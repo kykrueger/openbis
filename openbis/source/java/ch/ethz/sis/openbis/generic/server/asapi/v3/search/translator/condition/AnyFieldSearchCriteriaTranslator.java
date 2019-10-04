@@ -16,22 +16,22 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractStringValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AnyFieldSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringEqualToValue;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.SQLTypes;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator;
-import ch.systemsx.cisd.common.exceptions.UserFailureException;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
-import ch.systemsx.cisd.openbis.generic.shared.util.SimplePropertyValidator;
-
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractStringValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AnyFieldSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringEqualToValue;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.SQLTypes;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator;
+import ch.systemsx.cisd.common.exceptions.UserFailureException;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
+import ch.systemsx.cisd.openbis.generic.shared.util.SimplePropertyValidator;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.SQLTypes.BOOLEAN;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.SQLTypes.FLOAT4;
@@ -55,14 +55,14 @@ public class AnyFieldSearchCriteriaTranslator implements IConditionTranslator<An
     private final AtomicBoolean first = new AtomicBoolean();
 
     @Override
-    public Map<String, JoinInformation> getJoinInformationMap(final AnyFieldSearchCriteria criterion, final EntityMapper entityMapper,
+    public Map<String, JoinInformation> getJoinInformationMap(final AnyFieldSearchCriteria criterion, final TableMapper tableMapper,
             final IAliasFactory aliasFactory)
     {
         return null;
     }
 
     @Override
-    public void translate(final AnyFieldSearchCriteria criterion, final EntityMapper entityMapper, final List<Object> args,
+    public void translate(final AnyFieldSearchCriteria criterion, final TableMapper tableMapper, final List<Object> args,
             final StringBuilder sqlBuilder, final Map<Object, Map<String, JoinInformation>> aliases)
     {
         switch (criterion.getFieldType())
@@ -71,7 +71,7 @@ public class AnyFieldSearchCriteriaTranslator implements IConditionTranslator<An
             {
                 final String alias = Translator.MAIN_TABLE_ALIAS;
                 final AbstractStringValue value = criterion.getFieldValue();
-                final Map<String, SQLTypes> fieldToSQLTypeMap = entityMapper.getFieldToSQLTypeMap();
+                final Map<String, SQLTypes> fieldToSQLTypeMap = tableMapper.getFieldToSQLTypeMap();
                 final String stringValue = value.getValue();
                 final Set<SQLTypes> compatibleSqlTypesForValue = findCompatibleSqlTypesForValue(stringValue);
 

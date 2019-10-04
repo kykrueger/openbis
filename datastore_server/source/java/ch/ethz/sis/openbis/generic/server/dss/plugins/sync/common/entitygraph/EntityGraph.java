@@ -121,7 +121,7 @@ public class EntityGraph<N extends INode>
             if (list.isEmpty() && node.getEntityKind().equals(SyncEntityKind.DATA_SET) == false)
             {
                 sb.append(getRightHandNodeRep(node, forTest));
-                // if(node.getEntityKind().equals("PROJECT")) {
+                // if(node.getTableMapper().equals("PROJECT")) {
                 // sb.append(" [shape=box]");
                 // }
                 sb.append(";");

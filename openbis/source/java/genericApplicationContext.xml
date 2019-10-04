@@ -231,10 +231,18 @@
 		<constructor-arg ref="identity-translator"/>
 	</bean>
 
+	<bean id="person-search-manager" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.PersonSearchManager" lazy-init="true">
+		<constructor-arg ref="postgres-search-dao"/>
+		<constructor-arg ref="information-provider-dao"/>
+		<constructor-arg ref="identity-translator"/>
+	</bean>
+
 	<util:map id="criteria-to-manager-map" map-class="java.util.HashMap" key-type="java.lang.Class"
 			  value-type="ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager">
 		<entry key="ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria" value-ref="sample-search-manager"/>
 		<entry key="ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleTypeSearchCriteria" value-ref="sample-type-search-manager"/>
+		<entry key="ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.RegistratorSearchCriteria" value-ref="person-search-manager"/>
+		<entry key="ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.ModifierSearchCriteria" value-ref="person-search-manager"/>
 	</util:map>
 
 	<!-- // Common -->

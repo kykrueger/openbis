@@ -25,12 +25,13 @@ import java.util.stream.Collectors;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.ISQLExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SelectQuery;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator;
+
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
 
 public class PostgresSearchDAO implements ISQLSearchDAO
 {
@@ -43,40 +44,43 @@ public class PostgresSearchDAO implements ISQLSearchDAO
         this.sqlExecutor = sqlExecutor;
     }
 
-    public Set<Long> queryDBWithNonRecursiveCriteria(final Long userId, final EntityKind entityKind,
-            final Collection<ISearchCriteria> criteria,
-            final SearchOperator operator, final boolean entityTypeSearch)
+    public Set<Long> queryDBWithNonRecursiveCriteria(final Long userId, final TableMapper tableMapper,
+            final Collection<ISearchCriteria> criteria, final SearchOperator operator)
     {
-        final EntityMapper entityMapper = EntityMapper.toEntityMapper(entityKind, entityTypeSearch);
-        final SelectQuery selectQuery = Translator.translate(userId, entityMapper, criteria, operator, criteriaToManagerMap);
+        final Translator.TranslationVo translationVo = new Translator.TranslationVo();
+        translationVo.setUserId(userId);
+        translationVo.setTableMapper(tableMapper);
+        translationVo.setCriteria(criteria);
+        translationVo.setOperator(operator);
+        translationVo.setCriteriaToManagerMap(criteriaToManagerMap);
+
+        final SelectQuery selectQuery = Translator.translate(translationVo);
         final List<Map<String, Object>> result = sqlExecutor.execute(selectQuery.getQuery(), selectQuery.getArgs());
-        return result.stream().map(stringLongMap -> (Long) stringLongMap.get(entityMapper.getEntitiesTableIdField())).collect(Collectors.toSet());
+        return result.stream().map(stringLongMap -> (Long) stringLongMap.get(ID_COLUMN)).collect(Collectors.toSet());
     }
 
     @Override
-    public Set<Long> findChildIDs(final EntityKind entityKind, final Set<Long> parentIdSet)
+    public Set<Long> findChildIDs(final TableMapper tableMapper, final Set<Long> parentIdSet)
     {
-        final EntityMapper entityMapper = EntityMapper.toEntityMapper(entityKind, false);
-        final String query = "SELECT DISTINCT " + entityMapper.getRelationshipsTableChildIdField() + "\n" +
-                "FROM " + entityMapper.getRelationshipsTable() + "\n" +
-                "WHERE " + entityMapper.getRelationshipsTableParentIdField() + " IN (?)";
-        return executeSetSearchQuery(entityMapper, query, Collections.singletonList(parentIdSet.toArray()));
+        final String query = "SELECT DISTINCT " + tableMapper.getRelationshipsTableChildIdField() + "\n" +
+                "FROM " + tableMapper.getRelationshipsTable() + "\n" +
+                "WHERE " + tableMapper.getRelationshipsTableParentIdField() + " IN (?)";
+        return executeSetSearchQuery(tableMapper, query, Collections.singletonList(parentIdSet.toArray()));
     }
 
     @Override
-    public Set<Long> findParentIDs(final EntityKind entityKind, final Set<Long> childIdSet)
+    public Set<Long> findParentIDs(final TableMapper tableMapper, final Set<Long> childIdSet)
     {
-        final EntityMapper entityMapper = EntityMapper.toEntityMapper(entityKind, false);
-        final String query = "SELECT DISTINCT " + entityMapper.getRelationshipsTableParentIdField() + "\n" +
-                "FROM " + entityMapper.getRelationshipsTable() + "\n" +
-                "WHERE " + entityMapper.getRelationshipsTableChildIdField() + " IN (?)";
-        return executeSetSearchQuery(entityMapper, query, Collections.singletonList(childIdSet.toArray()));
+        final String query = "SELECT DISTINCT " + tableMapper.getRelationshipsTableParentIdField() + "\n" +
+                "FROM " + tableMapper.getRelationshipsTable() + "\n" +
+                "WHERE " + tableMapper.getRelationshipsTableChildIdField() + " IN (?)";
+        return executeSetSearchQuery(tableMapper, query, Collections.singletonList(childIdSet.toArray()));
     }
 
-    private Set<Long> executeSetSearchQuery(final EntityMapper entityMapper, final String query, final List<Object> args)
+    private Set<Long> executeSetSearchQuery(final TableMapper tableMapper, final String query, final List<Object> args)
     {
         final List<Map<String, Object>> queryResultList = sqlExecutor.execute(query, args);
-        return queryResultList.stream().map(stringObjectMap -> (Long) stringObjectMap.get(entityMapper.getRelationshipsTableChildIdField()))
+        return queryResultList.stream().map(stringObjectMap -> (Long) stringObjectMap.get(tableMapper.getRelationshipsTableChildIdField()))
                 .collect(Collectors.toSet());
     }
 

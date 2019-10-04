@@ -16,17 +16,17 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 
+import java.util.List;
+import java.util.Map;
+
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.IdSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sample.FullSampleIdentifier;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sample.SampleIdentifierParts;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator;
-
-import java.util.List;
-import java.util.Map;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.AND;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.EQ;
@@ -48,11 +48,11 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.PROJECTS_TA
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SAMPLES_ALL_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SPACES_TABLE;
 
-public class IdSearchCriteriaTranslator extends AbstractConditionTranslator<IdSearchCriteria<ISampleId>>
+public class SampleIdSearchCriteriaTranslator extends AbstractConditionTranslator<IdSearchCriteria<ISampleId>>
 {
 
     @Override
-    public void translate(final IdSearchCriteria<ISampleId> criterion, final EntityMapper entityMapper, final List<Object> args,
+    public void translate(final IdSearchCriteria<ISampleId> criterion, final TableMapper tableMapper, final List<Object> args,
             final StringBuilder sqlBuilder, final Map<Object, Map<String, JoinInformation>> aliases)
     {
         final ISampleId sampleId = criterion.getId();

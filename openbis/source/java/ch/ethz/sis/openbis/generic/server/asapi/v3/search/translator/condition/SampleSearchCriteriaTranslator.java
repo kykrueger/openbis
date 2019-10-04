@@ -16,11 +16,11 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
-
 import java.util.List;
 import java.util.Map;
+
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.TRUE;
 
@@ -28,14 +28,14 @@ public class SampleSearchCriteriaTranslator implements IConditionTranslator<Samp
 {
 
     @Override
-    public Map<String, JoinInformation> getJoinInformationMap(final SampleSearchCriteria criterion, final EntityMapper entityMapper,
+    public Map<String, JoinInformation> getJoinInformationMap(final SampleSearchCriteria criterion, final TableMapper tableMapper,
             final IAliasFactory aliasFactory)
     {
         return null;
     }
 
     @Override
-    public void translate(final SampleSearchCriteria criterion, final EntityMapper entityMapper, final List<Object> args,
+    public void translate(final SampleSearchCriteria criterion, final TableMapper tableMapper, final List<Object> args,
             final StringBuilder sqlBuilder, final Map<Object, Map<String, JoinInformation>> aliases)
     {
         sqlBuilder.append(TRUE);

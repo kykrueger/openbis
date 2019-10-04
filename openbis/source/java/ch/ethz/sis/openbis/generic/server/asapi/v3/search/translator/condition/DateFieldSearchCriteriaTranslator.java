@@ -16,16 +16,16 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 
+import java.util.List;
+import java.util.Map;
+
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateFieldSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.IDate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ModificationDateSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.RegistrationDateSearchCriteria;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
-
-import java.util.List;
-import java.util.Map;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.AND;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.CASE;
@@ -48,7 +48,7 @@ public class DateFieldSearchCriteriaTranslator implements IConditionTranslator<D
     private static final String TIMESTAMP_DATA_TYPE_CODE = "TIMESTAMP";
 
     @Override
-    public Map<String, JoinInformation> getJoinInformationMap(final DateFieldSearchCriteria criterion, final EntityMapper entityMapper,
+    public Map<String, JoinInformation> getJoinInformationMap(final DateFieldSearchCriteria criterion, final TableMapper tableMapper,
             final IAliasFactory aliasFactory)
     {
         switch (criterion.getFieldType())
@@ -60,7 +60,7 @@ public class DateFieldSearchCriteriaTranslator implements IConditionTranslator<D
 
             case PROPERTY:
             {
-                return TranslatorUtils.getPropertyJoinInformationMap(entityMapper, aliasFactory);
+                return TranslatorUtils.getPropertyJoinInformationMap(tableMapper, aliasFactory);
             }
         }
 
@@ -68,7 +68,7 @@ public class DateFieldSearchCriteriaTranslator implements IConditionTranslator<D
     }
 
     @Override
-    public void translate(final DateFieldSearchCriteria criterion, final EntityMapper entityMapper, final List<Object> args,
+    public void translate(final DateFieldSearchCriteria criterion, final TableMapper tableMapper, final List<Object> args,
             final StringBuilder sqlBuilder, final Map<Object, Map<String, JoinInformation>> aliases)
     {
         switch (criterion.getFieldType()) {
@@ -100,24 +100,24 @@ public class DateFieldSearchCriteriaTranslator implements IConditionTranslator<D
                 final String propertyName = TranslatorUtils.normalisePropertyName(criterion.getFieldName());
                 final boolean internalProperty = TranslatorUtils.isPropertyInternal(criterion.getFieldName());
                 final Map<String, JoinInformation> joinInformationMap = aliases.get(criterion);
-                final String entityTypesSubTableAlias = joinInformationMap.get(entityMapper.getEntityTypesAttributeTypesTable()).getSubTableAlias();
+                final String entityTypesSubTableAlias = joinInformationMap.get(tableMapper.getEntityTypesAttributeTypesTable()).getSubTableAlias();
 
                 sqlBuilder.append(CASE).append(SP).append(WHEN).append(SP);
 
                 TranslatorUtils.appendInternalExternalConstraint(sqlBuilder, args, entityTypesSubTableAlias, internalProperty);
 
-                sqlBuilder.append(SP).append(joinInformationMap.get(entityMapper.getEntityTypesAttributeTypesTable()).getSubTableAlias())
+                sqlBuilder.append(SP).append(joinInformationMap.get(tableMapper.getEntityTypesAttributeTypesTable()).getSubTableAlias())
                         .append(PERIOD).append(ColumnNames.CODE_COLUMN).append(SP).append(EQ).append(SP).append(QU);
                 args.add(propertyName);
 
                 sqlBuilder.append(SP).append(AND);
 
-                sqlBuilder.append(SP).append(joinInformationMap.get(entityMapper.getAttributeTypesTable()).getSubTableAlias())
+                sqlBuilder.append(SP).append(joinInformationMap.get(tableMapper.getAttributeTypesTable()).getSubTableAlias())
                         .append(PERIOD).append(ColumnNames.CODE_COLUMN).append(SP).append(EQ).append(SP).append(QU);
                 args.add(TIMESTAMP_DATA_TYPE_CODE);
 
                 sqlBuilder.append(SP).append(THEN).append(SP);
-                sqlBuilder.append(joinInformationMap.get(entityMapper.getEntitiesTable()).getSubTableAlias())
+                sqlBuilder.append(joinInformationMap.get(tableMapper.getEntitiesTable()).getSubTableAlias())
                         .append(PERIOD).append(ColumnNames.VALUE_COLUMN).append(DOUBLE_COLON).append(TIMESTAMPTZ).append(SP);
                 TranslatorUtils.appendDateComparatorOp(value, sqlBuilder);
                 TranslatorUtils.addDateValueToArgs(value, args);

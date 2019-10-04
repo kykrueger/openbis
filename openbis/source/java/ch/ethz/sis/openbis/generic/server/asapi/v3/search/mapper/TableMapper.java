@@ -29,18 +29,21 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.CHILD_SAMP
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.CODE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.DATA_TYPE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.DESCRIPTION_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.EMAIL_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.EXPERIMENT_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.FIRST_NAME_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.GENERATED_CODE_PREFIX;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.GENERATED_FROM_DEPTH;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.IS_AUTO_GENERATED_CODE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.IS_LISTABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.IS_SUBCODE_UNIQUE;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.LAST_NAME_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.MODIFICATION_TIMESTAMP_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PARENT_SAMPLE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PART_OF_DEPTH;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PART_OF_SAMPLE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PERM_ID_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PERSON_IS_ACTIVE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PERSON_MODIFIER_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PERSON_REGISTERER_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PROJECT_COLUMN;
@@ -51,8 +54,10 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.SAMPLE_TYP
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.SAMPLE_TYPE_PROPERTY_TYPE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.SHOW_PARENT_METADATA;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.SPACE_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.USER_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.VALIDATION_SCRIPT_ID_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.DATA_ALL_TABLE;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.PERSONS_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.PROPERTY_TYPES_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SAMPLES_ALL_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SAMPLE_PROPERTIES_TABLE;
@@ -62,150 +67,125 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SAMPLE_TYPE
 
 /**
  * Extension of enum {@link EntityKind} to contain extra information about tables related to the entities which can
- * have parent-child relationships.
+ * have parent-child relationships.<p/>
+ *
+ * This enum also contains table information for non-entity search criteria (not related to MATERIAL, EXPERIMENT, SAMPLE, DATA_SET).
  *
  * @author Viktor Kovtun
  */
-public enum EntityMapper
+public enum TableMapper
 {
 
-    SAMPLE(SAMPLES_ALL_TABLE, ID_COLUMN, SAMPLE_TYPE_COLUMN,
-            PROPERTY_TYPES_TABLE, ID_COLUMN, DATA_TYPE_COLUMN,
-            SAMPLE_TYPES_TABLE,
-            ID_COLUMN, SAMPLE_TYPE_PROPERTY_TYPE_TABLE, ID_COLUMN, SAMPLE_TYPE_COLUMN,
-            PROPERTY_TYPE_COLUMN, SAMPLE_PROPERTIES_TABLE, ID_COLUMN, SAMPLE_COLUMN,
-            SAMPLE_TYPE_PROPERTY_TYPE_COLUMN, SAMPLE_RELATIONSHIPS_ALL_TABLE, ID_COLUMN, PARENT_SAMPLE_COLUMN,
-            CHILD_SAMPLE_COLUMN, DATA_ALL_TABLE, ID_COLUMN, SAMPLE_COLUMN),
+    SAMPLE(SAMPLES_ALL_TABLE, SAMPLE_TYPE_COLUMN, PROPERTY_TYPES_TABLE, DATA_TYPE_COLUMN, SAMPLE_TYPES_TABLE,
+            SAMPLE_TYPE_PROPERTY_TYPE_TABLE, SAMPLE_TYPE_COLUMN, PROPERTY_TYPE_COLUMN, SAMPLE_PROPERTIES_TABLE, SAMPLE_COLUMN,
+            SAMPLE_TYPE_PROPERTY_TYPE_COLUMN, SAMPLE_RELATIONSHIPS_ALL_TABLE, PARENT_SAMPLE_COLUMN, CHILD_SAMPLE_COLUMN, DATA_ALL_TABLE,
+            SAMPLE_COLUMN),
 
-    SAMPLE_TYPE(SAMPLE_TYPES_TABLE, ID_COLUMN, null,  null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
-            null, null, null, null);
+    SAMPLE_TYPE(SAMPLE_TYPES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null,
+            null, null, null),
+
+    PERSON(PERSONS_TABLE, null, null, null, null, null, null, null, null, null, null, null, null,
+            null, null, null);
 
     static
     {
         initSampleFieldToSQLTypeMap();
-        initSampleSqlTypeToFieldsMap();
+        initSampleSQLTypeToFieldsMap();
         initSampleTypeFieldToSQLTypeMap();
-        initSampleTypeSqlTypeToFieldsMap();
+        initSampleTypeSQLTypeToFieldsMap();
+        initPersonFieldToSQLTypeMap();
+        initPersonSQLTypeToFieldsMap();
     }
+
 
     /*
      * Entities Table
      */
     private String entitiesTable;
 
-    private String entitiesTableIdField;
-
     private String entitiesTableEntityTypeIdField;
-
     private String attributeTypesTableDataTypeIdField;
+
 
     /*
      * Common Attribute definition Tables
      */
     private String attributeTypesTable;
 
-    private String attributeTypesTableIdField;
-
     /*
      * Entity Attribute definition Tables
      */
     private String entityTypesTable;
 
-    private String entityTypesTableIdField;
-
     private String entityTypesAttributeTypesTable;
-
-    private String entityTypesAttributeTypesTableIdField;
-
     private String entityTypesAttributeTypesTableEntityTypeIdField; //saty
 
     private String entityTypesAttributeTypesTableAttributeTypeIdField; //prty
+
 
     /*
      * Entity Values Tables
      */
     private String valuesTable;
 
-    private String valuesTableIdField;
-
     private String valuesTableEntityIdField;
-
     private String valuesTableEntityTypeAttributeTypeIdField;
+
 
     /*
      * Relationships Tables
      */
     private String relationshipsTable;
 
-    private String relationshipsTableIdField;
-
     private String relationshipsTableParentIdField;
-
     private String relationshipsTableChildIdField;
+
 
     /*
      * Files tables
      */
     private String dataTable;
 
-    private String dataTableIdField;
-
     private String dataTableEntityIdField;
-
     private Map<String, SQLTypes> fieldToSQLTypeMap = new HashMap<>();
 
     private Map<SQLTypes, Set<String>> sqlTypeToFieldsMap = new HashMap<>();
 
 
-    EntityMapper(final String entitiesTable, final String entitiesTableIdField, final String entitiesTableEntityTypeIdField,
-            final String attributeTypesTable, final String attributeTypesTableIdField, final String attributeTypesTableDataTypeIdField,
-            final String entityTypesTable, final String entityTypesTableIdField, final String entityTypesAttributeTypesTable,
-            final String entityTypesAttributeTypesTableIdField, final String entityTypesAttributeTypesTableEntityTypeIdField,
-            final String entityTypesAttributeTypesTableAttributeTypeIdField,
-            final String valuesTable, final String valuesTableIdField, final String valuesTableEntityIdField,
-            final String valuesTableEntityTypeAttributeTypeIdField, final String relationshipsTable, final String relationshipsTableIdField,
-            final String relationshipsTableParentIdField, final String relationshipsTableChildIdField, final String dataTable,
-            final String dataTableIdField, final String dataTableEntityIdField)
+    TableMapper(final String entitiesTable, final String entitiesTableEntityTypeIdField, final String attributeTypesTable,
+            final String attributeTypesTableDataTypeIdField, final String entityTypesTable, final String entityTypesAttributeTypesTable,
+            final String entityTypesAttributeTypesTableEntityTypeIdField, final String entityTypesAttributeTypesTableAttributeTypeIdField,
+            final String valuesTable, final String valuesTableEntityIdField, final String valuesTableEntityTypeAttributeTypeIdField,
+            final String relationshipsTable, final String relationshipsTableParentIdField, final String relationshipsTableChildIdField,
+            final String dataTable, final String dataTableEntityIdField)
     {
         this.entitiesTable = entitiesTable;
-        this.entitiesTableIdField = entitiesTableIdField;
         this.entitiesTableEntityTypeIdField = entitiesTableEntityTypeIdField;
         this.attributeTypesTable = attributeTypesTable;
-        this.attributeTypesTableIdField = attributeTypesTableIdField;
         this.attributeTypesTableDataTypeIdField = attributeTypesTableDataTypeIdField;
         this.entityTypesTable = entityTypesTable;
-        this.entityTypesTableIdField = entityTypesTableIdField;
         this.entityTypesAttributeTypesTable = entityTypesAttributeTypesTable;
-        this.entityTypesAttributeTypesTableIdField = entityTypesAttributeTypesTableIdField;
         this.entityTypesAttributeTypesTableEntityTypeIdField = entityTypesAttributeTypesTableEntityTypeIdField;
         this.entityTypesAttributeTypesTableAttributeTypeIdField = entityTypesAttributeTypesTableAttributeTypeIdField;
         this.valuesTable = valuesTable;
-        this.valuesTableIdField = valuesTableIdField;
         this.valuesTableEntityIdField = valuesTableEntityIdField;
         this.valuesTableEntityTypeAttributeTypeIdField = valuesTableEntityTypeAttributeTypeIdField;
         this.relationshipsTable = relationshipsTable;
-        this.relationshipsTableIdField = relationshipsTableIdField;
         this.relationshipsTableParentIdField = relationshipsTableParentIdField;
         this.relationshipsTableChildIdField = relationshipsTableChildIdField;
         this.dataTable = dataTable;
-        this.dataTableIdField = dataTableIdField;
         this.dataTableEntityIdField = dataTableEntityIdField;
     }
 
-    public static EntityMapper toEntityMapper(final EntityKind entityKind, final boolean isEntityType)
+    public static TableMapper toEntityMapper(final EntityKind entityKind, final boolean isEntityType)
     {
         // By convention entity mapper values corresponding to types should end with "_TYPE"
-        return EntityMapper.valueOf(entityKind.name() + (isEntityType ? "_TYPE" : ""));
+        return TableMapper.valueOf(entityKind.name() + (isEntityType ? "_TYPE" : ""));
     }
 
     public String getEntitiesTable()
     {
         return entitiesTable;
-    }
-
-    public String getEntitiesTableIdField()
-    {
-        return entitiesTableIdField;
     }
 
     public String getEntitiesTableEntityTypeIdField()
@@ -218,11 +198,6 @@ public enum EntityMapper
         return attributeTypesTable;
     }
 
-    public String getAttributeTypesTableIdField()
-    {
-        return attributeTypesTableIdField;
-    }
-
     public String getAttributeTypesTableDataTypeIdField()
     {
         return attributeTypesTableDataTypeIdField;
@@ -233,19 +208,9 @@ public enum EntityMapper
         return entityTypesTable;
     }
 
-    public String getEntityTypesTableIdField()
-    {
-        return entityTypesTableIdField;
-    }
-
     public String getEntityTypesAttributeTypesTable()
     {
         return entityTypesAttributeTypesTable;
-    }
-
-    public String getEntityTypesAttributeTypesTableIdField()
-    {
-        return entityTypesAttributeTypesTableIdField;
     }
 
     public String getEntityTypesAttributeTypesTableEntityTypeIdField()
@@ -263,11 +228,6 @@ public enum EntityMapper
         return valuesTable;
     }
 
-    public String getValuesTableIdField()
-    {
-        return valuesTableIdField;
-    }
-
     public String getValuesTableEntityIdField()
     {
         return valuesTableEntityIdField;
@@ -283,11 +243,6 @@ public enum EntityMapper
         return relationshipsTable;
     }
 
-    public String getRelationshipsTableIdField()
-    {
-        return relationshipsTableIdField;
-    }
-
     public String getRelationshipsTableParentIdField()
     {
         return relationshipsTableParentIdField;
@@ -301,11 +256,6 @@ public enum EntityMapper
     public String getDataTable()
     {
         return dataTable;
-    }
-
-    public String getDataTableIdField()
-    {
-        return dataTableIdField;
     }
 
     public String getDataTableEntityIdField()
@@ -350,31 +300,42 @@ public enum EntityMapper
         fields.put(SHOW_PARENT_METADATA, SQLTypes.BOOLEAN);
     }
 
-    private static void initSampleTypeSqlTypeToFieldsMap()
+    private static void initPersonFieldToSQLTypeMap()
     {
-        final Map<SQLTypes, Set<String>> map = SAMPLE_TYPE.sqlTypeToFieldsMap;
-        final Set<String> varcharColumns = new HashSet<>(Arrays.asList(CODE_COLUMN, DESCRIPTION_COLUMN, GENERATED_CODE_PREFIX));
-        final Set<String> timestampColumns = new HashSet<>(Arrays.asList(MODIFICATION_TIMESTAMP_COLUMN));
-        final Set<String> int4Columns = new HashSet<>(Arrays.asList(GENERATED_FROM_DEPTH, PART_OF_DEPTH));
-        final Set<String> int8Columns = new HashSet<>(Arrays.asList(VALIDATION_SCRIPT_ID_COLUMN));
-        final Set<String> booleanColumns = new HashSet<>(Arrays.asList(IS_AUTO_GENERATED_CODE, IS_SUBCODE_UNIQUE, IS_LISTABLE, SHOW_PARENT_METADATA));
-        map.put(SQLTypes.VARCHAR, varcharColumns);
-        map.put(SQLTypes.TIMESTAMP_WITH_TZ, timestampColumns);
-        map.put(SQLTypes.INT4, int4Columns);
-        map.put(SQLTypes.INT8, int8Columns);
-        map.put(SQLTypes.BOOLEAN, booleanColumns);
+        final Map<String, SQLTypes> fields = PERSON.fieldToSQLTypeMap;
+        fields.put(FIRST_NAME_COLUMN, SQLTypes.VARCHAR);
+        fields.put(LAST_NAME_COLUMN, SQLTypes.VARCHAR);
+        fields.put(USER_COLUMN, SQLTypes.VARCHAR);
+        fields.put(EMAIL_COLUMN, SQLTypes.VARCHAR);
+        fields.put(REGISTRATION_TIMESTAMP_COLUMN, SQLTypes.TIMESTAMP_WITH_TZ);
+        fields.put(PERSON_IS_ACTIVE_COLUMN, SQLTypes.BOOLEAN);
     }
 
-    private static void initSampleSqlTypeToFieldsMap()
+    private static void initSampleTypeSQLTypeToFieldsMap()
+    {
+        final Map<SQLTypes, Set<String>> map = SAMPLE_TYPE.sqlTypeToFieldsMap;
+        map.put(SQLTypes.VARCHAR, new HashSet<>(Arrays.asList(CODE_COLUMN, DESCRIPTION_COLUMN, GENERATED_CODE_PREFIX)));
+        map.put(SQLTypes.TIMESTAMP_WITH_TZ, new HashSet<>(Arrays.asList(MODIFICATION_TIMESTAMP_COLUMN)));
+        map.put(SQLTypes.INT4, new HashSet<>(Arrays.asList(GENERATED_FROM_DEPTH, PART_OF_DEPTH)));
+        map.put(SQLTypes.INT8, new HashSet<>(Arrays.asList(VALIDATION_SCRIPT_ID_COLUMN)));
+        map.put(SQLTypes.BOOLEAN, new HashSet<>(Arrays.asList(IS_AUTO_GENERATED_CODE, IS_SUBCODE_UNIQUE, IS_LISTABLE, SHOW_PARENT_METADATA)));
+    }
+
+    private static void initSampleSQLTypeToFieldsMap()
     {
         final Map<SQLTypes, Set<String>> map = SAMPLE.sqlTypeToFieldsMap;
-        final Set<String> varcharColumns = new HashSet<>(Arrays.asList(PERM_ID_COLUMN, CODE_COLUMN));
-        final Set<String> timestampColumns = new HashSet<>(Arrays.asList(REGISTRATION_TIMESTAMP_COLUMN, MODIFICATION_TIMESTAMP_COLUMN));
-        final Set<String> int8Columns = new HashSet<>(Arrays.asList(EXPERIMENT_COLUMN, SAMPLE_TYPE_COLUMN, PERSON_REGISTERER_COLUMN, SPACE_COLUMN,
-                PART_OF_SAMPLE_COLUMN, PERSON_MODIFIER_COLUMN, PROJECT_COLUMN));
-        map.put(SQLTypes.VARCHAR, varcharColumns);
-        map.put(SQLTypes.TIMESTAMP_WITH_TZ, timestampColumns);
-        map.put(SQLTypes.INT8, int8Columns);
+        map.put(SQLTypes.VARCHAR, new HashSet<>(Arrays.asList(PERM_ID_COLUMN, CODE_COLUMN)));
+        map.put(SQLTypes.TIMESTAMP_WITH_TZ, new HashSet<>(Arrays.asList(REGISTRATION_TIMESTAMP_COLUMN, MODIFICATION_TIMESTAMP_COLUMN)));
+        map.put(SQLTypes.INT8, new HashSet<>(Arrays.asList(EXPERIMENT_COLUMN, SAMPLE_TYPE_COLUMN, PERSON_REGISTERER_COLUMN, SPACE_COLUMN,
+                PART_OF_SAMPLE_COLUMN, PERSON_MODIFIER_COLUMN, PROJECT_COLUMN)));
+    }
+
+    private static void initPersonSQLTypeToFieldsMap()
+    {
+        final Map<SQLTypes, Set<String>> map = PERSON.sqlTypeToFieldsMap;
+        map.put(SQLTypes.VARCHAR, new HashSet<>(Arrays.asList(FIRST_NAME_COLUMN, LAST_NAME_COLUMN, USER_COLUMN, EMAIL_COLUMN)));
+        map.put(SQLTypes.TIMESTAMP_WITH_TZ, new HashSet<>(Arrays.asList(REGISTRATION_TIMESTAMP_COLUMN)));
+        map.put(SQLTypes.BOOLEAN, new HashSet<>(Arrays.asList(PERSON_IS_ACTIVE_COLUMN)));
     }
 
 }

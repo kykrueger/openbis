@@ -16,19 +16,23 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
-
 import java.util.List;
 import java.util.Map;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
+
+/**
+ *
+ * @param <CRITERIA> type of ISearchCriteria.
+ */
 public interface IConditionTranslator<CRITERIA extends ISearchCriteria>
 {
 
-    Map<String, JoinInformation> getJoinInformationMap(final CRITERIA criterion, final EntityMapper entityMapper,
+    Map<String, JoinInformation> getJoinInformationMap(final CRITERIA criterion, final TableMapper tableMapper,
             final IAliasFactory aliasFactory);
 
-    void translate(final CRITERIA criterion, final EntityMapper entityMapper, final List<Object> args, final StringBuilder sqlBuilder,
+    void translate(final CRITERIA criterion, final TableMapper tableMapper, final List<Object> args, final StringBuilder sqlBuilder,
             final Map<Object, Map<String, JoinInformation>> aliases);
 
 }

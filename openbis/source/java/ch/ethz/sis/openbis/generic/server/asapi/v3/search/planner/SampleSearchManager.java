@@ -19,7 +19,6 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 import java.util.Set;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleChildrenSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleParentsSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
@@ -27,6 +26,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInfo
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 
 /**
  * Manages detailed search with complex sample search criteria.
@@ -44,9 +44,9 @@ public class SampleSearchManager extends AbstractCompositeEntitySearchManager<Sa
     }
 
     @Override
-    protected EntityKind getEntityKind()
+    protected TableMapper getTableMapper()
     {
-        return EntityKind.SAMPLE;
+        return TableMapper.SAMPLE;
     }
 
     @Override

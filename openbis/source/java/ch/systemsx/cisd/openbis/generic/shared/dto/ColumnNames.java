@@ -444,6 +444,8 @@ public final class ColumnNames
 
     public static final String ARCHIVING_REQUESTED = "archiving_requested";
 
+    public static final String EMAIL_COLUMN = "email";
+
     private ColumnNames()
     {
         // Can not be instantiated.

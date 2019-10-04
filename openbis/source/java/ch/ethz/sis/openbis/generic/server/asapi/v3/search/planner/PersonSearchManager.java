@@ -19,7 +19,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 import java.util.Collections;
 import java.util.Set;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleTypeSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.PersonSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
@@ -27,14 +27,14 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETransl
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 
 /**
- * Manages detailed search with sample type search criteria.
+ * Manages detailed search with person search criteria.
  *
  * @author Viktor Kovtun
  */
-public class SampleTypeSearchManager extends AbstractSearchManager<SampleTypeSearchCriteria, Long>
+public class PersonSearchManager extends AbstractSearchManager<PersonSearchCriteria, Long>
 {
 
-    public SampleTypeSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
+    public PersonSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
             final IID2PETranslator<Long> idsTranslator)
     {
         super(searchDAO, authProvider, idsTranslator);
@@ -47,9 +47,9 @@ public class SampleTypeSearchManager extends AbstractSearchManager<SampleTypeSea
     }
 
     @Override
-    public Set<Long> searchForIDs(final Long userId, final SampleTypeSearchCriteria criteria)
+    public Set<Long> searchForIDs(final Long userId, final PersonSearchCriteria criteria)
     {
-        final Set<Long> mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId, TableMapper.SAMPLE_TYPE,
+        final Set<Long> mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId, TableMapper.PERSON,
                 criteria.getCriteria(), criteria.getOperator());
 
         // If we have results, we use them

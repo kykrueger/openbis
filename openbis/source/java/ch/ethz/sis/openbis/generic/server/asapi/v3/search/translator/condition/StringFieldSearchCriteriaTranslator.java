@@ -22,7 +22,7 @@ import java.util.Map;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractStringValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AnyStringValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringFieldSearchCriteria;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
 
@@ -37,7 +37,7 @@ public class StringFieldSearchCriteriaTranslator implements IConditionTranslator
 {
 
     @Override
-    public Map<String, JoinInformation> getJoinInformationMap(final StringFieldSearchCriteria criterion, final EntityMapper entityMapper,
+    public Map<String, JoinInformation> getJoinInformationMap(final StringFieldSearchCriteria criterion, final TableMapper tableMapper,
             final IAliasFactory aliasFactory)
     {
         switch (criterion.getFieldType())
@@ -49,7 +49,7 @@ public class StringFieldSearchCriteriaTranslator implements IConditionTranslator
 
             case PROPERTY:
             {
-                return TranslatorUtils.getPropertyJoinInformationMap(entityMapper, aliasFactory);
+                return TranslatorUtils.getPropertyJoinInformationMap(tableMapper, aliasFactory);
             }
         }
 
@@ -57,7 +57,7 @@ public class StringFieldSearchCriteriaTranslator implements IConditionTranslator
     }
 
     @Override
-    public void translate(final StringFieldSearchCriteria criterion, final EntityMapper entityMapper, final List<Object> args,
+    public void translate(final StringFieldSearchCriteria criterion, final TableMapper tableMapper, final List<Object> args,
             final StringBuilder sqlBuilder, final Map<Object, Map<String, JoinInformation>> aliases)
     {
         switch (criterion.getFieldType())
@@ -81,7 +81,7 @@ public class StringFieldSearchCriteriaTranslator implements IConditionTranslator
                 final String propertyName = TranslatorUtils.normalisePropertyName(criterion.getFieldName());
                 final boolean internalProperty = TranslatorUtils.isPropertyInternal(criterion.getFieldName());
                 final Map<String, JoinInformation> joinInformationMap = aliases.get(criterion);
-                final String entityTypesSubTableAlias = joinInformationMap.get(entityMapper.getEntityTypesAttributeTypesTable()).getSubTableAlias();
+                final String entityTypesSubTableAlias = joinInformationMap.get(tableMapper.getEntityTypesAttributeTypesTable()).getSubTableAlias();
 
                 TranslatorUtils.appendInternalExternalConstraint(sqlBuilder, args, entityTypesSubTableAlias, internalProperty);
 
@@ -91,7 +91,7 @@ public class StringFieldSearchCriteriaTranslator implements IConditionTranslator
 
                 if (value.getClass() != AnyStringValue.class)
                 {
-                    sqlBuilder.append(SP).append(AND).append(SP).append(joinInformationMap.get(entityMapper.getEntitiesTable()).getSubTableAlias())
+                    sqlBuilder.append(SP).append(AND).append(SP).append(joinInformationMap.get(tableMapper.getEntitiesTable()).getSubTableAlias())
                             .append(PERIOD).append(ColumnNames.VALUE_COLUMN).append(SP);
                     TranslatorUtils.appendStringComparatorOp(value, sqlBuilder);
                     args.add(value.getValue());

@@ -25,10 +25,10 @@ import java.util.stream.Stream;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 
 public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends AbstractCompositeSearchCriteria, OBJECT_PE>
         extends AbstractSearchManager<CRITERIA, OBJECT_PE>
@@ -45,7 +45,7 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
      *
      * @return an entity kind.
      */
-    protected abstract EntityKind getEntityKind();
+    protected abstract TableMapper getTableMapper();
 
     protected abstract Class<? extends AbstractCompositeSearchCriteria> getParentsSearchCriteriaClass();
 
@@ -69,8 +69,8 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
         // The main criteria have no recursive ISearchCriteria into it, to facilitate building a query
         if (!mainCriteria.isEmpty())
         {
-            mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId, getEntityKind(), mainCriteria,
-                    criteria.getOperator(), false);
+            mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId, getTableMapper(), mainCriteria,
+                    criteria.getOperator());
         }
 
         // The parents criteria can be or not recursive, they are resolved by a recursive call
@@ -143,15 +143,15 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
     private Set<Long> getAllIds(final Long userId)
     {
         final CRITERIA criteria = createEmptyCriteria();
-        return getSearchDAO().queryDBWithNonRecursiveCriteria(userId, getEntityKind(), Collections.singletonList(criteria),
-                SearchOperator.OR, false);
+        return getSearchDAO().queryDBWithNonRecursiveCriteria(userId, getTableMapper(), Collections.singletonList(criteria),
+                SearchOperator.OR);
     }
 
     private Set<Long> getChildrenIdsOf(final Set<Long> parentIdSet)
     {
         try
         {
-            return getSearchDAO().findChildIDs(getEntityKind(), parentIdSet);
+            return getSearchDAO().findChildIDs(getTableMapper(), parentIdSet);
         } catch (Exception e)
         {
             e.printStackTrace();
@@ -163,7 +163,7 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
     {
         try
         {
-            return getSearchDAO().findParentIDs(getEntityKind(), childIdSet);
+            return getSearchDAO().findParentIDs(getTableMapper(), childIdSet);
         } catch (Exception e)
         {
             e.printStackTrace();

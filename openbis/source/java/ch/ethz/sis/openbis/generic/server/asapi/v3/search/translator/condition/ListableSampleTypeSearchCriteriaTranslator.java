@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.ListableSampleTypeSearchCriteria;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.EQ;
@@ -31,14 +31,14 @@ public class ListableSampleTypeSearchCriteriaTranslator implements IConditionTra
 {
 
     @Override
-    public Map<String, JoinInformation> getJoinInformationMap(final ListableSampleTypeSearchCriteria criterion, final EntityMapper entityMapper,
+    public Map<String, JoinInformation> getJoinInformationMap(final ListableSampleTypeSearchCriteria criterion, final TableMapper tableMapper,
             final IAliasFactory aliasFactory)
     {
         return null;
     }
 
     @Override
-    public void translate(final ListableSampleTypeSearchCriteria criterion, final EntityMapper entityMapper, final List<Object> args,
+    public void translate(final ListableSampleTypeSearchCriteria criterion, final TableMapper tableMapper, final List<Object> args,
             final StringBuilder sqlBuilder, final Map<Object, Map<String, JoinInformation>> aliases)
     {
         sqlBuilder.append(ColumnNames.IS_LISTABLE).append(SP).append(EQ).append(QU);

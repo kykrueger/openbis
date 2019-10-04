@@ -26,7 +26,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleTypeSearchCriteria;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SelectQuery;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator;
@@ -62,9 +62,13 @@ public class TranslatorTest
     public void testTranslateSearchAllSamples()
     {
         final SampleSearchCriteria sampleSearchCriteria = new SampleSearchCriteria();
-        final SelectQuery result =
-                Translator.translate(USER_ID, EntityMapper.SAMPLE, Collections.singletonList(sampleSearchCriteria), SearchOperator.AND,
-                        CRITERIA_TO_MANAGER_MAP);
+        final Translator.TranslationVo translationVo = new Translator.TranslationVo();
+        translationVo.setUserId(USER_ID);
+        translationVo.setTableMapper(TableMapper.SAMPLE);
+        translationVo.setCriteria(Collections.singletonList(sampleSearchCriteria));
+        translationVo.setOperator(SearchOperator.AND);
+        translationVo.setCriteriaToManagerMap(CRITERIA_TO_MANAGER_MAP);
+        final SelectQuery result = Translator.translate(translationVo);
 
         assertEquals(result, new SelectQuery(String.format(
                 "SELECT DISTINCT %s.%s\n" +
@@ -79,9 +83,14 @@ public class TranslatorTest
         final SampleIdentifier sampleIdentifier = new SampleIdentifier(SAMPLE_ID);
         sampleSearchCriteria.withId().thatEquals(sampleIdentifier);
 
-        final SelectQuery result =
-                Translator.translate(USER_ID, EntityMapper.SAMPLE, Collections.singletonList(sampleSearchCriteria), SearchOperator.AND,
-                        CRITERIA_TO_MANAGER_MAP);
+        final Translator.TranslationVo translationVo = new Translator.TranslationVo();
+        translationVo.setUserId(USER_ID);
+        translationVo.setTableMapper(TableMapper.SAMPLE);
+        translationVo.setCriteria(Collections.singletonList(sampleSearchCriteria));
+        translationVo.setOperator(SearchOperator.AND);
+        translationVo.setCriteriaToManagerMap(CRITERIA_TO_MANAGER_MAP);
+
+        final SelectQuery result = Translator.translate(translationVo);
 
         assertEquals(result, new SelectQuery(String.format(
                 "SELECT DISTINCT %s.%s\n" +
@@ -99,9 +108,14 @@ public class TranslatorTest
         sampleSearchCriteria.withRegistrationDate().thatEquals(REGISTRATION_DATE);
         sampleSearchCriteria.withModificationDate().thatEquals(MODIFICATION_DATE);
 
-        final SelectQuery result =
-                Translator.translate(USER_ID, EntityMapper.SAMPLE, Collections.singletonList(sampleSearchCriteria), SearchOperator.AND,
-                CRITERIA_TO_MANAGER_MAP);
+        final Translator.TranslationVo translationVo = new Translator.TranslationVo();
+        translationVo.setUserId(USER_ID);
+        translationVo.setTableMapper(TableMapper.SAMPLE);
+        translationVo.setCriteria(Collections.singletonList(sampleSearchCriteria));
+        translationVo.setOperator(SearchOperator.AND);
+        translationVo.setCriteriaToManagerMap(CRITERIA_TO_MANAGER_MAP);
+
+        final SelectQuery result = Translator.translate(translationVo);
 
         assertEquals(result, new SelectQuery(String.format(
                 "SELECT DISTINCT %s.%s\n" +
@@ -120,9 +134,14 @@ public class TranslatorTest
         sampleSearchCriteria.withRegistrationDate().thatEquals(REGISTRATION_DATE);
         sampleSearchCriteria.withModificationDate().thatEquals(MODIFICATION_DATE);
 
-        final SelectQuery result =
-                Translator.translate(USER_ID, EntityMapper.SAMPLE, Collections.singletonList(sampleSearchCriteria), SearchOperator.AND,
-                        CRITERIA_TO_MANAGER_MAP);
+        final Translator.TranslationVo translationVo = new Translator.TranslationVo();
+        translationVo.setUserId(USER_ID);
+        translationVo.setTableMapper(TableMapper.SAMPLE);
+        translationVo.setCriteria(Collections.singletonList(sampleSearchCriteria));
+        translationVo.setOperator(SearchOperator.AND);
+        translationVo.setCriteriaToManagerMap(CRITERIA_TO_MANAGER_MAP);
+
+        final SelectQuery result = Translator.translate(translationVo);
 
         assertEquals(result, new SelectQuery(String.format(
                 "SELECT DISTINCT %s.%s\n" +

@@ -16,14 +16,14 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractNumberValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.NumberFieldSearchCriteria;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator;
-import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
-
 import java.util.List;
 import java.util.Map;
+
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractNumberValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.NumberFieldSearchCriteria;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator;
+import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.AND;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.CASE;
@@ -50,7 +50,7 @@ public class NumberFieldSearchCriteriaTranslator implements IConditionTranslator
     private static final String REAL_DATA_TYPE_CODE = "REAL";
 
     @Override
-    public Map<String, JoinInformation> getJoinInformationMap(final NumberFieldSearchCriteria criterion, final EntityMapper entityMapper,
+    public Map<String, JoinInformation> getJoinInformationMap(final NumberFieldSearchCriteria criterion, final TableMapper tableMapper,
             final IAliasFactory aliasFactory)
     {
         switch (criterion.getFieldType())
@@ -62,7 +62,7 @@ public class NumberFieldSearchCriteriaTranslator implements IConditionTranslator
 
             case PROPERTY:
             {
-                return TranslatorUtils.getPropertyJoinInformationMap(entityMapper, aliasFactory);
+                return TranslatorUtils.getPropertyJoinInformationMap(tableMapper, aliasFactory);
             }
         }
 
@@ -70,7 +70,7 @@ public class NumberFieldSearchCriteriaTranslator implements IConditionTranslator
     }
 
     @Override
-    public void translate(final NumberFieldSearchCriteria criterion, final EntityMapper entityMapper, final List<Object> args,
+    public void translate(final NumberFieldSearchCriteria criterion, final TableMapper tableMapper, final List<Object> args,
             final StringBuilder sqlBuilder, final Map<Object, Map<String, JoinInformation>> aliases)
     {
         switch (criterion.getFieldType()) {
@@ -91,32 +91,32 @@ public class NumberFieldSearchCriteriaTranslator implements IConditionTranslator
                 final String propertyName = TranslatorUtils.normalisePropertyName(criterion.getFieldName());
                 final boolean internalProperty = TranslatorUtils.isPropertyInternal(criterion.getFieldName());
                 final Map<String, JoinInformation> joinInformationMap = aliases.get(criterion);
-                final String entityTypesSubTableAlias = joinInformationMap.get(entityMapper.getEntityTypesAttributeTypesTable()).getSubTableAlias();
+                final String entityTypesSubTableAlias = joinInformationMap.get(tableMapper.getEntityTypesAttributeTypesTable()).getSubTableAlias();
 
                 sqlBuilder.append(CASE).append(SP).append(WHEN).append(SP);
 
                 TranslatorUtils.appendInternalExternalConstraint(sqlBuilder, args, entityTypesSubTableAlias, internalProperty);
 
-                sqlBuilder.append(SP).append(joinInformationMap.get(entityMapper.getEntityTypesAttributeTypesTable()).getSubTableAlias())
+                sqlBuilder.append(SP).append(joinInformationMap.get(tableMapper.getEntityTypesAttributeTypesTable()).getSubTableAlias())
                         .append(PERIOD).append(ColumnNames.CODE_COLUMN).append(SP).append(EQ).append(SP).append(QU);
                 args.add(propertyName);
 
                 sqlBuilder.append(SP).append(AND).append(SP).append(LP);
 
-                sqlBuilder.append(joinInformationMap.get(entityMapper.getAttributeTypesTable()).getSubTableAlias())
+                sqlBuilder.append(joinInformationMap.get(tableMapper.getAttributeTypesTable()).getSubTableAlias())
                         .append(PERIOD).append(ColumnNames.CODE_COLUMN).append(SP).append(EQ).append(SP).append(QU);
                 args.add(INTEGER_DATA_TYPE_CODE);
 
                 sqlBuilder.append(SP).append(OR).append(SP);
 
-                sqlBuilder.append(joinInformationMap.get(entityMapper.getAttributeTypesTable()).getSubTableAlias())
+                sqlBuilder.append(joinInformationMap.get(tableMapper.getAttributeTypesTable()).getSubTableAlias())
                         .append(PERIOD).append(ColumnNames.CODE_COLUMN).append(SP).append(EQ).append(SP).append(QU);
                 args.add(REAL_DATA_TYPE_CODE);
 
                 sqlBuilder.append(RP);
 
                 sqlBuilder.append(SP).append(THEN).append(SP);
-                sqlBuilder.append(joinInformationMap.get(entityMapper.getEntitiesTable()).getSubTableAlias())
+                sqlBuilder.append(joinInformationMap.get(tableMapper.getEntitiesTable()).getSubTableAlias())
                         .append(PERIOD).append(ColumnNames.VALUE_COLUMN).append(DOUBLE_COLON).append(NUMERIC).append(SP);
                 TranslatorUtils.appendNumberComparatorOp(value, sqlBuilder);
                 args.add(value.getValue());
