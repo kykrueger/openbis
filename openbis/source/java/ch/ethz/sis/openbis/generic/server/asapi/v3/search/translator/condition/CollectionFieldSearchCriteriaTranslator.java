@@ -51,7 +51,7 @@ public class CollectionFieldSearchCriteriaTranslator extends AbstractConditionTr
                         append(SELECT).append(SP).append(UNNEST).append(LP).append(QU).append(RP).
                         append(RP);
 
-                args.add(fieldValue.toArray(new Object[0]));
+                args.add(fieldValue.toArray());
                 break;
             }
 
