@@ -88,6 +88,7 @@ public class DateFieldSearchCriteriaTranslator implements IConditionTranslator<D
                 {
                     sqlBuilder.append(fieldName);
                 }
+                sqlBuilder.append(SP);
 
                 TranslatorUtils.appendDateComparatorOp(fieldValue, sqlBuilder);
                 TranslatorUtils.addDateValueToArgs(fieldValue, args);

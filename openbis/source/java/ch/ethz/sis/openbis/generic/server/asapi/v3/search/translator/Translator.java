@@ -81,7 +81,7 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLL
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.IN;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.INNER_JOIN;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.LP;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.NEW_LINE;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.NL;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.ON;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.PERIOD;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.QU;
@@ -151,14 +151,14 @@ public class Translator
 
         final String from = buildFrom(vo);
         final String where = buildWhere(vo);
-        final String select = buildSelect(vo.getTableMapper());
+        final String select = buildSelect();
 
-        return new SelectQuery(select + from + where, vo.getArgs());
+        return new SelectQuery(select  + NL + from + NL + where, vo.getArgs());
     }
 
-    private static String buildSelect(final TableMapper tableMapper)
+    private static String buildSelect()
     {
-        return SELECT + SP + DISTINCT + SP + MAIN_TABLE_ALIAS + PERIOD + ID_COLUMN + NEW_LINE;
+        return SELECT + SP + DISTINCT + SP + MAIN_TABLE_ALIAS + PERIOD + ID_COLUMN;
     }
 
     public static String getAlias(final AtomicInteger num) {
@@ -170,7 +170,7 @@ public class Translator
         final StringBuilder sqlBuilder = new StringBuilder();
 
         final String entitiesTableName = vo.getTableMapper().getEntitiesTable();
-        sqlBuilder.append(FROM).append(SP).append(entitiesTableName).append(SP).append(MAIN_TABLE_ALIAS).append(NEW_LINE);
+        sqlBuilder.append(FROM).append(SP).append(entitiesTableName).append(SP).append(MAIN_TABLE_ALIAS);
 
         final AtomicInteger indexCounter = new AtomicInteger(1);
         vo.getCriteria().forEach(criterion ->
@@ -190,13 +190,13 @@ public class Translator
                         {
                             if (joinInformation.getSubTable() != null)
                             { // Join required
-                                sqlBuilder.append(INNER_JOIN).append(SP).append(joinInformation.getSubTable()).append(SP)
+                                sqlBuilder.append(NL).append(INNER_JOIN).append(SP).append(joinInformation.getSubTable()).append(SP)
                                         .append(joinInformation.getSubTableAlias()).append(SP)
                                         .append(ON).append(SP).append(joinInformation.getMainTableAlias())
                                         .append(PERIOD).append(joinInformation.getMainTableIdField())
                                         .append(SP)
                                         .append(EQ).append(SP).append(joinInformation.getSubTableAlias()).append(PERIOD)
-                                        .append(joinInformation.getSubTableIdField()).append(NEW_LINE);
+                                        .append(joinInformation.getSubTableIdField());
                             }
                         });
                         vo.getAliases().put(criterion, joinInformationMap);
@@ -234,7 +234,6 @@ public class Translator
             }
 
             final ISearchManager<ISearchCriteria, ?> subqueryManager = vo.getCriteriaToManagerMap().get(criterion.getClass());
-
             final TableMapper tableMapper = vo.getTableMapper();
             if (subqueryManager != null)
             {
@@ -250,7 +249,8 @@ public class Translator
                 }
             } else
             {
-                @SuppressWarnings("unchecked") final IConditionTranslator<ISearchCriteria> conditionTranslator =
+                @SuppressWarnings("unchecked")
+                final IConditionTranslator<ISearchCriteria> conditionTranslator =
                         (IConditionTranslator<ISearchCriteria>) CRITERIA_TO_CONDITION_TRANSLATOR_MAP.get(criterion.getClass());
                 if (conditionTranslator != null)
                 {

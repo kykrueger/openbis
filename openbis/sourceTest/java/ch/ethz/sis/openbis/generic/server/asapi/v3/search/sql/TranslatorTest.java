@@ -17,7 +17,9 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql;
 
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,6 +34,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SelectQuery
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator;
 import org.testng.annotations.Test;
 
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.CODE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.MODIFICATION_TIMESTAMP_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.REGISTRATION_TIMESTAMP_COLUMN;
@@ -43,11 +46,13 @@ public class TranslatorTest
 
     private static final Long USER_ID = 1L;
 
-    private static final String SAMPLE_ID = "A";
+    private static final String EXPECTED_SAMPLE_ID = "A";
 
-    private static final String REGISTRATION_DATE = "2019-04-11 14:21:16.392852+02";
+    private static final String SAMPLE_ID = "/" + EXPECTED_SAMPLE_ID;
 
-    private static final String MODIFICATION_DATE = "2019-04-11 14:57:55.74435+02";
+    private static final Date REGISTRATION_DATE = new Date(2019, Calendar.APRIL, 11, 14, 21, 16);
+
+    private static final Date MODIFICATION_DATE = new Date(2019, Calendar.APRIL, 11, 14, 57, 55);
 
     private static final String MAIN_TABLE_ALIAS = "t0";
 
@@ -80,13 +85,12 @@ public class TranslatorTest
     public void testTranslateSearchSamplesById()
     {
         final SampleSearchCriteria sampleSearchCriteria = new SampleSearchCriteria().withAndOperator();
-        final SampleIdentifier sampleIdentifier = new SampleIdentifier(SAMPLE_ID);
-        sampleSearchCriteria.withId().thatEquals(sampleIdentifier);
+        sampleSearchCriteria.withId().thatEquals(new SampleIdentifier(SAMPLE_ID));
 
         final Translator.TranslationVo translationVo = new Translator.TranslationVo();
         translationVo.setUserId(USER_ID);
         translationVo.setTableMapper(TableMapper.SAMPLE);
-        translationVo.setCriteria(Collections.singletonList(sampleSearchCriteria));
+        translationVo.setCriteria(sampleSearchCriteria.getCriteria());
         translationVo.setOperator(SearchOperator.AND);
         translationVo.setCriteriaToManagerMap(CRITERIA_TO_MANAGER_MAP);
 
@@ -95,23 +99,23 @@ public class TranslatorTest
         assertEquals(result, new SelectQuery(String.format(
                 "SELECT DISTINCT %s.%s\n" +
                 "FROM %s %s\n" +
-                "WHERE %s=?",
-                MAIN_TABLE_ALIAS, ID_COLUMN, SAMPLES_ALL_TABLE, MAIN_TABLE_ALIAS, ID_COLUMN),
-                Collections.singletonList(sampleIdentifier)));
+                "WHERE %s.%s=?",
+                MAIN_TABLE_ALIAS, ID_COLUMN, SAMPLES_ALL_TABLE, MAIN_TABLE_ALIAS, MAIN_TABLE_ALIAS, CODE_COLUMN),
+                Collections.singletonList(EXPECTED_SAMPLE_ID)));
     }
 
     @Test
     public void testTranslateSearchSamplesByOtherFieldsAnd()
     {
         final SampleSearchCriteria sampleSearchCriteria = new SampleSearchCriteria().withAndOperator();
-        sampleSearchCriteria.withCode().thatEquals(SAMPLE_ID);
+        sampleSearchCriteria.withCode().thatEquals(EXPECTED_SAMPLE_ID);
         sampleSearchCriteria.withRegistrationDate().thatEquals(REGISTRATION_DATE);
         sampleSearchCriteria.withModificationDate().thatEquals(MODIFICATION_DATE);
 
         final Translator.TranslationVo translationVo = new Translator.TranslationVo();
         translationVo.setUserId(USER_ID);
         translationVo.setTableMapper(TableMapper.SAMPLE);
-        translationVo.setCriteria(Collections.singletonList(sampleSearchCriteria));
+        translationVo.setCriteria(sampleSearchCriteria.getCriteria());
         translationVo.setOperator(SearchOperator.AND);
         translationVo.setCriteriaToManagerMap(CRITERIA_TO_MANAGER_MAP);
 
@@ -120,25 +124,25 @@ public class TranslatorTest
         assertEquals(result, new SelectQuery(String.format(
                 "SELECT DISTINCT %s.%s\n" +
                 "FROM %s %s\n" +
-                "WHERE %s=? AND %s=? AND %s=?\n",
-                MAIN_TABLE_ALIAS, ID_COLUMN, SAMPLES_ALL_TABLE, MAIN_TABLE_ALIAS, ID_COLUMN, REGISTRATION_TIMESTAMP_COLUMN,
-                MODIFICATION_TIMESTAMP_COLUMN),
-                Arrays.asList(SAMPLE_ID, REGISTRATION_DATE, MODIFICATION_DATE)));
+                "WHERE %s.%s = ? AND %s.%s = ? AND %s.%s = ?",
+                MAIN_TABLE_ALIAS, ID_COLUMN, SAMPLES_ALL_TABLE, MAIN_TABLE_ALIAS, MAIN_TABLE_ALIAS, CODE_COLUMN, MAIN_TABLE_ALIAS,
+                REGISTRATION_TIMESTAMP_COLUMN, MAIN_TABLE_ALIAS, MODIFICATION_TIMESTAMP_COLUMN),
+                Arrays.asList(EXPECTED_SAMPLE_ID, REGISTRATION_DATE, MODIFICATION_DATE)));
     }
 
     @Test
     public void testTranslateSearchSamplesByOtherFieldsOr()
     {
         final SampleSearchCriteria sampleSearchCriteria = new SampleSearchCriteria().withOrOperator();
-        sampleSearchCriteria.withCode().thatEquals(SAMPLE_ID);
+        sampleSearchCriteria.withCode().thatEquals(EXPECTED_SAMPLE_ID);
         sampleSearchCriteria.withRegistrationDate().thatEquals(REGISTRATION_DATE);
         sampleSearchCriteria.withModificationDate().thatEquals(MODIFICATION_DATE);
 
         final Translator.TranslationVo translationVo = new Translator.TranslationVo();
         translationVo.setUserId(USER_ID);
         translationVo.setTableMapper(TableMapper.SAMPLE);
-        translationVo.setCriteria(Collections.singletonList(sampleSearchCriteria));
-        translationVo.setOperator(SearchOperator.AND);
+        translationVo.setCriteria(sampleSearchCriteria.getCriteria());
+        translationVo.setOperator(SearchOperator.OR);
         translationVo.setCriteriaToManagerMap(CRITERIA_TO_MANAGER_MAP);
 
         final SelectQuery result = Translator.translate(translationVo);
@@ -146,10 +150,10 @@ public class TranslatorTest
         assertEquals(result, new SelectQuery(String.format(
                 "SELECT DISTINCT %s.%s\n" +
                 "FROM %s %s\n" +
-                "WHERE %s=? OR %s=? OR %s=?\n",
-                MAIN_TABLE_ALIAS, ID_COLUMN, SAMPLES_ALL_TABLE, ID_COLUMN, MAIN_TABLE_ALIAS, REGISTRATION_TIMESTAMP_COLUMN,
-                MODIFICATION_TIMESTAMP_COLUMN),
-                Arrays.asList(SAMPLE_ID, REGISTRATION_DATE, MODIFICATION_DATE)));
+                "WHERE %s.%s = ? OR %s.%s = ? OR %s.%s = ?",
+                MAIN_TABLE_ALIAS, ID_COLUMN, SAMPLES_ALL_TABLE, MAIN_TABLE_ALIAS, MAIN_TABLE_ALIAS, CODE_COLUMN,
+                MAIN_TABLE_ALIAS, REGISTRATION_TIMESTAMP_COLUMN, MAIN_TABLE_ALIAS, MODIFICATION_TIMESTAMP_COLUMN),
+                Arrays.asList(EXPECTED_SAMPLE_ID, REGISTRATION_DATE, MODIFICATION_DATE)));
     }
 
 }

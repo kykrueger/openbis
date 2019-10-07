@@ -105,8 +105,6 @@ public class SQLLexemes
 
     public static final String LE = "<=";
 
-    public static final String NEW_LINE = "\n";
-
     public static final String ASTERISK = "*";
 
     public static final String QU = "?";
