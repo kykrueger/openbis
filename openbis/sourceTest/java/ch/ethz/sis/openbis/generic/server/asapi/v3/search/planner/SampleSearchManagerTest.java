@@ -235,7 +235,7 @@ public class SampleSearchManagerTest
 
         final SampleSearchCriteria searchCriteria = new SampleSearchCriteria().withAndOperator();
         searchCriteria.setCriteria(new ArrayList<>(Arrays.asList(criterion)));
-        searchCriteria.withChildren().withOrOperator().setCriteria(new ArrayList<>(childCriteria));
+        searchCriteria.withOrOperator().withChildren().setCriteria(new ArrayList<>(childCriteria));
 
         final Long userId = 1L;
         final Set<Long> childCriteriaIds = new HashSet<>(Arrays.asList(11L, 12L, 14L, 18L));
@@ -256,7 +256,7 @@ public class SampleSearchManagerTest
             will(returnValue(childCriteriaResultingIds));
         }});
 
-        final Set<Long> actualIds = searchManager.searchForIDs(null, searchCriteria);
+        final Set<Long> actualIds = searchManager.searchForIDs(userId, searchCriteria);
         assertEquals(actualIds, expectedIds, "Actual and expected IDs are not equal.");
     }
 
@@ -340,7 +340,7 @@ public class SampleSearchManagerTest
                 {{
                     final Set<Long> spaceIds = new HashSet<>(Arrays.asList(10L, 11L, 12L));
                     final Set<Long> projectIds = new HashSet<>(Arrays.asList(20L, 21L, 22L, 23L));
-                    final Set<Role> instanceRoles = new HashSet<>(Arrays.asList(Role.ETL_SERVER));
+                    final Set<Role> instanceRoles = Collections.emptySet();
 
                     one(authInfoProviderMock).findAuthorisedSpaceProjectIDs(userId);
                     will(returnValue(new AuthorisationInformation(instanceRoles, spaceIds, projectIds)));
