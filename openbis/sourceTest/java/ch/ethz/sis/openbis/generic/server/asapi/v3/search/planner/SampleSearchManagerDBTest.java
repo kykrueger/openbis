@@ -51,6 +51,9 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.Samples
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.REGISTRATION_DATE_2;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.REGISTRATION_DATE_STRING_1;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.REGISTRATION_DATE_STRING_2;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.REGISTRATOR_FIRST_NAME;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.REGISTRATOR_ID;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.REGISTRATOR_LAST_NAME;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.SAMPLE_ID_1;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.SAMPLE_ID_2;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.SAMPLE_ID_3;
@@ -1026,6 +1029,62 @@ public class SampleSearchManagerDBTest
         assertTrue(compoundOrPropertyFieldCriterionSampleIds.contains(SAMPLE_ID_1));
         assertTrue(compoundOrPropertyFieldCriterionSampleIds.contains(SAMPLE_ID_2));
         assertFalse(compoundOrPropertyFieldCriterionSampleIds.contains(SAMPLE_ID_3));
+    }
+
+    /**
+     * Tests {@link SampleSearchManager} with compound field criteria using DB connection.
+     */
+    @Test
+    public void testQueryDBWithRegistratorCriteria()
+    {
+        // Any registrator search
+        // This is a trivial search since registrator is a mandatory field, so the result set will contain all records
+        final SampleSearchCriteria emptyCriterion = new SampleSearchCriteria();
+        emptyCriterion.withRegistrator();
+        final Set<Long> emptyCriterionSampleIds = searchManager.searchForIDs(USER_ID, emptyCriterion);
+        assertFalse(emptyCriterionSampleIds.isEmpty());
+
+        // By ID
+        final SampleSearchCriteria idCriterion = new SampleSearchCriteria();
+        idCriterion.withRegistrator().withUserId().thatEquals(String.valueOf(REGISTRATOR_ID));
+        final Set<Long> idCriterionSampleIds = searchManager.searchForIDs(USER_ID, idCriterion);
+        assertEquals(idCriterionSampleIds.size(), 1);
+        assertFalse(idCriterionSampleIds.contains(SAMPLE_ID_1));
+        assertTrue(idCriterionSampleIds.contains(SAMPLE_ID_2));
+        assertFalse(idCriterionSampleIds.contains(SAMPLE_ID_3));
+
+        final SampleSearchCriteria notExistingIdCriterion = new SampleSearchCriteria();
+        notExistingIdCriterion.withRegistrator().withUserId().thatEquals("-");
+        final Set<Long> notExistingIdCriterionSampleIds = searchManager.searchForIDs(USER_ID, notExistingIdCriterion);
+        assertTrue(notExistingIdCriterionSampleIds.isEmpty());
+
+        // By First Name
+        final SampleSearchCriteria firstNameCriterion = new SampleSearchCriteria();
+        firstNameCriterion.withRegistrator().withFirstName().thatEquals(REGISTRATOR_FIRST_NAME);
+        final Set<Long> firstNameCriterionSampleIds = searchManager.searchForIDs(USER_ID, firstNameCriterion);
+        assertEquals(firstNameCriterionSampleIds.size(), 1);
+        assertFalse(firstNameCriterionSampleIds.contains(SAMPLE_ID_1));
+        assertTrue(firstNameCriterionSampleIds.contains(SAMPLE_ID_2));
+        assertFalse(firstNameCriterionSampleIds.contains(SAMPLE_ID_3));
+
+        final SampleSearchCriteria notExistingFirstNameCriterion = new SampleSearchCriteria();
+        notExistingFirstNameCriterion.withRegistrator().withFirstName().thatEquals("-");
+        final Set<Long> notExistingFirstNameCriterionSampleIds = searchManager.searchForIDs(USER_ID, notExistingFirstNameCriterion);
+        assertTrue(notExistingFirstNameCriterionSampleIds.isEmpty());
+
+        // By Last Name
+        final SampleSearchCriteria lastNameCriterion = new SampleSearchCriteria();
+        lastNameCriterion.withRegistrator().withLastName().thatEquals(REGISTRATOR_LAST_NAME);
+        final Set<Long> lastNameCriterionSampleIds = searchManager.searchForIDs(USER_ID, lastNameCriterion);
+        assertEquals(lastNameCriterionSampleIds.size(), 1);
+        assertFalse(lastNameCriterionSampleIds.contains(SAMPLE_ID_1));
+        assertTrue(lastNameCriterionSampleIds.contains(SAMPLE_ID_2));
+        assertFalse(lastNameCriterionSampleIds.contains(SAMPLE_ID_3));
+
+        final SampleSearchCriteria notExistingLastNameCriterion = new SampleSearchCriteria();
+        notExistingLastNameCriterion.withRegistrator().withLastName().thatEquals("-");
+        final Set<Long> notExistingLastNameCriterionSampleIds = searchManager.searchForIDs(USER_ID, notExistingLastNameCriterion);
+        assertTrue(notExistingLastNameCriterionSampleIds.isEmpty());
     }
 
 }

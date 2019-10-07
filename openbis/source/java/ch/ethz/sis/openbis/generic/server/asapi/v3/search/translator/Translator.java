@@ -49,12 +49,15 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringPropertySear
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.NoExperimentSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.FirstNameSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.LastNameSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.ModifierSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.RegistratorSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.UserIdSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.UserIdsSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.search.NoProjectSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.ListableSampleTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.NoSampleContainerSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.search.NoSpaceSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
@@ -74,6 +77,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.S
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.StringFieldSearchCriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.UserIdSearchCriteriaTranslator;
 import ch.systemsx.cisd.openbis.generic.shared.basic.BasicConstant;
+import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.DISTINCT;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.EQ;
@@ -88,6 +92,7 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLL
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.RP;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SELECT;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SP;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.TRUE;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.UNNEST;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.WHERE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
@@ -97,8 +102,11 @@ public class Translator
 
     public static final DateFormat DATE_FORMAT = new SimpleDateFormat(BasicConstant.DATE_WITHOUT_TIMEZONE_PATTERN);
 
-    public static final Map<Class<? extends ISearchCriteria>, IConditionTranslator<? extends ISearchCriteria>> CRITERIA_TO_CONDITION_TRANSLATOR_MAP =
+    private static final Map<Class<? extends ISearchCriteria>, IConditionTranslator<? extends ISearchCriteria>> CRITERIA_TO_CONDITION_TRANSLATOR_MAP =
             new HashMap<>();
+
+    /** This map is used when a subquery manager is used. It maps criteria to column name. */
+    private static final Map<Class<? extends ISearchCriteria>, String> CRITERIA_TO_SUBQUERY_COLUMN_MAP = new HashMap<>();
 
     public static final String MAIN_TABLE_ALIAS = getAlias(new AtomicInteger(0));
 
@@ -133,11 +141,14 @@ public class Translator
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(NumberPropertySearchCriteria.class, numberFieldSearchCriteriaTranslator);
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(DatePropertySearchCriteria.class, dateFieldSearchCriteriaTranslator);
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(AnyPropertySearchCriteria.class, new AnyPropertySearchCriteriaTranslator());
-
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(ListableSampleTypeSearchCriteria.class, new ListableSampleTypeSearchCriteriaTranslator());
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(UserIdSearchCriteria.class, new UserIdSearchCriteriaTranslator());
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(FirstNameSearchCriteria.class, new FirstNameSearchCriteriaTranslator());
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(LastNameSearchCriteria.class, new LastNameSearchCriteriaTranslator());
+
+        CRITERIA_TO_SUBQUERY_COLUMN_MAP.put(RegistratorSearchCriteria.class, ColumnNames.PERSON_REGISTERER_COLUMN);
+        CRITERIA_TO_SUBQUERY_COLUMN_MAP.put(ModifierSearchCriteria.class, ColumnNames.PERSON_MODIFIER_COLUMN);
+        CRITERIA_TO_SUBQUERY_COLUMN_MAP.put(SampleTypeSearchCriteria.class, ColumnNames.SAMPLE_TYPE_COLUMN);
     }
 
     private static final AtomicBoolean FIRST = new AtomicBoolean();
@@ -220,47 +231,52 @@ public class Translator
 
         sqlBuilder.append(WHERE).append(SP);
 
-        FIRST.set(true);
-        final String logicalOperator = vo.getOperator().toString();
-
-        vo.getCriteria().forEach((criterion) ->
+        if (vo.getCriteria().isEmpty()) {
+            sqlBuilder.append(TRUE);
+        } else
         {
-            if (FIRST.get())
-            {
-                FIRST.set(false);
-            } else
-            {
-                sqlBuilder.append(SP).append(logicalOperator).append(SP);
-            }
+            final String logicalOperator = vo.getOperator().toString();
 
-            final ISearchManager<ISearchCriteria, ?> subqueryManager = vo.getCriteriaToManagerMap().get(criterion.getClass());
-            final TableMapper tableMapper = vo.getTableMapper();
-            if (subqueryManager != null)
+            FIRST.set(true);
+            vo.getCriteria().forEach((criterion) ->
             {
-                if (tableMapper != null)
+                if (FIRST.get())
                 {
-                    final Set<Long> ids = subqueryManager.searchForIDs(vo.getUserId(), criterion);
-                    sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(tableMapper.getEntitiesTableEntityTypeIdField()).append(SP)
-                            .append(IN).append(SP).append(LP).append(SELECT).append(SP).append(UNNEST).append(LP).append(QU).append(RP).append(RP);
-                    vo.getArgs().add(ids.toArray(new Long[0]));
+                    FIRST.set(false);
                 } else
                 {
-                    throw new IllegalArgumentException("tableMapper == null");
+                    sqlBuilder.append(SP).append(logicalOperator).append(SP);
                 }
-            } else
-            {
-                @SuppressWarnings("unchecked")
-                final IConditionTranslator<ISearchCriteria> conditionTranslator =
-                        (IConditionTranslator<ISearchCriteria>) CRITERIA_TO_CONDITION_TRANSLATOR_MAP.get(criterion.getClass());
-                if (conditionTranslator != null)
+
+                final ISearchManager<ISearchCriteria, ?> subqueryManager = vo.getCriteriaToManagerMap().get(criterion.getClass());
+                final TableMapper tableMapper = vo.getTableMapper();
+                if (subqueryManager != null)
                 {
-                    conditionTranslator.translate(criterion, tableMapper, vo.getArgs(), sqlBuilder, vo.getAliases());
+                    if (tableMapper != null)
+                    {
+                        final Set<Long> ids = subqueryManager.searchForIDs(vo.getUserId(), criterion);
+                        sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(CRITERIA_TO_SUBQUERY_COLUMN_MAP.get(criterion.getClass()))
+                                .append(SP).append(IN).append(SP).append(LP).append(SELECT).append(SP).append(UNNEST).append(LP).append(QU).append(RP)
+                                .append(RP);
+                        vo.getArgs().add(ids.toArray(new Long[0]));
+                    } else
+                    {
+                        throw new IllegalArgumentException("tableMapper == null");
+                    }
                 } else
                 {
-                    throw new IllegalArgumentException("Unsupported criterion type: " + criterion.getClass().getSimpleName());
+                    @SuppressWarnings("unchecked") final IConditionTranslator<ISearchCriteria> conditionTranslator =
+                            (IConditionTranslator<ISearchCriteria>) CRITERIA_TO_CONDITION_TRANSLATOR_MAP.get(criterion.getClass());
+                    if (conditionTranslator != null)
+                    {
+                        conditionTranslator.translate(criterion, tableMapper, vo.getArgs(), sqlBuilder, vo.getAliases());
+                    } else
+                    {
+                        throw new IllegalArgumentException("Unsupported criterion type: " + criterion.getClass().getSimpleName());
+                    }
                 }
-            }
-        });
+            });
+        }
 
         return sqlBuilder.toString();
     }

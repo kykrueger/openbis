@@ -65,6 +65,16 @@ public class SamplesDBTestHelper
 
     public static final long USER_ID = 2L;
 
+    public static final long REGISTRATOR_ID = 101L;
+
+    public static final String REGISTRATOR_USER_ID = "jbrown";
+
+    public static final String REGISTRATOR_FIRST_NAME = "John";
+
+    public static final String REGISTRATOR_LAST_NAME = "Brown";
+
+    public static final long MODIFIER_ID = 3L;
+
     public static final long SAMPLE_ID_1 = 1001L;
 
     public static final long SAMPLE_ID_2 = 1002L;
@@ -274,6 +284,7 @@ public class SamplesDBTestHelper
     {
         try
         {
+            createUsers();
             createSpaces();
             createProject();
             createExperimentType();
@@ -288,6 +299,19 @@ public class SamplesDBTestHelper
             connection.rollback();
             throw e;
         }
+    }
+
+    private void createUsers()
+    {
+        final Map<String, Object> userValues = new HashMap<>();
+        userValues.put(ColumnNames.ID_COLUMN, REGISTRATOR_ID);
+        userValues.put(ColumnNames.FIRST_NAME_COLUMN, REGISTRATOR_FIRST_NAME);
+        userValues.put(ColumnNames.LAST_NAME_COLUMN, REGISTRATOR_LAST_NAME);
+        userValues.put(ColumnNames.USER_COLUMN, REGISTRATOR_USER_ID);
+        userValues.put(ColumnNames.EMAIL_COLUMN, "");
+        userValues.put(ColumnNames.PERSON_REGISTERER_COLUMN, USER_ID);
+        userValues.put(ColumnNames.PERSON_IS_ACTIVE_COLUMN, true);
+        insertRecord(TableNames.PERSONS_TABLE, userValues);
     }
 
     private void createSampleTypes()
@@ -379,6 +403,7 @@ public class SamplesDBTestHelper
         valuesMap1.put(ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, REGISTRATION_DATE_1);
         valuesMap1.put(ColumnNames.MODIFICATION_TIMESTAMP_COLUMN, MODIFICATION_DATE_1);
         valuesMap1.put(ColumnNames.SPACE_COLUMN, SPACE_ID_1);
+        valuesMap1.put(ColumnNames.PERSON_REGISTERER_COLUMN, USER_ID);
         insertRecord(TableNames.SAMPLES_ALL_TABLE, valuesMap1);
 
         final Map<String, Object> valuesMap2 = getDefaultValuesMap();
@@ -391,6 +416,7 @@ public class SamplesDBTestHelper
         valuesMap2.put(ColumnNames.SPACE_COLUMN, SPACE_ID_2);
         valuesMap2.put(ColumnNames.PROJECT_COLUMN, PROJECT_ID);
         valuesMap2.put(ColumnNames.PART_OF_SAMPLE_COLUMN, SAMPLE_ID_1);
+        valuesMap2.put(ColumnNames.PERSON_REGISTERER_COLUMN, REGISTRATOR_ID);
         insertRecord(TableNames.SAMPLES_ALL_TABLE, valuesMap2);
 
         final Map<String, Object> valuesMap3 = getDefaultValuesMap();
@@ -423,7 +449,7 @@ public class SamplesDBTestHelper
         valuesMap2.put(ColumnNames.CODE_COLUMN, SPACE_CODE_2);
         valuesMap2.put(ColumnNames.DESCRIPTION_COLUMN, null);
         valuesMap2.put(ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, DEFAULT_DATE);
-        valuesMap2.put(ColumnNames.PERSON_REGISTERER_COLUMN, USER_ID);
+        valuesMap2.put(ColumnNames.PERSON_REGISTERER_COLUMN, REGISTRATOR_ID);
         valuesMap2.put(ColumnNames.FROZEN_COLUMN, false);
         valuesMap2.put(ColumnNames.FROZEN_FOR_PROJECT_COLUMN, false);
         valuesMap2.put(ColumnNames.FROZEN_FOR_SAMPLE_COLUMN, false);
@@ -592,6 +618,9 @@ public class SamplesDBTestHelper
             deleteRecord(TableNames.PROJECTS_TABLE, ColumnNames.ID_COLUMN, PROJECT_ID);
             deleteRecord(TableNames.SPACES_TABLE, ColumnNames.ID_COLUMN, SPACE_ID_1);
             deleteRecord(TableNames.SPACES_TABLE, ColumnNames.ID_COLUMN, SPACE_ID_2);
+
+            // Removing users
+            deleteRecord(TableNames.PERSONS_TABLE, ColumnNames.ID_COLUMN, REGISTRATOR_ID);
         } finally
         {
             closeConnection();
