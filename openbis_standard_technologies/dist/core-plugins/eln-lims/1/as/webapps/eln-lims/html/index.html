@@ -288,6 +288,9 @@
 	<script type="text/javascript" src="./js/plugins/MicroscopyTechnology.js"></script>
 	<script type="text/javascript" src="./js/plugins/FlowCytometryTechnology.js"></script>
 
+	<script type="text/javascript" src="./js/util/EventUtil.js"></script>
+	<script type="text/javascript" src="./js/test/TestProtocol.js"></script>
+
 	<script type="text/javascript">
 	
 	//
@@ -366,6 +369,10 @@
 		//Reset password
 		if (mainController.resetPasswordRequested()) {
 		    mainController.resetPassword();
+		}
+		var test = queryString.test;
+		if(test == "true") {
+			TestProtocol.start();
 		}
 	}
 	
