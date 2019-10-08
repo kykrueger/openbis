@@ -73,7 +73,17 @@ public class SamplesDBTestHelper
 
     public static final String REGISTRATOR_LAST_NAME = "Brown";
 
-    public static final long MODIFIER_ID = 3L;
+    public static final String REGISTRATOR_EMAIL = "jbrown@example.com";
+
+    public static final String MODIFIER_USER_ID = "jblack";
+
+    public static final String MODIFIER_FIRST_NAME = "Jimm";
+
+    public static final String MODIFIER_LAST_NAME = "Black";
+
+    public static final String MODIFIER_EMAIL = "jblack@example.com";
+
+    public static final long MODIFIER_ID = 102L;
 
     public static final long SAMPLE_ID_1 = 1001L;
 
@@ -303,15 +313,25 @@ public class SamplesDBTestHelper
 
     private void createUsers()
     {
-        final Map<String, Object> userValues = new HashMap<>();
-        userValues.put(ColumnNames.ID_COLUMN, REGISTRATOR_ID);
-        userValues.put(ColumnNames.FIRST_NAME_COLUMN, REGISTRATOR_FIRST_NAME);
-        userValues.put(ColumnNames.LAST_NAME_COLUMN, REGISTRATOR_LAST_NAME);
-        userValues.put(ColumnNames.USER_COLUMN, REGISTRATOR_USER_ID);
-        userValues.put(ColumnNames.EMAIL_COLUMN, "");
-        userValues.put(ColumnNames.PERSON_REGISTERER_COLUMN, USER_ID);
-        userValues.put(ColumnNames.PERSON_IS_ACTIVE_COLUMN, true);
-        insertRecord(TableNames.PERSONS_TABLE, userValues);
+        final Map<String, Object> registratorValues = new HashMap<>();
+        registratorValues.put(ColumnNames.ID_COLUMN, REGISTRATOR_ID);
+        registratorValues.put(ColumnNames.FIRST_NAME_COLUMN, REGISTRATOR_FIRST_NAME);
+        registratorValues.put(ColumnNames.LAST_NAME_COLUMN, REGISTRATOR_LAST_NAME);
+        registratorValues.put(ColumnNames.USER_COLUMN, REGISTRATOR_USER_ID);
+        registratorValues.put(ColumnNames.EMAIL_COLUMN, REGISTRATOR_EMAIL);
+        registratorValues.put(ColumnNames.PERSON_REGISTERER_COLUMN, USER_ID);
+        registratorValues.put(ColumnNames.PERSON_IS_ACTIVE_COLUMN, true);
+        insertRecord(TableNames.PERSONS_TABLE, registratorValues);
+
+        final Map<String, Object> modifierValues = new HashMap<>();
+        modifierValues.put(ColumnNames.ID_COLUMN, MODIFIER_ID);
+        modifierValues.put(ColumnNames.FIRST_NAME_COLUMN, MODIFIER_FIRST_NAME);
+        modifierValues.put(ColumnNames.LAST_NAME_COLUMN, MODIFIER_LAST_NAME);
+        modifierValues.put(ColumnNames.USER_COLUMN, MODIFIER_USER_ID);
+        modifierValues.put(ColumnNames.EMAIL_COLUMN, MODIFIER_EMAIL);
+        modifierValues.put(ColumnNames.PERSON_REGISTERER_COLUMN, USER_ID);
+        modifierValues.put(ColumnNames.PERSON_IS_ACTIVE_COLUMN, true);
+        insertRecord(TableNames.PERSONS_TABLE, modifierValues);
     }
 
     private void createSampleTypes()

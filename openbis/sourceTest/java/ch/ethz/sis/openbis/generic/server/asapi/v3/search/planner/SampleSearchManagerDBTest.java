@@ -51,6 +51,7 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.Samples
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.REGISTRATION_DATE_2;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.REGISTRATION_DATE_STRING_1;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.REGISTRATION_DATE_STRING_2;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.REGISTRATOR_EMAIL;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.REGISTRATOR_FIRST_NAME;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.REGISTRATOR_ID;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.REGISTRATOR_LAST_NAME;
@@ -1085,6 +1086,20 @@ public class SampleSearchManagerDBTest
         notExistingLastNameCriterion.withRegistrator().withLastName().thatEquals("-");
         final Set<Long> notExistingLastNameCriterionSampleIds = searchManager.searchForIDs(USER_ID, notExistingLastNameCriterion);
         assertTrue(notExistingLastNameCriterionSampleIds.isEmpty());
+
+        // By Email
+        final SampleSearchCriteria emailCriterion = new SampleSearchCriteria();
+        emailCriterion.withRegistrator().withEmail().thatEquals(REGISTRATOR_EMAIL);
+        final Set<Long> emailCriterionSampleIds = searchManager.searchForIDs(USER_ID, emailCriterion);
+        assertEquals(emailCriterionSampleIds.size(), 1);
+        assertFalse(emailCriterionSampleIds.contains(SAMPLE_ID_1));
+        assertTrue(emailCriterionSampleIds.contains(SAMPLE_ID_2));
+        assertFalse(emailCriterionSampleIds.contains(SAMPLE_ID_3));
+
+        final SampleSearchCriteria notExistingEmailCriterion = new SampleSearchCriteria();
+        notExistingEmailCriterion.withRegistrator().withEmail().thatEquals("-");
+        final Set<Long> notExistingEmailCriterionSampleIds = searchManager.searchForIDs(USER_ID, notExistingEmailCriterion);
+        assertTrue(notExistingEmailCriterionSampleIds.isEmpty());
     }
 
 }

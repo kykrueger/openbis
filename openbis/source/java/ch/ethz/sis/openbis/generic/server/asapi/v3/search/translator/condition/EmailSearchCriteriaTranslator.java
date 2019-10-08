@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractStringValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.LastNameSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.EmailSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
@@ -29,24 +29,24 @@ import static ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchField
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.PERIOD;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SP;
 
-public class LastNameSearchCriteriaTranslator implements IConditionTranslator<LastNameSearchCriteria>
+public class EmailSearchCriteriaTranslator implements IConditionTranslator<EmailSearchCriteria>
 {
 
     @Override
-    public Map<String, JoinInformation> getJoinInformationMap(final LastNameSearchCriteria criterion, final TableMapper tableMapper,
+    public Map<String, JoinInformation> getJoinInformationMap(final EmailSearchCriteria criterion, final TableMapper tableMapper,
             final IAliasFactory aliasFactory)
     {
         return null;
     }
 
     @Override
-    public void translate(final LastNameSearchCriteria criterion, final TableMapper tableMapper, final List<Object> args,
+    public void translate(final EmailSearchCriteria criterion, final TableMapper tableMapper, final List<Object> args,
             final StringBuilder sqlBuilder, final Map<Object, Map<String, JoinInformation>> aliases)
     {
         if (criterion.getFieldType() == ATTRIBUTE)
         {
             final AbstractStringValue value = criterion.getFieldValue();
-            sqlBuilder.append(Translator.MAIN_TABLE_ALIAS).append(PERIOD).append(ColumnNames.LAST_NAME_COLUMN).append(SP);
+            sqlBuilder.append(Translator.MAIN_TABLE_ALIAS).append(PERIOD).append(ColumnNames.EMAIL_COLUMN).append(SP);
             TranslatorUtils.appendStringComparatorOp(value, sqlBuilder);
             args.add(value.getValue());
         } else

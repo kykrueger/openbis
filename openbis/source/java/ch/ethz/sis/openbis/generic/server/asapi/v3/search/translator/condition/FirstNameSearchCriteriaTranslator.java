@@ -26,7 +26,6 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
 
 import static ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchFieldType.ATTRIBUTE;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.NL;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.PERIOD;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SP;
 
@@ -50,7 +49,6 @@ public class FirstNameSearchCriteriaTranslator implements IConditionTranslator<F
             sqlBuilder.append(Translator.MAIN_TABLE_ALIAS).append(PERIOD).append(ColumnNames.FIRST_NAME_COLUMN).append(SP);
             TranslatorUtils.appendStringComparatorOp(value, sqlBuilder);
             args.add(value.getValue());
-            sqlBuilder.append(NL);
         } else
         {
             throw new IllegalArgumentException();
