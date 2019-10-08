@@ -81,7 +81,7 @@ public class SampleSearchManagerTest
     }
 
     /**
-     * Tests {@link SampleSearchManager#searchForIDs(Long, SampleSearchCriteria)} for the case when there are main and parent
+     * Tests {@link ISearchManager#searchForIDs(Long, ISearchCriteria)} for the case when there are main and parent
      * criteria and the OR logical operator is applied to the root criteria.
      */
     @Test
@@ -100,7 +100,7 @@ public class SampleSearchManagerTest
 
         final SampleSearchCriteria searchCriteria = new SampleSearchCriteria().withOrOperator();
         searchCriteria.setCriteria(new ArrayList<>(Arrays.asList(criterion)));
-        searchCriteria.withParents().withOrOperator().setCriteria(new ArrayList<>(parentCriteria));
+        searchCriteria.withOrOperator().withParents().setCriteria(new ArrayList<>(parentCriteria));
 
         final Long userId = 1L;
         final Set<Long> parentCriteriaIds = new HashSet<>(Arrays.asList(11L, 13L, 19L, 17L));
@@ -108,25 +108,26 @@ public class SampleSearchManagerTest
         final Set<Long> mainCriteriaIds = new HashSet<>(Arrays.asList(1L, 2L, 5L));
         final Set<Long> expectedIds = new HashSet<>(Arrays.asList(1L, 2L, 3L, 5L, 7L, 9L));
         context.checking(new Expectations()
-                {{
-                    one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, TableMapper.SAMPLE,
-                            Collections.singletonList(criterion), SearchOperator.OR);
-                    will(returnValue(mainCriteriaIds));
+        {{
+            one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, TableMapper.SAMPLE, Collections.singletonList(criterion), SearchOperator.OR);
+            will(returnValue(mainCriteriaIds));
 
-                    one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, TableMapper.SAMPLE, parentCriteria,
-                            SearchOperator.OR);
-                    will(returnValue(parentCriteriaIds));
+            one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, TableMapper.SAMPLE, parentCriteria, SearchOperator.OR);
+            will(returnValue(parentCriteriaIds));
 
-                    one(searchDAOMock).findChildIDs(TableMapper.SAMPLE, parentCriteriaIds);
-                    will(returnValue(parentCriteriaResultingIds));
-                }});
+            one(searchDAOMock).findChildIDs(TableMapper.SAMPLE, parentCriteriaIds);
+            will(returnValue(parentCriteriaResultingIds));
 
-        final Set<Long> actualIds = searchManager.searchForIDs(null, searchCriteria);
+            allowing(authInfoProviderMock).findAuthorisedSpaceProjectIDs(userId);
+            will(returnValue(new AuthorisationInformation(Collections.singleton(Role.ETL_SERVER), Collections.emptySet(), Collections.emptySet())));
+        }});
+
+        final Set<Long> actualIds = searchManager.searchForIDs(userId, searchCriteria);
         assertEquals(actualIds, expectedIds, "Actual and expected IDs are not equal.");
     }
 
     /**
-     * Tests {@link SampleSearchManager#searchForIDs(Long, SampleSearchCriteria)} for the case when there are main and parent
+     * Tests {@link ISearchManager#searchForIDs(Long, ISearchCriteria)} for the case when there are main and parent
      * criteria and the AND logical operator is applied to the root criteria.
      */
     @Test
@@ -145,7 +146,7 @@ public class SampleSearchManagerTest
 
         final SampleSearchCriteria searchCriteria = new SampleSearchCriteria().withAndOperator();
         searchCriteria.setCriteria(new ArrayList<>(Arrays.asList(criterion)));
-        searchCriteria.withParents().withOrOperator().setCriteria(new ArrayList<>(parentCriteria));
+        searchCriteria.withParents().setCriteria(new ArrayList<>(parentCriteria));
 
         final Long userId = 1L;
         final Set<Long> parentCriteriaIds = new HashSet<>(Arrays.asList(11L, 13L, 19L, 17L));
@@ -153,25 +154,28 @@ public class SampleSearchManagerTest
         final Set<Long> mainCriteriaIds = new HashSet<>(Arrays.asList(1L, 2L, 3L));
         final Set<Long> expectedIds = new HashSet<>(Arrays.asList(1L, 3L));
         context.checking(new Expectations()
-                {{
-                    one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, TableMapper.SAMPLE,
-                            Collections.singletonList(criterion), SearchOperator.AND);
-                    will(returnValue(mainCriteriaIds));
+        {{
+            one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, TableMapper.SAMPLE,
+                    Collections.singletonList(criterion), SearchOperator.AND);
+            will(returnValue(mainCriteriaIds));
 
-                    one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, TableMapper.SAMPLE, parentCriteria,
-                            SearchOperator.OR);
-                    will(returnValue(parentCriteriaIds));
+            one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, TableMapper.SAMPLE, parentCriteria,
+                    SearchOperator.AND);
+            will(returnValue(parentCriteriaIds));
 
-                    one(searchDAOMock).findChildIDs(TableMapper.SAMPLE, parentCriteriaIds);
-                    will(returnValue(parentCriteriaResultingIds));
-                }});
+            one(searchDAOMock).findChildIDs(TableMapper.SAMPLE, parentCriteriaIds);
+            will(returnValue(parentCriteriaResultingIds));
 
-        final Set<Long> actualIds = searchManager.searchForIDs(null, searchCriteria);
+            allowing(authInfoProviderMock).findAuthorisedSpaceProjectIDs(userId);
+            will(returnValue(new AuthorisationInformation(Collections.singleton(Role.ETL_SERVER), Collections.emptySet(), Collections.emptySet())));
+        }});
+
+        final Set<Long> actualIds = searchManager.searchForIDs(userId, searchCriteria);
         assertEquals(actualIds, expectedIds, "Actual and expected IDs are not equal.");
     }
 
     /**
-     * Tests {@link SampleSearchManager#searchForIDs(Long, SampleSearchCriteria)} for the case when there are main and child
+     * Tests {@link ISearchManager#searchForIDs(Long, ISearchCriteria)} for the case when there are main and child
      * criteria and the OR logical operator is applied to the root criteria.
      */
     @Test
@@ -190,7 +194,7 @@ public class SampleSearchManagerTest
 
         final SampleSearchCriteria searchCriteria = new SampleSearchCriteria().withOrOperator();
         searchCriteria.setCriteria(new ArrayList<>(Arrays.asList(criterion)));
-        searchCriteria.withChildren().withAndOperator().setCriteria(new ArrayList<>(childCriteria));
+        searchCriteria.withChildren().setCriteria(new ArrayList<>(childCriteria));
 
         final Long userId = 1L;
         final Set<Long> childCriteriaIds = new HashSet<>(Arrays.asList(11L, 12L, 14L, 18L));
@@ -198,25 +202,29 @@ public class SampleSearchManagerTest
         final Set<Long> mainCriteriaIds = new HashSet<>(Arrays.asList(1L, 2L, 5L));
         final Set<Long> expectedIds = new HashSet<>(Arrays.asList(1L, 2L, 3L, 5L, 7L, 9L));
         context.checking(new Expectations()
-                {{
-                    one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, TableMapper.SAMPLE, childCriteria,
-                            SearchOperator.AND);
-                    will(returnValue(childCriteriaIds));
+        {{
+            one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, TableMapper.SAMPLE, childCriteria,
+                    SearchOperator.OR);
+            will(returnValue(childCriteriaIds));
 
-                    one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, TableMapper.SAMPLE,
-                            Collections.singletonList(criterion), SearchOperator.OR);
-                    will(returnValue(mainCriteriaIds));
+            one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, TableMapper.SAMPLE,
+                    Collections.singletonList(criterion), SearchOperator.OR);
+            will(returnValue(mainCriteriaIds));
 
-                    one(searchDAOMock).findParentIDs(TableMapper.SAMPLE, childCriteriaIds);
-                    will(returnValue(childCriteriaResultingIds));
-                }});
+            allowing(authInfoProviderMock).findAuthorisedSpaceProjectIDs(userId);
+            will(returnValue(new AuthorisationInformation(Collections.singleton(Role.ETL_SERVER), Collections.emptySet(),
+                    Collections.emptySet())));
 
-        final Set<Long> actualIds = searchManager.searchForIDs(null, searchCriteria);
+            one(searchDAOMock).findParentIDs(TableMapper.SAMPLE, childCriteriaIds);
+            will(returnValue(childCriteriaResultingIds));
+        }});
+
+        final Set<Long> actualIds = searchManager.searchForIDs(userId, searchCriteria);
         assertEquals(actualIds, expectedIds, "Actual and expected IDs are not equal.");
     }
 
     /**
-     * Tests {@link SampleSearchManager#searchForIDs(Long, SampleSearchCriteria)} for the case when there are main and child
+     * Tests {@link ISearchManager#searchForIDs(Long, ISearchCriteria)} for the case when there are main and child
      * criteria and the AND logical operator is applied to the root criteria.
      */
     @Test
@@ -235,7 +243,7 @@ public class SampleSearchManagerTest
 
         final SampleSearchCriteria searchCriteria = new SampleSearchCriteria().withAndOperator();
         searchCriteria.setCriteria(new ArrayList<>(Arrays.asList(criterion)));
-        searchCriteria.withOrOperator().withChildren().setCriteria(new ArrayList<>(childCriteria));
+        searchCriteria.withChildren().setCriteria(new ArrayList<>(childCriteria));
 
         final Long userId = 1L;
         final Set<Long> childCriteriaIds = new HashSet<>(Arrays.asList(11L, 12L, 14L, 18L));
@@ -244,13 +252,14 @@ public class SampleSearchManagerTest
         final Set<Long> expectedIds = new HashSet<>(Arrays.asList(1L, 3L));
         context.checking(new Expectations()
         {{
-            one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, TableMapper.SAMPLE, childCriteria,
-                    SearchOperator.OR);
+            one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, TableMapper.SAMPLE, childCriteria, SearchOperator.AND);
             will(returnValue(childCriteriaIds));
 
-            one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, TableMapper.SAMPLE,
-                    Collections.singletonList(criterion), SearchOperator.AND);
+            one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, TableMapper.SAMPLE, Collections.singletonList(criterion), SearchOperator.AND);
             will(returnValue(mainCriteriaIds));
+
+            allowing(authInfoProviderMock).findAuthorisedSpaceProjectIDs(userId);
+            will(returnValue(new AuthorisationInformation(Collections.singleton(Role.ETL_SERVER), Collections.emptySet(), Collections.emptySet())));
 
             one(searchDAOMock).findParentIDs(TableMapper.SAMPLE, childCriteriaIds);
             will(returnValue(childCriteriaResultingIds));
@@ -261,7 +270,7 @@ public class SampleSearchManagerTest
     }
 
     /**
-     * Tests {@link SampleSearchManager#searchForIDs(Long, SampleSearchCriteria)} for the case when only main criteria is
+     * Tests {@link ISearchManager#searchForIDs(Long, ISearchCriteria)} for the case when only main criteria is
      * present.
      */
     @Test
@@ -277,13 +286,16 @@ public class SampleSearchManagerTest
 
         final Long userId = 1L;
         context.checking(new Expectations()
-                {{
-                    one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, TableMapper.SAMPLE,
-                            Collections.singletonList(criterion), SearchOperator.AND);
-                    will(returnValue(expectedIds));
-                }});
+        {{
+            one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, TableMapper.SAMPLE,
+                    Collections.singletonList(criterion), SearchOperator.AND);
+            will(returnValue(expectedIds));
 
-        final Set<Long> actualIds = searchManager.searchForIDs(null, searchCriteria);
+            allowing(authInfoProviderMock).findAuthorisedSpaceProjectIDs(userId);
+            will(returnValue(new AuthorisationInformation(Collections.singleton(Role.ETL_SERVER), Collections.emptySet(), Collections.emptySet())));
+        }});
+
+        final Set<Long> actualIds = searchManager.searchForIDs(userId, searchCriteria);
         assertEquals(actualIds, expectedIds, "Actual and expected IDs are not equal.");
     }
 
@@ -298,13 +310,16 @@ public class SampleSearchManagerTest
         final Long userId = 1L;
         final Set<Long> expectedIds = new HashSet(Arrays.asList(1L, 2L, 3L, 4L));
         context.checking(new Expectations()
-                {{
-                    one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, with(equal(TableMapper.SAMPLE)),
-                            with(any(List.class)), with(any(SearchOperator.class)));
-                    will(returnValue(expectedIds));
-                }});
+        {{
+            one(searchDAOMock).queryDBWithNonRecursiveCriteria(with(userId), with(equal(TableMapper.SAMPLE)),
+                    with(any(List.class)), with(any(SearchOperator.class)));
+            will(returnValue(expectedIds));
 
-        final Set<Long> actualIds = searchManager.searchForIDs(null, new SampleSearchCriteria());
+            allowing(authInfoProviderMock).findAuthorisedSpaceProjectIDs(userId);
+            will(returnValue(new AuthorisationInformation(Collections.singleton(Role.ETL_SERVER), Collections.emptySet(), Collections.emptySet())));
+        }});
+
+        final Set<Long> actualIds = searchManager.searchForIDs(userId, new SampleSearchCriteria());
         assertEquals(actualIds, expectedIds);
     }
 
@@ -319,13 +334,16 @@ public class SampleSearchManagerTest
 
         final Long userId = 1L;
         context.checking(new Expectations()
-                {{
-                    one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, with(equal(TableMapper.SAMPLE)),
-                            with(any(List.class)), with(any(SearchOperator.class)));
-                    will(returnValue(Collections.emptySet()));
-                }});
+        {{
+            one(searchDAOMock).queryDBWithNonRecursiveCriteria(with(userId), with(equal(TableMapper.SAMPLE)),
+                    with(any(List.class)), with(any(SearchOperator.class)));
+            will(returnValue(Collections.emptySet()));
 
-        final Set<Long> actualIds = searchManager.searchForIDs(null, new SampleSearchCriteria());
+            allowing(authInfoProviderMock).findAuthorisedSpaceProjectIDs(userId);
+            will(returnValue(new AuthorisationInformation(Collections.singleton(Role.ETL_SERVER), Collections.emptySet(), Collections.emptySet())));
+        }});
+
+        final Set<Long> actualIds = searchManager.searchForIDs(userId, new SampleSearchCriteria());
         assertTrue(actualIds.isEmpty());
     }
 
@@ -337,18 +355,18 @@ public class SampleSearchManagerTest
         final Set<Long> acceptedIds = new HashSet<Long>(Arrays.asList(1L, 3L, 5L));
 
         context.checking(new Expectations()
-                {{
-                    final Set<Long> spaceIds = new HashSet<>(Arrays.asList(10L, 11L, 12L));
-                    final Set<Long> projectIds = new HashSet<>(Arrays.asList(20L, 21L, 22L, 23L));
-                    final Set<Role> instanceRoles = Collections.emptySet();
+        {{
+            final Set<Long> spaceIds = new HashSet<>(Arrays.asList(10L, 11L, 12L));
+            final Set<Long> projectIds = new HashSet<>(Arrays.asList(20L, 21L, 22L, 23L));
+            final Set<Role> instanceRoles = Collections.emptySet();
 
-                    one(authInfoProviderMock).findAuthorisedSpaceProjectIDs(userId);
-                    will(returnValue(new AuthorisationInformation(instanceRoles, spaceIds, projectIds)));
+            one(authInfoProviderMock).findAuthorisedSpaceProjectIDs(userId);
+            will(returnValue(new AuthorisationInformation(instanceRoles, spaceIds, projectIds)));
 
-                    one(authInfoProviderMock).getAuthorisedSamples(sampleIds,
-                            new AuthorisationInformation(instanceRoles, spaceIds, projectIds));
-                    will(returnValue(acceptedIds));
-                }});
+            one(authInfoProviderMock).getAuthorisedSamples(sampleIds,
+                    new AuthorisationInformation(instanceRoles, spaceIds, projectIds));
+            will(returnValue(acceptedIds));
+        }});
 
         final Set<Long> resultingIds = searchManager.filterIDsByUserRights(userId, sampleIds);
         assertEquals(resultingIds, acceptedIds);

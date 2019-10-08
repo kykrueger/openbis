@@ -56,11 +56,17 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
     @Override
     public Set<Long> searchForIDs(final Long userId, final CRITERIA criteria)
     {
+        return doSearchForIDs(userId, criteria, null);
+    }
+
+    protected Set<Long> doSearchForIDs(final Long userId, final CRITERIA criteria, final SearchOperator searchOperator)
+    {
         final Class<? extends AbstractCompositeSearchCriteria> parentsSearchCriteriaClass = getParentsSearchCriteriaClass();
         final Class<? extends AbstractCompositeSearchCriteria> childrenSearchCriteriaClass = getChildrenSearchCriteriaClass();
         final List<ISearchCriteria> parentsCriteria = getCriteria(criteria, parentsSearchCriteriaClass);
         final List<ISearchCriteria> childrenCriteria = getCriteria(criteria, childrenSearchCriteriaClass);
         final List<ISearchCriteria> mainCriteria = getOtherCriteriaThan(criteria, parentsSearchCriteriaClass, childrenSearchCriteriaClass);
+        final SearchOperator finalSearchOperator = searchOperator == null ? criteria.getOperator() : searchOperator;
 
         Set<Long> mainCriteriaIntermediateResults = null;
         Set<Long> parentCriteriaIntermediateResults = null;
@@ -70,13 +76,13 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
         if (!mainCriteria.isEmpty())
         {
             mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId, getTableMapper(), mainCriteria,
-                    criteria.getOperator());
+                    finalSearchOperator);
         }
 
         // The parents criteria can be or not recursive, they are resolved by a recursive call
         if (!parentsCriteria.isEmpty())
         {
-            final Set<Long> finalParentIds = findFinalRelationshipIds(userId, criteria.getOperator(), parentsCriteria);
+            final Set<Long> finalParentIds = findFinalRelationshipIds(userId, finalSearchOperator, parentsCriteria);
             final Set<Long> finalParentIdsFiltered = filterIDsByUserRights(userId, finalParentIds);
             childrenCriteriaIntermediateResults = getChildrenIdsOf(finalParentIdsFiltered);
         }
@@ -84,7 +90,7 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
         // The children criteria can be or not recursive, they are resolved by a recursive call
         if (!childrenCriteria.isEmpty())
         {
-            final Set<Long> finalChildrenIds = findFinalRelationshipIds(userId, criteria.getOperator(), childrenCriteria);
+            final Set<Long> finalChildrenIds = findFinalRelationshipIds(userId, finalSearchOperator, childrenCriteria);
             final Set<Long> finalChildrenIdsFiltered = filterIDsByUserRights(userId, finalChildrenIds);
             parentCriteriaIntermediateResults = getParentsIdsOf(finalChildrenIdsFiltered);
         }
@@ -95,7 +101,7 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
                 containsValues(parentCriteriaIntermediateResults))
         {
             // If we have results, we merge them
-            resultBeforeFiltering = mergeResults(criteria.getOperator(),
+            resultBeforeFiltering = mergeResults(finalSearchOperator,
                     Collections.singleton(mainCriteriaIntermediateResults),
                     Collections.singleton(parentCriteriaIntermediateResults),
                     Collections.singleton(childrenCriteriaIntermediateResults));
@@ -123,7 +129,7 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
             final List<ISearchCriteria> relatedEntitiesCriteria)
     {
         final List<Set<Long>> relatedIds =  relatedEntitiesCriteria.stream().flatMap(entitySearchCriteria -> {
-            final Set<Long> foundParentIds = searchForIDs(userId, (CRITERIA) entitySearchCriteria);
+            final Set<Long> foundParentIds = doSearchForIDs(userId, (CRITERIA) entitySearchCriteria, operator);
             return foundParentIds.isEmpty() ? Stream.empty() : Stream.of(foundParentIds);
         }).collect(Collectors.toList());
 
