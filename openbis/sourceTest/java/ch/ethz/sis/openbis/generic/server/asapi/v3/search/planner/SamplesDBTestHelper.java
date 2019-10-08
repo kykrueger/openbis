@@ -225,9 +225,9 @@ public class SamplesDBTestHelper
 
     public static final String SAMPLE_TYPE_CODE_5 = "SAMPLE.TYPE.5";
 
-    public static final String LISTABLE_SAMPLE_TYPE_CODE = "SAMPLE.TYPE.LISTABLE";
+    public static final String LISTABLE_SAMPLE_TYPE_CODE = "MY.SAMPLE.TYPE.LISTABLE";
 
-    public static final String NOT_LISTABLE_SAMPLE_TYPE_CODE = "SAMPLE.TYPE.NOT.LISTABLE";
+    public static final String NOT_LISTABLE_SAMPLE_TYPE_CODE = "MY.SAMPLE.TYPE.NOT.LISTABLE";
 
     /** Indicator that the property is internal. */
     private static final String INTERNAL_PROPERTY_PREFIX = "$";

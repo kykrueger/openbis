@@ -107,11 +107,11 @@ public class SampleTypeSearchManagerDBTest
         final SampleTypeSearchCriteria containsCriterion = new SampleTypeSearchCriteria();
         containsCriterion.withCode().thatContains(SAMPLE_TYPE_CODE_2.substring(1, SAMPLE_TYPE_CODE_2.length() - 1));
         final Set<Long> containsCriterionSampleTypeIds = searchManager.searchForIDs(USER_ID, containsCriterion);
-        assertEquals(containsCriterionSampleTypeIds.size(), 5);
+        assertEquals(containsCriterionSampleTypeIds.size(), 7);
 
         final SampleTypeSearchCriteria startsWithCriterion = new SampleTypeSearchCriteria();
         startsWithCriterion.withCode().thatStartsWith(SAMPLE_TYPE_CODE_3.substring(0, 4));
-        final Set<Long> startsWithCriterionSampleTypeIds = searchManager.searchForIDs(USER_ID, containsCriterion);
+        final Set<Long> startsWithCriterionSampleTypeIds = searchManager.searchForIDs(USER_ID, startsWithCriterion);
         assertEquals(startsWithCriterionSampleTypeIds.size(), 5);
 
         final SampleTypeSearchCriteria endsWithCriterion = new SampleTypeSearchCriteria();
