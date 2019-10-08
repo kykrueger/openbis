@@ -641,6 +641,7 @@ public class SamplesDBTestHelper
 
             // Removing users
             deleteRecord(TableNames.PERSONS_TABLE, ColumnNames.ID_COLUMN, REGISTRATOR_ID);
+            deleteRecord(TableNames.PERSONS_TABLE, ColumnNames.ID_COLUMN, MODIFIER_ID);
         } finally
         {
             closeConnection();
