@@ -29,6 +29,7 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.ADMIN_USER_TECH_ID;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.LISTABLE_SAMPLE_TYPE_ID;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.NOT_LISTABLE_SAMPLE_TYPE_ID;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.SAMPLE_TYPE_CODE_1;
@@ -37,7 +38,6 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.Samples
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.SAMPLE_TYPE_CODE_4;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.SAMPLE_TYPE_ID_1;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.SAMPLE_TYPE_ID_4;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.USER_ID;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
@@ -89,7 +89,7 @@ public class SampleTypeSearchManagerDBTest
      */
     private void checkCriterion(final SampleTypeSearchCriteria criterion, final long sampleTypeId)
     {
-        final Set<Long> sampleTypeIds = searchManager.searchForIDs(USER_ID, criterion);
+        final Set<Long> sampleTypeIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, criterion);
         assertEquals(sampleTypeIds.size(), 1);
         assertEquals(sampleTypeIds.iterator().next().longValue(), sampleTypeId);
     }
@@ -106,12 +106,12 @@ public class SampleTypeSearchManagerDBTest
 
         final SampleTypeSearchCriteria containsCriterion = new SampleTypeSearchCriteria();
         containsCriterion.withCode().thatContains(SAMPLE_TYPE_CODE_2.substring(1, SAMPLE_TYPE_CODE_2.length() - 1));
-        final Set<Long> containsCriterionSampleTypeIds = searchManager.searchForIDs(USER_ID, containsCriterion);
+        final Set<Long> containsCriterionSampleTypeIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, containsCriterion);
         assertEquals(containsCriterionSampleTypeIds.size(), 7);
 
         final SampleTypeSearchCriteria startsWithCriterion = new SampleTypeSearchCriteria();
         startsWithCriterion.withCode().thatStartsWith(SAMPLE_TYPE_CODE_3.substring(0, 4));
-        final Set<Long> startsWithCriterionSampleTypeIds = searchManager.searchForIDs(USER_ID, startsWithCriterion);
+        final Set<Long> startsWithCriterionSampleTypeIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, startsWithCriterion);
         assertEquals(startsWithCriterionSampleTypeIds.size(), 5);
 
         final SampleTypeSearchCriteria endsWithCriterion = new SampleTypeSearchCriteria();
@@ -127,12 +127,12 @@ public class SampleTypeSearchManagerDBTest
     {
         final SampleTypeSearchCriteria trueCriterion = new SampleTypeSearchCriteria();
         trueCriterion.withListable().thatEquals(true);
-        final Set<Long> trueCriterionSampleTypeIds = searchManager.searchForIDs(USER_ID, trueCriterion);
+        final Set<Long> trueCriterionSampleTypeIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, trueCriterion);
         assertTrue(trueCriterionSampleTypeIds.contains(LISTABLE_SAMPLE_TYPE_ID));
 
         final SampleTypeSearchCriteria falseCriterion = new SampleTypeSearchCriteria();
         falseCriterion.withListable().thatEquals(false);
-        final Set<Long> falseCriterionSampleTypeIds = searchManager.searchForIDs(USER_ID, falseCriterion);
+        final Set<Long> falseCriterionSampleTypeIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, falseCriterion);
         assertTrue(falseCriterionSampleTypeIds.contains(NOT_LISTABLE_SAMPLE_TYPE_ID));
     }
 

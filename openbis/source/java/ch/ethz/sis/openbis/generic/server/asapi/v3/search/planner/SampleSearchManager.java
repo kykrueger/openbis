@@ -68,9 +68,9 @@ public class SampleSearchManager extends AbstractCompositeEntitySearchManager<Sa
     }
 
     @Override
-    protected Set<Long> doFilterIDsByUserRights(final Set<Long> ids, final AuthorisationInformation authorizedSpaceProjectIds)
+    protected Set<Long> doFilterIDsByUserRights(final Set<Long> ids, final AuthorisationInformation authorisationInformation)
     {
-        return getAuthProvider().getAuthorisedSamples(ids, authorizedSpaceProjectIds);
+        return getAuthProvider().getAuthorisedSamples(ids, authorisationInformation);
     }
 
 }

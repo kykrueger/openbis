@@ -41,9 +41,10 @@ public class PersonSearchManager extends AbstractSearchManager<PersonSearchCrite
     }
 
     @Override
-    protected Set<Long> doFilterIDsByUserRights(final Set<Long> ids, final AuthorisationInformation authorizedSpaceProjectIds)
+    protected Set<Long> doFilterIDsByUserRights(final Set<Long> ids, final AuthorisationInformation authorisationInformation)
     {
-        throw new RuntimeException("Filter method not implemented yet.");
+        // No filtering of persons is needed.
+        return ids;
     }
 
     @Override

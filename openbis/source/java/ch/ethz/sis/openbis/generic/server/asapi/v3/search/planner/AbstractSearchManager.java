@@ -78,7 +78,7 @@ public abstract class AbstractSearchManager<CRITERIA extends ISearchCriteria, OB
         }
     }
 
-    protected abstract Set<Long> doFilterIDsByUserRights(final Set<Long> ids, final AuthorisationInformation authorizedSpaceProjectIds);
+    protected abstract Set<Long> doFilterIDsByUserRights(final Set<Long> ids, final AuthorisationInformation authorisationInformation);
 
     protected List<ISearchCriteria> getOtherCriteriaThan(AbstractCompositeSearchCriteria compositeSearchCriteria,
             Class<? extends ISearchCriteria>... classes)

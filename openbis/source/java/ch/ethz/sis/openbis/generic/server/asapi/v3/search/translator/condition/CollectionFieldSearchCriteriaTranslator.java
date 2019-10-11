@@ -44,7 +44,7 @@ public class CollectionFieldSearchCriteriaTranslator extends AbstractConditionTr
         switch (criterion.getFieldType()) {
             case ATTRIBUTE:
             {
-                final Object fieldName = ATTRIBUTE_ID_TO_COLUMN_NAME.get(criterion.getFieldName());
+                final Object fieldName = ATTRIBUTE_ID_TO_COLUMN_NAME.getOrDefault(criterion.getFieldName(), criterion.getFieldName());
                 final Collection<?> fieldValue = criterion.getFieldValue();
 
                 sqlBuilder.append(Translator.MAIN_TABLE_ALIAS).append(PERIOD).append(fieldName).append(SP).append(IN).append(SP).append(LP).

@@ -16,9 +16,6 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.Role;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.ISQLExecutor;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -26,6 +23,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.Role;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.ISQLExecutor;
 
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.AUTHORIZATION_GROUP_ID_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.AUTHORIZATION_GROUP_ID_GRANTEE_COLUMN;
@@ -62,9 +62,10 @@ public class PostgresAuthorisationInformationProviderDAO implements ISQLAuthoris
     {
         final String p = "p";
         final String g = "g";
-        final String query = "SELECT " + p + "." + ROLE_COLUMN + " as \"p.role_code\", " + g + "." + ROLE_COLUMN + " as \"g.role_code\"," +
-                p + "." + SPACE_COLUMN + " as \"p.space_id\", " + p + "." + PROJECT_ID_COLUMN + " as \"p.project_id\", " +
-                g + "." + SPACE_COLUMN + " as \"g.space_id\", " + g + "." + PROJECT_ID_COLUMN + " as \"g.project_id\"\n" +
+        final String query = "SELECT " + p + "." + ROLE_COLUMN + " as \"" + p + ".role_code\", " +
+                g + "." + ROLE_COLUMN + " as \"" + g + ".role_code\"," +
+                p + "." + SPACE_COLUMN + " as \"" + p + ".space_id\", " + p + "." + PROJECT_ID_COLUMN + " as \"" + p + ".project_id\", " +
+                g + "." + SPACE_COLUMN + " as \"" + g + ".space_id\", " + g + "." + PROJECT_ID_COLUMN + " as \"" + g + ".project_id\"\n" +
                 "FROM " + PERSONS_TABLE + " per\n" +
                 "LEFT JOIN " + AUTHORIZATION_GROUP_PERSONS_TABLE + " ag ON per." + ID_COLUMN + " = ag." + PERSON_ID_COLUMN + "\n" +
                 "LEFT JOIN " + ROLE_ASSIGNMENTS_TABLE + " " + p + " ON per." + ID_COLUMN + " = " + p + "." + PERSON_GRANTEE_COLUMN + "\n" +
@@ -118,23 +119,16 @@ public class PostgresAuthorisationInformationProviderDAO implements ISQLAuthoris
         return result;
     }
 
-    /**
-     * Filters sample IDs based on their relations to space and projects.
-     *
-     * @param requestedIDs the IDs to be filtered
-     * @param authInfo value object that contains space and project IDs, which should be related to the
-     *     resulting IDs.
-     * @return the subset of IDs which are related either to one of the specified projects or spaces.
-     */
-    @Override public Set<Long> getAuthorisedSamples(final Set<Long> requestedIDs,
+    @Override
+    public Set<Long> getAuthorisedSamples(final Set<Long> requestedIDs,
             final AuthorisationInformation authInfo)
     {
         final String query = "SELECT DISTINCT " + ID_COLUMN + "\n" +
                 "FROM " + SAMPLES_ALL_TABLE + "\n" +
                 "WHERE " + ID_COLUMN + " IN (SELECT unnest(?)) AND (" + SPACE_COLUMN + " IN (SELECT unnest(?)) " +
                 "OR " + PROJECT_COLUMN + " IN (SELECT unnest(?)))";
-        final List<Object> args = Arrays
-                .asList(requestedIDs.toArray(), authInfo.getSpaceIds().toArray(), authInfo.getProjectIds().toArray());
+        final List<Object> args = Arrays.asList(requestedIDs.toArray(new Long[0]), authInfo.getSpaceIds().toArray(new Long[0]),
+                authInfo.getProjectIds().toArray(new Long[0]));
         final List<Map<String, Object>> queryResultList = executor.execute(query, args);
 
         return queryResultList.stream().map(stringObjectMap -> (Long) stringObjectMap.get(ID_COLUMN)).collect(Collectors.toSet());

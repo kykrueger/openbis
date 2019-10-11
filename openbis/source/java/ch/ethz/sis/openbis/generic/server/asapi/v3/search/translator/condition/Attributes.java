@@ -16,11 +16,11 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 
-import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
-import ch.systemsx.cisd.openbis.generic.shared.dto.hibernate.SearchFieldConstants;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
+import ch.systemsx.cisd.openbis.generic.shared.dto.hibernate.SearchFieldConstants;
 
 public class Attributes
 {
@@ -51,6 +51,7 @@ public class Attributes
 //        ATTRIBUTE_ID_TO_COLUMN_NAME.put("any", ?);
         ATTRIBUTE_ID_TO_COLUMN_NAME.put(SearchFieldConstants.FILE_NAME, ColumnNames.FILE_NAME_COLUMN);
         ATTRIBUTE_ID_TO_COLUMN_NAME.put(SearchFieldConstants.MODIFICATION_DATE, ColumnNames.MODIFICATION_TIMESTAMP_COLUMN);
+        ATTRIBUTE_ID_TO_COLUMN_NAME.put("userIds", ColumnNames.USER_COLUMN);
     }
 
     private Attributes()

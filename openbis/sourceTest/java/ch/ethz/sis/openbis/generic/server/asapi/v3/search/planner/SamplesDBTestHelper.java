@@ -63,7 +63,9 @@ public class SamplesDBTestHelper
 
     public static final String DATE_DATA_TYPE_CODE = "TIMESTAMP";
 
-    public static final long USER_ID = 2L;
+    public static final long ADMIN_USER_TECH_ID = 2L;
+
+    public static final String ADMIN_USER_ID = "etlserver";
 
     public static final long REGISTRATOR_ID = 101L;
 
@@ -319,7 +321,7 @@ public class SamplesDBTestHelper
         registratorValues.put(ColumnNames.LAST_NAME_COLUMN, REGISTRATOR_LAST_NAME);
         registratorValues.put(ColumnNames.USER_COLUMN, REGISTRATOR_USER_ID);
         registratorValues.put(ColumnNames.EMAIL_COLUMN, REGISTRATOR_EMAIL);
-        registratorValues.put(ColumnNames.PERSON_REGISTERER_COLUMN, USER_ID);
+        registratorValues.put(ColumnNames.PERSON_REGISTERER_COLUMN, ADMIN_USER_TECH_ID);
         registratorValues.put(ColumnNames.PERSON_IS_ACTIVE_COLUMN, true);
         insertRecord(TableNames.PERSONS_TABLE, registratorValues);
 
@@ -329,7 +331,7 @@ public class SamplesDBTestHelper
         modifierValues.put(ColumnNames.LAST_NAME_COLUMN, MODIFIER_LAST_NAME);
         modifierValues.put(ColumnNames.USER_COLUMN, MODIFIER_USER_ID);
         modifierValues.put(ColumnNames.EMAIL_COLUMN, MODIFIER_EMAIL);
-        modifierValues.put(ColumnNames.PERSON_REGISTERER_COLUMN, USER_ID);
+        modifierValues.put(ColumnNames.PERSON_REGISTERER_COLUMN, ADMIN_USER_TECH_ID);
         modifierValues.put(ColumnNames.PERSON_IS_ACTIVE_COLUMN, true);
         insertRecord(TableNames.PERSONS_TABLE, modifierValues);
     }
@@ -391,7 +393,7 @@ public class SamplesDBTestHelper
         propertyTypeValues.put(ColumnNames.LABEL_COLUMN, propertyTypeCode.toLowerCase());
         propertyTypeValues.put(ColumnNames.DESCRIPTION_COLUMN, "");
         propertyTypeValues.put(ColumnNames.DATA_TYPE_COLUMN, dataTypeId);
-        propertyTypeValues.put(ColumnNames.PERSON_REGISTERER_COLUMN, USER_ID);
+        propertyTypeValues.put(ColumnNames.PERSON_REGISTERER_COLUMN, ADMIN_USER_TECH_ID);
         propertyTypeValues.put(ColumnNames.IS_INTERNAL_NAMESPACE, isInternalCode);
         insertRecord(TableNames.PROPERTY_TYPES_TABLE, propertyTypeValues);
 
@@ -399,7 +401,7 @@ public class SamplesDBTestHelper
         stptValues.put(ColumnNames.ID_COLUMN, sampleTypePropertyTypeId);
         stptValues.put(ColumnNames.PROPERTY_TYPE_COLUMN, propertyTypeId);
         stptValues.put(ColumnNames.SAMPLE_TYPE_COLUMN, sampleTypeId);
-        stptValues.put(ColumnNames.PERSON_REGISTERER_COLUMN, USER_ID);
+        stptValues.put(ColumnNames.PERSON_REGISTERER_COLUMN, ADMIN_USER_TECH_ID);
         stptValues.put(ColumnNames.ORDINAL_COLUMN, SAMPLE_TYPE_PROPERTY_TYPE_ORDINAL_2);
         insertRecord(TableNames.SAMPLE_TYPE_PROPERTY_TYPE_TABLE, stptValues);
 
@@ -408,22 +410,22 @@ public class SamplesDBTestHelper
         samplePropertyValues.put(ColumnNames.SAMPLE_COLUMN, sampleId);
         samplePropertyValues.put(ColumnNames.SAMPLE_TYPE_PROPERTY_TYPE_COLUMN, sampleTypePropertyTypeId);
         samplePropertyValues.put(ColumnNames.VALUE_COLUMN, value);
-        samplePropertyValues.put(ColumnNames.PERSON_REGISTERER_COLUMN, USER_ID);
-        samplePropertyValues.put(ColumnNames.PERSON_AUTHOR_COLUMN, USER_ID);
+        samplePropertyValues.put(ColumnNames.PERSON_REGISTERER_COLUMN, ADMIN_USER_TECH_ID);
+        samplePropertyValues.put(ColumnNames.PERSON_AUTHOR_COLUMN, ADMIN_USER_TECH_ID);
         insertRecord(TableNames.SAMPLE_PROPERTIES_TABLE, samplePropertyValues);
     }
 
     private void createSamples()
     {
         final Map<String, Object> valuesMap1 = getDefaultValuesMap();
-        valuesMap1.put(ColumnNames.ID_COLUMN, SAMPLE_ID_1);
         valuesMap1.put(ColumnNames.PERM_ID_COLUMN, PERM_ID_1);
+        valuesMap1.put(ColumnNames.ID_COLUMN, SAMPLE_ID_1);
         valuesMap1.put(ColumnNames.VERSION_COLUMN, VERSION_1);
         valuesMap1.put(ColumnNames.CODE_COLUMN, CODE_1);
         valuesMap1.put(ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, REGISTRATION_DATE_1);
         valuesMap1.put(ColumnNames.MODIFICATION_TIMESTAMP_COLUMN, MODIFICATION_DATE_1);
         valuesMap1.put(ColumnNames.SPACE_COLUMN, SPACE_ID_1);
-        valuesMap1.put(ColumnNames.PERSON_REGISTERER_COLUMN, USER_ID);
+        valuesMap1.put(ColumnNames.PERSON_REGISTERER_COLUMN, ADMIN_USER_TECH_ID);
         insertRecord(TableNames.SAMPLES_ALL_TABLE, valuesMap1);
 
         final Map<String, Object> valuesMap2 = getDefaultValuesMap();
@@ -458,7 +460,7 @@ public class SamplesDBTestHelper
         valuesMap1.put(ColumnNames.CODE_COLUMN, SPACE_CODE_1);
         valuesMap1.put(ColumnNames.DESCRIPTION_COLUMN, null);
         valuesMap1.put(ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, DEFAULT_DATE);
-        valuesMap1.put(ColumnNames.PERSON_REGISTERER_COLUMN, USER_ID);
+        valuesMap1.put(ColumnNames.PERSON_REGISTERER_COLUMN, ADMIN_USER_TECH_ID);
         valuesMap1.put(ColumnNames.FROZEN_COLUMN, false);
         valuesMap1.put(ColumnNames.FROZEN_FOR_PROJECT_COLUMN, false);
         valuesMap1.put(ColumnNames.FROZEN_FOR_SAMPLE_COLUMN, false);
@@ -485,7 +487,7 @@ public class SamplesDBTestHelper
         valuesMap.put(ColumnNames.SPACE_COLUMN, SPACE_ID_1);
         valuesMap.put(ColumnNames.PERSON_LEADER_COLUMN, null);
         valuesMap.put(ColumnNames.DESCRIPTION_COLUMN, null);
-        valuesMap.put(ColumnNames.PERSON_REGISTERER_COLUMN, USER_ID);
+        valuesMap.put(ColumnNames.PERSON_REGISTERER_COLUMN, ADMIN_USER_TECH_ID);
         valuesMap.put(ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, DEFAULT_DATE);
         valuesMap.put(ColumnNames.MODIFICATION_TIMESTAMP_COLUMN, DEFAULT_DATE);
         valuesMap.put(ColumnNames.PERSON_MODIFIER_COLUMN, null);
@@ -504,7 +506,7 @@ public class SamplesDBTestHelper
         valuesMap.put(ColumnNames.PERM_ID_COLUMN, DEFAULT_PERM_ID);
         valuesMap.put(ColumnNames.CODE_COLUMN, DEFAULT_CODE);
         valuesMap.put(ColumnNames.EXPERIMENT_TYPE_COLUMN, EXPERIMENT_TYPE_ID);
-        valuesMap.put(ColumnNames.PERSON_REGISTERER_COLUMN, USER_ID);
+        valuesMap.put(ColumnNames.PERSON_REGISTERER_COLUMN, ADMIN_USER_TECH_ID);
         valuesMap.put(ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, DEFAULT_DATE);
         valuesMap.put(ColumnNames.MODIFICATION_TIMESTAMP_COLUMN, DEFAULT_DATE);
         valuesMap.put(ColumnNames.PROJECT_COLUMN, PROJECT_ID);
