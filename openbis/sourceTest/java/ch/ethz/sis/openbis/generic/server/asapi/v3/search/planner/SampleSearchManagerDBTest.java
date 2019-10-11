@@ -46,6 +46,11 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.Samples
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.INTERNAL_SAMPLE_PROPERTY_CODE_STRING;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.MODIFICATION_DATE_2;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.MODIFICATION_DATE_STRING_2;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.MODIFIER_EMAIL;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.MODIFIER_FIRST_NAME;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.MODIFIER_ID;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.MODIFIER_LAST_NAME;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.MODIFIER_USER_ID;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.PERM_ID_1;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.PERM_ID_2;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.PROJECT_CODE;
@@ -1035,7 +1040,7 @@ public class SampleSearchManagerDBTest
     }
 
     /**
-     * Tests {@link SampleSearchManager} with compound field criteria using DB connection.
+     * Tests {@link SampleSearchManager} with registrator field criteria using DB connection.
      */
     @Test
     public void testQueryDBWithRegistratorCriteria()
@@ -1109,6 +1114,85 @@ public class SampleSearchManagerDBTest
 
         final SampleSearchCriteria notExistingEmailCriterion = new SampleSearchCriteria();
         notExistingEmailCriterion.withRegistrator().withEmail().thatEquals("-");
+        final Set<Long> notExistingEmailCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, notExistingEmailCriterion);
+        assertTrue(notExistingEmailCriterionSampleIds.isEmpty());
+    }
+
+    /**
+     * Tests {@link SampleSearchManager} with modifier field criteria using DB connection.
+     */
+    @Test
+    public void testQueryDBWithModifierCriteria()
+    {
+        // Any modifier search
+        // This is a trivial search since modifier is a mandatory field, so the result set will contain all records
+        final SampleSearchCriteria emptyCriterion = new SampleSearchCriteria();
+        emptyCriterion.withModifier();
+        final Set<Long> emptyCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, emptyCriterion);
+        assertFalse(emptyCriterionSampleIds.isEmpty());
+
+        // By ID
+        final SampleSearchCriteria idCriterion = new SampleSearchCriteria();
+        idCriterion.withModifier().withUserId().thatEquals(String.valueOf(MODIFIER_ID));
+        final Set<Long> idCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, idCriterion);
+        assertEquals(idCriterionSampleIds.size(), 1);
+        assertFalse(idCriterionSampleIds.contains(SAMPLE_ID_1));
+        assertFalse(idCriterionSampleIds.contains(SAMPLE_ID_2));
+        assertTrue(idCriterionSampleIds.contains(SAMPLE_ID_3));
+
+        final SampleSearchCriteria notExistingIdCriterion = new SampleSearchCriteria();
+        notExistingIdCriterion.withModifier().withUserId().thatEquals("-");
+        final Set<Long> notExistingIdCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, notExistingIdCriterion);
+        assertTrue(notExistingIdCriterionSampleIds.isEmpty());
+
+        // By IDs
+        final SampleSearchCriteria idsCriterion = new SampleSearchCriteria();
+        idsCriterion.withModifier().withUserIds().thatIn(Arrays.asList(MODIFIER_USER_ID, ADMIN_USER_ID));
+        final Set<Long> idsCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, idsCriterion);
+        assertEquals(idsCriterionSampleIds.size(), 2);
+        assertTrue(idsCriterionSampleIds.contains(SAMPLE_ID_1));
+        assertFalse(idsCriterionSampleIds.contains(SAMPLE_ID_2));
+        assertTrue(idsCriterionSampleIds.contains(SAMPLE_ID_3));
+
+        // By First Name
+        final SampleSearchCriteria firstNameCriterion = new SampleSearchCriteria();
+        firstNameCriterion.withModifier().withFirstName().thatEquals(MODIFIER_FIRST_NAME);
+        final Set<Long> firstNameCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, firstNameCriterion);
+        assertEquals(firstNameCriterionSampleIds.size(), 1);
+        assertFalse(firstNameCriterionSampleIds.contains(SAMPLE_ID_1));
+        assertFalse(firstNameCriterionSampleIds.contains(SAMPLE_ID_2));
+        assertTrue(firstNameCriterionSampleIds.contains(SAMPLE_ID_3));
+
+        final SampleSearchCriteria notExistingFirstNameCriterion = new SampleSearchCriteria();
+        notExistingFirstNameCriterion.withModifier().withFirstName().thatEquals("-");
+        final Set<Long> notExistingFirstNameCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, notExistingFirstNameCriterion);
+        assertTrue(notExistingFirstNameCriterionSampleIds.isEmpty());
+
+        // By Last Name
+        final SampleSearchCriteria lastNameCriterion = new SampleSearchCriteria();
+        lastNameCriterion.withModifier().withLastName().thatEquals(MODIFIER_LAST_NAME);
+        final Set<Long> lastNameCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, lastNameCriterion);
+        assertEquals(lastNameCriterionSampleIds.size(), 1);
+        assertFalse(lastNameCriterionSampleIds.contains(SAMPLE_ID_1));
+        assertFalse(lastNameCriterionSampleIds.contains(SAMPLE_ID_2));
+        assertTrue(lastNameCriterionSampleIds.contains(SAMPLE_ID_3));
+
+        final SampleSearchCriteria notExistingLastNameCriterion = new SampleSearchCriteria();
+        notExistingLastNameCriterion.withModifier().withLastName().thatEquals("-");
+        final Set<Long> notExistingLastNameCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, notExistingLastNameCriterion);
+        assertTrue(notExistingLastNameCriterionSampleIds.isEmpty());
+
+        // By Email
+        final SampleSearchCriteria emailCriterion = new SampleSearchCriteria();
+        emailCriterion.withModifier().withEmail().thatEquals(MODIFIER_EMAIL);
+        final Set<Long> emailCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, emailCriterion);
+        assertEquals(emailCriterionSampleIds.size(), 1);
+        assertFalse(emailCriterionSampleIds.contains(SAMPLE_ID_1));
+        assertFalse(emailCriterionSampleIds.contains(SAMPLE_ID_2));
+        assertTrue(emailCriterionSampleIds.contains(SAMPLE_ID_3));
+
+        final SampleSearchCriteria notExistingEmailCriterion = new SampleSearchCriteria();
+        notExistingEmailCriterion.withModifier().withEmail().thatEquals("-");
         final Set<Long> notExistingEmailCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, notExistingEmailCriterion);
         assertTrue(notExistingEmailCriterionSampleIds.isEmpty());
     }

@@ -426,6 +426,7 @@ public class SamplesDBTestHelper
         valuesMap1.put(ColumnNames.MODIFICATION_TIMESTAMP_COLUMN, MODIFICATION_DATE_1);
         valuesMap1.put(ColumnNames.SPACE_COLUMN, SPACE_ID_1);
         valuesMap1.put(ColumnNames.PERSON_REGISTERER_COLUMN, ADMIN_USER_TECH_ID);
+        valuesMap1.put(ColumnNames.PERSON_MODIFIER_COLUMN, ADMIN_USER_TECH_ID);
         insertRecord(TableNames.SAMPLES_ALL_TABLE, valuesMap1);
 
         final Map<String, Object> valuesMap2 = getDefaultValuesMap();
@@ -450,6 +451,7 @@ public class SamplesDBTestHelper
         valuesMap3.put(ColumnNames.PROJECT_COLUMN, PROJECT_ID);
         valuesMap3.put(ColumnNames.EXPERIMENT_COLUMN, EXPERIMENT_ID);
         valuesMap3.put(ColumnNames.PART_OF_SAMPLE_COLUMN, SAMPLE_ID_1);
+        valuesMap3.put(ColumnNames.PERSON_MODIFIER_COLUMN, MODIFIER_ID);
         insertRecord(TableNames.SAMPLES_ALL_TABLE, valuesMap3);
     }
 
