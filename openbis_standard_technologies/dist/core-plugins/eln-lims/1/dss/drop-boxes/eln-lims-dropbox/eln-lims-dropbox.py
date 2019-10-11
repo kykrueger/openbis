@@ -5,7 +5,7 @@ from ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions import SampleF
 from ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search import SampleSearchCriteria
 
 INVALID_FORMAT_ERROR_MESSAGE = "Invalid format for the folder name, should follow the pattern <ENTITY_KIND>+<SPACE_CODE>+<PROJECT_CODE>[<EXPERIMENT_CODE|<SAMPLE_CODE>]+<OPTIONAL_DATASET_TYPE>+<OPTIONAL_NAME>";
-INVALID_CONTAINED_FORMAT_ERROR_MESSAGE = "Invalid contained format for the folder name, should follow the pattern CONTAINED+O+<SPACE_CODE>+<PROJECT_CODE>+<SAMPLE_CODE>+<DATASET_TYPE>+<NAME>";
+INVALID_CONTAINED_FORMAT_ERROR_MESSAGE = "Invalid contained format for the folder name, should follow the pattern CONTAINED+O+<SPACE_CODE>+<PROJECT_CODE>+<SAMPLE_CODE>+<DATASET_TYPE>+<OPTIONAL_NAME>";
 FAILED_TO_PARSE_SAMPLE_ERROR_MESSAGE = "Failed to parse sample";
 FAILED_TO_PARSE_EXPERIMENT_ERROR_MESSAGE = "Failed to parse experiment";
 SAMPLE_MISSING_ERROR_MESSAGE = "Sample not found";
@@ -16,18 +16,17 @@ MORE_THAN_ONE_FOLDER_ERROR_MESSAGE = "More than one folder found";
 def getContainedDataSetCode(v3, sessionToken, projectSamplesEnabled, itemThatIsCONTAINED):
 	# Basic format check
 	folderMeta = itemThatIsCONTAINED.getName().split("+");
-	expectedMetaLength = 6;
+	expectedMetaLength = 5;
 	if projectSamplesEnabled:
-		expectedMetaLength = 7;
+		expectedMetaLength = 6;
 
-	if len(folderMeta) != expectedMetaLength or folderMeta[0] != "CONTAINED" or folderMeta[1] != "O":
+	if len(folderMeta) < expectedMetaLength or folderMeta[0] != "CONTAINED" or folderMeta[1] != "O":
 		raise UserFailureException(INVALID_CONTAINED_FORMAT_ERROR_MESSAGE);
 	# Parse metadata in folder name
 	spaceCode = folderMeta[2];
 	projectCode = folderMeta[3] if projectSamplesEnabled else None;
 	sampleCode = folderMeta[4] if projectSamplesEnabled else folderMeta[3];
 	datasetType = folderMeta[5] if projectSamplesEnabled else folderMeta[4];
-	datasetName = folderMeta[6] if projectSamplesEnabled else folderMeta[5];
 
 	# Search for the sample
 	fetchOptions = SampleFetchOptions();
@@ -45,7 +44,7 @@ def getContainedDataSetCode(v3, sessionToken, projectSamplesEnabled, itemThatIsC
 	if not result.getObjects().isEmpty():
 		sample = result.getObjects().iterator().next();
 		for dataSet in sample.getDataSets():
-			if dataSet.getType().getCode() == datasetType and dataSet.getProperty("$NAME") == datasetName:
+			if dataSet.getType().getCode() == datasetType:
 				return dataSet.getCode();
 	raise UserFailureException(CONTAINED_MISSING_ERROR_MESSAGE);
 
