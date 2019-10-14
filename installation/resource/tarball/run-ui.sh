@@ -13,7 +13,7 @@ if [[ "$_java" ]]; then
     version=$("$_java" -version 2>&1 | awk -F '"' '/version/ {print $2}'| cut -c1-3)
     if [[ "$version" > "1.7" ]]; then
         echo Java version $version found.
-    else         
+    else
         echo Java version $version found is under the required 1.8.
         exit -1
     fi

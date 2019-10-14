@@ -233,9 +233,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 					toolbarModel.push({ component : $copyButton, tooltip: "Copy" });
 				}
 			}
-				
-				
-			
+
 			//Print
 			var $printButton = $("<a>", { 'class' : 'btn btn-default'} ).append($('<span>', { 'class' : 'glyphicon glyphicon-print' }));
 			$printButton.click(function() {
@@ -244,7 +242,16 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 			if(toolbarConfig.PRINT) {
 				toolbarModel.push({ component : $printButton, tooltip: "Print" });
 			}
-			
+
+			//Barcode
+			var $barcodeButton = $("<a>", { 'class' : 'btn btn-default'} ).append($('<span>', { 'class' : 'glyphicon glyphicon-barcode' }));
+            $barcodeButton.click(function() {
+                BarcodeUtil.showBarcode(_this._sampleFormModel.sample);
+            });
+            if(toolbarConfig.BARCODE) {
+                toolbarModel.push({ component : $barcodeButton, tooltip: "Barcode" });
+            }
+
 			//Hierarchy Graph
 			var $hierarchyGraph = FormUtil.getButtonWithImage("./img/hierarchy-icon.png", function () {
 				mainController.changeView('showSampleHierarchyPage', _this._sampleFormModel.sample.permId);
