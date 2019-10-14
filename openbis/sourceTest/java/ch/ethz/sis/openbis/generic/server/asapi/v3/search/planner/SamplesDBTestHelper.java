@@ -62,7 +62,7 @@ public class SamplesDBTestHelper
 
     public static final String MODIFIER_USER_ID = "jblack";
 
-    public static final String MODIFIER_FIRST_NAME = "Jimm";
+    public static final String MODIFIER_FIRST_NAME = "Jim";
 
     public static final String MODIFIER_LAST_NAME = "Black";
 
