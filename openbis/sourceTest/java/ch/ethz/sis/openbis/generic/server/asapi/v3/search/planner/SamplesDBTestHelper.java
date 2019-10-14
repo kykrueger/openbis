@@ -76,6 +76,10 @@ public class SamplesDBTestHelper
 
     public static final long SAMPLE_ID_3 = 1003L;
 
+    public static final long SAMPLE_ID_4 = 1004L;
+
+    public static final long SAMPLE_ID_5= 1005L;
+
     public static final long SPACE_ID_1 = 10000L;
 
     public static final long SPACE_ID_2 = 10001L;
@@ -174,15 +178,19 @@ public class SamplesDBTestHelper
 
     public static final String PROJECT_CODE = "PROJECT_CODE";
 
-    public static final String SPACE_CODE_1 = "MY_SPACE_UNIQUE_CODE1";
+    public static final String SPACE_CODE_1 = "MY_SPACE_UNIQUE_CODE_1";
 
-    public static final String SPACE_CODE_2 = "MY_SPACE_UNIQUE_CODE2";
+    public static final String SPACE_CODE_2 = "MY_SPACE_UNIQUE_CODE_2";
 
-    public static final String CODE_1 = "MY_UNIQUE_CODE1";
+    public static final String CODE_1 = "MY_UNIQUE_CODE_1";
 
-    public static final String CODE_2 = "ANOTHER_UNIQUE_CODE2";
+    public static final String CODE_2 = "ANOTHER_UNIQUE_CODE_2";
 
-    public static final String CODE_3 = "ANOTHER_UNIQUE_CODE3";
+    public static final String CODE_3 = "ANOTHER_UNIQUE_CODE_3";
+
+    public static final String CODE_4 = "ANOTHER_UNIQUE_CODE_4";
+
+    public static final String CODE_5 = "ANOTHER_UNIQUE_CODE_5";
 
     public static final int DEFAULT_VERSION = 10;
 

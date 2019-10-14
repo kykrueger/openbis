@@ -1,3 +1,14 @@
+-- Sample relationships
+
+DELETE FROM sample_relationships_all
+WHERE id=10001;
+
+DELETE FROM sample_relationships_all
+WHERE id=10002;
+
+DELETE FROM relationship_types
+WHERE id=10001;
+
 -- Tables related to samples
 
 DELETE FROM property_types
@@ -75,6 +86,12 @@ WHERE id=3102;
 -- Samples
 
 DELETE FROM samples_all
+WHERE id=1005;
+
+DELETE FROM samples_all
+WHERE id=1004;
+
+DELETE FROM samples_all
 WHERE id=1003;
 
 DELETE FROM samples_all
@@ -92,6 +109,7 @@ WHERE id=10004;
 
 DELETE FROM projects
 WHERE id=10002;
+
 
 -- Spaces
 

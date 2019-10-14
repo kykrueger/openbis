@@ -1,18 +1,18 @@
 -- Persons
 
-INSERT INTO persons(is_active, user_id, last_name, id, first_name, pers_id_registerer, email)
-VALUES (true, 'jbrown', 'Brown', 101, 'John', 2, 'jbrown@example.com');
+INSERT INTO persons(id, is_active, user_id, last_name, first_name, pers_id_registerer, email)
+VALUES (101, true, 'jbrown', 'Brown', 'John', 2, 'jbrown@example.com');
 
-INSERT INTO persons(is_active, user_id, last_name, id, first_name, pers_id_registerer, email)
-VALUES (true, 'jblack', 'Black', 102, 'Jim', 2, 'jblack@example.com');
+INSERT INTO persons(id, is_active, user_id, last_name, first_name, pers_id_registerer, email)
+VALUES (102, true, 'jblack', 'Black', 'Jim', 2, 'jblack@example.com');
 
 -- Spaces
 
 INSERT INTO spaces(registration_timestamp, code, frozen_for_proj, description, frozen, id, pers_id_registerer, frozen_for_samp)
-VALUES (TIMESTAMP '2019-06-10 10:50:00+02', 'MY_SPACE_UNIQUE_CODE1', false, null, false, 10000, 2, false);
+VALUES (TIMESTAMP '2019-06-10 10:50:00+02', 'MY_SPACE_UNIQUE_CODE_1', false, null, false, 10000, 2, false);
 
 INSERT INTO spaces(registration_timestamp, code, frozen_for_proj, description, frozen, id, pers_id_registerer, frozen_for_samp)
-VALUES (TIMESTAMP '2019-06-10 10:50:00+02', 'MY_SPACE_UNIQUE_CODE2', false, null, false, 10001, 101, false);
+VALUES (TIMESTAMP '2019-06-10 10:50:00+02', 'MY_SPACE_UNIQUE_CODE_2', false, null, false, 10001, 101, false);
 
 
 INSERT INTO projects(registration_timestamp, code, perm_id, description, frozen, frozen_for_exp, version, space_frozen, pers_id_modifier, modification_timestamp, pers_id_leader, id, space_id, pers_id_registerer, frozen_for_samp)
@@ -26,14 +26,20 @@ VALUES (null, TIMESTAMP '2019-06-10 10:50:00+02', 'DEFAULT_UNIQUE_CODE', '201906
 
 -- Samples
 
-INSERT INTO samples_all(orig_del, registration_timestamp, frozen_for_children, code, expe_id, proj_frozen, perm_id, del_id, frozen, saty_id, frozen_for_data, samp_id_part_of, version, proj_id, space_frozen, frozen_for_comp, frozen_for_parents, expe_frozen, pers_id_modifier, modification_timestamp, id, pers_id_registerer, space_id, cont_frozen)
-VALUES (null, TIMESTAMP '2019-06-11 10:50:00+02', false, 'MY_UNIQUE_CODE1', null, false, '20190612105000000-1001', null, false, 1, false, null, 101, null, false, false, false, false, 2, TIMESTAMP '2018-06-11 10:50:00+02', 1001, 2, 10000, false);
+INSERT INTO samples_all(id, orig_del, registration_timestamp, frozen_for_children, code, expe_id, proj_frozen, perm_id, del_id, frozen, saty_id, frozen_for_data, samp_id_part_of, version, proj_id, space_frozen, frozen_for_comp, frozen_for_parents, expe_frozen, pers_id_modifier, modification_timestamp, pers_id_registerer, space_id, cont_frozen)
+VALUES (1001, null, TIMESTAMP '2019-06-11 10:50:00+02', false, 'MY_UNIQUE_CODE_1', null, false, '20190612105000000-1001', null, false, 1, false, null, 101, null, false, false, false, false, 2, TIMESTAMP '2018-06-11 10:50:00+02', 2, 10000, false);
 
-INSERT INTO samples_all(orig_del, registration_timestamp, frozen_for_children, code, expe_id, proj_frozen, perm_id, del_id, frozen, saty_id, frozen_for_data, samp_id_part_of, version, proj_id, space_frozen, frozen_for_comp, frozen_for_parents, expe_frozen, pers_id_modifier, modification_timestamp, id, pers_id_registerer, space_id, cont_frozen)
-VALUES (null, TIMESTAMP '2019-06-12 10:50:00+02', false, 'ANOTHER_UNIQUE_CODE2', null, false, '20190612105000001-1001', null, false, 1, false, 1001, 102, 10002, false, false, false, false, null, TIMESTAMP '2018-06-12 10:50:00+02', 1002, 101, 10001, false);
+INSERT INTO samples_all(id, orig_del, registration_timestamp, frozen_for_children, code, expe_id, proj_frozen, perm_id, del_id, frozen, saty_id, frozen_for_data, samp_id_part_of, version, proj_id, space_frozen, frozen_for_comp, frozen_for_parents, expe_frozen, pers_id_modifier, modification_timestamp, pers_id_registerer, space_id, cont_frozen)
+VALUES (1002, null, TIMESTAMP '2019-06-12 10:50:00+02', false, 'ANOTHER_UNIQUE_CODE_2', null, false, '20190612105000001-1001', null, false, 1, false, 1001, 102, 10002, false, false, false, false, null, TIMESTAMP '2018-06-12 10:50:00+02', 101, 10001, false);
 
-INSERT INTO samples_all(orig_del, frozen_for_children, code, expe_id, proj_frozen, perm_id, del_id, frozen, saty_id, frozen_for_data, samp_id_part_of, version, proj_id, space_frozen, frozen_for_comp, frozen_for_parents, expe_frozen, pers_id_modifier, modification_timestamp, id, pers_id_registerer, space_id, cont_frozen)
-VALUES (null, false, 'ANOTHER_UNIQUE_CODE3', 10003, false, '20190612105000000-1003', null, false, 1, false, 1001, 103, 10002, false, false, false, false, 102, TIMESTAMP '2018-06-13 10:50:00+02', 1003, 1, null, false);
+INSERT INTO samples_all(id, orig_del, frozen_for_children, code, expe_id, proj_frozen, perm_id, del_id, frozen, saty_id, frozen_for_data, samp_id_part_of, version, proj_id, space_frozen, frozen_for_comp, frozen_for_parents, expe_frozen, pers_id_modifier, modification_timestamp, pers_id_registerer, space_id, cont_frozen)
+VALUES (1003, null, false, 'ANOTHER_UNIQUE_CODE_3', 10003, false, '20190612105000000-1003', null, false, 1, false, 1001, 103, 10002, false, false, false, false, 102, TIMESTAMP '2018-06-13 10:50:00+02', 1, null, false);
+
+INSERT INTO samples_all(id, orig_del, frozen_for_children, code, expe_id, proj_frozen, perm_id, del_id, frozen, saty_id, frozen_for_data, samp_id_part_of, version, proj_id, space_frozen, frozen_for_comp, frozen_for_parents, expe_frozen, pers_id_modifier, modification_timestamp, pers_id_registerer, space_id, cont_frozen)
+VALUES (1004, null, false, 'ANOTHER_UNIQUE_CODE_4', null, false, '20191014130100000-2004', null, false, 1, false, 1001, 104, 10002, false, false, false, false, null, TIMESTAMP '2018-06-13 10:50:00+02', 1, null, false);
+
+INSERT INTO samples_all(id, orig_del, frozen_for_children, code, expe_id, proj_frozen, perm_id, del_id, frozen, saty_id, frozen_for_data, samp_id_part_of, version, proj_id, space_frozen, frozen_for_comp, frozen_for_parents, expe_frozen, pers_id_modifier, modification_timestamp, pers_id_registerer, space_id, cont_frozen)
+VALUES (1005, null, false, 'ANOTHER_UNIQUE_CODE_5', null, false, '20191014130100000-2005', null, false, 1, false, 1001, 105, 10002, false, false, false, false, null, TIMESTAMP '2018-06-13 10:50:00+02', 1, null, false);
 
 -- Tables related to samples
 
@@ -108,3 +114,14 @@ VALUES (true, 'MY.SAMPLE.TYPE.LISTABLE', 3101);
 
 INSERT INTO sample_types(IS_LISTABLE, code, id)
 VALUES (false, 'MY.SAMPLE.TYPE.NOT.LISTABLE', 3102);
+
+-- Sample relationships
+
+INSERT INTO relationship_types(id, code, label, parent_label, child_label, description, pers_id_registerer)
+VALUES (10001, 'PARENT_CHILD_TEST', 'Parent - Child for testing', 'Parent', 'Child', 'Test', 101);
+
+INSERT INTO sample_relationships_all(id, sample_id_parent, sample_id_child, relationship_id)
+VALUES (10001, 1001, 1004, 10001);
+
+INSERT INTO sample_relationships_all(id, sample_id_parent, sample_id_child, relationship_id)
+VALUES (10002, 1001, 1005, 10001);

@@ -102,9 +102,9 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
         {
             // If we have results, we merge them
             resultBeforeFiltering = mergeResults(finalSearchOperator,
-                    Collections.singleton(mainCriteriaIntermediateResults),
-                    Collections.singleton(parentCriteriaIntermediateResults),
-                    Collections.singleton(childrenCriteriaIntermediateResults));
+                    mainCriteriaIntermediateResults != null ? Collections.singleton(mainCriteriaIntermediateResults) : Collections.emptySet(),
+                    parentCriteriaIntermediateResults != null ? Collections.singleton(parentCriteriaIntermediateResults) : Collections.emptySet(),
+                    childrenCriteriaIntermediateResults != null ? Collections.singleton(childrenCriteriaIntermediateResults) : Collections.emptySet());
         } else if (mainCriteria.isEmpty() && parentsCriteria.isEmpty() && childrenCriteria.isEmpty())
         {
             // If we don't have results and criteria are empty, return all.
