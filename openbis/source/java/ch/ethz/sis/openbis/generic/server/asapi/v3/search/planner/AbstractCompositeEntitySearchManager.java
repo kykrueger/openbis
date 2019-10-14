@@ -84,7 +84,7 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
         {
             final Set<Long> finalParentIds = findFinalRelationshipIds(userId, finalSearchOperator, parentsCriteria);
             final Set<Long> finalParentIdsFiltered = filterIDsByUserRights(userId, finalParentIds);
-            childrenCriteriaIntermediateResults = getChildrenIdsOf(finalParentIdsFiltered);
+            parentCriteriaIntermediateResults = getChildrenIdsOf(finalParentIdsFiltered);
         }
 
         // The children criteria can be or not recursive, they are resolved by a recursive call
@@ -92,19 +92,19 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
         {
             final Set<Long> finalChildrenIds = findFinalRelationshipIds(userId, finalSearchOperator, childrenCriteria);
             final Set<Long> finalChildrenIdsFiltered = filterIDsByUserRights(userId, finalChildrenIds);
-            parentCriteriaIntermediateResults = getParentsIdsOf(finalChildrenIdsFiltered);
+            childrenCriteriaIntermediateResults = getParentsIdsOf(finalChildrenIdsFiltered);
         }
 
         // Reaching this point we have the intermediate results of all recursive queries
         final Set<Long> resultBeforeFiltering;
-        if (containsValues(mainCriteriaIntermediateResults) || containsValues(childrenCriteriaIntermediateResults) ||
-                containsValues(parentCriteriaIntermediateResults))
+        if (containsValues(mainCriteriaIntermediateResults) || containsValues(parentCriteriaIntermediateResults) ||
+                containsValues(childrenCriteriaIntermediateResults))
         {
             // If we have results, we merge them
             resultBeforeFiltering = mergeResults(finalSearchOperator,
                     mainCriteriaIntermediateResults != null ? Collections.singleton(mainCriteriaIntermediateResults) : Collections.emptySet(),
-                    parentCriteriaIntermediateResults != null ? Collections.singleton(parentCriteriaIntermediateResults) : Collections.emptySet(),
-                    childrenCriteriaIntermediateResults != null ? Collections.singleton(childrenCriteriaIntermediateResults) : Collections.emptySet());
+                    childrenCriteriaIntermediateResults != null ? Collections.singleton(childrenCriteriaIntermediateResults) : Collections.emptySet(),
+                    parentCriteriaIntermediateResults != null ? Collections.singleton(parentCriteriaIntermediateResults) : Collections.emptySet());
         } else if (mainCriteria.isEmpty() && parentsCriteria.isEmpty() && childrenCriteria.isEmpty())
         {
             // If we don't have results and criteria are empty, return all.

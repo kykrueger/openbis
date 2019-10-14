@@ -40,6 +40,7 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.Samples
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.CODE_1;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.CODE_2;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.CODE_3;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.CODE_4;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.CONTAINER_DELIMITER;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.EXPERIMENT_ID;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.ID_DELIMITER;
@@ -1210,7 +1211,7 @@ public class SampleSearchManagerDBTest
     public void testQueryDBWithParentCriteria()
     {
         final SampleSearchCriteria parentIdCriterion = new SampleSearchCriteria();
-        parentIdCriterion.withParents().withCode().thatEquals("MY_UNIQUE_CODE_1");
+        parentIdCriterion.withParents().withCode().thatEquals(CODE_1);
         final Set<Long> parentIdCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, parentIdCriterion);
         assertEquals(parentIdCriterionSampleIds.size(), 2);
         assertFalse(parentIdCriterionSampleIds.contains(SAMPLE_ID_1));
@@ -1218,6 +1219,23 @@ public class SampleSearchManagerDBTest
         assertFalse(parentIdCriterionSampleIds.contains(SAMPLE_ID_3));
         assertTrue(parentIdCriterionSampleIds.contains(SAMPLE_ID_4));
         assertTrue(parentIdCriterionSampleIds.contains(SAMPLE_ID_5));
+    }
+
+    /**
+     * Tests {@link SampleSearchManager} with child sample criteria using DB connection.
+     */
+    @Test
+    public void testQueryDBWithChildCriteria()
+    {
+        final SampleSearchCriteria childIdCriterion = new SampleSearchCriteria();
+        childIdCriterion.withChildren().withCode().thatEquals(CODE_4);
+        final Set<Long> childIdCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, childIdCriterion);
+        assertEquals(childIdCriterionSampleIds.size(), 1);
+        assertTrue(childIdCriterionSampleIds.contains(SAMPLE_ID_1));
+        assertFalse(childIdCriterionSampleIds.contains(SAMPLE_ID_2));
+        assertFalse(childIdCriterionSampleIds.contains(SAMPLE_ID_3));
+        assertFalse(childIdCriterionSampleIds.contains(SAMPLE_ID_4));
+        assertFalse(childIdCriterionSampleIds.contains(SAMPLE_ID_5));
     }
 
 }

@@ -65,7 +65,10 @@ public class PostgresSearchDAO implements ISQLSearchDAO
         final String query = "SELECT DISTINCT " + tableMapper.getRelationshipsTableChildIdField() + "\n" +
                 "FROM " + tableMapper.getRelationshipsTable() + "\n" +
                 "WHERE " + tableMapper.getRelationshipsTableParentIdField() + " IN (SELECT unnest(?))";
-        return executeSetSearchQuery(tableMapper, query, Collections.singletonList(parentIdSet.toArray(new Long[0])));
+        final List<Object> args = Collections.singletonList(parentIdSet.toArray(new Long[0]));
+        final List<Map<String, Object>> queryResultList = sqlExecutor.execute(query, args);
+        return queryResultList.stream().map(stringObjectMap -> (Long) stringObjectMap.get(tableMapper.getRelationshipsTableChildIdField()))
+                .collect(Collectors.toSet());
     }
 
     @Override
@@ -74,13 +77,9 @@ public class PostgresSearchDAO implements ISQLSearchDAO
         final String query = "SELECT DISTINCT " + tableMapper.getRelationshipsTableParentIdField() + "\n" +
                 "FROM " + tableMapper.getRelationshipsTable() + "\n" +
                 "WHERE " + tableMapper.getRelationshipsTableChildIdField() + " IN (SELECT unnest(?))";
-        return executeSetSearchQuery(tableMapper, query, Collections.singletonList(childIdSet.toArray(new Long[0])));
-    }
-
-    private Set<Long> executeSetSearchQuery(final TableMapper tableMapper, final String query, final List<Object> args)
-    {
+        final List<Object> args = Collections.singletonList(childIdSet.toArray(new Long[0]));
         final List<Map<String, Object>> queryResultList = sqlExecutor.execute(query, args);
-        return queryResultList.stream().map(stringObjectMap -> (Long) stringObjectMap.get(tableMapper.getRelationshipsTableChildIdField()))
+        return queryResultList.stream().map(stringObjectMap -> (Long) stringObjectMap.get(tableMapper.getRelationshipsTableParentIdField()))
                 .collect(Collectors.toSet());
     }
 
