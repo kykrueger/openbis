@@ -1,5 +1,8 @@
 var EventUtil = new function() {
 
+    var DEFAULT_TIMEOUT = 15000;
+    var DEFAULT_TIMEOUT_STEP = 1000;
+
 	this.click = function(elementId) {
 		var element = $( "#" + elementId );
 		element.focus();
@@ -16,11 +19,26 @@ var EventUtil = new function() {
 		}
 	};
 
-    this.waitForId = function(elementId, action) {
-        if(!document.querySelector("#" + elementId)) {
-            setTimeout(this.waitForElement,500);
-        } else {
-            action();
-        }
+    this.waitForId = function(elementId, timeout) {
+        return new Promise(function(resolve, reject) {
+            if (!timeout) {
+                timeout = DEFAULT_TIMEOUT;
+            }
+            timeout -= DEFAULT_TIMEOUT_STEP;
+
+            if (timeout <= 0) {
+                reject(new Error("Element '" + elementId + "' is not exist."));
+                return;
+            }
+
+            if($("#" + elementId).length <= 0) {
+                setTimeout(function() { EventUtil.waitForId(elementId, timeout).then(resolve())
+                                                 .catch(reject(new Error("Element '" + elementId + "' is not exist.")));
+                                      }, DEFAULT_TIMEOUT_STEP);
+            } else {
+                resolve();
+            }
+        });
     };
+
 }
