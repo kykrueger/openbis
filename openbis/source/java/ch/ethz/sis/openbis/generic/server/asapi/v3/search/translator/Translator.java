@@ -70,11 +70,11 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.D
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.EmailSearchCriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.FirstNameSearchCriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.IConditionTranslator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.IdSearchCriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.JoinInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.LastNameSearchCriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.ListableSampleTypeSearchCriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.NumberFieldSearchCriteriaTranslator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.SampleIdSearchCriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.SampleSearchCriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.StringFieldSearchCriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.UserIdSearchCriteriaTranslator;
@@ -119,8 +119,9 @@ public class Translator
         final NumberFieldSearchCriteriaTranslator numberFieldSearchCriteriaTranslator = new NumberFieldSearchCriteriaTranslator();
         final CollectionFieldSearchCriteriaTranslator collectionFieldSearchCriteriaTranslator = new CollectionFieldSearchCriteriaTranslator();
         final AbsenceConditionTranslator absenceConditionTranslator = new AbsenceConditionTranslator();
-        final SampleIdSearchCriteriaTranslator sampleIdSearchCriteriaTranslator = new SampleIdSearchCriteriaTranslator();
+        final IdSearchCriteriaTranslator idSearchCriteriaTranslator = new IdSearchCriteriaTranslator();
 
+        CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(IdSearchCriteria.class, idSearchCriteriaTranslator);
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(SampleSearchCriteria.class, new SampleSearchCriteriaTranslator());
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(StringFieldSearchCriteria.class, stringFieldSearchCriteriaTranslator);
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(CodeSearchCriteria.class, stringFieldSearchCriteriaTranslator);
@@ -138,7 +139,6 @@ public class Translator
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(NoProjectSearchCriteria.class, absenceConditionTranslator);
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(NoSpaceSearchCriteria.class, absenceConditionTranslator);
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(AnyFieldSearchCriteria.class, new AnyFieldSearchCriteriaTranslator());
-        CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(IdSearchCriteria.class, sampleIdSearchCriteriaTranslator);
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(StringPropertySearchCriteria.class, stringFieldSearchCriteriaTranslator);
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(NumberPropertySearchCriteria.class, numberFieldSearchCriteriaTranslator);
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(DatePropertySearchCriteria.class, dateFieldSearchCriteriaTranslator);

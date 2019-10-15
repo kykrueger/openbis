@@ -22,6 +22,7 @@ import java.util.Set;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AnyFieldSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ModificationDateSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.RegistrationDateSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -355,6 +356,21 @@ public class ExperimentSearchManagerDBTest
         assertFalse(containsCriterionSampleIds.contains(EXPERIMENT_ID_1));
         assertFalse(containsCriterionSampleIds.contains(EXPERIMENT_ID_2));
         assertTrue(containsCriterionSampleIds.contains(EXPERIMENT_ID_3));
+    }
+
+    /**
+     * Tests {@link SampleSearchManager} with ID search criteria using DB connection.
+     */
+    @Test
+    public void testQueryDBWithId()
+    {
+        final ExperimentSearchCriteria permIdCriterion = new ExperimentSearchCriteria();
+        permIdCriterion.withId().thatEquals(new ExperimentPermId(EXPERIMENT_PERM_ID_2));
+        final Set<Long> permIdCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, permIdCriterion);
+        assertEquals(permIdCriterionSampleIds.size(), 1);
+        assertFalse(permIdCriterionSampleIds.contains(EXPERIMENT_ID_1));
+        assertTrue(permIdCriterionSampleIds.contains(EXPERIMENT_ID_2));
+        assertFalse(permIdCriterionSampleIds.contains(EXPERIMENT_ID_3));
     }
 
 }

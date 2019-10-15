@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.IdSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sample.FullSampleIdentifier;
@@ -48,17 +48,17 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.PROJECTS_TA
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SAMPLES_ALL_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SPACES_TABLE;
 
-public class SampleIdSearchCriteriaTranslator extends AbstractConditionTranslator<IdSearchCriteria<ISampleId>>
+public class IdSearchCriteriaTranslator extends AbstractConditionTranslator<IdSearchCriteria<?>>
 {
 
     @Override
-    public void translate(final IdSearchCriteria<ISampleId> criterion, final TableMapper tableMapper, final List<Object> args,
+    public void translate(final IdSearchCriteria<?> criterion, final TableMapper tableMapper, final List<Object> args,
             final StringBuilder sqlBuilder, final Map<Object, Map<String, JoinInformation>> aliases)
     {
-        final ISampleId sampleId = criterion.getId();
+        final Object entityId = criterion.getId();
 
-        if (sampleId.getClass() == SampleIdentifier.class) {
-            final FullSampleIdentifier fullSampleIdentifier = new FullSampleIdentifier(((SampleIdentifier) sampleId).getIdentifier(),
+        if (entityId.getClass() == SampleIdentifier.class) {
+            final FullSampleIdentifier fullSampleIdentifier = new FullSampleIdentifier(((SampleIdentifier) entityId).getIdentifier(),
                     null);
             final String sampleCode = fullSampleIdentifier.getSampleCode();
             final SampleIdentifierParts identifierParts = fullSampleIdentifier.getParts();
@@ -94,13 +94,17 @@ public class SampleIdSearchCriteriaTranslator extends AbstractConditionTranslato
 
             sqlBuilder.append(Translator.MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(EQ).append(QU);
             args.add(sampleCode);
-        } else if (sampleId.getClass() == SamplePermId.class)
+        } else if (entityId.getClass() == SamplePermId.class)
         {
             sqlBuilder.append(Translator.MAIN_TABLE_ALIAS).append(PERIOD).append(PERM_ID_COLUMN).append(EQ).append(QU);
-            args.add(((SamplePermId) sampleId).getPermId());
+            args.add(((SamplePermId) entityId).getPermId());
+        } else if (entityId.getClass() == ExperimentPermId.class)
+        {
+            sqlBuilder.append(Translator.MAIN_TABLE_ALIAS).append(PERIOD).append(PERM_ID_COLUMN).append(EQ).append(QU);
+            args.add(((ExperimentPermId) entityId).getPermId());
         } else
         {
-            throw new IllegalArgumentException("The following ID class is not supported: " + sampleId.getClass().getSimpleName());
+            throw new IllegalArgumentException("The following ID class is not supported: " + entityId.getClass().getSimpleName());
         }
     }
 
