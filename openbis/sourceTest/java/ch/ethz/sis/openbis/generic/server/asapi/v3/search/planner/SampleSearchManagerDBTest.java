@@ -394,12 +394,12 @@ public class SampleSearchManagerDBTest
         final SampleSearchCriteria endsWithCriterion2 = new SampleSearchCriteria();
         endsWithCriterion2.withAnyField().thatEndsWith(String.valueOf(SAMPLE_ID_1));
         final Set<Long> endsWithCriterionSampleIds2 = searchManager.searchForIDs(ADMIN_USER_TECH_ID, endsWithCriterion2);
-        assertEquals(endsWithCriterionSampleIds2.size(), 5);
+        assertEquals(endsWithCriterionSampleIds2.size(), 3);
         assertTrue(endsWithCriterionSampleIds2.contains(SAMPLE_ID_1));
         assertTrue(endsWithCriterionSampleIds2.contains(SAMPLE_ID_2));
         assertTrue(endsWithCriterionSampleIds2.contains(SAMPLE_ID_3));
-        assertTrue(endsWithCriterionSampleIds2.contains(SAMPLE_ID_4));
-        assertTrue(endsWithCriterionSampleIds2.contains(SAMPLE_ID_4));
+        assertFalse(endsWithCriterionSampleIds2.contains(SAMPLE_ID_4));
+        assertFalse(endsWithCriterionSampleIds2.contains(SAMPLE_ID_4));
 
         // expe_id
         final SampleSearchCriteria containsCriterion = new SampleSearchCriteria();
