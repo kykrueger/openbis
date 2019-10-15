@@ -78,7 +78,9 @@ public class DBTestHelper
 
     public static final long SPACE_ID_2 = 10001L;
 
-    public static final long PROJECT_ID = 10002L;
+    public static final long PROJECT_ID_1 = 10001L;
+
+    public static final long PROJECT_ID_2 = 10002L;
 
     public static final long EXPERIMENT_TYPE_ID = 10004L;
 
@@ -132,7 +134,7 @@ public class DBTestHelper
 
     public static final String SAMPLE_PERM_ID_2 = "20190612105000001-1001";
 
-    public static final String PROJECT_CODE = "PROJECT_CODE";
+    public static final String PROJECT_CODE_2 = "PROJECT_CODE_2";
 
     public static final String SPACE_CODE_1 = "MY_SPACE_UNIQUE_CODE_1";
 
@@ -158,13 +160,9 @@ public class DBTestHelper
 
     public static final String SAMPLE_REGISTRATION_DATE_STRING_2 = "2019-06-12 10:50:00 +0200";
 
-    public static final Date MODIFICATION_DATE_1 = new Date(118, Calendar.JUNE, 11, 10, 50, 0);
+    public static final Date SAMPLE_MODIFICATION_DATE_2 = new Date(118, Calendar.JUNE, 12, 10, 50, 0);
 
-    public static final Date MODIFICATION_DATE_2 = new Date(118, Calendar.JUNE, 12, 10, 50, 0);
-
-    public static final Date MODIFICATION_DATE_3 = new Date(118, Calendar.JUNE, 13, 10, 50, 0);
-
-    public static final String MODIFICATION_DATE_STRING_2 = "2018-06-12 10:50:00 +0200";
+    public static final String SAMPLE_MODIFICATION_DATE_STRING_2 = "2018-06-12 10:50:00 +0200";
 
     public static final String SAMPLE_TYPE_CODE_1 = "SAMPLE.TYPE.1";
 
@@ -205,6 +203,10 @@ public class DBTestHelper
     public static final String EXPERIMENT_REGISTRATION_DATE_STRING_1 = "2019-07-11 10:50:00 +0200";
 
     public static final String EXPERIMENT_REGISTRATION_DATE_STRING_2 = "2019-07-12 10:50:00 +0200";
+
+    public static final Date EXPERIMENT_MODIFICATION_DATE_2 = new Date(118, Calendar.JULY, 12, 10, 50, 0);
+
+    public static final String EXPERIMENT_MODIFICATION_DATE_STRING_2 = "2018-07-12 10:50:00 +0200";
 
     private JDBCSQLExecutor sqlExecutor;
 

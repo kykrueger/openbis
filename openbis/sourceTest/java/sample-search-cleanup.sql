@@ -125,8 +125,10 @@ WHERE id=10004;
 -- Projects
 
 DELETE FROM projects
-WHERE id=10002;
+WHERE id=10001;
 
+DELETE FROM projects
+WHERE id=10002;
 
 -- Spaces
 

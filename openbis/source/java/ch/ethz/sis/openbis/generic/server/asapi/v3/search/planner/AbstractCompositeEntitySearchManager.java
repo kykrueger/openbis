@@ -77,7 +77,7 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
         {
             throw new RuntimeException("Either both or none of parent/child search criteria should be null.");
         }
-        final SearchOperator finalSearchOperator = searchOperator == null ? criteria.getOperator() : searchOperator;
+        final SearchOperator finalSearchOperator = (searchOperator == null) ? criteria.getOperator() : searchOperator;
 
         Set<Long> mainCriteriaIntermediateResults = null;
         Set<Long> parentCriteriaIntermediateResults = null;
