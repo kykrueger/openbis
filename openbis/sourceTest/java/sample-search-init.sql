@@ -125,3 +125,6 @@ VALUES (10001, 1001, 1004, 10001);
 
 INSERT INTO sample_relationships_all(id, sample_id_parent, sample_id_child, relationship_id)
 VALUES (10002, 1001, 1005, 10001);
+
+INSERT INTO sample_relationships_all(id, sample_id_parent, sample_id_child, relationship_id)
+VALUES (10003, 1002, 1003, 10001);

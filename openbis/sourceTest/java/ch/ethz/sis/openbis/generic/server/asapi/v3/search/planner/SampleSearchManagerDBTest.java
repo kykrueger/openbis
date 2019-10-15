@@ -1219,6 +1219,17 @@ public class SampleSearchManagerDBTest
         assertFalse(parentIdCriterionSampleIds.contains(SAMPLE_ID_3));
         assertTrue(parentIdCriterionSampleIds.contains(SAMPLE_ID_4));
         assertTrue(parentIdCriterionSampleIds.contains(SAMPLE_ID_5));
+
+        final SampleSearchCriteria parentIdCriterionOr = new SampleSearchCriteria().withOrOperator();
+        parentIdCriterionOr.withParents().withCode().thatEquals(CODE_1);
+        parentIdCriterionOr.withParents().withCode().thatEquals(CODE_2);
+        final Set<Long> parentIdCriterionSampleIdsOr = searchManager.searchForIDs(ADMIN_USER_TECH_ID, parentIdCriterionOr);
+        assertEquals(parentIdCriterionSampleIdsOr.size(), 3);
+        assertFalse(parentIdCriterionSampleIdsOr.contains(SAMPLE_ID_1));
+        assertFalse(parentIdCriterionSampleIdsOr.contains(SAMPLE_ID_2));
+        assertTrue(parentIdCriterionSampleIdsOr.contains(SAMPLE_ID_3));
+        assertTrue(parentIdCriterionSampleIdsOr.contains(SAMPLE_ID_4));
+        assertTrue(parentIdCriterionSampleIdsOr.contains(SAMPLE_ID_5));
     }
 
     /**

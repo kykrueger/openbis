@@ -6,6 +6,9 @@ WHERE id=10001;
 DELETE FROM sample_relationships_all
 WHERE id=10002;
 
+DELETE FROM sample_relationships_all
+WHERE id=10003;
+
 DELETE FROM relationship_types
 WHERE id=10001;
 
