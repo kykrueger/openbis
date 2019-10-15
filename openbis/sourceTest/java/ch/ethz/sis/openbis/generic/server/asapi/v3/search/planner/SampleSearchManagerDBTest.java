@@ -1230,6 +1230,12 @@ public class SampleSearchManagerDBTest
         assertTrue(parentOrIdCriterionSampleIds.contains(SAMPLE_ID_3));
         assertTrue(parentOrIdCriterionSampleIds.contains(SAMPLE_ID_4));
         assertTrue(parentOrIdCriterionSampleIds.contains(SAMPLE_ID_5));
+
+        final SampleSearchCriteria parentAndIdCriterion = new SampleSearchCriteria().withAndOperator();
+        parentAndIdCriterion.withParents().withCode().thatEquals(CODE_1);
+        parentAndIdCriterion.withParents().withCode().thatEquals(CODE_2);
+        final Set<Long> parentAndIdCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, parentAndIdCriterion);
+        assertTrue(parentAndIdCriterionSampleIds.isEmpty());
     }
 
     /**
@@ -1258,6 +1264,12 @@ public class SampleSearchManagerDBTest
         assertFalse(childOrIdCriterionSampleIds.contains(SAMPLE_ID_3));
         assertFalse(childOrIdCriterionSampleIds.contains(SAMPLE_ID_4));
         assertFalse(childOrIdCriterionSampleIds.contains(SAMPLE_ID_5));
+
+        final SampleSearchCriteria childAndIdCriterion = new SampleSearchCriteria().withAndOperator();
+        childAndIdCriterion.withChildren().withCode().thatEquals(CODE_3);
+        childAndIdCriterion.withChildren().withCode().thatEquals(CODE_4);
+        final Set<Long> childAndIdCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, childAndIdCriterion);
+        assertTrue(childAndIdCriterionSampleIds.isEmpty());
     }
 
 }
