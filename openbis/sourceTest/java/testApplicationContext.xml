@@ -20,7 +20,7 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
     <import resource="applicationContext.xml"/>
 
-    <bean id="db-test-helper" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper" init-method="setUp"
+    <bean id="db-test-helper" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper" init-method="setUp"
           destroy-method="tearDown">
         <property name="autocommit" value="false"/>
     </bean>

@@ -59,6 +59,8 @@ public class SQLLexemes
 
     public static final String SP = " ";
 
+    public static final String LEFT_JOIN = LEFT + SP + JOIN;
+
     public static final String INNER_JOIN = INNER + SP + JOIN;
 
     public static final String LIKE = "LIKE";
@@ -118,6 +120,8 @@ public class SQLLexemes
     public static final String RP = ")";
 
     public static final String SQ = "'";
+
+    public static final String DQ = "\"";
 
     public static final String TILDA = "~";
 

@@ -31,6 +31,8 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.DATA_TYPE_
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.DESCRIPTION_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.EMAIL_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.EXPERIMENT_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.EXPERIMENT_TYPE_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.EXPERIMENT_TYPE_PROPERTY_TYPE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.FIRST_NAME_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.GENERATED_CODE_PREFIX;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.GENERATED_FROM_DEPTH;
@@ -57,6 +59,10 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.SPACE_COLU
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.USER_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.VALIDATION_SCRIPT_ID_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.DATA_ALL_TABLE;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.EXPERIMENTS_ALL_TABLE;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.EXPERIMENT_PROPERTIES_TABLE;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.EXPERIMENT_TYPES_TABLE;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.EXPERIMENT_TYPE_PROPERTY_TYPE_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.PERSONS_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.PROPERTY_TYPES_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SAMPLES_ALL_TABLE;
@@ -82,6 +88,13 @@ public enum TableMapper
             SAMPLE_COLUMN),
 
     SAMPLE_TYPE(SAMPLE_TYPES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null,
+            null, null, null),
+
+    EXPERIMENT(EXPERIMENTS_ALL_TABLE, EXPERIMENT_TYPE_COLUMN, PROPERTY_TYPES_TABLE, DATA_TYPE_COLUMN, EXPERIMENT_TYPES_TABLE,
+            EXPERIMENT_TYPE_PROPERTY_TYPE_TABLE, EXPERIMENT_TYPE_COLUMN, PROPERTY_TYPE_COLUMN, EXPERIMENT_PROPERTIES_TABLE, EXPERIMENT_COLUMN,
+            EXPERIMENT_TYPE_PROPERTY_TYPE_COLUMN, null, null, null, DATA_ALL_TABLE, EXPERIMENT_COLUMN),
+
+    EXPERIMENT_TYPE(EXPERIMENT_TYPES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null,
             null, null, null),
 
     PERSON(PERSONS_TABLE, null, null, null, null, null, null, null, null, null, null, null, null,

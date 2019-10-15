@@ -29,15 +29,15 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.ADMIN_USER_TECH_ID;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.LISTABLE_SAMPLE_TYPE_ID;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.NOT_LISTABLE_SAMPLE_TYPE_ID;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.SAMPLE_TYPE_CODE_1;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.SAMPLE_TYPE_CODE_2;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.SAMPLE_TYPE_CODE_3;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.SAMPLE_TYPE_CODE_4;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.SAMPLE_TYPE_ID_1;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.SAMPLE_TYPE_ID_4;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.ADMIN_USER_TECH_ID;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.LISTABLE_SAMPLE_TYPE_ID;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.NOT_LISTABLE_SAMPLE_TYPE_ID;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_TYPE_CODE_1;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_TYPE_CODE_2;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_TYPE_CODE_3;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_TYPE_CODE_4;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_TYPE_ID_1;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_TYPE_ID_4;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
@@ -46,7 +46,7 @@ public class SampleTypeSearchManagerDBTest
 
     private static final AbstractApplicationContext context = new ClassPathXmlApplicationContext("testApplicationContext.xml");
 
-    private SamplesDBTestHelper dbTestHelper = context.getBean(SamplesDBTestHelper.class);
+    private DBTestHelper dbTestHelper = context.getBean(DBTestHelper.class);
 
     private PostgresSearchDAO searchDAO;
 
