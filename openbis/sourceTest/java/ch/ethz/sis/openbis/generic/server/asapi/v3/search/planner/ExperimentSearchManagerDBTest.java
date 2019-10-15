@@ -16,14 +16,26 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.PostgresSearchDAO;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
+import java.util.Set;
+
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.RegistrationDateSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.ADMIN_USER_TECH_ID;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.EXPERIMENT_CODE_1;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.EXPERIMENT_ID_1;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.EXPERIMENT_ID_2;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.EXPERIMENT_ID_3;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.EXPERIMENT_REGISTRATION_DATE_2;
+import static junit.framework.Assert.assertFalse;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 
 public class ExperimentSearchManagerDBTest
 {
@@ -31,11 +43,7 @@ public class ExperimentSearchManagerDBTest
 
     private DBTestHelper dbTestHelper = context.getBean(DBTestHelper.class);
 
-    private PostgresSearchDAO searchDAO;
-
-    private ISQLAuthorisationInformationProviderDAO authInfoProviderDAO;
-
-    private IID2PETranslator iid2PETranslator;
+    private ExperimentSearchManager searchManager;
 
     public ExperimentSearchManagerDBTest() throws ClassNotFoundException
     {
@@ -45,10 +53,7 @@ public class ExperimentSearchManagerDBTest
     @BeforeClass
     public void setUpClass() throws Exception
     {
-        searchDAO = context.getBean(PostgresSearchDAO.class);
-        authInfoProviderDAO = context.getBean(ISQLAuthorisationInformationProviderDAO.class);
-        iid2PETranslator = context.getBean("identity-translator", IID2PETranslator.class);
-//        searchManager = new SampleSearchManager(searchDAO, authInfoProviderDAO, iid2PETranslator);
+        searchManager = context.getBean("experiment-search-manager", ExperimentSearchManager.class);
     }
 
     @AfterClass
@@ -61,6 +66,70 @@ public class ExperimentSearchManagerDBTest
     public void tearDown() throws Exception
     {
         dbTestHelper.resetConnection();
+    }
+
+    /**
+     * Tests {@link SampleSearchManager} with string attribute search criteria using DB connection.
+     */
+    @Test
+    public void testQueryDBWithCode()
+    {
+        final ExperimentSearchCriteria equalsCriterion = new ExperimentSearchCriteria();
+        equalsCriterion.withCode().thatEquals(EXPERIMENT_CODE_1);
+        checkCodeCriterion(equalsCriterion);
+
+        final ExperimentSearchCriteria containsCriterion = new ExperimentSearchCriteria();
+        containsCriterion.withCode().thatContains(EXPERIMENT_CODE_1.substring(1, EXPERIMENT_CODE_1.length() - 1));
+        checkCodeCriterion(containsCriterion);
+
+        final ExperimentSearchCriteria startsWithCriterion = new ExperimentSearchCriteria();
+        startsWithCriterion.withCode().thatStartsWith(EXPERIMENT_CODE_1.substring(0, 4));
+        checkCodeCriterion(startsWithCriterion);
+
+        final ExperimentSearchCriteria endsWithCriterion = new ExperimentSearchCriteria();
+        endsWithCriterion.withCode().thatEndsWith(EXPERIMENT_CODE_1.substring(4));
+        checkCodeCriterion(endsWithCriterion);
+    }
+
+    /**
+     * Checks if the criterion returns expected results.
+     *
+     * @param criterion criterion to be checked.
+     */
+    private void checkCodeCriterion(final ExperimentSearchCriteria criterion)
+    {
+        final Set<Long> sampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, criterion);
+        assertEquals(sampleIds.size(), 1);
+        assertEquals(sampleIds.iterator().next().longValue(), EXPERIMENT_ID_1);
+    }
+
+    /**
+     * Tests {@link SampleSearchManager} with {@link RegistrationDateSearchCriteria} search criteria using DB connection.
+     */
+    @Test
+    public void testQueryDBWithRegistrationDateField()
+    {
+        final ExperimentSearchCriteria equalsCriterion = new ExperimentSearchCriteria();
+        equalsCriterion.withRegistrationDate().thatEquals(EXPERIMENT_REGISTRATION_DATE_2);
+        final Set<Long> equalCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, equalsCriterion);
+        assertEquals(equalCriterionSampleIds.size(), 1);
+        assertTrue(equalCriterionSampleIds.contains(EXPERIMENT_ID_2));
+
+        final ExperimentSearchCriteria earlierThanCriterion = new ExperimentSearchCriteria();
+        earlierThanCriterion.withRegistrationDate().thatIsEarlierThanOrEqualTo(EXPERIMENT_REGISTRATION_DATE_2);
+        final Set<Long> earlierThanCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, earlierThanCriterion);
+        assertFalse(earlierThanCriterionSampleIds.isEmpty());
+        assertTrue(earlierThanCriterionSampleIds.contains(EXPERIMENT_ID_1));
+        assertTrue(earlierThanCriterionSampleIds.contains(EXPERIMENT_ID_2));
+        assertFalse(earlierThanCriterionSampleIds.contains(EXPERIMENT_ID_3));
+
+        final ExperimentSearchCriteria laterThanCriterion = new ExperimentSearchCriteria();
+        laterThanCriterion.withRegistrationDate().thatIsLaterThanOrEqualTo(EXPERIMENT_REGISTRATION_DATE_2);
+        final Set<Long> laterThanCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, laterThanCriterion);
+        assertFalse(laterThanCriterionSampleIds.isEmpty());
+        assertFalse(laterThanCriterionSampleIds.contains(EXPERIMENT_ID_1));
+        assertTrue(laterThanCriterionSampleIds.contains(EXPERIMENT_ID_2));
+        assertTrue(laterThanCriterionSampleIds.contains(EXPERIMENT_ID_3));
     }
 
 }

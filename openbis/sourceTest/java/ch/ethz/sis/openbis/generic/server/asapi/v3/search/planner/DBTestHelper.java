@@ -80,8 +80,6 @@ public class DBTestHelper
 
     public static final long PROJECT_ID = 10002L;
 
-    public static final long EXPERIMENT_ID = 10003L;
-
     public static final long EXPERIMENT_TYPE_ID = 10004L;
 
     public static final long SAMPLE_TYPE_PROPERTY_TYPE_ORDINAL_2 = 2L;
@@ -130,21 +128,9 @@ public class DBTestHelper
 
     public static final String SAMPLE_PROPERTY_CODE_DATE = "TEST.DATE";
 
-    public static final String DEFAULT_PERM_ID = "20190612105000000-0";
+    public static final String SAMPLE_PERM_ID_1 = "20190612105000000-1001";
 
-    public static final String PERM_ID_1 = "20190612105000000-1001";
-
-    public static final String PERM_ID_2 = "20190612105000001-1001";
-
-    public static final String PERM_ID_3 = "20190612105000000-1003";
-
-    public static final String PERM_ID_4 = "20191014130100000-2004";
-
-    public static final String PERM_ID_5 = "20191014130100000-2005";
-
-    public static final String PERM_ID_6 = "20191014130100000-2006";
-
-    public static final String DEFAULT_CODE = "DEFAULT_UNIQUE_CODE";
+    public static final String SAMPLE_PERM_ID_2 = "20190612105000001-1001";
 
     public static final String PROJECT_CODE = "PROJECT_CODE";
 
@@ -152,27 +138,25 @@ public class DBTestHelper
 
     public static final String SPACE_CODE_2 = "MY_SPACE_UNIQUE_CODE_2";
 
-    public static final String CODE_1 = "MY_UNIQUE_CODE_1";
+    public static final String SAMPLE_CODE_1 = "MY_UNIQUE_CODE_1";
 
-    public static final String CODE_2 = "ANOTHER_UNIQUE_CODE_2";
+    public static final String SAMPLE_CODE_2 = "ANOTHER_UNIQUE_CODE_2";
 
-    public static final String CODE_3 = "ANOTHER_UNIQUE_CODE_3";
+    public static final String SAMPLE_CODE_3 = "ANOTHER_UNIQUE_CODE_3";
 
-    public static final String CODE_4 = "ANOTHER_UNIQUE_CODE_4";
+    public static final String SAMPLE_CODE_4 = "ANOTHER_UNIQUE_CODE_4";
 
-    public static final String CODE_5 = "ANOTHER_UNIQUE_CODE_5";
+    public static final String SAMPLE_CODE_5 = "ANOTHER_UNIQUE_CODE_5";
 
-    public static final String CODE_6 = "ANOTHER_UNIQUE_CODE_6";
+    public static final String SAMPLE_CODE_6 = "ANOTHER_UNIQUE_CODE_6";
 
-    public static final int DEFAULT_VERSION = 10;
+    public static final Date SAMPLE_REGISTRATION_DATE_1 = new Date(119, Calendar.JUNE, 11, 10, 50, 0);
 
-    public static final Date REGISTRATION_DATE_1 = new Date(119, Calendar.JUNE, 11, 10, 50, 0);
+    public static final Date SAMPLE_REGISTRATION_DATE_2 = new Date(119, Calendar.JUNE, 12, 10, 50, 0);
 
-    public static final Date REGISTRATION_DATE_2 = new Date(119, Calendar.JUNE, 12, 10, 50, 0);
+    public static final String SAMPLE_REGISTRATION_DATE_STRING_1 = "2019-06-11 10:50:00 +0200";
 
-    public static final String REGISTRATION_DATE_STRING_1 = "2019-06-11 10:50:00 +0200";
-
-    public static final String REGISTRATION_DATE_STRING_2 = "2019-06-12 10:50:00 +0200";
+    public static final String SAMPLE_REGISTRATION_DATE_STRING_2 = "2019-06-12 10:50:00 +0200";
 
     public static final Date MODIFICATION_DATE_1 = new Date(118, Calendar.JUNE, 11, 10, 50, 0);
 
@@ -181,8 +165,6 @@ public class DBTestHelper
     public static final Date MODIFICATION_DATE_3 = new Date(118, Calendar.JUNE, 13, 10, 50, 0);
 
     public static final String MODIFICATION_DATE_STRING_2 = "2018-06-12 10:50:00 +0200";
-
-    public static final Date DEFAULT_DATE = new Date(119, Calendar.JUNE, 10, 10, 50, 0);
 
     public static final String SAMPLE_TYPE_CODE_1 = "SAMPLE.TYPE.1";
 
@@ -197,6 +179,32 @@ public class DBTestHelper
     public static final String LISTABLE_SAMPLE_TYPE_CODE = "MY.SAMPLE.TYPE.LISTABLE";
 
     public static final String NOT_LISTABLE_SAMPLE_TYPE_CODE = "MY.SAMPLE.TYPE.NOT.LISTABLE";
+
+    public static final long EXPERIMENT_ID_1 = 1001L;
+
+    public static final long EXPERIMENT_ID_2 = 1002L;
+
+    public static final long EXPERIMENT_ID_3 = 1003L;
+
+    public static final String EXPERIMENT_CODE_1 = "UNIQUE_EXPERIMENT_CODE_1";
+
+    public static final String EXPERIMENT_CODE_2 = "EXPERIMENT_CODE_2";
+
+    public static final String EXPERIMENT_CODE_3 = "EXPERIMENT_CODE_3";
+
+    public static final String EXPERIMENT_PERM_ID_1 = "20191015134000000-1001";
+
+    public static final String EXPERIMENT_PERM_ID_2 = "20191015134000001-1001";
+
+    public static final String EXPERIMENT_PERM_ID_3 = "20191015134000000-1003";
+
+    public static final Date EXPERIMENT_REGISTRATION_DATE_1 = new Date(119, Calendar.JULY, 11, 10, 50, 0);
+
+    public static final Date EXPERIMENT_REGISTRATION_DATE_2 = new Date(119, Calendar.JULY, 12, 10, 50, 0);
+
+    public static final String EXPERIMENT_REGISTRATION_DATE_STRING_1 = "2019-07-11 10:50:00 +0200";
+
+    public static final String EXPERIMENT_REGISTRATION_DATE_STRING_2 = "2019-07-12 10:50:00 +0200";
 
     private JDBCSQLExecutor sqlExecutor;
 

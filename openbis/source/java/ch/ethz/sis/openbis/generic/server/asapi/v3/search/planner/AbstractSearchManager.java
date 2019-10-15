@@ -19,6 +19,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -80,8 +81,8 @@ public abstract class AbstractSearchManager<CRITERIA extends ISearchCriteria, OB
 
     protected abstract Set<Long> doFilterIDsByUserRights(final Set<Long> ids, final AuthorisationInformation authorisationInformation);
 
-    protected List<ISearchCriteria> getOtherCriteriaThan(AbstractCompositeSearchCriteria compositeSearchCriteria,
-            Class<? extends ISearchCriteria>... classes)
+    protected List<ISearchCriteria> getOtherCriteriaThan(final AbstractCompositeSearchCriteria compositeSearchCriteria,
+            final Class<? extends ISearchCriteria>... classes)
     {
         final List<ISearchCriteria> criteria = compositeSearchCriteria.getCriteria().stream().filter(criterion -> {
             final boolean isInstanceOfOneOfClasses = Arrays.stream(classes).anyMatch(clazz -> clazz.isInstance(criterion));
@@ -94,9 +95,15 @@ public abstract class AbstractSearchManager<CRITERIA extends ISearchCriteria, OB
     protected List<ISearchCriteria> getCriteria(
             AbstractCompositeSearchCriteria compositeSearchCriteria, Class<? extends ISearchCriteria> clazz)
     {
-        final List<ISearchCriteria> criteria = compositeSearchCriteria.getCriteria().stream().filter(clazz::isInstance)
-                .collect(Collectors.toList());
-        return criteria;
+        if (clazz != null)
+        {
+            final List<ISearchCriteria> criteria = compositeSearchCriteria.getCriteria().stream().filter(clazz::isInstance)
+                    .collect(Collectors.toList());
+            return criteria;
+        } else
+        {
+            return Collections.emptyList();
+        }
     }
 
     protected static <E> Set<E> mergeResults(final SearchOperator operator,

@@ -15,14 +15,24 @@ INSERT INTO spaces(registration_timestamp, code, frozen_for_proj, description, f
 VALUES (TIMESTAMP '2019-06-10 10:50:00+02', 'MY_SPACE_UNIQUE_CODE_2', false, null, false, 10001, 101, false);
 
 
-INSERT INTO projects(registration_timestamp, code, perm_id, description, frozen, frozen_for_exp, version, space_frozen, pers_id_modifier, modification_timestamp, pers_id_leader, id, space_id, pers_id_registerer, frozen_for_samp)
-VALUES (TIMESTAMP '2019-06-10 10:50:00+02', 'PROJECT_CODE', '20190301152050019-11', null, false, false, 10, false, null, TIMESTAMP '2019-06-10 10:50:00+02', null, 10002, 10000, 2, false);
+INSERT INTO projects(id, registration_timestamp, code, perm_id, description, frozen, frozen_for_exp, version, space_frozen, pers_id_modifier, modification_timestamp, pers_id_leader, space_id, pers_id_registerer, frozen_for_samp)
+VALUES (10002, TIMESTAMP '2019-06-10 10:50:00+02', 'PROJECT_CODE', '20190301152050019-11', null, false, false, 10, false, null, TIMESTAMP '2019-06-10 10:50:00+02', null, 10000, 2, false);
 
-INSERT INTO experiment_types(code, modification_timestamp, validation_script_id, description, id)
-VALUES ('DEFAULT_UNIQUE_CODE', TIMESTAMP '2019-06-10 10:50:00+02', null, null, 10004);
+-- Experiment types
 
-INSERT INTO experiments_all(orig_del, registration_timestamp, code, perm_id, proj_frozen, del_id, frozen, frozen_for_data, proj_id, version, pers_id_modifier, exty_id, modification_timestamp, is_public, id, pers_id_registerer, frozen_for_samp)
-VALUES (null, TIMESTAMP '2019-06-10 10:50:00+02', 'DEFAULT_UNIQUE_CODE', '20190612105000000-0', false, null, false, false, 10002, 10, null, 10004, TIMESTAMP '2019-06-10 10:50:00+02', false, 10003, 2, false);
+INSERT INTO experiment_types(id, code, modification_timestamp, validation_script_id, description)
+VALUES (10004, 'DEFAULT_UNIQUE_CODE', TIMESTAMP '2019-06-10 10:50:00+02', null, null);
+
+-- Experiments
+
+INSERT INTO experiments_all(id, perm_id, orig_del, code, exty_id, del_id, proj_id, pers_id_registerer, pers_id_modifier, registration_timestamp)
+VALUES (1001, '20191015134000000-1001', null, 'UNIQUE_EXPERIMENT_CODE_1', 10004, null, 10002, 2, null, TIMESTAMP '2019-07-11 10:50:00+02');
+
+INSERT INTO experiments_all(id, perm_id, orig_del, code, exty_id, del_id, proj_id, pers_id_registerer, pers_id_modifier, registration_timestamp)
+VALUES (1002, '20191015134000001-1001', null, 'EXPERIMENT_CODE_2', 10004, null, 10002, 2, null, TIMESTAMP '2019-07-12 10:50:00+02');
+
+INSERT INTO experiments_all(id, perm_id, orig_del, code, exty_id, del_id, proj_id, pers_id_registerer, pers_id_modifier)
+VALUES (1003, '20191015134000000-1003', null, 'EXPERIMENT_CODE_3', 10004, null, 10002, 2, null);
 
 -- Samples
 
@@ -33,7 +43,7 @@ INSERT INTO samples_all(id, orig_del, registration_timestamp, frozen_for_childre
 VALUES (1002, null, TIMESTAMP '2019-06-12 10:50:00+02', false, 'ANOTHER_UNIQUE_CODE_2', null, false, '20190612105000001-1001', null, false, 1, false, 1001, 102, 10002, false, false, false, false, null, TIMESTAMP '2018-06-12 10:50:00+02', 101, 10001, false);
 
 INSERT INTO samples_all(id, orig_del, frozen_for_children, code, expe_id, proj_frozen, perm_id, del_id, frozen, saty_id, frozen_for_data, samp_id_part_of, version, proj_id, space_frozen, frozen_for_comp, frozen_for_parents, expe_frozen, pers_id_modifier, modification_timestamp, pers_id_registerer, space_id, cont_frozen)
-VALUES (1003, null, false, 'ANOTHER_UNIQUE_CODE_3', 10003, false, '20190612105000000-1003', null, false, 1, false, 1001, 103, 10002, false, false, false, false, 102, TIMESTAMP '2018-06-13 10:50:00+02', 1, null, false);
+VALUES (1003, null, false, 'ANOTHER_UNIQUE_CODE_3', 1003, false, '20190612105000000-1003', null, false, 1, false, 1001, 103, 10002, false, false, false, false, 102, TIMESTAMP '2018-06-13 10:50:00+02', 1, null, false);
 
 INSERT INTO samples_all(id, orig_del, frozen_for_children, code, expe_id, proj_frozen, perm_id, del_id, frozen, saty_id, frozen_for_data, samp_id_part_of, version, proj_id, space_frozen, frozen_for_comp, frozen_for_parents, expe_frozen, pers_id_modifier, modification_timestamp, pers_id_registerer, space_id, cont_frozen)
 VALUES (1004, null, false, 'ANOTHER_UNIQUE_CODE_4', null, false, '20191014130100000-2004', null, false, 1, false, null, 104, 10002, false, false, false, false, null, TIMESTAMP '2018-06-13 10:50:00+02', 1, null, false);

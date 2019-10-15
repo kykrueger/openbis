@@ -106,12 +106,23 @@ WHERE id=1002;
 DELETE FROM samples_all
 WHERE id=1001;
 
+-- Experiments
 
 DELETE FROM experiments_all
-WHERE id=10003;
+WHERE id=1001;
+
+DELETE FROM experiments_all
+WHERE id=1002;
+
+DELETE FROM experiments_all
+WHERE id=1003;
+
+-- Experiment types
 
 DELETE FROM experiment_types
 WHERE id=10004;
+
+-- Projects
 
 DELETE FROM projects
 WHERE id=10002;

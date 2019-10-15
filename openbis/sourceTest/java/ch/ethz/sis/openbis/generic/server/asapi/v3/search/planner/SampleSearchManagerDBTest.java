@@ -25,9 +25,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.RegistrationDateSe
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.PostgresSearchDAO;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.testng.annotations.AfterClass;
@@ -37,12 +34,8 @@ import org.testng.annotations.Test;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.ADMIN_USER_ID;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.ADMIN_USER_TECH_ID;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.CODE_1;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.CODE_2;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.CODE_3;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.CODE_4;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.CONTAINER_DELIMITER;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.EXPERIMENT_ID;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.EXPERIMENT_ID_3;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.ID_DELIMITER;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.INTERNAL_SAMPLE_PROPERTY_CODE_STRING;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.MODIFICATION_DATE_2;
@@ -52,24 +45,25 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestH
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.MODIFIER_ID;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.MODIFIER_LAST_NAME;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.MODIFIER_USER_ID;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.PERM_ID_1;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.PERM_ID_2;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.PROJECT_CODE;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.PROJECT_ID;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.REGISTRATION_DATE_2;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.REGISTRATION_DATE_STRING_1;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.REGISTRATION_DATE_STRING_2;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.REGISTRATOR_EMAIL;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.REGISTRATOR_FIRST_NAME;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.REGISTRATOR_ID;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.REGISTRATOR_LAST_NAME;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.REGISTRATOR_USER_ID;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_CODE_1;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_CODE_2;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_CODE_3;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_CODE_4;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_ID_1;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_ID_2;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_ID_3;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_ID_4;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_ID_5;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_ID_6;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_PERM_ID_1;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_PERM_ID_2;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_PROPERTY_1_INTERNAL_STRING_VALUE;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_PROPERTY_1_NUMBER_VALUE;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_PROPERTY_2_DATE_STRING_VALUE;
@@ -84,6 +78,9 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestH
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_PROPERTY_CODE_DOUBLE;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_PROPERTY_CODE_LONG;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_PROPERTY_CODE_STRING;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_REGISTRATION_DATE_2;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_REGISTRATION_DATE_STRING_1;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_REGISTRATION_DATE_STRING_2;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SPACE_CODE_1;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SPACE_CODE_2;
 import static org.testng.Assert.assertEquals;
@@ -97,12 +94,6 @@ public class SampleSearchManagerDBTest
 
     private DBTestHelper dbTestHelper = context.getBean(DBTestHelper.class);
 
-    private PostgresSearchDAO searchDAO;
-
-    private ISQLAuthorisationInformationProviderDAO authInfoProviderDAO;
-
-    private IID2PETranslator iid2PETranslator;
-
     private SampleSearchManager searchManager;
 
     public SampleSearchManagerDBTest() throws ClassNotFoundException
@@ -113,10 +104,7 @@ public class SampleSearchManagerDBTest
     @BeforeClass
     public void setUpClass() throws Exception
     {
-        searchDAO = context.getBean(PostgresSearchDAO.class);
-        authInfoProviderDAO = context.getBean(ISQLAuthorisationInformationProviderDAO.class);
-        iid2PETranslator = context.getBean("identity-translator", IID2PETranslator.class);
-        searchManager = new SampleSearchManager(searchDAO, authInfoProviderDAO, iid2PETranslator);
+        searchManager = context.getBean("sample-search-manager", SampleSearchManager.class);
     }
 
     @AfterClass
@@ -138,20 +126,20 @@ public class SampleSearchManagerDBTest
     public void testQueryDBWithCode()
     {
         final SampleSearchCriteria equalsCriterion = new SampleSearchCriteria();
-        equalsCriterion.withCode().thatEquals(CODE_1);
-        checkCriterion(equalsCriterion);
+        equalsCriterion.withCode().thatEquals(SAMPLE_CODE_1);
+        checkCodeCriterion(equalsCriterion);
 
         final SampleSearchCriteria containsCriterion = new SampleSearchCriteria();
-        containsCriterion.withCode().thatContains(CODE_1.substring(1, CODE_1.length() - 1));
-        checkCriterion(containsCriterion);
+        containsCriterion.withCode().thatContains(SAMPLE_CODE_1.substring(1, SAMPLE_CODE_1.length() - 1));
+        checkCodeCriterion(containsCriterion);
 
         final SampleSearchCriteria startsWithCriterion = new SampleSearchCriteria();
-        startsWithCriterion.withCode().thatStartsWith(CODE_1.substring(0, 4));
-        checkCriterion(startsWithCriterion);
+        startsWithCriterion.withCode().thatStartsWith(SAMPLE_CODE_1.substring(0, 4));
+        checkCodeCriterion(startsWithCriterion);
 
         final SampleSearchCriteria endsWithCriterion = new SampleSearchCriteria();
-        endsWithCriterion.withCode().thatEndsWith(CODE_1.substring(4));
-        checkCriterion(endsWithCriterion);
+        endsWithCriterion.withCode().thatEndsWith(SAMPLE_CODE_1.substring(4));
+        checkCodeCriterion(endsWithCriterion);
     }
 
     /**
@@ -159,7 +147,7 @@ public class SampleSearchManagerDBTest
      *
      * @param criterion criterion to be checked.
      */
-    private void checkCriterion(final SampleSearchCriteria criterion)
+    private void checkCodeCriterion(final SampleSearchCriteria criterion)
     {
         final Set<Long> sampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, criterion);
         assertEquals(sampleIds.size(), 1);
@@ -173,13 +161,13 @@ public class SampleSearchManagerDBTest
     public void testQueryDBWithRegistrationDateField()
     {
         final SampleSearchCriteria equalsCriterion = new SampleSearchCriteria();
-        equalsCriterion.withRegistrationDate().thatEquals(REGISTRATION_DATE_2);
+        equalsCriterion.withRegistrationDate().thatEquals(SAMPLE_REGISTRATION_DATE_2);
         final Set<Long> equalCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, equalsCriterion);
         assertEquals(equalCriterionSampleIds.size(), 1);
         assertTrue(equalCriterionSampleIds.contains(SAMPLE_ID_2));
 
         final SampleSearchCriteria earlierThanCriterion = new SampleSearchCriteria();
-        earlierThanCriterion.withRegistrationDate().thatIsEarlierThanOrEqualTo(REGISTRATION_DATE_2);
+        earlierThanCriterion.withRegistrationDate().thatIsEarlierThanOrEqualTo(SAMPLE_REGISTRATION_DATE_2);
         final Set<Long> earlierThanCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, earlierThanCriterion);
         assertFalse(earlierThanCriterionSampleIds.isEmpty());
         assertTrue(earlierThanCriterionSampleIds.contains(SAMPLE_ID_1));
@@ -187,7 +175,7 @@ public class SampleSearchManagerDBTest
         assertFalse(earlierThanCriterionSampleIds.contains(SAMPLE_ID_3));
 
         final SampleSearchCriteria laterThanCriterion = new SampleSearchCriteria();
-        laterThanCriterion.withRegistrationDate().thatIsLaterThanOrEqualTo(REGISTRATION_DATE_2);
+        laterThanCriterion.withRegistrationDate().thatIsLaterThanOrEqualTo(SAMPLE_REGISTRATION_DATE_2);
         final Set<Long> laterThanCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, laterThanCriterion);
         assertFalse(laterThanCriterionSampleIds.isEmpty());
         assertFalse(laterThanCriterionSampleIds.contains(SAMPLE_ID_1));
@@ -232,13 +220,13 @@ public class SampleSearchManagerDBTest
     public void testQueryDBWithStringRegistrationDateField()
     {
         final SampleSearchCriteria equalsCriterion = new SampleSearchCriteria();
-        equalsCriterion.withRegistrationDate().thatEquals(REGISTRATION_DATE_STRING_2);
+        equalsCriterion.withRegistrationDate().thatEquals(SAMPLE_REGISTRATION_DATE_STRING_2);
         final Set<Long> equalCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, equalsCriterion);
         assertEquals(equalCriterionSampleIds.size(), 1);
         assertTrue(equalCriterionSampleIds.contains(SAMPLE_ID_2));
 
         final SampleSearchCriteria earlierThanCriterion = new SampleSearchCriteria();
-        earlierThanCriterion.withRegistrationDate().thatIsEarlierThanOrEqualTo(REGISTRATION_DATE_STRING_2);
+        earlierThanCriterion.withRegistrationDate().thatIsEarlierThanOrEqualTo(SAMPLE_REGISTRATION_DATE_STRING_2);
         final Set<Long> earlierThanCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, earlierThanCriterion);
         assertFalse(earlierThanCriterionSampleIds.isEmpty());
         assertTrue(earlierThanCriterionSampleIds.contains(SAMPLE_ID_1));
@@ -246,7 +234,7 @@ public class SampleSearchManagerDBTest
         assertFalse(earlierThanCriterionSampleIds.contains(SAMPLE_ID_3));
 
         final SampleSearchCriteria laterThanCriterion = new SampleSearchCriteria();
-        laterThanCriterion.withRegistrationDate().thatIsLaterThanOrEqualTo(REGISTRATION_DATE_STRING_2);
+        laterThanCriterion.withRegistrationDate().thatIsLaterThanOrEqualTo(SAMPLE_REGISTRATION_DATE_STRING_2);
         final Set<Long> laterThanCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, laterThanCriterion);
         assertFalse(laterThanCriterionSampleIds.isEmpty());
         assertFalse(laterThanCriterionSampleIds.contains(SAMPLE_ID_1));
@@ -291,7 +279,7 @@ public class SampleSearchManagerDBTest
     public void testQueryDBWithCodes()
     {
         final SampleSearchCriteria criterion = new SampleSearchCriteria();
-        criterion.withCodes().thatIn(Arrays.asList(CODE_1, CODE_3));
+        criterion.withCodes().thatIn(Arrays.asList(SAMPLE_CODE_1, SAMPLE_CODE_3));
         final Set<Long> criterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, criterion);
         assertEquals(criterionSampleIds.size(), 2);
         assertTrue(criterionSampleIds.contains(SAMPLE_ID_1));
@@ -306,7 +294,7 @@ public class SampleSearchManagerDBTest
     public void testQueryDBWithPermId()
     {
         final SampleSearchCriteria equalsCriterion = new SampleSearchCriteria();
-        equalsCriterion.withPermId().thatEquals(PERM_ID_2);
+        equalsCriterion.withPermId().thatEquals(SAMPLE_PERM_ID_2);
         final Set<Long> equalsCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, equalsCriterion);
         assertEquals(equalsCriterionSampleIds.size(), 1);
         assertFalse(equalsCriterionSampleIds.contains(SAMPLE_ID_1));
@@ -314,7 +302,7 @@ public class SampleSearchManagerDBTest
         assertFalse(equalsCriterionSampleIds.contains(SAMPLE_ID_3));
 
         final SampleSearchCriteria startsWithCriterion = new SampleSearchCriteria();
-        startsWithCriterion.withPermId().thatStartsWith(PERM_ID_1.substring(0, PERM_ID_1.length() - 2));
+        startsWithCriterion.withPermId().thatStartsWith(SAMPLE_PERM_ID_1.substring(0, SAMPLE_PERM_ID_1.length() - 2));
         final Set<Long> startsWithCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, startsWithCriterion);
         assertEquals(startsWithCriterionSampleIds.size(), 2);
         assertTrue(startsWithCriterionSampleIds.contains(SAMPLE_ID_1));
@@ -322,7 +310,7 @@ public class SampleSearchManagerDBTest
         assertTrue(startsWithCriterionSampleIds.contains(SAMPLE_ID_3));
 
         final SampleSearchCriteria endsWithCriterion = new SampleSearchCriteria();
-        endsWithCriterion.withPermId().thatEndsWith(PERM_ID_1.substring(PERM_ID_1.length() - 4));
+        endsWithCriterion.withPermId().thatEndsWith(SAMPLE_PERM_ID_1.substring(SAMPLE_PERM_ID_1.length() - 4));
         final Set<Long> endsWithCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, endsWithCriterion);
         assertEquals(endsWithCriterionSampleIds.size(), 2);
         assertTrue(endsWithCriterionSampleIds.contains(SAMPLE_ID_1));
@@ -330,7 +318,7 @@ public class SampleSearchManagerDBTest
         assertFalse(endsWithCriterionSampleIds.contains(SAMPLE_ID_3));
 
         final SampleSearchCriteria containsCriterion = new SampleSearchCriteria();
-        containsCriterion.withPermId().thatContains(PERM_ID_1.substring(4, 12));
+        containsCriterion.withPermId().thatContains(SAMPLE_PERM_ID_1.substring(4, 12));
         final Set<Long> containsCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, containsCriterion);
         assertEquals(containsCriterionSampleIds.size(), 3);
         assertTrue(containsCriterionSampleIds.contains(SAMPLE_ID_1));
@@ -346,7 +334,7 @@ public class SampleSearchManagerDBTest
     {
         // code attribute
         final SampleSearchCriteria codeEqualsCriterion = new SampleSearchCriteria();
-        codeEqualsCriterion.withAnyField().thatEquals(CODE_2);
+        codeEqualsCriterion.withAnyField().thatEquals(SAMPLE_CODE_2);
         final Set<Long> codeEqualsCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, codeEqualsCriterion);
         assertEquals(codeEqualsCriterionSampleIds.size(), 1);
         assertFalse(codeEqualsCriterionSampleIds.contains(SAMPLE_ID_1));
@@ -367,7 +355,7 @@ public class SampleSearchManagerDBTest
 
         // project_id attribute
         final SampleSearchCriteria registrationDateEqualsCriterion = new SampleSearchCriteria();
-        registrationDateEqualsCriterion.withAnyField().thatEquals(REGISTRATION_DATE_STRING_1);
+        registrationDateEqualsCriterion.withAnyField().thatEquals(SAMPLE_REGISTRATION_DATE_STRING_1);
         final Set<Long> registrationDateEqualsCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, registrationDateEqualsCriterion);
         assertEquals(registrationDateEqualsCriterionSampleIds.size(), 1);
         assertTrue(registrationDateEqualsCriterionSampleIds.contains(SAMPLE_ID_1));
@@ -376,7 +364,7 @@ public class SampleSearchManagerDBTest
 
         // perm_id attribute
         final SampleSearchCriteria startsWithCriterion = new SampleSearchCriteria();
-        startsWithCriterion.withAnyField().thatStartsWith(PERM_ID_1.substring(0, PERM_ID_1.length() - 2));
+        startsWithCriterion.withAnyField().thatStartsWith(SAMPLE_PERM_ID_1.substring(0, SAMPLE_PERM_ID_1.length() - 2));
         final Set<Long> startsWithCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, startsWithCriterion);
         assertEquals(startsWithCriterionSampleIds.size(), 2);
         assertTrue(startsWithCriterionSampleIds.contains(SAMPLE_ID_1));
@@ -385,7 +373,7 @@ public class SampleSearchManagerDBTest
 
         // code attribute
         final SampleSearchCriteria endsWithCriterion1 = new SampleSearchCriteria();
-        endsWithCriterion1.withAnyField().thatEndsWith(CODE_2.substring(CODE_2.length() - 5));
+        endsWithCriterion1.withAnyField().thatEndsWith(SAMPLE_CODE_2.substring(SAMPLE_CODE_2.length() - 5));
         final Set<Long> endsWithCriterionSampleIds1 = searchManager.searchForIDs(ADMIN_USER_TECH_ID, endsWithCriterion1);
         assertEquals(endsWithCriterionSampleIds1.size(), 1);
         assertFalse(endsWithCriterionSampleIds1.contains(SAMPLE_ID_1));
@@ -405,7 +393,7 @@ public class SampleSearchManagerDBTest
 
         // expe_id
         final SampleSearchCriteria containsCriterion = new SampleSearchCriteria();
-        containsCriterion.withAnyField().thatContains(String.valueOf(EXPERIMENT_ID));
+        containsCriterion.withAnyField().thatContains(String.valueOf(EXPERIMENT_ID_3));
         final Set<Long> containsCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, containsCriterion);
         assertEquals(containsCriterionSampleIds.size(), 1);
         assertFalse(containsCriterionSampleIds.contains(SAMPLE_ID_1));
@@ -480,7 +468,7 @@ public class SampleSearchManagerDBTest
     public void testQueryDBWithId()
     {
         final SampleSearchCriteria permIdCriterion = new SampleSearchCriteria();
-        permIdCriterion.withId().thatEquals(new SamplePermId(PERM_ID_2));
+        permIdCriterion.withId().thatEquals(new SamplePermId(SAMPLE_PERM_ID_2));
         final Set<Long> permIdCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, permIdCriterion);
         assertEquals(permIdCriterionSampleIds.size(), 1);
         assertFalse(permIdCriterionSampleIds.contains(SAMPLE_ID_1));
@@ -488,7 +476,7 @@ public class SampleSearchManagerDBTest
         assertFalse(permIdCriterionSampleIds.contains(SAMPLE_ID_3));
 
         final SampleSearchCriteria identifierCriterion1 = new SampleSearchCriteria();
-        identifierCriterion1.withId().thatEquals(new SampleIdentifier(ID_DELIMITER + CODE_2));
+        identifierCriterion1.withId().thatEquals(new SampleIdentifier(ID_DELIMITER + SAMPLE_CODE_2));
         final Set<Long> identifierCriterion1SampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, identifierCriterion1);
         assertEquals(identifierCriterion1SampleIds.size(), 1);
         assertFalse(identifierCriterion1SampleIds.contains(SAMPLE_ID_1));
@@ -496,7 +484,7 @@ public class SampleSearchManagerDBTest
         assertFalse(identifierCriterion1SampleIds.contains(SAMPLE_ID_3));
 
         final SampleSearchCriteria identifierCriterion2 = new SampleSearchCriteria();
-        identifierCriterion2.withId().thatEquals(new SampleIdentifier(ID_DELIMITER + SPACE_CODE_1 + ID_DELIMITER + CODE_1));
+        identifierCriterion2.withId().thatEquals(new SampleIdentifier(ID_DELIMITER + SPACE_CODE_1 + ID_DELIMITER + SAMPLE_CODE_1));
         final Set<Long> identifierCriterion2SampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, identifierCriterion2);
         assertEquals(identifierCriterion2SampleIds.size(), 1);
         assertTrue(identifierCriterion2SampleIds.contains(SAMPLE_ID_1));
@@ -505,7 +493,7 @@ public class SampleSearchManagerDBTest
 
         final SampleSearchCriteria identifierCriterion3 = new SampleSearchCriteria();
         identifierCriterion3.withId().thatEquals(new SampleIdentifier(ID_DELIMITER + SPACE_CODE_2 + ID_DELIMITER + PROJECT_CODE + ID_DELIMITER +
-                CODE_2));
+                SAMPLE_CODE_2));
         final Set<Long> identifierCriterion3SampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, identifierCriterion3);
         assertEquals(identifierCriterion3SampleIds.size(), 1);
         assertFalse(identifierCriterion3SampleIds.contains(SAMPLE_ID_1));
@@ -514,7 +502,7 @@ public class SampleSearchManagerDBTest
 
         final SampleSearchCriteria identifierCriterion4 = new SampleSearchCriteria();
         identifierCriterion4.withId().thatEquals(new SampleIdentifier(ID_DELIMITER + SPACE_CODE_2 + ID_DELIMITER + PROJECT_CODE + ID_DELIMITER +
-                CODE_1 + CONTAINER_DELIMITER + CODE_2));
+                SAMPLE_CODE_1 + CONTAINER_DELIMITER + SAMPLE_CODE_2));
         final Set<Long> identifierCriterion4SampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, identifierCriterion4);
         assertEquals(identifierCriterion4SampleIds.size(), 1);
         assertFalse(identifierCriterion4SampleIds.contains(SAMPLE_ID_1));
@@ -978,8 +966,8 @@ public class SampleSearchManagerDBTest
     public void testQueryDBWithCompoundFieldCriteria()
     {
         final SampleSearchCriteria compoundAndFieldCriterion = new SampleSearchCriteria();
-        compoundAndFieldCriterion.withAndOperator().withRegistrationDate().thatIsEarlierThanOrEqualTo(REGISTRATION_DATE_2);
-        compoundAndFieldCriterion.withRegistrationDate().thatIsLaterThanOrEqualTo(REGISTRATION_DATE_2);
+        compoundAndFieldCriterion.withAndOperator().withRegistrationDate().thatIsEarlierThanOrEqualTo(SAMPLE_REGISTRATION_DATE_2);
+        compoundAndFieldCriterion.withRegistrationDate().thatIsLaterThanOrEqualTo(SAMPLE_REGISTRATION_DATE_2);
         final Set<Long> compoundAndFieldCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, compoundAndFieldCriterion);
         assertFalse(compoundAndFieldCriterionSampleIds.isEmpty());
         assertFalse(compoundAndFieldCriterionSampleIds.contains(SAMPLE_ID_1));
@@ -987,8 +975,8 @@ public class SampleSearchManagerDBTest
         assertFalse(compoundAndFieldCriterionSampleIds.contains(SAMPLE_ID_3));
 
         final SampleSearchCriteria compoundOrFieldCriterion = new SampleSearchCriteria();
-        compoundOrFieldCriterion.withOrOperator().withRegistrationDate().thatIsEarlierThanOrEqualTo(REGISTRATION_DATE_2);
-        compoundOrFieldCriterion.withRegistrationDate().thatIsLaterThanOrEqualTo(REGISTRATION_DATE_2);
+        compoundOrFieldCriterion.withOrOperator().withRegistrationDate().thatIsEarlierThanOrEqualTo(SAMPLE_REGISTRATION_DATE_2);
+        compoundOrFieldCriterion.withRegistrationDate().thatIsLaterThanOrEqualTo(SAMPLE_REGISTRATION_DATE_2);
         final Set<Long> compoundOrFieldCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, compoundOrFieldCriterion);
         assertFalse(compoundOrFieldCriterionSampleIds.isEmpty());
         assertTrue(compoundOrFieldCriterionSampleIds.contains(SAMPLE_ID_1));
@@ -1029,7 +1017,7 @@ public class SampleSearchManagerDBTest
         assertTrue(compoundOrPropertyCriterionSampleIds.contains(SAMPLE_ID_3));
 
         final SampleSearchCriteria compoundAndPropertyFieldCriterion = new SampleSearchCriteria();
-        compoundAndPropertyFieldCriterion.withAndOperator().withCodes().thatIn(Arrays.asList(CODE_1, CODE_3));
+        compoundAndPropertyFieldCriterion.withAndOperator().withCodes().thatIn(Arrays.asList(SAMPLE_CODE_1, SAMPLE_CODE_3));
         compoundAndPropertyFieldCriterion.withNumberProperty(SAMPLE_PROPERTY_CODE_DOUBLE).thatIsGreaterThan(SAMPLE_PROPERTY_3_NUMBER_VALUE
                 - 0.000001);
         final Set<Long> compoundAndPropertyFieldCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, compoundAndPropertyFieldCriterion);
@@ -1039,7 +1027,7 @@ public class SampleSearchManagerDBTest
         assertTrue(compoundAndPropertyFieldCriterionSampleIds.contains(SAMPLE_ID_3));
 
         final SampleSearchCriteria compoundOrPropertyFieldCriterion = new SampleSearchCriteria();
-        compoundOrPropertyFieldCriterion.withOrOperator().withPermId().thatEquals(PERM_ID_2);
+        compoundOrPropertyFieldCriterion.withOrOperator().withPermId().thatEquals(SAMPLE_PERM_ID_2);
         compoundOrPropertyFieldCriterion.withNumberProperty(SAMPLE_PROPERTY_CODE_LONG).thatEquals(SAMPLE_PROPERTY_1_NUMBER_VALUE);
         final Set<Long> compoundOrPropertyFieldCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, compoundOrPropertyFieldCriterion);
         assertEquals(compoundOrPropertyFieldCriterionSampleIds.size(), 2);
@@ -1213,7 +1201,7 @@ public class SampleSearchManagerDBTest
     public void testQueryDBWithParentCriteria()
     {
         final SampleSearchCriteria parentIdCriterion = new SampleSearchCriteria();
-        parentIdCriterion.withParents().withCode().thatEquals(CODE_1);
+        parentIdCriterion.withParents().withCode().thatEquals(SAMPLE_CODE_1);
         final Set<Long> parentIdCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, parentIdCriterion);
         assertEquals(parentIdCriterionSampleIds.size(), 2);
         assertFalse(parentIdCriterionSampleIds.contains(SAMPLE_ID_1));
@@ -1224,8 +1212,8 @@ public class SampleSearchManagerDBTest
         assertFalse(parentIdCriterionSampleIds.contains(SAMPLE_ID_6));
 
         final SampleSearchCriteria parentOrIdCriterion = new SampleSearchCriteria().withOrOperator();
-        parentOrIdCriterion.withParents().withCode().thatEquals(CODE_1);
-        parentOrIdCriterion.withParents().withCode().thatEquals(CODE_2);
+        parentOrIdCriterion.withParents().withCode().thatEquals(SAMPLE_CODE_1);
+        parentOrIdCriterion.withParents().withCode().thatEquals(SAMPLE_CODE_2);
         final Set<Long> parentOrIdCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, parentOrIdCriterion);
         assertEquals(parentOrIdCriterionSampleIds.size(), 3);
         assertFalse(parentOrIdCriterionSampleIds.contains(SAMPLE_ID_1));
@@ -1236,8 +1224,8 @@ public class SampleSearchManagerDBTest
         assertFalse(parentOrIdCriterionSampleIds.contains(SAMPLE_ID_6));
 
         final SampleSearchCriteria parentAndIdCriterion = new SampleSearchCriteria().withAndOperator();
-        parentAndIdCriterion.withParents().withCode().thatEquals(CODE_1);
-        parentAndIdCriterion.withParents().withCode().thatEquals(CODE_2);
+        parentAndIdCriterion.withParents().withCode().thatEquals(SAMPLE_CODE_1);
+        parentAndIdCriterion.withParents().withCode().thatEquals(SAMPLE_CODE_2);
         final Set<Long> parentAndIdCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, parentAndIdCriterion);
         assertTrue(parentAndIdCriterionSampleIds.isEmpty());
     }
@@ -1249,7 +1237,7 @@ public class SampleSearchManagerDBTest
     public void testQueryDBWithChildCriteria()
     {
         final SampleSearchCriteria childIdCriterion = new SampleSearchCriteria();
-        childIdCriterion.withChildren().withCode().thatEquals(CODE_4);
+        childIdCriterion.withChildren().withCode().thatEquals(SAMPLE_CODE_4);
         final Set<Long> childIdCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, childIdCriterion);
         assertEquals(childIdCriterionSampleIds.size(), 1);
         assertTrue(childIdCriterionSampleIds.contains(SAMPLE_ID_1));
@@ -1260,8 +1248,8 @@ public class SampleSearchManagerDBTest
         assertFalse(childIdCriterionSampleIds.contains(SAMPLE_ID_6));
 
         final SampleSearchCriteria childOrIdCriterion = new SampleSearchCriteria().withOrOperator();
-        childOrIdCriterion.withChildren().withCode().thatEquals(CODE_3);
-        childOrIdCriterion.withChildren().withCode().thatEquals(CODE_4);
+        childOrIdCriterion.withChildren().withCode().thatEquals(SAMPLE_CODE_3);
+        childOrIdCriterion.withChildren().withCode().thatEquals(SAMPLE_CODE_4);
         final Set<Long> childOrIdCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, childOrIdCriterion);
         assertEquals(childOrIdCriterionSampleIds.size(), 2);
         assertTrue(childOrIdCriterionSampleIds.contains(SAMPLE_ID_1));
@@ -1272,8 +1260,8 @@ public class SampleSearchManagerDBTest
         assertFalse(childOrIdCriterionSampleIds.contains(SAMPLE_ID_6));
 
         final SampleSearchCriteria childAndIdCriterion = new SampleSearchCriteria().withAndOperator();
-        childAndIdCriterion.withChildren().withCode().thatEquals(CODE_3);
-        childAndIdCriterion.withChildren().withCode().thatEquals(CODE_4);
+        childAndIdCriterion.withChildren().withCode().thatEquals(SAMPLE_CODE_3);
+        childAndIdCriterion.withChildren().withCode().thatEquals(SAMPLE_CODE_4);
         final Set<Long> childAndIdCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, childAndIdCriterion);
         assertTrue(childAndIdCriterionSampleIds.isEmpty());
     }

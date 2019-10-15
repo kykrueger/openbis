@@ -16,6 +16,7 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -63,9 +64,19 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
     {
         final Class<? extends AbstractCompositeSearchCriteria> parentsSearchCriteriaClass = getParentsSearchCriteriaClass();
         final Class<? extends AbstractCompositeSearchCriteria> childrenSearchCriteriaClass = getChildrenSearchCriteriaClass();
-        final List<ISearchCriteria> parentsCriteria = getCriteria(criteria, parentsSearchCriteriaClass);
-        final List<ISearchCriteria> childrenCriteria = getCriteria(criteria, childrenSearchCriteriaClass);
-        final List<ISearchCriteria> mainCriteria = getOtherCriteriaThan(criteria, parentsSearchCriteriaClass, childrenSearchCriteriaClass);
+        final Collection<ISearchCriteria> parentsCriteria = getCriteria(criteria, parentsSearchCriteriaClass);
+        final Collection<ISearchCriteria> childrenCriteria = getCriteria(criteria, childrenSearchCriteriaClass);
+        final Collection<ISearchCriteria> mainCriteria;
+        if (parentsSearchCriteriaClass != null && childrenSearchCriteriaClass != null)
+        {
+            mainCriteria = getOtherCriteriaThan(criteria, parentsSearchCriteriaClass, childrenSearchCriteriaClass);
+        } else if (parentsSearchCriteriaClass == null && childrenSearchCriteriaClass == null)
+        {
+            mainCriteria = criteria.getCriteria();
+        } else
+        {
+            throw new RuntimeException("Either both or none of parent/child search criteria should be null.");
+        }
         final SearchOperator finalSearchOperator = searchOperator == null ? criteria.getOperator() : searchOperator;
 
         Set<Long> mainCriteriaIntermediateResults = null;
@@ -126,9 +137,9 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
      * @return IDs found from parent/child criteria.
      */
     private Set<Long> findFinalRelationshipIds(final Long userId, final SearchOperator operator,
-            final List<ISearchCriteria> relatedEntitiesCriteria)
+            final Collection<ISearchCriteria> relatedEntitiesCriteria)
     {
-        final List<Set<Long>> relatedIds =  relatedEntitiesCriteria.stream().flatMap(entitySearchCriteria -> {
+        final List<Set<Long>> relatedIds = relatedEntitiesCriteria.stream().flatMap(entitySearchCriteria -> {
             final Set<Long> foundParentIds = doSearchForIDs(userId, (CRITERIA) entitySearchCriteria, operator);
             return foundParentIds.isEmpty() ? Stream.empty() : Stream.of(foundParentIds);
         }).collect(Collectors.toList());
