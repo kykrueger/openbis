@@ -80,6 +80,8 @@ public class SamplesDBTestHelper
 
     public static final long SAMPLE_ID_5= 1005L;
 
+    public static final long SAMPLE_ID_6= 1006L;
+
     public static final long SPACE_ID_1 = 10000L;
 
     public static final long SPACE_ID_2 = 10001L;
@@ -174,6 +176,12 @@ public class SamplesDBTestHelper
 
     public static final String PERM_ID_3 = "20190612105000000-1003";
 
+    public static final String PERM_ID_4 = "20191014130100000-2004";
+
+    public static final String PERM_ID_5 = "20191014130100000-2005";
+
+    public static final String PERM_ID_6 = "20191014130100000-2006";
+
     public static final String DEFAULT_CODE = "DEFAULT_UNIQUE_CODE";
 
     public static final String PROJECT_CODE = "PROJECT_CODE";
@@ -191,6 +199,8 @@ public class SamplesDBTestHelper
     public static final String CODE_4 = "ANOTHER_UNIQUE_CODE_4";
 
     public static final String CODE_5 = "ANOTHER_UNIQUE_CODE_5";
+
+    public static final String CODE_6 = "ANOTHER_UNIQUE_CODE_6";
 
     public static final int DEFAULT_VERSION = 10;
 

@@ -69,6 +69,7 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.Samples
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.SAMPLE_ID_3;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.SAMPLE_ID_4;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.SAMPLE_ID_5;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.SAMPLE_ID_6;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.SAMPLE_PROPERTY_1_INTERNAL_STRING_VALUE;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.SAMPLE_PROPERTY_1_NUMBER_VALUE;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.SAMPLE_PROPERTY_2_DATE_STRING_VALUE;
@@ -356,12 +357,13 @@ public class SampleSearchManagerDBTest
         final SampleSearchCriteria projectIdEqualsCriterion = new SampleSearchCriteria();
         projectIdEqualsCriterion.withAnyField().thatEquals(String.valueOf(PROJECT_ID));
         final Set<Long> projectIdEqualsCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, projectIdEqualsCriterion);
-        assertEquals(projectIdEqualsCriterionSampleIds.size(), 4);
+        assertEquals(projectIdEqualsCriterionSampleIds.size(), 5);
         assertFalse(projectIdEqualsCriterionSampleIds.contains(SAMPLE_ID_1));
         assertTrue(projectIdEqualsCriterionSampleIds.contains(SAMPLE_ID_2));
         assertTrue(projectIdEqualsCriterionSampleIds.contains(SAMPLE_ID_3));
         assertTrue(projectIdEqualsCriterionSampleIds.contains(SAMPLE_ID_4));
         assertTrue(projectIdEqualsCriterionSampleIds.contains(SAMPLE_ID_5));
+        assertTrue(projectIdEqualsCriterionSampleIds.contains(SAMPLE_ID_6));
 
         // project_id attribute
         final SampleSearchCriteria registrationDateEqualsCriterion = new SampleSearchCriteria();
@@ -1219,6 +1221,7 @@ public class SampleSearchManagerDBTest
         assertFalse(parentIdCriterionSampleIds.contains(SAMPLE_ID_3));
         assertTrue(parentIdCriterionSampleIds.contains(SAMPLE_ID_4));
         assertTrue(parentIdCriterionSampleIds.contains(SAMPLE_ID_5));
+        assertFalse(parentIdCriterionSampleIds.contains(SAMPLE_ID_6));
 
         final SampleSearchCriteria parentOrIdCriterion = new SampleSearchCriteria().withOrOperator();
         parentOrIdCriterion.withParents().withCode().thatEquals(CODE_1);
@@ -1230,6 +1233,7 @@ public class SampleSearchManagerDBTest
         assertTrue(parentOrIdCriterionSampleIds.contains(SAMPLE_ID_3));
         assertTrue(parentOrIdCriterionSampleIds.contains(SAMPLE_ID_4));
         assertTrue(parentOrIdCriterionSampleIds.contains(SAMPLE_ID_5));
+        assertFalse(parentOrIdCriterionSampleIds.contains(SAMPLE_ID_6));
 
         final SampleSearchCriteria parentAndIdCriterion = new SampleSearchCriteria().withAndOperator();
         parentAndIdCriterion.withParents().withCode().thatEquals(CODE_1);
@@ -1253,6 +1257,7 @@ public class SampleSearchManagerDBTest
         assertFalse(childIdCriterionSampleIds.contains(SAMPLE_ID_3));
         assertFalse(childIdCriterionSampleIds.contains(SAMPLE_ID_4));
         assertFalse(childIdCriterionSampleIds.contains(SAMPLE_ID_5));
+        assertFalse(childIdCriterionSampleIds.contains(SAMPLE_ID_6));
 
         final SampleSearchCriteria childOrIdCriterion = new SampleSearchCriteria().withOrOperator();
         childOrIdCriterion.withChildren().withCode().thatEquals(CODE_3);
@@ -1264,6 +1269,7 @@ public class SampleSearchManagerDBTest
         assertFalse(childOrIdCriterionSampleIds.contains(SAMPLE_ID_3));
         assertFalse(childOrIdCriterionSampleIds.contains(SAMPLE_ID_4));
         assertFalse(childOrIdCriterionSampleIds.contains(SAMPLE_ID_5));
+        assertFalse(childOrIdCriterionSampleIds.contains(SAMPLE_ID_6));
 
         final SampleSearchCriteria childAndIdCriterion = new SampleSearchCriteria().withAndOperator();
         childAndIdCriterion.withChildren().withCode().thatEquals(CODE_3);

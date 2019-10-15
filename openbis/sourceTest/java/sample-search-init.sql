@@ -41,6 +41,9 @@ VALUES (1004, null, false, 'ANOTHER_UNIQUE_CODE_4', null, false, '20191014130100
 INSERT INTO samples_all(id, orig_del, frozen_for_children, code, expe_id, proj_frozen, perm_id, del_id, frozen, saty_id, frozen_for_data, samp_id_part_of, version, proj_id, space_frozen, frozen_for_comp, frozen_for_parents, expe_frozen, pers_id_modifier, modification_timestamp, pers_id_registerer, space_id, cont_frozen)
 VALUES (1005, null, false, 'ANOTHER_UNIQUE_CODE_5', null, false, '20191014130100000-2005', null, false, 1, false, null, 105, 10002, false, false, false, false, null, TIMESTAMP '2018-06-13 10:50:00+02', 1, null, false);
 
+INSERT INTO samples_all(id, orig_del, frozen_for_children, code, expe_id, proj_frozen, perm_id, del_id, frozen, saty_id, frozen_for_data, samp_id_part_of, version, proj_id, space_frozen, frozen_for_comp, frozen_for_parents, expe_frozen, pers_id_modifier, modification_timestamp, pers_id_registerer, space_id, cont_frozen)
+VALUES (1006, null, false, 'ANOTHER_UNIQUE_CODE_6', null, false, '20191014130100000-2006', null, false, 1, false, null, 105, 10002, false, false, false, false, null, TIMESTAMP '2018-06-13 10:50:00+02', 1, null, false);
+
 -- Tables related to samples
 
 INSERT INTO sample_types(code, id)

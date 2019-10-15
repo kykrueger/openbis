@@ -89,6 +89,9 @@ WHERE id=3102;
 -- Samples
 
 DELETE FROM samples_all
+WHERE id=1006;
+
+DELETE FROM samples_all
 WHERE id=1005;
 
 DELETE FROM samples_all
