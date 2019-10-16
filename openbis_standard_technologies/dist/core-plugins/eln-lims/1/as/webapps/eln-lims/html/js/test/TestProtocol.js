@@ -56,7 +56,6 @@ var TestProtocol = new function () {
 
         for (let i = 0, chain = Promise.resolve(); i < ids.length; i++) {
             chain = chain.then(function() {
-                console.log(ids[i]);
                 return api.waitForId(ids[i]);
             }).catch(error => { alert(error);});
         }
@@ -65,9 +64,24 @@ var TestProtocol = new function () {
     this.enableBacteriaToShowInDropDowns = function() {
         var api = EventUtil;
 
-        api.waitForId("SETTINGS")
-            .then(function() {
-                api.click("SETTINGS");
+        api.waitForId("SETTINGS").then(function() {
+            api.click("SETTINGS");
+            api.waitForId("settingsDropdown").then(function() {
+                api.change("settingsDropdown", "/ELN_SETTINGS/GENERAL_ELN_SETTINGS");
+                api.waitForId("edit-btn").then(function() {
+                    api.click("edit-btn");
+                    // we wait for the save-button, cause page contains settings-section-sample type-BACTERIA
+                    // even when page can't be edit. So we wait when page be reloaded.
+                    api.waitForId("save-btn").then(function() {
+                        api.click("settings-section-sampletype-BACTERIA");
+
+                        api.waitForId("BACTERIA_show_in_drop_downs").then(function() {
+                            api.checked("BACTERIA_show_in_drop_downs", true);
+                            api.click("save-btn");
+                        });
+                    });
+                });
+            });
             })
             .catch(error => { alert(error);});
         }

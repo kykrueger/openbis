@@ -56,7 +56,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 				//Edit
 				var $editButton = FormUtil.getButtonWithIcon("glyphicon-edit", function () {
 					mainController.changeView("showEditSettingsPage", _this._settingsFormModel.settingsSample.identifier);
-				});
+				}, null, null, "edit-btn");
 				toolbarModel.push({ component : $editButton, tooltip: "Edit" });
 			} else { //Create and Edit
 				//Save
@@ -66,7 +66,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 				        widgetSettings = this._customWidgetsTableModel.getValues();
 				    }
 					this._settingsFormController.save(this._getSettings(), widgetSettings);
-				}).bind(this), "Save");
+				}).bind(this), "Save", null, "save-btn");
 				$saveBtn.removeClass("btn-default");
 				$saveBtn.addClass("btn-primary");
 				toolbarModel.push({ component : $saveBtn, tooltip: "Save" });
@@ -434,7 +434,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 			// Checkboxes for miscellaneous options
 			// isProtocol
 			// isStorage
-			var miscellaneousSettingsTableModel = this._getSampleTypesDefinitionMiscellaneousSettingsTableModel(sampleTypeSettings);
+			var miscellaneousSettingsTableModel = this._getSampleTypesDefinitionMiscellaneousSettingsTableModel(sampleType.code, sampleTypeSettings);
 			var miscellaneousSettingsTable = this._getTable(miscellaneousSettingsTableModel);
 			miscellaneousSettingsTable.css( { "margin-left" : "30px" } );
 			$sampleTypeFieldset.append(miscellaneousSettingsTable);
@@ -496,7 +496,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 		return tableModel;
 	}
 
-	this._getSampleTypesDefinitionMiscellaneousSettingsTableModel = function(sampleTypeSettings) {
+	this._getSampleTypesDefinitionMiscellaneousSettingsTableModel = function(code, sampleTypeSettings) {
 		var tableModel = this._getTableModel();
 		tableModel.fullWidth = false;
 		// define columns
@@ -513,6 +513,9 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 				if (rowData.enabled) {
 					$checkbox.attr("checked", true);
 				}
+				if (rowData.id) {
+                    $checkbox.attr("id", rowData.id);
+                }
 				return $checkbox;
 			}
 		};
@@ -528,7 +531,8 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 			});
 			tableModel.addRow({
 				name : "Show in drop downs",
-				enabled : sampleTypeSettings["SHOW"]
+				enabled : sampleTypeSettings["SHOW"],
+				id : code + "_show_in_drop_downs"
 			});
 			tableModel.addRow({
                 name : "Show in main menu",
