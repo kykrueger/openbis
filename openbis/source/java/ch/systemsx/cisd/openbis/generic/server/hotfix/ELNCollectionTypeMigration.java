@@ -204,14 +204,14 @@ public class ELNCollectionTypeMigration {
                         BigInteger oldAssignment = experiment_prty_id_2_etpt_id.get(propertyTechId);
                         BigInteger newAssignment = collection_prty_id_2_etpt_id.get(propertyTechId);
                         final String UPDATE_PROPERTY_ASSIGNMENT = "UPDATE experiment_properties SET etpt_id = :new_etpt_id WHERE etpt_id = :old_etpt_id";
-                        System.out.println("Swap for " + propertyTechId + " : " + oldAssignment + "<>" + newAssignment);
+                        System.out.println("ELNCollectionTypeMigration - Swap for property tech id : " + propertyTechId + " : " + oldAssignment + " <> " + newAssignment);
                         executeUpdate(UPDATE_PROPERTY_ASSIGNMENT, "old_etpt_id", oldAssignment, "new_etpt_id", newAssignment);
                     }
 
                     // Update type
                     final String UPDATE_TYPE = "UPDATE experiments_all SET exty_id = :exty_id WHERE code = :code";
                     executeUpdate(UPDATE_TYPE, "exty_id", collectionTypeTechId, "code", experimentCode);
-                    System.out.println("Update for " + experimentCode + " : exty_id : " + collectionTypeTechId);
+                    System.out.println("ELNCollectionTypeMigration -  Update for : " + experimentCode + " : exty_id : " + collectionTypeTechId);
 
                 }
             }
