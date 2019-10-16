@@ -4,7 +4,7 @@ from parsers import SpaceDefinitionToCreationType, ProjectDefinitionToCreationTy
     CreationToUpdateParser
 from .version_handler import VersionHandler
 
-from utils.openbis_utils import create_sample_identifier_string
+from utils.openbis_utils import create_sample_identifier_string, create_project_identifier_string
 
 FAIL_IF_EXISTS = "FAIL_IF_EXISTS"
 IGNORE_EXISTING = "IGNORE_EXISTING"
@@ -133,11 +133,19 @@ class OpenbisDuplicatesHandler(object):
                 if creations_type == SampleDefinitionToCreationType:
                     existing_object_codes = [obj.identifier.identifier for obj in existing_elements]
                     duplicates_list[creations_type] = list(filter(
-                        lambda creation: creation.code is not None or create_sample_identifier_string(
+                        lambda creation: creation.code is not None and create_sample_identifier_string(
                             creation) in existing_object_codes, self.creations[creations_type]))
                     self.creations[creations_type] = list(filter(
                         lambda creation: creation.code is None or create_sample_identifier_string(
                             creation) not in existing_object_codes, self.creations[creations_type]))
+                if creations_type == ProjectDefinitionToCreationType:
+                    existing_object_codes = [str(obj.identifier) for obj in existing_elements]
+                    duplicates_list[creations_type] = list(
+                        filter(lambda creation: create_project_identifier_string(creation) in existing_object_codes,
+                               self.creations[creations_type]))
+                    self.creations[creations_type] = list(
+                        filter(lambda creation: create_project_identifier_string(creation) not in existing_object_codes,
+                               self.creations[creations_type]))
                 else:
                     distinct_property_name = self._get_distinct_property_name(creations_type)
                     duplicates_list[creations_type] = self.get_creations_for_existing_objects(creations_type,
