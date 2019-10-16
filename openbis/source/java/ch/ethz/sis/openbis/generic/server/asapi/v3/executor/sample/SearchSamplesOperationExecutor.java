@@ -72,6 +72,7 @@ public class SearchSamplesOperationExecutor extends SearchObjectsOperationExecut
         return translator;
     }
 
+    @Override
     protected ISearchManager<SampleSearchCriteria, Long> getSearchManager()
     {
         return sampleSearchManager;

@@ -30,6 +30,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchObjectsOpera
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchObjectsOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.experiment.SearchExperimentsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.sample.SearchSamplesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sort.ISortAndPage;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
@@ -39,8 +40,8 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.TranslationContext
 /**
  * @author pkupczyk
  */
-public abstract class SearchObjectsOperationExecutor<OBJECT, OBJECT_PE, CRITERIA extends AbstractSearchCriteria, FETCH_OPTIONS extends FetchOptions<OBJECT>>
-        extends AbstractSearchObjectsOperationExecutor<OBJECT, OBJECT_PE, CRITERIA, FETCH_OPTIONS>
+public abstract class SearchObjectsOperationExecutor<OBJECT, OBJECT_PE, CRITERIA extends AbstractSearchCriteria,
+        FETCH_OPTIONS extends FetchOptions<OBJECT>> extends AbstractSearchObjectsOperationExecutor<OBJECT, OBJECT_PE, CRITERIA, FETCH_OPTIONS>
 {
 
     protected abstract ISearchObjectExecutor<CRITERIA, OBJECT_PE> getExecutor();
@@ -66,7 +67,7 @@ public abstract class SearchObjectsOperationExecutor<OBJECT, OBJECT_PE, CRITERIA
             final SearchObjectsOperation<CRITERIA, FETCH_OPTIONS> operation)
     {
         // TODO: remove this hack when all implementations of this executor implement getSearchManager() which is not throwing an exception
-        if (!(this instanceof SearchSamplesOperationExecutor))
+        if (!(this instanceof SearchSamplesOperationExecutor || this instanceof SearchExperimentsOperationExecutor))
         {
             return super.doExecute(context, operation);
         }
@@ -102,9 +103,7 @@ public abstract class SearchObjectsOperationExecutor<OBJECT, OBJECT_PE, CRITERIA
         final List<Long> sortedAndPagedResults = (List<Long>) sortAndPage.sortAndPage(filteredResults, criteria, fetchOptions);
         final List<OBJECT_PE> objectPEResults = getSearchManager().translate(sortedAndPagedResults);
         final Map<OBJECT_PE, OBJECT> translatedMap = doTranslate(translationContext, objectPEResults, fetchOptions);
-
         final List<OBJECT> finalResults = objectPEResults.stream().map(translatedMap::get).collect(Collectors.toList());
-
         final SearchResult<OBJECT> searchResult = new SearchResult<>(finalResults, allResultsIds.size());
         return getOperationResult(searchResult);
     }

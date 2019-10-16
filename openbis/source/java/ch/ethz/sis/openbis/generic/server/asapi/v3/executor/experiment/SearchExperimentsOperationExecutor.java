@@ -26,6 +26,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.SearchExperime
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.SearchExperimentsOperationResult;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.ISearchObjectExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.SearchObjectsOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ExperimentSearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.ITranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.experiment.IExperimentTranslator;
@@ -46,6 +47,9 @@ public class SearchExperimentsOperationExecutor
 
     @Autowired
     private IExperimentTranslator translator;
+
+    @Autowired
+    private ExperimentSearchManager experimentSearchManager;
 
     @Override
     protected Class<? extends SearchObjectsOperation<ExperimentSearchCriteria, ExperimentFetchOptions>> getOperationClass()
@@ -68,7 +72,7 @@ public class SearchExperimentsOperationExecutor
     @Override
     protected ISearchManager<ExperimentSearchCriteria, Long> getSearchManager()
     {
-        throw new RuntimeException("This method is not implemented yet.");
+        return experimentSearchManager;
     }
 
     @Override
