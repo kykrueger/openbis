@@ -63,6 +63,7 @@ public class IdSearchCriteriaTranslator extends AbstractConditionTranslator<IdSe
         final Object entityId = criterion.getId();
 
         if (entityId instanceof ObjectIdentifier) {
+            // Even though FullSampleIdentifier contains 'Sample' in its name, it may be used for Experiment identifiers.
             final FullSampleIdentifier fullObjectIdentifier = new FullSampleIdentifier(((ObjectIdentifier) entityId).getIdentifier(), null);
             final String objectCode = fullObjectIdentifier.getSampleCode();
             final SampleIdentifierParts identifierParts = fullObjectIdentifier.getParts();

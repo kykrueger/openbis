@@ -34,7 +34,7 @@ VALUES (10004, 'DEFAULT_UNIQUE_CODE', TIMESTAMP '2019-06-10 10:50:00+02', null, 
 
 INSERT INTO experiments_all(id, perm_id, orig_del, code, exty_id, del_id, proj_id, pers_id_registerer, pers_id_modifier, registration_timestamp,
         modification_timestamp)
-VALUES (1001, '20191015134000000-1001', null, 'UNIQUE_EXPERIMENT_CODE_1', 10004, null, 10001, 2, null, TIMESTAMP '2019-07-11 10:50:00+02',
+VALUES (1001, '20191015134000000-1001', null, 'UNIQUE_EXPERIMENT_CODE_1', 10004, null, 10001, 2, 2, TIMESTAMP '2019-07-11 10:50:00+02',
         TIMESTAMP '2018-07-11 10:50:00+02');
 
 INSERT INTO experiments_all(id, perm_id, orig_del, code, exty_id, del_id, proj_id, pers_id_registerer, pers_id_modifier, registration_timestamp,
@@ -43,7 +43,7 @@ VALUES (1002, '20191015134000001-1001', null, 'EXPERIMENT_CODE_2', 10004, null, 
         TIMESTAMP '2018-07-12 10:50:00+02');
 
 INSERT INTO experiments_all(id, perm_id, orig_del, code, exty_id, del_id, proj_id, pers_id_registerer, pers_id_modifier)
-VALUES (1003, '20191015134000000-1003', null, 'EXPERIMENT_CODE_3', 10004, null, 10001, 102, null);
+VALUES (1003, '20191015134000000-1003', null, 'EXPERIMENT_CODE_3', 10004, null, 10001, 102, 102);
 
 -- Samples
 
