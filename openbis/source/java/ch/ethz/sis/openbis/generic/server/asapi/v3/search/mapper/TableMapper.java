@@ -98,11 +98,9 @@ public enum TableMapper
             EXPERIMENT_TYPE_PROPERTY_TYPE_TABLE, EXPERIMENT_TYPE_COLUMN, PROPERTY_TYPE_COLUMN, EXPERIMENT_PROPERTIES_TABLE, EXPERIMENT_COLUMN,
             EXPERIMENT_TYPE_PROPERTY_TYPE_COLUMN, null, null, null, DATA_ALL_TABLE, EXPERIMENT_COLUMN),
 
-    EXPERIMENT_TYPE(EXPERIMENT_TYPES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null,
-            null, null, null),
+    EXPERIMENT_TYPE(EXPERIMENT_TYPES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
 
-    PERSON(PERSONS_TABLE, null, null, null, null, null, null, null, null, null, null, null, null,
-            null, null, null);
+    PERSON(PERSONS_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
 
     static
     {

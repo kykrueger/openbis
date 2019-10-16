@@ -358,10 +358,10 @@ public class ExperimentSearchManagerDBTest
         final ExperimentSearchCriteria endsWithCriterion2 = new ExperimentSearchCriteria();
         endsWithCriterion2.withAnyField().thatEndsWith(String.valueOf(EXPERIMENT_ID_1));
         final Set<Long> endsWithCriterionSampleIds2 = searchManager.searchForIDs(ADMIN_USER_TECH_ID, endsWithCriterion2);
-        assertEquals(endsWithCriterionSampleIds2.size(), 2);
+        assertEquals(endsWithCriterionSampleIds2.size(), 3);
         assertTrue(endsWithCriterionSampleIds2.contains(EXPERIMENT_ID_1));
         assertTrue(endsWithCriterionSampleIds2.contains(EXPERIMENT_ID_2));
-        assertFalse(endsWithCriterionSampleIds2.contains(EXPERIMENT_ID_3));
+        assertTrue(endsWithCriterionSampleIds2.contains(EXPERIMENT_ID_3));
 
         // expe_id
         final ExperimentSearchCriteria containsCriterion = new ExperimentSearchCriteria();

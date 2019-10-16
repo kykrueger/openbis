@@ -28,22 +28,31 @@ VALUES (10002, TIMESTAMP '2019-06-10 10:50:00+02', 'PROJECT_CODE_2', '2019030115
 -- Experiment types
 
 INSERT INTO experiment_types(id, code, modification_timestamp, validation_script_id, description)
-VALUES (10004, 'DEFAULT_UNIQUE_CODE', TIMESTAMP '2019-06-10 10:50:00+02', null, null);
+VALUES (1001, 'DEFAULT_UNIQUE_CODE', TIMESTAMP '2019-06-10 10:50:00+02', null, null);
+
+INSERT INTO experiment_types(id, code, modification_timestamp, validation_script_id, description)
+VALUES (1002, 'EXPERIMENT.TYPE.2', TIMESTAMP '2019-06-10 10:50:00+02', null, null);
+
+INSERT INTO experiment_types(id, code, modification_timestamp, validation_script_id, description)
+VALUES (1003, 'EXPERIMENT.TYPE.3', TIMESTAMP '2019-06-10 10:50:00+02', null, null);
+
+INSERT INTO experiment_types(id, code, modification_timestamp, validation_script_id, description)
+VALUES (1004, 'EXPERIMENT.TYPE.4', TIMESTAMP '2019-06-10 10:50:00+02', null, null);
 
 -- Experiments
 
 INSERT INTO experiments_all(id, perm_id, orig_del, code, exty_id, del_id, proj_id, pers_id_registerer, pers_id_modifier, registration_timestamp,
         modification_timestamp)
-VALUES (1001, '20191015134000000-1001', null, 'UNIQUE_EXPERIMENT_CODE_1', 10004, null, 10001, 2, 2, TIMESTAMP '2019-07-11 10:50:00+02',
+VALUES (1001, '20191015134000000-1001', null, 'UNIQUE_EXPERIMENT_CODE_1', 1001, null, 10001, 2, 2, TIMESTAMP '2019-07-11 10:50:00+02',
         TIMESTAMP '2018-07-11 10:50:00+02');
 
 INSERT INTO experiments_all(id, perm_id, orig_del, code, exty_id, del_id, proj_id, pers_id_registerer, pers_id_modifier, registration_timestamp,
         modification_timestamp)
-VALUES (1002, '20191015134000001-1001', null, 'EXPERIMENT_CODE_2', 10004, null, 10002, 101, null, TIMESTAMP '2019-07-12 10:50:00+02',
+VALUES (1002, '20191015134000001-1001', null, 'EXPERIMENT_CODE_2', 1001, null, 10002, 101, null, TIMESTAMP '2019-07-12 10:50:00+02',
         TIMESTAMP '2018-07-12 10:50:00+02');
 
 INSERT INTO experiments_all(id, perm_id, orig_del, code, exty_id, del_id, proj_id, pers_id_registerer, pers_id_modifier)
-VALUES (1003, '20191015134000000-1003', null, 'EXPERIMENT_CODE_3', 10004, null, 10001, 102, 102);
+VALUES (1003, '20191015134000000-1003', null, 'EXPERIMENT_CODE_3', 1001, null, 10001, 102, 102);
 
 -- Samples
 

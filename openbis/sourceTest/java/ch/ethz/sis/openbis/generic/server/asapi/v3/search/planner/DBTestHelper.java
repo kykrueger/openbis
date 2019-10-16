@@ -208,6 +208,22 @@ public class DBTestHelper
 
     public static final String EXPERIMENT_MODIFICATION_DATE_STRING_2 = "2018-07-12 10:50:00 +0200";
 
+    public static final long EXPERIMENT_TYPE_ID_1 = 1001L;
+
+    public static final long EXPERIMENT_TYPE_ID_2 = 1002L;
+
+    public static final long EXPERIMENT_TYPE_ID_3 = 1003L;
+
+    public static final long EXPERIMENT_TYPE_ID_4 = 1004L;
+
+    public static final String EXPERIMENT_TYPE_CODE_1 = "DEFAULT_UNIQUE_CODE";
+
+    public static final String EXPERIMENT_TYPE_CODE_2 = "EXPERIMENT.TYPE.2";
+
+    public static final String EXPERIMENT_TYPE_CODE_3 = "EXPERIMENT.TYPE.3";
+
+    public static final String EXPERIMENT_TYPE_CODE_4 = "EXPERIMENT.TYPE.4";
+
     private JDBCSQLExecutor sqlExecutor;
 
     private Connection connection;

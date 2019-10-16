@@ -231,6 +231,13 @@
 		<constructor-arg ref="identity-translator"/>
 	</bean>
 
+	<bean id="experiment-type-search-manager" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ExperimentTypeSearchManager"
+          lazy-init="true">
+		<constructor-arg ref="postgres-search-dao"/>
+		<constructor-arg ref="information-provider-dao"/>
+		<constructor-arg ref="identity-translator"/>
+	</bean>
+
 	<bean id="sample-type-search-manager" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SampleTypeSearchManager" lazy-init="true">
 		<constructor-arg ref="postgres-search-dao"/>
 		<constructor-arg ref="information-provider-dao"/>

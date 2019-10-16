@@ -120,7 +120,16 @@ WHERE id=1003;
 -- Experiment types
 
 DELETE FROM experiment_types
-WHERE id=10004;
+WHERE id=1001;
+
+DELETE FROM experiment_types
+WHERE id=1002;
+
+DELETE FROM experiment_types
+WHERE id=1003;
+
+DELETE FROM experiment_types
+WHERE id=1004;
 
 -- Projects
 

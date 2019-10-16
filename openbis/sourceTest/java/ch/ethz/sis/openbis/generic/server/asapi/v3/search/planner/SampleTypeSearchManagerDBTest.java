@@ -19,9 +19,6 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 import java.util.Set;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleTypeSearchCriteria;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.PostgresSearchDAO;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.testng.annotations.AfterClass;
@@ -48,12 +45,6 @@ public class SampleTypeSearchManagerDBTest
 
     private DBTestHelper dbTestHelper = context.getBean(DBTestHelper.class);
 
-    private PostgresSearchDAO searchDAO;
-
-    private ISQLAuthorisationInformationProviderDAO authInfoProviderDAO;
-
-    private IID2PETranslator<Long> iid2PETranslator;
-
     private SampleTypeSearchManager searchManager;
 
     public SampleTypeSearchManagerDBTest() throws ClassNotFoundException
@@ -64,10 +55,7 @@ public class SampleTypeSearchManagerDBTest
     @BeforeClass
     public void setUpClass() throws Exception
     {
-        searchDAO = context.getBean(PostgresSearchDAO.class);
-        authInfoProviderDAO = context.getBean(ISQLAuthorisationInformationProviderDAO.class);
-        iid2PETranslator = context.getBean("identity-translator", IID2PETranslator.class);
-        searchManager = new SampleTypeSearchManager(searchDAO, authInfoProviderDAO, iid2PETranslator);
+        searchManager = context.getBean("sample-type-search-manager", SampleTypeSearchManager.class);
     }
 
     @AfterClass
