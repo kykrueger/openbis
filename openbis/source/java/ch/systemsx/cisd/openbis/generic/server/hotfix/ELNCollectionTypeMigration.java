@@ -53,9 +53,7 @@ public class ELNCollectionTypeMigration {
         "RNA_COLLECTION",
         "PCR_PROTOCOLS",
         "WESTERN_BLOTTING_PROTOCOLS",
-        "PLANT_COLLECTION",
-            // FOR TESTING
-        "ASDF"
+        "PLANT_COLLECTION"
     };
 
     private static Set<ExperimentType> getExperimentTypes(String[] experimentCodes) {
