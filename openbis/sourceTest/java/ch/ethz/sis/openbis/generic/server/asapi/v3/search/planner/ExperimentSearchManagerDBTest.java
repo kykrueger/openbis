@@ -22,6 +22,7 @@ import java.util.Set;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AnyFieldSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ModificationDateSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.RegistrationDateSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria;
 import org.springframework.context.support.AbstractApplicationContext;
@@ -31,6 +32,7 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.ADMIN_USER_ID;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.ADMIN_USER_TECH_ID;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.EXPERIMENT_CODE_1;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.EXPERIMENT_CODE_2;
@@ -45,7 +47,15 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestH
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.EXPERIMENT_REGISTRATION_DATE_2;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.EXPERIMENT_REGISTRATION_DATE_STRING_1;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.EXPERIMENT_REGISTRATION_DATE_STRING_2;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.ID_DELIMITER;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.PROJECT_CODE_2;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.PROJECT_ID_2;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.REGISTRATOR_EMAIL;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.REGISTRATOR_FIRST_NAME;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.REGISTRATOR_ID;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.REGISTRATOR_LAST_NAME;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.REGISTRATOR_USER_ID;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SPACE_CODE_1;
 import static junit.framework.Assert.assertFalse;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
@@ -307,10 +317,10 @@ public class ExperimentSearchManagerDBTest
         final ExperimentSearchCriteria projectIdEqualsCriterion = new ExperimentSearchCriteria();
         projectIdEqualsCriterion.withAnyField().thatEquals(String.valueOf(PROJECT_ID_2));
         final Set<Long> projectIdEqualsCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, projectIdEqualsCriterion);
-        assertEquals(projectIdEqualsCriterionSampleIds.size(), 2);
+        assertEquals(projectIdEqualsCriterionSampleIds.size(), 1);
         assertFalse(projectIdEqualsCriterionSampleIds.contains(EXPERIMENT_ID_1));
         assertTrue(projectIdEqualsCriterionSampleIds.contains(EXPERIMENT_ID_2));
-        assertTrue(projectIdEqualsCriterionSampleIds.contains(EXPERIMENT_ID_3));
+        assertFalse(projectIdEqualsCriterionSampleIds.contains(EXPERIMENT_ID_3));
 
         // project_id attribute
         final ExperimentSearchCriteria registrationDateEqualsCriterion = new ExperimentSearchCriteria();
@@ -359,7 +369,7 @@ public class ExperimentSearchManagerDBTest
     }
 
     /**
-     * Tests {@link SampleSearchManager} with ID search criteria using DB connection.
+     * Tests {@link ExperimentSearchManager} with ID search criteria using DB connection.
      */
     @Test
     public void testQueryDBWithId()
@@ -371,6 +381,94 @@ public class ExperimentSearchManagerDBTest
         assertFalse(permIdCriterionSampleIds.contains(EXPERIMENT_ID_1));
         assertTrue(permIdCriterionSampleIds.contains(EXPERIMENT_ID_2));
         assertFalse(permIdCriterionSampleIds.contains(EXPERIMENT_ID_3));
+
+        final ExperimentSearchCriteria identifierCriterion3 = new ExperimentSearchCriteria();
+        identifierCriterion3.withId().thatEquals(new ExperimentIdentifier(ID_DELIMITER + SPACE_CODE_1 + ID_DELIMITER + PROJECT_CODE_2 + ID_DELIMITER +
+                EXPERIMENT_CODE_2));
+        final Set<Long> identifierCriterion3SampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, identifierCriterion3);
+        assertEquals(identifierCriterion3SampleIds.size(), 1);
+        assertFalse(identifierCriterion3SampleIds.contains(EXPERIMENT_ID_1));
+        assertTrue(identifierCriterion3SampleIds.contains(EXPERIMENT_ID_2));
+        assertFalse(identifierCriterion3SampleIds.contains(EXPERIMENT_ID_3));
+    }
+
+    /**
+     * Tests {@link ExperimentSearchManager} with registrator field criteria using DB connection.
+     */
+    @Test
+    public void testQueryDBWithRegistratorCriteria()
+    {
+        // Any registrator search
+        // This is a trivial search since registrator is a mandatory field, so the result set will contain all records
+        final ExperimentSearchCriteria emptyCriterion = new ExperimentSearchCriteria();
+        emptyCriterion.withRegistrator();
+        final Set<Long> emptyCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, emptyCriterion);
+        assertFalse(emptyCriterionSampleIds.isEmpty());
+
+        // By ID
+        final ExperimentSearchCriteria idCriterion = new ExperimentSearchCriteria();
+        idCriterion.withRegistrator().withUserId().thatEquals(String.valueOf(REGISTRATOR_ID));
+        final Set<Long> idCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, idCriterion);
+        assertEquals(idCriterionSampleIds.size(), 1);
+        assertFalse(idCriterionSampleIds.contains(EXPERIMENT_ID_1));
+        assertTrue(idCriterionSampleIds.contains(EXPERIMENT_ID_2));
+        assertFalse(idCriterionSampleIds.contains(EXPERIMENT_ID_3));
+
+        final ExperimentSearchCriteria notExistingIdCriterion = new ExperimentSearchCriteria();
+        notExistingIdCriterion.withRegistrator().withUserId().thatEquals("-");
+        final Set<Long> notExistingIdCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, notExistingIdCriterion);
+        assertTrue(notExistingIdCriterionSampleIds.isEmpty());
+
+        // By IDs
+        final ExperimentSearchCriteria idsCriterion = new ExperimentSearchCriteria();
+        idsCriterion.withRegistrator().withUserIds().thatIn(Arrays.asList(REGISTRATOR_USER_ID, ADMIN_USER_ID));
+        final Set<Long> idsCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, idsCriterion);
+        assertEquals(idsCriterionSampleIds.size(), 2);
+        assertTrue(idsCriterionSampleIds.contains(EXPERIMENT_ID_1));
+        assertTrue(idsCriterionSampleIds.contains(EXPERIMENT_ID_2));
+        assertFalse(idsCriterionSampleIds.contains(EXPERIMENT_ID_3));
+
+        // By First Name
+        final ExperimentSearchCriteria firstNameCriterion = new ExperimentSearchCriteria();
+        firstNameCriterion.withRegistrator().withFirstName().thatEquals(REGISTRATOR_FIRST_NAME);
+        final Set<Long> firstNameCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, firstNameCriterion);
+        assertEquals(firstNameCriterionSampleIds.size(), 1);
+        assertFalse(firstNameCriterionSampleIds.contains(EXPERIMENT_ID_1));
+        assertTrue(firstNameCriterionSampleIds.contains(EXPERIMENT_ID_2));
+        assertFalse(firstNameCriterionSampleIds.contains(EXPERIMENT_ID_3));
+
+        final ExperimentSearchCriteria notExistingFirstNameCriterion = new ExperimentSearchCriteria();
+        notExistingFirstNameCriterion.withRegistrator().withFirstName().thatEquals("-");
+        final Set<Long> notExistingFirstNameCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, notExistingFirstNameCriterion);
+        assertTrue(notExistingFirstNameCriterionSampleIds.isEmpty());
+
+        // By Last Name
+        final ExperimentSearchCriteria lastNameCriterion = new ExperimentSearchCriteria();
+        lastNameCriterion.withRegistrator().withLastName().thatEquals(REGISTRATOR_LAST_NAME);
+        final Set<Long> lastNameCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, lastNameCriterion);
+        assertEquals(lastNameCriterionSampleIds.size(), 1);
+        assertFalse(lastNameCriterionSampleIds.contains(EXPERIMENT_ID_1));
+        assertTrue(lastNameCriterionSampleIds.contains(EXPERIMENT_ID_2));
+        assertFalse(lastNameCriterionSampleIds.contains(EXPERIMENT_ID_3));
+
+        final ExperimentSearchCriteria notExistingLastNameCriterion = new ExperimentSearchCriteria();
+        notExistingLastNameCriterion.withRegistrator().withLastName().thatEquals("-");
+        final Set<Long> notExistingLastNameCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, notExistingLastNameCriterion);
+        assertTrue(notExistingLastNameCriterionSampleIds.isEmpty());
+
+        // By Email
+        final ExperimentSearchCriteria emailCriterion = new ExperimentSearchCriteria();
+        emailCriterion.withRegistrator().withEmail().thatEquals(REGISTRATOR_EMAIL);
+        final Set<Long> emailCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, emailCriterion);
+        assertEquals(emailCriterionSampleIds.size(), 1);
+        assertFalse(emailCriterionSampleIds.contains(EXPERIMENT_ID_1));
+        assertTrue(emailCriterionSampleIds.contains(EXPERIMENT_ID_2));
+        assertFalse(emailCriterionSampleIds.contains(EXPERIMENT_ID_3));
+
+        final ExperimentSearchCriteria notExistingEmailCriterion = new ExperimentSearchCriteria();
+        notExistingEmailCriterion.withRegistrator().withEmail().thatEquals("-");
+        final Set<Long> notExistingEmailCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, notExistingEmailCriterion);
+        assertTrue(notExistingEmailCriterionSampleIds.isEmpty());
     }
 
 }

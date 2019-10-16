@@ -8,18 +8,22 @@ VALUES (102, true, 'jblack', 'Black', 'Jim', 2, 'jblack@example.com');
 
 -- Spaces
 
-INSERT INTO spaces(registration_timestamp, code, frozen_for_proj, description, frozen, id, pers_id_registerer, frozen_for_samp)
-VALUES (TIMESTAMP '2019-06-10 10:50:00+02', 'MY_SPACE_UNIQUE_CODE_1', false, null, false, 10000, 2, false);
+INSERT INTO spaces(id, registration_timestamp, code, frozen_for_proj, description, frozen, pers_id_registerer, frozen_for_samp)
+VALUES (10000, TIMESTAMP '2019-06-10 10:50:00+02', 'MY_SPACE_UNIQUE_CODE_1', false, null, false, 2, false);
 
-INSERT INTO spaces(registration_timestamp, code, frozen_for_proj, description, frozen, id, pers_id_registerer, frozen_for_samp)
-VALUES (TIMESTAMP '2019-06-10 10:50:00+02', 'MY_SPACE_UNIQUE_CODE_2', false, null, false, 10001, 101, false);
+INSERT INTO spaces(id, registration_timestamp, code, frozen_for_proj, description, frozen, pers_id_registerer, frozen_for_samp)
+VALUES (10001, TIMESTAMP '2019-06-10 10:50:00+02', 'MY_SPACE_UNIQUE_CODE_2', false, null, false, 101, false);
 
 
-INSERT INTO projects(id, registration_timestamp, code, perm_id, description, frozen, frozen_for_exp, version, space_frozen, pers_id_modifier, modification_timestamp, pers_id_leader, space_id, pers_id_registerer, frozen_for_samp)
-VALUES (10001, TIMESTAMP '2019-06-10 10:49:00+02', 'PROJECT_CODE_1', '20190301152050019-11', null, false, false, 10, false, null, TIMESTAMP '2019-06-10 10:49:00+02', null, 10000, 2, false);
+INSERT INTO projects(id, registration_timestamp, code, perm_id, description, frozen, frozen_for_exp, version, space_frozen, pers_id_modifier,
+        modification_timestamp, pers_id_leader, space_id, pers_id_registerer, frozen_for_samp)
+VALUES (10001, TIMESTAMP '2019-06-10 10:49:00+02', 'PROJECT_CODE_1', '20190301152050019-11', null, false, false, 10, false, null,
+        TIMESTAMP '2019-06-10 10:49:00+02', null, 10000, 2, false);
 
-INSERT INTO projects(id, registration_timestamp, code, perm_id, description, frozen, frozen_for_exp, version, space_frozen, pers_id_modifier, modification_timestamp, pers_id_leader, space_id, pers_id_registerer, frozen_for_samp)
-VALUES (10002, TIMESTAMP '2019-06-10 10:50:00+02', 'PROJECT_CODE_2', '20190301152050019-12', null, false, false, 10, false, null, TIMESTAMP '2019-06-10 10:50:00+02', null, 10000, 2, false);
+INSERT INTO projects(id, registration_timestamp, code, perm_id, description, frozen, frozen_for_exp, version, space_frozen, pers_id_modifier,
+        modification_timestamp, pers_id_leader, space_id, pers_id_registerer, frozen_for_samp)
+VALUES (10002, TIMESTAMP '2019-06-10 10:50:00+02', 'PROJECT_CODE_2', '20190301152050019-12', null, false, false, 10, false, null,
+        TIMESTAMP '2019-06-10 10:50:00+02', null, 10000, 2, false);
 
 -- Experiment types
 
@@ -35,11 +39,11 @@ VALUES (1001, '20191015134000000-1001', null, 'UNIQUE_EXPERIMENT_CODE_1', 10004,
 
 INSERT INTO experiments_all(id, perm_id, orig_del, code, exty_id, del_id, proj_id, pers_id_registerer, pers_id_modifier, registration_timestamp,
         modification_timestamp)
-VALUES (1002, '20191015134000001-1001', null, 'EXPERIMENT_CODE_2', 10004, null, 10002, 2, null, TIMESTAMP '2019-07-12 10:50:00+02',
+VALUES (1002, '20191015134000001-1001', null, 'EXPERIMENT_CODE_2', 10004, null, 10002, 101, null, TIMESTAMP '2019-07-12 10:50:00+02',
         TIMESTAMP '2018-07-12 10:50:00+02');
 
 INSERT INTO experiments_all(id, perm_id, orig_del, code, exty_id, del_id, proj_id, pers_id_registerer, pers_id_modifier)
-VALUES (1003, '20191015134000000-1003', null, 'EXPERIMENT_CODE_3', 10004, null, 10002, 2, null);
+VALUES (1003, '20191015134000000-1003', null, 'EXPERIMENT_CODE_3', 10004, null, 10001, 102, null);
 
 -- Samples
 
