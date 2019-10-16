@@ -9,6 +9,18 @@ var EventUtil = new function() {
 		element.trigger('click');
 	};
 
+	this.change = function(elementId, value) {
+        var element = $( "#" + elementId );
+        element.focus();
+        element.val(value).change();
+    };
+
+    this.checked = function(elementId, value) {
+        var element = $( "#" + elementId );
+        element.focus();
+        element.prop('checked', value);
+    };
+
 	this.write = function(elementId, text) {
 		var element = $("#" + elementId);
 		element.focus();
