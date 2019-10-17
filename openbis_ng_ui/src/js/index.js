@@ -4,7 +4,6 @@ import ReactDOM from 'react-dom'
 import store from './store/store.js'
 import { Provider } from 'react-redux'
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles'
-import DragAndDropProvider from './components/common/dnd/DragAndDropProvider.jsx'
 import indigo from '@material-ui/core/colors/indigo'
 import lightBlue from '@material-ui/core/colors/lightBlue'
 
@@ -32,9 +31,7 @@ const render = () => {
   ReactDOM.render(
     <Provider store={store}>
       <MuiThemeProvider theme={theme}>
-        <DragAndDropProvider>
-          <App />
-        </DragAndDropProvider>
+        <App />
       </MuiThemeProvider>
     </Provider>,
     document.getElementById('app')

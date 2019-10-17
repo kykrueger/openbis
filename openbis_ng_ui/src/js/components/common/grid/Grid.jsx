@@ -241,16 +241,11 @@ class Grid extends React.Component {
     )
   }
 
-  handleColumnOrderChange(sourceField, targetField) {
+  handleColumnOrderChange(sourceIndex, destinationIndex) {
     let columns = [...this.state.columns]
-    let sourceIndex = _.findIndex(columns, ['field', sourceField])
-    let targetIndex = _.findIndex(columns, ['field', targetField])
-
-    if (sourceIndex !== -1 && targetIndex !== -1) {
-      let source = columns[sourceIndex]
-      columns.splice(sourceIndex, 1)
-      columns.splice(targetIndex, 0, source)
-    }
+    let source = columns[sourceIndex]
+    columns.splice(sourceIndex, 1)
+    columns.splice(destinationIndex, 0, source)
 
     this.setState(
       () => ({

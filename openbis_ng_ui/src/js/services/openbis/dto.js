@@ -28,7 +28,8 @@ const CLASS_FULL_NAMES = [
   'as/dto/plugin/id/PluginPermId',
   'as/dto/webapp/create/WebAppSettingCreation',
   'as/dto/service/id/CustomASServiceCode',
-  'as/dto/service/CustomASServiceExecutionOptions'
+  'as/dto/service/CustomASServiceExecutionOptions',
+  'as/dto/property/DataType'
 ]
 
 class Dto {
