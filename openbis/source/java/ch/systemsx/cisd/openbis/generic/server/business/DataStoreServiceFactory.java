@@ -88,13 +88,8 @@ public class DataStoreServiceFactory implements IDataStoreServiceFactory
                     .timing(TimingParameters.create(-1L, 5, DateUtils.MILLIS_PER_MINUTE))
                     .exceptionClassSuitableForRetrying(RemoteAccessException.class)
                     .executorService(executorService)
-                    .callAsynchronously(
-                            IDataStoreService.class.getMethod("cleanupSession", new Class<?>[]
-                            { String.class })).get();
+                    .get();
         } catch (SecurityException ex)
-        {
-            throw CheckedExceptionTunnel.wrapIfNecessary(ex);
-        } catch (NoSuchMethodException ex)
         {
             throw CheckedExceptionTunnel.wrapIfNecessary(ex);
         }

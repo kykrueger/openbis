@@ -330,7 +330,10 @@ public class TestUtils {
 
     static String extractSamplePermIdFromResults(String result) {
         // Note this will work only if we created single sample!!
-        String permId = result.substring(result.indexOf("CreateSamplesOperationResult") + "CreateSamplesOperationResult".length());
+        int indexOfSamples = result.indexOf("CreateSamplesOperationResult");
+        int permIdStart = indexOfSamples + "CreateSamplesOperationResult".length();
+        int permIdEnd = result.indexOf("]", indexOfSamples);
+        String permId = result.substring(permIdStart, permIdEnd);
         permId = StringUtils.strip(permId, "[]");
         return permId;
     }

@@ -1208,7 +1208,7 @@ function MainController(profile) {
 		var views = this._getNewViewModel(true, true, false);
 		newView.init(views);
 		if(freeText) {
-			newView.search();
+		    setTimeout(function(){ newView.search(); }, 1000);
 		}
 		this.currentView = newView;
 	}
