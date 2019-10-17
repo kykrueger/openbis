@@ -12,13 +12,13 @@ class SampleCreationSampleChildrenParentSearchCriteria(object):
         for creation in specific_creations:
             if creation.parentIds is not None:
                 for parent in creation.parentIds:
-                    self._get_criteria_from_string(str(parent), search_criterias)
+                    search_criterias.append(self._get_criteria_from_string(str(parent)))
             if creation.childIds is not None:
                 for child in creation.childIds:
-                    self._get_criteria_from_string(str(child), search_criterias)
+                    search_criterias.append(self._get_criteria_from_string(str(child)))
         return search_criterias
 
-    def _get_criteria_from_string(self, sample_identifier_or_permid, search_criterias):
+    def _get_criteria_from_string(self, sample_identifier_or_permid):
         identifier = None
         try:
             identifier = FullSampleIdentifier(sample_identifier_or_permid, None)
@@ -46,11 +46,11 @@ class SampleCreationSampleChildrenParentSearchCriteria(object):
                 search_criteria.withSpace().withCode().thatEquals(space_code)
             else:
                 search_criteria.withoutSpace()
-            search_criterias.append(search_criteria)
+            return search_criteria
         else:
             search_criteria = self.search_criteria_class()
             search_criteria.withPermId().thatEquals(sample_identifier_or_permid)
-            search_criterias.append(search_criteria)
+            return search_criteria
 
 
 class SampleCreationSampleSearchCriteria(object):
@@ -90,7 +90,10 @@ class SpaceFromPropertiesSearchCriteria(object):
         self.search_criteria = search_criteria_class
 
     def get_search_criteria(self, specific_creations):
-        space_codes = [dotdict({'code': str(creation.spaceId)}) for creation in specific_creations if creation.spaceId is not None]
+        space_codes = [dotdict({'code': str(creation.spaceId)}) for creation in specific_creations if
+                       creation.spaceId is not None]
+        if space_codes == []:
+            return None
         default_search_criteria_builder = DefaultCreationElementSearchCriteria(self.search_criteria)
         return default_search_criteria_builder.get_search_criteria(space_codes)
 
@@ -101,8 +104,12 @@ class ProjectFromPropertiesSearchCriteria(object):
         self.search_criteria = search_criteria_class
 
     def get_search_criteria(self, specific_creations):
-        project_codes = [dotdict({'code': str(creation.projectId)}) for creation in specific_creations if creation.projectId is not None]
-        default_search_criteria_builder = DefaultCreationElementSearchCriteria(self.search_criteria)
+        project_codes = [dotdict({'code': str(creation.projectId)}) for creation in
+                         specific_creations if
+                         creation.projectId is not None]
+        if project_codes == []:
+            return None
+        default_search_criteria_builder = ProjectFromProjectCreationSearchCriteria(self.search_criteria)
         return default_search_criteria_builder.get_search_criteria(project_codes)
 
 
@@ -112,7 +119,10 @@ class ExperimentFromPropertiesSearchCriteria(object):
         self.search_criteria = search_criteria_class
 
     def get_search_criteria(self, specific_creations):
-        experiment_codes = [dotdict({'code': str(creation.experimentId)}) for creation in specific_creations if creation.experimentId is not None]
+        experiment_codes = [dotdict({'code': str(creation.experimentId)}) for creation in specific_creations if
+                            creation.experimentId is not None]
+        if not experiment_codes:
+            return None
         default_search_criteria_builder = DefaultCreationElementSearchCriteria(self.search_criteria)
         return default_search_criteria_builder.get_search_criteria(experiment_codes)
 
@@ -123,12 +133,25 @@ class DefaultCreationElementSearchCriteria(object):
         self.search_criteria = search_criteria_class()
 
     def get_search_criteria(self, specific_creations):
-        if 'withCodes' in dir(self.search_criteria):
+        if hasattr(self.search_criteria, 'withCodes'):
             self.search_criteria.withCodes().thatIn([creation.code for creation in specific_creations])
         else:
             for creation in specific_creations:
-                self.search_criteria.withCodes().thatIn(creation.code)
+                self.search_criteria.withCode().thatIn(creation.code)
             self.search_criteria.withOrOperator()
+        return self.search_criteria
+
+
+class ProjectFromProjectCreationSearchCriteria(object):
+
+    def __init__(self, search_criteria_class):
+        self.search_criteria = search_criteria_class()
+
+    def get_search_criteria(self, specific_creations):
+        for creation in specific_creations:
+            self.search_criteria.withCode().thatEquals(creation.code)
+            self.search_criteria.withSpace().withCode().thatEquals(str(creation.spaceId))
+        self.search_criteria.withOrOperator()
         return self.search_criteria
 
 
@@ -139,7 +162,8 @@ class VocabularyTermCreationVocabularyTermSearchCriteria(object):
 
     def get_search_criteria(self, specific_creations):
         self.search_criteria.withCodes().thatIn([creation.code for creation in specific_creations])
-        self.search_criteria.withVocabulary().withCodes().thatIn([str(creation.vocabularyId) for creation in specific_creations])
+        self.search_criteria.withVocabulary().withCodes().thatIn(
+            [str(creation.vocabularyId) for creation in specific_creations])
         self.search_criteria.withAndOperator()
         return self.search_criteria
 
