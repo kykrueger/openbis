@@ -51,7 +51,7 @@ var EventUtil = new function() {
 	    });
 	};
 
-    this.waitForId = function(elementId, timeout) {
+    this.waitForId = function(elementId, ignoreError, timeout) {
         return new Promise(function executor(resolve, reject) {
             if (!timeout) {
                 timeout = DEFAULT_TIMEOUT;
@@ -59,7 +59,11 @@ var EventUtil = new function() {
             timeout -= DEFAULT_TIMEOUT_STEP;
 
             if (timeout <= 0) {
-                reject(new Error("Element '" + elementId + "' is not exist."));
+                if(ignoreError) {
+                    resolve();
+                } else {
+                    reject(new Error("Element '" + elementId + "' is not exist."));
+                }
                 return;
             }
 
