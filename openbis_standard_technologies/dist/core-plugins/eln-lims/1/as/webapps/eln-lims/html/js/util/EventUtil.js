@@ -4,9 +4,19 @@ var EventUtil = new function() {
     var DEFAULT_TIMEOUT_STEP = 1000;
 
 	this.click = function(elementId) {
-		var element = $( "#" + elementId );
-		element.focus();
-		element.trigger('click');
+	    return new Promise(function executor(resolve, reject) {
+	        try {
+                var element = $( "#" + elementId );
+                if(!element) {
+                    throw "Element not found: #" + elementId;
+                }
+                element.focus();
+                element.trigger('click');
+                resolve();
+            } catch(error) {
+                reject();
+            }
+	    });
 	};
 
 	this.change = function(elementId, value) {
@@ -22,13 +32,23 @@ var EventUtil = new function() {
     };
 
 	this.write = function(elementId, text) {
-		var element = $("#" + elementId);
-		element.focus();
-		$(element).val(text);
-		for (var i = 0; i < text.length; i++) {
-			$(element).trigger('keydown', {which: text.charCodeAt(i)});
-			$(element).trigger('keyup', {which: text.charCodeAt(i)});
-		}
+	    return new Promise(function executor(resolve, reject) {
+	        try {
+                var element = $( "#" + elementId );
+                if(!element) {
+                    throw "Element not found: #" + elementId;
+                }
+                element.focus();
+                $(element).val(text);
+                for (var i = 0; i < text.length; i++) {
+                    $(element).trigger('keydown', {which: text.charCodeAt(i)});
+                    $(element).trigger('keyup', {which: text.charCodeAt(i)});
+                }
+                resolve();
+            } catch(error) {
+                reject();
+            }
+	    });
 	};
 
     this.waitForId = function(elementId, timeout) {
