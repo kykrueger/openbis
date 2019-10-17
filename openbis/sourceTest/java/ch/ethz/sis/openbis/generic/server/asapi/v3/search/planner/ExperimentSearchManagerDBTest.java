@@ -50,14 +50,12 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestH
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.ID_DELIMITER;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.MODIFIER_EMAIL;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.MODIFIER_FIRST_NAME;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.MODIFIER_ID;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.MODIFIER_LAST_NAME;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.MODIFIER_USER_ID;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.PROJECT_CODE_2;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.PROJECT_ID_2;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.REGISTRATOR_EMAIL;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.REGISTRATOR_FIRST_NAME;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.REGISTRATOR_ID;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.REGISTRATOR_LAST_NAME;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.REGISTRATOR_USER_ID;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SPACE_CODE_1;
@@ -412,7 +410,7 @@ public class ExperimentSearchManagerDBTest
 
         // By ID
         final ExperimentSearchCriteria idCriterion = new ExperimentSearchCriteria();
-        idCriterion.withRegistrator().withUserId().thatEquals(String.valueOf(REGISTRATOR_ID));
+        idCriterion.withRegistrator().withUserId().thatEquals(REGISTRATOR_USER_ID);
         final Set<Long> idCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, idCriterion);
         assertEquals(idCriterionSampleIds.size(), 1);
         assertFalse(idCriterionSampleIds.contains(EXPERIMENT_ID_1));
@@ -491,7 +489,7 @@ public class ExperimentSearchManagerDBTest
 
         // By ID
         final ExperimentSearchCriteria idCriterion = new ExperimentSearchCriteria();
-        idCriterion.withModifier().withUserId().thatEquals(String.valueOf(MODIFIER_ID));
+        idCriterion.withModifier().withUserId().thatEquals(MODIFIER_USER_ID);
         final Set<Long> idCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, idCriterion);
         assertEquals(idCriterionSampleIds.size(), 1);
         assertFalse(idCriterionSampleIds.contains(EXPERIMENT_ID_1));

@@ -42,8 +42,6 @@ public class DBTestHelper
 
     public static final String ADMIN_USER_ID = "etlserver";
 
-    public static final long REGISTRATOR_ID = 101L;
-
     public static final String REGISTRATOR_USER_ID = "jbrown";
 
     public static final String REGISTRATOR_FIRST_NAME = "John";

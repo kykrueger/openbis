@@ -23,6 +23,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -45,7 +46,7 @@ public class JDBCSQLExecutor implements ISQLExecutor
     public List<Map<String, Object>> execute(final String sqlQuery, final List<Object> args)
     {
         System.out.println("QUERY: " + sqlQuery);
-        System.out.println("ARGS: " + args);
+        System.out.println("ARGS: " + Arrays.deepToString(args.toArray()));
 
         final List<Map<String, Object>> results = new ArrayList<>();
         try (final PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery))

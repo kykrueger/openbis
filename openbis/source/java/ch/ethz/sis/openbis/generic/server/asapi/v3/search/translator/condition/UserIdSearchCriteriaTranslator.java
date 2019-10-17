@@ -49,17 +49,9 @@ public class UserIdSearchCriteriaTranslator implements IConditionTranslator<User
         if (criterion.getFieldType() == ATTRIBUTE)
         {
             final AbstractStringValue value = criterion.getFieldValue();
-            Long longValue;
-            try
-            {
-                longValue = Long.valueOf(value.getValue());
-            } catch (NumberFormatException e)
-            {
-                longValue = null;
-            }
-            sqlBuilder.append(Translator.MAIN_TABLE_ALIAS).append(PERIOD).append(ColumnNames.ID_COLUMN).append(SP).append(EQ).append(SP).append(QU)
+            sqlBuilder.append(Translator.MAIN_TABLE_ALIAS).append(PERIOD).append(ColumnNames.USER_COLUMN).append(SP).append(EQ).append(SP).append(QU)
                     .append(NL);
-            args.add(longValue);
+            args.add(value.getValue());
         } else
         {
             throw new IllegalArgumentException();
