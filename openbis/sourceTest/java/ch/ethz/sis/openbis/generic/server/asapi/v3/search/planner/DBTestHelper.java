@@ -148,6 +148,8 @@ public class DBTestHelper
 
     public static final String SPACE_CODE_2 = "MY_SPACE_UNIQUE_CODE_2";
 
+    public static final String SPACE_CODE_3 = "MY_SPACE_UNIQUE_CODE_3";
+
     public static final String SAMPLE_CODE_1 = "MY_UNIQUE_CODE_1";
 
     public static final String SAMPLE_CODE_2 = "ANOTHER_UNIQUE_CODE_2";
@@ -192,17 +194,23 @@ public class DBTestHelper
 
     public static final long EXPERIMENT_ID_3 = 1003L;
 
+    public static final long EXPERIMENT_ID_4 = 1004L;
+
     public static final String EXPERIMENT_CODE_1 = "UNIQUE_EXPERIMENT_CODE_1";
 
     public static final String EXPERIMENT_CODE_2 = "EXPERIMENT_CODE_2";
 
     public static final String EXPERIMENT_CODE_3 = "EXPERIMENT_CODE_3";
 
+    public static final String EXPERIMENT_CODE_4 = "EXPERIMENT_CODE_4";
+
     public static final String EXPERIMENT_PERM_ID_1 = "20191015134000000-1001";
 
     public static final String EXPERIMENT_PERM_ID_2 = "20191015134000001-1001";
 
     public static final String EXPERIMENT_PERM_ID_3 = "20191015134000000-1003";
+
+    public static final String EXPERIMENT_PERM_ID_4 = "20191015134000002-1004";
 
     public static final Date EXPERIMENT_REGISTRATION_DATE_1 = new Date(119, Calendar.JULY, 11, 10, 50, 0);
 

@@ -155,8 +155,7 @@ public class PostgresAuthorisationInformationProviderDAO implements ISQLAuthoris
     }
 
     @Override
-    public Set<Long> getAuthorisedSamples(final Set<Long> requestedIDs,
-            final AuthorisationInformation authInfo)
+    public Set<Long> getAuthorisedSamples(final Set<Long> requestedIDs, final AuthorisationInformation authInfo)
     {
         final String query = SELECT + SP + DISTINCT + SP + ID_COLUMN + NL +
                 FROM + SP + SAMPLES_ALL_TABLE + NL +

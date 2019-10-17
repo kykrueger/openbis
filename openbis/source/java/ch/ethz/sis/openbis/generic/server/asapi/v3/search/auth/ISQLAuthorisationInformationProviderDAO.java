@@ -37,8 +37,7 @@ public interface ISQLAuthorisationInformationProviderDAO
      * Filters experiment IDs based on their relations to space and projects.
      *
      * @param requestedIDs the IDs to be filtered
-     * @param authInfo value object that contains space and project IDs, which should be related to the
-     *     resulting IDs.
+     * @param authInfo value object that contains space and project IDs, which should be related to the resulting IDs.
      * @return the subset of IDs which are related either to one of the specified projects or spaces.
      */
     Set<Long> getAuthorisedExperiments(Set<Long> requestedIDs, AuthorisationInformation authInfo);

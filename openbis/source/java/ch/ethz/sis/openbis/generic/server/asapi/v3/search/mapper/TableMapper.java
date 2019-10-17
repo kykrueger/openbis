@@ -76,6 +76,7 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SAMPLE_PROP
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SAMPLE_RELATIONSHIPS_ALL_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SAMPLE_TYPES_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SAMPLE_TYPE_PROPERTY_TYPE_TABLE;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SPACES_TABLE;
 
 /**
  * Extension of enum {@link EntityKind} to contain extra information about tables related to the entities which can
@@ -104,7 +105,9 @@ public enum TableMapper
 
     PERSON(PERSONS_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
 
-    PROJECT(PROJECTS_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+    PROJECT(PROJECTS_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
+
+    SPACE(SPACES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
 
     static
     {
@@ -125,6 +128,9 @@ public enum TableMapper
 
         initProjectFieldToSQLTypeMap();
         initProjectSQLTypeToFieldsMap();
+
+        initSpaceFieldToSQLTypeMap();
+        initSpaceSQLTypeToFieldsMap();
     }
 
 
@@ -440,6 +446,23 @@ public enum TableMapper
         map.put(SQLTypes.TIMESTAMP_WITH_TZ, new HashSet<>(Arrays.asList(REGISTRATION_TIMESTAMP_COLUMN, MODIFICATION_TIMESTAMP_COLUMN)));
         map.put(SQLTypes.INT8, new HashSet<>(Arrays.asList(SPACE_COLUMN, PERSON_LEADER_COLUMN, PERSON_REGISTERER_COLUMN, PERSON_MODIFIER_COLUMN)));
         map.put(SQLTypes.INT4, new HashSet<>(Arrays.asList(VERSION_COLUMN)));
+    }
+
+    private static void initSpaceFieldToSQLTypeMap()
+    {
+        final Map<String, SQLTypes> fields = SPACE.fieldToSQLTypeMap;
+        fields.put(CODE_COLUMN, SQLTypes.VARCHAR);
+        fields.put(DESCRIPTION_COLUMN, SQLTypes.VARCHAR);
+        fields.put(REGISTRATION_TIMESTAMP_COLUMN, SQLTypes.TIMESTAMP_WITH_TZ);
+        fields.put(PERSON_REGISTERER_COLUMN, SQLTypes.INT8);
+    }
+
+    private static void initSpaceSQLTypeToFieldsMap()
+    {
+        final Map<SQLTypes, Set<String>> map = SPACE.sqlTypeToFieldsMap;
+        map.put(SQLTypes.VARCHAR, new HashSet<>(Arrays.asList(CODE_COLUMN, DESCRIPTION_COLUMN)));
+        map.put(SQLTypes.TIMESTAMP_WITH_TZ, new HashSet<>(Arrays.asList(REGISTRATION_TIMESTAMP_COLUMN)));
+        map.put(SQLTypes.INT8, new HashSet<>(Arrays.asList(PERSON_REGISTERER_COLUMN)));
     }
 
 }

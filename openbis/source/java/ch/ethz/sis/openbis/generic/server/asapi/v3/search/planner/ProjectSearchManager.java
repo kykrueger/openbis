@@ -17,6 +17,7 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.search.ProjectSearchCriteria;
@@ -61,13 +62,13 @@ public class ProjectSearchManager extends AbstractCompositeEntitySearchManager<P
     @Override
     protected ProjectSearchCriteria createEmptyCriteria()
     {
-        return null;
+        return new ProjectSearchCriteria();
     }
 
     @Override
     protected Set<Long> doFilterIDsByUserRights(final Set<Long> ids, final AuthorisationInformation authorisationInformation)
     {
-        return null;
+        return authorisationInformation.getProjectIds().stream().filter(ids::contains).collect(Collectors.toSet());
     }
 
 }

@@ -117,6 +117,9 @@ WHERE id=1002;
 DELETE FROM experiments_all
 WHERE id=1003;
 
+DELETE FROM experiments_all
+WHERE id=1004;
+
 -- Experiment types
 
 DELETE FROM experiment_types
@@ -149,6 +152,9 @@ WHERE id=10000;
 
 DELETE FROM spaces
 WHERE id=10001;
+
+DELETE FROM spaces
+WHERE id=10002;
 
 -- Persons
 

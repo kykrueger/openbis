@@ -237,6 +237,12 @@
 		<constructor-arg ref="identity-translator"/>
 	</bean>
 
+	<bean id="space-search-manager" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SpaceSearchManager" lazy-init="true">
+		<constructor-arg ref="postgres-search-dao"/>
+		<constructor-arg ref="information-provider-dao"/>
+		<constructor-arg ref="identity-translator"/>
+	</bean>
+
 	<bean id="experiment-type-search-manager" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ExperimentTypeSearchManager"
           lazy-init="true">
 		<constructor-arg ref="postgres-search-dao"/>
@@ -258,13 +264,14 @@
 
 	<util:map id="criteria-to-manager-map" map-class="java.util.HashMap" key-type="java.lang.Class"
 			  value-type="ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager">
-		<entry key="ch.ethz.sis.openbis.generic.asapi.v3.dto.project.search.ProjectSearchCriteria" value-ref="project-search-manager"/>
 		<entry key="ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria" value-ref="experiment-search-manager"/>
 		<entry key="ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentTypeSearchCriteria" value-ref="experiment-type-search-manager"/>
 		<entry key="ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria" value-ref="sample-search-manager"/>
 		<entry key="ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleTypeSearchCriteria" value-ref="sample-type-search-manager"/>
 		<entry key="ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.RegistratorSearchCriteria" value-ref="person-search-manager"/>
 		<entry key="ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.ModifierSearchCriteria" value-ref="person-search-manager"/>
+		<entry key="ch.ethz.sis.openbis.generic.asapi.v3.dto.project.search.ProjectSearchCriteria" value-ref="project-search-manager"/>
+		<entry key="ch.ethz.sis.openbis.generic.asapi.v3.dto.space.search.SpaceSearchCriteria" value-ref="space-search-manager"/>
 	</util:map>
 
 	<!-- // Common -->
