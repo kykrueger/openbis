@@ -139,6 +139,9 @@ WHERE id=10001;
 DELETE FROM projects
 WHERE id=10002;
 
+DELETE FROM projects
+WHERE id=10003;
+
 -- Spaces
 
 DELETE FROM spaces

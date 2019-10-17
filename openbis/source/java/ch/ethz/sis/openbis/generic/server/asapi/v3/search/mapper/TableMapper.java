@@ -49,6 +49,7 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PART_OF_DE
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PART_OF_SAMPLE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PERM_ID_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PERSON_IS_ACTIVE_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PERSON_LEADER_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PERSON_MODIFIER_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PERSON_REGISTERER_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PROJECT_COLUMN;
@@ -68,6 +69,7 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.EXPERIMENT_
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.EXPERIMENT_TYPES_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.EXPERIMENT_TYPE_PROPERTY_TYPE_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.PERSONS_TABLE;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.PROJECTS_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.PROPERTY_TYPES_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SAMPLES_ALL_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SAMPLE_PROPERTIES_TABLE;
@@ -100,7 +102,9 @@ public enum TableMapper
 
     EXPERIMENT_TYPE(EXPERIMENT_TYPES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
 
-    PERSON(PERSONS_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+    PERSON(PERSONS_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
+
+    PROJECT(PROJECTS_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
 
     static
     {
@@ -118,6 +122,9 @@ public enum TableMapper
 
         initExperimentTypeFieldToSQLTypeMap();
         initExperimentTypeSQLTypeToFieldsMap();
+
+        initProjectFieldToSQLTypeMap();
+        initProjectSQLTypeToFieldsMap();
     }
 
 
@@ -409,6 +416,30 @@ public enum TableMapper
         map.put(SQLTypes.VARCHAR, new HashSet<>(Arrays.asList(CODE_COLUMN, DESCRIPTION_COLUMN)));
         map.put(SQLTypes.TIMESTAMP_WITH_TZ, new HashSet<>(Arrays.asList(MODIFICATION_TIMESTAMP_COLUMN)));
         map.put(SQLTypes.INT8, new HashSet<>(Arrays.asList(VALIDATION_SCRIPT_ID_COLUMN)));
+    }
+
+    private static void initProjectFieldToSQLTypeMap()
+    {
+        final Map<String, SQLTypes> fields = PROJECT.fieldToSQLTypeMap;
+        fields.put(PERM_ID_COLUMN, SQLTypes.VARCHAR);
+        fields.put(CODE_COLUMN, SQLTypes.VARCHAR);
+        fields.put(DESCRIPTION_COLUMN, SQLTypes.VARCHAR);
+        fields.put(SPACE_COLUMN, SQLTypes.INT8);
+        fields.put(PERSON_LEADER_COLUMN, SQLTypes.INT8);
+        fields.put(PERSON_REGISTERER_COLUMN, SQLTypes.INT8);
+        fields.put(PERSON_MODIFIER_COLUMN, SQLTypes.INT8);
+        fields.put(VERSION_COLUMN, SQLTypes.INT4);
+        fields.put(REGISTRATION_TIMESTAMP_COLUMN, SQLTypes.TIMESTAMP_WITH_TZ);
+        fields.put(MODIFICATION_TIMESTAMP_COLUMN, SQLTypes.TIMESTAMP_WITH_TZ);
+    }
+
+    private static void initProjectSQLTypeToFieldsMap()
+    {
+        final Map<SQLTypes, Set<String>> map = PROJECT.sqlTypeToFieldsMap;
+        map.put(SQLTypes.VARCHAR, new HashSet<>(Arrays.asList(PERM_ID_COLUMN, CODE_COLUMN, DESCRIPTION_COLUMN)));
+        map.put(SQLTypes.TIMESTAMP_WITH_TZ, new HashSet<>(Arrays.asList(REGISTRATION_TIMESTAMP_COLUMN, MODIFICATION_TIMESTAMP_COLUMN)));
+        map.put(SQLTypes.INT8, new HashSet<>(Arrays.asList(SPACE_COLUMN, PERSON_LEADER_COLUMN, PERSON_REGISTERER_COLUMN, PERSON_MODIFIER_COLUMN)));
+        map.put(SQLTypes.INT4, new HashSet<>(Arrays.asList(VERSION_COLUMN)));
     }
 
 }

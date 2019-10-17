@@ -52,8 +52,10 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestH
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.MODIFIER_FIRST_NAME;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.MODIFIER_LAST_NAME;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.MODIFIER_USER_ID;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.PROJECT_CODE_1;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.PROJECT_CODE_2;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.PROJECT_ID_2;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.PROJECT_PERM_ID_2;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.REGISTRATOR_EMAIL;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.REGISTRATOR_FIRST_NAME;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.REGISTRATOR_LAST_NAME;
@@ -551,6 +553,37 @@ public class ExperimentSearchManagerDBTest
         notExistingEmailCriterion.withModifier().withEmail().thatEquals("-");
         final Set<Long> notExistingEmailCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, notExistingEmailCriterion);
         assertTrue(notExistingEmailCriterionSampleIds.isEmpty());
+    }
+
+    /**
+     * Tests {@link ExperimentSearchManager} with project search criteria using DB connection.
+     */
+    @Test
+    public void testQueryDBWithProject()
+    {
+        final ExperimentSearchCriteria codeCriterion = new ExperimentSearchCriteria();
+        codeCriterion.withProject().withCode().thatEquals(PROJECT_CODE_1);
+        final Set<Long> codeCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, codeCriterion);
+        assertEquals(codeCriterionSampleIds.size(), 2);
+        assertTrue(codeCriterionSampleIds.contains(EXPERIMENT_ID_1));
+        assertFalse(codeCriterionSampleIds.contains(EXPERIMENT_ID_2));
+        assertTrue(codeCriterionSampleIds.contains(EXPERIMENT_ID_3));
+
+        final ExperimentSearchCriteria codesCriterion = new ExperimentSearchCriteria();
+        codesCriterion.withProject().withCodes().thatIn(Arrays.asList(PROJECT_CODE_1, PROJECT_CODE_2));
+        final Set<Long> codesCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, codesCriterion);
+        assertEquals(codesCriterionSampleIds.size(), 3);
+        assertTrue(codesCriterionSampleIds.contains(EXPERIMENT_ID_1));
+        assertTrue(codesCriterionSampleIds.contains(EXPERIMENT_ID_2));
+        assertTrue(codesCriterionSampleIds.contains(EXPERIMENT_ID_3));
+
+        final ExperimentSearchCriteria permIdCriterion = new ExperimentSearchCriteria();
+        permIdCriterion.withProject().withPermId().thatEquals(PROJECT_PERM_ID_2);
+        final Set<Long> permIdCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, permIdCriterion);
+        assertEquals(permIdCriterionSampleIds.size(), 1);
+        assertFalse(permIdCriterionSampleIds.contains(EXPERIMENT_ID_1));
+        assertTrue(permIdCriterionSampleIds.contains(EXPERIMENT_ID_2));
+        assertFalse(permIdCriterionSampleIds.contains(EXPERIMENT_ID_3));
     }
 
 }

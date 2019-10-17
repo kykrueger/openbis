@@ -132,7 +132,17 @@ public class DBTestHelper
 
     public static final String SAMPLE_PERM_ID_2 = "20190612105000001-1001";
 
+    public static final String PROJECT_PERM_ID_1 = "20190117152050019-11";
+
+    public static final String PROJECT_PERM_ID_2 = "20191017152050019-12";
+
+    public static final String PROJECT_PERM_ID_3 = "20191017152050019-13";
+
+    public static final String PROJECT_CODE_1 = "UNIQUE_PROJECT_CODE_FOR_SURE";
+
     public static final String PROJECT_CODE_2 = "PROJECT_CODE_2";
+
+    public static final String PROJECT_CODE_3 = "PROJECT_CODE_3";
 
     public static final String SPACE_CODE_1 = "MY_SPACE_UNIQUE_CODE_1";
 
@@ -285,7 +295,7 @@ public class DBTestHelper
     {
         try
         {
-            executeUpdateSqlFromResourceFile("sample-search-init.sql");
+            executeUpdateSqlFromResourceFile("search-test-init.sql");
             connection.commit();
         } catch (final Exception e)
         {
@@ -299,7 +309,7 @@ public class DBTestHelper
         try
         {
             connection.setAutoCommit(true);
-            executeUpdateSqlFromResourceFile("sample-search-cleanup.sql");
+            executeUpdateSqlFromResourceFile("search-test-cleanup.sql");
         } finally
         {
             closeConnection();
