@@ -343,7 +343,7 @@ public class SampleSearchManagerDBTest
         assertTrue(projectIdEqualsCriterionSampleIds.contains(SAMPLE_ID_5));
         assertTrue(projectIdEqualsCriterionSampleIds.contains(SAMPLE_ID_6));
 
-        // project_id attribute
+        // registration_timestamp attribute
         final SampleSearchCriteria registrationDateEqualsCriterion = new SampleSearchCriteria();
         registrationDateEqualsCriterion.withAnyField().thatEquals(SAMPLE_REGISTRATION_DATE_STRING_1);
         final Set<Long> registrationDateEqualsCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, registrationDateEqualsCriterion);

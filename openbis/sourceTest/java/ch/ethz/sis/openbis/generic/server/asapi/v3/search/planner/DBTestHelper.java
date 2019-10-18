@@ -240,6 +240,8 @@ public class DBTestHelper
 
     public static final String EXPERIMENT_TYPE_CODE_4 = "EXPERIMENT.TYPE.4";
 
+    public static final long DATA_STORE_ID_1 = 101L;
+
     public static final long DATA_SET_ID_1 = 1001L;
 
     public static final long DATA_SET_ID_2 = 1002L;
@@ -251,6 +253,16 @@ public class DBTestHelper
     public static final String DATA_SET_CODE_2 = "20191018113900001-1002";
 
     public static final String DATA_SET_CODE_3 = "20191018113900000-1003";
+
+    public static final Date DATA_SET_REGISTRATION_DATE_2 = new Date(119, Calendar.AUGUST, 12, 10, 50, 0);
+
+    public static final String DATA_SET_REGISTRATION_DATE_STRING_1 = "2019-08-11 10:50:00 +0200";
+
+    public static final String DATA_SET_REGISTRATION_DATE_STRING_2 = "2019-08-12 10:50:00 +0200";
+
+    public static final Date DATA_SET_MODIFICATION_DATE_2 = new Date(119, Calendar.AUGUST, 02, 10, 50, 0);
+
+    public static final String DATA_SET_MODIFICATION_DATE_STRING_2 = "2019-08-02 10:50:00 +0200";
 
     private JDBCSQLExecutor sqlExecutor;
 

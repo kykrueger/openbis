@@ -211,11 +211,17 @@ VALUES (1003, 'DS_TYPE_CODE_3');
 
 -- Data sets
 
-INSERT INTO data_all(id, code, dsty_id, dast_id, expe_id, samp_id, pers_id_registerer, pers_id_modifier, is_derived)
-VALUES (1001, '10000101113999999-1001', 1001, 101, 1003, 1003, 101, 102, true);
+INSERT INTO data_all(id, code, dsty_id, dast_id, expe_id, samp_id, pers_id_registerer, pers_id_modifier, is_derived,
+        registration_timestamp, modification_timestamp)
+VALUES (1001, '10000101113999999-1001', 1001, 101, 1003, 1003, 101, 102, true,
+        TIMESTAMP '2019-08-11 10:50:00+02', TIMESTAMP '2019-08-01 10:50:00+02');
 
-INSERT INTO data_all(id, code, dsty_id, dast_id, expe_id, samp_id, pers_id_registerer, pers_id_modifier, is_derived)
-VALUES (1002, '20191018113900001-1002', 1002, 101, 1003, 1003, 101, 102, true);
+INSERT INTO data_all(id, code, dsty_id, dast_id, expe_id, samp_id, pers_id_registerer, pers_id_modifier, is_derived,
+        registration_timestamp, modification_timestamp)
+VALUES (1002, '20191018113900001-1002', 1002, 101, 1003, 1003, 101, 102, true,
+        TIMESTAMP '2019-08-12 10:50:00+02', TIMESTAMP '2019-08-02 10:50:00+02');
 
-INSERT INTO data_all(id, code, dsty_id, dast_id, expe_id, samp_id, pers_id_registerer, pers_id_modifier, is_derived)
-VALUES (1003, '20191018113900000-1003', 1003, 101, 1003, 1003, 101, 102, true);
+INSERT INTO data_all(id, code, dsty_id, dast_id, expe_id, samp_id, pers_id_registerer, pers_id_modifier, is_derived,
+        registration_timestamp, modification_timestamp)
+VALUES (1003, '20191018113900000-1003', 1003, 101, 1003, 1003, 101, 102, true,
+        TIMESTAMP '2019-08-13 10:50:00+02', TIMESTAMP '2019-08-03 10:50:00+02');
