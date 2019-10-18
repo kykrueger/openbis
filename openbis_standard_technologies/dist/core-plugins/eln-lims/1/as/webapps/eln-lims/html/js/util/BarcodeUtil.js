@@ -80,7 +80,15 @@ var BarcodeUtil = new function() {
         };
 
         Util.blockUI($window, css);
-        this.generateBarcode("barcode-canvas", "code128", entity.permId, entity.permId);
+
+        var barcode = null;
+        if(entity.properties && entity.properties["$BARCODE"]) {
+            barcode = entity.properties["$BARCODE"];
+        } else {
+            barcode = entity.permId;
+        }
+
+        this.generateBarcode("barcode-canvas", "code128", barcode, barcode);
     }
 
     this.supportedBarcodes = function() {
