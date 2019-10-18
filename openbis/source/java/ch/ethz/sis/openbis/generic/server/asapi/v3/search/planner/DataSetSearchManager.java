@@ -17,14 +17,16 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CodeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.PermIdSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.search.SpaceSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetChildrenSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetParentsSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
@@ -32,23 +34,47 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETransl
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 
 /**
- * Manages detailed search with space search criteria.
+ * Manages detailed search with dataset search criteria.
  *
  * @author Viktor Kovtun
  */
-public class SpaceSearchManager extends AbstractSearchManager<SpaceSearchCriteria, Long>
+public class DataSetSearchManager extends AbstractCompositeEntitySearchManager<DataSetSearchCriteria, Long>
 {
 
-    public SpaceSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
+    public DataSetSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
             final IID2PETranslator<Long> idsTranslator)
     {
         super(searchDAO, authProvider, idsTranslator);
     }
 
     @Override
+    protected TableMapper getTableMapper()
+    {
+        return TableMapper.DATA_SET;
+    }
+
+    @Override
+    protected Class<? extends AbstractCompositeSearchCriteria> getParentsSearchCriteriaClass()
+    {
+        return DataSetParentsSearchCriteria.class;
+    }
+
+    @Override
+    protected Class<? extends AbstractCompositeSearchCriteria> getChildrenSearchCriteriaClass()
+    {
+        return DataSetChildrenSearchCriteria.class;
+    }
+
+    @Override
+    protected DataSetSearchCriteria createEmptyCriteria()
+    {
+        return new DataSetSearchCriteria();
+    }
+
+    @Override
     protected Set<Long> doFilterIDsByUserRights(final Set<Long> ids, final AuthorisationInformation authorisationInformation)
     {
-        return authorisationInformation.getSpaceIds().stream().filter(ids::contains).collect(Collectors.toSet());
+        return ids;
     }
 
     private CodeSearchCriteria convertToCodeSearchCriterion(final PermIdSearchCriteria permIdSearchCriteria)
@@ -59,10 +85,16 @@ public class SpaceSearchManager extends AbstractSearchManager<SpaceSearchCriteri
     }
 
     @Override
-    public Set<Long> searchForIDs(final Long userId, final SpaceSearchCriteria criteria)
+    public Set<Long> searchForIDs(final Long userId, final DataSetSearchCriteria criteria)
     {
-        // Replacing perm ID search criteria with code search criteria, because for spaces perm ID is equivalent to code
-        final Collection<ISearchCriteria> newCriteria = criteria.getCriteria().stream().map(searchCriterion ->
+        final Class<? extends AbstractCompositeSearchCriteria> parentsSearchCriteriaClass = getParentsSearchCriteriaClass();
+        final Class<? extends AbstractCompositeSearchCriteria> childrenSearchCriteriaClass = getChildrenSearchCriteriaClass();
+        final Collection<ISearchCriteria> parentsCriteria = getCriteria(criteria, parentsSearchCriteriaClass);
+        final Collection<ISearchCriteria> childrenCriteria = getCriteria(criteria, childrenSearchCriteriaClass);
+        final Collection<ISearchCriteria> mainCriteria = getOtherCriteriaThan(criteria, parentsSearchCriteriaClass, childrenSearchCriteriaClass);
+
+        // Replacing perm ID search criteria with code search criteria, because for datasets perm ID is equivalent to code
+        final Collection<ISearchCriteria> newCriteria = mainCriteria.stream().map(searchCriterion ->
         {
             if (searchCriterion instanceof PermIdSearchCriteria)
             {
@@ -73,15 +105,7 @@ public class SpaceSearchManager extends AbstractSearchManager<SpaceSearchCriteri
             }
         }).collect(Collectors.toList());
 
-        final Set<Long> mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId, TableMapper.SPACE,
-                newCriteria, criteria.getOperator());
-
-        // If we have results, we use them
-        // If we don't have results and criteria are not empty, there are no results.
-        final Set<Long> resultBeforeFiltering =
-                containsValues(mainCriteriaIntermediateResults) ? mainCriteriaIntermediateResults : Collections.emptySet();
-
-        return filterIDsByUserRights(userId, resultBeforeFiltering);
+        return super.doSearchForIds(userId, parentsCriteria, childrenCriteria, newCriteria, criteria.getOperator());
     }
 
 }

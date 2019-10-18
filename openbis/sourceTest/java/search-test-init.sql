@@ -191,3 +191,31 @@ VALUES (10002, 1001, 1005, 10001);
 
 INSERT INTO sample_relationships_all(id, sample_id_parent, sample_id_child, relationship_id)
 VALUES (10003, 1002, 1003, 10001);
+
+-- Data stores
+
+INSERT INTO data_stores(id, uuid, code, download_url, remote_url, session_token, data_source_definitions)
+VALUES (101, '94D5B32C-1CCB-437E-82BD-17693496051E', 'TEST', 'http://localhost:0', 'http://127.0.0.1:0', '1234-12345',
+        'driverClassName=org.postgresql.Driver');
+
+-- Data set types
+
+INSERT INTO data_set_types(id, code)
+VALUES (1001, 'DS_TYPE_CODE_1');
+
+INSERT INTO data_set_types(id, code)
+VALUES (1002, 'DS_TYPE_CODE_2');
+
+INSERT INTO data_set_types(id, code)
+VALUES (1003, 'DS_TYPE_CODE_3');
+
+-- Data sets
+
+INSERT INTO data_all(id, code, dsty_id, dast_id, expe_id, samp_id, pers_id_registerer, pers_id_modifier, is_derived)
+VALUES (1001, '10000101113999999-1001', 1001, 101, 1003, 1003, 101, 102, true);
+
+INSERT INTO data_all(id, code, dsty_id, dast_id, expe_id, samp_id, pers_id_registerer, pers_id_modifier, is_derived)
+VALUES (1002, '20191018113900001-1002', 1002, 101, 1003, 1003, 101, 102, true);
+
+INSERT INTO data_all(id, code, dsty_id, dast_id, expe_id, samp_id, pers_id_registerer, pers_id_modifier, is_derived)
+VALUES (1003, '20191018113900000-1003', 1003, 101, 1003, 1003, 101, 102, true);

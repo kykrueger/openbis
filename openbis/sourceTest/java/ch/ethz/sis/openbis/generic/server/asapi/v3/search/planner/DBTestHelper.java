@@ -240,6 +240,18 @@ public class DBTestHelper
 
     public static final String EXPERIMENT_TYPE_CODE_4 = "EXPERIMENT.TYPE.4";
 
+    public static final long DATA_SET_ID_1 = 1001L;
+
+    public static final long DATA_SET_ID_2 = 1002L;
+
+    public static final long DATA_SET_ID_3 = 1003L;
+
+    public static final String DATA_SET_CODE_1 = "10000101113999999-1001";
+
+    public static final String DATA_SET_CODE_2 = "20191018113900001-1002";
+
+    public static final String DATA_SET_CODE_3 = "20191018113900000-1003";
+
     private JDBCSQLExecutor sqlExecutor;
 
     private Connection connection;

@@ -16,10 +16,10 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
+import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.search.ProjectSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
@@ -28,11 +28,11 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETransl
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 
 /**
- * Manages detailed search with complex project search criteria.
+ * Manages detailed search with project search criteria.
  *
  * @author Viktor Kovtun
  */
-public class ProjectSearchManager extends AbstractCompositeEntitySearchManager<ProjectSearchCriteria, Long>
+public class ProjectSearchManager extends AbstractSearchManager<ProjectSearchCriteria, Long>
 {
 
     public ProjectSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
@@ -42,33 +42,23 @@ public class ProjectSearchManager extends AbstractCompositeEntitySearchManager<P
     }
 
     @Override
-    protected TableMapper getTableMapper()
-    {
-        return TableMapper.PROJECT;
-    }
-
-    @Override
-    protected Class<? extends AbstractCompositeSearchCriteria> getParentsSearchCriteriaClass()
-    {
-        return null;
-    }
-
-    @Override
-    protected Class<? extends AbstractCompositeSearchCriteria> getChildrenSearchCriteriaClass()
-    {
-        return null;
-    }
-
-    @Override
-    protected ProjectSearchCriteria createEmptyCriteria()
-    {
-        return new ProjectSearchCriteria();
-    }
-
-    @Override
     protected Set<Long> doFilterIDsByUserRights(final Set<Long> ids, final AuthorisationInformation authorisationInformation)
     {
         return authorisationInformation.getProjectIds().stream().filter(ids::contains).collect(Collectors.toSet());
+    }
+
+    @Override
+    public Set<Long> searchForIDs(final Long userId, final ProjectSearchCriteria criteria)
+    {
+        final Set<Long> mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId, TableMapper.PROJECT,
+                criteria.getCriteria(), criteria.getOperator());
+
+        // If we have results, we use them
+        // If we don't have results and criteria are not empty, there are no results.
+        final Set<Long> resultBeforeFiltering =
+                containsValues(mainCriteriaIntermediateResults) ? mainCriteriaIntermediateResults : Collections.emptySet();
+
+        return filterIDsByUserRights(userId, resultBeforeFiltering);
     }
 
 }

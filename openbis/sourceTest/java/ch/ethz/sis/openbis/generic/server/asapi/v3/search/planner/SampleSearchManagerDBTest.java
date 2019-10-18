@@ -147,9 +147,9 @@ public class SampleSearchManagerDBTest
      */
     private void checkCodeCriterion(final SampleSearchCriteria criterion)
     {
-        final Set<Long> sampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, criterion);
-        assertEquals(sampleIds.size(), 1);
-        assertEquals(sampleIds.iterator().next().longValue(), SAMPLE_ID_1);
+        final Set<Long> ids = searchManager.searchForIDs(ADMIN_USER_TECH_ID, criterion);
+        assertEquals(ids.size(), 1);
+        assertEquals(ids.iterator().next().longValue(), SAMPLE_ID_1);
     }
 
     /**

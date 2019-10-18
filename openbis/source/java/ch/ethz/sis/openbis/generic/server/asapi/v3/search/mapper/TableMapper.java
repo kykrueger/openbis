@@ -25,10 +25,20 @@ import java.util.Set;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.SQLTypes;
 
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ACCESS_TIMESTAMP;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.CHILD_SAMPLE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.CODE_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.DATA_CHILD_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.DATA_PARENT_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.DATA_PRODUCER_CODE_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.DATA_SET_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.DATA_SET_KIND_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.DATA_SET_TYPE_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.DATA_SET_TYPE_PROPERTY_TYPE_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.DATA_STORE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.DATA_TYPE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.DELETION_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.DELETION_DISALLOW;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.DESCRIPTION_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.EMAIL_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.EXPERIMENT_COLUMN;
@@ -37,11 +47,15 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.EXPERIMENT
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.FIRST_NAME_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.GENERATED_CODE_PREFIX;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.GENERATED_FROM_DEPTH;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.IS_AUTO_GENERATED_CODE;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.IS_DERIVED;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.IS_LISTABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.IS_PUBLIC;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.IS_SUBCODE_UNIQUE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.LAST_NAME_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.MAIN_DS_PATH;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.MAIN_DS_PATTERN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.MODIFICATION_TIMESTAMP_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ORIGINAL_DELETION_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PARENT_SAMPLE_COLUMN;
@@ -52,6 +66,7 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PERSON_IS_
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PERSON_LEADER_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PERSON_MODIFIER_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PERSON_REGISTERER_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PRODUCTION_TIMESTAMP_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PROJECT_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PROPERTY_TYPE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.REGISTRATION_TIMESTAMP_COLUMN;
@@ -64,6 +79,10 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.USER_COLUM
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.VALIDATION_SCRIPT_ID_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.VERSION_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.DATA_ALL_TABLE;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.DATA_SET_PROPERTIES_TABLE;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.DATA_SET_RELATIONSHIPS_ALL_TABLE;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.DATA_SET_TYPES_TABLE;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.DATA_SET_TYPE_PROPERTY_TYPE_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.EXPERIMENTS_ALL_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.EXPERIMENT_PROPERTIES_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.EXPERIMENT_TYPES_TABLE;
@@ -103,6 +122,12 @@ public enum TableMapper
 
     EXPERIMENT_TYPE(EXPERIMENT_TYPES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
 
+    DATA_SET(DATA_ALL_TABLE, DATA_SET_TYPE_COLUMN, PROPERTY_TYPES_TABLE, DATA_TYPE_COLUMN, DATA_SET_TYPES_TABLE, DATA_SET_TYPE_PROPERTY_TYPE_TABLE,
+            DATA_SET_TYPE_COLUMN, PROPERTY_TYPE_COLUMN, DATA_SET_PROPERTIES_TABLE, DATA_SET_COLUMN, DATA_SET_TYPE_PROPERTY_TYPE_COLUMN,
+            DATA_SET_RELATIONSHIPS_ALL_TABLE, DATA_PARENT_COLUMN, DATA_CHILD_COLUMN, DATA_ALL_TABLE, ID_COLUMN),
+
+    DATA_SET_TYPE(DATA_SET_TYPES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
+
     PERSON(PERSONS_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
 
     PROJECT(PROJECTS_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
@@ -131,6 +156,12 @@ public enum TableMapper
 
         initSpaceFieldToSQLTypeMap();
         initSpaceSQLTypeToFieldsMap();
+
+        initDataSetFieldToSQLTypeMap();
+        initDataSetSQLTypeToFieldsMap();
+
+        initDataSetTypeFieldToSQLTypeMap();
+        initDataSetTypeSQLTypeToFieldsMap();
     }
 
 
@@ -463,6 +494,68 @@ public enum TableMapper
         map.put(SQLTypes.VARCHAR, new HashSet<>(Arrays.asList(CODE_COLUMN, DESCRIPTION_COLUMN)));
         map.put(SQLTypes.TIMESTAMP_WITH_TZ, new HashSet<>(Arrays.asList(REGISTRATION_TIMESTAMP_COLUMN)));
         map.put(SQLTypes.INT8, new HashSet<>(Arrays.asList(PERSON_REGISTERER_COLUMN)));
+    }
+
+    private static void initDataSetFieldToSQLTypeMap()
+    {
+        final Map<String, SQLTypes> fields = DATA_SET.fieldToSQLTypeMap;
+        fields.put(CODE_COLUMN, SQLTypes.VARCHAR);
+        fields.put(DATA_SET_KIND_COLUMN, SQLTypes.VARCHAR);
+        fields.put(DATA_PRODUCER_CODE_COLUMN, SQLTypes.VARCHAR);
+
+        fields.put(PRODUCTION_TIMESTAMP_COLUMN, SQLTypes.TIMESTAMP_WITH_TZ);
+        fields.put(REGISTRATION_TIMESTAMP_COLUMN, SQLTypes.TIMESTAMP_WITH_TZ);
+        fields.put(MODIFICATION_TIMESTAMP_COLUMN, SQLTypes.TIMESTAMP_WITH_TZ);
+        fields.put(ACCESS_TIMESTAMP, SQLTypes.TIMESTAMP_WITH_TZ);
+
+        fields.put(DATA_SET_TYPE_COLUMN, SQLTypes.INT8);
+        fields.put(DATA_STORE_COLUMN, SQLTypes.INT8);
+        fields.put(EXPERIMENT_COLUMN, SQLTypes.INT8);
+        fields.put(SAMPLE_COLUMN, SQLTypes.INT8);
+        fields.put(PERSON_REGISTERER_COLUMN, SQLTypes.INT8);
+        fields.put(PERSON_MODIFIER_COLUMN, SQLTypes.INT8);
+        fields.put(DELETION_COLUMN, SQLTypes.INT8);
+        fields.put(ORIGINAL_DELETION_COLUMN, SQLTypes.INT8);
+
+        fields.put(VERSION_COLUMN, SQLTypes.INT4);
+
+        fields.put(IS_DERIVED, SQLTypes.BOOLEAN);
+    }
+
+    private static void initDataSetSQLTypeToFieldsMap()
+    {
+        final Map<SQLTypes, Set<String>> map = DATA_SET.sqlTypeToFieldsMap;
+        map.put(SQLTypes.VARCHAR, new HashSet<>(Arrays.asList(CODE_COLUMN, DATA_SET_KIND_COLUMN, DATA_PRODUCER_CODE_COLUMN)));
+        map.put(SQLTypes.TIMESTAMP_WITH_TZ, new HashSet<>(Arrays.asList(PRODUCTION_TIMESTAMP_COLUMN, REGISTRATION_TIMESTAMP_COLUMN,
+                MODIFICATION_TIMESTAMP_COLUMN, ACCESS_TIMESTAMP)));
+        map.put(SQLTypes.INT8, new HashSet<>(Arrays.asList(DATA_SET_TYPE_COLUMN, DATA_STORE_COLUMN, EXPERIMENT_COLUMN, SAMPLE_COLUMN,
+                PERSON_REGISTERER_COLUMN, PERSON_MODIFIER_COLUMN, DELETION_COLUMN, ORIGINAL_DELETION_COLUMN)));
+        map.put(SQLTypes.INT4, new HashSet<>(Arrays.asList(VERSION_COLUMN)));
+        map.put(SQLTypes.BOOLEAN, new HashSet<>(Arrays.asList(IS_DERIVED)));
+    }
+
+    private static void initDataSetTypeFieldToSQLTypeMap()
+    {
+        final Map<String, SQLTypes> fields = DATA_SET_TYPE.fieldToSQLTypeMap;
+        fields.put(CODE_COLUMN, SQLTypes.VARCHAR);
+        fields.put(DESCRIPTION_COLUMN, SQLTypes.VARCHAR);
+        fields.put(MAIN_DS_PATTERN, SQLTypes.VARCHAR);
+        fields.put(MAIN_DS_PATH, SQLTypes.VARCHAR);
+
+        fields.put(MODIFICATION_TIMESTAMP_COLUMN, SQLTypes.TIMESTAMP_WITH_TZ);
+
+        fields.put(VALIDATION_SCRIPT_ID_COLUMN, SQLTypes.INT8);
+
+        fields.put(DELETION_DISALLOW, SQLTypes.BOOLEAN);
+    }
+
+    private static void initDataSetTypeSQLTypeToFieldsMap()
+    {
+        final Map<SQLTypes, Set<String>> map = DATA_SET_TYPE.sqlTypeToFieldsMap;
+        map.put(SQLTypes.VARCHAR, new HashSet<>(Arrays.asList(CODE_COLUMN, DESCRIPTION_COLUMN, MAIN_DS_PATTERN, MAIN_DS_PATH)));
+        map.put(SQLTypes.TIMESTAMP_WITH_TZ, new HashSet<>(Arrays.asList(MODIFICATION_TIMESTAMP_COLUMN)));
+        map.put(SQLTypes.INT8, new HashSet<>(Arrays.asList(VALIDATION_SCRIPT_ID_COLUMN)));
+        map.put(SQLTypes.BOOLEAN, new HashSet<>(Arrays.asList(DELETION_DISALLOW)));
     }
 
 }

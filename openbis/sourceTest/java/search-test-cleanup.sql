@@ -1,3 +1,30 @@
+-- Data sets
+
+DELETE FROM data_all
+WHERE id=1001;
+
+DELETE FROM data_all
+WHERE id=1002;
+
+DELETE FROM data_all
+WHERE id=1003;
+
+-- Data set types
+
+DELETE FROM data_set_types
+WHERE id=1001;
+
+DELETE FROM data_set_types
+WHERE id=1002;
+
+DELETE FROM data_set_types
+WHERE id=1003;
+
+-- Data stores
+
+DELETE FROM data_stores
+WHERE id=101;
+
 -- Sample relationships
 
 DELETE FROM sample_relationships_all
