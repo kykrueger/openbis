@@ -2,6 +2,11 @@ import _ from 'lodash'
 import React from 'react'
 import { Draggable } from 'react-beautiful-dnd'
 import { withStyles } from '@material-ui/core/styles'
+import ObjectTypePreviewPropertyVarchar from './ObjectTypePreviewPropertyVarchar.jsx'
+import ObjectTypePreviewPropertyNumber from './ObjectTypePreviewPropertyNumber.jsx'
+import ObjectTypePreviewPropertyBoolean from './ObjectTypePreviewPropertyBoolean.jsx'
+import ObjectTypePreviewPropertyVocabulary from './ObjectTypePreviewPropertyVocabulary.jsx'
+import ObjectTypePreviewPropertyMaterial from './ObjectTypePreviewPropertyMaterial.jsx'
 import logger from '../../../common/logger.js'
 import * as util from '../../../common/util.js'
 
@@ -9,9 +14,7 @@ const styles = () => ({
   container: {
     padding: '10px'
   },
-  selected: {
-    border: '1px solid black'
-  }
+  selected: {}
 })
 
 class ObjectTypePreviewProperty extends React.PureComponent {
@@ -48,11 +51,29 @@ class ObjectTypePreviewProperty extends React.PureComponent {
             )}
             onClick={this.handleClick}
           >
-            {property.code}
+            {this.renderProperty(property)}
           </div>
         )}
       </Draggable>
     )
+  }
+
+  renderProperty(property) {
+    const dataType = property.dataType
+
+    if (dataType === 'VARCHAR' || dataType === 'MULTILINE_VARCHAR') {
+      return <ObjectTypePreviewPropertyVarchar property={property} />
+    } else if (dataType === 'REAL' || dataType === 'INTEGER') {
+      return <ObjectTypePreviewPropertyNumber property={property} />
+    } else if (dataType === 'BOOLEAN') {
+      return <ObjectTypePreviewPropertyBoolean property={property} />
+    } else if (dataType === 'CONTROLLEDVOCABULARY') {
+      return <ObjectTypePreviewPropertyVocabulary property={property} />
+    } else if (dataType === 'MATERIAL') {
+      return <ObjectTypePreviewPropertyMaterial property={property} />
+    } else {
+      return <span>Data type not supported yet</span>
+    }
   }
 }
 

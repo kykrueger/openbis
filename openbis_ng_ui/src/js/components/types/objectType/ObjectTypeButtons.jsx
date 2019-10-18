@@ -25,24 +25,22 @@ class ObjectTypeButtons extends React.PureComponent {
           classes={{ root: classes.button }}
           variant='contained'
           color='secondary'
-          onClick={this.props.onAdd}
+          onClick={this.props.onAddSection}
         >
-          Add
+          Add Section
         </Button>
         <Button
           classes={{ root: classes.button }}
           variant='contained'
           color='secondary'
-          disabled={!this.props.removeEnabled}
-          onClick={this.props.onRemove}
+          onClick={this.props.onAddProperty}
         >
-          Remove
+          Add Property
         </Button>
         <Button
           classes={{ root: classes.button }}
           variant='contained'
           color='primary'
-          disabled={!this.props.saveEnabled}
           onClick={this.props.onSave}
         >
           Save

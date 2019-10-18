@@ -10,7 +10,9 @@ import logger from '../../../common/logger.js'
 
 const styles = theme => ({
   container: {
-    padding: theme.spacing(2)
+    padding: theme.spacing(2),
+    height: '100%',
+    boxSizing: 'border-box'
   },
   droppable: {
     display: 'flex',
@@ -24,6 +26,7 @@ class ObjectTypePreview extends React.PureComponent {
   constructor(props) {
     super(props)
     this.handleDragEnd = this.handleDragEnd.bind(this)
+    this.handleClick = this.handleClick.bind(this)
   }
 
   handleDragEnd(result) {
@@ -46,13 +49,17 @@ class ObjectTypePreview extends React.PureComponent {
     }
   }
 
+  handleClick() {
+    this.props.onSelectionChange()
+  }
+
   render() {
     logger.log(logger.DEBUG, 'ObjectTypePreview.render')
 
     const { classes, type, sections } = this.props
 
     return (
-      <div className={classes.container}>
+      <div className={classes.container} onClick={this.handleClick}>
         <Typography variant='h6'>Form Preview</Typography>
         <ObjectTypePreviewCode type={type} />
         <DragDropContext onDragEnd={this.handleDragEnd}>

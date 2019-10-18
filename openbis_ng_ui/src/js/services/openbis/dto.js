@@ -23,6 +23,8 @@ const CLASS_FULL_NAMES = [
   'as/dto/property/create/PropertyAssignmentCreation',
   'as/dto/material/fetchoptions/MaterialFetchOptions',
   'as/dto/material/search/MaterialSearchCriteria',
+  'as/dto/vocabulary/search/VocabularySearchCriteria',
+  'as/dto/vocabulary/fetchoptions/VocabularyFetchOptions',
   'as/dto/vocabulary/search/VocabularyTermSearchCriteria',
   'as/dto/vocabulary/fetchoptions/VocabularyTermFetchOptions',
   'as/dto/plugin/id/PluginPermId',

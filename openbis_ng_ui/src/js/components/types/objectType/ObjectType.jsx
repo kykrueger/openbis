@@ -88,9 +88,14 @@ class ObjectType extends React.PureComponent {
           label: assignment.propertyType.label,
           description: assignment.propertyType.description,
           dataType: assignment.propertyType.dataType,
+          vocabulary: assignment.propertyType.vocabulary
+            ? assignment.propertyType.vocabulary.code
+            : null,
+          materialType: assignment.propertyType.materialType
+            ? assignment.propertyType.materialType.code
+            : null,
           visible: assignment.showInEditView,
           mandatory: assignment.mandatory,
-          propertyType: assignment.propertyType,
           section: _.find(sections, ['name', assignment.section]).id
         })
       )
@@ -210,12 +215,18 @@ class ObjectType extends React.PureComponent {
   }
 
   handleSelectionChange(type, params) {
-    this.setState(state => ({
-      ...state,
-      selection: {
+    let selection = null
+
+    if (type && params) {
+      selection = {
         type,
         params
       }
+    }
+
+    this.setState(state => ({
+      ...state,
+      selection
     }))
   }
 
