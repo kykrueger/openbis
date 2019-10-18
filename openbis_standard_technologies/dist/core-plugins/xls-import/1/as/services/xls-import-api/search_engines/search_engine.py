@@ -278,39 +278,25 @@ class SearchEngine():
                         # explicitly mentioned in xls sheet, it is ok.
                         existing_elements[results_key].extend(existing_specific_elements)
 
+        print("DEBUGDEBUG")
+        print(existing_elements)
+
         return existing_elements
 
     def _get_existing_elements(self, search_criterias, **kwargs):
         search_operation = kwargs['search_operation']
-        print("SSSOOOO")
         fetch_options = kwargs['fetch_options']
-        print("FFFFFSSSOOOO")
         if not search_criterias:
             return None
         search_criterias = search_criterias if type(search_criterias) == list else [search_criterias]
-        print("SCCSCSCSCS")
-        print(search_criterias)
         operations = [search_operation(search_criteria, fetch_options) for search_criteria in search_criterias]
-        print("OOOOOOOOOO301")
-        print(operations)
         return self._execute_search_operation(operations)
 
     def _execute_search_operation(self, operations):
-        print(operations)
-        print("BRBRBRBRBRBRBRB")
-        print(self.api)
         execution_results = self.api.executeOperations(self.session_token, operations,
                                                        SynchronousOperationExecutionOptions())
-        print("WWWWWWWWWW")
+
         result_objects = []
-        print(operations)
-        print(execution_results)
-        print(execution_results.getResults())
-        print(execution_results.getResults()[0])
-        print(execution_results.getResults()[0].getSearchResult())
-        print(execution_results.getResults()[0].getSearchResult().getObjects())
         for search_result in execution_results.getResults():
             result_objects.extend(search_result.getSearchResult().getObjects())
-        print("PRINTED THINGS")
-        print(result_objects)
         return result_objects

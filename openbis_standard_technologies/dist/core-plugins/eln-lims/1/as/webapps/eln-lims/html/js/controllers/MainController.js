@@ -222,6 +222,9 @@ function MainController(profile) {
 
 													// Keep Alive
 													localReference.serverFacade.scheduleKeepAlive();
+
+													// Barcode reading
+													BarcodeUtil.enableAutomaticBarcodeReading();
 												});
 											};
 											
