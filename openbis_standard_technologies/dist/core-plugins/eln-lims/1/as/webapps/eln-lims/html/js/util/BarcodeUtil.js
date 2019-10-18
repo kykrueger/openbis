@@ -1,5 +1,50 @@
 var BarcodeUtil = new function() {
 
+    var barcodeTimeout = false;
+    var barcodeReader = "";
+
+    var readSample = function() {
+        // Trigger search if needed
+        // permID Format 23 char, 1 hyphen: 20170912112249208-38888
+        // UUID Format 36 char, 4 hyphens: 123e4567-e89b-12d3-a456-426655440000
+        var rules = {};
+        if(barcodeReader.length === 36) {
+            rules["UUIDv4"] = { type: "Property/Attribute", 	name: "PROP.$BARCODE", operator : "thatEqualsString", value: barcodeReader };
+        } else if(barcodeReader.length === 23) {
+            rules["UUIDv4"] = { type: "Property/Attribute", 	name: "ATTR.PERM_ID", operator : "thatEqualsString", value: barcodeReader };
+        }
+
+        if(rules) {
+            var criteria = {};
+            criteria.entityKind = "SAMPLE";
+            criteria.logicalOperator = "AND";
+            criteria.rules = rules;
+
+            mainController.serverFacade.searchForSamplesAdvanced(criteria, { only : true, withProperties: true },
+            function(results) {
+                if(results.totalCount === 1) {
+                    mainController.changeView('showViewSamplePageFromPermId', results.objects[0].permId.permId);
+                }
+            });
+        }
+    }
+
+    this.enableAutomaticBarcodeReading = function() {
+        document.addEventListener('keyup', function(event) {
+            if(!barcodeTimeout) {
+                barcodeTimeout = true;
+                var timeoutFunc = function() {
+                    readSample();
+                    // reset
+                    barcodeTimeout = false;
+                    barcodeReader = "";
+                }
+                setTimeout(timeoutFunc, 1000);
+            }
+            barcodeReader += event.key;
+        });
+    }
+
     this.showBarcode = function(entity) {
         var $window = $('<form>', {
             'action' : 'javascript:void(0);'
