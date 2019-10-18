@@ -121,11 +121,6 @@ def process(context, parameters):
     entity_type_creation_operations, entity_creation_operations, entity_type_update_operations, entity_update_operations = CreationOrUpdateToOperationParser.parse(
         creations)
 
-    print(entity_type_creation_operations)
-    print(entity_creation_operations)
-    print(entity_type_update_operations)
-    print(entity_update_operations)
-
     entity_type_update_results = str(api.executeOperations(session_token, entity_type_update_operations,
                                                            SynchronousOperationExecutionOptions()).getResults())
     entity_type_creation_results = str(api.executeOperations(session_token, entity_type_creation_operations,

@@ -38,7 +38,7 @@ class SampleCreationSampleChildrenParentSearchCriteria(object):
             sample_code = identifier.sampleCode
             search_criteria.withCode().thatEquals(sample_code)
             if project_code is not None:
-                search_criteria.withProject().withCode().thatEquals(project_code)
+                search_criteria.withProject().withIdentifier().thatEquals(project_code)
             else:
                 search_criteria.withoutProject()
 
@@ -66,12 +66,15 @@ class SampleCreationSampleSearchCriteria(object):
             if creation.code is not None:
                 search_criteria.withCode().thatEquals(creation.code)
                 if creation.experimentId is not None:
-                    search_criteria.withExperiment().withCode().thatEquals(str(creation.experimentId))
+                    search_criteria.withExperiment().withIdentifier().thatEquals(str(creation.experimentId))
                 else:
                     search_criteria.withoutExperiment()
 
                 if creation.projectId is not None:
-                    search_criteria.withProject().withCode().thatEquals(str(creation.projectId))
+                    space_code, project_code = str(creation.projectId)[1:].split('/')
+                    project_search_criteria = search_criteria.withProject()
+                    project_search_criteria.withCode().thatEquals(project_code)
+                    project_search_criteria.withSpace().withCode().thatEquals(space_code)
                 else:
                     search_criteria.withoutProject()
 
@@ -104,11 +107,12 @@ class ProjectFromPropertiesSearchCriteria(object):
         self.search_criteria = search_criteria_class
 
     def get_search_criteria(self, specific_creations):
-        project_codes = [dotdict({'code': str(creation.projectId)}) for creation in
-                         specific_creations if
+        space_project = [tuple(str(creation.projectId)[1:].split('/')) for creation in specific_creations if
                          creation.projectId is not None]
+        project_codes = [dotdict({'code': project, 'spaceId': space}) for (space, project) in space_project]
         if project_codes == []:
             return None
+
         default_search_criteria_builder = ProjectFromProjectCreationSearchCriteria(self.search_criteria)
         return default_search_criteria_builder.get_search_criteria(project_codes)
 
@@ -119,11 +123,11 @@ class ExperimentFromPropertiesSearchCriteria(object):
         self.search_criteria = search_criteria_class
 
     def get_search_criteria(self, specific_creations):
-        experiment_codes = [dotdict({'code': str(creation.experimentId)}) for creation in specific_creations if
+        experiment_codes = [dotdict({'identifier': str(creation.experimentId)}) for creation in specific_creations if
                             creation.experimentId is not None]
         if not experiment_codes:
             return None
-        default_search_criteria_builder = DefaultCreationElementSearchCriteria(self.search_criteria)
+        default_search_criteria_builder = ExperimentFromExperimentCreationSearchCriteria(self.search_criteria)
         return default_search_criteria_builder.get_search_criteria(experiment_codes)
 
 
@@ -151,6 +155,19 @@ class ProjectFromProjectCreationSearchCriteria(object):
         for creation in specific_creations:
             self.search_criteria.withCode().thatEquals(creation.code)
             self.search_criteria.withSpace().withCode().thatEquals(str(creation.spaceId))
+        self.search_criteria.withOrOperator()
+        return self.search_criteria
+
+
+class ExperimentFromExperimentCreationSearchCriteria(object):
+
+    def __init__(self, search_criteria_class):
+        self.search_criteria = search_criteria_class()
+
+    def get_search_criteria(self, specific_creations):
+        for creation in specific_creations:
+            if creation.identifier:
+                self.search_criteria.withIdentifier().thatEquals(creation.identifier)
         self.search_criteria.withOrOperator()
         return self.search_criteria
 
