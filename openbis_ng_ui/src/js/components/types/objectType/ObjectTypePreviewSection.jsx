@@ -7,11 +7,10 @@ import * as util from '../../../common/util.js'
 
 const styles = () => ({
   container: {
-    padding: '10px'
-  },
-  selected: {
+    padding: '10px',
     border: '1px solid red'
-  }
+  },
+  selected: {}
 })
 
 class ObjectTypePreviewSection extends React.PureComponent {
@@ -28,7 +27,15 @@ class ObjectTypePreviewSection extends React.PureComponent {
   render() {
     logger.log(logger.DEBUG, 'ObjectTypePreviewSection.render')
 
-    let { section, index, children, selection, classes } = this.props
+    let {
+      section,
+      index,
+      children,
+      selection,
+      isDroppable,
+      classes
+    } = this.props
+
     let { id, name } = section
 
     const selected =
@@ -49,7 +56,7 @@ class ObjectTypePreviewSection extends React.PureComponent {
             )}
             onClick={this.handleClick}
           >
-            <Droppable droppableId={id} type='property'>
+            <Droppable droppableId={id} isDropDisabled={!isDroppable}>
               {provided => (
                 <div ref={provided.innerRef} {...provided.droppableProps}>
                   Section {name}

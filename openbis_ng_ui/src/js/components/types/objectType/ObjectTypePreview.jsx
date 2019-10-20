@@ -18,15 +18,25 @@ const styles = theme => ({
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'flex-start',
-    alignContent: 'flex-start'
+    alignContent: 'flex-start',
+    padding: theme.spacing(2),
+    border: '1px solid green'
   }
 })
 
 class ObjectTypePreview extends React.PureComponent {
   constructor(props) {
     super(props)
+    this.state = {}
+    this.handleDragStart = this.handleDragStart.bind(this)
     this.handleDragEnd = this.handleDragEnd.bind(this)
     this.handleClick = this.handleClick.bind(this)
+  }
+
+  handleDragStart(start) {
+    this.setState({
+      currentDraggableId: start.draggableId
+    })
   }
 
   handleDragEnd(result) {
@@ -56,23 +66,24 @@ class ObjectTypePreview extends React.PureComponent {
   render() {
     logger.log(logger.DEBUG, 'ObjectTypePreview.render')
 
-    const { classes, type, sections } = this.props
+    const { classes, type } = this.props
 
     return (
       <div className={classes.container} onClick={this.handleClick}>
         <Typography variant='h6'>Form Preview</Typography>
         <ObjectTypePreviewCode type={type} />
-        <DragDropContext onDragEnd={this.handleDragEnd}>
-          <Droppable droppableId='root' type='section'>
+        <DragDropContext
+          onDragStart={this.handleDragStart}
+          onDragEnd={this.handleDragEnd}
+        >
+          <Droppable droppableId='root'>
             {provided => (
               <div
                 ref={provided.innerRef}
                 {...provided.droppableProps}
                 className={classes.droppable}
               >
-                {sections.map((section, index) =>
-                  this.renderSection(section, index)
-                )}
+                {this.renderSectionsAndProperties()}
                 {provided.placeholder}
               </div>
             )}
@@ -82,8 +93,31 @@ class ObjectTypePreview extends React.PureComponent {
     )
   }
 
+  renderSectionsAndProperties() {
+    const { sections, properties } = this.props
+
+    const elements = []
+    let index = 0
+
+    while (index < properties.length) {
+      let property = properties[index]
+
+      if (property.section) {
+        let section = _.find(sections, ['id', property.section])
+        elements.push(this.renderSection(section, index))
+        index += section.properties.length
+      } else {
+        elements.push(this.renderProperty(property, index))
+        index++
+      }
+    }
+
+    return elements
+  }
+
   renderSection(section, index) {
     const { properties, selection, onSelectionChange } = this.props
+    const { currentDraggableId } = this.state
 
     const sectionProperties = section.properties.map(id =>
       _.find(properties, ['id', id])
@@ -96,26 +130,29 @@ class ObjectTypePreview extends React.PureComponent {
         index={index}
         selection={selection}
         onSelectionChange={onSelectionChange}
+        isDroppable={
+          currentDraggableId && currentDraggableId.startsWith('property-')
+        }
       >
-        {this.renderProperties(sectionProperties, 0)}
+        {sectionProperties.map((sectionProperty, index) =>
+          this.renderProperty(sectionProperty, index)
+        )}
       </ObjectTypePreviewSection>
     )
   }
 
-  renderProperties(properties, index) {
+  renderProperty(property, index) {
     const { selection, onSelectionChange } = this.props
 
-    return properties.map((property, offset) => {
-      return (
-        <ObjectTypePreviewProperty
-          key={property.id}
-          property={property}
-          index={index + offset}
-          selection={selection}
-          onSelectionChange={onSelectionChange}
-        />
-      )
-    })
+    return (
+      <ObjectTypePreviewProperty
+        key={property.id}
+        property={property}
+        index={index}
+        selection={selection}
+        onSelectionChange={onSelectionChange}
+      />
+    )
   }
 }
 
