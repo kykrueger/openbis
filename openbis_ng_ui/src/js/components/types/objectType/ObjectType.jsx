@@ -63,13 +63,26 @@ class ObjectType extends React.PureComponent {
         subcodeUnique: loadedType.subcodeUnique
       }
 
-      const sections = []
-      const properties = []
-      let currentSection = null
-      let currentProperty = null
+      const sections = loadedType.propertyAssignments.reduce(
+        (sections, assignment, index) => {
+          let section = sections[sections.length - 1]
+          if (section.name === assignment.section) {
+            section.properties.push('property-' + index)
+          } else {
+            let newSection = {
+              id: 'section-' + sections.length,
+              name: assignment.section,
+              properties: ['property-' + index]
+            }
+            sections.push(newSection)
+          }
+          return sections
+        },
+        [{ id: 'section-0', name: null, properties: [] }]
+      )
 
-      loadedType.propertyAssignments.forEach((assignment, index) => {
-        currentProperty = {
+      const properties = loadedType.propertyAssignments.map(
+        (assignment, index) => ({
           id: 'property-' + index,
           code: assignment.propertyType.code,
           label: assignment.propertyType.label,
@@ -82,27 +95,10 @@ class ObjectType extends React.PureComponent {
             ? assignment.propertyType.materialType.code
             : null,
           visible: assignment.showInEditView,
-          mandatory: assignment.mandatory
-        }
-
-        if (assignment.section) {
-          if (currentSection && currentSection.name === assignment.section) {
-            currentSection.properties.push(currentProperty.id)
-          } else {
-            currentSection = {
-              id: 'section-' + sections.length,
-              name: assignment.section,
-              properties: [currentProperty.id]
-            }
-            sections.push(currentSection)
-          }
-          currentProperty.section = currentSection.id
-        } else {
-          currentSection = null
-        }
-
-        properties.push(currentProperty)
-      })
+          mandatory: assignment.mandatory,
+          section: _.find(sections, ['name', assignment.section]).id
+        })
+      )
 
       this.setState(() => ({
         loaded: true,

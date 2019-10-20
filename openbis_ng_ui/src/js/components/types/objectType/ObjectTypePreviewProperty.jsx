@@ -12,9 +12,9 @@ import * as util from '../../../common/util.js'
 
 const styles = () => ({
   container: {
-    padding: '10px',
-    border: '1px solid black'
-  }
+    padding: '10px'
+  },
+  selected: {}
 })
 
 class ObjectTypePreviewProperty extends React.PureComponent {
