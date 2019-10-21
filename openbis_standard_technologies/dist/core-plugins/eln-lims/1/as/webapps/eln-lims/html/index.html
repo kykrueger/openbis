@@ -50,6 +50,7 @@
 	<!-- Third party libraries -->
 	<script type="text/javascript" src="./lib/cycle/js/cycle.js"></script>
 	<script type="text/javascript" src="./lib/jquery/js/jquery-1.11.3.min.js"></script>
+	<script type="text/javascript" src="./lib/jquery/js/jquery.cookie.js"></script>
 	<script type="text/javascript" src="./lib/jquery-ui/js/jquery-ui.min.js"></script>
 	<script type="text/javascript" src="./lib/jquery-fancytree/js/jquery.fancytree-all.min.js"></script>
 	<script type="text/javascript" src="./lib/bootstrap-datetimepicker/js/moment.js"></script>
@@ -372,7 +373,11 @@
 		}
 		var test = queryString.test;
 		if(test == "true") {
-			TestProtocol.start();
+			TestProtocol.startAdmitTests();
+		}
+
+		if ($.cookie("suitename") == "testId") {
+			TestProtocol.startTestUserTests();
 		}
 	}
 	

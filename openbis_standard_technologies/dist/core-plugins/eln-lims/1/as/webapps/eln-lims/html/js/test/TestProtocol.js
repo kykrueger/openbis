@@ -1,11 +1,19 @@
 var TestProtocol = new function () {
 
-    this.start = function() {
+    this.startAdmitTests = function() {
         testChain = Promise.resolve();
         testChain.then(() => this.login("admin", "a"))
                  .then(() => this.inventorySpace())
                  .then(() => this.enableBacteriaToShowInDropDowns())
                  .then(() => this.userManager())
+                 .catch(error => { console.log(error) });
+    }
+
+    this.startTestUserTests = function() {
+        testChain = Promise.resolve();
+        testChain.then(() => this.deleteCookies("suitename"))
+                 .then(() => this.login("testId", "pass"))
+                 .then(() => this.inventorySpaceForTestUser())
                  .catch(error => { console.log(error) });
     }
 
@@ -104,9 +112,8 @@ var TestProtocol = new function () {
                      .then(() => e.click("createUserBtn"))
                      .then(() => TestProtocol.createPassword())
                      .then(() => TestProtocol.userExist())
+                     .then(() => TestProtocol.setCookies("suitename", "testId"))
                      .then(() => e.click("logoutBtn"))
-                     .then(() => TestProtocol.login("testId", "pass"))
-                     .then(() => TestProtocol.inventorySpaceForTestUser())
                      .then(() => resolve())
                      .catch(() => reject(error));
         });
@@ -138,8 +145,22 @@ var TestProtocol = new function () {
                        "_METHODS_PROTOCOLS_WESTERN_BLOTTING_PROTOCOLS"];
 
             Promise.resolve().then(() => TestProtocol.verifyInventory(ids))
-                             .then(() => e.verifyExistence("USER_MANAGER", true))
+                             .then(() => e.verifyExistence("USER_MANAGER", false))
                              .then(() => resolve());
+        });
+    }
+
+    this.setCookies = function(key, value) {
+        return new Promise(function executor(resolve, reject) {
+            $.cookie(key, value);
+            resolve();
+        });
+    }
+
+    this.deleteCookies = function(key) {
+        return new Promise(function executor(resolve, reject) {
+            $.removeCookie(key);
+            resolve();
         });
     }
 
