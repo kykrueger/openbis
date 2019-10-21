@@ -26,6 +26,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.SearchDataSetsOpe
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.SearchDataSetsOperationResult;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.ISearchObjectExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.SearchObjectsOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DataSetSearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.ITranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.dataset.IDataSetTranslator;
@@ -45,6 +46,9 @@ public class SearchDataSetsOperationExecutor extends SearchObjectsOperationExecu
 
     @Autowired
     private IDataSetTranslator translator;
+
+    @Autowired
+    private DataSetSearchManager dataSetSearchManager;
 
     @Override
     protected Class<? extends SearchObjectsOperation<DataSetSearchCriteria, DataSetFetchOptions>> getOperationClass()
@@ -67,7 +71,7 @@ public class SearchDataSetsOperationExecutor extends SearchObjectsOperationExecu
     @Override
     protected ISearchManager<DataSetSearchCriteria, Long> getSearchManager()
     {
-        throw new RuntimeException("This method is not implemented yet.");
+        return dataSetSearchManager;
     }
 
     @Override

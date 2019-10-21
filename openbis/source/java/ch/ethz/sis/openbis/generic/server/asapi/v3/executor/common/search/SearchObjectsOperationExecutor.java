@@ -30,6 +30,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchObjectsOpera
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchObjectsOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset.SearchDataSetsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.experiment.SearchExperimentsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.sample.SearchSamplesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sort.ISortAndPage;
@@ -67,7 +68,8 @@ public abstract class SearchObjectsOperationExecutor<OBJECT, OBJECT_PE, CRITERIA
             final SearchObjectsOperation<CRITERIA, FETCH_OPTIONS> operation)
     {
         // TODO: remove this hack when all implementations of this executor implement getSearchManager() which is not throwing an exception
-        if (!(this instanceof SearchSamplesOperationExecutor || this instanceof SearchExperimentsOperationExecutor))
+        if (!(this instanceof SearchSamplesOperationExecutor || this instanceof SearchExperimentsOperationExecutor ||
+                this instanceof SearchDataSetsOperationExecutor))
         {
             return super.doExecute(context, operation);
         }
