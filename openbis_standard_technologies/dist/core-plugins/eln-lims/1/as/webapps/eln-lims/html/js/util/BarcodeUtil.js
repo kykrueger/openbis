@@ -45,6 +45,39 @@ var BarcodeUtil = new function() {
         });
     }
 
+    this.preGenerateBarcodes = function(views) {
+        views.header.append($("<h2>").append("Barcode Generator"));
+	    var $generateBtn = FormUtil.getButtonWithText("Generate Barcodes", function() {}, "btn-primary");
+        $generateBtn.css("margin-bottom", "14px");
+
+        var $toolbar = $("<span>");
+
+        var $numberDropdown = FormUtil.getDropdown([
+            { label: '10', value: 10, selected: true },
+            { label: '25', value: 25 },
+            { label: '50', value: 50 },
+            { label: '100', value: 100 }
+        ]);
+        $toolbar.append($generateBtn).append($("<span>", { style:"width:50%; margin-left: 10px; display:inline-block;"}).append($numberDropdown));
+        views.header.append($toolbar);
+
+        var _this = this;
+        $generateBtn.click(function() {
+            views.content.empty();
+            var value = parseInt($numberDropdown.val());
+            for(var idx = 0; idx < value; idx++) {
+                _this.addBarcode(views.content, idx);
+            }
+        });
+    }
+
+    this.addBarcode = function(content, idx) {
+        var uuid = Util.guid();
+        content.append($('<br>'));
+        content.append($('<center>').append($('<canvas>', { id : "barcode-canvas-" + idx, width : 1, height : 1, style : "border:1px solid #fff;visibility:hidden" })));
+        this.generateBarcode("barcode-canvas-" + idx, "code128", uuid, uuid);
+    }
+
     this.readBarcode = function(entity) {
         var $window = $('<form>', {
             'action' : 'javascript:void(0);'
@@ -232,11 +265,10 @@ var BarcodeUtil = new function() {
             if (msg.indexOf("bwipp.") >= 0) {
                 Util.manageError(msg);
             } else if (e.stack) {
-                Util.manageError(stack);
+                Util.manageError(e.stack);
             } else {
                 Util.manageError(e);
             }
-            return;
         }
     }
 }

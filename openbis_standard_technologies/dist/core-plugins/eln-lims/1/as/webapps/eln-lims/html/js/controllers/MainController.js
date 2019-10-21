@@ -376,6 +376,12 @@ function MainController(profile) {
 		
 		try {
 			switch (newViewChange) {
+			    case "showBarcodesGeneratorPage":
+			        document.title = "Barcodes Generator";
+			        var barcodesGeneratorViews = this._getNewViewModel(true, true, false);
+			        BarcodeUtil.preGenerateBarcodes(barcodesGeneratorViews);
+			        this.currentView = null;
+			        break;
 				case "showJupyterWorkspace":
 					document.title = "Jupyter Workspace";
 					var views = this._getNewViewModel(false, true, false);
