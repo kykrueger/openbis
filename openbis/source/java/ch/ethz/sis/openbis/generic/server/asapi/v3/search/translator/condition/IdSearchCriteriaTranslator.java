@@ -21,6 +21,7 @@ import java.util.Map;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.IdSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
@@ -117,6 +118,10 @@ public class IdSearchCriteriaTranslator extends AbstractConditionTranslator<IdSe
         {
             sqlBuilder.append(Translator.MAIN_TABLE_ALIAS).append(PERIOD).append(PERM_ID_COLUMN).append(EQ).append(QU);
             args.add(((ExperimentPermId) entityId).getPermId());
+        } else if (entityId.getClass() == DataSetPermId.class)
+        {
+            sqlBuilder.append(Translator.MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(EQ).append(QU);
+            args.add(((DataSetPermId) entityId).getPermId());
         } else
         {
             throw new IllegalArgumentException("The following ID class is not supported: " + entityId.getClass().getSimpleName());

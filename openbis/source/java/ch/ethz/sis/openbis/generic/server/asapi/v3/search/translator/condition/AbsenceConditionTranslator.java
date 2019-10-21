@@ -23,6 +23,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.NoExperimentSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.search.NoProjectSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.NoSampleContainerSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.NoSampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.search.NoSpaceSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator;
@@ -53,6 +54,9 @@ public class AbsenceConditionTranslator extends AbstractConditionTranslator<ISea
         } else if (criterion instanceof NoSpaceSearchCriteria)
         {
             sqlBuilder.append(ColumnNames.SPACE_COLUMN);
+        } else if (criterion instanceof NoSampleSearchCriteria)
+        {
+            sqlBuilder.append(ColumnNames.SAMPLE_COLUMN);
         } else
         {
             throw new IllegalArgumentException("Unsupported criterion type: " + criterion.getClass().getSimpleName());

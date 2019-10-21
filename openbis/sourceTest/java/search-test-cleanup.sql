@@ -1,3 +1,69 @@
+-- Property tables for data tests
+
+DELETE FROM data_set_types
+WHERE id=3001;
+
+DELETE FROM property_types
+WHERE id=5002;
+
+DELETE FROM data_set_type_property_types
+WHERE id=3001;
+
+DELETE FROM data_set_properties
+WHERE id=2001;
+
+
+DELETE FROM data_set_types
+WHERE id=3002;
+
+DELETE FROM property_types
+WHERE id=5001;
+
+DELETE FROM data_set_type_property_types
+WHERE id=3002;
+
+DELETE FROM data_set_properties
+WHERE id=2002;
+
+
+DELETE FROM data_set_types
+WHERE id=3003;
+
+DELETE FROM property_types
+WHERE id=5003;
+
+DELETE FROM data_set_type_property_types
+WHERE id=3003;
+
+DELETE FROM data_set_properties
+WHERE id=2003;
+
+
+DELETE FROM data_set_types
+WHERE id=3004;
+
+DELETE FROM property_types
+WHERE id=5004;
+
+DELETE FROM data_set_type_property_types
+WHERE id=3004;
+
+DELETE FROM data_set_properties
+WHERE id=2004;
+
+
+DELETE FROM data_set_types
+WHERE id=3005;
+
+DELETE FROM property_types
+WHERE id=5005;
+
+DELETE FROM data_set_type_property_types
+WHERE id=3005;
+
+DELETE FROM data_set_properties
+WHERE id=2005;
+
 -- Data sets
 
 DELETE FROM data_all
@@ -39,7 +105,7 @@ WHERE id=10003;
 DELETE FROM relationship_types
 WHERE id=10001;
 
--- Tables related to samples
+-- Property tables for samples
 
 DELETE FROM property_types
 WHERE id=4002;

@@ -104,7 +104,7 @@ INSERT INTO samples_all(id, orig_del, frozen_for_children, code, expe_id, proj_f
 VALUES (1006, null, false, 'ANOTHER_UNIQUE_CODE_6', null, false, '20191014130100000-2006', null, false, 1, false, null, 105, 10002, false, false,
         false, false, null, TIMESTAMP '2018-06-13 10:50:00+02', 1, null, false);
 
--- Tables related to samples
+-- Property tables for samples
 
 INSERT INTO sample_types(code, id)
 VALUES ('SAMPLE.TYPE.1', 3001);
@@ -213,15 +213,81 @@ VALUES (1003, 'DS_TYPE_CODE_3');
 
 INSERT INTO data_all(id, code, dsty_id, dast_id, expe_id, samp_id, pers_id_registerer, pers_id_modifier, is_derived,
         registration_timestamp, modification_timestamp)
-VALUES (1001, '10000101113999999-1001', 1001, 101, 1003, 1003, 101, 102, true,
+VALUES (1001, '10000101113999999-1001', 1001, 101, null, 1003, 101, 102, true,
         TIMESTAMP '2019-08-11 10:50:00+02', TIMESTAMP '2019-08-01 10:50:00+02');
 
 INSERT INTO data_all(id, code, dsty_id, dast_id, expe_id, samp_id, pers_id_registerer, pers_id_modifier, is_derived,
         registration_timestamp, modification_timestamp)
-VALUES (1002, '20191018113900001-1002', 1002, 101, 1003, 1003, 101, 102, true,
+VALUES (1002, '20191018113900001-1002', 1002, 101, 1003, null, 101, 102, true,
         TIMESTAMP '2019-08-12 10:50:00+02', TIMESTAMP '2019-08-02 10:50:00+02');
 
 INSERT INTO data_all(id, code, dsty_id, dast_id, expe_id, samp_id, pers_id_registerer, pers_id_modifier, is_derived,
         registration_timestamp, modification_timestamp)
 VALUES (1003, '20191018113900000-1003', 1003, 101, 1003, 1003, 101, 102, true,
         TIMESTAMP '2019-08-13 10:50:00+02', TIMESTAMP '2019-08-03 10:50:00+02');
+
+-- Property tables for data sets
+
+INSERT INTO data_set_types(id, code)
+VALUES (3001, 'DATASET.TYPE.1');
+
+INSERT INTO property_types(id, code, daty_id, is_internal_namespace, description, label, pers_id_registerer)
+VALUES (5002, 'TEST.DATASET.LONG', 3, false, '', 'test.dataset.long', 2);
+
+INSERT INTO data_set_type_property_types(id, dsty_id, pers_id_registerer, prty_id, ordinal)
+VALUES (3001, 3001, 101, 5002, 2);
+
+INSERT INTO data_set_properties(id, pers_id_author, dstpt_id, value, pers_id_registerer, ds_id)
+VALUES (2001, 101, 3001, 102, 101, 1001);
+
+
+INSERT INTO data_set_types(id, code)
+VALUES (3002, 'DATASET.TYPE.2');
+
+INSERT INTO property_types(id, code, daty_id, is_internal_namespace, description, label, pers_id_registerer)
+VALUES (5001, 'TEST.DATASET.STRING', 1, false, '', 'test.dataset.string', 2);
+
+INSERT INTO data_set_type_property_types(id, dsty_id, pers_id_registerer, prty_id, ordinal)
+VALUES (3002, 3002, 2, 5001, 2);
+
+INSERT INTO data_set_properties(id, pers_id_author, dstpt_id, value, pers_id_registerer, ds_id)
+VALUES (2002, 2, 3002, 'Test data set property value', 2, 1002);
+
+
+INSERT INTO data_set_types(id, code)
+VALUES (3003, 'DATASET.TYPE.3');
+
+INSERT INTO property_types(id, code, daty_id, is_internal_namespace, description, label, pers_id_registerer)
+VALUES (5003, 'TEST.DATASET.DOUBLE', 4, false, '', 'test.dataset.double', 2);
+
+INSERT INTO data_set_type_property_types(id, dsty_id, pers_id_registerer, prty_id, ordinal)
+VALUES (3003, 3003, 2, 5003, 2);
+
+INSERT INTO data_set_properties(id, pers_id_author, dstpt_id, value, pers_id_registerer, ds_id)
+VALUES (2003, 2, 3003, 90.15, 2, 1003);
+
+
+INSERT INTO data_set_types(id, code)
+VALUES (3004, 'DATASET.TYPE.4');
+
+INSERT INTO property_types(id, code, daty_id, is_internal_namespace, description, label, pers_id_registerer)
+VALUES (5004, 'TEST.DATASET.DATE', 6, false, '', 'test.dataset.date', 2);
+
+INSERT INTO data_set_type_property_types(id, dsty_id, pers_id_registerer, prty_id, ordinal)
+VALUES (3004, 3004, 2, 5004, 2);
+
+INSERT INTO data_set_properties(id, pers_id_author, dstpt_id, value, pers_id_registerer, ds_id)
+VALUES (2004, 2, 3004, TIMESTAMP '2019-10-17 15:58:00+02', 2, 1002);
+
+
+INSERT INTO data_set_types(id, code)
+VALUES (3005, 'DATASET.TYPE.5');
+
+INSERT INTO property_types(id, code, daty_id, is_internal_namespace, description, label, pers_id_registerer)
+VALUES (5005, 'TEST.DATASET.STRING', 1, true, '', 'test.dataset.string', 2);
+
+INSERT INTO data_set_type_property_types(id, dsty_id, pers_id_registerer, prty_id, ordinal)
+VALUES (3005, 3005, 2, 5005, 2);
+
+INSERT INTO data_set_properties(id, pers_id_author, dstpt_id, value, pers_id_registerer, ds_id)
+VALUES (2005, 2, 3005, 'Internal data set value', 2, 1001);

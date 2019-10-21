@@ -264,6 +264,36 @@ public class DBTestHelper
 
     public static final String DATA_SET_MODIFICATION_DATE_STRING_2 = "2019-08-02 10:50:00 +0200";
 
+    public static final long DATA_SET_PROPERTY_1_NUMBER_VALUE = 102L;
+
+    public static final String DATA_SET_PROPERTY_1_INTERNAL_STRING_VALUE = "Internal data set value";
+
+    public static final String DATA_SET_PROPERTY_2_STRING_VALUE = "Test data set property value";
+
+    public static final double DATA_SET_PROPERTY_3_NUMBER_VALUE = 90.15;
+
+    public static final Date DATA_SET_PROPERTY_2_DATE_VALUE = new Date(119, Calendar.OCTOBER, 17, 15, 58, 0);
+
+    public static final Date DATA_SET_PROPERTY_2_EARLIER_DATE_VALUE = new Date(119, Calendar.OCTOBER, 17, 15, 57, 0);
+
+    public static final Date DATA_SET_PROPERTY_2_LATER_DATE_VALUE = new Date(119, Calendar.OCTOBER, 17, 15, 59, 0);
+
+    public static final String DATA_SET_PROPERTY_2_DATE_STRING_VALUE = "2019-10-17 15:58:00 +0200";
+
+    public static final String DATA_SET_PROPERTY_2_EARLIER_DATE_STRING_VALUE = "2019-10-17 15:57:00 +0200";
+
+    public static final String DATA_SET_PROPERTY_2_LATER_DATE_STRING_VALUE = "2019-10-17 15:59:00 +0200";
+
+    public static final String INTERNAL_DATA_SET_PROPERTY_CODE_STRING = "$TEST.DATASET.STRING";
+
+    public static final String DATA_SET_PROPERTY_CODE_STRING = "TEST.DATASET.STRING";
+
+    public static final String DATA_SET_PROPERTY_CODE_LONG = "TEST.DATASET.LONG";
+
+    public static final String DATA_SET_PROPERTY_CODE_DOUBLE = "TEST.DATASET.DOUBLE";
+
+    public static final String DATA_SET_PROPERTY_CODE_DATE = "TEST.DATASET.DATE";
+
     private JDBCSQLExecutor sqlExecutor;
 
     private Connection connection;

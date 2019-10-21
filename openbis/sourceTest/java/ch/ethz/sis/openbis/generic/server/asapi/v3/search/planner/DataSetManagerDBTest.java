@@ -22,6 +22,7 @@ import java.util.Set;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AnyFieldSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ModificationDateSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.RegistrationDateSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetSearchCriteria;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -39,6 +40,10 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestH
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.DATA_SET_ID_3;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.DATA_SET_MODIFICATION_DATE_2;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.DATA_SET_MODIFICATION_DATE_STRING_2;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.DATA_SET_PROPERTY_1_NUMBER_VALUE;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.DATA_SET_PROPERTY_2_STRING_VALUE;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.DATA_SET_PROPERTY_CODE_LONG;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.DATA_SET_PROPERTY_CODE_STRING;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.DATA_SET_REGISTRATION_DATE_2;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.DATA_SET_REGISTRATION_DATE_STRING_1;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.DATA_SET_REGISTRATION_DATE_STRING_2;
@@ -336,6 +341,223 @@ public class DataSetManagerDBTest
         assertTrue(containsCriterionDataSetIds.contains(DATA_SET_ID_1));
         assertTrue(containsCriterionDataSetIds.contains(DATA_SET_ID_2));
         assertTrue(containsCriterionDataSetIds.contains(DATA_SET_ID_3));
+    }
+
+    /**
+     * Tests {@link DataSetSearchManager} with without experiment attribute search criteria using DB connection.
+     */
+    @Test
+    public void testQueryDBWithoutExperimentField()
+    {
+        final DataSetSearchCriteria criterion = new DataSetSearchCriteria();
+        criterion.withoutExperiment();
+        final Set<Long> criterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, criterion);
+        assertFalse(criterionDataSetIds.isEmpty());
+        assertTrue(criterionDataSetIds.contains(DATA_SET_ID_1));
+        assertFalse(criterionDataSetIds.contains(DATA_SET_ID_2));
+        assertFalse(criterionDataSetIds.contains(DATA_SET_ID_3));
+    }
+
+    /**
+     * Tests {@link DataSetSearchManager} with without sample attribute search criteria using DB connection.
+     */
+    @Test
+    public void testQueryDBWithoutSampleField()
+    {
+        final DataSetSearchCriteria criterion = new DataSetSearchCriteria();
+        criterion.withoutSample();
+        final Set<Long> criterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, criterion);
+        assertFalse(criterionDataSetIds.isEmpty());
+        assertFalse(criterionDataSetIds.contains(DATA_SET_ID_1));
+        assertTrue(criterionDataSetIds.contains(DATA_SET_ID_2));
+        assertFalse(criterionDataSetIds.contains(DATA_SET_ID_3));
+    }
+
+    /**
+     * Tests {@link DataSetSearchManager} with ID search criteria using DB connection.
+     */
+    @Test
+    public void testQueryDBWithId()
+    {
+        final DataSetSearchCriteria permIdCriterion = new DataSetSearchCriteria();
+        permIdCriterion.withId().thatEquals(new DataSetPermId(DATA_SET_CODE_2));
+        final Set<Long> permIdCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, permIdCriterion);
+        assertEquals(permIdCriterionDataSetIds.size(), 1);
+        assertTrue(permIdCriterionDataSetIds.contains(DATA_SET_ID_2));
+    }
+
+    /**
+     * Tests {@link DataSetSearchManager} with string property search criteria using DB connection.
+     */
+    @Test
+    public void testQueryDBWithAnyProperty()
+    {
+        final DataSetSearchCriteria anyPropertyCriterion = new DataSetSearchCriteria();
+        anyPropertyCriterion.withAnyProperty();
+        final Set<Long> anyPropertyCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, anyPropertyCriterion);
+        assertTrue(anyPropertyCriterionDataSetIds.contains(DATA_SET_ID_1));
+        assertTrue(anyPropertyCriterionDataSetIds.contains(DATA_SET_ID_2));
+        assertTrue(anyPropertyCriterionDataSetIds.contains(DATA_SET_ID_3));
+
+        final DataSetSearchCriteria equalsNumberPropertyCriterion = new DataSetSearchCriteria();
+        equalsNumberPropertyCriterion.withAnyProperty().thatEquals(String.valueOf(DATA_SET_PROPERTY_1_NUMBER_VALUE));
+        final Set<Long> equalsNumberPropertyCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, equalsNumberPropertyCriterion);
+        assertEquals(equalsNumberPropertyCriterionDataSetIds.size(), 1);
+        assertTrue(equalsNumberPropertyCriterionDataSetIds.contains(DATA_SET_ID_1));
+
+        final DataSetSearchCriteria equalsStringPropertyCriterion = new DataSetSearchCriteria();
+        equalsStringPropertyCriterion.withAnyProperty().thatEquals(DATA_SET_PROPERTY_2_STRING_VALUE);
+        final Set<Long> equalsStringPropertyCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, equalsStringPropertyCriterion);
+        assertEquals(equalsStringPropertyCriterionDataSetIds.size(), 1);
+        assertTrue(equalsStringPropertyCriterionDataSetIds.contains(DATA_SET_ID_2));
+
+        final DataSetSearchCriteria equalsStringPropertyCriterionNotFound = new DataSetSearchCriteria();
+        equalsStringPropertyCriterionNotFound.withAnyProperty().thatEquals(DATA_SET_PROPERTY_2_STRING_VALUE + "-");
+        final Set<Long> equalsStringPropertyCriterionDataSetIdsNotFound = searchManager.searchForIDs(ADMIN_USER_TECH_ID, equalsStringPropertyCriterionNotFound);
+        assertEquals(equalsStringPropertyCriterionDataSetIdsNotFound.size(), 0);
+
+        final DataSetSearchCriteria startsWithStringPropertyCriterion = new DataSetSearchCriteria();
+        startsWithStringPropertyCriterion.withAnyProperty().thatStartsWith(DATA_SET_PROPERTY_2_STRING_VALUE.substring(0, 10));
+        final Set<Long> startsWithStringPropertyCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, startsWithStringPropertyCriterion);
+        assertEquals(startsWithStringPropertyCriterionDataSetIds.size(), 1);
+        assertTrue(startsWithStringPropertyCriterionDataSetIds.contains(DATA_SET_ID_2));
+
+        final DataSetSearchCriteria startsWithStringPropertyCriterionNotFound = new DataSetSearchCriteria();
+        startsWithStringPropertyCriterionNotFound.withAnyProperty().thatStartsWith(
+                DATA_SET_PROPERTY_2_STRING_VALUE.substring(0, 10) + "-");
+        final Set<Long> startsWithStringPropertyCriterionDataSetIdsNotFound = searchManager.searchForIDs(ADMIN_USER_TECH_ID,
+                startsWithStringPropertyCriterionNotFound);
+        assertEquals(startsWithStringPropertyCriterionDataSetIdsNotFound.size(), 0);
+
+        final DataSetSearchCriteria endsWithStringPropertyCriterion = new DataSetSearchCriteria();
+        endsWithStringPropertyCriterion.withAnyProperty().thatEndsWith(DATA_SET_PROPERTY_2_STRING_VALUE.substring(10));
+        final Set<Long> endsWithStringPropertyCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, endsWithStringPropertyCriterion);
+        assertEquals(endsWithStringPropertyCriterionDataSetIds.size(), 1);
+        assertTrue(endsWithStringPropertyCriterionDataSetIds.contains(DATA_SET_ID_2));
+
+        final DataSetSearchCriteria endsWithStringPropertyCriterionNotFound = new DataSetSearchCriteria();
+        endsWithStringPropertyCriterionNotFound.withAnyProperty().thatEndsWith(DATA_SET_PROPERTY_2_STRING_VALUE.substring(10)
+                + "-");
+        final Set<Long> endsWithStringPropertyCriterionDataSetIdsNotFound = searchManager.searchForIDs(ADMIN_USER_TECH_ID,
+                endsWithStringPropertyCriterionNotFound);
+        assertEquals(endsWithStringPropertyCriterionDataSetIdsNotFound.size(), 0);
+
+        final DataSetSearchCriteria containsStringPropertyCriterion = new DataSetSearchCriteria();
+        containsStringPropertyCriterion.withAnyProperty().thatContains(DATA_SET_PROPERTY_2_STRING_VALUE.substring(3, 10));
+        final Set<Long> containsStringPropertyCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, containsStringPropertyCriterion);
+        assertEquals(containsStringPropertyCriterionDataSetIds.size(), 1);
+        assertTrue(containsStringPropertyCriterionDataSetIds.contains(DATA_SET_ID_2));
+
+        final DataSetSearchCriteria containsStringPropertyCriterionNotFound = new DataSetSearchCriteria();
+        containsStringPropertyCriterionNotFound.withAnyProperty().thatContains(DATA_SET_PROPERTY_2_STRING_VALUE.substring(3, 10)
+                + "-");
+        final Set<Long> containsStringPropertyCriterionDataSetIdsNotFound = searchManager.searchForIDs(ADMIN_USER_TECH_ID,
+                containsStringPropertyCriterionNotFound);
+        assertEquals(containsStringPropertyCriterionDataSetIdsNotFound.size(), 0);
+    }
+
+    /**
+     * Tests {@link DataSetSearchManager} with string property search criteria using DB connection.
+     */
+    @Test
+    public void testQueryDBWithStringProperty()
+    {
+        final DataSetSearchCriteria anyStringPropertyCriterion = new DataSetSearchCriteria();
+        anyStringPropertyCriterion.withProperty(DATA_SET_PROPERTY_CODE_STRING);
+        final Set<Long> anyStringPropertyCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, anyStringPropertyCriterion);
+        assertFalse(anyStringPropertyCriterionDataSetIds.contains(DATA_SET_ID_1));
+        assertTrue(anyStringPropertyCriterionDataSetIds.contains(DATA_SET_ID_2));
+        assertFalse(anyStringPropertyCriterionDataSetIds.contains(DATA_SET_ID_3));
+
+        final DataSetSearchCriteria equalsStringPropertyCriterion = new DataSetSearchCriteria();
+        equalsStringPropertyCriterion.withProperty(DATA_SET_PROPERTY_CODE_STRING).thatEquals(DATA_SET_PROPERTY_2_STRING_VALUE);
+        final Set<Long> equalsStringPropertyCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, equalsStringPropertyCriterion);
+        assertEquals(equalsStringPropertyCriterionDataSetIds.size(), 1);
+        assertTrue(equalsStringPropertyCriterionDataSetIds.contains(DATA_SET_ID_2));
+
+        final DataSetSearchCriteria equalsStringPropertyCriterionNotFound = new DataSetSearchCriteria();
+        equalsStringPropertyCriterionNotFound.withProperty(DATA_SET_PROPERTY_CODE_STRING).thatEquals(DATA_SET_PROPERTY_2_STRING_VALUE + "-");
+        final Set<Long> equalsStringPropertyCriterionDataSetIdsNotFound = searchManager.searchForIDs(ADMIN_USER_TECH_ID, equalsStringPropertyCriterionNotFound);
+        assertEquals(equalsStringPropertyCriterionDataSetIdsNotFound.size(), 0);
+
+        final DataSetSearchCriteria startsWithStringPropertyCriterion = new DataSetSearchCriteria();
+        startsWithStringPropertyCriterion.withProperty(DATA_SET_PROPERTY_CODE_STRING).thatStartsWith(DATA_SET_PROPERTY_2_STRING_VALUE.substring(0, 10));
+        final Set<Long> startsWithStringPropertyCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, startsWithStringPropertyCriterion);
+        assertEquals(startsWithStringPropertyCriterionDataSetIds.size(), 1);
+        assertTrue(startsWithStringPropertyCriterionDataSetIds.contains(DATA_SET_ID_2));
+
+        final DataSetSearchCriteria startsWithStringPropertyCriterionNotFound = new DataSetSearchCriteria();
+        startsWithStringPropertyCriterionNotFound.withProperty(DATA_SET_PROPERTY_CODE_STRING).thatStartsWith(
+                DATA_SET_PROPERTY_2_STRING_VALUE.substring(0, 10) + "-");
+        final Set<Long> startsWithStringPropertyCriterionDataSetIdsNotFound = searchManager.searchForIDs(ADMIN_USER_TECH_ID,
+                startsWithStringPropertyCriterionNotFound);
+        assertEquals(startsWithStringPropertyCriterionDataSetIdsNotFound.size(), 0);
+
+        final DataSetSearchCriteria endsWithStringPropertyCriterion = new DataSetSearchCriteria();
+        endsWithStringPropertyCriterion.withProperty(DATA_SET_PROPERTY_CODE_STRING).thatEndsWith(DATA_SET_PROPERTY_2_STRING_VALUE.substring(10));
+        final Set<Long> endsWithStringPropertyCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, endsWithStringPropertyCriterion);
+        assertEquals(endsWithStringPropertyCriterionDataSetIds.size(), 1);
+        assertTrue(endsWithStringPropertyCriterionDataSetIds.contains(DATA_SET_ID_2));
+
+        final DataSetSearchCriteria endsWithStringPropertyCriterionNotFound = new DataSetSearchCriteria();
+        endsWithStringPropertyCriterionNotFound.withProperty(DATA_SET_PROPERTY_CODE_STRING).thatEndsWith(DATA_SET_PROPERTY_2_STRING_VALUE.substring(10)
+                + "-");
+        final Set<Long> endsWithStringPropertyCriterionDataSetIdsNotFound = searchManager.searchForIDs(ADMIN_USER_TECH_ID,
+                endsWithStringPropertyCriterionNotFound);
+        assertEquals(endsWithStringPropertyCriterionDataSetIdsNotFound.size(), 0);
+
+        final DataSetSearchCriteria containsStringPropertyCriterion = new DataSetSearchCriteria();
+        containsStringPropertyCriterion.withProperty(DATA_SET_PROPERTY_CODE_STRING).thatContains(DATA_SET_PROPERTY_2_STRING_VALUE.substring(3, 10));
+        final Set<Long> containsStringPropertyCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, containsStringPropertyCriterion);
+        assertEquals(containsStringPropertyCriterionDataSetIds.size(), 1);
+        assertTrue(containsStringPropertyCriterionDataSetIds.contains(DATA_SET_ID_2));
+
+        final DataSetSearchCriteria containsStringPropertyCriterionNotFound = new DataSetSearchCriteria();
+        containsStringPropertyCriterionNotFound.withProperty(DATA_SET_PROPERTY_CODE_STRING).thatContains(DATA_SET_PROPERTY_2_STRING_VALUE.substring(3, 10)
+                + "-");
+        final Set<Long> containsStringPropertyCriterionDataSetIdsNotFound = searchManager.searchForIDs(ADMIN_USER_TECH_ID,
+                containsStringPropertyCriterionNotFound);
+        assertEquals(containsStringPropertyCriterionDataSetIdsNotFound.size(), 0);
+    }
+
+    /**
+     * Tests {@link DataSetSearchManager} with long number property search criteria using DB connection.
+     */
+    @Test
+    public void testQueryDBWithLongNumberProperty()
+    {
+        // =
+        final DataSetSearchCriteria equalsCriterion = new DataSetSearchCriteria();
+        equalsCriterion.withNumberProperty(DATA_SET_PROPERTY_CODE_LONG).thatEquals(DATA_SET_PROPERTY_1_NUMBER_VALUE);
+        final Set<Long> equalsCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, equalsCriterion);
+        assertEquals(equalsCriterionDataSetIds.size(), 1);
+        assertTrue(equalsCriterionDataSetIds.contains(DATA_SET_ID_1));
+
+        // >
+        final DataSetSearchCriteria gtCriterion = new DataSetSearchCriteria();
+        gtCriterion.withNumberProperty(DATA_SET_PROPERTY_CODE_LONG).thatIsGreaterThan(DATA_SET_PROPERTY_1_NUMBER_VALUE);
+        final Set<Long> gtCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, gtCriterion);
+        assertEquals(gtCriterionDataSetIds.size(), 0);
+
+        // >=
+        final DataSetSearchCriteria geCriterion = new DataSetSearchCriteria();
+        geCriterion.withNumberProperty(DATA_SET_PROPERTY_CODE_LONG).thatIsGreaterThan(DATA_SET_PROPERTY_1_NUMBER_VALUE - 1);
+        final Set<Long> geCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, geCriterion);
+        assertEquals(geCriterionDataSetIds.size(), 1);
+        assertTrue(geCriterionDataSetIds.contains(DATA_SET_ID_1));
+
+        // <
+        final DataSetSearchCriteria ltCriterion = new DataSetSearchCriteria();
+        ltCriterion.withNumberProperty(DATA_SET_PROPERTY_CODE_LONG).thatIsLessThan(DATA_SET_PROPERTY_1_NUMBER_VALUE);
+        final Set<Long> ltCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, ltCriterion);
+        assertEquals(ltCriterionDataSetIds.size(), 0);
+
+        // <=
+        final DataSetSearchCriteria leCriterion = new DataSetSearchCriteria();
+        leCriterion.withNumberProperty(DATA_SET_PROPERTY_CODE_LONG).thatIsLessThanOrEqualTo(DATA_SET_PROPERTY_1_NUMBER_VALUE + 1);
+        final Set<Long> leCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, leCriterion);
+        assertEquals(leCriterionDataSetIds.size(), 1);
+        assertTrue(leCriterionDataSetIds.contains(DATA_SET_ID_1));
     }
 
 }
