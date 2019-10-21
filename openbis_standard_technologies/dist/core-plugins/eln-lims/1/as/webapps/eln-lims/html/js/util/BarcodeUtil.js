@@ -45,6 +45,68 @@ var BarcodeUtil = new function() {
         });
     }
 
+    this.readBarcode = function(entity) {
+        var $window = $('<form>', {
+            'action' : 'javascript:void(0);'
+        });
+
+        var $btnAccept = $('<input>', { 'type': 'submit', 'class' : 'btn btn-primary', 'value' : 'Save Barcode' });
+        $btnAccept.prop("disabled",true);
+
+
+        var $barcodeReader = $('<input>', { 'type': 'text', 'placeholder': 'barcode' });
+        $barcodeReader.keyup(function() {
+            var UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+            var isValid = UUID_REGEX.exec($barcodeReader.val());
+            if(isValid) {
+                $btnAccept.prop("disabled", false);
+            } else {
+                $btnAccept.prop("disabled", true);
+            }
+        });
+
+        $btnAccept.click(function(event) {
+            Util.blockUINoMessage();
+            require([ "as/dto/sample/update/SampleUpdate", "as/dto/sample/id/SamplePermId" ],
+            function(SampleUpdate, SamplePermId) {
+                var sample = new SampleUpdate();
+                sample.setSampleId(new SamplePermId(entity.permId));
+                sample.setProperty("$BARCODE", $barcodeReader.val());
+                mainController.openbisV3.updateSamples([ sample ]).done(function(result) {
+                    Util.unblockUI();
+                    Util.showInfo("Barcode Updated", function() {
+                        mainController.changeView('showViewSamplePageFromPermId', entity.permId);
+                    }, true);
+                }).fail(function(result) {
+                    Util.showFailedServerCallError(result);
+                });
+            });
+        });
+
+        var $btnCancel = $('<input>', { 'type': 'submit', 'class' : 'btn', 'value' : 'Close' });
+        $btnCancel.click(function(event) {
+            Util.unblockUI();
+        });
+
+        $window.append($('<legend>').append("Update Barcode"));
+        $window.append($('<br>'));
+        $window.append($('<center>').append($barcodeReader));
+        $window.append($('<br>'));
+        $window.append($btnAccept).append('&nbsp;').append($btnCancel);
+
+        var css = {
+            'text-align' : 'left',
+            'top' : '15%',
+            'width' : '70%',
+            'height' : '400px',
+            'left' : '15%',
+            'right' : '20%',
+            'overflow' : 'auto'
+        };
+
+        Util.blockUI($window, css);
+    }
+
     this.showBarcode = function(entity) {
         var $window = $('<form>', {
             'action' : 'javascript:void(0);'
@@ -63,7 +125,7 @@ var BarcodeUtil = new function() {
 			Util.unblockUI();
 		});
 
-		$window.append($('<legend>').append("Barcode"));
+		$window.append($('<legend>').append("Print Barcode"));
 	    $window.append($('<br>'));
 	    $window.append($('<center>').append($('<canvas>', { id : "barcode-canvas", width : 1, height : 1, style : "border:1px solid #fff;visibility:hidden" })));
 	    $window.append($('<br>'));
