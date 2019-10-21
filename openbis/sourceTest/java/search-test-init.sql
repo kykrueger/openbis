@@ -226,6 +226,27 @@ INSERT INTO data_all(id, code, dsty_id, dast_id, expe_id, samp_id, pers_id_regis
 VALUES (1003, '20191018113900000-1003', 1003, 101, 1003, 1003, 1, 102, true,
         TIMESTAMP '2019-08-13 10:50:00+02', TIMESTAMP '2019-08-03 10:50:00+02');
 
+INSERT INTO data_all(id, code, dsty_id, dast_id, expe_id, samp_id, pers_id_registerer, pers_id_modifier, is_derived,
+        registration_timestamp, modification_timestamp)
+VALUES (1004, '20191018113900011-1004', 1002, 101, null, 1003, 1, null, true,
+        TIMESTAMP '2019-08-14 10:50:00+02', TIMESTAMP '2019-08-14 10:50:00+02');
+
+INSERT INTO data_all(id, code, dsty_id, dast_id, expe_id, samp_id, pers_id_registerer, pers_id_modifier, is_derived,
+        registration_timestamp, modification_timestamp)
+VALUES (1005, '20191018113900012-1005', 1002, 101, null, 1003, 1, null, true,
+        TIMESTAMP '2019-08-15 10:50:00+02', TIMESTAMP '2019-08-15 10:50:00+02');
+
+-- Data set relationships
+
+INSERT INTO data_set_relationships_all(data_id_parent, data_id_child, relationship_id)
+VALUES (1001, 1004, 10001);
+
+INSERT INTO data_set_relationships_all(data_id_parent, data_id_child, relationship_id)
+VALUES (1001, 1005, 10001);
+
+INSERT INTO data_set_relationships_all(data_id_parent, data_id_child, relationship_id)
+VALUES (1002, 1003, 10001);
+
 -- Property tables for data sets
 
 INSERT INTO data_set_types(id, code)

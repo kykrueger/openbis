@@ -64,6 +64,17 @@ WHERE id=3005;
 DELETE FROM data_set_properties
 WHERE id=2005;
 
+-- Data set relationships
+
+DELETE FROM data_set_relationships_all
+WHERE data_id_parent=1001 AND data_id_child=1004;
+
+DELETE FROM data_set_relationships_all
+WHERE data_id_parent=1001 AND data_id_child=1005;
+
+DELETE FROM data_set_relationships_all
+WHERE data_id_parent=1002 AND data_id_child=1003;
+
 -- Data sets
 
 DELETE FROM data_all
@@ -74,6 +85,12 @@ WHERE id=1002;
 
 DELETE FROM data_all
 WHERE id=1003;
+
+DELETE FROM data_all
+WHERE id=1004;
+
+DELETE FROM data_all
+WHERE id=1005;
 
 -- Data set types
 

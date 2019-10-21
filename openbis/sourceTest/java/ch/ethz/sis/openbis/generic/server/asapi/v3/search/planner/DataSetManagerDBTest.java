@@ -36,9 +36,12 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestH
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.DATA_SET_CODE_1;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.DATA_SET_CODE_2;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.DATA_SET_CODE_3;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.DATA_SET_CODE_4;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.DATA_SET_ID_1;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.DATA_SET_ID_2;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.DATA_SET_ID_3;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.DATA_SET_ID_4;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.DATA_SET_ID_5;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.DATA_SET_MODIFICATION_DATE_2;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.DATA_SET_MODIFICATION_DATE_STRING_2;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.DATA_SET_PROPERTY_1_INTERNAL_STRING_VALUE;
@@ -298,9 +301,11 @@ public class DataSetManagerDBTest
         final DataSetSearchCriteria containsCriterion = new DataSetSearchCriteria();
         containsCriterion.withPermId().thatContains(DATA_SET_CODE_2.substring(4, 12));
         final Set<Long> containsCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, containsCriterion);
-        assertEquals(containsCriterionDataSetIds.size(), 2);
+        assertEquals(containsCriterionDataSetIds.size(), 4);
         assertTrue(containsCriterionDataSetIds.contains(DATA_SET_ID_2));
         assertTrue(containsCriterionDataSetIds.contains(DATA_SET_ID_3));
+        assertTrue(containsCriterionDataSetIds.contains(DATA_SET_ID_4));
+        assertTrue(containsCriterionDataSetIds.contains(DATA_SET_ID_5));
     }
 
     /**
@@ -320,10 +325,12 @@ public class DataSetManagerDBTest
         final DataSetSearchCriteria projectIdEqualsCriterion = new DataSetSearchCriteria();
         projectIdEqualsCriterion.withAnyField().thatEquals(String.valueOf(DATA_STORE_ID_1));
         final Set<Long> projectIdEqualsCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, projectIdEqualsCriterion);
-        assertEquals(projectIdEqualsCriterionDataSetIds.size(), 3);
+        assertEquals(projectIdEqualsCriterionDataSetIds.size(), 5);
         assertTrue(projectIdEqualsCriterionDataSetIds.contains(DATA_SET_ID_1));
         assertTrue(projectIdEqualsCriterionDataSetIds.contains(DATA_SET_ID_2));
         assertTrue(projectIdEqualsCriterionDataSetIds.contains(DATA_SET_ID_3));
+        assertTrue(projectIdEqualsCriterionDataSetIds.contains(DATA_SET_ID_4));
+        assertTrue(projectIdEqualsCriterionDataSetIds.contains(DATA_SET_ID_5));
 
         // registration_timestamp attribute
         final DataSetSearchCriteria registrationDateEqualsCriterion = new DataSetSearchCriteria();
@@ -357,10 +364,12 @@ public class DataSetManagerDBTest
         final DataSetSearchCriteria containsCriterion = new DataSetSearchCriteria();
         containsCriterion.withAnyField().thatContains(String.valueOf(EXPERIMENT_ID_3));
         final Set<Long> containsCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, containsCriterion);
-        assertEquals(containsCriterionDataSetIds.size(), 3);
+        assertEquals(containsCriterionDataSetIds.size(), 5);
         assertTrue(containsCriterionDataSetIds.contains(DATA_SET_ID_1));
         assertTrue(containsCriterionDataSetIds.contains(DATA_SET_ID_2));
         assertTrue(containsCriterionDataSetIds.contains(DATA_SET_ID_3));
+        assertTrue(containsCriterionDataSetIds.contains(DATA_SET_ID_4));
+        assertTrue(containsCriterionDataSetIds.contains(DATA_SET_ID_5));
     }
 
     /**
@@ -1008,33 +1017,60 @@ public class DataSetManagerDBTest
         assertTrue(notExistingEmailCriterionDataSetIds.isEmpty());
     }
 
+    /**
+     * Tests {@link DataSetSearchManager} with parent dataSet criteria using DB connection.
+     */
+    @Test
+    public void testQueryDBWithParentCriteria()
+    {
+        final DataSetSearchCriteria parentIdCriterion = new DataSetSearchCriteria();
+        parentIdCriterion.withParents().withCode().thatEquals(DATA_SET_CODE_1);
+        final Set<Long> parentIdCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, parentIdCriterion);
+        assertEquals(parentIdCriterionDataSetIds.size(), 2);
+        assertTrue(parentIdCriterionDataSetIds.contains(DATA_SET_ID_4));
+        assertTrue(parentIdCriterionDataSetIds.contains(DATA_SET_ID_5));
 
-//
-//    /**
-//     * Tests {@link DataSetSearchManager} with child dataSet criteria using DB connection.
-//     */
-//    @Test
-//    public void testQueryDBWithChildCriteria()
-//    {
-//        final DataSetSearchCriteria childIdCriterion = new DataSetSearchCriteria();
-//        childIdCriterion.withChildren().withCode().thatEquals(DATA_SET_CODE_4);
-//        final Set<Long> childIdCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, childIdCriterion);
-//        assertEquals(childIdCriterionDataSetIds.size(), 1);
-//        assertTrue(childIdCriterionDataSetIds.contains(DATA_SET_ID_1));
-//
-//        final DataSetSearchCriteria childOrIdCriterion = new DataSetSearchCriteria().withOrOperator();
-//        childOrIdCriterion.withChildren().withCode().thatEquals(DATA_SET_CODE_3);
-//        childOrIdCriterion.withChildren().withCode().thatEquals(DATA_SET_CODE_4);
-//        final Set<Long> childOrIdCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, childOrIdCriterion);
-//        assertEquals(childOrIdCriterionDataSetIds.size(), 2);
-//        assertTrue(childOrIdCriterionDataSetIds.contains(DATA_SET_ID_1));
-//        assertTrue(childOrIdCriterionDataSetIds.contains(DATA_SET_ID_2));
-//
-//        final DataSetSearchCriteria childAndIdCriterion = new DataSetSearchCriteria().withAndOperator();
-//        childAndIdCriterion.withChildren().withCode().thatEquals(DATA_SET_CODE_3);
-//        childAndIdCriterion.withChildren().withCode().thatEquals(DATA_SET_CODE_4);
-//        final Set<Long> childAndIdCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, childAndIdCriterion);
-//        assertTrue(childAndIdCriterionDataSetIds.isEmpty());
-//    }
+        final DataSetSearchCriteria parentOrIdCriterion = new DataSetSearchCriteria().withOrOperator();
+        parentOrIdCriterion.withParents().withCode().thatEquals(DATA_SET_CODE_1);
+        parentOrIdCriterion.withParents().withCode().thatEquals(DATA_SET_CODE_2);
+        final Set<Long> parentOrIdCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, parentOrIdCriterion);
+        assertEquals(parentOrIdCriterionDataSetIds.size(), 3);
+        assertTrue(parentOrIdCriterionDataSetIds.contains(DATA_SET_ID_3));
+        assertTrue(parentOrIdCriterionDataSetIds.contains(DATA_SET_ID_4));
+        assertTrue(parentOrIdCriterionDataSetIds.contains(DATA_SET_ID_5));
+
+        final DataSetSearchCriteria parentAndIdCriterion = new DataSetSearchCriteria().withAndOperator();
+        parentAndIdCriterion.withParents().withCode().thatEquals(DATA_SET_CODE_1);
+        parentAndIdCriterion.withParents().withCode().thatEquals(DATA_SET_CODE_2);
+        final Set<Long> parentAndIdCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, parentAndIdCriterion);
+        assertTrue(parentAndIdCriterionDataSetIds.isEmpty());
+    }
+
+    /**
+     * Tests {@link DataSetSearchManager} with child dataSet criteria using DB connection.
+     */
+    @Test
+    public void testQueryDBWithChildCriteria()
+    {
+        final DataSetSearchCriteria childIdCriterion = new DataSetSearchCriteria();
+        childIdCriterion.withChildren().withCode().thatEquals(DATA_SET_CODE_4);
+        final Set<Long> childIdCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, childIdCriterion);
+        assertEquals(childIdCriterionDataSetIds.size(), 1);
+        assertTrue(childIdCriterionDataSetIds.contains(DATA_SET_ID_1));
+
+        final DataSetSearchCriteria childOrIdCriterion = new DataSetSearchCriteria().withOrOperator();
+        childOrIdCriterion.withChildren().withCode().thatEquals(DATA_SET_CODE_3);
+        childOrIdCriterion.withChildren().withCode().thatEquals(DATA_SET_CODE_4);
+        final Set<Long> childOrIdCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, childOrIdCriterion);
+        assertEquals(childOrIdCriterionDataSetIds.size(), 2);
+        assertTrue(childOrIdCriterionDataSetIds.contains(DATA_SET_ID_1));
+        assertTrue(childOrIdCriterionDataSetIds.contains(DATA_SET_ID_2));
+
+        final DataSetSearchCriteria childAndIdCriterion = new DataSetSearchCriteria().withAndOperator();
+        childAndIdCriterion.withChildren().withCode().thatEquals(DATA_SET_CODE_3);
+        childAndIdCriterion.withChildren().withCode().thatEquals(DATA_SET_CODE_4);
+        final Set<Long> childAndIdCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, childAndIdCriterion);
+        assertTrue(childAndIdCriterionDataSetIds.isEmpty());
+    }
 
 }

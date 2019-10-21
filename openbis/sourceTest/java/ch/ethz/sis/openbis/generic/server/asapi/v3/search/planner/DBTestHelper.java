@@ -248,11 +248,17 @@ public class DBTestHelper
 
     public static final long DATA_SET_ID_3 = 1003L;
 
+    public static final long DATA_SET_ID_4 = 1004L;
+
+    public static final long DATA_SET_ID_5 = 1005L;
+
     public static final String DATA_SET_CODE_1 = "10000101113999999-1001";
 
     public static final String DATA_SET_CODE_2 = "20191018113900001-1002";
 
     public static final String DATA_SET_CODE_3 = "20191018113900000-1003";
+
+    public static final String DATA_SET_CODE_4 = "20191018113900011-1004";
 
     public static final Date DATA_SET_REGISTRATION_DATE_2 = new Date(119, Calendar.AUGUST, 12, 10, 50, 0);
 
