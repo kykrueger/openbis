@@ -226,10 +226,6 @@ public class DBTestHelper
 
     public static final long EXPERIMENT_TYPE_ID_1 = 1001L;
 
-    public static final long EXPERIMENT_TYPE_ID_2 = 1002L;
-
-    public static final long EXPERIMENT_TYPE_ID_3 = 1003L;
-
     public static final long EXPERIMENT_TYPE_ID_4 = 1004L;
 
     public static final String EXPERIMENT_TYPE_CODE_1 = "DEFAULT_UNIQUE_CODE";
@@ -259,6 +255,18 @@ public class DBTestHelper
     public static final String DATA_SET_CODE_3 = "20191018113900000-1003";
 
     public static final String DATA_SET_CODE_4 = "20191018113900011-1004";
+
+    public static final String DATA_SET_TYPE_CODE_1 = "DS_TYPE_CODE_1";
+
+    public static final String DATA_SET_TYPE_CODE_2 = "DS_TYPE_CODE_2";
+
+    public static final String DATA_SET_TYPE_CODE_3 = "DS_TYPE_CODE_3";
+
+    public static final String DATA_SET_TYPE_CODE_4 = "DS_TYPE_CODE_4";
+
+    public static final Long DATA_SET_TYPE_ID_1 = 1001L;
+
+    public static final Long DATA_SET_TYPE_ID_4 = 1004L;
 
     public static final Date DATA_SET_REGISTRATION_DATE_2 = new Date(119, Calendar.AUGUST, 12, 10, 50, 0);
 

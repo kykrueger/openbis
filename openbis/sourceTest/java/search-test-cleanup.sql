@@ -103,6 +103,9 @@ WHERE id=1002;
 DELETE FROM data_set_types
 WHERE id=1003;
 
+DELETE FROM data_set_types
+WHERE id=1004;
+
 -- Data stores
 
 DELETE FROM data_stores

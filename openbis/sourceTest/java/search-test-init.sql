@@ -209,6 +209,9 @@ VALUES (1002, 'DS_TYPE_CODE_2');
 INSERT INTO data_set_types(id, code)
 VALUES (1003, 'DS_TYPE_CODE_3');
 
+INSERT INTO data_set_types(id, code)
+VALUES (1004, 'DS_TYPE_CODE_4');
+
 -- Data sets
 
 INSERT INTO data_all(id, code, dsty_id, dast_id, expe_id, samp_id, pers_id_registerer, pers_id_modifier, is_derived,
