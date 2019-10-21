@@ -46,6 +46,7 @@ class ObjectType extends React.PureComponent {
     this.handleChange = this.handleChange.bind(this)
     this.handleAddSection = this.handleAddSection.bind(this)
     this.handleAddProperty = this.handleAddProperty.bind(this)
+    this.handleRemove = this.handleRemove.bind(this)
     this.handleSave = this.handleSave.bind(this)
   }
 
@@ -66,27 +67,16 @@ class ObjectType extends React.PureComponent {
         subcodeUnique: loadedType.subcodeUnique
       }
 
-      const sections = loadedType.propertyAssignments.reduce(
-        (sections, assignment, index) => {
-          let section = sections[sections.length - 1]
-          if (section.name === assignment.section) {
-            section.properties.push('property-' + index)
-          } else {
-            let newSection = {
-              id: 'section-' + sections.length,
-              name: assignment.section,
-              properties: ['property-' + index]
-            }
-            sections.push(newSection)
-          }
-          return sections
-        },
-        [{ id: 'section-0', name: null, properties: [] }]
-      )
+      const sections = []
+      const properties = []
+      let currentSection = null
+      let currentProperty = null
+      let sectionsCounter = 0
+      let propertiesCounter = 0
 
-      const properties = loadedType.propertyAssignments.map(
-        (assignment, index) => ({
-          id: 'property-' + index,
+      loadedType.propertyAssignments.forEach(assignment => {
+        currentProperty = {
+          id: 'property-' + propertiesCounter++,
           code: assignment.propertyType.code,
           label: assignment.propertyType.label,
           description: assignment.propertyType.description,
@@ -98,16 +88,31 @@ class ObjectType extends React.PureComponent {
             ? assignment.propertyType.materialType.code
             : null,
           visible: assignment.showInEditView,
-          mandatory: assignment.mandatory,
-          section: _.find(sections, ['name', assignment.section]).id
-        })
-      )
+          mandatory: assignment.mandatory
+        }
+
+        if (currentSection && currentSection.name === assignment.section) {
+          currentSection.properties.push(currentProperty.id)
+        } else {
+          currentSection = {
+            id: 'section-' + sectionsCounter++,
+            name: assignment.section,
+            properties: [currentProperty.id]
+          }
+          sections.push(currentSection)
+        }
+        currentProperty.section = currentSection.id
+
+        properties.push(currentProperty)
+      })
 
       this.setState(() => ({
         loaded: true,
         type,
         properties,
+        propertiesCounter,
         sections,
+        sectionsCounter,
         selection: null
       }))
     })
@@ -293,11 +298,11 @@ class ObjectType extends React.PureComponent {
   }
 
   handleAddSection() {
-    const { sections, selection } = this.state
+    let { sections, sectionsCounter, selection } = this.state
 
     let newSections = Array.from(sections)
     let newSection = {
-      id: 'section-' + sections.length,
+      id: 'section-' + sectionsCounter++,
       name: null,
       properties: []
     }
@@ -308,11 +313,20 @@ class ObjectType extends React.PureComponent {
       }
     }
 
-    if (selection && selection.type === 'section') {
-      let index = sections.findIndex(
-        section => section.id === selection.params.id
-      )
-      newSections.splice(index + 1, 0, newSection)
+    if (selection) {
+      if (selection.type === 'section') {
+        let index = sections.findIndex(
+          section => section.id === selection.params.id
+        )
+        newSections.splice(index + 1, 0, newSection)
+      } else if (selection.type === 'property') {
+        let index = sections.findIndex(
+          section => section.properties.indexOf(selection.params.id) !== -1
+        )
+        newSections.splice(index + 1, 0, newSection)
+      } else {
+        newSections.push(newSection)
+      }
     } else {
       newSections.push(newSection)
     }
@@ -320,12 +334,13 @@ class ObjectType extends React.PureComponent {
     this.setState(state => ({
       ...state,
       sections: newSections,
+      sectionsCounter,
       selection: newSelection
     }))
   }
 
   handleAddProperty() {
-    const { sections, properties, selection } = this.state
+    let { sections, properties, propertiesCounter, selection } = this.state
 
     let sectionIndex = null
     let sectionPropertyIndex = null
@@ -355,7 +370,7 @@ class ObjectType extends React.PureComponent {
 
     let newProperties = Array.from(properties)
     let newProperty = {
-      id: 'property-' + properties.length,
+      id: 'property-' + propertiesCounter++,
       code: '',
       label: '',
       description: '',
@@ -388,7 +403,73 @@ class ObjectType extends React.PureComponent {
       ...state,
       sections: newSections,
       properties: newProperties,
+      propertiesCounter,
       selection: newSelection
+    }))
+  }
+
+  handleRemove() {
+    const { selection } = this.state
+
+    if (selection.type === 'section') {
+      this.handleRemoveSection(selection.params.id)
+    } else if (selection.type === 'property') {
+      this.handleRemoveProperty(selection.params.id)
+    }
+  }
+
+  handleRemoveSection(sectionId) {
+    const { sections, properties } = this.state
+
+    const sectionIndex = sections.findIndex(section => section.id === sectionId)
+    const section = sections[sectionIndex]
+
+    const newProperties = Array.from(properties)
+    _.remove(
+      newProperties,
+      property => section.properties.indexOf(property.id) !== -1
+    )
+
+    const newSections = Array.from(sections)
+    newSections.splice(sectionIndex, 1)
+
+    this.setState(state => ({
+      ...state,
+      sections: newSections,
+      properties: newProperties,
+      selection: null
+    }))
+  }
+
+  handleRemoveProperty(propertyId) {
+    const { sections, properties } = this.state
+
+    const propertyIndex = properties.findIndex(
+      property => property.id === propertyId
+    )
+    const property = properties[propertyIndex]
+
+    const newProperties = Array.from(properties)
+    newProperties.splice(propertyIndex, 1)
+
+    let sectionIndex = sections.findIndex(
+      section => section.id === property.section
+    )
+    let section = sections[sectionIndex]
+    let newSection = {
+      ...section,
+      properties: Array.from(section.properties)
+    }
+    _.remove(newSection.properties, property => property === propertyId)
+
+    const newSections = Array.from(sections)
+    newSections[sectionIndex] = newSection
+
+    this.setState(state => ({
+      ...state,
+      sections: newSections,
+      properties: newProperties,
+      selection: null
     }))
   }
 
@@ -421,9 +502,11 @@ class ObjectType extends React.PureComponent {
             <ObjectTypeButtons
               onAddSection={this.handleAddSection}
               onAddProperty={this.handleAddProperty}
+              onRemove={this.handleRemove}
               onSave={this.handleSave}
               addSectionEnabled={true}
               addPropertyEnabled={selection !== null}
+              removeEnabled={selection !== null}
               saveEnabled={false}
             />
           </div>
