@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import React from 'react'
-import TextField from '@material-ui/core/TextField'
+import TextField from '../../common/form/TextField.jsx'
 import { withStyles } from '@material-ui/core/styles'
 import logger from '../../../common/logger.js'
 
@@ -19,7 +19,6 @@ class ObjectTypePreviewCode extends React.PureComponent {
         label='Code'
         value={this.getValue()}
         disabled={this.getDisabled()}
-        variant='filled'
       />
     )
   }

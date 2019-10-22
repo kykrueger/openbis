@@ -1,17 +1,10 @@
 import React from 'react'
-import TextField from '@material-ui/core/TextField'
 import { withStyles } from '@material-ui/core/styles'
 import { facade, dto } from '../../../services/openbis.js'
+import SelectField from '../../common/form/SelectField.jsx'
 import logger from '../../../common/logger.js'
 
-const styles = () => ({
-  visible: {
-    opacity: 1
-  },
-  hidden: {
-    opacity: 0.5
-  }
-})
+const styles = () => ({})
 
 class ObjectTypePreviewPropertyVocabulary extends React.PureComponent {
   constructor(props) {
@@ -54,33 +47,25 @@ class ObjectTypePreviewPropertyVocabulary extends React.PureComponent {
   render() {
     logger.log(logger.DEBUG, 'ObjectTypePreviewPropertyVocabulary.render')
 
-    const { property, classes } = this.props
+    const { property } = this.props
     const { terms } = this.state
 
+    let options = []
+    if (terms) {
+      options = terms.map(term => ({
+        value: term.code,
+        label: term.label
+      }))
+    }
+
     return (
-      <TextField
-        select
-        error={property.mandatory}
-        SelectProps={{
-          native: true
-        }}
-        InputLabelProps={{
-          shrink: true
-        }}
+      <SelectField
         label={property.label}
-        helperText={property.description}
-        fullWidth={true}
-        className={property.visible ? classes.visible : classes.hidden}
-        variant='filled'
-      >
-        {terms &&
-          terms.map(term => (
-            <option key={term.code} value={term.code}>
-              {term.label || term.code}
-            </option>
-          ))}
-        <React.Fragment></React.Fragment>
-      </TextField>
+        description={property.description}
+        mandatory={property.mandatory}
+        transparent={!property.visible}
+        options={options}
+      />
     )
   }
 }
