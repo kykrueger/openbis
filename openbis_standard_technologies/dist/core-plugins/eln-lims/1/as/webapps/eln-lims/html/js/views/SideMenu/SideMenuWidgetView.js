@@ -108,7 +108,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
         var logoutButton = FormUtil.getButtonWithIcon("glyphicon-off", function() {
             $('body').addClass('bodyLogin');
             mainController.serverFacade.logout();
-         });
+         }, null, null, "logoutBtn");
         
         var $searchForm = $("<form>", { "onsubmit": "return false;" })
                             .append(logoutButton)

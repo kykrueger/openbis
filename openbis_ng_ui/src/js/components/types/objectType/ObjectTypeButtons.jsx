@@ -4,41 +4,43 @@ import {withStyles} from '@material-ui/core/styles'
 import logger from '../../../common/logger.js'
 
 const styles = theme => ({
+  container: {
+    padding: theme.spacing(2),
+    display: 'flex'
+  },
   button: {
     marginRight: theme.spacing(2)
   }
 })
 
-class ObjectTypeFooter extends React.Component {
+class ObjectTypeButtons extends React.PureComponent {
   render() {
-    logger.log(logger.DEBUG, 'ObjectTypeFooter.render')
+    logger.log(logger.DEBUG, 'ObjectTypeButtons.render')
 
     const classes = this.props.classes
 
     return (
-      <div>
+      <div className={classes.container}>
         <Button
           classes={{ root: classes.button }}
           variant='contained'
           color='secondary'
-          onClick={this.props.onAdd}
+          onClick={this.props.onAddSection}
         >
-          Add
+          Add Section
         </Button>
         <Button
           classes={{ root: classes.button }}
           variant='contained'
           color='secondary'
-          disabled={!this.props.removeEnabled}
-          onClick={this.props.onRemove}
+          onClick={this.props.onAddProperty}
         >
-          Remove
+          Add Property
         </Button>
         <Button
           classes={{ root: classes.button }}
           variant='contained'
           color='primary'
-          disabled={!this.props.saveEnabled}
           onClick={this.props.onSave}
         >
           Save
@@ -48,4 +50,4 @@ class ObjectTypeFooter extends React.Component {
   }
 }
 
-export default withStyles(styles)(ObjectTypeFooter)
+export default withStyles(styles)(ObjectTypeButtons)

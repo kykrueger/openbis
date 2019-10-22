@@ -55,6 +55,10 @@ export class Facade {
     return this.v3.searchMaterials(criteria, fo)
   }
 
+  searchVocabularies(criteria, fo) {
+    return this.v3.searchVocabularies(criteria, fo)
+  }
+
   searchVocabularyTerms(criteria, fo) {
     return this.v3.searchVocabularyTerms(criteria, fo)
   }

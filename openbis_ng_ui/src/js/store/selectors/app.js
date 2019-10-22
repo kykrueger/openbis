@@ -1,5 +1,9 @@
 import routes from '../../common/consts/routes.js'
 
+export const getInitialized = state => {
+  return state.initialized
+}
+
 export const getLoading = state => {
   return state.ui.loading
 }

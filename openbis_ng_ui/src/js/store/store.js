@@ -8,7 +8,12 @@ import history from './history.js'
 function createStoreWithMiddleware() {
   const sagaMiddleware = createSagaMiddleware()
   const composeEnhancers =
-    window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose
+    (window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ &&
+      window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__({
+        trace: true,
+        traceLimit: 25
+      })) ||
+    compose
 
   let store = createStore(
     rootReducer,
@@ -22,6 +27,14 @@ function createStoreWithMiddleware() {
 }
 
 let store = createStoreWithMiddleware()
+
+/* eslint-disable no-undef */
+if (module.hot) {
+  module.hot.accept('./reducers/reducers.js', () => {
+    const nextRootReducer = require('./reducers/reducers.js').default
+    store.replaceReducer(nextRootReducer)
+  })
+}
 
 export { createStoreWithMiddleware as createStore }
 export default store

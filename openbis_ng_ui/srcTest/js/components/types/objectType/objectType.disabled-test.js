@@ -1,6 +1,5 @@
 import React from 'react'
 import { mount } from 'enzyme'
-import DragAndDropProvider from '../../../../../src/js/components/common/dnd/DragAndDropProvider.jsx'
 import ObjectType from '../../../../../src/js/components/types/objectType/ObjectType.jsx'
 import { facade, dto } from '../../../../../src/js/services/openbis.js'
 import * as actions from '../../../../../src/js/store/actions/actions.js'
@@ -135,9 +134,7 @@ describe('browser', () => {
     store.dispatch(actions.init())
 
     let wrapper = mount(
-      <DragAndDropProvider>
-        <ObjectType store={store} objectId='TEST_OBJECT_TYPE' />
-      </DragAndDropProvider>
+      <ObjectType store={store} objectId='TEST_OBJECT_TYPE' />
     )
 
     setTimeout(() => {

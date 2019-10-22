@@ -135,6 +135,7 @@ public class ELNCollectionTypeMigration {
     }
 
     private static List executeQuery(String SQL, String key, Object value) {
+        //System.out.println("SQL: " + SQL + " Key: " + key + " Value: " + value);
         DAOFactory daoFactory = (DAOFactory) CommonServiceProvider.getApplicationContext().getBean(ComponentNames.DAO_FACTORY);
         Session currentSession = daoFactory.getSessionFactory().getCurrentSession();
         NativeQuery nativeQuery = currentSession.createNativeQuery(SQL);
@@ -165,7 +166,8 @@ public class ELNCollectionTypeMigration {
         for (String experimentCode:experimentsOfTypeCollection) {
             Set<ExperimentType> experimentTypes = getExperimentTypes(new String[]{experimentCode});
             if (!experimentTypes.isEmpty()) {
-                ExperimentType experimentType = getExperimentTypes(new String[]{experimentCode}).iterator().next();
+                //System.out.println("EXPERIMENT_CODE: " + experimentCode + " IS OF TYPE: " + experimentTypes.iterator().next().getCode());
+                ExperimentType experimentType = experimentTypes.iterator().next();
                 if (!experimentType.getCode().equals(COLLECTION)) {
                     // Property Type used
                     Set<PropertyType> propertyTypes = getPropertyTypes(experimentType);

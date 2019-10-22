@@ -6,6 +6,7 @@ export * from './browser.js'
 export function isPageAction(page, action) {
   return (
     action.type === actions.INIT ||
+    action.type === actions.CLEAR ||
     page === (action.payload && action.payload.page)
   )
 }
