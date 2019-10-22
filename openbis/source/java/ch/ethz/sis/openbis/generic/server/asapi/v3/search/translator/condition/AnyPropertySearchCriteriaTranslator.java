@@ -79,7 +79,8 @@ public class AnyPropertySearchCriteriaTranslator implements IConditionTranslator
                             .append(PERIOD).append(ColumnNames.VALUE_COLUMN).append(SP);
                     TranslatorUtils.appendStringComparatorOp(value, sqlBuilder);
                     args.add(value.getValue());
-                } else {
+                } else
+                {
                     sqlBuilder.append(TRUE);
                 }
                 break;

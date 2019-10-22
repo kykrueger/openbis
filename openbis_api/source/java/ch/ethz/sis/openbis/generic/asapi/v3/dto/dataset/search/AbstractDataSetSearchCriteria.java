@@ -30,7 +30,7 @@ import ch.systemsx.cisd.base.annotation.JsonObject;
  * @author pkupczyk
  */
 @JsonObject("as.dto.dataset.search.AbstractDataSetSearchCriteria")
-public class AbstractDataSetSearchCriteria<T extends AbstractDataSetSearchCriteria<T>> extends AbstractEntitySearchCriteria<IDataSetId>
+public abstract class AbstractDataSetSearchCriteria<T extends AbstractDataSetSearchCriteria<T>> extends AbstractEntitySearchCriteria<IDataSetId>
 {
 
     private static final long serialVersionUID = 1L;
