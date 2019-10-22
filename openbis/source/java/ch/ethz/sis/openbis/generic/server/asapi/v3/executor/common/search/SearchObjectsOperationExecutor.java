@@ -94,7 +94,10 @@ public abstract class SearchObjectsOperationExecutor<OBJECT, OBJECT_PE, CRITERIA
             public <T, C extends Collection<T>> C sortAndPage(final C objects, final ISearchCriteria c, final FetchOptions fo)
             {
                 final List<T> toPage = new ArrayList<>(objects);
-                return (C) toPage.subList(fo.getFrom(), Math.min(fo.getFrom() + fo.getCount(), toPage.size()));
+                final Integer fromRecord = fo.getFrom();
+                final Integer recordsCount = fo.getCount();
+                final boolean hasPaging = fromRecord != null || recordsCount != null;
+                return hasPaging ? (C) toPage.subList(fromRecord, Math.min(fromRecord + recordsCount, toPage.size())) : (C) toPage;
             }
 
         };
