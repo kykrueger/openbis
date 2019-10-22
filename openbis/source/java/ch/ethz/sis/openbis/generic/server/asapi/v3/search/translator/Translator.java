@@ -165,8 +165,6 @@ public class Translator
         CRITERIA_TO_SUBQUERY_COLUMN_MAP.put(SpaceSearchCriteria.class, ColumnNames.SPACE_COLUMN);
     }
 
-    private static final AtomicBoolean FIRST = new AtomicBoolean();
-
     public static SelectQuery translate(final TranslationVo vo)
     {
         if (vo.getCriteria() == null && vo.getCriteria().isEmpty())
@@ -250,13 +248,13 @@ public class Translator
         } else
         {
             final String logicalOperator = vo.getOperator().toString();
+            final AtomicBoolean first = new AtomicBoolean(true);
 
-            FIRST.set(true);
             vo.getCriteria().forEach((criterion) ->
             {
-                if (FIRST.get())
+                if (first.get())
                 {
-                    FIRST.set(false);
+                    first.set(false);
                 } else
                 {
                     sqlBuilder.append(SP).append(logicalOperator).append(SP);
