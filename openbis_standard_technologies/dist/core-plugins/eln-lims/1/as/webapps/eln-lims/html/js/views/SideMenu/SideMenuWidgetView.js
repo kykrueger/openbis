@@ -249,8 +249,10 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
             treeModelUtils.push({ title : userProfileLink, entityType: "USER_PROFILE", key : "USER_PROFILE", folder : false, lazy : false, view : "showUserProfilePage", icon : "glyphicon glyphicon-user" });
         }
 
-        var preGenerateBarcodesLink = _this.getLinkForNode("Barcodes Generator", "GENERATE_BARCODES", "showBarcodesGeneratorPage", null, null);
-        treeModelUtils.push({ title : preGenerateBarcodesLink, entityType: "GENERATE_BARCODES", key : "GENERATE_BARCODES", folder : false, lazy : false, view : "showBarcodesGeneratorPage", icon : "glyphicon glyphicon-barcode" });
+        if(profile.mainMenu.showBarcodes) {
+            var preGenerateBarcodesLink = _this.getLinkForNode("Barcodes Generator", "GENERATE_BARCODES", "showBarcodesGeneratorPage", null, null);
+            treeModelUtils.push({ title : preGenerateBarcodesLink, entityType: "GENERATE_BARCODES", key : "GENERATE_BARCODES", folder : false, lazy : false, view : "showBarcodesGeneratorPage", icon : "glyphicon glyphicon-barcode" });
+        }
 
         if(profile.mainMenu.showDrawingBoard) {
             var drawingBoardLink = _this.getLinkForNode("Drawing Board", "DRAWING_BOARD", "showDrawingBoard", null, null);

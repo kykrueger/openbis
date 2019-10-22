@@ -63,6 +63,7 @@ $.extend(DefaultProfile.prototype, {
 				showUserProfile : true,
 				showResearchCollectionExportBuilder : false,
 				showZenodoExportBuilder : false,
+				showBarcodes : true,
 		}
 		
 		this.orderLabInfo = {
