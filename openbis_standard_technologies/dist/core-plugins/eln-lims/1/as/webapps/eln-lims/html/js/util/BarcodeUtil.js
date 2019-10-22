@@ -102,7 +102,7 @@ var BarcodeUtil = new function() {
         $btnAccept.prop("disabled",true);
 
 
-        var $barcodeReader = $('<input>', { 'type': 'text', 'placeholder': 'barcode' });
+        var $barcodeReader = $('<input>', { 'type': 'text', 'placeholder': 'barcode', 'style' : 'min-width: 50%;' });
         $barcodeReader.keyup(function() {
             var UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
             var isValid = UUID_REGEX.exec($barcodeReader.val());
@@ -156,6 +156,14 @@ var BarcodeUtil = new function() {
     }
 
     this.showBarcode = function(entity) {
+        var _this = this;
+        var barcode = null;
+        if(entity.properties && entity.properties["$BARCODE"]) {
+            barcode = entity.properties["$BARCODE"];
+        } else {
+            barcode = entity.permId;
+        }
+
         var $window = $('<form>', {
             'action' : 'javascript:void(0);'
         });
@@ -173,9 +181,16 @@ var BarcodeUtil = new function() {
 			Util.unblockUI();
 		});
 
+        var $canvas = $('<canvas>', { id : "barcode-canvas", width : 1, height : 1, style : "border:1px solid #fff;visibility:hidden" });
+        var $barcodeTypesDropdown = FormUtil.getDropdown(this.supportedBarcodes());
+            $barcodeTypesDropdown.change(function() {
+                _this.generateBarcode("barcode-canvas", $barcodeTypesDropdown.val(), barcode, barcode);
+            });
 		$window.append($('<legend>').append("Print Barcode"));
 	    $window.append($('<br>'));
-	    $window.append($('<center>').append($('<canvas>', { id : "barcode-canvas", width : 1, height : 1, style : "border:1px solid #fff;visibility:hidden" })));
+	    $window.append($('<center>').append($barcodeTypesDropdown));
+	    $window.append($('<br>'));
+	    $window.append($('<center>').append($canvas));
 	    $window.append($('<br>'));
 	    $window.append($btnAccept).append('&nbsp;').append($btnCancel);
 
@@ -191,14 +206,7 @@ var BarcodeUtil = new function() {
 
         Util.blockUI($window, css);
 
-        var barcode = null;
-        if(entity.properties && entity.properties["$BARCODE"]) {
-            barcode = entity.properties["$BARCODE"];
-        } else {
-            barcode = entity.permId;
-        }
-
-        this.generateBarcode("barcode-canvas", "code128", barcode, barcode);
+        this.generateBarcode("barcode-canvas", $barcodeTypesDropdown.val(), barcode, barcode);
     }
 
     this.supportedBarcodes = function() {
