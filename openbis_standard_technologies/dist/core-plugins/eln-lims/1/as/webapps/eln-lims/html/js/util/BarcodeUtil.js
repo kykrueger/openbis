@@ -41,7 +41,11 @@ var BarcodeUtil = new function() {
                 }
                 setTimeout(timeoutFunc, 1000);
             }
-            barcodeReader += event.key;
+            if(event.key === "Clear") {
+                barcodeReader = "";
+            } else {
+                barcodeReader += event.key;
+            }
         });
     }
 
@@ -104,9 +108,7 @@ var BarcodeUtil = new function() {
 
         var $barcodeReader = $('<input>', { 'type': 'text', 'placeholder': 'barcode', 'style' : 'min-width: 50%;' });
         $barcodeReader.keyup(function() {
-            var UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-            var isValid = UUID_REGEX.exec($barcodeReader.val());
-            if(isValid) {
+            if($barcodeReader.val().length === 36) {
                 $btnAccept.prop("disabled", false);
             } else {
                 $btnAccept.prop("disabled", true);
