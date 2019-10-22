@@ -8,9 +8,8 @@ dependencies {
 			'sis:sis-file-transfer:19.03.1',
 			'fasterxml:jackson-core:2.9.7',
 			'fasterxml:jackson-annotations:2.9.7'
-			
+
 	testCompile project(path: ':common', configuration: 'tests'),
 			'fjelmer:classycle:1.4.2',
 			'reflections:reflections:0.9.10'
-			
-} 
+}
