@@ -157,6 +157,7 @@ public class Translator
 
         CRITERIA_TO_SUBQUERY_COLUMN_MAP.put(RegistratorSearchCriteria.class, ColumnNames.PERSON_REGISTERER_COLUMN);
         CRITERIA_TO_SUBQUERY_COLUMN_MAP.put(ModifierSearchCriteria.class, ColumnNames.PERSON_MODIFIER_COLUMN);
+        CRITERIA_TO_SUBQUERY_COLUMN_MAP.put(SampleSearchCriteria.class, ColumnNames.SAMPLE_COLUMN);
         CRITERIA_TO_SUBQUERY_COLUMN_MAP.put(SampleTypeSearchCriteria.class, ColumnNames.SAMPLE_TYPE_COLUMN);
         CRITERIA_TO_SUBQUERY_COLUMN_MAP.put(ExperimentTypeSearchCriteria.class, ColumnNames.EXPERIMENT_TYPE_COLUMN);
         CRITERIA_TO_SUBQUERY_COLUMN_MAP.put(ExperimentSearchCriteria.class, ColumnNames.EXPERIMENT_COLUMN);
@@ -265,16 +266,17 @@ public class Translator
                 final TableMapper tableMapper = vo.getTableMapper();
                 if (subqueryManager != null)
                 {
-                    if (tableMapper != null)
+                    final String column = CRITERIA_TO_SUBQUERY_COLUMN_MAP.get(criterion.getClass());
+                    if (tableMapper != null && column != null)
                     {
                         final Set<Long> ids = subqueryManager.searchForIDs(vo.getUserId(), criterion);
-                        sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(CRITERIA_TO_SUBQUERY_COLUMN_MAP.get(criterion.getClass()))
+                        sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(column)
                                 .append(SP).append(IN).append(SP).append(LP).append(SELECT).append(SP).append(UNNEST).append(LP).append(QU).append(RP)
                                 .append(RP);
                         vo.getArgs().add(ids.toArray(new Long[0]));
                     } else
                     {
-                        throw new NullPointerException("tableMapper is null");
+                        throw new NullPointerException("tableMapper = " + tableMapper + " column = " + column);
                     }
                 } else
                 {

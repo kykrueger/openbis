@@ -61,6 +61,7 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestH
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.REGISTRATOR_FIRST_NAME;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.REGISTRATOR_LAST_NAME;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.REGISTRATOR_USER_ID;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_CODE_1;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SPACE_CODE_2;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SPACE_CODE_3;
 import static junit.framework.Assert.assertFalse;
@@ -535,7 +536,7 @@ public class ExperimentSearchManagerDBTest
     public void testQueryDBWithProject()
     {
         final ExperimentSearchCriteria codeCriterion = new ExperimentSearchCriteria();
-        codeCriterion.withProject().withCode().thatEquals(PROJECT_CODE_1);
+        codeCriterion.withProject().withCode().thatEquals(SAMPLE_CODE_1);
         final Set<Long> codeCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, codeCriterion);
         assertEquals(codeCriterionSampleIds.size(), 2);
         assertTrue(codeCriterionSampleIds.contains(EXPERIMENT_ID_1));
