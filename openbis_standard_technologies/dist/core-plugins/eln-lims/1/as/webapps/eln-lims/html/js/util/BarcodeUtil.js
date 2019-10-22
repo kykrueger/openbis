@@ -10,7 +10,7 @@ var BarcodeUtil = new function() {
         var rules = {};
         if(barcodeReader.length === 36) {
             rules["UUIDv4"] = { type: "Property/Attribute", 	name: "PROP.$BARCODE", operator : "thatEqualsString", value: barcodeReader };
-        } else if(barcodeReader.length === 23) {
+        } else if(barcodeReader.length > 17) {
             rules["UUIDv4"] = { type: "Property/Attribute", 	name: "ATTR.PERM_ID", operator : "thatEqualsString", value: barcodeReader };
         }
 
