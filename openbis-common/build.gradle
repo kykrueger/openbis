@@ -14,7 +14,7 @@ dependencies {
 		'springframework:spring-jdbc:5.0.1.RELEASE',
 		'apache:commons-collections4:4.1',
 		'truezip:truezip:6.8.1'
-		
+
 	testCompile project(path: ':common', configuration: 'tests'),
 				'eclipse:jetty-servlet:9.4.14.v20181114'
 }
