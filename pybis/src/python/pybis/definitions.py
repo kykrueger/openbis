@@ -146,7 +146,7 @@ def openbis_definitions(entity):
         },
         "propertyType": {
             "attrs": "code label description managedInternally internalNameSpace dataType vocabulary materialType schema transformation semanticAnnotations registrator registrationDate".split(),
-            "attrs_new": "code label description managedInternally internalNameSpace dataType vocabularyId materialTypeId schema transformation metaData".split(),
+            "attrs_new": "code label description managedInternally internalNameSpace dataType vocabulary materialType schema transformation metaData".split(),
             "attrs_up": "label description schema transformation metaData".split(),
             "search": {
                 "@type": "as.dto.property.search.PropertyTypeSearchCriteria"
@@ -274,6 +274,7 @@ def openbis_definitions(entity):
             "experiments": "experimentIds",
             "material": "materialId",
             "materials": "materialIds",
+            "materialType": "materialTypeId",
             "container": "containerId",
             "containers": "containerIds",
             "component": "componentId",
