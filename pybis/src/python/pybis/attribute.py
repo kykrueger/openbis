@@ -466,6 +466,19 @@ class AttrHolder():
         elif name in ["users"]:
             self.set_users(value)
 
+        elif name in ["vocabulary"]:
+            self.__dict__['_vocabulary'] = {
+                "@type": "as.dto.vocabulary.id.VocabularyPermId",
+                "permId": value.upper()
+            }
+
+        elif name in ["materialType"]:
+            self.__dict__['_materialType'] = {
+                "@type": "as.dto.entitytype.id.EntityTypePermId",
+                "permId": value.upper(),
+                "entityKind": "MATERIAL"
+            }
+
         elif name in ["attachments"]:
             if isinstance(value, list):
                 for item in value:

@@ -97,23 +97,44 @@ o.get_tags()
 ## create plugins and property types
 ```
 pl = o.new_plugin(
-	name       ='my_new_entry_validation_plugin',
-	pluginType ='ENTITY_VALIDATION',               # or 'DYNAMIC_PROPERTY' or 'MANAGED_PROPERTY',
-	entityKind = None,                             # or 'SAMPLE', 'MATERIAL', 'EXPERIMENT', 'DATA_SET'
-	script     = 'def calculate(): pass'           # a JYTHON script
+    name       ='my_new_entry_validation_plugin',
+    pluginType ='ENTITY_VALIDATION',               # or 'DYNAMIC_PROPERTY' or 'MANAGED_PROPERTY',
+    entityKind = None,                             # or 'SAMPLE', 'MATERIAL', 'EXPERIMENT', 'DATA_SET'
+    script     = 'def calculate(): pass'           # a JYTHON script
 )
 pl.save()
 
 pt = o.new_property_type(
-	code='MY_NEW_PROPERTY_TYPE', 
-	label='yet another property type', 
-   description='my first property',
-   dataType='VARCHAR'
+    code        = 'MY_NEW_PROPERTY_TYPE', 
+    label       = 'yet another property type', 
+    description = 'my first property',
+    dataType    = 'VARCHAR'
 )
-# dataType can be any of ['INTEGER', 'VARCHAR', 'MULTILINE_VARCHAR', 'REAL', 'TIMESTAMP', 'BOOLEAN', 'CONTROLLEDVOCABULARY', 'MATERIAL', 'HYPERLINK', 'XML']
 
-
+pt2 = o.new_property_type(
+    code        = 'MY_CONTROLLED_VOCABULARY', 
+    label       = 'label me', 
+    description = 'give me a description',
+    dataType    = 'CONTROLLEDVOCABULARY',
+    vocabulary  = 'STORAGE'
+)
 ```
+
+The `dataType` attribute can contain any of these values:
+
+* `INTEGER`
+* `VARCHAR`
+* `MULTILINE_VARCHAR`
+* `REAL`
+* `TIMESTAMP`
+* `BOOLEAN`
+* `HYPERLINK`
+* `XML`
+* `CONTROLLEDVOCABULARY`
+* `MATERIAL`
+
+When choosing `CONTROLLEDVOCABULARY`, you must specify a `vocabulary` attribute (see example). Likewise, when choosing `MATERIAL`, a `materialType` attribute must be provided.
+
 
 ## Users, Groups and RoleAssignments
 
