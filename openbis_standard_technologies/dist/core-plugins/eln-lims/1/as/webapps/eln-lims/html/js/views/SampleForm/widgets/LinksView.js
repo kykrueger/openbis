@@ -481,7 +481,11 @@ function LinksView(linksController, linksModel) {
 	    var $addBtn = FormUtil.getButtonWithIcon("glyphicon-barcode", null);
         $addBtn.click(function() {
             BarcodeUtil.readBarcodeMulti("Add Objects", function(objects) {
-                alert("Done");
+                for(var oIdx = 0; oIdx < objects.length; oIdx++) {
+                    linksController.addSample({
+                        identifier : objects[oIdx].identifier.identifier
+                    });
+                }
             });
         });
         if(linksModel.isDisabled) {

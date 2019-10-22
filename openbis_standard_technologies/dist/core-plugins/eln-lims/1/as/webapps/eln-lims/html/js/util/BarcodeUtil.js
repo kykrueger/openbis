@@ -138,7 +138,7 @@ var BarcodeUtil = new function() {
             document.removeEventListener('keyup', barcodeReaderLocalEventListener);
             _this.enableAutomaticBarcodeReading();
             Util.unblockUI();
-            action();
+            action(objects);
         });
 
         var $btnCancel = $('<input>', { 'type': 'submit', 'class' : 'btn', 'value' : 'Close' });
