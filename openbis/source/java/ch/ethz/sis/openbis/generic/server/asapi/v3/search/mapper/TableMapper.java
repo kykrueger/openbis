@@ -77,7 +77,6 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.SHOW_PAREN
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.SPACE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.USER_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.VALIDATION_SCRIPT_ID_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.VERSION_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.DATA_ALL_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.DATA_SET_PROPERTIES_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.DATA_SET_RELATIONSHIPS_ALL_TABLE;
@@ -385,7 +384,6 @@ public enum TableMapper
         fields.put(DELETION_COLUMN, SQLTypes.INT8);
         fields.put(ORIGINAL_DELETION_COLUMN, SQLTypes.INT8);
         fields.put(PERSON_MODIFIER_COLUMN, SQLTypes.INT8);
-        fields.put(VERSION_COLUMN, SQLTypes.INT4);
         fields.put(IS_PUBLIC, SQLTypes.BOOLEAN);
     }
 
@@ -443,7 +441,6 @@ public enum TableMapper
         map.put(SQLTypes.TIMESTAMP_WITH_TZ, new HashSet<>(Arrays.asList(REGISTRATION_TIMESTAMP_COLUMN, MODIFICATION_TIMESTAMP_COLUMN)));
         map.put(SQLTypes.INT8, new HashSet<>(Arrays.asList(EXPERIMENT_TYPE_COLUMN, PERSON_REGISTERER_COLUMN, PROJECT_COLUMN, DELETION_COLUMN,
                 ORIGINAL_DELETION_COLUMN)));
-        map.put(SQLTypes.INT4, new HashSet<>(Arrays.asList(VERSION_COLUMN)));
         map.put(SQLTypes.BOOLEAN, new HashSet<>(Arrays.asList(IS_PUBLIC)));
     }
 
@@ -465,7 +462,6 @@ public enum TableMapper
         fields.put(PERSON_LEADER_COLUMN, SQLTypes.INT8);
         fields.put(PERSON_REGISTERER_COLUMN, SQLTypes.INT8);
         fields.put(PERSON_MODIFIER_COLUMN, SQLTypes.INT8);
-        fields.put(VERSION_COLUMN, SQLTypes.INT4);
         fields.put(REGISTRATION_TIMESTAMP_COLUMN, SQLTypes.TIMESTAMP_WITH_TZ);
         fields.put(MODIFICATION_TIMESTAMP_COLUMN, SQLTypes.TIMESTAMP_WITH_TZ);
     }
@@ -476,7 +472,6 @@ public enum TableMapper
         map.put(SQLTypes.VARCHAR, new HashSet<>(Arrays.asList(PERM_ID_COLUMN, CODE_COLUMN, DESCRIPTION_COLUMN)));
         map.put(SQLTypes.TIMESTAMP_WITH_TZ, new HashSet<>(Arrays.asList(REGISTRATION_TIMESTAMP_COLUMN, MODIFICATION_TIMESTAMP_COLUMN)));
         map.put(SQLTypes.INT8, new HashSet<>(Arrays.asList(SPACE_COLUMN, PERSON_LEADER_COLUMN, PERSON_REGISTERER_COLUMN, PERSON_MODIFIER_COLUMN)));
-        map.put(SQLTypes.INT4, new HashSet<>(Arrays.asList(VERSION_COLUMN)));
     }
 
     private static void initSpaceFieldToSQLTypeMap()
@@ -517,8 +512,6 @@ public enum TableMapper
         fields.put(DELETION_COLUMN, SQLTypes.INT8);
         fields.put(ORIGINAL_DELETION_COLUMN, SQLTypes.INT8);
 
-        fields.put(VERSION_COLUMN, SQLTypes.INT4);
-
         fields.put(IS_DERIVED, SQLTypes.BOOLEAN);
     }
 
@@ -530,7 +523,6 @@ public enum TableMapper
                 MODIFICATION_TIMESTAMP_COLUMN, ACCESS_TIMESTAMP)));
         map.put(SQLTypes.INT8, new HashSet<>(Arrays.asList(DATA_SET_TYPE_COLUMN, DATA_STORE_COLUMN, EXPERIMENT_COLUMN, SAMPLE_COLUMN,
                 PERSON_REGISTERER_COLUMN, PERSON_MODIFIER_COLUMN, DELETION_COLUMN, ORIGINAL_DELETION_COLUMN)));
-        map.put(SQLTypes.INT4, new HashSet<>(Arrays.asList(VERSION_COLUMN)));
         map.put(SQLTypes.BOOLEAN, new HashSet<>(Arrays.asList(IS_DERIVED)));
     }
 
