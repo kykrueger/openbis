@@ -52,13 +52,17 @@ var BarcodeUtil = new function() {
 
         var $toolbar = $("<span>");
 
+        var $barcodeTypesDropdown = FormUtil.getDropdown(this.supportedBarcodes());
+
         var $numberDropdown = FormUtil.getDropdown([
             { label: '10', value: 10, selected: true },
             { label: '25', value: 25 },
             { label: '50', value: 50 },
             { label: '100', value: 100 }
         ]);
-        $toolbar.append($generateBtn).append($("<span>", { style:"width:50%; margin-left: 10px; display:inline-block;"}).append($numberDropdown));
+        $toolbar.append($generateBtn)
+                .append($("<span>", { style:"width:25%; margin-left: 10px; display:inline-block;"}).append($barcodeTypesDropdown))
+                .append($("<span>", { style:"width:25%; margin-left: 10px; display:inline-block;"}).append($numberDropdown));
         views.header.append($toolbar);
 
         var _this = this;
@@ -66,7 +70,7 @@ var BarcodeUtil = new function() {
             views.content.empty();
             var value = parseInt($numberDropdown.val());
             for(var idx = 0; idx < value; idx++) {
-                _this.addBarcode(views.content, idx);
+                _this.addBarcode(views.content, idx, $barcodeTypesDropdown.val());
             }
         });
 
@@ -82,11 +86,11 @@ var BarcodeUtil = new function() {
         });
     }
 
-    this.addBarcode = function(content, idx) {
+    this.addBarcode = function(content, idx, type) {
         var uuid = Util.guid();
         content.append($('<br>'));
         content.append($('<center>').append($('<canvas>', { id : "barcode-canvas-" + idx, width : 1, height : 1, style : "border:1px solid #fff;visibility:hidden" })));
-        this.generateBarcode("barcode-canvas-" + idx, "code128", uuid, uuid);
+        this.generateBarcode("barcode-canvas-" + idx, type, uuid, uuid);
     }
 
     this.readBarcode = function(entity) {
@@ -198,16 +202,21 @@ var BarcodeUtil = new function() {
     }
 
     this.supportedBarcodes = function() {
-        return [{
-                    id : "code128",
-                    value : "Code 128"
-                },{
-                    id : "qrcode",
-                    value : "QR Code"
-                },{
-                    id : "microqrcode",
-                    value : "Micro QR Code"
-            }];
+        return [
+                {
+                    value : "code128",
+                    label : "Code 128",
+                    selected : true
+                },
+                {
+                    value : "qrcode",
+                    label : "QR Code"
+                },
+//                {
+//                    value : "microqrcode",
+//                    label : "Micro QR Code"
+//                }
+            ];
     }
 
     this.generateBarcode = function(canvasId, barcodeType, text, altx, action) {
