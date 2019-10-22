@@ -1,6 +1,12 @@
+## Changes with pybis-1.9.7
+
+* bugfix for creating propertyTypes of type controlled vocabulary and material
+
+
 ## Changes with pybis-1.9.6
 
 * bugfix when vocabulary attribute was not identical to the code of the aassigned property type
+
 
 ## Changes with pybis-1.9.5
 
