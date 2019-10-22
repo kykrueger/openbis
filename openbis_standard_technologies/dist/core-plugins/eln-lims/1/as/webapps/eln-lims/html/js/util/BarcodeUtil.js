@@ -69,6 +69,17 @@ var BarcodeUtil = new function() {
                 _this.addBarcode(views.content, idx);
             }
         });
+
+        this.preloadLibrary();
+    }
+
+    this.preloadLibrary = function() {
+        var $hiddenContainer = $("<div>", { style : "display:none;" });
+        $(document.body).append($hiddenContainer);
+        $hiddenContainer.append($('<center>').append($('<canvas>', { id : "barcode-canvas-preload", width : 1, height : 1, style : "border:1px solid #fff;visibility:hidden" })));
+        this.generateBarcode("barcode-canvas-preload", "code128", "Barcode", "Text", function() {
+            $hiddenContainer.remove();
+        });
     }
 
     this.addBarcode = function(content, idx) {
@@ -199,7 +210,7 @@ var BarcodeUtil = new function() {
             }];
     }
 
-    this.generateBarcode = function(canvasId, barcodeType, text, altx) {
+    this.generateBarcode = function(canvasId, barcodeType, text, altx, action) {
         var elt  = symdesc[barcodeType];
         var opts = {};
         var rot  = "N";
@@ -257,6 +268,9 @@ var BarcodeUtil = new function() {
                     // Draw the barcode to the canvas
                     bw.render();
                     canvas.style.visibility = 'visible';
+                    if(action) {
+                        action();
+                    }
                 }
             });
         } catch (e) {
