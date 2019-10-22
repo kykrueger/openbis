@@ -3,7 +3,7 @@ var BarcodeUtil = new function() {
     var barcodeTimeout = false;
     var barcodeReader = "";
 
-    var readSample = function() {
+    var readSample = function(action) {
         // Trigger search if needed
         // permID Format 23 char, 1 hyphen: 20170912112249208-38888
         // UUID Format 36 char, 4 hyphens: 123e4567-e89b-12d3-a456-426655440000
@@ -23,30 +23,44 @@ var BarcodeUtil = new function() {
             mainController.serverFacade.searchForSamplesAdvanced(criteria, { only : true, withProperties: true },
             function(results) {
                 if(results.totalCount === 1) {
-                    mainController.changeView('showViewSamplePageFromPermId', results.objects[0].permId.permId);
+                    if(action) {
+                        action(results.objects[0]);
+                    } else {
+                        mainController.changeView('showViewSamplePageFromPermId', results.objects[0].permId.permId);
+                    }
                 }
             });
         }
     }
 
-    this.enableAutomaticBarcodeReading = function() {
-        document.addEventListener('keyup', function(event) {
+    var barcodeReaderEventListener = function(action) {
+        return function(event) {
             if(!barcodeTimeout) {
-                barcodeTimeout = true;
-                var timeoutFunc = function() {
-                    readSample();
-                    // reset
-                    barcodeTimeout = false;
-                    barcodeReader = "";
-                }
-                setTimeout(timeoutFunc, 1000);
+                  barcodeTimeout = true;
+                  var timeoutFunc = function() {
+                      readSample(action);
+                      // reset
+                      barcodeTimeout = false;
+                      barcodeReader = "";
+                  }
+                  setTimeout(timeoutFunc, 1000);
             }
             if(event.key === "Clear") {
                 barcodeReader = "";
             } else {
                 barcodeReader += event.key;
             }
-        });
+        };
+    }
+
+    var barcodeReaderGlobalEventListener = barcodeReaderEventListener();
+
+    this.enableAutomaticBarcodeReading = function() {
+        document.addEventListener('keyup', barcodeReaderGlobalEventListener);
+    }
+
+    this.disableAutomaticBarcodeReading = function() {
+        document.removeEventListener('keyup', barcodeReaderGlobalEventListener);
     }
 
     this.preGenerateBarcodes = function(views) {
@@ -95,6 +109,64 @@ var BarcodeUtil = new function() {
         content.append($('<br>'));
         content.append($('<center>').append($('<canvas>', { id : "barcode-canvas-" + idx, width : 1, height : 1, style : "border:1px solid #fff;visibility:hidden" })));
         this.generateBarcode("barcode-canvas-" + idx, type, uuid, uuid);
+    }
+
+    this.readBarcodeMulti = function(actionLabel, action) {
+        var _this = this;
+        var $readed = $('<div>');
+
+        // Remove global event
+        this.disableAutomaticBarcodeReading();
+        // Add local event
+        var objects = [];
+        var gatherReaded = function(object) {
+            objects.push(object);
+            var displayName = "";
+            $readed.append($('<div>').append(object.identifier.identifier));
+        }
+        var barcodeReaderLocalEventListener = barcodeReaderEventListener(gatherReaded);
+        document.addEventListener('keyup', barcodeReaderLocalEventListener);
+
+
+        var $window = $('<form>', {
+            'action' : 'javascript:void(0);'
+        });
+
+        var $btnAccept = $('<input>', { 'type': 'submit', 'class' : 'btn btn-primary', 'value' : actionLabel });
+        $btnAccept.click(function(event) {
+            // Swap event listeners
+            document.removeEventListener('keyup', barcodeReaderLocalEventListener);
+            _this.enableAutomaticBarcodeReading();
+            Util.unblockUI();
+            action();
+        });
+
+        var $btnCancel = $('<input>', { 'type': 'submit', 'class' : 'btn', 'value' : 'Close' });
+        $btnCancel.click(function(event) {
+            // Swap event listeners
+            document.removeEventListener('keyup', barcodeReaderLocalEventListener);
+            _this.enableAutomaticBarcodeReading();
+            Util.unblockUI();
+        });
+
+        $window.append($('<legend>').append("Barcode Reader"));
+        $window.append($('<br>'));
+        $window.append($btnAccept).append('&nbsp;').append($btnCancel);
+        $window.append($('<legend>').append('Readed'));
+        $window.append($('<br>'));
+        $window.append($('<div>').append($readed));
+
+        var css = {
+            'text-align' : 'left',
+            'top' : '15%',
+            'width' : '70%',
+            'height' : '400px',
+            'left' : '15%',
+            'right' : '20%',
+            'overflow' : 'auto'
+        };
+
+        Util.blockUI($window, css);
     }
 
     this.readBarcode = function(entity) {

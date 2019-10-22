@@ -174,7 +174,11 @@ function LinksView(linksController, linksModel) {
 		}
 		
 		$legend.append(linksModel.title).append("&nbsp;").append(addAnyBtn); //.css("margin-top", "20px").css("margin-bottom", "20px");
-		
+
+		if(!linksModel.disableAddAnyType && profile.mainMenu.showBarcodes) {
+		    $legend.append(linksView.getAddAnyBarcode());
+		}
+
 		$legend.prepend(FormUtil.getShowHideButton($fieldset, "SAMPLE-" + linksModel.sampleTypeCode + "-" + linksModel.title));
 		
 		$fieldset.append($samplePicker);
@@ -471,5 +475,19 @@ function LinksView(linksController, linksModel) {
 		} else {
 			return $addBtn;
 		}
+	}
+
+	linksView.getAddAnyBarcode = function() {
+	    var $addBtn = FormUtil.getButtonWithIcon("glyphicon-barcode", null);
+        $addBtn.click(function() {
+            BarcodeUtil.readBarcodeMulti("Add Objects", function(objects) {
+                alert("Done");
+            });
+        });
+        if(linksModel.isDisabled) {
+            return "";
+        } else {
+            return $addBtn;
+        }
 	}
 }
