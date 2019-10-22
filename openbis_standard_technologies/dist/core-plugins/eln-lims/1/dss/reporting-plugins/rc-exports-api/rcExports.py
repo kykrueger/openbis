@@ -35,7 +35,7 @@ from org.eclipse.jetty.client.util import BasicAuthentication
 from org.eclipse.jetty.http import HttpMethod
 from org.eclipse.jetty.util.ssl import SslContextFactory
 
-from exportsApi import displayResult, findEntitiesToExport, validateDataSize, getConfigurationProperty, generateFilesInZip, addToZipFile, cleanUp, \
+from exportsApi import displayResult, findEntitiesToExport, validateDataSize, getConfigurationProperty, addToZipFile, cleanUp, \
     generateZipFile, checkResponseStatus
 
 operationLog = Logger.getLogger(str(LogCategory.OPERATION) + '.rcExports.py')
@@ -337,7 +337,7 @@ def generateXML(zipOutputStream, fileMetadata, exportDirPath, submissionType, us
         fLocat = ET.SubElement(file, ET.QName(metsNS, 'FLocat'))
         fLocat.set('LOCTYPE', 'URL')
         fLocat.set('MIMETYPE', fileMetadatum.get('mimeType'))
-        fLocat.set('RETENTIONPERIOD', '10 years')
+        fLocat.set('RETENTIONPERIOD', 'indefinite')
         fLocat.set(ET.QName(xlinkNS, 'href'), fileMetadatum.get('fileName'))
 
     structMap = ET.SubElement(root, ET.QName(metsNS, 'structMap'))
