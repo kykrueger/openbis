@@ -35,7 +35,7 @@ def get_existing_element_based_on(creation_type, creation, existing_elements):
         existing_element = list(filter(
             lambda existing_element: create_project_identifier_string(creation) == str(existing_element.identifier),
             existing_elements))
-    if creation_type == ExperimentDefinitionToCreationType:
+    elif creation_type == ExperimentDefinitionToCreationType:
         existing_element = list(filter(
             lambda existing_element: create_experiment_identifier_string(creation) == str(existing_element.identifier),
             existing_elements))
