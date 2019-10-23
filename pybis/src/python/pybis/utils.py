@@ -18,7 +18,8 @@ def parse_jackson(input_json):
     interesting=['tags', 'registrator', 'modifier', 'owner', 'type', 'parents', 
         'children', 'containers', 'container', 'properties', 'experiment', 'sample',
         'project', 'space', 'propertyType', 'entityType', 'propertyType', 'propertyAssignment',
-        'externalDms', 'roleAssignments', 'user', 'users', 'authorizationGroup', 'vocabulary'
+        'externalDms', 'roleAssignments', 'user', 'users', 'authorizationGroup', 'vocabulary',
+        'validationPlugin'
     ]
     found = {} 
     def build_cache(graph):
@@ -183,6 +184,12 @@ def extract_nested_permid(permid):
     if not isinstance(permid, dict):
         return '' if permid is None else str(permid)
     return '' if permid['permId']['permId'] is None else permid['permId']['permId'] 
+    
+def extract_nested_permids(items):
+    if not isinstance(items, list):
+        return []
+
+    return list(item['permId']['permId'] for item in items)
 
 
 def extract_property_assignments(pas):
