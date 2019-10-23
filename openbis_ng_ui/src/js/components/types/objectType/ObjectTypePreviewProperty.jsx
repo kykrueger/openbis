@@ -10,15 +10,22 @@ import ObjectTypePreviewPropertyMaterial from './ObjectTypePreviewPropertyMateri
 import logger from '../../../common/logger.js'
 import * as util from '../../../common/util.js'
 
-const styles = () => ({
-  container: {
-    padding: '10px',
-    border: '1px solid white',
+const styles = theme => ({
+  draggable: {
+    padding: theme.spacing(2),
+    '&:last-child': {
+      marginBottom: 0
+    },
     '&:hover': {
-      border: '1px solid blue'
+      backgroundColor: theme.palette.background.primary
     }
   },
-  selected: {}
+  selected: {
+    backgroundColor: theme.palette.background.secondary,
+    '&:hover': {
+      backgroundColor: theme.palette.background.secondary
+    }
+  }
 })
 
 class ObjectTypePreviewProperty extends React.PureComponent {
@@ -50,7 +57,7 @@ class ObjectTypePreviewProperty extends React.PureComponent {
             {...provided.draggableProps}
             {...provided.dragHandleProps}
             className={util.classNames(
-              classes.container,
+              classes.draggable,
               selected ? classes.selected : null
             )}
             onClick={this.handleClick}

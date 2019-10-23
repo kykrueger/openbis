@@ -6,33 +6,33 @@ import Typography from '@material-ui/core/Typography'
 import logger from '../../../common/logger.js'
 import * as util from '../../../common/util.js'
 
-const styles = () => ({
+const styles = theme => ({
   draggable: {
-    marginBottom: '10px'
+    marginBottom: theme.spacing(2)
   },
   droppable: {
-    padding: '10px',
-    borderWidth: '1px',
+    padding: theme.spacing(2),
+    borderWidth: '2px',
     borderStyle: 'dashed',
-    borderColor: 'lightgray',
+    borderColor: theme.palette.background.primary,
     '&:hover': {
-      borderColor: 'blue'
+      borderColor: theme.palette.primary.main
     }
   },
   named: {
     '& $droppable': {
       borderStyle: 'solid',
-      borderColor: 'gray',
+      borderColor: theme.palette.background.secondary,
       '&:hover': {
-        borderColor: 'blue'
+        borderColor: theme.palette.primary.main
       }
     }
   },
   selected: {
     '& $droppable': {
-      borderColor: 'red',
+      borderColor: theme.palette.secondary.main,
       '&:hover': {
-        borderColor: 'red'
+        borderColor: theme.palette.secondary.main
       }
     }
   }
