@@ -3,14 +3,14 @@ var BarcodeUtil = new function() {
     var barcodeTimeout = false;
     var barcodeReader = "";
 
-    var readSample = function() {
+    var readSample = function(action) {
         // Trigger search if needed
         // permID Format 23 char, 1 hyphen: 20170912112249208-38888
         // UUID Format 36 char, 4 hyphens: 123e4567-e89b-12d3-a456-426655440000
         var rules = {};
         if(barcodeReader.length === 36) {
             rules["UUIDv4"] = { type: "Property/Attribute", 	name: "PROP.$BARCODE", operator : "thatEqualsString", value: barcodeReader };
-        } else if(barcodeReader.length === 23) {
+        } else if(barcodeReader.length > 17) {
             rules["UUIDv4"] = { type: "Property/Attribute", 	name: "ATTR.PERM_ID", operator : "thatEqualsString", value: barcodeReader };
         }
 
@@ -23,26 +23,44 @@ var BarcodeUtil = new function() {
             mainController.serverFacade.searchForSamplesAdvanced(criteria, { only : true, withProperties: true },
             function(results) {
                 if(results.totalCount === 1) {
-                    mainController.changeView('showViewSamplePageFromPermId', results.objects[0].permId.permId);
+                    if(action) {
+                        action(results.objects[0]);
+                    } else {
+                        mainController.changeView('showViewSamplePageFromPermId', results.objects[0].permId.permId);
+                    }
                 }
             });
         }
     }
 
-    this.enableAutomaticBarcodeReading = function() {
-        document.addEventListener('keyup', function(event) {
+    var barcodeReaderEventListener = function(action) {
+        return function(event) {
             if(!barcodeTimeout) {
-                barcodeTimeout = true;
-                var timeoutFunc = function() {
-                    readSample();
-                    // reset
-                    barcodeTimeout = false;
-                    barcodeReader = "";
-                }
-                setTimeout(timeoutFunc, 1000);
+                  barcodeTimeout = true;
+                  var timeoutFunc = function() {
+                      readSample(action);
+                      // reset
+                      barcodeTimeout = false;
+                      barcodeReader = "";
+                  }
+                  setTimeout(timeoutFunc, 1000);
             }
-            barcodeReader += event.key;
-        });
+            if(event.key === "Clear") {
+                barcodeReader = "";
+            } else {
+                barcodeReader += event.key;
+            }
+        };
+    }
+
+    var barcodeReaderGlobalEventListener = barcodeReaderEventListener();
+
+    this.enableAutomaticBarcodeReading = function() {
+        document.addEventListener('keyup', barcodeReaderGlobalEventListener);
+    }
+
+    this.disableAutomaticBarcodeReading = function() {
+        document.removeEventListener('keyup', barcodeReaderGlobalEventListener);
     }
 
     this.preGenerateBarcodes = function(views) {
@@ -93,6 +111,64 @@ var BarcodeUtil = new function() {
         this.generateBarcode("barcode-canvas-" + idx, type, uuid, uuid);
     }
 
+    this.readBarcodeMulti = function(actionLabel, action) {
+        var _this = this;
+        var $readed = $('<div>');
+
+        // Remove global event
+        this.disableAutomaticBarcodeReading();
+        // Add local event
+        var objects = [];
+        var gatherReaded = function(object) {
+            objects.push(object);
+            var displayName = "";
+            $readed.append($('<div>').append(object.identifier.identifier));
+        }
+        var barcodeReaderLocalEventListener = barcodeReaderEventListener(gatherReaded);
+        document.addEventListener('keyup', barcodeReaderLocalEventListener);
+
+
+        var $window = $('<form>', {
+            'action' : 'javascript:void(0);'
+        });
+
+        var $btnAccept = $('<input>', { 'type': 'submit', 'class' : 'btn btn-primary', 'value' : actionLabel });
+        $btnAccept.click(function(event) {
+            // Swap event listeners
+            document.removeEventListener('keyup', barcodeReaderLocalEventListener);
+            _this.enableAutomaticBarcodeReading();
+            Util.unblockUI();
+            action(objects);
+        });
+
+        var $btnCancel = $('<input>', { 'type': 'submit', 'class' : 'btn', 'value' : 'Close' });
+        $btnCancel.click(function(event) {
+            // Swap event listeners
+            document.removeEventListener('keyup', barcodeReaderLocalEventListener);
+            _this.enableAutomaticBarcodeReading();
+            Util.unblockUI();
+        });
+
+        $window.append($('<legend>').append("Barcode Reader"));
+        $window.append($('<br>'));
+        $window.append($btnAccept).append('&nbsp;').append($btnCancel);
+        $window.append($('<legend>').append('Readed'));
+        $window.append($('<br>'));
+        $window.append($('<div>').append($readed));
+
+        var css = {
+            'text-align' : 'left',
+            'top' : '15%',
+            'width' : '70%',
+            'height' : '400px',
+            'left' : '15%',
+            'right' : '20%',
+            'overflow' : 'auto'
+        };
+
+        Util.blockUI($window, css);
+    }
+
     this.readBarcode = function(entity) {
         var $window = $('<form>', {
             'action' : 'javascript:void(0);'
@@ -104,9 +180,7 @@ var BarcodeUtil = new function() {
 
         var $barcodeReader = $('<input>', { 'type': 'text', 'placeholder': 'barcode', 'style' : 'min-width: 50%;' });
         $barcodeReader.keyup(function() {
-            var UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-            var isValid = UUID_REGEX.exec($barcodeReader.val());
-            if(isValid) {
+            if($barcodeReader.val().length === 36) {
                 $btnAccept.prop("disabled", false);
             } else {
                 $btnAccept.prop("disabled", true);
