@@ -177,9 +177,15 @@ public class Translator
         final String from = buildFrom(vo);
         final String where = buildWhere(vo);
         final String select = buildSelect();
+//        final String orderBy = buildOrderBy(vo);
 
-        return new SelectQuery(select  + NL + from + NL + where, vo.getArgs());
+        return new SelectQuery(select  + NL + from + NL + where /*+ NL + orderBy*/, vo.getArgs());
     }
+
+//    private static String buildOrderBy(final TranslationVo vo)
+//    {
+//        return "";
+//    }
 
     private static String buildSelect()
     {
