@@ -10,7 +10,8 @@ const styles = () => ({
     opacity: 0.4
   },
   labelContainer: {
-    margin: 0
+    margin: 0,
+    alignItems: 'start'
   },
   labelText: {
     '& b': {

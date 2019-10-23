@@ -2,15 +2,39 @@ import _ from 'lodash'
 import React from 'react'
 import { Draggable, Droppable } from 'react-beautiful-dnd'
 import { withStyles } from '@material-ui/core/styles'
+import Typography from '@material-ui/core/Typography'
 import logger from '../../../common/logger.js'
 import * as util from '../../../common/util.js'
 
 const styles = () => ({
-  container: {
-    padding: '10px'
+  draggable: {
+    marginBottom: '10px'
+  },
+  droppable: {
+    padding: '10px',
+    borderWidth: '1px',
+    borderStyle: 'dashed',
+    borderColor: 'lightgray',
+    '&:hover': {
+      borderColor: 'blue'
+    }
+  },
+  named: {
+    '& $droppable': {
+      borderStyle: 'solid',
+      borderColor: 'gray',
+      '&:hover': {
+        borderColor: 'blue'
+      }
+    }
   },
   selected: {
-    border: '1px solid red'
+    '& $droppable': {
+      borderColor: 'red',
+      '&:hover': {
+        borderColor: 'red'
+      }
+    }
   }
 })
 
@@ -44,18 +68,25 @@ class ObjectTypePreviewSection extends React.PureComponent {
             {...provided.draggableProps}
             {...provided.dragHandleProps}
             className={util.classNames(
-              classes.container,
+              classes.draggable,
+              name ? classes.named : null,
               selected ? classes.selected : null
             )}
             onClick={this.handleClick}
           >
             <Droppable droppableId={id} type='property'>
               {provided => (
-                <div ref={provided.innerRef} {...provided.droppableProps}>
-                  Section {name}
-                  <div>{children}</div>
-                  {provided.placeholder}
-                </div>
+                <React.Fragment>
+                  <Typography variant='h6'>{name}</Typography>
+                  <div
+                    ref={provided.innerRef}
+                    {...provided.droppableProps}
+                    className={classes.droppable}
+                  >
+                    <div>{children}</div>
+                    {provided.placeholder}
+                  </div>
+                </React.Fragment>
               )}
             </Droppable>
           </div>

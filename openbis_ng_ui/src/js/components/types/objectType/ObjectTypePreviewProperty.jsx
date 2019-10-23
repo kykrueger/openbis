@@ -12,7 +12,11 @@ import * as util from '../../../common/util.js'
 
 const styles = () => ({
   container: {
-    padding: '10px'
+    padding: '10px',
+    border: '1px solid white',
+    '&:hover': {
+      border: '1px solid blue'
+    }
   },
   selected: {}
 })
