@@ -470,10 +470,14 @@ class AttrHolder():
             self.set_users(value)
 
         elif name in ["vocabulary"]:
-            self.__dict__['_vocabulary'] = {
-                "@type": "as.dto.vocabulary.id.VocabularyPermId",
-                "permId": value.upper()
-            }
+            if value is None or value == '':
+                self.__dict__['_vocabulary'] = None
+            else:
+                self.__dict__['_vocabulary'] = {
+                    "@type": "as.dto.vocabulary.id.VocabularyPermId",
+                    "permId": value.upper()
+                }
+
         elif name in ["validationPlugin"]:
             if value is None or value == '':
                 self.__dict__['_validationPlugin'] = None
@@ -484,11 +488,14 @@ class AttrHolder():
                 }
 
         elif name in ["materialType"]:
-            self.__dict__['_materialType'] = {
-                "@type": "as.dto.entitytype.id.EntityTypePermId",
-                "permId": value.upper(),
-                "entityKind": "MATERIAL"
-            }
+            if value is None or value == '':
+                self.__dict__['_materialType'] = None
+            else:
+                self.__dict__['_materialType'] = {
+                    "@type": "as.dto.entitytype.id.EntityTypePermId",
+                    "permId": value.upper(),
+                    "entityKind": "MATERIAL"
+                }
 
         elif name in ["attachments"]:
             if isinstance(value, list):
