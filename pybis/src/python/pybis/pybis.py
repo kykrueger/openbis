@@ -28,7 +28,7 @@ from tabulate import tabulate
 
 from . import data_set as pbds
 from .utils import parse_jackson, check_datatype, split_identifier, format_timestamp, is_identifier, is_permid, nvl, VERBOSE
-from .utils import extract_attr, extract_permid, extract_code,extract_deletion,extract_identifier,extract_nested_identifier,extract_nested_permid,extract_property_assignments,extract_role_assignments,extract_person, extract_person_details,extract_id,extract_userId
+from .utils import extract_attr, extract_permid, extract_code,extract_deletion,extract_identifier,extract_nested_identifier,extract_nested_permid, extract_nested_permids, extract_property_assignments,extract_role_assignments,extract_person, extract_person_details,extract_id,extract_userId
 from .entity_type import EntityType, SampleType, DataSetType, MaterialType, ExperimentType
 from .vocabulary import Vocabulary, VocabularyTerm
 from .openbis_object import OpenBisObject 
@@ -682,74 +682,81 @@ class Openbis:
 
     def __dir__(self):
         return [
-            'url', 'port', 'hostname',
-            'login(username, password, save_token=True)', 'logout()', 'is_session_active()', 'token', 'is_token_valid("")',
+            'url', 'port', 'hostname', 'token',
+            'login()', 
+            'logout()', 
+            'is_session_active()', 
+            'is_token_valid()',
             "get_server_information()",
-            "get_dataset('permId')",
+            "get_dataset()",
             "get_datasets()",
-            "get_dataset_type('type')",
+            "get_dataset_type()",
             "get_dataset_types()",
             "get_datastores()",
-            "gen_code(entity, prefix)",
+            "gen_code()",
             "get_deletions()",
-            "get_experiment('permId', withAttachments=False)",
+            "get_experiment()",
             "get_experiments()",
-            "get_experiment_type('type')",
+            "get_experiment_type()",
             "get_experiment_types()",
-            "get_collection('permId', withAttachments=False)",
+            "get_collection()",
             "get_collections()",
-            "get_collection_type('type')",
+            "get_collection_type()",
             "get_collection_types()",
-            "get_external_data_management_system(permId)",
-            "get_material_type('type')",
+            "get_external_data_management_system()",
+            "get_material_type()",
             "get_material_types()",
-            "get_project('project')",
-            "get_projects(space=None, code=None)",
-            "get_sample('id')",
-            "get_object('id')", # "get_sample('id')" alias
+            "get_project()",
+            "get_projects()",
+            "get_sample()",
+            "get_object()",
             "get_samples()",
-            "get_objects()", # "get_samples()" alias
-            "get_sample_type('type')",
-            "get_object_type('type')", # "get_sample_type(type))" alias
+            "get_objects()",
+            "get_sample_type()",
+            "get_object_type()",
             "get_sample_types()",
-            "get_object_types()", # "get_sample_types()" alias
+            "get_object_types()",
             "get_property_types()",
             "get_property_type()",
             "new_property_type()",
             "get_semantic_annotations()",
-            "get_semantic_annotation(permId, only_data = False)",
-            "get_space(code)",
+            "get_semantic_annotation()",
+            "get_space()",
             "get_spaces()",
             "get_tags()",
-            "get_tag(tagId)",
-            "new_tag(code, description)",
+            "get_tag()",
+            "new_tag()",
             "get_terms()",
             "get_term()",
             "get_vocabularies()",
             "get_vocabulary()",
-            "new_person(userId, space)",
+            "new_person()",
             "get_persons()",
-            "get_person(userId)",
+            "get_person()",
             "get_groups()",
-            "get_group(code)",
+            "get_group()",
             "get_role_assignments()",
-            "get_role_assignment(techId)",
+            "get_role_assignment()",
             "get_plugins()",
-            "get_plugin(code)",
-            "new_plugin(code)",
-            "new_group(code, description, userIds)",
-            'new_space(name, description)',
-            'new_project(space, code, description, attachments)',
-            'new_experiment(type, code, project, props={})',
-            'new_collection(type, code, project, props={})',
-            'new_sample(type, space, project, experiment, parents)',
-            'new_object(type, space, project, experiment, parents)', # 'new_sample(type, space, project, experiment)' alias
+            "get_plugin()",
+            "new_plugin()",
+            "new_group()",
+            'new_space()',
+            'new_project()',
+            'new_experiment()',
+            'new_collection()',
+            'new_sample()',
+            'new_object()',
             'new_sample_type()',
             'new_object_type()',
-            'new_dataset(type, parent, experiment, sample, files=[], folder, props={})',
-            'new_semantic_annotation(entityType, propertyType)',
-            'update_sample(sampleId, space, project, experiment, parents, children, components, properties, tagIds, attachments)',
-            'update_object(sampleId, space, project, experiment, parents, children, components, properties, tagIds, attachments)', # 'update_sample(sampleId, space, project, experiment, parents, children, components, properties, tagIds, attachments)' alias
+            'new_dataset()',
+            'new_dataset_type()',
+            'new_experiment_type()',
+            'new_collection_type()',
+            'new_material_type()',
+            'new_semantic_annotation()',
+            'update_sample()',
+            'update_object()', 
         ]
 
     def _repr_html_(self):
@@ -2620,8 +2627,31 @@ class Openbis:
         return Plugin(self, name=name, pluginType=pluginType, **kwargs) 
         
 
-    def new_property_type(self, code, label, description, dataType, **kwargs):
-        return PropertyType(openbis_obj=self, code=code, label=label, description=description, dataType=dataType, **kwargs)
+    def new_property_type(self, 
+        code,
+        label,
+        description,
+        dataType,
+        managedInternally = False,
+        internalNameSpace= False,
+        vocabulary = None,
+        materialType = None,
+        schema = None,
+        transformation = None,
+    ):
+        return PropertyType(
+            openbis_obj=self,
+            code=code,
+            label=label,
+            description=description,
+            dataType=dataType,
+            managedInternally = managedInternally,
+            internalNameSpace= internalNameSpace,
+            vocabulary = vocabulary,
+            materialType = materialType,
+            schema = schema,
+            transformation = transformation,
+        )
 
     def get_property_type(self, code, only_data=False, start_with=None, count=None):
         identifiers = []
@@ -2632,7 +2662,7 @@ class Openbis:
 
         for c in code:
             identifiers.append({
-                "permId": c,
+                "permId": c.upper(),
                 "@type": "as.dto.property.id.PropertyTypePermId"
             })
 
@@ -2708,6 +2738,8 @@ class Openbis:
             df = DataFrame(objects)
             df['registrationDate'] = df['registrationDate'].map(format_timestamp)
             df['registrator'] = df['registrator'].map(extract_person)
+            df['vocabulary'] = df['vocabulary'].map(extract_code)
+            df['semanticAnnotations'] = df['semanticAnnotations'].map(extract_nested_permids)
         
         return Things(
             openbis_obj = self,
@@ -2835,6 +2867,8 @@ class Openbis:
             entity_types = DataFrame(objects)
             entity_types['permId'] = entity_types['permId'].map(extract_permid)
             entity_types['modificationDate'] = entity_types['modificationDate'].map(format_timestamp)
+            entity_types['validationPlugin'] = entity_types['validationPlugin'].map(extract_nested_permid
+            )
 
         single_item_method = getattr(self, cls._single_item_method_name)
         return Things(
@@ -3358,21 +3392,79 @@ class Openbis:
 
     new_object = new_sample # Alias
 
-    def new_sample_type(self, 
-            code,
-            **kwargs
-        ):
-        return SampleType(self, code=code, **kwargs)
+    def new_sample_type(self,
+        code, 
+        generatedCodePrefix,
+        subcodeUnique=False,
+        autoGeneratedCode=False,
+        listable=True,
+        showContainer=False,
+        showParents=True,
+        showParentMetadata=False,
+        validationPlugin=None
+    ):
+        """Creates a new sample type.
+        """
 
+        return SampleType(self, 
+            code=code, 
+            generatedCodePrefix = generatedCodePrefix,
+            autoGeneratedCode = autoGeneratedCode,
+            listable = listable,
+            showContainer = showContainer,
+            showParents = showParents,
+            showParentMetadata = showParentMetadata,
+            validationPlugin = validationPlugin,
+        )
     new_object_type = new_sample_type
 
     def new_dataset_type(self, 
-            code,
-            **kwargs
-        ):
-        return DataSetType(self, code=code, **kwargs)
+        code,
+        description=None,
+        mainDataSetPattern=None,
+        mainDataSetPath=None,
+        disallowDeletion=False,
+        validationPlugin=None,
+    ):
+        """Creates a new dataSet type.
+        """
 
-    new_object_type = new_sample_type
+        return DataSetType(self,
+            code=code, 
+            description=description, 
+            mainDataSetPattern=mainDataSetPattern,
+            mainDataSetPath=mainDataSetPath,
+            disallowDeletion=disallowDeletion,
+            validationPlugin=validationPlugin,
+        )
+
+    def new_experiment_type(self, 
+        code, 
+        description=None,
+        validationPlugin=None,
+    ):
+        """Creates a new experiment type (collection type)
+        """
+        return ExperimentType(self,
+            code=code, 
+            description=description, 
+            validationPlugin=validationPlugin,
+        )
+    new_collection_type = new_experiment_type
+
+
+    def new_material_type(self,
+        code, 
+        description=None,
+        validationPlugin=None,
+    ):
+        """Creates a new material type.
+        """
+        return MaterialType(self,
+            code=code,
+            description=description,
+            validationPlugin=validationPlugin,
+        )
 
     def new_dataset(self, type=None, kind='PHYSICAL_DATA', files=None, props=None, folder=None, **kwargs):
         """ Creates a new dataset of a given sample type.
