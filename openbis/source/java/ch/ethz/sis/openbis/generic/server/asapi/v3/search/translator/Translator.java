@@ -268,14 +268,14 @@ public class Translator
                     sqlBuilder.append(SP).append(logicalOperator).append(SP);
                 }
 
-                final ISearchManager<ISearchCriteria, ?> subqueryManager = vo.getCriteriaToManagerMap().get(criterion.getClass());
+                final ISearchManager<ISearchCriteria, ?, ?> subqueryManager = vo.getCriteriaToManagerMap().get(criterion.getClass());
                 final TableMapper tableMapper = vo.getTableMapper();
                 if (subqueryManager != null)
                 {
                     final String column = CRITERIA_TO_SUBQUERY_COLUMN_MAP.get(criterion.getClass());
                     if (tableMapper != null && column != null)
                     {
-                        final Set<Long> ids = subqueryManager.searchForIDs(vo.getUserId(), criterion);
+                        final Set<Long> ids = subqueryManager.searchForIDs(vo.getUserId(), criterion, null);
                         sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(column)
                                 .append(SP).append(IN).append(SP).append(LP).append(SELECT).append(SP).append(UNNEST).append(LP).append(QU).append(RP)
                                 .append(RP);
@@ -335,7 +335,7 @@ public class Translator
 
         private Map<Object, Map<String, JoinInformation>> aliases = new HashMap<>();
 
-        private Map<Class<? extends ISearchCriteria>, ISearchManager<ISearchCriteria, ?>> criteriaToManagerMap;
+        private Map<Class<? extends ISearchCriteria>, ISearchManager<ISearchCriteria, ?, ?>> criteriaToManagerMap;
 
         private List<Object> args = new ArrayList<>();
 
@@ -390,13 +390,13 @@ public class Translator
             this.aliases = aliases;
         }
 
-        public Map<Class<? extends ISearchCriteria>, ISearchManager<ISearchCriteria, ?>> getCriteriaToManagerMap()
+        public Map<Class<? extends ISearchCriteria>, ISearchManager<ISearchCriteria, ?, ?>> getCriteriaToManagerMap()
         {
             return criteriaToManagerMap;
         }
 
         public void setCriteriaToManagerMap(
-                final Map<Class<? extends ISearchCriteria>, ISearchManager<ISearchCriteria, ?>> criteriaToManagerMap)
+                final Map<Class<? extends ISearchCriteria>, ISearchManager<ISearchCriteria, ?, ?>> criteriaToManagerMap)
         {
             this.criteriaToManagerMap = criteriaToManagerMap;
         }

@@ -21,9 +21,12 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CodeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.PermIdSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.fetchoptions.SpaceFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.search.SpaceSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
@@ -36,7 +39,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
  *
  * @author Viktor Kovtun
  */
-public class SpaceSearchManager extends AbstractSearchManager<SpaceSearchCriteria, Long>
+public class SpaceSearchManager extends AbstractSearchManager<SpaceSearchCriteria, SpaceFetchOptions, Space, Long>
 {
 
     public SpaceSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
@@ -59,7 +62,7 @@ public class SpaceSearchManager extends AbstractSearchManager<SpaceSearchCriteri
     }
 
     @Override
-    public Set<Long> searchForIDs(final Long userId, final SpaceSearchCriteria criteria)
+    public Set<Long> searchForIDs(final Long userId, final SpaceSearchCriteria criteria, final SortOptions<Space> sortOptions)
     {
         // Replacing perm ID search criteria with code search criteria, because for spaces perm ID is equivalent to code
         final Collection<ISearchCriteria> newCriteria = criteria.getCriteria().stream().map(searchCriterion ->

@@ -67,7 +67,7 @@ public class SearchReportingServicesOperationExecutor
     }
 
     @Override
-    protected ISearchManager<ReportingServiceSearchCriteria, ReportingService> getSearchManager()
+    protected ISearchManager<ReportingServiceSearchCriteria, ReportingService, ReportingService> getSearchManager()
     {
         throw new RuntimeException("This method is not implemented yet.");
     }

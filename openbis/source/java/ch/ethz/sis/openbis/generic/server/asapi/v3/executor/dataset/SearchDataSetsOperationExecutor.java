@@ -69,7 +69,7 @@ public class SearchDataSetsOperationExecutor extends SearchObjectsOperationExecu
     }
 
     @Override
-    protected ISearchManager<DataSetSearchCriteria, Long> getSearchManager()
+    protected ISearchManager<DataSetSearchCriteria, DataSet, Long> getSearchManager()
     {
         return dataSetSearchManager;
     }

@@ -70,7 +70,7 @@ public class SearchExperimentsOperationExecutor
     }
 
     @Override
-    protected ISearchManager<ExperimentSearchCriteria, Long> getSearchManager()
+    protected ISearchManager<ExperimentSearchCriteria, Experiment, Long> getSearchManager()
     {
         return experimentSearchManager;
     }

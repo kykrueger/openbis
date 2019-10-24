@@ -72,7 +72,8 @@ public class SearchSearchDomainServicesOperationExecutor
     }
 
     @Override
-    protected ISearchManager<SearchDomainServiceSearchCriteria, SearchDomainService> getSearchManager()
+    protected ISearchManager<SearchDomainServiceSearchCriteria, SearchDomainService, SearchDomainService>
+    getSearchManager()
     {
         throw new RuntimeException("This method is not implemented yet.");
     }

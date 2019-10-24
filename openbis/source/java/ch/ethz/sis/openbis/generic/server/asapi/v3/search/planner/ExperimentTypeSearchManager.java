@@ -19,6 +19,9 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 import java.util.Collections;
 import java.util.Set;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.ExperimentType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
@@ -31,7 +34,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
  *
  * @author Viktor Kovtun
  */
-public class ExperimentTypeSearchManager extends AbstractSearchManager<ExperimentTypeSearchCriteria, Long>
+public class ExperimentTypeSearchManager extends AbstractSearchManager<ExperimentTypeSearchCriteria, ExperimentTypeFetchOptions, ExperimentType, Long>
 {
 
     public ExperimentTypeSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
@@ -48,7 +51,7 @@ public class ExperimentTypeSearchManager extends AbstractSearchManager<Experimen
     }
 
     @Override
-    public Set<Long> searchForIDs(final Long userId, final ExperimentTypeSearchCriteria criteria)
+    public Set<Long> searchForIDs(final Long userId, final ExperimentTypeSearchCriteria criteria, final SortOptions<ExperimentType> sortOptions)
     {
         final Set<Long> mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId, TableMapper.EXPERIMENT_TYPE,
                 criteria.getCriteria(), criteria.getOperator());

@@ -18,6 +18,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
 import java.util.Set;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetTypeSortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetTypeSearchCriteria;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -74,7 +75,7 @@ public class DataSetTypeSearchManagerDBTest
      */
     private void checkCriterion(final DataSetTypeSearchCriteria criterion, final long dataSetTypeId)
     {
-        final Set<Long> dataSetTypeIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, criterion);
+        final Set<Long> dataSetTypeIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, criterion, new DataSetTypeSortOptions());
         assertEquals(dataSetTypeIds.size(), 1);
         assertEquals(dataSetTypeIds.iterator().next().longValue(), dataSetTypeId);
     }
@@ -91,12 +92,14 @@ public class DataSetTypeSearchManagerDBTest
 
         final DataSetTypeSearchCriteria containsCriterion = new DataSetTypeSearchCriteria();
         containsCriterion.withCode().thatContains(DATA_SET_TYPE_CODE_2.substring(1, DATA_SET_TYPE_CODE_2.length() - 1));
-        final Set<Long> containsCriterionDataSetTypeIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, containsCriterion);
+        final Set<Long> containsCriterionDataSetTypeIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, containsCriterion,
+                new DataSetTypeSortOptions());
         assertEquals(containsCriterionDataSetTypeIds.size(), 4);
 
         final DataSetTypeSearchCriteria startsWithCriterion = new DataSetTypeSearchCriteria();
         startsWithCriterion.withCode().thatStartsWith(DATA_SET_TYPE_CODE_3.substring(0, 4));
-        final Set<Long> startsWithCriterionDataSetTypeIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, startsWithCriterion);
+        final Set<Long> startsWithCriterionDataSetTypeIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, startsWithCriterion,
+                new DataSetTypeSortOptions());
         assertEquals(startsWithCriterionDataSetTypeIds.size(), 4);
 
         final DataSetTypeSearchCriteria endsWithCriterion = new DataSetTypeSearchCriteria();

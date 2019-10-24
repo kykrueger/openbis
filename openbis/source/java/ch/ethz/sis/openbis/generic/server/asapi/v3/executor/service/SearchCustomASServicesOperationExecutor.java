@@ -73,7 +73,7 @@ public class SearchCustomASServicesOperationExecutor
     }
 
     @Override
-    protected ISearchManager<CustomASServiceSearchCriteria, CustomASService> getSearchManager()
+    protected ISearchManager<CustomASServiceSearchCriteria, CustomASService, CustomASService> getSearchManager()
     {
         throw new RuntimeException("This method is not implemented yet.");
     }

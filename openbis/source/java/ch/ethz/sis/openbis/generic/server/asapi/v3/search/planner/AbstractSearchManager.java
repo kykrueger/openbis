@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
@@ -39,7 +40,8 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETransl
  * @author Viktor Kovtun
  * @author Juan Fuentes
  */
-public abstract class AbstractSearchManager<CRITERIA extends ISearchCriteria, OBJECT_PE> implements ISearchManager<CRITERIA, OBJECT_PE>
+public abstract class AbstractSearchManager<CRITERIA extends ISearchCriteria, FETCH_OPTIONS extends FetchOptions<OBJECT>, OBJECT, OBJECT_PE>
+        implements ISearchManager<CRITERIA, OBJECT, OBJECT_PE>
 {
     private final ISQLSearchDAO searchDAO;
 

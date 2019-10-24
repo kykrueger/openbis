@@ -56,7 +56,7 @@ public class TranslatorTest
 
     private static final String MAIN_TABLE_ALIAS = "t0";
 
-    protected static final Map<Class<? extends ISearchCriteria>, ISearchManager<ISearchCriteria, ?>> CRITERIA_TO_MANAGER_MAP = new HashMap<>();
+    protected static final Map<Class<? extends ISearchCriteria>, ISearchManager<ISearchCriteria, ?, ?>> CRITERIA_TO_MANAGER_MAP = new HashMap<>();
 
     static {
         CRITERIA_TO_MANAGER_MAP.put(SampleSearchCriteria.class, null);

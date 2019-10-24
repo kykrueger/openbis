@@ -37,8 +37,7 @@ import org.springframework.stereotype.Component;
  * @author Franz-Josef Elmer
  */
 @Component
-public class SearchAggregationServicesOperationExecutor
-        extends
+public class SearchAggregationServicesOperationExecutor extends
         SearchObjectsOperationExecutor<AggregationService, AggregationService, AggregationServiceSearchCriteria, AggregationServiceFetchOptions>
         implements ISearchAggregationServicesOperationExecutor
 {
@@ -67,7 +66,7 @@ public class SearchAggregationServicesOperationExecutor
     }
 
     @Override
-    protected ISearchManager<AggregationServiceSearchCriteria, AggregationService> getSearchManager()
+    protected ISearchManager<AggregationServiceSearchCriteria, AggregationService, AggregationService> getSearchManager()
     {
         throw new RuntimeException("This method is not implemented yet.");
     }

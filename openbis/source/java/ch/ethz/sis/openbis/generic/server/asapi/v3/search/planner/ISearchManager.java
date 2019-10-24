@@ -18,19 +18,21 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
 import java.util.Set;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
 
-public interface ISearchManager<CRITERIA extends ISearchCriteria, OBJECT_PE> extends IID2PETranslator<OBJECT_PE>
+public interface ISearchManager<CRITERIA extends ISearchCriteria, OBJECT, OBJECT_PE> extends IID2PETranslator<OBJECT_PE>
 {
 
     /**
      * Searches for entities using certain criteria.
      *
      * @param criteria search criteria.
+     * @param sortOptions
      * @return set of IDs of found entities.
      */
-    Set<Long> searchForIDs(final Long userId, final CRITERIA criteria);
+    Set<Long> searchForIDs(final Long userId, final CRITERIA criteria, final SortOptions<OBJECT> sortOptions);
 
     /**
      * Filters IDs of certain

@@ -19,6 +19,9 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 import java.util.Collections;
 import java.util.Set;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
@@ -31,7 +34,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
  *
  * @author Viktor Kovtun
  */
-public class SampleTypeSearchManager extends AbstractSearchManager<SampleTypeSearchCriteria, Long>
+public class SampleTypeSearchManager extends AbstractSearchManager<SampleTypeSearchCriteria, SampleTypeFetchOptions, SampleType, Long>
 {
 
     public SampleTypeSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
@@ -48,7 +51,7 @@ public class SampleTypeSearchManager extends AbstractSearchManager<SampleTypeSea
     }
 
     @Override
-    public Set<Long> searchForIDs(final Long userId, final SampleTypeSearchCriteria criteria)
+    public Set<Long> searchForIDs(final Long userId, final SampleTypeSearchCriteria criteria, final SortOptions<SampleType> sortOptions)
     {
         final Set<Long> mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId, TableMapper.SAMPLE_TYPE,
                 criteria.getCriteria(), criteria.getOperator());

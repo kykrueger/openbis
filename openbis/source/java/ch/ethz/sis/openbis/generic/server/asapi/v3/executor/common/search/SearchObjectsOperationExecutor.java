@@ -24,6 +24,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchObjectsOperation;
@@ -49,7 +50,7 @@ public abstract class SearchObjectsOperationExecutor<OBJECT, OBJECT_PE, CRITERIA
 
     protected abstract ITranslator<OBJECT_PE, OBJECT, FETCH_OPTIONS> getTranslator();
 
-    protected abstract ISearchManager<CRITERIA, OBJECT_PE> getSearchManager();
+    protected abstract ISearchManager<CRITERIA, OBJECT, OBJECT_PE> getSearchManager();
 
     @Override
     protected final List<OBJECT_PE> doSearch(IOperationContext context, CRITERIA criteria, FETCH_OPTIONS fetchOptions)
@@ -102,8 +103,9 @@ public abstract class SearchObjectsOperationExecutor<OBJECT, OBJECT_PE, CRITERIA
 
         };
         final TranslationContext translationContext = new TranslationContext(context.getSession());
+        final SortOptions<OBJECT> sortOptions = fetchOptions.getSortBy();
 
-        final Set<Long> allResultsIds = getSearchManager().searchForIDs(userId, criteria);
+        final Set<Long> allResultsIds = getSearchManager().searchForIDs(userId, criteria, sortOptions);
         final Set<Long> filteredResults = getSearchManager().filterIDsByUserRights(userId, allResultsIds);
         final List<Long> sortedAndPagedResults = (List<Long>) sortAndPage.sortAndPage(filteredResults, criteria, fetchOptions);
         final List<OBJECT_PE> objectPEResults = getSearchManager().translate(sortedAndPagedResults);

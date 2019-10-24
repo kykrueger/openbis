@@ -18,6 +18,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
 import java.util.Set;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleTypeSortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleTypeSearchCriteria;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -77,7 +78,7 @@ public class SampleTypeSearchManagerDBTest
      */
     private void checkCriterion(final SampleTypeSearchCriteria criterion, final long sampleTypeId)
     {
-        final Set<Long> sampleTypeIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, criterion);
+        final Set<Long> sampleTypeIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, criterion, new SampleTypeSortOptions());
         assertEquals(sampleTypeIds.size(), 1);
         assertEquals(sampleTypeIds.iterator().next().longValue(), sampleTypeId);
     }
@@ -94,12 +95,14 @@ public class SampleTypeSearchManagerDBTest
 
         final SampleTypeSearchCriteria containsCriterion = new SampleTypeSearchCriteria();
         containsCriterion.withCode().thatContains(SAMPLE_TYPE_CODE_2.substring(1, SAMPLE_TYPE_CODE_2.length() - 1));
-        final Set<Long> containsCriterionSampleTypeIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, containsCriterion);
+        final Set<Long> containsCriterionSampleTypeIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, containsCriterion,
+                new SampleTypeSortOptions());
         assertEquals(containsCriterionSampleTypeIds.size(), 7);
 
         final SampleTypeSearchCriteria startsWithCriterion = new SampleTypeSearchCriteria();
         startsWithCriterion.withCode().thatStartsWith(SAMPLE_TYPE_CODE_3.substring(0, 4));
-        final Set<Long> startsWithCriterionSampleTypeIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, startsWithCriterion);
+        final Set<Long> startsWithCriterionSampleTypeIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, startsWithCriterion,
+                new SampleTypeSortOptions());
         assertEquals(startsWithCriterionSampleTypeIds.size(), 5);
 
         final SampleTypeSearchCriteria endsWithCriterion = new SampleTypeSearchCriteria();
@@ -115,12 +118,12 @@ public class SampleTypeSearchManagerDBTest
     {
         final SampleTypeSearchCriteria trueCriterion = new SampleTypeSearchCriteria();
         trueCriterion.withListable().thatEquals(true);
-        final Set<Long> trueCriterionSampleTypeIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, trueCriterion);
+        final Set<Long> trueCriterionSampleTypeIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, trueCriterion, new SampleTypeSortOptions());
         assertTrue(trueCriterionSampleTypeIds.contains(LISTABLE_SAMPLE_TYPE_ID));
 
         final SampleTypeSearchCriteria falseCriterion = new SampleTypeSearchCriteria();
         falseCriterion.withListable().thatEquals(false);
-        final Set<Long> falseCriterionSampleTypeIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, falseCriterion);
+        final Set<Long> falseCriterionSampleTypeIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, falseCriterion, new SampleTypeSortOptions());
         assertTrue(falseCriterionSampleTypeIds.contains(NOT_LISTABLE_SAMPLE_TYPE_ID));
     }
 

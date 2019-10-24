@@ -37,8 +37,7 @@ import org.springframework.stereotype.Component;
  * @author Franz-Josef Elmer
  */
 @Component
-public class SearchProcessingServicesOperationExecutor
-        extends
+public class SearchProcessingServicesOperationExecutor extends
         SearchObjectsOperationExecutor<ProcessingService, ProcessingService, ProcessingServiceSearchCriteria, ProcessingServiceFetchOptions>
         implements ISearchProcessingServicesOperationExecutor
 {
@@ -67,7 +66,7 @@ public class SearchProcessingServicesOperationExecutor
     }
 
     @Override
-    protected ISearchManager<ProcessingServiceSearchCriteria, ProcessingService> getSearchManager()
+    protected ISearchManager<ProcessingServiceSearchCriteria, ProcessingService, ProcessingService> getSearchManager()
     {
         throw new RuntimeException("This method is not implemented yet.");
     }

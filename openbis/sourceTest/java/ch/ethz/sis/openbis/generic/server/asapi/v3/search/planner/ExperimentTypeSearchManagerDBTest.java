@@ -18,6 +18,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
 import java.util.Set;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentTypeSortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentTypeSearchCriteria;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -74,7 +75,7 @@ public class ExperimentTypeSearchManagerDBTest
      */
     private void checkCriterion(final ExperimentTypeSearchCriteria criterion, final long experimentTypeId)
     {
-        final Set<Long> experimentTypeIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, criterion);
+        final Set<Long> experimentTypeIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, criterion, new ExperimentTypeSortOptions());
         assertEquals(experimentTypeIds.size(), 1);
         assertEquals(experimentTypeIds.iterator().next().longValue(), experimentTypeId);
     }
@@ -91,12 +92,14 @@ public class ExperimentTypeSearchManagerDBTest
 
         final ExperimentTypeSearchCriteria containsCriterion = new ExperimentTypeSearchCriteria();
         containsCriterion.withCode().thatContains(EXPERIMENT_TYPE_CODE_2.substring(1, EXPERIMENT_TYPE_CODE_2.length() - 1));
-        final Set<Long> containsCriterionExperimentTypeIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, containsCriterion);
+        final Set<Long> containsCriterionExperimentTypeIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, containsCriterion,
+                new ExperimentTypeSortOptions());
         assertEquals(containsCriterionExperimentTypeIds.size(), 3);
 
         final ExperimentTypeSearchCriteria startsWithCriterion = new ExperimentTypeSearchCriteria();
         startsWithCriterion.withCode().thatStartsWith(EXPERIMENT_TYPE_CODE_3.substring(0, 4));
-        final Set<Long> startsWithCriterionExperimentTypeIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, startsWithCriterion);
+        final Set<Long> startsWithCriterionExperimentTypeIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, startsWithCriterion,
+                new ExperimentTypeSortOptions());
         assertEquals(startsWithCriterionExperimentTypeIds.size(), 3);
 
         final ExperimentTypeSearchCriteria endsWithCriterion = new ExperimentTypeSearchCriteria();

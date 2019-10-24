@@ -48,7 +48,7 @@ public class PostgresSearchDAO implements ISQLSearchDAO
 {
     private ISQLExecutor sqlExecutor;
 
-    private Map<Class<? extends ISearchCriteria>, ISearchManager<ISearchCriteria, ?>> criteriaToManagerMap;
+    private Map<Class<? extends ISearchCriteria>, ISearchManager<ISearchCriteria, ?, ?>> criteriaToManagerMap;
 
     public PostgresSearchDAO(ISQLExecutor sqlExecutor)
     {
@@ -95,7 +95,7 @@ public class PostgresSearchDAO implements ISQLSearchDAO
     }
 
     public void setCriteriaToManagerMap(
-            final Map<Class<? extends ISearchCriteria>, ISearchManager<ISearchCriteria, ?>> criteriaToManagerMap)
+            final Map<Class<? extends ISearchCriteria>, ISearchManager<ISearchCriteria, ?, ?>> criteriaToManagerMap)
     {
         this.criteriaToManagerMap = criteriaToManagerMap;
     }

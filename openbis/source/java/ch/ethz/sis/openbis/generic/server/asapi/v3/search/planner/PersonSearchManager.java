@@ -19,6 +19,9 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 import java.util.Collections;
 import java.util.Set;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.Person;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.fetchoptions.PersonFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.PersonSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
@@ -31,7 +34,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
  *
  * @author Viktor Kovtun
  */
-public class PersonSearchManager extends AbstractSearchManager<PersonSearchCriteria, Long>
+public class PersonSearchManager extends AbstractSearchManager<PersonSearchCriteria, PersonFetchOptions, Person, Long>
 {
 
     public PersonSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
@@ -48,7 +51,7 @@ public class PersonSearchManager extends AbstractSearchManager<PersonSearchCrite
     }
 
     @Override
-    public Set<Long> searchForIDs(final Long userId, final PersonSearchCriteria criteria)
+    public Set<Long> searchForIDs(final Long userId, final PersonSearchCriteria criteria, final SortOptions<Person> sortOptions)
     {
         final Set<Long> mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId, TableMapper.PERSON,
                 criteria.getCriteria(), criteria.getOperator());

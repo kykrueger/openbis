@@ -23,6 +23,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
@@ -31,8 +33,8 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 
-public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends AbstractCompositeSearchCriteria, OBJECT_PE>
-        extends AbstractSearchManager<CRITERIA, OBJECT_PE>
+public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends AbstractCompositeSearchCriteria,
+        FETCH_OPTIONS extends FetchOptions<OBJECT>, OBJECT, OBJECT_PE> extends AbstractSearchManager<CRITERIA, FETCH_OPTIONS, OBJECT, OBJECT_PE>
 {
 
     public AbstractCompositeEntitySearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
@@ -55,7 +57,7 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
     protected abstract CRITERIA createEmptyCriteria();
 
     @Override
-    public Set<Long> searchForIDs(final Long userId, final CRITERIA criteria)
+    public Set<Long> searchForIDs(final Long userId, final CRITERIA criteria, SortOptions<OBJECT> sortOptions)
     {
         return doSearchForIDs(userId, criteria, null);
     }

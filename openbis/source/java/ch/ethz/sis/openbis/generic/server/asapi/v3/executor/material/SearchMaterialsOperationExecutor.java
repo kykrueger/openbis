@@ -65,7 +65,7 @@ public class SearchMaterialsOperationExecutor extends SearchObjectsOperationExec
     }
 
     @Override
-    protected ISearchManager<MaterialSearchCriteria, Long> getSearchManager()
+    protected ISearchManager<MaterialSearchCriteria, Material, Long> getSearchManager()
     {
         throw new RuntimeException("This method is not implemented yet.");
     }

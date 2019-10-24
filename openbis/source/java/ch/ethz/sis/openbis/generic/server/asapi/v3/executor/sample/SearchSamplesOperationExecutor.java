@@ -73,10 +73,10 @@ public class SearchSamplesOperationExecutor extends SearchObjectsOperationExecut
     }
 
     @Override
-    protected ISearchManager<SampleSearchCriteria, Long> getSearchManager()
+    protected ISearchManager<SampleSearchCriteria, Sample, Long> getSearchManager()
     {
         return sampleSearchManager;
-    };
+    }
 
     @Override
     protected SearchObjectsOperationResult<Sample> getOperationResult(SearchResult<Sample> searchResult)

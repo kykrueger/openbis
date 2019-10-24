@@ -26,6 +26,7 @@ import java.util.Set;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.Role;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleSortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sort.ISortAndPage;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
@@ -81,7 +82,7 @@ public class SampleSearchManagerTest
     }
 
     /**
-     * Tests {@link ISearchManager#searchForIDs(Long, ISearchCriteria)} for the case when there are main and parent
+     * Tests {@link ISearchManager#searchForIDs(Long, ISearchCriteria, ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions)} for the case when there are main and parent
      * criteria and the OR logical operator is applied to the root criteria.
      */
     @Test
@@ -122,12 +123,12 @@ public class SampleSearchManagerTest
             will(returnValue(new AuthorisationInformation(Collections.singleton(Role.ETL_SERVER), Collections.emptySet(), Collections.emptySet())));
         }});
 
-        final Set<Long> actualIds = searchManager.searchForIDs(userId, searchCriteria);
+        final Set<Long> actualIds = searchManager.searchForIDs(userId, searchCriteria, new SampleSortOptions());
         assertEquals(actualIds, expectedIds, "Actual and expected IDs are not equal.");
     }
 
     /**
-     * Tests {@link ISearchManager#searchForIDs(Long, ISearchCriteria)} for the case when there are main and parent
+     * Tests {@link ISearchManager#searchForIDs(Long, ISearchCriteria, ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions)} for the case when there are main and parent
      * criteria and the AND logical operator is applied to the root criteria.
      */
     @Test
@@ -170,12 +171,12 @@ public class SampleSearchManagerTest
             will(returnValue(new AuthorisationInformation(Collections.singleton(Role.ETL_SERVER), Collections.emptySet(), Collections.emptySet())));
         }});
 
-        final Set<Long> actualIds = searchManager.searchForIDs(userId, searchCriteria);
+        final Set<Long> actualIds = searchManager.searchForIDs(userId, searchCriteria, new SampleSortOptions());
         assertEquals(actualIds, expectedIds, "Actual and expected IDs are not equal.");
     }
 
     /**
-     * Tests {@link ISearchManager#searchForIDs(Long, ISearchCriteria)} for the case when there are main and child
+     * Tests {@link ISearchManager#searchForIDs(Long, ISearchCriteria, ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions)} for the case when there are main and child
      * criteria and the OR logical operator is applied to the root criteria.
      */
     @Test
@@ -219,12 +220,12 @@ public class SampleSearchManagerTest
             will(returnValue(childCriteriaResultingIds));
         }});
 
-        final Set<Long> actualIds = searchManager.searchForIDs(userId, searchCriteria);
+        final Set<Long> actualIds = searchManager.searchForIDs(userId, searchCriteria, new SampleSortOptions());
         assertEquals(actualIds, expectedIds, "Actual and expected IDs are not equal.");
     }
 
     /**
-     * Tests {@link ISearchManager#searchForIDs(Long, ISearchCriteria)} for the case when there are main and child
+     * Tests {@link ISearchManager#searchForIDs(Long, ISearchCriteria, ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions)} for the case when there are main and child
      * criteria and the AND logical operator is applied to the root criteria.
      */
     @Test
@@ -265,12 +266,12 @@ public class SampleSearchManagerTest
             will(returnValue(childCriteriaResultingIds));
         }});
 
-        final Set<Long> actualIds = searchManager.searchForIDs(userId, searchCriteria);
+        final Set<Long> actualIds = searchManager.searchForIDs(userId, searchCriteria, new SampleSortOptions());
         assertEquals(actualIds, expectedIds, "Actual and expected IDs are not equal.");
     }
 
     /**
-     * Tests {@link ISearchManager#searchForIDs(Long, ISearchCriteria)} for the case when only main criteria is
+     * Tests {@link ISearchManager#searchForIDs(Long, ISearchCriteria, ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions)} for the case when only main criteria is
      * present.
      */
     @Test
@@ -295,7 +296,7 @@ public class SampleSearchManagerTest
             will(returnValue(new AuthorisationInformation(Collections.singleton(Role.ETL_SERVER), Collections.emptySet(), Collections.emptySet())));
         }});
 
-        final Set<Long> actualIds = searchManager.searchForIDs(userId, searchCriteria);
+        final Set<Long> actualIds = searchManager.searchForIDs(userId, searchCriteria, new SampleSortOptions());
         assertEquals(actualIds, expectedIds, "Actual and expected IDs are not equal.");
     }
 
@@ -319,7 +320,7 @@ public class SampleSearchManagerTest
             will(returnValue(new AuthorisationInformation(Collections.singleton(Role.ETL_SERVER), Collections.emptySet(), Collections.emptySet())));
         }});
 
-        final Set<Long> actualIds = searchManager.searchForIDs(userId, new SampleSearchCriteria());
+        final Set<Long> actualIds = searchManager.searchForIDs(userId, new SampleSearchCriteria(), new SampleSortOptions());
         assertEquals(actualIds, expectedIds);
     }
 
@@ -343,7 +344,7 @@ public class SampleSearchManagerTest
             will(returnValue(new AuthorisationInformation(Collections.singleton(Role.ETL_SERVER), Collections.emptySet(), Collections.emptySet())));
         }});
 
-        final Set<Long> actualIds = searchManager.searchForIDs(userId, new SampleSearchCriteria());
+        final Set<Long> actualIds = searchManager.searchForIDs(userId, new SampleSearchCriteria(), new SampleSortOptions());
         assertTrue(actualIds.isEmpty());
     }
 

@@ -79,7 +79,7 @@ public class SearchGloballyOperationExecutor
     }
 
     @Override
-    protected ISearchManager<GlobalSearchCriteria, MatchingEntity> getSearchManager()
+    protected ISearchManager<GlobalSearchCriteria, GlobalSearchObject, MatchingEntity> getSearchManager()
     {
         throw new RuntimeException("This method is not implemented yet.");
     }
