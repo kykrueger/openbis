@@ -61,9 +61,9 @@ $.extend(DefaultProfile.prototype, {
 				showVocabularyViewer : true,
 				showUserManager : true,
 				showUserProfile : true,
-			    // Not fully implemented yet.
-				// showResearchCollectionExportBuilder : false,
+				showResearchCollectionExportBuilder : false,
 				showZenodoExportBuilder : false,
+				showBarcodes : false,
 		}
 		
 		this.orderLabInfo = {
@@ -350,7 +350,7 @@ $.extend(DefaultProfile.prototype, {
 		}
 		
 		this.getSampleTypeToolbarConfiguration = function(sampleTypeCode) {
-			var defaultToolbar = { CREATE : true, EDIT : true, FREEZE : true, MOVE : true, COPY: true, DELETE : true, PRINT: true, HIERARCHY_GRAPH : true, HIERARCHY_TABLE : true, UPLOAD_DATASET : true, UPLOAD_DATASET_HELPER : true, EXPORT_ALL : true, EXPORT_METADATA : true, TEMPLATES : true };
+			var defaultToolbar = { CREATE : true, EDIT : true, FREEZE : true, MOVE : true, COPY: true, DELETE : true, PRINT: true, HIERARCHY_GRAPH : true, HIERARCHY_TABLE : true, UPLOAD_DATASET : true, UPLOAD_DATASET_HELPER : true, EXPORT_ALL : true, EXPORT_METADATA : true, TEMPLATES : true, BARCODE : true };
 			if(this.sampleTypeDefinitionsExtension[sampleTypeCode] && this.sampleTypeDefinitionsExtension[sampleTypeCode]["TOOLBAR"]) {
 				var toolbarOptions = this.sampleTypeDefinitionsExtension[sampleTypeCode]["TOOLBAR"];
 				for(key in toolbarOptions) {

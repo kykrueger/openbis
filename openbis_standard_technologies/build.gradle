@@ -457,12 +457,12 @@ task clientsAndApis(type: Zip, dependsOn: [dssClientZip, queryApiZip, apiV3Zip, 
 }
 
 task deleteOpenbisNgUi(type: Delete) {
-  delete 'dist/core-plugins/openbis-ng-ui/1/as/webapps/openbis-ng-ui/html'
+  delete 'dist/core-plugins/openbis-ng-ui'
 }
 
 task copyOpenbisNgUiToCorePlugins(type: Copy, dependsOn: [deleteOpenbisNgUi, ':openbis_ng_ui:build']) {
-    from project(':openbis_ng_ui').file('build')
-    into file('dist/core-plugins/openbis-ng-ui/1/as/webapps/openbis-ng-ui/html')
+    from project(':openbis_ng_ui').file('build/core-plugins')
+    into file('dist/core-plugins')
 }
 
 zipCorePlugins.dependsOn copyOpenbisNgUiToCorePlugins

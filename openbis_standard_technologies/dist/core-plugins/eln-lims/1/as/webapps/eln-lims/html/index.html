@@ -50,6 +50,7 @@
 	<!-- Third party libraries -->
 	<script type="text/javascript" src="./lib/cycle/js/cycle.js"></script>
 	<script type="text/javascript" src="./lib/jquery/js/jquery-1.11.3.min.js"></script>
+	<script type="text/javascript" src="./lib/jquery/js/jquery.cookie.js"></script>
 	<script type="text/javascript" src="./lib/jquery-ui/js/jquery-ui.min.js"></script>
 	<script type="text/javascript" src="./lib/jquery-fancytree/js/jquery.fancytree-all.min.js"></script>
 	<script type="text/javascript" src="./lib/bootstrap-datetimepicker/js/moment.js"></script>
@@ -79,6 +80,12 @@
 	<script type="text/javascript" src="./lib/caja-HTML-sanitizer/js/sanitizer.js"></script>
 	<script type="text/javascript" src="./lib/jsuites/jsuites.js"></script>
 	<script type="text/javascript" src="./lib/jexcel/jexcel.js"></script>
+	<script type="text/javascript" src="./lib/bwip-js/bwipp.js"></script>
+	<script type="text/javascript" src="./lib/bwip-js/bwipjs.js"></script>
+	<script type="text/javascript" src="./lib/bwip-js/lib/xhr-fonts.js"></script>
+	<script type="text/javascript" src="./lib/bwip-js/lib/bitmap.js"></script>
+	<script type="text/javascript" src="./lib/bwip-js/lib/symdesc.js"></script>
+	<script type="text/javascript" src="./lib/bwip-js/lib/canvas-toblob.js"></script>
 
 	<!-- First party libraries -->
 	<script type="text/javascript" src="../../resources/js/openbis.js"></script>
@@ -107,6 +114,7 @@
 	<script type="text/javascript" src="./js/util/JupyterUtil.js"></script>
 	<script type="text/javascript" src="./js/util/AnnotationUtil.js"></script>
 	<script type="text/javascript" src="./js/util/HierarchyUtil.js"></script>
+	<script type="text/javascript" src="./js/util/BarcodeUtil.js"></script>
 	
 	<script type="text/javascript" src="./js/views/TrashManager/TrashManagerController.js"></script>
 	<script type="text/javascript" src="./js/views/TrashManager/TrashManagerModel.js"></script>
@@ -280,7 +288,10 @@
 	<script type="text/javascript" src="./js/plugins/LifeSciencesTechnology.js"></script>
 	<script type="text/javascript" src="./js/plugins/MicroscopyTechnology.js"></script>
 	<script type="text/javascript" src="./js/plugins/FlowCytometryTechnology.js"></script>
-	
+
+	<script type="text/javascript" src="./js/util/EventUtil.js"></script>
+	<script type="text/javascript" src="./js/test/TestProtocol.js"></script>
+
 	<script type="text/javascript">
 	
 	//
@@ -359,6 +370,14 @@
 		//Reset password
 		if (mainController.resetPasswordRequested()) {
 		    mainController.resetPassword();
+		}
+		var test = queryString.test;
+		if(test == "true") {
+			TestProtocol.startAdmitTests();
+		}
+
+		if ($.cookie("suitename") == "testId") {
+			TestProtocol.startTestUserTests();
 		}
 	}
 	

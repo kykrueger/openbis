@@ -3,7 +3,7 @@ const Webpack = require('webpack')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 
 module.exports = {
-  entry: './src/index.js',
+  entry: './src/js/index.js',
   output: {
     path: __dirname + '/build/npm-build/',
     filename: 'bundle.js'
@@ -13,7 +13,7 @@ module.exports = {
     host: '0.0.0.0',
     port: 8124,
     inline: true,
-    contentBase: './src',
+    contentBase: './src/js',
     https: false,
     watchOptions: {
       aggregateTimeout: 300,
@@ -38,9 +38,7 @@ module.exports = {
       {
         test: /\.(js|jsx)$/,
         exclude: /node_modules/,
-        use: {
-          loader: 'babel-loader'
-        }
+        use: ['babel-loader']
       },
       {
         test: /\.(css)$/,
