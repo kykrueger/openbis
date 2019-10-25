@@ -56,6 +56,38 @@ public class ELNCollectionTypeMigration {
         "PLANT_COLLECTION"
     };
 
+    private static final String[] PROPERTY_SQL_UPDATES = new String[]{
+        "UPDATE property_types SET code = 'PRODUCT.COMPANY' WHERE code = 'COMPANY' and (select count(*) from core_plugins where name = 'eln-lims') > 0;",
+        "UPDATE property_types SET code = 'PRODUCT.SIZE_OF_ITEM' WHERE code = 'SIZE_OF_ITEM' and (select count(*) from core_plugins where name = 'eln-lims') > 0;",
+        "UPDATE property_types SET code = 'PRODUCT.HAZARD_STATEMENT' WHERE code = 'HAZARD_STATEMENT' and (select count(*) from core_plugins where name = 'eln-lims') > 0;",
+        "UPDATE property_types SET code = 'PRODUCT.CATEGORY' WHERE code = 'CATEGORY' and (select count(*) from core_plugins where name = 'eln-lims') > 0;",
+        "UPDATE property_types SET code = 'PRODUCT.DESCRIPTION' WHERE code = 'DESCRIPTION' and (select count(*) from core_plugins where name = 'eln-lims') > 0;",
+        "UPDATE property_types SET code = 'PRODUCT.PRODUCT_SECONDARY_NAMES' WHERE code = 'PRODUCT_SECONDARY_NAMES' and (select count(*) from core_plugins where name = 'eln-lims') > 0;",
+
+        "UPDATE property_types SET code = 'REQUEST.ORDER_NUMBER' WHERE code = 'ORDER_NUMBER' and (select count(*) from core_plugins where name = 'eln-lims') > 0;",
+        "UPDATE property_types SET code = 'REQUEST.DEPARTMENT' WHERE code = 'DEPARTMENT' and (select count(*) from core_plugins where name = 'eln-lims') > 0;",
+        "UPDATE property_types SET code = 'REQUEST.BUYER' WHERE code = 'BUYER' and (select count(*) from core_plugins where name = 'eln-lims') > 0;",
+        "UPDATE property_types SET code = 'REQUEST.PROJECT' WHERE code = 'PROJECT' and (select count(*) from core_plugins where name = 'eln-lims') > 0;",
+
+        "UPDATE property_types SET code = 'SUPPLIER.URL' WHERE code = 'URL' and (select count(*) from core_plugins where name = 'eln-lims') > 0;",
+        "UPDATE property_types SET code = 'SUPPLIER.PREFERRED_ORDER_METHOD' WHERE code = 'PREFERRED_ORDER_METHOD' and (select count(*) from core_plugins where name = 'eln-lims') > 0;",
+        "UPDATE property_types SET code = 'SUPPLIER.COMPANY_CONTACT_EMAIL' WHERE code = 'COMPANY_CONTACT_EMAIL' and (select count(*) from core_plugins where name = 'eln-lims') > 0;",
+        "UPDATE property_types SET code = 'SUPPLIER.COMPANY_CONTACT_NAME' WHERE code = 'COMPANY_CONTACT_NAME' and (select count(*) from core_plugins where name = 'eln-lims') > 0;",
+
+        "UPDATE property_types SET code = 'ORDER.PRICE_PAID' WHERE code = 'PRICE_PAID' and (select count(*) from core_plugins where name = 'eln-lims') > 0;",
+
+        "UPDATE property_types SET code = 'GENERAL_PROTOCOL.PROTOCOL_TYPE' WHERE code = 'PROTOCOL_TYPE' and (select count(*) from core_plugins where name = 'eln-lims') > 0;",
+        "UPDATE property_types SET code = 'GENERAL_PROTOCOL.PROTOCOL_EVALUATION' WHERE code = 'PROTOCOL_EVALUATION' and (select count(*) from core_plugins where name = 'eln-lims') > 0;",
+        "UPDATE property_types SET code = 'GENERAL_PROTOCOL.TIME_REQUIREMENT' WHERE code = 'TIME_REQUIREMENT' and (select count(*) from core_plugins where name = 'eln-lims') > 0;",
+        "UPDATE property_types SET code = 'GENERAL_PROTOCOL.MATERIALS' WHERE code = 'MATERIALS' and (select count(*) from core_plugins where name = 'eln-lims') > 0;",
+
+        "UPDATE property_types SET code = 'DEFAULT_EXPERIMENT.GRANT' WHERE code = 'GRANT' and (select count(*) from core_plugins where name = 'eln-lims') > 0;",
+
+        "UPDATE property_types SET code = 'EXPERIMENTAL_STEP.EXPERIMENTAL_RESULTS' WHERE code = 'EXPERIMENTAL_RESULTS' and (select count(*) from core_plugins where name = 'eln-lims') > 0;",
+        "UPDATE property_types SET code = 'EXPERIMENTAL_STEP.EXPERIMENTAL_GOALS' WHERE code = 'EXPERIMENTAL_GOALS' and (select count(*) from core_plugins where name = 'eln-lims') > 0;",
+        "UPDATE property_types SET code = 'EXPERIMENTAL_STEP.EXPERIMENTAL_DESCRIPTION' WHERE code = 'EXPERIMENTAL_PROCEDURE' and (select count(*) from core_plugins where name = 'eln-lims') > 0;"
+    };
+
     private static Set<ExperimentType> getExperimentTypes(String[] experimentCodes) {
         IApplicationServerInternalApi api = CommonServiceProvider.getApplicationServerApi();
         String sessionToken = api.loginAsSystem();
@@ -148,8 +180,12 @@ public class ELNCollectionTypeMigration {
         DAOFactory daoFactory = (DAOFactory) CommonServiceProvider.getApplicationContext().getBean(ComponentNames.DAO_FACTORY);
         Session currentSession = daoFactory.getSessionFactory().getCurrentSession();
         NativeQuery nativeQuery = currentSession.createNativeQuery(SQL);
-        nativeQuery.setParameter(ukey, uValue);
-        nativeQuery.setParameter(ckey, cValue);
+        if (ukey != null) {
+            nativeQuery.setParameter(ukey, uValue);
+        }
+        if (ckey != null) {
+            nativeQuery.setParameter(ckey, cValue);
+        }
         nativeQuery.executeUpdate();
     }
 
@@ -217,6 +253,12 @@ public class ELNCollectionTypeMigration {
 
                 }
             }
+        }
+
+        for (String PROPERTY_UPDATE:PROPERTY_SQL_UPDATES) {
+            System.out.println("Going to Execute PROPERTY_UPDATE: " + PROPERTY_UPDATE);
+            executeUpdate(PROPERTY_UPDATE, null, null, null, null);
+            System.out.println("PROPERTY_UPDATE DONE");
         }
     }
 }
