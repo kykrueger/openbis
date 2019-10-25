@@ -198,6 +198,7 @@ public class ELNCollectionTypeMigration {
     }
 
     public static void migrate() {
+        System.out.println("ELNCollectionTypeMigration START");
         // Obtain property types used by experiments that should be of type COLLECTION
         for (String experimentCode:experimentsOfTypeCollection) {
             Set<ExperimentType> experimentTypes = getExperimentTypes(new String[]{experimentCode});
@@ -260,5 +261,6 @@ public class ELNCollectionTypeMigration {
             executeUpdate(PROPERTY_UPDATE, null, null, null, null);
             System.out.println("PROPERTY_UPDATE DONE");
         }
+        System.out.println("ELNCollectionTypeMigration END");
     }
 }
