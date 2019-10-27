@@ -12,6 +12,9 @@ const styles = theme => ({
   container: {
     padding: `${theme.spacing(2)}px ${theme.spacing(4)}px`
   },
+  header: {
+    marginBottom: theme.spacing(2)
+  },
   form: {
     width: '50%'
   },
@@ -76,7 +79,9 @@ class ObjectTypePreview extends React.PureComponent {
     return (
       <div className={classes.container} onClick={this.handleClick}>
         <div className={classes.form}>
-          <Typography variant='h6'>Form Preview</Typography>
+          <Typography variant='h6' className={classes.header}>
+            Form Preview
+          </Typography>
           <ObjectTypePreviewCode type={type} />
           <DragDropContext
             onDragStart={this.handleDragStart}
