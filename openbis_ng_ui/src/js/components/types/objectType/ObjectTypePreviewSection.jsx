@@ -8,6 +8,7 @@ import * as util from '../../../common/util.js'
 
 const styles = theme => ({
   draggable: {
+    width: '100%',
     marginBottom: theme.spacing(2)
   },
   droppable: {

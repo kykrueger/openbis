@@ -29,7 +29,7 @@ class FormField extends React.Component {
 
     return (
       <div className={transparent ? classes.transparent : null}>
-        <FormControl>
+        <FormControl fullWidth={true}>
           <FormControlLabel
             label={this.renderLabel()}
             labelPlacement='top'

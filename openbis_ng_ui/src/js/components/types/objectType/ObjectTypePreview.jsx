@@ -10,9 +10,10 @@ import logger from '../../../common/logger.js'
 
 const styles = theme => ({
   container: {
-    padding: theme.spacing(2),
-    height: '100%',
-    boxSizing: 'border-box'
+    padding: `${theme.spacing(2)}px ${theme.spacing(4)}px`
+  },
+  form: {
+    width: '50%'
   },
   droppable: {
     display: 'flex',
@@ -74,27 +75,29 @@ class ObjectTypePreview extends React.PureComponent {
 
     return (
       <div className={classes.container} onClick={this.handleClick}>
-        <Typography variant='h6'>Form Preview</Typography>
-        <ObjectTypePreviewCode type={type} />
-        <DragDropContext
-          onDragStart={this.handleDragStart}
-          onDragEnd={this.handleDragEnd}
-        >
-          <Droppable droppableId='root' type='section'>
-            {provided => (
-              <div
-                ref={provided.innerRef}
-                {...provided.droppableProps}
-                className={classes.droppable}
-              >
-                {sections.map((section, index) =>
-                  this.renderSection(section, index)
-                )}
-                {provided.placeholder}
-              </div>
-            )}
-          </Droppable>
-        </DragDropContext>
+        <div className={classes.form}>
+          <Typography variant='h6'>Form Preview</Typography>
+          <ObjectTypePreviewCode type={type} />
+          <DragDropContext
+            onDragStart={this.handleDragStart}
+            onDragEnd={this.handleDragEnd}
+          >
+            <Droppable droppableId='root' type='section'>
+              {provided => (
+                <div
+                  ref={provided.innerRef}
+                  {...provided.droppableProps}
+                  className={classes.droppable}
+                >
+                  {sections.map((section, index) =>
+                    this.renderSection(section, index)
+                  )}
+                  {provided.placeholder}
+                </div>
+              )}
+            </Droppable>
+          </DragDropContext>
+        </div>
       </div>
     )
   }

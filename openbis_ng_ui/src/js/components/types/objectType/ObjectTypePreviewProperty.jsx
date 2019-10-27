@@ -12,7 +12,9 @@ import * as util from '../../../common/util.js'
 
 const styles = theme => ({
   draggable: {
+    width: '100%',
     padding: theme.spacing(2),
+    boxSizing: 'border-box',
     '&:last-child': {
       marginBottom: 0
     },
