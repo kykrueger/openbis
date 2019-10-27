@@ -5,7 +5,11 @@ import ObjectTypeParametersProperty from './ObjectTypeParametersProperty.jsx'
 import ObjectTypeParametersSection from './ObjectTypeParametersSection.jsx'
 import logger from '../../../common/logger.js'
 
-const styles = () => ({})
+const styles = () => ({
+  container: {
+    minWidth: '400px'
+  }
+})
 
 class ObjectTypeParameters extends React.PureComponent {
   constructor(props) {
@@ -15,10 +19,17 @@ class ObjectTypeParameters extends React.PureComponent {
   render() {
     logger.log(logger.DEBUG, 'ObjectTypeParameters.render')
 
-    const { type, sections, properties, selection, onChange } = this.props
+    const {
+      type,
+      sections,
+      properties,
+      selection,
+      onChange,
+      classes
+    } = this.props
 
     return (
-      <React.Fragment>
+      <div className={classes.container}>
         <ObjectTypeParametersType
           type={type}
           selection={selection}
@@ -34,7 +45,7 @@ class ObjectTypeParameters extends React.PureComponent {
           selection={selection}
           onChange={onChange}
         />
-      </React.Fragment>
+      </div>
     )
   }
 }
