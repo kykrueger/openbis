@@ -1,6 +1,7 @@
 import _ from 'lodash'
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
+import { Resizable } from 're-resizable'
 import ObjectTypePreview from './ObjectTypePreview.jsx'
 import ObjectTypeParameters from './ObjectTypeParameters.jsx'
 import ObjectTypeButtons from './ObjectTypeButtons.jsx'
@@ -511,15 +512,28 @@ class ObjectType extends React.PureComponent {
             />
           </div>
         </div>
-        <div className={classes.parameters}>
-          <ObjectTypeParameters
-            type={type}
-            properties={properties}
-            sections={sections}
-            selection={selection}
-            onChange={this.handleChange}
-          />
-        </div>
+        <Resizable
+          enable={{
+            left: true,
+            top: false,
+            right: false,
+            bottom: false,
+            topRight: false,
+            bottomRight: false,
+            bottomLeft: false,
+            topLeft: false
+          }}
+        >
+          <div className={classes.parameters}>
+            <ObjectTypeParameters
+              type={type}
+              properties={properties}
+              sections={sections}
+              selection={selection}
+              onChange={this.handleChange}
+            />
+          </div>
+        </Resizable>
       </div>
     )
   }

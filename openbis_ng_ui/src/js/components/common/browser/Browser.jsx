@@ -1,6 +1,7 @@
 import React from 'react'
 import _ from 'lodash'
 import Paper from '@material-ui/core/Paper'
+import { Resizable } from 're-resizable'
 import { connect } from 'react-redux'
 import { withStyles } from '@material-ui/core/styles'
 import logger from '../../../common/logger.js'
@@ -11,10 +12,12 @@ import FilterField from './../form/FilterField.jsx'
 import BrowserNodes from './BrowserNodes.jsx'
 
 const styles = {
-  container: {
+  resizable: {
     display: 'flex',
-    flexDirection: 'column',
-    minWidth: '300px'
+    flexDirection: 'column'
+  },
+  paper: {
+    height: '100%'
   }
 }
 
@@ -59,19 +62,33 @@ class Browser extends React.PureComponent {
     const classes = this.props.classes
 
     return (
-      <Paper square={true} elevation={3} classes={{ root: classes.container }}>
-        <FilterField
-          filter={this.props.filter}
-          filterChange={this.props.filterChange}
-        />
-        <BrowserNodes
-          nodes={this.props.nodes}
-          nodeSelect={this.props.nodeSelect}
-          nodeExpand={this.props.nodeExpand}
-          nodeCollapse={this.props.nodeCollapse}
-          level={0}
-        />
-      </Paper>
+      <Resizable
+        enable={{
+          right: true,
+          left: false,
+          top: false,
+          bottom: false,
+          topRight: false,
+          bottomRight: false,
+          bottomLeft: false,
+          topLeft: false
+        }}
+        className={classes.resizable}
+      >
+        <Paper square={true} elevation={3} classes={{ root: classes.paper }}>
+          <FilterField
+            filter={this.props.filter}
+            filterChange={this.props.filterChange}
+          />
+          <BrowserNodes
+            nodes={this.props.nodes}
+            nodeSelect={this.props.nodeSelect}
+            nodeExpand={this.props.nodeExpand}
+            nodeCollapse={this.props.nodeCollapse}
+            level={0}
+          />
+        </Paper>
+      </Resizable>
     )
   }
 }
