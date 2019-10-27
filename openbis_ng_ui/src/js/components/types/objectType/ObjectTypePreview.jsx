@@ -25,11 +25,23 @@ const styles = theme => ({
 class ObjectTypePreview extends React.PureComponent {
   constructor(props) {
     super(props)
+    this.state = {}
+    this.handleDragStart = this.handleDragStart.bind(this)
     this.handleDragEnd = this.handleDragEnd.bind(this)
     this.handleClick = this.handleClick.bind(this)
   }
 
+  handleDragStart(start) {
+    this.setState({ dragging: true })
+
+    this.props.onSelectionChange(start.type, {
+      id: start.draggableId
+    })
+  }
+
   handleDragEnd(result) {
+    this.setState({ dragging: false })
+
     if (!result.destination) {
       return
     }
@@ -50,7 +62,9 @@ class ObjectTypePreview extends React.PureComponent {
   }
 
   handleClick() {
-    this.props.onSelectionChange()
+    if (!this.state.dragging) {
+      this.props.onSelectionChange()
+    }
   }
 
   render() {
@@ -62,7 +76,10 @@ class ObjectTypePreview extends React.PureComponent {
       <div className={classes.container} onClick={this.handleClick}>
         <Typography variant='h6'>Form Preview</Typography>
         <ObjectTypePreviewCode type={type} />
-        <DragDropContext onDragEnd={this.handleDragEnd}>
+        <DragDropContext
+          onDragStart={this.handleDragStart}
+          onDragEnd={this.handleDragEnd}
+        >
           <Droppable droppableId='root' type='section'>
             {provided => (
               <div
