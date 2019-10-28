@@ -10,13 +10,14 @@ import logger from '../../../common/logger.js'
 
 const styles = theme => ({
   container: {
+    display: 'flex',
     padding: `${theme.spacing(2)}px ${theme.spacing(4)}px`
   },
   header: {
     marginBottom: theme.spacing(2)
   },
   form: {
-    width: '50%'
+    flex: '0 0 50%'
   },
   droppable: {
     display: 'flex',

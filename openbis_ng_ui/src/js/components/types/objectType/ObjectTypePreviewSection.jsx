@@ -9,13 +9,14 @@ import * as util from '../../../common/util.js'
 const styles = theme => ({
   draggable: {
     width: '100%',
-    marginBottom: theme.spacing(2)
+    marginBottom: theme.spacing(2),
+    backgroundColor: theme.palette.background.paper
   },
   droppable: {
     padding: theme.spacing(2),
     borderWidth: '2px',
     borderStyle: 'dashed',
-    borderColor: theme.palette.background.primary,
+    borderColor: theme.palette.background.secondary,
     '&:hover': {
       borderColor: theme.palette.primary.main
     }

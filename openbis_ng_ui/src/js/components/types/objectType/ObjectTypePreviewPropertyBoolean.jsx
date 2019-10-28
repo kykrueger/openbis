@@ -1,6 +1,7 @@
 import React from 'react'
 import CheckboxField from '../../common/form/CheckboxField.jsx'
 import { withStyles } from '@material-ui/core/styles'
+import ObjectTypePreviewPropertyMetadata from './ObjectTypePreviewPropertyMetadata.jsx'
 import logger from '../../../common/logger.js'
 
 const styles = () => ({})
@@ -17,6 +18,7 @@ class ObjectTypePreviewPropertyBoolean extends React.PureComponent {
           label={property.label}
           description={property.description}
           mandatory={property.mandatory}
+          metadata={<ObjectTypePreviewPropertyMetadata property={property} />}
           transparent={!property.visible}
         />
       </div>

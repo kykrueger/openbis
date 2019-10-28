@@ -12,6 +12,9 @@ const theme = createMuiTheme({
     useNextVariants: true
   },
   palette: {
+    grey: {
+      main: '#9e9e9e'
+    },
     primary: {
       main: indigo[700]
     },

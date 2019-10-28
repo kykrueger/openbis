@@ -5,7 +5,7 @@ import FormControlLabel from '@material-ui/core/FormControlLabel'
 import FormHelperText from '@material-ui/core/FormHelperText'
 import logger from '../../../common/logger.js'
 
-const styles = () => ({
+const styles = theme => ({
   transparent: {
     opacity: 0.4
   },
@@ -13,10 +13,24 @@ const styles = () => ({
     margin: 0,
     alignItems: 'start'
   },
+  labelLabel: {
+    width: '100%'
+  },
   labelText: {
+    display: 'flex',
+    alignItems: 'stretch',
+    '& div': {
+      flex: '0 0 auto'
+    },
     '& b': {
       fontWeight: 'bold',
-      color: 'red'
+      color: theme.palette.error.main
+    },
+    '& pre': {
+      flex: '0 0 auto',
+      margin: 0,
+      paddingLeft: theme.spacing(1),
+      color: theme.palette.grey.main
     }
   }
 })
@@ -36,7 +50,7 @@ class FormField extends React.Component {
             control={children}
             classes={{
               root: classes.labelContainer,
-              label: classes.labelText
+              label: classes.labelLabel
             }}
           />
           <FormHelperText>{description}</FormHelperText>
@@ -46,12 +60,15 @@ class FormField extends React.Component {
   }
 
   renderLabel() {
-    const { label, mandatory } = this.props
+    const { label, mandatory, metadata, classes } = this.props
 
     return (
-      <React.Fragment>
-        {label} {mandatory && <b>*</b>}
-      </React.Fragment>
+      <div className={classes.labelText}>
+        <div>
+          {label} {mandatory && <b>*</b>}
+        </div>
+        {metadata && <pre>{metadata}</pre>}
+      </div>
     )
   }
 }

@@ -18,6 +18,7 @@ class SelectFormField extends React.PureComponent {
       disabled,
       transparent,
       options,
+      metadata,
       value
     } = this.props
 
@@ -27,6 +28,7 @@ class SelectFormField extends React.PureComponent {
         description={description}
         mandatory={mandatory}
         transparent={transparent}
+        metadata={metadata}
       >
         <TextField select value={value} disabled={disabled} fullWidth={true}>
           {options &&

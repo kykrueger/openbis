@@ -2,6 +2,7 @@ import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import { facade, dto } from '../../../services/openbis.js'
 import SelectField from '../../common/form/SelectField.jsx'
+import ObjectTypePreviewPropertyMetadata from './ObjectTypePreviewPropertyMetadata.jsx'
 import logger from '../../../common/logger.js'
 
 const styles = () => ({})
@@ -64,6 +65,7 @@ class ObjectTypePreviewPropertyVocabulary extends React.PureComponent {
         description={property.description}
         mandatory={property.mandatory}
         transparent={!property.visible}
+        metadata={<ObjectTypePreviewPropertyMetadata property={property} />}
         options={options}
       />
     )
