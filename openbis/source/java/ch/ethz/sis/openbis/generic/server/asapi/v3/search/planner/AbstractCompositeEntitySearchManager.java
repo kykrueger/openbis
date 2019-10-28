@@ -59,10 +59,11 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
     @Override
     public Set<Long> searchForIDs(final Long userId, final CRITERIA criteria, SortOptions<OBJECT> sortOptions)
     {
-        return doSearchForIDs(userId, criteria, null);
+        return doSearchForIDs(userId, criteria, null, sortOptions);
     }
 
-    private Set<Long> doSearchForIDs(final Long userId, final CRITERIA criteria, final SearchOperator searchOperator)
+    private Set<Long> doSearchForIDs(final Long userId, final CRITERIA criteria, final SearchOperator searchOperator,
+            final SortOptions<OBJECT> sortOptions)
     {
         final Class<? extends AbstractCompositeSearchCriteria> parentsSearchCriteriaClass = getParentsSearchCriteriaClass();
         final Class<? extends AbstractCompositeSearchCriteria> childrenSearchCriteriaClass = getChildrenSearchCriteriaClass();
@@ -81,38 +82,48 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
         }
         final SearchOperator finalSearchOperator = (searchOperator == null) ? criteria.getOperator() : searchOperator;
 
-        return doSearchForIds(userId, parentsCriteria, childrenCriteria, mainCriteria, finalSearchOperator);
+        return doSearchForIds(userId, parentsCriteria, childrenCriteria, mainCriteria, finalSearchOperator, sortOptions);
     }
 
     protected Set<Long> doSearchForIds(final Long userId, final Collection<ISearchCriteria> parentsCriteria,
             final Collection<ISearchCriteria> childrenCriteria, final Collection<ISearchCriteria> mainCriteria,
-            final SearchOperator finalSearchOperator)
+            final SearchOperator finalSearchOperator, final SortOptions<OBJECT> sortOptions)
     {
-        Set<Long> mainCriteriaIntermediateResults = null;
-        Set<Long> parentCriteriaIntermediateResults = null;
-        Set<Long> childrenCriteriaIntermediateResults  = null;
+        final TableMapper tableMapper = getTableMapper();
 
-        // The main criteria have no recursive ISearchCriteria into it, to facilitate building a query
+        final Set<Long> mainCriteriaIntermediateResults;
         if (!mainCriteria.isEmpty())
         {
-            mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId, getTableMapper(), mainCriteria,
+            // The main criteria have no recursive ISearchCriteria into it, to facilitate building a query
+            mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId, tableMapper, mainCriteria,
                     finalSearchOperator);
+        } else
+        {
+            mainCriteriaIntermediateResults = null;
         }
 
-        // The parents criteria can be or not recursive, they are resolved by a recursive call
+        final Set<Long> parentCriteriaIntermediateResults;
         if (!parentsCriteria.isEmpty())
         {
+            // The parents criteria can be or not recursive, they are resolved by a recursive call
             final Set<Long> finalParentIds = findFinalRelationshipIds(userId, finalSearchOperator, parentsCriteria);
             final Set<Long> finalParentIdsFiltered = filterIDsByUserRights(userId, finalParentIds);
             parentCriteriaIntermediateResults = getChildrenIdsOf(finalParentIdsFiltered);
+        } else
+        {
+            parentCriteriaIntermediateResults = null;
         }
 
-        // The children criteria can be or not recursive, they are resolved by a recursive call
+        final Set<Long> childrenCriteriaIntermediateResults;
         if (!childrenCriteria.isEmpty())
         {
+            // The children criteria can be or not recursive, they are resolved by a recursive call
             final Set<Long> finalChildrenIds = findFinalRelationshipIds(userId, finalSearchOperator, childrenCriteria);
             final Set<Long> finalChildrenIdsFiltered = filterIDsByUserRights(userId, finalChildrenIds);
             childrenCriteriaIntermediateResults = getParentsIdsOf(finalChildrenIdsFiltered);
+        } else
+        {
+            childrenCriteriaIntermediateResults = null;
         }
 
         // Reaching this point we have the intermediate results of all recursive queries
@@ -135,7 +146,29 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
             resultBeforeFiltering = Collections.emptySet();
         }
 
-        return filterIDsByUserRights(userId, resultBeforeFiltering);
+        final Set<Long> filteredIDs = filterIDsByUserRights(userId, resultBeforeFiltering);
+
+        if (sortOptions != null)
+        {
+            final Set<Long> orderedIDs = sortIDs(userId, tableMapper, filteredIDs, sortOptions);
+            return orderedIDs;
+        } else
+        {
+            return filteredIDs;
+        }
+    }
+
+    private Set<Long> sortIDs(final Long userId, final TableMapper tableMapper,
+            final Set<Long> filteredIDs, final SortOptions<OBJECT> sortOptions)
+    {
+        try
+        {
+            return getSearchDAO().sortIDs(userId, tableMapper, filteredIDs, sortOptions);
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     /**
@@ -149,7 +182,7 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
             final Collection<ISearchCriteria> relatedEntitiesCriteria)
     {
         final List<Set<Long>> relatedIds = relatedEntitiesCriteria.stream().flatMap(entitySearchCriteria -> {
-            final Set<Long> foundParentIds = doSearchForIDs(userId, (CRITERIA) entitySearchCriteria, operator);
+            final Set<Long> foundParentIds = doSearchForIDs(userId, (CRITERIA) entitySearchCriteria, operator, null);
             return foundParentIds.isEmpty() ? Stream.empty() : Stream.of(foundParentIds);
         }).collect(Collectors.toList());
 

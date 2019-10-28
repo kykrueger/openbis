@@ -89,6 +89,8 @@ public class SQLLexemes
 
     public static final String IS_NULL = IS + SP + NULL;
 
+    public static final String ORDER_BY = "ORDER BY";
+
     public static final String NL = "\n";
 
     public static final String COMMA = ",";

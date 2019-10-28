@@ -18,11 +18,13 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
@@ -67,7 +69,9 @@ public class PostgresSearchDAO implements ISQLSearchDAO
 
         final SelectQuery selectQuery = Translator.translate(translationVo);
         final List<Map<String, Object>> result = sqlExecutor.execute(selectQuery.getQuery(), selectQuery.getArgs());
-        return result.stream().map(stringLongMap -> (Long) stringLongMap.get(ID_COLUMN)).collect(Collectors.toSet());
+        return result.stream().map(
+                stringLongMap -> (Long) stringLongMap.get(ID_COLUMN)
+        ).collect(Collectors.toSet());
     }
 
     @Override
@@ -92,6 +96,21 @@ public class PostgresSearchDAO implements ISQLSearchDAO
         final List<Map<String, Object>> queryResultList = sqlExecutor.execute(query, args);
         return queryResultList.stream().map(stringObjectMap -> (Long) stringObjectMap.get(tableMapper.getRelationshipsTableParentIdField()))
                 .collect(Collectors.toSet());
+    }
+
+    @Override
+    public Set<Long> sortIDs(final Long userId, final TableMapper tableMapper, final Set<Long> filteredIDs, final SortOptions<?> sortOptions)
+    {
+        final Translator.OrderTranslationVo orderTranslationVo = new Translator.OrderTranslationVo();
+        orderTranslationVo.setUserId(userId);
+        orderTranslationVo.setTableMapper(tableMapper);
+        orderTranslationVo.setIDs(filteredIDs);
+        orderTranslationVo.setSortOptions(sortOptions);
+
+        final SelectQuery query = Translator.translateToOrderQuery(orderTranslationVo);
+        final List<Map<String, Object>> queryResultList = sqlExecutor.execute(query.getQuery(), query.getArgs());
+        return queryResultList.stream().map(stringObjectMap -> (Long) stringObjectMap.get(ID_COLUMN))
+                .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     public void setCriteriaToManagerMap(

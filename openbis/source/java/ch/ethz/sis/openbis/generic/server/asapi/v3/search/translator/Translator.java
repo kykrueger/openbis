@@ -20,6 +20,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +28,8 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.Sorting;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractEntitySearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AnyFieldSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AnyPropertySearchCriteria;
@@ -71,6 +74,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.AbsenceConditionTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.AnyFieldSearchCriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.AnyPropertySearchCriteriaTranslator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.Attributes;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.CollectionFieldSearchCriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.DateFieldSearchCriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.EmailSearchCriteriaTranslator;
@@ -87,6 +91,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.U
 import ch.systemsx.cisd.openbis.generic.shared.basic.BasicConstant;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
 
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.COMMA;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.DISTINCT;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.EQ;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.FROM;
@@ -95,6 +100,7 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLL
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.LP;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.NL;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.ON;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.ORDER_BY;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.PERIOD;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.QU;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.RP;
@@ -169,7 +175,7 @@ public class Translator
 
     public static SelectQuery translate(final TranslationVo vo)
     {
-        if (vo.getCriteria() == null && vo.getCriteria().isEmpty())
+        if (vo.getCriteria() == null || vo.getCriteria().isEmpty())
         {
             throw new IllegalArgumentException("Empty or null criteria provided.");
         }
@@ -177,15 +183,9 @@ public class Translator
         final String from = buildFrom(vo);
         final String where = buildWhere(vo);
         final String select = buildSelect();
-//        final String orderBy = buildOrderBy(vo);
 
-        return new SelectQuery(select  + NL + from + NL + where /*+ NL + orderBy*/, vo.getArgs());
+        return new SelectQuery(select  + NL + from + NL + where, vo.getArgs());
     }
-
-//    private static String buildOrderBy(final TranslationVo vo)
-//    {
-//        return "";
-//    }
 
     private static String buildSelect()
     {
@@ -243,13 +243,12 @@ public class Translator
 
     private static String buildWhere(final TranslationVo vo)
     {
-        final StringBuilder sqlBuilder = new StringBuilder();
         if (isSearchAllCriteria(vo.getCriteria()))
         {
             return "";
         }
 
-        sqlBuilder.append(WHERE).append(SP);
+        final StringBuilder sqlBuilder = new StringBuilder().append(WHERE).append(SP);
 
         if (vo.getCriteria().isEmpty()) {
             sqlBuilder.append(TRUE);
@@ -260,13 +259,7 @@ public class Translator
 
             vo.getCriteria().forEach((criterion) ->
             {
-                if (first.get())
-                {
-                    first.set(false);
-                } else
-                {
-                    sqlBuilder.append(SP).append(logicalOperator).append(SP);
-                }
+                appendIfFirst(sqlBuilder, SP + logicalOperator + SP, first);
 
                 final ISearchManager<ISearchCriteria, ?, ?> subqueryManager = vo.getCriteriaToManagerMap().get(criterion.getClass());
                 final TableMapper tableMapper = vo.getTableMapper();
@@ -287,7 +280,8 @@ public class Translator
                     }
                 } else
                 {
-                    @SuppressWarnings("unchecked") final IConditionTranslator<ISearchCriteria> conditionTranslator =
+                    @SuppressWarnings("unchecked")
+                    final IConditionTranslator<ISearchCriteria> conditionTranslator =
                             (IConditionTranslator<ISearchCriteria>) CRITERIA_TO_CONDITION_TRANSLATOR_MAP.get(criterion.getClass());
                     if (conditionTranslator != null)
                     {
@@ -321,6 +315,88 @@ public class Translator
             }
         }
         return false;
+    }
+
+    public static SelectQuery translateToOrderQuery(final OrderTranslationVo vo)
+    {
+        if (vo.getSortOptions() == null)
+        {
+            throw new IllegalArgumentException("Null sort options provided.");
+        }
+
+        final String from = buildOrderFrom(vo);
+        final String where = buildOrderWhere(vo);
+        final String select = buildOrderSelect(vo);
+        final String orderBy = buildOrderOrderBy(vo);
+
+        return new SelectQuery(select  + NL + from + NL + where + NL + orderBy, Collections.singletonList(vo.ids.toArray(new Long[0])));
+    }
+
+    private static String buildOrderOrderBy(final OrderTranslationVo vo)
+    {
+        final StringBuilder sqlBuilder = new StringBuilder(ORDER_BY + SP);
+
+        final SortOptions<?> sortOptions = vo.getSortOptions();
+        final List<Sorting> sortings = sortOptions.getSortings();
+        final AtomicBoolean first = new AtomicBoolean(true);
+
+        sortings.forEach((sorting) ->
+        {
+            appendIfFirst(sqlBuilder, COMMA + SP, first);
+
+            final String sortingCriteriaFieldName = sorting.getField().toLowerCase();
+            final String fieldName = Attributes.ATTRIBUTE_ID_TO_COLUMN_NAME.getOrDefault(sortingCriteriaFieldName, sortingCriteriaFieldName);
+            sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(fieldName).append(SP).append(sorting.getOrder());
+        });
+
+        return sqlBuilder.toString();
+    }
+
+    /**
+     * Appends given string to string builder only when atomic boolean is false. Otherwise just sets atomic boolean to false.
+     *
+     * @param sb string builder to be updated.
+     * @param value the value to be added when needed.
+     * @param first atomic boolean, if {@code true} it will be set to false with no change to sb, otherwise the {@code value} will be appended to
+     * {@code sb}.
+     */
+    private static void appendIfFirst(final StringBuilder sb, final String value, final AtomicBoolean first)
+    {
+        if (first.get())
+        {
+            first.set(false);
+        } else
+        {
+            sb.append(value);
+        }
+    }
+
+    private static String buildOrderSelect(final OrderTranslationVo vo)
+    {
+        final StringBuilder sqlBuilder = new StringBuilder(SELECT + SP + MAIN_TABLE_ALIAS + PERIOD + ID_COLUMN);
+
+        final SortOptions<?> sortOptions = vo.getSortOptions();
+        final List<Sorting> sortings = sortOptions.getSortings();
+
+        sortings.forEach((sorting) ->
+        {
+            final String sortingCriteriaFieldName = sorting.getField().toLowerCase();
+            final String fieldName = Attributes.ATTRIBUTE_ID_TO_COLUMN_NAME.getOrDefault(sortingCriteriaFieldName, sortingCriteriaFieldName);
+            sqlBuilder.append(COMMA).append(SP).append(MAIN_TABLE_ALIAS).append(PERIOD).append(fieldName);
+        });
+
+        return sqlBuilder.toString();
+    }
+
+    private static String buildOrderFrom(final OrderTranslationVo vo)
+    {
+        return FROM + SP + vo.getTableMapper().getEntitiesTable() + SP + MAIN_TABLE_ALIAS;
+    }
+
+    private static String buildOrderWhere(final OrderTranslationVo vo)
+    {
+        return WHERE + SP + MAIN_TABLE_ALIAS + PERIOD + ID_COLUMN + SP + IN + SP + LP +
+                SELECT + SP + UNNEST + LP + QU + RP + RP;
     }
 
     public static class TranslationVo
@@ -410,6 +486,72 @@ public class Translator
         {
             this.args = args;
         }
+    }
+
+    public static class OrderTranslationVo
+    {
+
+        private Long userId;
+
+        private TableMapper tableMapper;
+
+        private Set<Long> ids;
+
+        private SortOptions<?> sortOptions;
+
+        private Map<Object, Map<String, JoinInformation>> aliases = new HashMap<>();
+
+        public Long getUserId()
+        {
+            return userId;
+        }
+
+        public void setUserId(final Long userId)
+        {
+            this.userId = userId;
+        }
+
+        public TableMapper getTableMapper()
+        {
+            return tableMapper;
+        }
+
+        public void setTableMapper(final TableMapper tableMapper)
+        {
+            this.tableMapper = tableMapper;
+        }
+
+        public Set<Long> getIDs()
+        {
+            return ids;
+        }
+
+        public void setIDs(final Set<Long> filteredIDs)
+        {
+            this.ids = filteredIDs;
+        }
+
+        public SortOptions<?> getSortOptions()
+        {
+            return sortOptions;
+        }
+
+        public void setSortOptions(final SortOptions<?> sortOptions)
+        {
+            this.sortOptions = sortOptions;
+        }
+
+        public Map<Object, Map<String, JoinInformation>> getAliases()
+        {
+            return aliases;
+        }
+
+        public void setAliases(
+                final Map<Object, Map<String, JoinInformation>> aliases)
+        {
+            this.aliases = aliases;
+        }
+
     }
 
 }

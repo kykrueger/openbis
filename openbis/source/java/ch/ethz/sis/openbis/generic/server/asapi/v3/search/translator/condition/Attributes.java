@@ -22,19 +22,19 @@ import java.util.Map;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
 import ch.systemsx.cisd.openbis.generic.shared.dto.hibernate.SearchFieldConstants;
 
-class Attributes
+public class Attributes
 {
-    static final Map<String, String> ATTRIBUTE_ID_TO_COLUMN_NAME = new HashMap<>();
+    public static final Map<String, String> ATTRIBUTE_ID_TO_COLUMN_NAME = new HashMap<>();
 
     static {
         ATTRIBUTE_ID_TO_COLUMN_NAME.put("perm id", ColumnNames.PERM_ID_COLUMN);
-        ATTRIBUTE_ID_TO_COLUMN_NAME.put(SearchFieldConstants.REGISTRATION_DATE, ColumnNames.REGISTRATION_TIMESTAMP_COLUMN);
         ATTRIBUTE_ID_TO_COLUMN_NAME.put(SearchFieldConstants.CODE, ColumnNames.CODE_COLUMN);
         ATTRIBUTE_ID_TO_COLUMN_NAME.put("codes", ColumnNames.CODE_COLUMN);
         ATTRIBUTE_ID_TO_COLUMN_NAME.put(SearchFieldConstants.ID, ColumnNames.ID_COLUMN);
         ATTRIBUTE_ID_TO_COLUMN_NAME.put(SearchFieldConstants.FILE_DESCRIPTION, ColumnNames.DESCRIPTION_COLUMN);
         ATTRIBUTE_ID_TO_COLUMN_NAME.put(SearchFieldConstants.FILE_NAME, ColumnNames.FILE_NAME_COLUMN);
         ATTRIBUTE_ID_TO_COLUMN_NAME.put(SearchFieldConstants.MODIFICATION_DATE, ColumnNames.MODIFICATION_TIMESTAMP_COLUMN);
+        ATTRIBUTE_ID_TO_COLUMN_NAME.put(SearchFieldConstants.REGISTRATION_DATE, ColumnNames.REGISTRATION_TIMESTAMP_COLUMN);
         ATTRIBUTE_ID_TO_COLUMN_NAME.put("userIds", ColumnNames.USER_COLUMN);
     }
 

@@ -19,6 +19,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao;
 import java.util.Collection;
 import java.util.Set;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
@@ -50,5 +51,17 @@ public interface ISQLSearchDAO
      * @return a set of IDs od parent entities of the children specified by IDs.
      */
     Set<Long> findParentIDs(TableMapper tableMapper, Set<Long> childIdSet);
+
+    /**
+     * Sorts IDs by certain fields.
+     *
+     * @param userId ID of the user performing search.
+     * @param tableMapper mapper that contains information about entity tables.
+     * @param filteredIDs the IDs to be sorted.
+     * @param sortOptions contains fields to be sorted.
+     * @return IDs of sorted entities.
+     */
+    Set<Long> sortIDs(Long userId, final TableMapper tableMapper, Set<Long> filteredIDs,
+            SortOptions<?> sortOptions);
 
 }
