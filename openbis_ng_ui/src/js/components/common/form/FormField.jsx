@@ -20,7 +20,8 @@ const styles = theme => ({
     display: 'flex',
     alignItems: 'stretch',
     '& div': {
-      flex: '0 0 auto'
+      flex: '0 0 auto',
+      paddingRight: theme.spacing(1)
     },
     '& b': {
       fontWeight: 'bold',
@@ -29,7 +30,6 @@ const styles = theme => ({
     '& pre': {
       flex: '0 0 auto',
       margin: 0,
-      paddingLeft: theme.spacing(1),
       color: theme.palette.grey.main
     }
   }
@@ -64,9 +64,11 @@ class FormField extends React.Component {
 
     return (
       <div className={classes.labelText}>
-        <div>
-          {label} {mandatory && <b>*</b>}
-        </div>
+        {(label || mandatory) && (
+          <div>
+            {label} {mandatory && <b>*</b>}
+          </div>
+        )}
         {metadata && <pre>{metadata}</pre>}
       </div>
     )
