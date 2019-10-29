@@ -244,12 +244,25 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 			}
 
 			//Barcode
-			var $barcodeButton = $("<a>", { 'class' : 'btn btn-default'} ).append($('<span>', { 'class' : 'glyphicon glyphicon-barcode' }));
-            $barcodeButton.click(function() {
-                BarcodeUtil.showBarcode(_this._sampleFormModel.sample);
-            });
-            if(toolbarConfig.BARCODE) {
-                toolbarModel.push({ component : $barcodeButton, tooltip: "Barcode" });
+			if(profile.mainMenu.showBarcodes) {
+                var $barcodeButton = $("<a>", { 'class' : 'btn btn-default'} ).append($('<span>', { 'class' : 'glyphicon glyphicon-barcode' }));
+                $barcodeButton.click(function() {
+                    BarcodeUtil.showBarcode(_this._sampleFormModel.sample);
+                });
+                if(toolbarConfig.BARCODE) {
+                    toolbarModel.push({ component : $barcodeButton, tooltip: "Barcode" });
+                }
+
+                if(profile.isPropertyPressent(sampleType, "$BARCODE")) {
+                    var $barcodeReadButton = $("<a>", { 'class' : 'btn btn-default'} ).append($('<span>', { 'class' : 'glyphicon glyphicon-barcode' }));
+                    $barcodeReadButton.append(" R");
+                    $barcodeReadButton.click(function() {
+                        BarcodeUtil.readBarcode(_this._sampleFormModel.sample);
+                    });
+                    if(toolbarConfig.BARCODE) {
+                        toolbarModel.push({ component : $barcodeReadButton, tooltip: "Update Barcode" });
+                    }
+                }
             }
 
 			//Hierarchy Graph
