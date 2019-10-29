@@ -11,9 +11,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.annotation.Transactional;
-import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
@@ -41,6 +39,8 @@ public class ImportProjectsTest extends AbstractImportTest {
 
     private static final String PROJECTS_WITH_SPACES_ON_SERVER = "projects/with_spaces_on_server.xls";
 
+    private static final String PROJECTS_UPDATE = "projects/update.xls";
+
     private static final String SPACES = "projects/spaces.xls";
 
     private static String FILES_DIR;
@@ -62,6 +62,20 @@ public class ImportProjectsTest extends AbstractImportTest {
         assertEquals(project.getCode(), "TEST_PROJECT");
         assertEquals(project.getDescription(), "TEST");
         assertEquals(project.getSpace().getCode(), "TEST_SPACE");
+    }
+
+    @Test
+    @DirtiesContext
+    public void testExistProjectIsUpdated() throws IOException {
+        // GIVEN
+        TestUtils.createFrom(v3api, sessionToken, UpdateMode.UPDATE_IF_EXISTS, Paths.get(FilenameUtils.concat(FILES_DIR, PROJECTS_XLS)));
+        // WHEN
+        TestUtils.createFrom(v3api, sessionToken, UpdateMode.UPDATE_IF_EXISTS, Paths.get(FilenameUtils.concat(FILES_DIR, PROJECTS_UPDATE)));
+        Project project = TestUtils.getProject(v3api, sessionToken, "TEST_PROJECT", "TEST_SPACE2");
+        // THEN
+        assertEquals(project.getCode(), "TEST_PROJECT");
+        assertEquals(project.getDescription(), "UPDATE");
+        assertEquals(project.getSpace().getCode(), "TEST_SPACE2");
     }
 
     @Test

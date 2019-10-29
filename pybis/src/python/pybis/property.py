@@ -16,9 +16,13 @@ class PropertyHolder():
                     self._property_names[property_name]=prop['propertyType']
                     self._property_names[property_name]['mandatory'] = prop['mandatory']
                     self._property_names[property_name]['showInEditView'] = prop['showInEditView']
-
-    def _get_terms(self, vocabulary):
-        return self._openbis.get_terms(vocabulary)
+                    if prop['propertyType']['dataType'] == 'CONTROLLEDVOCABULARY':
+                        pt = self._openbis.get_property_type(prop['propertyType']['code'])
+                        # get the vocabulary of a property type.
+                        # In some cases, the «code» of an assigned property is not identical to the «vocabulary» attribute
+                        voc = self._openbis.get_vocabulary(pt.vocabulary)
+                        terms = voc.get_terms()
+                        self._property_names[property_name]['terms'] = terms
 
     def _all_props(self):
         props = {}
@@ -60,7 +64,8 @@ class PropertyHolder():
             if name in self._property_names:
                 property_type = self._property_names[name]
                 if property_type['dataType'] == 'CONTROLLEDVOCABULARY':
-                    return self._get_terms(property_type['code'])
+                    return property_type['terms']
+                    #return self._get_terms(property_type['code'])
                 else:
                     syntax = { property_type["label"] : property_type["dataType"]}
                     if property_type["dataType"] == "TIMESTAMP":
@@ -82,11 +87,11 @@ class PropertyHolder():
         property_type = self._property_names[name]
         data_type = property_type['dataType']
         if data_type == 'CONTROLLEDVOCABULARY':
-            voc = self._get_terms(property_type['code'])
+            terms = property_type['terms']
             value = str(value).upper()
-            if value not in voc.df['code'].values:
+            if value not in terms.df['code'].values:
                 raise ValueError("Value for attribute {} must be one of these terms: {}".format(
-                    name, ", ".join(voc.df['code'].values)
+                    name, ", ".join(terms.df['code'].values)
                 ))
         elif data_type in ('INTEGER', 'BOOLEAN', 'VARCHAR'):
             if not check_datatype(data_type, value):

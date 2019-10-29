@@ -1,3 +1,22 @@
+## Changes with pybis-1.9.8
+
+* new: create and update Dateset Types
+* new: create and update Experiment Types
+* new: create and update Material Types
+* many bugfixes
+* extended documentation about creating these entity types
+
+
+## Changes with pybis-1.9.7
+
+* bugfix for creating propertyTypes of type controlled vocabulary and material
+
+
+## Changes with pybis-1.9.6
+
+* bugfix when vocabulary attribute was not identical to the code of the aassigned property type
+
+
 ## Changes with pybis-1.9.5
 
 * bugfixes: get_property_assignments() method fixed for dataSet-, experiment- and materialTypes

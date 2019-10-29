@@ -187,8 +187,16 @@ public class TestUtils {
     }
 
     static Project getProject(IApplicationServerInternalApi v3api, String sessionToken, String code) {
+        return getProject(v3api, sessionToken, code, null);
+    }
+
+    static Project getProject(IApplicationServerInternalApi v3api, String sessionToken, String code, String spaceId) {
         ProjectSearchCriteria criteria = new ProjectSearchCriteria();
         criteria.withCode().thatEquals(code);
+
+        if (spaceId != null) {
+            criteria.withSpace().withCode().thatEquals(spaceId);
+        }
 
         ProjectFetchOptions fo = new ProjectFetchOptions();
         fo.withSpace();
@@ -259,6 +267,10 @@ public class TestUtils {
     }
 
     static String createFrom(IApplicationServerInternalApi v3api, String sessionToken, Path... xls_paths) throws IOException {
+        return createFrom(v3api, sessionToken, UpdateMode.IGNORE_EXISTING, xls_paths);
+    }
+
+    static String createFrom(IApplicationServerInternalApi v3api, String sessionToken, UpdateMode updateMode, Path... xls_paths) throws IOException {
         List<byte[]> excels = new ArrayList<>();
         for (Path xls_path : xls_paths) {
             byte[] xls = readData(xls_path);
@@ -266,7 +278,7 @@ public class TestUtils {
         }
         CustomASServiceExecutionOptions options = new CustomASServiceExecutionOptions();
         options.withParameter(XLS_PARAM, excels);
-        options.withParameter(UPDATE_MODE, UpdateMode.IGNORE_EXISTING.name());
+        options.withParameter(UPDATE_MODE, updateMode.name());
         options.withParameter(XLS_NAME, TEST_XLS);
         return (String) v3api.executeCustomASService(sessionToken, new CustomASServiceCode(XLS_IMPORT_API), options);
     }
