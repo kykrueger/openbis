@@ -20,7 +20,6 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,8 +27,8 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.EntityWithPropertiesSortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.Sorting;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractEntitySearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AnyFieldSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AnyPropertySearchCriteria;
@@ -87,16 +86,19 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.L
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.NumberFieldSearchCriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.SampleSearchCriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.StringFieldSearchCriteriaTranslator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.TranslatorUtils;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.UserIdSearchCriteriaTranslator;
 import ch.systemsx.cisd.openbis.generic.shared.basic.BasicConstant;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
 
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.AND;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.COMMA;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.DISTINCT;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.EQ;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.FROM;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.IN;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.INNER_JOIN;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.LEFT_JOIN;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.LP;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.NL;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.ON;
@@ -109,7 +111,9 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLL
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.TRUE;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.UNNEST;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.WHERE;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.CODE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.VALUE_COLUMN;
 
 public class Translator
 {
@@ -192,8 +196,14 @@ public class Translator
         return SELECT + SP + DISTINCT + SP + MAIN_TABLE_ALIAS + PERIOD + ID_COLUMN;
     }
 
-    public static String getAlias(final AtomicInteger num) {
+    private static String getAlias(final AtomicInteger num)
+    {
         return "t" + num.getAndIncrement();
+    }
+
+    private static String getOrderingAlias(final AtomicInteger num)
+    {
+        return "o" + num.getAndIncrement();
     }
 
     private static String buildFrom(final TranslationVo vo)
@@ -208,19 +218,20 @@ public class Translator
         {
             if (!vo.getCriteriaToManagerMap().containsKey(criterion.getClass()))
             {
-                // Search for a translator only when you don't have a manager for the criterion.
                 final IConditionTranslator conditionTranslator = CRITERIA_TO_CONDITION_TRANSLATOR_MAP.get(criterion.getClass());
                 if (conditionTranslator != null)
                 {
+                    @SuppressWarnings("unchecked")
                     final Map<String, JoinInformation> joinInformationMap = conditionTranslator.getJoinInformationMap(criterion,
                             vo.getTableMapper(), () -> getAlias(indexCounter));
 
                     if (joinInformationMap != null)
                     {
-                        joinInformationMap.values().forEach(joinInformation ->
+                        joinInformationMap.values().forEach((joinInformation) ->
                         {
                             if (joinInformation.getSubTable() != null)
-                            { // Join required
+                            {
+                                // Join required
                                 sqlBuilder.append(NL).append(INNER_JOIN).append(SP).append(joinInformation.getSubTable()).append(SP)
                                         .append(joinInformation.getSubTableAlias()).append(SP)
                                         .append(ON).append(SP).append(joinInformation.getMainTableAlias())
@@ -329,24 +340,35 @@ public class Translator
         final String select = buildOrderSelect(vo);
         final String orderBy = buildOrderOrderBy(vo);
 
-        return new SelectQuery(select  + NL + from + NL + where + NL + orderBy, Collections.singletonList(vo.ids.toArray(new Long[0])));
+        return new SelectQuery(select  + NL + from + NL + where + NL + orderBy, vo.getArgs());
     }
 
     private static String buildOrderOrderBy(final OrderTranslationVo vo)
     {
         final StringBuilder sqlBuilder = new StringBuilder(ORDER_BY + SP);
-
-        final SortOptions<?> sortOptions = vo.getSortOptions();
-        final List<Sorting> sortings = sortOptions.getSortings();
         final AtomicBoolean first = new AtomicBoolean(true);
+        final Map<Object, Map<String, JoinInformation>> aliases = vo.getAliases();
+        final TableMapper tableMapper = vo.getTableMapper();
 
-        sortings.forEach((sorting) ->
+        vo.getSortOptions().getSortings().forEach((sorting) ->
         {
             appendIfFirst(sqlBuilder, COMMA + SP, first);
 
-            final String sortingCriteriaFieldName = sorting.getField().toLowerCase();
-            final String fieldName = Attributes.ATTRIBUTE_ID_TO_COLUMN_NAME.getOrDefault(sortingCriteriaFieldName, sortingCriteriaFieldName);
-            sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(fieldName).append(SP).append(sorting.getOrder());
+            final String sortingCriteriaFieldName = sorting.getField();
+            if (!isPropertySearchCriterion(sortingCriteriaFieldName))
+            {
+                final String lowerCaseSortingCriteriaFieldName = sortingCriteriaFieldName.toLowerCase();
+                final String fieldName = Attributes.ATTRIBUTE_ID_TO_COLUMN_NAME.getOrDefault(lowerCaseSortingCriteriaFieldName,
+                        lowerCaseSortingCriteriaFieldName);
+                sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(fieldName);
+            } else
+            {
+                final String propertyName = sortingCriteriaFieldName.substring(EntityWithPropertiesSortOptions.PROPERTY.length()).toLowerCase();
+                final String valuesTableAlias = aliases.get(propertyName).get(tableMapper.getValuesTable()).getMainTableAlias();
+                sqlBuilder.append(valuesTableAlias).append(PERIOD).append(VALUE_COLUMN);
+            }
+
+            sqlBuilder.append(SP).append(sorting.getOrder());
         });
 
         return sqlBuilder.toString();
@@ -374,15 +396,25 @@ public class Translator
     private static String buildOrderSelect(final OrderTranslationVo vo)
     {
         final StringBuilder sqlBuilder = new StringBuilder(SELECT + SP + MAIN_TABLE_ALIAS + PERIOD + ID_COLUMN);
+        final Map<Object, Map<String, JoinInformation>> aliases = vo.getAliases();
+        final TableMapper tableMapper = vo.getTableMapper();
 
-        final SortOptions<?> sortOptions = vo.getSortOptions();
-        final List<Sorting> sortings = sortOptions.getSortings();
-
-        sortings.forEach((sorting) ->
+        vo.getSortOptions().getSortings().forEach((sorting) ->
         {
-            final String sortingCriteriaFieldName = sorting.getField().toLowerCase();
-            final String fieldName = Attributes.ATTRIBUTE_ID_TO_COLUMN_NAME.getOrDefault(sortingCriteriaFieldName, sortingCriteriaFieldName);
-            sqlBuilder.append(COMMA).append(SP).append(MAIN_TABLE_ALIAS).append(PERIOD).append(fieldName);
+            final String sortingCriteriaFieldName = sorting.getField();
+            sqlBuilder.append(COMMA).append(SP);
+            if (!isPropertySearchCriterion(sortingCriteriaFieldName))
+            {
+                final String lowerCaseSortingCriteriaFieldName = sortingCriteriaFieldName.toLowerCase();
+                final String fieldName = Attributes.ATTRIBUTE_ID_TO_COLUMN_NAME.getOrDefault(lowerCaseSortingCriteriaFieldName,
+                        lowerCaseSortingCriteriaFieldName);
+                sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(fieldName);
+            } else
+            {
+                final String propertyName = sortingCriteriaFieldName.substring(EntityWithPropertiesSortOptions.PROPERTY.length()).toLowerCase();
+                final String valuesTableAlias = aliases.get(propertyName).get(tableMapper.getValuesTable()).getMainTableAlias();
+                sqlBuilder.append(valuesTableAlias).append(PERIOD).append(VALUE_COLUMN);
+            }
         });
 
         return sqlBuilder.toString();
@@ -390,13 +422,68 @@ public class Translator
 
     private static String buildOrderFrom(final OrderTranslationVo vo)
     {
-        return FROM + SP + vo.getTableMapper().getEntitiesTable() + SP + MAIN_TABLE_ALIAS;
+        final TableMapper tableMapper = vo.getTableMapper();
+        final StringBuilder sqlBuilder = new StringBuilder(FROM + SP + tableMapper.getEntitiesTable() + SP + MAIN_TABLE_ALIAS);
+        final AtomicInteger indexCounter = new AtomicInteger(1);
+
+        vo.getSortOptions().getSortings().forEach((sorting) ->
+        {
+            final String sortingCriteriaFieldName = sorting.getField();
+            if (isPropertySearchCriterion(sortingCriteriaFieldName))
+            {
+                final String propertyName = sortingCriteriaFieldName.substring(EntityWithPropertiesSortOptions.PROPERTY.length()).toLowerCase();
+                final Map<String, JoinInformation> joinInformationMap = TranslatorUtils.getPropertyJoinInformationMap(tableMapper,
+                        () -> getOrderingAlias(indexCounter));
+
+                joinInformationMap.values().forEach((joinInformation) ->
+                {
+                    if (joinInformation.getSubTable() != null)
+                    {
+                        // Join required
+                        sqlBuilder.append(NL).append(LEFT_JOIN).append(SP).append(joinInformation.getSubTable()).append(SP)
+                                .append(joinInformation.getSubTableAlias()).append(SP)
+                                .append(ON).append(SP).append(joinInformation.getMainTableAlias())
+                                .append(PERIOD).append(joinInformation.getMainTableIdField()).append(SP)
+                                .append(EQ).append(SP).append(joinInformation.getSubTableAlias()).append(PERIOD)
+                                .append(joinInformation.getSubTableIdField());
+                    }
+                });
+                vo.getAliases().put(propertyName, joinInformationMap);
+            }
+        });
+        return sqlBuilder.toString();
     }
 
     private static String buildOrderWhere(final OrderTranslationVo vo)
     {
-        return WHERE + SP + MAIN_TABLE_ALIAS + PERIOD + ID_COLUMN + SP + IN + SP + LP +
-                SELECT + SP + UNNEST + LP + QU + RP + RP;
+        final StringBuilder sqlBuilder = new StringBuilder(WHERE + SP + MAIN_TABLE_ALIAS + PERIOD + ID_COLUMN + SP + IN + SP +
+                LP + SELECT + SP + UNNEST + LP + QU + RP + RP);
+        final Map<Object, Map<String, JoinInformation>> aliases = vo.getAliases();
+        final TableMapper tableMapper = vo.getTableMapper();
+        final List<Object> args = vo.getArgs();
+
+        args.add(vo.ids.toArray(new Long[0]));
+
+        vo.getSortOptions().getSortings().forEach((sorting) ->
+        {
+            final String sortingCriteriaFieldName = sorting.getField();
+            if (isPropertySearchCriterion(sortingCriteriaFieldName))
+            {
+                final String propertyName = sortingCriteriaFieldName.substring(EntityWithPropertiesSortOptions.PROPERTY.length());
+                final String attributeTypesTableAlias = aliases.get(propertyName.toLowerCase()).get(tableMapper.getAttributeTypesTable()).
+                        getMainTableAlias();
+                sqlBuilder.append(SP).append(AND).append(SP).append(attributeTypesTableAlias).append(PERIOD).append(CODE_COLUMN).append(SP).
+                        append(EQ).append(SP).append(QU);
+                args.add(propertyName);
+            }
+        });
+
+        return sqlBuilder.toString();
+    }
+
+    private static boolean isPropertySearchCriterion(final String sortingCriteriaFieldName)
+    {
+        return sortingCriteriaFieldName.startsWith(EntityWithPropertiesSortOptions.PROPERTY);
     }
 
     public static class TranslationVo
@@ -486,6 +573,7 @@ public class Translator
         {
             this.args = args;
         }
+
     }
 
     public static class OrderTranslationVo
@@ -500,6 +588,8 @@ public class Translator
         private SortOptions<?> sortOptions;
 
         private Map<Object, Map<String, JoinInformation>> aliases = new HashMap<>();
+
+        private List<Object> args = new ArrayList<>();
 
         public Long getUserId()
         {
@@ -546,10 +636,19 @@ public class Translator
             return aliases;
         }
 
-        public void setAliases(
-                final Map<Object, Map<String, JoinInformation>> aliases)
+        public void setAliases(final Map<Object, Map<String, JoinInformation>> aliases)
         {
             this.aliases = aliases;
+        }
+
+        public List<Object> getArgs()
+        {
+            return args;
+        }
+
+        public void setArgs(final List<Object> args)
+        {
+            this.args = args;
         }
 
     }

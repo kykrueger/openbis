@@ -79,6 +79,7 @@ public class JDBCSQLExecutor implements ISQLExecutor
         }
 
         System.out.println("RESULTS: " + results);
+        System.out.println("RESULTS COUNT: " + results.size());
         return results;
     }
 

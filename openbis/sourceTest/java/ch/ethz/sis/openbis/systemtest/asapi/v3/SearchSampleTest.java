@@ -16,18 +16,11 @@
 
 package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
-import static org.junit.Assert.assertTrue;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotSame;
-import static org.testng.Assert.assertSame;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
-
-import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.CacheMode;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
@@ -49,6 +42,12 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagPermId;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.common.test.AssertionUtil;
 import ch.systemsx.cisd.openbis.systemtest.authorization.ProjectAuthorizationUser;
+import org.testng.annotations.Test;
+
+import static org.junit.Assert.assertTrue;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotSame;
+import static org.testng.Assert.assertSame;
 
 /**
  * @author pkupczyk
@@ -1044,6 +1043,14 @@ public class SearchSampleTest extends AbstractSampleTest
         assertSampleIdentifiersInOrder(samples2, "/TEST-SPACE/CP-TEST-4", "/CISD/CP-TEST-1", "/CISD/3V-125");
 
         v3api.logout(sessionToken);
+        //SELECT DISTINCT t0.id, t0.code, t1.id, t1.code, t2.id, t2.code
+        //FROM samples_all t0
+        //LEFT JOIN experiments_all t1 ON t1.id = t0.expe_id
+        //LEFT JOIN spaces t2 ON t2.id = t0.space_id
+        //WHERE (t0.space_id = (SELECT id FROM spaces WHERE code = 'TEST-SPACE')) AND t0.code = 'CP-TEST-4'
+        //	OR (t0.space_id = (SELECT id FROM spaces WHERE code = 'CISD')) AND t0.code = 'CP-TEST-1'
+        //	OR (t0.space_id = (SELECT id FROM spaces WHERE code = 'CISD')) AND t0.code = '3V-125'
+        //ORDER BY t2.code ASC, t1.code ASC, t1.code ASC
     }
 
     @Test

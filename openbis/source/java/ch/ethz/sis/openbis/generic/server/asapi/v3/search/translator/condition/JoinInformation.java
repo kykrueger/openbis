@@ -1,6 +1,7 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 
-public class JoinInformation {
+public class JoinInformation
+{
 
     private String mainTable;
 

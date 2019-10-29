@@ -161,14 +161,7 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
     private Set<Long> sortIDs(final Long userId, final TableMapper tableMapper,
             final Set<Long> filteredIDs, final SortOptions<OBJECT> sortOptions)
     {
-        try
-        {
-            return getSearchDAO().sortIDs(userId, tableMapper, filteredIDs, sortOptions);
-        } catch (Exception e)
-        {
-            e.printStackTrace();
-            return null;
-        }
+        return getSearchDAO().sortIDs(userId, tableMapper, filteredIDs, sortOptions);
     }
 
     /**
@@ -208,25 +201,11 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
 
     private Set<Long> getChildrenIdsOf(final Set<Long> parentIdSet)
     {
-        try
-        {
-            return getSearchDAO().findChildIDs(getTableMapper(), parentIdSet);
-        } catch (Exception e)
-        {
-            e.printStackTrace();
-            return null;
-        }
+        return getSearchDAO().findChildIDs(getTableMapper(), parentIdSet);
     }
 
     private Set<Long> getParentsIdsOf(final Set<Long> childIdSet)
     {
-        try
-        {
-            return getSearchDAO().findParentIDs(getTableMapper(), childIdSet);
-        } catch (Exception e)
-        {
-            e.printStackTrace();
-            return null;
-        }
+        return getSearchDAO().findParentIDs(getTableMapper(), childIdSet);
     }
 }
