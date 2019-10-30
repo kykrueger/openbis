@@ -36,8 +36,8 @@ from org.eclipse.jetty.client.util import BasicAuthentication
 from org.eclipse.jetty.http import HttpMethod
 from org.eclipse.jetty.util.ssl import SslContextFactory
 
-from exportsApi import displayResult, findEntitiesToExport, validateDataSize, getConfigurationProperty, addToZipFile, cleanUp, \
-    generateZipFile, checkResponseStatus
+from exportsApi import displayResult, findEntitiesToExport, validateDataSize, getConfigurationProperty, addToZipFile, generateZipFile, \
+    checkResponseStatus
 
 operationLog = Logger.getLogger(str(LogCategory.OPERATION) + '.rcExports.py')
 
@@ -100,7 +100,7 @@ def export(entities, tr, params, userInformation):
     generateExternalZipFile(params=params, exportDirPath=exportDirPath, contentZipFilePath=contentZipFilePath, contentZipFileName=contentZipFileName,
                             exportZipFileName=exportZipFilePath, userInformation=userInformation, entities=entities)
     resultUrl = sendToDSpace(params=params, tr=tr, tempZipFileName=exportZipFileName, tempZipFilePath=exportZipFilePath)
-    cleanUp(exportDirPath, exportZipFilePath)
+    # cleanUp(exportDirPath, exportZipFilePath)
     return resultUrl
 
 
@@ -284,6 +284,13 @@ def generateXML(zipOutputStream, fileMetadata, exportDirPath, userInformation, e
     publicationDateField.set('qualifier', 'issued')
     publicationDateField.text = datetime.date.today().strftime('%Y-%m-%d')
 
+    # TODO: uncomment when this code is accepted at DSpace and does not produce the response 500 Internal Server Error.
+    # openBisApiUrlField = ET.SubElement(dim, ET.QName(dimNS, 'field'))
+    # openBisApiUrlField.set('mdschema', 'ethz')
+    # openBisApiUrlField.set('element', 'identifier')
+    # openBisApiUrlField.set('qualifier', 'openBisApiUrl')
+    # openBisApiUrlField.text = originUrl + '/openbis-test/'
+
     elnLimsURLPattern = '/openbis-test/webapp/eln-lims/?menuUniqueId=null&viewName='
 
     for entity in entities:
@@ -325,7 +332,7 @@ def generateXML(zipOutputStream, fileMetadata, exportDirPath, userInformation, e
         fLocat = ET.SubElement(file, ET.QName(metsNS, 'FLocat'))
         fLocat.set('LOCTYPE', 'URL')
         fLocat.set('MIMETYPE', fileMetadatum.get('mimeType'))
-        fLocat.set('RETENTIONPERIOD', str(params.get('retentionPeriod')))
+        fLocat.set('RETENTIONPERIOD', params.get('retentionPeriod'))
         fLocat.set(ET.QName(xlinkNS, 'href'), fileMetadatum.get('fileName'))
 
     structMap = ET.SubElement(root, ET.QName(metsNS, 'structMap'))

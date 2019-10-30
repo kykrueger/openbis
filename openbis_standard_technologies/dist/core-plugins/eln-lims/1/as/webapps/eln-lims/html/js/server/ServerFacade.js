@@ -404,6 +404,7 @@ function ServerFacade(openbisServer) {
 				options.withParameter("method", parameters["method"]);
 				options.withParameter("originUrl", parameters["originUrl"]);
 				options.withParameter("submissionType", parameters["submissionType"]);
+				options.withParameter("retentionPeriod", parameters["retentionPeriod"]);
 				options.withParameter("submissionUrl", parameters["submissionUrl"]);
 				options.withParameter("entities", parameters["entities"]);
 				options.withParameter("userId", parameters["userInformation"]["id"]);
