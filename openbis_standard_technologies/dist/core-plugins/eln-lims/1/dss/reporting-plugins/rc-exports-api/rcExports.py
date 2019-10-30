@@ -37,7 +37,7 @@ from org.eclipse.jetty.http import HttpMethod
 from org.eclipse.jetty.util.ssl import SslContextFactory
 
 from exportsApi import displayResult, findEntitiesToExport, validateDataSize, getConfigurationProperty, addToZipFile, generateZipFile, \
-    checkResponseStatus
+    checkResponseStatus, cleanUp
 
 operationLog = Logger.getLogger(str(LogCategory.OPERATION) + '.rcExports.py')
 
@@ -100,7 +100,7 @@ def export(entities, tr, params, userInformation):
     generateExternalZipFile(params=params, exportDirPath=exportDirPath, contentZipFilePath=contentZipFilePath, contentZipFileName=contentZipFileName,
                             exportZipFileName=exportZipFilePath, userInformation=userInformation, entities=entities)
     resultUrl = sendToDSpace(params=params, tr=tr, tempZipFileName=exportZipFileName, tempZipFilePath=exportZipFilePath)
-    # cleanUp(exportDirPath, exportZipFilePath)
+    cleanUp(exportDirPath, exportZipFilePath)
     return resultUrl
 
 
