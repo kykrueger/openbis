@@ -44,6 +44,7 @@ function ResearchCollectionExportView(researchCollectionExportController, resear
         $container.append($form);
 
         this.paintSubmissionTypeDropdown($container);
+        this.paintRetentionPeriodDropdown($container);
 
         researchCollectionExportModel.tree = TreeUtil.getCompleteTree($tree);
 
@@ -57,13 +58,38 @@ function ResearchCollectionExportView(researchCollectionExportController, resear
 
     this.paintSubmissionTypeDropdown = function($container) {
         this.$submissionTypeDropdown = this.getSubmissionTypeDropdown();
-        var entityTypeDropdownFormGroup = FormUtil.getFieldForComponentWithLabel(this.$submissionTypeDropdown, 'Submission Type', null, true);
-        entityTypeDropdownFormGroup.css('width', '50%');
-        $container.append(entityTypeDropdownFormGroup);
+        var submissionTypeDropdownFormGroup = FormUtil.getFieldForComponentWithLabel(this.$submissionTypeDropdown, 'Submission Type', null, true);
+        submissionTypeDropdownFormGroup.css('width', '50%');
+        $container.append(submissionTypeDropdownFormGroup);
+    };
+
+    this.paintRetentionPeriodDropdown = function($container) {
+        this.$retentionPeriodDropdown = this.getRetentionPeriodDropdown();
+        var retentionPeriodDropdownFormGroup = FormUtil.getFieldForComponentWithLabel(this.$retentionPeriodDropdown, 'Retention Period', null, true);
+        retentionPeriodDropdownFormGroup.css('width', '50%');
+        $container.append(retentionPeriodDropdownFormGroup);
     };
 
     this.getSubmissionTypeDropdown = function() {
         return FormUtil.getDropdown(researchCollectionExportModel.submissionTypes, 'Select a submission type');
+    };
+
+    this.getRetentionPeriodDropdown = function() {
+        var values = [
+            {
+                value: '10 years',
+                label: '10 years'
+            },
+            {
+                value: '15 years',
+                label: '15 years'
+            },
+            {
+                value: 'indefinite',
+                label: 'indefinite'
+            }
+        ];
+        return FormUtil.getDropdown(values, 'Select a retention period');
     };
 
     this.refreshSubmissionTypeDropdown = function() {
