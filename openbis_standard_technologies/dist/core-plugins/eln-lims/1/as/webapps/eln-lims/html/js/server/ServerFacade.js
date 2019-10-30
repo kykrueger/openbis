@@ -370,7 +370,7 @@ function ServerFacade(openbisServer) {
 	//
 	// Research collection export
 	//
-	this.exportRc = function(entities, includeRoot, metadataOnly, submissionUrl, submissionType, userInformation, callbackFunction) {
+	this.exportRc = function(entities, includeRoot, metadataOnly, submissionUrl, submissionType, retentionPeriod, userInformation, callbackFunction) {
 		this.asyncExportRc({
 			"method": "exportAll",
 			"includeRoot": includeRoot,
@@ -378,6 +378,7 @@ function ServerFacade(openbisServer) {
 			"metadataOnly": metadataOnly,
 			"submissionUrl": submissionUrl,
 			"submissionType": submissionType,
+			"retentionPeriod": retentionPeriod,
             "userInformation": userInformation,
 			"originUrl": window.location.origin,
 			"sessionToken": this.openbisServer.getSession(),
@@ -403,6 +404,7 @@ function ServerFacade(openbisServer) {
 				options.withParameter("method", parameters["method"]);
 				options.withParameter("originUrl", parameters["originUrl"]);
 				options.withParameter("submissionType", parameters["submissionType"]);
+				options.withParameter("retentionPeriod", parameters["retentionPeriod"]);
 				options.withParameter("submissionUrl", parameters["submissionUrl"]);
 				options.withParameter("entities", parameters["entities"]);
 				options.withParameter("userId", parameters["userInformation"]["id"]);

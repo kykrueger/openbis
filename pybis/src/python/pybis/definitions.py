@@ -82,8 +82,8 @@ def openbis_definitions(entity):
             "identifier": "typeId",
         },
         "materialType": {
-            "attrs_new":    "code description validationPluginId".split(),
-            "attrs_up":          "description validationPluginId".split(),
+            "attrs_new":    "code description validationPlugin".split(),
+            "attrs_up":          "description validationPlugin".split(),
             "attrs": "permId code description validationPlugin".split(),
             "search": {
                 "@type": "as.dto.material.search.MaterialTypeSearchCriteria"
@@ -103,8 +103,8 @@ def openbis_definitions(entity):
             "identifier": "typeId",
         },
         "dataSetType": {
-            "attrs_new":    "code description mainDataSetPattern mainDataSetPath disallowDeletion validationPluginId".split(),
-            "attrs_up":          "description mainDataSetPattern mainDataSetPath disallowDeletion validationPluginId".split(),
+            "attrs_new":    "code description mainDataSetPattern mainDataSetPath disallowDeletion validationPlugin".split(),
+            "attrs_up":          "description mainDataSetPattern mainDataSetPath disallowDeletion validationPlugin".split(),
             "attrs": "permId code description mainDataSetPattern mainDataSetPath disallowDeletion modificationDate validationPlugin".split(),
             "search": {
                 "@type": "as.dto.dataset.search.DataSetTypeSearchCriteria"
@@ -124,8 +124,8 @@ def openbis_definitions(entity):
             "identifier": "typeId",
         },
         "experimentType": {
-            "attrs_new":        "code description modificationDate validationPluginId".split(),
-            "attrs_up":              "description modificationDate validationPluginId".split(),
+            "attrs_new": "code description validationPlugin".split(),
+            "attrs_up":  "description modificationDate validationPlugin".split(),
             "attrs":     "permId code description modificationDate validationPlugin".split(),
             "search": {
                 "@type": "as.dto.experiment.search.ExperimentTypeSearchCriteria"
@@ -137,7 +137,7 @@ def openbis_definitions(entity):
                 "@type": "as.dto.experiment.create.ExperimentTypeCreation"
             },
             "update": {
-                "@type": "as.dto.experiment.create.ExperimentTypeUpdate"
+                "@type": "as.dto.experiment.update.ExperimentTypeUpdate"
             },
             "delete": {
                 "@type": "as.dto.experiment.delete.ExperimentTypeDeletionOptions"
@@ -146,7 +146,7 @@ def openbis_definitions(entity):
         },
         "propertyType": {
             "attrs": "code label description managedInternally internalNameSpace dataType vocabulary materialType schema transformation semanticAnnotations registrator registrationDate".split(),
-            "attrs_new": "code label description managedInternally internalNameSpace dataType vocabularyId materialTypeId schema transformation metaData".split(),
+            "attrs_new": "code label description managedInternally internalNameSpace dataType vocabulary materialType schema transformation metaData".split(),
             "attrs_up": "label description schema transformation metaData".split(),
             "search": {
                 "@type": "as.dto.property.search.PropertyTypeSearchCriteria"
@@ -274,6 +274,7 @@ def openbis_definitions(entity):
             "experiments": "experimentIds",
             "material": "materialId",
             "materials": "materialIds",
+            "materialType": "materialTypeId",
             "container": "containerId",
             "containers": "containerIds",
             "component": "componentId",
