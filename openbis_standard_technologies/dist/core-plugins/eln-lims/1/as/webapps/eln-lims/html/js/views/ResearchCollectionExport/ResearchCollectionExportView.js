@@ -16,8 +16,6 @@
 
 function ResearchCollectionExportView(researchCollectionExportController, researchCollectionExportModel) {
     this.repaint = function(views) {
-        researchCollectionExportController.initialiseSubmissionTypesDropdown();
-
         var $header = views.header;
         var $container = views.content;
 
@@ -91,9 +89,5 @@ function ResearchCollectionExportView(researchCollectionExportController, resear
         ];
         return FormUtil.getDropdown(values, 'Select a retention period');
     };
-
-    this.refreshSubmissionTypeDropdown = function() {
-        FormUtil.setValuesToComponent(this.$submissionTypeDropdown, researchCollectionExportModel.submissionTypes);
-    }
 
 }
