@@ -140,7 +140,8 @@ $.extend(DefaultProfile.prototype, {
 		
         this.customWidgetSettings = {};
 
-		this.plugins = [new GenericTechnology(), new LifeSciencesTechnology(), new MicroscopyTechnology(), new FlowCytometryTechnology()];
+		this.plugins = [new GenericTechnology()];
+
 		this.sampleFormTop = function($container, model) {
 			for(var i = 0; i < this.plugins.length; i++) {
 				this.plugins[i].sampleFormTop($container, model);

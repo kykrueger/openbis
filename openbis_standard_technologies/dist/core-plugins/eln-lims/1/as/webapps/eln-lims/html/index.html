@@ -283,11 +283,8 @@
 	<script type="text/javascript" src="./js/views/ExperimentTable/ExperimentTableModel.js"></script>
 	<script type="text/javascript" src="./js/views/ExperimentTable/ExperimentTableView.js"></script>
 	
-	<script type="text/javascript" src="./js/plugins/ELNLIMSPlugin.js"></script>
-	<script type="text/javascript" src="./js/plugins/GenericTechnology.js"></script>
-	<script type="text/javascript" src="./js/plugins/LifeSciencesTechnology.js"></script>
-	<script type="text/javascript" src="./js/plugins/MicroscopyTechnology.js"></script>
-	<script type="text/javascript" src="./js/plugins/FlowCytometryTechnology.js"></script>
+	<script type="text/javascript" src="./plugins/ELNLIMSPlugin.js"></script>
+	<script type="text/javascript" src="./plugins/generic/plugin.js"></script>
 
 	<script type="text/javascript" src="./js/util/EventUtil.js"></script>
 	<script type="text/javascript" src="./js/test/TestProtocol.js"></script>
@@ -380,15 +377,29 @@
 			TestProtocol.startTestUserTests();
 		}
 	}
-	
+
 	$(document).ready(function() {
+		var numPlugins = !PLUGINS_CONFIGURATION?1:1+PLUGINS_CONFIGURATION.extraPlugins.length;
+		var pluginsOnLoad = false;
+
 		var wait = null;
 			wait = function() {
-				var condition = profile !== null;
-				if (!condition){
+				if (!profile) {
 					setTimeout(wait,100);
 				} else {
-					startELNLIMS();
+					if(profile.plugins.length === numPlugins) {
+						startELNLIMS();
+					} else if(!pluginsOnLoad) {
+						if(PLUGINS_CONFIGURATION && PLUGINS_CONFIGURATION.extraPlugins) {
+							for(var pIdx = 0; pIdx < PLUGINS_CONFIGURATION.extraPlugins.length; pIdx++) {
+								loadJSResorce("./plugins/" + PLUGINS_CONFIGURATION.extraPlugins[pIdx] + "/plugin.js");
+							}
+						}
+						pluginsOnLoad = true;
+						setTimeout(wait,100);
+					} else {
+						setTimeout(wait,100);
+					}
 				}
 			}
 			wait();
