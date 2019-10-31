@@ -165,6 +165,22 @@ public class TranslatorUtils
         return result;
     }
 
+    public static Map<String, JoinInformation> getTypeJoinInformationMap(final TableMapper tableMapper, final IAliasFactory aliasFactory)
+    {
+        final Map<String, JoinInformation> result = new LinkedHashMap<>();
+
+        final JoinInformation joinInformation = new JoinInformation();
+        joinInformation.setMainTable(tableMapper.getEntitiesTable());
+        joinInformation.setMainTableAlias(Translator.MAIN_TABLE_ALIAS);
+        joinInformation.setMainTableIdField(tableMapper.getEntitiesTableEntityTypeIdField());
+        joinInformation.setSubTable(tableMapper.getEntityTypesTable());
+        joinInformation.setSubTableAlias(aliasFactory.createAlias());
+        joinInformation.setSubTableIdField(ID_COLUMN);
+        result.put(tableMapper.getEntityTypesTable(), joinInformation);
+
+        return result;
+    }
+
     static void addDateValueToArgs(final IDate fieldValue, final List<Object> args)
     {
         if (fieldValue instanceof AbstractDateValue)

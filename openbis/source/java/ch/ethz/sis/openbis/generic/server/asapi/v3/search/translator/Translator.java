@@ -235,17 +235,7 @@ public class Translator
                     {
                         joinInformationMap.values().forEach((joinInformation) ->
                         {
-                            if (joinInformation.getSubTable() != null)
-                            {
-                                // Join required
-                                sqlBuilder.append(NL).append(INNER_JOIN).append(SP).append(joinInformation.getSubTable()).append(SP)
-                                        .append(joinInformation.getSubTableAlias()).append(SP)
-                                        .append(ON).append(SP).append(joinInformation.getMainTableAlias())
-                                        .append(PERIOD).append(joinInformation.getMainTableIdField())
-                                        .append(SP)
-                                        .append(EQ).append(SP).append(joinInformation.getSubTableAlias()).append(PERIOD)
-                                        .append(joinInformation.getSubTableIdField());
-                            }
+                            appendJoin(sqlBuilder, joinInformation, INNER_JOIN);
                         });
                         vo.getAliases().put(criterion, joinInformationMap);
                     }
@@ -396,36 +386,6 @@ public class Translator
         return sqlBuilder.toString();
     }
 
-    /**
-     * Appends sorting column to SQL builder. Adds type casting when needed.
-     *
-     * @param vo order translation value object.
-     * @param sqlBuilder string builder to which the column should be appended.
-     * @param sortingCriteriaFieldName the name of the field to sort by.
-     */
-    private static void appendSortingColumn(final OrderTranslationVo vo, final StringBuilder sqlBuilder, final String sortingCriteriaFieldName)
-    {
-        if (!isPropertySearchCriterion(sortingCriteriaFieldName))
-        {
-            final String lowerCaseSortingCriteriaFieldName = sortingCriteriaFieldName.toLowerCase();
-            final String fieldName = Attributes.ATTRIBUTE_ID_TO_COLUMN_NAME.getOrDefault(lowerCaseSortingCriteriaFieldName,
-                    lowerCaseSortingCriteriaFieldName);
-            sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(fieldName);
-        } else
-        {
-            final String propertyName = sortingCriteriaFieldName.substring(EntityWithPropertiesSortOptions.PROPERTY.length());
-            final String propertyNameLowerCase = propertyName.toLowerCase();
-            final String valuesTableAlias = vo.getAliases().get(propertyNameLowerCase).get(vo.getTableMapper().getValuesTable()).getMainTableAlias();
-            sqlBuilder.append(valuesTableAlias).append(PERIOD).append(VALUE_COLUMN);
-
-            final String casting = vo.getDataTypeByPropertyName().get(propertyName);
-            if (casting != null)
-            {
-                sqlBuilder.append("::").append(casting.toLowerCase());
-            }
-        }
-    }
-
     private static String buildOrderFrom(final OrderTranslationVo vo)
     {
         final TableMapper tableMapper = vo.getTableMapper();
@@ -434,27 +394,27 @@ public class Translator
 
         vo.getSortOptions().getSortings().forEach((sorting) ->
         {
-            final String sortingCriteriaFieldName = sorting.getField();
-            if (isPropertySearchCriterion(sortingCriteriaFieldName))
+            final String sortingCriterionFieldName = sorting.getField();
+            if (isPropertySearchCriterion(sortingCriterionFieldName))
             {
-                final String propertyName = sortingCriteriaFieldName.substring(EntityWithPropertiesSortOptions.PROPERTY.length()).toLowerCase();
+                final String propertyName = sortingCriterionFieldName.substring(EntityWithPropertiesSortOptions.PROPERTY.length()).toLowerCase();
                 final Map<String, JoinInformation> joinInformationMap = TranslatorUtils.getPropertyJoinInformationMap(tableMapper,
                         () -> getOrderingAlias(indexCounter));
 
                 joinInformationMap.values().forEach((joinInformation) ->
                 {
-                    if (joinInformation.getSubTable() != null)
-                    {
-                        // Join required
-                        sqlBuilder.append(NL).append(LEFT_JOIN).append(SP).append(joinInformation.getSubTable()).append(SP)
-                                .append(joinInformation.getSubTableAlias()).append(SP)
-                                .append(ON).append(SP).append(joinInformation.getMainTableAlias())
-                                .append(PERIOD).append(joinInformation.getMainTableIdField()).append(SP)
-                                .append(EQ).append(SP).append(joinInformation.getSubTableAlias()).append(PERIOD)
-                                .append(joinInformation.getSubTableIdField());
-                    }
+                    appendJoin(sqlBuilder, joinInformation, LEFT_JOIN);
                 });
                 vo.getAliases().put(propertyName, joinInformationMap);
+            } else if (isTypeSearchCriterion(sortingCriterionFieldName))
+            {
+                final Map<String, JoinInformation> joinInformationMap = TranslatorUtils.getTypeJoinInformationMap(tableMapper,
+                        () -> getOrderingAlias(indexCounter));
+                joinInformationMap.values().forEach((joinInformation) ->
+                {
+                    appendJoin(sqlBuilder, joinInformation, LEFT_JOIN);
+                });
+                vo.getAliases().put(EntityWithPropertiesSortOptions.TYPE, joinInformationMap);
             }
         });
         return sqlBuilder.toString();
@@ -487,11 +447,6 @@ public class Translator
         return sqlBuilder.toString();
     }
 
-    public static boolean isPropertySearchCriterion(final String sortingCriteriaFieldName)
-    {
-        return sortingCriteriaFieldName.startsWith(EntityWithPropertiesSortOptions.PROPERTY);
-    }
-
     public static SelectQuery translateToSearchTypeQuery(final OrderTranslationVo vo)
     {
         final TableMapper tableMapper = vo.getTableMapper();
@@ -510,6 +465,65 @@ public class Translator
                 WHERE + SP + "o4" + PERIOD + CODE_COLUMN + SP + IN + SP + LP + SELECT + SP + UNNEST + LP + QU + RP + RP;
 
         return new SelectQuery(result, Collections.singletonList(vo.getTypesToFilter()));
+    }
+
+    /**
+     * Appends sorting column to SQL builder. Adds type casting when needed.
+     *
+     * @param vo order translation value object.
+     * @param sqlBuilder string builder to which the column should be appended.
+     * @param sortingCriteriaFieldName the name of the field to sort by.
+     */
+    private static void appendSortingColumn(final OrderTranslationVo vo, final StringBuilder sqlBuilder, final String sortingCriteriaFieldName)
+    {
+        if (isPropertySearchCriterion(sortingCriteriaFieldName))
+        {
+            final String propertyName = sortingCriteriaFieldName.substring(EntityWithPropertiesSortOptions.PROPERTY.length());
+            final String propertyNameLowerCase = propertyName.toLowerCase();
+            final String valuesTableAlias = vo.getAliases().get(propertyNameLowerCase).get(vo.getTableMapper().getValuesTable()).getMainTableAlias();
+            sqlBuilder.append(valuesTableAlias).append(PERIOD).append(VALUE_COLUMN);
+
+            final String casting = vo.getDataTypeByPropertyName().get(propertyName);
+            if (casting != null)
+            {
+                sqlBuilder.append("::").append(casting.toLowerCase());
+            }
+        } else if (isTypeSearchCriterion(sortingCriteriaFieldName))
+        {
+            final String typesTableAlias = vo.getAliases().get(EntityWithPropertiesSortOptions.TYPE).get(vo.getTableMapper().getEntityTypesTable()).
+                    getSubTableAlias();
+            sqlBuilder.append(typesTableAlias).append(PERIOD).append(CODE_COLUMN);
+        } else
+        {
+            final String lowerCaseSortingCriteriaFieldName = sortingCriteriaFieldName.toLowerCase();
+            final String fieldName = Attributes.ATTRIBUTE_ID_TO_COLUMN_NAME.getOrDefault(lowerCaseSortingCriteriaFieldName,
+                    lowerCaseSortingCriteriaFieldName);
+            sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(fieldName);
+        }
+    }
+
+    private static void appendJoin(final StringBuilder sqlBuilder, final JoinInformation joinInformation, final String joinType)
+    {
+        if (joinInformation.getSubTable() != null)
+        {
+            sqlBuilder.append(NL).append(joinType).append(SP).append(joinInformation.getSubTable()).append(SP)
+                    .append(joinInformation.getSubTableAlias()).append(SP)
+                    .append(ON).append(SP).append(joinInformation.getMainTableAlias())
+                    .append(PERIOD).append(joinInformation.getMainTableIdField())
+                    .append(SP)
+                    .append(EQ).append(SP).append(joinInformation.getSubTableAlias()).append(PERIOD)
+                    .append(joinInformation.getSubTableIdField());
+        }
+    }
+
+    public static boolean isPropertySearchCriterion(final String sortingCriteriaFieldName)
+    {
+        return sortingCriteriaFieldName.startsWith(EntityWithPropertiesSortOptions.PROPERTY);
+    }
+
+    private static boolean isTypeSearchCriterion(final String sortingCriteriaFieldName)
+    {
+        return sortingCriteriaFieldName.equals(EntityWithPropertiesSortOptions.TYPE);
     }
 
     public static class TranslationVo
