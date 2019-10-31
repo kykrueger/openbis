@@ -48,6 +48,8 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
 
 public class PostgresSearchDAO implements ISQLSearchDAO
 {
+    private static final String[] POSTGRES_TYPES = new String[] {"INTEGER", "REAL", "BOOLEAN", "TIMESTAMP", "XML"};
+
     private ISQLExecutor sqlExecutor;
 
     private Map<Class<? extends ISearchCriteria>, ISearchManager<ISearchCriteria, ?, ?>> criteriaToManagerMap;
@@ -106,10 +108,20 @@ public class PostgresSearchDAO implements ISQLSearchDAO
         orderTranslationVo.setTableMapper(tableMapper);
         orderTranslationVo.setIDs(filteredIDs);
         orderTranslationVo.setSortOptions(sortOptions);
+        orderTranslationVo.setTypesToFilter(POSTGRES_TYPES);
 
-        final SelectQuery query = Translator.translateToOrderQuery(orderTranslationVo);
-        final List<Map<String, Object>> queryResultList = sqlExecutor.execute(query.getQuery(), query.getArgs());
-        return queryResultList.stream().map(stringObjectMap -> (Long) stringObjectMap.get(ID_COLUMN))
+        // TODO: make the following query execute only when there is search by property.
+        final SelectQuery dataTypesQuery = Translator.translateToSearchTypeQuery(orderTranslationVo);
+        final List<Map<String, Object>> dataTypesQueryResultList = sqlExecutor.execute(dataTypesQuery.getQuery(), dataTypesQuery.getArgs());
+        final Map<String, String> typeByPropertyName = dataTypesQueryResultList.stream().collect(Collectors.toMap(
+                (valueByColumnName) -> (String) valueByColumnName.get(Translator.PROPERTY_CODE_ALIAS),
+                (valueByColumnName) -> (String) valueByColumnName.get(Translator.TYPE_CODE_ALIAS)));
+
+        orderTranslationVo.setDataTypeByPropertyName(typeByPropertyName);
+
+        final SelectQuery orderQuery = Translator.translateToOrderQuery(orderTranslationVo);
+        final List<Map<String, Object>> orderQueryResultList = sqlExecutor.execute(orderQuery.getQuery(), orderQuery.getArgs());
+        return orderQueryResultList.stream().map((valueByColumnName) -> (Long) valueByColumnName.get(ID_COLUMN))
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
