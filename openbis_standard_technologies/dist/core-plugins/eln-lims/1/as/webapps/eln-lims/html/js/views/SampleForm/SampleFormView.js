@@ -442,6 +442,10 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		var $header = views.header;
 		
 		$header.append($formTitle);
+		var sampleTypeDefinitionsExtension = profile.sampleTypeDefinitionsExtension[_this._sampleFormModel.sample.sampleTypeCode];
+		if(sampleTypeDefinitionsExtension && sampleTypeDefinitionsExtension.extraToolbar) {
+		    toolbarModel = toolbarModel.concat(sampleTypeDefinitionsExtension.extraToolbar(_this._sampleFormModel.mode, _this._sampleFormModel.sample));
+		}
 		$header.append(FormUtil.getToolbar(toolbarModel));
 		
 		//
