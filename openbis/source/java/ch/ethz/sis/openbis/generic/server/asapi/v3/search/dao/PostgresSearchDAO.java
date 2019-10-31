@@ -110,12 +110,21 @@ public class PostgresSearchDAO implements ISQLSearchDAO
         orderTranslationVo.setSortOptions(sortOptions);
         orderTranslationVo.setTypesToFilter(POSTGRES_TYPES);
 
-        // TODO: make the following query execute only when there is search by property.
-        final SelectQuery dataTypesQuery = Translator.translateToSearchTypeQuery(orderTranslationVo);
-        final List<Map<String, Object>> dataTypesQueryResultList = sqlExecutor.execute(dataTypesQuery.getQuery(), dataTypesQuery.getArgs());
-        final Map<String, String> typeByPropertyName = dataTypesQueryResultList.stream().collect(Collectors.toMap(
-                (valueByColumnName) -> (String) valueByColumnName.get(Translator.PROPERTY_CODE_ALIAS),
-                (valueByColumnName) -> (String) valueByColumnName.get(Translator.TYPE_CODE_ALIAS)));
+        final Map<String, String> typeByPropertyName;
+        final boolean containsProperties = sortOptions.getSortings().stream().anyMatch(
+                (sorting) -> Translator.isPropertySearchCriterion(sorting.getField()));
+        if (containsProperties)
+        {
+            // Making property types query only when it is needed.
+            final SelectQuery dataTypesQuery = Translator.translateToSearchTypeQuery(orderTranslationVo);
+            final List<Map<String, Object>> dataTypesQueryResultList = sqlExecutor.execute(dataTypesQuery.getQuery(), dataTypesQuery.getArgs());
+            typeByPropertyName = dataTypesQueryResultList.stream().collect(Collectors.toMap(
+                    (valueByColumnName) -> (String) valueByColumnName.get(Translator.PROPERTY_CODE_ALIAS),
+                    (valueByColumnName) -> (String) valueByColumnName.get(Translator.TYPE_CODE_ALIAS)));
+        } else
+        {
+            typeByPropertyName = Collections.emptyMap();
+        }
 
         orderTranslationVo.setDataTypeByPropertyName(typeByPropertyName);
 

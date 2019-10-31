@@ -487,20 +487,13 @@ public class Translator
         return sqlBuilder.toString();
     }
 
-    private static boolean isPropertySearchCriterion(final String sortingCriteriaFieldName)
+    public static boolean isPropertySearchCriterion(final String sortingCriteriaFieldName)
     {
         return sortingCriteriaFieldName.startsWith(EntityWithPropertiesSortOptions.PROPERTY);
     }
 
     public static SelectQuery translateToSearchTypeQuery(final OrderTranslationVo vo)
     {
-        //SELECT DISTINCT o3.code, o4.code
-        //FROM samples_all t0
-        //INNER JOIN sample_properties o1 ON t0.id = o1.samp_id
-        //INNER JOIN sample_type_property_types o2 ON o1.stpt_id = o2.id
-        //INNER JOIN property_types o3 ON o2.prty_id = o3.id
-        //INNER JOIN data_types o4 ON o3.daty_id = o4.id
-        // WHERE o4.code IN (SELECT unnest(ARRAY['INTEGER', 'REAL', 'BOOLEAN', 'TIMESTAMP', 'XML']))
         final TableMapper tableMapper = vo.getTableMapper();
         final String result = SELECT + SP + DISTINCT + SP + "o3" + PERIOD + CODE_COLUMN + SP + PROPERTY_CODE_ALIAS + COMMA + SP +
                 "o4" + PERIOD + CODE_COLUMN + SP + TYPE_CODE_ALIAS + NL +
