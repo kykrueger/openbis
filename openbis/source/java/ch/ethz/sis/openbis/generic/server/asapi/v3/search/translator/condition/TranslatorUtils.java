@@ -42,10 +42,11 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringEndsWithValu
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringEqualToValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringStartsWithValue;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
 import ch.systemsx.cisd.openbis.generic.shared.dto.TableNames;
 
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator.DATE_FORMAT;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.AND;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.BARS;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.EQ;
@@ -54,12 +55,13 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLL
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.LE;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.LIKE;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.LT;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.NL;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.ON;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.PERCENT;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.PERIOD;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.QU;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SP;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SQ;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator.DATE_FORMAT;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
 
 public class TranslatorUtils
@@ -128,7 +130,7 @@ public class TranslatorUtils
 
         final JoinInformation joinInformation1 = new JoinInformation();
         joinInformation1.setMainTable(tableMapper.getEntitiesTable());
-        joinInformation1.setMainTableAlias(Translator.MAIN_TABLE_ALIAS);
+        joinInformation1.setMainTableAlias(CriteriaTranslator.MAIN_TABLE_ALIAS);
         joinInformation1.setMainTableIdField(ID_COLUMN);
         joinInformation1.setSubTable(tableMapper.getValuesTable());
         joinInformation1.setSubTableAlias(valuesTableAlias);
@@ -171,7 +173,7 @@ public class TranslatorUtils
 
         final JoinInformation joinInformation = new JoinInformation();
         joinInformation.setMainTable(tableMapper.getEntitiesTable());
-        joinInformation.setMainTableAlias(Translator.MAIN_TABLE_ALIAS);
+        joinInformation.setMainTableAlias(CriteriaTranslator.MAIN_TABLE_ALIAS);
         joinInformation.setMainTableIdField(tableMapper.getEntitiesTableEntityTypeIdField());
         joinInformation.setSubTable(tableMapper.getEntityTypesTable());
         joinInformation.setSubTableAlias(aliasFactory.createAlias());
@@ -235,6 +237,20 @@ public class TranslatorUtils
         sqlBuilder.append(entityTypesSubTableAlias).append(PERIOD).append(ColumnNames.IS_INTERNAL_NAMESPACE).append(SP)
                 .append(EQ).append(SP).append(QU).append(SP).append(AND);
         args.add(internalProperty);
+    }
+
+    public static void appendJoin(final StringBuilder sqlBuilder, final JoinInformation joinInformation, final String joinType)
+    {
+        if (joinInformation.getSubTable() != null)
+        {
+            sqlBuilder.append(NL).append(joinType).append(SP).append(joinInformation.getSubTable()).append(SP)
+                    .append(joinInformation.getSubTableAlias()).append(SP)
+                    .append(ON).append(SP).append(joinInformation.getMainTableAlias())
+                    .append(PERIOD).append(joinInformation.getMainTableIdField())
+                    .append(SP)
+                    .append(EQ).append(SP).append(joinInformation.getSubTableAlias()).append(PERIOD)
+                    .append(joinInformation.getSubTableIdField());
+        }
     }
 
 }

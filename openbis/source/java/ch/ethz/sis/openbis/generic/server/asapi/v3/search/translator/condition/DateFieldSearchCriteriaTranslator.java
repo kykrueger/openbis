@@ -24,7 +24,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.IDate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ModificationDateSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.RegistrationDateSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.AND;
@@ -77,7 +77,7 @@ public class DateFieldSearchCriteriaTranslator implements IConditionTranslator<D
                 final Object fieldName = criterion.getFieldName();
                 final IDate fieldValue = criterion.getFieldValue();
 
-                sqlBuilder.append(Translator.MAIN_TABLE_ALIAS).append(PERIOD);
+                sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD);
                 if (criterion instanceof RegistrationDateSearchCriteria)
                 {
                     sqlBuilder.append(REGISTRATION_TIMESTAMP_COLUMN);

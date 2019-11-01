@@ -30,8 +30,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriter
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SelectQuery;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator;
 import org.testng.annotations.Test;
 
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.CODE_COLUMN;
@@ -67,13 +67,13 @@ public class TranslatorTest
     public void testTranslateSearchAllSamples()
     {
         final SampleSearchCriteria sampleSearchCriteria = new SampleSearchCriteria();
-        final Translator.TranslationVo translationVo = new Translator.TranslationVo();
-        translationVo.setUserId(USER_ID);
-        translationVo.setTableMapper(TableMapper.SAMPLE);
-        translationVo.setCriteria(Collections.singletonList(sampleSearchCriteria));
-        translationVo.setOperator(SearchOperator.AND);
-        translationVo.setCriteriaToManagerMap(CRITERIA_TO_MANAGER_MAP);
-        final SelectQuery result = Translator.translate(translationVo);
+        final CriteriaTranslator.CriteriaTranslationVo criteriaTranslationVo = new CriteriaTranslator.CriteriaTranslationVo();
+        criteriaTranslationVo.setUserId(USER_ID);
+        criteriaTranslationVo.setTableMapper(TableMapper.SAMPLE);
+        criteriaTranslationVo.setCriteria(Collections.singletonList(sampleSearchCriteria));
+        criteriaTranslationVo.setOperator(SearchOperator.AND);
+        criteriaTranslationVo.setCriteriaToManagerMap(CRITERIA_TO_MANAGER_MAP);
+        final SelectQuery result = CriteriaTranslator.translate(criteriaTranslationVo);
 
         assertEquals(result, new SelectQuery(String.format(
                 "SELECT DISTINCT %s.%s\n" +
@@ -87,14 +87,14 @@ public class TranslatorTest
         final SampleSearchCriteria sampleSearchCriteria = new SampleSearchCriteria().withAndOperator();
         sampleSearchCriteria.withId().thatEquals(new SampleIdentifier(SAMPLE_ID));
 
-        final Translator.TranslationVo translationVo = new Translator.TranslationVo();
-        translationVo.setUserId(USER_ID);
-        translationVo.setTableMapper(TableMapper.SAMPLE);
-        translationVo.setCriteria(sampleSearchCriteria.getCriteria());
-        translationVo.setOperator(SearchOperator.AND);
-        translationVo.setCriteriaToManagerMap(CRITERIA_TO_MANAGER_MAP);
+        final CriteriaTranslator.CriteriaTranslationVo criteriaTranslationVo = new CriteriaTranslator.CriteriaTranslationVo();
+        criteriaTranslationVo.setUserId(USER_ID);
+        criteriaTranslationVo.setTableMapper(TableMapper.SAMPLE);
+        criteriaTranslationVo.setCriteria(sampleSearchCriteria.getCriteria());
+        criteriaTranslationVo.setOperator(SearchOperator.AND);
+        criteriaTranslationVo.setCriteriaToManagerMap(CRITERIA_TO_MANAGER_MAP);
 
-        final SelectQuery result = Translator.translate(translationVo);
+        final SelectQuery result = CriteriaTranslator.translate(criteriaTranslationVo);
 
         assertEquals(result, new SelectQuery(String.format(
                 "SELECT DISTINCT %s.%s\n" +
@@ -112,14 +112,14 @@ public class TranslatorTest
         sampleSearchCriteria.withRegistrationDate().thatEquals(REGISTRATION_DATE);
         sampleSearchCriteria.withModificationDate().thatEquals(MODIFICATION_DATE);
 
-        final Translator.TranslationVo translationVo = new Translator.TranslationVo();
-        translationVo.setUserId(USER_ID);
-        translationVo.setTableMapper(TableMapper.SAMPLE);
-        translationVo.setCriteria(sampleSearchCriteria.getCriteria());
-        translationVo.setOperator(SearchOperator.AND);
-        translationVo.setCriteriaToManagerMap(CRITERIA_TO_MANAGER_MAP);
+        final CriteriaTranslator.CriteriaTranslationVo criteriaTranslationVo = new CriteriaTranslator.CriteriaTranslationVo();
+        criteriaTranslationVo.setUserId(USER_ID);
+        criteriaTranslationVo.setTableMapper(TableMapper.SAMPLE);
+        criteriaTranslationVo.setCriteria(sampleSearchCriteria.getCriteria());
+        criteriaTranslationVo.setOperator(SearchOperator.AND);
+        criteriaTranslationVo.setCriteriaToManagerMap(CRITERIA_TO_MANAGER_MAP);
 
-        final SelectQuery result = Translator.translate(translationVo);
+        final SelectQuery result = CriteriaTranslator.translate(criteriaTranslationVo);
 
         assertEquals(result, new SelectQuery(String.format(
                 "SELECT DISTINCT %s.%s\n" +
@@ -138,14 +138,14 @@ public class TranslatorTest
         sampleSearchCriteria.withRegistrationDate().thatEquals(REGISTRATION_DATE);
         sampleSearchCriteria.withModificationDate().thatEquals(MODIFICATION_DATE);
 
-        final Translator.TranslationVo translationVo = new Translator.TranslationVo();
-        translationVo.setUserId(USER_ID);
-        translationVo.setTableMapper(TableMapper.SAMPLE);
-        translationVo.setCriteria(sampleSearchCriteria.getCriteria());
-        translationVo.setOperator(SearchOperator.OR);
-        translationVo.setCriteriaToManagerMap(CRITERIA_TO_MANAGER_MAP);
+        final CriteriaTranslator.CriteriaTranslationVo criteriaTranslationVo = new CriteriaTranslator.CriteriaTranslationVo();
+        criteriaTranslationVo.setUserId(USER_ID);
+        criteriaTranslationVo.setTableMapper(TableMapper.SAMPLE);
+        criteriaTranslationVo.setCriteria(sampleSearchCriteria.getCriteria());
+        criteriaTranslationVo.setOperator(SearchOperator.OR);
+        criteriaTranslationVo.setCriteriaToManagerMap(CRITERIA_TO_MANAGER_MAP);
 
-        final SelectQuery result = Translator.translate(translationVo);
+        final SelectQuery result = CriteriaTranslator.translate(criteriaTranslationVo);
 
         assertEquals(result, new SelectQuery(String.format(
                 "SELECT DISTINCT %s.%s\n" +

@@ -22,7 +22,7 @@ import java.util.Map;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CollectionFieldSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.IN;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.LP;
@@ -47,7 +47,7 @@ public class CollectionFieldSearchCriteriaTranslator extends AbstractConditionTr
                 final Object fieldName = ATTRIBUTE_ID_TO_COLUMN_NAME.getOrDefault(criterion.getFieldName(), criterion.getFieldName());
                 final Collection<?> fieldValue = criterion.getFieldValue();
 
-                sqlBuilder.append(Translator.MAIN_TABLE_ALIAS).append(PERIOD).append(fieldName).append(SP).append(IN).append(SP).append(LP).
+                sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(fieldName).append(SP).append(IN).append(SP).append(LP).
                         append(SELECT).append(SP).append(UNNEST).append(LP).append(QU).append(RP).
                         append(RP);
 

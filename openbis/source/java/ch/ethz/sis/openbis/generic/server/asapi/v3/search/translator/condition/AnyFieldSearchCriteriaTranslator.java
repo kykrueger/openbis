@@ -27,8 +27,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AnyFieldSearchCrit
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringEqualToValue;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.SQLTypes;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
 import ch.systemsx.cisd.openbis.generic.shared.util.SimplePropertyValidator;
@@ -69,7 +69,7 @@ public class AnyFieldSearchCriteriaTranslator implements IConditionTranslator<An
         {
             case ANY_FIELD:
             {
-                final String alias = Translator.MAIN_TABLE_ALIAS;
+                final String alias = CriteriaTranslator.MAIN_TABLE_ALIAS;
                 final AbstractStringValue value = criterion.getFieldValue();
                 final Map<String, SQLTypes> fieldToSQLTypeMap = tableMapper.getFieldToSQLTypeMap();
                 final String stringValue = value.getValue();
