@@ -2,5 +2,6 @@
 .*.sw?
 .ipynb_checkpoints/
 *.ipynb
-dist/*
+dist
 deleteDatasetsAlreadyDeletedFromApplicationServerTaskLastSeen
+notebooks
