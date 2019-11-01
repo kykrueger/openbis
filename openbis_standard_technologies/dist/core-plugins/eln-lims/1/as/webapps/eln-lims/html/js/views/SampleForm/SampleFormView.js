@@ -442,6 +442,10 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		var $header = views.header;
 		
 		$header.append($formTitle);
+		var sampleTypeDefinitionsExtension = profile.sampleTypeDefinitionsExtension[_this._sampleFormModel.sample.sampleTypeCode];
+		if(sampleTypeDefinitionsExtension && sampleTypeDefinitionsExtension.extraToolbar) {
+		    toolbarModel = toolbarModel.concat(sampleTypeDefinitionsExtension.extraToolbar(_this._sampleFormModel.mode, _this._sampleFormModel.sample));
+		}
 		$header.append(FormUtil.getToolbar(toolbarModel));
 		
 		//
@@ -806,7 +810,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 					            if(propertyType.dataType === "MULTILINE_VARCHAR") {
 					                $component = FormUtil.activateRichTextProperties($component, changeEvent(propertyType), propertyType);
 					            } else {
-					                alert("Word Processor only works with MULTILINE_VARCHAR data type.");
+					                alert("Word Processor only works with MULTILINE_VARCHAR data type, " + propertyType.code + " is " + propertyType.dataType + ".");
 					            }
 					            break;
 					        case 'Spreadsheet':
@@ -815,7 +819,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
                                     JExcelEditorManager.createField($jexcelContainer, this._sampleFormModel.mode, propertyType.code, this._sampleFormModel.sample);
                                     $component = $jexcelContainer;
 					            } else {
-					                alert("Spreadsheet only works with XML data type.");
+					                alert("Spreadsheet only works with XML data type, " + propertyType.code + " is " + propertyType.dataType + ".");
 					            }
 					            break;
 					    }
