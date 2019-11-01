@@ -626,6 +626,15 @@ ds_new.save()
 
 ### create dataSet with mixed content
 
+* mixed content means: folders and files are provided
+* a relative specified folder (and all its content) will end up in the root, while keeping its structure
+   * `../measurements/` --> `/measurements/`
+   * `some/folder/somewhere/` --> `/somewhere/` 
+* relative files will also end up in the root
+   * `my_file.txt` --> `/my_file.txt`
+   * `../somwhere/else/my_other_file.txt` --> `/my_other_file.txt`
+   * `some/folder/file.txt` --> `/file.txt`
+
 ```
 # Dataset containing files and folders
 # the content of the folder will be zipped (on-the-fly) and uploaded to openBIS.
@@ -640,7 +649,11 @@ ds_new = o.new_dataset(
     files     = ['../measurements/', 'my_analyis.ipynb', 'results/'] 
 )
 ds_new.save()
+```
 
+### create dataSet container
+
+```
 # DataSet CONTAINER (contains other DataSets, but no files)
 ds_new = o.new_dataset(
     type       = 'ANALYZED_DATA', 
