@@ -7,16 +7,16 @@ import static org.testng.Assert.assertTrue;
 
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.Arrays;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.delete.PropertyTypeDeletionOptions;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.annotation.Transactional;
-import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
@@ -152,6 +152,20 @@ public class ImportPropertyTypesTest extends AbstractImportTest {
     @Test(expectedExceptions = UserFailureException.class)
     public void testPropertyTypeVocabularyCodeToNonVocabularyType() throws IOException {
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, PROPERTY_NON_VOCAB_TYPE_VOCABULARY_CODE)));
+    }
+
+    @Test(expectedExceptions = Exception.class)
+    @DirtiesContext
+    public void deleteProjectFromDBButNotFromJSON() throws IOException {
+        // GIVEN
+        TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, PROPERTY_TYPES_XLS)));
+        // WHEN
+        PropertyType type = TestUtils.getPropertyType(v3api, sessionToken, "$INTERNAL_PROP");
+        PropertyTypeDeletionOptions deletionOptions = new PropertyTypeDeletionOptions();
+        deletionOptions.setReason("test");
+        v3api.deletePropertyTypes(sessionToken, Arrays.asList(type.getPermId()), deletionOptions);
+        // THEN
+        TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, PROPERTY_TYPES_XLS)));
     }
 
 }
