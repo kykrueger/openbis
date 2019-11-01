@@ -77,8 +77,7 @@ public class AnyPropertySearchCriteriaTranslator implements IConditionTranslator
                 {
                     sqlBuilder.append(SP).append(joinInformationMap.get(tableMapper.getEntitiesTable()).getSubTableAlias())
                             .append(PERIOD).append(ColumnNames.VALUE_COLUMN).append(SP);
-                    TranslatorUtils.appendStringComparatorOp(value, sqlBuilder);
-                    args.add(value.getValue());
+                    TranslatorUtils.appendStringComparatorOp(value, sqlBuilder, args);
                 } else
                 {
                     sqlBuilder.append(TRUE);

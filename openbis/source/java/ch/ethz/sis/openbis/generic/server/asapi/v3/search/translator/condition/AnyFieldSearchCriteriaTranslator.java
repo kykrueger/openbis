@@ -103,8 +103,7 @@ public class AnyFieldSearchCriteriaTranslator implements IConditionTranslator<An
                     } else
                     {
                         sqlBuilder.append(alias).append(PERIOD).append(fieldName).append(DOUBLE_COLON).append(VARCHAR);
-                        TranslatorUtils.appendStringComparatorOp(value, sqlBuilder);
-                        args.add(stringValue);
+                        TranslatorUtils.appendStringComparatorOp(value, sqlBuilder, args);
                     }
                 });
 

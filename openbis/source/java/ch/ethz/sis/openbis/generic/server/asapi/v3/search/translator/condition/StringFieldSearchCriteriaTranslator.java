@@ -68,8 +68,7 @@ public class StringFieldSearchCriteriaTranslator implements IConditionTranslator
                 final String fieldName = Attributes.ATTRIBUTE_ID_TO_COLUMN_NAME.getOrDefault(criterionFieldName, criterionFieldName);
 
                 sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(fieldName).append(SP);
-                TranslatorUtils.appendStringComparatorOp(value, sqlBuilder);
-                args.add(value.getValue());
+                TranslatorUtils.appendStringComparatorOp(value, sqlBuilder, args);
                 break;
             }
 
@@ -91,8 +90,7 @@ public class StringFieldSearchCriteriaTranslator implements IConditionTranslator
                 {
                     sqlBuilder.append(SP).append(AND).append(SP).append(joinInformationMap.get(tableMapper.getEntitiesTable()).getSubTableAlias())
                             .append(PERIOD).append(ColumnNames.VALUE_COLUMN).append(SP);
-                    TranslatorUtils.appendStringComparatorOp(value, sqlBuilder);
-                    args.add(value.getValue());
+                    TranslatorUtils.appendStringComparatorOp(value, sqlBuilder, args);
                 }
                 break;
             }

@@ -27,6 +27,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractDateObject
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractDateValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractNumberValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractStringValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AnyStringValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateEarlierThanOrEqualToValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateEqualToValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateLaterThanOrEqualToValue;
@@ -54,6 +55,7 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLL
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.EQ;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.GE;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.GT;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.IS_NOT_NULL;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.LE;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.LIKE;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.LT;
@@ -77,22 +79,29 @@ public class TranslatorUtils
         throw new UnsupportedOperationException("Utility class cannot be instantiated");
     }
 
-    static void appendStringComparatorOp(final AbstractStringValue value, final StringBuilder sqlBuilder)
+    static void appendStringComparatorOp(final AbstractStringValue value, final StringBuilder sqlBuilder, final List<Object> args)
     {
         if (value.getClass() == StringEqualToValue.class)
         {
             sqlBuilder.append(EQ).append(SP).append(QU);
+            args.add(value.getValue());
         } else if (value.getClass() == StringStartsWithValue.class)
         {
             sqlBuilder.append(SP).append(LIKE).append(SP).append(QU).append(SP).append(BARS).append(SP).append(SQ).
                     append(PERCENT).append(SQ);
+            args.add(value.getValue());
         } else if (value.getClass() == StringEndsWithValue.class)
         {
             sqlBuilder.append(SP).append(LIKE).append(SP).append(SQ).append(PERCENT).append(SQ).append(SP).append(BARS).append(SP).append(QU);
+            args.add(value.getValue());
         } else if (value.getClass() == StringContainsValue.class)
         {
             sqlBuilder.append(SP).append(LIKE).append(SP).append(SQ).append(PERCENT).append(SQ).append(SP).append(BARS).append(SP).append(QU).
                     append(SP).append(BARS).append(SP).append(SQ).append(PERCENT).append(SQ);
+            args.add(value.getValue());
+        } else if (value.getClass() == AnyStringValue.class)
+        {
+            sqlBuilder.append(SP).append(IS_NOT_NULL);
         } else
         {
             throw new IllegalArgumentException("Unsupported AbstractStringValue type: " + value.getClass().getSimpleName());

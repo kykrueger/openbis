@@ -47,8 +47,7 @@ public class LastNameSearchCriteriaTranslator implements IConditionTranslator<La
         {
             final AbstractStringValue value = criterion.getFieldValue();
             sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(ColumnNames.LAST_NAME_COLUMN).append(SP);
-            TranslatorUtils.appendStringComparatorOp(value, sqlBuilder);
-            args.add(value.getValue());
+            TranslatorUtils.appendStringComparatorOp(value, sqlBuilder, args);
         } else
         {
             throw new IllegalArgumentException();
