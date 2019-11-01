@@ -27,7 +27,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.EntityWithPropertiesSortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractEntitySearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AnyFieldSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AnyPropertySearchCriteria;
@@ -245,7 +244,7 @@ public class CriteriaTranslator
 
             vo.getCriteria().forEach((criterion) ->
             {
-                OrderTranslator.appendIfFirst(sqlBuilder, SP + logicalOperator + SP, first);
+                TranslatorUtils.appendIfFirst(sqlBuilder, SP + logicalOperator + SP, first);
 
                 final ISearchManager<ISearchCriteria, ?, ?> subqueryManager = vo.getCriteriaToManagerMap().get(criterion.getClass());
                 final TableMapper tableMapper = vo.getTableMapper();
@@ -301,11 +300,6 @@ public class CriteriaTranslator
             }
         }
         return false;
-    }
-
-    public static boolean isPropertySearchCriterion(final String sortingCriteriaFieldName)
-    {
-        return sortingCriteriaFieldName.startsWith(EntityWithPropertiesSortOptions.PROPERTY);
     }
 
     public static class CriteriaTranslationVo

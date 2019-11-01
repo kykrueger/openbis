@@ -62,11 +62,6 @@ public class OrderTranslator
 
     public static final String TYPE_CODE_ALIAS = "type_code";
 
-    private static String getOrderingAlias(final AtomicInteger num)
-    {
-        return "o" + num.getAndIncrement();
-    }
-
     public static SelectQuery translateToOrderQuery(final OrderTranslationVo vo)
     {
         if (vo.getSortOptions() == null)
@@ -89,31 +84,12 @@ public class OrderTranslator
 
         vo.getSortOptions().getSortings().forEach((sorting) ->
         {
-            appendIfFirst(sqlBuilder, COMMA + SP, first);
+            TranslatorUtils.appendIfFirst(sqlBuilder, COMMA + SP, first);
             appendSortingColumn(vo, sqlBuilder, sorting.getField());
             sqlBuilder.append(SP).append(sorting.getOrder());
         });
 
         return sqlBuilder.toString();
-    }
-
-    /**
-     * Appends given string to string builder only when atomic boolean is false. Otherwise just sets atomic boolean to false.
-     *
-     * @param sb string builder to be updated.
-     * @param value the value to be added when needed.
-     * @param first atomic boolean, if {@code true} it will be set to false with no change to sb, otherwise the {@code value} will be appended to
-     * {@code sb}.
-     */
-    static void appendIfFirst(final StringBuilder sb, final String value, final AtomicBoolean first)
-    {
-        if (first.get())
-        {
-            first.set(false);
-        } else
-        {
-            sb.append(value);
-        }
     }
 
     private static String buildOrderSelect(final OrderTranslationVo vo)
@@ -138,7 +114,7 @@ public class OrderTranslator
         vo.getSortOptions().getSortings().forEach((sorting) ->
         {
             final String sortingCriterionFieldName = sorting.getField();
-            if (CriteriaTranslator.isPropertySearchCriterion(sortingCriterionFieldName))
+            if (TranslatorUtils.isPropertySearchCriterion(sortingCriterionFieldName))
             {
                 final String propertyName = sortingCriterionFieldName.substring(EntityWithPropertiesSortOptions.PROPERTY.length()).toLowerCase();
                 final Map<String, JoinInformation> joinInformationMap = TranslatorUtils.getPropertyJoinInformationMap(tableMapper,
@@ -176,7 +152,7 @@ public class OrderTranslator
         vo.getSortOptions().getSortings().forEach((sorting) ->
         {
             final String sortingCriteriaFieldName = sorting.getField();
-            if (CriteriaTranslator.isPropertySearchCriterion(sortingCriteriaFieldName))
+            if (TranslatorUtils.isPropertySearchCriterion(sortingCriteriaFieldName))
             {
                 final String propertyName = sortingCriteriaFieldName.substring(EntityWithPropertiesSortOptions.PROPERTY.length());
                 final String attributeTypesTableAlias = aliases.get(propertyName.toLowerCase()).get(tableMapper.getAttributeTypesTable()).
@@ -199,7 +175,7 @@ public class OrderTranslator
      */
     private static void appendSortingColumn(final OrderTranslationVo vo, final StringBuilder sqlBuilder, final String sortingCriteriaFieldName)
     {
-        if (CriteriaTranslator.isPropertySearchCriterion(sortingCriteriaFieldName))
+        if (TranslatorUtils.isPropertySearchCriterion(sortingCriteriaFieldName))
         {
             final String propertyName = sortingCriteriaFieldName.substring(EntityWithPropertiesSortOptions.PROPERTY.length());
             final String propertyNameLowerCase = propertyName.toLowerCase();
@@ -223,6 +199,11 @@ public class OrderTranslator
                     lowerCaseSortingCriteriaFieldName);
             sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(fieldName);
         }
+    }
+
+    private static String getOrderingAlias(final AtomicInteger num)
+    {
+        return "o" + num.getAndIncrement();
     }
 
     private static boolean isTypeSearchCriterion(final String sortingCriteriaFieldName)
@@ -345,4 +326,5 @@ public class OrderTranslator
         }
 
     }
+
 }

@@ -20,7 +20,9 @@ import java.text.ParseException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.EntityWithPropertiesSortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractDateObjectValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractDateValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractNumberValue;
@@ -253,4 +255,27 @@ public class TranslatorUtils
         }
     }
 
+    /**
+     * Appends given string to string builder only when atomic boolean is false. Otherwise just sets atomic boolean to false.
+     *
+     * @param sb string builder to be updated.
+     * @param value the value to be added when needed.
+     * @param first atomic boolean, if {@code true} it will be set to false with no change to sb, otherwise the {@code value} will be appended to
+     * {@code sb}.
+     */
+    public static void appendIfFirst(final StringBuilder sb, final String value, final AtomicBoolean first)
+    {
+        if (first.get())
+        {
+            first.set(false);
+        } else
+        {
+            sb.append(value);
+        }
+    }
+
+    public static boolean isPropertySearchCriterion(final String sortingCriteriaFieldName)
+    {
+        return sortingCriteriaFieldName.startsWith(EntityWithPropertiesSortOptions.PROPERTY);
+    }
 }

@@ -33,6 +33,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.ISQLExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.OrderTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SelectQuery;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.TranslatorUtils;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.DISTINCT;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.FROM;
@@ -113,7 +114,7 @@ public class PostgresSearchDAO implements ISQLSearchDAO
 
         final Map<String, String> typeByPropertyName;
         final boolean containsProperties = sortOptions.getSortings().stream().anyMatch(
-                (sorting) -> CriteriaTranslator.isPropertySearchCriterion(sorting.getField()));
+                (sorting) -> TranslatorUtils.isPropertySearchCriterion(sorting.getField()));
         if (containsProperties)
         {
             // Making property types query only when it is needed.
