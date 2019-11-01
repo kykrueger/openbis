@@ -175,12 +175,13 @@ var BarcodeUtil = new function() {
         });
 
         var $btnAccept = $('<input>', { 'type': 'submit', 'class' : 'btn btn-primary', 'value' : 'Save Barcode' });
-        $btnAccept.prop("disabled",true);
+        $btnAccept.prop("disabled",false);
 
 
         var $barcodeReader = $('<input>', { 'type': 'text', 'placeholder': 'barcode', 'style' : 'min-width: 50%;' });
         $barcodeReader.keyup(function() {
-            if($barcodeReader.val().length === 36) {
+            if($barcodeReader.val().length >= 10 ||
+               $barcodeReader.val().length === 0) {
                 $btnAccept.prop("disabled", false);
             } else {
                 $btnAccept.prop("disabled", true);
@@ -189,20 +190,45 @@ var BarcodeUtil = new function() {
 
         $btnAccept.click(function(event) {
             Util.blockUINoMessage();
-            require([ "as/dto/sample/update/SampleUpdate", "as/dto/sample/id/SamplePermId" ],
-            function(SampleUpdate, SamplePermId) {
-                var sample = new SampleUpdate();
-                sample.setSampleId(new SamplePermId(entity.permId));
-                sample.setProperty("$BARCODE", $barcodeReader.val());
-                mainController.openbisV3.updateSamples([ sample ]).done(function(result) {
-                    Util.unblockUI();
-                    Util.showInfo("Barcode Updated", function() {
-                        mainController.changeView('showViewSamplePageFromPermId', entity.permId);
-                    }, true);
-                }).fail(function(result) {
-                    Util.showFailedServerCallError(result);
+
+            var updateBarcode = function() {
+                require([ "as/dto/sample/update/SampleUpdate", "as/dto/sample/id/SamplePermId" ],
+                    function(SampleUpdate, SamplePermId) {
+                        var sample = new SampleUpdate();
+                        sample.setSampleId(new SamplePermId(entity.permId));
+                        sample.setProperty("$BARCODE", $barcodeReader.val());
+                        mainController.openbisV3.updateSamples([ sample ]).done(function(result) {
+                            Util.unblockUI();
+                            Util.showInfo("Barcode Updated", function() {
+                                mainController.changeView('showViewSamplePageFromPermId', entity.permId);
+                        }, true);
+                    }).fail(function(result) {
+                        Util.showFailedServerCallError(result);
+                    });
                 });
-            });
+            }
+
+            if($barcodeReader.val().length === 0) {
+                updateBarcode();
+            } else {
+                var criteria = {
+			        entityKind : "SAMPLE",
+				    logicalOperator : "OR",
+				    rules : {
+				        "UUIDv4-1": { type: "Property/Attribute", 	name: "PROP.$BARCODE", operator : "thatEqualsString", value: $barcodeReader.val() }
+				    }
+			    };
+                mainController.serverFacade.searchForSamplesAdvanced(criteria, {
+                only : true,
+                withProperties : true
+                }, function(results) {
+                    if(results.objects.length === 0) {
+                        updateBarcode();
+                    } else {
+                        Util.showError("Barcode already in use by " +  results.objects[0].identifier.identifier + " : It will not be assigned.");
+                    }
+                });
+            }
         });
 
         var $btnCancel = $('<input>', { 'type': 'submit', 'class' : 'btn', 'value' : 'Close' });
@@ -211,6 +237,9 @@ var BarcodeUtil = new function() {
         });
 
         $window.append($('<legend>').append("Update Barcode"));
+        $window.append($('<br>'));
+        $window.append(FormUtil.getInfoText("A valid barcode need to have 10 or more characters."));
+        $window.append(FormUtil.getWarningText("An empty barcode will delete the current barcode."));
         $window.append($('<br>'));
         $window.append($('<center>').append($barcodeReader));
         $window.append($('<br>'));
