@@ -1,5 +1,5 @@
 var BarcodeUtil = new function() {
-
+    var MIN_BARCODE_LENGTH = 10;
     var barcodeTimeout = false;
     var barcodeReader = "";
 
@@ -8,16 +8,16 @@ var BarcodeUtil = new function() {
         // permID Format 23 char, 1 hyphen: 20170912112249208-38888
         // UUID Format 36 char, 4 hyphens: 123e4567-e89b-12d3-a456-426655440000
         var rules = {};
-        if(barcodeReader.length === 36) {
-            rules["UUIDv4"] = { type: "Property/Attribute", 	name: "PROP.$BARCODE", operator : "thatEqualsString", value: barcodeReader };
-        } else if(barcodeReader.length > 17) {
-            rules["UUIDv4"] = { type: "Property/Attribute", 	name: "ATTR.PERM_ID", operator : "thatEqualsString", value: barcodeReader };
+
+        if(barcodeReader.length >= MIN_BARCODE_LENGTH) {
+            rules["UUIDv4-1"] = { type: "Property/Attribute", 	name: "PROP.$BARCODE", operator : "thatEqualsString", value: barcodeReader };
+            rules["UUIDv4-2"] = { type: "Property/Attribute", 	name: "ATTR.PERM_ID",  operator : "thatEqualsString", value: barcodeReader };
         }
 
         if(rules) {
             var criteria = {};
             criteria.entityKind = "SAMPLE";
-            criteria.logicalOperator = "AND";
+            criteria.logicalOperator = "OR";
             criteria.rules = rules;
 
             mainController.serverFacade.searchForSamplesAdvanced(criteria, { only : true, withProperties: true },
@@ -122,8 +122,19 @@ var BarcodeUtil = new function() {
         var gatherReaded = function(object) {
             objects.push(object);
             var displayName = "";
-            $readed.append($('<div>').append(object.identifier.identifier));
+            var $container = $('<div>');
+            var $identifier = $('<span>').append(object.identifier.identifier);
+            var $removeBtn = FormUtil.getButtonWithIcon("glyphicon-remove", function() {
+                $container.remove();
+                for(var oIdx = 0; oIdx < objects.length; oIdx++) {
+                    if(objects[oIdx].identifier.identifier === object.identifier.identifier) {
+                        objects.splice(oIdx, 1);
+                    }
+                }
+            });
+            $readed.append($container.append($identifier).append($removeBtn));
         }
+
         var barcodeReaderLocalEventListener = barcodeReaderEventListener(gatherReaded);
         document.addEventListener('keyup', barcodeReaderLocalEventListener);
 
@@ -177,10 +188,9 @@ var BarcodeUtil = new function() {
         var $btnAccept = $('<input>', { 'type': 'submit', 'class' : 'btn btn-primary', 'value' : 'Save Barcode' });
         $btnAccept.prop("disabled",false);
 
-
         var $barcodeReader = $('<input>', { 'type': 'text', 'placeholder': 'barcode', 'style' : 'min-width: 50%;' });
         $barcodeReader.keyup(function() {
-            if($barcodeReader.val().length >= 10 ||
+            if($barcodeReader.val().length >= MIN_BARCODE_LENGTH ||
                $barcodeReader.val().length === 0) {
                 $btnAccept.prop("disabled", false);
             } else {
@@ -238,7 +248,7 @@ var BarcodeUtil = new function() {
 
         $window.append($('<legend>').append("Update Barcode"));
         $window.append($('<br>'));
-        $window.append(FormUtil.getInfoText("A valid barcode need to have 10 or more characters."));
+        $window.append(FormUtil.getInfoText("A valid barcode need to have " + MIN_BARCODE_LENGTH + " or more characters."));
         $window.append(FormUtil.getWarningText("An empty barcode will delete the current barcode."));
         $window.append($('<br>'));
         $window.append($('<center>').append($barcodeReader));
