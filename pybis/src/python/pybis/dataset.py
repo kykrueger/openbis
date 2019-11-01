@@ -6,10 +6,14 @@ from .openbis_object import OpenBisObject
 from .definitions import openbis_definitions
 from .utils import VERBOSE
 import requests
+from requests import Request, Session
 import json
 from pandas import DataFrame
 #from urllib.parse import urlparse, urljoin, quote
 import urllib.parse
+import zipfile
+import random
+import time
 
 # needed for Data upload
 PYBIS_PLUGIN = "dataset-uploader-api"
@@ -24,23 +28,34 @@ class DataSet(
     """ DataSet are openBIS objects that contain the actual files.
     """
 
-    def __init__(self, openbis_obj, type, data=None, files=None, folder=None, kind=None, props=None, **kwargs):
+    def __init__(self, openbis_obj, type, data=None, files=None, zipfile=None, folder=None, kind=None, props=None, **kwargs):
 
         if kind == 'PHYSICAL_DATA':
-            if files is None:
+            if files is None and zipfile is None:
                 raise ValueError('please provide at least one file')
 
-            if isinstance(files, str):
-                files = [files]
+            if files and zipfile:
+                raise ValueError('please provide either a list of files or a single zipfile')
 
-            for file in files:
-                if not os.path.exists(file):
-                    raise ValueError('File {} does not exist'.format(file))
+            if zipfile:
+                files = [zipfile]
+                self.__dict__['isZipDirectoryUpload'] = True
+            else:
+                self.__dict__['isZipDirectoryUpload'] = False
 
 
-            self.__dict__['files'] = files
+            if files:
+                if isinstance(files, str):
+                    files = [files]
 
-        # initialize the attributes
+                for file in files:
+                    if not os.path.exists(file):
+                        raise ValueError('File {} does not exist'.format(file))
+
+                self.__dict__['files'] = files
+ 
+
+        # initialize the OpenBisObject
         super().__init__(openbis_obj, type=type, data=data, props=props, **kwargs)
 
         self.__dict__['files_in_wsp'] = []
@@ -402,7 +417,7 @@ class DataSet(
                     "dataSetType" : dataset_type,
                     "folderName" : self.folder,
                     "fileNames" : self.files_in_wsp,
-                    "isZipDirectoryUpload" : False,
+                    "isZipDirectoryUpload" : self.isZipDirectoryUpload,
                     "properties" : properties,
                     "parentIdentifiers": parentIds
                 }
@@ -443,7 +458,10 @@ class DataSet(
 
                 # activate the ingestion plugin, as soon as the data is uploaded
                 # this will actually register the dataset in the datastore and the AS
-                request = self._generate_plugin_request(dss=datastores['code'][0], permId=permId)
+                request = self._generate_plugin_request(
+                    dss    = datastores['code'][0],
+                    permId = permId,
+                )
                 resp = self.openbis._post_request(self.openbis.reg_v1, request)
                 if resp['rows'][0][0]['value'] == 'OK':
                     permId = resp['rows'][0][2]['value']
@@ -456,6 +474,8 @@ class DataSet(
                         if VERBOSE: print("DataSet successfully created.")
                         return self
                 else:
+                    import json
+                    print(json.dumps(request))
                     raise ValueError('Error while creating the DataSet: ' + resp['rows'][0][1]['value'])
             # CONTAINER 
             else:
@@ -497,6 +517,36 @@ class DataSet(
             self.openbis._post_request(self.openbis.as_v3, request)
             if VERBOSE: print("DataSet successfully updated.")
 
+    def zipit(self, file_or_folder, zipf):
+        """Takes a directory or a file, and a zipfile instance. For every file that is encountered,
+        we issue the write() method to add that file to the zipfile.
+        If we have a directory, we walk that directory and add every file inside it,
+        including the starting folder name. 
+        """
+        if os.path.isfile(file_or_folder):
+            # if a file is provided, we want to always store it in the root of the zip file
+            # ../../somedir/file.txt       -->   file.txt
+            (realpath, filename) = os.path.split(os.path.realpath(file_or_folder))
+            zipf.write(
+                file_or_folder, 
+                filename
+            )
+        elif os.path.isdir(file_or_folder):
+            # if a directory is provided, we want to store it (and its content) also in the root of the zip file
+            # ../../somedir/               -->   somedir/
+            # ../../somedir/other/file.txt -->   somedir/other/file.txt
+            (head, tail) = os.path.split(os.path.realpath(file_or_folder))
+            for dirpath, dirnames, filenames in os.walk(file_or_folder):
+                realpath = os.path.realpath(dirpath)
+                for filename in filenames:
+                    zipf.write(
+                        os.path.relpath(
+                            os.path.join(dirpath, filename),
+                            os.path.join(filename, '..')
+                        ),
+                        os.path.join(realpath[len(head)+1:], filename)
+                    )
+
 
     def upload_files(self, datastore_url=None, files=None, folder=None, wait_until_finished=False):
 
@@ -512,6 +562,26 @@ class DataSet(
 
         if isinstance(files, str):
             files = [files]
+
+        contains_dir = False
+        for f in files:
+            if os.path.isdir(f):
+                contains_dir = True
+
+        if contains_dir:
+            # if the file list contains at least one directory, we need to zip the
+            # whole thing in order to get it safely to openBIS.
+            file_ending = ''.join(random.choice('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ') for i in range(6))
+            filename = time.strftime('%Y-%m-%d_%H-%M-%S') + file_ending + '.zip'
+            buf = ZipBuffer(host=datastore_url, token=self.openbis.token, filename=filename)
+            zipf = zipfile.ZipFile(file=buf, mode='w', compression=zipfile.ZIP_DEFLATED) 
+            for file_or_folder in files:
+                self.zipit(file_or_folder, zipf)
+            #self.__dict__['folder'] = '/'
+            self.__dict__['files_in_wsp'] = [filename]
+            self.__dict__['isZipDirectoryUpload'] = True
+            return self.files_in_wsp
+
 
         # define a queue to handle the upload threads
         queue = DataSetUploadQueue()
@@ -584,6 +654,59 @@ class DataSetUploadQueue():
 
             # Tell the queue that we are done
             self.upload_queue.task_done()
+
+
+class ZipBuffer(object):
+    """ A file-like object for zipfile.ZipFile to write into.
+    zipfile invokes the write method to store its zipped content.
+    We will send this content directly to the session_workspace as a POST request.
+    """
+
+    def __init__(self, host, token, filename):
+        self.startByte = 0
+        self.endByte = 0
+        self.filename = filename
+        self.upload_url = host + '/datastore_server/session_workspace_file_upload?' \
+             'filename={}' \
+             '&id=1' \
+             '&startByte={}' \
+             '&endByte={}' \
+             '&sessionID={}'
+        self.token = token
+        self.session = Session()
+
+    def write(self, data):
+
+        self.startByte = self.endByte
+        self.endByte += len(data)
+        attempts = 0
+ 
+        while True:
+            attempts += 1
+            resp = self.session.post(
+                url = self.upload_url.format(
+                    self.filename,
+                    self.startByte,
+                    self.endByte,
+                    self.token
+                ),
+                data = data,
+            )
+            if resp.status_code == 200:
+                break
+            if attempts > 10:
+                raise Exception("Upload failed after more than 10 attempts")
+ 
+    def tell(self):
+        """ Return the current stream position.
+        """
+        return self.endByte
+
+    def flush(self):
+        """Flush the write buffers of the stream if applicable. 
+        """
+        self.session.close()
+        pass
 
 
 class DataSetDownloadQueue():
