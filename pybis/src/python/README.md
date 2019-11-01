@@ -302,7 +302,10 @@ project = o.new_project(
     code='project_name',
     description='some project description'
 )
-project = space.new_project( code='project_code', description='project description')
+project = space.new_project(
+	code='project_code',
+	description='project description'
+)
 project.save()
 
 o.get_projects(
@@ -368,8 +371,17 @@ enabled
 sample.tags
 sample.tags = ['guten_tag', 'zahl_tag' ]
 
-sample.attrs.all()         # returns a dict of all attributes
+sample.attrs.all()                    # returns all attributes as a dict
+sample.props.all()                    # returns all properties as a dict
 
+sample.get_attachments()
+sample.download_attachments()
+sample.add_attachment('testfile.xls')
+```
+
+### parents, children, components and container
+
+```
 sample.get_parents()
 sample.set_parents(['/MY_SPACE/PARENT_SAMPLE_NAME')
 sample.add_parents('/MY_SPACE/PARENT_SAMPLE_NAME')
@@ -394,26 +406,35 @@ sample.get_components()
 sample.set_components('/MY_SPACE/COMPONENT_NAME')
 sample.add_components('/MY_SPACE/COMPONENT_NAME')
 sample.del_components('/MY_SPACE/COMPONENT_NAME')
+```
 
+### sample tags
+
+```
 sample.get_tags()
 sample.set_tags('tag1')
 sample.add_tags(['tag2','tag3'])
 sample.del_tags('tag1')
+```
 
-sample.set_props({ ... })
-sample.p                              # same thing as .props
-sample.p.my_property = "some value"   # set the value of a property (value is checked)
+
+### useful tricks when dealing with properties, using Jupyter or IPython
+
+```
 sample.p + TAB                        # in IPython or Jupyter: show list of available properties
 sample.p.my_property_ + TAB           # in IPython or Jupyter: show datatype or controlled vocabulary
 sample.p['my-weird.property-name']    # accessing properties containing a dash or a dot
 
-sample.attrs.all()                    # returns all attributes as a dict
-sample.props.all()                    # returns all properties as a dict
+sample.set_props({ ... })             # set properties by providing a dict
+sample.p                              # same thing as .props
+sample.p.my_property = "some value"   # set the value of a property
+                                      # value is checked (type/vocabulary)
+sample.save()                         # update the sample in openBIS
+```
 
-sample.get_attachments()
-sample.download_attachments()
-sample.add_attachment('testfile.xls')
+### querying samples
 
+```
 samples = o.get_samples(
     space ='MY_SPACE',
     type  ='YEAST',
@@ -428,7 +449,11 @@ samples = o.get_samples(
 )
 samples.df                            # returns a pandas DataFrame object
 samples.get_datasets(type='ANALYZED_DATA')
+```
 
+### freezing samples
+
+```
 sample.freeze = True
 sample.freezeForComponents = True
 sample.freezeForChildren = True
@@ -441,11 +466,12 @@ sample.freezeForDataSets = True
 NOTE: In openBIS, `experiment` entities have recently been renamed to `collection`. All methods have synonyms using the term `collection`, e.g. `get_collections`, `new_collection`, `get_collection_types`.
 
 ```
-o.new_experiment
+exp = o.new_experiment
     type='DEFAULT_EXPERIMENT',
     space='MY_SPACE',
     project='YEASTS'
 )
+exp.save()
 
 o.get_experiments(
     project='YEASTS',
@@ -488,6 +514,7 @@ exp.freezeForSamples = True
 
 ## Datasets
 
+### working with existing dataSets
 ```
 sample.get_datasets()
 ds = o.get_dataset('20160719143426517-259')
@@ -496,8 +523,9 @@ ds.get_children()
 ds.sample
 ds.experiment
 ds.physicalData
-ds.status              # AVAILABLE LOCKED ARCHIVED 
-                       # UNARCHIVE_PENDING ARCHIVE_PENDING BACKUP_PENDING
+ds.status                         # AVAILABLE LOCKED ARCHIVED 
+                                  # ARCHIVE_PENDING UNARCHIVE_PENDING
+                                  # BACKUP_PENDING
 ds.archive()
 ds.unarchive()
 
@@ -510,52 +538,10 @@ ds.add_attachment()
 ds.get_attachments()
 ds.download_attachments()
 ds.download(destination='/tmp', wait_until_finished=False)
+```
+### dataSet attributes and properties
 
-ds_new = o.new_dataset(
-    type       = 'ANALYZED_DATA', 
-    experiment = '/SPACE/PROJECT/EXP1', 
-    sample     = '/SPACE/SAMP1',
-    files      = ['my_analyzed_data.dat'], 
-    props      = {'name': 'some good name', 'description': '...' }
-)
-
-# DataSet CONTAINER (contains other DataSets, but no files)
-ds_new = o.new_dataset(
-    type       = 'ANALYZED_DATA', 
-    experiment = '/SPACE/PROJECT/EXP1', 
-    sample     = '/SPACE/SAMP1',
-    kind       = 'CONTAINER',
-    props      = {'name': 'some good name', 'description': '...' }
-)
-ds_new.save()
-
-# get, set, add and remove parent datasets
-dataset.get_parents()
-dataset.set_parents(['20170115220259155-412'])
-dataset.add_parents(['20170115220259155-412'])
-dataset.del_parents(['20170115220259155-412'])
-
-# get, set, add and remove child datasets
-dataset.get_children()
-dataset.set_children(['20170115220259155-412'])
-dataset.add_children(['20170115220259155-412'])
-dataset.del_children(['20170115220259155-412'])
-
-# A DataSet may belong to other DataSets, which must be of kind=CONTAINER
-# As opposed to Samples, DataSets may belong (contained) to more than one DataSet-container
-dataset.get_containers()
-dataset.set_containers(['20170115220259155-412'])
-dataset.add_containers(['20170115220259155-412'])
-dataset.del_containers(['20170115220259155-412'])
-
-# A DataSet of kind=CONTAINER may contain other DataSets, to act like a folder (see above)
-# The DataSet-objects inside that DataSet are called components or contained DataSets
-# You may also use the xxx_contained() functions, which are just aliases.
-dataset.get_components()
-dataset.set_components(['20170115220259155-412'])
-dataset.add_components(['20170115220259155-412'])
-dataset.del_components(['20170115220259155-412'])
-
+```
 ds.set_props({ key: value})
 ds.props
 ds.p                              # same thing as .props
@@ -566,26 +552,145 @@ ds.p['my-weird.property-name']    # accessing properties containing a dash or a 
 
 ds.attrs.all()                    # returns all attributes as a dict
 ds.props.all()                    # returns all properties as a dict
+```
 
-# complex query with chaining.
-# properties must be in UPPERCASE
-datasets = o.get_experiments(project='YEASTS').get_samples(type='FLY').get_datasets(type='ANALYZED_DATA', props=['MY_PROPERTY'],MY_PROPERTY='some analyzed data')
+### querying dataSets
 
-# another example
-datasets = o.get_experiment('/MY_NEW_SPACE/VERMEUL_PROJECT/MY_EXPERIMENT4').get_samples(type='UNKNOWN').get_parents().get_datasets(type='RAW_DATA')
+* examples of a complex queries with methods chaining.
+* NOTE: properties must be in UPPERCASE to distinguish them from attributes
 
+```
+datasets = o.get_experiments(project='YEASTS')\
+			 .get_samples(type='FLY')\
+			 .get_datasets(
+					type='ANALYZED_DATA',
+					props=['MY_PROPERTY'],
+					MY_PROPERTY='some analyzed data'
+		 	 )
+```
+
+```
+datasets = o.get_experiment('/MY_NEW_SPACE/MY_PROJECT/MY_EXPERIMENT4')\
+           .get_samples(type='UNKNOWN')\
+           .get_parents()\
+           .get_datasets(type='RAW_DATA')
+```
+
+### deal with dataSets query results
+
+```
 datasets.df                       # get a pandas dataFrame object
 
 # use it in a for-loop:
 for dataset in datasets:
     print(dataset.permID)
     dataset.delete('give me a reason')
+```
+### freeze dataSets
+* once a dataSet has been frozen, it cannot be changed by anyone anymore
+* so be careful!
 
+```
 ds.freeze = True
 ds.freezeForChildren = True
 ds.freezeForParents = True
 ds.freezeForComponents = True
 ds.freezeForContainers = True
+ds.save()
+```
+
+### create a new dataSet
+
+```
+ds_new = o.new_dataset(
+    type       = 'ANALYZED_DATA', 
+    experiment = '/SPACE/PROJECT/EXP1', 
+    sample     = '/SPACE/SAMP1',
+    files      = ['my_analyzed_data.dat'], 
+    props      = {'name': 'some good name', 'description': '...' }
+)
+ds_new.save()
+```
+
+### create dataSet with zipfile
+
+```
+# DataSet containing one zipfile which will be unzipped in openBIS
+ds_new = o.new_dataset(
+    type       = 'RAW_DATA', 
+    sample     = '/SPACE/SAMP1',
+    zipfile    = 'my_zipped_folder.zip', 
+)
+ds_new.save()
+```
+
+### create dataSet with mixed content
+
+```
+# Dataset containing files and folders
+# the content of the folder will be zipped (on-the-fly) and uploaded to openBIS.
+# openBIS will keep the folder structure intact.
+# relative path will be shortened to its basename. For example:
+# local                         openBIS
+# ../../myData/                 myData/
+# some/experiment/results/      results/
+ds_new = o.new_dataset(
+    type       = 'RAW_DATA', 
+    sample     = '/SPACE/SAMP1',
+    files     = ['../measurements/', 'my_analyis.ipynb', 'results/'] 
+)
+ds_new.save()
+
+# DataSet CONTAINER (contains other DataSets, but no files)
+ds_new = o.new_dataset(
+    type       = 'ANALYZED_DATA', 
+    experiment = '/SPACE/PROJECT/EXP1', 
+    sample     = '/SPACE/SAMP1',
+    kind       = 'CONTAINER',
+    props      = {'name': 'some good name', 'description': '...' }
+)
+ds_new.save()
+```
+
+### get, set, add and remove parent datasets
+
+```
+dataset.get_parents()
+dataset.set_parents(['20170115220259155-412'])
+dataset.add_parents(['20170115220259155-412'])
+dataset.del_parents(['20170115220259155-412'])
+```
+
+#### get, set, add and remove child datasets
+
+```
+dataset.get_children()
+dataset.set_children(['20170115220259155-412'])
+dataset.add_children(['20170115220259155-412'])
+dataset.del_children(['20170115220259155-412'])
+```
+
+### dataSet containers
+
+* A DataSet may belong to other DataSets, which must be of kind=CONTAINER
+* As opposed to Samples, DataSets may belong (contained) to more than one DataSet-container
+
+```
+dataset.get_containers()
+dataset.set_containers(['20170115220259155-412'])
+dataset.add_containers(['20170115220259155-412'])
+dataset.del_containers(['20170115220259155-412'])
+```
+
+* a DataSet of kind=CONTAINER may contain other DataSets, to act like a folder (see above)
+* the DataSet-objects inside that DataSet are called components or contained DataSets
+* you may also use the xxx_contained() functions, which are just aliases.
+
+```
+dataset.get_components()
+dataset.set_components(['20170115220259155-412'])
+dataset.add_components(['20170115220259155-412'])
+dataset.del_components(['20170115220259155-412'])
 ```
 
 ## Semantic Annotations
