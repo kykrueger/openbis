@@ -2408,6 +2408,15 @@ function ServerFacade(openbisServer) {
 	// V3 Functions
 	//
 
+    this.createPermIdStrings = function(count, callbackFunction) {
+        mainController.openbisV3.createPermIdStrings(count)
+        .done(function(result) {
+            callbackFunction(result);
+        }).fail(function(result) {
+            Util.showFailedServerCallError(result);
+        });
+    }
+
 	this.getSpace = function(spaceIdentifier, callbackFunction) {
 		require(["as/dto/space/id/SpacePermId", "as/dto/space/fetchoptions/SpaceFetchOptions"], 
 			function(SpacePermId, SpaceFetchOptions) {

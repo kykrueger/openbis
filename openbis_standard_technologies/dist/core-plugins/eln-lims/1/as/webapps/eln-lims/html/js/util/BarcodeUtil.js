@@ -87,9 +87,11 @@ var BarcodeUtil = new function() {
         $generateBtn.click(function() {
             views.content.empty();
             var value = parseInt($numberDropdown.val());
-            for(var idx = 0; idx < value; idx++) {
-                _this.addBarcode(views.content, idx, $barcodeTypesDropdown.val());
-            }
+            mainController.serverFacade.createPermIdStrings(value, function(newPermIds) {
+                for(var idx = 0; idx < value; idx++) {
+                    _this.addBarcode(views.content, idx, $barcodeTypesDropdown.val(), newPermIds[idx], newPermIds[idx]);
+                }
+            });
         });
 
         this.preloadLibrary();
@@ -104,11 +106,10 @@ var BarcodeUtil = new function() {
         });
     }
 
-    this.addBarcode = function(content, idx, type) {
-        var uuid = Util.guid();
+    this.addBarcode = function(content, idx, type, text) {
         content.append($('<br>'));
         content.append($('<center>').append($('<canvas>', { id : "barcode-canvas-" + idx, width : 1, height : 1, style : "border:1px solid #fff;visibility:hidden" })));
-        this.generateBarcode("barcode-canvas-" + idx, type, uuid, uuid);
+        this.generateBarcode("barcode-canvas-" + idx, type, text, text);
     }
 
     this.readBarcodeMulti = function(actionLabel, action) {
@@ -333,10 +334,10 @@ var BarcodeUtil = new function() {
                     value : "qrcode",
                     label : "QR Code"
                 },
-//                {
-//                    value : "microqrcode",
-//                    label : "Micro QR Code"
-//                }
+                {
+                    value : "microqrcode",
+                    label : "Micro QR Code"
+                }
             ];
     }
 
