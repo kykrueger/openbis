@@ -35,6 +35,7 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLL
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.FROM;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.IN;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.INNER_JOIN;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.IS_NULL;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.LEFT_JOIN;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.LP;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.NL;
@@ -161,7 +162,8 @@ public class PostgresAuthorisationInformationProviderDAO implements ISQLAuthoris
                 FROM + SP + SAMPLES_ALL_TABLE + NL +
                 WHERE + SP + ID_COLUMN + SP + IN + LP + SELECT + SP + UNNEST + LP + QU + RP + RP + SP + AND + SP + LP + SPACE_COLUMN + SP + IN + SP +
                 LP + SELECT + SP + UNNEST + LP + QU + RP + RP + SP + OR +
-                SP + PROJECT_COLUMN + SP + IN + SP + LP + SELECT + SP + UNNEST + LP + QU + RP + RP + RP;
+                SP + PROJECT_COLUMN + SP + IN + SP + LP + SELECT + SP + UNNEST + LP + QU + RP + RP +
+                SP + OR + SP + SPACE_COLUMN + SP + IS_NULL + SP + AND + SP + PROJECT_COLUMN + SP + IS_NULL + RP;
         final List<Object> args = Arrays.asList(requestedIDs.toArray(new Long[0]), authInfo.getSpaceIds().toArray(new Long[0]),
                 authInfo.getProjectIds().toArray(new Long[0]));
         final List<Map<String, Object>> queryResultList = executor.execute(query, args);
