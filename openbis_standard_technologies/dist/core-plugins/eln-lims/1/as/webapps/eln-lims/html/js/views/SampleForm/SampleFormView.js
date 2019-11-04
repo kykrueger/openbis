@@ -1273,7 +1273,8 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 	
 	this._allowedToEdit = function() {
 		var sample = this._sampleFormModel.v3_sample;
-		return sample.frozen == false;
+		var updateAllowed = this._sampleFormModel.rights.rights.indexOf("UPDATE") >= 0;
+		return updateAllowed && sample.frozen == false;
 	}
 	
 	this._allowedToMove = function() {
