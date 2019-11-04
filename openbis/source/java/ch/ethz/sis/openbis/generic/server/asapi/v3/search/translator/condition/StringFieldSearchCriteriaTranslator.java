@@ -22,11 +22,13 @@ import java.util.Map;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractStringValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AnyStringValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringFieldSearchCriteria;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.AND;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.DOUBLE_COLON;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.EQ;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.PERIOD;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.QU;
@@ -57,7 +59,8 @@ public class StringFieldSearchCriteriaTranslator implements IConditionTranslator
 
     @Override
     public void translate(final StringFieldSearchCriteria criterion, final TableMapper tableMapper, final List<Object> args,
-            final StringBuilder sqlBuilder, final Map<Object, Map<String, JoinInformation>> aliases)
+            final StringBuilder sqlBuilder, final Map<Object, Map<String, JoinInformation>> aliases,
+            final Map<String, String> dataTypeByPropertyName)
     {
         switch (criterion.getFieldType())
         {
@@ -82,15 +85,30 @@ public class StringFieldSearchCriteriaTranslator implements IConditionTranslator
 
                 TranslatorUtils.appendInternalExternalConstraint(sqlBuilder, args, entityTypesSubTableAlias, internalProperty);
 
-                sqlBuilder.append(SP).append(entityTypesSubTableAlias).append(PERIOD).append(ColumnNames.CODE_COLUMN).append(SP).append(EQ)
-                        .append(SP).append(QU);
+                sqlBuilder.append(SP).append(entityTypesSubTableAlias).append(PERIOD).append(ColumnNames.CODE_COLUMN).append(SP).append(EQ).
+                        append(SP).append(QU);
                 args.add(propertyName);
 
                 if (value.getClass() != AnyStringValue.class)
                 {
                     sqlBuilder.append(SP).append(AND).append(SP).append(joinInformationMap.get(tableMapper.getEntitiesTable()).getSubTableAlias())
-                            .append(PERIOD).append(ColumnNames.VALUE_COLUMN).append(SP);
-                    TranslatorUtils.appendStringComparatorOp(value, sqlBuilder, args);
+                            .append(PERIOD).append(ColumnNames.VALUE_COLUMN);
+
+                    final String casting = dataTypeByPropertyName.get(propertyName);
+                    if (casting != null)
+                    {
+                        final String lowerCaseCasting = casting.toLowerCase();
+                        sqlBuilder.append(DOUBLE_COLON).append(lowerCaseCasting).append(SP).append(EQ).append(SP).append(QU);
+                        final String stringValue = value.getValue();
+
+                        final Object convertedValue = TranslatorUtils.convertStringToType(stringValue,
+                                PSQLTypes.sqlTypeToJavaClass(lowerCaseCasting));
+                        args.add(convertedValue);
+                    } else
+                    {
+                        sqlBuilder.append(SP);
+                        TranslatorUtils.appendStringComparatorOp(value, sqlBuilder, args);
+                    }
                 }
                 break;
             }

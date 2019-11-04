@@ -16,17 +16,13 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.EntityWithPropertiesSortOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.Attributes;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.JoinInformation;
@@ -35,6 +31,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.T
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.AND;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.COMMA;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.DISTINCT;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.DOUBLE_COLON;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.EQ;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.FROM;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.IN;
@@ -62,7 +59,7 @@ public class OrderTranslator
 
     public static final String TYPE_CODE_ALIAS = "type_code";
 
-    public static SelectQuery translateToOrderQuery(final OrderTranslationVo vo)
+    public static SelectQuery translateToOrderQuery(final TranslationVo vo)
     {
         if (vo.getSortOptions() == null)
         {
@@ -77,7 +74,7 @@ public class OrderTranslator
         return new SelectQuery(select  + NL + from + NL + where + NL + orderBy, vo.getArgs());
     }
 
-    private static String buildOrderOrderBy(final OrderTranslationVo vo)
+    private static String buildOrderOrderBy(final TranslationVo vo)
     {
         final StringBuilder sqlBuilder = new StringBuilder(ORDER_BY + SP);
         final AtomicBoolean first = new AtomicBoolean(true);
@@ -92,7 +89,7 @@ public class OrderTranslator
         return sqlBuilder.toString();
     }
 
-    private static String buildOrderSelect(final OrderTranslationVo vo)
+    private static String buildOrderSelect(final TranslationVo vo)
     {
         final StringBuilder sqlBuilder = new StringBuilder(SELECT + SP + DISTINCT + SP + CriteriaTranslator.MAIN_TABLE_ALIAS + PERIOD + ID_COLUMN);
 
@@ -105,7 +102,7 @@ public class OrderTranslator
         return sqlBuilder.toString();
     }
 
-    private static String buildOrderFrom(final OrderTranslationVo vo)
+    private static String buildOrderFrom(final TranslationVo vo)
     {
         final TableMapper tableMapper = vo.getTableMapper();
         final StringBuilder sqlBuilder = new StringBuilder(FROM + SP + tableMapper.getEntitiesTable() + SP + CriteriaTranslator.MAIN_TABLE_ALIAS);
@@ -114,7 +111,7 @@ public class OrderTranslator
         vo.getSortOptions().getSortings().forEach((sorting) ->
         {
             final String sortingCriterionFieldName = sorting.getField();
-            if (TranslatorUtils.isPropertySearchCriterion(sortingCriterionFieldName))
+            if (TranslatorUtils.isPropertySearchFieldName(sortingCriterionFieldName))
             {
                 final String propertyName = sortingCriterionFieldName.substring(EntityWithPropertiesSortOptions.PROPERTY.length()).toLowerCase();
                 final Map<String, JoinInformation> joinInformationMap = TranslatorUtils.getPropertyJoinInformationMap(tableMapper,
@@ -139,7 +136,7 @@ public class OrderTranslator
         return sqlBuilder.toString();
     }
 
-    private static String buildOrderWhere(final OrderTranslationVo vo)
+    private static String buildOrderWhere(final TranslationVo vo)
     {
         final StringBuilder sqlBuilder = new StringBuilder(WHERE + SP + CriteriaTranslator.MAIN_TABLE_ALIAS + PERIOD + ID_COLUMN + SP + IN + SP +
                 LP + SELECT + SP + UNNEST + LP + QU + RP + RP);
@@ -147,12 +144,12 @@ public class OrderTranslator
         final TableMapper tableMapper = vo.getTableMapper();
         final List<Object> args = vo.getArgs();
 
-        args.add(vo.ids.toArray(new Long[0]));
+        args.add(vo.getIds().toArray(new Long[0]));
 
         vo.getSortOptions().getSortings().forEach((sorting) ->
         {
             final String sortingCriteriaFieldName = sorting.getField();
-            if (TranslatorUtils.isPropertySearchCriterion(sortingCriteriaFieldName))
+            if (TranslatorUtils.isPropertySearchFieldName(sortingCriteriaFieldName))
             {
                 final String propertyName = sortingCriteriaFieldName.substring(EntityWithPropertiesSortOptions.PROPERTY.length());
                 final String attributeTypesTableAlias = aliases.get(propertyName.toLowerCase()).get(tableMapper.getAttributeTypesTable()).
@@ -173,9 +170,9 @@ public class OrderTranslator
      * @param sqlBuilder string builder to which the column should be appended.
      * @param sortingCriteriaFieldName the name of the field to sort by.
      */
-    private static void appendSortingColumn(final OrderTranslationVo vo, final StringBuilder sqlBuilder, final String sortingCriteriaFieldName)
+    private static void appendSortingColumn(final TranslationVo vo, final StringBuilder sqlBuilder, final String sortingCriteriaFieldName)
     {
-        if (TranslatorUtils.isPropertySearchCriterion(sortingCriteriaFieldName))
+        if (TranslatorUtils.isPropertySearchFieldName(sortingCriteriaFieldName))
         {
             final String propertyName = sortingCriteriaFieldName.substring(EntityWithPropertiesSortOptions.PROPERTY.length());
             final String propertyNameLowerCase = propertyName.toLowerCase();
@@ -185,7 +182,7 @@ public class OrderTranslator
             final String casting = vo.getDataTypeByPropertyName().get(propertyName);
             if (casting != null)
             {
-                sqlBuilder.append("::").append(casting.toLowerCase());
+                sqlBuilder.append(DOUBLE_COLON).append(casting.toLowerCase());
             }
         } else if (isTypeSearchCriterion(sortingCriteriaFieldName))
         {
@@ -211,7 +208,7 @@ public class OrderTranslator
         return sortingCriteriaFieldName.equals(EntityWithPropertiesSortOptions.TYPE);
     }
 
-    public static SelectQuery translateToSearchTypeQuery(final OrderTranslationVo vo)
+    public static SelectQuery translateToSearchTypeQuery(final TranslationVo vo)
     {
         final TableMapper tableMapper = vo.getTableMapper();
         final String result = SELECT + SP + DISTINCT + SP + "o3" + PERIOD + CODE_COLUMN + SP + PROPERTY_CODE_ALIAS + COMMA + SP +
@@ -229,102 +226,6 @@ public class OrderTranslator
                 WHERE + SP + "o4" + PERIOD + CODE_COLUMN + SP + IN + SP + LP + SELECT + SP + UNNEST + LP + QU + RP + RP;
 
         return new SelectQuery(result, Collections.singletonList(vo.getTypesToFilter()));
-    }
-
-    public static class OrderTranslationVo
-    {
-
-        private Long userId;
-
-        private TableMapper tableMapper;
-
-        private Set<Long> ids;
-
-        private SortOptions<?> sortOptions;
-
-        private Map<Object, Map<String, JoinInformation>> aliases = new HashMap<>();
-
-        private List<Object> args = new ArrayList<>();
-
-        private String[] typesToFilter;
-
-        private Map<String, String> dataTypeByPropertyName;
-
-        public Long getUserId()
-        {
-            return userId;
-        }
-
-        public void setUserId(final Long userId)
-        {
-            this.userId = userId;
-        }
-
-        public TableMapper getTableMapper()
-        {
-            return tableMapper;
-        }
-
-        public void setTableMapper(final TableMapper tableMapper)
-        {
-            this.tableMapper = tableMapper;
-        }
-
-        public Set<Long> getIDs()
-        {
-            return ids;
-        }
-
-        public void setIDs(final Set<Long> filteredIDs)
-        {
-            this.ids = filteredIDs;
-        }
-
-        public SortOptions<?> getSortOptions()
-        {
-            return sortOptions;
-        }
-
-        public void setSortOptions(final SortOptions<?> sortOptions)
-        {
-            this.sortOptions = sortOptions;
-        }
-
-        public Map<Object, Map<String, JoinInformation>> getAliases()
-        {
-            return aliases;
-        }
-
-        public void setAliases(final Map<Object, Map<String, JoinInformation>> aliases)
-        {
-            this.aliases = aliases;
-        }
-
-        public List<Object> getArgs()
-        {
-            return args;
-        }
-
-        public String[] getTypesToFilter()
-        {
-            return typesToFilter;
-        }
-
-        public void setTypesToFilter(final String[] typesToFilter)
-        {
-            this.typesToFilter = typesToFilter;
-        }
-
-        public Map<String, String> getDataTypeByPropertyName()
-        {
-            return dataTypeByPropertyName;
-        }
-
-        public void setDataTypeByPropertyName(final Map<String, String> dataTypeByPropertyName)
-        {
-            this.dataTypeByPropertyName = dataTypeByPropertyName;
-        }
-
     }
 
 }

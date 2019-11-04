@@ -25,7 +25,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractFieldSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchFieldType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
@@ -33,6 +35,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.ISQLExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.OrderTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SelectQuery;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.TranslationVo;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.TranslatorUtils;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.DISTINCT;
@@ -64,14 +67,19 @@ public class PostgresSearchDAO implements ISQLSearchDAO
     public Set<Long> queryDBWithNonRecursiveCriteria(final Long userId, final TableMapper tableMapper,
             final Collection<ISearchCriteria> criteria, final SearchOperator operator)
     {
-        final CriteriaTranslator.CriteriaTranslationVo criteriaTranslationVo = new CriteriaTranslator.CriteriaTranslationVo();
-        criteriaTranslationVo.setUserId(userId);
-        criteriaTranslationVo.setTableMapper(tableMapper);
-        criteriaTranslationVo.setCriteria(criteria);
-        criteriaTranslationVo.setOperator(operator);
-        criteriaTranslationVo.setCriteriaToManagerMap(criteriaToManagerMap);
+        final TranslationVo translationVo = new TranslationVo();
+        translationVo.setUserId(userId);
+        translationVo.setTableMapper(tableMapper);
+        translationVo.setCriteria(criteria);
+        translationVo.setOperator(operator);
+        translationVo.setCriteriaToManagerMap(criteriaToManagerMap);
 
-        final SelectQuery selectQuery = CriteriaTranslator.translate(criteriaTranslationVo);
+        final boolean containsProperties = criteria.stream().anyMatch(
+                (criterion) -> criterion instanceof AbstractFieldSearchCriteria &&
+                        ((AbstractFieldSearchCriteria) criterion).getFieldType().equals(SearchFieldType.PROPERTY));
+        updateWithDataTypes(translationVo, containsProperties);
+
+        final SelectQuery selectQuery = CriteriaTranslator.translate(translationVo);
         final List<Map<String, Object>> result = sqlExecutor.execute(selectQuery.getQuery(), selectQuery.getArgs());
         return result.stream().map(
                 stringLongMap -> (Long) stringLongMap.get(ID_COLUMN)
@@ -105,20 +113,31 @@ public class PostgresSearchDAO implements ISQLSearchDAO
     @Override
     public Set<Long> sortIDs(final Long userId, final TableMapper tableMapper, final Set<Long> filteredIDs, final SortOptions<?> sortOptions)
     {
-        final OrderTranslator.OrderTranslationVo orderTranslationVo = new OrderTranslator.OrderTranslationVo();
-        orderTranslationVo.setUserId(userId);
-        orderTranslationVo.setTableMapper(tableMapper);
-        orderTranslationVo.setIDs(filteredIDs);
-        orderTranslationVo.setSortOptions(sortOptions);
-        orderTranslationVo.setTypesToFilter(POSTGRES_TYPES);
+        final TranslationVo translationVo = new TranslationVo();
+        translationVo.setUserId(userId);
+        translationVo.setTableMapper(tableMapper);
+        translationVo.setIds(filteredIDs);
+        translationVo.setSortOptions(sortOptions);
 
-        final Map<String, String> typeByPropertyName;
         final boolean containsProperties = sortOptions.getSortings().stream().anyMatch(
-                (sorting) -> TranslatorUtils.isPropertySearchCriterion(sorting.getField()));
+                (sorting) -> TranslatorUtils.isPropertySearchFieldName(sorting.getField()));
+
+        updateWithDataTypes(translationVo, containsProperties);
+
+        final SelectQuery orderQuery = OrderTranslator.translateToOrderQuery(translationVo);
+        final List<Map<String, Object>> orderQueryResultList = sqlExecutor.execute(orderQuery.getQuery(), orderQuery.getArgs());
+        return orderQueryResultList.stream().map((valueByColumnName) -> (Long) valueByColumnName.get(ID_COLUMN))
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
+    private void updateWithDataTypes(final TranslationVo translationVo, final boolean containsProperties)
+    {
+        translationVo.setTypesToFilter(POSTGRES_TYPES);
+        final Map<String, String> typeByPropertyName;
         if (containsProperties)
         {
             // Making property types query only when it is needed.
-            final SelectQuery dataTypesQuery = OrderTranslator.translateToSearchTypeQuery(orderTranslationVo);
+            final SelectQuery dataTypesQuery = OrderTranslator.translateToSearchTypeQuery(translationVo);
             final List<Map<String, Object>> dataTypesQueryResultList = sqlExecutor.execute(dataTypesQuery.getQuery(), dataTypesQuery.getArgs());
             typeByPropertyName = dataTypesQueryResultList.stream().collect(Collectors.toMap(
                     (valueByColumnName) -> (String) valueByColumnName.get(OrderTranslator.PROPERTY_CODE_ALIAS),
@@ -128,12 +147,7 @@ public class PostgresSearchDAO implements ISQLSearchDAO
             typeByPropertyName = Collections.emptyMap();
         }
 
-        orderTranslationVo.setDataTypeByPropertyName(typeByPropertyName);
-
-        final SelectQuery orderQuery = OrderTranslator.translateToOrderQuery(orderTranslationVo);
-        final List<Map<String, Object>> orderQueryResultList = sqlExecutor.execute(orderQuery.getQuery(), orderQuery.getArgs());
-        return orderQueryResultList.stream().map((valueByColumnName) -> (Long) valueByColumnName.get(ID_COLUMN))
-                .collect(Collectors.toCollection(LinkedHashSet::new));
+        translationVo.setDataTypeByPropertyName(typeByPropertyName);
     }
 
     public void setCriteriaToManagerMap(

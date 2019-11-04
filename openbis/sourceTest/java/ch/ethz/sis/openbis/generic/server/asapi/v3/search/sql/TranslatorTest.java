@@ -32,6 +32,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SelectQuery;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.TranslationVo;
 import org.testng.annotations.Test;
 
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.CODE_COLUMN;
@@ -67,7 +68,7 @@ public class TranslatorTest
     public void testTranslateSearchAllSamples()
     {
         final SampleSearchCriteria sampleSearchCriteria = new SampleSearchCriteria();
-        final CriteriaTranslator.CriteriaTranslationVo criteriaTranslationVo = new CriteriaTranslator.CriteriaTranslationVo();
+        final TranslationVo criteriaTranslationVo = new TranslationVo();
         criteriaTranslationVo.setUserId(USER_ID);
         criteriaTranslationVo.setTableMapper(TableMapper.SAMPLE);
         criteriaTranslationVo.setCriteria(Collections.singletonList(sampleSearchCriteria));
@@ -87,7 +88,7 @@ public class TranslatorTest
         final SampleSearchCriteria sampleSearchCriteria = new SampleSearchCriteria().withAndOperator();
         sampleSearchCriteria.withId().thatEquals(new SampleIdentifier(SAMPLE_ID));
 
-        final CriteriaTranslator.CriteriaTranslationVo criteriaTranslationVo = new CriteriaTranslator.CriteriaTranslationVo();
+        final TranslationVo criteriaTranslationVo = new TranslationVo();
         criteriaTranslationVo.setUserId(USER_ID);
         criteriaTranslationVo.setTableMapper(TableMapper.SAMPLE);
         criteriaTranslationVo.setCriteria(sampleSearchCriteria.getCriteria());
@@ -112,7 +113,7 @@ public class TranslatorTest
         sampleSearchCriteria.withRegistrationDate().thatEquals(REGISTRATION_DATE);
         sampleSearchCriteria.withModificationDate().thatEquals(MODIFICATION_DATE);
 
-        final CriteriaTranslator.CriteriaTranslationVo criteriaTranslationVo = new CriteriaTranslator.CriteriaTranslationVo();
+        final TranslationVo criteriaTranslationVo = new TranslationVo();
         criteriaTranslationVo.setUserId(USER_ID);
         criteriaTranslationVo.setTableMapper(TableMapper.SAMPLE);
         criteriaTranslationVo.setCriteria(sampleSearchCriteria.getCriteria());
@@ -138,7 +139,7 @@ public class TranslatorTest
         sampleSearchCriteria.withRegistrationDate().thatEquals(REGISTRATION_DATE);
         sampleSearchCriteria.withModificationDate().thatEquals(MODIFICATION_DATE);
 
-        final CriteriaTranslator.CriteriaTranslationVo criteriaTranslationVo = new CriteriaTranslator.CriteriaTranslationVo();
+        final TranslationVo criteriaTranslationVo = new TranslationVo();
         criteriaTranslationVo.setUserId(USER_ID);
         criteriaTranslationVo.setTableMapper(TableMapper.SAMPLE);
         criteriaTranslationVo.setCriteria(sampleSearchCriteria.getCriteria());

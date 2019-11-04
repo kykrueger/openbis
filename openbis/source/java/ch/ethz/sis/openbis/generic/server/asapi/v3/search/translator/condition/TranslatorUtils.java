@@ -283,8 +283,48 @@ public class TranslatorUtils
         }
     }
 
-    public static boolean isPropertySearchCriterion(final String sortingCriteriaFieldName)
+    public static boolean isPropertySearchFieldName(final String sortingCriteriaFieldName)
     {
         return sortingCriteriaFieldName.startsWith(EntityWithPropertiesSortOptions.PROPERTY);
     }
+
+    public static Object convertStringToType(final String value, final Class klass)
+    {
+        // Integer numbers need to be converted from string to a real number first, because they can be presented with decimal point.
+        if (Boolean.class == klass)
+        {
+            return Boolean.parseBoolean(value);
+        }
+        if (Byte.class == klass)
+        {
+            final float decimalValue = Float.parseFloat(value);
+            return (byte) decimalValue;
+        }
+        if (Short.class == klass)
+        {
+            final float decimalValue = Float.parseFloat(value);
+            return (short) decimalValue;
+        }
+        if (Integer.class == klass)
+        {
+            final float decimalValue = Float.parseFloat(value);
+            return (int) decimalValue;
+        }
+        if (Long.class == klass)
+        {
+            final double decimalValue = Double.parseDouble(value);
+            return (long) decimalValue;
+        }
+        if (Float.class == klass)
+        {
+            return Float.parseFloat(value);
+        }
+        if (Double.class == klass)
+        {
+            return Double.parseDouble(value);
+        }
+
+        return value;
+    }
+
 }

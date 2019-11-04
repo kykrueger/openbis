@@ -69,7 +69,8 @@ public class DateFieldSearchCriteriaTranslator implements IConditionTranslator<D
 
     @Override
     public void translate(final DateFieldSearchCriteria criterion, final TableMapper tableMapper, final List<Object> args,
-            final StringBuilder sqlBuilder, final Map<Object, Map<String, JoinInformation>> aliases)
+            final StringBuilder sqlBuilder, final Map<Object, Map<String, JoinInformation>> aliases,
+            final Map<String, String> dataTypeByPropertyName)
     {
         switch (criterion.getFieldType()) {
             case ATTRIBUTE:

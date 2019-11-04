@@ -29,7 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.SQLTypes;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes;
 
 public class JDBCSQLExecutor implements ISQLExecutor
 {
@@ -114,31 +114,31 @@ public class JDBCSQLExecutor implements ISQLExecutor
                 {
                     if (Boolean.class.isAssignableFrom(componentType))
                     {
-                        dbArrayTypeName = SQLTypes.BOOLEAN.toString();
+                        dbArrayTypeName = PSQLTypes.BOOLEAN.toString();
                     } else if (Byte.class.isAssignableFrom(componentType))
                     {
-                        dbArrayTypeName = SQLTypes.INT2.toString();
+                        dbArrayTypeName = PSQLTypes.INT2.toString();
                     } else if (Character.class.isAssignableFrom(componentType))
                     {
-                        dbArrayTypeName = SQLTypes.CHARACTER.toString();
+                        dbArrayTypeName = PSQLTypes.CHARACTER.toString();
                     } else if (Double.class.isAssignableFrom(componentType))
                     {
-                        dbArrayTypeName = SQLTypes.FLOAT8.toString();
+                        dbArrayTypeName = PSQLTypes.FLOAT8.toString();
                     } else if (Float.class.isAssignableFrom(componentType))
                     {
-                        dbArrayTypeName = SQLTypes.FLOAT4.toString();
+                        dbArrayTypeName = PSQLTypes.FLOAT4.toString();
                     } else if (Integer.class.isAssignableFrom(componentType))
                     {
-                        dbArrayTypeName = SQLTypes.INT4.toString();
+                        dbArrayTypeName = PSQLTypes.INT4.toString();
                     } else if (Long.class.isAssignableFrom(componentType))
                     {
-                        dbArrayTypeName = SQLTypes.INT8.toString();
+                        dbArrayTypeName = PSQLTypes.INT8.toString();
                     } else if (Short.class.isAssignableFrom(componentType))
                     {
-                        dbArrayTypeName = SQLTypes.INT2.toString();
+                        dbArrayTypeName = PSQLTypes.INT2.toString();
                     } else if (String.class.isAssignableFrom(componentType))
                     {
-                        dbArrayTypeName = SQLTypes.VARCHAR.toString();
+                        dbArrayTypeName = PSQLTypes.VARCHAR.toString();
                     } else
                     {
                         throw new IllegalArgumentException("Arrays of objects are not supported");

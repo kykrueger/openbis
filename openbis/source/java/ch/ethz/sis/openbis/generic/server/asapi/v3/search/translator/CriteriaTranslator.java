@@ -18,10 +18,8 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -43,7 +41,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.NumberFieldSearchC
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.NumberPropertySearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.PermIdSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.RegistrationDateSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringFieldSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringPropertySearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetSearchCriteria;
@@ -166,7 +163,7 @@ public class CriteriaTranslator
         CRITERIA_TO_SUBQUERY_COLUMN_MAP.put(SpaceSearchCriteria.class, ColumnNames.SPACE_COLUMN);
     }
 
-    public static SelectQuery translate(final CriteriaTranslationVo vo)
+    public static SelectQuery translate(final TranslationVo vo)
     {
         if (vo.getCriteria() == null || vo.getCriteria().isEmpty())
         {
@@ -190,7 +187,7 @@ public class CriteriaTranslator
         return "t" + num.getAndIncrement();
     }
 
-    private static String buildFrom(final CriteriaTranslationVo vo)
+    private static String buildFrom(final TranslationVo vo)
     {
         final StringBuilder sqlBuilder = new StringBuilder();
 
@@ -226,7 +223,7 @@ public class CriteriaTranslator
         return sqlBuilder.toString();
     }
 
-    private static String buildWhere(final CriteriaTranslationVo vo)
+    private static String buildWhere(final TranslationVo vo)
     {
         if (isSearchAllCriteria(vo.getCriteria()))
         {
@@ -270,7 +267,8 @@ public class CriteriaTranslator
                             (IConditionTranslator<ISearchCriteria>) CRITERIA_TO_CONDITION_TRANSLATOR_MAP.get(criterion.getClass());
                     if (conditionTranslator != null)
                     {
-                        conditionTranslator.translate(criterion, tableMapper, vo.getArgs(), sqlBuilder, vo.getAliases());
+                        conditionTranslator.translate(criterion, tableMapper, vo.getArgs(), sqlBuilder, vo.getAliases(),
+                                vo.getDataTypeByPropertyName());
                     } else
                     {
                         throw new IllegalArgumentException("Unsupported criterion type: " + criterion.getClass().getSimpleName());
@@ -300,96 +298,6 @@ public class CriteriaTranslator
             }
         }
         return false;
-    }
-
-    public static class CriteriaTranslationVo
-    {
-        private Long userId;
-
-        private TableMapper tableMapper;
-
-        private Collection<ISearchCriteria> criteria;
-
-        private SearchOperator operator;
-
-        private Map<Object, Map<String, JoinInformation>> aliases = new HashMap<>();
-
-        private Map<Class<? extends ISearchCriteria>, ISearchManager<ISearchCriteria, ?, ?>> criteriaToManagerMap;
-
-        private List<Object> args = new ArrayList<>();
-
-        public Long getUserId()
-        {
-            return userId;
-        }
-
-        public void setUserId(final Long userId)
-        {
-            this.userId = userId;
-        }
-
-        public TableMapper getTableMapper()
-        {
-            return tableMapper;
-        }
-
-        public void setTableMapper(final TableMapper tableMapper)
-        {
-            this.tableMapper = tableMapper;
-        }
-
-        public Collection<ISearchCriteria> getCriteria()
-        {
-            return criteria;
-        }
-
-        public void setCriteria(final Collection<ISearchCriteria> criteria)
-        {
-            this.criteria = criteria;
-        }
-
-        public SearchOperator getOperator()
-        {
-            return operator;
-        }
-
-        public void setOperator(final SearchOperator operator)
-        {
-            this.operator = operator;
-        }
-
-        public Map<Object, Map<String, JoinInformation>> getAliases()
-        {
-            return aliases;
-        }
-
-        public void setAliases(
-                final Map<Object, Map<String, JoinInformation>> aliases)
-        {
-            this.aliases = aliases;
-        }
-
-        public Map<Class<? extends ISearchCriteria>, ISearchManager<ISearchCriteria, ?, ?>> getCriteriaToManagerMap()
-        {
-            return criteriaToManagerMap;
-        }
-
-        public void setCriteriaToManagerMap(
-                final Map<Class<? extends ISearchCriteria>, ISearchManager<ISearchCriteria, ?, ?>> criteriaToManagerMap)
-        {
-            this.criteriaToManagerMap = criteriaToManagerMap;
-        }
-
-        public List<Object> getArgs()
-        {
-            return args;
-        }
-
-        public void setArgs(final List<Object> args)
-        {
-            this.args = args;
-        }
-
     }
 
 }

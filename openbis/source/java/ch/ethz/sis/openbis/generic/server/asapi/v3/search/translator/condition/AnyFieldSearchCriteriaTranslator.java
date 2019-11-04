@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractStringValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AnyFieldSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringEqualToValue;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.SQLTypes;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes;
@@ -33,14 +33,14 @@ import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
 import ch.systemsx.cisd.openbis.generic.shared.util.SimplePropertyValidator;
 
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.SQLTypes.BOOLEAN;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.SQLTypes.FLOAT4;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.SQLTypes.FLOAT8;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.SQLTypes.INT2;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.SQLTypes.INT4;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.SQLTypes.INT8;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.SQLTypes.TIMESTAMP_WITH_TZ;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.SQLTypes.VARCHAR;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes.BOOLEAN;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes.FLOAT4;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes.FLOAT8;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes.INT2;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes.INT4;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes.INT8;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes.TIMESTAMP_WITH_TZ;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes.VARCHAR;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.DOUBLE_COLON;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.EQ;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.FALSE;
@@ -63,7 +63,8 @@ public class AnyFieldSearchCriteriaTranslator implements IConditionTranslator<An
 
     @Override
     public void translate(final AnyFieldSearchCriteria criterion, final TableMapper tableMapper, final List<Object> args,
-            final StringBuilder sqlBuilder, final Map<Object, Map<String, JoinInformation>> aliases)
+            final StringBuilder sqlBuilder, final Map<Object, Map<String, JoinInformation>> aliases,
+            final Map<String, String> dataTypeByPropertyName)
     {
         switch (criterion.getFieldType())
         {
@@ -71,15 +72,15 @@ public class AnyFieldSearchCriteriaTranslator implements IConditionTranslator<An
             {
                 final String alias = CriteriaTranslator.MAIN_TABLE_ALIAS;
                 final AbstractStringValue value = criterion.getFieldValue();
-                final Map<String, SQLTypes> fieldToSQLTypeMap = tableMapper.getFieldToSQLTypeMap();
+                final Map<String, PSQLTypes> fieldToSQLTypeMap = tableMapper.getFieldToSQLTypeMap();
                 final String stringValue = value.getValue();
-                final Set<SQLTypes> compatibleSqlTypesForValue = findCompatibleSqlTypesForValue(stringValue);
+                final Set<PSQLTypes> compatiblePSQLTypesForValue = findCompatibleSqlTypesForValue(stringValue);
 
                 first.set(true);
                 fieldToSQLTypeMap.forEach((fieldName, fieldSQLType) ->
                 {
                     final boolean equalsToComparison = (value.getClass() == StringEqualToValue.class);
-                    final boolean includeColumn = compatibleSqlTypesForValue.contains(fieldSQLType);
+                    final boolean includeColumn = compatiblePSQLTypesForValue.contains(fieldSQLType);
 
                     if (!equalsToComparison || includeColumn)
                     {
@@ -127,7 +128,7 @@ public class AnyFieldSearchCriteriaTranslator implements IConditionTranslator<An
         }
     }
 
-    private Set<SQLTypes> findCompatibleSqlTypesForValue(final String value)
+    private Set<PSQLTypes> findCompatibleSqlTypesForValue(final String value)
     {
         final SimplePropertyValidator validator = new SimplePropertyValidator();
         try

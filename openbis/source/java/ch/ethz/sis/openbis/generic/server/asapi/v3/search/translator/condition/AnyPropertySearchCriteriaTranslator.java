@@ -26,21 +26,21 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractStringValu
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AnyPropertySearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AnyStringValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchFieldType;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.SQLTypes;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
 import ch.systemsx.cisd.openbis.generic.shared.util.SimplePropertyValidator;
 
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.SQLTypes.BOOLEAN;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.SQLTypes.FLOAT4;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.SQLTypes.FLOAT8;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.SQLTypes.INT2;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.SQLTypes.INT4;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.SQLTypes.INT8;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.SQLTypes.TIMESTAMP_WITH_TZ;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.SQLTypes.VARCHAR;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes.BOOLEAN;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes.FLOAT4;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes.FLOAT8;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes.INT2;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes.INT4;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes.INT8;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes.TIMESTAMP_WITH_TZ;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes.VARCHAR;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.PERIOD;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SP;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.TRUE;
@@ -64,7 +64,8 @@ public class AnyPropertySearchCriteriaTranslator implements IConditionTranslator
 
     @Override
     public void translate(final AnyPropertySearchCriteria criterion, final TableMapper tableMapper, final List<Object> args,
-            final StringBuilder sqlBuilder, final Map<Object, Map<String, JoinInformation>> aliases)
+            final StringBuilder sqlBuilder, final Map<Object, Map<String, JoinInformation>> aliases,
+            final Map<String, String> dataTypeByPropertyName)
     {
         switch (criterion.getFieldType())
         {
@@ -94,7 +95,7 @@ public class AnyPropertySearchCriteriaTranslator implements IConditionTranslator
         }
     }
 
-    private Set<SQLTypes> findCompatibleSqlTypesForValue(final String value)
+    private Set<PSQLTypes> findCompatibleSqlTypesForValue(final String value)
     {
         final SimplePropertyValidator validator = new SimplePropertyValidator();
         try

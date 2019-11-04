@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.Set;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.SQLTypes;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes;
 
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ACCESS_TIMESTAMP;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.CHILD_SAMPLE_COLUMN;
@@ -218,9 +218,9 @@ public enum TableMapper
 
     private String dataTableEntityIdField;
 
-    private Map<String, SQLTypes> fieldToSQLTypeMap = new HashMap<>();
+    private Map<String, PSQLTypes> fieldToSQLTypeMap = new HashMap<>();
 
-    private Map<SQLTypes, Set<String>> sqlTypeToFieldsMap = new HashMap<>();
+    private Map<PSQLTypes, Set<String>> sqlTypeToFieldsMap = new HashMap<>();
 
 
     TableMapper(final String entitiesTable, final String entitiesTableEntityTypeIdField, final String attributeTypesTable,
@@ -334,220 +334,220 @@ public enum TableMapper
         return dataTableEntityIdField;
     }
 
-    public Map<String, SQLTypes> getFieldToSQLTypeMap()
+    public Map<String, PSQLTypes> getFieldToSQLTypeMap()
     {
         return fieldToSQLTypeMap;
     }
 
     private static void initSampleFieldToSQLTypeMap()
     {
-        final Map<String, SQLTypes> fields = SAMPLE.fieldToSQLTypeMap;
-        fields.put(PERM_ID_COLUMN, SQLTypes.VARCHAR);
-        fields.put(CODE_COLUMN, SQLTypes.VARCHAR);
-        fields.put(REGISTRATION_TIMESTAMP_COLUMN, SQLTypes.TIMESTAMP_WITH_TZ);
-        fields.put(MODIFICATION_TIMESTAMP_COLUMN, SQLTypes.TIMESTAMP_WITH_TZ);
-        fields.put(EXPERIMENT_COLUMN, SQLTypes.INT8);
-        fields.put(SAMPLE_TYPE_COLUMN, SQLTypes.INT8);
-        fields.put(PERSON_REGISTERER_COLUMN, SQLTypes.INT8);
-        fields.put(SPACE_COLUMN, SQLTypes.INT8);
-        fields.put(PART_OF_SAMPLE_COLUMN, SQLTypes.INT8);
-        fields.put(PERSON_MODIFIER_COLUMN, SQLTypes.INT8);
-        fields.put(PROJECT_COLUMN, SQLTypes.INT8);
+        final Map<String, PSQLTypes> fields = SAMPLE.fieldToSQLTypeMap;
+        fields.put(PERM_ID_COLUMN, PSQLTypes.VARCHAR);
+        fields.put(CODE_COLUMN, PSQLTypes.VARCHAR);
+        fields.put(REGISTRATION_TIMESTAMP_COLUMN, PSQLTypes.TIMESTAMP_WITH_TZ);
+        fields.put(MODIFICATION_TIMESTAMP_COLUMN, PSQLTypes.TIMESTAMP_WITH_TZ);
+        fields.put(EXPERIMENT_COLUMN, PSQLTypes.INT8);
+        fields.put(SAMPLE_TYPE_COLUMN, PSQLTypes.INT8);
+        fields.put(PERSON_REGISTERER_COLUMN, PSQLTypes.INT8);
+        fields.put(SPACE_COLUMN, PSQLTypes.INT8);
+        fields.put(PART_OF_SAMPLE_COLUMN, PSQLTypes.INT8);
+        fields.put(PERSON_MODIFIER_COLUMN, PSQLTypes.INT8);
+        fields.put(PROJECT_COLUMN, PSQLTypes.INT8);
     }
 
     private static void initSampleTypeFieldToSQLTypeMap()
     {
-        final Map<String, SQLTypes> fields = SAMPLE_TYPE.fieldToSQLTypeMap;
-        fields.put(CODE_COLUMN, SQLTypes.VARCHAR);
-        fields.put(DESCRIPTION_COLUMN, SQLTypes.VARCHAR);
-        fields.put(GENERATED_CODE_PREFIX, SQLTypes.VARCHAR);
-        fields.put(MODIFICATION_TIMESTAMP_COLUMN, SQLTypes.TIMESTAMP_WITH_TZ);
-        fields.put(GENERATED_FROM_DEPTH, SQLTypes.INT4);
-        fields.put(PART_OF_DEPTH, SQLTypes.INT4);
-        fields.put(VALIDATION_SCRIPT_ID_COLUMN, SQLTypes.INT8);
-        fields.put(IS_AUTO_GENERATED_CODE, SQLTypes.BOOLEAN);
-        fields.put(IS_SUBCODE_UNIQUE, SQLTypes.BOOLEAN);
-        fields.put(IS_LISTABLE, SQLTypes.BOOLEAN);
-        fields.put(SHOW_PARENT_METADATA, SQLTypes.BOOLEAN);
+        final Map<String, PSQLTypes> fields = SAMPLE_TYPE.fieldToSQLTypeMap;
+        fields.put(CODE_COLUMN, PSQLTypes.VARCHAR);
+        fields.put(DESCRIPTION_COLUMN, PSQLTypes.VARCHAR);
+        fields.put(GENERATED_CODE_PREFIX, PSQLTypes.VARCHAR);
+        fields.put(MODIFICATION_TIMESTAMP_COLUMN, PSQLTypes.TIMESTAMP_WITH_TZ);
+        fields.put(GENERATED_FROM_DEPTH, PSQLTypes.INT4);
+        fields.put(PART_OF_DEPTH, PSQLTypes.INT4);
+        fields.put(VALIDATION_SCRIPT_ID_COLUMN, PSQLTypes.INT8);
+        fields.put(IS_AUTO_GENERATED_CODE, PSQLTypes.BOOLEAN);
+        fields.put(IS_SUBCODE_UNIQUE, PSQLTypes.BOOLEAN);
+        fields.put(IS_LISTABLE, PSQLTypes.BOOLEAN);
+        fields.put(SHOW_PARENT_METADATA, PSQLTypes.BOOLEAN);
     }
 
     private static void initExperimentFieldToSQLTypeMap()
     {
-        final Map<String, SQLTypes> fields = EXPERIMENT.fieldToSQLTypeMap;
-        fields.put(PERM_ID_COLUMN, SQLTypes.VARCHAR);
-        fields.put(CODE_COLUMN, SQLTypes.VARCHAR);
-        fields.put(REGISTRATION_TIMESTAMP_COLUMN, SQLTypes.TIMESTAMP_WITH_TZ);
-        fields.put(MODIFICATION_TIMESTAMP_COLUMN, SQLTypes.TIMESTAMP_WITH_TZ);
-        fields.put(EXPERIMENT_TYPE_COLUMN, SQLTypes.INT8);
-        fields.put(PERSON_REGISTERER_COLUMN, SQLTypes.INT8);
-        fields.put(PROJECT_COLUMN, SQLTypes.INT8);
-        fields.put(DELETION_COLUMN, SQLTypes.INT8);
-        fields.put(ORIGINAL_DELETION_COLUMN, SQLTypes.INT8);
-        fields.put(PERSON_MODIFIER_COLUMN, SQLTypes.INT8);
-        fields.put(IS_PUBLIC, SQLTypes.BOOLEAN);
+        final Map<String, PSQLTypes> fields = EXPERIMENT.fieldToSQLTypeMap;
+        fields.put(PERM_ID_COLUMN, PSQLTypes.VARCHAR);
+        fields.put(CODE_COLUMN, PSQLTypes.VARCHAR);
+        fields.put(REGISTRATION_TIMESTAMP_COLUMN, PSQLTypes.TIMESTAMP_WITH_TZ);
+        fields.put(MODIFICATION_TIMESTAMP_COLUMN, PSQLTypes.TIMESTAMP_WITH_TZ);
+        fields.put(EXPERIMENT_TYPE_COLUMN, PSQLTypes.INT8);
+        fields.put(PERSON_REGISTERER_COLUMN, PSQLTypes.INT8);
+        fields.put(PROJECT_COLUMN, PSQLTypes.INT8);
+        fields.put(DELETION_COLUMN, PSQLTypes.INT8);
+        fields.put(ORIGINAL_DELETION_COLUMN, PSQLTypes.INT8);
+        fields.put(PERSON_MODIFIER_COLUMN, PSQLTypes.INT8);
+        fields.put(IS_PUBLIC, PSQLTypes.BOOLEAN);
     }
 
     private static void initExperimentTypeFieldToSQLTypeMap()
     {
-        final Map<String, SQLTypes> fields = EXPERIMENT_TYPE.fieldToSQLTypeMap;
-        fields.put(CODE_COLUMN, SQLTypes.VARCHAR);
-        fields.put(DESCRIPTION_COLUMN, SQLTypes.VARCHAR);
-        fields.put(MODIFICATION_TIMESTAMP_COLUMN, SQLTypes.TIMESTAMP_WITH_TZ);
-        fields.put(VALIDATION_SCRIPT_ID_COLUMN, SQLTypes.INT8);
+        final Map<String, PSQLTypes> fields = EXPERIMENT_TYPE.fieldToSQLTypeMap;
+        fields.put(CODE_COLUMN, PSQLTypes.VARCHAR);
+        fields.put(DESCRIPTION_COLUMN, PSQLTypes.VARCHAR);
+        fields.put(MODIFICATION_TIMESTAMP_COLUMN, PSQLTypes.TIMESTAMP_WITH_TZ);
+        fields.put(VALIDATION_SCRIPT_ID_COLUMN, PSQLTypes.INT8);
     }
 
     private static void initPersonFieldToSQLTypeMap()
     {
-        final Map<String, SQLTypes> fields = PERSON.fieldToSQLTypeMap;
-        fields.put(FIRST_NAME_COLUMN, SQLTypes.VARCHAR);
-        fields.put(LAST_NAME_COLUMN, SQLTypes.VARCHAR);
-        fields.put(USER_COLUMN, SQLTypes.VARCHAR);
-        fields.put(EMAIL_COLUMN, SQLTypes.VARCHAR);
-        fields.put(REGISTRATION_TIMESTAMP_COLUMN, SQLTypes.TIMESTAMP_WITH_TZ);
-        fields.put(PERSON_IS_ACTIVE_COLUMN, SQLTypes.BOOLEAN);
+        final Map<String, PSQLTypes> fields = PERSON.fieldToSQLTypeMap;
+        fields.put(FIRST_NAME_COLUMN, PSQLTypes.VARCHAR);
+        fields.put(LAST_NAME_COLUMN, PSQLTypes.VARCHAR);
+        fields.put(USER_COLUMN, PSQLTypes.VARCHAR);
+        fields.put(EMAIL_COLUMN, PSQLTypes.VARCHAR);
+        fields.put(REGISTRATION_TIMESTAMP_COLUMN, PSQLTypes.TIMESTAMP_WITH_TZ);
+        fields.put(PERSON_IS_ACTIVE_COLUMN, PSQLTypes.BOOLEAN);
     }
 
     private static void initSampleSQLTypeToFieldsMap()
     {
-        final Map<SQLTypes, Set<String>> map = SAMPLE.sqlTypeToFieldsMap;
-        map.put(SQLTypes.VARCHAR, new HashSet<>(Arrays.asList(PERM_ID_COLUMN, CODE_COLUMN)));
-        map.put(SQLTypes.TIMESTAMP_WITH_TZ, new HashSet<>(Arrays.asList(REGISTRATION_TIMESTAMP_COLUMN, MODIFICATION_TIMESTAMP_COLUMN)));
-        map.put(SQLTypes.INT8, new HashSet<>(Arrays.asList(EXPERIMENT_COLUMN, SAMPLE_TYPE_COLUMN, PERSON_REGISTERER_COLUMN, SPACE_COLUMN,
+        final Map<PSQLTypes, Set<String>> map = SAMPLE.sqlTypeToFieldsMap;
+        map.put(PSQLTypes.VARCHAR, new HashSet<>(Arrays.asList(PERM_ID_COLUMN, CODE_COLUMN)));
+        map.put(PSQLTypes.TIMESTAMP_WITH_TZ, new HashSet<>(Arrays.asList(REGISTRATION_TIMESTAMP_COLUMN, MODIFICATION_TIMESTAMP_COLUMN)));
+        map.put(PSQLTypes.INT8, new HashSet<>(Arrays.asList(EXPERIMENT_COLUMN, SAMPLE_TYPE_COLUMN, PERSON_REGISTERER_COLUMN, SPACE_COLUMN,
                 PART_OF_SAMPLE_COLUMN, PERSON_MODIFIER_COLUMN, PROJECT_COLUMN)));
     }
 
     private static void initSampleTypeSQLTypeToFieldsMap()
     {
-        final Map<SQLTypes, Set<String>> map = SAMPLE_TYPE.sqlTypeToFieldsMap;
-        map.put(SQLTypes.VARCHAR, new HashSet<>(Arrays.asList(CODE_COLUMN, DESCRIPTION_COLUMN, GENERATED_CODE_PREFIX)));
-        map.put(SQLTypes.TIMESTAMP_WITH_TZ, new HashSet<>(Arrays.asList(MODIFICATION_TIMESTAMP_COLUMN)));
-        map.put(SQLTypes.INT4, new HashSet<>(Arrays.asList(GENERATED_FROM_DEPTH, PART_OF_DEPTH)));
-        map.put(SQLTypes.INT8, new HashSet<>(Arrays.asList(VALIDATION_SCRIPT_ID_COLUMN)));
-        map.put(SQLTypes.BOOLEAN, new HashSet<>(Arrays.asList(IS_AUTO_GENERATED_CODE, IS_SUBCODE_UNIQUE, IS_LISTABLE, SHOW_PARENT_METADATA)));
+        final Map<PSQLTypes, Set<String>> map = SAMPLE_TYPE.sqlTypeToFieldsMap;
+        map.put(PSQLTypes.VARCHAR, new HashSet<>(Arrays.asList(CODE_COLUMN, DESCRIPTION_COLUMN, GENERATED_CODE_PREFIX)));
+        map.put(PSQLTypes.TIMESTAMP_WITH_TZ, new HashSet<>(Arrays.asList(MODIFICATION_TIMESTAMP_COLUMN)));
+        map.put(PSQLTypes.INT4, new HashSet<>(Arrays.asList(GENERATED_FROM_DEPTH, PART_OF_DEPTH)));
+        map.put(PSQLTypes.INT8, new HashSet<>(Arrays.asList(VALIDATION_SCRIPT_ID_COLUMN)));
+        map.put(PSQLTypes.BOOLEAN, new HashSet<>(Arrays.asList(IS_AUTO_GENERATED_CODE, IS_SUBCODE_UNIQUE, IS_LISTABLE, SHOW_PARENT_METADATA)));
     }
 
     private static void initPersonSQLTypeToFieldsMap()
     {
-        final Map<SQLTypes, Set<String>> map = PERSON.sqlTypeToFieldsMap;
-        map.put(SQLTypes.VARCHAR, new HashSet<>(Arrays.asList(FIRST_NAME_COLUMN, LAST_NAME_COLUMN, USER_COLUMN, EMAIL_COLUMN)));
-        map.put(SQLTypes.TIMESTAMP_WITH_TZ, new HashSet<>(Arrays.asList(REGISTRATION_TIMESTAMP_COLUMN)));
-        map.put(SQLTypes.BOOLEAN, new HashSet<>(Arrays.asList(PERSON_IS_ACTIVE_COLUMN)));
+        final Map<PSQLTypes, Set<String>> map = PERSON.sqlTypeToFieldsMap;
+        map.put(PSQLTypes.VARCHAR, new HashSet<>(Arrays.asList(FIRST_NAME_COLUMN, LAST_NAME_COLUMN, USER_COLUMN, EMAIL_COLUMN)));
+        map.put(PSQLTypes.TIMESTAMP_WITH_TZ, new HashSet<>(Arrays.asList(REGISTRATION_TIMESTAMP_COLUMN)));
+        map.put(PSQLTypes.BOOLEAN, new HashSet<>(Arrays.asList(PERSON_IS_ACTIVE_COLUMN)));
     }
 
     private static void initExperimentSQLTypeToFieldsMap()
     {
-        final Map<SQLTypes, Set<String>> map = EXPERIMENT.sqlTypeToFieldsMap;
-        map.put(SQLTypes.VARCHAR, new HashSet<>(Arrays.asList(GENERATED_CODE_PREFIX, CODE_COLUMN, DESCRIPTION_COLUMN)));
-        map.put(SQLTypes.TIMESTAMP_WITH_TZ, new HashSet<>(Arrays.asList(REGISTRATION_TIMESTAMP_COLUMN, MODIFICATION_TIMESTAMP_COLUMN)));
-        map.put(SQLTypes.INT8, new HashSet<>(Arrays.asList(EXPERIMENT_TYPE_COLUMN, PERSON_REGISTERER_COLUMN, PROJECT_COLUMN, DELETION_COLUMN,
+        final Map<PSQLTypes, Set<String>> map = EXPERIMENT.sqlTypeToFieldsMap;
+        map.put(PSQLTypes.VARCHAR, new HashSet<>(Arrays.asList(GENERATED_CODE_PREFIX, CODE_COLUMN, DESCRIPTION_COLUMN)));
+        map.put(PSQLTypes.TIMESTAMP_WITH_TZ, new HashSet<>(Arrays.asList(REGISTRATION_TIMESTAMP_COLUMN, MODIFICATION_TIMESTAMP_COLUMN)));
+        map.put(PSQLTypes.INT8, new HashSet<>(Arrays.asList(EXPERIMENT_TYPE_COLUMN, PERSON_REGISTERER_COLUMN, PROJECT_COLUMN, DELETION_COLUMN,
                 ORIGINAL_DELETION_COLUMN)));
-        map.put(SQLTypes.BOOLEAN, new HashSet<>(Arrays.asList(IS_PUBLIC)));
+        map.put(PSQLTypes.BOOLEAN, new HashSet<>(Arrays.asList(IS_PUBLIC)));
     }
 
     private static void initExperimentTypeSQLTypeToFieldsMap()
     {
-        final Map<SQLTypes, Set<String>> map = SAMPLE_TYPE.sqlTypeToFieldsMap;
-        map.put(SQLTypes.VARCHAR, new HashSet<>(Arrays.asList(CODE_COLUMN, DESCRIPTION_COLUMN)));
-        map.put(SQLTypes.TIMESTAMP_WITH_TZ, new HashSet<>(Arrays.asList(MODIFICATION_TIMESTAMP_COLUMN)));
-        map.put(SQLTypes.INT8, new HashSet<>(Arrays.asList(VALIDATION_SCRIPT_ID_COLUMN)));
+        final Map<PSQLTypes, Set<String>> map = SAMPLE_TYPE.sqlTypeToFieldsMap;
+        map.put(PSQLTypes.VARCHAR, new HashSet<>(Arrays.asList(CODE_COLUMN, DESCRIPTION_COLUMN)));
+        map.put(PSQLTypes.TIMESTAMP_WITH_TZ, new HashSet<>(Arrays.asList(MODIFICATION_TIMESTAMP_COLUMN)));
+        map.put(PSQLTypes.INT8, new HashSet<>(Arrays.asList(VALIDATION_SCRIPT_ID_COLUMN)));
     }
 
     private static void initProjectFieldToSQLTypeMap()
     {
-        final Map<String, SQLTypes> fields = PROJECT.fieldToSQLTypeMap;
-        fields.put(PERM_ID_COLUMN, SQLTypes.VARCHAR);
-        fields.put(CODE_COLUMN, SQLTypes.VARCHAR);
-        fields.put(DESCRIPTION_COLUMN, SQLTypes.VARCHAR);
-        fields.put(SPACE_COLUMN, SQLTypes.INT8);
-        fields.put(PERSON_LEADER_COLUMN, SQLTypes.INT8);
-        fields.put(PERSON_REGISTERER_COLUMN, SQLTypes.INT8);
-        fields.put(PERSON_MODIFIER_COLUMN, SQLTypes.INT8);
-        fields.put(REGISTRATION_TIMESTAMP_COLUMN, SQLTypes.TIMESTAMP_WITH_TZ);
-        fields.put(MODIFICATION_TIMESTAMP_COLUMN, SQLTypes.TIMESTAMP_WITH_TZ);
+        final Map<String, PSQLTypes> fields = PROJECT.fieldToSQLTypeMap;
+        fields.put(PERM_ID_COLUMN, PSQLTypes.VARCHAR);
+        fields.put(CODE_COLUMN, PSQLTypes.VARCHAR);
+        fields.put(DESCRIPTION_COLUMN, PSQLTypes.VARCHAR);
+        fields.put(SPACE_COLUMN, PSQLTypes.INT8);
+        fields.put(PERSON_LEADER_COLUMN, PSQLTypes.INT8);
+        fields.put(PERSON_REGISTERER_COLUMN, PSQLTypes.INT8);
+        fields.put(PERSON_MODIFIER_COLUMN, PSQLTypes.INT8);
+        fields.put(REGISTRATION_TIMESTAMP_COLUMN, PSQLTypes.TIMESTAMP_WITH_TZ);
+        fields.put(MODIFICATION_TIMESTAMP_COLUMN, PSQLTypes.TIMESTAMP_WITH_TZ);
     }
 
     private static void initProjectSQLTypeToFieldsMap()
     {
-        final Map<SQLTypes, Set<String>> map = PROJECT.sqlTypeToFieldsMap;
-        map.put(SQLTypes.VARCHAR, new HashSet<>(Arrays.asList(PERM_ID_COLUMN, CODE_COLUMN, DESCRIPTION_COLUMN)));
-        map.put(SQLTypes.TIMESTAMP_WITH_TZ, new HashSet<>(Arrays.asList(REGISTRATION_TIMESTAMP_COLUMN, MODIFICATION_TIMESTAMP_COLUMN)));
-        map.put(SQLTypes.INT8, new HashSet<>(Arrays.asList(SPACE_COLUMN, PERSON_LEADER_COLUMN, PERSON_REGISTERER_COLUMN, PERSON_MODIFIER_COLUMN)));
+        final Map<PSQLTypes, Set<String>> map = PROJECT.sqlTypeToFieldsMap;
+        map.put(PSQLTypes.VARCHAR, new HashSet<>(Arrays.asList(PERM_ID_COLUMN, CODE_COLUMN, DESCRIPTION_COLUMN)));
+        map.put(PSQLTypes.TIMESTAMP_WITH_TZ, new HashSet<>(Arrays.asList(REGISTRATION_TIMESTAMP_COLUMN, MODIFICATION_TIMESTAMP_COLUMN)));
+        map.put(PSQLTypes.INT8, new HashSet<>(Arrays.asList(SPACE_COLUMN, PERSON_LEADER_COLUMN, PERSON_REGISTERER_COLUMN, PERSON_MODIFIER_COLUMN)));
     }
 
     private static void initSpaceFieldToSQLTypeMap()
     {
-        final Map<String, SQLTypes> fields = SPACE.fieldToSQLTypeMap;
-        fields.put(CODE_COLUMN, SQLTypes.VARCHAR);
-        fields.put(DESCRIPTION_COLUMN, SQLTypes.VARCHAR);
-        fields.put(REGISTRATION_TIMESTAMP_COLUMN, SQLTypes.TIMESTAMP_WITH_TZ);
-        fields.put(PERSON_REGISTERER_COLUMN, SQLTypes.INT8);
+        final Map<String, PSQLTypes> fields = SPACE.fieldToSQLTypeMap;
+        fields.put(CODE_COLUMN, PSQLTypes.VARCHAR);
+        fields.put(DESCRIPTION_COLUMN, PSQLTypes.VARCHAR);
+        fields.put(REGISTRATION_TIMESTAMP_COLUMN, PSQLTypes.TIMESTAMP_WITH_TZ);
+        fields.put(PERSON_REGISTERER_COLUMN, PSQLTypes.INT8);
     }
 
     private static void initSpaceSQLTypeToFieldsMap()
     {
-        final Map<SQLTypes, Set<String>> map = SPACE.sqlTypeToFieldsMap;
-        map.put(SQLTypes.VARCHAR, new HashSet<>(Arrays.asList(CODE_COLUMN, DESCRIPTION_COLUMN)));
-        map.put(SQLTypes.TIMESTAMP_WITH_TZ, new HashSet<>(Arrays.asList(REGISTRATION_TIMESTAMP_COLUMN)));
-        map.put(SQLTypes.INT8, new HashSet<>(Arrays.asList(PERSON_REGISTERER_COLUMN)));
+        final Map<PSQLTypes, Set<String>> map = SPACE.sqlTypeToFieldsMap;
+        map.put(PSQLTypes.VARCHAR, new HashSet<>(Arrays.asList(CODE_COLUMN, DESCRIPTION_COLUMN)));
+        map.put(PSQLTypes.TIMESTAMP_WITH_TZ, new HashSet<>(Arrays.asList(REGISTRATION_TIMESTAMP_COLUMN)));
+        map.put(PSQLTypes.INT8, new HashSet<>(Arrays.asList(PERSON_REGISTERER_COLUMN)));
     }
 
     private static void initDataSetFieldToSQLTypeMap()
     {
-        final Map<String, SQLTypes> fields = DATA_SET.fieldToSQLTypeMap;
-        fields.put(CODE_COLUMN, SQLTypes.VARCHAR);
-        fields.put(DATA_SET_KIND_COLUMN, SQLTypes.VARCHAR);
-        fields.put(DATA_PRODUCER_CODE_COLUMN, SQLTypes.VARCHAR);
+        final Map<String, PSQLTypes> fields = DATA_SET.fieldToSQLTypeMap;
+        fields.put(CODE_COLUMN, PSQLTypes.VARCHAR);
+        fields.put(DATA_SET_KIND_COLUMN, PSQLTypes.VARCHAR);
+        fields.put(DATA_PRODUCER_CODE_COLUMN, PSQLTypes.VARCHAR);
 
-        fields.put(PRODUCTION_TIMESTAMP_COLUMN, SQLTypes.TIMESTAMP_WITH_TZ);
-        fields.put(REGISTRATION_TIMESTAMP_COLUMN, SQLTypes.TIMESTAMP_WITH_TZ);
-        fields.put(MODIFICATION_TIMESTAMP_COLUMN, SQLTypes.TIMESTAMP_WITH_TZ);
-        fields.put(ACCESS_TIMESTAMP, SQLTypes.TIMESTAMP_WITH_TZ);
+        fields.put(PRODUCTION_TIMESTAMP_COLUMN, PSQLTypes.TIMESTAMP_WITH_TZ);
+        fields.put(REGISTRATION_TIMESTAMP_COLUMN, PSQLTypes.TIMESTAMP_WITH_TZ);
+        fields.put(MODIFICATION_TIMESTAMP_COLUMN, PSQLTypes.TIMESTAMP_WITH_TZ);
+        fields.put(ACCESS_TIMESTAMP, PSQLTypes.TIMESTAMP_WITH_TZ);
 
-        fields.put(DATA_SET_TYPE_COLUMN, SQLTypes.INT8);
-        fields.put(DATA_STORE_COLUMN, SQLTypes.INT8);
-        fields.put(EXPERIMENT_COLUMN, SQLTypes.INT8);
-        fields.put(SAMPLE_COLUMN, SQLTypes.INT8);
-        fields.put(PERSON_REGISTERER_COLUMN, SQLTypes.INT8);
-        fields.put(PERSON_MODIFIER_COLUMN, SQLTypes.INT8);
-        fields.put(DELETION_COLUMN, SQLTypes.INT8);
-        fields.put(ORIGINAL_DELETION_COLUMN, SQLTypes.INT8);
+        fields.put(DATA_SET_TYPE_COLUMN, PSQLTypes.INT8);
+        fields.put(DATA_STORE_COLUMN, PSQLTypes.INT8);
+        fields.put(EXPERIMENT_COLUMN, PSQLTypes.INT8);
+        fields.put(SAMPLE_COLUMN, PSQLTypes.INT8);
+        fields.put(PERSON_REGISTERER_COLUMN, PSQLTypes.INT8);
+        fields.put(PERSON_MODIFIER_COLUMN, PSQLTypes.INT8);
+        fields.put(DELETION_COLUMN, PSQLTypes.INT8);
+        fields.put(ORIGINAL_DELETION_COLUMN, PSQLTypes.INT8);
 
-        fields.put(IS_DERIVED, SQLTypes.BOOLEAN);
+        fields.put(IS_DERIVED, PSQLTypes.BOOLEAN);
     }
 
     private static void initDataSetSQLTypeToFieldsMap()
     {
-        final Map<SQLTypes, Set<String>> map = DATA_SET.sqlTypeToFieldsMap;
-        map.put(SQLTypes.VARCHAR, new HashSet<>(Arrays.asList(CODE_COLUMN, DATA_SET_KIND_COLUMN, DATA_PRODUCER_CODE_COLUMN)));
-        map.put(SQLTypes.TIMESTAMP_WITH_TZ, new HashSet<>(Arrays.asList(PRODUCTION_TIMESTAMP_COLUMN, REGISTRATION_TIMESTAMP_COLUMN,
+        final Map<PSQLTypes, Set<String>> map = DATA_SET.sqlTypeToFieldsMap;
+        map.put(PSQLTypes.VARCHAR, new HashSet<>(Arrays.asList(CODE_COLUMN, DATA_SET_KIND_COLUMN, DATA_PRODUCER_CODE_COLUMN)));
+        map.put(PSQLTypes.TIMESTAMP_WITH_TZ, new HashSet<>(Arrays.asList(PRODUCTION_TIMESTAMP_COLUMN, REGISTRATION_TIMESTAMP_COLUMN,
                 MODIFICATION_TIMESTAMP_COLUMN, ACCESS_TIMESTAMP)));
-        map.put(SQLTypes.INT8, new HashSet<>(Arrays.asList(DATA_SET_TYPE_COLUMN, DATA_STORE_COLUMN, EXPERIMENT_COLUMN, SAMPLE_COLUMN,
+        map.put(PSQLTypes.INT8, new HashSet<>(Arrays.asList(DATA_SET_TYPE_COLUMN, DATA_STORE_COLUMN, EXPERIMENT_COLUMN, SAMPLE_COLUMN,
                 PERSON_REGISTERER_COLUMN, PERSON_MODIFIER_COLUMN, DELETION_COLUMN, ORIGINAL_DELETION_COLUMN)));
-        map.put(SQLTypes.BOOLEAN, new HashSet<>(Arrays.asList(IS_DERIVED)));
+        map.put(PSQLTypes.BOOLEAN, new HashSet<>(Arrays.asList(IS_DERIVED)));
     }
 
     private static void initDataSetTypeFieldToSQLTypeMap()
     {
-        final Map<String, SQLTypes> fields = DATA_SET_TYPE.fieldToSQLTypeMap;
-        fields.put(CODE_COLUMN, SQLTypes.VARCHAR);
-        fields.put(DESCRIPTION_COLUMN, SQLTypes.VARCHAR);
-        fields.put(MAIN_DS_PATTERN, SQLTypes.VARCHAR);
-        fields.put(MAIN_DS_PATH, SQLTypes.VARCHAR);
+        final Map<String, PSQLTypes> fields = DATA_SET_TYPE.fieldToSQLTypeMap;
+        fields.put(CODE_COLUMN, PSQLTypes.VARCHAR);
+        fields.put(DESCRIPTION_COLUMN, PSQLTypes.VARCHAR);
+        fields.put(MAIN_DS_PATTERN, PSQLTypes.VARCHAR);
+        fields.put(MAIN_DS_PATH, PSQLTypes.VARCHAR);
 
-        fields.put(MODIFICATION_TIMESTAMP_COLUMN, SQLTypes.TIMESTAMP_WITH_TZ);
+        fields.put(MODIFICATION_TIMESTAMP_COLUMN, PSQLTypes.TIMESTAMP_WITH_TZ);
 
-        fields.put(VALIDATION_SCRIPT_ID_COLUMN, SQLTypes.INT8);
+        fields.put(VALIDATION_SCRIPT_ID_COLUMN, PSQLTypes.INT8);
 
-        fields.put(DELETION_DISALLOW, SQLTypes.BOOLEAN);
+        fields.put(DELETION_DISALLOW, PSQLTypes.BOOLEAN);
     }
 
     private static void initDataSetTypeSQLTypeToFieldsMap()
     {
-        final Map<SQLTypes, Set<String>> map = DATA_SET_TYPE.sqlTypeToFieldsMap;
-        map.put(SQLTypes.VARCHAR, new HashSet<>(Arrays.asList(CODE_COLUMN, DESCRIPTION_COLUMN, MAIN_DS_PATTERN, MAIN_DS_PATH)));
-        map.put(SQLTypes.TIMESTAMP_WITH_TZ, new HashSet<>(Arrays.asList(MODIFICATION_TIMESTAMP_COLUMN)));
-        map.put(SQLTypes.INT8, new HashSet<>(Arrays.asList(VALIDATION_SCRIPT_ID_COLUMN)));
-        map.put(SQLTypes.BOOLEAN, new HashSet<>(Arrays.asList(DELETION_DISALLOW)));
+        final Map<PSQLTypes, Set<String>> map = DATA_SET_TYPE.sqlTypeToFieldsMap;
+        map.put(PSQLTypes.VARCHAR, new HashSet<>(Arrays.asList(CODE_COLUMN, DESCRIPTION_COLUMN, MAIN_DS_PATTERN, MAIN_DS_PATH)));
+        map.put(PSQLTypes.TIMESTAMP_WITH_TZ, new HashSet<>(Arrays.asList(MODIFICATION_TIMESTAMP_COLUMN)));
+        map.put(PSQLTypes.INT8, new HashSet<>(Arrays.asList(VALIDATION_SCRIPT_ID_COLUMN)));
+        map.put(PSQLTypes.BOOLEAN, new HashSet<>(Arrays.asList(DELETION_DISALLOW)));
     }
 
 }

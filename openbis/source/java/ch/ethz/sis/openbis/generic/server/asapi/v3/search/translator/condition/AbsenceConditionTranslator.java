@@ -38,7 +38,7 @@ public class AbsenceConditionTranslator extends AbstractConditionTranslator<ISea
 {
     @Override
     public void translate(final ISearchCriteria criterion, final TableMapper tableMapper, final List<Object> args, final StringBuilder sqlBuilder,
-            final Map<Object, Map<String, JoinInformation>> aliases)
+            final Map<Object, Map<String, JoinInformation>> aliases, final Map<String, String> dataTypeByPropertyName)
     {
         final String alias = CriteriaTranslator.MAIN_TABLE_ALIAS;
         sqlBuilder.append(alias).append(PERIOD);

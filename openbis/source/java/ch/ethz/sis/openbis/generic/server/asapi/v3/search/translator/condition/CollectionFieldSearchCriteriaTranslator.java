@@ -39,7 +39,8 @@ public class CollectionFieldSearchCriteriaTranslator extends AbstractConditionTr
 
     @Override
     public void translate(final CollectionFieldSearchCriteria<?> criterion, final TableMapper tableMapper, final List<Object> args,
-            final StringBuilder sqlBuilder, final Map<Object, Map<String, JoinInformation>> aliases)
+            final StringBuilder sqlBuilder, final Map<Object, Map<String, JoinInformation>> aliases,
+            final Map<String, String> dataTypeByPropertyName)
     {
         switch (criterion.getFieldType()) {
             case ATTRIBUTE:
