@@ -433,9 +433,11 @@ public class TrackingBO
         if (commandLineMap.containsKey(TrackingClient.CL_PARAMETER_COPY_DATA_SETS))
         {
         	// Data Sets with higher priority get transferred first 
-            extraSCICOREDataSetListCopy(params, toTransferDataSetsHighPriority);
-            extraSCICOREDataSetListCopy(params, toTransferDataSets);
+            // extraSCICOREDataSetListCopy(params, toTransferDataSetsHighPriority);
+            // extraSCICOREDataSetListCopy(params, toTransferDataSets);
         }
+
+        extraSCICOREDataSetListCopy(params, filteredDataSets);
 
         LogUtils.info("Found " + filteredDataSets.size() + " data sets which are connected to samples in " + filterList.toString());       
         setLaneProperties(changedTrackingMap, v3, v3SessionToken);
@@ -560,6 +562,13 @@ public class TrackingBO
                     ret.getLocalizedMessage(), null,
                     new EMailAddress(params.getNotificationEmail()),
                     adminEmails.toArray(new EMailAddress[0]));
+        } else {
+            File datasetDestinationMarkerFile = new File(params.getDestinationFolderMap().get(datasetTypeCode), ".MARKER_is_finished_" + datasetName);
+            try {
+                datasetDestinationMarkerFile.createNewFile();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
