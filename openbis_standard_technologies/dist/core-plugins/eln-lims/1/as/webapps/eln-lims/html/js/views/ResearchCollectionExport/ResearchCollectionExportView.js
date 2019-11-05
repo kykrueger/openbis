@@ -35,8 +35,6 @@ function ResearchCollectionExportView(researchCollectionExportController, resear
         $infoBox.css('border', 'none');
         $container.append($infoBox);
 
-        this.paintSubmissionTypeDropdown($container);
-
         var $tree = $('<div>', { 'id' : 'exportsTree' });
         $formColumn.append($('<br>'));
         $formColumn.append(FormUtil.getBox().append($tree));
