@@ -478,7 +478,7 @@ public class TrackingBO
         return new SimpleDateFormat(DATE_FORMAT_PATTERN).format(Calendar.getInstance().getTime());
     }
 
-    private static final SimpleDateFormat LIST_TIMESTAMP_FORMAT = new SimpleDateFormat("yyyyMMddHHmmss");
+    private static final SimpleDateFormat LIST_TIMESTAMP_FORMAT = new SimpleDateFormat("yyyyMMddHHmmssSSSS");
 
     private static void extraSCICOREDataSetListCopy(Parameters params, List<AbstractExternalData> dataSets) {
         LogUtils.info("SCICORE dataset listing - Start");
@@ -491,7 +491,7 @@ public class TrackingBO
         String timestamp = LIST_TIMESTAMP_FORMAT.format(new Date());
         String tempCanonicalPath = null;
         try {
-            tempCanonicalPath = java.nio.file.Files.createTempDirectory(timestamp + "-tracking-temp").toFile().getCanonicalPath();
+            tempCanonicalPath = java.nio.file.Files.createTempDirectory(timestamp + "-tracking-temp-").toFile().getCanonicalPath();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
