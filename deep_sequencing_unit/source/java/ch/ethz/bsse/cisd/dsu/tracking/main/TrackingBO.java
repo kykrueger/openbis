@@ -49,7 +49,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.update.SampleUpdate;
-import com.google.common.io.Files;
 
 /**
  * @author Tomasz Pylak
@@ -506,7 +505,7 @@ public class TrackingBO
 
         File datasetListFile = new File(tempCanonicalPath + "/" + datasetName + "/" + timestamp + ".tsv");
         try {
-            Files.write(datasetListFileBytes.getBytes(), datasetListFile);
+            java.nio.file.Files.write(datasetListFile.toPath(), datasetListFileBytes.getBytes());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
