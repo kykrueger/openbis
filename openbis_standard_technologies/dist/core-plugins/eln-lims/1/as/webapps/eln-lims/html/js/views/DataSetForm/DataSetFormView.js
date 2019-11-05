@@ -807,7 +807,9 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 
 	this._allowedToEdit = function() {
 		var dataSet = this._dataSetFormModel.v3_dataset;
-		return dataSet.frozen == false;
+		var rights = this._dataSetFormModel.rights;
+		var updateAllowed = rights && rights.rights.indexOf("UPDATE") >= 0;
+		return updateAllowed && dataSet.frozen == false;
 	}
 
 	this._allowedToMove = function() {
