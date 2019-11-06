@@ -287,6 +287,9 @@
 	<script type="text/javascript" src="./plugins/generic/plugin.js"></script>
 
 	<script type="text/javascript" src="./js/util/EventUtil.js"></script>
+	<script type="text/javascript" src="./js/test/TestUtil.js"></script>
+	<script type="text/javascript" src="./js/test/UserTests.js"></script>
+	<script type="text/javascript" src="./js/test/AdminTests.js"></script>
 	<script type="text/javascript" src="./js/test/TestProtocol.js"></script>
 
 	<script type="text/javascript">
@@ -370,11 +373,11 @@
 		}
 		var test = queryString.test;
 		if(test == "true") {
-			TestProtocol.startAdmitTests();
+			TestProtocol.startAdminTests();
 		}
 
 		if ($.cookie("suitename") == "testId") {
-			TestProtocol.startTestUserTests();
+			TestProtocol.startUserTests();
 		}
 	}
 
