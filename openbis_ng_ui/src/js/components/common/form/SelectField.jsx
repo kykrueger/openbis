@@ -11,25 +11,10 @@ class SelectFormField extends React.PureComponent {
   render() {
     logger.log(logger.DEBUG, 'SelectFormField.render')
 
-    const {
-      label,
-      description,
-      mandatory,
-      disabled,
-      transparent,
-      options,
-      metadata,
-      value
-    } = this.props
+    const { value, disabled, options } = this.props
 
     return (
-      <FormField
-        label={label}
-        description={description}
-        mandatory={mandatory}
-        transparent={transparent}
-        metadata={metadata}
-      >
+      <FormField {...this.props}>
         <TextField select value={value} disabled={disabled} fullWidth={true}>
           {options &&
             options.map(option => (

@@ -25,6 +25,7 @@ class ObjectTypeParameters extends React.PureComponent {
       properties,
       selection,
       onChange,
+      onSelectionChange,
       classes
     } = this.props
 
@@ -44,6 +45,7 @@ class ObjectTypeParameters extends React.PureComponent {
           properties={properties}
           selection={selection}
           onChange={onChange}
+          onSelectionChange={onSelectionChange}
         />
       </div>
     )

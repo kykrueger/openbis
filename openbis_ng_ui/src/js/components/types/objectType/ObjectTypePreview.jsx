@@ -16,9 +16,7 @@ const styles = theme => ({
   header: {
     marginBottom: theme.spacing(2)
   },
-  form: {
-    flex: '0 0 50%'
-  },
+  form: {},
   droppable: {
     display: 'flex',
     flexDirection: 'column',

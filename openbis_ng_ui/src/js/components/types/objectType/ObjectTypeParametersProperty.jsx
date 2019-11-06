@@ -18,11 +18,21 @@ class ObjectTypeParametersProperty extends React.PureComponent {
   constructor(props) {
     super(props)
     this.state = {}
+    this.references = {
+      code: React.createRef(),
+      label: React.createRef(),
+      description: React.createRef(),
+      dataType: React.createRef(),
+      mandatory: React.createRef()
+    }
+    this.actions = {}
     this.handleChange = this.handleChange.bind(this)
+    this.handleFocus = this.handleFocus.bind(this)
   }
 
   componentDidMount() {
     this.load()
+    this.focus()
   }
 
   componentDidUpdate(prevProps) {
@@ -34,6 +44,13 @@ class ObjectTypeParametersProperty extends React.PureComponent {
 
     if (prevDataType !== dataType) {
       this.load()
+    }
+
+    const prevSelection = prevProps.selection
+    const selection = this.props.selection
+
+    if (prevSelection !== selection) {
+      this.focus()
     }
   }
 
@@ -73,6 +90,23 @@ class ObjectTypeParametersProperty extends React.PureComponent {
     })
   }
 
+  focus() {
+    const property = this.getProperty(this.props)
+    if (property) {
+      const { part } = this.props.selection.params
+      if (part) {
+        const reference = this.references[part]
+        if (reference) {
+          reference.current.focus()
+        }
+        const action = this.actions[part]
+        if (action) {
+          action.focusVisible()
+        }
+      }
+    }
+  }
+
   handleChange(event) {
     const property = this.getProperty(this.props)
 
@@ -95,6 +129,26 @@ class ObjectTypeParametersProperty extends React.PureComponent {
     this.props.onChange('property', params)
   }
 
+  handleFocus(event) {
+    const property = this.getProperty(this.props)
+
+    let params = null
+
+    if (_.has(event.target, 'checked')) {
+      params = {
+        id: property.id,
+        part: event.target.value
+      }
+    } else {
+      params = {
+        id: property.id,
+        part: event.target.name
+      }
+    }
+
+    this.props.onSelectionChange('property', params)
+  }
+
   render() {
     logger.log(logger.DEBUG, 'ObjectTypeParametersProperty.render')
 
@@ -112,20 +166,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
         <form>
           <div>
             <TextField
-              label='Code'
-              name='code'
-              value={property.code}
-              fullWidth={true}
-              margin='normal'
-              variant='filled'
-              InputLabelProps={{
-                shrink: true
-              }}
-              onChange={this.handleChange}
-            />
-          </div>
-          <div>
-            <TextField
+              inputRef={this.references.label}
               label='Label'
               name='label'
               value={property.label}
@@ -136,11 +177,28 @@ class ObjectTypeParametersProperty extends React.PureComponent {
                 shrink: true
               }}
               onChange={this.handleChange}
+              onFocus={this.handleFocus}
             />
           </div>
           <div>
             <TextField
-              multiline
+              inputRef={this.references.code}
+              label='Code'
+              name='code'
+              value={property.code}
+              fullWidth={true}
+              margin='normal'
+              variant='filled'
+              InputLabelProps={{
+                shrink: true
+              }}
+              onChange={this.handleChange}
+              onFocus={this.handleFocus}
+            />
+          </div>
+          <div>
+            <TextField
+              inputRef={this.references.description}
               label='Description'
               name='description'
               value={property.description}
@@ -151,11 +209,13 @@ class ObjectTypeParametersProperty extends React.PureComponent {
                 shrink: true
               }}
               onChange={this.handleChange}
+              onFocus={this.handleFocus}
             />
           </div>
           <div>
             <TextField
               select
+              inputRef={this.references.dataType}
               label='Data Type'
               name='dataType'
               SelectProps={{
@@ -169,6 +229,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
                 shrink: true
               }}
               onChange={this.handleChange}
+              onFocus={this.handleFocus}
             >
               {dto.DataType.values.sort().map(dataType => {
                 return (
@@ -196,6 +257,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
                   shrink: true
                 }}
                 onChange={this.handleChange}
+                onFocus={this.handleFocus}
               >
                 <option key='' value=''></option>
                 {vocabularies &&
@@ -226,6 +288,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
                   shrink: true
                 }}
                 onChange={this.handleChange}
+                onFocus={this.handleFocus}
               >
                 <option key='' value=''></option>
                 {materialTypes &&
@@ -243,9 +306,14 @@ class ObjectTypeParametersProperty extends React.PureComponent {
             <FormControlLabel
               control={
                 <Checkbox
+                  inputRef={this.references.mandatory}
+                  action={actions => {
+                    this.actions.mandatory = actions
+                  }}
                   value='mandatory'
                   checked={property.mandatory}
                   onChange={this.handleChange}
+                  onFocus={this.handleFocus}
                 />
               }
               label='Mandatory'
@@ -258,6 +326,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
                   value='visible'
                   checked={property.visible}
                   onChange={this.handleChange}
+                  onFocus={this.handleFocus}
                 />
               }
               label='Visible'

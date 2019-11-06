@@ -531,6 +531,7 @@ class ObjectType extends React.PureComponent {
               sections={sections}
               selection={selection}
               onChange={this.handleChange}
+              onSelectionChange={this.handleSelectionChange}
             />
           </div>
         </Resizable>
