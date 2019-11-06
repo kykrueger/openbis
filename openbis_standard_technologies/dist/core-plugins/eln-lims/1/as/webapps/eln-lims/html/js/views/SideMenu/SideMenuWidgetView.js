@@ -249,6 +249,11 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
             treeModelUtils.push({ title : userProfileLink, entityType: "USER_PROFILE", key : "USER_PROFILE", folder : false, lazy : false, view : "showUserProfilePage", icon : "glyphicon glyphicon-user" });
         }
 
+        if(profile.mainMenu.showBarcodes) {
+            var preGenerateBarcodesLink = _this.getLinkForNode("Barcodes Generator", "GENERATE_BARCODES", "showBarcodesGeneratorPage", null, null);
+            treeModelUtils.push({ title : preGenerateBarcodesLink, entityType: "GENERATE_BARCODES", key : "GENERATE_BARCODES", folder : false, lazy : false, view : "showBarcodesGeneratorPage", icon : "glyphicon glyphicon-barcode" });
+        }
+
         if(profile.mainMenu.showDrawingBoard) {
             var drawingBoardLink = _this.getLinkForNode("Drawing Board", "DRAWING_BOARD", "showDrawingBoard", null, null);
             treeModelUtils.push({ displayName: "Drawing Board", title : drawingBoardLink, entityType: "DRAWING_BOARD", key : "DRAWING_BOARD", folder : false, lazy : false, view : "showDrawingBoard" });
@@ -589,7 +594,9 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
                         for(var sIdx = 0; sIdx < samples.length; sIdx++) {
                             var sample = samples[sIdx];
                             var sampleIsExperiment = sample.type.code.indexOf("EXPERIMENT") > -1;
-                            var sampleTypeOnNav = profile.sampleTypeDefinitionsExtension[sample.type.code] && profile.sampleTypeDefinitionsExtension[sample.type.code]["SHOW_ON_NAV"];
+                            var sampleTypeOnNav = profile.sampleTypeDefinitionsExtension[sample.type.code] &&
+                                                  profile.sampleTypeDefinitionsExtension[sample.type.code]["SHOW_ON_NAV"] &&
+                                                  !profile.sampleTypeDefinitionsExtension[sample.type.code]["SHOW_ON_NAV_FOR_PARENT_TYPES"];
                             if(sampleIsExperiment || sampleTypeOnNav) {
                                 var parentIsExperiment = false;
                                 if(sample.parents) {
@@ -728,24 +735,40 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
                                     }
                                     if(sample.type.code.indexOf("EXPERIMENT") > -1 ||
                                     (profile.sampleTypeDefinitionsExtension[sample.type.code] && profile.sampleTypeDefinitionsExtension[sample.type.code]["SHOW_ON_NAV"])) {
-                                        var sampleDisplayName = sample.code;
-                                        if(sample.properties && sample.properties[profile.propertyReplacingCode]) {
-                                                sampleDisplayName = sample.properties[profile.propertyReplacingCode];
-                                        }
-                                        var sampleLink = _this.getLinkForNode(sampleDisplayName, sample.getPermId().getPermId(), "showViewSamplePageFromPermId", sample.getPermId().getPermId(), null);
-                                        var sampleNode = {
-                                            displayName: sampleDisplayName,
-                                            title : sampleLink,
-                                            entityType: "SAMPLE",
-                                            key : sample.getPermId().getPermId(),
-                                            folder : true,
-                                            lazy : true,
-                                            view : "showViewSamplePageFromPermId",
-                                            viewData: sample.getPermId().getPermId(),
-                                            icon : sampleIcon,
-                                            registrationDate: sample.registrationDate
-                                        };
-                                        results.push(sampleNode);
+                                        var parentTypeCode = samples[0].type.code;
+                                        var showOnNavForParentTypes = profile.sampleTypeDefinitionsExtension[sample.type.code]["SHOW_ON_NAV_FOR_PARENT_TYPES"];
+                                        var showSampleOnNav = false;
+                                        if(!showOnNavForParentTypes) {
+                                            showSampleOnNav = true;
+                                        } else {
+                                            for(var ptIdx = 0; ptIdx < showOnNavForParentTypes.length; ptIdx++) {
+                                                if(parentTypeCode === showOnNavForParentTypes[ptIdx]) {
+                                                    showSampleOnNav = true;
+                                                    break;
+                                                }
+                                            }
+                                        }
+
+                                        if(showSampleOnNav) {
+                                            var sampleDisplayName = sample.code;
+                                            if(sample.properties && sample.properties[profile.propertyReplacingCode]) {
+                                                    sampleDisplayName = sample.properties[profile.propertyReplacingCode];
+                                            }
+                                            var sampleLink = _this.getLinkForNode(sampleDisplayName, sample.getPermId().getPermId(), "showViewSamplePageFromPermId", sample.getPermId().getPermId(), null);
+                                            var sampleNode = {
+                                                displayName: sampleDisplayName,
+                                                title : sampleLink,
+                                                entityType: "SAMPLE",
+                                                key : sample.getPermId().getPermId(),
+                                                folder : true,
+                                                lazy : true,
+                                                view : "showViewSamplePageFromPermId",
+                                                viewData: sample.getPermId().getPermId(),
+                                                icon : sampleIcon,
+                                                registrationDate: sample.registrationDate
+                                            };
+                                            results.push(sampleNode);
+                                        }
                                     }
                                 }
                             }

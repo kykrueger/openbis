@@ -4,7 +4,7 @@ from pandas import DataFrame
 from .openbis_object import OpenBisObject
 from .things import Things
 from .utils import check_datatype, split_identifier, format_timestamp, is_identifier, is_permid, nvl, extract_permid, extract_code, extract_name, VERBOSE
-from .definitions import get_method_for_entity, get_type_for_entity
+from .definitions import get_method_for_entity, get_type_for_entity, get_definition_for_entity
 
 class EntityType:
     """ EntityTypes define a variety of an entity, eg. sample, dataSet, experiment
@@ -37,13 +37,21 @@ class EntityType:
         ]
 
     def __dir__(self):
-        return self._attrs() + [
+        defs = get_definition_for_entity(self.entity)
+        attrs = [
             'get_property_assignments()',
             'assign_property()',
             'revoke_property()',
             'move_property_to_top()',
             'move_property_after()',
+            'get_validationPlugin()',
+            'save()',
+            'delete()',
         ]
+        if self.is_new:
+            return attrs + defs['attrs_new']
+        else:
+            return attrs + list(set(defs['attrs'] + defs['attrs_up']))
 
     def __getattr__(self, name):
         if name in self._attrs():
@@ -177,7 +185,7 @@ class EntityType:
 
 
     @property
-    def validationPlugin(self):
+    def get_validationPlugin(self):
         """Returns a validation plugin object when called.
         Returns None when no validation plugin is defined.
         """
