@@ -23,6 +23,8 @@ const styles = theme => ({
   preview: {
     height: '100%',
     flex: '1 1 auto',
+    display: 'flex',
+    flexDirection: 'column',
     overflow: 'auto'
   },
   buttons: {
