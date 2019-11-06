@@ -139,8 +139,7 @@ class ObjectTypePreviewProperty extends React.PureComponent {
   handleDraggableClick(event) {
     event.stopPropagation()
     this.props.onSelectionChange('property', {
-      id: this.props.property.id,
-      part: 'label'
+      id: this.props.property.id
     })
   }
 
