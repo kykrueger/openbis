@@ -398,7 +398,7 @@ $.extend(DefaultProfile.prototype, {
 				"experimentTypeCodes" : []
 		}
 		this.hideTypes = {
-				"sampleTypeCodes" : ["GENERAL_ELN_SETTINGS", "STORAGE_POSITION", "STORAGE"],
+				"sampleTypeCodes" : [],
 				"experimentTypeCodes" : []
 		}
 		
