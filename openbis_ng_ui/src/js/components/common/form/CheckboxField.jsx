@@ -10,11 +10,40 @@ class CheckboxFormField extends React.PureComponent {
   render() {
     logger.log(logger.DEBUG, 'CheckboxFormField.render')
 
-    const { value, disabled } = this.props
+    const {
+      reference: inputRef,
+      name,
+      label,
+      description,
+      value,
+      mandatory,
+      disabled,
+      action,
+      metadata,
+      styles,
+      onClick,
+      onChange,
+      onFocus
+    } = this.props
 
     return (
-      <FormField {...this.props}>
-        <Checkbox checked={value} disabled={disabled} />
+      <FormField
+        label={label}
+        description={description}
+        mandatory={mandatory}
+        metadata={metadata}
+        styles={styles}
+        onClick={onClick}
+      >
+        <Checkbox
+          inputRef={inputRef}
+          value={name}
+          checked={value}
+          disabled={disabled}
+          action={action}
+          onChange={onChange}
+          onFocus={onFocus}
+        />
       </FormField>
     )
   }

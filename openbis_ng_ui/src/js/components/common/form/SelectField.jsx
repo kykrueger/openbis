@@ -1,7 +1,6 @@
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import TextField from '@material-ui/core/TextField'
-import MenuItem from '@material-ui/core/MenuItem'
 import FormField from './FormField.jsx'
 import logger from '../../../common/logger.js'
 
@@ -11,16 +10,49 @@ class SelectFormField extends React.PureComponent {
   render() {
     logger.log(logger.DEBUG, 'SelectFormField.render')
 
-    const { value, disabled, options } = this.props
+    const {
+      reference: inputRef,
+      name,
+      label,
+      description,
+      value,
+      mandatory,
+      disabled,
+      options,
+      metadata,
+      styles,
+      onClick,
+      onChange,
+      onFocus
+    } = this.props
 
     return (
-      <FormField {...this.props}>
-        <TextField select value={value} disabled={disabled} fullWidth={true}>
+      <FormField
+        label={label}
+        description={description}
+        mandatory={mandatory}
+        metadata={metadata}
+        styles={styles}
+        onClick={onClick}
+      >
+        <TextField
+          select
+          inputRef={inputRef}
+          name={name}
+          value={value}
+          disabled={disabled}
+          onChange={onChange}
+          onFocus={onFocus}
+          fullWidth={true}
+          SelectProps={{
+            native: true
+          }}
+        >
           {options &&
             options.map(option => (
-              <MenuItem key={option.value} value={option.value}>
+              <option key={option.value} value={option.value}>
                 {option.label || option.value}
-              </MenuItem>
+              </option>
             ))}
         </TextField>
       </FormField>

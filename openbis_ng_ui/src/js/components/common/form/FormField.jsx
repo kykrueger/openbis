@@ -55,7 +55,13 @@ class FormField extends React.PureComponent {
   }
 
   renderLabel() {
-    const { label, mandatory, metadata, classes, styles = {} } = this.props
+    const {
+      label,
+      mandatory = false,
+      metadata,
+      classes,
+      styles = {}
+    } = this.props
     return (
       <div className={classes.labelContainer}>
         <div>
