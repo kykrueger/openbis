@@ -17,16 +17,13 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchObjectsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchObjectsOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
@@ -34,7 +31,6 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset.SearchDataSetsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.experiment.SearchExperimentsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.sample.SearchSamplesOperationExecutor;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sort.IPage;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sort.SortAndPage;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.ITranslator;
@@ -89,26 +85,12 @@ public abstract class SearchObjectsOperationExecutor<OBJECT, OBJECT_PE, CRITERIA
         }
 
         final Long userId = context.getSession().tryGetPerson().getId();
-        final IPage page = new IPage()
-        {
-
-            @Override
-            public <T, C extends Collection<T>> C page(final C objects, final ISearchCriteria c, final FetchOptions fo)
-            {
-                final List<T> toPage = new ArrayList<>(objects);
-                final Integer fromRecord = fo.getFrom();
-                final Integer recordsCount = fo.getCount();
-                final boolean hasPaging = fromRecord != null || recordsCount != null;
-                return hasPaging ? (C) toPage.subList(fromRecord, Math.min(fromRecord + recordsCount, toPage.size())) : (C) toPage;
-            }
-
-        };
         final TranslationContext translationContext = new TranslationContext(context.getSession());
         final SortOptions<OBJECT> sortOptions = fetchOptions.getSortBy();
 
         final Set<Long> allResultsIds = getSearchManager().searchForIDs(userId, criteria, sortOptions);
-        final Set<Long> filteredResults = getSearchManager().filterIDsByUserRights(userId, allResultsIds);
-        final List<Long> sortedAndPagedResultIds = (List<Long>) page.page(filteredResults, criteria, fetchOptions);
+        final Set<Long> filteredIds = getSearchManager().filterIDsByUserRights(userId, allResultsIds);
+        final List<Long> sortedAndPagedResultIds = sortAndPage(userId, filteredIds, fetchOptions);
         final List<OBJECT_PE> sortedAndPagedResultPEs = getSearchManager().translate(sortedAndPagedResultIds);
         final Map<OBJECT_PE, OBJECT> sortedAndPagedResultV3DTOs = doTranslate(translationContext, sortedAndPagedResultPEs, fetchOptions);
         final List<OBJECT> finalResults = new ArrayList<>(sortedAndPagedResultV3DTOs.values());
@@ -123,6 +105,18 @@ public abstract class SearchObjectsOperationExecutor<OBJECT, OBJECT_PE, CRITERIA
 
         final SearchResult<OBJECT> searchResult = new SearchResult<>(sortedFinalResults, allResultsIds.size());
         return getOperationResult(searchResult);
+    }
+
+    private List<Long> sortAndPage(final Long userId, final Set<Long> ids, final FetchOptions fo)
+    {
+        final SortOptions<OBJECT> sortOptions = fo.getSortBy();
+        final Set<Long> orderedIDs = (sortOptions != null) ? getSearchManager().sortIDs(userId, ids, sortOptions) : ids;
+
+        final List<Long> toPage = new ArrayList<>(orderedIDs);
+        final Integer fromRecord = fo.getFrom();
+        final Integer recordsCount = fo.getCount();
+        final boolean hasPaging = fromRecord != null && recordsCount != null;
+        return hasPaging ? toPage.subList(fromRecord, Math.min(fromRecord + recordsCount, toPage.size())) : toPage;
     }
 
 }

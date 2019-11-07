@@ -51,6 +51,12 @@ public class DataSetTypeSearchManager extends AbstractSearchManager<DataSetTypeS
     }
 
     @Override
+    protected TableMapper getTableMapper()
+    {
+        return TableMapper.DATA_SET_TYPE;
+    }
+
+    @Override
     public Set<Long> searchForIDs(final Long userId, final DataSetTypeSearchCriteria criteria, final SortOptions<DataSetType> sortOptions)
     {
         final Set<Long> mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId, TableMapper.DATA_SET_TYPE,

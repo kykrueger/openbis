@@ -51,6 +51,12 @@ public class ExperimentTypeSearchManager extends AbstractSearchManager<Experimen
     }
 
     @Override
+    protected TableMapper getTableMapper()
+    {
+        return TableMapper.EXPERIMENT_TYPE;
+    }
+
+    @Override
     public Set<Long> searchForIDs(final Long userId, final ExperimentTypeSearchCriteria criteria, final SortOptions<ExperimentType> sortOptions)
     {
         final Set<Long> mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId, TableMapper.EXPERIMENT_TYPE,

@@ -51,6 +51,12 @@ public class SampleTypeSearchManager extends AbstractSearchManager<SampleTypeSea
     }
 
     @Override
+    protected TableMapper getTableMapper()
+    {
+        return TableMapper.SAMPLE_TYPE;
+    }
+
+    @Override
     public Set<Long> searchForIDs(final Long userId, final SampleTypeSearchCriteria criteria, final SortOptions<SampleType> sortOptions)
     {
         final Set<Long> mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId, TableMapper.SAMPLE_TYPE,

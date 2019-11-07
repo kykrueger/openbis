@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
@@ -33,6 +34,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInfo
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 
 /**
  * Manages detailed search with complex search criteria.
@@ -190,5 +192,18 @@ public abstract class AbstractSearchManager<CRITERIA extends ISearchCriteria, FE
     public List<OBJECT_PE> translate(final List<Long> ids) {
         return idsTranslator.translate(ids);
     }
+
+    @Override
+    public Set<Long> sortIDs(final Long userId, final Set<Long> filteredIDs, final SortOptions<OBJECT> sortOptions)
+    {
+        return getSearchDAO().sortIDs(userId, getTableMapper(), filteredIDs, sortOptions);
+    }
+
+    /**
+     * Returns what kind of entity should be searched.
+     *
+     * @return an entity kind.
+     */
+    protected abstract TableMapper getTableMapper();
 
 }

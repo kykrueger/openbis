@@ -51,6 +51,12 @@ public class PersonSearchManager extends AbstractSearchManager<PersonSearchCrite
     }
 
     @Override
+    protected TableMapper getTableMapper()
+    {
+        return TableMapper.PERSON;
+    }
+
+    @Override
     public Set<Long> searchForIDs(final Long userId, final PersonSearchCriteria criteria, final SortOptions<Person> sortOptions)
     {
         final Set<Long> mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId, TableMapper.PERSON,

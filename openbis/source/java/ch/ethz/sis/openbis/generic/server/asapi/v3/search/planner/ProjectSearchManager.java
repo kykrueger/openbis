@@ -51,6 +51,12 @@ public class ProjectSearchManager extends AbstractSearchManager<ProjectSearchCri
     }
 
     @Override
+    protected TableMapper getTableMapper()
+    {
+        return TableMapper.PROJECT;
+    }
+
+    @Override
     public Set<Long> searchForIDs(final Long userId, final ProjectSearchCriteria criteria, final SortOptions<Project> sortOptions)
     {
         final Set<Long> mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId, TableMapper.PROJECT,

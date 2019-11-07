@@ -28,7 +28,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.Role;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleSortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sort.IPage;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
@@ -62,15 +61,12 @@ public class SampleSearchManagerTest
 
     private SampleSearchManager searchManager;
 
-    private IPage sortAndPageMock;
-
     @BeforeMethod
     public void setUpMocks()
     {
         context = new Mockery();
         searchDAOMock = context.mock(ISQLSearchDAO.class);
         authInfoProviderMock = context.mock(ISQLAuthorisationInformationProviderDAO.class);
-        sortAndPageMock = context.mock(IPage.class);
         iid2PETranslatorMock = context.mock(IID2PETranslator.class);
         searchManager = new SampleSearchManager(searchDAOMock, authInfoProviderMock, iid2PETranslatorMock);
     }

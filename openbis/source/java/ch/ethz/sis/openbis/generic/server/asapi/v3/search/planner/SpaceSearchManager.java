@@ -54,6 +54,12 @@ public class SpaceSearchManager extends AbstractSearchManager<SpaceSearchCriteri
         return authorisationInformation.getSpaceIds().stream().filter(ids::contains).collect(Collectors.toSet());
     }
 
+    @Override
+    protected TableMapper getTableMapper()
+    {
+        return TableMapper.SPACE;
+    }
+
     private CodeSearchCriteria convertToCodeSearchCriterion(final PermIdSearchCriteria permIdSearchCriteria)
     {
         final CodeSearchCriteria codeSearchCriteria = new CodeSearchCriteria();

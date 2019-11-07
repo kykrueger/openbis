@@ -43,13 +43,6 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
         super(searchDAO, authProvider, idsTranslator);
     }
 
-    /**
-     * Returns what kind of entity should be searched.
-     *
-     * @return an entity kind.
-     */
-    protected abstract TableMapper getTableMapper();
-
     protected abstract Class<? extends AbstractCompositeSearchCriteria> getParentsSearchCriteriaClass();
 
     protected abstract Class<? extends AbstractCompositeSearchCriteria> getChildrenSearchCriteriaClass();
@@ -127,41 +120,26 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
         }
 
         // Reaching this point we have the intermediate results of all recursive queries
-        final Set<Long> resultBeforeFiltering;
+        final Set<Long> results;
         if (containsValues(mainCriteriaIntermediateResults) || containsValues(parentCriteriaIntermediateResults) ||
                 containsValues(childrenCriteriaIntermediateResults))
         {
             // If we have results, we merge them
-            resultBeforeFiltering = mergeResults(finalSearchOperator,
+            results = mergeResults(finalSearchOperator,
                     mainCriteriaIntermediateResults != null ? Collections.singleton(mainCriteriaIntermediateResults) : Collections.emptySet(),
                     childrenCriteriaIntermediateResults != null ? Collections.singleton(childrenCriteriaIntermediateResults) : Collections.emptySet(),
                     parentCriteriaIntermediateResults != null ? Collections.singleton(parentCriteriaIntermediateResults) : Collections.emptySet());
         } else if (mainCriteria.isEmpty() && parentsCriteria.isEmpty() && childrenCriteria.isEmpty())
         {
             // If we don't have results and criteria are empty, return all.
-            resultBeforeFiltering = getAllIds(userId);
+            results = getAllIds(userId);
         } else
         {
             // If we don't have results and criteria are not empty, there are no results.
-            resultBeforeFiltering = Collections.emptySet();
+            results = Collections.emptySet();
         }
 
-        final Set<Long> filteredIDs = filterIDsByUserRights(userId, resultBeforeFiltering);
-
-        if (sortOptions != null)
-        {
-            final Set<Long> orderedIDs = sortIDs(userId, tableMapper, filteredIDs, sortOptions);
-            return orderedIDs;
-        } else
-        {
-            return filteredIDs;
-        }
-    }
-
-    private Set<Long> sortIDs(final Long userId, final TableMapper tableMapper,
-            final Set<Long> filteredIDs, final SortOptions<OBJECT> sortOptions)
-    {
-        return getSearchDAO().sortIDs(userId, tableMapper, filteredIDs, sortOptions);
+        return results;
     }
 
     /**
