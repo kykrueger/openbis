@@ -21,9 +21,9 @@ import java.util.Collection;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 
-public interface ISortAndPage
+public interface IPage
 {
 
-    <T, C extends Collection<T>> C sortAndPage(C objects, ISearchCriteria c, FetchOptions fo);
+    <T, C extends Collection<T>> C page(C objects, ISearchCriteria c, FetchOptions fo);
 
 }

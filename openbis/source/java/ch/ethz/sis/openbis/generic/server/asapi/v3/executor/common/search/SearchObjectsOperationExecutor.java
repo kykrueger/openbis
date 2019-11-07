@@ -34,7 +34,8 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset.SearchDataSetsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.experiment.SearchExperimentsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.sample.SearchSamplesOperationExecutor;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sort.ISortAndPage;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sort.IPage;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sort.SortAndPage;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.ITranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.TranslationContext;
@@ -88,11 +89,11 @@ public abstract class SearchObjectsOperationExecutor<OBJECT, OBJECT_PE, CRITERIA
         }
 
         final Long userId = context.getSession().tryGetPerson().getId();
-        final ISortAndPage sortAndPage = new ISortAndPage()
+        final IPage page = new IPage()
         {
 
             @Override
-            public <T, C extends Collection<T>> C sortAndPage(final C objects, final ISearchCriteria c, final FetchOptions fo)
+            public <T, C extends Collection<T>> C page(final C objects, final ISearchCriteria c, final FetchOptions fo)
             {
                 final List<T> toPage = new ArrayList<>(objects);
                 final Integer fromRecord = fo.getFrom();
@@ -107,11 +108,20 @@ public abstract class SearchObjectsOperationExecutor<OBJECT, OBJECT_PE, CRITERIA
 
         final Set<Long> allResultsIds = getSearchManager().searchForIDs(userId, criteria, sortOptions);
         final Set<Long> filteredResults = getSearchManager().filterIDsByUserRights(userId, allResultsIds);
-        final List<Long> sortedAndPagedResults = (List<Long>) sortAndPage.sortAndPage(filteredResults, criteria, fetchOptions);
-        final List<OBJECT_PE> objectPEResults = getSearchManager().translate(sortedAndPagedResults);
-        final Map<OBJECT_PE, OBJECT> translatedMap = doTranslate(translationContext, objectPEResults, fetchOptions);
-        final List<OBJECT> finalResults = objectPEResults.stream().map(translatedMap::get).collect(Collectors.toList());
-        final SearchResult<OBJECT> searchResult = new SearchResult<>(finalResults, allResultsIds.size());
+        final List<Long> sortedAndPagedResultIds = (List<Long>) page.page(filteredResults, criteria, fetchOptions);
+        final List<OBJECT_PE> sortedAndPagedResultPEs = getSearchManager().translate(sortedAndPagedResultIds);
+        final Map<OBJECT_PE, OBJECT> sortedAndPagedResultV3DTOs = doTranslate(translationContext, sortedAndPagedResultPEs, fetchOptions);
+        final List<OBJECT> finalResults = new ArrayList<>(sortedAndPagedResultV3DTOs.values());
+
+        final Integer from = fetchOptions.getFrom();
+        fetchOptions.from(null);
+        final Integer count = fetchOptions.getCount();
+        fetchOptions.count(null);
+        final List<OBJECT> sortedFinalResults = new SortAndPage().sortAndPage(finalResults, criteria, fetchOptions);
+        fetchOptions.from(from);
+        fetchOptions.count(count);
+
+        final SearchResult<OBJECT> searchResult = new SearchResult<>(sortedFinalResults, allResultsIds.size());
         return getOperationResult(searchResult);
     }
 

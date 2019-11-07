@@ -34,13 +34,12 @@ import java.util.*;
  * @author pkupczyk
  */
 @SuppressWarnings({ "rawtypes", "unchecked", "cast" })
-public class SortAndPage implements ISortAndPage {
+public class SortAndPage {
 
     private Set processed = new HashSet();
 
     private MethodsCache methodsCache = new MethodsCache();
 
-    @Override
     public <T, C extends Collection<T>> C sortAndPage(C objects, ISearchCriteria c, FetchOptions fo)
     {
         C newObjects = objects;
@@ -57,7 +56,7 @@ public class SortAndPage implements ISortAndPage {
         return newObjects;
     }
 
-    private Collection sort(Collection objects, ISearchCriteria c, FetchOptions fo)
+    public Collection<?> sort(Collection<?> objects, ISearchCriteria c, FetchOptions fo)
     {
         if (objects == null || objects.isEmpty())
         {
