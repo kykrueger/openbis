@@ -90,7 +90,7 @@ public abstract class SearchObjectsOperationExecutor<OBJECT, OBJECT_PE, CRITERIA
 
         final Set<Long> allResultsIds = getSearchManager().searchForIDs(userId, criteria, sortOptions);
         final Set<Long> filteredIds = getSearchManager().filterIDsByUserRights(userId, allResultsIds);
-        final List<Long> sortedAndPagedResultIds = sortAndPage(userId, filteredIds, fetchOptions);
+        final List<Long> sortedAndPagedResultIds = sortAndPage(filteredIds, fetchOptions);
         final List<OBJECT_PE> sortedAndPagedResultPEs = getSearchManager().translate(sortedAndPagedResultIds);
         final Map<OBJECT_PE, OBJECT> sortedAndPagedResultV3DTOs = doTranslate(translationContext, sortedAndPagedResultPEs, fetchOptions);
         final List<OBJECT> finalResults = new ArrayList<>(sortedAndPagedResultV3DTOs.values());
@@ -107,10 +107,10 @@ public abstract class SearchObjectsOperationExecutor<OBJECT, OBJECT_PE, CRITERIA
         return getOperationResult(searchResult);
     }
 
-    private List<Long> sortAndPage(final Long userId, final Set<Long> ids, final FetchOptions fo)
+    private List<Long> sortAndPage(final Set<Long> ids, final FetchOptions fo)
     {
         final SortOptions<OBJECT> sortOptions = fo.getSortBy();
-        final Set<Long> orderedIDs = (sortOptions != null) ? getSearchManager().sortIDs(userId, ids, sortOptions) : ids;
+        final Set<Long> orderedIDs = (sortOptions != null) ? getSearchManager().sortIDs(ids, sortOptions) : ids;
 
         final List<Long> toPage = new ArrayList<>(orderedIDs);
         final Integer fromRecord = fo.getFrom();

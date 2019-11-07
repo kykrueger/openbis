@@ -43,6 +43,5 @@ public interface ISearchManager<CRITERIA extends ISearchCriteria, OBJECT, OBJECT
      */
     Set<Long> filterIDsByUserRights(Long userId, Set<Long> ids);
 
-    Set<Long> sortIDs(Long userId,
-            Set<Long> filteredIDs, SortOptions<OBJECT> sortOptions);
+    Set<Long> sortIDs(Set<Long> filteredIDs, SortOptions<OBJECT> sortOptions);
 }

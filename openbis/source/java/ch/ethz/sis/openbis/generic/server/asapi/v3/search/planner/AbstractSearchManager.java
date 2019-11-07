@@ -194,9 +194,9 @@ public abstract class AbstractSearchManager<CRITERIA extends ISearchCriteria, FE
     }
 
     @Override
-    public Set<Long> sortIDs(final Long userId, final Set<Long> filteredIDs, final SortOptions<OBJECT> sortOptions)
+    public Set<Long> sortIDs(final Set<Long> filteredIDs, final SortOptions<OBJECT> sortOptions)
     {
-        return getSearchDAO().sortIDs(userId, getTableMapper(), filteredIDs, sortOptions);
+        return getSearchDAO().sortIDs(getTableMapper(), filteredIDs, sortOptions);
     }
 
     /**

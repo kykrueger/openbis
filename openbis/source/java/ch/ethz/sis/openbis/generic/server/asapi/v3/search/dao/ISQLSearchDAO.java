@@ -55,13 +55,12 @@ public interface ISQLSearchDAO
     /**
      * Sorts IDs by certain fields.
      *
-     * @param userId ID of the user performing search.
      * @param tableMapper mapper that contains information about entity tables.
      * @param filteredIDs the IDs to be sorted.
      * @param sortOptions contains fields to be sorted.
      * @return IDs of sorted entities.
      */
-    Set<Long> sortIDs(Long userId, final TableMapper tableMapper, Set<Long> filteredIDs,
+    Set<Long> sortIDs(final TableMapper tableMapper, Set<Long> filteredIDs,
             SortOptions<?> sortOptions);
 
 }
