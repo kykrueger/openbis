@@ -1233,6 +1233,13 @@ var FormUtil = new function() {
 			.append($("<span>").text(infoText));
 	}
 
+	this.getWarningText = function(infoText) {
+    		return $("<p>")
+    			.append($("<div>", { class : "glyphicon glyphicon-warning-sign" })
+    				.css("margin-right", "3px"))
+    			.append($("<span>").text(infoText));
+    }
+
     //
     // DSS disk space usage dialog
     //

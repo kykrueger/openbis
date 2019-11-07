@@ -575,7 +575,8 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 	
 	this._allowedToEdit = function() {
 		var experiment = this._experimentFormModel.v3_experiment;
-		return experiment.frozen == false;
+		var updateAllowed = this._experimentFormModel.rights.rights.indexOf("UPDATE") >= 0;
+		return updateAllowed && experiment.frozen == false;
 	}
 
 	this._allowedToMove = function() {

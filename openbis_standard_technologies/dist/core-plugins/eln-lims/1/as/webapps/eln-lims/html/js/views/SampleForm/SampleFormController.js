@@ -37,18 +37,21 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 					fetchOptions.withParents();
 					fetchOptions.withChildren();
 					mainController.openbisV3.getSamples([ id ], fetchOptions).done(function(map) {
-		                _this._sampleFormModel.v3_sample = map[id];
-		                //
-		                mainController.serverFacade.listDataSetsForSample(_this._sampleFormModel.sample, true, function(datasets) {
-		    				if(!datasets.error) {
-		    					_this._sampleFormModel.datasets = datasets.result;
-		    				}
-		    				
-		    				//Load view
-		    				_this._sampleFormView.repaint(views);
-		    				Util.unblockUI();
-		    			});
-		            });		
+						_this._sampleFormModel.v3_sample = map[id];
+						//
+						mainController.openbisV3.getRights([ id ], null).done(function(rightsByIds) {
+							_this._sampleFormModel.rights = rightsByIds[id];
+							mainController.serverFacade.listDataSetsForSample(_this._sampleFormModel.sample, true, function(datasets) {
+								if(!datasets.error) {
+									_this._sampleFormModel.datasets = datasets.result;
+								}
+								
+								//Load view
+								_this._sampleFormView.repaint(views);
+								Util.unblockUI();
+							});
+						});
+					});
 			});
 		} else {
 //			if(sample.sampleTypeCode === "ORDER") {

@@ -15,7 +15,9 @@ import ch.systemsx.cisd.openbis.generic.shared.coreplugin.CorePluginsUtils;
 
 public class AbstractImportTest extends AbstractTransactionalTestNGSpringContextTests {
 
-    private String XLS_VERSIONING_DIR = "xls-import.version-data-file";
+    private static final String VERSIONING_JSON = "./versioning.json";
+
+    private static final String XLS_VERSIONING_DIR = "xls-import.version-data-file";
 
     private static final String TEST_USER = "test";
 
@@ -30,7 +32,7 @@ public class AbstractImportTest extends AbstractTransactionalTestNGSpringContext
 
     @BeforeSuite
     public void setupSuite() {
-        System.setProperty(XLS_VERSIONING_DIR, "./versioning.bin");
+        System.setProperty(XLS_VERSIONING_DIR, VERSIONING_JSON);
         System.setProperty(CorePluginsUtils.CORE_PLUGINS_FOLDER_KEY, "dist/core-plugins");
         System.setProperty(Constants.ENABLED_MODULES_KEY, "xls-import");
         TestInitializer.initEmptyDbNoIndex();
@@ -39,13 +41,11 @@ public class AbstractImportTest extends AbstractTransactionalTestNGSpringContext
     @BeforeMethod
     public void beforeTest() {
         sessionToken = v3api.login(TEST_USER, PASSWORD);
-        System.out.println("AHAHHAHAHAHHA");
-        System.out.println(sessionToken);
     }
 
     @AfterMethod
     public void afterTest() {
-        File f = new File("./versioning.bin");
+        File f = new File(VERSIONING_JSON);
         f.delete();
         v3api.logout(sessionToken);
     }

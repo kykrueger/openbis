@@ -10,10 +10,13 @@ import logger from '../../../common/logger.js'
 
 const styles = theme => ({
   container: {
-    padding: theme.spacing(2),
-    height: '100%',
-    boxSizing: 'border-box'
+    display: 'flex',
+    padding: `${theme.spacing(2)}px ${theme.spacing(4)}px`
   },
+  header: {
+    marginBottom: theme.spacing(2)
+  },
+  form: {},
   droppable: {
     display: 'flex',
     flexDirection: 'column',
@@ -25,11 +28,23 @@ const styles = theme => ({
 class ObjectTypePreview extends React.PureComponent {
   constructor(props) {
     super(props)
+    this.state = {}
+    this.handleDragStart = this.handleDragStart.bind(this)
     this.handleDragEnd = this.handleDragEnd.bind(this)
     this.handleClick = this.handleClick.bind(this)
   }
 
+  handleDragStart(start) {
+    this.setState({ dragging: true })
+
+    this.props.onSelectionChange(start.type, {
+      id: start.draggableId
+    })
+  }
+
   handleDragEnd(result) {
+    this.setState({ dragging: false })
+
     if (!result.destination) {
       return
     }
@@ -50,7 +65,9 @@ class ObjectTypePreview extends React.PureComponent {
   }
 
   handleClick() {
-    this.props.onSelectionChange()
+    if (!this.state.dragging) {
+      this.props.onSelectionChange()
+    }
   }
 
   render() {
@@ -60,24 +77,31 @@ class ObjectTypePreview extends React.PureComponent {
 
     return (
       <div className={classes.container} onClick={this.handleClick}>
-        <Typography variant='h6'>Form Preview</Typography>
-        <ObjectTypePreviewCode type={type} />
-        <DragDropContext onDragEnd={this.handleDragEnd}>
-          <Droppable droppableId='root' type='section'>
-            {provided => (
-              <div
-                ref={provided.innerRef}
-                {...provided.droppableProps}
-                className={classes.droppable}
-              >
-                {sections.map((section, index) =>
-                  this.renderSection(section, index)
-                )}
-                {provided.placeholder}
-              </div>
-            )}
-          </Droppable>
-        </DragDropContext>
+        <div className={classes.form}>
+          <Typography variant='h6' className={classes.header}>
+            Form Preview
+          </Typography>
+          <ObjectTypePreviewCode type={type} />
+          <DragDropContext
+            onDragStart={this.handleDragStart}
+            onDragEnd={this.handleDragEnd}
+          >
+            <Droppable droppableId='root' type='section'>
+              {provided => (
+                <div
+                  ref={provided.innerRef}
+                  {...provided.droppableProps}
+                  className={classes.droppable}
+                >
+                  {sections.map((section, index) =>
+                    this.renderSection(section, index)
+                  )}
+                  {provided.placeholder}
+                </div>
+              )}
+            </Droppable>
+          </DragDropContext>
+        </div>
       </div>
     )
   }

@@ -28,9 +28,12 @@ function ExperimentFormController(mainController, mode, experiment) {
 				var fetchOptions = new ExperimentFetchOptions();
 				fetchOptions.withProject().withSpace();
 				mainController.openbisV3.getExperiments([ id ], fetchOptions).done(function(map) {
-	                _this._experimentFormModel.v3_experiment = map[id];
-	                _this._experimentFormView.repaint(views);
-	            });		
+					_this._experimentFormModel.v3_experiment = map[id];
+					mainController.openbisV3.getRights([ id ], null).done(function(rightsByIds) {
+						_this._experimentFormModel.rights = rightsByIds[id];
+						_this._experimentFormView.repaint(views);
+					});
+				});
 		});
 	}
 	

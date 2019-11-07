@@ -751,3 +751,5 @@ $.extend(FlowCytometryTechnology.prototype, ELNLIMSPlugin.prototype, {
     }
 
 });
+
+profile.plugins.push( new FlowCytometryTechnology());
