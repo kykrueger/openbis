@@ -167,9 +167,9 @@ public class CriteriaTranslator
 
     public static SelectQuery translate(final TranslationVo vo)
     {
-        if (vo.getCriteria() == null || vo.getCriteria().isEmpty())
+        if (vo.getCriteria() == null)
         {
-            throw new IllegalArgumentException("Empty or null criteria provided.");
+            throw new IllegalArgumentException("Null criteria provided.");
         }
 
         final String from = buildFrom(vo);
