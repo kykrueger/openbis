@@ -67,6 +67,8 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLL
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SP;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SQ;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.RELATIONSHIP_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.RELATIONSHIP_TYPES_TABLE;
 
 public class TranslatorUtils
 {
@@ -190,6 +192,41 @@ public class TranslatorUtils
         joinInformation.setSubTableAlias(aliasFactory.createAlias());
         joinInformation.setSubTableIdField(ID_COLUMN);
         result.put(tableMapper.getEntityTypesTable(), joinInformation);
+
+        return result;
+    }
+
+    public static Map<String, JoinInformation> getRelationshipsJoinInformationMap(final TableMapper tableMapper, final IAliasFactory aliasFactory)
+    {
+        final Map<String, JoinInformation> result = new LinkedHashMap<>();
+        final String relationshipsTableAlias = aliasFactory.createAlias();
+
+        final JoinInformation joinInformation1 = new JoinInformation();
+        joinInformation1.setMainTable(tableMapper.getEntitiesTable());
+        joinInformation1.setMainTableAlias(CriteriaTranslator.MAIN_TABLE_ALIAS);
+        joinInformation1.setMainTableIdField(ID_COLUMN);
+        joinInformation1.setSubTable(tableMapper.getRelationshipsTable());
+        joinInformation1.setSubTableAlias(relationshipsTableAlias);
+        joinInformation1.setSubTableIdField(tableMapper.getRelationshipsTableParentIdField());
+        result.put(tableMapper.getRelationshipsTable(), joinInformation1);
+
+        final JoinInformation joinInformation2 = new JoinInformation();
+        joinInformation2.setMainTable(tableMapper.getRelationshipsTable());
+        joinInformation2.setMainTableAlias(relationshipsTableAlias);
+        joinInformation2.setMainTableIdField(tableMapper.getRelationshipsTableChildIdField());
+        joinInformation2.setSubTable(tableMapper.getEntitiesTable());
+        joinInformation2.setSubTableAlias(aliasFactory.createAlias());
+        joinInformation2.setSubTableIdField(ID_COLUMN);
+        result.put(tableMapper.getEntitiesTable(), joinInformation2);
+
+        final JoinInformation joinInformation3 = new JoinInformation();
+        joinInformation3.setMainTable(tableMapper.getRelationshipsTable());
+        joinInformation3.setMainTableAlias(relationshipsTableAlias);
+        joinInformation3.setMainTableIdField(RELATIONSHIP_COLUMN);
+        joinInformation3.setSubTable(RELATIONSHIP_TYPES_TABLE);
+        joinInformation3.setSubTableAlias(aliasFactory.createAlias());
+        joinInformation3.setSubTableIdField(ID_COLUMN);
+        result.put(RELATIONSHIP_TYPES_TABLE, joinInformation3);
 
         return result;
     }
