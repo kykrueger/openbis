@@ -24,6 +24,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.IdSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sample.FullSampleIdentifier;
@@ -85,10 +86,14 @@ public class IdSearchCriteriaTranslator extends AbstractConditionTranslator<IdSe
                     } else if (entityId.getClass() == ExperimentIdentifier.class)
                     {
                         buildSelectByIdConditionWithSubqueryExperiments(sqlBuilder);
+                    } else if (entityId.getClass() == ProjectIdentifier.class)
+                    {
+                        buildSelectByIdConditionWithSubqueryProjects(sqlBuilder);
                     } else
                     {
                         throw new RuntimeException("Unsupported identifier: " + entityId.getClass());
                     }
+                    sqlBuilder.append(SP).append(AND).append(SP);
 
                     args.add(spaceCode);
                 }
@@ -129,6 +134,19 @@ public class IdSearchCriteriaTranslator extends AbstractConditionTranslator<IdSe
         }
     }
 
+    private void buildSelectByIdConditionWithSubqueryProjects(final StringBuilder sqlBuilder)
+    {
+        //SELECT DISTINCT t0.*
+        //FROM projects t0
+        //WHERE (t0.space_id IN (SELECT id FROM spaces WHERE code = 'TEST-SPACE'))
+        //	AND t0.code = 'NOE'
+        sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(SPACE_COLUMN).append(SP).append(IN).append(SP).append(LP).
+                append(SELECT).append(SP).append(ID_COLUMN).append(SP).
+                append(FROM).append(SP).append(SPACES_TABLE).append(SP).
+                append(WHERE).append(SP).append(CODE_COLUMN).append(SP).append(EQ).append(SP).append(QU).
+                append(RP);
+    }
+
     private static void buildSelectByIdConditionWithSubqueryExperiments(final StringBuilder sqlBuilder)
     {
         final String p = "p";
@@ -140,7 +158,7 @@ public class IdSearchCriteriaTranslator extends AbstractConditionTranslator<IdSe
                 append(ON).append(SP).append(s).append(PERIOD).append(ID_COLUMN).append(SP).append(EQ).
                 append(SP).append(p).append(PERIOD).append(SPACE_COLUMN).append(SP).
                 append(WHERE).append(SP).append(s).append(PERIOD).append(CODE_COLUMN).append(SP).append(EQ).append(SP).append(QU).
-                append(RP).append(SP).append(AND).append(SP);
+                append(RP);
     }
 
     private static void buildSelectByIdConditionWithSubquery(final StringBuilder sqlBuilder, final String columnName, final String subqueryTable)
@@ -148,7 +166,7 @@ public class IdSearchCriteriaTranslator extends AbstractConditionTranslator<IdSe
         sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(columnName).append(SP).append(EQ).append(SP).append(LP).
                 append(SELECT).append(SP).append(ID_COLUMN).append(SP).append(FROM).append(SP).append(subqueryTable).append(SP).
                 append(WHERE).append(SP).append(CODE_COLUMN).append(SP).append(EQ).append(SP).append(QU).
-                append(RP).append(SP).append(AND).append(SP);
+                append(RP);
     }
 
 }
