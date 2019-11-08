@@ -43,13 +43,53 @@ var UserTests = new function() {
         });
     }
 
-    this.creationSampleForm = function(key, value) {
+    this.creationSampleForm = function() {
         return new Promise(function executor(resolve, reject) {
             var e = EventUtil;
 
+            Promise.resolve().then(() => UserTests.createBacteria("BAC1", "Aurantimonas"))
+                             .then(() => UserTests.createBacteria("BAC2", "Burantimonas"))
+                             .then(() => UserTests.createBacteria("BAC3", "Curantimonas"))
+                             .then(() => UserTests.createBacteria("BAC4", "Durantimonas"))
+                             .then(() => resolve());
+        });
+    }
+
+    this.createBacteria = function(code, name) {
+        return new Promise(function executor(resolve, reject) {
+            var e = EventUtil;
+
+            var richText = '<p><strong><span style="color:#000080">F<sup>-</sup>&nbsp;tonA21 thi-1 thr-1 leuB6 lacY1</span>&nbsp;<em><span style="color:#008000">glnV44 rfbC1 fhuA1 ?? mcrB e14-(mcrA<sup>-</sup>)</span>&nbsp;</em><u><span style="color:#cc99ff">hsdR(r<sub>K</sub>&nbsp;<sup>-</sup>m<sub>K</sub>&nbsp;<sup>+</sup>) λ<sup>-</sup></span></u></strong></p>';
+
             Promise.resolve().then(() => e.waitForId("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
                              .then(() => e.click("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
+                             .then(() => e.waitForId("create-btn"))
+                             .then(() => e.click("create-btn"))
+                             .then(() => e.waitForId("sampleFormTitle"))
+                             .then(() => e.equalTo("sampleFormTitle", "Create Object Bacteria", false))
+                             .then(() => e.waitForId("codeId"))
+                             .then(() => e.waitForFill("codeId"))
+                             .then(() => e.equalTo("codeId", code, false))
+                             .then(() => e.waitForId("NAME"))
+                             .then(() => e.change("NAME", name, false))
+                             //Paste from Word
+                             .then(() =>  UserTests.ckeditorSetData("BACTERIA.GENOTYPE", richText))
+                             .then(() => e.waitForId("save-btn"))
+                             .then(() => e.click("save-btn"))
+                             //Check saving results
+                             .then(() => e.waitForId("edit-btn"))
+                             .then(() => e.waitForId("NAME"))
+                             .then(() => e.equalTo("NAME", name, false))
+                             .then(() => e.equalTo("BACTERIAGENOTYPE", richText, false))
                              .then(() => resolve());
+        });
+    }
+
+    this.ckeditorSetData = function(id, data) {
+        return new Promise(function executor(resolve, reject) {
+            CKEDITOR.instances[id].setData(data);
+            CKEDITOR.instances[id].fire('change');
+            resolve();
         });
     }
 

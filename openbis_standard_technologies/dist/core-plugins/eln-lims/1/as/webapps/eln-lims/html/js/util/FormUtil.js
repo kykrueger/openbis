@@ -696,7 +696,7 @@ var FormUtil = new function() {
 		$component.html(hyperlink ? this.asHyperlink(text) : text);
 		
 		if(id) {
-			$component.attr('id', id);
+			$component.attr('id', this.prepareId(id));
 		}
 		$controls.append($component);
 		
@@ -819,7 +819,7 @@ var FormUtil = new function() {
 	}
 	
 	this._getInputField = function(type, id, alt, step, isRequired) {
-		var $component = $('<input>', {'type' : type, 'id' : id, 'alt' : alt, 'placeholder' : alt, 'class' : 'form-control'});
+		var $component = $('<input>', {'type' : type, 'id' : this.prepareId(id), 'alt' : alt, 'placeholder' : alt, 'class' : 'form-control'});
 		if (isRequired) {
 			$component.attr('required', '');
 		}
@@ -1768,4 +1768,10 @@ var FormUtil = new function() {
 	this.showFreezingError = function(error) {
 		Util.showError(error.message);
 	}
+
+	this.prepareId = function(id) {
+	    id = id[0] === '$' ? id.substring(1) : id;
+	    id = id.split(".").join("");
+        return id;
+    }
 }

@@ -63,6 +63,28 @@ var EventUtil = new function() {
         });
     };
 
+    this.equalTo = function(elementId, value, ignoreError) {
+        return new Promise(function executor(resolve, reject) {
+            try {
+                var element = $( "#" + elementId );
+                if(!element) {
+                    if(ignoreError) {
+                        resolve();
+                    } else {
+                        throw "Element not found: #" + elementId;
+                    }
+                }
+                if (element.html() === value || element.val() === value) {
+                    resolve();
+                } else {
+                    throw "Element #" + elementId + " should have value = " + element.val() + " but have " + value;
+                }
+            } catch(error) {
+                reject();
+            }
+        });
+    };
+
 	this.write = function(elementId, text, ignoreError) {
 	    return new Promise(function executor(resolve, reject) {
 	        try {
@@ -119,6 +141,39 @@ var EventUtil = new function() {
             }
 
             if($("#" + elementId).length <= 0) {
+                setTimeout(executor.bind(null, resolve, reject), DEFAULT_TIMEOUT_STEP);
+            } else {
+                resolve();
+            }
+        });
+    };
+
+    this.waitForFill = function(elementId, ignoreError, timeout) {
+        return new Promise(function executor(resolve, reject) {
+            if (!timeout) {
+                timeout = DEFAULT_TIMEOUT;
+            }
+            timeout -= DEFAULT_TIMEOUT_STEP;
+
+            if (timeout <= 0) {
+                if(ignoreError) {
+                    resolve();
+                } else {
+                    reject(new Error("Element '" + elementId + "' is not exist."));
+                }
+                return;
+            }
+
+            var element = $( "#" + elementId );
+            if(!element) {
+                if(ignoreError) {
+                    resolve();
+                } else {
+                    throw "Element not found: #" + elementId;
+                }
+            }
+
+            if(element.html().length <= 0 && element.val().length <= 0) {
                 setTimeout(executor.bind(null, resolve, reject), DEFAULT_TIMEOUT_STEP);
             } else {
                 resolve();
