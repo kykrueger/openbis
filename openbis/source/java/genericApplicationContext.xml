@@ -283,6 +283,7 @@
 		<entry key="ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentTypeSearchCriteria" value-ref="experiment-type-search-manager"/>
 		<entry key="ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria" value-ref="sample-search-manager"/>
 		<entry key="ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleTypeSearchCriteria" value-ref="sample-type-search-manager"/>
+		<entry key="ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleContainerSearchCriteria" value-ref="sample-search-manager"/>
 		<entry key="ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.RegistratorSearchCriteria" value-ref="person-search-manager"/>
 		<entry key="ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.ModifierSearchCriteria" value-ref="person-search-manager"/>
 		<entry key="ch.ethz.sis.openbis.generic.asapi.v3.dto.project.search.ProjectSearchCriteria" value-ref="project-search-manager"/>
