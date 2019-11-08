@@ -24,7 +24,9 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.IdSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sample.FullSampleIdentifier;
@@ -128,6 +130,10 @@ public class IdSearchCriteriaTranslator extends AbstractConditionTranslator<IdSe
         {
             sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(EQ).append(QU);
             args.add(((DataSetPermId) entityId).getPermId());
+        } else if (entityId.getClass() == ProjectPermId.class)
+        {
+            sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(PERM_ID_COLUMN).append(EQ).append(QU);
+            args.add(((ProjectPermId) entityId).getPermId());
         } else
         {
             throw new IllegalArgumentException("The following ID class is not supported: " + entityId.getClass().getSimpleName());
@@ -136,10 +142,6 @@ public class IdSearchCriteriaTranslator extends AbstractConditionTranslator<IdSe
 
     private void buildSelectByIdConditionWithSubqueryProjects(final StringBuilder sqlBuilder)
     {
-        //SELECT DISTINCT t0.*
-        //FROM projects t0
-        //WHERE (t0.space_id IN (SELECT id FROM spaces WHERE code = 'TEST-SPACE'))
-        //	AND t0.code = 'NOE'
         sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(SPACE_COLUMN).append(SP).append(IN).append(SP).append(LP).
                 append(SELECT).append(SP).append(ID_COLUMN).append(SP).
                 append(FROM).append(SP).append(SPACES_TABLE).append(SP).
