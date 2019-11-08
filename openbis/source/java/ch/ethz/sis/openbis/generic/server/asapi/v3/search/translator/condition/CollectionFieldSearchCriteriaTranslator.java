@@ -32,7 +32,6 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLL
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SELECT;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SP;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.UNNEST;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.Attributes.ATTRIBUTE_ID_TO_COLUMN_NAME;
 
 public class CollectionFieldSearchCriteriaTranslator extends AbstractConditionTranslator<CollectionFieldSearchCriteria<?>>
 {
@@ -45,7 +44,7 @@ public class CollectionFieldSearchCriteriaTranslator extends AbstractConditionTr
         switch (criterion.getFieldType()) {
             case ATTRIBUTE:
             {
-                final Object fieldName = ATTRIBUTE_ID_TO_COLUMN_NAME.getOrDefault(criterion.getFieldName(), criterion.getFieldName());
+                final Object fieldName = Attributes.getColumnName(criterion.getFieldName(), tableMapper.getEntitiesTable(), criterion.getFieldName());
                 final Collection<?> fieldValue = criterion.getFieldValue();
 
                 sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(fieldName).append(SP).append(IN).append(SP).append(LP).
