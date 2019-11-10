@@ -1,12 +1,18 @@
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import Typography from '@material-ui/core/Typography'
-import TextField from '@material-ui/core/TextField'
+import TextField from '../../common/form/TextField.jsx'
 import logger from '../../../common/logger.js'
 
 const styles = theme => ({
   container: {
     padding: theme.spacing(2)
+  },
+  header: {
+    paddingBottom: theme.spacing(2)
+  },
+  field: {
+    paddingBottom: theme.spacing(2)
   }
 })
 
@@ -41,19 +47,15 @@ class ObjectTypeParametersSection extends React.PureComponent {
 
     return (
       <div className={classes.container}>
-        <Typography variant='h6'>Section</Typography>
+        <Typography variant='h6' className={classes.header}>
+          Section
+        </Typography>
         <form>
-          <div>
+          <div className={classes.field}>
             <TextField
               label='Name'
               name='name'
               value={section.name || ''}
-              fullWidth={true}
-              margin='normal'
-              variant='filled'
-              InputLabelProps={{
-                shrink: true
-              }}
               onChange={this.handleChange}
             />
           </div>
