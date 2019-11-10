@@ -7,18 +7,21 @@ import logger from '../../../common/logger.js'
 const styles = () => ({})
 
 class CheckboxFormField extends React.PureComponent {
+  constructor(props) {
+    super(props)
+    this.reference = React.createRef()
+  }
+
   render() {
     logger.log(logger.DEBUG, 'CheckboxFormField.render')
 
     const {
-      reference: inputRef,
       name,
       label,
       description,
       value,
       mandatory,
       disabled,
-      action,
       metadata,
       styles,
       onClick,
@@ -26,9 +29,15 @@ class CheckboxFormField extends React.PureComponent {
       onFocus
     } = this.props
 
+    const reference = this.props.reference
+      ? this.props.reference
+      : this.reference
+
     return (
       <FormField
+        reference={reference}
         label={label}
+        labelPlacement='right'
         description={description}
         mandatory={mandatory}
         metadata={metadata}
@@ -36,11 +45,10 @@ class CheckboxFormField extends React.PureComponent {
         onClick={onClick}
       >
         <Checkbox
-          inputRef={inputRef}
+          inputRef={reference}
           value={name}
           checked={value}
           disabled={disabled}
-          action={action}
           onChange={onChange}
           onFocus={onFocus}
         />

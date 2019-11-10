@@ -7,11 +7,15 @@ import logger from '../../../common/logger.js'
 const styles = () => ({})
 
 class SelectFormField extends React.PureComponent {
+  constructor(props) {
+    super(props)
+    this.reference = React.createRef()
+  }
+
   render() {
     logger.log(logger.DEBUG, 'SelectFormField.render')
 
     const {
-      reference: inputRef,
       name,
       label,
       description,
@@ -26,9 +30,15 @@ class SelectFormField extends React.PureComponent {
       onFocus
     } = this.props
 
+    const reference = this.props.reference
+      ? this.props.reference
+      : this.reference
+
     return (
       <FormField
+        reference={reference}
         label={label}
+        labelPlacement='top'
         description={description}
         mandatory={mandatory}
         metadata={metadata}
@@ -37,7 +47,7 @@ class SelectFormField extends React.PureComponent {
       >
         <TextField
           select
-          inputRef={inputRef}
+          inputRef={reference}
           name={name}
           value={value}
           disabled={disabled}

@@ -11,6 +11,12 @@ import logger from '../../../common/logger.js'
 const styles = theme => ({
   container: {
     padding: theme.spacing(2)
+  },
+  header: {
+    paddingBottom: theme.spacing(2)
+  },
+  field: {
+    paddingBottom: theme.spacing(2)
   }
 })
 
@@ -25,7 +31,6 @@ class ObjectTypeParametersProperty extends React.PureComponent {
       dataType: React.createRef(),
       mandatory: React.createRef()
     }
-    this.actions = {}
     this.handleChange = this.handleChange.bind(this)
     this.handleFocus = this.handleFocus.bind(this)
   }
@@ -99,10 +104,6 @@ class ObjectTypeParametersProperty extends React.PureComponent {
         if (reference) {
           reference.current.focus()
         }
-        const action = this.actions[part]
-        if (action) {
-          action.focusVisible()
-        }
       }
     }
   }
@@ -152,16 +153,18 @@ class ObjectTypeParametersProperty extends React.PureComponent {
   render() {
     logger.log(logger.DEBUG, 'ObjectTypeParametersProperty.render')
 
-    let property = this.getProperty(this.props)
+    const property = this.getProperty(this.props)
     if (!property) {
       return null
     }
 
-    let { classes } = this.props
+    const { classes } = this.props
 
     return (
       <div className={classes.container}>
-        <Typography variant='h6'>Property</Typography>
+        <Typography variant='h6' className={classes.header}>
+          Property
+        </Typography>
         <form>
           {this.renderLabel(property)}
           {this.renderCode(property)}
@@ -177,41 +180,50 @@ class ObjectTypeParametersProperty extends React.PureComponent {
   }
 
   renderLabel(property) {
+    const { classes } = this.props
     return (
-      <TextField
-        reference={this.references.label}
-        label='Label'
-        name='label'
-        value={property.label}
-        onChange={this.handleChange}
-        onFocus={this.handleFocus}
-      />
+      <div className={classes.field}>
+        <TextField
+          reference={this.references.label}
+          label='Label'
+          name='label'
+          value={property.label}
+          onChange={this.handleChange}
+          onFocus={this.handleFocus}
+        />
+      </div>
     )
   }
 
   renderCode(property) {
+    const { classes } = this.props
     return (
-      <TextField
-        reference={this.references.code}
-        label='Code'
-        name='code'
-        value={property.code}
-        onChange={this.handleChange}
-        onFocus={this.handleFocus}
-      />
+      <div className={classes.field}>
+        <TextField
+          reference={this.references.code}
+          label='Code'
+          name='code'
+          value={property.code}
+          onChange={this.handleChange}
+          onFocus={this.handleFocus}
+        />
+      </div>
     )
   }
 
   renderDescription(property) {
+    const { classes } = this.props
     return (
-      <TextField
-        reference={this.references.description}
-        label='Description'
-        name='description'
-        value={property.description}
-        onChange={this.handleChange}
-        onFocus={this.handleFocus}
-      />
+      <div className={classes.field}>
+        <TextField
+          reference={this.references.description}
+          label='Description'
+          name='description'
+          value={property.description}
+          onChange={this.handleChange}
+          onFocus={this.handleFocus}
+        />
+      </div>
     )
   }
 
@@ -222,16 +234,19 @@ class ObjectTypeParametersProperty extends React.PureComponent {
         value: dataType
       }
     })
+    const { classes } = this.props
     return (
-      <SelectField
-        reference={this.references.dataType}
-        label='Data Type'
-        name='dataType'
-        value={property.dataType}
-        options={options}
-        onChange={this.handleChange}
-        onFocus={this.handleFocus}
-      />
+      <div className={classes.field}>
+        <SelectField
+          reference={this.references.dataType}
+          label='Data Type'
+          name='dataType'
+          value={property.dataType}
+          options={options}
+          onChange={this.handleChange}
+          onFocus={this.handleFocus}
+        />
+      </div>
     )
   }
 
@@ -245,15 +260,18 @@ class ObjectTypeParametersProperty extends React.PureComponent {
           value: vocabulary.code
         }
       })
+      const { classes } = this.props
       return (
-        <SelectField
-          label='Vocabulary'
-          name='vocabulary'
-          value={property.vocabulary ? property.vocabulary : ''}
-          options={options}
-          onChange={this.handleChange}
-          onFocus={this.handleFocus}
-        />
+        <div className={classes.field}>
+          <SelectField
+            label='Vocabulary'
+            name='vocabulary'
+            value={property.vocabulary ? property.vocabulary : ''}
+            options={options}
+            onChange={this.handleChange}
+            onFocus={this.handleFocus}
+          />
+        </div>
       )
     } else {
       return null
@@ -270,15 +288,18 @@ class ObjectTypeParametersProperty extends React.PureComponent {
           value: materialType.code
         }
       })
+      const { classes } = this.props
       return (
-        <SelectField
-          label='Material Type'
-          name='materialType'
-          value={property.materialType ? property.materialType : ''}
-          options={options}
-          onChange={this.handleChange}
-          onFocus={this.handleFocus}
-        />
+        <div className={classes.field}>
+          <SelectField
+            label='Material Type'
+            name='materialType'
+            value={property.materialType ? property.materialType : ''}
+            options={options}
+            onChange={this.handleChange}
+            onFocus={this.handleFocus}
+          />
+        </div>
       )
     } else {
       return null
@@ -286,30 +307,33 @@ class ObjectTypeParametersProperty extends React.PureComponent {
   }
 
   renderMandatory(property) {
+    const { classes } = this.props
     return (
-      <CheckboxField
-        reference={this.references.mandatory}
-        label='Mandatory'
-        action={actions => {
-          this.actions.mandatory = actions
-        }}
-        name='mandatory'
-        value={property.mandatory}
-        onChange={this.handleChange}
-        onFocus={this.handleFocus}
-      />
+      <div className={classes.field}>
+        <CheckboxField
+          reference={this.references.mandatory}
+          label='Mandatory'
+          name='mandatory'
+          value={property.mandatory}
+          onChange={this.handleChange}
+          onFocus={this.handleFocus}
+        />
+      </div>
     )
   }
 
   renderVisible(property) {
+    const { classes } = this.props
     return (
-      <CheckboxField
-        label='Visible'
-        name='visible'
-        value={property.visible}
-        onChange={this.handleChange}
-        onFocus={this.handleFocus}
-      />
+      <div className={classes.field}>
+        <CheckboxField
+          label='Visible'
+          name='visible'
+          value={property.visible}
+          onChange={this.handleChange}
+          onFocus={this.handleFocus}
+        />
+      </div>
     )
   }
 
