@@ -1,4 +1,3 @@
-import _ from 'lodash'
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import Typography from '@material-ui/core/Typography'
@@ -123,18 +122,9 @@ class ObjectTypeParametersProperty extends React.PureComponent {
   handleFocus(event) {
     const property = this.getProperty(this.props)
 
-    let params = null
-
-    if (_.has(event.target, 'checked')) {
-      params = {
-        id: property.id,
-        part: event.target.value
-      }
-    } else {
-      params = {
-        id: property.id,
-        part: event.target.name
-      }
+    const params = {
+      id: property.id,
+      part: event.target.name
     }
 
     this.props.onSelectionChange('property', params)

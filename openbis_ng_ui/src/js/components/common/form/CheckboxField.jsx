@@ -11,11 +11,19 @@ class CheckboxFormField extends React.PureComponent {
     super(props)
     this.reference = React.createRef()
     this.handleChange = this.handleChange.bind(this)
+    this.handleFocus = this.handleFocus.bind(this)
   }
 
   handleChange(event) {
-    const { onChange } = this.props
-    if (onChange) {
+    this.handleEvent(event, this.props.onChange)
+  }
+
+  handleFocus(event) {
+    this.handleEvent(event, this.props.onFocus)
+  }
+
+  handleEvent(event, handler) {
+    if (handler) {
       const newEvent = {
         ...event,
         target: {
@@ -25,7 +33,7 @@ class CheckboxFormField extends React.PureComponent {
         }
       }
       delete newEvent.target.checked
-      onChange(newEvent)
+      handler(newEvent)
     }
   }
 
@@ -41,8 +49,7 @@ class CheckboxFormField extends React.PureComponent {
       disabled,
       metadata,
       styles,
-      onClick,
-      onFocus
+      onClick
     } = this.props
 
     const reference = this.props.reference
@@ -66,7 +73,7 @@ class CheckboxFormField extends React.PureComponent {
           checked={value}
           disabled={disabled}
           onChange={this.handleChange}
-          onFocus={onFocus}
+          onFocus={this.handleFocus}
         />
       </FormField>
     )
