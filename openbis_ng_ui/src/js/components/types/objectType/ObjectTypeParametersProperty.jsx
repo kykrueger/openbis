@@ -111,20 +111,10 @@ class ObjectTypeParametersProperty extends React.PureComponent {
   handleChange(event) {
     const property = this.getProperty(this.props)
 
-    let params = null
-
-    if (_.has(event.target, 'checked')) {
-      params = {
-        id: property.id,
-        field: event.target.value,
-        value: event.target.checked
-      }
-    } else {
-      params = {
-        id: property.id,
-        field: event.target.name,
-        value: event.target.value
-      }
+    const params = {
+      id: property.id,
+      field: event.target.name,
+      value: event.target.value
     }
 
     this.props.onChange('property', params)

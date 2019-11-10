@@ -1,4 +1,3 @@
-import _ from 'lodash'
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import Typography from '@material-ui/core/Typography'
@@ -25,20 +24,10 @@ class ObjectTypeParametersType extends React.PureComponent {
   }
 
   handleChange(event) {
-    let params = null
-
-    if (_.has(event.target, 'checked')) {
-      params = {
-        field: event.target.value,
-        value: event.target.checked
-      }
-    } else {
-      params = {
-        field: event.target.name,
-        value: event.target.value
-      }
+    let params = {
+      field: event.target.name,
+      value: event.target.value
     }
-
     this.props.onChange('type', params)
   }
 
