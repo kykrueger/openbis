@@ -109,11 +109,15 @@ public class SQLLexemes
 
     public static final String LE = "<=";
 
-    public static final String ASTERISK = "*";
+    public static final char ASTERISK = '*';
 
-    public static final String QU = "?";
+    public static final char QU = '?';
 
-    public static final String PERCENT = "%";
+    public static final char UNDERSCORE = '_';
+
+    public static final char PERCENT = '%';
+
+    public static final char BACKSLASH = '\\';
 
     public static final String BARS = "||";
 

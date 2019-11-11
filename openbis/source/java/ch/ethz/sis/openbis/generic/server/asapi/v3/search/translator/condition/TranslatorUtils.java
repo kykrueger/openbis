@@ -51,7 +51,8 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.TableNames;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator.DATE_FORMAT;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.AND;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.BARS;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.ASTERISK;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.BACKSLASH;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.EQ;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.GE;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.GT;
@@ -65,7 +66,7 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLL
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.PERIOD;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.QU;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SP;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SQ;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.UNDERSCORE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.RELATIONSHIP_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.RELATIONSHIP_TYPES_TABLE;
@@ -85,22 +86,28 @@ public class TranslatorUtils
     {
         if (value.getClass() == StringEqualToValue.class)
         {
-            sqlBuilder.append(EQ).append(SP).append(QU);
-            args.add(value.getValue());
+            final String valueString = value.getValue();
+            if (!containsWildcards(valueString))
+            {
+                sqlBuilder.append(EQ).append(SP).append(QU);
+                args.add(valueString);
+            } else
+            {
+                sqlBuilder.append(LIKE).append(SP).append(QU);
+                args.add(toPSQLWildcards(valueString));
+            }
         } else if (value.getClass() == StringStartsWithValue.class)
         {
-            sqlBuilder.append(SP).append(LIKE).append(SP).append(QU).append(SP).append(BARS).append(SP).append(SQ).
-                    append(PERCENT).append(SQ);
-            args.add(value.getValue());
+            sqlBuilder.append(SP).append(LIKE).append(SP).append(QU);
+            args.add(toPSQLWildcards(value.getValue()) + PERCENT);
         } else if (value.getClass() == StringEndsWithValue.class)
         {
-            sqlBuilder.append(SP).append(LIKE).append(SP).append(SQ).append(PERCENT).append(SQ).append(SP).append(BARS).append(SP).append(QU);
-            args.add(value.getValue());
+            sqlBuilder.append(SP).append(LIKE).append(SP).append(QU);
+            args.add(PERCENT + toPSQLWildcards(value.getValue()));
         } else if (value.getClass() == StringContainsValue.class)
         {
-            sqlBuilder.append(SP).append(LIKE).append(SP).append(SQ).append(PERCENT).append(SQ).append(SP).append(BARS).append(SP).append(QU).
-                    append(SP).append(BARS).append(SP).append(SQ).append(PERCENT).append(SQ);
-            args.add(value.getValue());
+            sqlBuilder.append(SP).append(LIKE).append(SP).append(QU);
+            args.add(PERCENT + toPSQLWildcards(value.getValue()) + PERCENT);
         } else if (value.getClass() == AnyStringValue.class)
         {
             sqlBuilder.append(SP).append(IS_NOT_NULL);
@@ -108,6 +115,52 @@ public class TranslatorUtils
         {
             throw new IllegalArgumentException("Unsupported AbstractStringValue type: " + value.getClass().getSimpleName());
         }
+    }
+
+    /**
+     * Determines whether the string contains search wildcards.
+     *
+     * @param str string to be checked.
+     * @return {@code true} if the string contains '*' or '?'.
+     */
+    private static boolean containsWildcards(final String str)
+    {
+        return str.matches(".*[*?].*");
+    }
+
+    /**
+     * Changes '*' -> '%' and '?' -> '_' to match PSQL pattern matching standards. Escapes already existing '%', '_' and '\' characters with '\'.
+     *
+     * @param str string to be converted.
+     * @return string that corresponds to the PSQL standard.
+     */
+    private static String toPSQLWildcards(final String str)
+    {
+        final StringBuilder sb = new StringBuilder();
+        str.chars().forEach((value) ->
+        {
+            final char ch = (char) value;
+            switch (ch)
+            {
+                case UNDERSCORE:
+                    // Fall through.
+                case PERCENT:
+                    // Fall through.
+                case BACKSLASH:
+                    sb.append(BACKSLASH).append(ch);
+                    break;
+                case ASTERISK:
+                    sb.append(PERCENT);
+                    break;
+                case QU:
+                    sb.append(UNDERSCORE);
+                    break;
+                default:
+                    sb.append(ch);
+                    break;
+            }
+        });
+        return sb.toString();
     }
 
     static void appendNumberComparatorOp(final AbstractNumberValue value, final StringBuilder sqlBuilder)
