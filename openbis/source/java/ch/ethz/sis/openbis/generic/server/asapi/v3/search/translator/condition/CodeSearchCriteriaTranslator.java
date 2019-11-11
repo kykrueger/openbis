@@ -78,12 +78,16 @@ public class CodeSearchCriteriaTranslator implements IConditionTranslator<String
                                     append(EQ).append(SP).append(LP).
                                     append(SELECT).append(SP).append(ID_COLUMN).append(SP).append(FROM).append(SP).
                                     append(tableMapper.getEntitiesTable()).append(SP).
-                                    append(WHERE).append(SP).append(CODE_COLUMN).append(SP).append(EQ).append(SP).append(QU).
-                                    append(RP).append(SP).append(AND).append(SP).
-                                    append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(SP).
-                                    append(EQ).append(SP).append(QU);
-                            args.add(values[0]);
-                            args.add(values[1]);
+                                    append(WHERE).append(SP).append(CODE_COLUMN);
+                            TranslatorUtils.appendStringComparatorOp(value.getClass(), values[0], sqlBuilder, args);
+//                            sqlBuilder.append(SP).append(EQ).append(SP).append(QU);
+
+                            sqlBuilder.append(RP).append(SP).append(AND).append(SP).
+                                    append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN);
+                            TranslatorUtils.appendStringComparatorOp(value.getClass(), values[1], sqlBuilder, args);
+//                            sqlBuilder.append(SP).append(EQ).append(SP).append(QU);
+//                            args.add(values[0]);
+//                            args.add(values[1]);
                             break;
                         }
                         case 1:
