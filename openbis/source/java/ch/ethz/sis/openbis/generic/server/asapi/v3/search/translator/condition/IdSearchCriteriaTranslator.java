@@ -105,12 +105,16 @@ public class IdSearchCriteriaTranslator extends AbstractConditionTranslator<IdSe
                 if (projectCode != null)
                 {
                     buildSelectByIdConditionWithSubquery(sqlBuilder, PROJECT_COLUMN, PROJECTS_TABLE);
+                    sqlBuilder.append(SP).append(AND).append(SP);
+
                     args.add(projectCode);
                 }
 
                 if (containerCode != null)
                 {
                     buildSelectByIdConditionWithSubquery(sqlBuilder, PART_OF_SAMPLE_COLUMN, SAMPLES_ALL_TABLE);
+                    sqlBuilder.append(SP).append(AND).append(SP);
+
                     args.add(containerCode);
                 }
 

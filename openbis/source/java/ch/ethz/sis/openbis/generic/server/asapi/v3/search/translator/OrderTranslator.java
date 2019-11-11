@@ -66,15 +66,15 @@ public class OrderTranslator
             throw new IllegalArgumentException("Null sort options provided.");
         }
 
-        final String from = buildOrderFrom(vo);
-        final String where = buildOrderWhere(vo);
-        final String select = buildOrderSelect(vo);
-        final String orderBy = buildOrderOrderBy(vo);
+        final String from = buildFrom(vo);
+        final String where = buildWhere(vo);
+        final String select = buildSelect(vo);
+        final String orderBy = buildOrderBy(vo);
 
         return new SelectQuery(select  + NL + from + NL + where + NL + orderBy, vo.getArgs());
     }
 
-    private static String buildOrderOrderBy(final TranslationVo vo)
+    private static String buildOrderBy(final TranslationVo vo)
     {
         final StringBuilder sqlBuilder = new StringBuilder(ORDER_BY + SP);
         final AtomicBoolean first = new AtomicBoolean(true);
@@ -89,7 +89,7 @@ public class OrderTranslator
         return sqlBuilder.toString();
     }
 
-    private static String buildOrderSelect(final TranslationVo vo)
+    private static String buildSelect(final TranslationVo vo)
     {
         final StringBuilder sqlBuilder = new StringBuilder(SELECT + SP + DISTINCT + SP + CriteriaTranslator.MAIN_TABLE_ALIAS + PERIOD + ID_COLUMN);
 
@@ -102,7 +102,7 @@ public class OrderTranslator
         return sqlBuilder.toString();
     }
 
-    private static String buildOrderFrom(final TranslationVo vo)
+    private static String buildFrom(final TranslationVo vo)
     {
         final TableMapper tableMapper = vo.getTableMapper();
         final StringBuilder sqlBuilder = new StringBuilder(FROM + SP + tableMapper.getEntitiesTable() + SP + CriteriaTranslator.MAIN_TABLE_ALIAS);
@@ -136,7 +136,7 @@ public class OrderTranslator
         return sqlBuilder.toString();
     }
 
-    private static String buildOrderWhere(final TranslationVo vo)
+    private static String buildWhere(final TranslationVo vo)
     {
         final StringBuilder sqlBuilder = new StringBuilder(WHERE + SP + CriteriaTranslator.MAIN_TABLE_ALIAS + PERIOD + ID_COLUMN + SP + IN + SP +
                 LP + SELECT + SP + UNNEST + LP + QU + RP + RP);
