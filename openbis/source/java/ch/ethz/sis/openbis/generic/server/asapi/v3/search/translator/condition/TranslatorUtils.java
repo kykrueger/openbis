@@ -84,9 +84,14 @@ public class TranslatorUtils
 
     static void appendStringComparatorOp(final AbstractStringValue value, final StringBuilder sqlBuilder, final List<Object> args)
     {
-        if (value.getClass() == StringEqualToValue.class)
+        appendStringComparatorOp(value.getClass(), value.getValue(), sqlBuilder, args);
+    }
+
+    static void appendStringComparatorOp(final Class<?> valueClass, final String finalValue, final StringBuilder sqlBuilder, final List<Object> args)
+    {
+        if (valueClass == StringEqualToValue.class)
         {
-            final String valueString = value.getValue();
+            final String valueString = finalValue;
             if (!containsWildcards(valueString))
             {
                 sqlBuilder.append(EQ).append(SP).append(QU);
@@ -96,24 +101,24 @@ public class TranslatorUtils
                 sqlBuilder.append(LIKE).append(SP).append(QU);
                 args.add(toPSQLWildcards(valueString));
             }
-        } else if (value.getClass() == StringStartsWithValue.class)
+        } else if (valueClass == StringStartsWithValue.class)
         {
             sqlBuilder.append(SP).append(LIKE).append(SP).append(QU);
-            args.add(toPSQLWildcards(value.getValue()) + PERCENT);
-        } else if (value.getClass() == StringEndsWithValue.class)
+            args.add(toPSQLWildcards(finalValue) + PERCENT);
+        } else if (valueClass == StringEndsWithValue.class)
         {
             sqlBuilder.append(SP).append(LIKE).append(SP).append(QU);
-            args.add(PERCENT + toPSQLWildcards(value.getValue()));
-        } else if (value.getClass() == StringContainsValue.class)
+            args.add(PERCENT + toPSQLWildcards(finalValue));
+        } else if (valueClass == StringContainsValue.class)
         {
             sqlBuilder.append(SP).append(LIKE).append(SP).append(QU);
-            args.add(PERCENT + toPSQLWildcards(value.getValue()) + PERCENT);
-        } else if (value.getClass() == AnyStringValue.class)
+            args.add(PERCENT + toPSQLWildcards(finalValue) + PERCENT);
+        } else if (valueClass == AnyStringValue.class)
         {
             sqlBuilder.append(SP).append(IS_NOT_NULL);
         } else
         {
-            throw new IllegalArgumentException("Unsupported AbstractStringValue type: " + value.getClass().getSimpleName());
+            throw new IllegalArgumentException("Unsupported AbstractStringValue type: " + valueClass.getSimpleName());
         }
     }
 

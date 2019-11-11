@@ -47,8 +47,6 @@ public class SampleContainerRelationshipSearchCriteriaTranslator implements ICon
         sqlBuilder.append(joinInformationByTable.get(RELATIONSHIP_TYPES_TABLE).getSubTableAlias()).append(PERIOD).append(CODE_COLUMN).append(SP).append(EQ).append(SP).
                 append(QU);
         args.add(IGetRelationshipIdExecutor.RelationshipType.CONTAINER_COMPONENT.toString());
-
-//        sqlBuilder.append(SP).append(AND).append(SP).append(joinInformationByTable.get(tableMapper.getEntitiesTable()))
     }
 
 }
