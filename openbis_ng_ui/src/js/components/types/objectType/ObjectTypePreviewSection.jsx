@@ -10,32 +10,28 @@ const styles = theme => ({
   draggable: {
     width: '100%',
     marginBottom: theme.spacing(2),
-    backgroundColor: theme.palette.background.paper
+    backgroundColor: theme.palette.background.paper,
+    '&:hover $droppable': {
+      borderColor: theme.palette.primary.main
+    }
   },
   droppable: {
     padding: theme.spacing(2),
     borderWidth: '2px',
     borderStyle: 'dashed',
-    borderColor: theme.palette.background.secondary,
-    '&:hover': {
-      borderColor: theme.palette.primary.main
-    }
+    borderColor: theme.palette.background.secondary
   },
   named: {
     '& $droppable': {
-      borderStyle: 'solid',
-      borderColor: theme.palette.background.secondary,
-      '&:hover': {
-        borderColor: theme.palette.primary.main
-      }
+      borderStyle: 'solid'
     }
   },
   selected: {
     '& $droppable': {
-      borderColor: theme.palette.secondary.main,
-      '&:hover': {
-        borderColor: theme.palette.secondary.main
-      }
+      borderColor: theme.palette.secondary.main
+    },
+    '&:hover $droppable': {
+      borderColor: theme.palette.secondary.main
     }
   }
 })
@@ -48,7 +44,10 @@ class ObjectTypePreviewSection extends React.PureComponent {
 
   handleClick(event) {
     event.stopPropagation()
-    this.props.onSelectionChange('section', { id: this.props.section.id })
+    this.props.onSelectionChange('section', {
+      id: this.props.section.id,
+      part: 'name'
+    })
   }
 
   render() {
@@ -78,8 +77,10 @@ class ObjectTypePreviewSection extends React.PureComponent {
           >
             <Droppable droppableId={id} type='property'>
               {provided => (
-                <React.Fragment>
-                  <Typography variant='h6'>{name}</Typography>
+                <div>
+                  <Typography variant='h6' data-part='name'>
+                    {name}
+                  </Typography>
                   <div
                     ref={provided.innerRef}
                     {...provided.droppableProps}
@@ -88,7 +89,7 @@ class ObjectTypePreviewSection extends React.PureComponent {
                     <div>{children}</div>
                     {provided.placeholder}
                   </div>
-                </React.Fragment>
+                </div>
               )}
             </Droppable>
           </div>

@@ -145,16 +145,14 @@ class ObjectTypeParametersProperty extends React.PureComponent {
         <Typography variant='h6' className={classes.header}>
           Property
         </Typography>
-        <form>
-          {this.renderLabel(property)}
-          {this.renderCode(property)}
-          {this.renderDescription(property)}
-          {this.renderDataType(property)}
-          {this.renderVocabulary(property)}
-          {this.renderMaterial(property)}
-          {this.renderMandatory(property)}
-          {this.renderVisible(property)}
-        </form>
+        {this.renderLabel(property)}
+        {this.renderCode(property)}
+        {this.renderDescription(property)}
+        {this.renderDataType(property)}
+        {this.renderVocabulary(property)}
+        {this.renderMaterial(property)}
+        {this.renderMandatory(property)}
+        {this.renderVisible(property)}
       </div>
     )
   }
