@@ -1,7 +1,9 @@
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import Checkbox from '@material-ui/core/Checkbox'
-import FormField from './FormField.jsx'
+import FormFieldContainer from './FormFieldContainer.jsx'
+import FormFieldLabel from './FormFieldLabel.jsx'
+import FormControlLabel from '@material-ui/core/FormControlLabel'
 import logger from '../../../common/logger.js'
 
 const styles = () => ({})
@@ -57,25 +59,35 @@ class CheckboxFormField extends React.PureComponent {
       : this.reference
 
     return (
-      <FormField
-        reference={reference}
-        label={label}
-        labelPlacement='right'
+      <FormFieldContainer
         description={description}
-        mandatory={mandatory}
         metadata={metadata}
         styles={styles}
         onClick={onClick}
       >
-        <Checkbox
-          inputRef={reference}
-          value={name}
-          checked={value}
-          disabled={disabled}
-          onChange={this.handleChange}
-          onFocus={this.handleFocus}
+        <FormControlLabel
+          control={
+            <Checkbox
+              inputRef={reference}
+              value={name}
+              checked={value}
+              disabled={disabled}
+              inputProps={{
+                'data-part': 'label'
+              }}
+              onChange={this.handleChange}
+              onFocus={this.handleFocus}
+            />
+          }
+          label={
+            <FormFieldLabel
+              label={label}
+              mandatory={mandatory}
+              styles={styles}
+            />
+          }
         />
-      </FormField>
+      </FormFieldContainer>
     )
   }
 }

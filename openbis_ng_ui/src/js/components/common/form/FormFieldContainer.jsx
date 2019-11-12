@@ -1,0 +1,90 @@
+import React from 'react'
+import { withStyles } from '@material-ui/core/styles'
+import FormControl from '@material-ui/core/FormControl'
+import FormHelperText from '@material-ui/core/FormHelperText'
+import logger from '../../../common/logger.js'
+
+const styles = theme => ({
+  metadataDefault: {
+    flex: '0 0 auto',
+    margin: 0,
+    marginBottom: theme.spacing(1),
+    color: theme.palette.grey.main
+  },
+  controlDefault: {
+    flex: '0 0'
+  },
+  descriptionDefault: {}
+})
+
+class FormFieldContainer extends React.PureComponent {
+  constructor(props) {
+    super(props)
+  }
+
+  render() {
+    logger.log(logger.DEBUG, 'FormField.render')
+
+    const { onClick, styles = {} } = this.props
+
+    return (
+      <FormControl fullWidth={true}>
+        <div onClick={onClick} className={styles.container}>
+          {this.renderMetadata()}
+          {this.renderControl()}
+          {this.renderDescription()}
+        </div>
+      </FormControl>
+    )
+  }
+
+  renderMetadata() {
+    const { metadata, classes, styles = {} } = this.props
+
+    if (metadata) {
+      return (
+        <pre
+          data-part='metadata'
+          className={`${classes.metadataDefault} ${styles.metadata}`}
+        >
+          {metadata}
+        </pre>
+      )
+    } else {
+      return null
+    }
+  }
+
+  renderControl() {
+    const { children, classes, styles = {} } = this.props
+    return (
+      <div
+        data-part='control'
+        className={`${classes.controlDefault} ${styles.control}`}
+      >
+        {children}
+      </div>
+    )
+  }
+
+  renderDescription() {
+    const { description, classes, styles = {} } = this.props
+
+    if (description) {
+      return (
+        <FormHelperText>
+          <span
+            data-part='description'
+            className={`${classes.descriptionDefault} ${styles.description}`}
+          >
+            {description}
+          </span>
+        </FormHelperText>
+      )
+    } else {
+      return null
+    }
+  }
+}
+
+export default withStyles(styles)(FormFieldContainer)

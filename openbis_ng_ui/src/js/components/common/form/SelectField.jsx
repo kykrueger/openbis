@@ -1,7 +1,8 @@
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import TextField from '@material-ui/core/TextField'
-import FormField from './FormField.jsx'
+import FormFieldContainer from './FormFieldContainer.jsx'
+import FormFieldLabel from './FormFieldLabel.jsx'
 import logger from '../../../common/logger.js'
 
 const styles = () => ({})
@@ -35,12 +36,8 @@ class SelectFormField extends React.PureComponent {
       : this.reference
 
     return (
-      <FormField
-        reference={reference}
-        label={label}
-        labelPlacement='top'
+      <FormFieldContainer
         description={description}
-        mandatory={mandatory}
         metadata={metadata}
         styles={styles}
         onClick={onClick}
@@ -48,6 +45,13 @@ class SelectFormField extends React.PureComponent {
         <TextField
           select
           inputRef={reference}
+          label={
+            <FormFieldLabel
+              label={label}
+              mandatory={mandatory}
+              styles={styles}
+            />
+          }
           name={name}
           value={value}
           disabled={disabled}
@@ -57,6 +61,7 @@ class SelectFormField extends React.PureComponent {
           SelectProps={{
             native: true
           }}
+          variant='filled'
         >
           {options &&
             options.map(option => (
@@ -65,7 +70,7 @@ class SelectFormField extends React.PureComponent {
               </option>
             ))}
         </TextField>
-      </FormField>
+      </FormFieldContainer>
     )
   }
 }

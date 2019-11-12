@@ -39,6 +39,7 @@ const styles = theme => ({
   },
   partSelected: {
     cursor: 'pointer',
+    pointerEvents: 'initial',
     paddingBottom: '1px',
     borderColor: theme.palette.secondary.main,
     borderStyle: 'solid',
@@ -49,6 +50,7 @@ const styles = theme => ({
   },
   partNotSelected: {
     cursor: 'pointer',
+    pointerEvents: 'initial',
     paddingBottom: '1px',
     '&:hover': {
       borderStyle: 'solid',

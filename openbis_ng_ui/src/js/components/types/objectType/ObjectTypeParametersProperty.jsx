@@ -101,7 +101,9 @@ class ObjectTypeParametersProperty extends React.PureComponent {
       if (part) {
         const reference = this.references[part]
         if (reference) {
-          reference.current.focus()
+          setTimeout(() => {
+            reference.current.focus()
+          })
         }
       }
     }
