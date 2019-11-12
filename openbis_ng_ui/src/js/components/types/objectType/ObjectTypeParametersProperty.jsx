@@ -101,9 +101,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
       if (part) {
         const reference = this.references[part]
         if (reference) {
-          setTimeout(() => {
-            reference.current.focus()
-          })
+          reference.current.focus()
         }
       }
     }
@@ -147,10 +145,10 @@ class ObjectTypeParametersProperty extends React.PureComponent {
         <Typography variant='h6' className={classes.header}>
           Property
         </Typography>
-        {this.renderLabel(property)}
         {this.renderCode(property)}
-        {this.renderDescription(property)}
         {this.renderDataType(property)}
+        {this.renderLabel(property)}
+        {this.renderDescription(property)}
         {this.renderVocabulary(property)}
         {this.renderMaterial(property)}
         {this.renderMandatory(property)}
