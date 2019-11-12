@@ -11,7 +11,6 @@ const styles = () => ({})
 class CheckboxFormField extends React.PureComponent {
   constructor(props) {
     super(props)
-    this.reference = React.createRef()
     this.handleChange = this.handleChange.bind(this)
     this.handleFocus = this.handleFocus.bind(this)
   }
@@ -43,6 +42,7 @@ class CheckboxFormField extends React.PureComponent {
     logger.log(logger.DEBUG, 'CheckboxFormField.render')
 
     const {
+      reference,
       name,
       label,
       description,
@@ -53,10 +53,6 @@ class CheckboxFormField extends React.PureComponent {
       styles,
       onClick
     } = this.props
-
-    const reference = this.props.reference
-      ? this.props.reference
-      : this.reference
 
     return (
       <FormFieldContainer
