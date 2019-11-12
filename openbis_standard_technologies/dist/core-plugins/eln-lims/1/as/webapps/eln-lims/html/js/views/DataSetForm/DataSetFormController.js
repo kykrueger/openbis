@@ -30,17 +30,20 @@ function DataSetFormController(parentController, mode, entity, dataSet, isMini, 
 						if(mode !== FormMode.CREATE) {
 							var datasetPermId = dataSet.code;
 							require([ "as/dto/dataset/id/DataSetPermId", "as/dto/dataset/fetchoptions/DataSetFetchOptions" ],
-									function(DataSetPermId, DataSetFetchOptions) {
-										var ids = [new DataSetPermId(datasetPermId)];
-							            var fetchOptions = new DataSetFetchOptions();
-							            fetchOptions.withLinkedData().withExternalDms();
-							            fetchOptions.withExperiment();
-							            fetchOptions.withSample();
-							            mainController.openbisV3.getDataSets(ids, fetchOptions).done(function(map) {
-							            	_this._dataSetFormModel.v3_dataset = map[datasetPermId];
-							            	_this._dataSetFormModel.linkedData = map[datasetPermId].linkedData;
-							            	_this._dataSetFormView.repaint(views);
-							            });
+								function(DataSetPermId, DataSetFetchOptions) {
+									var ids = [new DataSetPermId(datasetPermId)];
+									var fetchOptions = new DataSetFetchOptions();
+									fetchOptions.withLinkedData().withExternalDms();
+									fetchOptions.withExperiment();
+									fetchOptions.withSample();
+									mainController.openbisV3.getDataSets(ids, fetchOptions).done(function(map) {
+										_this._dataSetFormModel.v3_dataset = map[datasetPermId];
+										_this._dataSetFormModel.linkedData = map[datasetPermId].linkedData;
+										mainController.openbisV3.getRights(ids, null).done(function(rightsByIds) {
+											_this._dataSetFormModel.rights = rightsByIds[datasetPermId];
+											_this._dataSetFormView.repaint(views);
+										});
+									});
 							});
 						} else {
 							_this._dataSetFormView.repaint(views);

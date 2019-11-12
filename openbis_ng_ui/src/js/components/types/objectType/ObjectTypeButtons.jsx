@@ -17,7 +17,17 @@ class ObjectTypeButtons extends React.PureComponent {
   render() {
     logger.log(logger.DEBUG, 'ObjectTypeButtons.render')
 
-    const classes = this.props.classes
+    const {
+      classes,
+      onAddSection,
+      onAddProperty,
+      onRemove,
+      onSave,
+      addSectionEnabled,
+      addPropertyEnabled,
+      removeEnabled,
+      saveEnabled
+    } = this.props
 
     return (
       <div className={classes.container}>
@@ -25,7 +35,8 @@ class ObjectTypeButtons extends React.PureComponent {
           classes={{ root: classes.button }}
           variant='contained'
           color='secondary'
-          onClick={this.props.onAddSection}
+          disabled={!addSectionEnabled}
+          onClick={onAddSection}
         >
           Add Section
         </Button>
@@ -33,15 +44,26 @@ class ObjectTypeButtons extends React.PureComponent {
           classes={{ root: classes.button }}
           variant='contained'
           color='secondary'
-          onClick={this.props.onAddProperty}
+          disabled={!addPropertyEnabled}
+          onClick={onAddProperty}
         >
           Add Property
         </Button>
         <Button
           classes={{ root: classes.button }}
           variant='contained'
+          color='secondary'
+          disabled={!removeEnabled}
+          onClick={onRemove}
+        >
+          Remove
+        </Button>
+        <Button
+          classes={{ root: classes.button }}
+          variant='contained'
           color='primary'
-          onClick={this.props.onSave}
+          disabled={!saveEnabled}
+          onClick={onSave}
         >
           Save
         </Button>

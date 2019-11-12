@@ -1,6 +1,7 @@
 import _ from 'lodash'
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
+import { Resizable } from 're-resizable'
 import ObjectTypePreview from './ObjectTypePreview.jsx'
 import ObjectTypeParameters from './ObjectTypeParameters.jsx'
 import ObjectTypeButtons from './ObjectTypeButtons.jsx'
@@ -44,6 +45,10 @@ class ObjectType extends React.PureComponent {
     this.handleOrderChange = this.handleOrderChange.bind(this)
     this.handleSelectionChange = this.handleSelectionChange.bind(this)
     this.handleChange = this.handleChange.bind(this)
+    this.handleAddSection = this.handleAddSection.bind(this)
+    this.handleAddProperty = this.handleAddProperty.bind(this)
+    this.handleRemove = this.handleRemove.bind(this)
+    this.handleSave = this.handleSave.bind(this)
   }
 
   componentDidMount() {
@@ -63,27 +68,16 @@ class ObjectType extends React.PureComponent {
         subcodeUnique: loadedType.subcodeUnique
       }
 
-      const sections = loadedType.propertyAssignments.reduce(
-        (sections, assignment, index) => {
-          let section = sections[sections.length - 1]
-          if (section.name === assignment.section) {
-            section.properties.push('property-' + index)
-          } else {
-            let newSection = {
-              id: 'section-' + sections.length,
-              name: assignment.section,
-              properties: ['property-' + index]
-            }
-            sections.push(newSection)
-          }
-          return sections
-        },
-        [{ id: 'section-0', name: null, properties: [] }]
-      )
+      const sections = []
+      const properties = []
+      let currentSection = null
+      let currentProperty = null
+      let sectionsCounter = 0
+      let propertiesCounter = 0
 
-      const properties = loadedType.propertyAssignments.map(
-        (assignment, index) => ({
-          id: 'property-' + index,
+      loadedType.propertyAssignments.forEach(assignment => {
+        currentProperty = {
+          id: 'property-' + propertiesCounter++,
           code: assignment.propertyType.code,
           label: assignment.propertyType.label,
           description: assignment.propertyType.description,
@@ -95,16 +89,31 @@ class ObjectType extends React.PureComponent {
             ? assignment.propertyType.materialType.code
             : null,
           visible: assignment.showInEditView,
-          mandatory: assignment.mandatory,
-          section: _.find(sections, ['name', assignment.section]).id
-        })
-      )
+          mandatory: assignment.mandatory
+        }
+
+        if (currentSection && currentSection.name === assignment.section) {
+          currentSection.properties.push(currentProperty.id)
+        } else {
+          currentSection = {
+            id: 'section-' + sectionsCounter++,
+            name: assignment.section,
+            properties: [currentProperty.id]
+          }
+          sections.push(currentSection)
+        }
+        currentProperty.section = currentSection.id
+
+        properties.push(currentProperty)
+      })
 
       this.setState(() => ({
         loaded: true,
         type,
         properties,
+        propertiesCounter,
         sections,
+        sectionsCounter,
         selection: null
       }))
     })
@@ -289,6 +298,184 @@ class ObjectType extends React.PureComponent {
     }))
   }
 
+  handleAddSection() {
+    let { sections, sectionsCounter, selection } = this.state
+
+    let newSections = Array.from(sections)
+    let newSection = {
+      id: 'section-' + sectionsCounter++,
+      name: null,
+      properties: []
+    }
+    let newSelection = {
+      type: 'section',
+      params: {
+        id: newSection.id
+      }
+    }
+
+    if (selection) {
+      if (selection.type === 'section') {
+        let index = sections.findIndex(
+          section => section.id === selection.params.id
+        )
+        newSections.splice(index + 1, 0, newSection)
+      } else if (selection.type === 'property') {
+        let index = sections.findIndex(
+          section => section.properties.indexOf(selection.params.id) !== -1
+        )
+        newSections.splice(index + 1, 0, newSection)
+      } else {
+        newSections.push(newSection)
+      }
+    } else {
+      newSections.push(newSection)
+    }
+
+    this.setState(state => ({
+      ...state,
+      sections: newSections,
+      sectionsCounter,
+      selection: newSelection
+    }))
+  }
+
+  handleAddProperty() {
+    let { sections, properties, propertiesCounter, selection } = this.state
+
+    let sectionIndex = null
+    let sectionPropertyIndex = null
+    let propertyIndex = null
+
+    if (selection.type === 'section') {
+      sectionIndex = sections.findIndex(
+        section => section.id === selection.params.id
+      )
+      sectionPropertyIndex = sections[sectionIndex].properties.length
+      propertyIndex = properties.length
+    } else if (selection.type === 'property') {
+      sections.forEach((section, i) => {
+        section.properties.forEach((property, j) => {
+          if (property === selection.params.id) {
+            sectionIndex = i
+            sectionPropertyIndex = j + 1
+          }
+        })
+      })
+      propertyIndex =
+        properties.findIndex(property => property.id === selection.params.id) +
+        1
+    }
+
+    let section = sections[sectionIndex]
+
+    let newProperties = Array.from(properties)
+    let newProperty = {
+      id: 'property-' + propertiesCounter++,
+      code: '',
+      label: '',
+      description: '',
+      dataType: 'VARCHAR',
+      vocabulary: null,
+      materialType: null,
+      visible: true,
+      mandatory: false,
+      section: section.id
+    }
+    newProperties.splice(propertyIndex, 0, newProperty)
+
+    let newSection = {
+      ...section,
+      properties: Array.from(section.properties)
+    }
+    newSection.properties.splice(sectionPropertyIndex, 0, newProperty.id)
+
+    let newSections = Array.from(sections)
+    newSections[sectionIndex] = newSection
+
+    let newSelection = {
+      type: 'property',
+      params: {
+        id: newProperty.id
+      }
+    }
+
+    this.setState(state => ({
+      ...state,
+      sections: newSections,
+      properties: newProperties,
+      propertiesCounter,
+      selection: newSelection
+    }))
+  }
+
+  handleRemove() {
+    const { selection } = this.state
+
+    if (selection.type === 'section') {
+      this.handleRemoveSection(selection.params.id)
+    } else if (selection.type === 'property') {
+      this.handleRemoveProperty(selection.params.id)
+    }
+  }
+
+  handleRemoveSection(sectionId) {
+    const { sections, properties } = this.state
+
+    const sectionIndex = sections.findIndex(section => section.id === sectionId)
+    const section = sections[sectionIndex]
+
+    const newProperties = Array.from(properties)
+    _.remove(
+      newProperties,
+      property => section.properties.indexOf(property.id) !== -1
+    )
+
+    const newSections = Array.from(sections)
+    newSections.splice(sectionIndex, 1)
+
+    this.setState(state => ({
+      ...state,
+      sections: newSections,
+      properties: newProperties,
+      selection: null
+    }))
+  }
+
+  handleRemoveProperty(propertyId) {
+    const { sections, properties } = this.state
+
+    const propertyIndex = properties.findIndex(
+      property => property.id === propertyId
+    )
+    const property = properties[propertyIndex]
+
+    const newProperties = Array.from(properties)
+    newProperties.splice(propertyIndex, 1)
+
+    let sectionIndex = sections.findIndex(
+      section => section.id === property.section
+    )
+    let section = sections[sectionIndex]
+    let newSection = {
+      ...section,
+      properties: Array.from(section.properties)
+    }
+    _.remove(newSection.properties, property => property === propertyId)
+
+    const newSections = Array.from(sections)
+    newSections[sectionIndex] = newSection
+
+    this.setState(state => ({
+      ...state,
+      sections: newSections,
+      properties: newProperties,
+      selection: null
+    }))
+  }
+
+  handleSave() {}
+
   render() {
     logger.log(logger.DEBUG, 'ObjectType.render')
 
@@ -313,18 +500,41 @@ class ObjectType extends React.PureComponent {
             />
           </div>
           <div className={classes.buttons}>
-            <ObjectTypeButtons />
+            <ObjectTypeButtons
+              onAddSection={this.handleAddSection}
+              onAddProperty={this.handleAddProperty}
+              onRemove={this.handleRemove}
+              onSave={this.handleSave}
+              addSectionEnabled={true}
+              addPropertyEnabled={selection !== null}
+              removeEnabled={selection !== null}
+              saveEnabled={false}
+            />
           </div>
         </div>
-        <div className={classes.parameters}>
-          <ObjectTypeParameters
-            type={type}
-            properties={properties}
-            sections={sections}
-            selection={selection}
-            onChange={this.handleChange}
-          />
-        </div>
+        <Resizable
+          enable={{
+            left: true,
+            top: false,
+            right: false,
+            bottom: false,
+            topRight: false,
+            bottomRight: false,
+            bottomLeft: false,
+            topLeft: false
+          }}
+        >
+          <div className={classes.parameters}>
+            <ObjectTypeParameters
+              type={type}
+              properties={properties}
+              sections={sections}
+              selection={selection}
+              onChange={this.handleChange}
+              onSelectionChange={this.handleSelectionChange}
+            />
+          </div>
+        </Resizable>
       </div>
     )
   }

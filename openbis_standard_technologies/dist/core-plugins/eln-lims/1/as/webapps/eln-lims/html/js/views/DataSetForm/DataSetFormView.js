@@ -219,6 +219,10 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 		if(!this._dataSetFormModel.isMini) {
 			var $header = views.header;
 			$header.append($title);
+	        var dataSetTypeDefinitionsExtension = profile.dataSetTypeDefinitionsExtension[_this._dataSetFormModel.dataSet.dataSetTypeCode];
+            if(dataSetTypeDefinitionsExtension && dataSetTypeDefinitionsExtension.extraToolbar) {
+                toolbarModel = toolbarModel.concat(dataSetTypeDefinitionsExtension.extraToolbar(_this._dataSetFormModel.mode, _this._dataSetFormModel.dataSet));
+            }
 			$header.append(FormUtil.getToolbar(toolbarModel));
 		}
 		
@@ -803,7 +807,9 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 
 	this._allowedToEdit = function() {
 		var dataSet = this._dataSetFormModel.v3_dataset;
-		return dataSet.frozen == false;
+		var rights = this._dataSetFormModel.rights;
+		var updateAllowed = rights && rights.rights.indexOf("UPDATE") >= 0;
+		return updateAllowed && dataSet.frozen == false;
 	}
 
 	this._allowedToMove = function() {

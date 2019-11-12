@@ -46,13 +46,13 @@ function SettingsFormController(mainController, settingsSample, mode) {
                 switch(widget.Widget) {
                     case "Word Processor":
                         if(property.dataType !== "MULTILINE_VARCHAR") {
-                            Util.showUserError("Word Processor only works with MULTILINE_VARCHAR data type.", function() {}, true);
+                            Util.showUserError("Word Processor only works with MULTILINE_VARCHAR data type, " + property.code + " is " + property.dataType + ".", function() {}, true);
                             return;
                         }
                         break;
                     case "Spreadsheet":
                         if(property.dataType !== "XML") {
-                            Util.showUserError("Spreadsheet only works with XML data type.", function() {}, true);
+                            Util.showUserError("Spreadsheet only works with XML data type, " + property.code + " is " + property.dataType + ".", function() {}, true);
                             return;
                         }
                         break;
