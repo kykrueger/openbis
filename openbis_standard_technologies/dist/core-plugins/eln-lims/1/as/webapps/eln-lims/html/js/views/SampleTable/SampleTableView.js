@@ -195,6 +195,7 @@ function SampleTableView(sampleTableController, sampleTableModel) {
 	}
 	
 	this.registerSamples = function(experimentIdentifier) {
+	    var _this = this;
 		var allowedSampleTypes = null;
 		var forcedSpace = null;
 		var spaceCodeFromIdentifier = null;
@@ -205,7 +206,7 @@ function SampleTableView(sampleTableController, sampleTableModel) {
 			spaceCodeFromIdentifier = IdentifierUtil.getSpaceCodeFromIdentifier(experimentIdentifier);
 			forcedSpace = IdentifierUtil.getForcedSpaceIdentifier(spaceCodeFromIdentifier);
 		}
-		
+
 		var typeAndFileController = new TypeAndFileController('Register ' + ELNDictionary.Samples + '', "REGISTRATION", function(type, file) {
 			Util.blockUI();
 			mainController.serverFacade.fileUpload(typeAndFileController.getFile(), function(result) {
@@ -224,6 +225,9 @@ function SampleTableView(sampleTableController, sampleTableModel) {
 						} else {
 							Util.showError("Unknown response. Probably an error happened.", function() {Util.unblockUI();});
 						}
+
+						// Remove the controller of this view that should be now out of scope.
+                        _this._sampleTableController.typeAndFileController = null;
 					};
 					
 					var experimentIdentifierOrDelete = experimentIdentifier;
@@ -241,9 +245,13 @@ function SampleTableView(sampleTableController, sampleTableModel) {
 			});
 		}, allowedSampleTypes);
 		typeAndFileController.init();
+
+		// Set the typeAndFileController on the main controller of this view to make it available.
+        this._sampleTableController.typeAndFileController = typeAndFileController;
 	}
 	
 	this.updateSamples = function(experimentIdentifier) {
+	    var _this = this;
 		var allowedSampleTypes = null;
 		var forcedSpace = null;
 		var spaceCodeFromIdentifier = null;
@@ -267,6 +275,9 @@ function SampleTableView(sampleTableController, sampleTableModel) {
 				} else {
 					Util.showError("Unknown response. Probably an error happened.", function() {Util.unblockUI();});
 				}
+
+				// Remove the controller of this view that should be now out of scope.
+				_this._sampleTableController.typeAndFileController = null;
 			};
 			
 			var experimentIdentifierOrDelete = experimentIdentifier;
@@ -281,5 +292,8 @@ function SampleTableView(sampleTableController, sampleTableModel) {
 			});
 		}, allowedSampleTypes);
 		typeAndFileController.init();
+
+		// Set the typeAndFileController on the main controller of this view to make it available.
+		this._sampleTableController.typeAndFileController = typeAndFileController;
 	}
 }

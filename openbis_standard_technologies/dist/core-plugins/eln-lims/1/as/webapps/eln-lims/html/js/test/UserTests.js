@@ -101,16 +101,19 @@ var UserTests = new function() {
     }
 
     this.importsAutomaticCodes = function() {
+        var baseURL = location.protocol + '//' + location.host + location.pathname;
+        var pathToResource = "js/test/resources/bacteria_for_test_without_identifier.tsv";
         return new Promise(function executor(resolve, reject) {
             var e = EventUtil;
-
             Promise.resolve().then(() => e.waitForId("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
                              .then(() => e.click("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
                              .then(() => e.waitForId("options-menu-btn"))
                              .then(() => e.click("options-menu-btn"))
                              .then(() => e.waitForId("register-object-btn"))
                              .then(() => e.click("register-object-btn"))
-                             .
+                             .then(() => e.waitForId("accept-type-file"))
+                             .then(() => TestUtil.setFile("name", baseURL + pathToResource, "text"))
+                             .then(() => e.click("accept-type-file"))
                              .then(() => resolve());
         });
     }

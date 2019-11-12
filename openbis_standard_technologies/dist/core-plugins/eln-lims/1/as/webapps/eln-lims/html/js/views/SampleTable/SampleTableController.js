@@ -18,7 +18,8 @@ function SampleTableController(parentController, title, experimentIdentifier, pr
 	this._parentController = parentController;
 	this._sampleTableModel = new SampleTableModel(title, experimentIdentifier, projectPermId, showInProjectOverview, experiment);
 	this._sampleTableView = new SampleTableView(this, this._sampleTableModel);
-	
+	this.typeAndFileController = null;
+
 	this.init = function(views) {
 		var _this = this;
 		Util.blockUI();
