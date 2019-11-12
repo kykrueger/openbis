@@ -38,4 +38,30 @@ var TestUtil = new function() {
             chain.then(() => resolve());
         });
     }
+
+    this.setFile = function(name, url, mimeType) {
+        var _this = this;
+        return new Promise(function executor(resolve, reject) {
+                _this.fetchBytes(url, function(file) {
+                file.name = name;
+                mainController.currentView.typeAndFileController.setFile(file);
+                resolve();
+            });
+        });
+    }
+
+    this.fetchBytes = function(url, action) {
+	    var xhr = new XMLHttpRequest();
+        xhr.open('GET', url, true);
+        xhr.responseType = 'blob';
+
+        xhr.onload = function(e) {
+          if (this.status == 200) {
+            // get binary data as a response
+            action(this.response);
+          }
+        };
+
+        xhr.send();
+    }
 }

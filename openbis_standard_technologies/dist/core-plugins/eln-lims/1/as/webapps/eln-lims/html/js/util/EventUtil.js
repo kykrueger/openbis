@@ -6,14 +6,7 @@ var EventUtil = new function() {
 	this.click = function(elementId, ignoreError) {
 	    return new Promise(function executor(resolve, reject) {
 	        try {
-                var element = $( "#" + elementId );
-                if(!element) {
-                    if(ignoreError) {
-                        resolve();
-                    } else {
-                        throw "Element not found: #" + elementId;
-                    }
-                }
+                var element = EventUtil.getElement(elementId, ignoreError, resolve);
                 element.focus();
                 element.trigger('click');
                 resolve();
@@ -26,14 +19,7 @@ var EventUtil = new function() {
 	this.change = function(elementId, value, ignoreError) {
         return new Promise(function executor(resolve, reject) {
             try {
-                var element = $( "#" + elementId );
-                if(!element) {
-                    if(ignoreError) {
-                        resolve();
-                    } else {
-                        throw "Element not found: #" + elementId;
-                    }
-                }
+                var element = EventUtil.getElement(elementId, ignoreError, resolve);
                 element.focus();
                 element.val(value).change();
                 resolve();
@@ -46,14 +32,7 @@ var EventUtil = new function() {
     this.checked = function(elementId, value, ignoreError) {
         return new Promise(function executor(resolve, reject) {
             try {
-                var element = $( "#" + elementId );
-                if(!element) {
-                    if(ignoreError) {
-                        resolve();
-                    } else {
-                        throw "Element not found: #" + elementId;
-                    }
-                }
+                var element = EventUtil.getElement(elementId, ignoreError, resolve);
                 element.focus();
                 element.prop('checked', value);
                 resolve();
@@ -63,17 +42,25 @@ var EventUtil = new function() {
         });
     };
 
+    this.equalTo = function(elementId, value, ignoreError) {
+        return new Promise(function executor(resolve, reject) {
+            try {
+                var element = EventUtil.getElement(elementId, ignoreError, resolve);
+                if (element.html() === value || element.val() === value) {
+                    resolve();
+                } else {
+                    throw "Element #" + elementId + " should have value = " + element.val() + " but have " + value;
+                }
+            } catch(error) {
+                reject();
+            }
+        });
+    };
+
 	this.write = function(elementId, text, ignoreError) {
 	    return new Promise(function executor(resolve, reject) {
 	        try {
-                var element = $( "#" + elementId );
-                if(!element) {
-                    if(ignoreError) {
-                        resolve();
-                    } else {
-                        throw "Element not found: #" + elementId;
-                    }
-                }
+                var element = EventUtil.getElement(elementId, ignoreError, resolve);
                 element.focus();
                 $(element).val(text);
                 for (var i = 0; i < text.length; i++) {
@@ -104,19 +91,7 @@ var EventUtil = new function() {
 
     this.waitForId = function(elementId, ignoreError, timeout) {
         return new Promise(function executor(resolve, reject) {
-            if (!timeout) {
-                timeout = DEFAULT_TIMEOUT;
-            }
-            timeout -= DEFAULT_TIMEOUT_STEP;
-
-            if (timeout <= 0) {
-                if(ignoreError) {
-                    resolve();
-                } else {
-                    reject(new Error("Element '" + elementId + "' is not exist."));
-                }
-                return;
-            }
+            EventUtil.getElement(elementId, timeout, ignoreError, resolve, reject);
 
             if($("#" + elementId).length <= 0) {
                 setTimeout(executor.bind(null, resolve, reject), DEFAULT_TIMEOUT_STEP);
@@ -125,5 +100,45 @@ var EventUtil = new function() {
             }
         });
     };
+
+    this.waitForFill = function(elementId, ignoreError, timeout) {
+        return new Promise(function executor(resolve, reject) {
+            EventUtil.getElement(elementId, timeout, ignoreError, resolve, reject);
+
+            var element = EventUtil.getElement(elementId, ignoreError, resolve);
+            if(element.html().length <= 0 && element.val().length <= 0) {
+                setTimeout(executor.bind(null, resolve, reject), DEFAULT_TIMEOUT_STEP);
+            } else {
+                resolve();
+            }
+        });
+    };
+
+    this.checkTimeout = function(elementId, timeout, ignoreError, resolve, reject) {
+        if (!timeout) {
+            timeout = DEFAULT_TIMEOUT;
+        }
+        timeout -= DEFAULT_TIMEOUT_STEP;
+
+        if (timeout <= 0) {
+            if(ignoreError) {
+                resolve();
+            } else {
+                reject(new Error("Element '" + elementId + "' is not exist."));
+            }
+        }
+    }
+
+    this.getElement = function(elementId, ignoreError, resolve) {
+        var element = $( "#" + elementId );
+        if(!element) {
+            if(ignoreError) {
+                resolve();
+            } else {
+                throw "Element not found: #" + elementId;
+            }
+        }
+        return element;
+    }
 
 }
