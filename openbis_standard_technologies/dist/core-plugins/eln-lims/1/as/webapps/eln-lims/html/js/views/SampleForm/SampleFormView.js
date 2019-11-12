@@ -104,7 +104,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		}
 		
 		$formTitle
-			.append($("<h2>").append(title))
+			.append($("<h2 id='sampleFormTitle'>").append(title))
 			.append($("<h4>", { "style" : "font-weight:normal;" } ).append(entityPath));
 		
 		//
@@ -155,7 +155,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 						}
 						
 						mainController.changeView('showEditSamplePageFromPermId', args);
-					});
+					}, null, null, "edit-btn");
 					if(toolbarConfig.EDIT) {
 						toolbarModel.push({ component : $editButton, tooltip: "Edit" });
 					}
@@ -337,7 +337,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		} else { //Create and Edit
 			var $saveBtn = FormUtil.getButtonWithIcon("glyphicon-floppy-disk", function() {
 				_this._sampleFormController.createUpdateCopySample();
-			}, "Save");
+			}, "Save", null, "save-btn");
 			$saveBtn.removeClass("btn-default");
 			$saveBtn.addClass("btn-primary");
 			toolbarModel.push({ component : $saveBtn, tooltip: "Save" });
@@ -871,7 +871,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		//
 		var $codeField = null;
 		if(this._sampleFormModel.mode === FormMode.CREATE) {
-			var $textField = FormUtil._getInputField('text', null, "Code", null, true);
+			var $textField = FormUtil._getInputField('text', 'codeId', "Code", null, true);
 			$textField.keyup(function(event){
 				var textField = $(this);
 				var caretPosition = this.selectionStart;

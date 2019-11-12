@@ -1,3 +1,14 @@
+## Changes with pybis-1.10.1
+
+* fixed a nasty threading bug: open threads are now closed when downloading or uploading datasets
+* this bugfix avoids this RuntimeError: can't start new thread
+
+## Changes with pybis-1.10.0
+
+* dataSet upload now supports zipfiles
+* dataSet upload now supports files and folders
+* different behaviour when providing a folder: files are no longer flattened out, structure is kept intact
+
 ## Changes with pybis-1.9.8
 
 * new: create and update Dateset Types

@@ -1,15 +1,19 @@
 import os
 from threading import Thread
-from tabulate import tabulate
 from queue import Queue
+from tabulate import tabulate
 from .openbis_object import OpenBisObject 
 from .definitions import openbis_definitions
 from .utils import VERBOSE
 import requests
+from requests import Request, Session
 import json
 from pandas import DataFrame
 #from urllib.parse import urlparse, urljoin, quote
 import urllib.parse
+import zipfile
+import random
+import time
 
 # needed for Data upload
 PYBIS_PLUGIN = "dataset-uploader-api"
@@ -24,23 +28,34 @@ class DataSet(
     """ DataSet are openBIS objects that contain the actual files.
     """
 
-    def __init__(self, openbis_obj, type, data=None, files=None, folder=None, kind=None, props=None, **kwargs):
+    def __init__(self, openbis_obj, type, data=None, files=None, zipfile=None, folder=None, kind=None, props=None, **kwargs):
 
         if kind == 'PHYSICAL_DATA':
-            if files is None:
+            if files is None and zipfile is None:
                 raise ValueError('please provide at least one file')
 
-            if isinstance(files, str):
-                files = [files]
+            if files and zipfile:
+                raise ValueError('please provide either a list of files or a single zipfile')
 
-            for file in files:
-                if not os.path.exists(file):
-                    raise ValueError('File {} does not exist'.format(file))
+            if zipfile:
+                files = [zipfile]
+                self.__dict__['isZipDirectoryUpload'] = True
+            else:
+                self.__dict__['isZipDirectoryUpload'] = False
 
 
-            self.__dict__['files'] = files
+            if files:
+                if isinstance(files, str):
+                    files = [files]
 
-        # initialize the attributes
+                for file in files:
+                    if not os.path.exists(file):
+                        raise ValueError('File {} does not exist'.format(file))
+
+                self.__dict__['files'] = files
+ 
+
+        # initialize the OpenBisObject
         super().__init__(openbis_obj, type=type, data=data, props=props, **kwargs)
 
         self.__dict__['files_in_wsp'] = []
@@ -226,23 +241,21 @@ class DataSet(
         """
 
         base_url = self.data['dataStore']['downloadUrl'] + '/datastore_server/' + self.permId + '/'
+        with DataSetDownloadQueue(workers=workers) as queue:
+            # get file list and start download
+            for filename in files:
+                file_info = self.get_file_list(start_folder=filename)
+                file_size = file_info[0]['fileSize']
+                download_url = base_url + filename + '?sessionID=' + self.openbis.token
+                filename_dest = os.path.join(destination, self.permId, filename)
+                queue.put([download_url, filename, filename_dest, file_size, self.openbis.verify_certificates, 'wb'])
 
-        queue = DataSetDownloadQueue(workers=workers)
+            # wait until all files have downloaded
+            if wait_until_finished:
+                queue.join()
 
-        # get file list and start download
-        for filename in files:
-            file_info = self.get_file_list(start_folder=filename)
-            file_size = file_info[0]['fileSize']
-            download_url = base_url + filename + '?sessionID=' + self.openbis.token
-            filename_dest = os.path.join(destination, self.permId, filename)
-            queue.put([download_url, filename, filename_dest, file_size, self.openbis.verify_certificates, 'wb'])
-
-        # wait until all files have downloaded
-        if wait_until_finished:
-            queue.join()
-
-        if VERBOSE: print("Files downloaded to: %s" % os.path.join(destination, self.permId))
-        return destination
+            if VERBOSE: print("Files downloaded to: %s" % os.path.join(destination, self.permId))
+            return destination
 
 
     def _download_link(self, files, destination, wait_until_finished, workers, linked_dataset_fileservice_url, content_copy_index):
@@ -250,42 +263,42 @@ class DataSet(
         Requires the microservice server to be running at the given linked_dataset_fileservice_url.
         """
 
-        queue = DataSetDownloadQueue(workers=workers, collect_files_with_wrong_length=True)
+        with DataSetDownloadQueue(workers=workers, collect_files_with_wrong_length=True) as queue:
 
-        if content_copy_index >= len(self.data["linkedData"]["contentCopies"]):
-            raise ValueError("Content Copy index out of range.")
-        content_copy = self.data["linkedData"]["contentCopies"][content_copy_index]
+            if content_copy_index >= len(self.data["linkedData"]["contentCopies"]):
+                raise ValueError("Content Copy index out of range.")
+            content_copy = self.data["linkedData"]["contentCopies"][content_copy_index]
 
-        for filename in files:
-            file_info = self.get_file_list(start_folder=filename)
-            file_size = file_info[0]['fileSize']
+            for filename in files:
+                file_info = self.get_file_list(start_folder=filename)
+                file_size = file_info[0]['fileSize']
 
-            download_url = linked_dataset_fileservice_url
-            download_url += "?sessionToken=" + self.openbis.token
-            download_url += "&datasetPermId=" + self.data["permId"]["permId"]
-            download_url += "&externalDMSCode=" + content_copy["externalDms"]["code"]
-            download_url += "&contentCopyPath=" + content_copy["path"].replace("/", "%2F")
-            download_url += "&datasetPathToFile=" + urllib.parse.quote(filename)
+                download_url = linked_dataset_fileservice_url
+                download_url += "?sessionToken=" + self.openbis.token
+                download_url += "&datasetPermId=" + self.data["permId"]["permId"]
+                download_url += "&externalDMSCode=" + content_copy["externalDms"]["code"]
+                download_url += "&contentCopyPath=" + content_copy["path"].replace("/", "%2F")
+                download_url += "&datasetPathToFile=" + urllib.parse.quote(filename)
 
-            filename_dest = os.path.join(destination, self.permId, filename)
+                filename_dest = os.path.join(destination, self.permId, filename)
 
-            # continue download if file is not complete - do nothing if it is
-            write_mode = 'wb'
-            if os.path.exists(filename_dest):
-                actual_size = os.path.getsize(filename_dest)
-                if actual_size == int(file_size):
-                    continue
-                elif actual_size < int(file_size):
-                    write_mode = 'ab'
-                    download_url += "&offset=" + str(actual_size)
+                # continue download if file is not complete - do nothing if it is
+                write_mode = 'wb'
+                if os.path.exists(filename_dest):
+                    actual_size = os.path.getsize(filename_dest)
+                    if actual_size == int(file_size):
+                        continue
+                    elif actual_size < int(file_size):
+                        write_mode = 'ab'
+                        download_url += "&offset=" + str(actual_size)
 
-            queue.put([download_url, filename, filename_dest, file_size, self.openbis.verify_certificates, write_mode])
+                queue.put([download_url, filename, filename_dest, file_size, self.openbis.verify_certificates, write_mode])
 
-        if wait_until_finished:
-            queue.join()
+            if wait_until_finished:
+                queue.join()
 
-        if VERBOSE: print("Files downloaded to: %s" % os.path.join(destination, self.permId))
-        return destination, queue.files_with_wrong_length
+            if VERBOSE: print("Files downloaded to: %s" % os.path.join(destination, self.permId))
+            return destination, queue.files_with_wrong_length
 
 
     @property
@@ -402,7 +415,7 @@ class DataSet(
                     "dataSetType" : dataset_type,
                     "folderName" : self.folder,
                     "fileNames" : self.files_in_wsp,
-                    "isZipDirectoryUpload" : False,
+                    "isZipDirectoryUpload" : self.isZipDirectoryUpload,
                     "properties" : properties,
                     "parentIdentifiers": parentIds
                 }
@@ -443,7 +456,10 @@ class DataSet(
 
                 # activate the ingestion plugin, as soon as the data is uploaded
                 # this will actually register the dataset in the datastore and the AS
-                request = self._generate_plugin_request(dss=datastores['code'][0], permId=permId)
+                request = self._generate_plugin_request(
+                    dss    = datastores['code'][0],
+                    permId = permId,
+                )
                 resp = self.openbis._post_request(self.openbis.reg_v1, request)
                 if resp['rows'][0][0]['value'] == 'OK':
                     permId = resp['rows'][0][2]['value']
@@ -456,6 +472,8 @@ class DataSet(
                         if VERBOSE: print("DataSet successfully created.")
                         return self
                 else:
+                    import json
+                    print(json.dumps(request))
                     raise ValueError('Error while creating the DataSet: ' + resp['rows'][0][1]['value'])
             # CONTAINER 
             else:
@@ -497,6 +515,36 @@ class DataSet(
             self.openbis._post_request(self.openbis.as_v3, request)
             if VERBOSE: print("DataSet successfully updated.")
 
+    def zipit(self, file_or_folder, zipf):
+        """Takes a directory or a file, and a zipfile instance. For every file that is encountered,
+        we issue the write() method to add that file to the zipfile.
+        If we have a directory, we walk that directory and add every file inside it,
+        including the starting folder name. 
+        """
+        if os.path.isfile(file_or_folder):
+            # if a file is provided, we want to always store it in the root of the zip file
+            # ../../somedir/file.txt       -->   file.txt
+            (realpath, filename) = os.path.split(os.path.realpath(file_or_folder))
+            zipf.write(
+                file_or_folder, 
+                filename
+            )
+        elif os.path.isdir(file_or_folder):
+            # if a directory is provided, we want to store it (and its content) also in the root of the zip file
+            # ../../somedir/               -->   somedir/
+            # ../../somedir/other/file.txt -->   somedir/other/file.txt
+            (head, tail) = os.path.split(os.path.realpath(file_or_folder))
+            for dirpath, dirnames, filenames in os.walk(file_or_folder):
+                realpath = os.path.realpath(dirpath)
+                for filename in filenames:
+                    zipf.write(
+                        os.path.relpath(
+                            os.path.join(dirpath, filename),
+                            os.path.join(filename, '..')
+                        ),
+                        os.path.join(realpath[len(head)+1:], filename)
+                    )
+
 
     def upload_files(self, datastore_url=None, files=None, folder=None, wait_until_finished=False):
 
@@ -513,50 +561,80 @@ class DataSet(
         if isinstance(files, str):
             files = [files]
 
+        contains_dir = False
+        for f in files:
+            if os.path.isdir(f):
+                contains_dir = True
+
+        if contains_dir:
+            # if the file list contains at least one directory, we need to zip the
+            # whole thing in order to get it safely to openBIS.
+            file_ending = ''.join(random.choice('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ') for i in range(6))
+            filename = time.strftime('%Y-%m-%d_%H-%M-%S') + file_ending + '.zip'
+            buf = ZipBuffer(host=datastore_url, token=self.openbis.token, filename=filename)
+            zipf = zipfile.ZipFile(file=buf, mode='w', compression=zipfile.ZIP_DEFLATED) 
+            for file_or_folder in files:
+                self.zipit(file_or_folder, zipf)
+            #self.__dict__['folder'] = '/'
+            self.__dict__['files_in_wsp'] = [filename]
+            self.__dict__['isZipDirectoryUpload'] = True
+            return self.files_in_wsp
+
+
         # define a queue to handle the upload threads
-        queue = DataSetUploadQueue()
+        with DataSetUploadQueue() as queue:
 
-        real_files = []
-        for filename in files:
-            if os.path.isdir(filename):
-                real_files.extend(
-                    [os.path.join(dp, f) for dp, dn, fn in os.walk(os.path.expanduser(filename)) for f in fn])
-            else:
-                real_files.append(os.path.join(filename))
+            real_files = []
+            for filename in files:
+                if os.path.isdir(filename):
+                    real_files.extend(
+                        [os.path.join(dp, f) for dp, dn, fn in os.walk(os.path.expanduser(filename)) for f in fn])
+                else:
+                    real_files.append(os.path.join(filename))
 
-        # compose the upload-URL and put URL and filename in the upload queue 
-        for filename in real_files:
-            file_in_wsp = os.path.join(folder, os.path.basename(filename))
-            url_filename = os.path.join(folder, urllib.parse.quote(os.path.basename(filename)))
-            self.files_in_wsp.append(file_in_wsp)
+            # compose the upload-URL and put URL and filename in the upload queue 
+            for filename in real_files:
+                file_in_wsp = os.path.join(folder, os.path.basename(filename))
+                url_filename = os.path.join(folder, urllib.parse.quote(os.path.basename(filename)))
+                self.files_in_wsp.append(file_in_wsp)
 
-            upload_url = (
-                datastore_url + '/datastore_server/session_workspace_file_upload'
-                + '?filename=' + url_filename
-                + '&id=1'
-                + '&startByte=0&endByte=0'
-                + '&sessionID=' + self.openbis.token
-            )
-            queue.put([upload_url, filename, self.openbis.verify_certificates])
+                upload_url = (
+                    datastore_url + '/datastore_server/session_workspace_file_upload'
+                    + '?filename=' + url_filename
+                    + '&id=1'
+                    + '&startByte=0&endByte=0'
+                    + '&sessionID=' + self.openbis.token
+                )
+                queue.put([upload_url, filename, self.openbis.verify_certificates])
 
-        # wait until all files have uploaded
-        if wait_until_finished:
-            queue.join()
+            # wait until all files have uploaded
+            if wait_until_finished:
+                queue.join()
 
-        # return files with full path in session workspace
-        return self.files_in_wsp
+            # return files with full path in session workspace
+            return self.files_in_wsp
 
 
 class DataSetUploadQueue():
     def __init__(self, workers=20):
         # maximum files to be uploaded at once
         self.upload_queue = Queue()
+        self.workers = workers
 
         # define number of threads and start them
         for t in range(workers):
             t = Thread(target=self.upload_file)
-            t.daemon = True
             t.start()
+
+    def __enter__(self, *args, **kwargs):
+        return self
+
+    def __exit__(self, *args, **kwargs):
+        """This method is called at the end of a with statement.
+        """
+        # stop the workers
+        for i in self.workers:
+            self.upload_queue.put(None)
 
     def put(self, things):
         """ expects a list [url, filename] which is put into the upload queue
@@ -566,12 +644,17 @@ class DataSetUploadQueue():
     def join(self):
         """ needs to be called if you want to wait for all uploads to be finished
         """
+        # block until all tasks are done
         self.upload_queue.join()
 
     def upload_file(self):
         while True:
             # get the next item in the queue
-            upload_url, filename, verify_certificates = self.upload_queue.get()
+            queue_item = self.upload_queue.get()
+            if queue_item is None:
+                # when we call the .join() method of the DataSetUploadQueue and empty the queue
+                break
+            upload_url, filename, verify_certificates = queue_item
 
             filesize = os.path.getsize(filename)
 
@@ -586,18 +669,81 @@ class DataSetUploadQueue():
             self.upload_queue.task_done()
 
 
+class ZipBuffer(object):
+    """ A file-like object for zipfile.ZipFile to write into.
+    zipfile invokes the write method to store its zipped content.
+    We will send this content directly to the session_workspace as a POST request.
+    """
+
+    def __init__(self, host, token, filename):
+        self.startByte = 0
+        self.endByte = 0
+        self.filename = filename
+        self.upload_url = host + '/datastore_server/session_workspace_file_upload?' \
+             'filename={}' \
+             '&id=1' \
+             '&startByte={}' \
+             '&endByte={}' \
+             '&sessionID={}'
+        self.token = token
+        self.session = Session()
+
+    def write(self, data):
+
+        self.startByte = self.endByte
+        self.endByte += len(data)
+        attempts = 0
+ 
+        while True:
+            attempts += 1
+            resp = self.session.post(
+                url = self.upload_url.format(
+                    self.filename,
+                    self.startByte,
+                    self.endByte,
+                    self.token
+                ),
+                data = data,
+            )
+            if resp.status_code == 200:
+                break
+            if attempts > 10:
+                raise Exception("Upload failed after more than 10 attempts")
+ 
+    def tell(self):
+        """ Return the current stream position.
+        """
+        return self.endByte
+
+    def flush(self):
+        """Flush the write buffers of the stream if applicable. 
+        """
+        self.session.close()
+        pass
+
+
 class DataSetDownloadQueue():
     def __init__(self, workers=20, collect_files_with_wrong_length=False):
         self.collect_files_with_wrong_length = collect_files_with_wrong_length
         # maximum files to be downloaded at once
+        self.workers = workers
         self.download_queue = Queue()
         self.files_with_wrong_length = []
 
         # define number of threads
-        for t in range(workers):
-            t = Thread(target=self.download_file)
-            t.daemon = True
-            t.start()
+        for i in range(workers):
+            thread = Thread(target=self.download_file)
+            thread.start()
+
+    def __enter__(self, *args, **kwargs):
+        return self
+
+    def __exit__(self, *args, **kwargs):
+        """This method is called at the end of a with statement.
+        """
+        # stop all workers
+        for i in range(self.workers):
+            self.download_queue.put(None)
 
     def put(self, things):
         """ expects a list [url, filename] which is put into the download queue
@@ -612,7 +758,11 @@ class DataSetDownloadQueue():
     def download_file(self):
         while True:
             try:
-                url, filename, filename_dest, file_size, verify_certificates, write_mode = self.download_queue.get()
+                queue_item = self.download_queue.get()
+                if queue_item is None:
+                    # when we call the .join() method of the DataSetDownloadQueue and empty the queue
+                    break
+                url, filename, filename_dest, file_size, verify_certificates, write_mode = queue_item
                 # create the necessary directory structure if they don't exist yet
                 os.makedirs(os.path.dirname(filename_dest), exist_ok=True)
 

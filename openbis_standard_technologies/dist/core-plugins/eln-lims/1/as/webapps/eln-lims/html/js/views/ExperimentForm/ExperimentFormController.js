@@ -22,15 +22,20 @@ function ExperimentFormController(mainController, mode, experiment) {
 	this.init = function(views) {
 		var _this = this;
 		
-		require([ "as/dto/experiment/id/ExperimentPermId", "as/dto/experiment/fetchoptions/ExperimentFetchOptions" ],
-				function(ExperimentPermId, ExperimentFetchOptions) {
+		require([ "as/dto/experiment/id/ExperimentPermId", "as/dto/sample/id/SampleIdentifier", "as/dto/experiment/fetchoptions/ExperimentFetchOptions" ],
+				function(ExperimentPermId, SampleIdentifier, ExperimentFetchOptions) {
 				var id = new ExperimentPermId(experiment.permId);
 				var fetchOptions = new ExperimentFetchOptions();
 				fetchOptions.withProject().withSpace();
 				mainController.openbisV3.getExperiments([ id ], fetchOptions).done(function(map) {
 					_this._experimentFormModel.v3_experiment = map[id];
-					mainController.openbisV3.getRights([ id ], null).done(function(rightsByIds) {
+					var expeId = _this._experimentFormModel.v3_experiment.getIdentifier().getIdentifier();
+					var spaceCode = IdentifierUtil.getSpaceCodeFromIdentifier(expeId);
+					var projectCode = IdentifierUtil.getProjectCodeFromExperimentIdentifier(expeId);
+					var dummySampleId = new SampleIdentifier("/" + spaceCode + "/" + projectCode + "/DUMMY");
+					mainController.openbisV3.getRights([ id , dummySampleId], null).done(function(rightsByIds) {
 						_this._experimentFormModel.rights = rightsByIds[id];
+						_this._experimentFormModel.sampleRights = rightsByIds[dummySampleId];
 						_this._experimentFormView.repaint(views);
 					});
 				});

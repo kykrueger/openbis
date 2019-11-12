@@ -570,7 +570,9 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		var experiment = this._experimentFormModel.v3_experiment;
 		var project = experiment.project;
 		var space = project.space;
-		return experiment.frozenForSamples == false && project.frozenForSamples == false && space.frozenForSamples == false;
+		
+		return experiment.frozenForSamples == false && project.frozenForSamples == false && space.frozenForSamples == false
+			&& this._experimentFormModel.sampleRights.rights.indexOf("CREATE") >= 0;
 	}
 	
 	this._allowedToEdit = function() {

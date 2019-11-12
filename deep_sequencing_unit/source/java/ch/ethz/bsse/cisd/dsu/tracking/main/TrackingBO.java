@@ -433,11 +433,14 @@ public class TrackingBO
         if (commandLineMap.containsKey(TrackingClient.CL_PARAMETER_COPY_DATA_SETS))
         {
         	// Data Sets with higher priority get transferred first 
-            // extraSCICOREDataSetListCopy(params, toTransferDataSetsHighPriority);
-            // extraSCICOREDataSetListCopy(params, toTransferDataSets);
+            // extraDataSetCopy(params, toTransferDataSetsHighPriority);
+            // extraDataSetCopy(params, toTransferDataSets);
+            ArrayList<AbstractExternalData> toTransferDataSetsAll = new ArrayList<>(toTransferDataSetsHighPriority.size() + toTransferDataSets.size());
+            toTransferDataSetsAll.addAll(toTransferDataSetsHighPriority);
+            toTransferDataSetsAll.addAll(toTransferDataSets);
+            extraSCICOREDataSetListCopy(params, toTransferDataSetsAll);
         }
 
-        extraSCICOREDataSetListCopy(params, filteredDataSets);
 
         LogUtils.info("Found " + filteredDataSets.size() + " data sets which are connected to samples in " + filterList.toString());       
         setLaneProperties(changedTrackingMap, v3, v3SessionToken);
