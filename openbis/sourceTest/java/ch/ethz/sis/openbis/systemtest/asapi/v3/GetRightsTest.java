@@ -23,12 +23,14 @@ import java.util.Map;
 
 import org.testng.annotations.Test;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.CreationId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.IObjectId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.rights.Rights;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.rights.fetchoptions.RightsFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 
 /**
  * @author Franz-Josef Elmer
@@ -42,13 +44,71 @@ public class GetRightsTest extends AbstractTest
         String sessionToken = v3api.login(TEST_ROLE_V3, PASSWORD);
         IObjectId s1 = new SampleIdentifier("/TEST-SPACE/CP-TEST-4");
         IObjectId s2 = new SampleIdentifier("/CISD/CP-TEST-1");
+        IObjectId s3 = new SampleIdentifier("/CISD/NEW");
+        IObjectId s4 = new SampleIdentifier("/CISD/NEMO/NEW");
+        IObjectId s5 = new SampleIdentifier("/TEST-SPACE/NOE/NEW");
 
         // When
-        Map<IObjectId, Rights> map = v3api.getRights(sessionToken, Arrays.asList(s1, s2), new RightsFetchOptions());
+        Map<IObjectId, Rights> map = v3api.getRights(sessionToken, Arrays.asList(s1, s2, s3, s4, s5), new RightsFetchOptions());
 
         // Then
         assertEquals(map.get(s1).getRights().toString(), "[]");
         assertEquals(map.get(s2).getRights().toString(), "[UPDATE]");
+        assertEquals(map.get(s3).getRights().toString(), "[CREATE]");
+        assertEquals(map.get(s4).getRights().toString(), "[CREATE]");
+        assertEquals(map.get(s5).getRights().toString(), "[]");
+    }
+
+    @Test
+    public void testGetSampleCreationRightForSamplePermId()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_ROLE_V3, PASSWORD);
+        IObjectId s1 = new SamplePermId("123-45");
+
+        // When
+        assertUserFailureException(Void -> v3api.getRights(sessionToken, Arrays.asList(s1), new RightsFetchOptions()),
+                // Then
+                "Sample id '123-45' can not be a SamplePermId.");
+    }
+
+    @Test
+    public void testGetSampleCreationRightForCreationId()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_ROLE_V3, PASSWORD);
+        IObjectId s1 = new CreationId("123-45");
+
+        // When
+        assertUserFailureException(Void -> v3api.getRights(sessionToken, Arrays.asList(s1), new RightsFetchOptions()),
+                // Then
+                "Sample id '123-45' can not be a CreationId.");
+    }
+
+    @Test
+    public void testGetSampleCreationRightInMissingSpace()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_ROLE_V3, PASSWORD);
+        IObjectId s1 = new SampleIdentifier("/NO-SPACE/NEW");
+
+        // When
+        assertUserFailureException(Void -> v3api.getRights(sessionToken, Arrays.asList(s1), new RightsFetchOptions()),
+                // Then
+                "Unknown space in sample identifier '/NO-SPACE/NEW'.");
+    }
+
+    @Test
+    public void testGetSampleCreationRightInMissingProject()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_ROLE_V3, PASSWORD);
+        IObjectId s1 = new SampleIdentifier("/TEST-SPACE/NO-PROJECT/NEW");
+
+        // When
+        assertUserFailureException(Void -> v3api.getRights(sessionToken, Arrays.asList(s1), new RightsFetchOptions()),
+                // Then
+                "Unknown project in sample identifier '/TEST-SPACE/NO-PROJECT/NEW'.");
     }
 
     @Test
