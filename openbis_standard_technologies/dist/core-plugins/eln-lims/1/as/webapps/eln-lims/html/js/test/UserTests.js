@@ -7,8 +7,7 @@ var UserTests = new function() {
                  .then(() => TestUtil.login("testId", "pass"))
                  .then(() => this.inventorySpaceForTestUser())
                  //6. Sample Form - Creation
-                 //todo remove this comment before commit!
-                 //.then(() => this.creationSampleForm())
+                 .then(() => this.creationSampleForm())
                  //13. Inventory Table - Imports for Create - Automatic Codes
                  .then(() => this.importsAutomaticCodes())
                  //15. Sample Form - Storage
@@ -111,9 +110,15 @@ var UserTests = new function() {
                              .then(() => e.click("options-menu-btn"))
                              .then(() => e.waitForId("register-object-btn"))
                              .then(() => e.click("register-object-btn"))
-                             .then(() => e.waitForId("accept-type-file"))
+                             .then(() => e.waitForId("choose-type-btn"))
+                             .then(() => e.change("choose-type-btn", "BACTERIA", false))
                              .then(() => TestUtil.setFile("name", baseURL + pathToResource, "text"))
+                             .then(() => e.waitForId("accept-type-file"))
                              .then(() => e.click("accept-type-file"))
+                             .then(() => e.waitForId("bac5-column-id"))
+                             .then(() => e.waitForId("bac6-column-id"))
+                             .then(() => e.waitForId("bac7-column-id"))
+                             .then(() => e.waitForId("bac8-column-id"))
                              .then(() => resolve());
         });
     }

@@ -91,8 +91,6 @@ var EventUtil = new function() {
 
     this.waitForId = function(elementId, ignoreError, timeout) {
         return new Promise(function executor(resolve, reject) {
-            EventUtil.getElement(elementId, timeout, ignoreError, resolve, reject);
-
             if($("#" + elementId).length <= 0) {
                 setTimeout(executor.bind(null, resolve, reject), DEFAULT_TIMEOUT_STEP);
             } else {
@@ -103,8 +101,6 @@ var EventUtil = new function() {
 
     this.waitForFill = function(elementId, ignoreError, timeout) {
         return new Promise(function executor(resolve, reject) {
-            EventUtil.getElement(elementId, timeout, ignoreError, resolve, reject);
-
             var element = EventUtil.getElement(elementId, ignoreError, resolve);
             if(element.html().length <= 0 && element.val().length <= 0) {
                 setTimeout(executor.bind(null, resolve, reject), DEFAULT_TIMEOUT_STEP);
