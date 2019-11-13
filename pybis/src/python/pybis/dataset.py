@@ -633,7 +633,7 @@ class DataSetUploadQueue():
         """This method is called at the end of a with statement.
         """
         # stop the workers
-        for i in self.workers:
+        for i in range(self.workers):
             self.upload_queue.put(None)
 
     def put(self, things):
