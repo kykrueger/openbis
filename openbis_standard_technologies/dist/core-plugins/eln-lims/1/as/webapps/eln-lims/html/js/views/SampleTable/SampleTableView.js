@@ -132,7 +132,7 @@ function SampleTableView(sampleTableController, sampleTableModel) {
 		$dropDownMenu.append($caret);
 		$dropDownMenu.append($list);
 		
-		if(_this._sampleTableModel.experimentIdentifier) {
+		if(_this._sampleTableModel.experimentIdentifier && _this._sampleTableModel.sampleRights.rights.indexOf("CREATE") >= 0) {
 			var $createSampleOption = $("<li>", { 'role' : 'presentation' }).append($("<a>", {'title' : 'Create ' + ELNDictionary.Sample + '', 'id' : 'create-' + ELNDictionary.Sample.toLowerCase() + '-btn'}).append('Create ' + ELNDictionary.Sample + ''));
 			$createSampleOption.click(function() {
 				_this.createNewSample(_this._sampleTableModel.experimentIdentifier);
