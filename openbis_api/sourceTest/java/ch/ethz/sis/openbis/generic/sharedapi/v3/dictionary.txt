@@ -2329,5 +2329,5 @@ Right
 Rights
 Rights Fetch Options
 set Rights
-CREATE_SAMPLE
+CREATE
 

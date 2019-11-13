@@ -1,3 +1,7 @@
+## Changes with pybis-1.10.2
+
+* typo bugfix
+
 ## Changes with pybis-1.10.1
 
 * fixed a nasty threading bug: open threads are now closed when downloading or uploading datasets
