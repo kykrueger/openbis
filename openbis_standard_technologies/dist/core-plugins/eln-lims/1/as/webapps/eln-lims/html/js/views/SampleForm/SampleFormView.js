@@ -1295,6 +1295,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 	
 	this._allowedToRegisterDataSet = function() {
 		var sample = this._sampleFormModel.v3_sample;
-		return sample.frozenForDataSets == false && (!sample.experiment || sample.experiment.frozenForDataSets == false);
+		return sample.frozenForDataSets == false && (!sample.experiment || sample.experiment.frozenForDataSets == false)
+				&& this._sampleFormModel.sampleRights.rights.indexOf("CREATE") >= 0;
 	}
 }
