@@ -30,7 +30,7 @@ function TypeAndFileView(typeAndFileController, typeAndFileModel) {
 		
 		$window.append($('<legend>').append(this._typeAndFileModel.title));
 
-		var $sampleTypeDropDown = FormUtil.getSampleTypeDropdown(null, true, this._typeAndFileModel.allowedSampleTypes, this._typeAndFileModel.allowedSampleTypes);
+		var $sampleTypeDropDown = FormUtil.getSampleTypeDropdown('choose-type-btn', true, this._typeAndFileModel.allowedSampleTypes, this._typeAndFileModel.allowedSampleTypes);
 		$sampleTypeDropDown.change(function(event) {
 			_this._typeAndFileModel.sampleTypeCode = $(this).val();
 			_this.updateLink($(this).val());

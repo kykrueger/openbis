@@ -43,7 +43,7 @@ var SampleDataGridUtil = new function() {
 				return sortDirection * naturalSort(value1, value2);
 			}
 		});
-		
+
 		columnsFirst.push({
 			label : 'Code',
 			property : 'code',
@@ -69,7 +69,10 @@ var SampleDataGridUtil = new function() {
 						}
 					}
 				}
-				return (isLinksDisabled)?data.code:FormUtil.getFormLink(data.code, "Sample", data.permId, paginationInfo);
+				var output = $("<span id = '" + data.code.toLowerCase() + "-column-id"+ "'>");
+				var eComponent = (isLinksDisabled)?data.code:FormUtil.getFormLink(data.code, "Sample", data.permId, paginationInfo);
+				output.append(eComponent);
+				return output;
 			},
 			filter : function(data, filter) {
 				return data.identifier.toLowerCase().indexOf(filter) !== -1;
