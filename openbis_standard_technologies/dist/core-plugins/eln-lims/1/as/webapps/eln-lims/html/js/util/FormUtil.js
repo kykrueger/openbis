@@ -1770,8 +1770,10 @@ var FormUtil = new function() {
 	}
 
 	this.prepareId = function(id) {
-	    id = id[0] === '$' ? id.substring(1) : id;
-	    id = id.split(".").join("");
-        return id;
-    }
+		if (id) {
+			id = id[0] === '$' ? id.substring(1) : id;
+			id = id.split(".").join("");
+		}
+		return id;
+	}
 }

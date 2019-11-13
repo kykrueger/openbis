@@ -23,6 +23,8 @@ const styles = theme => ({
   preview: {
     height: '100%',
     flex: '1 1 auto',
+    display: 'flex',
+    flexDirection: 'column',
     overflow: 'auto'
   },
   buttons: {
@@ -513,6 +515,10 @@ class ObjectType extends React.PureComponent {
           </div>
         </div>
         <Resizable
+          defaultSize={{
+            width: 400,
+            height: 'auto'
+          }}
           enable={{
             left: true,
             top: false,

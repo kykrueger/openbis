@@ -9,6 +9,8 @@ import { facade, dto } from '../../../services/openbis.js'
 import logger from '../../../common/logger.js'
 import * as util from '../../../common/util.js'
 
+const EMPTY = 'empty'
+
 const styles = theme => ({
   draggable: {
     width: '100%',
@@ -33,13 +35,11 @@ const styles = theme => ({
   partEmpty: {
     fontStyle: 'italic',
     opacity: 0.7,
-    color: theme.palette.grey.main,
-    '&:after': {
-      content: '"empty"'
-    }
+    color: theme.palette.grey.main
   },
   partSelected: {
     cursor: 'pointer',
+    pointerEvents: 'initial',
     paddingBottom: '1px',
     borderColor: theme.palette.secondary.main,
     borderStyle: 'solid',
@@ -50,6 +50,7 @@ const styles = theme => ({
   },
   partNotSelected: {
     cursor: 'pointer',
+    pointerEvents: 'initial',
     paddingBottom: '1px',
     '&:hover': {
       borderStyle: 'solid',
@@ -139,8 +140,7 @@ class ObjectTypePreviewProperty extends React.PureComponent {
   handleDraggableClick(event) {
     event.stopPropagation()
     this.props.onSelectionChange('property', {
-      id: this.props.property.id,
-      part: 'label'
+      id: this.props.property.id
     })
   }
 
@@ -200,72 +200,42 @@ class ObjectTypePreviewProperty extends React.PureComponent {
     }
   }
 
-  renderMetadata() {
-    const { code, dataType } = this.props.property
-    const styles = this.createStyles()
-
-    return (
-      <React.Fragment>
-        [
-        <span
-          data-part='code'
-          className={styles.code}
-          onClick={this.handlePropertyClick}
-        >
-          {code}
-        </span>
-        ][
-        <span
-          data-part='dataType'
-          className={styles.dataType}
-          onClick={this.handlePropertyClick}
-        >
-          {dataType}
-        </span>
-        ]
-      </React.Fragment>
-    )
-  }
-
   renderVarcharProperty() {
-    const { property } = this.props
     return (
       <TextField
-        label={property.label}
-        description={property.description}
-        mandatory={property.mandatory}
-        metadata={this.renderMetadata()}
-        styles={this.createStyles()}
+        label={this.getLabel()}
+        description={this.getDescription()}
+        mandatory={this.getMandatory()}
+        metadata={this.getMetadata()}
+        styles={this.getStyles()}
         onClick={this.handlePropertyClick}
       />
     )
   }
 
   renderNumberProperty() {
-    const { property } = this.props
     return (
       <TextField
         type='number'
-        label={property.label}
-        description={property.description}
-        mandatory={property.mandatory}
-        metadata={this.renderMetadata()}
-        styles={this.createStyles()}
+        label={this.getLabel()}
+        description={this.getDescription()}
+        mandatory={this.getMandatory()}
+        metadata={this.getMetadata()}
+        styles={this.getStyles()}
         onClick={this.handlePropertyClick}
       />
     )
   }
 
   renderBooleanProperty() {
-    const { property } = this.props
     return (
       <div>
         <CheckboxField
-          label={property.label}
-          description={property.description}
-          mandatory={property.mandatory}
-          metadata={this.renderMetadata()}
-          styles={this.createStyles()}
+          label={this.getLabel()}
+          description={this.getDescription()}
+          mandatory={this.getMandatory()}
+          metadata={this.getMetadata()}
+          styles={this.getStyles()}
           onClick={this.handlePropertyClick}
         />
       </div>
@@ -273,7 +243,6 @@ class ObjectTypePreviewProperty extends React.PureComponent {
   }
 
   renderVocabularyProperty() {
-    const { property } = this.props
     const { terms } = this.state
 
     let options = []
@@ -286,19 +255,18 @@ class ObjectTypePreviewProperty extends React.PureComponent {
 
     return (
       <SelectField
-        label={property.label}
-        description={property.description}
-        mandatory={property.mandatory}
+        label={this.getLabel()}
+        description={this.getDescription()}
+        mandatory={this.getMandatory()}
         options={options}
-        metadata={this.renderMetadata()}
-        styles={this.createStyles()}
+        metadata={this.getMetadata()}
+        styles={this.getStyles()}
         onClick={this.handlePropertyClick}
       />
     )
   }
 
   renderMaterialProperty() {
-    const { property } = this.props
     const { materials } = this.state
 
     let options = []
@@ -310,18 +278,64 @@ class ObjectTypePreviewProperty extends React.PureComponent {
 
     return (
       <SelectField
-        label={property.label}
-        description={property.description}
-        mandatory={property.mandatory}
+        label={this.getLabel()}
+        description={this.getDescription()}
+        mandatory={this.getMandatory()}
         options={options}
-        metadata={this.renderMetadata()}
-        styles={this.createStyles()}
+        metadata={this.getMetadata()}
+        styles={this.getStyles()}
         onClick={this.handlePropertyClick}
       />
     )
   }
 
-  createStyles() {
+  getCode() {
+    return this.props.property.code || EMPTY
+  }
+
+  getLabel() {
+    return this.props.property.label || EMPTY
+  }
+
+  getDescription() {
+    return this.props.property.description || EMPTY
+  }
+
+  getDataType() {
+    return this.props.property.dataType
+  }
+
+  getMandatory() {
+    return this.props.property.mandatory
+  }
+
+  getMetadata() {
+    const styles = this.getStyles()
+
+    return (
+      <React.Fragment>
+        [
+        <span
+          data-part='code'
+          className={styles.code}
+          onClick={this.handlePropertyClick}
+        >
+          {this.getCode()}
+        </span>
+        ][
+        <span
+          data-part='dataType'
+          className={styles.dataType}
+          onClick={this.handlePropertyClick}
+        >
+          {this.getDataType()}
+        </span>
+        ]
+      </React.Fragment>
+    )
+  }
+
+  getStyles() {
     const { property, selection, classes } = this.props
 
     let styles = {}
