@@ -67,11 +67,16 @@ function SampleTableController(parentController, title, experimentIdentifier, pr
 		//
 		require(["as/dto/sample/id/SampleIdentifier"], function(SampleIdentifier) {
 			var expeId = _this._sampleTableModel.experimentIdentifier;
-			var dummySampleId = new SampleIdentifier(IdentifierUtil.createDummySampleIdentifierFromExperimentIdentifier(expeId));
-			mainController.openbisV3.getRights([ dummySampleId], null).done(function(rightsByIds) {
-				_this._sampleTableModel.sampleRights = rightsByIds[dummySampleId];
+			if (expeId) {
+				var dummySampleId = new SampleIdentifier(IdentifierUtil.createDummySampleIdentifierFromExperimentIdentifier(expeId));
+				mainController.openbisV3.getRights([ dummySampleId], null).done(function(rightsByIds) {
+					_this._sampleTableModel.sampleRights = rightsByIds[dummySampleId];
+					callback();
+				});
+			} else
+			{
 				callback();
-			});
+			}
 		});
 		this._reloadTableWithAllSamples(advancedSampleSearchCriteria);
 	}

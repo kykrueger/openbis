@@ -76,7 +76,7 @@ function SampleTableView(sampleTableController, sampleTableModel) {
 			this._sampleTableModel.sampleTypeCodeToUse = sampleTypeCodeToUse;
 			
 			//Add Sample Type
-			if(sampleTypeCodeToUse !== null) {
+			if(sampleTypeCodeToUse !== null & _this._sampleTableModel.sampleRights.rights.indexOf("CREATE") >= 0) {
 				var $createButton = FormUtil.getButtonWithIcon("glyphicon-plus", function() {
 					var argsMap = {
 							"sampleTypeCode" : sampleTypeCodeToUse,

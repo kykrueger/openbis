@@ -53,11 +53,13 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 			var toolbarModel = [];		
 
 			if(this._settingsFormModel.mode === FormMode.VIEW) {
-				//Edit
-				var $editButton = FormUtil.getButtonWithIcon("glyphicon-edit", function () {
-					mainController.changeView("showEditSettingsPage", _this._settingsFormModel.settingsSample.identifier);
-				}, null, null, "edit-btn");
-				toolbarModel.push({ component : $editButton, tooltip: "Edit" });
+				if (this._settingsFormModel.sampleRights.rights.indexOf("CREATE") >= 0) {
+					//Edit
+					var $editButton = FormUtil.getButtonWithIcon("glyphicon-edit", function () {
+						mainController.changeView("showEditSettingsPage", _this._settingsFormModel.settingsSample.identifier);
+					}, null, null, "edit-btn");
+					toolbarModel.push({ component : $editButton, tooltip: "Edit" });
+				}
 			} else { //Create and Edit
 				//Save
 				var $saveBtn = FormUtil.getButtonWithIcon("glyphicon-floppy-disk", (function() {
