@@ -1268,7 +1268,8 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 	
 	this._allowedToCreateChild = function() {
 		var sample = this._sampleFormModel.v3_sample;
-		return sample.frozenForChildren == false && (!sample.experiment || sample.experiment.frozenForSamples == false);
+		return sample.frozenForChildren == false && (!sample.experiment || sample.experiment.frozenForSamples == false)
+				&& this._sampleFormModel.sampleRights.rights.indexOf("CREATE") >= 0;
 	}
 	
 	this._allowedToEdit = function() {
