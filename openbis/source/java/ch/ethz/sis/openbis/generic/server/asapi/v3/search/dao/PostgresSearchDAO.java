@@ -18,6 +18,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +30,17 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractFieldSearc
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchFieldType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetTypeSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentTypeSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.ModifierSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.RegistratorSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.search.ProjectSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleContainerSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleTypeSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.search.SpaceSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.ISQLExecutor;
@@ -37,6 +49,8 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.OrderTransl
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SelectQuery;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.TranslationVo;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.TranslatorUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.DISTINCT;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.FROM;
@@ -57,9 +71,9 @@ public class PostgresSearchDAO implements ISQLSearchDAO
 
     private ISQLExecutor sqlExecutor;
 
-    private Map<Class<? extends ISearchCriteria>, ISearchManager<ISearchCriteria, ?, ?>> criteriaToManagerMap;
+    private Map<Class<? extends ISearchCriteria>, ISearchManager<ISearchCriteria, ?, ?>> criteriaToManagerMap = new HashMap<>();
 
-    public PostgresSearchDAO(ISQLExecutor sqlExecutor)
+    public PostgresSearchDAO(final ISQLExecutor sqlExecutor)
     {
         this.sqlExecutor = sqlExecutor;
     }
@@ -153,6 +167,23 @@ public class PostgresSearchDAO implements ISQLSearchDAO
             final Map<Class<? extends ISearchCriteria>, ISearchManager<ISearchCriteria, ?, ?>> criteriaToManagerMap)
     {
         this.criteriaToManagerMap = criteriaToManagerMap;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Autowired
+    public void setApplicationContext(final ApplicationContext applicationContext)
+    {
+        criteriaToManagerMap.put(DataSetSearchCriteria.class, applicationContext.getBean("data-set-search-manager", ISearchManager.class));
+        criteriaToManagerMap.put(DataSetTypeSearchCriteria.class, applicationContext.getBean("data-set-type-search-manager", ISearchManager.class));
+        criteriaToManagerMap.put(ExperimentSearchCriteria.class, applicationContext.getBean("experiment-search-manager", ISearchManager.class));
+        criteriaToManagerMap.put(ExperimentTypeSearchCriteria.class, applicationContext.getBean("experiment-type-search-manager", ISearchManager.class));
+        criteriaToManagerMap.put(SampleSearchCriteria.class, applicationContext.getBean("sample-search-manager", ISearchManager.class));
+        criteriaToManagerMap.put(SampleTypeSearchCriteria.class, applicationContext.getBean("sample-type-search-manager", ISearchManager.class));
+        criteriaToManagerMap.put(SampleContainerSearchCriteria.class, applicationContext.getBean("sample-search-manager", ISearchManager.class));
+        criteriaToManagerMap.put(RegistratorSearchCriteria.class, applicationContext.getBean("person-search-manager", ISearchManager.class));
+        criteriaToManagerMap.put(ModifierSearchCriteria.class, applicationContext.getBean("person-search-manager", ISearchManager.class));
+        criteriaToManagerMap.put(ProjectSearchCriteria.class, applicationContext.getBean("project-search-manager", ISearchManager.class));
+        criteriaToManagerMap.put(SpaceSearchCriteria.class, applicationContext.getBean("space-search-manager", ISearchManager.class));
     }
 
 }
