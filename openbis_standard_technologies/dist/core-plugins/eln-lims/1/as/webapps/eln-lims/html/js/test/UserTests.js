@@ -129,6 +129,30 @@ var UserTests = new function() {
 
             Promise.resolve().then(() => e.waitForId("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
                              .then(() => e.click("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
+                             .then(() => e.waitForId("bac1-column-id"))
+                             .then(() => e.click("bac1-column-id"))
+                             .then(() => e.waitForId("edit-btn"))
+                             .then(() => e.click("edit-btn"))
+                             // we wait for the save-button, cause page contains add-storage-btn
+                             // even when page can't be edit. So we wait when page be reloaded.
+                             .then(() => e.waitForId("save-btn"))
+                             .then(() => e.waitForId("add-storage-btn"))
+                             .then(() => e.click("add-storage-btn"))
+                             .then(() => e.waitForId("storage-drop-down-id"))
+                             .then(() => e.change("storage-drop-down-id", "DEFAULT_STORAGE", false))
+                             .then(() => e.waitForId("grid-cell-1-2"))
+                             .then(() => e.click("grid-cell-1-2"))
+                             .then(() => e.waitForId("box-name-id"))
+                             .then(() => e.write("box-name-id", "Test Box", false))
+                             .then(() => e.waitForId("box-size-drop-down-id"))
+                             .then(() => e.change("box-size-drop-down-id", "4X4", false))
+                             .then(() => e.waitForId("grid-cell-C-2"))
+                             .then(() => e.click("grid-cell-C-2"))
+                             .then(() => e.click("storage-accept"))
+                             .then(() => e.waitForId("save-btn"))
+                             .then(() => e.click("save-btn"))
+                             // check that new storage was created
+                             .then(() => e.waitForId("testbox-c2-id"))
                              .then(() => resolve());
         });
     }
