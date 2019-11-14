@@ -28,6 +28,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.IObjectId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.rights.Rights;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.rights.fetchoptions.RightsFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
@@ -38,6 +40,52 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
  */
 public class GetRightsTest extends AbstractTest
 {
+    @Test
+    public void testGetProjectRights()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_ROLE_V3, PASSWORD);
+        IObjectId s1 = new ProjectIdentifier("/TEST-SPACE/TEST-PROJECT");
+        IObjectId s2 = new ProjectIdentifier("/CISD/NEMO");
+        IObjectId s3 = new SampleIdentifier("/CISD/NEW");
+        IObjectId s4 = new SampleIdentifier("/TEST-SPACE/NEW");
+
+        // When
+        Map<IObjectId, Rights> map = v3api.getRights(sessionToken, Arrays.asList(s1, s2, s3, s4), new RightsFetchOptions());
+
+        // Then
+        assertEquals(map.get(s1).getRights().toString(), "[]");
+        assertEquals(map.get(s2).getRights().toString(), "[UPDATE]");
+        assertEquals(map.get(s3).getRights().toString(), "[CREATE]");
+        assertEquals(map.get(s4).getRights().toString(), "[]");
+    }
+
+    @Test
+    public void testGetProjectCreationRightForUnknownProjectPermId()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_ROLE_V3, PASSWORD);
+        IObjectId s1 = new ProjectPermId("123-45");
+
+        // When
+        assertUserFailureException(Void -> v3api.getRights(sessionToken, Arrays.asList(s1), new RightsFetchOptions()),
+                // Then
+                "Unknown project with perm id 123-45.");
+    }
+
+    @Test
+    public void testGetProjectCreationRightInMissingSpace()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_ROLE_V3, PASSWORD);
+        IObjectId s1 = new ProjectIdentifier("/NO-SPACE/NEW");
+
+        // When
+        assertUserFailureException(Void -> v3api.getRights(sessionToken, Arrays.asList(s1), new RightsFetchOptions()),
+                // Then
+                "Unknown space in project identifier '/NO-SPACE/NEW'.");
+    }
+
     @Test
     public void testGetSampleRights()
     {

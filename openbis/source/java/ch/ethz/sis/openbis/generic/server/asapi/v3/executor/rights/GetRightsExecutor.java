@@ -38,13 +38,16 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.IDataSetId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.IExperimentId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.IProjectId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.rights.Right;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.rights.Rights;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.rights.fetchoptions.RightsFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.ISpaceId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset.IDataSetAuthorizationExecutor;
@@ -52,6 +55,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset.IMapDataSetB
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.experiment.IExperimentAuthorizationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.experiment.IMapExperimentByIdExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.project.IMapProjectByIdExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.project.IProjectAuthorizationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.sample.IMapSampleByIdExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.sample.ISampleAuthorizationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.space.IMapSpaceByIdExecutor;
@@ -65,6 +69,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.ProjectPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SpacePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.ExperimentIdentifierFactory;
+import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.ProjectIdentifierFactory;
 
 /**
  * @author Franz-Josef Elmer
@@ -78,6 +83,9 @@ public class GetRightsExecutor implements IGetRightsExecutor
     @Autowired
     private IMapProjectByIdExecutor mapProjectByIdExecutor;
 
+    @Autowired
+    private IProjectAuthorizationExecutor projectAuthorizationExecutor;
+    
     @Autowired
     private IMapSampleByIdExecutor mapSampleByIdExecutor;
 
@@ -123,6 +131,10 @@ public class GetRightsExecutor implements IGetRightsExecutor
     private Map<Class<? extends IObjectId>, IHandler> getHandlersByObjectIdClassMap()
     {
         Map<Class<? extends IObjectId>, IHandler> map = new LinkedHashMap<>();
+        
+        IHandler projectHandler = new ProjectHandler();
+        map.put(ProjectIdentifier.class, projectHandler);
+        map.put(ProjectPermId.class, projectHandler);
 
         IHandler sampleHandler = new SampleHandler();
         map.put(SampleIdentifier.class, sampleHandler);
@@ -337,6 +349,57 @@ public class GetRightsExecutor implements IGetRightsExecutor
         {
             experimentAuthorizationExecutor.canCreate(context, entity);
 
+        }
+    }
+    
+    private class ProjectHandler extends AbstractHandler<IProjectId, ProjectPE>
+    {
+        ProjectHandler()
+        {
+            super(IProjectId.class);
+        }
+
+        @Override
+        Map<IProjectId, ProjectPE> getEntitiesByIds(IOperationContext context, Collection<IProjectId> ids)
+        {
+            return mapProjectByIdExecutor.map(context, ids);
+        }
+
+        @Override
+        void canUpdate(IOperationContext context, IProjectId id, ProjectPE entity)
+        {
+            projectAuthorizationExecutor.canUpdate(context, id, entity);
+        }
+
+        @Override
+        ProjectPE createDummyEntity(IOperationContext context, IProjectId id)
+        {
+            if (id instanceof ProjectPermId)
+            {
+                throw new UserFailureException("Unknown project with perm id " + id + ".");
+            }
+            if (id instanceof ProjectIdentifier == false)
+            {
+                throw new UserFailureException("Project identifier of unsupported type ("
+                        + id.getClass().getName() + "): " + id);
+            }
+            ISpaceId spaceId = new SpacePermId(ProjectIdentifierFactory.parse(((ProjectIdentifier) id).getIdentifier())
+                    .getSpaceCode());
+            SpacePE spacePE = mapSpaceByIdExecutor.map(context, Arrays.asList(spaceId)).get(spaceId);
+            if (spacePE == null)
+            {
+                throw new UserFailureException("Unknown space in project identifier '" + id + "'.");
+            }
+            ProjectPE projectPE = new ProjectPE();
+            projectPE.setSpace(spacePE);
+            projectPE.setCode("DUMMY");
+            return projectPE;
+        }
+
+        @Override
+        void canCreate(IOperationContext context, ProjectPE entity)
+        {
+            projectAuthorizationExecutor.canCreate(context, entity);
         }
     }
 
