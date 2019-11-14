@@ -174,12 +174,13 @@ function ProjectFormView(projectFormController, projectFormModel) {
 					Util.unblockUI();
 				});
 			};
-
-			//Operations
-			var $operationsMenu = FormUtil.getOperationsMenu([{ label: "Create " + experimentKindName, event: function() {
-				showSelectExperimentType();
-			}}]);
-			toolbarModel.push({ component : $operationsMenu, tooltip: "Extra operations" });
+			if (_this._allowedToCreateExperiments()) {
+				//Operations
+				var $operationsMenu = FormUtil.getOperationsMenu([{ label: "Create " + experimentKindName, event: function() {
+					showSelectExperimentType();
+				}}]);
+				toolbarModel.push({ component : $operationsMenu, tooltip: "Extra operations" });
+			}
 		} else {
 			var $saveBtn = FormUtil.getButtonWithIcon("glyphicon-floppy-disk", function() {
 				_this._projectFormController.updateProject();
@@ -285,7 +286,7 @@ function ProjectFormView(projectFormController, projectFormModel) {
 	
 	this._allowedToCreateExperiments = function() {
 		var project = this._projectFormModel.v3_project;
-		return project.frozenForExperiments == false;
+		return project.frozenForExperiments == false && this._projectFormModel.projectRights.rights.indexOf("CREATE") >= 0;;
 	};
 	
 	this._allowedToEdit = function() {
