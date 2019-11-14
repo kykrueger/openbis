@@ -286,12 +286,12 @@ function ProjectFormView(projectFormController, projectFormModel) {
 	
 	this._allowedToCreateExperiments = function() {
 		var project = this._projectFormModel.v3_project;
-		return project.frozenForExperiments == false && this._projectFormModel.projectRights.rights.indexOf("CREATE") >= 0;;
+		return project.frozenForExperiments == false && this._projectFormModel.experimentRights.rights.indexOf("CREATE") >= 0;
 	};
 	
 	this._allowedToEdit = function() {
 		var project = this._projectFormModel.v3_project;
-		return project.frozen == false;
+		return project.frozen == false && this._projectFormModel.rights.rights.indexOf("UPDATE") >= 0;
 	};
 
 	this._allowedToMove = function() {

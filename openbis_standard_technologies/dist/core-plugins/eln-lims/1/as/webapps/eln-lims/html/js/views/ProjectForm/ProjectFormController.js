@@ -38,8 +38,9 @@ function ProjectFormController(mainController, mode, project) {
 					}, function(roles){
 						_this._projectFormModel.roles = roles;
 						var dummyId = new ExperimentIdentifier("/" + spaceCode + "/" + projectCode + "/DUMMY");
-						mainController.openbisV3.getRights([dummyId], new RightsFetchOptions()).done(function(rightsByIds) {
-							_this._projectFormModel.projectRights = rightsByIds[dummyId];
+						mainController.openbisV3.getRights([id, dummyId], new RightsFetchOptions()).done(function(rightsByIds) {
+							_this._projectFormModel.rights = rightsByIds[id];
+							_this._projectFormModel.experimentRights = rightsByIds[dummyId];
 							_this._projectFormView.repaint(views);
 						});
 					});
