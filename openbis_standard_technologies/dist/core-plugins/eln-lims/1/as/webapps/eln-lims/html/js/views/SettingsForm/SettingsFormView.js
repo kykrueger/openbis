@@ -53,7 +53,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 			var toolbarModel = [];		
 
 			if(this._settingsFormModel.mode === FormMode.VIEW) {
-				if (this._settingsFormModel.sampleRights.rights.indexOf("CREATE") >= 0) {
+				if (this._settingsFormModel.sampleRights.rights.indexOf("UPDATE") >= 0) {
 					//Edit
 					var $editButton = FormUtil.getButtonWithIcon("glyphicon-edit", function () {
 						mainController.changeView("showEditSettingsPage", _this._settingsFormModel.settingsSample.identifier);
