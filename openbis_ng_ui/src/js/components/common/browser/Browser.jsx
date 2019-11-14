@@ -12,12 +12,14 @@ import FilterField from './../form/FilterField.jsx'
 import BrowserNodes from './BrowserNodes.jsx'
 
 const styles = {
-  resizable: {
+  paper: {
+    height: '100%',
     display: 'flex',
     flexDirection: 'column'
   },
-  paper: {
-    height: '100%'
+  nodes: {
+    height: '100%',
+    overflow: 'auto'
   }
 }
 
@@ -73,20 +75,21 @@ class Browser extends React.PureComponent {
           bottomLeft: false,
           topLeft: false
         }}
-        className={classes.resizable}
       >
         <Paper square={true} elevation={3} classes={{ root: classes.paper }}>
           <FilterField
             filter={this.props.filter}
             filterChange={this.props.filterChange}
           />
-          <BrowserNodes
-            nodes={this.props.nodes}
-            nodeSelect={this.props.nodeSelect}
-            nodeExpand={this.props.nodeExpand}
-            nodeCollapse={this.props.nodeCollapse}
-            level={0}
-          />
+          <div className={classes.nodes}>
+            <BrowserNodes
+              nodes={this.props.nodes}
+              nodeSelect={this.props.nodeSelect}
+              nodeExpand={this.props.nodeExpand}
+              nodeCollapse={this.props.nodeCollapse}
+              level={0}
+            />
+          </div>
         </Paper>
       </Resizable>
     )
