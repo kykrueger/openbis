@@ -30,7 +30,7 @@ function StorageView(storageController, storageModel, gridViewRack, gridViewPosi
 	this.repaint = function($container, callbackFunction) {
 		var _this = this;
 		
-		FormUtil.getDefaultStoragesDropDown("storage-drop-down-id", false, function($storagesDropdownComponent) {
+		FormUtil.getDefaultStoragesDropDown(_this._storageModel.config.storageId, false, function($storagesDropdownComponent) {
 			_this._defaultStoragesDropDown = $storagesDropdownComponent;
 			
 			//

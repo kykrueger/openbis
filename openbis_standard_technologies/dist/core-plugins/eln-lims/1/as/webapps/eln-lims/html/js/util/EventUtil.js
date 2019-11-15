@@ -42,14 +42,15 @@ var EventUtil = new function() {
         });
     };
 
-    this.equalTo = function(elementId, value, ignoreError) {
+    this.equalTo = function(elementId, value, isEqual, ignoreError) {
         return new Promise(function executor(resolve, reject) {
             try {
                 var element = EventUtil.getElement(elementId, ignoreError, resolve);
-                if (element.html() === value || element.val() === value) {
+                if (isEqual && (element.html() === value || element.val() === value) ||
+                    !isEqual && (element.html() != value && element.val() != value)) {
                     resolve();
                 } else {
-                    throw "Element #" + elementId + " should have value = " + element.val() + " but have " + value;
+                    throw "Element #" + elementId + " should" + (isEqual ? "" : " not") + " be equal " + value;
                 }
             } catch(error) {
                 reject();
@@ -129,6 +130,32 @@ var EventUtil = new function() {
         }
         return timeout;
     }
+
+    this.dragAndDrop = function(dragId, dropId, ignoreError) {
+        return new Promise(function executor(resolve, reject) {
+            try {
+                var dragElement = EventUtil.getElement(dragId, ignoreError, resolve).draggable();
+                var dropElement = EventUtil.getElement(dropId, ignoreError, resolve).droppable();
+
+                var dt = new DataTransfer();
+
+                var dragStartEvent = jQuery.Event("dragstart");
+                dragStartEvent.originalEvent = jQuery.Event("mousedown");
+                dragStartEvent.originalEvent.dataTransfer = dt;
+
+                dropEvent = jQuery.Event("drop");
+                dropEvent.originalEvent = jQuery.Event("DragEvent");
+                dropEvent.originalEvent.dataTransfer = dt;
+
+                dragElement.trigger(dragStartEvent);
+                dropElement.trigger(dropEvent);
+                resolve();
+            } catch(error) {
+                reject();
+            }
+        });
+    };
+
 
     this.getElement = function(elementId, ignoreError, resolve) {
         var element = $( "#" + elementId );

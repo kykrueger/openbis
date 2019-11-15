@@ -217,7 +217,8 @@ function StorageListView(storageListController, storageListModel) {
 			positionSelector: "on",
 			positionDropEventHandler: null,
 			boxPositionMultiple: "on",
-			positionDragAndDropEnabled: "off"
+			positionDragAndDropEnabled: "off",
+			storageId : "storage-drop-down-id"
 		});
 		
 		var storagePropGroup = profile.getStoragePropertyGroup();

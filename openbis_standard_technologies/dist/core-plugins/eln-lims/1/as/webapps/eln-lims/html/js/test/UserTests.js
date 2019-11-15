@@ -74,10 +74,10 @@ var UserTests = new function() {
                              .then(() => e.waitForId("create-btn"))
                              .then(() => e.click("create-btn"))
                              .then(() => e.waitForId("sampleFormTitle"))
-                             .then(() => e.equalTo("sampleFormTitle", "Create Object Bacteria", false))
+                             .then(() => e.equalTo("sampleFormTitle", "Create Object Bacteria", true, false))
                              .then(() => e.waitForId("codeId"))
                              .then(() => e.waitForFill("codeId"))
-                             .then(() => e.equalTo("codeId", code, false))
+                             .then(() => e.equalTo("codeId", code, true, false))
                              .then(() => e.waitForId("NAME"))
                              .then(() => e.change("NAME", name, false))
                              //Paste from Word
@@ -87,8 +87,8 @@ var UserTests = new function() {
                              //Check saving results
                              .then(() => e.waitForId("edit-btn"))
                              .then(() => e.waitForId("NAME"))
-                             .then(() => e.equalTo("NAME", name, false))
-                             .then(() => e.equalTo("BACTERIAGENOTYPE", richText, false))
+                             .then(() => e.equalTo("NAME", name, true, false))
+                             .then(() => e.equalTo("BACTERIAGENOTYPE", richText, true, false))
                              .then(() => resolve());
         });
     }
@@ -107,6 +107,7 @@ var UserTests = new function() {
         return new Promise(function executor(resolve, reject) {
             var e = EventUtil;
             Promise.resolve().then(() => UserTests.importBacteriasFromFile(baseURL + pathToResource))
+                             // check that bacterias was created
                              .then(() => e.waitForId("bac5-column-id"))
                              .then(() => e.waitForId("bac6-column-id"))
                              .then(() => e.waitForId("bac7-column-id"))
@@ -121,6 +122,7 @@ var UserTests = new function() {
         return new Promise(function executor(resolve, reject) {
             var e = EventUtil;
             Promise.resolve().then(() => UserTests.importBacteriasFromFile(baseURL + pathToResource))
+                             // check that bacterias was created
                              .then(() => e.waitForId("bac10-column-id"))
                              .then(() => e.waitForId("bac11-column-id"))
                              .then(() => e.waitForId("next-page-id"))
@@ -167,14 +169,14 @@ var UserTests = new function() {
                              .then(() => e.click("add-storage-btn"))
                              .then(() => e.waitForId("storage-drop-down-id"))
                              .then(() => e.change("storage-drop-down-id", "DEFAULT_STORAGE", false))
-                             .then(() => e.waitForId("grid-cell-1-2"))
-                             .then(() => e.click("grid-cell-1-2"))
+                             .then(() => e.waitForId("storage-drop-down-id-1-2"))
+                             .then(() => e.click("storage-drop-down-id-1-2"))
                              .then(() => e.waitForId("box-name-id"))
                              .then(() => e.write("box-name-id", "Test Box", false))
                              .then(() => e.waitForId("box-size-drop-down-id"))
                              .then(() => e.change("box-size-drop-down-id", "4X4", false))
-                             .then(() => e.waitForId("grid-cell-C-2"))
-                             .then(() => e.click("grid-cell-C-2"))
+                             .then(() => e.waitForId("storage-drop-down-id-C-2"))
+                             .then(() => e.click("storage-drop-down-id-C-2"))
                              .then(() => e.click("storage-accept"))
                              .then(() => e.waitForId("save-btn"))
                              .then(() => e.click("save-btn"))
@@ -188,8 +190,19 @@ var UserTests = new function() {
         return new Promise(function executor(resolve, reject) {
             var e = EventUtil;
 
-            Promise.resolve().then(() => e.waitForId("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
-                             .then(() => e.click("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
+            Promise.resolve().then(() => e.waitForId("STORAGE_MANAGER"))
+                             .then(() => e.click("STORAGE_MANAGER"))
+                             .then(() => e.waitForId("storage-drop-down-id-a"))
+                             .then(() => e.change("storage-drop-down-id-a", "DEFAULT_STORAGE", false))
+                             .then(() => e.waitForId("toggle-storage-b-id"))
+                             .then(() => e.click("toggle-storage-b-id"))
+                             .then(() => e.waitForId("storage-drop-down-id-b"))
+                             .then(() => e.change("storage-drop-down-id-b", "BENCH", false))
+                             .then(() => e.waitForId("storage-drop-down-id-a-1-2-storage-box"))
+                             .then(() => e.waitForId("storage-drop-down-id-b-1-1"))
+                             .then(() => e.dragAndDrop("storage-drop-down-id-a-1-2-storage-box", "storage-drop-down-id-b-1-1", false))
+                             .then(() => e.equalTo("change-log-container-id", "None", false, false))
+                             .then(() => e.click("save-changes-btn"))
                              .then(() => resolve());
         });
     }
