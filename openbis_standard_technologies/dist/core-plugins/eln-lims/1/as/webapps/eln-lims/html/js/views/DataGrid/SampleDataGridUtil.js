@@ -69,10 +69,8 @@ var SampleDataGridUtil = new function() {
 						}
 					}
 				}
-				var output = $("<span id = '" + data.code.toLowerCase() + "-column-id"+ "'>");
-				var eComponent = (isLinksDisabled)?data.code:FormUtil.getFormLink(data.code, "Sample", data.permId, paginationInfo);
-				output.append(eComponent);
-				return output;
+				var codeId = data.code.toLowerCase() + "-column-id";
+				return (isLinksDisabled)?data.code:FormUtil.getFormLink(data.code, "Sample", data.permId, paginationInfo, codeId);
 			},
 			filter : function(data, filter) {
 				return data.identifier.toLowerCase().indexOf(filter) !== -1;

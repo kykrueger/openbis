@@ -10,6 +10,8 @@ var UserTests = new function() {
                  .then(() => this.creationSampleForm())
                  //13. Inventory Table - Imports for Create - Automatic Codes
                  .then(() => this.importsAutomaticCodes())
+                 //14. Inventory Table - Imports for Create - Given Codes
+                 .then(() => this.importsGivenCodes())
                  //15. Sample Form - Storage
                  .then(() => this.storageTest())
                  //16. Storage Manager - Moving Box
@@ -123,12 +125,62 @@ var UserTests = new function() {
         });
     }
 
+    this.importsGivenCodes = function() {
+        var baseURL = location.protocol + '//' + location.host + location.pathname;
+        var pathToResource = "js/test/resources/bacteria_for_test_with_identifier.tsv";
+        return new Promise(function executor(resolve, reject) {
+            var e = EventUtil;
+            Promise.resolve().then(() => e.waitForId("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
+                             .then(() => e.click("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
+                             .then(() => e.waitForId("options-menu-btn"))
+                             .then(() => e.click("options-menu-btn"))
+                             .then(() => e.waitForId("register-object-btn"))
+                             .then(() => e.click("register-object-btn"))
+                             .then(() => e.waitForId("choose-type-btn"))
+                             .then(() => e.change("choose-type-btn", "BACTERIA", false))
+                             .then(() => TestUtil.setFile("name", baseURL + pathToResource, "text"))
+                             .then(() => e.waitForId("accept-type-file"))
+                             .then(() => e.click("accept-type-file"))
+                             .then(() => e.waitForId("bac10-column-id"))
+                             .then(() => e.waitForId("bac11-column-id"))
+                             .then(() => e.waitForId("next-page-id"))
+                             .then(() => e.click("next-page-id"))
+                             .then(() => e.waitForId("bac12-column-id"))
+                             .then(() => e.waitForId("bac13-column-id"))
+                             .then(() => resolve());
+        });
+        }
+
     this.storageTest = function() {
         return new Promise(function executor(resolve, reject) {
             var e = EventUtil;
 
             Promise.resolve().then(() => e.waitForId("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
                              .then(() => e.click("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
+                             .then(() => e.waitForId("bac1-column-id"))
+                             .then(() => e.click("bac1-column-id"))
+                             .then(() => e.waitForId("edit-btn"))
+                             .then(() => e.click("edit-btn"))
+                             // we wait for the save-button, cause page contains add-storage-btn
+                             // even when page can't be edit. So we wait when page be reloaded.
+                             .then(() => e.waitForId("save-btn"))
+                             .then(() => e.waitForId("add-storage-btn"))
+                             .then(() => e.click("add-storage-btn"))
+                             .then(() => e.waitForId("storage-drop-down-id"))
+                             .then(() => e.change("storage-drop-down-id", "DEFAULT_STORAGE", false))
+                             .then(() => e.waitForId("grid-cell-1-2"))
+                             .then(() => e.click("grid-cell-1-2"))
+                             .then(() => e.waitForId("box-name-id"))
+                             .then(() => e.write("box-name-id", "Test Box", false))
+                             .then(() => e.waitForId("box-size-drop-down-id"))
+                             .then(() => e.change("box-size-drop-down-id", "4X4", false))
+                             .then(() => e.waitForId("grid-cell-C-2"))
+                             .then(() => e.click("grid-cell-C-2"))
+                             .then(() => e.click("storage-accept"))
+                             .then(() => e.waitForId("save-btn"))
+                             .then(() => e.click("save-btn"))
+                             // check that new storage was created
+                             .then(() => e.waitForId("testbox-c2-id"))
                              .then(() => resolve());
         });
     }

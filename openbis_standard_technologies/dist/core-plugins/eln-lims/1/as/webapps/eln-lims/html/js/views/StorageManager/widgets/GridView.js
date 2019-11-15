@@ -70,7 +70,8 @@ function GridView(gridModel) {
 			$newRow.append($numberCell);
 			
 			for(var j = 0; j < this._gridModel.numColumns; j++) {
-				var $newColumn = $("<td>");
+			    var id = "grid-cell-" + rowLabel + "-" + (j+1);
+				var $newColumn = $("<td id = '" + id + "'>");
 				if(this._gridModel.isDragable) {
 					var dropEventFuncCopyPos = function(newX,newY) {
 						return function(event) {
@@ -163,7 +164,7 @@ function GridView(gridModel) {
 							mainController.changeView("showViewSamplePageFromPermId", sample.permId);
 						}).bind(this, sample));
 					}
-					
+
 					var labelContainer = $("<div>", { class: "storageBox", id : Util.guid() }).text(labels[i].displayName);
 					if (sample) {
 						var tooltip = PrintUtil.getTable(sample, false, optSampleTitle, 'inspectorWhiteFont', 'colorEncodedWellAnnotations-holder-' + sample.permId, null, null);
