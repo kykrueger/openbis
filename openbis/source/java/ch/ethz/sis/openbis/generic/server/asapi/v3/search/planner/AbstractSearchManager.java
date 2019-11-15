@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractFieldSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
@@ -85,13 +86,12 @@ public abstract class AbstractSearchManager<CRITERIA extends ISearchCriteria, FE
 
     protected abstract Set<Long> doFilterIDsByUserRights(final Set<Long> ids, final AuthorisationInformation authorisationInformation);
 
-    protected List<ISearchCriteria> getOtherCriteriaThan(final AbstractCompositeSearchCriteria compositeSearchCriteria,
+    protected List<ISearchCriteria> getOtherCriteriaThan(final AbstractCompositeSearchCriteria searchCriteria,
             final Class<? extends ISearchCriteria>... classes)
     {
-        final List<ISearchCriteria> criteria = compositeSearchCriteria.getCriteria().stream().filter(criterion -> {
-            final boolean isInstanceOfOneOfClasses = Arrays.stream(classes).anyMatch(clazz -> clazz.isInstance(criterion));
-            return !isInstanceOfOneOfClasses;
-        }).collect(Collectors.toList());
+        final List<ISearchCriteria> criteria = searchCriteria.getCriteria().stream().filter(
+                criterion -> Arrays.stream(classes).noneMatch(clazz -> clazz.isInstance(criterion))).
+                collect(Collectors.toList());
 
         return criteria;
     }
@@ -101,9 +101,8 @@ public abstract class AbstractSearchManager<CRITERIA extends ISearchCriteria, FE
     {
         if (clazz != null)
         {
-            final List<ISearchCriteria> criteria = compositeSearchCriteria.getCriteria().stream().filter(clazz::isInstance)
+            return compositeSearchCriteria.getCriteria().stream().filter(clazz::isInstance)
                     .collect(Collectors.toList());
-            return criteria;
         } else
         {
             return Collections.emptyList();
@@ -205,5 +204,13 @@ public abstract class AbstractSearchManager<CRITERIA extends ISearchCriteria, FE
      * @return an entity kind.
      */
     protected abstract TableMapper getTableMapper();
+
+    protected  <T, C extends AbstractFieldSearchCriteria<T>> C convertToOtherCriterion(final AbstractFieldSearchCriteria<T> criterion,
+            IFieldSearchCriterionFactory<C> factory)
+    {
+        final C result = factory.create();
+        result.setFieldValue(criterion.getFieldValue());
+        return null;
+    }
 
 }

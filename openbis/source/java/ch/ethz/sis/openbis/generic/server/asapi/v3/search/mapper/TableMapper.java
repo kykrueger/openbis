@@ -86,6 +86,7 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.EXPERIMENTS
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.EXPERIMENT_PROPERTIES_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.EXPERIMENT_TYPES_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.EXPERIMENT_TYPE_PROPERTY_TYPE_TABLE;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.METAPROJECTS_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.PERSONS_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.PROJECTS_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.PROPERTY_TYPES_TABLE;
@@ -131,7 +132,9 @@ public enum TableMapper
 
     PROJECT(PROJECTS_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
 
-    SPACE(SPACES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+    SPACE(SPACES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
+
+    TAG(METAPROJECTS_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
 
     static
     {

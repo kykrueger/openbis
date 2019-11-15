@@ -274,6 +274,12 @@
 		<constructor-arg ref="identity-translator"/>
 	</bean>
 
+	<bean id="tag-search-manager" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.TagSearchManager" lazy-init="true">
+		<constructor-arg ref="postgres-search-dao"/>
+		<constructor-arg ref="information-provider-dao"/>
+		<constructor-arg ref="identity-translator"/>
+	</bean>
+
 	<!-- // Common -->
 
 	<bean id="common-server" class="ch.systemsx.cisd.openbis.generic.server.CommonServer">

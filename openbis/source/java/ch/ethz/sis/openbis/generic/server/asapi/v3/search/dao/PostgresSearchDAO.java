@@ -41,6 +41,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleContainerSea
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.search.SpaceSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.search.TagSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.ISQLExecutor;
@@ -163,12 +164,6 @@ public class PostgresSearchDAO implements ISQLSearchDAO
         translationVo.setDataTypeByPropertyName(typeByPropertyName);
     }
 
-    public void setCriteriaToManagerMap(
-            final Map<Class<? extends ISearchCriteria>, ISearchManager<ISearchCriteria, ?, ?>> criteriaToManagerMap)
-    {
-        this.criteriaToManagerMap = criteriaToManagerMap;
-    }
-
     @SuppressWarnings("unchecked")
     @Autowired
     public void setApplicationContext(final ApplicationContext applicationContext)
@@ -184,6 +179,7 @@ public class PostgresSearchDAO implements ISQLSearchDAO
         criteriaToManagerMap.put(ModifierSearchCriteria.class, applicationContext.getBean("person-search-manager", ISearchManager.class));
         criteriaToManagerMap.put(ProjectSearchCriteria.class, applicationContext.getBean("project-search-manager", ISearchManager.class));
         criteriaToManagerMap.put(SpaceSearchCriteria.class, applicationContext.getBean("space-search-manager", ISearchManager.class));
+        criteriaToManagerMap.put(TagSearchCriteria.class, applicationContext.getBean("tag-search-manager", ISearchManager.class));
     }
 
 }
