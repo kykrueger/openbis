@@ -10,6 +10,8 @@ var UserTests = new function() {
                  .then(() => this.creationSampleForm())
                  //13. Inventory Table - Imports for Create - Automatic Codes
                  .then(() => this.importsAutomaticCodes())
+                 //14. Inventory Table - Imports for Create - Given Codes
+                 .then(() => this.importsGivenCodes())
                  //15. Sample Form - Storage
                  .then(() => this.storageTest())
                  //16. Storage Manager - Moving Box
@@ -122,6 +124,32 @@ var UserTests = new function() {
                              .then(() => resolve());
         });
     }
+
+    this.importsGivenCodes = function() {
+        var baseURL = location.protocol + '//' + location.host + location.pathname;
+        var pathToResource = "js/test/resources/bacteria_for_test_with_identifier.tsv";
+        return new Promise(function executor(resolve, reject) {
+            var e = EventUtil;
+            Promise.resolve().then(() => e.waitForId("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
+                             .then(() => e.click("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
+                             .then(() => e.waitForId("options-menu-btn"))
+                             .then(() => e.click("options-menu-btn"))
+                             .then(() => e.waitForId("register-object-btn"))
+                             .then(() => e.click("register-object-btn"))
+                             .then(() => e.waitForId("choose-type-btn"))
+                             .then(() => e.change("choose-type-btn", "BACTERIA", false))
+                             .then(() => TestUtil.setFile("name", baseURL + pathToResource, "text"))
+                             .then(() => e.waitForId("accept-type-file"))
+                             .then(() => e.click("accept-type-file"))
+                             .then(() => e.waitForId("bac10-column-id"))
+                             .then(() => e.waitForId("bac11-column-id"))
+                             .then(() => e.waitForId("next-page-id"))
+                             .then(() => e.click("next-page-id"))
+                             .then(() => e.waitForId("bac12-column-id"))
+                             .then(() => e.waitForId("bac13-column-id"))
+                             .then(() => resolve());
+        });
+        }
 
     this.storageTest = function() {
         return new Promise(function executor(resolve, reject) {
