@@ -106,17 +106,7 @@ var UserTests = new function() {
         var pathToResource = "js/test/resources/bacteria_for_test_without_identifier.tsv";
         return new Promise(function executor(resolve, reject) {
             var e = EventUtil;
-            Promise.resolve().then(() => e.waitForId("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
-                             .then(() => e.click("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
-                             .then(() => e.waitForId("options-menu-btn"))
-                             .then(() => e.click("options-menu-btn"))
-                             .then(() => e.waitForId("register-object-btn"))
-                             .then(() => e.click("register-object-btn"))
-                             .then(() => e.waitForId("choose-type-btn"))
-                             .then(() => e.change("choose-type-btn", "BACTERIA", false))
-                             .then(() => TestUtil.setFile("name", baseURL + pathToResource, "text"))
-                             .then(() => e.waitForId("accept-type-file"))
-                             .then(() => e.click("accept-type-file"))
+            Promise.resolve().then(() => UserTests.importBacteriasFromFile(baseURL + pathToResource))
                              .then(() => e.waitForId("bac5-column-id"))
                              .then(() => e.waitForId("bac6-column-id"))
                              .then(() => e.waitForId("bac7-column-id"))
@@ -130,17 +120,7 @@ var UserTests = new function() {
         var pathToResource = "js/test/resources/bacteria_for_test_with_identifier.tsv";
         return new Promise(function executor(resolve, reject) {
             var e = EventUtil;
-            Promise.resolve().then(() => e.waitForId("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
-                             .then(() => e.click("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
-                             .then(() => e.waitForId("options-menu-btn"))
-                             .then(() => e.click("options-menu-btn"))
-                             .then(() => e.waitForId("register-object-btn"))
-                             .then(() => e.click("register-object-btn"))
-                             .then(() => e.waitForId("choose-type-btn"))
-                             .then(() => e.change("choose-type-btn", "BACTERIA", false))
-                             .then(() => TestUtil.setFile("name", baseURL + pathToResource, "text"))
-                             .then(() => e.waitForId("accept-type-file"))
-                             .then(() => e.click("accept-type-file"))
+            Promise.resolve().then(() => UserTests.importBacteriasFromFile(baseURL + pathToResource))
                              .then(() => e.waitForId("bac10-column-id"))
                              .then(() => e.waitForId("bac11-column-id"))
                              .then(() => e.waitForId("next-page-id"))
@@ -149,7 +129,26 @@ var UserTests = new function() {
                              .then(() => e.waitForId("bac13-column-id"))
                              .then(() => resolve());
         });
-        }
+    }
+
+    this.importBacteriasFromFile = function(file) {
+        return new Promise(function executor(resolve, reject) {
+            var e = EventUtil;
+
+            Promise.resolve().then(() => e.waitForId("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
+                             .then(() => e.click("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
+                             .then(() => e.waitForId("options-menu-btn"))
+                             .then(() => e.click("options-menu-btn"))
+                             .then(() => e.waitForId("register-object-btn"))
+                             .then(() => e.click("register-object-btn"))
+                             .then(() => e.waitForId("choose-type-btn"))
+                             .then(() => e.change("choose-type-btn", "BACTERIA", false))
+                             .then(() => TestUtil.setFile("name", file, "text"))
+                             .then(() => e.waitForId("accept-type-file"))
+                             .then(() => e.click("accept-type-file"))
+                             .then(() => resolve());
+        });
+    }
 
     this.storageTest = function() {
         return new Promise(function executor(resolve, reject) {
