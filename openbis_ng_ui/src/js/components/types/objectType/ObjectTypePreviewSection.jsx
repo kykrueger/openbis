@@ -10,7 +10,6 @@ const styles = theme => ({
   draggable: {
     width: '100%',
     marginBottom: theme.spacing(2),
-    backgroundColor: theme.palette.background.paper,
     '&:hover $droppable': {
       borderColor: theme.palette.primary.main
     }
@@ -19,7 +18,8 @@ const styles = theme => ({
     padding: theme.spacing(2),
     borderWidth: '2px',
     borderStyle: 'dashed',
-    borderColor: theme.palette.background.secondary
+    borderColor: theme.palette.background.secondary,
+    backgroundColor: theme.palette.background.paper
   },
   named: {
     '& $droppable': {

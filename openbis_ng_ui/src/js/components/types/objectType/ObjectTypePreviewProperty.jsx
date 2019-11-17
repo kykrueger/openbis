@@ -16,17 +16,21 @@ const styles = theme => ({
     width: '100%',
     padding: theme.spacing(2),
     boxSizing: 'border-box',
+    borderWidth: '2px',
+    borderStyle: 'solid',
+    borderColor: theme.palette.background.paper,
+    backgroundColor: theme.palette.background.paper,
     '&:last-child': {
       marginBottom: 0
     },
     '&:hover': {
-      backgroundColor: theme.palette.background.primary
+      borderColor: theme.palette.primary.main
     }
   },
   selected: {
-    backgroundColor: theme.palette.background.secondary,
+    borderColor: theme.palette.secondary.main,
     '&:hover': {
-      backgroundColor: theme.palette.background.secondary
+      borderColor: theme.palette.secondary.main
     }
   },
   hidden: {
