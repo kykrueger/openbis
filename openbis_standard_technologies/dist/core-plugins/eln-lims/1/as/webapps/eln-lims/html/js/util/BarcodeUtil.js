@@ -92,6 +92,7 @@ var BarcodeUtil = new function() {
         ]);
 
         var $height = FormUtil.getDropdown([ { label: 'Default Height', value: 'default', selected: true },
+                                             { label: ' 5 mm', value:  5 },
                                              { label: '10 mm', value: 10 },
                                              { label: '15 mm', value: 15 },
                                              { label: '20 mm', value: 20 },
@@ -108,11 +109,28 @@ var BarcodeUtil = new function() {
                     { label: 'Continuous Layout',   value: 'continuous' }
                 ]);
 
+        var $layoutForPrinter = null;
+
 		var $printButton = $("<a>", { 'class' : 'btn btn-default', style : 'margin-bottom:13px;' } ).append($('<span>', { 'class' : 'glyphicon glyphicon-print' }));
         $printButton.click(function() {
             var newWindow = window.open(undefined,"print");
-            $(newWindow.document.body).html(views.content);
+
+            var width = $width.val();
+            if(width === 'default') {
+                width = null;
+            }
+
+            var height = $height.val();
+            if(height === 'default') {
+                height = null;
+            }
+
+            if(width && height) {
+                $(newWindow.document.head).append('<style>body {  background: rgb(204,204,204); }page {  background: white;  display: block;  margin: 0mm 0mm 0mm 0mm; } page[size="CUSTOM"] {   height: ' + height + 'mm; width: ' + width + 'mm; }@media print {  body, page {    margin: 0;    box-shadow: 0;  }}</style>')
+            }
             $(newWindow.document.body).css("margin", "0mm 0mm 0mm 0mm");
+            $(newWindow.document.body).html($layoutForPrinter);
+
         });
 
         $toolbar.append($generateBtn)
@@ -138,10 +156,13 @@ var BarcodeUtil = new function() {
             var layout = $layout.val();
 
             views.content.empty();
+            $layoutForPrinter = $('<div>', { 'id' : 'layout-for-printer' });
+            views.content.append($layoutForPrinter);
+
             var value = parseInt($numberDropdown.val());
             mainController.serverFacade.createPermIdStrings(value, function(newPermIds) {
                 for(var idx = 0; idx < value; idx++) {
-                    _this.addBarcode(views.content, idx, $barcodeTypesDropdown.val(), newPermIds[idx], idx === 0, width, height, layout);
+                    _this.addBarcode($layoutForPrinter, idx, $barcodeTypesDropdown.val(), newPermIds[idx], idx === 0, width, height, layout);
                 }
             });
         });
@@ -150,11 +171,7 @@ var BarcodeUtil = new function() {
     }
 
     this.preloadLibrary = function() {
-        var $hiddenContainer = $("<div>", { style : "display:none;" });
-        $(document.body).append($hiddenContainer);
-        $hiddenContainer.append($('<canvas>', { id : "barcode-canvas-preload", width : 1, height : 1, style : "border:1px solid #fff;visibility:hidden" }));
-        this.generateBarcode("barcode-canvas-preload", "code128", "Barcode", "Text", function() {
-            $hiddenContainer.remove();
+        this.generateBarcode("code128", "Barcode", "Text", function() {
         });
     }
 
@@ -168,8 +185,13 @@ var BarcodeUtil = new function() {
             }
             content.append($br);
         }
-        content.append($('<canvas>', { id : "barcode-canvas-" + idx, width : 1, height : 1, style : "border:1px solid #fff;visibility:hidden" }));
-        this.generateBarcode("barcode-canvas-" + idx, type, text, text, null, width, height);
+        var imageSRC = this.generateBarcode(type, text, text, null, width, height);
+        var imagePNG = $('<img>', { src : imageSRC });
+        content.append(imagePNG);
+        if(width && height) {
+            imagePNG.css('width', width + 'mm');
+            imagePNG.css('height', height + 'mm');
+        }
     }
 
     this.readBarcodeMulti = function(actionLabel, action) {
@@ -355,10 +377,10 @@ var BarcodeUtil = new function() {
 			Util.unblockUI();
 		});
 
-        var $canvas = $('<canvas>', { id : "barcode-canvas", width : 1, height : 1, style : "border:1px solid #fff;visibility:hidden" });
+        var $canvas = $('<img>');
         var $barcodeTypesDropdown = FormUtil.getDropdown(this.supportedBarcodes());
             $barcodeTypesDropdown.change(function() {
-                _this.generateBarcode("barcode-canvas", $barcodeTypesDropdown.val(), barcode, barcode);
+                $canvas.attr('src', _this.generateBarcode($barcodeTypesDropdown.val(), barcode, barcode));
             });
 		$window.append($('<legend>').append("Print Barcode"));
 	    $window.append($('<br>'));
@@ -380,7 +402,7 @@ var BarcodeUtil = new function() {
 
         Util.blockUI($window, css);
 
-        this.generateBarcode("barcode-canvas", $barcodeTypesDropdown.val(), barcode, barcode);
+        $canvas.attr('src', this.generateBarcode($barcodeTypesDropdown.val(), barcode, barcode));
     }
 
     this.supportedBarcodes = function() {
@@ -401,7 +423,7 @@ var BarcodeUtil = new function() {
             ];
     }
 
-    this.generateBarcode = function(canvasId, barcodeType, text, altx, action, width, height) {
+    this.generateBarcode = function(barcodeType, text, altx, action, width, height) {
         var elt  = symdesc[barcodeType];
         var opts = {};
         var rot  = "N";
@@ -411,7 +433,7 @@ var BarcodeUtil = new function() {
 
         var bw = new BWIPJS(bwipjs_fonts, monochrome);
 
-        var canvas = document.getElementById(canvasId);
+        var canvas = document.createElement('canvas');
         canvas.height = 1;
         canvas.width  = 1;
         canvas.style.visibility = 'hidden';
@@ -481,5 +503,6 @@ var BarcodeUtil = new function() {
                 Util.manageError(e);
             }
         }
+        return canvas.toDataURL('image/png');
     }
 }
