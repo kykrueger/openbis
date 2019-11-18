@@ -253,6 +253,16 @@ function DataSetFormController(parentController, mode, entity, dataSet, isMini, 
 		});
 	}
 
+	this.setArchivingLock = function(lock) {
+		var _this = this;
+		var dataSetPermId = this._dataSetFormModel.dataSetV3.permId.permId;
+		Util.blockUI();
+		mainController.serverFacade.lockDataSet(dataSetPermId, lock, function() {
+			_this._reloadView();
+			Util.unblockUI();
+		});
+	}
+	
 	this.unarchive = function() {
 		var _this = this;
 		var dataSetPermId = this._dataSetFormModel.dataSetV3.permId.permId;

@@ -2671,6 +2671,28 @@ function ServerFacade(openbisServer) {
 				});
 			});
 	}
+	
+	this.lockDataSet = function(dataSetPermId, lock, callbackFunction) {
+		require(["as/dto/dataset/id/DataSetPermId", "as/dto/dataset/lock/DataSetLockOptions", "as/dto/dataset/unlock/DataSetUnlockOptions"], 
+				function(DataSetPermId, DataSetLockOptions, DataSetUnlockOptions) {
+			var ids = [new DataSetPermId(dataSetPermId)];
+			if (lock) {
+				mainController.openbisV3.lockDataSets(ids, new DataSetLockOptions()).done(function(result) {
+					callbackFunction(true);
+				}).fail(function(result) {
+					Util.showFailedServerCallError(result);
+					callbackFunction(false);
+				});
+			} else {
+				mainController.openbisV3.unlockDataSets(ids, new DataSetUnlockOptions()).done(function(result) {
+					callbackFunction(true);
+				}).fail(function(result) {
+					Util.showFailedServerCallError(result);
+					callbackFunction(false);
+				});
+			}
+		});
+	}
 
 	// errorHandler: optional. if present, it is called instead of showing the error and the callbackFunction is not called
 	this.searchRoleAssignments = function(criteriaParams, callbackFunction, errorHandler) {
