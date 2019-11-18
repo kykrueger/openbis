@@ -89,11 +89,17 @@ public class TagSearchManager extends AbstractSearchManager<TagSearchCriteria, T
         final Set<Long> mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId, TableMapper.TAG,
                 newCriteria, criteria.getOperator());
 
-        // If we have results, we use them
-        final Set<Long> resultBeforeFiltering =
-                containsValues(mainCriteriaIntermediateResults) ? mainCriteriaIntermediateResults : Collections.emptySet();
+        if (!containsValues(mainCriteriaIntermediateResults))
+        {
+            return Collections.emptySet();
+        }
 
-        final Set<Long> resultAfterFiltering = getAuthProvider().getTagsOfUser(resultBeforeFiltering, userId);
+        final Set<Long> resultAfterFiltering = getAuthProvider().getTagsOfUser(mainCriteriaIntermediateResults, userId);
+
+        if (!containsValues(resultAfterFiltering))
+        {
+            return Collections.emptySet();
+        }
 
         return filterIDsByUserRights(userId, resultAfterFiltering);
     }
