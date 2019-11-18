@@ -438,7 +438,9 @@ public class TrackingBO
             ArrayList<AbstractExternalData> toTransferDataSetsAll = new ArrayList<>(toTransferDataSetsHighPriority.size() + toTransferDataSets.size());
             toTransferDataSetsAll.addAll(toTransferDataSetsHighPriority);
             toTransferDataSetsAll.addAll(toTransferDataSets);
-            extraSCICOREDataSetListCopy(params, toTransferDataSetsAll);
+            if (!toTransferDataSetsAll.isEmpty()) {
+                extraSCICOREDataSetListCopy(params, toTransferDataSetsAll);
+            }
         }
 
 
