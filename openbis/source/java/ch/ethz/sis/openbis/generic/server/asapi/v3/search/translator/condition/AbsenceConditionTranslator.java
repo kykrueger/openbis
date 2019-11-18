@@ -34,8 +34,14 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLL
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SP;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PART_OF_SAMPLE_COLUMN;
 
-public class AbsenceConditionTranslator extends AbstractConditionTranslator<ISearchCriteria>
+public class AbsenceConditionTranslator implements IConditionTranslator<ISearchCriteria>
 {
+    @Override
+    public Map<String, JoinInformation> getJoinInformationMap(ISearchCriteria criterion, TableMapper tableMapper,
+            final IAliasFactory aliasFactory) {
+        return null;
+    }
+
     @Override
     public void translate(final ISearchCriteria criterion, final TableMapper tableMapper, final List<Object> args, final StringBuilder sqlBuilder,
             final Map<Object, Map<String, JoinInformation>> aliases, final Map<String, String> dataTypeByPropertyName)

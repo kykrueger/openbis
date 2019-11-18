@@ -29,6 +29,7 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ACCESS_TIM
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.CHILD_SAMPLE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.CODE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.DATA_CHILD_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.DATA_ID_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.DATA_PARENT_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.DATA_PRODUCER_CODE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.DATA_SET_COLUMN;
@@ -111,30 +112,30 @@ public enum TableMapper
     SAMPLE(SAMPLES_ALL_TABLE, SAMPLE_TYPE_COLUMN, PROPERTY_TYPES_TABLE, DATA_TYPE_COLUMN, SAMPLE_TYPES_TABLE,
             SAMPLE_TYPE_PROPERTY_TYPE_TABLE, SAMPLE_TYPE_COLUMN, PROPERTY_TYPE_COLUMN, SAMPLE_PROPERTIES_TABLE, SAMPLE_COLUMN,
             SAMPLE_TYPE_PROPERTY_TYPE_COLUMN, SAMPLE_RELATIONSHIPS_ALL_TABLE, PARENT_SAMPLE_COLUMN, CHILD_SAMPLE_COLUMN, DATA_ALL_TABLE,
-            SAMPLE_COLUMN),
+            SAMPLE_COLUMN, SAMPLE_COLUMN),
 
     SAMPLE_TYPE(SAMPLE_TYPES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null,
-            null, null, null),
+            null, null, null, null),
 
     EXPERIMENT(EXPERIMENTS_ALL_TABLE, EXPERIMENT_TYPE_COLUMN, PROPERTY_TYPES_TABLE, DATA_TYPE_COLUMN, EXPERIMENT_TYPES_TABLE,
             EXPERIMENT_TYPE_PROPERTY_TYPE_TABLE, EXPERIMENT_TYPE_COLUMN, PROPERTY_TYPE_COLUMN, EXPERIMENT_PROPERTIES_TABLE, EXPERIMENT_COLUMN,
-            EXPERIMENT_TYPE_PROPERTY_TYPE_COLUMN, null, null, null, DATA_ALL_TABLE, EXPERIMENT_COLUMN),
+            EXPERIMENT_TYPE_PROPERTY_TYPE_COLUMN, null, null, null, DATA_ALL_TABLE, EXPERIMENT_COLUMN, EXPERIMENT_COLUMN),
 
-    EXPERIMENT_TYPE(EXPERIMENT_TYPES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
+    EXPERIMENT_TYPE(EXPERIMENT_TYPES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
 
     DATA_SET(DATA_ALL_TABLE, DATA_SET_TYPE_COLUMN, PROPERTY_TYPES_TABLE, DATA_TYPE_COLUMN, DATA_SET_TYPES_TABLE, DATA_SET_TYPE_PROPERTY_TYPE_TABLE,
             DATA_SET_TYPE_COLUMN, PROPERTY_TYPE_COLUMN, DATA_SET_PROPERTIES_TABLE, DATA_SET_COLUMN, DATA_SET_TYPE_PROPERTY_TYPE_COLUMN,
-            DATA_SET_RELATIONSHIPS_ALL_TABLE, DATA_PARENT_COLUMN, DATA_CHILD_COLUMN, DATA_ALL_TABLE, ID_COLUMN),
+            DATA_SET_RELATIONSHIPS_ALL_TABLE, DATA_PARENT_COLUMN, DATA_CHILD_COLUMN, DATA_ALL_TABLE, ID_COLUMN, DATA_ID_COLUMN),
 
-    DATA_SET_TYPE(DATA_SET_TYPES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
+    DATA_SET_TYPE(DATA_SET_TYPES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
 
-    PERSON(PERSONS_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
+    PERSON(PERSONS_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
 
-    PROJECT(PROJECTS_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
+    PROJECT(PROJECTS_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
 
-    SPACE(SPACES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
+    SPACE(SPACES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
 
-    TAG(METAPROJECTS_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+    TAG(METAPROJECTS_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
 
     static
     {
@@ -221,17 +222,22 @@ public enum TableMapper
 
     private String dataTableEntityIdField;
 
+    /*
+     * Other
+     */
+
+    private String metaprojectAssignmentsEntityIdField;
+
     private Map<String, PSQLTypes> fieldToSQLTypeMap = new HashMap<>();
 
     private Map<PSQLTypes, Set<String>> sqlTypeToFieldsMap = new HashMap<>();
-
 
     TableMapper(final String entitiesTable, final String entitiesTableEntityTypeIdField, final String attributeTypesTable,
             final String attributeTypesTableDataTypeIdField, final String entityTypesTable, final String entityTypesAttributeTypesTable,
             final String entityTypesAttributeTypesTableEntityTypeIdField, final String entityTypesAttributeTypesTableAttributeTypeIdField,
             final String valuesTable, final String valuesTableEntityIdField, final String valuesTableEntityTypeAttributeTypeIdField,
             final String relationshipsTable, final String relationshipsTableParentIdField, final String relationshipsTableChildIdField,
-            final String dataTable, final String dataTableEntityIdField)
+            final String dataTable, final String dataTableEntityIdField, final String metaprojectAssignmentsEntityIdField)
     {
         this.entitiesTable = entitiesTable;
         this.entitiesTableEntityTypeIdField = entitiesTableEntityTypeIdField;
@@ -249,6 +255,7 @@ public enum TableMapper
         this.relationshipsTableChildIdField = relationshipsTableChildIdField;
         this.dataTable = dataTable;
         this.dataTableEntityIdField = dataTableEntityIdField;
+        this.metaprojectAssignmentsEntityIdField = metaprojectAssignmentsEntityIdField;
     }
 
     public static TableMapper toEntityMapper(final EntityKind entityKind, final boolean isEntityType)
@@ -340,6 +347,11 @@ public enum TableMapper
     public Map<String, PSQLTypes> getFieldToSQLTypeMap()
     {
         return fieldToSQLTypeMap;
+    }
+
+    public String getMetaprojectAssignmentsEntityIdField()
+    {
+        return metaprojectAssignmentsEntityIdField;
     }
 
     private static void initSampleFieldToSQLTypeMap()

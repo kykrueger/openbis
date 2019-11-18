@@ -33,13 +33,18 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLL
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SP;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.UNNEST;
 
-public class CollectionFieldSearchCriteriaTranslator extends AbstractConditionTranslator<CollectionFieldSearchCriteria<?>>
+public class CollectionFieldSearchCriteriaTranslator implements IConditionTranslator<CollectionFieldSearchCriteria<?>>
 {
 
     @Override
+    public Map<String, JoinInformation> getJoinInformationMap(final CollectionFieldSearchCriteria<?> criterion, final TableMapper tableMapper,
+            final IAliasFactory aliasFactory) {
+        return null;
+    }
+
+    @Override
     public void translate(final CollectionFieldSearchCriteria<?> criterion, final TableMapper tableMapper, final List<Object> args,
-            final StringBuilder sqlBuilder, final Map<Object, Map<String, JoinInformation>> aliases,
-            final Map<String, String> dataTypeByPropertyName)
+            final StringBuilder sqlBuilder, final Map<Object, Map<String, JoinInformation>> aliases, final Map<String, String> dataTypeByPropertyName)
     {
         switch (criterion.getFieldType()) {
             case ATTRIBUTE:

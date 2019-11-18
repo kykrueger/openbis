@@ -48,8 +48,6 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLL
 public class AnyPropertySearchCriteriaTranslator implements IConditionTranslator<AnyPropertySearchCriteria>
 {
 
-    private final AtomicBoolean first = new AtomicBoolean();
-
     @Override
     public Map<String, JoinInformation> getJoinInformationMap(final AnyPropertySearchCriteria criterion, final TableMapper tableMapper,
             final IAliasFactory aliasFactory)
@@ -91,41 +89,6 @@ public class AnyPropertySearchCriteriaTranslator implements IConditionTranslator
             case ATTRIBUTE:
             {
                 throw new IllegalArgumentException("Field type " + criterion.getFieldType() + " is not supported");
-            }
-        }
-    }
-
-    private Set<PSQLTypes> findCompatibleSqlTypesForValue(final String value)
-    {
-        final SimplePropertyValidator validator = new SimplePropertyValidator();
-        try
-        {
-            validator.validatePropertyValue(DataTypeCode.TIMESTAMP, value);
-            return EnumSet.of(TIMESTAMP_WITH_TZ);
-        } catch (UserFailureException e1)
-        {
-            try
-            {
-                validator.validatePropertyValue(DataTypeCode.BOOLEAN, value);
-                return EnumSet.of(BOOLEAN);
-            } catch (UserFailureException e2)
-            {
-                try
-                {
-                    validator.validatePropertyValue(DataTypeCode.INTEGER, value);
-                    return EnumSet.of(INT8, INT4, INT2, FLOAT4, FLOAT8);
-                } catch (UserFailureException e3)
-                {
-                    try
-                    {
-                        validator.validatePropertyValue(DataTypeCode.REAL, value);
-                        return EnumSet.of(FLOAT4, FLOAT8);
-                    } catch (UserFailureException e4)
-                    {
-                        validator.validatePropertyValue(DataTypeCode.VARCHAR, value);
-                        return EnumSet.of(VARCHAR);
-                    }
-                }
             }
         }
     }

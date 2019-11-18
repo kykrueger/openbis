@@ -210,7 +210,7 @@ public abstract class AbstractSearchManager<CRITERIA extends ISearchCriteria, FE
     {
         final C result = factory.create();
         result.setFieldValue(criterion.getFieldValue());
-        return null;
+        return result;
     }
 
 }

@@ -90,11 +90,12 @@ public class TagSearchManager extends AbstractSearchManager<TagSearchCriteria, T
                 newCriteria, criteria.getOperator());
 
         // If we have results, we use them
-        // If we don't have results and criteria are not empty, there are no results.
         final Set<Long> resultBeforeFiltering =
                 containsValues(mainCriteriaIntermediateResults) ? mainCriteriaIntermediateResults : Collections.emptySet();
 
-        return filterIDsByUserRights(userId, resultBeforeFiltering);
+        final Set<Long> resultAfterFiltering = getAuthProvider().getTagsOfUser(resultBeforeFiltering, userId);
+
+        return filterIDsByUserRights(userId, resultAfterFiltering);
     }
 
 }

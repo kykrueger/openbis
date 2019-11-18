@@ -42,4 +42,13 @@ public interface ISQLAuthorisationInformationProviderDAO
      */
     Set<Long> getAuthorisedExperiments(Set<Long> requestedIDs, AuthorisationInformation authInfo);
 
+    /**
+     * Filters tag IDs based on whether they belong to a user.
+     *
+     * @param requestedIDs IDs to be filtered
+     * @param userID ID of the user requestedIDs to be filtered by.
+     * @return the subset of IDs which are linked to the specified user.
+     */
+    Set<Long> getTagsOfUser(Set<Long> requestedIDs, Long userID);
+
 }

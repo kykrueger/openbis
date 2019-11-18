@@ -59,8 +59,14 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.PROJECTS_TA
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SAMPLES_ALL_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SPACES_TABLE;
 
-public class IdSearchCriteriaTranslator extends AbstractConditionTranslator<IdSearchCriteria<?>>
+public class IdSearchCriteriaTranslator implements IConditionTranslator<IdSearchCriteria<?>>
 {
+
+    @Override
+    public Map<String, JoinInformation> getJoinInformationMap(final IdSearchCriteria<?> criterion, final TableMapper tableMapper,
+            final IAliasFactory aliasFactory) {
+        return null;
+    }
 
     @Override
     public void translate(final IdSearchCriteria<?> criterion, final TableMapper tableMapper, final List<Object> args,

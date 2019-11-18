@@ -51,6 +51,7 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLL
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.AUTHORIZATION_GROUP_ID_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.AUTHORIZATION_GROUP_ID_GRANTEE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.OWNER_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PERSON_GRANTEE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PERSON_ID_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PROJECT_COLUMN;
@@ -59,6 +60,7 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ROLE_COLUM
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.SPACE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.AUTHORIZATION_GROUP_PERSONS_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.EXPERIMENTS_ALL_TABLE;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.METAPROJECTS_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.PERSONS_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.PROJECTS_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.ROLE_ASSIGNMENTS_TABLE;
@@ -168,7 +170,7 @@ public class PostgresAuthorisationInformationProviderDAO implements ISQLAuthoris
                 authInfo.getProjectIds().toArray(new Long[0]));
         final List<Map<String, Object>> queryResultList = executor.execute(query, args);
 
-        return queryResultList.stream().map(stringObjectMap -> (Long) stringObjectMap.get(ID_COLUMN)).collect(Collectors.toSet());
+        return collectIDs(queryResultList);
     }
 
     @Override
@@ -187,6 +189,23 @@ public class PostgresAuthorisationInformationProviderDAO implements ISQLAuthoris
                 authInfo.getProjectIds().toArray(new Long[0]));
         final List<Map<String, Object>> queryResultList = executor.execute(query, args);
 
+        return collectIDs(queryResultList);
+    }
+
+    @Override
+    public Set<Long> getTagsOfUser(final Set<Long> requestedIDs, final Long userID)
+    {
+        final String query = SELECT + SP + ID_COLUMN + SP + NL +
+                FROM + SP + METAPROJECTS_TABLE + NL +
+                WHERE + SP + OWNER_COLUMN + SP + EQ + SP + QU + SP +
+                AND + SP + ID_COLUMN + SP + IN + LP + SELECT + SP + UNNEST + LP + QU + RP + RP;
+        final List<Object> args = Arrays.asList(userID, requestedIDs.toArray(new Long[0]));
+        final List<Map<String, Object>> queryResultList = executor.execute(query, args);
+        return collectIDs(queryResultList);
+    }
+
+    private Set<Long> collectIDs(final List<Map<String, Object>> queryResultList)
+    {
         return queryResultList.stream().map(stringObjectMap -> (Long) stringObjectMap.get(ID_COLUMN)).collect(Collectors.toSet());
     }
 
