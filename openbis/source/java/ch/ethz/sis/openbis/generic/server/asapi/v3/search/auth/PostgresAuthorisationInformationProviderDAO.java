@@ -180,8 +180,8 @@ public class PostgresAuthorisationInformationProviderDAO implements ISQLAuthoris
         final String p = "p";
         final String query = SELECT + SP + DISTINCT + SP + e + PERIOD + ID_COLUMN + NL +
                 FROM + SP + EXPERIMENTS_ALL_TABLE + SP + e + NL +
-                INNER_JOIN + SP + PROJECTS_TABLE + SP + p + SP + ON + SP + p + PERIOD + ID_COLUMN + SP + EQ + SP + e + PERIOD + PROJECT_COLUMN +
-                WHERE + SP + e + PERIOD + ID_COLUMN + SP + IN + LP + SELECT + SP + UNNEST + LP + QU + RP + RP + SP + AND +
+                INNER_JOIN + SP + PROJECTS_TABLE + SP + p + SP + ON + SP + p + PERIOD + ID_COLUMN + SP + EQ + SP + e + PERIOD + PROJECT_COLUMN + SP +
+                WHERE + SP + e + PERIOD + ID_COLUMN + SP + IN + SP + LP + SELECT + SP + UNNEST + LP + QU + RP + RP + SP + AND +
                 SP + LP + p + PERIOD + SPACE_COLUMN + SP + IN + SP + LP + SELECT + SP + UNNEST + LP + QU + RP + RP + SP + OR +
                 SP + e + PERIOD + PROJECT_COLUMN + SP + IN + SP + LP + SELECT + SP + UNNEST + LP + QU + RP + RP + RP;
 
