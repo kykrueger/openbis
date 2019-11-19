@@ -477,14 +477,21 @@ function ServerFacade(openbisServer) {
 	};
 
 	//
-	// Gets submission types
+	// Gets archiving info for specified data set codes
 	//
-	this.listSubmissionTypes = function(callbackFunction) {
+	this.getArchivingInfo = function(dataSets, callbackFunction) {
 		this.customELNApi({
-			"method" : "getSubmissionTypes",
-		}, callbackFunction, "rc-exports-api");
+			"method" : "getArchivingInfo",
+			"args" : dataSets.join(","),
+		}, function(error, result) {
+			if (error) {
+				Util.showError(error);
+			} else {
+				callbackFunction(result.data);
+			}
+		}, "archiving-api");
 	};
-	
+
 	//
 	// Metadata Related Functions
 	//
