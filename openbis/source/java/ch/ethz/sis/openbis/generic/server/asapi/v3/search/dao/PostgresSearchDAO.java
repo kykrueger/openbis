@@ -49,7 +49,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTra
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.OrderTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SelectQuery;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.TranslationVo;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.TranslatorUtils;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 

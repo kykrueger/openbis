@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
+package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils;
 
 import java.text.ParseException;
 import java.util.LinkedHashMap;
@@ -46,6 +46,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringEqualToValue
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringStartsWithValue;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.IAliasFactory;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
 import ch.systemsx.cisd.openbis.generic.shared.dto.TableNames;
 
@@ -82,12 +83,13 @@ public class TranslatorUtils
         throw new UnsupportedOperationException("Utility class cannot be instantiated");
     }
 
-    static void appendStringComparatorOp(final AbstractStringValue value, final StringBuilder sqlBuilder, final List<Object> args)
+    public static void appendStringComparatorOp(final AbstractStringValue value, final StringBuilder sqlBuilder, final List<Object> args)
     {
         appendStringComparatorOp(value.getClass(), value.getValue(), sqlBuilder, args);
     }
 
-    static void appendStringComparatorOp(final Class<?> valueClass, final String finalValue, final StringBuilder sqlBuilder, final List<Object> args)
+    public static void appendStringComparatorOp(final Class<?> valueClass, final String finalValue, final StringBuilder sqlBuilder,
+            final List<Object> args)
     {
         if (valueClass == StringEqualToValue.class)
         {
@@ -168,7 +170,7 @@ public class TranslatorUtils
         return sb.toString();
     }
 
-    static void appendNumberComparatorOp(final AbstractNumberValue value, final StringBuilder sqlBuilder)
+    public static void appendNumberComparatorOp(final AbstractNumberValue value, final StringBuilder sqlBuilder)
     {
         if (value.getClass() == NumberEqualToValue.class)
         {
@@ -289,7 +291,7 @@ public class TranslatorUtils
         return result;
     }
 
-    static void addDateValueToArgs(final IDate fieldValue, final List<Object> args)
+    public static void addDateValueToArgs(final IDate fieldValue, final List<Object> args)
     {
         if (fieldValue instanceof AbstractDateValue)
         {
@@ -309,7 +311,7 @@ public class TranslatorUtils
         }
     }
 
-    static void appendDateComparatorOp(final Object fieldValue, final StringBuilder sqlBuilder)
+    public static void appendDateComparatorOp(final Object fieldValue, final StringBuilder sqlBuilder)
     {
         if (fieldValue instanceof DateEqualToValue || fieldValue instanceof DateObjectEqualToValue)
         {
@@ -327,17 +329,17 @@ public class TranslatorUtils
         sqlBuilder.append(SP).append(QU);
     }
 
-    static boolean isPropertyInternal(final String propertyName)
+    public static boolean isPropertyInternal(final String propertyName)
     {
         return propertyName.startsWith(INTERNAL_PROPERTY_PREFIX);
     }
 
-    static String normalisePropertyName(final String propertyName)
+    public static String normalisePropertyName(final String propertyName)
     {
         return isPropertyInternal(propertyName) ? propertyName.substring(INTERNAL_PROPERTY_PREFIX.length()) : propertyName;
     }
 
-    static void appendInternalExternalConstraint(final StringBuilder sqlBuilder, final List<Object> args,
+    public static void appendInternalExternalConstraint(final StringBuilder sqlBuilder, final List<Object> args,
             final String entityTypesSubTableAlias, final boolean internalProperty)
     {
         sqlBuilder.append(entityTypesSubTableAlias).append(PERIOD).append(ColumnNames.IS_INTERNAL_NAMESPACE).append(SP)
