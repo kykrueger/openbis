@@ -30,6 +30,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagCode;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagPermId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sample.FullSampleIdentifier;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sample.SampleIdentifierParts;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
@@ -51,6 +53,7 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLL
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.WHERE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.CODE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.NAME_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PART_OF_SAMPLE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PERM_ID_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PROJECT_COLUMN;
@@ -75,9 +78,13 @@ public class IdSearchCriteriaTranslator implements IConditionTranslator<IdSearch
     {
         final Object entityId = criterion.getId();
 
-        if (entityId instanceof ObjectIdentifier) {
+        if (entityId instanceof ObjectIdentifier || entityId.getClass() == TagPermId.class) {
             // Even though FullSampleIdentifier contains 'Sample' in its name, it may be used for Experiment identifiers.
-            final FullSampleIdentifier fullObjectIdentifier = new FullSampleIdentifier(((ObjectIdentifier) entityId).getIdentifier(), null);
+            final FullSampleIdentifier fullObjectIdentifier = new FullSampleIdentifier(
+                    (entityId instanceof ObjectIdentifier)
+                            ? ((ObjectIdentifier) entityId).getIdentifier()
+                            : ((TagPermId) entityId).getPermId(),
+                    null);
             final String objectCode = fullObjectIdentifier.getSampleCode();
             final SampleIdentifierParts identifierParts = fullObjectIdentifier.getParts();
             final String spaceCode = identifierParts.getSpaceCodeOrNull();
@@ -99,6 +106,9 @@ public class IdSearchCriteriaTranslator implements IConditionTranslator<IdSearch
                     } else if (entityId.getClass() == ProjectIdentifier.class)
                     {
                         buildSelectByIdConditionWithSubqueryProjects(sqlBuilder);
+                    } else if (entityId.getClass() == TagPermId.class)
+                    {
+                        buildSelectByIdConditionWithSubqueryTags(sqlBuilder);
                     } else
                     {
                         throw new RuntimeException("Unsupported identifier: " + entityId.getClass());
@@ -154,13 +164,26 @@ public class IdSearchCriteriaTranslator implements IConditionTranslator<IdSearch
         {
             sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(EQ).append(QU);
             args.add(((EntityTypePermId) entityId).getPermId());
-        } else
+        } else if (entityId.getClass() == TagCode.class)
+        {
+            sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(NAME_COLUMN).append(EQ).append(QU);
+            args.add(((TagCode) entityId).getCode());
+        } /*else if (entityId.getClass() == TagPermId.class)
+        {
+            sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(NAME_COLUMN).append(EQ).append(QU);
+            args.add(((TagPermId) entityId).getPermId());
+        } */else
         {
             throw new IllegalArgumentException("The following ID class is not supported: " + entityId.getClass().getSimpleName());
         }
     }
 
-    private void buildSelectByIdConditionWithSubqueryProjects(final StringBuilder sqlBuilder)
+    private static void buildSelectByIdConditionWithSubqueryTags(final StringBuilder sqlBuilder)
+    {
+//        sqlBuilder.append();
+    }
+
+    private static void buildSelectByIdConditionWithSubqueryProjects(final StringBuilder sqlBuilder)
     {
         sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(SPACE_COLUMN).append(SP).append(IN).append(SP).append(LP).
                 append(SELECT).append(SP).append(ID_COLUMN).append(SP).
@@ -183,6 +206,15 @@ public class IdSearchCriteriaTranslator implements IConditionTranslator<IdSearch
                 append(RP);
     }
 
+    /**
+     * Builds the following query:<p/>
+     * <code>
+     *     t0.[columnName] = (SELECT id FROM [subqueryTable] WHERE code = ?)
+     * </code>
+     * @param sqlBuilder SQL builder to add the query part to.
+     * @param columnName name of the column in the main table to be equal to the result in the subquery.
+     * @param subqueryTable table which should be queried for code.
+     */
     private static void buildSelectByIdConditionWithSubquery(final StringBuilder sqlBuilder, final String columnName, final String subqueryTable)
     {
         sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(columnName).append(SP).append(EQ).append(SP).append(LP).
