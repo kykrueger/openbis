@@ -31,6 +31,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.u
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.AND;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.EQ;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.FROM;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.IN;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.LP;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.PERIOD;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.RP;
@@ -99,7 +100,7 @@ public class IdentifierSearchCriteriaTranslator implements IConditionTranslator<
             sqlBuilder.append(RP).append(SP).append(AND).append(SP);
         }
 
-        sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN)/*.append(SP).append(EQ).append(SP).append(QU)*/;
+        sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(SP);
         TranslatorUtils.appendStringComparatorOp(valueClass, entityCode, sqlBuilder, args);
     }
 
@@ -116,7 +117,7 @@ public class IdentifierSearchCriteriaTranslator implements IConditionTranslator<
     private static void buildSelectByIdConditionWithSubquery(final StringBuilder sqlBuilder, final String columnName, final String subqueryTable,
             final String subqueryTableColumn, final Class<?> valueClass, final String finalValue, final List<Object> args)
     {
-        sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(columnName).append(SP).append(EQ).append(SP).append(LP).
+        sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(columnName).append(SP).append(IN).append(SP).append(LP).
                 append(SELECT).append(SP).append(ID_COLUMN).append(SP).append(FROM).append(SP).append(subqueryTable).append(SP).
                 append(WHERE).append(SP).append(subqueryTableColumn).append(SP);
         TranslatorUtils.appendStringComparatorOp(valueClass, finalValue, sqlBuilder, args);
