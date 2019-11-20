@@ -1,3 +1,7 @@
+## Changes with pybis-1.10.3
+
+* print warning message when downloaded file-size does not match with promised file-size. Do not die.
+
 ## Changes with pybis-1.10.2
 
 * typo bugfix
