@@ -776,11 +776,16 @@ class DataSetDownloadQueue():
                         if chunk:  # filter out keep-alive new chunks
                             f.write(chunk)
 
-                if os.path.getsize(filename_dest) != int(file_size):
+                actual_file_size = os.path.getsize(filename_dest)
+                if actual_file_size != int(file_size):
                     if self.collect_files_with_wrong_length:
                         self.files_with_wrong_length.append(filename)
                     else:
-                        raise ValueError("File has the wrong length: {}".format(filename_dest))
+                        print (
+                            "WARNING! File {} has the wrong length: Expected: {} Actual size: {}".format(
+                                filename_dest, int(file_size), actual_file_size)
+                        )
+
             finally:
                 self.download_queue.task_done()
 
