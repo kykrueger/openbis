@@ -16,6 +16,7 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -53,7 +54,10 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.u
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.executor.relationship.IGetRelationshipIdExecutor.RelationshipType.PARENT_CHILD;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.AND;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.DISTINCT;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.EQ;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.FROM;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.IN;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.LP;
@@ -64,7 +68,10 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLL
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SP;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.UNNEST;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.WHERE;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.CODE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.RELATIONSHIP_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.RELATIONSHIP_TYPES_TABLE;
 
 public class PostgresSearchDAO implements ISQLSearchDAO
 {
@@ -104,11 +111,15 @@ public class PostgresSearchDAO implements ISQLSearchDAO
     @Override
     public Set<Long> findChildIDs(final TableMapper tableMapper, final Set<Long> parentIdSet)
     {
-        final String query = SELECT + SP + DISTINCT + SP + tableMapper.getRelationshipsTableChildIdField() + NL +
-                FROM + SP + tableMapper.getRelationshipsTable() + NL +
-                WHERE + SP + tableMapper.getRelationshipsTableParentIdField() + SP + IN + SP + LP + SELECT + SP + UNNEST + LP + QU + RP + RP;
+        final StringBuilder sqlBuilder = new StringBuilder(SELECT).append(SP).append(DISTINCT).append(SP).
+                append(tableMapper.getRelationshipsTableChildIdField()).append(NL).
+                append(FROM).append(SP).append(tableMapper.getRelationshipsTable()).append(NL).
+                append(WHERE).append(SP).append(tableMapper.getRelationshipsTableParentIdField()).append(SP).append(IN).append(SP).append(LP).
+                append(SELECT).append(SP).append(UNNEST).append(LP).append(QU).append(RP).
+                append(RP);
         final List<Object> args = Collections.singletonList(parentIdSet.toArray(new Long[0]));
-        final List<Map<String, Object>> queryResultList = sqlExecutor.execute(query, args);
+
+        final List<Map<String, Object>> queryResultList = sqlExecutor.execute(sqlBuilder.toString(), args);
         return queryResultList.stream().map(stringObjectMap -> (Long) stringObjectMap.get(tableMapper.getRelationshipsTableChildIdField()))
                 .collect(Collectors.toSet());
     }
@@ -116,13 +127,31 @@ public class PostgresSearchDAO implements ISQLSearchDAO
     @Override
     public Set<Long> findParentIDs(final TableMapper tableMapper, final Set<Long> childIdSet)
     {
-        final String query = SELECT + SP + DISTINCT + SP + tableMapper.getRelationshipsTableParentIdField() + NL +
-                FROM + SP + tableMapper.getRelationshipsTable() + NL +
-                WHERE + SP + tableMapper.getRelationshipsTableChildIdField() + SP + IN + SP + LP + SELECT + SP + UNNEST + LP + QU + RP + RP;
-        final List<Object> args = Collections.singletonList(childIdSet.toArray(new Long[0]));
-        final List<Map<String, Object>> queryResultList = sqlExecutor.execute(query, args);
+        final StringBuilder sqlBuilder = new StringBuilder(SELECT).append(SP).append(DISTINCT).append(SP).
+                append(tableMapper.getRelationshipsTableParentIdField()).append(NL).
+                append(FROM).append(SP).append(tableMapper.getRelationshipsTable()).append(NL).
+                append(WHERE).append(SP).append(tableMapper.getRelationshipsTableChildIdField()).append(SP).append(IN).append(SP).append(LP).
+                append(SELECT).append(SP).append(UNNEST).append(LP).append(QU).append(RP).
+                append(RP);
+
+        final List<Object> args = new ArrayList<>(2);
+        args.add(childIdSet.toArray(new Long[0]));
+
+        appendRelationshipId(sqlBuilder, args);
+
+        final List<Map<String, Object>> queryResultList = sqlExecutor.execute(sqlBuilder.toString(), args);
         return queryResultList.stream().map(stringObjectMap -> (Long) stringObjectMap.get(tableMapper.getRelationshipsTableParentIdField()))
                 .collect(Collectors.toSet());
+    }
+
+    private void appendRelationshipId(final StringBuilder sqlBuilder, final List<Object> args)
+    {
+        sqlBuilder.append(SP).append(AND).append(SP).append(RELATIONSHIP_COLUMN).append(SP).append(EQ).append(SP).append(LP);
+        sqlBuilder.append(SELECT).append(SP).append(ID_COLUMN).append(SP).
+                append(FROM).append(SP).append(RELATIONSHIP_TYPES_TABLE).append(SP).
+                append(WHERE).append(SP).append(CODE_COLUMN).append(SP).append(EQ).append(SP).append(QU);
+        sqlBuilder.append(RP);
+        args.add(PARENT_CHILD.toString());
     }
 
     @Override
