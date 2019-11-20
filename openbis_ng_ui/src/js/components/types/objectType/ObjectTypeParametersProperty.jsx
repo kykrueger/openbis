@@ -1,16 +1,21 @@
-import _ from 'lodash'
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import Typography from '@material-ui/core/Typography'
-import FormControlLabel from '@material-ui/core/FormControlLabel'
-import Checkbox from '@material-ui/core/Checkbox'
-import TextField from '@material-ui/core/TextField'
+import CheckboxField from '../../common/form/CheckboxField.jsx'
+import TextField from '../../common/form/TextField.jsx'
+import SelectField from '../../common/form/SelectField.jsx'
 import { facade, dto } from '../../../services/openbis.js'
 import logger from '../../../common/logger.js'
 
 const styles = theme => ({
   container: {
     padding: theme.spacing(2)
+  },
+  header: {
+    paddingBottom: theme.spacing(2)
+  },
+  field: {
+    paddingBottom: theme.spacing(2)
   }
 })
 
@@ -25,7 +30,6 @@ class ObjectTypeParametersProperty extends React.PureComponent {
       dataType: React.createRef(),
       mandatory: React.createRef()
     }
-    this.actions = {}
     this.handleChange = this.handleChange.bind(this)
     this.handleFocus = this.handleFocus.bind(this)
   }
@@ -99,10 +103,6 @@ class ObjectTypeParametersProperty extends React.PureComponent {
         if (reference) {
           reference.current.focus()
         }
-        const action = this.actions[part]
-        if (action) {
-          action.focusVisible()
-        }
       }
     }
   }
@@ -110,20 +110,10 @@ class ObjectTypeParametersProperty extends React.PureComponent {
   handleChange(event) {
     const property = this.getProperty(this.props)
 
-    let params = null
-
-    if (_.has(event.target, 'checked')) {
-      params = {
-        id: property.id,
-        field: event.target.value,
-        value: event.target.checked
-      }
-    } else {
-      params = {
-        id: property.id,
-        field: event.target.name,
-        value: event.target.value
-      }
+    const params = {
+      id: property.id,
+      field: event.target.name,
+      value: event.target.value
     }
 
     this.props.onChange('property', params)
@@ -132,18 +122,9 @@ class ObjectTypeParametersProperty extends React.PureComponent {
   handleFocus(event) {
     const property = this.getProperty(this.props)
 
-    let params = null
-
-    if (_.has(event.target, 'checked')) {
-      params = {
-        id: property.id,
-        part: event.target.value
-      }
-    } else {
-      params = {
-        id: property.id,
-        part: event.target.name
-      }
+    const params = {
+      id: property.id,
+      part: event.target.name
     }
 
     this.props.onSelectionChange('property', params)
@@ -152,187 +133,184 @@ class ObjectTypeParametersProperty extends React.PureComponent {
   render() {
     logger.log(logger.DEBUG, 'ObjectTypeParametersProperty.render')
 
-    let property = this.getProperty(this.props)
+    const property = this.getProperty(this.props)
     if (!property) {
       return null
     }
 
-    let { classes } = this.props
-    let { vocabularies, materialTypes } = this.state
+    const { classes } = this.props
 
     return (
       <div className={classes.container}>
-        <Typography variant='h6'>Property</Typography>
-        <form>
-          <div>
-            <TextField
-              inputRef={this.references.label}
-              label='Label'
-              name='label'
-              value={property.label}
-              fullWidth={true}
-              margin='normal'
-              variant='filled'
-              InputLabelProps={{
-                shrink: true
-              }}
-              onChange={this.handleChange}
-              onFocus={this.handleFocus}
-            />
-          </div>
-          <div>
-            <TextField
-              inputRef={this.references.code}
-              label='Code'
-              name='code'
-              value={property.code}
-              fullWidth={true}
-              margin='normal'
-              variant='filled'
-              InputLabelProps={{
-                shrink: true
-              }}
-              onChange={this.handleChange}
-              onFocus={this.handleFocus}
-            />
-          </div>
-          <div>
-            <TextField
-              inputRef={this.references.description}
-              label='Description'
-              name='description'
-              value={property.description}
-              fullWidth={true}
-              margin='normal'
-              variant='filled'
-              InputLabelProps={{
-                shrink: true
-              }}
-              onChange={this.handleChange}
-              onFocus={this.handleFocus}
-            />
-          </div>
-          <div>
-            <TextField
-              select
-              inputRef={this.references.dataType}
-              label='Data Type'
-              name='dataType'
-              SelectProps={{
-                native: true
-              }}
-              value={property.dataType}
-              fullWidth={true}
-              margin='normal'
-              variant='filled'
-              InputLabelProps={{
-                shrink: true
-              }}
-              onChange={this.handleChange}
-              onFocus={this.handleFocus}
-            >
-              {dto.DataType.values.sort().map(dataType => {
-                return (
-                  <option key={dataType} value={dataType}>
-                    {dataType}
-                  </option>
-                )
-              })}
-            </TextField>
-          </div>
-          {property.dataType === 'CONTROLLEDVOCABULARY' && (
-            <div>
-              <TextField
-                select
-                label='Vocabulary'
-                name='vocabulary'
-                SelectProps={{
-                  native: true
-                }}
-                value={property.vocabulary ? property.vocabulary : ''}
-                fullWidth={true}
-                margin='normal'
-                variant='filled'
-                InputLabelProps={{
-                  shrink: true
-                }}
-                onChange={this.handleChange}
-                onFocus={this.handleFocus}
-              >
-                <option key='' value=''></option>
-                {vocabularies &&
-                  vocabularies.map(vocabulary => {
-                    return (
-                      <option key={vocabulary.code} value={vocabulary.code}>
-                        {vocabulary.code}
-                      </option>
-                    )
-                  })}
-              </TextField>
-            </div>
-          )}
-          {property.dataType === 'MATERIAL' && (
-            <div>
-              <TextField
-                select
-                label='Material Type'
-                name='materialType'
-                SelectProps={{
-                  native: true
-                }}
-                value={property.materialType ? property.materialType : ''}
-                fullWidth={true}
-                margin='normal'
-                variant='filled'
-                InputLabelProps={{
-                  shrink: true
-                }}
-                onChange={this.handleChange}
-                onFocus={this.handleFocus}
-              >
-                <option key='' value=''></option>
-                {materialTypes &&
-                  materialTypes.map(materialType => {
-                    return (
-                      <option key={materialType.code} value={materialType.code}>
-                        {materialType.code}
-                      </option>
-                    )
-                  })}
-              </TextField>
-            </div>
-          )}
-          <div>
-            <FormControlLabel
-              control={
-                <Checkbox
-                  inputRef={this.references.mandatory}
-                  action={actions => {
-                    this.actions.mandatory = actions
-                  }}
-                  value='mandatory'
-                  checked={property.mandatory}
-                  onChange={this.handleChange}
-                  onFocus={this.handleFocus}
-                />
-              }
-              label='Mandatory'
-            />
-          </div>
-          <div>
-            <FormControlLabel
-              control={
-                <Checkbox
-                  value='visible'
-                  checked={property.visible}
-                  onChange={this.handleChange}
-                  onFocus={this.handleFocus}
-                />
-              }
-              label='Visible'
-            />
-          </div>
-        </form>
+        <Typography variant='h6' className={classes.header}>
+          Property
+        </Typography>
+        {this.renderCode(property)}
+        {this.renderDataType(property)}
+        {this.renderLabel(property)}
+        {this.renderDescription(property)}
+        {this.renderVocabulary(property)}
+        {this.renderMaterial(property)}
+        {this.renderMandatory(property)}
+        {this.renderVisible(property)}
+      </div>
+    )
+  }
+
+  renderLabel(property) {
+    const { classes } = this.props
+    return (
+      <div className={classes.field}>
+        <TextField
+          reference={this.references.label}
+          label='Label'
+          name='label'
+          value={property.label}
+          onChange={this.handleChange}
+          onFocus={this.handleFocus}
+        />
+      </div>
+    )
+  }
+
+  renderCode(property) {
+    const { classes } = this.props
+    return (
+      <div className={classes.field}>
+        <TextField
+          reference={this.references.code}
+          label='Code'
+          name='code'
+          value={property.code}
+          onChange={this.handleChange}
+          onFocus={this.handleFocus}
+        />
+      </div>
+    )
+  }
+
+  renderDescription(property) {
+    const { classes } = this.props
+    return (
+      <div className={classes.field}>
+        <TextField
+          reference={this.references.description}
+          label='Description'
+          name='description'
+          value={property.description}
+          onChange={this.handleChange}
+          onFocus={this.handleFocus}
+        />
+      </div>
+    )
+  }
+
+  renderDataType(property) {
+    const options = dto.DataType.values.sort().map(dataType => {
+      return {
+        label: dataType,
+        value: dataType
+      }
+    })
+    const { classes } = this.props
+    return (
+      <div className={classes.field}>
+        <SelectField
+          reference={this.references.dataType}
+          label='Data Type'
+          name='dataType'
+          value={property.dataType}
+          options={options}
+          onChange={this.handleChange}
+          onFocus={this.handleFocus}
+        />
+      </div>
+    )
+  }
+
+  renderVocabulary(property) {
+    let { vocabularies } = this.state
+
+    if (property.dataType === 'CONTROLLEDVOCABULARY' && vocabularies) {
+      const options = vocabularies.map(vocabulary => {
+        return {
+          label: vocabulary.code,
+          value: vocabulary.code
+        }
+      })
+      const { classes } = this.props
+      return (
+        <div className={classes.field}>
+          <SelectField
+            label='Vocabulary'
+            name='vocabulary'
+            value={property.vocabulary ? property.vocabulary : ''}
+            options={options}
+            onChange={this.handleChange}
+            onFocus={this.handleFocus}
+          />
+        </div>
+      )
+    } else {
+      return null
+    }
+  }
+
+  renderMaterial(property) {
+    let { materialTypes } = this.state
+
+    if (property.dataType === 'MATERIAL' && materialTypes) {
+      const options = materialTypes.map(materialType => {
+        return {
+          label: materialType.code,
+          value: materialType.code
+        }
+      })
+      const { classes } = this.props
+      return (
+        <div className={classes.field}>
+          <SelectField
+            label='Material Type'
+            name='materialType'
+            value={property.materialType ? property.materialType : ''}
+            options={options}
+            onChange={this.handleChange}
+            onFocus={this.handleFocus}
+          />
+        </div>
+      )
+    } else {
+      return null
+    }
+  }
+
+  renderMandatory(property) {
+    const { classes } = this.props
+    return (
+      <div className={classes.field}>
+        <CheckboxField
+          reference={this.references.mandatory}
+          label='Mandatory'
+          name='mandatory'
+          value={property.mandatory}
+          onChange={this.handleChange}
+          onFocus={this.handleFocus}
+        />
+      </div>
+    )
+  }
+
+  renderVisible(property) {
+    const { classes } = this.props
+    return (
+      <div className={classes.field}>
+        <CheckboxField
+          label='Visible'
+          name='visible'
+          value={property.visible}
+          onChange={this.handleChange}
+          onFocus={this.handleFocus}
+        />
       </div>
     )
   }

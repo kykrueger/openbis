@@ -5,11 +5,7 @@ import ObjectTypeParametersProperty from './ObjectTypeParametersProperty.jsx'
 import ObjectTypeParametersSection from './ObjectTypeParametersSection.jsx'
 import logger from '../../../common/logger.js'
 
-const styles = () => ({
-  container: {
-    minWidth: '400px'
-  }
-})
+const styles = () => ({})
 
 class ObjectTypeParameters extends React.PureComponent {
   constructor(props) {
@@ -25,12 +21,11 @@ class ObjectTypeParameters extends React.PureComponent {
       properties,
       selection,
       onChange,
-      onSelectionChange,
-      classes
+      onSelectionChange
     } = this.props
 
     return (
-      <div className={classes.container}>
+      <div>
         <ObjectTypeParametersType
           type={type}
           selection={selection}
@@ -40,6 +35,7 @@ class ObjectTypeParameters extends React.PureComponent {
           sections={sections}
           selection={selection}
           onChange={onChange}
+          onSelectionChange={onSelectionChange}
         />
         <ObjectTypeParametersProperty
           properties={properties}
