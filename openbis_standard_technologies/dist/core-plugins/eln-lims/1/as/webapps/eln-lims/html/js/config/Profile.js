@@ -56,6 +56,7 @@ $.extend(DefaultProfile.prototype, {
 				showExports : true,
 				showStorageManager : true,
 				showAdvancedSearch : true,
+				showUnarchivingHelper : true,
 				showTrashcan : true,
 				showSettings : true,
 				showVocabularyViewer : true,
