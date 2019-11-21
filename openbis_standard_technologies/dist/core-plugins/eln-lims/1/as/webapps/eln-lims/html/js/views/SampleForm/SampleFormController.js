@@ -27,8 +27,8 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 		_this._sampleFormModel.views = views;
 
 		if(mode !== FormMode.CREATE) {
-			require([ "as/dto/sample/id/SamplePermId", "as/dto/sample/fetchoptions/SampleFetchOptions" ],
-					function(SamplePermId, SampleFetchOptions) {
+			require([ "as/dto/sample/id/SamplePermId", "as/dto/sample/id/SampleIdentifier", "as/dto/sample/fetchoptions/SampleFetchOptions" ],
+					function(SamplePermId, SampleIdentifier, SampleFetchOptions) {
 					var id = new SamplePermId(sample.permId);
 					var fetchOptions = new SampleFetchOptions();
 					fetchOptions.withSpace();
@@ -38,9 +38,11 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 					fetchOptions.withChildren();
 					mainController.openbisV3.getSamples([ id ], fetchOptions).done(function(map) {
 						_this._sampleFormModel.v3_sample = map[id];
-						//
-						mainController.openbisV3.getRights([ id ], null).done(function(rightsByIds) {
+						var expeId = _this._sampleFormModel.v3_sample.getExperiment().getIdentifier().getIdentifier();
+						var dummySampleId = new SampleIdentifier(IdentifierUtil.createDummySampleIdentifierFromExperimentIdentifier(expeId));
+						mainController.openbisV3.getRights([ id, dummySampleId ], null).done(function(rightsByIds) {
 							_this._sampleFormModel.rights = rightsByIds[id];
+							_this._sampleFormModel.sampleRights = rightsByIds[dummySampleId]; 
 							mainController.serverFacade.listDataSetsForSample(_this._sampleFormModel.sample, true, function(datasets) {
 								if(!datasets.error) {
 									_this._sampleFormModel.datasets = datasets.result;

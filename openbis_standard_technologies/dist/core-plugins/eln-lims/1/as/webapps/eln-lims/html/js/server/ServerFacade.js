@@ -477,14 +477,21 @@ function ServerFacade(openbisServer) {
 	};
 
 	//
-	// Gets submission types
+	// Gets archiving info for specified data set codes
 	//
-	this.listSubmissionTypes = function(callbackFunction) {
+	this.getArchivingInfo = function(dataSets, callbackFunction) {
 		this.customELNApi({
-			"method" : "getSubmissionTypes",
-		}, callbackFunction, "rc-exports-api");
+			"method" : "getArchivingInfo",
+			"args" : dataSets.join(","),
+		}, function(error, result) {
+			if (error) {
+				Util.showError(error);
+			} else {
+				callbackFunction(result.data);
+			}
+		}, "archiving-api");
 	};
-	
+
 	//
 	// Metadata Related Functions
 	//
@@ -2670,6 +2677,28 @@ function ServerFacade(openbisServer) {
 					callbackFunction(false);
 				});
 			});
+	}
+	
+	this.lockDataSet = function(dataSetPermId, lock, callbackFunction) {
+		require(["as/dto/dataset/id/DataSetPermId", "as/dto/dataset/lock/DataSetLockOptions", "as/dto/dataset/unlock/DataSetUnlockOptions"], 
+				function(DataSetPermId, DataSetLockOptions, DataSetUnlockOptions) {
+			var ids = [new DataSetPermId(dataSetPermId)];
+			if (lock) {
+				mainController.openbisV3.lockDataSets(ids, new DataSetLockOptions()).done(function(result) {
+					callbackFunction(true);
+				}).fail(function(result) {
+					Util.showFailedServerCallError(result);
+					callbackFunction(false);
+				});
+			} else {
+				mainController.openbisV3.unlockDataSets(ids, new DataSetUnlockOptions()).done(function(result) {
+					callbackFunction(true);
+				}).fail(function(result) {
+					Util.showFailedServerCallError(result);
+					callbackFunction(false);
+				});
+			}
+		});
 	}
 
 	// errorHandler: optional. if present, it is called instead of showing the error and the callbackFunction is not called

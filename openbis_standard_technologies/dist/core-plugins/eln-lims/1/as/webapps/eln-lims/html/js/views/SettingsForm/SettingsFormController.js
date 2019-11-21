@@ -31,10 +31,15 @@ function SettingsFormController(mainController, settingsSample, mode) {
             } else {
                 profileToEdit = runningProfile;
             }
-
-            _this._settingsManager.applySettingsToProfile(profileToEdit, runningProfile);
-            _this._settingsFormView.repaint(views, runningProfile);
-            _this._settingsFormModel.customWidgetSettings = customWidgetSettings;
+            require(["as/dto/sample/id/SampleIdentifier"], function(SampleIdentifier) {
+				var sampId = new SampleIdentifier(settingsSample.identifier);
+				mainController.openbisV3.getRights([ sampId], null).done(function(rightsByIds) {
+					_this._settingsFormModel.sampleRights = rightsByIds[sampId];
+					_this._settingsFormModel.customWidgetSettings = customWidgetSettings;
+					_this._settingsManager.applySettingsToProfile(profileToEdit, runningProfile);
+					_this._settingsFormView.repaint(views, runningProfile);
+				});
+			});
 	    });
 	}
 

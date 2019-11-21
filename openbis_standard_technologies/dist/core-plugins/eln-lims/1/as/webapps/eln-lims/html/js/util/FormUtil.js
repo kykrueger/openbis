@@ -961,7 +961,7 @@ var FormUtil = new function() {
 		return $dropDownMenu;
 	}
 	
-	this.getFormLink = function(displayName, entityKind, permIdOrIdentifier, paginationInfo) {
+	this.getFormLink = function(displayName, entityKind, permIdOrIdentifier, paginationInfo, id) {
 		var view = null;
 		switch(entityKind) {
 			case "Space":
@@ -999,7 +999,7 @@ var FormUtil = new function() {
 			mainController.changeView(view, arg, true);
 		}
 		displayName = String(displayName).replace(/<(?:.|\n)*?>/gm, ''); //Clean any HTML tags
-		var link = $("<a>", { "href" : href, "class" : "browser-compatible-javascript-link" }).text(displayName);
+		var link = $("<a>", { "href" : href, "class" : "browser-compatible-javascript-link", "id" : id }).text(displayName);
 		link.click(click);
 		return link;
 	}
