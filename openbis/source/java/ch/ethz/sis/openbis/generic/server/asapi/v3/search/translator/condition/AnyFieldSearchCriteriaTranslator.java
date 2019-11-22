@@ -54,8 +54,6 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLL
 public class AnyFieldSearchCriteriaTranslator implements IConditionTranslator<AnyFieldSearchCriteria>
 {
 
-    private final AtomicBoolean first = new AtomicBoolean();
-
     @Override
     public Map<String, JoinInformation> getJoinInformationMap(final AnyFieldSearchCriteria criterion, final TableMapper tableMapper,
             final IAliasFactory aliasFactory)
@@ -75,10 +73,10 @@ public class AnyFieldSearchCriteriaTranslator implements IConditionTranslator<An
                 final String alias = CriteriaTranslator.MAIN_TABLE_ALIAS;
                 final AbstractStringValue value = criterion.getFieldValue();
                 final Map<String, PSQLTypes> fieldToSQLTypeMap = tableMapper.getFieldToSQLTypeMap();
-                final String stringValue = value.getValue();
+                final String stringValue = stripQuotationMarks(value.getValue().trim());
                 final Set<PSQLTypes> compatiblePSQLTypesForValue = findCompatibleSqlTypesForValue(stringValue);
 
-                first.set(true);
+                final AtomicBoolean first = new AtomicBoolean(true);
                 fieldToSQLTypeMap.forEach((fieldName, fieldSQLType) ->
                 {
                     final boolean equalsToComparison = (value.getClass() == StringEqualToValue.class);
@@ -127,6 +125,17 @@ public class AnyFieldSearchCriteriaTranslator implements IConditionTranslator<An
             {
                 throw new IllegalArgumentException("Field type " + criterion.getFieldType() + " is not supported");
             }
+        }
+    }
+
+    private String stripQuotationMarks(final String value)
+    {
+        if (value.startsWith("\"") && value.endsWith("\""))
+        {
+            return value.substring(1, value.length() - 1);
+        } else
+        {
+            return value;
         }
     }
 

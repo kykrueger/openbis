@@ -93,15 +93,14 @@ public class TranslatorUtils
     {
         if (valueClass == StringEqualToValue.class)
         {
-            final String valueString = finalValue;
-            if (!containsWildcards(valueString))
+            if (!containsWildcards(finalValue))
             {
                 sqlBuilder.append(EQ).append(SP).append(QU);
-                args.add(valueString);
+                args.add(finalValue);
             } else
             {
                 sqlBuilder.append(LIKE).append(SP).append(QU);
-                args.add(toPSQLWildcards(valueString));
+                args.add(toPSQLWildcards(finalValue));
             }
         } else if (valueClass == StringStartsWithValue.class)
         {
