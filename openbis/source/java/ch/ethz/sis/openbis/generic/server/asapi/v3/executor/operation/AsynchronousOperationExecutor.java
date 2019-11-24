@@ -122,7 +122,7 @@ public class AsynchronousOperationExecutor implements IAsynchronousOperationExec
                             // will be thrown from it.
 
                             executionStore.executionRunning(context, executionId);
-                            List<IOperationResult> results = poolExecutor.execute(context, executionId, operations);
+                            List<IOperationResult> results = poolExecutor.execute(context, executionId, operations, options);
                             executionStore.executionFinished(context, executionId, results);
                             return null;
 
