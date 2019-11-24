@@ -52,7 +52,8 @@ class ObjectTypeParametersType extends React.PureComponent {
           <TextField
             label='Code'
             name='code'
-            value={type.code}
+            disabled={type.exists}
+            value={type.code || ''}
             onChange={this.handleChange}
           />
         </div>
@@ -60,7 +61,7 @@ class ObjectTypeParametersType extends React.PureComponent {
           <TextField
             label='Description'
             name='description'
-            value={type.description}
+            value={type.description || ''}
             onChange={this.handleChange}
           />
         </div>
@@ -77,7 +78,7 @@ class ObjectTypeParametersType extends React.PureComponent {
             <TextField
               label='Generated code prefix'
               name='generatedCodePrefix'
-              value={type.generatedCodePrefix}
+              value={type.generatedCodePrefix || ''}
               onChange={this.handleChange}
             />
           </div>

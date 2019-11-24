@@ -39,6 +39,10 @@ export class Facade {
     return this.v3.logout()
   }
 
+  getPropertyTypes(ids, fo) {
+    return this.v3.getPropertyTypes(ids, fo)
+  }
+
   getPersons(ids, fo) {
     return this.v3.getPersons(ids, fo)
   }
@@ -75,6 +79,10 @@ export class Facade {
     return this.v3.getSampleTypes(ids, fo)
   }
 
+  searchSamples(criteria, fo) {
+    return this.v3.searchSamples(criteria, fo)
+  }
+
   searchSampleTypes(criteria, fo) {
     return this.v3.searchSampleTypes(criteria, fo)
   }
@@ -99,6 +107,10 @@ export class Facade {
     let id = new dto.CustomASServiceCode('openbis-ng-ui-service')
     let options = new dto.CustomASServiceExecutionOptions()
     return this.v3.executeCustomASService(id, options)
+  }
+
+  executeOperations(operations, options) {
+    return this.v3.executeOperations(operations, options)
   }
 }
 

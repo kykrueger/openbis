@@ -38,6 +38,7 @@ class ObjectTypeParameters extends React.PureComponent {
           onSelectionChange={onSelectionChange}
         />
         <ObjectTypeParametersProperty
+          type={type}
           properties={properties}
           selection={selection}
           onChange={onChange}

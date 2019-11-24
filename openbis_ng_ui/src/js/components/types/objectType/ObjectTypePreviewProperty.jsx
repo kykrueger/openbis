@@ -255,6 +255,10 @@ class ObjectTypePreviewProperty extends React.PureComponent {
         value: term.code,
         label: term.label
       }))
+      options.unshift({
+        value: '',
+        label: ''
+      })
     }
 
     return (
@@ -278,6 +282,10 @@ class ObjectTypePreviewProperty extends React.PureComponent {
       options = materials.map(material => ({
         value: material.code
       }))
+      options.unshift({
+        value: '',
+        label: ''
+      })
     }
 
     return (
@@ -372,7 +380,7 @@ class ObjectTypePreviewProperty extends React.PureComponent {
       }
     })
 
-    if (!property.visible) {
+    if (!property.showInEditView) {
       styles = {
         ...styles,
         container: classes.hidden

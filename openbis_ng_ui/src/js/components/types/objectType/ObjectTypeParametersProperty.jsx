@@ -77,6 +77,20 @@ class ObjectTypeParametersProperty extends React.PureComponent {
     let fo = new dto.VocabularyFetchOptions()
 
     return facade.searchVocabularies(criteria, fo).then(result => {
+      const property = this.getProperty(this.props)
+
+      if (!property.vocabulary && result.objects.length > 0) {
+        let vocabulary = result.objects[0]
+
+        const params = {
+          id: property.id,
+          field: 'vocabulary',
+          value: vocabulary.code
+        }
+
+        this.props.onChange('property', params)
+      }
+
       this.setState(() => ({
         vocabularies: result.objects
       }))
@@ -88,6 +102,20 @@ class ObjectTypeParametersProperty extends React.PureComponent {
     let fo = new dto.MaterialTypeFetchOptions()
 
     return facade.searchMaterialTypes(criteria, fo).then(result => {
+      const property = this.getProperty(this.props)
+
+      if (!property.materialType && result.objects.length > 0) {
+        let materialType = result.objects[0]
+
+        const params = {
+          id: property.id,
+          field: 'materialType',
+          value: materialType.code
+        }
+
+        this.props.onChange('property', params)
+      }
+
       this.setState(() => ({
         materialTypes: result.objects
       }))
@@ -147,10 +175,10 @@ class ObjectTypeParametersProperty extends React.PureComponent {
         </Typography>
         {this.renderCode(property)}
         {this.renderDataType(property)}
-        {this.renderLabel(property)}
-        {this.renderDescription(property)}
         {this.renderVocabulary(property)}
         {this.renderMaterial(property)}
+        {this.renderLabel(property)}
+        {this.renderDescription(property)}
         {this.renderMandatory(property)}
         {this.renderVisible(property)}
       </div>
@@ -174,13 +202,14 @@ class ObjectTypeParametersProperty extends React.PureComponent {
   }
 
   renderCode(property) {
-    const { classes } = this.props
+    const { type, classes } = this.props
     return (
       <div className={classes.field}>
         <TextField
           reference={this.references.code}
           label='Code'
           name='code'
+          disabled={property.exists && type.entitiesExist}
           value={property.code}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
@@ -212,13 +241,14 @@ class ObjectTypeParametersProperty extends React.PureComponent {
         value: dataType
       }
     })
-    const { classes } = this.props
+    const { type, classes } = this.props
     return (
       <div className={classes.field}>
         <SelectField
           reference={this.references.dataType}
           label='Data Type'
           name='dataType'
+          disabled={property.exists && type.entitiesExist}
           value={property.dataType}
           options={options}
           onChange={this.handleChange}
@@ -238,12 +268,13 @@ class ObjectTypeParametersProperty extends React.PureComponent {
           value: vocabulary.code
         }
       })
-      const { classes } = this.props
+      const { type, classes } = this.props
       return (
         <div className={classes.field}>
           <SelectField
             label='Vocabulary'
             name='vocabulary'
+            disabled={property.exists && type.entitiesExist}
             value={property.vocabulary ? property.vocabulary : ''}
             options={options}
             onChange={this.handleChange}
@@ -266,12 +297,13 @@ class ObjectTypeParametersProperty extends React.PureComponent {
           value: materialType.code
         }
       })
-      const { classes } = this.props
+      const { type, classes } = this.props
       return (
         <div className={classes.field}>
           <SelectField
             label='Material Type'
             name='materialType'
+            disabled={property.exists && type.entitiesExist}
             value={property.materialType ? property.materialType : ''}
             options={options}
             onChange={this.handleChange}
@@ -306,13 +338,17 @@ class ObjectTypeParametersProperty extends React.PureComponent {
       <div className={classes.field}>
         <CheckboxField
           label='Visible'
-          name='visible'
-          value={property.visible}
+          name='showInEditView'
+          value={property.showInEditView}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
         />
       </div>
     )
+  }
+
+  getType() {
+    return this.props.type
   }
 
   getProperty(props) {
