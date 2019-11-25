@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.EntityWithPropertiesSortOptions;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
@@ -76,17 +77,18 @@ public class OrderTranslator
 
     private static String buildOrderBy(final TranslationVo vo)
     {
-        final StringBuilder sqlBuilder = new StringBuilder(ORDER_BY + SP);
-        final AtomicBoolean first = new AtomicBoolean(true);
+        final StringBuilder orderByBuilder = vo.getSortOptions().getSortings().stream().collect(
+                StringBuilder::new,
+                (stringBuilder, sorting) ->
+                {
+                    stringBuilder.append(COMMA + SP);
+                    appendSortingColumn(vo, stringBuilder, sorting.getField());
+                    stringBuilder.append(SP).append(sorting.getOrder());
+                },
+                StringBuilder::append
+        );
 
-        vo.getSortOptions().getSortings().forEach((sorting) ->
-        {
-            TranslatorUtils.appendIfFirst(sqlBuilder, COMMA + SP, first);
-            appendSortingColumn(vo, sqlBuilder, sorting.getField());
-            sqlBuilder.append(SP).append(sorting.getOrder());
-        });
-
-        return sqlBuilder.toString();
+        return ORDER_BY + orderByBuilder.substring(COMMA.length());
     }
 
     private static String buildSelect(final TranslationVo vo)

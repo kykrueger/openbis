@@ -368,7 +368,7 @@ public class TranslatorUtils
      * @param first atomic boolean, if {@code true} it will be set to false with no change to sb, otherwise the {@code value} will be appended to
      * {@code sb}.
      */
-    public static void appendIfFirst(final StringBuilder sb, final String value, final AtomicBoolean first)
+    public static void appendIfNotFirst(final StringBuilder sb, final String value, final AtomicBoolean first)
     {
         if (first.get())
         {

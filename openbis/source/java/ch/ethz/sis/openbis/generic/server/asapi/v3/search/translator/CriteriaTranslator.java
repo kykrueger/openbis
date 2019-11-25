@@ -257,7 +257,7 @@ public class CriteriaTranslator
 
             vo.getCriteria().forEach((criterion) ->
             {
-                TranslatorUtils.appendIfFirst(sqlBuilder, SP + logicalOperator + SP, first);
+                TranslatorUtils.appendIfNotFirst(sqlBuilder, SP + logicalOperator + SP, first);
 
                 final ISearchManager<ISearchCriteria, ?, ?> subqueryManager = vo.getCriteriaToManagerMap().get(criterion.getClass());
                 final TableMapper tableMapper = vo.getTableMapper();
