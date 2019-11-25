@@ -79,8 +79,7 @@ var BarcodeUtil = new function() {
             { label: '100', value: 100 }
         ]);
 
-        var $width = FormUtil.getDropdown([ { label: 'Default Width', value: 'default' },
-                                            { label: '10 mm', value: 10 },
+        var $width = FormUtil.getDropdown([ { label: '10 mm', value: 10 },
                                             { label: '15 mm', value: 15 },
                                             { label: '20 mm', value: 20 },
                                             { label: '25 mm', value: 25 },
@@ -91,8 +90,7 @@ var BarcodeUtil = new function() {
                                             { label: '50 mm', value: 50, selected: true }
         ]);
 
-        var $height = FormUtil.getDropdown([ { label: 'Default Height', value: 'default' },
-                                             { label: ' 5 mm', value:  5 },
+        var $height = FormUtil.getDropdown([ { label: ' 5 mm', value:  5 },
                                              { label: '10 mm', value: 10 },
                                              { label: '15 mm', value: 15, selected: true },
                                              { label: '20 mm', value: 20 },
@@ -105,8 +103,8 @@ var BarcodeUtil = new function() {
         ]);
 
         var $layout = FormUtil.getDropdown([
-                    { label: 'Split Layout',        value: 'split'},
-                    { label: 'Continuous Layout',   value: 'continuous',         selected: true  }
+                    { label: 'Split Layout',        value: 'split',         selected: true},
+                    { label: 'Continuous Layout',   value: 'continuous' }
                 ]);
 
         var $layoutForPrinter = null;
@@ -132,17 +130,9 @@ var BarcodeUtil = new function() {
         var _this = this;
         $generateBtn.click(function() {
             var width  = $width.val();
-            if(width === 'default') {
-                width = null;
-            } else {
-                width = parseInt(width);
-            }
+            width = parseInt(width);
             var height = $height.val();
-            if(height === 'default') {
-                height = null;
-            } else {
-                height = parseInt(height);
-            }
+            height = parseInt(height);
             var layout = $layout.val();
 
             views.content.empty();
@@ -164,10 +154,10 @@ var BarcodeUtil = new function() {
                 }
 
                 for(var idx = 0; idx < value; idx++) {
-                    // OLD
+                    // HTML
                     _this.addBarcode($layoutForPrinter, idx, $barcodeTypesDropdown.val(), newPermIds[idx], idx === 0, width, height, layout);
 
-                    // NEW
+                    // PDF
                     var imgData = _this.generateBarcode($barcodeTypesDropdown.val(), newPermIds[idx], newPermIds[idx], null, width, height);
                     if(pdf !== null) {
                         if(layout === 'split') {
@@ -196,7 +186,7 @@ var BarcodeUtil = new function() {
         if(!isFirst) {
             var $br = null;
             if(layout && layout === 'split') {
-                $br = $('<br>', { style : 'page-break-after: always;'});
+                $br = $('<hr>', { style : 'page-break-after: always;'});
             } else {
                 $br = $('<br>');
             }
