@@ -241,59 +241,66 @@ public class CriteriaTranslator
 
     private static String buildWhere(final TranslationVo vo)
     {
-        if (isSearchAllCriteria(vo.getCriteria()))
-        {
-            return "";
-        }
-
-        final StringBuilder sqlBuilder = new StringBuilder().append(WHERE).append(SP);
-
-        if (vo.getCriteria().isEmpty()) {
-            sqlBuilder.append(TRUE);
+        if (isSearchAllCriteria(vo.getCriteria())) {
+            return WHERE + SP + TRUE;
         } else
         {
             final String logicalOperator = vo.getOperator().toString();
-            final AtomicBoolean first = new AtomicBoolean(true);
+            final String separator = SP + logicalOperator + SP;
 
-            vo.getCriteria().forEach((criterion) ->
-            {
-                TranslatorUtils.appendIfNotFirst(sqlBuilder, SP + logicalOperator + SP, first);
+            final StringBuilder resultSqlBuilder = vo.getCriteria().stream().collect(
+                    StringBuilder::new,
+                    (sqlBuilder, criterion) -> {
+                        sqlBuilder.append(separator);
+                        appendCriterionCondition(vo, sqlBuilder, criterion);
+                    },
+                    StringBuilder::append
+            );
 
-                final ISearchManager<ISearchCriteria, ?, ?> subqueryManager = vo.getCriteriaToManagerMap().get(criterion.getClass());
-                final TableMapper tableMapper = vo.getTableMapper();
-                if (subqueryManager != null)
-                {
-                    final String column = (!(criterion instanceof TagSearchCriteria))
-                            ? CRITERIA_TO_SUBQUERY_COLUMN_MAP.get(criterion.getClass())
-                            : ID_COLUMN;
-                    if (tableMapper != null && column != null)
-                    {
-                        final Set<Long> ids = subqueryManager.searchForIDs(vo.getUserId(), criterion, null);
-                        appendInStatement(sqlBuilder, criterion, column, tableMapper);
-                        vo.getArgs().add(ids.toArray(new Long[0]));
-                    } else
-                    {
-                        throw new NullPointerException("tableMapper = " + tableMapper + " column = " + column + ", criterion.getClass() = " +
-                                criterion.getClass());
-                    }
-                } else
-                {
-                    @SuppressWarnings("unchecked")
-                    final IConditionTranslator<ISearchCriteria> conditionTranslator =
-                            (IConditionTranslator<ISearchCriteria>) CRITERIA_TO_CONDITION_TRANSLATOR_MAP.get(criterion.getClass());
-                    if (conditionTranslator != null)
-                    {
-                        conditionTranslator.translate(criterion, tableMapper, vo.getArgs(), sqlBuilder, vo.getAliases(),
-                                vo.getDataTypeByPropertyName());
-                    } else
-                    {
-                        throw new IllegalArgumentException("Unsupported criterion type: " + criterion.getClass().getSimpleName());
-                    }
-                }
-            });
+            return WHERE + SP + resultSqlBuilder.substring(separator.length());
         }
+    }
 
-        return sqlBuilder.toString();
+    /**
+     * Appends condition translated from a criterion.
+     *
+     * @param vo value object with miscellaneous information.
+     * @param sqlBuilder string builder to append the condition to.
+     * @param criterion criterion to be translated.
+     */
+    private static void appendCriterionCondition(final TranslationVo vo, final StringBuilder sqlBuilder, final ISearchCriteria criterion)
+    {
+        final ISearchManager<ISearchCriteria, ?, ?> subqueryManager = vo.getCriteriaToManagerMap().get(criterion.getClass());
+        final TableMapper tableMapper = vo.getTableMapper();
+        if (subqueryManager != null)
+        {
+            final String column = (!(criterion instanceof TagSearchCriteria))
+                    ? CRITERIA_TO_SUBQUERY_COLUMN_MAP.get(criterion.getClass())
+                    : ID_COLUMN;
+            if (tableMapper != null && column != null)
+            {
+                final Set<Long> ids = subqueryManager.searchForIDs(vo.getUserId(), criterion, null);
+                appendInStatement(sqlBuilder, criterion, column, tableMapper);
+                vo.getArgs().add(ids.toArray(new Long[0]));
+            } else
+            {
+                throw new NullPointerException("tableMapper = " + tableMapper + " column = " + column + ", criterion.getClass() = " +
+                        criterion.getClass());
+            }
+        } else
+        {
+            @SuppressWarnings("unchecked")
+            final IConditionTranslator<ISearchCriteria> conditionTranslator =
+                    (IConditionTranslator<ISearchCriteria>) CRITERIA_TO_CONDITION_TRANSLATOR_MAP.get(criterion.getClass());
+            if (conditionTranslator != null)
+            {
+                conditionTranslator.translate(criterion, tableMapper, vo.getArgs(), sqlBuilder, vo.getAliases(),
+                        vo.getDataTypeByPropertyName());
+            } else
+            {
+                throw new IllegalArgumentException("Unsupported criterion type: " + criterion.getClass().getSimpleName());
+            }
+        }
     }
 
     private static void appendInStatement(final StringBuilder sqlBuilder, final ISearchCriteria criterion, final String column,
@@ -331,16 +338,25 @@ public class CriteriaTranslator
      */
     private static boolean isSearchAllCriteria(final Collection<ISearchCriteria> criteria)
     {
-        if (criteria.size() == 1)
+        switch (criteria.size())
         {
-            final ISearchCriteria criterion = criteria.iterator().next();
-            if (criterion instanceof AbstractEntitySearchCriteria<?> &&
-                    ((AbstractEntitySearchCriteria<?>) criterion).getCriteria().isEmpty())
+            case 0:
             {
                 return true;
             }
+
+            case 1:
+            {
+                final ISearchCriteria criterion = criteria.iterator().next();
+                return criterion instanceof AbstractEntitySearchCriteria<?> &&
+                        ((AbstractEntitySearchCriteria<?>) criterion).getCriteria().isEmpty();
+            }
+
+            default:
+            {
+                return false;
+            }
         }
-        return false;
     }
 
 }
