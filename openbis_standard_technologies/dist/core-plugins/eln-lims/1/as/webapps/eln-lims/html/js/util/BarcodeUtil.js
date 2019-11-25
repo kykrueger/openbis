@@ -79,7 +79,7 @@ var BarcodeUtil = new function() {
             { label: '100', value: 100 }
         ]);
 
-        var $width = FormUtil.getDropdown([ { label: 'Default Width', value: 'default', selected: true },
+        var $width = FormUtil.getDropdown([ { label: 'Default Width', value: 'default' },
                                             { label: '10 mm', value: 10 },
                                             { label: '15 mm', value: 15 },
                                             { label: '20 mm', value: 20 },
@@ -88,13 +88,13 @@ var BarcodeUtil = new function() {
                                             { label: '35 mm', value: 35 },
                                             { label: '40 mm', value: 40 },
                                             { label: '45 mm', value: 45 },
-                                            { label: '50 mm', value: 50 }
+                                            { label: '50 mm', value: 50, selected: true }
         ]);
 
-        var $height = FormUtil.getDropdown([ { label: 'Default Height', value: 'default', selected: true },
+        var $height = FormUtil.getDropdown([ { label: 'Default Height', value: 'default' },
                                              { label: ' 5 mm', value:  5 },
                                              { label: '10 mm', value: 10 },
-                                             { label: '15 mm', value: 15 },
+                                             { label: '15 mm', value: 15, selected: true },
                                              { label: '20 mm', value: 20 },
                                              { label: '25 mm', value: 25 },
                                              { label: '30 mm', value: 30 },
@@ -105,8 +105,8 @@ var BarcodeUtil = new function() {
         ]);
 
         var $layout = FormUtil.getDropdown([
-                    { label: 'Split Layout',        value: 'split',         selected: true },
-                    { label: 'Continuous Layout',   value: 'continuous' }
+                    { label: 'Split Layout',        value: 'split'},
+                    { label: 'Continuous Layout',   value: 'continuous',         selected: true  }
                 ]);
 
         var $layoutForPrinter = null;
@@ -134,10 +134,14 @@ var BarcodeUtil = new function() {
             var width  = $width.val();
             if(width === 'default') {
                 width = null;
+            } else {
+                width = parseInt(width);
             }
             var height = $height.val();
             if(height === 'default') {
                 height = null;
+            } else {
+                height = parseInt(height);
             }
             var layout = $layout.val();
 
@@ -150,12 +154,12 @@ var BarcodeUtil = new function() {
                 var format = null;
                 if(width && height) {
                     format = {
-                     orientation: 'l',
-                     unit: 'mm',
-                     format: [width, height],
-                     putOnlyUsedFonts:true
+                        orientation: ((layout === 'split')?'l':'p'),
+                        unit: 'mm',
+                        format: [width, height * ((layout === 'split')?1:value) + ((layout === 'split')?0:2*value)],
+                        putOnlyUsedFonts:true
                     };
-
+                    console.log(format);
                     pdf = new jsPDF(format);
                 }
 
@@ -165,17 +169,16 @@ var BarcodeUtil = new function() {
 
                     // NEW
                     var imgData = _this.generateBarcode($barcodeTypesDropdown.val(), newPermIds[idx], newPermIds[idx], null, width, height);
-                    var imagePNG = $('<img>', { src : imgData });
-                    if(width && height) {
-                        imagePNG.css('width', width + 'mm');
-                        imagePNG.css('height', height + 'mm');
-                    }
-
                     if(pdf !== null) {
-                        if(idx > 0) {
-                            pdf.addPage(format.format, 'l');
+                        if(layout === 'split') {
+                            if(idx > 0) {
+                                pdf.addPage(format.format, 'l');
+                            }
+                            pdf.addImage(imgData, 'png', 0, 0, width, height);
+                        } else {
+                            console.log("height: " + (height * idx + idx));
+                            pdf.addImage(imgData, 'png', 0, (height * idx + 2*idx), width, height);
                         }
-                        pdf.addImage(imgData, 'png', 0, 0, width, height);
                     }
                 }
             });
