@@ -47,6 +47,7 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLL
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.EQ;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.FALSE;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.NL;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.OR;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.PERIOD;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.QU;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SP;
@@ -72,41 +73,41 @@ public class AnyFieldSearchCriteriaTranslator implements IConditionTranslator<An
             {
                 final String alias = CriteriaTranslator.MAIN_TABLE_ALIAS;
                 final AbstractStringValue value = criterion.getFieldValue();
-                final Map<String, PSQLTypes> fieldToSQLTypeMap = tableMapper.getFieldToSQLTypeMap();
                 final String stringValue = stripQuotationMarks(value.getValue().trim());
                 final Set<PSQLTypes> compatiblePSQLTypesForValue = findCompatibleSqlTypesForValue(stringValue);
+                final boolean equalsToComparison = (value.getClass() == StringEqualToValue.class);
+                final String separator = SP + OR + SP;
+                final int separatorLength = separator.length();
 
-                final AtomicBoolean first = new AtomicBoolean(true);
-                fieldToSQLTypeMap.forEach((fieldName, fieldSQLType) ->
+                final StringBuilder resultSqlBuilder = tableMapper.getFieldToSQLTypeMap().entrySet().stream().collect(
+                        StringBuilder::new,
+                        (stringBuilder, fieldToSQLTypesEntry) ->
+                        {
+                            final String fieldName = fieldToSQLTypesEntry.getKey();
+                            final PSQLTypes fieldSQLType = fieldToSQLTypesEntry.getValue();
+                            final boolean includeColumn = compatiblePSQLTypesForValue.contains(fieldSQLType);
+
+                            if (equalsToComparison)
+                            {
+                                if (includeColumn)
+                                {
+                                    stringBuilder.append(separator).append(alias).append(PERIOD).append(fieldName).append(EQ).append(QU).
+                                            append(DOUBLE_COLON).append(fieldSQLType.toString());
+                                    args.add(stringValue);
+                                }
+                            } else
+                            {
+                                stringBuilder.append(separator).append(alias).append(PERIOD).append(fieldName).append(DOUBLE_COLON).append(VARCHAR);
+                                TranslatorUtils.appendStringComparatorOp(value, stringBuilder, args);
+                            }
+                        },
+                        StringBuilder::append
+                );
+
+                if (resultSqlBuilder.length() > separatorLength)
                 {
-                    final boolean equalsToComparison = (value.getClass() == StringEqualToValue.class);
-                    final boolean includeColumn = compatiblePSQLTypesForValue.contains(fieldSQLType);
-
-                    if (!equalsToComparison || includeColumn)
-                    {
-                        if (first.get())
-                        {
-                            first.set(false);
-                        } else
-                        {
-                            sqlBuilder.append(SP).append(SQLLexemes.OR).append(SP);
-                        }
-                    }
-
-                    if (equalsToComparison)
-                    {
-                        if (includeColumn)
-                        {
-                            sqlBuilder.append(alias).append(PERIOD).append(fieldName).append(EQ).append(QU).append(DOUBLE_COLON).
-                                    append(fieldSQLType.toString());
-                            args.add(stringValue);
-                        }
-                    } else
-                    {
-                        sqlBuilder.append(alias).append(PERIOD).append(fieldName).append(DOUBLE_COLON).append(VARCHAR);
-                        TranslatorUtils.appendStringComparatorOp(value, sqlBuilder, args);
-                    }
-                });
+                    sqlBuilder.append(resultSqlBuilder.substring(separatorLength));
+                }
 
                 if (args.isEmpty())
                 {
@@ -128,7 +129,7 @@ public class AnyFieldSearchCriteriaTranslator implements IConditionTranslator<An
         }
     }
 
-    private String stripQuotationMarks(final String value)
+    private static String stripQuotationMarks(final String value)
     {
         if (value.startsWith("\"") && value.endsWith("\""))
         {
@@ -139,7 +140,7 @@ public class AnyFieldSearchCriteriaTranslator implements IConditionTranslator<An
         }
     }
 
-    private Set<PSQLTypes> findCompatibleSqlTypesForValue(final String value)
+    private static Set<PSQLTypes> findCompatibleSqlTypesForValue(final String value)
     {
         final SimplePropertyValidator validator = new SimplePropertyValidator();
         try
