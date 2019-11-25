@@ -402,7 +402,11 @@ var BarcodeUtil = new function() {
 
         Util.blockUI($window, css);
 
-        $canvas.attr('src', this.generateBarcode($barcodeTypesDropdown.val(), barcode, barcode));
+        // The first call is to load the library if is not loaded yet
+        var _this = this;
+        this.generateBarcode($barcodeTypesDropdown.val(), barcode, barcode, function() {
+            $canvas.attr('src', _this.generateBarcode($barcodeTypesDropdown.val(), barcode, barcode));
+        });
     }
 
     this.supportedBarcodes = function() {
