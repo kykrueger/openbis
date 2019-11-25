@@ -111,26 +111,12 @@ var BarcodeUtil = new function() {
 
         var $layoutForPrinter = null;
 
+        var pdf = null;
 		var $printButton = $("<a>", { 'class' : 'btn btn-default', style : 'margin-bottom:13px;' } ).append($('<span>', { 'class' : 'glyphicon glyphicon-print' }));
         $printButton.click(function() {
-            var newWindow = window.open(undefined,"print");
-
-            var width = $width.val();
-            if(width === 'default') {
-                width = null;
+            if(pdf !== null) {
+                pdf.save("barcodes.pdf");
             }
-
-            var height = $height.val();
-            if(height === 'default') {
-                height = null;
-            }
-
-            if(width && height) {
-                $(newWindow.document.head).append('<style>body {  background: rgb(204,204,204); }page {  background: white;  display: block;  margin: 0mm 0mm 0mm 0mm; } page[size="CUSTOM"] {   height: ' + height + 'mm; width: ' + width + 'mm; }@media print {  body, page {    margin: 0;    box-shadow: 0;  }}</style>')
-            }
-            $(newWindow.document.body).css("margin", "0mm 0mm 0mm 0mm");
-            $(newWindow.document.body).html($layoutForPrinter);
-
         });
 
         $toolbar.append($generateBtn)
@@ -161,8 +147,36 @@ var BarcodeUtil = new function() {
 
             var value = parseInt($numberDropdown.val());
             mainController.serverFacade.createPermIdStrings(value, function(newPermIds) {
+                var format = null;
+                if(width && height) {
+                    format = {
+                     orientation: 'l',
+                     unit: 'mm',
+                     format: [width, height],
+                     putOnlyUsedFonts:true
+                    };
+
+                    pdf = new jsPDF(format);
+                }
+
                 for(var idx = 0; idx < value; idx++) {
+                    // OLD
                     _this.addBarcode($layoutForPrinter, idx, $barcodeTypesDropdown.val(), newPermIds[idx], idx === 0, width, height, layout);
+
+                    // NEW
+                    var imgData = _this.generateBarcode($barcodeTypesDropdown.val(), newPermIds[idx], newPermIds[idx], null, width, height);
+                    var imagePNG = $('<img>', { src : imgData });
+                    if(width && height) {
+                        imagePNG.css('width', width + 'mm');
+                        imagePNG.css('height', height + 'mm');
+                    }
+
+                    if(pdf !== null) {
+                        if(idx > 0) {
+                            pdf.addPage(format.format, 'l');
+                        }
+                        pdf.addImage(imgData, 'png', 0, 0, width, height);
+                    }
                 }
             });
         });
