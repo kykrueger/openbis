@@ -20,7 +20,6 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractStringValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AnyFieldSearchCriteria;
@@ -28,7 +27,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringEqualToValue
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
@@ -73,7 +71,7 @@ public class AnyFieldSearchCriteriaTranslator implements IConditionTranslator<An
             {
                 final String alias = CriteriaTranslator.MAIN_TABLE_ALIAS;
                 final AbstractStringValue value = criterion.getFieldValue();
-                final String stringValue = stripQuotationMarks(value.getValue().trim());
+                final String stringValue = TranslatorUtils.stripQuotationMarks(value.getValue().trim());
                 final Set<PSQLTypes> compatiblePSQLTypesForValue = findCompatibleSqlTypesForValue(stringValue);
                 final boolean equalsToComparison = (value.getClass() == StringEqualToValue.class);
                 final String separator = SP + OR + SP;
@@ -126,17 +124,6 @@ public class AnyFieldSearchCriteriaTranslator implements IConditionTranslator<An
             {
                 throw new IllegalArgumentException("Field type " + criterion.getFieldType() + " is not supported");
             }
-        }
-    }
-
-    private static String stripQuotationMarks(final String value)
-    {
-        if (value.startsWith("\"") && value.endsWith("\""))
-        {
-            return value.substring(1, value.length() - 1);
-        } else
-        {
-            return value;
         }
     }
 

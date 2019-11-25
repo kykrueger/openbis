@@ -423,4 +423,15 @@ public class TranslatorUtils
         return value;
     }
 
+    public static String stripQuotationMarks(final String value)
+    {
+        if (value.startsWith("\"") && value.endsWith("\""))
+        {
+            return value.substring(1, value.length() - 1);
+        } else
+        {
+            return value;
+        }
+    }
+
 }
