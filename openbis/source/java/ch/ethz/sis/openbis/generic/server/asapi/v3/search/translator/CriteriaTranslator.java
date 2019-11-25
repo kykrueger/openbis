@@ -22,7 +22,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractEntitySearchCriteria;
@@ -64,6 +63,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.NoSampleSearchCrit
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleContainerSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleTypeSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.search.SemanticAnnotationSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.search.NoSpaceSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.search.SpaceSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.search.TagSearchCriteria;
@@ -177,6 +177,7 @@ public class CriteriaTranslator
         CRITERIA_TO_SUBQUERY_COLUMN_MAP.put(ProjectSearchCriteria.class, ColumnNames.PROJECT_COLUMN);
         CRITERIA_TO_SUBQUERY_COLUMN_MAP.put(SpaceSearchCriteria.class, ColumnNames.SPACE_COLUMN);
         CRITERIA_TO_SUBQUERY_COLUMN_MAP.put(TagSearchCriteria.class, METAPROJECT_ID_COLUMN);
+        CRITERIA_TO_SUBQUERY_COLUMN_MAP.put(SemanticAnnotationSearchCriteria.class, ID_COLUMN);
     }
 
     public static SelectQuery translate(final TranslationVo vo)
@@ -274,9 +275,9 @@ public class CriteriaTranslator
         final TableMapper tableMapper = vo.getTableMapper();
         if (subqueryManager != null)
         {
-            final String column = (!(criterion instanceof TagSearchCriteria))
-                    ? CRITERIA_TO_SUBQUERY_COLUMN_MAP.get(criterion.getClass())
-                    : ID_COLUMN;
+            final String column = ((criterion instanceof TagSearchCriteria) || (criterion instanceof SemanticAnnotationSearchCriteria))
+                    ? ID_COLUMN
+                    : CRITERIA_TO_SUBQUERY_COLUMN_MAP.get(criterion.getClass());
             if (tableMapper != null && column != null)
             {
                 final Set<Long> ids = subqueryManager.searchForIDs(vo.getUserId(), criterion, null);

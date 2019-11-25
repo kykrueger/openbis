@@ -96,6 +96,7 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SAMPLE_PROP
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SAMPLE_RELATIONSHIPS_ALL_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SAMPLE_TYPES_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SAMPLE_TYPE_PROPERTY_TYPE_TABLE;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SEMANTIC_ANNOTATIONS_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SPACES_TABLE;
 
 /**
@@ -135,7 +136,9 @@ public enum TableMapper
 
     SPACE(SPACES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
 
-    TAG(METAPROJECTS_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+    TAG(METAPROJECTS_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
+
+    SEMANTIC_ANNOTATION(SEMANTIC_ANNOTATIONS_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
 
     static
     {

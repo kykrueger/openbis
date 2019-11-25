@@ -41,6 +41,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.search.ProjectSearchCrit
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleContainerSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleTypeSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.search.SemanticAnnotationSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.search.SpaceSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.search.TagSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
@@ -200,7 +201,8 @@ public class PostgresSearchDAO implements ISQLSearchDAO
         criteriaToManagerMap.put(DataSetSearchCriteria.class, applicationContext.getBean("data-set-search-manager", ISearchManager.class));
         criteriaToManagerMap.put(DataSetTypeSearchCriteria.class, applicationContext.getBean("data-set-type-search-manager", ISearchManager.class));
         criteriaToManagerMap.put(ExperimentSearchCriteria.class, applicationContext.getBean("experiment-search-manager", ISearchManager.class));
-        criteriaToManagerMap.put(ExperimentTypeSearchCriteria.class, applicationContext.getBean("experiment-type-search-manager", ISearchManager.class));
+        criteriaToManagerMap.put(ExperimentTypeSearchCriteria.class, applicationContext.getBean("experiment-type-search-manager",
+                ISearchManager.class));
         criteriaToManagerMap.put(SampleSearchCriteria.class, applicationContext.getBean("sample-search-manager", ISearchManager.class));
         criteriaToManagerMap.put(SampleTypeSearchCriteria.class, applicationContext.getBean("sample-type-search-manager", ISearchManager.class));
         criteriaToManagerMap.put(SampleContainerSearchCriteria.class, applicationContext.getBean("sample-search-manager", ISearchManager.class));
@@ -209,6 +211,8 @@ public class PostgresSearchDAO implements ISQLSearchDAO
         criteriaToManagerMap.put(ProjectSearchCriteria.class, applicationContext.getBean("project-search-manager", ISearchManager.class));
         criteriaToManagerMap.put(SpaceSearchCriteria.class, applicationContext.getBean("space-search-manager", ISearchManager.class));
         criteriaToManagerMap.put(TagSearchCriteria.class, applicationContext.getBean("tag-search-manager", ISearchManager.class));
+        criteriaToManagerMap.put(SemanticAnnotationSearchCriteria.class, applicationContext.getBean("semantic-annotation-search-manager",
+                ISearchManager.class));
     }
 
 }

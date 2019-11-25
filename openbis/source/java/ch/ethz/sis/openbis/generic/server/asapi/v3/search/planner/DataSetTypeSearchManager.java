@@ -59,15 +59,7 @@ public class DataSetTypeSearchManager extends AbstractSearchManager<DataSetTypeS
     @Override
     public Set<Long> searchForIDs(final Long userId, final DataSetTypeSearchCriteria criteria, final SortOptions<DataSetType> sortOptions)
     {
-        final Set<Long> mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId, TableMapper.DATA_SET_TYPE,
-                criteria.getCriteria(), criteria.getOperator());
-
-        // If we have results, we use them
-        // If we don't have results and criteria are not empty, there are no results.
-        final Set<Long> resultBeforeFiltering =
-                containsValues(mainCriteriaIntermediateResults) ? mainCriteriaIntermediateResults : Collections.emptySet();
-
-        return filterIDsByUserRights(userId, resultBeforeFiltering);
+        return super.searchForIDs(userId, criteria);
     }
 
 }

@@ -59,15 +59,7 @@ public class PersonSearchManager extends AbstractSearchManager<PersonSearchCrite
     @Override
     public Set<Long> searchForIDs(final Long userId, final PersonSearchCriteria criteria, final SortOptions<Person> sortOptions)
     {
-        final Set<Long> mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId, TableMapper.PERSON,
-                criteria.getCriteria(), criteria.getOperator());
-
-        // If we have results, we use them
-        // If we don't have results and criteria are not empty, there are no results.
-        final Set<Long> resultBeforeFiltering =
-                containsValues(mainCriteriaIntermediateResults) ? mainCriteriaIntermediateResults : Collections.emptySet();
-
-        return filterIDsByUserRights(userId, resultBeforeFiltering);
+        return super.searchForIDs(userId, criteria);
     }
 
 }

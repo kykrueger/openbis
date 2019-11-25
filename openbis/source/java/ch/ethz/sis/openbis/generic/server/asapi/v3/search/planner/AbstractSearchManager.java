@@ -31,6 +31,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeS
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractFieldSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
@@ -211,6 +213,19 @@ public abstract class AbstractSearchManager<CRITERIA extends ISearchCriteria, FE
         final C result = factory.create();
         result.setFieldValue(criterion.getFieldValue());
         return result;
+    }
+
+    protected Set<Long> searchForIDs(final Long userId, final AbstractCompositeSearchCriteria criteria)
+    {
+        final Set<Long> mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId, getTableMapper(),
+                criteria.getCriteria(), criteria.getOperator());
+
+        // If we have results, we use them
+        // If we don't have results and criteria are not empty, there are no results.
+        final Set<Long> resultBeforeFiltering =
+                containsValues(mainCriteriaIntermediateResults) ? mainCriteriaIntermediateResults : Collections.emptySet();
+
+        return filterIDsByUserRights(userId, resultBeforeFiltering);
     }
 
 }
