@@ -225,6 +225,7 @@ class ObjectType extends React.PureComponent {
               addSectionEnabled={true}
               addPropertyEnabled={selection !== null}
               removeEnabled={selection !== null}
+              removeConfirmationEnabled={true}
               saveEnabled={true}
             />
           </div>
