@@ -15,9 +15,9 @@ const styles = () => ({
   }
 })
 
-class SelectFormField extends React.PureComponent {
+class TextFormField extends React.PureComponent {
   render() {
-    logger.log(logger.DEBUG, 'SelectFormField.render')
+    logger.log(logger.DEBUG, 'TextFormField.render')
 
     const {
       reference,
@@ -79,6 +79,7 @@ class SelectFormField extends React.PureComponent {
           onChange={onChange}
           onFocus={onFocus}
           fullWidth={true}
+          autoComplete='off'
           variant='filled'
         />
       </FormFieldContainer>
@@ -86,4 +87,4 @@ class SelectFormField extends React.PureComponent {
   }
 }
 
-export default withStyles(styles)(SelectFormField)
+export default withStyles(styles)(TextFormField)
