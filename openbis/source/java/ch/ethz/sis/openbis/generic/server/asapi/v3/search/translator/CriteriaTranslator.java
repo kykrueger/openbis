@@ -179,9 +179,9 @@ public class CriteriaTranslator
         CRITERIA_TO_SUBQUERY_COLUMN_MAP.put(ExperimentSearchCriteria.class, ColumnNames.EXPERIMENT_COLUMN);
         CRITERIA_TO_SUBQUERY_COLUMN_MAP.put(ProjectSearchCriteria.class, ColumnNames.PROJECT_COLUMN);
         CRITERIA_TO_SUBQUERY_COLUMN_MAP.put(SpaceSearchCriteria.class, ColumnNames.SPACE_COLUMN);
-        CRITERIA_TO_SUBQUERY_COLUMN_MAP.put(TagSearchCriteria.class, METAPROJECT_ID_COLUMN);
         CRITERIA_TO_SUBQUERY_COLUMN_MAP.put(PropertyTypeSearchCriteria.class, PROPERTY_TYPE_COLUMN);
 
+        CRITERIA_TO_SUBQUERY_COLUMN_MAP.put(TagSearchCriteria.class, ID_COLUMN);
         CRITERIA_TO_SUBQUERY_COLUMN_MAP.put(SemanticAnnotationSearchCriteria.class, ID_COLUMN);
         CRITERIA_TO_SUBQUERY_COLUMN_MAP.put(PropertyAssignmentSearchCriteria.class, ID_COLUMN);
     }
@@ -246,7 +246,8 @@ public class CriteriaTranslator
 
     private static String buildWhere(final TranslationVo vo)
     {
-        if (isSearchAllCriteria(vo.getCriteria())) {
+        if (isSearchAllCriteria(vo.getCriteria()))
+        {
             return WHERE + SP + TRUE;
         } else
         {
@@ -255,7 +256,8 @@ public class CriteriaTranslator
 
             final StringBuilder resultSqlBuilder = vo.getCriteria().stream().collect(
                     StringBuilder::new,
-                    (sqlBuilder, criterion) -> {
+                    (sqlBuilder, criterion) ->
+                    {
                         sqlBuilder.append(separator);
                         appendCriterionCondition(vo, sqlBuilder, criterion);
                     },
@@ -279,9 +281,7 @@ public class CriteriaTranslator
         final TableMapper tableMapper = vo.getTableMapper();
         if (subqueryManager != null)
         {
-            final String column = ((criterion instanceof TagSearchCriteria) || (criterion instanceof SemanticAnnotationSearchCriteria))
-                    ? ID_COLUMN
-                    : CRITERIA_TO_SUBQUERY_COLUMN_MAP.get(criterion.getClass());
+            final String column = CRITERIA_TO_SUBQUERY_COLUMN_MAP.get(criterion.getClass());
             if (tableMapper != null && column != null)
             {
                 final Set<Long> ids = subqueryManager.searchForIDs(vo.getUserId(), criterion, null);
