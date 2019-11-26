@@ -48,7 +48,7 @@ export default class ObjectTypeFacade {
 
     return facade.searchSamples(criteria, fo).then(result => {
       if (result.objects.length > 0) {
-        result.objects[0]
+        return result.objects[0]
       } else {
         return null
       }

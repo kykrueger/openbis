@@ -202,14 +202,14 @@ class ObjectTypeParametersProperty extends React.PureComponent {
   }
 
   renderCode(property) {
-    const { type, classes } = this.props
+    const { classes } = this.props
     return (
       <div className={classes.field}>
         <TextField
           reference={this.references.code}
           label='Code'
           name='code'
-          disabled={property.exists && type.entitiesExist}
+          disabled={this.isDisabled(property)}
           value={property.code}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
@@ -241,14 +241,14 @@ class ObjectTypeParametersProperty extends React.PureComponent {
         value: dataType
       }
     })
-    const { type, classes } = this.props
+    const { classes } = this.props
     return (
       <div className={classes.field}>
         <SelectField
           reference={this.references.dataType}
           label='Data Type'
           name='dataType'
-          disabled={property.exists && type.entitiesExist}
+          disabled={this.isDisabled(property)}
           value={property.dataType}
           options={options}
           onChange={this.handleChange}
@@ -268,13 +268,13 @@ class ObjectTypeParametersProperty extends React.PureComponent {
           value: vocabulary.code
         }
       })
-      const { type, classes } = this.props
+      const { classes } = this.props
       return (
         <div className={classes.field}>
           <SelectField
             label='Vocabulary'
             name='vocabulary'
-            disabled={property.exists && type.entitiesExist}
+            disabled={this.isDisabled(property)}
             value={property.vocabulary ? property.vocabulary : ''}
             options={options}
             onChange={this.handleChange}
@@ -297,13 +297,13 @@ class ObjectTypeParametersProperty extends React.PureComponent {
           value: materialType.code
         }
       })
-      const { type, classes } = this.props
+      const { classes } = this.props
       return (
         <div className={classes.field}>
           <SelectField
             label='Material Type'
             name='materialType'
-            disabled={property.exists && type.entitiesExist}
+            disabled={this.isDisabled(property)}
             value={property.materialType ? property.materialType : ''}
             options={options}
             onChange={this.handleChange}
@@ -362,6 +362,15 @@ class ObjectTypeParametersProperty extends React.PureComponent {
     } else {
       return null
     }
+  }
+
+  isDisabled(property) {
+    const { latestEntity } = this.props.type
+    return (
+      property.registrationDate &&
+      latestEntity &&
+      latestEntity.modificationDate > property.registrationDate
+    )
   }
 }
 
