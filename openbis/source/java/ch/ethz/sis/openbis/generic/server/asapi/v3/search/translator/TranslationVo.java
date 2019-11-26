@@ -55,6 +55,8 @@ public class TranslationVo
 
     private String[] typesToFilter;
 
+    private String idColumnName;
+
     public Long getUserId()
     {
         return userId;
@@ -166,4 +168,15 @@ public class TranslationVo
     {
         this.typesToFilter = typesToFilter;
     }
+
+    public String getIdColumnName()
+    {
+        return idColumnName;
+    }
+
+    public void setIdColumnName(final String idColumnName)
+    {
+        this.idColumnName = idColumnName;
+    }
+
 }

@@ -38,6 +38,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentType
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.ModifierSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.RegistratorSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.search.ProjectSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.search.PropertyAssignmentSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.search.PropertyTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleContainerSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleTypeSearchCriteria;
@@ -88,14 +90,17 @@ public class PostgresSearchDAO implements ISQLSearchDAO
     }
 
     public Set<Long> queryDBWithNonRecursiveCriteria(final Long userId, final TableMapper tableMapper,
-            final Collection<ISearchCriteria> criteria, final SearchOperator operator)
+            final Collection<ISearchCriteria> criteria, final SearchOperator operator, final String idColumnName)
     {
+        final String finalIdColumnName = (idColumnName == null) ? ID_COLUMN : idColumnName;
+
         final TranslationVo translationVo = new TranslationVo();
         translationVo.setUserId(userId);
         translationVo.setTableMapper(tableMapper);
         translationVo.setCriteria(criteria);
         translationVo.setOperator(operator);
         translationVo.setCriteriaToManagerMap(criteriaToManagerMap);
+        translationVo.setIdColumnName(finalIdColumnName);
 
         final boolean containsProperties = criteria.stream().anyMatch(
                 (criterion) -> criterion instanceof AbstractFieldSearchCriteria &&
@@ -105,7 +110,7 @@ public class PostgresSearchDAO implements ISQLSearchDAO
         final SelectQuery selectQuery = CriteriaTranslator.translate(translationVo);
         final List<Map<String, Object>> result = sqlExecutor.execute(selectQuery.getQuery(), selectQuery.getArgs());
         return result.stream().map(
-                stringLongMap -> (Long) stringLongMap.get(ID_COLUMN)
+                stringLongMap -> (Long) stringLongMap.get(finalIdColumnName)
         ).collect(Collectors.toSet());
     }
 
@@ -213,6 +218,9 @@ public class PostgresSearchDAO implements ISQLSearchDAO
         criteriaToManagerMap.put(TagSearchCriteria.class, applicationContext.getBean("tag-search-manager", ISearchManager.class));
         criteriaToManagerMap.put(SemanticAnnotationSearchCriteria.class, applicationContext.getBean("semantic-annotation-search-manager",
                 ISearchManager.class));
+        criteriaToManagerMap.put(PropertyAssignmentSearchCriteria.class, applicationContext.getBean("property-assignment-search-manager",
+                ISearchManager.class));
+        criteriaToManagerMap.put(PropertyTypeSearchCriteria.class, applicationContext.getBean("property-type-search-manager", ISearchManager.class));
     }
 
 }

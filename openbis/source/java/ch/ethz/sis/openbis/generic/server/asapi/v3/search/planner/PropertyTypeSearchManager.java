@@ -16,14 +16,12 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
-import java.util.Collections;
 import java.util.Set;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.SemanticAnnotation;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.fetchoptions.SemanticAnnotationFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.search.SemanticAnnotationSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyTypeFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.search.PropertyTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
@@ -31,15 +29,14 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETransl
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 
 /**
- * Manages detailed search with complex semantic annotation search criteria.
+ * Manages detailed search with complex property type search criteria.
  * 
  * @author Viktor Kovtun
  */
-public class SemanticAnnotationSearchManager extends
-        AbstractSearchManager<SemanticAnnotationSearchCriteria, SemanticAnnotationFetchOptions, SemanticAnnotation, Long>
+public class PropertyTypeSearchManager extends AbstractSearchManager<PropertyTypeSearchCriteria, PropertyTypeFetchOptions, PropertyType, Long>
 {
 
-    public SemanticAnnotationSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
+    public PropertyTypeSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
             final IID2PETranslator idsTranslator)
     {
         super(searchDAO, authProvider, idsTranslator);
@@ -48,7 +45,7 @@ public class SemanticAnnotationSearchManager extends
     @Override
     protected TableMapper getTableMapper()
     {
-        return TableMapper.SEMANTIC_ANNOTATION;
+        return TableMapper.PROPERTY_TYPE;
     }
 
     @Override
@@ -58,8 +55,7 @@ public class SemanticAnnotationSearchManager extends
     }
 
     @Override
-    public Set<Long> searchForIDs(final Long userId, final SemanticAnnotationSearchCriteria criteria,
-            final SortOptions<SemanticAnnotation> sortOptions)
+    public Set<Long> searchForIDs(final Long userId, final PropertyTypeSearchCriteria criteria, final SortOptions<PropertyType> sortOptions)
     {
         return super.searchForIDs(userId, criteria);
     }

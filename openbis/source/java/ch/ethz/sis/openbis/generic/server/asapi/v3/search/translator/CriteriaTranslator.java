@@ -57,6 +57,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.UserIdSearchCriter
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.UserIdsSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.search.NoProjectSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.search.ProjectSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.search.PropertyAssignmentSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.search.PropertyTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.ListableSampleTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.NoSampleContainerSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.NoSampleSearchCriteria;
@@ -109,6 +111,7 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLL
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.WHERE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.METAPROJECT_ID_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PROPERTY_TYPE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.METAPROJECTS_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.METAPROJECT_ASSIGNMENTS_ALL_TABLE;
 
@@ -177,7 +180,10 @@ public class CriteriaTranslator
         CRITERIA_TO_SUBQUERY_COLUMN_MAP.put(ProjectSearchCriteria.class, ColumnNames.PROJECT_COLUMN);
         CRITERIA_TO_SUBQUERY_COLUMN_MAP.put(SpaceSearchCriteria.class, ColumnNames.SPACE_COLUMN);
         CRITERIA_TO_SUBQUERY_COLUMN_MAP.put(TagSearchCriteria.class, METAPROJECT_ID_COLUMN);
+        CRITERIA_TO_SUBQUERY_COLUMN_MAP.put(PropertyTypeSearchCriteria.class, PROPERTY_TYPE_COLUMN);
+
         CRITERIA_TO_SUBQUERY_COLUMN_MAP.put(SemanticAnnotationSearchCriteria.class, ID_COLUMN);
+        CRITERIA_TO_SUBQUERY_COLUMN_MAP.put(PropertyAssignmentSearchCriteria.class, ID_COLUMN);
     }
 
     public static SelectQuery translate(final TranslationVo vo)
@@ -189,14 +195,14 @@ public class CriteriaTranslator
 
         final String from = buildFrom(vo);
         final String where = buildWhere(vo);
-        final String select = buildSelect();
+        final String select = buildSelect(vo);
 
         return new SelectQuery(select  + NL + from + NL + where, vo.getArgs());
     }
 
-    private static String buildSelect()
+    private static String buildSelect(final TranslationVo vo)
     {
-        return SELECT + SP + DISTINCT + SP + MAIN_TABLE_ALIAS + PERIOD + ID_COLUMN;
+        return SELECT + SP + DISTINCT + SP + MAIN_TABLE_ALIAS + PERIOD + vo.getIdColumnName();
     }
 
     private static String getAlias(final AtomicInteger num)
@@ -226,9 +232,7 @@ public class CriteriaTranslator
                     if (joinInformationMap != null)
                     {
                         joinInformationMap.values().forEach((joinInformation) ->
-                        {
-                            TranslatorUtils.appendJoin(sqlBuilder, joinInformation, INNER_JOIN);
-                        });
+                                TranslatorUtils.appendJoin(sqlBuilder, joinInformation, INNER_JOIN));
                         vo.getAliases().put(criterion, joinInformationMap);
                     }
                 } else
@@ -285,7 +289,7 @@ public class CriteriaTranslator
                 vo.getArgs().add(ids.toArray(new Long[0]));
             } else
             {
-                throw new NullPointerException("tableMapper = " + tableMapper + " column = " + column + ", criterion.getClass() = " +
+                throw new NullPointerException("tableMapper = " + tableMapper + ", column = " + column + ", criterion.getClass() = " +
                         criterion.getClass());
             }
         } else

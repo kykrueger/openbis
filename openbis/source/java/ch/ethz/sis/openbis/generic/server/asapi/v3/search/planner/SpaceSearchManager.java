@@ -83,7 +83,7 @@ public class SpaceSearchManager extends AbstractSearchManager<SpaceSearchCriteri
         }).collect(Collectors.toList());
 
         final Set<Long> mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId, TableMapper.SPACE,
-                newCriteria, criteria.getOperator());
+                newCriteria, criteria.getOperator(), null);
 
         // If we have results, we use them
         // If we don't have results and criteria are not empty, there are no results.

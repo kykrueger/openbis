@@ -106,10 +106,11 @@ public class SampleSearchManagerTest
         final Set<Long> expectedIds = new HashSet<>(Arrays.asList(1L, 2L, 3L, 5L, 7L, 9L));
         context.checking(new Expectations()
         {{
-            one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, TableMapper.SAMPLE, Collections.singletonList(criterion), SearchOperator.OR);
+            one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, TableMapper.SAMPLE, Collections.singletonList(criterion), SearchOperator.OR,
+                    null);
             will(returnValue(mainCriteriaIds));
 
-            one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, TableMapper.SAMPLE, parentCriteria, SearchOperator.OR);
+            one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, TableMapper.SAMPLE, parentCriteria, SearchOperator.OR, null);
             will(returnValue(parentCriteriaIds));
 
             one(searchDAOMock).findChildIDs(TableMapper.SAMPLE, parentCriteriaIds);
@@ -153,11 +154,11 @@ public class SampleSearchManagerTest
         context.checking(new Expectations()
         {{
             one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, TableMapper.SAMPLE,
-                    Collections.singletonList(criterion), SearchOperator.AND);
+                    Collections.singletonList(criterion), SearchOperator.AND, null);
             will(returnValue(mainCriteriaIds));
 
             one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, TableMapper.SAMPLE, parentCriteria,
-                    SearchOperator.AND);
+                    SearchOperator.AND, null);
             will(returnValue(parentCriteriaIds));
 
             one(searchDAOMock).findChildIDs(TableMapper.SAMPLE, parentCriteriaIds);
@@ -201,11 +202,11 @@ public class SampleSearchManagerTest
         context.checking(new Expectations()
         {{
             one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, TableMapper.SAMPLE, childCriteria,
-                    SearchOperator.OR);
+                    SearchOperator.OR, null);
             will(returnValue(childCriteriaIds));
 
             one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, TableMapper.SAMPLE,
-                    Collections.singletonList(criterion), SearchOperator.OR);
+                    Collections.singletonList(criterion), SearchOperator.OR, null);
             will(returnValue(mainCriteriaIds));
 
             allowing(authInfoProviderMock).findAuthorisedSpaceProjectIDs(userId);
@@ -249,10 +250,11 @@ public class SampleSearchManagerTest
         final Set<Long> expectedIds = new HashSet<>(Arrays.asList(1L, 3L));
         context.checking(new Expectations()
         {{
-            one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, TableMapper.SAMPLE, childCriteria, SearchOperator.AND);
+            one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, TableMapper.SAMPLE, childCriteria, SearchOperator.AND, null);
             will(returnValue(childCriteriaIds));
 
-            one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, TableMapper.SAMPLE, Collections.singletonList(criterion), SearchOperator.AND);
+            one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, TableMapper.SAMPLE, Collections.singletonList(criterion), SearchOperator.AND,
+                    null);
             will(returnValue(mainCriteriaIds));
 
             allowing(authInfoProviderMock).findAuthorisedSpaceProjectIDs(userId);
@@ -285,7 +287,7 @@ public class SampleSearchManagerTest
         context.checking(new Expectations()
         {{
             one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, TableMapper.SAMPLE,
-                    Collections.singletonList(criterion), SearchOperator.AND);
+                    Collections.singletonList(criterion), SearchOperator.AND, null);
             will(returnValue(expectedIds));
 
             allowing(authInfoProviderMock).findAuthorisedSpaceProjectIDs(userId);
@@ -309,7 +311,7 @@ public class SampleSearchManagerTest
         context.checking(new Expectations()
         {{
             one(searchDAOMock).queryDBWithNonRecursiveCriteria(with(userId), with(equal(TableMapper.SAMPLE)),
-                    with(any(List.class)), with(any(SearchOperator.class)));
+                    with(any(List.class)), with(any(SearchOperator.class)), null);
             will(returnValue(expectedIds));
 
             allowing(authInfoProviderMock).findAuthorisedSpaceProjectIDs(userId);
@@ -333,7 +335,7 @@ public class SampleSearchManagerTest
         context.checking(new Expectations()
         {{
             one(searchDAOMock).queryDBWithNonRecursiveCriteria(with(userId), with(equal(TableMapper.SAMPLE)),
-                    with(any(List.class)), with(any(SearchOperator.class)));
+                    with(any(List.class)), with(any(SearchOperator.class)), null);
             will(returnValue(Collections.emptySet()));
 
             allowing(authInfoProviderMock).findAuthorisedSpaceProjectIDs(userId);

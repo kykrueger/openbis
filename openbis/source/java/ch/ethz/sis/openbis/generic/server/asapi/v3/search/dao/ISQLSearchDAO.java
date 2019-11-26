@@ -28,10 +28,17 @@ public interface ISQLSearchDAO
 {
 
     /**
+     * Queries the DB only with non recursive criteria.
      *
+     * @param userId ID of the user who makes the query.
+     * @param tableMapper table mapper that contains extra information about tables related to the entities which can have parent-child relationships.
+     * @param criteria criteria to search by.
+     * @param idColumnName name of the column to select by, if {@code null} {@link ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN}
+     *     is used.
+     * @return set of numbers which represent the IDs of the scpecified ID column name.
      */
     Set<Long> queryDBWithNonRecursiveCriteria(final Long userId, final TableMapper tableMapper, final Collection<ISearchCriteria> criteria,
-            final SearchOperator operator);
+            final SearchOperator operator, final String idColumnName);
 
     /**
      * Finds child IDs which correspond to parent IDs.
@@ -40,7 +47,7 @@ public interface ISQLSearchDAO
      * @param parentIdSet set of parent IDs to find the corresponding child IDs for.
      * @return a set of IDs od child entities of the parents specified by IDs.
      */
-    Set<Long> findChildIDs(TableMapper tableMapper, Set<Long> parentIdSet);
+    Set<Long> findChildIDs(final TableMapper tableMapper, final Set<Long> parentIdSet);
 
     /**
      * Finds parent IDs which correspond to child IDs.
@@ -50,7 +57,7 @@ public interface ISQLSearchDAO
      * @param childIdSet set of child IDs to find the corresponding parent IDs for.
      * @return a set of IDs od parent entities of the children specified by IDs.
      */
-    Set<Long> findParentIDs(TableMapper tableMapper, Set<Long> childIdSet);
+    Set<Long> findParentIDs(final TableMapper tableMapper, final Set<Long> childIdSet);
 
     /**
      * Sorts IDs by certain fields.
@@ -60,7 +67,6 @@ public interface ISQLSearchDAO
      * @param sortOptions contains fields to be sorted.
      * @return IDs of sorted entities.
      */
-    Set<Long> sortIDs(final TableMapper tableMapper, Set<Long> filteredIDs,
-            SortOptions<?> sortOptions);
+    Set<Long> sortIDs(final TableMapper tableMapper, final Set<Long> filteredIDs, final SortOptions<?> sortOptions);
 
 }
