@@ -16,6 +16,7 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -26,6 +27,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.FullEntityIdentifier;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinInformation;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinType;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.AND;
@@ -54,7 +56,44 @@ public class IdentifierSearchConditionTranslator implements IConditionTranslator
     public Map<String, JoinInformation> getJoinInformationMap(final IdentifierSearchCriteria criterion, final TableMapper tableMapper,
             final IAliasFactory aliasFactory)
     {
-        return null;
+        final Map<String, JoinInformation> result = new LinkedHashMap<>();
+        final String entitiesTable = tableMapper.getEntitiesTable();
+
+        final JoinInformation joinInformation1 = new JoinInformation();
+        joinInformation1.setJoinType(JoinType.LEFT);
+        joinInformation1.setMainTable(entitiesTable);
+        joinInformation1.setMainTableAlias(CriteriaTranslator.MAIN_TABLE_ALIAS);
+        joinInformation1.setMainTableIdField(SPACE_COLUMN);
+        joinInformation1.setSubTable(SPACES_TABLE);
+        joinInformation1.setSubTableAlias(aliasFactory.createAlias());
+        joinInformation1.setSubTableIdField(ID_COLUMN);
+        result.put(SPACES_TABLE, joinInformation1);
+
+        final JoinInformation joinInformation2 = new JoinInformation();
+        joinInformation2.setJoinType(JoinType.LEFT);
+        joinInformation2.setMainTable(entitiesTable);
+        joinInformation2.setMainTableAlias(CriteriaTranslator.MAIN_TABLE_ALIAS);
+        joinInformation2.setMainTableIdField(PROJECT_COLUMN);
+        joinInformation2.setSubTable(PROJECTS_TABLE);
+        joinInformation2.setSubTableAlias(aliasFactory.createAlias());
+        joinInformation2.setSubTableIdField(ID_COLUMN);
+        result.put(PROJECTS_TABLE, joinInformation2);
+
+        if (entitiesTable.equals(SAMPLES_ALL_TABLE))
+        {
+            // Only samples can have containers.
+            final JoinInformation joinInformation3 = new JoinInformation();
+            joinInformation3.setJoinType(JoinType.LEFT);
+            joinInformation3.setMainTable(entitiesTable);
+            joinInformation3.setMainTableAlias(CriteriaTranslator.MAIN_TABLE_ALIAS);
+            joinInformation3.setMainTableIdField(PART_OF_SAMPLE_COLUMN);
+            joinInformation3.setSubTable(entitiesTable);
+            joinInformation3.setSubTableAlias(aliasFactory.createAlias());
+            joinInformation3.setSubTableIdField(ID_COLUMN);
+            result.put(entitiesTable, joinInformation3);
+        }
+
+        return result;
     }
 
     @Override

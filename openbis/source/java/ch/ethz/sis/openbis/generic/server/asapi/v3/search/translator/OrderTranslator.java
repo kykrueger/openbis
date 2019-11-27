@@ -19,14 +19,13 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.EntityWithPropertiesSortOptions;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.Attributes;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinInformation;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinType;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.AND;
@@ -37,7 +36,6 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLL
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.FROM;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.IN;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.INNER_JOIN;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.LEFT_JOIN;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.LP;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.NL;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.ON;
@@ -117,11 +115,11 @@ public class OrderTranslator
             {
                 final String propertyName = sortingCriterionFieldName.substring(EntityWithPropertiesSortOptions.PROPERTY.length()).toLowerCase();
                 final Map<String, JoinInformation> joinInformationMap = TranslatorUtils.getPropertyJoinInformationMap(tableMapper,
-                        () -> getOrderingAlias(indexCounter));
+                        () -> getOrderingAlias(indexCounter), JoinType.LEFT);
 
                 joinInformationMap.values().forEach((joinInformation) ->
                 {
-                    TranslatorUtils.appendJoin(sqlBuilder, joinInformation, LEFT_JOIN);
+                    TranslatorUtils.appendJoin(sqlBuilder, joinInformation);
                 });
                 vo.getAliases().put(propertyName, joinInformationMap);
             } else if (isTypeSearchCriterion(sortingCriterionFieldName))
@@ -130,7 +128,7 @@ public class OrderTranslator
                         () -> getOrderingAlias(indexCounter));
                 joinInformationMap.values().forEach((joinInformation) ->
                 {
-                    TranslatorUtils.appendJoin(sqlBuilder, joinInformation, LEFT_JOIN);
+                    TranslatorUtils.appendJoin(sqlBuilder, joinInformation);
                 });
                 vo.getAliases().put(EntityWithPropertiesSortOptions.TYPE, joinInformationMap);
             }

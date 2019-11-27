@@ -58,6 +58,7 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLL
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.GE;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.GT;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.IS_NOT_NULL;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.JOIN;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.LE;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.LIKE;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.LT;
@@ -193,7 +194,8 @@ public class TranslatorUtils
         sqlBuilder.append(SP).append(QU);
     }
 
-    public static Map<String, JoinInformation> getPropertyJoinInformationMap(final TableMapper tableMapper, final IAliasFactory aliasFactory)
+    public static Map<String, JoinInformation> getPropertyJoinInformationMap(final TableMapper tableMapper, final IAliasFactory aliasFactory,
+            final JoinType joinType)
     {
         final Map<String, JoinInformation> result = new LinkedHashMap<>();
         final String valuesTableAlias = aliasFactory.createAlias();
@@ -201,6 +203,7 @@ public class TranslatorUtils
         final String attributeTypesTableAlias = aliasFactory.createAlias();
 
         final JoinInformation joinInformation1 = new JoinInformation();
+        joinInformation1.setJoinType(joinType);
         joinInformation1.setMainTable(tableMapper.getEntitiesTable());
         joinInformation1.setMainTableAlias(CriteriaTranslator.MAIN_TABLE_ALIAS);
         joinInformation1.setMainTableIdField(ID_COLUMN);
@@ -210,6 +213,7 @@ public class TranslatorUtils
         result.put(tableMapper.getEntitiesTable(), joinInformation1);
 
         final JoinInformation joinInformation2 = new JoinInformation();
+        joinInformation2.setJoinType(joinType);
         joinInformation2.setMainTable(tableMapper.getValuesTable());
         joinInformation2.setMainTableAlias(valuesTableAlias);
         joinInformation2.setMainTableIdField(tableMapper.getValuesTableEntityTypeAttributeTypeIdField());
@@ -219,6 +223,7 @@ public class TranslatorUtils
         result.put(tableMapper.getValuesTable(), joinInformation2);
 
         final JoinInformation joinInformation3 = new JoinInformation();
+        joinInformation3.setJoinType(joinType);
         joinInformation3.setMainTable(tableMapper.getEntityTypesAttributeTypesTable());
         joinInformation3.setMainTableAlias(entityTypesAttributeTypesTableAlias);
         joinInformation3.setMainTableIdField(tableMapper.getEntityTypesAttributeTypesTableAttributeTypeIdField());
@@ -228,6 +233,7 @@ public class TranslatorUtils
         result.put(tableMapper.getEntityTypesAttributeTypesTable(), joinInformation3);
 
         final JoinInformation joinInformation4 = new JoinInformation();
+        joinInformation4.setJoinType(joinType);
         joinInformation4.setMainTable(tableMapper.getAttributeTypesTable());
         joinInformation4.setMainTableAlias(attributeTypesTableAlias);
         joinInformation4.setMainTableIdField(tableMapper.getAttributeTypesTableDataTypeIdField());
@@ -244,6 +250,7 @@ public class TranslatorUtils
         final Map<String, JoinInformation> result = new LinkedHashMap<>();
 
         final JoinInformation joinInformation = new JoinInformation();
+        joinInformation.setJoinType(JoinType.INNER);
         joinInformation.setMainTable(tableMapper.getEntitiesTable());
         joinInformation.setMainTableAlias(CriteriaTranslator.MAIN_TABLE_ALIAS);
         joinInformation.setMainTableIdField(tableMapper.getEntitiesTableEntityTypeIdField());
@@ -261,6 +268,7 @@ public class TranslatorUtils
         final String relationshipsTableAlias = aliasFactory.createAlias();
 
         final JoinInformation joinInformation1 = new JoinInformation();
+        joinInformation1.setJoinType(JoinType.INNER);
         joinInformation1.setMainTable(tableMapper.getEntitiesTable());
         joinInformation1.setMainTableAlias(CriteriaTranslator.MAIN_TABLE_ALIAS);
         joinInformation1.setMainTableIdField(ID_COLUMN);
@@ -270,6 +278,7 @@ public class TranslatorUtils
         result.put(tableMapper.getRelationshipsTable(), joinInformation1);
 
         final JoinInformation joinInformation2 = new JoinInformation();
+        joinInformation2.setJoinType(JoinType.INNER);
         joinInformation2.setMainTable(tableMapper.getRelationshipsTable());
         joinInformation2.setMainTableAlias(relationshipsTableAlias);
         joinInformation2.setMainTableIdField(tableMapper.getRelationshipsTableChildIdField());
@@ -279,6 +288,7 @@ public class TranslatorUtils
         result.put(tableMapper.getEntitiesTable(), joinInformation2);
 
         final JoinInformation joinInformation3 = new JoinInformation();
+        joinInformation3.setJoinType(JoinType.INNER);
         joinInformation3.setMainTable(tableMapper.getRelationshipsTable());
         joinInformation3.setMainTableAlias(relationshipsTableAlias);
         joinInformation3.setMainTableIdField(RELATIONSHIP_COLUMN);
@@ -346,12 +356,12 @@ public class TranslatorUtils
         args.add(internalProperty);
     }
 
-    public static void appendJoin(final StringBuilder sqlBuilder, final JoinInformation joinInformation, final String joinType)
+    public static void appendJoin(final StringBuilder sqlBuilder, final JoinInformation joinInformation)
     {
         if (joinInformation.getSubTable() != null)
         {
-            sqlBuilder.append(NL).append(joinType).append(SP).append(joinInformation.getSubTable()).append(SP)
-                    .append(joinInformation.getSubTableAlias()).append(SP)
+            sqlBuilder.append(NL).append(joinInformation.getJoinType()).append(SP).append(JOIN).append(SP).append(joinInformation.getSubTable())
+                    .append(SP).append(joinInformation.getSubTableAlias()).append(SP)
                     .append(ON).append(SP).append(joinInformation.getMainTableAlias())
                     .append(PERIOD).append(joinInformation.getMainTableIdField())
                     .append(SP)

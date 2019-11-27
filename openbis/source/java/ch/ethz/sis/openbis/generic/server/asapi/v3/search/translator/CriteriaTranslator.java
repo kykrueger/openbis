@@ -232,7 +232,7 @@ public class CriteriaTranslator
                     if (joinInformationMap != null)
                     {
                         joinInformationMap.values().forEach((joinInformation) ->
-                                TranslatorUtils.appendJoin(sqlBuilder, joinInformation, INNER_JOIN));
+                                TranslatorUtils.appendJoin(sqlBuilder, joinInformation));
                         vo.getAliases().put(criterion, joinInformationMap);
                     }
                 } else

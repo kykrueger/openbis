@@ -31,6 +31,8 @@ public class JoinInformation
 
     private String subTableAlias;
 
+    private JoinType joinType;
+
     public String getMainTable() {
         return mainTable;
     }
@@ -77,6 +79,16 @@ public class JoinInformation
 
     public void setSubTableAlias(String subTableAlias) {
         this.subTableAlias = subTableAlias;
+    }
+
+    public JoinType getJoinType()
+    {
+        return joinType;
+    }
+
+    public void setJoinType(final JoinType joinType)
+    {
+        this.joinType = joinType;
     }
 
 }
