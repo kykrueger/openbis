@@ -52,7 +52,7 @@ class ObjectTypeParametersType extends React.PureComponent {
           <TextField
             label='Code'
             name='code'
-            disabled={this.isDisabled()}
+            disabled={type.used}
             value={type.code || ''}
             onChange={this.handleChange}
           />
@@ -93,11 +93,6 @@ class ObjectTypeParametersType extends React.PureComponent {
         </div>
       </div>
     )
-  }
-
-  isDisabled() {
-    const { type } = this.props
-    return type.modificationDate !== null
   }
 }
 

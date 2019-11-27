@@ -10,8 +10,6 @@ import DialogTitle from '@material-ui/core/DialogTitle'
 import Slide from '@material-ui/core/Slide'
 import logger from '../../../common/logger.js'
 
-const ANIMATION_TIME_MS = 250
-
 const styles = theme => ({
   actions: {
     marginLeft: theme.spacing(2),
@@ -21,38 +19,23 @@ const styles = theme => ({
 })
 
 const Transition = React.forwardRef(function Transition(props, ref) {
-  return (
-    <Slide
-      ref={ref}
-      direction='up'
-      timeout={{ enter: ANIMATION_TIME_MS, exit: ANIMATION_TIME_MS }}
-      {...props}
-    />
-  )
+  return <Slide ref={ref} direction='up' {...props} />
 })
 
 class DialogWindow extends React.Component {
   constructor(props) {
     super(props)
-    this.handleClose = this.handleClose.bind(this)
-  }
-
-  handleClose() {
-    const { onClose } = this.props
-    if (onClose) {
-      setTimeout(onClose, ANIMATION_TIME_MS)
-    }
   }
 
   render() {
     logger.log(logger.DEBUG, 'DialogWindow.render')
 
-    const { open, title, content, actions, classes } = this.props
+    const { open, title, content, actions, onClose, classes } = this.props
 
     return (
       <Dialog
         open={open}
-        onClose={this.handleClose}
+        onClose={onClose}
         scroll='paper'
         fullWidth={true}
         maxWidth='md'

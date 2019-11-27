@@ -6,7 +6,7 @@ export default class ObjectTypeHandlerRemove {
     this.setState = setState
   }
 
-  execute() {
+  executeRemove() {
     const { selection } = this.state
     if (selection.type === 'section') {
       this.handleRemoveSection(selection.params.id)
@@ -15,11 +15,33 @@ export default class ObjectTypeHandlerRemove {
     }
   }
 
+  executeRemoveConfirm() {
+    this.setState({
+      removeSectionDialogOpen: false,
+      removePropertyDialogOpen: false
+    })
+    this.executeRemove()
+  }
+
+  executeRemoveCancel() {
+    this.setState({
+      removeSectionDialogOpen: false,
+      removePropertyDialogOpen: false
+    })
+  }
+
   handleRemoveSection(sectionId) {
-    const { sections, properties } = this.state
+    const { sections, properties, removeSectionDialogOpen } = this.state
 
     const sectionIndex = sections.findIndex(section => section.id === sectionId)
     const section = sections[sectionIndex]
+
+    if (this.isSectionUsed(section) && !removeSectionDialogOpen) {
+      this.setState({
+        removeSectionDialogOpen: true
+      })
+      return
+    }
 
     const newProperties = Array.from(properties)
     _.remove(
@@ -39,12 +61,19 @@ export default class ObjectTypeHandlerRemove {
   }
 
   handleRemoveProperty(propertyId) {
-    const { sections, properties } = this.state
+    const { sections, properties, removePropertyDialogOpen } = this.state
 
     const propertyIndex = properties.findIndex(
       property => property.id === propertyId
     )
     const property = properties[propertyIndex]
+
+    if (this.isPropertyUsed(property) && !removePropertyDialogOpen) {
+      this.setState({
+        removePropertyDialogOpen: true
+      })
+      return
+    }
 
     const newProperties = Array.from(properties)
     newProperties.splice(propertyIndex, 1)
@@ -68,5 +97,23 @@ export default class ObjectTypeHandlerRemove {
       properties: newProperties,
       selection: null
     }))
+  }
+
+  isSectionUsed(section) {
+    const { properties } = this.state
+
+    const propertiesMap = properties.reduce((map, property) => {
+      map[property.id] = property
+      return map
+    }, {})
+
+    return _.some(section.properties, propertyId => {
+      const property = propertiesMap[propertyId]
+      return this.isPropertyUsed(property)
+    })
+  }
+
+  isPropertyUsed(property) {
+    return property.used
   }
 }

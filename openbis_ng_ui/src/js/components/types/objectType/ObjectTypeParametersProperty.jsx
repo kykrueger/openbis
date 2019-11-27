@@ -209,7 +209,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
           reference={this.references.code}
           label='Code'
           name='code'
-          disabled={this.isDisabled(property)}
+          disabled={property.used}
           value={property.code}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
@@ -248,7 +248,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
           reference={this.references.dataType}
           label='Data Type'
           name='dataType'
-          disabled={this.isDisabled(property)}
+          disabled={property.used}
           value={property.dataType}
           options={options}
           onChange={this.handleChange}
@@ -274,7 +274,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
           <SelectField
             label='Vocabulary'
             name='vocabulary'
-            disabled={this.isDisabled(property)}
+            disabled={property.used}
             value={property.vocabulary ? property.vocabulary : ''}
             options={options}
             onChange={this.handleChange}
@@ -303,7 +303,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
           <SelectField
             label='Material Type'
             name='materialType'
-            disabled={this.isDisabled(property)}
+            disabled={property.used}
             value={property.materialType ? property.materialType : ''}
             options={options}
             onChange={this.handleChange}
@@ -362,15 +362,6 @@ class ObjectTypeParametersProperty extends React.PureComponent {
     } else {
       return null
     }
-  }
-
-  isDisabled(property) {
-    const { latestEntity } = this.props.type
-    return (
-      property.registrationDate &&
-      latestEntity &&
-      latestEntity.modificationDate > property.registrationDate
-    )
   }
 }
 

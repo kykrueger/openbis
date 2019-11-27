@@ -1,7 +1,6 @@
 import React from 'react'
 import Button from '@material-ui/core/Button'
 import { withStyles } from '@material-ui/core/styles'
-import ObjectTypeButtonsRemoveDialog from './ObjectTypeButtonsRemoveDialog.jsx'
 import logger from '../../../common/logger.js'
 
 const styles = theme => ({
@@ -15,41 +14,6 @@ const styles = theme => ({
 })
 
 class ObjectTypeButtons extends React.PureComponent {
-  constructor(props) {
-    super(props)
-    this.state = {
-      removeDialogOpen: false
-    }
-    this.handleRemove = this.handleRemove.bind(this)
-    this.handleRemoveConfirmed = this.handleRemoveConfirmed.bind(this)
-    this.handleRemoveCanceled = this.handleRemoveCanceled.bind(this)
-  }
-
-  handleRemove() {
-    const { removeConfirmationEnabled } = this.props
-
-    if (removeConfirmationEnabled) {
-      this.setState({
-        removeDialogOpen: true
-      })
-    } else {
-      this.props.onRemove()
-    }
-  }
-
-  handleRemoveConfirmed() {
-    this.setState({
-      removeDialogOpen: false
-    })
-    this.props.onRemove()
-  }
-
-  handleRemoveCanceled() {
-    this.setState({
-      removeDialogOpen: false
-    })
-  }
-
   render() {
     logger.log(logger.DEBUG, 'ObjectTypeButtons.render')
 
@@ -57,14 +21,13 @@ class ObjectTypeButtons extends React.PureComponent {
       classes,
       onAddSection,
       onAddProperty,
+      onRemove,
       onSave,
       addSectionEnabled,
       addPropertyEnabled,
       removeEnabled,
       saveEnabled
     } = this.props
-
-    const { removeDialogOpen } = this.state
 
     return (
       <div className={classes.container}>
@@ -91,7 +54,7 @@ class ObjectTypeButtons extends React.PureComponent {
           variant='contained'
           color='secondary'
           disabled={!removeEnabled}
-          onClick={this.handleRemove}
+          onClick={onRemove}
         >
           Remove
         </Button>
@@ -104,12 +67,6 @@ class ObjectTypeButtons extends React.PureComponent {
         >
           Save
         </Button>
-
-        <ObjectTypeButtonsRemoveDialog
-          open={removeDialogOpen}
-          onConfirm={this.handleRemoveConfirmed}
-          onCancel={this.handleRemoveCanceled}
-        />
       </div>
     )
   }
