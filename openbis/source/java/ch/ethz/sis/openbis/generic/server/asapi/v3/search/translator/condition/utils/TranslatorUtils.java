@@ -57,6 +57,7 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLL
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.EQ;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.GE;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.GT;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.ILIKE;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.IS_NOT_NULL;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.JOIN;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.LE;
@@ -92,6 +93,7 @@ public class TranslatorUtils
     public static void appendStringComparatorOp(final Class<?> valueClass, final String finalValue, final StringBuilder sqlBuilder,
             final List<Object> args)
     {
+        sqlBuilder.append(SP);
         if (valueClass == StringEqualToValue.class)
         {
             if (!containsWildcards(finalValue))
@@ -100,24 +102,24 @@ public class TranslatorUtils
                 args.add(finalValue);
             } else
             {
-                sqlBuilder.append(LIKE).append(SP).append(QU);
+                sqlBuilder.append(ILIKE).append(SP).append(QU);
                 args.add(toPSQLWildcards(finalValue));
             }
         } else if (valueClass == StringStartsWithValue.class)
         {
-            sqlBuilder.append(SP).append(LIKE).append(SP).append(QU);
+            sqlBuilder.append(ILIKE).append(SP).append(QU);
             args.add(toPSQLWildcards(finalValue) + PERCENT);
         } else if (valueClass == StringEndsWithValue.class)
         {
-            sqlBuilder.append(SP).append(LIKE).append(SP).append(QU);
+            sqlBuilder.append(ILIKE).append(SP).append(QU);
             args.add(PERCENT + toPSQLWildcards(finalValue));
         } else if (valueClass == StringContainsValue.class)
         {
-            sqlBuilder.append(SP).append(LIKE).append(SP).append(QU);
+            sqlBuilder.append(ILIKE).append(SP).append(QU);
             args.add(PERCENT + toPSQLWildcards(finalValue) + PERCENT);
         } else if (valueClass == AnyStringValue.class)
         {
-            sqlBuilder.append(SP).append(IS_NOT_NULL);
+            sqlBuilder.append(IS_NOT_NULL);
         } else
         {
             throw new IllegalArgumentException("Unsupported AbstractStringValue type: " + valueClass.getSimpleName());

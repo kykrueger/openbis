@@ -67,6 +67,8 @@ public class SQLLexemes
 
     public static final String LIKE = "LIKE";
 
+    public static final String ILIKE = "ILIKE";
+
     public static final String ON = "ON";
 
     public static final String IN = "IN";
