@@ -475,7 +475,23 @@ function ServerFacade(openbisServer) {
 			"method": "getSubmissionTypes",
 		}, callbackFunction, "rc-exports-api");
 	};
-	
+
+	//
+	// Gets archiving info for specified data set codes
+	//
+	this.getArchivingInfo = function(dataSets, callbackFunction) {
+		this.customELNApi({
+			"method" : "getArchivingInfo",
+			"args" : dataSets.join(","),
+		}, function(error, result) {
+			if (error) {
+				Util.showError(error);
+			} else {
+				callbackFunction(result.data);
+			}
+		}, "archiving-api");
+	};
+
 	//
 	// Metadata Related Functions
 	//
@@ -1534,6 +1550,13 @@ function ServerFacade(openbisServer) {
 								value : searchCriteria.criteria[cIdx].fieldValue.value
 							});
 						}
+
+						if(searchCriteria.criteria[cIdx].fieldType === "ATTRIBUTE" && searchCriteria.criteria[cIdx].fieldName === "perm id" &&
+                            searchCriteria.criteria[cIdx].fieldValue.__proto__["@type"] === "as.dto.common.search.StringEqualToValue") {
+                        	hackFixForBrokenEquals.push({
+                        	    permId : searchCriteria.criteria[cIdx].fieldValue.value
+                            });
+                        }
 					}
 				}
 				//
@@ -1569,9 +1592,14 @@ function ServerFacade(openbisServer) {
             for(var rIdx = 0; rIdx < results.length; rIdx++) {
         	    var result = results[rIdx];
         	    for(var fIdx = 0; fIdx < hackFixForBrokenEquals.length; fIdx++) {
-        		    if(	result &&
-        		        result.properties &&
-        			    result.properties[hackFixForBrokenEquals[fIdx].propertyCode] === hackFixForBrokenEquals[fIdx].value) {
+        	        var propertyFound = hackFixForBrokenEquals[fIdx].propertyCode && result &&
+                                        result.properties &&
+                                        result.properties[hackFixForBrokenEquals[fIdx].propertyCode] === hackFixForBrokenEquals[fIdx].value;
+
+                    var permIdFound = hackFixForBrokenEquals[fIdx].permId && result &&
+                                        result.permId && result.permId.permId
+                                        result.permId.permId === hackFixForBrokenEquals[fIdx].value;
+        		    if(propertyFound || permIdFound) {
         			    switch(operator) {
                             case "AND":
                                 resultsValid[rIdx] = resultsValid[rIdx] && true;
@@ -1947,6 +1975,14 @@ function ServerFacade(openbisServer) {
 						value : sampleCriteria.matchClauses[cIdx].desiredValue.substring(1,sampleCriteria.matchClauses[cIdx].desiredValue.length-1)
 					});
 				}
+//              TODO : This could be supported as done on V3 but is untested, so is commented out in case is buggy
+//				if(sampleCriteria.matchClauses[cIdx]["@type"] === "AttributeMatchClause" &&
+//				        sampleCriteria.matchClauses[cIdx]["attribute"] === "PERM_ID" &&
+//						sampleCriteria.matchClauses[cIdx]["compareMode"] === "EQUALS") {
+//					hackFixForBrokenEquals.push({
+//                        permId : sampleCriteria.matchClauses[cIdx].desiredValue.substring(1,sampleCriteria.matchClauses[cIdx].desiredValue.length-1)
+//                    });
+//				}
 			}
 		}
 		//
@@ -2661,6 +2697,28 @@ function ServerFacade(openbisServer) {
 					callbackFunction(false);
 				});
 			});
+	}
+	
+	this.lockDataSet = function(dataSetPermId, lock, callbackFunction) {
+		require(["as/dto/dataset/id/DataSetPermId", "as/dto/dataset/lock/DataSetLockOptions", "as/dto/dataset/unlock/DataSetUnlockOptions"], 
+				function(DataSetPermId, DataSetLockOptions, DataSetUnlockOptions) {
+			var ids = [new DataSetPermId(dataSetPermId)];
+			if (lock) {
+				mainController.openbisV3.lockDataSets(ids, new DataSetLockOptions()).done(function(result) {
+					callbackFunction(true);
+				}).fail(function(result) {
+					Util.showFailedServerCallError(result);
+					callbackFunction(false);
+				});
+			} else {
+				mainController.openbisV3.unlockDataSets(ids, new DataSetUnlockOptions()).done(function(result) {
+					callbackFunction(true);
+				}).fail(function(result) {
+					Util.showFailedServerCallError(result);
+					callbackFunction(false);
+				});
+			}
+		});
 	}
 
 	// errorHandler: optional. if present, it is called instead of showing the error and the callbackFunction is not called

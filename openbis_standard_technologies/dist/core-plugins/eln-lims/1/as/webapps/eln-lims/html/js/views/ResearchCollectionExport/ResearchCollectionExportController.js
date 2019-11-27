@@ -22,6 +22,24 @@ function ResearchCollectionExportController(parentController) {
         researchCollectionExportView.repaint(views);
     };
 
+    this.initialiseSubmissionTypesDropdown = function(callback) {
+        Util.blockUI();
+        mainController.serverFacade.listSubmissionTypes(function(error, result) {
+            Util.unblockUI();
+            if (error) {
+                Util.showError(error);
+            } else {
+                researchCollectionExportModel.submissionTypes = result.data.map(function (resultItem) {
+                    return {
+                        value: resultItem.url,
+                        label: resultItem.title
+                    };
+                });
+                researchCollectionExportView.refreshSubmissionTypeDropdown();
+            }
+        });
+    };
+
     this.exportSelected = function() {
         var _this = this;
         var selectedNodes = $(researchCollectionExportModel.tree).fancytree('getTree').getSelectedNodes();

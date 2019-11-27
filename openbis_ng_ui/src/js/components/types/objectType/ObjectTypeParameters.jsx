@@ -15,10 +15,17 @@ class ObjectTypeParameters extends React.PureComponent {
   render() {
     logger.log(logger.DEBUG, 'ObjectTypeParameters.render')
 
-    const { type, sections, properties, selection, onChange } = this.props
+    const {
+      type,
+      sections,
+      properties,
+      selection,
+      onChange,
+      onSelectionChange
+    } = this.props
 
     return (
-      <React.Fragment>
+      <div>
         <ObjectTypeParametersType
           type={type}
           selection={selection}
@@ -28,13 +35,15 @@ class ObjectTypeParameters extends React.PureComponent {
           sections={sections}
           selection={selection}
           onChange={onChange}
+          onSelectionChange={onSelectionChange}
         />
         <ObjectTypeParametersProperty
           properties={properties}
           selection={selection}
           onChange={onChange}
+          onSelectionChange={onSelectionChange}
         />
-      </React.Fragment>
+      </div>
     )
   }
 }

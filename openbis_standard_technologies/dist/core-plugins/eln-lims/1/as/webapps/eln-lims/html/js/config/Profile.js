@@ -56,6 +56,7 @@ $.extend(DefaultProfile.prototype, {
 				showExports : true,
 				showStorageManager : true,
 				showAdvancedSearch : true,
+				showUnarchivingHelper : true,
 				showTrashcan : true,
 				showSettings : true,
 				showVocabularyViewer : true,
@@ -398,7 +399,7 @@ $.extend(DefaultProfile.prototype, {
 				"experimentTypeCodes" : []
 		}
 		this.hideTypes = {
-				"sampleTypeCodes" : ["GENERAL_ELN_SETTINGS", "STORAGE_POSITION", "STORAGE"],
+				"sampleTypeCodes" : [],
 				"experimentTypeCodes" : []
 		}
 		

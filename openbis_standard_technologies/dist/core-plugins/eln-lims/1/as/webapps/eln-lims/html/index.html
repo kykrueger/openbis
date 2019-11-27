@@ -86,6 +86,7 @@
 	<script type="text/javascript" src="./lib/bwip-js/lib/bitmap.js"></script>
 	<script type="text/javascript" src="./lib/bwip-js/lib/symdesc.js"></script>
 	<script type="text/javascript" src="./lib/bwip-js/lib/canvas-toblob.js"></script>
+	<script type="text/javascript" src="./lib/jspdf/js/jspdf.min.js"></script>
 
 	<!-- First party libraries -->
 	<script type="text/javascript" src="../../resources/js/openbis.js"></script>
@@ -183,6 +184,9 @@
 	<script type="text/javascript" src="./js/views/ExperimentForm/ExperimentFormModel.js"></script>
 	<script type="text/javascript" src="./js/views/ExperimentForm/ExperimentFormView.js"></script>
 	
+	<script type="text/javascript" src="./js/views/UnarchivingHelper/UnarchivingHelperController.js"></script>
+	<script type="text/javascript" src="./js/views/UnarchivingHelper/UnarchivingHelperModel.js"></script>
+	<script type="text/javascript" src="./js/views/UnarchivingHelper/UnarchivingHelperView.js"></script>
 	<script type="text/javascript" src="./js/views/UserManager/UserManagerController.js"></script>
 	<script type="text/javascript" src="./js/views/UserManager/UserManagerModel.js"></script>
 	<script type="text/javascript" src="./js/views/UserManager/UserManagerView.js"></script>
@@ -198,6 +202,7 @@
 	<script type="text/javascript" src="./js/views/DataSetForm/DataSetFormView.js"></script>
 	
 	<script type="text/javascript" src="./js/views/DataSetForm/widgets/AdvancedEntitySearchDropdown.js"></script>
+	<script type="text/javascript" src="./js/views/DataSetForm/widgets/AdvancedEntitySearchDropdown2.js"></script>
 	<script type="text/javascript" src="./js/views/DataSetForm/widgets/DatasetViewerController.js"></script>
 	<script type="text/javascript" src="./js/views/DataSetForm/widgets/DatasetViewerModel.js"></script>
 	<script type="text/javascript" src="./js/views/DataSetForm/widgets/DatasetViewerView.js"></script>
@@ -287,6 +292,9 @@
 	<script type="text/javascript" src="./plugins/generic/plugin.js"></script>
 
 	<script type="text/javascript" src="./js/util/EventUtil.js"></script>
+	<script type="text/javascript" src="./js/test/TestUtil.js"></script>
+	<script type="text/javascript" src="./js/test/UserTests.js"></script>
+	<script type="text/javascript" src="./js/test/AdminTests.js"></script>
 	<script type="text/javascript" src="./js/test/TestProtocol.js"></script>
 
 	<script type="text/javascript">
@@ -370,11 +378,11 @@
 		}
 		var test = queryString.test;
 		if(test == "true") {
-			TestProtocol.startAdmitTests();
+			TestProtocol.startAdminTests();
 		}
 
 		if ($.cookie("suitename") == "testId") {
-			TestProtocol.startTestUserTests();
+			TestProtocol.startUserTests();
 		}
 	}
 

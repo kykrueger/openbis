@@ -284,12 +284,11 @@ def generateXML(zipOutputStream, fileMetadata, exportDirPath, userInformation, e
     publicationDateField.set('qualifier', 'issued')
     publicationDateField.text = datetime.date.today().strftime('%Y-%m-%d')
 
-    # TODO: uncomment when this code is accepted at DSpace and does not produce the response 500 Internal Server Error.
-    # openBisApiUrlField = ET.SubElement(dim, ET.QName(dimNS, 'field'))
-    # openBisApiUrlField.set('mdschema', 'ethz')
-    # openBisApiUrlField.set('element', 'identifier')
-    # openBisApiUrlField.set('qualifier', 'openBisApiUrl')
-    # openBisApiUrlField.text = originUrl + '/openbis-test/'
+    openBisApiUrlField = ET.SubElement(dim, ET.QName(dimNS, 'field'))
+    openBisApiUrlField.set('mdschema', 'ethz')
+    openBisApiUrlField.set('element', 'identifier')
+    openBisApiUrlField.set('qualifier', 'openBisApiUrl')
+    openBisApiUrlField.text = originUrl + '/openbis-test/'
 
     elnLimsURLPattern = '/openbis-test/webapp/eln-lims/?menuUniqueId=null&viewName='
 

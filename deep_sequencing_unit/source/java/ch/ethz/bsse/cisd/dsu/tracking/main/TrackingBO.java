@@ -17,18 +17,10 @@
 package ch.ethz.bsse.cisd.dsu.tracking.main;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
 
 import ch.ethz.bsse.cisd.dsu.tracking.dto.TrackedEntities;
 import ch.ethz.bsse.cisd.dsu.tracking.dto.TrackingStateDTO;
@@ -441,9 +433,16 @@ public class TrackingBO
         if (commandLineMap.containsKey(TrackingClient.CL_PARAMETER_COPY_DATA_SETS))
         {
         	// Data Sets with higher priority get transferred first 
-            extraDataSetCopy(params, toTransferDataSetsHighPriority);
-            extraDataSetCopy(params, toTransferDataSets);
+            // extraDataSetCopy(params, toTransferDataSetsHighPriority);
+            // extraDataSetCopy(params, toTransferDataSets);
+            ArrayList<AbstractExternalData> toTransferDataSetsAll = new ArrayList<>(toTransferDataSetsHighPriority.size() + toTransferDataSets.size());
+            toTransferDataSetsAll.addAll(toTransferDataSetsHighPriority);
+            toTransferDataSetsAll.addAll(toTransferDataSets);
+            if (!toTransferDataSetsAll.isEmpty()) {
+                extraSCICOREDataSetListCopy(params, toTransferDataSetsAll);
+            }
         }
+
 
         LogUtils.info("Found " + filteredDataSets.size() + " data sets which are connected to samples in " + filterList.toString());       
         setLaneProperties(changedTrackingMap, v3, v3SessionToken);
@@ -486,11 +485,102 @@ public class TrackingBO
         return new SimpleDateFormat(DATE_FORMAT_PATTERN).format(Calendar.getInstance().getTime());
     }
 
-    
-    
+    private static final SimpleDateFormat LIST_TIMESTAMP_FORMAT = new SimpleDateFormat("yyyyMMddHHmmssSSSS");
+
+    private static void extraSCICOREDataSetListCopy(Parameters params, List<AbstractExternalData> dataSets) {
+        LogUtils.info("SCICORE dataset listing - Start");
+        String datasetListFileBytes = "";
+        for (AbstractExternalData dataSet:dataSets) {
+            datasetListFileBytes += dataSet.getPermId() + "\n";
+        }
+        LogUtils.info("SCICORE dataset listing - Content : " + datasetListFileBytes);
+
+        String timestamp = LIST_TIMESTAMP_FORMAT.format(new Date());
+        String tempCanonicalPath = null;
+        try {
+            tempCanonicalPath = java.nio.file.Files.createTempDirectory(timestamp + "-tracking-temp-").toFile().getCanonicalPath();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        LogUtils.info("SCICORE dataset listing - temp : " + tempCanonicalPath);
+
+        String datasetTypeCode = "FASTQ_GZ";
+        String datasetName = timestamp + "_LIST";
+        File datasetSource = new File(tempCanonicalPath + "/" + datasetName);
+        datasetSource.mkdirs();
+        LogUtils.info("SCICORE dataset listing - datasetSource : " + datasetSource.getPath());
+
+        File datasetListFile = new File(tempCanonicalPath + "/" + datasetName + "/" + timestamp + ".tsv");
+        try {
+            java.nio.file.Files.write(datasetListFile.toPath(), datasetListFileBytes.getBytes());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        LogUtils.info("SCICORE dataset listing - writing to : " + datasetListFile.getPath());
+
+        File datasetDestination = new File(params.getDestinationFolderMap().get(datasetTypeCode), datasetName);
+        datasetDestination.mkdirs();
+
+        LogUtils.info("SCICORE dataset listing - datasetDestination : " + datasetDestination.getPath());
+
+        RsyncCopier copier = null;
+        File rsyncBinary = new File(params.getRsyncBinary());
+        if (params.getRsyncFlags() != null)
+        {
+            LogUtils.info("SCICORE dataset listing - RSYNC WITH EXTRA PARAMETERS ");
+            List<String> cmdLineOptions = new ArrayList<String>(params.getRsyncFlags().length);
+            Collections.addAll(cmdLineOptions, params.getRsyncFlags());
+            copier = new RsyncCopier(rsyncBinary, null, cmdLineOptions.toArray(new String[cmdLineOptions.size()]));
+        } else
+        {
+            LogUtils.info("SCICORE dataset listing - RSYNC NO EXTRA PARAMETERS ");
+            copier = new RsyncCopier(rsyncBinary, (File) null, "");
+        }
+
+        final long start = System.currentTimeMillis();
+        LogUtils.info("SCICORE dataset listing - BEFORE RSYNC");
+        Status status = copier.copyContent(datasetSource, datasetDestination, null, null);
+        final long end = System.currentTimeMillis();
+        LogUtils.info("SCICORE dataset listing - AFTER RSYNC TIME: " + (end-start) + " millis.");
+        LogUtils.info("SCICORE dataset listing - AFTER RSYNC STATUS: " + status.toString());
+
+        if (status.isError())
+        {
+            String exceptionMsg =
+                    (status == null) ? "" : " Unexpected exception has occured: "
+                            + status.toString();
+
+            List<EMailAddress> adminEmails = new ArrayList<EMailAddress>();
+            for (String adminEmail : params.getAdminEmail().split(","))
+            {
+                adminEmails.add(new EMailAddress(adminEmail.trim()));
+            }
+
+            EnvironmentFailureException ret =
+                    LogUtils.environmentError(
+                            "Data transfer failed for %s. %s",
+                            datasetName, exceptionMsg);
+
+            IMailClient emailClient = params.getMailClient();
+            emailClient.sendEmailMessage("GFB Tracker: Data transfer problem",
+                    ret.getLocalizedMessage(), null,
+                    new EMailAddress(params.getNotificationEmail()),
+                    adminEmails.toArray(new EMailAddress[0]));
+        }
+// MARKER FILE CREATION FAILED
+//        else {
+//            File datasetDestinationMarkerFile = new File(params.getDestinationFolderMap().get(datasetTypeCode), ".MARKER_is_finished_" + datasetName);
+//            try {
+//                datasetDestinationMarkerFile.createNewFile();
+//            } catch (IOException e) {
+//                throw new RuntimeException(e);
+//            }
+//        }
+    }
+
 	private static void extraDataSetCopy(Parameters params, List<AbstractExternalData> dataSets)
     {
-
         RsyncCopier copier = null;
         File rsyncBinary = new File(params.getRsyncBinary());
         String base_path_string = params.getDssRoot();
