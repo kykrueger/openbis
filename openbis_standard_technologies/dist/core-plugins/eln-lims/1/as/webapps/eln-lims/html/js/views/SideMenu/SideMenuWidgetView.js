@@ -274,7 +274,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
             treeModelUtils.push({ displayName: "Advanced Search", title : advancedSearchLink, entityType: "ADVANCED_SEARCH", key : "ADVANCED_SEARCH", folder : false, lazy : false, view : "showAdvancedSearchPage", icon : "glyphicon glyphicon-search" });
         }
 
-        if(profile.mainMenu.showUnarchivingHelper) {
+        if(profile.mainMenu.showUnarchivingHelper && profile.showDatasetArchivingButton) {
         	var unarchivingHelperLink = _this.getLinkForNode("Unarchiving Helper", "UNARCHIVING_HELPER", "showUnarchivingHelperPage", null, null);
         	treeModelUtils.push({ displayName: "Unarchiving Helper", title : unarchivingHelperLink, entityType: "UNARCHIVING_HELPER", key : "UNARCHIVING_HELPER", folder : false, lazy : false, view : "showUnarchivingHelperPage", icon : "glyphicon glyphicon-open" });
         }
