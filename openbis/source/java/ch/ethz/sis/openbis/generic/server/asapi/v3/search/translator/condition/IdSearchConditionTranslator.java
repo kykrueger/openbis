@@ -77,7 +77,7 @@ public class IdSearchConditionTranslator implements IConditionTranslator<IdSearc
 
     @Override
     public void translate(final IdSearchCriteria<?> criterion, final TableMapper tableMapper, final List<Object> args,
-            final StringBuilder sqlBuilder, final Map<Object, Map<String, JoinInformation>> aliases,
+            final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases,
             final Map<String, String> dataTypeByPropertyName)
     {
         final Object entityId = criterion.getId();

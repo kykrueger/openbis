@@ -63,7 +63,7 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
 
     @Override
     public void translate(final StringFieldSearchCriteria criterion, final TableMapper tableMapper, final List<Object> args,
-            final StringBuilder sqlBuilder, final Map<Object, Map<String, JoinInformation>> aliases,
+            final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases,
             final Map<String, String> dataTypeByPropertyName)
     {
         switch (criterion.getFieldType())
@@ -84,8 +84,7 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
                 final AbstractStringValue value = criterion.getFieldValue();
                 final String propertyName = TranslatorUtils.normalisePropertyName(criterion.getFieldName());
                 final boolean internalProperty = TranslatorUtils.isPropertyInternal(criterion.getFieldName());
-                final Map<String, JoinInformation> joinInformationMap = aliases.get(criterion);
-                final String entityTypesSubTableAlias = joinInformationMap.get(tableMapper.getEntityTypesAttributeTypesTable()).getSubTableAlias();
+                final String entityTypesSubTableAlias = aliases.get(tableMapper.getEntityTypesAttributeTypesTable()).getSubTableAlias();
 
                 TranslatorUtils.appendInternalExternalConstraint(sqlBuilder, args, entityTypesSubTableAlias, internalProperty);
 
@@ -95,7 +94,7 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
 
                 if (value.getClass() != AnyStringValue.class)
                 {
-                    sqlBuilder.append(SP).append(AND).append(SP).append(joinInformationMap.get(tableMapper.getEntitiesTable()).getSubTableAlias())
+                    sqlBuilder.append(SP).append(AND).append(SP).append(aliases.get(tableMapper.getEntitiesTable()).getSubTableAlias())
                             .append(PERIOD).append(ColumnNames.VALUE_COLUMN);
 
                     final String casting = dataTypeByPropertyName.get(propertyName);

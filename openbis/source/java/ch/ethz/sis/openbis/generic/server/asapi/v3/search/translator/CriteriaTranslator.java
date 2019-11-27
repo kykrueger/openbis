@@ -299,7 +299,7 @@ public class CriteriaTranslator
                     (IConditionTranslator<ISearchCriteria>) CRITERIA_TO_CONDITION_TRANSLATOR_MAP.get(criterion.getClass());
             if (conditionTranslator != null)
             {
-                conditionTranslator.translate(criterion, tableMapper, vo.getArgs(), sqlBuilder, vo.getAliases(),
+                conditionTranslator.translate(criterion, tableMapper, vo.getArgs(), sqlBuilder, vo.getAliases().get(criterion),
                         vo.getDataTypeByPropertyName());
             } else
             {

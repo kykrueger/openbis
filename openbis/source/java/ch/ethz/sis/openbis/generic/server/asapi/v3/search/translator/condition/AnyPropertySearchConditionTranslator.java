@@ -50,7 +50,7 @@ public class AnyPropertySearchConditionTranslator implements IConditionTranslato
 
     @Override
     public void translate(final AnyPropertySearchCriteria criterion, final TableMapper tableMapper, final List<Object> args,
-            final StringBuilder sqlBuilder, final Map<Object, Map<String, JoinInformation>> aliases,
+            final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases,
             final Map<String, String> dataTypeByPropertyName)
     {
         switch (criterion.getFieldType())
@@ -58,11 +58,10 @@ public class AnyPropertySearchConditionTranslator implements IConditionTranslato
             case ANY_PROPERTY:
             {
                 final AbstractStringValue value = criterion.getFieldValue();
-                final Map<String, JoinInformation> joinInformationMap = aliases.get(criterion);
 
                 if (value.getClass() != AnyStringValue.class)
                 {
-                    sqlBuilder.append(SP).append(joinInformationMap.get(tableMapper.getEntitiesTable()).getSubTableAlias())
+                    sqlBuilder.append(SP).append(aliases.get(tableMapper.getEntitiesTable()).getSubTableAlias())
                             .append(PERIOD).append(ColumnNames.VALUE_COLUMN).append(SP);
                     TranslatorUtils.appendStringComparatorOp(value.getClass(), TranslatorUtils.stripQuotationMarks(value.getValue()), sqlBuilder,
                             args);

@@ -31,7 +31,6 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.u
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.AND;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.EQ;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.FROM;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.IN;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.LP;
@@ -98,7 +97,7 @@ public class IdentifierSearchConditionTranslator implements IConditionTranslator
 
     @Override
     public void translate(final IdentifierSearchCriteria criterion, final TableMapper tableMapper, final List<Object> args,
-            final StringBuilder sqlBuilder, final Map<Object, Map<String, JoinInformation>> aliases, final Map<String, String> dataTypeByPropertyName)
+            final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases, final Map<String, String> dataTypeByPropertyName)
     {
         final AbstractStringValue fieldValue = criterion.getFieldValue();
         final Class<? extends AbstractStringValue> valueClass = fieldValue.getClass();
@@ -110,6 +109,8 @@ public class IdentifierSearchConditionTranslator implements IConditionTranslator
         final String spaceCode = identifierParts.getSpaceCodeOrNull();
         final String projectCode = identifierParts.getProjectCodeOrNull();
         final String containerCode = identifierParts.getContainerCodeOrNull();
+
+//        final Map<String, JoinInformation> joinInformationMap = aliases.get(criterion);
 
         if (spaceCode != null || projectCode != null || containerCode != null)
         {
@@ -141,6 +142,20 @@ public class IdentifierSearchConditionTranslator implements IConditionTranslator
 
         sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(SP);
         TranslatorUtils.appendStringComparatorOp(valueClass, entityCode, sqlBuilder, args);
+
+        // --SELECT DISTINCT '/' || coalesce(t1.code || '/', '') || coalesce(t2.code || '/', '') || coalesce(t3.code || ':', '') || t0.code
+        //SELECT DISTINCT t0.id
+        //FROM samples_all t0
+        //LEFT JOIN spaces t1 ON t0.space_id = t1.id
+        //LEFT JOIN projects t2 ON t0.proj_id = t2.id
+        //LEFT JOIN samples_all t3 ON t0.samp_id_part_of = t3.id
+        //-- WHERE t0.code  LIKE '%CP-TEST%'
+        //WHERE '/' || coalesce(t1.code || '/', '') || coalesce(t2.code || '/', '') || coalesce(t3.code || ':', '') || t0.code LIKE '%CP-TEST%'
+
+//        final String slash = "/";
+//        sqlBuilder.append(SQ).append(slash).append(SQ).append(SP).append(BARS);
+//        sqlBuilder.append(SP).append(COALESCE).append(LP).append(aliases.get(criterion).get(SPACES_TABLE))
+
     }
 
     /**

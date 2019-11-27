@@ -43,10 +43,9 @@ public class SampleContainerRelationshipSearchConditionTranslator implements ICo
 
     @Override
     public void translate(final SampleContainerSearchCriteria criterion, final TableMapper tableMapper, final List<Object> args,
-            final StringBuilder sqlBuilder, final Map<Object, Map<String, JoinInformation>> aliases, final Map<String, String> dataTypeByPropertyName)
+            final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases, final Map<String, String> dataTypeByPropertyName)
     {
-        final Map<String, JoinInformation> joinInformationByTable = aliases.get(criterion);
-        sqlBuilder.append(joinInformationByTable.get(RELATIONSHIP_TYPES_TABLE).getSubTableAlias()).append(PERIOD).append(CODE_COLUMN).append(SP).append(EQ).append(SP).
+        sqlBuilder.append(aliases.get(RELATIONSHIP_TYPES_TABLE).getSubTableAlias()).append(PERIOD).append(CODE_COLUMN).append(SP).append(EQ).append(SP).
                 append(QU);
         args.add(IGetRelationshipIdExecutor.RelationshipType.CONTAINER_COMPONENT.toString());
     }

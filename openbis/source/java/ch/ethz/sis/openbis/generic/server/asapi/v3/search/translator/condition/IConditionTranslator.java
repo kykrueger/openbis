@@ -34,6 +34,6 @@ public interface IConditionTranslator<CRITERIA extends ISearchCriteria>
             final IAliasFactory aliasFactory);
 
     void translate(final CRITERIA criterion, final TableMapper tableMapper, final List<Object> args, final StringBuilder sqlBuilder,
-            final Map<Object, Map<String, JoinInformation>> aliases, final Map<String, String> dataTypeByPropertyName);
+            final Map<String, JoinInformation> aliases, final Map<String, String> dataTypeByPropertyName);
 
 }

@@ -58,7 +58,7 @@ public class CodeSearchConditionTranslator implements IConditionTranslator<Strin
 
     @Override
     public void translate(final StringFieldSearchCriteria criterion, final TableMapper tableMapper, final List<Object> args,
-            final StringBuilder sqlBuilder, final Map<Object, Map<String, JoinInformation>> aliases,
+            final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases,
             final Map<String, String> dataTypeByPropertyName)
     {
         switch (criterion.getFieldType())
