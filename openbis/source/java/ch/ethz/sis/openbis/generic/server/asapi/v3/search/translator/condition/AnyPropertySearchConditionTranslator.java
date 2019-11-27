@@ -32,7 +32,7 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLL
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SP;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.TRUE;
 
-public class AnyPropertySearchCriteriaTranslator implements IConditionTranslator<AnyPropertySearchCriteria>
+public class AnyPropertySearchConditionTranslator implements IConditionTranslator<AnyPropertySearchCriteria>
 {
 
     @Override

@@ -32,7 +32,7 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLL
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.CODE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.RELATIONSHIP_TYPES_TABLE;
 
-public class SampleContainerRelationshipSearchCriteriaTranslator implements IConditionTranslator<SampleContainerSearchCriteria>
+public class SampleContainerRelationshipSearchConditionTranslator implements IConditionTranslator<SampleContainerSearchCriteria>
 {
     @Override
     public Map<String, JoinInformation> getJoinInformationMap(final SampleContainerSearchCriteria criterion, final TableMapper tableMapper,

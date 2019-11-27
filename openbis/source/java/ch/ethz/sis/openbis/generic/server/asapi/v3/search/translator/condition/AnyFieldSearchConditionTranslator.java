@@ -50,7 +50,7 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLL
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.QU;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SP;
 
-public class AnyFieldSearchCriteriaTranslator implements IConditionTranslator<AnyFieldSearchCriteria>
+public class AnyFieldSearchConditionTranslator implements IConditionTranslator<AnyFieldSearchCriteria>
 {
 
     @Override

@@ -44,7 +44,7 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLL
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.MODIFICATION_TIMESTAMP_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.REGISTRATION_TIMESTAMP_COLUMN;
 
-public class DateFieldSearchCriteriaTranslator implements IConditionTranslator<DateFieldSearchCriteria>
+public class DateFieldSearchConditionTranslator implements IConditionTranslator<DateFieldSearchCriteria>
 {
 
     private static final String TIMESTAMP_DATA_TYPE_CODE = "TIMESTAMP";

@@ -44,7 +44,7 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLL
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.THEN;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.WHEN;
 
-public class NumberFieldSearchCriteriaTranslator implements IConditionTranslator<NumberFieldSearchCriteria>
+public class NumberFieldSearchConditionTranslator implements IConditionTranslator<NumberFieldSearchCriteria>
 {
 
     private static final String INTEGER_DATA_TYPE_CODE = "INTEGER";

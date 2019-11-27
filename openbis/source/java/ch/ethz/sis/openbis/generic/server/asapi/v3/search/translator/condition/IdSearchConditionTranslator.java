@@ -66,7 +66,7 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.PROJECTS_TA
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SAMPLES_ALL_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SPACES_TABLE;
 
-public class IdSearchCriteriaTranslator implements IConditionTranslator<IdSearchCriteria<?>>
+public class IdSearchConditionTranslator implements IConditionTranslator<IdSearchCriteria<?>>
 {
 
     @Override

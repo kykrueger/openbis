@@ -46,7 +46,7 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PART_OF_SA
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.USER_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.PERSONS_TABLE;
 
-public class CodeSearchCriteriaTranslator implements IConditionTranslator<StringFieldSearchCriteria>
+public class CodeSearchConditionTranslator implements IConditionTranslator<StringFieldSearchCriteria>
 {
 
     @Override

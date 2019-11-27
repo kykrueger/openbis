@@ -37,7 +37,7 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLL
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.QU;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SP;
 
-public class StringFieldSearchCriteriaTranslator implements IConditionTranslator<StringFieldSearchCriteria>
+public class StringFieldSearchConditionTranslator implements IConditionTranslator<StringFieldSearchCriteria>
 {
 
     @Override
