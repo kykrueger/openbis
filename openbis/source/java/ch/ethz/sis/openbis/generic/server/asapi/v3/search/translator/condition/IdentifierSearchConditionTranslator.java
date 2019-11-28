@@ -106,59 +106,10 @@ public class IdentifierSearchConditionTranslator implements IConditionTranslator
             final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases, final Map<String, String> dataTypeByPropertyName)
     {
         final AbstractStringValue fieldValue = criterion.getFieldValue();
-        final Class<? extends AbstractStringValue> valueClass = fieldValue.getClass();
-
-//        final FullEntityIdentifier fullObjectIdentifier = new FullEntityIdentifier(fieldValue.getValue(), null);
-//        final String entityCode = fullObjectIdentifier.getEntityCode();
-//        final SampleIdentifierParts identifierParts = fullObjectIdentifier.getParts();
-//
-//        final String spaceCode = identifierParts.getSpaceCodeOrNull();
-//        final String projectCode = identifierParts.getProjectCodeOrNull();
-//        final String containerCode = identifierParts.getContainerCodeOrNull();
-//
-//        if (spaceCode != null || projectCode != null || containerCode != null)
-//        {
-//            sqlBuilder.append(LP);
-//
-//            if (spaceCode != null)
-//            {
-//                buildSelectByIdConditionWithSubquery(sqlBuilder, SPACE_COLUMN, SPACES_TABLE, CODE_COLUMN, valueClass, spaceCode, args);
-//                sqlBuilder.append(SP).append(AND).append(SP);
-//            }
-//
-//            if (projectCode != null)
-//            {
-//                buildSelectByIdConditionWithSubquery(sqlBuilder, PROJECT_COLUMN, PROJECTS_TABLE, CODE_COLUMN, valueClass, projectCode,
-//                        args);
-//                sqlBuilder.append(SP).append(AND).append(SP);
-//            }
-//
-//            if (containerCode != null)
-//            {
-//                buildSelectByIdConditionWithSubquery(sqlBuilder, PART_OF_SAMPLE_COLUMN, SAMPLES_ALL_TABLE, CODE_COLUMN, valueClass,
-//                        containerCode, args);
-//                sqlBuilder.append(SP).append(AND).append(SP);
-//            }
-//
-//            sqlBuilder.setLength(sqlBuilder.length() - AND.length() - SP.length() * 2);
-//            sqlBuilder.append(RP).append(SP).append(AND).append(SP);
-//        }
-//
-//        sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(SP);
-//        TranslatorUtils.appendStringComparatorOp(valueClass, entityCode, sqlBuilder, args);
-
-        // --SELECT DISTINCT '/' || coalesce(t1.code || '/', '') || coalesce(t2.code || '/', '') || coalesce(t3.code || ':', '') || t0.code
-        //SELECT DISTINCT t0.id
-        //FROM samples_all t0
-        //LEFT JOIN spaces t1 ON t0.space_id = t1.id
-        //LEFT JOIN projects t2 ON t0.proj_id = t2.id
-        //LEFT JOIN samples_all t3 ON t0.samp_id_part_of = t3.id
-        //-- WHERE t0.code  LIKE '%CP-TEST%'
-        //WHERE '/' || coalesce(t1.code || '/', '') || coalesce(t2.code || '/', '') || coalesce(t3.code || ':', '') || t0.code LIKE '%CP-TEST%'
-
         final String entitiesTable = tableMapper.getEntitiesTable();
         final String slash = "/";
         final String colon = ":";
+
         sqlBuilder.append(SQ).append(slash).append(SQ).append(SP).append(BARS);
 
         appendCoalesce(sqlBuilder, aliases.get(SPACES_TABLE).getSubTableAlias(), slash);
@@ -169,7 +120,7 @@ public class IdentifierSearchConditionTranslator implements IConditionTranslator
         }
 
         sqlBuilder.append(SP).append(MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(SP);
-        TranslatorUtils.appendStringComparatorOp(valueClass, fieldValue.getValue(), sqlBuilder, args);
+        TranslatorUtils.appendStringComparatorOp(fieldValue.getClass(), fieldValue.getValue(), sqlBuilder, args);
     }
 
     /**
