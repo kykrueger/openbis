@@ -836,7 +836,7 @@ public class SearchSampleTest extends AbstractSampleTest
     public void testSearchWithAnyProperty()
     {
         SampleSearchCriteria criteria = new SampleSearchCriteria();
-        criteria.withAnyProperty().thatEquals("\"very advanced\"");
+        criteria.withAnyProperty().thatStartsWith("\"very advanced\"");
         testSearch(TEST_USER, criteria, "/CISD/CP-TEST-1");
     }
 
