@@ -14,18 +14,22 @@ class ObjectTypeDialogRemoveProperty extends React.Component {
         open={open}
         onConfirm={onConfirm}
         onCancel={onCancel}
-        title={'Remove "' + this.getPropertyName() + '" property'}
-        content='The property is used by some entities. Are you sure you want to remove it?'
+        title={this.getTitle()}
+        content='This property is already used by some entities. Are you sure you want to remove it?'
       />
     )
   }
 
-  getPropertyName() {
+  getTitle() {
     const { open, selection, properties } = this.props
 
     if (open) {
       const property = _.find(properties, ['id', selection.params.id])
-      return property.code
+      if (property.code) {
+        return `Remove "${property.code}" property`
+      } else {
+        return 'Remove property'
+      }
     } else {
       return null
     }

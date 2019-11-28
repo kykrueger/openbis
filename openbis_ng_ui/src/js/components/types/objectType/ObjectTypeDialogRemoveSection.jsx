@@ -14,18 +14,22 @@ class ObjectTypeDialogRemoveSection extends React.Component {
         open={open}
         onConfirm={onConfirm}
         onCancel={onCancel}
-        title={'Remove "' + this.getSectionName() + '" section'}
-        content='The section contains properties used in entities. Are you sure you want to remove it?'
+        title={this.getTitle()}
+        content='This section contains properties which are already used by some entities. Are you sure you want to remove it?'
       />
     )
   }
 
-  getSectionName() {
+  getTitle() {
     const { open, selection, sections } = this.props
 
     if (open) {
       const section = _.find(sections, ['id', selection.params.id])
-      return section.name
+      if (section.name) {
+        return `Remove "${section.name}" section`
+      } else {
+        return 'Remove section'
+      }
     } else {
       return null
     }

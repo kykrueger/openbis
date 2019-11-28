@@ -4,6 +4,7 @@ import Typography from '@material-ui/core/Typography'
 import CheckboxField from '../../common/form/CheckboxField.jsx'
 import TextField from '../../common/form/TextField.jsx'
 import SelectField from '../../common/form/SelectField.jsx'
+import WarningIcon from '@material-ui/icons/Warning'
 import { facade, dto } from '../../../services/openbis.js'
 import logger from '../../../common/logger.js'
 
@@ -16,6 +17,14 @@ const styles = theme => ({
   },
   field: {
     paddingBottom: theme.spacing(2)
+  },
+  warning: {
+    display: 'flex',
+    alignItems: 'center',
+    '& svg': {
+      marginRight: theme.spacing(1),
+      color: theme.palette.warning.main
+    }
   }
 })
 
@@ -173,6 +182,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
         <Typography variant='h6' className={classes.header}>
           Property
         </Typography>
+        {this.renderWarning(property)}
         {this.renderCode(property)}
         {this.renderDataType(property)}
         {this.renderVocabulary(property)}
@@ -183,6 +193,22 @@ class ObjectTypeParametersProperty extends React.PureComponent {
         {this.renderVisible(property)}
       </div>
     )
+  }
+
+  renderWarning(property) {
+    if (property.used) {
+      const { classes } = this.props
+      return (
+        <div className={classes.field}>
+          <Typography variant='body2' className={classes.warning}>
+            <WarningIcon />
+            This property is already used by some entities.
+          </Typography>
+        </div>
+      )
+    } else {
+      return null
+    }
   }
 
   renderLabel(property) {
