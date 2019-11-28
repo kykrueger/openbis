@@ -62,7 +62,6 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ORIGINAL_D
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PARENT_SAMPLE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PART_OF_DEPTH;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PART_OF_SAMPLE_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PERM_ID_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PERSON_IS_ACTIVE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PERSON_LEADER_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PERSON_MODIFIER_COLUMN;
@@ -365,7 +364,6 @@ public enum TableMapper
     private static void initSampleFieldToSQLTypeMap()
     {
         final Map<String, PSQLTypes> fields = SAMPLE.fieldToSQLTypeMap;
-        fields.put(PERM_ID_COLUMN, PSQLTypes.VARCHAR);
         fields.put(CODE_COLUMN, PSQLTypes.VARCHAR);
         fields.put(REGISTRATION_TIMESTAMP_COLUMN, PSQLTypes.TIMESTAMP_WITH_TZ);
         fields.put(MODIFICATION_TIMESTAMP_COLUMN, PSQLTypes.TIMESTAMP_WITH_TZ);
@@ -397,7 +395,6 @@ public enum TableMapper
     private static void initExperimentFieldToSQLTypeMap()
     {
         final Map<String, PSQLTypes> fields = EXPERIMENT.fieldToSQLTypeMap;
-        fields.put(PERM_ID_COLUMN, PSQLTypes.VARCHAR);
         fields.put(CODE_COLUMN, PSQLTypes.VARCHAR);
         fields.put(REGISTRATION_TIMESTAMP_COLUMN, PSQLTypes.TIMESTAMP_WITH_TZ);
         fields.put(MODIFICATION_TIMESTAMP_COLUMN, PSQLTypes.TIMESTAMP_WITH_TZ);
@@ -433,7 +430,7 @@ public enum TableMapper
     private static void initSampleSQLTypeToFieldsMap()
     {
         final Map<PSQLTypes, Set<String>> map = SAMPLE.sqlTypeToFieldsMap;
-        map.put(PSQLTypes.VARCHAR, new HashSet<>(Arrays.asList(PERM_ID_COLUMN, CODE_COLUMN)));
+        map.put(PSQLTypes.VARCHAR, new HashSet<>(Arrays.asList(CODE_COLUMN)));
         map.put(PSQLTypes.TIMESTAMP_WITH_TZ, new HashSet<>(Arrays.asList(REGISTRATION_TIMESTAMP_COLUMN, MODIFICATION_TIMESTAMP_COLUMN)));
         map.put(PSQLTypes.INT8, new HashSet<>(Arrays.asList(EXPERIMENT_COLUMN, SAMPLE_TYPE_COLUMN, PERSON_REGISTERER_COLUMN, SPACE_COLUMN,
                 PART_OF_SAMPLE_COLUMN, PERSON_MODIFIER_COLUMN, PROJECT_COLUMN)));
@@ -478,7 +475,6 @@ public enum TableMapper
     private static void initProjectFieldToSQLTypeMap()
     {
         final Map<String, PSQLTypes> fields = PROJECT.fieldToSQLTypeMap;
-        fields.put(PERM_ID_COLUMN, PSQLTypes.VARCHAR);
         fields.put(CODE_COLUMN, PSQLTypes.VARCHAR);
         fields.put(DESCRIPTION_COLUMN, PSQLTypes.VARCHAR);
         fields.put(SPACE_COLUMN, PSQLTypes.INT8);
@@ -492,7 +488,7 @@ public enum TableMapper
     private static void initProjectSQLTypeToFieldsMap()
     {
         final Map<PSQLTypes, Set<String>> map = PROJECT.sqlTypeToFieldsMap;
-        map.put(PSQLTypes.VARCHAR, new HashSet<>(Arrays.asList(PERM_ID_COLUMN, CODE_COLUMN, DESCRIPTION_COLUMN)));
+        map.put(PSQLTypes.VARCHAR, new HashSet<>(Arrays.asList(CODE_COLUMN, DESCRIPTION_COLUMN)));
         map.put(PSQLTypes.TIMESTAMP_WITH_TZ, new HashSet<>(Arrays.asList(REGISTRATION_TIMESTAMP_COLUMN, MODIFICATION_TIMESTAMP_COLUMN)));
         map.put(PSQLTypes.INT8, new HashSet<>(Arrays.asList(SPACE_COLUMN, PERSON_LEADER_COLUMN, PERSON_REGISTERER_COLUMN, PERSON_MODIFIER_COLUMN)));
     }
