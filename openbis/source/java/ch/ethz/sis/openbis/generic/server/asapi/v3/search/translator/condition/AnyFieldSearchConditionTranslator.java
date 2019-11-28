@@ -28,6 +28,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinInformation;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinType;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
@@ -57,7 +58,9 @@ public class AnyFieldSearchConditionTranslator implements IConditionTranslator<A
     public Map<String, JoinInformation> getJoinInformationMap(final AnyFieldSearchCriteria criterion, final TableMapper tableMapper,
             final IAliasFactory aliasFactory)
     {
-        return IdentifierSearchConditionTranslator.doGetJoinInformationMap(tableMapper, aliasFactory);
+        final Map<String, JoinInformation> result = TranslatorUtils.getPropertyJoinInformationMap(tableMapper, aliasFactory, JoinType.LEFT);
+        IdentifierSearchConditionTranslator.appendJoinInformationMap(result, tableMapper, aliasFactory);
+        return result;
     }
 
     @Override
@@ -76,6 +79,9 @@ public class AnyFieldSearchConditionTranslator implements IConditionTranslator<A
                 final boolean equalsToComparison = (value.getClass() == StringEqualToValue.class);
                 final String separator = SP + OR + SP;
                 final int separatorLength = separator.length();
+
+                AnyPropertySearchConditionTranslator.doTranslate(criterion, tableMapper, args, sqlBuilder, aliases);
+                sqlBuilder.append(separator);
 
                 IdentifierSearchConditionTranslator.doTranslate(criterion, tableMapper, args, sqlBuilder, aliases);
                 sqlBuilder.append(separator);

@@ -53,16 +53,19 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SPACES_TABL
 public class IdentifierSearchConditionTranslator implements IConditionTranslator<IdentifierSearchCriteria>
 {
 
+    private static final String UNIQUE_PREFIX = IdentifierSearchConditionTranslator.class.getName();
+
     @Override
     public Map<String, JoinInformation> getJoinInformationMap(final IdentifierSearchCriteria criterion, final TableMapper tableMapper,
             final IAliasFactory aliasFactory)
     {
-        return doGetJoinInformationMap(tableMapper, aliasFactory);
+        final Map<String, JoinInformation> result = new LinkedHashMap<>();
+        appendJoinInformationMap(result, tableMapper, aliasFactory);
+        return result;
     }
 
-    static Map<String, JoinInformation> doGetJoinInformationMap(final TableMapper tableMapper, final IAliasFactory aliasFactory)
+    static void appendJoinInformationMap(final Map<String, JoinInformation> result, final TableMapper tableMapper, final IAliasFactory aliasFactory)
     {
-        final Map<String, JoinInformation> result = new LinkedHashMap<>();
         final String entitiesTable = tableMapper.getEntitiesTable();
 
         final JoinInformation joinInformation1 = new JoinInformation();
@@ -73,7 +76,7 @@ public class IdentifierSearchConditionTranslator implements IConditionTranslator
         joinInformation1.setSubTable(SPACES_TABLE);
         joinInformation1.setSubTableAlias(aliasFactory.createAlias());
         joinInformation1.setSubTableIdField(ID_COLUMN);
-        result.put(SPACES_TABLE, joinInformation1);
+        result.put(UNIQUE_PREFIX + SPACES_TABLE, joinInformation1);
 
         final JoinInformation joinInformation2 = new JoinInformation();
         joinInformation2.setJoinType(JoinType.LEFT);
@@ -83,7 +86,7 @@ public class IdentifierSearchConditionTranslator implements IConditionTranslator
         joinInformation2.setSubTable(PROJECTS_TABLE);
         joinInformation2.setSubTableAlias(aliasFactory.createAlias());
         joinInformation2.setSubTableIdField(ID_COLUMN);
-        result.put(PROJECTS_TABLE, joinInformation2);
+        result.put(UNIQUE_PREFIX + PROJECTS_TABLE, joinInformation2);
 
         if (entitiesTable.equals(SAMPLES_ALL_TABLE))
         {
@@ -96,10 +99,8 @@ public class IdentifierSearchConditionTranslator implements IConditionTranslator
             joinInformation3.setSubTable(entitiesTable);
             joinInformation3.setSubTableAlias(aliasFactory.createAlias());
             joinInformation3.setSubTableIdField(ID_COLUMN);
-            result.put(entitiesTable, joinInformation3);
+            result.put(UNIQUE_PREFIX + entitiesTable, joinInformation3);
         }
-
-        return result;
     }
 
     @Override
@@ -119,11 +120,11 @@ public class IdentifierSearchConditionTranslator implements IConditionTranslator
 
         sqlBuilder.append(SQ).append(slash).append(SQ).append(SP).append(BARS);
 
-        appendCoalesce(sqlBuilder, aliases.get(SPACES_TABLE).getSubTableAlias(), slash);
-        appendCoalesce(sqlBuilder, aliases.get(PROJECTS_TABLE).getSubTableAlias(), slash);
+        appendCoalesce(sqlBuilder, aliases.get(UNIQUE_PREFIX + SPACES_TABLE).getSubTableAlias(), slash);
+        appendCoalesce(sqlBuilder, aliases.get(UNIQUE_PREFIX + PROJECTS_TABLE).getSubTableAlias(), slash);
         if (entitiesTable.equals(SAMPLES_ALL_TABLE))
         {
-            appendCoalesce(sqlBuilder, aliases.get(entitiesTable).getSubTableAlias(), colon);
+            appendCoalesce(sqlBuilder, aliases.get(UNIQUE_PREFIX + entitiesTable).getSubTableAlias(), colon);
         }
 
         sqlBuilder.append(SP).append(MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(SP);

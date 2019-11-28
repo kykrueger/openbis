@@ -23,6 +23,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractStringValu
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AnyPropertySearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AnyStringValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchFieldType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringFieldSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinType;
@@ -42,7 +43,7 @@ public class AnyPropertySearchConditionTranslator implements IConditionTranslato
     {
         if (criterion.getFieldType() == SearchFieldType.ANY_PROPERTY)
         {
-            return TranslatorUtils.getPropertyJoinInformationMap(tableMapper, aliasFactory, JoinType.INNER);
+            return TranslatorUtils.getPropertyJoinInformationMap(tableMapper, aliasFactory, JoinType.LEFT);
         } else {
             throw new IllegalArgumentException();
         }
@@ -70,7 +71,7 @@ public class AnyPropertySearchConditionTranslator implements IConditionTranslato
         }
     }
 
-    static void doTranslate(final AnyPropertySearchCriteria criterion, final TableMapper tableMapper, final List<Object> args,
+    static void doTranslate(final StringFieldSearchCriteria criterion, final TableMapper tableMapper, final List<Object> args,
             final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases)
     {
         final AbstractStringValue value = criterion.getFieldValue();
