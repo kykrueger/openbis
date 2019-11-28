@@ -279,7 +279,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
         	treeModelUtils.push({ displayName: "Unarchiving Helper", title : unarchivingHelperLink, entityType: "UNARCHIVING_HELPER", key : "UNARCHIVING_HELPER", folder : false, lazy : false, view : "showUnarchivingHelperPage", icon : "glyphicon glyphicon-open" });
         }
         
-        if (profile.mainMenu.showExports || profile.mainMenu.showResearchCollectionExportBuilder || profile.mainMenu.showZenodoExportBuilder) {
+        if (profile.mainMenu.showExports || options.showResearchCollectionExportBuilder || profile.mainMenu.showZenodoExportBuilder) {
             var treeModelExports = [];
 
             if (profile.mainMenu.showExports) {
@@ -290,7 +290,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
                 });
             }
 
-            if (profile.mainMenu.showResearchCollectionExportBuilder) {
+            if (options.showResearchCollectionExportBuilder) {
                 var researchCollectionExportBuilderLink = _this.getLinkForNode("Export to Research Collection",
                         "EXPORT_TO_RESEARCH_COLLECTION", "showResearchCollectionExportPage", null, null);
                 treeModelExports.push({
