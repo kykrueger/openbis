@@ -92,6 +92,10 @@ class ObjectType extends React.PureComponent {
         used: used
       }
 
+      type.original = {
+        ...type
+      }
+
       const sections = []
       const properties = []
       let currentSection = null
@@ -121,8 +125,6 @@ class ObjectType extends React.PureComponent {
           mandatory: assignment.mandatory,
           showInEditView: assignment.showInEditView,
           showRawValueInForms: assignment.showRawValueInForms,
-          initialValueForExistingEntities:
-            assignment.initialValueForExistingEntities,
           used: used
         }
 
@@ -136,7 +138,11 @@ class ObjectType extends React.PureComponent {
           }
           sections.push(currentSection)
         }
+
         currentProperty.section = currentSection.id
+        currentProperty.original = {
+          ...currentProperty
+        }
 
         properties.push(currentProperty)
       })

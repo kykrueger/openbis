@@ -189,8 +189,9 @@ class ObjectTypeParametersProperty extends React.PureComponent {
         {this.renderMaterial(property)}
         {this.renderLabel(property)}
         {this.renderDescription(property)}
-        {this.renderMandatory(property)}
         {this.renderVisible(property)}
+        {this.renderMandatory(property)}
+        {this.renderInitialValue(property)}
       </div>
     )
   }
@@ -356,6 +357,29 @@ class ObjectTypeParametersProperty extends React.PureComponent {
         />
       </div>
     )
+  }
+
+  renderInitialValue(property) {
+    const { type, classes } = this.props
+
+    const wasMandatory = property.original ? property.original.mandatory : false
+    const isMandatory = property.mandatory
+
+    if (type.used && !wasMandatory && isMandatory) {
+      return (
+        <div className={classes.field}>
+          <TextField
+            label='Initial Value'
+            name='initialValueForExistingEntities'
+            value={property.initialValueForExistingEntities}
+            onChange={this.handleChange}
+            onFocus={this.handleFocus}
+          />
+        </div>
+      )
+    } else {
+      return null
+    }
   }
 
   renderVisible(property) {
