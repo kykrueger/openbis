@@ -57,7 +57,7 @@ public class AnyFieldSearchConditionTranslator implements IConditionTranslator<A
     public Map<String, JoinInformation> getJoinInformationMap(final AnyFieldSearchCriteria criterion, final TableMapper tableMapper,
             final IAliasFactory aliasFactory)
     {
-        return null;
+        return IdentifierSearchConditionTranslator.doGetJoinInformationMap(tableMapper, aliasFactory);
     }
 
     @Override
@@ -76,6 +76,9 @@ public class AnyFieldSearchConditionTranslator implements IConditionTranslator<A
                 final boolean equalsToComparison = (value.getClass() == StringEqualToValue.class);
                 final String separator = SP + OR + SP;
                 final int separatorLength = separator.length();
+
+                IdentifierSearchConditionTranslator.doTranslate(criterion, tableMapper, args, sqlBuilder, aliases);
+                sqlBuilder.append(separator);
 
                 final StringBuilder resultSqlBuilder = tableMapper.getFieldToSQLTypeMap().entrySet().stream().collect(
                         StringBuilder::new,

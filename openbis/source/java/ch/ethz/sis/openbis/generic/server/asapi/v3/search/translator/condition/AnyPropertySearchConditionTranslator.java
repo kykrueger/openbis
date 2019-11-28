@@ -57,18 +57,7 @@ public class AnyPropertySearchConditionTranslator implements IConditionTranslato
         {
             case ANY_PROPERTY:
             {
-                final AbstractStringValue value = criterion.getFieldValue();
-
-                if (value.getClass() != AnyStringValue.class)
-                {
-                    sqlBuilder.append(SP).append(aliases.get(tableMapper.getEntitiesTable()).getSubTableAlias())
-                            .append(PERIOD).append(ColumnNames.VALUE_COLUMN).append(SP);
-                    TranslatorUtils.appendStringComparatorOp(value.getClass(), TranslatorUtils.stripQuotationMarks(value.getValue()), sqlBuilder,
-                            args);
-                } else
-                {
-                    sqlBuilder.append(TRUE);
-                }
+                doTranslate(criterion, tableMapper, args, sqlBuilder, aliases);
                 break;
             }
 
@@ -78,6 +67,23 @@ public class AnyPropertySearchConditionTranslator implements IConditionTranslato
             {
                 throw new IllegalArgumentException("Field type " + criterion.getFieldType() + " is not supported");
             }
+        }
+    }
+
+    static void doTranslate(final AnyPropertySearchCriteria criterion, final TableMapper tableMapper, final List<Object> args,
+            final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases)
+    {
+        final AbstractStringValue value = criterion.getFieldValue();
+
+        if (value.getClass() != AnyStringValue.class)
+        {
+            sqlBuilder.append(SP).append(aliases.get(tableMapper.getEntitiesTable()).getSubTableAlias())
+                    .append(PERIOD).append(ColumnNames.VALUE_COLUMN).append(SP);
+            TranslatorUtils.appendStringComparatorOp(value.getClass(), TranslatorUtils.stripQuotationMarks(value.getValue()), sqlBuilder,
+                    args);
+        } else
+        {
+            sqlBuilder.append(TRUE);
         }
     }
 
