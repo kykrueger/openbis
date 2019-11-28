@@ -25,13 +25,9 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.IdentifierSearchCr
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringFieldSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinInformation;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinType;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator.MAIN_TABLE_ALIAS;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.BARS;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.COALESCE;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.COMMA;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.FROM;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.IN;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.LP;
@@ -39,13 +35,10 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLL
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.RP;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SELECT;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SP;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SQ;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.WHERE;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.CODE_COLUMN;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils.appendStringComparatorOp;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils.buildFullIdentifierConcatenationString;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PART_OF_SAMPLE_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PROJECT_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.SPACE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.PROJECTS_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SAMPLES_ALL_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SPACES_TABLE;
@@ -60,94 +53,29 @@ public class IdentifierSearchConditionTranslator implements IConditionTranslator
             final IAliasFactory aliasFactory)
     {
         final Map<String, JoinInformation> result = new LinkedHashMap<>();
-        appendJoinInformationMap(result, tableMapper, aliasFactory);
+        TranslatorUtils.appendIdentifierJoinInformationMap(result, tableMapper, aliasFactory, UNIQUE_PREFIX);
         return result;
-    }
-
-    static void appendJoinInformationMap(final Map<String, JoinInformation> result, final TableMapper tableMapper, final IAliasFactory aliasFactory)
-    {
-        final String entitiesTable = tableMapper.getEntitiesTable();
-
-        final JoinInformation joinInformation1 = new JoinInformation();
-        joinInformation1.setJoinType(JoinType.LEFT);
-        joinInformation1.setMainTable(entitiesTable);
-        joinInformation1.setMainTableAlias(MAIN_TABLE_ALIAS);
-        joinInformation1.setMainTableIdField(SPACE_COLUMN);
-        joinInformation1.setSubTable(SPACES_TABLE);
-        joinInformation1.setSubTableAlias(aliasFactory.createAlias());
-        joinInformation1.setSubTableIdField(ID_COLUMN);
-        result.put(UNIQUE_PREFIX + SPACES_TABLE, joinInformation1);
-
-        final JoinInformation joinInformation2 = new JoinInformation();
-        joinInformation2.setJoinType(JoinType.LEFT);
-        joinInformation2.setMainTable(entitiesTable);
-        joinInformation2.setMainTableAlias(MAIN_TABLE_ALIAS);
-        joinInformation2.setMainTableIdField(PROJECT_COLUMN);
-        joinInformation2.setSubTable(PROJECTS_TABLE);
-        joinInformation2.setSubTableAlias(aliasFactory.createAlias());
-        joinInformation2.setSubTableIdField(ID_COLUMN);
-        result.put(UNIQUE_PREFIX + PROJECTS_TABLE, joinInformation2);
-
-        if (entitiesTable.equals(SAMPLES_ALL_TABLE))
-        {
-            // Only samples can have containers.
-            final JoinInformation joinInformation3 = new JoinInformation();
-            joinInformation3.setJoinType(JoinType.LEFT);
-            joinInformation3.setMainTable(entitiesTable);
-            joinInformation3.setMainTableAlias(MAIN_TABLE_ALIAS);
-            joinInformation3.setMainTableIdField(PART_OF_SAMPLE_COLUMN);
-            joinInformation3.setSubTable(entitiesTable);
-            joinInformation3.setSubTableAlias(aliasFactory.createAlias());
-            joinInformation3.setSubTableIdField(ID_COLUMN);
-            result.put(UNIQUE_PREFIX + entitiesTable, joinInformation3);
-        }
     }
 
     @Override
     public void translate(final IdentifierSearchCriteria criterion, final TableMapper tableMapper, final List<Object> args,
             final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases, final Map<String, String> dataTypeByPropertyName)
     {
-        doTranslate(criterion, tableMapper, args, sqlBuilder, aliases);
+        doTranslate(criterion, tableMapper, args, sqlBuilder, aliases, UNIQUE_PREFIX);
     }
 
     static void doTranslate(final StringFieldSearchCriteria criterion, final TableMapper tableMapper, final List<Object> args,
-            final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases)
+            final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases, final String prefix)
     {
         final AbstractStringValue fieldValue = criterion.getFieldValue();
         final String entitiesTable = tableMapper.getEntitiesTable();
-        final String slash = "/";
-        final String colon = ":";
+        final String spacesTableAlias = aliases.get(prefix + SPACES_TABLE).getSubTableAlias();
+        final String projectsTableAlias = aliases.get(prefix + PROJECTS_TABLE).getSubTableAlias();
+        final String samplesTableAlias = entitiesTable.equals(SAMPLES_ALL_TABLE)
+                ? aliases.get(prefix + entitiesTable).getSubTableAlias() : null;
 
-        sqlBuilder.append(SQ).append(slash).append(SQ).append(SP).append(BARS);
-
-        appendCoalesce(sqlBuilder, aliases.get(UNIQUE_PREFIX + SPACES_TABLE).getSubTableAlias(), slash);
-        appendCoalesce(sqlBuilder, aliases.get(UNIQUE_PREFIX + PROJECTS_TABLE).getSubTableAlias(), slash);
-        if (entitiesTable.equals(SAMPLES_ALL_TABLE))
-        {
-            appendCoalesce(sqlBuilder, aliases.get(UNIQUE_PREFIX + entitiesTable).getSubTableAlias(), colon);
-        }
-
-        sqlBuilder.append(SP).append(MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(SP);
-        TranslatorUtils.appendStringComparatorOp(fieldValue.getClass(), fieldValue.getValue(), sqlBuilder, args);
-    }
-
-    /**
-     * Appends the following text to sqlBuilder.
-     *
-     * <pre>
-     *     coalesce([alias].code || '[separator]', '') ||
-     * </pre>
-     *
-     * @param sqlBuilder query builder.
-     * @param alias alias of the table.
-     * @param separator string to be appender at the end in the first parameter.
-     */
-    private static void appendCoalesce(final StringBuilder sqlBuilder, final String alias, final String separator)
-    {
-        sqlBuilder.append(SP).append(COALESCE).append(LP).append(alias).append(PERIOD).append(CODE_COLUMN).append(SP)
-                .append(BARS)
-                .append(SP).append(SQ).append(separator).append(SQ).append(COMMA).append(SP).append(SQ).append(SQ).append(RP).append(SP)
-                .append(BARS);
+        buildFullIdentifierConcatenationString(sqlBuilder, spacesTableAlias, projectsTableAlias, samplesTableAlias);
+        appendStringComparatorOp(fieldValue.getClass(), fieldValue.getValue(), sqlBuilder, args);
     }
 
     /**
@@ -166,7 +94,7 @@ public class IdentifierSearchConditionTranslator implements IConditionTranslator
         sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(columnName).append(SP).append(IN).append(SP).append(LP).
                 append(SELECT).append(SP).append(ID_COLUMN).append(SP).append(FROM).append(SP).append(subqueryTable).append(SP).
                 append(WHERE).append(SP).append(subqueryTableColumn).append(SP);
-        TranslatorUtils.appendStringComparatorOp(valueClass, finalValue, sqlBuilder, args);
+        appendStringComparatorOp(valueClass, finalValue, sqlBuilder, args);
         sqlBuilder.append(RP);
     }
 

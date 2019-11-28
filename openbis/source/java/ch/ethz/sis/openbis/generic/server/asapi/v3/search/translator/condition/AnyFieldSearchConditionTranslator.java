@@ -54,12 +54,14 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLL
 public class AnyFieldSearchConditionTranslator implements IConditionTranslator<AnyFieldSearchCriteria>
 {
 
+    private static final String UNIQUE_PREFIX = AnyFieldSearchConditionTranslator.class.getName();
+
     @Override
     public Map<String, JoinInformation> getJoinInformationMap(final AnyFieldSearchCriteria criterion, final TableMapper tableMapper,
             final IAliasFactory aliasFactory)
     {
         final Map<String, JoinInformation> result = TranslatorUtils.getPropertyJoinInformationMap(tableMapper, aliasFactory, JoinType.LEFT);
-        IdentifierSearchConditionTranslator.appendJoinInformationMap(result, tableMapper, aliasFactory);
+        TranslatorUtils.appendIdentifierJoinInformationMap(result, tableMapper, aliasFactory, UNIQUE_PREFIX);
         return result;
     }
 
@@ -83,7 +85,7 @@ public class AnyFieldSearchConditionTranslator implements IConditionTranslator<A
                 AnyPropertySearchConditionTranslator.doTranslate(criterion, tableMapper, args, sqlBuilder, aliases);
                 sqlBuilder.append(separator);
 
-                IdentifierSearchConditionTranslator.doTranslate(criterion, tableMapper, args, sqlBuilder, aliases);
+                IdentifierSearchConditionTranslator.doTranslate(criterion, tableMapper, args, sqlBuilder, aliases, UNIQUE_PREFIX);
                 sqlBuilder.append(separator);
 
                 final StringBuilder resultSqlBuilder = tableMapper.getFieldToSQLTypeMap().entrySet().stream().collect(

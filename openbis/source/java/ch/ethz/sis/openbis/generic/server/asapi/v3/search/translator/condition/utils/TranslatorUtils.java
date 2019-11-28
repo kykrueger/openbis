@@ -51,9 +51,13 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
 import ch.systemsx.cisd.openbis.generic.shared.dto.TableNames;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator.DATE_FORMAT;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator.MAIN_TABLE_ALIAS;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.AND;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.ASTERISK;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.BACKSLASH;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.BARS;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.COALESCE;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.COMMA;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.EQ;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.GE;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.GT;
@@ -61,18 +65,27 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLL
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.IS_NOT_NULL;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.JOIN;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.LE;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.LIKE;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.LP;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.LT;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.NL;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.ON;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.PERCENT;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.PERIOD;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.QU;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.RP;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SP;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SQ;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.UNDERSCORE;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.CODE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PART_OF_SAMPLE_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PROJECT_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.RELATIONSHIP_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.SPACE_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.PROJECTS_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.RELATIONSHIP_TYPES_TABLE;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SAMPLES_ALL_TABLE;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SPACES_TABLE;
 
 public class TranslatorUtils
 {
@@ -443,6 +456,106 @@ public class TranslatorUtils
         } else
         {
             return value;
+        }
+    }
+
+    /**
+     * Appends one of the the following texts to sqlBuilder depending on the value of {@code samplesTableAlias}. If it is {@code null} the second
+     * version will be appended.
+     *
+     * <pre>
+     *     '/' || coalesce([spacesTableAlias].code || '/', '') || coalesce([projectsTableAlias].code || '/', '') || coalesce([samplesTableAlias].code || ':', '') || t0.code
+     * </pre>
+     * <pre>
+     *     '/' || coalesce([spacesTableAlias].code || '/', '') || coalesce([projectsTableAlias].code || '/', '') || t0.code
+     * </pre>
+     *
+     * @param sqlBuilder query builder.
+     * @param spacesTableAlias alias of the spaces table.
+     * @param projectsTableAlias alias of the projects table.
+     * @param samplesTableAlias alias of the samples table, {@code null} indicates that the table should not be included.
+     */
+    public static void buildFullIdentifierConcatenationString(final StringBuilder sqlBuilder, final String spacesTableAlias,
+            final String projectsTableAlias, final String samplesTableAlias)
+    {
+        final String slash = "/";
+        final String colon = ":";
+        sqlBuilder.append(SQ).append(slash).append(SQ).append(SP).append(BARS);
+
+        appendCoalesce(sqlBuilder, spacesTableAlias, slash);
+        appendCoalesce(sqlBuilder, projectsTableAlias, slash);
+        if (samplesTableAlias != null)
+        {
+            appendCoalesce(sqlBuilder, samplesTableAlias, colon);
+        }
+
+        sqlBuilder.append(SP).append(MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(SP);
+    }
+
+    /**
+     * Appends the following text to sqlBuilder.
+     *
+     * <pre>
+     *     coalesce([alias].code || '[separator]', '') ||
+     * </pre>
+     *
+     * @param sqlBuilder query builder.
+     * @param alias alias of the table.
+     * @param separator string to be appender at the end in the first parameter.
+     */
+    private static void appendCoalesce(final StringBuilder sqlBuilder, final String alias, final String separator)
+    {
+        sqlBuilder.append(SP).append(COALESCE).append(LP).append(alias).append(PERIOD).append(CODE_COLUMN).append(SP)
+                .append(BARS)
+                .append(SP).append(SQ).append(separator).append(SQ).append(COMMA).append(SP).append(SQ).append(SQ).append(RP).append(SP)
+                .append(BARS);
+    }
+
+    public static Map<String, JoinInformation> getIdentifierJoinInformationMap(final TableMapper tableMapper,
+            final IAliasFactory aliasFactory, final String prefix)
+    {
+        final Map<String, JoinInformation> result = new LinkedHashMap<>();
+        appendIdentifierJoinInformationMap(result, tableMapper, aliasFactory, prefix);
+        return result;
+    }
+
+    public static void appendIdentifierJoinInformationMap(final Map<String, JoinInformation> result, final TableMapper tableMapper,
+            final IAliasFactory aliasFactory, final String prefix)
+    {
+        final String entitiesTable = tableMapper.getEntitiesTable();
+
+        final JoinInformation joinInformation1 = new JoinInformation();
+        joinInformation1.setJoinType(JoinType.LEFT);
+        joinInformation1.setMainTable(entitiesTable);
+        joinInformation1.setMainTableAlias(MAIN_TABLE_ALIAS);
+        joinInformation1.setMainTableIdField(SPACE_COLUMN);
+        joinInformation1.setSubTable(SPACES_TABLE);
+        joinInformation1.setSubTableAlias(aliasFactory.createAlias());
+        joinInformation1.setSubTableIdField(ID_COLUMN);
+        result.put(prefix + SPACES_TABLE, joinInformation1);
+
+        final JoinInformation joinInformation2 = new JoinInformation();
+        joinInformation2.setJoinType(JoinType.LEFT);
+        joinInformation2.setMainTable(entitiesTable);
+        joinInformation2.setMainTableAlias(MAIN_TABLE_ALIAS);
+        joinInformation2.setMainTableIdField(PROJECT_COLUMN);
+        joinInformation2.setSubTable(PROJECTS_TABLE);
+        joinInformation2.setSubTableAlias(aliasFactory.createAlias());
+        joinInformation2.setSubTableIdField(ID_COLUMN);
+        result.put(prefix + PROJECTS_TABLE, joinInformation2);
+
+        if (entitiesTable.equals(SAMPLES_ALL_TABLE))
+        {
+            // Only samples can have containers.
+            final JoinInformation joinInformation3 = new JoinInformation();
+            joinInformation3.setJoinType(JoinType.LEFT);
+            joinInformation3.setMainTable(entitiesTable);
+            joinInformation3.setMainTableAlias(MAIN_TABLE_ALIAS);
+            joinInformation3.setMainTableIdField(PART_OF_SAMPLE_COLUMN);
+            joinInformation3.setSubTable(entitiesTable);
+            joinInformation3.setSubTableAlias(aliasFactory.createAlias());
+            joinInformation3.setSubTableIdField(ID_COLUMN);
+            result.put(prefix + entitiesTable, joinInformation3);
         }
     }
 
