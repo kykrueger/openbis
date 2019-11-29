@@ -88,13 +88,22 @@ public abstract class SearchObjectsOperationExecutor<OBJECT, OBJECT_PE, CRITERIA
         final TranslationContext translationContext = new TranslationContext(context.getSession());
         final SortOptions<OBJECT> sortOptions = fetchOptions.getSortBy();
 
+        // There results from the manager should already be filtered.
         final Set<Long> allResultsIds = getSearchManager().searchForIDs(userId, criteria, sortOptions);
-        final Set<Long> filteredIds = getSearchManager().filterIDsByUserRights(userId, allResultsIds);
-        final List<Long> sortedAndPagedResultIds = sortAndPage(filteredIds, fetchOptions);
+        final List<Long> sortedAndPagedResultIds = sortAndPage(allResultsIds, fetchOptions);
         final List<OBJECT_PE> sortedAndPagedResultPEs = getSearchManager().translate(sortedAndPagedResultIds);
         final Map<OBJECT_PE, OBJECT> sortedAndPagedResultV3DTOs = doTranslate(translationContext, sortedAndPagedResultPEs, fetchOptions);
-        final List<OBJECT> finalResults = new ArrayList<>(sortedAndPagedResultV3DTOs.values());
 
+        final List<OBJECT> finalResults = new ArrayList<>(sortedAndPagedResultV3DTOs.values());
+        final List<OBJECT> sortedFinalResults = getSortedFinalResults(criteria, fetchOptions, finalResults);
+        final SearchResult<OBJECT> searchResult = new SearchResult<>(sortedFinalResults, allResultsIds.size());
+
+        return getOperationResult(searchResult);
+    }
+
+    private List<OBJECT> getSortedFinalResults(final CRITERIA criteria, final FETCH_OPTIONS fetchOptions, final List<OBJECT> finalResults)
+    {
+        // No paging is needed, the result should just be sorted.
         final Integer from = fetchOptions.getFrom();
         fetchOptions.from(null);
         final Integer count = fetchOptions.getCount();
@@ -102,9 +111,7 @@ public abstract class SearchObjectsOperationExecutor<OBJECT, OBJECT_PE, CRITERIA
         final List<OBJECT> sortedFinalResults = new SortAndPage().sortAndPage(finalResults, criteria, fetchOptions);
         fetchOptions.from(from);
         fetchOptions.count(count);
-
-        final SearchResult<OBJECT> searchResult = new SearchResult<>(sortedFinalResults, allResultsIds.size());
-        return getOperationResult(searchResult);
+        return sortedFinalResults;
     }
 
     private List<Long> sortAndPage(final Set<Long> ids, final FetchOptions fo)
