@@ -77,6 +77,7 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestH
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.REGISTRATOR_USER_ID;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_CODE_1;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_CODE_3;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
@@ -142,7 +143,7 @@ public class DataSetManagerDBTest
      */
     private void checkCodeCriterion(final DataSetSearchCriteria criterion)
     {
-        final Set<Long> ids = searchManager.searchForIDs(ADMIN_USER_TECH_ID, criterion, new DataSetSortOptions());
+        final Set<Long> ids = searchManager.searchForIDs(ADMIN_USER_TECH_ID, criterion, new DataSetSortOptions(), null, ID_COLUMN);
         assertEquals(ids.size(), 1);
         assertEquals(ids.iterator().next().longValue(), DATA_SET_ID_1);
     }
@@ -155,14 +156,15 @@ public class DataSetManagerDBTest
     {
         final DataSetSearchCriteria equalsCriterion = new DataSetSearchCriteria();
         equalsCriterion.withRegistrationDate().thatEquals(DATA_SET_REGISTRATION_DATE_2);
-        final Set<Long> equalCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, equalsCriterion, new DataSetSortOptions());
+        final Set<Long> equalCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, equalsCriterion, new DataSetSortOptions(), null,
+                ID_COLUMN);
         assertEquals(equalCriterionDataSetIds.size(), 1);
         assertTrue(equalCriterionDataSetIds.contains(DATA_SET_ID_2));
 
         final DataSetSearchCriteria earlierThanCriterion = new DataSetSearchCriteria();
         earlierThanCriterion.withRegistrationDate().thatIsEarlierThanOrEqualTo(DATA_SET_REGISTRATION_DATE_2);
         final Set<Long> earlierThanCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, earlierThanCriterion,
-                new DataSetSortOptions());
+                new DataSetSortOptions(), null, ID_COLUMN);
         assertFalse(earlierThanCriterionDataSetIds.isEmpty());
         assertTrue(earlierThanCriterionDataSetIds.contains(DATA_SET_ID_1));
         assertTrue(earlierThanCriterionDataSetIds.contains(DATA_SET_ID_2));
@@ -170,7 +172,8 @@ public class DataSetManagerDBTest
 
         final DataSetSearchCriteria laterThanCriterion = new DataSetSearchCriteria();
         laterThanCriterion.withRegistrationDate().thatIsLaterThanOrEqualTo(DATA_SET_REGISTRATION_DATE_2);
-        final Set<Long> laterThanCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, laterThanCriterion, new DataSetSortOptions());
+        final Set<Long> laterThanCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, laterThanCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertFalse(laterThanCriterionDataSetIds.isEmpty());
         assertFalse(laterThanCriterionDataSetIds.contains(DATA_SET_ID_1));
         assertTrue(laterThanCriterionDataSetIds.contains(DATA_SET_ID_2));
@@ -185,13 +188,14 @@ public class DataSetManagerDBTest
     {
         final DataSetSearchCriteria equalsCriterion = new DataSetSearchCriteria();
         equalsCriterion.withModificationDate().thatEquals(DATA_SET_MODIFICATION_DATE_2);
-        final Set<Long> equalCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, equalsCriterion, new DataSetSortOptions());
+        final Set<Long> equalCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, equalsCriterion, new DataSetSortOptions(), null, ID_COLUMN);
         assertEquals(equalCriterionDataSetIds.size(), 1);
         assertTrue(equalCriterionDataSetIds.contains(DATA_SET_ID_2));
 
         final DataSetSearchCriteria earlierThanCriterion = new DataSetSearchCriteria();
         earlierThanCriterion.withModificationDate().thatIsEarlierThanOrEqualTo(DATA_SET_MODIFICATION_DATE_2);
-        final Set<Long> earlierThanCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, earlierThanCriterion, new DataSetSortOptions());
+        final Set<Long> earlierThanCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, earlierThanCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertFalse(earlierThanCriterionDataSetIds.isEmpty());
         assertTrue(earlierThanCriterionDataSetIds.contains(DATA_SET_ID_1));
         assertTrue(earlierThanCriterionDataSetIds.contains(DATA_SET_ID_2));
@@ -199,7 +203,8 @@ public class DataSetManagerDBTest
 
         final DataSetSearchCriteria laterThanCriterion = new DataSetSearchCriteria();
         laterThanCriterion.withModificationDate().thatIsLaterThanOrEqualTo(DATA_SET_MODIFICATION_DATE_2);
-        final Set<Long> laterThanCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, laterThanCriterion, new DataSetSortOptions());
+        final Set<Long> laterThanCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, laterThanCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertFalse(laterThanCriterionDataSetIds.isEmpty());
         assertFalse(laterThanCriterionDataSetIds.contains(DATA_SET_ID_1));
         assertTrue(laterThanCriterionDataSetIds.contains(DATA_SET_ID_2));
@@ -215,13 +220,14 @@ public class DataSetManagerDBTest
     {
         final DataSetSearchCriteria equalsCriterion = new DataSetSearchCriteria();
         equalsCriterion.withRegistrationDate().thatEquals(DATA_SET_REGISTRATION_DATE_STRING_2);
-        final Set<Long> equalCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, equalsCriterion, new DataSetSortOptions());
+        final Set<Long> equalCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, equalsCriterion, new DataSetSortOptions(), null, ID_COLUMN);
         assertEquals(equalCriterionDataSetIds.size(), 1);
         assertTrue(equalCriterionDataSetIds.contains(DATA_SET_ID_2));
 
         final DataSetSearchCriteria earlierThanCriterion = new DataSetSearchCriteria();
         earlierThanCriterion.withRegistrationDate().thatIsEarlierThanOrEqualTo(DATA_SET_REGISTRATION_DATE_STRING_2);
-        final Set<Long> earlierThanCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, earlierThanCriterion, new DataSetSortOptions());
+        final Set<Long> earlierThanCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, earlierThanCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertFalse(earlierThanCriterionDataSetIds.isEmpty());
         assertTrue(earlierThanCriterionDataSetIds.contains(DATA_SET_ID_1));
         assertTrue(earlierThanCriterionDataSetIds.contains(DATA_SET_ID_2));
@@ -229,7 +235,8 @@ public class DataSetManagerDBTest
 
         final DataSetSearchCriteria laterThanCriterion = new DataSetSearchCriteria();
         laterThanCriterion.withRegistrationDate().thatIsLaterThanOrEqualTo(DATA_SET_REGISTRATION_DATE_STRING_2);
-        final Set<Long> laterThanCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, laterThanCriterion, new DataSetSortOptions());
+        final Set<Long> laterThanCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, laterThanCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertFalse(laterThanCriterionDataSetIds.isEmpty());
         assertFalse(laterThanCriterionDataSetIds.contains(DATA_SET_ID_1));
         assertTrue(laterThanCriterionDataSetIds.contains(DATA_SET_ID_2));
@@ -245,13 +252,14 @@ public class DataSetManagerDBTest
     {
         final DataSetSearchCriteria equalsCriterion = new DataSetSearchCriteria();
         equalsCriterion.withModificationDate().thatEquals(DATA_SET_MODIFICATION_DATE_STRING_2);
-        final Set<Long> equalCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, equalsCriterion, new DataSetSortOptions());
+        final Set<Long> equalCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, equalsCriterion, new DataSetSortOptions(), null, ID_COLUMN);
         assertEquals(equalCriterionDataSetIds.size(), 1);
         assertTrue(equalCriterionDataSetIds.contains(DATA_SET_ID_2));
 
         final DataSetSearchCriteria earlierThanCriterion = new DataSetSearchCriteria();
         earlierThanCriterion.withModificationDate().thatIsEarlierThanOrEqualTo(DATA_SET_MODIFICATION_DATE_STRING_2);
-        final Set<Long> earlierThanCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, earlierThanCriterion, new DataSetSortOptions());
+        final Set<Long> earlierThanCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, earlierThanCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertFalse(earlierThanCriterionDataSetIds.isEmpty());
         assertTrue(earlierThanCriterionDataSetIds.contains(DATA_SET_ID_1));
         assertTrue(earlierThanCriterionDataSetIds.contains(DATA_SET_ID_2));
@@ -259,7 +267,8 @@ public class DataSetManagerDBTest
 
         final DataSetSearchCriteria laterThanCriterion = new DataSetSearchCriteria();
         laterThanCriterion.withModificationDate().thatIsLaterThanOrEqualTo(DATA_SET_MODIFICATION_DATE_STRING_2);
-        final Set<Long> laterThanCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, laterThanCriterion, new DataSetSortOptions());
+        final Set<Long> laterThanCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, laterThanCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertFalse(laterThanCriterionDataSetIds.isEmpty());
         assertFalse(laterThanCriterionDataSetIds.contains(DATA_SET_ID_1));
         assertTrue(laterThanCriterionDataSetIds.contains(DATA_SET_ID_2));
@@ -274,7 +283,7 @@ public class DataSetManagerDBTest
     {
         final DataSetSearchCriteria criterion = new DataSetSearchCriteria();
         criterion.withCodes().thatIn(Arrays.asList(DATA_SET_CODE_1, DATA_SET_CODE_3));
-        final Set<Long> criterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, criterion, new DataSetSortOptions());
+        final Set<Long> criterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, criterion, new DataSetSortOptions(), null, ID_COLUMN);
         assertEquals(criterionDataSetIds.size(), 2);
         assertTrue(criterionDataSetIds.contains(DATA_SET_ID_1));
         assertTrue(criterionDataSetIds.contains(DATA_SET_ID_3));
@@ -288,25 +297,28 @@ public class DataSetManagerDBTest
     {
         final DataSetSearchCriteria equalsCriterion = new DataSetSearchCriteria();
         equalsCriterion.withPermId().thatEquals(DATA_SET_CODE_2);
-        final Set<Long> equalsCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, equalsCriterion, new DataSetSortOptions());
+        final Set<Long> equalsCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, equalsCriterion, new DataSetSortOptions(), null, ID_COLUMN);
         assertEquals(equalsCriterionDataSetIds.size(), 1);
         assertTrue(equalsCriterionDataSetIds.contains(DATA_SET_ID_2));
 
         final DataSetSearchCriteria startsWithCriterion = new DataSetSearchCriteria();
         startsWithCriterion.withPermId().thatStartsWith(DATA_SET_CODE_1.substring(0, DATA_SET_CODE_1.length() - 2));
-        final Set<Long> startsWithCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, startsWithCriterion, new DataSetSortOptions());
+        final Set<Long> startsWithCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, startsWithCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertEquals(startsWithCriterionDataSetIds.size(), 1);
         assertTrue(startsWithCriterionDataSetIds.contains(DATA_SET_ID_1));
 
         final DataSetSearchCriteria endsWithCriterion = new DataSetSearchCriteria();
         endsWithCriterion.withPermId().thatEndsWith(DATA_SET_CODE_1.substring(DATA_SET_CODE_1.length() - 4));
-        final Set<Long> endsWithCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, endsWithCriterion, new DataSetSortOptions());
+        final Set<Long> endsWithCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, endsWithCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertEquals(endsWithCriterionDataSetIds.size(), 1);
         assertTrue(endsWithCriterionDataSetIds.contains(DATA_SET_ID_1));
 
         final DataSetSearchCriteria containsCriterion = new DataSetSearchCriteria();
         containsCriterion.withPermId().thatContains(DATA_SET_CODE_2.substring(4, 12));
-        final Set<Long> containsCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, containsCriterion, new DataSetSortOptions());
+        final Set<Long> containsCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, containsCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertEquals(containsCriterionDataSetIds.size(), 4);
         assertTrue(containsCriterionDataSetIds.contains(DATA_SET_ID_2));
         assertTrue(containsCriterionDataSetIds.contains(DATA_SET_ID_3));
@@ -323,14 +335,16 @@ public class DataSetManagerDBTest
         // code attribute
         final DataSetSearchCriteria codeEqualsCriterion = new DataSetSearchCriteria();
         codeEqualsCriterion.withAnyField().thatEquals(DATA_SET_CODE_2);
-        final Set<Long> codeEqualsCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, codeEqualsCriterion, new DataSetSortOptions());
+        final Set<Long> codeEqualsCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, codeEqualsCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertEquals(codeEqualsCriterionDataSetIds.size(), 1);
         assertTrue(codeEqualsCriterionDataSetIds.contains(DATA_SET_ID_2));
 
         // dast_id attribute
         final DataSetSearchCriteria projectIdEqualsCriterion = new DataSetSearchCriteria();
         projectIdEqualsCriterion.withAnyField().thatEquals(String.valueOf(DATA_STORE_ID_1));
-        final Set<Long> projectIdEqualsCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, projectIdEqualsCriterion, new DataSetSortOptions());
+        final Set<Long> projectIdEqualsCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, projectIdEqualsCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertEquals(projectIdEqualsCriterionDataSetIds.size(), 5);
         assertTrue(projectIdEqualsCriterionDataSetIds.contains(DATA_SET_ID_1));
         assertTrue(projectIdEqualsCriterionDataSetIds.contains(DATA_SET_ID_2));
@@ -341,35 +355,40 @@ public class DataSetManagerDBTest
         // registration_timestamp attribute
         final DataSetSearchCriteria registrationDateEqualsCriterion = new DataSetSearchCriteria();
         registrationDateEqualsCriterion.withAnyField().thatEquals(DATA_SET_REGISTRATION_DATE_STRING_1);
-        final Set<Long> registrationDateEqualsCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, registrationDateEqualsCriterion, new DataSetSortOptions());
+        final Set<Long> registrationDateEqualsCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, registrationDateEqualsCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertEquals(registrationDateEqualsCriterionDataSetIds.size(), 1);
         assertTrue(registrationDateEqualsCriterionDataSetIds.contains(DATA_SET_ID_1));
 
         // code attribute again
         final DataSetSearchCriteria startsWithCriterion = new DataSetSearchCriteria();
         startsWithCriterion.withAnyField().thatStartsWith(DATA_SET_CODE_1.substring(0, DATA_SET_CODE_1.length() - 2));
-        final Set<Long> startsWithCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, startsWithCriterion, new DataSetSortOptions());
+        final Set<Long> startsWithCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, startsWithCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertEquals(startsWithCriterionDataSetIds.size(), 1);
         assertTrue(startsWithCriterionDataSetIds.contains(DATA_SET_ID_1));
 
         // code attribute again
         final DataSetSearchCriteria endsWithCriterion1 = new DataSetSearchCriteria();
         endsWithCriterion1.withAnyField().thatEndsWith(DATA_SET_CODE_2.substring(DATA_SET_CODE_2.length() - 5));
-        final Set<Long> endsWithCriterionDataSetIds1 = searchManager.searchForIDs(ADMIN_USER_TECH_ID, endsWithCriterion1, new DataSetSortOptions());
+        final Set<Long> endsWithCriterionDataSetIds1 = searchManager.searchForIDs(ADMIN_USER_TECH_ID, endsWithCriterion1, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertEquals(endsWithCriterionDataSetIds1.size(), 1);
         assertTrue(endsWithCriterionDataSetIds1.contains(DATA_SET_ID_2));
 
         // id, perm_id and samp_id_part_of fields
         final DataSetSearchCriteria endsWithCriterion2 = new DataSetSearchCriteria();
         endsWithCriterion2.withAnyField().thatEndsWith(String.valueOf(DATA_SET_ID_1));
-        final Set<Long> endsWithCriterionDataSetIds2 = searchManager.searchForIDs(ADMIN_USER_TECH_ID, endsWithCriterion2, new DataSetSortOptions());
+        final Set<Long> endsWithCriterionDataSetIds2 = searchManager.searchForIDs(ADMIN_USER_TECH_ID, endsWithCriterion2, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertEquals(endsWithCriterionDataSetIds2.size(), 1);
         assertTrue(endsWithCriterionDataSetIds2.contains(DATA_SET_ID_1));
 
         // expe_id
         final DataSetSearchCriteria containsCriterion = new DataSetSearchCriteria();
         containsCriterion.withAnyField().thatContains(String.valueOf(EXPERIMENT_ID_3));
-        final Set<Long> containsCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, containsCriterion, new DataSetSortOptions());
+        final Set<Long> containsCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, containsCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertEquals(containsCriterionDataSetIds.size(), 5);
         assertTrue(containsCriterionDataSetIds.contains(DATA_SET_ID_1));
         assertTrue(containsCriterionDataSetIds.contains(DATA_SET_ID_2));
@@ -386,7 +405,7 @@ public class DataSetManagerDBTest
     {
         final DataSetSearchCriteria criterion = new DataSetSearchCriteria();
         criterion.withoutExperiment();
-        final Set<Long> criterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, criterion, new DataSetSortOptions());
+        final Set<Long> criterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, criterion, new DataSetSortOptions(), null, ID_COLUMN);
         assertFalse(criterionDataSetIds.isEmpty());
         assertTrue(criterionDataSetIds.contains(DATA_SET_ID_1));
         assertFalse(criterionDataSetIds.contains(DATA_SET_ID_2));
@@ -401,7 +420,7 @@ public class DataSetManagerDBTest
     {
         final DataSetSearchCriteria criterion = new DataSetSearchCriteria();
         criterion.withoutSample();
-        final Set<Long> criterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, criterion, new DataSetSortOptions());
+        final Set<Long> criterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, criterion, new DataSetSortOptions(), null, ID_COLUMN);
         assertFalse(criterionDataSetIds.isEmpty());
         assertFalse(criterionDataSetIds.contains(DATA_SET_ID_1));
         assertTrue(criterionDataSetIds.contains(DATA_SET_ID_2));
@@ -416,7 +435,7 @@ public class DataSetManagerDBTest
     {
         final DataSetSearchCriteria permIdCriterion = new DataSetSearchCriteria();
         permIdCriterion.withId().thatEquals(new DataSetPermId(DATA_SET_CODE_2));
-        final Set<Long> permIdCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, permIdCriterion, new DataSetSortOptions());
+        final Set<Long> permIdCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, permIdCriterion, new DataSetSortOptions(), null, ID_COLUMN);
         assertEquals(permIdCriterionDataSetIds.size(), 1);
         assertTrue(permIdCriterionDataSetIds.contains(DATA_SET_ID_2));
     }
@@ -429,31 +448,36 @@ public class DataSetManagerDBTest
     {
         final DataSetSearchCriteria anyPropertyCriterion = new DataSetSearchCriteria();
         anyPropertyCriterion.withAnyProperty();
-        final Set<Long> anyPropertyCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, anyPropertyCriterion, new DataSetSortOptions());
+        final Set<Long> anyPropertyCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, anyPropertyCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertTrue(anyPropertyCriterionDataSetIds.contains(DATA_SET_ID_1));
         assertTrue(anyPropertyCriterionDataSetIds.contains(DATA_SET_ID_2));
         assertTrue(anyPropertyCriterionDataSetIds.contains(DATA_SET_ID_3));
 
         final DataSetSearchCriteria equalsNumberPropertyCriterion = new DataSetSearchCriteria();
         equalsNumberPropertyCriterion.withAnyProperty().thatEquals(String.valueOf(DATA_SET_PROPERTY_1_NUMBER_VALUE));
-        final Set<Long> equalsNumberPropertyCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, equalsNumberPropertyCriterion, new DataSetSortOptions());
+        final Set<Long> equalsNumberPropertyCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, equalsNumberPropertyCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertEquals(equalsNumberPropertyCriterionDataSetIds.size(), 1);
         assertTrue(equalsNumberPropertyCriterionDataSetIds.contains(DATA_SET_ID_1));
 
         final DataSetSearchCriteria equalsStringPropertyCriterion = new DataSetSearchCriteria();
         equalsStringPropertyCriterion.withAnyProperty().thatEquals(DATA_SET_PROPERTY_2_STRING_VALUE);
-        final Set<Long> equalsStringPropertyCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, equalsStringPropertyCriterion, new DataSetSortOptions());
+        final Set<Long> equalsStringPropertyCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, equalsStringPropertyCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertEquals(equalsStringPropertyCriterionDataSetIds.size(), 1);
         assertTrue(equalsStringPropertyCriterionDataSetIds.contains(DATA_SET_ID_2));
 
         final DataSetSearchCriteria equalsStringPropertyCriterionNotFound = new DataSetSearchCriteria();
         equalsStringPropertyCriterionNotFound.withAnyProperty().thatEquals(DATA_SET_PROPERTY_2_STRING_VALUE + "-");
-        final Set<Long> equalsStringPropertyCriterionDataSetIdsNotFound = searchManager.searchForIDs(ADMIN_USER_TECH_ID, equalsStringPropertyCriterionNotFound, new DataSetSortOptions());
+        final Set<Long> equalsStringPropertyCriterionDataSetIdsNotFound = searchManager.searchForIDs(ADMIN_USER_TECH_ID, equalsStringPropertyCriterionNotFound, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertEquals(equalsStringPropertyCriterionDataSetIdsNotFound.size(), 0);
 
         final DataSetSearchCriteria startsWithStringPropertyCriterion = new DataSetSearchCriteria();
         startsWithStringPropertyCriterion.withAnyProperty().thatStartsWith(DATA_SET_PROPERTY_2_STRING_VALUE.substring(0, 10));
-        final Set<Long> startsWithStringPropertyCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, startsWithStringPropertyCriterion, new DataSetSortOptions());
+        final Set<Long> startsWithStringPropertyCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, startsWithStringPropertyCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertEquals(startsWithStringPropertyCriterionDataSetIds.size(), 1);
         assertTrue(startsWithStringPropertyCriterionDataSetIds.contains(DATA_SET_ID_2));
 
@@ -461,12 +485,13 @@ public class DataSetManagerDBTest
         startsWithStringPropertyCriterionNotFound.withAnyProperty().thatStartsWith(
                 DATA_SET_PROPERTY_2_STRING_VALUE.substring(0, 10) + "-");
         final Set<Long> startsWithStringPropertyCriterionDataSetIdsNotFound = searchManager.searchForIDs(ADMIN_USER_TECH_ID,
-                startsWithStringPropertyCriterionNotFound, new DataSetSortOptions());
+                startsWithStringPropertyCriterionNotFound, new DataSetSortOptions(), null, ID_COLUMN);
         assertEquals(startsWithStringPropertyCriterionDataSetIdsNotFound.size(), 0);
 
         final DataSetSearchCriteria endsWithStringPropertyCriterion = new DataSetSearchCriteria();
         endsWithStringPropertyCriterion.withAnyProperty().thatEndsWith(DATA_SET_PROPERTY_2_STRING_VALUE.substring(10));
-        final Set<Long> endsWithStringPropertyCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, endsWithStringPropertyCriterion, new DataSetSortOptions());
+        final Set<Long> endsWithStringPropertyCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, endsWithStringPropertyCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertEquals(endsWithStringPropertyCriterionDataSetIds.size(), 1);
         assertTrue(endsWithStringPropertyCriterionDataSetIds.contains(DATA_SET_ID_2));
 
@@ -474,12 +499,13 @@ public class DataSetManagerDBTest
         endsWithStringPropertyCriterionNotFound.withAnyProperty().thatEndsWith(DATA_SET_PROPERTY_2_STRING_VALUE.substring(10)
                 + "-");
         final Set<Long> endsWithStringPropertyCriterionDataSetIdsNotFound = searchManager.searchForIDs(ADMIN_USER_TECH_ID,
-                endsWithStringPropertyCriterionNotFound, new DataSetSortOptions());
+                endsWithStringPropertyCriterionNotFound, new DataSetSortOptions(), null, ID_COLUMN);
         assertEquals(endsWithStringPropertyCriterionDataSetIdsNotFound.size(), 0);
 
         final DataSetSearchCriteria containsStringPropertyCriterion = new DataSetSearchCriteria();
         containsStringPropertyCriterion.withAnyProperty().thatContains(DATA_SET_PROPERTY_2_STRING_VALUE.substring(3, 10));
-        final Set<Long> containsStringPropertyCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, containsStringPropertyCriterion, new DataSetSortOptions());
+        final Set<Long> containsStringPropertyCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, containsStringPropertyCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertEquals(containsStringPropertyCriterionDataSetIds.size(), 1);
         assertTrue(containsStringPropertyCriterionDataSetIds.contains(DATA_SET_ID_2));
 
@@ -487,7 +513,7 @@ public class DataSetManagerDBTest
         containsStringPropertyCriterionNotFound.withAnyProperty().thatContains(DATA_SET_PROPERTY_2_STRING_VALUE.substring(3, 10)
                 + "-");
         final Set<Long> containsStringPropertyCriterionDataSetIdsNotFound = searchManager.searchForIDs(ADMIN_USER_TECH_ID,
-                containsStringPropertyCriterionNotFound, new DataSetSortOptions());
+                containsStringPropertyCriterionNotFound, new DataSetSortOptions(), null, ID_COLUMN);
         assertEquals(containsStringPropertyCriterionDataSetIdsNotFound.size(), 0);
     }
 
@@ -499,25 +525,29 @@ public class DataSetManagerDBTest
     {
         final DataSetSearchCriteria anyStringPropertyCriterion = new DataSetSearchCriteria();
         anyStringPropertyCriterion.withProperty(DATA_SET_PROPERTY_CODE_STRING);
-        final Set<Long> anyStringPropertyCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, anyStringPropertyCriterion, new DataSetSortOptions());
+        final Set<Long> anyStringPropertyCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, anyStringPropertyCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertFalse(anyStringPropertyCriterionDataSetIds.contains(DATA_SET_ID_1));
         assertTrue(anyStringPropertyCriterionDataSetIds.contains(DATA_SET_ID_2));
         assertFalse(anyStringPropertyCriterionDataSetIds.contains(DATA_SET_ID_3));
 
         final DataSetSearchCriteria equalsStringPropertyCriterion = new DataSetSearchCriteria();
         equalsStringPropertyCriterion.withProperty(DATA_SET_PROPERTY_CODE_STRING).thatEquals(DATA_SET_PROPERTY_2_STRING_VALUE);
-        final Set<Long> equalsStringPropertyCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, equalsStringPropertyCriterion, new DataSetSortOptions());
+        final Set<Long> equalsStringPropertyCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, equalsStringPropertyCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertEquals(equalsStringPropertyCriterionDataSetIds.size(), 1);
         assertTrue(equalsStringPropertyCriterionDataSetIds.contains(DATA_SET_ID_2));
 
         final DataSetSearchCriteria equalsStringPropertyCriterionNotFound = new DataSetSearchCriteria();
         equalsStringPropertyCriterionNotFound.withProperty(DATA_SET_PROPERTY_CODE_STRING).thatEquals(DATA_SET_PROPERTY_2_STRING_VALUE + "-");
-        final Set<Long> equalsStringPropertyCriterionDataSetIdsNotFound = searchManager.searchForIDs(ADMIN_USER_TECH_ID, equalsStringPropertyCriterionNotFound, new DataSetSortOptions());
+        final Set<Long> equalsStringPropertyCriterionDataSetIdsNotFound = searchManager.searchForIDs(ADMIN_USER_TECH_ID, equalsStringPropertyCriterionNotFound, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertEquals(equalsStringPropertyCriterionDataSetIdsNotFound.size(), 0);
 
         final DataSetSearchCriteria startsWithStringPropertyCriterion = new DataSetSearchCriteria();
         startsWithStringPropertyCriterion.withProperty(DATA_SET_PROPERTY_CODE_STRING).thatStartsWith(DATA_SET_PROPERTY_2_STRING_VALUE.substring(0, 10));
-        final Set<Long> startsWithStringPropertyCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, startsWithStringPropertyCriterion, new DataSetSortOptions());
+        final Set<Long> startsWithStringPropertyCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, startsWithStringPropertyCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertEquals(startsWithStringPropertyCriterionDataSetIds.size(), 1);
         assertTrue(startsWithStringPropertyCriterionDataSetIds.contains(DATA_SET_ID_2));
 
@@ -525,12 +555,13 @@ public class DataSetManagerDBTest
         startsWithStringPropertyCriterionNotFound.withProperty(DATA_SET_PROPERTY_CODE_STRING).thatStartsWith(
                 DATA_SET_PROPERTY_2_STRING_VALUE.substring(0, 10) + "-");
         final Set<Long> startsWithStringPropertyCriterionDataSetIdsNotFound = searchManager.searchForIDs(ADMIN_USER_TECH_ID,
-                startsWithStringPropertyCriterionNotFound, new DataSetSortOptions());
+                startsWithStringPropertyCriterionNotFound, new DataSetSortOptions(), null, ID_COLUMN);
         assertEquals(startsWithStringPropertyCriterionDataSetIdsNotFound.size(), 0);
 
         final DataSetSearchCriteria endsWithStringPropertyCriterion = new DataSetSearchCriteria();
         endsWithStringPropertyCriterion.withProperty(DATA_SET_PROPERTY_CODE_STRING).thatEndsWith(DATA_SET_PROPERTY_2_STRING_VALUE.substring(10));
-        final Set<Long> endsWithStringPropertyCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, endsWithStringPropertyCriterion, new DataSetSortOptions());
+        final Set<Long> endsWithStringPropertyCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, endsWithStringPropertyCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertEquals(endsWithStringPropertyCriterionDataSetIds.size(), 1);
         assertTrue(endsWithStringPropertyCriterionDataSetIds.contains(DATA_SET_ID_2));
 
@@ -538,12 +569,13 @@ public class DataSetManagerDBTest
         endsWithStringPropertyCriterionNotFound.withProperty(DATA_SET_PROPERTY_CODE_STRING).thatEndsWith(DATA_SET_PROPERTY_2_STRING_VALUE.substring(10)
                 + "-");
         final Set<Long> endsWithStringPropertyCriterionDataSetIdsNotFound = searchManager.searchForIDs(ADMIN_USER_TECH_ID,
-                endsWithStringPropertyCriterionNotFound, new DataSetSortOptions());
+                endsWithStringPropertyCriterionNotFound, new DataSetSortOptions(), null, ID_COLUMN);
         assertEquals(endsWithStringPropertyCriterionDataSetIdsNotFound.size(), 0);
 
         final DataSetSearchCriteria containsStringPropertyCriterion = new DataSetSearchCriteria();
         containsStringPropertyCriterion.withProperty(DATA_SET_PROPERTY_CODE_STRING).thatContains(DATA_SET_PROPERTY_2_STRING_VALUE.substring(3, 10));
-        final Set<Long> containsStringPropertyCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, containsStringPropertyCriterion, new DataSetSortOptions());
+        final Set<Long> containsStringPropertyCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, containsStringPropertyCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertEquals(containsStringPropertyCriterionDataSetIds.size(), 1);
         assertTrue(containsStringPropertyCriterionDataSetIds.contains(DATA_SET_ID_2));
 
@@ -551,7 +583,7 @@ public class DataSetManagerDBTest
         containsStringPropertyCriterionNotFound.withProperty(DATA_SET_PROPERTY_CODE_STRING).thatContains(DATA_SET_PROPERTY_2_STRING_VALUE.substring(3, 10)
                 + "-");
         final Set<Long> containsStringPropertyCriterionDataSetIdsNotFound = searchManager.searchForIDs(ADMIN_USER_TECH_ID,
-                containsStringPropertyCriterionNotFound, new DataSetSortOptions());
+                containsStringPropertyCriterionNotFound, new DataSetSortOptions(), null, ID_COLUMN);
         assertEquals(containsStringPropertyCriterionDataSetIdsNotFound.size(), 0);
     }
 
@@ -564,33 +596,33 @@ public class DataSetManagerDBTest
         // =
         final DataSetSearchCriteria equalsCriterion = new DataSetSearchCriteria();
         equalsCriterion.withNumberProperty(DATA_SET_PROPERTY_CODE_LONG).thatEquals(DATA_SET_PROPERTY_1_NUMBER_VALUE);
-        final Set<Long> equalsCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, equalsCriterion, new DataSetSortOptions());
+        final Set<Long> equalsCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, equalsCriterion, new DataSetSortOptions(), null, ID_COLUMN);
         assertEquals(equalsCriterionDataSetIds.size(), 1);
         assertTrue(equalsCriterionDataSetIds.contains(DATA_SET_ID_1));
 
         // >
         final DataSetSearchCriteria gtCriterion = new DataSetSearchCriteria();
         gtCriterion.withNumberProperty(DATA_SET_PROPERTY_CODE_LONG).thatIsGreaterThan(DATA_SET_PROPERTY_1_NUMBER_VALUE);
-        final Set<Long> gtCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, gtCriterion, new DataSetSortOptions());
+        final Set<Long> gtCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, gtCriterion, new DataSetSortOptions(), null, ID_COLUMN);
         assertEquals(gtCriterionDataSetIds.size(), 0);
 
         // >=
         final DataSetSearchCriteria geCriterion = new DataSetSearchCriteria();
         geCriterion.withNumberProperty(DATA_SET_PROPERTY_CODE_LONG).thatIsGreaterThan(DATA_SET_PROPERTY_1_NUMBER_VALUE - 1);
-        final Set<Long> geCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, geCriterion, new DataSetSortOptions());
+        final Set<Long> geCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, geCriterion, new DataSetSortOptions(), null, ID_COLUMN);
         assertEquals(geCriterionDataSetIds.size(), 1);
         assertTrue(geCriterionDataSetIds.contains(DATA_SET_ID_1));
 
         // <
         final DataSetSearchCriteria ltCriterion = new DataSetSearchCriteria();
         ltCriterion.withNumberProperty(DATA_SET_PROPERTY_CODE_LONG).thatIsLessThan(DATA_SET_PROPERTY_1_NUMBER_VALUE);
-        final Set<Long> ltCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, ltCriterion, new DataSetSortOptions());
+        final Set<Long> ltCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, ltCriterion, new DataSetSortOptions(), null, ID_COLUMN);
         assertEquals(ltCriterionDataSetIds.size(), 0);
 
         // <=
         final DataSetSearchCriteria leCriterion = new DataSetSearchCriteria();
         leCriterion.withNumberProperty(DATA_SET_PROPERTY_CODE_LONG).thatIsLessThanOrEqualTo(DATA_SET_PROPERTY_1_NUMBER_VALUE + 1);
-        final Set<Long> leCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, leCriterion, new DataSetSortOptions());
+        final Set<Long> leCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, leCriterion, new DataSetSortOptions(), null, ID_COLUMN);
         assertEquals(leCriterionDataSetIds.size(), 1);
         assertTrue(leCriterionDataSetIds.contains(DATA_SET_ID_1));
     }
@@ -604,33 +636,33 @@ public class DataSetManagerDBTest
         // =
         final DataSetSearchCriteria equalsCriterion = new DataSetSearchCriteria();
         equalsCriterion.withNumberProperty(DATA_SET_PROPERTY_CODE_DOUBLE).thatEquals(DATA_SET_PROPERTY_3_NUMBER_VALUE);
-        final Set<Long> equalsCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, equalsCriterion, new DataSetSortOptions());
+        final Set<Long> equalsCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, equalsCriterion, new DataSetSortOptions(), null, ID_COLUMN);
         assertEquals(equalsCriterionDataSetIds.size(), 1);
         assertTrue(equalsCriterionDataSetIds.contains(DATA_SET_ID_3));
 
         // >
         final DataSetSearchCriteria gtCriterion = new DataSetSearchCriteria();
         gtCriterion.withNumberProperty(DATA_SET_PROPERTY_CODE_DOUBLE).thatIsGreaterThan(DATA_SET_PROPERTY_3_NUMBER_VALUE);
-        final Set<Long> gtCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, gtCriterion, new DataSetSortOptions());
+        final Set<Long> gtCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, gtCriterion, new DataSetSortOptions(), null, ID_COLUMN);
         assertEquals(gtCriterionDataSetIds.size(), 0);
 
         // >=
         final DataSetSearchCriteria geCriterion = new DataSetSearchCriteria();
         geCriterion.withNumberProperty(DATA_SET_PROPERTY_CODE_DOUBLE).thatIsGreaterThan(DATA_SET_PROPERTY_3_NUMBER_VALUE - 0.000001);
-        final Set<Long> geCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, geCriterion, new DataSetSortOptions());
+        final Set<Long> geCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, geCriterion, new DataSetSortOptions(), null, ID_COLUMN);
         assertEquals(geCriterionDataSetIds.size(), 1);
         assertTrue(geCriterionDataSetIds.contains(DATA_SET_ID_3));
 
         // <
         final DataSetSearchCriteria ltCriterion = new DataSetSearchCriteria();
         ltCriterion.withNumberProperty(DATA_SET_PROPERTY_CODE_DOUBLE).thatIsLessThan(DATA_SET_PROPERTY_3_NUMBER_VALUE);
-        final Set<Long> ltCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, ltCriterion, new DataSetSortOptions());
+        final Set<Long> ltCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, ltCriterion, new DataSetSortOptions(), null, ID_COLUMN);
         assertEquals(ltCriterionDataSetIds.size(), 0);
 
         // <=
         final DataSetSearchCriteria leCriterion = new DataSetSearchCriteria();
         leCriterion.withNumberProperty(DATA_SET_PROPERTY_CODE_DOUBLE).thatIsLessThanOrEqualTo(DATA_SET_PROPERTY_3_NUMBER_VALUE + 0.000001);
-        final Set<Long> leCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, leCriterion, new DataSetSortOptions());
+        final Set<Long> leCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, leCriterion, new DataSetSortOptions(), null, ID_COLUMN);
         assertEquals(leCriterionDataSetIds.size(), 1);
         assertTrue(leCriterionDataSetIds.contains(DATA_SET_ID_3));
     }
@@ -644,47 +676,50 @@ public class DataSetManagerDBTest
         // =
         final DataSetSearchCriteria equalsCriterion = new DataSetSearchCriteria();
         equalsCriterion.withDateProperty(DATA_SET_PROPERTY_CODE_DATE).thatEquals(DATA_SET_PROPERTY_2_DATE_VALUE);
-        final Set<Long> equalsCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, equalsCriterion, new DataSetSortOptions());
+        final Set<Long> equalsCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, equalsCriterion, new DataSetSortOptions(), null, ID_COLUMN);
         assertEquals(equalsCriterionDataSetIds.size(), 1);
         assertTrue(equalsCriterionDataSetIds.contains(DATA_SET_ID_2));
 
         // <
         final DataSetSearchCriteria earlierCriterion1 = new DataSetSearchCriteria();
         earlierCriterion1.withDateProperty(DATA_SET_PROPERTY_CODE_DATE).thatIsEarlierThanOrEqualTo(DATA_SET_PROPERTY_2_EARLIER_DATE_VALUE);
-        final Set<Long> earlierCriterionDataSetIds1 = searchManager.searchForIDs(ADMIN_USER_TECH_ID, earlierCriterion1, new DataSetSortOptions());
+        final Set<Long> earlierCriterionDataSetIds1 = searchManager.searchForIDs(ADMIN_USER_TECH_ID, earlierCriterion1, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertEquals(earlierCriterionDataSetIds1.size(), 0);
 
         // <
         final DataSetSearchCriteria earlierCriterion2 = new DataSetSearchCriteria();
         earlierCriterion2.withDateProperty(DATA_SET_PROPERTY_CODE_DATE).thatIsEarlierThanOrEqualTo(DATA_SET_PROPERTY_2_DATE_VALUE);
-        final Set<Long> earlierCriterionDataSetIds2 = searchManager.searchForIDs(ADMIN_USER_TECH_ID, earlierCriterion2, new DataSetSortOptions());
+        final Set<Long> earlierCriterionDataSetIds2 = searchManager.searchForIDs(ADMIN_USER_TECH_ID, earlierCriterion2, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertEquals(earlierCriterionDataSetIds2.size(), 1);
         assertTrue(earlierCriterionDataSetIds2.contains(DATA_SET_ID_2));
 
         // <
         final DataSetSearchCriteria earlierCriterion3 = new DataSetSearchCriteria();
         earlierCriterion3.withDateProperty(DATA_SET_PROPERTY_CODE_DATE).thatIsEarlierThanOrEqualTo(DATA_SET_PROPERTY_2_LATER_DATE_VALUE);
-        final Set<Long> earlierCriterionDataSetIds3 = searchManager.searchForIDs(ADMIN_USER_TECH_ID, earlierCriterion3, new DataSetSortOptions());
+        final Set<Long> earlierCriterionDataSetIds3 = searchManager.searchForIDs(ADMIN_USER_TECH_ID, earlierCriterion3, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertEquals(earlierCriterionDataSetIds3.size(), 1);
         assertTrue(earlierCriterionDataSetIds3.contains(DATA_SET_ID_2));
 
         // >
         final DataSetSearchCriteria laterCriterion1 = new DataSetSearchCriteria();
         laterCriterion1.withDateProperty(DATA_SET_PROPERTY_CODE_DATE).thatIsLaterThanOrEqualTo(DATA_SET_PROPERTY_2_LATER_DATE_VALUE);
-        final Set<Long> laterCriterionDataSetIds1 = searchManager.searchForIDs(ADMIN_USER_TECH_ID, laterCriterion1, new DataSetSortOptions());
+        final Set<Long> laterCriterionDataSetIds1 = searchManager.searchForIDs(ADMIN_USER_TECH_ID, laterCriterion1, new DataSetSortOptions(), null, ID_COLUMN);
         assertEquals(laterCriterionDataSetIds1.size(), 0);
 
         // >
         final DataSetSearchCriteria laterCriterion2 = new DataSetSearchCriteria();
         laterCriterion2.withDateProperty(DATA_SET_PROPERTY_CODE_DATE).thatIsLaterThanOrEqualTo(DATA_SET_PROPERTY_2_DATE_VALUE);
-        final Set<Long> laterCriterionDataSetIds2 = searchManager.searchForIDs(ADMIN_USER_TECH_ID, laterCriterion2, new DataSetSortOptions());
+        final Set<Long> laterCriterionDataSetIds2 = searchManager.searchForIDs(ADMIN_USER_TECH_ID, laterCriterion2, new DataSetSortOptions(), null, ID_COLUMN);
         assertEquals(laterCriterionDataSetIds2.size(), 1);
         assertTrue(laterCriterionDataSetIds2.contains(DATA_SET_ID_2));
 
         // >
         final DataSetSearchCriteria laterCriterion3 = new DataSetSearchCriteria();
         laterCriterion3.withDateProperty(DATA_SET_PROPERTY_CODE_DATE).thatIsLaterThanOrEqualTo(DATA_SET_PROPERTY_2_EARLIER_DATE_VALUE);
-        final Set<Long> laterCriterionDataSetIds3 = searchManager.searchForIDs(ADMIN_USER_TECH_ID, laterCriterion3, new DataSetSortOptions());
+        final Set<Long> laterCriterionDataSetIds3 = searchManager.searchForIDs(ADMIN_USER_TECH_ID, laterCriterion3, new DataSetSortOptions(), null, ID_COLUMN);
         assertEquals(laterCriterionDataSetIds3.size(), 1);
         assertTrue(laterCriterionDataSetIds3.contains(DATA_SET_ID_2));
     }
@@ -698,47 +733,50 @@ public class DataSetManagerDBTest
         // =
         final DataSetSearchCriteria equalsCriterion = new DataSetSearchCriteria();
         equalsCriterion.withDateProperty(DATA_SET_PROPERTY_CODE_DATE).thatEquals(DATA_SET_PROPERTY_2_DATE_STRING_VALUE);
-        final Set<Long> equalsCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, equalsCriterion, new DataSetSortOptions());
+        final Set<Long> equalsCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, equalsCriterion, new DataSetSortOptions(), null, ID_COLUMN);
         assertEquals(equalsCriterionDataSetIds.size(), 1);
         assertTrue(equalsCriterionDataSetIds.contains(DATA_SET_ID_2));
 
         // <
         final DataSetSearchCriteria earlierCriterion1 = new DataSetSearchCriteria();
         earlierCriterion1.withDateProperty(DATA_SET_PROPERTY_CODE_DATE).thatIsEarlierThanOrEqualTo(DATA_SET_PROPERTY_2_EARLIER_DATE_STRING_VALUE);
-        final Set<Long> earlierCriterionDataSetIds1 = searchManager.searchForIDs(ADMIN_USER_TECH_ID, earlierCriterion1, new DataSetSortOptions());
+        final Set<Long> earlierCriterionDataSetIds1 = searchManager.searchForIDs(ADMIN_USER_TECH_ID, earlierCriterion1, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertEquals(earlierCriterionDataSetIds1.size(), 0);
 
         // <
         final DataSetSearchCriteria earlierCriterion2 = new DataSetSearchCriteria();
         earlierCriterion2.withDateProperty(DATA_SET_PROPERTY_CODE_DATE).thatIsEarlierThanOrEqualTo(DATA_SET_PROPERTY_2_DATE_STRING_VALUE);
-        final Set<Long> earlierCriterionDataSetIds2 = searchManager.searchForIDs(ADMIN_USER_TECH_ID, earlierCriterion2, new DataSetSortOptions());
+        final Set<Long> earlierCriterionDataSetIds2 = searchManager.searchForIDs(ADMIN_USER_TECH_ID, earlierCriterion2, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertEquals(earlierCriterionDataSetIds2.size(), 1);
         assertTrue(earlierCriterionDataSetIds2.contains(DATA_SET_ID_2));
 
         // <
         final DataSetSearchCriteria earlierCriterion3 = new DataSetSearchCriteria();
         earlierCriterion3.withDateProperty(DATA_SET_PROPERTY_CODE_DATE).thatIsEarlierThanOrEqualTo(DATA_SET_PROPERTY_2_LATER_DATE_STRING_VALUE);
-        final Set<Long> earlierCriterionDataSetIds3 = searchManager.searchForIDs(ADMIN_USER_TECH_ID, earlierCriterion3, new DataSetSortOptions());
+        final Set<Long> earlierCriterionDataSetIds3 = searchManager.searchForIDs(ADMIN_USER_TECH_ID, earlierCriterion3, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertEquals(earlierCriterionDataSetIds3.size(), 1);
         assertTrue(earlierCriterionDataSetIds3.contains(DATA_SET_ID_2));
 
         // >
         final DataSetSearchCriteria laterCriterion1 = new DataSetSearchCriteria();
         laterCriterion1.withDateProperty(DATA_SET_PROPERTY_CODE_DATE).thatIsLaterThanOrEqualTo(DATA_SET_PROPERTY_2_LATER_DATE_STRING_VALUE);
-        final Set<Long> laterCriterionDataSetIds1 = searchManager.searchForIDs(ADMIN_USER_TECH_ID, laterCriterion1, new DataSetSortOptions());
+        final Set<Long> laterCriterionDataSetIds1 = searchManager.searchForIDs(ADMIN_USER_TECH_ID, laterCriterion1, new DataSetSortOptions(), null, ID_COLUMN);
         assertEquals(laterCriterionDataSetIds1.size(), 0);
 
         // >
         final DataSetSearchCriteria laterCriterion2 = new DataSetSearchCriteria();
         laterCriterion2.withDateProperty(DATA_SET_PROPERTY_CODE_DATE).thatIsLaterThanOrEqualTo(DATA_SET_PROPERTY_2_DATE_STRING_VALUE);
-        final Set<Long> laterCriterionDataSetIds2 = searchManager.searchForIDs(ADMIN_USER_TECH_ID, laterCriterion2, new DataSetSortOptions());
+        final Set<Long> laterCriterionDataSetIds2 = searchManager.searchForIDs(ADMIN_USER_TECH_ID, laterCriterion2, new DataSetSortOptions(), null, ID_COLUMN);
         assertEquals(laterCriterionDataSetIds2.size(), 1);
         assertTrue(laterCriterionDataSetIds2.contains(DATA_SET_ID_2));
 
         // >
         final DataSetSearchCriteria laterCriterion3 = new DataSetSearchCriteria();
         laterCriterion3.withDateProperty(DATA_SET_PROPERTY_CODE_DATE).thatIsLaterThanOrEqualTo(DATA_SET_PROPERTY_2_EARLIER_DATE_STRING_VALUE);
-        final Set<Long> laterCriterionDataSetIds3 = searchManager.searchForIDs(ADMIN_USER_TECH_ID, laterCriterion3, new DataSetSortOptions());
+        final Set<Long> laterCriterionDataSetIds3 = searchManager.searchForIDs(ADMIN_USER_TECH_ID, laterCriterion3, new DataSetSortOptions(), null, ID_COLUMN);
         assertEquals(laterCriterionDataSetIds3.size(), 1);
         assertTrue(laterCriterionDataSetIds3.contains(DATA_SET_ID_2));
     }
@@ -751,27 +789,31 @@ public class DataSetManagerDBTest
     {
         final DataSetSearchCriteria anyStringPropertyCriterion = new DataSetSearchCriteria();
         anyStringPropertyCriterion.withProperty(INTERNAL_DATA_SET_PROPERTY_CODE_STRING);
-        final Set<Long> anyStringPropertyCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, anyStringPropertyCriterion, new DataSetSortOptions());
+        final Set<Long> anyStringPropertyCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, anyStringPropertyCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertTrue(anyStringPropertyCriterionDataSetIds.contains(DATA_SET_ID_1));
         assertFalse(anyStringPropertyCriterionDataSetIds.contains(DATA_SET_ID_2));
         assertFalse(anyStringPropertyCriterionDataSetIds.contains(DATA_SET_ID_3));
 
         final DataSetSearchCriteria equalsStringPropertyCriterion = new DataSetSearchCriteria();
         equalsStringPropertyCriterion.withProperty(INTERNAL_DATA_SET_PROPERTY_CODE_STRING).thatEquals(DATA_SET_PROPERTY_1_INTERNAL_STRING_VALUE);
-        final Set<Long> equalsStringPropertyCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, equalsStringPropertyCriterion, new DataSetSortOptions());
+        final Set<Long> equalsStringPropertyCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, equalsStringPropertyCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertEquals(equalsStringPropertyCriterionDataSetIds.size(), 1);
         assertTrue(equalsStringPropertyCriterionDataSetIds.contains(DATA_SET_ID_1));
 
         final DataSetSearchCriteria equalsStringPropertyCriterionNotFound = new DataSetSearchCriteria();
         equalsStringPropertyCriterionNotFound.withProperty(INTERNAL_DATA_SET_PROPERTY_CODE_STRING).thatEquals(DATA_SET_PROPERTY_1_INTERNAL_STRING_VALUE
                 + "-");
-        final Set<Long> equalsStringPropertyCriterionDataSetIdsNotFound = searchManager.searchForIDs(ADMIN_USER_TECH_ID, equalsStringPropertyCriterionNotFound, new DataSetSortOptions());
+        final Set<Long> equalsStringPropertyCriterionDataSetIdsNotFound = searchManager.searchForIDs(ADMIN_USER_TECH_ID, equalsStringPropertyCriterionNotFound, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertEquals(equalsStringPropertyCriterionDataSetIdsNotFound.size(), 0);
 
         final DataSetSearchCriteria startsWithStringPropertyCriterion = new DataSetSearchCriteria();
         startsWithStringPropertyCriterion.withProperty(INTERNAL_DATA_SET_PROPERTY_CODE_STRING).thatStartsWith(DATA_SET_PROPERTY_1_INTERNAL_STRING_VALUE
                 .substring(0, 10));
-        final Set<Long> startsWithStringPropertyCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, startsWithStringPropertyCriterion, new DataSetSortOptions());
+        final Set<Long> startsWithStringPropertyCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, startsWithStringPropertyCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertEquals(startsWithStringPropertyCriterionDataSetIds.size(), 1);
         assertTrue(startsWithStringPropertyCriterionDataSetIds.contains(DATA_SET_ID_1));
 
@@ -779,13 +821,14 @@ public class DataSetManagerDBTest
         startsWithStringPropertyCriterionNotFound.withProperty(DATA_SET_PROPERTY_CODE_STRING).thatStartsWith(
                 DATA_SET_PROPERTY_2_STRING_VALUE.substring(0, 10) + "-");
         final Set<Long> startsWithStringPropertyCriterionDataSetIdsNotFound = searchManager.searchForIDs(ADMIN_USER_TECH_ID,
-                startsWithStringPropertyCriterionNotFound, new DataSetSortOptions());
+                startsWithStringPropertyCriterionNotFound, new DataSetSortOptions(), null, ID_COLUMN);
         assertEquals(startsWithStringPropertyCriterionDataSetIdsNotFound.size(), 0);
 
         final DataSetSearchCriteria endsWithStringPropertyCriterion = new DataSetSearchCriteria();
         endsWithStringPropertyCriterion.withProperty(INTERNAL_DATA_SET_PROPERTY_CODE_STRING).thatEndsWith(DATA_SET_PROPERTY_1_INTERNAL_STRING_VALUE
                 .substring(10));
-        final Set<Long> endsWithStringPropertyCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, endsWithStringPropertyCriterion, new DataSetSortOptions());
+        final Set<Long> endsWithStringPropertyCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, endsWithStringPropertyCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertEquals(endsWithStringPropertyCriterionDataSetIds.size(), 1);
         assertTrue(endsWithStringPropertyCriterionDataSetIds.contains(DATA_SET_ID_1));
 
@@ -794,13 +837,14 @@ public class DataSetManagerDBTest
                 DATA_SET_PROPERTY_1_INTERNAL_STRING_VALUE.substring(10)
                         + "-");
         final Set<Long> endsWithStringPropertyCriterionDataSetIdsNotFound = searchManager.searchForIDs(ADMIN_USER_TECH_ID,
-                endsWithStringPropertyCriterionNotFound, new DataSetSortOptions());
+                endsWithStringPropertyCriterionNotFound, new DataSetSortOptions(), null, ID_COLUMN);
         assertEquals(endsWithStringPropertyCriterionDataSetIdsNotFound.size(), 0);
 
         final DataSetSearchCriteria containsStringPropertyCriterion = new DataSetSearchCriteria();
         containsStringPropertyCriterion.withProperty(INTERNAL_DATA_SET_PROPERTY_CODE_STRING).thatContains(
                 DATA_SET_PROPERTY_1_INTERNAL_STRING_VALUE.substring(3, 10));
-        final Set<Long> containsStringPropertyCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, containsStringPropertyCriterion, new DataSetSortOptions());
+        final Set<Long> containsStringPropertyCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, containsStringPropertyCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertEquals(containsStringPropertyCriterionDataSetIds.size(), 1);
         assertTrue(containsStringPropertyCriterionDataSetIds.contains(DATA_SET_ID_1));
 
@@ -808,7 +852,7 @@ public class DataSetManagerDBTest
         containsStringPropertyCriterionNotFound.withProperty(INTERNAL_DATA_SET_PROPERTY_CODE_STRING).thatContains(
                 DATA_SET_PROPERTY_1_INTERNAL_STRING_VALUE.substring(3, 10) + "-");
         final Set<Long> containsStringPropertyCriterionDataSetIdsNotFound = searchManager.searchForIDs(ADMIN_USER_TECH_ID,
-                containsStringPropertyCriterionNotFound, new DataSetSortOptions());
+                containsStringPropertyCriterionNotFound, new DataSetSortOptions(), null, ID_COLUMN);
         assertEquals(containsStringPropertyCriterionDataSetIdsNotFound.size(), 0);
     }
 
@@ -821,7 +865,8 @@ public class DataSetManagerDBTest
         final DataSetSearchCriteria compoundAndFieldCriterion = new DataSetSearchCriteria();
         compoundAndFieldCriterion.withAndOperator().withRegistrationDate().thatIsEarlierThanOrEqualTo(DATA_SET_REGISTRATION_DATE_2);
         compoundAndFieldCriterion.withRegistrationDate().thatIsLaterThanOrEqualTo(DATA_SET_REGISTRATION_DATE_2);
-        final Set<Long> compoundAndFieldCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, compoundAndFieldCriterion, new DataSetSortOptions());
+        final Set<Long> compoundAndFieldCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, compoundAndFieldCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertFalse(compoundAndFieldCriterionDataSetIds.isEmpty());
         assertFalse(compoundAndFieldCriterionDataSetIds.contains(DATA_SET_ID_1));
         assertTrue(compoundAndFieldCriterionDataSetIds.contains(DATA_SET_ID_2));
@@ -830,7 +875,8 @@ public class DataSetManagerDBTest
         final DataSetSearchCriteria compoundOrFieldCriterion = new DataSetSearchCriteria();
         compoundOrFieldCriterion.withOrOperator().withRegistrationDate().thatIsEarlierThanOrEqualTo(DATA_SET_REGISTRATION_DATE_2);
         compoundOrFieldCriterion.withRegistrationDate().thatIsLaterThanOrEqualTo(DATA_SET_REGISTRATION_DATE_2);
-        final Set<Long> compoundOrFieldCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, compoundOrFieldCriterion, new DataSetSortOptions());
+        final Set<Long> compoundOrFieldCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, compoundOrFieldCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertFalse(compoundOrFieldCriterionDataSetIds.isEmpty());
         assertTrue(compoundOrFieldCriterionDataSetIds.contains(DATA_SET_ID_1));
         assertTrue(compoundOrFieldCriterionDataSetIds.contains(DATA_SET_ID_2));
@@ -847,7 +893,8 @@ public class DataSetManagerDBTest
         compoundAndPropertyCriterion1.withAndOperator().withNumberProperty(DATA_SET_PROPERTY_CODE_DOUBLE).thatIsLessThanOrEqualTo(
                 DATA_SET_PROPERTY_3_NUMBER_VALUE);
         compoundAndPropertyCriterion1.withNumberProperty(DATA_SET_PROPERTY_CODE_DOUBLE).thatIsGreaterThanOrEqualTo(DATA_SET_PROPERTY_3_NUMBER_VALUE);
-        final Set<Long> compoundAndPropertyCriterionDataSetIds1 = searchManager.searchForIDs(ADMIN_USER_TECH_ID, compoundAndPropertyCriterion1, new DataSetSortOptions());
+        final Set<Long> compoundAndPropertyCriterionDataSetIds1 = searchManager.searchForIDs(ADMIN_USER_TECH_ID, compoundAndPropertyCriterion1, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertEquals(compoundAndPropertyCriterionDataSetIds1.size(), 1);
         assertTrue(compoundAndPropertyCriterionDataSetIds1.contains(DATA_SET_ID_3));
 
@@ -855,13 +902,15 @@ public class DataSetManagerDBTest
         compoundAndPropertyCriterion2.withAndOperator().withNumberProperty(DATA_SET_PROPERTY_CODE_DOUBLE).thatIsLessThan(
                 DATA_SET_PROPERTY_3_NUMBER_VALUE);
         compoundAndPropertyCriterion2.withNumberProperty(DATA_SET_PROPERTY_CODE_DOUBLE).thatIsGreaterThanOrEqualTo(DATA_SET_PROPERTY_3_NUMBER_VALUE);
-        final Set<Long> compoundAndPropertyCriterionDataSetIds2 = searchManager.searchForIDs(ADMIN_USER_TECH_ID, compoundAndPropertyCriterion2, new DataSetSortOptions());
+        final Set<Long> compoundAndPropertyCriterionDataSetIds2 = searchManager.searchForIDs(ADMIN_USER_TECH_ID, compoundAndPropertyCriterion2, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertEquals(compoundAndPropertyCriterionDataSetIds2.size(), 0);
 
         final DataSetSearchCriteria compoundOrPropertyCriterion = new DataSetSearchCriteria();
         compoundOrPropertyCriterion.withOrOperator().withNumberProperty(DATA_SET_PROPERTY_CODE_DOUBLE).thatEquals(DATA_SET_PROPERTY_3_NUMBER_VALUE);
         compoundOrPropertyCriterion.withProperty(DATA_SET_PROPERTY_CODE_STRING).thatEquals(DATA_SET_PROPERTY_2_STRING_VALUE);
-        final Set<Long> compoundOrPropertyCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, compoundOrPropertyCriterion, new DataSetSortOptions());
+        final Set<Long> compoundOrPropertyCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, compoundOrPropertyCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertEquals(compoundOrPropertyCriterionDataSetIds.size(), 2);
         assertTrue(compoundOrPropertyCriterionDataSetIds.contains(DATA_SET_ID_2));
         assertTrue(compoundOrPropertyCriterionDataSetIds.contains(DATA_SET_ID_3));
@@ -870,14 +919,16 @@ public class DataSetManagerDBTest
         compoundAndPropertyFieldCriterion.withAndOperator().withCodes().thatIn(Arrays.asList(DATA_SET_CODE_1, DATA_SET_CODE_3));
         compoundAndPropertyFieldCriterion.withNumberProperty(DATA_SET_PROPERTY_CODE_DOUBLE).thatIsGreaterThan(DATA_SET_PROPERTY_3_NUMBER_VALUE
                 - 0.000001);
-        final Set<Long> compoundAndPropertyFieldCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, compoundAndPropertyFieldCriterion, new DataSetSortOptions());
+        final Set<Long> compoundAndPropertyFieldCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, compoundAndPropertyFieldCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertEquals(compoundAndPropertyFieldCriterionDataSetIds.size(), 1);
         assertTrue(compoundAndPropertyFieldCriterionDataSetIds.contains(DATA_SET_ID_3));
 
         final DataSetSearchCriteria compoundOrPropertyFieldCriterion = new DataSetSearchCriteria();
         compoundOrPropertyFieldCriterion.withOrOperator().withPermId().thatEquals(DATA_SET_CODE_2);
         compoundOrPropertyFieldCriterion.withNumberProperty(DATA_SET_PROPERTY_CODE_LONG).thatEquals(DATA_SET_PROPERTY_1_NUMBER_VALUE);
-        final Set<Long> compoundOrPropertyFieldCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, compoundOrPropertyFieldCriterion, new DataSetSortOptions());
+        final Set<Long> compoundOrPropertyFieldCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, compoundOrPropertyFieldCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertEquals(compoundOrPropertyFieldCriterionDataSetIds.size(), 2);
         assertTrue(compoundOrPropertyFieldCriterionDataSetIds.contains(DATA_SET_ID_1));
         assertTrue(compoundOrPropertyFieldCriterionDataSetIds.contains(DATA_SET_ID_2));
@@ -893,25 +944,26 @@ public class DataSetManagerDBTest
         // This is a trivial search since registrator is a mandatory field, so the result set will contain all records
         final DataSetSearchCriteria emptyCriterion = new DataSetSearchCriteria();
         emptyCriterion.withRegistrator();
-        final Set<Long> emptyCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, emptyCriterion, new DataSetSortOptions());
+        final Set<Long> emptyCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, emptyCriterion, new DataSetSortOptions(), null, ID_COLUMN);
         assertFalse(emptyCriterionDataSetIds.isEmpty());
 
         // By ID
         final DataSetSearchCriteria idCriterion = new DataSetSearchCriteria();
         idCriterion.withRegistrator().withUserId().thatEquals(REGISTRATOR_USER_ID);
-        final Set<Long> idCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, idCriterion, new DataSetSortOptions());
+        final Set<Long> idCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, idCriterion, new DataSetSortOptions(), null, ID_COLUMN);
         assertEquals(idCriterionDataSetIds.size(), 1);
         assertTrue(idCriterionDataSetIds.contains(DATA_SET_ID_1));
 
         final DataSetSearchCriteria notExistingIdCriterion = new DataSetSearchCriteria();
         notExistingIdCriterion.withRegistrator().withUserId().thatEquals("-");
-        final Set<Long> notExistingIdCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, notExistingIdCriterion, new DataSetSortOptions());
+        final Set<Long> notExistingIdCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, notExistingIdCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertTrue(notExistingIdCriterionDataSetIds.isEmpty());
 
         // By IDs
         final DataSetSearchCriteria idsCriterion = new DataSetSearchCriteria();
         idsCriterion.withRegistrator().withUserIds().thatIn(Arrays.asList(REGISTRATOR_USER_ID, ADMIN_USER_ID));
-        final Set<Long> idsCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, idsCriterion, new DataSetSortOptions());
+        final Set<Long> idsCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, idsCriterion, new DataSetSortOptions(), null, ID_COLUMN);
         assertEquals(idsCriterionDataSetIds.size(), 2);
         assertTrue(idsCriterionDataSetIds.contains(DATA_SET_ID_1));
         assertTrue(idsCriterionDataSetIds.contains(DATA_SET_ID_2));
@@ -919,37 +971,42 @@ public class DataSetManagerDBTest
         // By First Name
         final DataSetSearchCriteria firstNameCriterion = new DataSetSearchCriteria();
         firstNameCriterion.withRegistrator().withFirstName().thatEquals(REGISTRATOR_FIRST_NAME);
-        final Set<Long> firstNameCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, firstNameCriterion, new DataSetSortOptions());
+        final Set<Long> firstNameCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, firstNameCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertEquals(firstNameCriterionDataSetIds.size(), 1);
         assertTrue(firstNameCriterionDataSetIds.contains(DATA_SET_ID_1));
 
         final DataSetSearchCriteria notExistingFirstNameCriterion = new DataSetSearchCriteria();
         notExistingFirstNameCriterion.withRegistrator().withFirstName().thatEquals("-");
-        final Set<Long> notExistingFirstNameCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, notExistingFirstNameCriterion, new DataSetSortOptions());
+        final Set<Long> notExistingFirstNameCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, notExistingFirstNameCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertTrue(notExistingFirstNameCriterionDataSetIds.isEmpty());
 
         // By Last Name
         final DataSetSearchCriteria lastNameCriterion = new DataSetSearchCriteria();
         lastNameCriterion.withRegistrator().withLastName().thatEquals(REGISTRATOR_LAST_NAME);
-        final Set<Long> lastNameCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, lastNameCriterion, new DataSetSortOptions());
+        final Set<Long> lastNameCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, lastNameCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertEquals(lastNameCriterionDataSetIds.size(), 1);
         assertTrue(lastNameCriterionDataSetIds.contains(DATA_SET_ID_1));
 
         final DataSetSearchCriteria notExistingLastNameCriterion = new DataSetSearchCriteria();
         notExistingLastNameCriterion.withRegistrator().withLastName().thatEquals("-");
-        final Set<Long> notExistingLastNameCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, notExistingLastNameCriterion, new DataSetSortOptions());
+        final Set<Long> notExistingLastNameCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, notExistingLastNameCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertTrue(notExistingLastNameCriterionDataSetIds.isEmpty());
 
         // By Email
         final DataSetSearchCriteria emailCriterion = new DataSetSearchCriteria();
         emailCriterion.withRegistrator().withEmail().thatEquals(REGISTRATOR_EMAIL);
-        final Set<Long> emailCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, emailCriterion, new DataSetSortOptions());
+        final Set<Long> emailCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, emailCriterion, new DataSetSortOptions(), null, ID_COLUMN);
         assertEquals(emailCriterionDataSetIds.size(), 1);
         assertTrue(emailCriterionDataSetIds.contains(DATA_SET_ID_1));
 
         final DataSetSearchCriteria notExistingEmailCriterion = new DataSetSearchCriteria();
         notExistingEmailCriterion.withRegistrator().withEmail().thatEquals("-");
-        final Set<Long> notExistingEmailCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, notExistingEmailCriterion, new DataSetSortOptions());
+        final Set<Long> notExistingEmailCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, notExistingEmailCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertTrue(notExistingEmailCriterionDataSetIds.isEmpty());
     }
 
@@ -963,25 +1020,26 @@ public class DataSetManagerDBTest
         // This is a trivial search since modifier is a mandatory field, so the result set will contain all records
         final DataSetSearchCriteria emptyCriterion = new DataSetSearchCriteria();
         emptyCriterion.withModifier();
-        final Set<Long> emptyCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, emptyCriterion, new DataSetSortOptions());
+        final Set<Long> emptyCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, emptyCriterion, new DataSetSortOptions(), null, ID_COLUMN);
         assertFalse(emptyCriterionDataSetIds.isEmpty());
 
         // By ID
         final DataSetSearchCriteria idCriterion = new DataSetSearchCriteria();
         idCriterion.withModifier().withUserId().thatEquals(MODIFIER_USER_ID);
-        final Set<Long> idCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, idCriterion, new DataSetSortOptions());
+        final Set<Long> idCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, idCriterion, new DataSetSortOptions(), null, ID_COLUMN);
         assertEquals(idCriterionDataSetIds.size(), 1);
         assertTrue(idCriterionDataSetIds.contains(DATA_SET_ID_3));
 
         final DataSetSearchCriteria notExistingIdCriterion = new DataSetSearchCriteria();
         notExistingIdCriterion.withModifier().withUserId().thatEquals("-");
-        final Set<Long> notExistingIdCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, notExistingIdCriterion, new DataSetSortOptions());
+        final Set<Long> notExistingIdCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, notExistingIdCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertTrue(notExistingIdCriterionDataSetIds.isEmpty());
 
         // By IDs
         final DataSetSearchCriteria idsCriterion = new DataSetSearchCriteria();
         idsCriterion.withModifier().withUserIds().thatIn(Arrays.asList(MODIFIER_USER_ID, ADMIN_USER_ID));
-        final Set<Long> idsCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, idsCriterion, new DataSetSortOptions());
+        final Set<Long> idsCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, idsCriterion, new DataSetSortOptions(), null, ID_COLUMN);
         assertEquals(idsCriterionDataSetIds.size(), 2);
         assertTrue(idsCriterionDataSetIds.contains(DATA_SET_ID_2));
         assertTrue(idsCriterionDataSetIds.contains(DATA_SET_ID_3));
@@ -989,37 +1047,42 @@ public class DataSetManagerDBTest
         // By First Name
         final DataSetSearchCriteria firstNameCriterion = new DataSetSearchCriteria();
         firstNameCriterion.withModifier().withFirstName().thatEquals(MODIFIER_FIRST_NAME);
-        final Set<Long> firstNameCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, firstNameCriterion, new DataSetSortOptions());
+        final Set<Long> firstNameCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, firstNameCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertEquals(firstNameCriterionDataSetIds.size(), 1);
         assertTrue(firstNameCriterionDataSetIds.contains(DATA_SET_ID_3));
 
         final DataSetSearchCriteria notExistingFirstNameCriterion = new DataSetSearchCriteria();
         notExistingFirstNameCriterion.withModifier().withFirstName().thatEquals("-");
-        final Set<Long> notExistingFirstNameCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, notExistingFirstNameCriterion, new DataSetSortOptions());
+        final Set<Long> notExistingFirstNameCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, notExistingFirstNameCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertTrue(notExistingFirstNameCriterionDataSetIds.isEmpty());
 
         // By Last Name
         final DataSetSearchCriteria lastNameCriterion = new DataSetSearchCriteria();
         lastNameCriterion.withModifier().withLastName().thatEquals(MODIFIER_LAST_NAME);
-        final Set<Long> lastNameCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, lastNameCriterion, new DataSetSortOptions());
+        final Set<Long> lastNameCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, lastNameCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertEquals(lastNameCriterionDataSetIds.size(), 1);
         assertTrue(lastNameCriterionDataSetIds.contains(DATA_SET_ID_3));
 
         final DataSetSearchCriteria notExistingLastNameCriterion = new DataSetSearchCriteria();
         notExistingLastNameCriterion.withModifier().withLastName().thatEquals("-");
-        final Set<Long> notExistingLastNameCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, notExistingLastNameCriterion, new DataSetSortOptions());
+        final Set<Long> notExistingLastNameCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, notExistingLastNameCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertTrue(notExistingLastNameCriterionDataSetIds.isEmpty());
 
         // By Email
         final DataSetSearchCriteria emailCriterion = new DataSetSearchCriteria();
         emailCriterion.withModifier().withEmail().thatEquals(MODIFIER_EMAIL);
-        final Set<Long> emailCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, emailCriterion, new DataSetSortOptions());
+        final Set<Long> emailCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, emailCriterion, new DataSetSortOptions(), null, ID_COLUMN);
         assertEquals(emailCriterionDataSetIds.size(), 1);
         assertTrue(emailCriterionDataSetIds.contains(DATA_SET_ID_3));
 
         final DataSetSearchCriteria notExistingEmailCriterion = new DataSetSearchCriteria();
         notExistingEmailCriterion.withModifier().withEmail().thatEquals("-");
-        final Set<Long> notExistingEmailCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, notExistingEmailCriterion, new DataSetSortOptions());
+        final Set<Long> notExistingEmailCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, notExistingEmailCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertTrue(notExistingEmailCriterionDataSetIds.isEmpty());
     }
 
@@ -1031,7 +1094,8 @@ public class DataSetManagerDBTest
     {
         final DataSetSearchCriteria parentIdCriterion = new DataSetSearchCriteria();
         parentIdCriterion.withParents().withCode().thatEquals(DATA_SET_CODE_1);
-        final Set<Long> parentIdCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, parentIdCriterion, new DataSetSortOptions());
+        final Set<Long> parentIdCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, parentIdCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertEquals(parentIdCriterionDataSetIds.size(), 2);
         assertTrue(parentIdCriterionDataSetIds.contains(DATA_SET_ID_4));
         assertTrue(parentIdCriterionDataSetIds.contains(DATA_SET_ID_5));
@@ -1039,7 +1103,8 @@ public class DataSetManagerDBTest
         final DataSetSearchCriteria parentOrIdCriterion = new DataSetSearchCriteria().withOrOperator();
         parentOrIdCriterion.withParents().withCode().thatEquals(DATA_SET_CODE_1);
         parentOrIdCriterion.withParents().withCode().thatEquals(DATA_SET_CODE_2);
-        final Set<Long> parentOrIdCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, parentOrIdCriterion, new DataSetSortOptions());
+        final Set<Long> parentOrIdCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, parentOrIdCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertEquals(parentOrIdCriterionDataSetIds.size(), 3);
         assertTrue(parentOrIdCriterionDataSetIds.contains(DATA_SET_ID_3));
         assertTrue(parentOrIdCriterionDataSetIds.contains(DATA_SET_ID_4));
@@ -1048,7 +1113,8 @@ public class DataSetManagerDBTest
         final DataSetSearchCriteria parentAndIdCriterion = new DataSetSearchCriteria().withAndOperator();
         parentAndIdCriterion.withParents().withCode().thatEquals(DATA_SET_CODE_1);
         parentAndIdCriterion.withParents().withCode().thatEquals(DATA_SET_CODE_2);
-        final Set<Long> parentAndIdCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, parentAndIdCriterion, new DataSetSortOptions());
+        final Set<Long> parentAndIdCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, parentAndIdCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertTrue(parentAndIdCriterionDataSetIds.isEmpty());
     }
 
@@ -1060,14 +1126,15 @@ public class DataSetManagerDBTest
     {
         final DataSetSearchCriteria childIdCriterion = new DataSetSearchCriteria();
         childIdCriterion.withChildren().withCode().thatEquals(DATA_SET_CODE_4);
-        final Set<Long> childIdCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, childIdCriterion, new DataSetSortOptions());
+        final Set<Long> childIdCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, childIdCriterion, new DataSetSortOptions(), null, ID_COLUMN);
         assertEquals(childIdCriterionDataSetIds.size(), 1);
         assertTrue(childIdCriterionDataSetIds.contains(DATA_SET_ID_1));
 
         final DataSetSearchCriteria childOrIdCriterion = new DataSetSearchCriteria().withOrOperator();
         childOrIdCriterion.withChildren().withCode().thatEquals(DATA_SET_CODE_3);
         childOrIdCriterion.withChildren().withCode().thatEquals(DATA_SET_CODE_4);
-        final Set<Long> childOrIdCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, childOrIdCriterion, new DataSetSortOptions());
+        final Set<Long> childOrIdCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, childOrIdCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertEquals(childOrIdCriterionDataSetIds.size(), 2);
         assertTrue(childOrIdCriterionDataSetIds.contains(DATA_SET_ID_1));
         assertTrue(childOrIdCriterionDataSetIds.contains(DATA_SET_ID_2));
@@ -1075,7 +1142,8 @@ public class DataSetManagerDBTest
         final DataSetSearchCriteria childAndIdCriterion = new DataSetSearchCriteria().withAndOperator();
         childAndIdCriterion.withChildren().withCode().thatEquals(DATA_SET_CODE_3);
         childAndIdCriterion.withChildren().withCode().thatEquals(DATA_SET_CODE_4);
-        final Set<Long> childAndIdCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, childAndIdCriterion, new DataSetSortOptions());
+        final Set<Long> childAndIdCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, childAndIdCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertTrue(childAndIdCriterionDataSetIds.isEmpty());
     }
 
@@ -1087,7 +1155,7 @@ public class DataSetManagerDBTest
     {
         final DataSetSearchCriteria codeCriterion = new DataSetSearchCriteria();
         codeCriterion.withSample().withCode().thatEquals(SAMPLE_CODE_3);
-        final Set<Long> codeCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, codeCriterion, new DataSetSortOptions());
+        final Set<Long> codeCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, codeCriterion, new DataSetSortOptions(), null, ID_COLUMN);
         assertEquals(codeCriterionDataSetIds.size(), 4);
         assertTrue(codeCriterionDataSetIds.contains(DATA_SET_ID_1));
         assertTrue(codeCriterionDataSetIds.contains(DATA_SET_ID_3));
@@ -1096,12 +1164,14 @@ public class DataSetManagerDBTest
 
         final DataSetSearchCriteria noResultsCodeCriterion = new DataSetSearchCriteria();
         noResultsCodeCriterion.withSample().withCode().thatEquals(SAMPLE_CODE_1);
-        final Set<Long> noResultsCodeCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, noResultsCodeCriterion, new DataSetSortOptions());
+        final Set<Long> noResultsCodeCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, noResultsCodeCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertTrue(noResultsCodeCriterionDataSetIds.isEmpty());
 
         final DataSetSearchCriteria noSampleCriterion = new DataSetSearchCriteria();
         noSampleCriterion.withoutSample();
-        final Set<Long> noSampleCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, noSampleCriterion, new DataSetSortOptions());
+        final Set<Long> noSampleCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, noSampleCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertEquals(noSampleCriterionDataSetIds.size(), 1);
         assertTrue(noSampleCriterionDataSetIds.contains(DATA_SET_ID_2));
     }
@@ -1114,19 +1184,21 @@ public class DataSetManagerDBTest
     {
         final DataSetSearchCriteria codeCriterion = new DataSetSearchCriteria();
         codeCriterion.withExperiment().withCode().thatEquals(EXPERIMENT_CODE_3);
-        final Set<Long> codeCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, codeCriterion, new DataSetSortOptions());
+        final Set<Long> codeCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, codeCriterion, new DataSetSortOptions(), null, ID_COLUMN);
         assertEquals(codeCriterionDataSetIds.size(), 2);
         assertTrue(codeCriterionDataSetIds.contains(DATA_SET_ID_2));
         assertTrue(codeCriterionDataSetIds.contains(DATA_SET_ID_3));
 
         final DataSetSearchCriteria noResultsCodeCriterion = new DataSetSearchCriteria();
         noResultsCodeCriterion.withSample().withCode().thatEquals(EXPERIMENT_CODE_1);
-        final Set<Long> noResultsCodeCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, noResultsCodeCriterion, new DataSetSortOptions());
+        final Set<Long> noResultsCodeCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, noResultsCodeCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertTrue(noResultsCodeCriterionDataSetIds.isEmpty());
 
         final DataSetSearchCriteria noExperimentCriterion = new DataSetSearchCriteria();
         noExperimentCriterion.withoutExperiment();
-        final Set<Long> noExperimentCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, noExperimentCriterion, new DataSetSortOptions());
+        final Set<Long> noExperimentCriterionDataSetIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, noExperimentCriterion, new DataSetSortOptions(),
+                null, ID_COLUMN);
         assertEquals(noExperimentCriterionDataSetIds.size(), 3);
         assertTrue(noExperimentCriterionDataSetIds.contains(DATA_SET_ID_1));
         assertTrue(noExperimentCriterionDataSetIds.contains(DATA_SET_ID_4));

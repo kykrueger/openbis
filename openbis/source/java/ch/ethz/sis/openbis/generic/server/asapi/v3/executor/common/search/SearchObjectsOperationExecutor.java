@@ -36,6 +36,8 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.ITranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.TranslationContext;
 
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
+
 /**
  * @author pkupczyk
  */
@@ -89,7 +91,7 @@ public abstract class SearchObjectsOperationExecutor<OBJECT, OBJECT_PE, CRITERIA
         final SortOptions<OBJECT> sortOptions = fetchOptions.getSortBy();
 
         // There results from the manager should already be filtered.
-        final Set<Long> allResultsIds = getSearchManager().searchForIDs(userId, criteria, sortOptions);
+        final Set<Long> allResultsIds = getSearchManager().searchForIDs(userId, criteria, sortOptions, null, ID_COLUMN);
         final List<Long> sortedAndPagedResultIds = sortAndPage(allResultsIds, fetchOptions);
         final List<OBJECT_PE> sortedAndPagedResultPEs = getSearchManager().translate(sortedAndPagedResultIds);
         final Map<OBJECT_PE, OBJECT> sortedAndPagedResultV3DTOs = doTranslate(translationContext, sortedAndPagedResultPEs, fetchOptions);

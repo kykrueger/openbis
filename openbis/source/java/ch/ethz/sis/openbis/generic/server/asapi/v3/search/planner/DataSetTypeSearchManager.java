@@ -16,10 +16,10 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
-import java.util.Collections;
 import java.util.Set;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetTypeSearchCriteria;
@@ -57,9 +57,10 @@ public class DataSetTypeSearchManager extends AbstractSearchManager<DataSetTypeS
     }
 
     @Override
-    public Set<Long> searchForIDs(final Long userId, final DataSetTypeSearchCriteria criteria, final SortOptions<DataSetType> sortOptions)
+    public Set<Long> searchForIDs(final Long userId, final DataSetTypeSearchCriteria criteria, final SortOptions<DataSetType> sortOptions,
+            final ISearchCriteria parentCriteria, final String idsColumnName)
     {
-        return super.searchForIDs(userId, criteria);
+        return super.searchForIDs(userId, criteria, null);
     }
 
 }

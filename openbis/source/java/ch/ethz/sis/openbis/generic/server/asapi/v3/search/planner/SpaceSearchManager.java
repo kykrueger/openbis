@@ -68,7 +68,8 @@ public class SpaceSearchManager extends AbstractSearchManager<SpaceSearchCriteri
     }
 
     @Override
-    public Set<Long> searchForIDs(final Long userId, final SpaceSearchCriteria criteria, final SortOptions<Space> sortOptions)
+    public Set<Long> searchForIDs(final Long userId, final SpaceSearchCriteria criteria, final SortOptions<Space> sortOptions,
+            final ISearchCriteria parentCriteria, final String idsColumnName)
     {
         // Replacing perm ID search criteria with code search criteria, because for spaces perm ID is equivalent to code
         final Collection<ISearchCriteria> newCriteria = criteria.getCriteria().stream().map(searchCriterion ->
@@ -83,7 +84,7 @@ public class SpaceSearchManager extends AbstractSearchManager<SpaceSearchCriteri
         }).collect(Collectors.toList());
 
         final Set<Long> mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId, TableMapper.SPACE,
-                newCriteria, criteria.getOperator(), null);
+                newCriteria, criteria.getOperator(), idsColumnName, criteria);
 
         // If we have results, we use them
         // If we don't have results and criteria are not empty, there are no results.

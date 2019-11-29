@@ -16,11 +16,11 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
-import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.fetchoptions.ProjectFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.search.ProjectSearchCriteria;
@@ -57,9 +57,10 @@ public class ProjectSearchManager extends AbstractSearchManager<ProjectSearchCri
     }
 
     @Override
-    public Set<Long> searchForIDs(final Long userId, final ProjectSearchCriteria criteria, final SortOptions<Project> sortOptions)
+    public Set<Long> searchForIDs(final Long userId, final ProjectSearchCriteria criteria, final SortOptions<Project> sortOptions,
+            final ISearchCriteria parentCriteria, final String idsColumnName)
     {
-        return super.searchForIDs(userId, criteria);
+        return super.searchForIDs(userId, criteria, idsColumnName);
     }
 
 }

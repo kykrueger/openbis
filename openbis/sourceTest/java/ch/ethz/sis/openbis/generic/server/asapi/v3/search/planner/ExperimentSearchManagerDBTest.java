@@ -65,6 +65,7 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestH
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_CODE_1;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SPACE_CODE_2;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SPACE_CODE_3;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
 import static junit.framework.Assert.assertFalse;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
@@ -130,7 +131,7 @@ public class ExperimentSearchManagerDBTest
      */
     private void checkCodeCriterion(final ExperimentSearchCriteria criterion)
     {
-        final Set<Long> sampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, criterion, new ExperimentSortOptions());
+        final Set<Long> sampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, criterion, new ExperimentSortOptions(), null, ID_COLUMN);
         assertEquals(sampleIds.size(), 1);
         assertEquals(sampleIds.iterator().next().longValue(), EXPERIMENT_ID_1);
     }
@@ -143,14 +144,15 @@ public class ExperimentSearchManagerDBTest
     {
         final ExperimentSearchCriteria equalsCriterion = new ExperimentSearchCriteria();
         equalsCriterion.withRegistrationDate().thatEquals(EXPERIMENT_REGISTRATION_DATE_2);
-        final Set<Long> equalCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, equalsCriterion, new ExperimentSortOptions());
+        final Set<Long> equalCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, equalsCriterion, new ExperimentSortOptions(), null,
+                ID_COLUMN);
         assertEquals(equalCriterionSampleIds.size(), 1);
         assertTrue(equalCriterionSampleIds.contains(EXPERIMENT_ID_2));
 
         final ExperimentSearchCriteria earlierThanCriterion = new ExperimentSearchCriteria();
         earlierThanCriterion.withRegistrationDate().thatIsEarlierThanOrEqualTo(EXPERIMENT_REGISTRATION_DATE_2);
         final Set<Long> earlierThanCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, earlierThanCriterion,
-                new ExperimentSortOptions());
+                new ExperimentSortOptions(), null, ID_COLUMN);
         assertFalse(earlierThanCriterionSampleIds.isEmpty());
         assertTrue(earlierThanCriterionSampleIds.contains(EXPERIMENT_ID_1));
         assertTrue(earlierThanCriterionSampleIds.contains(EXPERIMENT_ID_2));
@@ -159,7 +161,8 @@ public class ExperimentSearchManagerDBTest
 
         final ExperimentSearchCriteria laterThanCriterion = new ExperimentSearchCriteria();
         laterThanCriterion.withRegistrationDate().thatIsLaterThanOrEqualTo(EXPERIMENT_REGISTRATION_DATE_2);
-        final Set<Long> laterThanCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, laterThanCriterion, new ExperimentSortOptions());
+        final Set<Long> laterThanCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, laterThanCriterion, new ExperimentSortOptions(),
+                null, ID_COLUMN);
         assertFalse(laterThanCriterionSampleIds.isEmpty());
         assertFalse(laterThanCriterionSampleIds.contains(EXPERIMENT_ID_1));
         assertTrue(laterThanCriterionSampleIds.contains(EXPERIMENT_ID_2));
@@ -175,14 +178,15 @@ public class ExperimentSearchManagerDBTest
     {
         final ExperimentSearchCriteria equalsCriterion = new ExperimentSearchCriteria();
         equalsCriterion.withModificationDate().thatEquals(EXPERIMENT_MODIFICATION_DATE_2);
-        final Set<Long> equalCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, equalsCriterion, new ExperimentSortOptions());
+        final Set<Long> equalCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, equalsCriterion, new ExperimentSortOptions(), null,
+                ID_COLUMN);
         assertEquals(equalCriterionSampleIds.size(), 1);
         assertTrue(equalCriterionSampleIds.contains(EXPERIMENT_ID_2));
 
         final ExperimentSearchCriteria earlierThanCriterion = new ExperimentSearchCriteria();
         earlierThanCriterion.withModificationDate().thatIsEarlierThanOrEqualTo(EXPERIMENT_MODIFICATION_DATE_2);
         final Set<Long> earlierThanCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, earlierThanCriterion,
-                new ExperimentSortOptions());
+                new ExperimentSortOptions(), null, ID_COLUMN);
         assertFalse(earlierThanCriterionSampleIds.isEmpty());
         assertTrue(earlierThanCriterionSampleIds.contains(EXPERIMENT_ID_1));
         assertTrue(earlierThanCriterionSampleIds.contains(EXPERIMENT_ID_2));
@@ -191,7 +195,8 @@ public class ExperimentSearchManagerDBTest
 
         final ExperimentSearchCriteria laterThanCriterion = new ExperimentSearchCriteria();
         laterThanCriterion.withModificationDate().thatIsLaterThanOrEqualTo(EXPERIMENT_MODIFICATION_DATE_2);
-        final Set<Long> laterThanCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, laterThanCriterion, new ExperimentSortOptions());
+        final Set<Long> laterThanCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, laterThanCriterion, new ExperimentSortOptions(),
+                null, ID_COLUMN);
         assertFalse(laterThanCriterionSampleIds.isEmpty());
         assertFalse(laterThanCriterionSampleIds.contains(EXPERIMENT_ID_1));
         assertTrue(laterThanCriterionSampleIds.contains(EXPERIMENT_ID_2));
@@ -208,14 +213,15 @@ public class ExperimentSearchManagerDBTest
     {
         final ExperimentSearchCriteria equalsCriterion = new ExperimentSearchCriteria();
         equalsCriterion.withRegistrationDate().thatEquals(EXPERIMENT_REGISTRATION_DATE_STRING_2);
-        final Set<Long> equalCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, equalsCriterion, new ExperimentSortOptions());
+        final Set<Long> equalCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, equalsCriterion, new ExperimentSortOptions(), null,
+                ID_COLUMN);
         assertEquals(equalCriterionSampleIds.size(), 1);
         assertTrue(equalCriterionSampleIds.contains(EXPERIMENT_ID_2));
 
         final ExperimentSearchCriteria earlierThanCriterion = new ExperimentSearchCriteria();
         earlierThanCriterion.withRegistrationDate().thatIsEarlierThanOrEqualTo(EXPERIMENT_REGISTRATION_DATE_STRING_2);
         final Set<Long> earlierThanCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, earlierThanCriterion,
-                new ExperimentSortOptions());
+                new ExperimentSortOptions(), null, ID_COLUMN);
         assertFalse(earlierThanCriterionSampleIds.isEmpty());
         assertTrue(earlierThanCriterionSampleIds.contains(EXPERIMENT_ID_1));
         assertTrue(earlierThanCriterionSampleIds.contains(EXPERIMENT_ID_2));
@@ -224,7 +230,8 @@ public class ExperimentSearchManagerDBTest
 
         final ExperimentSearchCriteria laterThanCriterion = new ExperimentSearchCriteria();
         laterThanCriterion.withRegistrationDate().thatIsLaterThanOrEqualTo(EXPERIMENT_REGISTRATION_DATE_STRING_2);
-        final Set<Long> laterThanCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, laterThanCriterion, new ExperimentSortOptions());
+        final Set<Long> laterThanCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, laterThanCriterion, new ExperimentSortOptions(),
+                null, ID_COLUMN);
         assertFalse(laterThanCriterionSampleIds.isEmpty());
         assertFalse(laterThanCriterionSampleIds.contains(EXPERIMENT_ID_1));
         assertTrue(laterThanCriterionSampleIds.contains(EXPERIMENT_ID_2));
@@ -241,13 +248,15 @@ public class ExperimentSearchManagerDBTest
     {
         final ExperimentSearchCriteria equalsCriterion = new ExperimentSearchCriteria();
         equalsCriterion.withModificationDate().thatEquals(EXPERIMENT_MODIFICATION_DATE_STRING_2);
-        final Set<Long> equalCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, equalsCriterion, new ExperimentSortOptions());
+        final Set<Long> equalCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, equalsCriterion, new ExperimentSortOptions(), null,
+                ID_COLUMN);
         assertEquals(equalCriterionSampleIds.size(), 1);
         assertTrue(equalCriterionSampleIds.contains(EXPERIMENT_ID_2));
 
         final ExperimentSearchCriteria earlierThanCriterion = new ExperimentSearchCriteria();
         earlierThanCriterion.withModificationDate().thatIsEarlierThanOrEqualTo(EXPERIMENT_MODIFICATION_DATE_STRING_2);
-        final Set<Long> earlierThanCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, earlierThanCriterion, new ExperimentSortOptions());
+        final Set<Long> earlierThanCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, earlierThanCriterion, new ExperimentSortOptions(),
+                null, ID_COLUMN);
         assertFalse(earlierThanCriterionSampleIds.isEmpty());
         assertTrue(earlierThanCriterionSampleIds.contains(EXPERIMENT_ID_1));
         assertTrue(earlierThanCriterionSampleIds.contains(EXPERIMENT_ID_2));
@@ -256,7 +265,8 @@ public class ExperimentSearchManagerDBTest
 
         final ExperimentSearchCriteria laterThanCriterion = new ExperimentSearchCriteria();
         laterThanCriterion.withModificationDate().thatIsLaterThanOrEqualTo(EXPERIMENT_MODIFICATION_DATE_STRING_2);
-        final Set<Long> laterThanCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, laterThanCriterion, new ExperimentSortOptions());
+        final Set<Long> laterThanCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, laterThanCriterion, new ExperimentSortOptions(),
+                null, ID_COLUMN);
         assertFalse(laterThanCriterionSampleIds.isEmpty());
         assertFalse(laterThanCriterionSampleIds.contains(EXPERIMENT_ID_1));
         assertTrue(laterThanCriterionSampleIds.contains(EXPERIMENT_ID_2));
@@ -272,7 +282,7 @@ public class ExperimentSearchManagerDBTest
     {
         final ExperimentSearchCriteria criterion = new ExperimentSearchCriteria();
         criterion.withCodes().thatIn(Arrays.asList(EXPERIMENT_CODE_1, EXPERIMENT_CODE_3));
-        final Set<Long> criterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, criterion, new ExperimentSortOptions());
+        final Set<Long> criterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, criterion, new ExperimentSortOptions(), null, ID_COLUMN);
         assertEquals(criterionSampleIds.size(), 2);
         assertTrue(criterionSampleIds.contains(EXPERIMENT_ID_1));
         assertTrue(criterionSampleIds.contains(EXPERIMENT_ID_3));
@@ -286,27 +296,31 @@ public class ExperimentSearchManagerDBTest
     {
         final ExperimentSearchCriteria equalsCriterion = new ExperimentSearchCriteria();
         equalsCriterion.withPermId().thatEquals(EXPERIMENT_PERM_ID_2);
-        final Set<Long> equalsCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, equalsCriterion, new ExperimentSortOptions());
+        final Set<Long> equalsCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, equalsCriterion, new ExperimentSortOptions(), null,
+                ID_COLUMN);
         assertEquals(equalsCriterionSampleIds.size(), 1);
         assertTrue(equalsCriterionSampleIds.contains(EXPERIMENT_ID_2));
 
         final ExperimentSearchCriteria startsWithCriterion = new ExperimentSearchCriteria();
         startsWithCriterion.withPermId().thatStartsWith(EXPERIMENT_PERM_ID_1.substring(0, EXPERIMENT_PERM_ID_1.length() - 2));
-        final Set<Long> startsWithCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, startsWithCriterion, new ExperimentSortOptions());
+        final Set<Long> startsWithCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, startsWithCriterion, new ExperimentSortOptions(),
+                null, ID_COLUMN);
         assertEquals(startsWithCriterionSampleIds.size(), 2);
         assertTrue(startsWithCriterionSampleIds.contains(EXPERIMENT_ID_1));
         assertTrue(startsWithCriterionSampleIds.contains(EXPERIMENT_ID_3));
 
         final ExperimentSearchCriteria endsWithCriterion = new ExperimentSearchCriteria();
         endsWithCriterion.withPermId().thatEndsWith(EXPERIMENT_PERM_ID_1.substring(EXPERIMENT_PERM_ID_1.length() - 4));
-        final Set<Long> endsWithCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, endsWithCriterion, new ExperimentSortOptions());
+        final Set<Long> endsWithCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, endsWithCriterion, new ExperimentSortOptions(),
+                null, ID_COLUMN);
         assertEquals(endsWithCriterionSampleIds.size(), 2);
         assertTrue(endsWithCriterionSampleIds.contains(EXPERIMENT_ID_1));
         assertTrue(endsWithCriterionSampleIds.contains(EXPERIMENT_ID_2));
 
         final ExperimentSearchCriteria containsCriterion = new ExperimentSearchCriteria();
         containsCriterion.withPermId().thatContains(EXPERIMENT_PERM_ID_1.substring(4, 12));
-        final Set<Long> containsCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, containsCriterion, new ExperimentSortOptions());
+        final Set<Long> containsCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, containsCriterion, new ExperimentSortOptions(),
+                null, ID_COLUMN);
         assertEquals(containsCriterionSampleIds.size(), 4);
         assertTrue(containsCriterionSampleIds.contains(EXPERIMENT_ID_1));
         assertTrue(containsCriterionSampleIds.contains(EXPERIMENT_ID_2));
@@ -323,21 +337,24 @@ public class ExperimentSearchManagerDBTest
         // code attribute
         final ExperimentSearchCriteria codeEqualsCriterion = new ExperimentSearchCriteria();
         codeEqualsCriterion.withAnyField().thatEquals(EXPERIMENT_CODE_2);
-        final Set<Long> codeEqualsCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, codeEqualsCriterion, new ExperimentSortOptions());
+        final Set<Long> codeEqualsCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, codeEqualsCriterion, new ExperimentSortOptions(),
+                null, ID_COLUMN);
         assertEquals(codeEqualsCriterionSampleIds.size(), 1);
         assertTrue(codeEqualsCriterionSampleIds.contains(EXPERIMENT_ID_2));
 
         // project_id attribute
         final ExperimentSearchCriteria projectIdEqualsCriterion = new ExperimentSearchCriteria();
         projectIdEqualsCriterion.withAnyField().thatEquals(String.valueOf(PROJECT_ID_2));
-        final Set<Long> projectIdEqualsCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, projectIdEqualsCriterion, new ExperimentSortOptions());
+        final Set<Long> projectIdEqualsCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, projectIdEqualsCriterion, new ExperimentSortOptions(),
+                null, ID_COLUMN);
         assertEquals(projectIdEqualsCriterionSampleIds.size(), 1);
         assertTrue(projectIdEqualsCriterionSampleIds.contains(EXPERIMENT_ID_2));
 
         // project_id attribute
         final ExperimentSearchCriteria registrationDateEqualsCriterion = new ExperimentSearchCriteria();
         registrationDateEqualsCriterion.withAnyField().thatEquals(EXPERIMENT_REGISTRATION_DATE_STRING_1);
-        final Set<Long> registrationDateEqualsCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, registrationDateEqualsCriterion, new ExperimentSortOptions());
+        final Set<Long> registrationDateEqualsCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, registrationDateEqualsCriterion, new ExperimentSortOptions(),
+                null, ID_COLUMN);
         assertEquals(registrationDateEqualsCriterionSampleIds.size(), 1);
         assertTrue(registrationDateEqualsCriterionSampleIds.contains(EXPERIMENT_ID_1));
 
@@ -345,7 +362,7 @@ public class ExperimentSearchManagerDBTest
         final ExperimentSearchCriteria startsWithCriterion = new ExperimentSearchCriteria();
         startsWithCriterion.withAnyField().thatStartsWith(EXPERIMENT_PERM_ID_1.substring(0, EXPERIMENT_PERM_ID_1.length() - 2));
         final Set<Long> startsWithCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, startsWithCriterion,
-                new ExperimentSortOptions());
+                new ExperimentSortOptions(), null, ID_COLUMN);
         assertEquals(startsWithCriterionSampleIds.size(), 2);
         assertTrue(startsWithCriterionSampleIds.contains(EXPERIMENT_ID_1));
         assertTrue(startsWithCriterionSampleIds.contains(EXPERIMENT_ID_3));
@@ -353,14 +370,16 @@ public class ExperimentSearchManagerDBTest
         // code attribute
         final ExperimentSearchCriteria endsWithCriterion1 = new ExperimentSearchCriteria();
         endsWithCriterion1.withAnyField().thatEndsWith(EXPERIMENT_CODE_2.substring(EXPERIMENT_CODE_2.length() - 5));
-        final Set<Long> endsWithCriterionSampleIds1 = searchManager.searchForIDs(ADMIN_USER_TECH_ID, endsWithCriterion1, new ExperimentSortOptions());
+        final Set<Long> endsWithCriterionSampleIds1 = searchManager.searchForIDs(ADMIN_USER_TECH_ID, endsWithCriterion1, new ExperimentSortOptions(),
+                null, ID_COLUMN);
         assertEquals(endsWithCriterionSampleIds1.size(), 1);
         assertTrue(endsWithCriterionSampleIds1.contains(EXPERIMENT_ID_2));
 
         // id, perm_id and samp_id_part_of fields
         final ExperimentSearchCriteria endsWithCriterion2 = new ExperimentSearchCriteria();
         endsWithCriterion2.withAnyField().thatEndsWith(String.valueOf(EXPERIMENT_ID_1));
-        final Set<Long> endsWithCriterionSampleIds2 = searchManager.searchForIDs(ADMIN_USER_TECH_ID, endsWithCriterion2, new ExperimentSortOptions());
+        final Set<Long> endsWithCriterionSampleIds2 = searchManager.searchForIDs(ADMIN_USER_TECH_ID, endsWithCriterion2, new ExperimentSortOptions(),
+                null, ID_COLUMN);
         assertEquals(endsWithCriterionSampleIds2.size(), 3);
         assertTrue(endsWithCriterionSampleIds2.contains(EXPERIMENT_ID_1));
         assertTrue(endsWithCriterionSampleIds2.contains(EXPERIMENT_ID_2));
@@ -369,7 +388,8 @@ public class ExperimentSearchManagerDBTest
         // expe_id
         final ExperimentSearchCriteria containsCriterion = new ExperimentSearchCriteria();
         containsCriterion.withAnyField().thatContains(String.valueOf(EXPERIMENT_ID_3));
-        final Set<Long> containsCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, containsCriterion, new ExperimentSortOptions());
+        final Set<Long> containsCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, containsCriterion, new ExperimentSortOptions(),
+                null, ID_COLUMN);
         assertEquals(containsCriterionSampleIds.size(), 1);
         assertTrue(containsCriterionSampleIds.contains(EXPERIMENT_ID_3));
     }
@@ -382,7 +402,8 @@ public class ExperimentSearchManagerDBTest
     {
         final ExperimentSearchCriteria permIdCriterion = new ExperimentSearchCriteria();
         permIdCriterion.withId().thatEquals(new ExperimentPermId(EXPERIMENT_PERM_ID_2));
-        final Set<Long> permIdCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, permIdCriterion, new ExperimentSortOptions());
+        final Set<Long> permIdCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, permIdCriterion, new ExperimentSortOptions(), null,
+                ID_COLUMN);
         assertEquals(permIdCriterionSampleIds.size(), 1);
         assertTrue(permIdCriterionSampleIds.contains(EXPERIMENT_ID_2));
 
@@ -390,7 +411,7 @@ public class ExperimentSearchManagerDBTest
         identifierCriterion3.withId().thatEquals(new ExperimentIdentifier(ID_DELIMITER + SPACE_CODE_2 + ID_DELIMITER + PROJECT_CODE_2 + ID_DELIMITER +
                 EXPERIMENT_CODE_2));
         final Set<Long> identifierCriterion3SampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, identifierCriterion3,
-                new ExperimentSortOptions());
+                new ExperimentSortOptions(), null, ID_COLUMN);
         assertEquals(identifierCriterion3SampleIds.size(), 1);
         assertTrue(identifierCriterion3SampleIds.contains(EXPERIMENT_ID_2));
     }
@@ -405,25 +426,29 @@ public class ExperimentSearchManagerDBTest
         // This is a trivial search since registrator is a mandatory field, so the result set will contain all records
         final ExperimentSearchCriteria emptyCriterion = new ExperimentSearchCriteria();
         emptyCriterion.withRegistrator();
-        final Set<Long> emptyCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, emptyCriterion, new ExperimentSortOptions());
+        final Set<Long> emptyCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, emptyCriterion, new ExperimentSortOptions(), null,
+                ID_COLUMN);
         assertFalse(emptyCriterionSampleIds.isEmpty());
 
         // By ID
         final ExperimentSearchCriteria idCriterion = new ExperimentSearchCriteria();
         idCriterion.withRegistrator().withUserId().thatEquals(REGISTRATOR_USER_ID);
-        final Set<Long> idCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, idCriterion, new ExperimentSortOptions());
+        final Set<Long> idCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, idCriterion, new ExperimentSortOptions(), null,
+                ID_COLUMN);
         assertEquals(idCriterionSampleIds.size(), 1);
         assertTrue(idCriterionSampleIds.contains(EXPERIMENT_ID_2));
 
         final ExperimentSearchCriteria notExistingIdCriterion = new ExperimentSearchCriteria();
         notExistingIdCriterion.withRegistrator().withUserId().thatEquals("-");
-        final Set<Long> notExistingIdCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, notExistingIdCriterion, new ExperimentSortOptions());
+        final Set<Long> notExistingIdCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, notExistingIdCriterion, new ExperimentSortOptions(),
+                null, ID_COLUMN);
         assertTrue(notExistingIdCriterionSampleIds.isEmpty());
 
         // By IDs
         final ExperimentSearchCriteria idsCriterion = new ExperimentSearchCriteria();
         idsCriterion.withRegistrator().withUserIds().thatIn(Arrays.asList(REGISTRATOR_USER_ID, ADMIN_USER_ID));
-        final Set<Long> idsCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, idsCriterion, new ExperimentSortOptions());
+        final Set<Long> idsCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, idsCriterion, new ExperimentSortOptions(), null,
+                ID_COLUMN);
         assertEquals(idsCriterionSampleIds.size(), 2);
         assertTrue(idsCriterionSampleIds.contains(EXPERIMENT_ID_1));
         assertTrue(idsCriterionSampleIds.contains(EXPERIMENT_ID_2));
@@ -431,37 +456,43 @@ public class ExperimentSearchManagerDBTest
         // By First Name
         final ExperimentSearchCriteria firstNameCriterion = new ExperimentSearchCriteria();
         firstNameCriterion.withRegistrator().withFirstName().thatEquals(REGISTRATOR_FIRST_NAME);
-        final Set<Long> firstNameCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, firstNameCriterion, new ExperimentSortOptions());
+        final Set<Long> firstNameCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, firstNameCriterion, new ExperimentSortOptions(),
+                null, ID_COLUMN);
         assertEquals(firstNameCriterionSampleIds.size(), 1);
         assertTrue(firstNameCriterionSampleIds.contains(EXPERIMENT_ID_2));
 
         final ExperimentSearchCriteria notExistingFirstNameCriterion = new ExperimentSearchCriteria();
         notExistingFirstNameCriterion.withRegistrator().withFirstName().thatEquals("-");
-        final Set<Long> notExistingFirstNameCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, notExistingFirstNameCriterion, new ExperimentSortOptions());
+        final Set<Long> notExistingFirstNameCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, notExistingFirstNameCriterion, new ExperimentSortOptions(),
+                null, ID_COLUMN);
         assertTrue(notExistingFirstNameCriterionSampleIds.isEmpty());
 
         // By Last Name
         final ExperimentSearchCriteria lastNameCriterion = new ExperimentSearchCriteria();
         lastNameCriterion.withRegistrator().withLastName().thatEquals(REGISTRATOR_LAST_NAME);
-        final Set<Long> lastNameCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, lastNameCriterion, new ExperimentSortOptions());
+        final Set<Long> lastNameCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, lastNameCriterion, new ExperimentSortOptions(),
+                null, ID_COLUMN);
         assertEquals(lastNameCriterionSampleIds.size(), 1);
         assertTrue(lastNameCriterionSampleIds.contains(EXPERIMENT_ID_2));
 
         final ExperimentSearchCriteria notExistingLastNameCriterion = new ExperimentSearchCriteria();
         notExistingLastNameCriterion.withRegistrator().withLastName().thatEquals("-");
-        final Set<Long> notExistingLastNameCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, notExistingLastNameCriterion, new ExperimentSortOptions());
+        final Set<Long> notExistingLastNameCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, notExistingLastNameCriterion, new ExperimentSortOptions(),
+                null, ID_COLUMN);
         assertTrue(notExistingLastNameCriterionSampleIds.isEmpty());
 
         // By Email
         final ExperimentSearchCriteria emailCriterion = new ExperimentSearchCriteria();
         emailCriterion.withRegistrator().withEmail().thatEquals(REGISTRATOR_EMAIL);
-        final Set<Long> emailCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, emailCriterion, new ExperimentSortOptions());
+        final Set<Long> emailCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, emailCriterion, new ExperimentSortOptions(), null,
+                ID_COLUMN);
         assertEquals(emailCriterionSampleIds.size(), 1);
         assertTrue(emailCriterionSampleIds.contains(EXPERIMENT_ID_2));
 
         final ExperimentSearchCriteria notExistingEmailCriterion = new ExperimentSearchCriteria();
         notExistingEmailCriterion.withRegistrator().withEmail().thatEquals("-");
-        final Set<Long> notExistingEmailCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, notExistingEmailCriterion, new ExperimentSortOptions());
+        final Set<Long> notExistingEmailCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, notExistingEmailCriterion, new ExperimentSortOptions(),
+                null, ID_COLUMN);
         assertTrue(notExistingEmailCriterionSampleIds.isEmpty());
     }
 
@@ -475,25 +506,29 @@ public class ExperimentSearchManagerDBTest
         // This is a trivial search since registrator is a mandatory field, so the result set will contain all records
         final ExperimentSearchCriteria emptyCriterion = new ExperimentSearchCriteria();
         emptyCriterion.withModifier();
-        final Set<Long> emptyCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, emptyCriterion, new ExperimentSortOptions());
+        final Set<Long> emptyCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, emptyCriterion, new ExperimentSortOptions(), null,
+                ID_COLUMN);
         assertFalse(emptyCriterionSampleIds.isEmpty());
 
         // By ID
         final ExperimentSearchCriteria idCriterion = new ExperimentSearchCriteria();
         idCriterion.withModifier().withUserId().thatEquals(MODIFIER_USER_ID);
-        final Set<Long> idCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, idCriterion, new ExperimentSortOptions());
+        final Set<Long> idCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, idCriterion, new ExperimentSortOptions(), null,
+                ID_COLUMN);
         assertEquals(idCriterionSampleIds.size(), 1);
         assertTrue(idCriterionSampleIds.contains(EXPERIMENT_ID_3));
 
         final ExperimentSearchCriteria notExistingIdCriterion = new ExperimentSearchCriteria();
         notExistingIdCriterion.withModifier().withUserId().thatEquals("-");
-        final Set<Long> notExistingIdCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, notExistingIdCriterion, new ExperimentSortOptions());
+        final Set<Long> notExistingIdCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, notExistingIdCriterion, new ExperimentSortOptions(),
+                null, ID_COLUMN);
         assertTrue(notExistingIdCriterionSampleIds.isEmpty());
 
         // By IDs
         final ExperimentSearchCriteria idsCriterion = new ExperimentSearchCriteria();
         idsCriterion.withModifier().withUserIds().thatIn(Arrays.asList(MODIFIER_USER_ID, ADMIN_USER_ID));
-        final Set<Long> idsCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, idsCriterion, new ExperimentSortOptions());
+        final Set<Long> idsCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, idsCriterion, new ExperimentSortOptions(), null,
+                ID_COLUMN);
         assertEquals(idsCriterionSampleIds.size(), 2);
         assertTrue(idsCriterionSampleIds.contains(EXPERIMENT_ID_1));
         assertTrue(idsCriterionSampleIds.contains(EXPERIMENT_ID_3));
@@ -501,37 +536,43 @@ public class ExperimentSearchManagerDBTest
         // By First Name
         final ExperimentSearchCriteria firstNameCriterion = new ExperimentSearchCriteria();
         firstNameCriterion.withModifier().withFirstName().thatEquals(MODIFIER_FIRST_NAME);
-        final Set<Long> firstNameCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, firstNameCriterion, new ExperimentSortOptions());
+        final Set<Long> firstNameCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, firstNameCriterion, new ExperimentSortOptions(),
+                null, ID_COLUMN);
         assertEquals(firstNameCriterionSampleIds.size(), 1);
         assertTrue(firstNameCriterionSampleIds.contains(EXPERIMENT_ID_3));
 
         final ExperimentSearchCriteria notExistingFirstNameCriterion = new ExperimentSearchCriteria();
         notExistingFirstNameCriterion.withModifier().withFirstName().thatEquals("-");
-        final Set<Long> notExistingFirstNameCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, notExistingFirstNameCriterion, new ExperimentSortOptions());
+        final Set<Long> notExistingFirstNameCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, notExistingFirstNameCriterion, new ExperimentSortOptions(),
+                null, ID_COLUMN);
         assertTrue(notExistingFirstNameCriterionSampleIds.isEmpty());
 
         // By Last Name
         final ExperimentSearchCriteria lastNameCriterion = new ExperimentSearchCriteria();
         lastNameCriterion.withModifier().withLastName().thatEquals(MODIFIER_LAST_NAME);
-        final Set<Long> lastNameCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, lastNameCriterion, new ExperimentSortOptions());
+        final Set<Long> lastNameCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, lastNameCriterion, new ExperimentSortOptions(),
+                null, ID_COLUMN);
         assertEquals(lastNameCriterionSampleIds.size(), 1);
         assertTrue(lastNameCriterionSampleIds.contains(EXPERIMENT_ID_3));
 
         final ExperimentSearchCriteria notExistingLastNameCriterion = new ExperimentSearchCriteria();
         notExistingLastNameCriterion.withModifier().withLastName().thatEquals("-");
-        final Set<Long> notExistingLastNameCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, notExistingLastNameCriterion, new ExperimentSortOptions());
+        final Set<Long> notExistingLastNameCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, notExistingLastNameCriterion, new ExperimentSortOptions(),
+                null, ID_COLUMN);
         assertTrue(notExistingLastNameCriterionSampleIds.isEmpty());
 
         // By Email
         final ExperimentSearchCriteria emailCriterion = new ExperimentSearchCriteria();
         emailCriterion.withModifier().withEmail().thatEquals(MODIFIER_EMAIL);
-        final Set<Long> emailCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, emailCriterion, new ExperimentSortOptions());
+        final Set<Long> emailCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, emailCriterion, new ExperimentSortOptions(), null,
+                ID_COLUMN);
         assertEquals(emailCriterionSampleIds.size(), 1);
         assertTrue(emailCriterionSampleIds.contains(EXPERIMENT_ID_3));
 
         final ExperimentSearchCriteria notExistingEmailCriterion = new ExperimentSearchCriteria();
         notExistingEmailCriterion.withModifier().withEmail().thatEquals("-");
-        final Set<Long> notExistingEmailCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, notExistingEmailCriterion, new ExperimentSortOptions());
+        final Set<Long> notExistingEmailCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, notExistingEmailCriterion,
+                new ExperimentSortOptions(), null, ID_COLUMN);
         assertTrue(notExistingEmailCriterionSampleIds.isEmpty());
     }
 
@@ -543,14 +584,16 @@ public class ExperimentSearchManagerDBTest
     {
         final ExperimentSearchCriteria codeCriterion = new ExperimentSearchCriteria();
         codeCriterion.withProject().withCode().thatEquals(SAMPLE_CODE_1);
-        final Set<Long> codeCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, codeCriterion, new ExperimentSortOptions());
+        final Set<Long> codeCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, codeCriterion, new ExperimentSortOptions(), null,
+                ID_COLUMN);
         assertEquals(codeCriterionSampleIds.size(), 2);
         assertTrue(codeCriterionSampleIds.contains(EXPERIMENT_ID_1));
         assertTrue(codeCriterionSampleIds.contains(EXPERIMENT_ID_3));
 
         final ExperimentSearchCriteria codesCriterion = new ExperimentSearchCriteria();
         codesCriterion.withProject().withCodes().thatIn(Arrays.asList(PROJECT_CODE_1, PROJECT_CODE_2));
-        final Set<Long> codesCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, codesCriterion, new ExperimentSortOptions());
+        final Set<Long> codesCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, codesCriterion, new ExperimentSortOptions(), null,
+                ID_COLUMN);
         assertEquals(codesCriterionSampleIds.size(), 3);
         assertTrue(codesCriterionSampleIds.contains(EXPERIMENT_ID_1));
         assertTrue(codesCriterionSampleIds.contains(EXPERIMENT_ID_2));
@@ -558,7 +601,8 @@ public class ExperimentSearchManagerDBTest
 
         final ExperimentSearchCriteria permIdCriterion = new ExperimentSearchCriteria();
         permIdCriterion.withProject().withPermId().thatEquals(PROJECT_PERM_ID_2);
-        final Set<Long> permIdCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, permIdCriterion, new ExperimentSortOptions());
+        final Set<Long> permIdCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, permIdCriterion, new ExperimentSortOptions(), null,
+                ID_COLUMN);
         assertEquals(permIdCriterionSampleIds.size(), 1);
         assertTrue(permIdCriterionSampleIds.contains(EXPERIMENT_ID_2));
     }
@@ -571,20 +615,23 @@ public class ExperimentSearchManagerDBTest
     {
         final ExperimentSearchCriteria spaceCodeCriterion = new ExperimentSearchCriteria();
         spaceCodeCriterion.withProject().withSpace().withCode().thatEquals(SPACE_CODE_3);
-        final Set<Long> spaceCodeCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, spaceCodeCriterion, new ExperimentSortOptions());
+        final Set<Long> spaceCodeCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, spaceCodeCriterion, new ExperimentSortOptions(),
+                null, ID_COLUMN);
         assertEquals(spaceCodeCriterionSampleIds.size(), 1);
         assertTrue(spaceCodeCriterionSampleIds.contains(EXPERIMENT_ID_4));
 
         final ExperimentSearchCriteria spaceCodesCriterion = new ExperimentSearchCriteria();
         spaceCodesCriterion.withProject().withSpace().withCodes().thatIn(Arrays.asList(SPACE_CODE_3, SPACE_CODE_2));
-        final Set<Long> spaceCodesCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, spaceCodesCriterion, new ExperimentSortOptions());
+        final Set<Long> spaceCodesCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, spaceCodesCriterion, new ExperimentSortOptions(),
+                null, ID_COLUMN);
         assertEquals(spaceCodesCriterionSampleIds.size(), 2);
         assertTrue(spaceCodesCriterionSampleIds.contains(EXPERIMENT_ID_2));
         assertTrue(spaceCodesCriterionSampleIds.contains(EXPERIMENT_ID_4));
 
         final ExperimentSearchCriteria spacePermIdCriterion = new ExperimentSearchCriteria();
         spacePermIdCriterion.withProject().withSpace().withPermId().thatEndsWith(SPACE_CODE_3.substring(1));
-        final Set<Long> spacePermIdCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, spacePermIdCriterion, new ExperimentSortOptions());
+        final Set<Long> spacePermIdCriterionSampleIds = searchManager.searchForIDs(ADMIN_USER_TECH_ID, spacePermIdCriterion, new ExperimentSortOptions(),
+                null, ID_COLUMN);
         assertEquals(spacePermIdCriterionSampleIds.size(), 1);
         assertTrue(spacePermIdCriterionSampleIds.contains(EXPERIMENT_ID_4));
     }

@@ -16,10 +16,10 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
-import java.util.Collections;
 import java.util.Set;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleTypeSearchCriteria;
@@ -57,9 +57,10 @@ public class SampleTypeSearchManager extends AbstractSearchManager<SampleTypeSea
     }
 
     @Override
-    public Set<Long> searchForIDs(final Long userId, final SampleTypeSearchCriteria criteria, final SortOptions<SampleType> sortOptions)
+    public Set<Long> searchForIDs(final Long userId, final SampleTypeSearchCriteria criteria, final SortOptions<SampleType> sortOptions,
+            final ISearchCriteria parentCriteria, final String idsColumnName)
     {
-        return super.searchForIDs(userId, criteria);
+        return super.searchForIDs(userId, criteria, idsColumnName);
     }
 
 }

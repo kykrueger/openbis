@@ -37,6 +37,8 @@ public class TranslationVo
 
     private TableMapper tableMapper;
 
+    private ISearchCriteria parentCriterion;
+
     private Collection<ISearchCriteria> criteria;
 
     private SearchOperator operator;
@@ -75,6 +77,16 @@ public class TranslationVo
     public void setTableMapper(final TableMapper tableMapper)
     {
         this.tableMapper = tableMapper;
+    }
+
+    public ISearchCriteria getParentCriterion()
+    {
+        return parentCriterion;
+    }
+
+    public void setParentCriterion(final ISearchCriteria parentCriterion)
+    {
+        this.parentCriterion = parentCriterion;
     }
 
     public Collection<ISearchCriteria> getCriteria()

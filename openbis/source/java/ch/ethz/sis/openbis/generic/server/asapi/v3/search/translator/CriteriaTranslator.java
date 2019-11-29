@@ -124,8 +124,11 @@ public class CriteriaTranslator
     private static final Map<Class<? extends ISearchCriteria>, IConditionTranslator<? extends ISearchCriteria>> CRITERIA_TO_CONDITION_TRANSLATOR_MAP =
             new HashMap<>();
 
-    /** This map is used when a subquery manager is used. It maps criteria to column name. */
-    private static final Map<Class<? extends ISearchCriteria>, String> CRITERIA_TO_SUBQUERY_COLUMN_MAP = new HashMap<>();
+    /** This map is used when a subquery manager is used. It maps criteria to column name which is on the left of the "IN" statement. */
+    private static final Map<Class<? extends ISearchCriteria>, String> CRITERIA_TO_IN_COLUMN_MAP = new HashMap<>();
+
+    /** This map is used do set an ID different from default for subqueries. */
+    private static final Map<Class<? extends ISearchCriteria>, String> PARENT_CRITERIA_TO_CHILD_SELECT_ID_MAP = new HashMap<>();
 
     public static final String MAIN_TABLE_ALIAS = getAlias(new AtomicInteger(0));
 
@@ -169,21 +172,23 @@ public class CriteriaTranslator
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(EmailSearchCriteria.class, new EmailSearchConditionTranslator());
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(NameSearchCriteria.class, codeSearchConditionTranslator);
 
-        CRITERIA_TO_SUBQUERY_COLUMN_MAP.put(DataSetSearchCriteria.class, ColumnNames.DATA_SET_COLUMN);
-        CRITERIA_TO_SUBQUERY_COLUMN_MAP.put(RegistratorSearchCriteria.class, ColumnNames.PERSON_REGISTERER_COLUMN);
-        CRITERIA_TO_SUBQUERY_COLUMN_MAP.put(ModifierSearchCriteria.class, ColumnNames.PERSON_MODIFIER_COLUMN);
-        CRITERIA_TO_SUBQUERY_COLUMN_MAP.put(SampleSearchCriteria.class, ColumnNames.SAMPLE_COLUMN);
-        CRITERIA_TO_SUBQUERY_COLUMN_MAP.put(SampleContainerSearchCriteria.class, ColumnNames.PART_OF_SAMPLE_COLUMN);
-        CRITERIA_TO_SUBQUERY_COLUMN_MAP.put(SampleTypeSearchCriteria.class, ColumnNames.SAMPLE_TYPE_COLUMN);
-        CRITERIA_TO_SUBQUERY_COLUMN_MAP.put(ExperimentTypeSearchCriteria.class, ColumnNames.EXPERIMENT_TYPE_COLUMN);
-        CRITERIA_TO_SUBQUERY_COLUMN_MAP.put(ExperimentSearchCriteria.class, ColumnNames.EXPERIMENT_COLUMN);
-        CRITERIA_TO_SUBQUERY_COLUMN_MAP.put(ProjectSearchCriteria.class, ColumnNames.PROJECT_COLUMN);
-        CRITERIA_TO_SUBQUERY_COLUMN_MAP.put(SpaceSearchCriteria.class, ColumnNames.SPACE_COLUMN);
-        CRITERIA_TO_SUBQUERY_COLUMN_MAP.put(PropertyTypeSearchCriteria.class, PROPERTY_TYPE_COLUMN);
+        CRITERIA_TO_IN_COLUMN_MAP.put(DataSetSearchCriteria.class, ColumnNames.DATA_SET_COLUMN);
+        CRITERIA_TO_IN_COLUMN_MAP.put(RegistratorSearchCriteria.class, ColumnNames.PERSON_REGISTERER_COLUMN);
+        CRITERIA_TO_IN_COLUMN_MAP.put(ModifierSearchCriteria.class, ColumnNames.PERSON_MODIFIER_COLUMN);
+        CRITERIA_TO_IN_COLUMN_MAP.put(SampleSearchCriteria.class, ColumnNames.SAMPLE_COLUMN);
+        CRITERIA_TO_IN_COLUMN_MAP.put(SampleContainerSearchCriteria.class, ColumnNames.PART_OF_SAMPLE_COLUMN);
+        CRITERIA_TO_IN_COLUMN_MAP.put(SampleTypeSearchCriteria.class, ColumnNames.SAMPLE_TYPE_COLUMN);
+        CRITERIA_TO_IN_COLUMN_MAP.put(ExperimentTypeSearchCriteria.class, ColumnNames.EXPERIMENT_TYPE_COLUMN);
+        CRITERIA_TO_IN_COLUMN_MAP.put(ExperimentSearchCriteria.class, ColumnNames.EXPERIMENT_COLUMN);
+        CRITERIA_TO_IN_COLUMN_MAP.put(ProjectSearchCriteria.class, ColumnNames.PROJECT_COLUMN);
+        CRITERIA_TO_IN_COLUMN_MAP.put(SpaceSearchCriteria.class, ColumnNames.SPACE_COLUMN);
+        CRITERIA_TO_IN_COLUMN_MAP.put(PropertyTypeSearchCriteria.class, PROPERTY_TYPE_COLUMN);
 
-        CRITERIA_TO_SUBQUERY_COLUMN_MAP.put(TagSearchCriteria.class, ID_COLUMN);
-        CRITERIA_TO_SUBQUERY_COLUMN_MAP.put(SemanticAnnotationSearchCriteria.class, ID_COLUMN);
-        CRITERIA_TO_SUBQUERY_COLUMN_MAP.put(PropertyAssignmentSearchCriteria.class, ID_COLUMN);
+        CRITERIA_TO_IN_COLUMN_MAP.put(TagSearchCriteria.class, ID_COLUMN);
+        CRITERIA_TO_IN_COLUMN_MAP.put(SemanticAnnotationSearchCriteria.class, ID_COLUMN);
+        CRITERIA_TO_IN_COLUMN_MAP.put(PropertyAssignmentSearchCriteria.class, ID_COLUMN);
+
+        PARENT_CRITERIA_TO_CHILD_SELECT_ID_MAP.put(PropertyTypeSearchCriteria.class, PROPERTY_TYPE_COLUMN);
     }
 
     public static SelectQuery translate(final TranslationVo vo)
@@ -246,7 +251,8 @@ public class CriteriaTranslator
 
     private static String buildWhere(final TranslationVo vo)
     {
-        if (isSearchAllCriteria(vo.getCriteria()))
+        final Collection<ISearchCriteria> parentCriterion = vo.getCriteria();
+        if (isSearchAllCriteria(parentCriterion))
         {
             return WHERE + SP + TRUE;
         } else
@@ -254,12 +260,12 @@ public class CriteriaTranslator
             final String logicalOperator = vo.getOperator().toString();
             final String separator = SP + logicalOperator + SP;
 
-            final StringBuilder resultSqlBuilder = vo.getCriteria().stream().collect(
+            final StringBuilder resultSqlBuilder = parentCriterion.stream().collect(
                     StringBuilder::new,
                     (sqlBuilder, criterion) ->
                     {
                         sqlBuilder.append(separator);
-                        appendCriterionCondition(vo, sqlBuilder, criterion);
+                        appendCriterionCondition(vo, sqlBuilder, criterion, vo.getParentCriterion());
                     },
                     StringBuilder::append
             );
@@ -274,17 +280,20 @@ public class CriteriaTranslator
      * @param vo value object with miscellaneous information.
      * @param sqlBuilder string builder to append the condition to.
      * @param criterion criterion to be translated.
+     * @param parentCriterion parent of {@code criterion}.
      */
-    private static void appendCriterionCondition(final TranslationVo vo, final StringBuilder sqlBuilder, final ISearchCriteria criterion)
+    private static void appendCriterionCondition(final TranslationVo vo, final StringBuilder sqlBuilder, final ISearchCriteria criterion,
+            final ISearchCriteria parentCriterion)
     {
         final ISearchManager<ISearchCriteria, ?, ?> subqueryManager = vo.getCriteriaToManagerMap().get(criterion.getClass());
         final TableMapper tableMapper = vo.getTableMapper();
         if (subqueryManager != null)
         {
-            final String column = CRITERIA_TO_SUBQUERY_COLUMN_MAP.get(criterion.getClass());
+            final String column = CRITERIA_TO_IN_COLUMN_MAP.get(criterion.getClass());
             if (tableMapper != null && column != null)
             {
-                final Set<Long> ids = subqueryManager.searchForIDs(vo.getUserId(), criterion, null);
+                final Set<Long> ids = subqueryManager.searchForIDs(vo.getUserId(), criterion, null, parentCriterion,
+                        PARENT_CRITERIA_TO_CHILD_SELECT_ID_MAP.getOrDefault(parentCriterion.getClass(), ID_COLUMN));
                 appendInStatement(sqlBuilder, criterion, column, tableMapper);
                 vo.getArgs().add(ids.toArray(new Long[0]));
             } else
@@ -326,8 +335,8 @@ public class CriteriaTranslator
                     append(ON).append(SP).append(e).append(PERIOD).append(ID_COLUMN).append(SP).append(EQ).append(SP).append(mpa).append(PERIOD).
                     append(tableMapper.getMetaprojectAssignmentsEntityIdField()).append(NL).
                     append(INNER_JOIN).append(SP).append(METAPROJECTS_TABLE).append(SP).append(mp).append(SP).
-                    append(ON).append(SP).append(mpa).append(PERIOD).append(METAPROJECT_ID_COLUMN).append(SP).append(EQ).append(SP).append(mp).append(PERIOD).
-                    append(ID_COLUMN).append(NL).
+                    append(ON).append(SP).append(mpa).append(PERIOD).append(METAPROJECT_ID_COLUMN).append(SP).append(EQ).append(SP).append(mp).
+                    append(PERIOD).append(ID_COLUMN).append(NL).
                     append(WHERE).append(SP).append(mp).append(PERIOD).append(ID_COLUMN).append(SP).append(IN).append(SP).append(LP);
             sqlBuilder.append(SELECT).append(SP).append(UNNEST).append(LP).append(QU).append(RP);
             sqlBuilder.append(RP);

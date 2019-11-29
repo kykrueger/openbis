@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.Set;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyAssignmentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.search.PropertyAssignmentSearchCriteria;
@@ -28,7 +29,6 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisation
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
-import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
 
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.SAMPLE_TYPE_COLUMN;
 
@@ -62,10 +62,11 @@ public class PropertyAssignmentSearchManager extends
 
     @Override
     public Set<Long> searchForIDs(final Long userId, final PropertyAssignmentSearchCriteria criteria,
-            final SortOptions<PropertyAssignment> sortOptions)
+            final SortOptions<PropertyAssignment> sortOptions,
+            final ISearchCriteria parentCriteria, final String idsColumnName)
     {
         final Set<Long> mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId, getTableMapper(),
-                criteria.getCriteria(), criteria.getOperator(), SAMPLE_TYPE_COLUMN);
+                criteria.getCriteria(), criteria.getOperator(), SAMPLE_TYPE_COLUMN, criteria);
 
         // If we have results, we use them
         // If we don't have results and criteria are not empty, there are no results.

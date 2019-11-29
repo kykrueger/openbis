@@ -90,13 +90,15 @@ public class PostgresSearchDAO implements ISQLSearchDAO
     }
 
     public Set<Long> queryDBWithNonRecursiveCriteria(final Long userId, final TableMapper tableMapper,
-            final Collection<ISearchCriteria> criteria, final SearchOperator operator, final String idColumnName)
+            final Collection<ISearchCriteria> criteria, final SearchOperator operator, final String idsColumnName,
+            final ISearchCriteria parentCriterion)
     {
-        final String finalIdColumnName = (idColumnName == null) ? ID_COLUMN : idColumnName;
+        final String finalIdColumnName = (idsColumnName == null) ? ID_COLUMN : idsColumnName;
 
         final TranslationVo translationVo = new TranslationVo();
         translationVo.setUserId(userId);
         translationVo.setTableMapper(tableMapper);
+        translationVo.setParentCriterion(parentCriterion);
         translationVo.setCriteria(criteria);
         translationVo.setOperator(operator);
         translationVo.setCriteriaToManagerMap(criteriaToManagerMap);

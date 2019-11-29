@@ -33,12 +33,14 @@ public interface ISQLSearchDAO
      * @param userId ID of the user who makes the query.
      * @param tableMapper table mapper that contains extra information about tables related to the entities which can have parent-child relationships.
      * @param criteria criteria to search by.
-     * @param idColumnName name of the column to select by, if {@code null} {@link ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN}
+     * @param idsColumnName name of the column to select by, if {@code null} {@link ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN}
      *     is used.
+     * @param parentCriterion
      * @return set of numbers which represent the IDs of the scpecified ID column name.
      */
     Set<Long> queryDBWithNonRecursiveCriteria(final Long userId, final TableMapper tableMapper, final Collection<ISearchCriteria> criteria,
-            final SearchOperator operator, final String idColumnName);
+            final SearchOperator operator, final String idsColumnName,
+            final ISearchCriteria parentCriterion);
 
     /**
      * Finds child IDs which correspond to parent IDs.

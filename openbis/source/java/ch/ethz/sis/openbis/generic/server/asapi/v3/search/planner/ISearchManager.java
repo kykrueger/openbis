@@ -29,10 +29,14 @@ public interface ISearchManager<CRITERIA extends ISearchCriteria, OBJECT, OBJECT
      * Searches for entities using certain criteria.
      *
      * @param criteria search criteria.
-     * @param sortOptions
+     * @param sortOptions sorting columns and the directions of sorting.
+     * @param parentCriteria parent criteria (if there is one) to {@code criteria}.
+     * @param idsColumnName name of the column to select the ID's by; usually the
+     * {@link ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN}.
      * @return set of IDs of found entities.
      */
-    Set<Long> searchForIDs(final Long userId, final CRITERIA criteria, final SortOptions<OBJECT> sortOptions);
+    Set<Long> searchForIDs(final Long userId, final CRITERIA criteria, final SortOptions<OBJECT> sortOptions,
+            final ISearchCriteria parentCriteria, final String idsColumnName);
 
     /**
      * Filters IDs of certain

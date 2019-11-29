@@ -19,6 +19,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 import java.util.Set;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.search.PropertyTypeSearchCriteria;
@@ -55,9 +56,10 @@ public class PropertyTypeSearchManager extends AbstractSearchManager<PropertyTyp
     }
 
     @Override
-    public Set<Long> searchForIDs(final Long userId, final PropertyTypeSearchCriteria criteria, final SortOptions<PropertyType> sortOptions)
+    public Set<Long> searchForIDs(final Long userId, final PropertyTypeSearchCriteria criteria, final SortOptions<PropertyType> sortOptions,
+            final ISearchCriteria parentCriteria, final String idsColumnName)
     {
-        return super.searchForIDs(userId, criteria);
+        return super.searchForIDs(userId, criteria, idsColumnName);
     }
 
 }
