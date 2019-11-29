@@ -4,6 +4,7 @@ import Typography from '@material-ui/core/Typography'
 import CheckboxField from '../../common/form/CheckboxField.jsx'
 import TextField from '../../common/form/TextField.jsx'
 import SelectField from '../../common/form/SelectField.jsx'
+import Collapse from '@material-ui/core/Collapse'
 import WarningIcon from '@material-ui/icons/Warning'
 import { facade, dto } from '../../../services/openbis.js'
 import logger from '../../../common/logger.js'
@@ -286,17 +287,22 @@ class ObjectTypeParametersProperty extends React.PureComponent {
   }
 
   renderVocabulary(property) {
-    let { vocabularies } = this.state
+    const { classes } = this.props
+    const { vocabularies = [] } = this.state
 
-    if (property.dataType === 'CONTROLLEDVOCABULARY' && vocabularies) {
-      const options = vocabularies.map(vocabulary => {
-        return {
-          label: vocabulary.code,
-          value: vocabulary.code
-        }
-      })
-      const { classes } = this.props
-      return (
+    const options = vocabularies.map(vocabulary => {
+      return {
+        label: vocabulary.code,
+        value: vocabulary.code
+      }
+    })
+
+    return (
+      <Collapse
+        in={property.dataType === 'CONTROLLEDVOCABULARY'}
+        mountOnEnter={true}
+        unmountOnExit={true}
+      >
         <div className={classes.field}>
           <SelectField
             label='Vocabulary'
@@ -308,24 +314,27 @@ class ObjectTypeParametersProperty extends React.PureComponent {
             onFocus={this.handleFocus}
           />
         </div>
-      )
-    } else {
-      return null
-    }
+      </Collapse>
+    )
   }
 
   renderMaterial(property) {
-    let { materialTypes } = this.state
+    const { classes } = this.props
+    const { materialTypes = [] } = this.state
 
-    if (property.dataType === 'MATERIAL' && materialTypes) {
-      const options = materialTypes.map(materialType => {
-        return {
-          label: materialType.code,
-          value: materialType.code
-        }
-      })
-      const { classes } = this.props
-      return (
+    const options = materialTypes.map(materialType => {
+      return {
+        label: materialType.code,
+        value: materialType.code
+      }
+    })
+
+    return (
+      <Collapse
+        in={property.dataType === 'MATERIAL'}
+        mountOnEnter={true}
+        unmountOnExit={true}
+      >
         <div className={classes.field}>
           <SelectField
             label='Material Type'
@@ -337,10 +346,8 @@ class ObjectTypeParametersProperty extends React.PureComponent {
             onFocus={this.handleFocus}
           />
         </div>
-      )
-    } else {
-      return null
-    }
+      </Collapse>
+    )
   }
 
   renderMandatory(property) {
@@ -365,8 +372,12 @@ class ObjectTypeParametersProperty extends React.PureComponent {
     const wasMandatory = property.original ? property.original.mandatory : false
     const isMandatory = property.mandatory
 
-    if (type.used && !wasMandatory && isMandatory) {
-      return (
+    return (
+      <Collapse
+        in={type.used && !wasMandatory && isMandatory}
+        mountOnEnter={true}
+        unmountOnExit={true}
+      >
         <div className={classes.field}>
           <TextField
             label='Initial Value'
@@ -376,10 +387,8 @@ class ObjectTypeParametersProperty extends React.PureComponent {
             onFocus={this.handleFocus}
           />
         </div>
-      )
-    } else {
-      return null
-    }
+      </Collapse>
+    )
   }
 
   renderVisible(property) {
