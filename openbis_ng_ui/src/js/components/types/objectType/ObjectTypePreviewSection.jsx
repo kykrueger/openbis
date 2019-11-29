@@ -11,14 +11,14 @@ const styles = theme => ({
     width: '100%',
     marginBottom: theme.spacing(2),
     '&:hover $droppable': {
-      borderColor: theme.palette.primary.main
+      borderColor: theme.palette.background.secondary
     }
   },
   droppable: {
     padding: theme.spacing(2),
     borderWidth: '2px',
     borderStyle: 'dashed',
-    borderColor: theme.palette.background.secondary,
+    borderColor: theme.palette.background.primary,
     backgroundColor: theme.palette.background.paper
   },
   named: {

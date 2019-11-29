@@ -24,7 +24,7 @@ const styles = theme => ({
       marginBottom: 0
     },
     '&:hover': {
-      borderColor: theme.palette.primary.main
+      borderColor: theme.palette.background.secondary
     }
   },
   selected: {
@@ -59,7 +59,7 @@ const styles = theme => ({
     '&:hover': {
       borderStyle: 'solid',
       borderWidth: '0px 0px 2px 0px',
-      borderColor: theme.palette.primary.main
+      borderColor: theme.palette.background.secondary
     }
   }
 })
