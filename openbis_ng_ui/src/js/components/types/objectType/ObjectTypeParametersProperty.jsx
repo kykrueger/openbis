@@ -221,6 +221,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
           reference={this.references.label}
           label='Label'
           name='label'
+          mandatory={true}
           value={property.label}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
@@ -237,6 +238,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
           reference={this.references.code}
           label='Code'
           name='code'
+          mandatory={true}
           disabled={property.used}
           value={property.code}
           onChange={this.handleChange}
@@ -254,6 +256,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
           reference={this.references.description}
           label='Description'
           name='description'
+          mandatory={true}
           value={property.description}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
@@ -276,6 +279,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
           reference={this.references.dataType}
           label='Data Type'
           name='dataType'
+          mandatory={true}
           disabled={property.used}
           value={property.dataType}
           options={options}
@@ -307,6 +311,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
           <SelectField
             label='Vocabulary'
             name='vocabulary'
+            mandatory={true}
             disabled={property.used}
             value={property.vocabulary ? property.vocabulary : ''}
             options={options}
@@ -339,6 +344,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
           <SelectField
             label='Material Type'
             name='materialType'
+            mandatory={true}
             disabled={property.used}
             value={property.materialType ? property.materialType : ''}
             options={options}
@@ -382,6 +388,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
           <TextField
             label='Initial Value'
             name='initialValueForExistingEntities'
+            mandatory={true}
             value={property.initialValueForExistingEntities}
             onChange={this.handleChange}
             onFocus={this.handleFocus}
