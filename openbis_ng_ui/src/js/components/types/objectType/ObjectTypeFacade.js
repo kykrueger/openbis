@@ -54,4 +54,8 @@ export default class ObjectTypeFacade {
       }
     })
   }
+
+  executeOperations(operations, options) {
+    return facade.executeOperations(operations, options)
+  }
 }

@@ -1,15 +1,17 @@
-import ObjectTypeFacade from './ObjectTypeFacade.js'
-import { dto, facade } from '../../../services/openbis.js'
+import { dto } from '../../../services/openbis.js'
 
 export default class ObjectTypeHandlerSave {
-  constructor(state) {
-    this.facade = new ObjectTypeFacade()
+  constructor(state, setState, facade, loadHandler, validateHandler) {
     this.type = this.prepareType(state.type)
     this.properties = this.prepareProperties(
       state.type,
       state.properties,
       state.sections
     )
+    this.setState = setState
+    this.facade = facade
+    this.loadHandler = loadHandler
+    this.validateHandler = validateHandler
   }
 
   prepareType(type) {
@@ -128,6 +130,7 @@ export default class ObjectTypeHandlerSave {
       new dto.EntityTypePermId(this.type.code, dto.EntityKind.SAMPLE)
     )
     update.getPropertyAssignments().remove(assignmentIds)
+    update.getPropertyAssignments().setForceRemovingAssignments(true)
 
     return [new dto.UpdateSampleTypesOperation([update])]
   }
@@ -221,7 +224,11 @@ export default class ObjectTypeHandlerSave {
   }
 
   execute() {
-    return this.facade
+    if (!this.validateHandler.execute(true)) {
+      return
+    }
+
+    this.facade
       .loadTypePropertyTypes(this.type.code)
       .then(loadedPropertyTypes => {
         const { toCreate, toUpdate, toDelete } = this.preparePropertyChanges(
@@ -240,14 +247,23 @@ export default class ObjectTypeHandlerSave {
         const options = new dto.SynchronousOperationExecutionOptions()
         options.setExecuteInOrder(true)
 
-        return facade.executeOperations(
-          [
-            ...deletePropertyAssignmentsOperations,
-            ...createUpdateDeletePropertyTypesOperations,
-            ...updateTypeAndAssignmentsOperations
-          ],
-          options
-        )
+        this.facade
+          .executeOperations(
+            [
+              ...deletePropertyAssignmentsOperations,
+              ...createUpdateDeletePropertyTypesOperations,
+              ...updateTypeAndAssignmentsOperations
+            ],
+            options
+          )
+          .then(
+            () => {
+              this.loadHandler.execute()
+            },
+            error => {
+              alert(JSON.stringify(error))
+            }
+          )
       })
   }
 }

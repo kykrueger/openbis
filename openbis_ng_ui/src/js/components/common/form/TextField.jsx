@@ -28,6 +28,7 @@ class TextFormField extends React.PureComponent {
       value,
       mandatory,
       disabled,
+      error,
       metadata,
       startAdornment,
       endAdornment,
@@ -41,6 +42,7 @@ class TextFormField extends React.PureComponent {
     return (
       <FormFieldContainer
         description={description}
+        error={error}
         metadata={metadata}
         styles={styles}
         onClick={onClick}
@@ -75,6 +77,7 @@ class TextFormField extends React.PureComponent {
           }}
           name={name}
           value={value}
+          error={error !== null && error !== undefined}
           disabled={disabled}
           onChange={onChange}
           onFocus={onFocus}

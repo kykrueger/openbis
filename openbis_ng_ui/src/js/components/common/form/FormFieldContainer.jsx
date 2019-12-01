@@ -14,7 +14,10 @@ const styles = theme => ({
   controlDefault: {
     flex: '0 0'
   },
-  descriptionDefault: {}
+  descriptionDefault: {},
+  errorDefault: {
+    color: theme.palette.error.main
+  }
 })
 
 class FormFieldContainer extends React.PureComponent {
@@ -33,6 +36,7 @@ class FormFieldContainer extends React.PureComponent {
           {this.renderMetadata()}
           {this.renderControl()}
           {this.renderDescription()}
+          {this.renderError()}
         </div>
       </FormControl>
     )
@@ -78,6 +82,25 @@ class FormFieldContainer extends React.PureComponent {
             className={`${classes.descriptionDefault} ${styles.description}`}
           >
             {description}
+          </span>
+        </FormHelperText>
+      )
+    } else {
+      return null
+    }
+  }
+
+  renderError() {
+    const { error, classes, styles = {} } = this.props
+
+    if (error) {
+      return (
+        <FormHelperText>
+          <span
+            data-part='error'
+            className={`${classes.errorDefault} ${styles.error}`}
+          >
+            {error}
           </span>
         </FormHelperText>
       )

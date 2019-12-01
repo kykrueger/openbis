@@ -222,6 +222,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
           label='Label'
           name='label'
           mandatory={true}
+          error={property.errors.label}
           value={property.label}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
@@ -239,6 +240,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
           label='Code'
           name='code'
           mandatory={true}
+          error={property.errors.code}
           disabled={property.used}
           value={property.code}
           onChange={this.handleChange}
@@ -257,6 +259,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
           label='Description'
           name='description'
           mandatory={true}
+          error={property.errors.description}
           value={property.description}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
@@ -280,6 +283,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
           label='Data Type'
           name='dataType'
           mandatory={true}
+          error={property.errors.dataType}
           disabled={property.used}
           value={property.dataType}
           options={options}
@@ -312,6 +316,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
             label='Vocabulary'
             name='vocabulary'
             mandatory={true}
+            error={property.errors.vocabulary}
             disabled={property.used}
             value={property.vocabulary ? property.vocabulary : ''}
             options={options}
@@ -345,6 +350,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
             label='Material Type'
             name='materialType'
             mandatory={true}
+            error={property.errors.materialType}
             disabled={property.used}
             value={property.materialType ? property.materialType : ''}
             options={options}
@@ -389,6 +395,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
             label='Initial Value'
             name='initialValueForExistingEntities'
             mandatory={true}
+            error={property.errors.initialValueForExistingEntities}
             value={property.initialValueForExistingEntities}
             onChange={this.handleChange}
             onFocus={this.handleFocus}

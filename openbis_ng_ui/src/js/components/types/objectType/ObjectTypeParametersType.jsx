@@ -54,6 +54,7 @@ class ObjectTypeParametersType extends React.PureComponent {
             label='Code'
             name='code'
             mandatory={true}
+            error={type.errors.code}
             disabled={type.used}
             value={type.code || ''}
             onChange={this.handleChange}
@@ -85,6 +86,7 @@ class ObjectTypeParametersType extends React.PureComponent {
               label='Generated code prefix'
               name='generatedCodePrefix'
               mandatory={true}
+              error={type.errors.generatedCodePrefix}
               value={type.generatedCodePrefix || ''}
               onChange={this.handleChange}
             />

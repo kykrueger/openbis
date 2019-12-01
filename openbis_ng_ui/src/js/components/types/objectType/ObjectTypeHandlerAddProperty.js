@@ -44,7 +44,9 @@ export default class ObjectTypeHandlerAddProperty {
       materialType: null,
       showInEditView: true,
       mandatory: false,
-      section: section.id
+      section: section.id,
+      errors: {},
+      used: false
     }
     newProperties.splice(propertyIndex, 0, newProperty)
 
