@@ -558,12 +558,10 @@ public class SearchSampleTest extends AbstractSampleTest
     public void testSearchWithExperimentWithProjectWithSpaceWithPermId()
     {
         SampleSearchCriteria criteria = new SampleSearchCriteria();
-//        criteria.withExperiment().withProject().withSpace().withPermId().thatEquals("TEST-SPACE");
-//        testSearch(TEST_USER, criteria, 8);
+        criteria.withExperiment().withProject().withSpace().withPermId().thatEquals("TEST-SPACE");
+        testSearch(TEST_USER, criteria, 8);
 
-//        criteria = new SampleSearchCriteria();
-
-        ///////// WHY WAS THIS PASSING IN THE FIRST PLACE?????
+        criteria = new SampleSearchCriteria();
         criteria.withExperiment().withProject().withSpace().withPermId().thatEquals("/TEST-SPACE");
         testSearch(TEST_USER, criteria, 8);
     }

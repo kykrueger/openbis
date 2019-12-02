@@ -108,8 +108,8 @@ public class PostgresSearchDAO implements ISQLSearchDAO
         translationVo.setIdColumnName(finalIdColumnName);
 
         final boolean containsProperties = criteria.stream().anyMatch(
-                (criterion) -> criterion instanceof AbstractFieldSearchCriteria &&
-                        ((AbstractFieldSearchCriteria) criterion).getFieldType().equals(SearchFieldType.PROPERTY));
+                (subcriterion) -> subcriterion instanceof AbstractFieldSearchCriteria &&
+                        ((AbstractFieldSearchCriteria) subcriterion).getFieldType().equals(SearchFieldType.PROPERTY));
         updateWithDataTypes(translationVo, containsProperties);
 
         final SelectQuery selectQuery = CriteriaTranslator.translate(translationVo);

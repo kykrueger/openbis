@@ -50,7 +50,6 @@ public interface ISQLSearchDAO
     /**
      * Finds parent IDs which correspond to child IDs.
      *
-     *
      * @param tableMapper type of the entities to search for.
      * @param childIdSet set of child IDs to find the corresponding parent IDs for.
      * @return a set of IDs od parent entities of the children specified by IDs.
