@@ -89,7 +89,7 @@ public class DataSetSearchManager extends AbstractCompositeEntitySearchManager<D
 
     @Override
     public Set<Long> searchForIDs(final Long userId, final DataSetSearchCriteria criteria, final SortOptions<DataSet> sortOptions,
-            final ISearchCriteria parentCriteria, final String idsColumnName)
+            final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
         final Class<? extends AbstractCompositeSearchCriteria> parentsSearchCriteriaClass = getParentsSearchCriteriaClass();
         final Class<? extends AbstractCompositeSearchCriteria> childrenSearchCriteriaClass = getChildrenSearchCriteriaClass();
@@ -109,7 +109,8 @@ public class DataSetSearchManager extends AbstractCompositeEntitySearchManager<D
             }
         }).collect(Collectors.toList());
 
-        return super.doSearchForIds(userId, parentsCriteria, childrenCriteria, newCriteria, criteria.getOperator(), sortOptions, parentCriteria, idsColumnName);
+        return super.doSearchForIds(userId, parentsCriteria, childrenCriteria, newCriteria, criteria.getOperator(), sortOptions, parentCriteria,
+                idsColumnName);
     }
 
 }

@@ -70,11 +70,12 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
         {
             case ATTRIBUTE:
             {
-                final AbstractStringValue value = criterion.getFieldValue();
                 final String criterionFieldName = criterion.getFieldName();
-                final String fieldName = Attributes.getColumnName(criterionFieldName, tableMapper.getEntitiesTable(), criterionFieldName);
+                final String columnName = Attributes.getColumnName(criterionFieldName, tableMapper.getEntitiesTable(), criterionFieldName);
+                final AbstractStringValue value = criterion.getFieldValue();
+                normalizeValue(value, columnName);
 
-                sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(fieldName).append(SP);
+                sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(columnName).append(SP);
                 TranslatorUtils.appendStringComparatorOp(value, sqlBuilder, args);
                 break;
             }
@@ -121,6 +122,14 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
             {
                 throw new IllegalArgumentException();
             }
+        }
+    }
+
+    private static void normalizeValue(final AbstractStringValue value, final String columnName)
+    {
+        if (columnName.equals(ColumnNames.CODE_COLUMN) && value.getValue().startsWith("/"))
+        {
+            value.setValue(value.getValue().substring(1));
         }
     }
 

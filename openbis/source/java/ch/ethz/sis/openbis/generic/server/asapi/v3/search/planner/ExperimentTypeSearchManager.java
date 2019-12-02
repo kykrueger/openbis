@@ -19,7 +19,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 import java.util.Set;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.ExperimentType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentTypeSearchCriteria;
@@ -58,7 +58,7 @@ public class ExperimentTypeSearchManager extends AbstractSearchManager<Experimen
 
     @Override
     public Set<Long> searchForIDs(final Long userId, final ExperimentTypeSearchCriteria criteria, final SortOptions<ExperimentType> sortOptions,
-            final ISearchCriteria parentCriteria, final String idsColumnName)
+            final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
         return super.searchForIDs(userId, criteria, null);
     }

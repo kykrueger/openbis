@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractFieldSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchFieldType;
@@ -89,16 +90,18 @@ public class PostgresSearchDAO implements ISQLSearchDAO
         this.sqlExecutor = sqlExecutor;
     }
 
-    public Set<Long> queryDBWithNonRecursiveCriteria(final Long userId, final TableMapper tableMapper,
-            final Collection<ISearchCriteria> criteria, final SearchOperator operator, final String idsColumnName,
-            final ISearchCriteria parentCriterion)
+    public Set<Long> queryDBWithNonRecursiveCriteria(final Long userId, final AbstractCompositeSearchCriteria criterion,
+            final TableMapper tableMapper, final String idsColumnName)
     {
+        final Collection<ISearchCriteria> criteria = criterion.getCriteria();
+        final SearchOperator operator = criterion.getOperator();
+
         final String finalIdColumnName = (idsColumnName == null) ? ID_COLUMN : idsColumnName;
 
         final TranslationVo translationVo = new TranslationVo();
         translationVo.setUserId(userId);
         translationVo.setTableMapper(tableMapper);
-        translationVo.setParentCriterion(parentCriterion);
+        translationVo.setParentCriterion(criterion);
         translationVo.setCriteria(criteria);
         translationVo.setOperator(operator);
         translationVo.setCriteriaToManagerMap(criteriaToManagerMap);

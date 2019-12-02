@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractEntitySearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AnyFieldSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AnyPropertySearchCriteria;
@@ -283,7 +284,7 @@ public class CriteriaTranslator
      * @param parentCriterion parent of {@code criterion}.
      */
     private static void appendCriterionCondition(final TranslationVo vo, final StringBuilder sqlBuilder, final ISearchCriteria criterion,
-            final ISearchCriteria parentCriterion)
+            final AbstractCompositeSearchCriteria parentCriterion)
     {
         final ISearchManager<ISearchCriteria, ?, ?> subqueryManager = vo.getCriteriaToManagerMap().get(criterion.getClass());
         final TableMapper tableMapper = vo.getTableMapper();

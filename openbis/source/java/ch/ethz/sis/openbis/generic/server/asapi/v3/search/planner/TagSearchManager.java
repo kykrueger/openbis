@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractFieldSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractStringValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CodeSearchCriteria;
@@ -70,7 +71,7 @@ public class TagSearchManager extends AbstractSearchManager<TagSearchCriteria, T
 
     @Override
     public Set<Long> searchForIDs(final Long userId, final TagSearchCriteria criteria, final SortOptions<Tag> sortOptions,
-            final ISearchCriteria parentCriteria, final String idsColumnName)
+            final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
         // Replacing perm ID and code search criteria with name search criteria, because for tags perm ID and code are equivalent to name
         final Collection<ISearchCriteria> newCriteria = criteria.getCriteria().stream().map(searchCriterion ->
@@ -87,8 +88,8 @@ public class TagSearchManager extends AbstractSearchManager<TagSearchCriteria, T
             }
         }).collect(Collectors.toList());
 
-        final Set<Long> mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId, TableMapper.TAG,
-                newCriteria, criteria.getOperator(), idsColumnName, criteria);
+        final Set<Long> mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId,
+                new DummyCompositeSearchCriterion(newCriteria, criteria.getOperator()), TableMapper.TAG, idsColumnName);
 
         if (!containsValues(mainCriteriaIntermediateResults))
         {

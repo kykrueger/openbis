@@ -51,7 +51,7 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
 
     @Override
     public Set<Long> searchForIDs(final Long userId, final CRITERIA criteria, SortOptions<OBJECT> sortOptions,
-            final ISearchCriteria parentCriteria, final String idsColumnName)
+            final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
         return doSearchForIDs(userId, criteria, null, sortOptions, idsColumnName);
     }
@@ -81,7 +81,7 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
 
     protected Set<Long> doSearchForIds(final Long userId, final Collection<ISearchCriteria> parentsCriteria,
             final Collection<ISearchCriteria> childrenCriteria, final Collection<ISearchCriteria> mainCriteria,
-            final SearchOperator finalSearchOperator, final SortOptions<OBJECT> sortOptions, final ISearchCriteria parentCriteria,
+            final SearchOperator finalSearchOperator, final SortOptions<OBJECT> sortOptions, final AbstractCompositeSearchCriteria parentCriteria,
             final String idsColumnName)
     {
         final TableMapper tableMapper = getTableMapper();
@@ -90,8 +90,8 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
         if (!mainCriteria.isEmpty())
         {
             // The main criteria have no recursive ISearchCriteria into it, to facilitate building a query
-            final Set<Long> mainCriteriaNotFilteredResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId, tableMapper, mainCriteria,
-                    finalSearchOperator, idsColumnName, parentCriteria);
+            final Set<Long> mainCriteriaNotFilteredResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId, parentCriteria, tableMapper,
+                    idsColumnName);
             mainCriteriaIntermediateResults = filterIDsByUserRights(userId, mainCriteriaNotFilteredResults);
         } else
         {
@@ -177,8 +177,10 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
     private Set<Long> getAllIds(final Long userId, final String idsColumnName)
     {
         final CRITERIA criteria = createEmptyCriteria();
-        return getSearchDAO().queryDBWithNonRecursiveCriteria(userId, getTableMapper(), Collections.singletonList(criteria),
-                SearchOperator.OR, idsColumnName, null);
+        final DummyCompositeSearchCriterion containerCriterion = new DummyCompositeSearchCriterion();
+        containerCriterion.setCriteria(Collections.singletonList(criteria));
+        return getSearchDAO().queryDBWithNonRecursiveCriteria(userId, containerCriterion, getTableMapper(),
+                idsColumnName);
     }
 
     private Set<Long> getChildrenIdsOf(final Set<Long> parentIdSet)
@@ -190,4 +192,5 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
     {
         return getSearchDAO().findParentIDs(getTableMapper(), childIdSet);
     }
+
 }

@@ -20,7 +20,7 @@ import java.util.Collections;
 import java.util.Set;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyAssignmentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.search.PropertyAssignmentSearchCriteria;
@@ -63,10 +63,10 @@ public class PropertyAssignmentSearchManager extends
     @Override
     public Set<Long> searchForIDs(final Long userId, final PropertyAssignmentSearchCriteria criteria,
             final SortOptions<PropertyAssignment> sortOptions,
-            final ISearchCriteria parentCriteria, final String idsColumnName)
+            final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
-        final Set<Long> mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId, getTableMapper(),
-                criteria.getCriteria(), criteria.getOperator(), SAMPLE_TYPE_COLUMN, criteria);
+        final Set<Long> mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId, criteria, getTableMapper(),
+                SAMPLE_TYPE_COLUMN);
 
         // If we have results, we use them
         // If we don't have results and criteria are not empty, there are no results.

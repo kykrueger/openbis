@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Set;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.Role;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleSortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
@@ -79,7 +78,7 @@ public class SampleSearchManagerTest
     }
 
     /**
-     * Tests {@link ISearchManager#searchForIDs(Long, ISearchCriteria, ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions, ISearchCriteria, String)} for the case when there are main and parent
+     * Tests {@link ISearchManager#searchForIDs(Long, ISearchCriteria, ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions, ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria, String)} for the case when there are main and parent
      * criteria and the OR logical operator is applied to the root criteria.
      */
     @Test
@@ -107,11 +106,11 @@ public class SampleSearchManagerTest
         final Set<Long> expectedIds = new HashSet<>(Arrays.asList(1L, 2L, 3L, 5L, 7L, 9L));
         context.checking(new Expectations()
         {{
-            one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, TableMapper.SAMPLE, Collections.singletonList(criterion), SearchOperator.OR,
-                    null, null);
+            one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, null, TableMapper.SAMPLE,
+                    null);
             will(returnValue(mainCriteriaIds));
 
-            one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, TableMapper.SAMPLE, parentCriteria, SearchOperator.OR, null, null);
+            one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, null, TableMapper.SAMPLE, null);
             will(returnValue(parentCriteriaIds));
 
             one(searchDAOMock).findChildIDs(TableMapper.SAMPLE, parentCriteriaIds);
@@ -126,7 +125,7 @@ public class SampleSearchManagerTest
     }
 
     /**
-     * Tests {@link ISearchManager#searchForIDs(Long, ISearchCriteria, ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions, ISearchCriteria, String)} for the case when there are main and parent
+     * Tests {@link ISearchManager#searchForIDs(Long, ISearchCriteria, ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions, ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria, String)} for the case when there are main and parent
      * criteria and the AND logical operator is applied to the root criteria.
      */
     @Test
@@ -154,12 +153,12 @@ public class SampleSearchManagerTest
         final Set<Long> expectedIds = new HashSet<>(Arrays.asList(1L, 3L));
         context.checking(new Expectations()
         {{
-            one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, TableMapper.SAMPLE,
-                    Collections.singletonList(criterion), SearchOperator.AND, null, null);
+            one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, null, TableMapper.SAMPLE,
+                    null);
             will(returnValue(mainCriteriaIds));
 
-            one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, TableMapper.SAMPLE, parentCriteria,
-                    SearchOperator.AND, null, null);
+            one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, null, TableMapper.SAMPLE,
+                    null);
             will(returnValue(parentCriteriaIds));
 
             one(searchDAOMock).findChildIDs(TableMapper.SAMPLE, parentCriteriaIds);
@@ -174,7 +173,7 @@ public class SampleSearchManagerTest
     }
 
     /**
-     * Tests {@link ISearchManager#searchForIDs(Long, ISearchCriteria, ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions, ISearchCriteria, String)} for the case when there are main and child
+     * Tests {@link ISearchManager#searchForIDs(Long, ISearchCriteria, ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions, ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria, String)} for the case when there are main and child
      * criteria and the OR logical operator is applied to the root criteria.
      */
     @Test
@@ -202,12 +201,12 @@ public class SampleSearchManagerTest
         final Set<Long> expectedIds = new HashSet<>(Arrays.asList(1L, 2L, 3L, 5L, 7L, 9L));
         context.checking(new Expectations()
         {{
-            one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, TableMapper.SAMPLE, childCriteria,
-                    SearchOperator.OR, null, null);
+            one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, null, TableMapper.SAMPLE,
+                    null);
             will(returnValue(childCriteriaIds));
 
-            one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, TableMapper.SAMPLE,
-                    Collections.singletonList(criterion), SearchOperator.OR, null, null);
+            one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, null, TableMapper.SAMPLE,
+                    null);
             will(returnValue(mainCriteriaIds));
 
             allowing(authInfoProviderMock).findAuthorisedSpaceProjectIDs(userId);
@@ -223,7 +222,7 @@ public class SampleSearchManagerTest
     }
 
     /**
-     * Tests {@link ISearchManager#searchForIDs(Long, ISearchCriteria, ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions, ISearchCriteria, String)} for the case when there are main and child
+     * Tests {@link ISearchManager#searchForIDs(Long, ISearchCriteria, ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions, ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria, String)} for the case when there are main and child
      * criteria and the AND logical operator is applied to the root criteria.
      */
     @Test
@@ -251,11 +250,11 @@ public class SampleSearchManagerTest
         final Set<Long> expectedIds = new HashSet<>(Arrays.asList(1L, 3L));
         context.checking(new Expectations()
         {{
-            one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, TableMapper.SAMPLE, childCriteria, SearchOperator.AND, null, null);
+            one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, null, TableMapper.SAMPLE, null);
             will(returnValue(childCriteriaIds));
 
-            one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, TableMapper.SAMPLE, Collections.singletonList(criterion), SearchOperator.AND,
-                    null, null);
+            one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, null, TableMapper.SAMPLE,
+                    null);
             will(returnValue(mainCriteriaIds));
 
             allowing(authInfoProviderMock).findAuthorisedSpaceProjectIDs(userId);
@@ -270,7 +269,7 @@ public class SampleSearchManagerTest
     }
 
     /**
-     * Tests {@link ISearchManager#searchForIDs(Long, ISearchCriteria, ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions, ISearchCriteria, String)} for the case when only main criteria is
+     * Tests {@link ISearchManager#searchForIDs(Long, ISearchCriteria, ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions, ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria, String)} for the case when only main criteria is
      * present.
      */
     @Test
@@ -287,8 +286,8 @@ public class SampleSearchManagerTest
         final Long userId = 1L;
         context.checking(new Expectations()
         {{
-            one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, TableMapper.SAMPLE,
-                    Collections.singletonList(criterion), SearchOperator.AND, null, null);
+            one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, null, TableMapper.SAMPLE,
+                    null);
             will(returnValue(expectedIds));
 
             allowing(authInfoProviderMock).findAuthorisedSpaceProjectIDs(userId);
@@ -311,8 +310,8 @@ public class SampleSearchManagerTest
         final Set<Long> expectedIds = new HashSet(Arrays.asList(1L, 2L, 3L, 4L));
         context.checking(new Expectations()
         {{
-            one(searchDAOMock).queryDBWithNonRecursiveCriteria(with(userId), with(equal(TableMapper.SAMPLE)),
-                    with(any(List.class)), with(any(SearchOperator.class)), null, null);
+            one(searchDAOMock).queryDBWithNonRecursiveCriteria(with(userId), null, with(equal(TableMapper.SAMPLE)),
+                    null);
             will(returnValue(expectedIds));
 
             allowing(authInfoProviderMock).findAuthorisedSpaceProjectIDs(userId);
@@ -335,8 +334,8 @@ public class SampleSearchManagerTest
         final Long userId = 1L;
         context.checking(new Expectations()
         {{
-            one(searchDAOMock).queryDBWithNonRecursiveCriteria(with(userId), with(equal(TableMapper.SAMPLE)),
-                    with(any(List.class)), with(any(SearchOperator.class)), null, null);
+            one(searchDAOMock).queryDBWithNonRecursiveCriteria(with(userId), null, with(equal(TableMapper.SAMPLE)),
+                    null);
             will(returnValue(Collections.emptySet()));
 
             allowing(authInfoProviderMock).findAuthorisedSpaceProjectIDs(userId);

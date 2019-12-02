@@ -19,6 +19,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 import java.util.Set;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
 
@@ -36,7 +37,7 @@ public interface ISearchManager<CRITERIA extends ISearchCriteria, OBJECT, OBJECT
      * @return set of IDs of found entities.
      */
     Set<Long> searchForIDs(final Long userId, final CRITERIA criteria, final SortOptions<OBJECT> sortOptions,
-            final ISearchCriteria parentCriteria, final String idsColumnName);
+            final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName);
 
     /**
      * Filters IDs of certain

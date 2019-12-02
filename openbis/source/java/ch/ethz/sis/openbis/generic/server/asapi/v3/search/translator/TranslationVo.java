@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Set;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
@@ -37,7 +38,7 @@ public class TranslationVo
 
     private TableMapper tableMapper;
 
-    private ISearchCriteria parentCriterion;
+    private AbstractCompositeSearchCriteria parentCriterion;
 
     private Collection<ISearchCriteria> criteria;
 
@@ -79,12 +80,12 @@ public class TranslationVo
         this.tableMapper = tableMapper;
     }
 
-    public ISearchCriteria getParentCriterion()
+    public AbstractCompositeSearchCriteria getParentCriterion()
     {
         return parentCriterion;
     }
 
-    public void setParentCriterion(final ISearchCriteria parentCriterion)
+    public void setParentCriterion(final AbstractCompositeSearchCriteria parentCriterion)
     {
         this.parentCriterion = parentCriterion;
     }

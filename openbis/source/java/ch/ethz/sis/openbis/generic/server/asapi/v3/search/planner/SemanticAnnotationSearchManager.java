@@ -19,7 +19,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 import java.util.Set;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.SemanticAnnotation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.fetchoptions.SemanticAnnotationFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.search.SemanticAnnotationSearchCriteria;
@@ -58,7 +58,7 @@ public class SemanticAnnotationSearchManager extends
 
     @Override
     public Set<Long> searchForIDs(final Long userId, final SemanticAnnotationSearchCriteria criteria,
-            final SortOptions<SemanticAnnotation> sortOptions, final ISearchCriteria parentCriteria, final String idsColumnName)
+            final SortOptions<SemanticAnnotation> sortOptions, final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
         return super.searchForIDs(userId, criteria, idsColumnName);
     }
