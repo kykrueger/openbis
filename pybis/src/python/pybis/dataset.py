@@ -219,7 +219,7 @@ class DataSet(
                 fetchopts,
             ],
         }
-        resp = self._post_request(datastore.url dss_endpoint, request)
+        resp = self._post_request(datastore.url, dss_endpoint, request)
 
         return self._dataset_list_for_response(
             response=resp['objects'],
