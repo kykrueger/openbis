@@ -129,8 +129,8 @@ public class CriteriaTranslator
     /** This map is used when a subquery manager is used. It maps criteria to column name which is on the left of the "IN" statement. */
     private static final Map<Class<? extends ISearchCriteria>, String> CRITERIA_TO_IN_COLUMN_MAP = new HashMap<>();
 
-    /** This map is used do set an ID different from default for subqueries. */
-    private static final Map<Class<? extends ISearchCriteria>, String> PARENT_CRITERIA_TO_CHILD_SELECT_ID_MAP = new HashMap<>();
+    /** This map is used do set an ID different from default for subqueries. The key is the couple (parent, child). */
+    private static final Map<String, String> PARENT_CHILD_CRITERIA_TO_CHILD_SELECT_ID_MAP = new HashMap<>();
 
     public static final String MAIN_TABLE_ALIAS = getAlias(new AtomicInteger(0));
 
@@ -190,8 +190,13 @@ public class CriteriaTranslator
         CRITERIA_TO_IN_COLUMN_MAP.put(SemanticAnnotationSearchCriteria.class, ID_COLUMN);
         CRITERIA_TO_IN_COLUMN_MAP.put(PropertyAssignmentSearchCriteria.class, ID_COLUMN);
 
-        PARENT_CRITERIA_TO_CHILD_SELECT_ID_MAP.put(PropertyTypeSearchCriteria.class, PROPERTY_TYPE_COLUMN);
-        PARENT_CRITERIA_TO_CHILD_SELECT_ID_MAP.put(PropertyAssignmentSearchCriteria.class, SAMPLE_TYPE_PROPERTY_TYPE_COLUMN);
+        //noinspection unchecked
+        PARENT_CHILD_CRITERIA_TO_CHILD_SELECT_ID_MAP.put(
+                PropertyTypeSearchCriteria.class.toString() + SemanticAnnotationSearchCriteria.class.toString(), PROPERTY_TYPE_COLUMN);
+        //noinspection unchecked
+        PARENT_CHILD_CRITERIA_TO_CHILD_SELECT_ID_MAP.put(
+                PropertyAssignmentSearchCriteria.class.toString() + SemanticAnnotationSearchCriteria.class.toString(),
+                SAMPLE_TYPE_PROPERTY_TYPE_COLUMN);
     }
 
     public static SelectQuery translate(final TranslationVo vo)
@@ -296,7 +301,8 @@ public class CriteriaTranslator
             if (tableMapper != null && column != null)
             {
                 final Set<Long> ids = subqueryManager.searchForIDs(vo.getUserId(), criterion, null, parentCriterion,
-                        PARENT_CRITERIA_TO_CHILD_SELECT_ID_MAP.getOrDefault(parentCriterion.getClass(), ID_COLUMN));
+                        PARENT_CHILD_CRITERIA_TO_CHILD_SELECT_ID_MAP.getOrDefault(
+                                parentCriterion.getClass().toString() + criterion.getClass().toString(), ID_COLUMN));
                 appendInStatement(sqlBuilder, criterion, column, tableMapper);
                 vo.getArgs().add(ids.toArray(new Long[0]));
             } else
