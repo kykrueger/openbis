@@ -1043,14 +1043,6 @@ public class SearchSampleTest extends AbstractSampleTest
         assertSampleIdentifiersInOrder(samples2, "/TEST-SPACE/CP-TEST-4", "/CISD/CP-TEST-1", "/CISD/3V-125");
 
         v3api.logout(sessionToken);
-        //SELECT DISTINCT t0.id, t0.code, t1.id, t1.code, t2.id, t2.code
-        //FROM samples_all t0
-        //LEFT JOIN experiments_all t1 ON t1.id = t0.expe_id
-        //LEFT JOIN spaces t2 ON t2.id = t0.space_id
-        //WHERE (t0.space_id = (SELECT id FROM spaces WHERE code = 'TEST-SPACE')) AND t0.code = 'CP-TEST-4'
-        //	OR (t0.space_id = (SELECT id FROM spaces WHERE code = 'CISD')) AND t0.code = 'CP-TEST-1'
-        //	OR (t0.space_id = (SELECT id FROM spaces WHERE code = 'CISD')) AND t0.code = '3V-125'
-        //ORDER BY t2.code ASC, t1.code ASC, t1.code ASC
     }
 
     @Test
@@ -1469,15 +1461,14 @@ public class SearchSampleTest extends AbstractSampleTest
 
         if (user.isDisabledProjectUser())
         {
-            testSearch(user.getUserId(), criteria);
-//            assertAuthorizationFailureException(new IDelegatedAction()
-//                {
-//                    @Override
-//                    public void execute()
-//                    {
-//                        testSearch(user.getUserId(), criteria);
-//                    }
-//                });
+            assertAuthorizationFailureException(new IDelegatedAction()
+                {
+                    @Override
+                    public void execute()
+                    {
+                        testSearch(user.getUserId(), criteria);
+                    }
+                });
         } else if (user.isInstanceUserOrTestSpaceUserOrEnabledTestProjectUser())
         {
             testSearch(user.getUserId(), criteria, "/TEST-SPACE/EV-TEST");
