@@ -113,6 +113,7 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLL
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.METAPROJECT_ID_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PROPERTY_TYPE_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.SAMPLE_TYPE_PROPERTY_TYPE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.METAPROJECTS_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.METAPROJECT_ASSIGNMENTS_ALL_TABLE;
 
@@ -190,6 +191,7 @@ public class CriteriaTranslator
         CRITERIA_TO_IN_COLUMN_MAP.put(PropertyAssignmentSearchCriteria.class, ID_COLUMN);
 
         PARENT_CRITERIA_TO_CHILD_SELECT_ID_MAP.put(PropertyTypeSearchCriteria.class, PROPERTY_TYPE_COLUMN);
+        PARENT_CRITERIA_TO_CHILD_SELECT_ID_MAP.put(PropertyAssignmentSearchCriteria.class, SAMPLE_TYPE_PROPERTY_TYPE_COLUMN);
     }
 
     public static SelectQuery translate(final TranslationVo vo)
