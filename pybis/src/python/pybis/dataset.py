@@ -18,6 +18,7 @@ import time
 # needed for Data upload
 PYBIS_PLUGIN = "dataset-uploader-api"
 dataset_definitions = openbis_definitions('dataSet')
+dss_endpoint = '/datastore_server/rmi-data-store-server-v3.json'
 
 
 class DataSet(
@@ -201,6 +202,33 @@ class DataSet(
             setattr(self.p, prop, properties[prop])
 
     set_props = set_properties
+
+    def get_dataset_files(self, **properties):
+
+
+        search_criteria = get_search_type_for_entity('datasetFiles')
+        search_criteria['criteria'] = sub_criteria
+        search_criteria['operator'] = 'AND'
+
+
+        request = {
+            "method": "searchFiles",
+            "params": [
+                self.token,
+                search_criteria,
+                fetchopts,
+            ],
+        }
+        resp = self._post_request(datastore.url dss_endpoint, request)
+
+        return self._dataset_list_for_response(
+            response=resp['objects'],
+            props=props,
+            start_with=start_with,
+            count=count,
+            totalCount=resp['totalCount'],
+        )
+
 
     def download(self, files=None, destination=None, wait_until_finished=True, workers=10,
         linked_dataset_fileservice_url=None, content_copy_index=0):
