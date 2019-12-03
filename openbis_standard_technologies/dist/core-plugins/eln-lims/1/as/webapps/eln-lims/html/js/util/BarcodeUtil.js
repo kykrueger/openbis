@@ -78,18 +78,98 @@ var BarcodeUtil = new function() {
             { label: '50', value: 50 },
             { label: '100', value: 100 }
         ]);
+
+        var $width = FormUtil.getDropdown([ { label: '10 mm', value: 10 },
+                                            { label: '15 mm', value: 15 },
+                                            { label: '20 mm', value: 20 },
+                                            { label: '25 mm', value: 25 },
+                                            { label: '30 mm', value: 30 },
+                                            { label: '35 mm', value: 35 },
+                                            { label: '40 mm', value: 40 },
+                                            { label: '45 mm', value: 45 },
+                                            { label: '50 mm', value: 50, selected: true }
+        ]);
+
+        var $height = FormUtil.getDropdown([ { label: ' 5 mm', value:  5 },
+                                             { label: '10 mm', value: 10 },
+                                             { label: '15 mm', value: 15, selected: true },
+                                             { label: '20 mm', value: 20 },
+                                             { label: '25 mm', value: 25 },
+                                             { label: '30 mm', value: 30 },
+                                             { label: '35 mm', value: 35 },
+                                             { label: '40 mm', value: 40 },
+                                             { label: '45 mm', value: 45 },
+                                             { label: '50 mm', value: 50 }
+        ]);
+
+        var $layout = FormUtil.getDropdown([
+                    { label: 'Split Layout',        value: 'split',         selected: true},
+                    { label: 'Continuous Layout',   value: 'continuous' }
+                ]);
+
+        var $layoutForPrinter = null;
+
+        var pdf = null;
+		var $printButton = $("<a>", { 'class' : 'btn btn-default', style : 'margin-bottom:13px;' } ).append($('<span>', { 'class' : 'glyphicon glyphicon-print' }));
+        $printButton.click(function() {
+            if(pdf !== null) {
+                pdf.save("barcodes.pdf");
+            }
+        });
+
         $toolbar.append($generateBtn)
-                .append($("<span>", { style:"width:25%; margin-left: 10px; display:inline-block;"}).append($barcodeTypesDropdown))
-                .append($("<span>", { style:"width:25%; margin-left: 10px; display:inline-block;"}).append($numberDropdown));
+                .append($("<span>", { style:"width:15%; margin-left: 10px; display:inline-block;"}).append($barcodeTypesDropdown))
+                .append($("<span>", { style:"width:10%; margin-left: 10px; display:inline-block;"}).append($numberDropdown))
+                .append($("<span>", { style:"width:15%; margin-left: 10px; display:inline-block;"}).append($layout))
+                .append($("<span>", { style:"width:15%; margin-left: 10px; display:inline-block;"}).append($width))
+                .append($("<span>", { style:"width:15%; margin-left: 10px; display:inline-block;"}).append($height))
+                .append($("<span>", { style:"width:8%; margin-left: 10px; display:inline-block;"}).append($printButton));
+
         views.header.append($toolbar);
 
         var _this = this;
         $generateBtn.click(function() {
+            var width  = $width.val();
+            width = parseInt(width);
+            var height = $height.val();
+            height = parseInt(height);
+            var layout = $layout.val();
+
             views.content.empty();
+            $layoutForPrinter = $('<div>', { 'id' : 'layout-for-printer' });
+            views.content.append($layoutForPrinter);
+
             var value = parseInt($numberDropdown.val());
             mainController.serverFacade.createPermIdStrings(value, function(newPermIds) {
+                var format = null;
+                if(width && height) {
+                    format = {
+                        orientation: ((layout === 'split')?'l':'p'),
+                        unit: 'mm',
+                        format: [width, height * ((layout === 'split')?1:value) + ((layout === 'split')?0:2*value)],
+                        putOnlyUsedFonts:true
+                    };
+                    console.log(format);
+                    pdf = new jsPDF(format);
+                }
+
                 for(var idx = 0; idx < value; idx++) {
-                    _this.addBarcode(views.content, idx, $barcodeTypesDropdown.val(), newPermIds[idx], newPermIds[idx]);
+                    // HTML
+                    _this.addBarcode($layoutForPrinter, idx, $barcodeTypesDropdown.val(), newPermIds[idx], idx === 0, width, height, layout);
+
+                    // PDF
+                    var imgData = _this.generateBarcode($barcodeTypesDropdown.val(), newPermIds[idx], newPermIds[idx], null, width, height);
+                    if(pdf !== null) {
+                        if(layout === 'split') {
+                            if(idx > 0) {
+                                pdf.addPage(format.format, 'l');
+                            }
+                            pdf.addImage(imgData, 'png', 0, 0, width, height);
+                        } else {
+                            console.log("height: " + (height * idx + idx));
+                            pdf.addImage(imgData, 'png', 0, (height * idx + 2*idx), width, height);
+                        }
+                    }
                 }
             });
         });
@@ -98,18 +178,27 @@ var BarcodeUtil = new function() {
     }
 
     this.preloadLibrary = function() {
-        var $hiddenContainer = $("<div>", { style : "display:none;" });
-        $(document.body).append($hiddenContainer);
-        $hiddenContainer.append($('<center>').append($('<canvas>', { id : "barcode-canvas-preload", width : 1, height : 1, style : "border:1px solid #fff;visibility:hidden" })));
-        this.generateBarcode("barcode-canvas-preload", "code128", "Barcode", "Text", function() {
-            $hiddenContainer.remove();
+        this.generateBarcode("code128", "Barcode", "Text", function() {
         });
     }
 
-    this.addBarcode = function(content, idx, type, text) {
-        content.append($('<br>'));
-        content.append($('<center>').append($('<canvas>', { id : "barcode-canvas-" + idx, width : 1, height : 1, style : "border:1px solid #fff;visibility:hidden" })));
-        this.generateBarcode("barcode-canvas-" + idx, type, text, text);
+    this.addBarcode = function(content, idx, type, text, isFirst, width, height, layout) {
+        if(!isFirst) {
+            var $br = null;
+            if(layout && layout === 'split') {
+                $br = $('<hr>', { style : 'page-break-after: always;'});
+            } else {
+                $br = $('<br>');
+            }
+            content.append($br);
+        }
+        var imageSRC = this.generateBarcode(type, text, text, null, width, height);
+        var imagePNG = $('<img>', { src : imageSRC });
+        content.append(imagePNG);
+        if(width && height) {
+            imagePNG.css('width', width + 'mm');
+            imagePNG.css('height', height + 'mm');
+        }
     }
 
     this.readBarcodeMulti = function(actionLabel, action) {
@@ -295,10 +384,10 @@ var BarcodeUtil = new function() {
 			Util.unblockUI();
 		});
 
-        var $canvas = $('<canvas>', { id : "barcode-canvas", width : 1, height : 1, style : "border:1px solid #fff;visibility:hidden" });
+        var $canvas = $('<img>');
         var $barcodeTypesDropdown = FormUtil.getDropdown(this.supportedBarcodes());
             $barcodeTypesDropdown.change(function() {
-                _this.generateBarcode("barcode-canvas", $barcodeTypesDropdown.val(), barcode, barcode);
+                $canvas.attr('src', _this.generateBarcode($barcodeTypesDropdown.val(), barcode, barcode));
             });
 		$window.append($('<legend>').append("Print Barcode"));
 	    $window.append($('<br>'));
@@ -320,7 +409,11 @@ var BarcodeUtil = new function() {
 
         Util.blockUI($window, css);
 
-        this.generateBarcode("barcode-canvas", $barcodeTypesDropdown.val(), barcode, barcode);
+        // The first call is to load the library if is not loaded yet
+        var _this = this;
+        this.generateBarcode($barcodeTypesDropdown.val(), barcode, barcode, function() {
+            $canvas.attr('src', _this.generateBarcode($barcodeTypesDropdown.val(), barcode, barcode));
+        });
     }
 
     this.supportedBarcodes = function() {
@@ -341,17 +434,17 @@ var BarcodeUtil = new function() {
             ];
     }
 
-    this.generateBarcode = function(canvasId, barcodeType, text, altx, action) {
+    this.generateBarcode = function(barcodeType, text, altx, action, width, height) {
         var elt  = symdesc[barcodeType];
         var opts = {};
         var rot  = "N";
         var monochrome = true;
-        var scaleX = 2;
-        var scaleY = 2;
+        var scaleX = 1;
+        var scaleY = 1;
 
         var bw = new BWIPJS(bwipjs_fonts, monochrome);
 
-        var canvas = document.getElementById(canvasId);
+        var canvas = document.createElement('canvas');
         canvas.height = 1;
         canvas.width  = 1;
         canvas.style.visibility = 'hidden';
@@ -366,9 +459,15 @@ var BarcodeUtil = new function() {
         if (+opts.height && elt.sym != 'pharmacode2') {
             opts.height = opts.height / 25.4 || 0.5;
         }
+        if(height) {
+            opts.height = height / 25.4;
+        }
         // Likewise, width.
         if (+opts.width) {
             opts.width = opts.width / 25.4 || 0;
+        }
+        if(width) {
+            opts.width = width / 25.4;
         }
         // BWIPP does not extend the background color into the
         // human readable text.  Fix that in the bitmap interface.
@@ -415,5 +514,6 @@ var BarcodeUtil = new function() {
                 Util.manageError(e);
             }
         }
+        return canvas.toDataURL('image/png');
     }
 }

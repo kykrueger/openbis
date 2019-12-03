@@ -56,12 +56,12 @@ $.extend(DefaultProfile.prototype, {
 				showExports : true,
 				showStorageManager : true,
 				showAdvancedSearch : true,
+				showUnarchivingHelper : true,
 				showTrashcan : true,
 				showSettings : true,
 				showVocabularyViewer : true,
 				showUserManager : true,
 				showUserProfile : true,
-				showResearchCollectionExportBuilder : false,
 				showZenodoExportBuilder : false,
 				showBarcodes : false,
 		}

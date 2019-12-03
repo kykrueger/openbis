@@ -42,14 +42,15 @@ var EventUtil = new function() {
         });
     };
 
-    this.equalTo = function(elementId, value, ignoreError) {
+    this.equalTo = function(elementId, value, isEqual, ignoreError) {
         return new Promise(function executor(resolve, reject) {
             try {
                 var element = EventUtil.getElement(elementId, ignoreError, resolve);
-                if (element.html() === value || element.val() === value) {
+                if (isEqual && (element.html() === value || element.val() === value) ||
+                    !isEqual && (element.html() != value && element.val() != value)) {
                     resolve();
                 } else {
-                    throw "Element #" + elementId + " should have value = " + element.val() + " but have " + value;
+                    throw "Element #" + elementId + " should" + (isEqual ? "" : " not") + " be equal " + value;
                 }
             } catch(error) {
                 reject();
@@ -91,7 +92,7 @@ var EventUtil = new function() {
 
     this.waitForId = function(elementId, ignoreError, timeout) {
         return new Promise(function executor(resolve, reject) {
-            EventUtil.getElement(elementId, timeout, ignoreError, resolve, reject);
+            timeout = EventUtil.checkTimeout(elementId, timeout, ignoreError, resolve, reject);
 
             if($("#" + elementId).length <= 0) {
                 setTimeout(executor.bind(null, resolve, reject), DEFAULT_TIMEOUT_STEP);
@@ -103,7 +104,7 @@ var EventUtil = new function() {
 
     this.waitForFill = function(elementId, ignoreError, timeout) {
         return new Promise(function executor(resolve, reject) {
-            EventUtil.getElement(elementId, timeout, ignoreError, resolve, reject);
+            timeout = EventUtil.checkTimeout(elementId, timeout, ignoreError, resolve, reject);
 
             var element = EventUtil.getElement(elementId, ignoreError, resolve);
             if(element.html().length <= 0 && element.val().length <= 0) {
@@ -127,7 +128,34 @@ var EventUtil = new function() {
                 reject(new Error("Element '" + elementId + "' is not exist."));
             }
         }
+        return timeout;
     }
+
+    this.dragAndDrop = function(dragId, dropId, ignoreError) {
+        return new Promise(function executor(resolve, reject) {
+            try {
+                var dragElement = EventUtil.getElement(dragId, ignoreError, resolve).draggable();
+                var dropElement = EventUtil.getElement(dropId, ignoreError, resolve).droppable();
+
+                var dt = new DataTransfer();
+
+                var dragStartEvent = jQuery.Event("dragstart");
+                dragStartEvent.originalEvent = jQuery.Event("mousedown");
+                dragStartEvent.originalEvent.dataTransfer = dt;
+
+                dropEvent = jQuery.Event("drop");
+                dropEvent.originalEvent = jQuery.Event("DragEvent");
+                dropEvent.originalEvent.dataTransfer = dt;
+
+                dragElement.trigger(dragStartEvent);
+                dropElement.trigger(dropEvent);
+                resolve();
+            } catch(error) {
+                reject();
+            }
+        });
+    };
+
 
     this.getElement = function(elementId, ignoreError, resolve) {
         var element = $( "#" + elementId );

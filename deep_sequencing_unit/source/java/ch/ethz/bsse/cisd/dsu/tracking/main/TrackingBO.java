@@ -438,7 +438,9 @@ public class TrackingBO
             ArrayList<AbstractExternalData> toTransferDataSetsAll = new ArrayList<>(toTransferDataSetsHighPriority.size() + toTransferDataSets.size());
             toTransferDataSetsAll.addAll(toTransferDataSetsHighPriority);
             toTransferDataSetsAll.addAll(toTransferDataSets);
-            extraSCICOREDataSetListCopy(params, toTransferDataSetsAll);
+            if (!toTransferDataSetsAll.isEmpty()) {
+                extraSCICOREDataSetListCopy(params, toTransferDataSetsAll);
+            }
         }
 
 
@@ -565,14 +567,16 @@ public class TrackingBO
                     ret.getLocalizedMessage(), null,
                     new EMailAddress(params.getNotificationEmail()),
                     adminEmails.toArray(new EMailAddress[0]));
-        } else {
-            File datasetDestinationMarkerFile = new File(params.getDestinationFolderMap().get(datasetTypeCode), ".MARKER_is_finished_" + datasetName);
-            try {
-                datasetDestinationMarkerFile.createNewFile();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
         }
+// MARKER FILE CREATION FAILED
+//        else {
+//            File datasetDestinationMarkerFile = new File(params.getDestinationFolderMap().get(datasetTypeCode), ".MARKER_is_finished_" + datasetName);
+//            try {
+//                datasetDestinationMarkerFile.createNewFile();
+//            } catch (IOException e) {
+//                throw new RuntimeException(e);
+//            }
+//        }
     }
 
 	private static void extraDataSetCopy(Parameters params, List<AbstractExternalData> dataSets)

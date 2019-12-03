@@ -18,8 +18,11 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.rights;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -29,17 +32,22 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.CreationId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.IObjectId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.IDataSetId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.IExperimentId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.IProjectId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.rights.Right;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.rights.Rights;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.rights.fetchoptions.RightsFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.ISpaceId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset.IDataSetAuthorizationExecutor;
@@ -47,6 +55,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset.IMapDataSetB
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.experiment.IExperimentAuthorizationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.experiment.IMapExperimentByIdExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.project.IMapProjectByIdExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.project.IProjectAuthorizationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.sample.IMapSampleByIdExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.sample.ISampleAuthorizationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.space.IMapSpaceByIdExecutor;
@@ -59,6 +68,8 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ProjectPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SpacePE;
+import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.ExperimentIdentifierFactory;
+import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.ProjectIdentifierFactory;
 
 /**
  * @author Franz-Josef Elmer
@@ -72,6 +83,9 @@ public class GetRightsExecutor implements IGetRightsExecutor
     @Autowired
     private IMapProjectByIdExecutor mapProjectByIdExecutor;
 
+    @Autowired
+    private IProjectAuthorizationExecutor projectAuthorizationExecutor;
+    
     @Autowired
     private IMapSampleByIdExecutor mapSampleByIdExecutor;
 
@@ -94,14 +108,19 @@ public class GetRightsExecutor implements IGetRightsExecutor
     public Map<IObjectId, Rights> getRights(IOperationContext context, List<? extends IObjectId> objectIds, RightsFetchOptions fetchOptions)
     {
         Map<IObjectId, Rights> result = new HashMap<>();
-        List<IHandler> handlers = createHandlers();
+        Map<Class<? extends IObjectId>, IHandler> handlersByObjectIdClass = getHandlersByObjectIdClassMap();
         for (IObjectId id : objectIds)
         {
-            for (IHandler handler : handlers)
+            if (id != null)
             {
-                handler.handle(id);
+                IHandler handler = handlersByObjectIdClass.get(id.getClass());
+                if (handler != null)
+                {
+                    handler.handle(id);
+                }
             }
         }
+        Set<IHandler> handlers = new LinkedHashSet<>(handlersByObjectIdClass.values());
         for (IHandler handler : handlers)
         {
             handler.addRights(context, result);
@@ -109,9 +128,25 @@ public class GetRightsExecutor implements IGetRightsExecutor
         return result;
     }
 
-    private List<IHandler> createHandlers()
+    private Map<Class<? extends IObjectId>, IHandler> getHandlersByObjectIdClassMap()
     {
-        return Arrays.asList(new SampleHandler(), new ExperimentHandler(), new DataSetHandler());
+        Map<Class<? extends IObjectId>, IHandler> map = new LinkedHashMap<>();
+        
+        IHandler projectHandler = new ProjectHandler();
+        map.put(ProjectIdentifier.class, projectHandler);
+        map.put(ProjectPermId.class, projectHandler);
+
+        IHandler sampleHandler = new SampleHandler();
+        map.put(SampleIdentifier.class, sampleHandler);
+        map.put(SamplePermId.class, sampleHandler);
+
+        IHandler experimentHandler = new ExperimentHandler();
+        map.put(ExperimentIdentifier.class, experimentHandler);
+        map.put(ExperimentPermId.class, experimentHandler);
+
+        IHandler dataSetHandler = new DataSetHandler();
+        map.put(DataSetPermId.class, dataSetHandler);
+        return map;
     }
 
     private static interface IHandler
@@ -121,48 +156,55 @@ public class GetRightsExecutor implements IGetRightsExecutor
         void addRights(IOperationContext context, Map<IObjectId, Rights> rightsByIds);
     }
 
-    private class SampleHandler implements IHandler
+    private static abstract class AbstractHandler<ID extends IObjectId, ENTITY> implements IHandler
     {
-        private List<ISampleId> sampleIds = new ArrayList<>();
+        private Class<ID> idClass;
 
+        private List<ID> ids = new ArrayList<>();
+
+        AbstractHandler(Class<ID> idClass)
+        {
+            this.idClass = idClass;
+        }
+
+        @SuppressWarnings("unchecked")
         @Override
         public void handle(IObjectId id)
         {
-            if (id instanceof ISampleId)
+            if (idClass.isAssignableFrom(id.getClass()))
             {
-                sampleIds.add((ISampleId) id);
+                ids.add((ID) id);
             }
         }
 
         @Override
         public void addRights(IOperationContext context, Map<IObjectId, Rights> rightsByIds)
         {
-            Map<ISampleId, SamplePE> map = mapSampleByIdExecutor.map(context, sampleIds);
-            Set<ISampleId> unknownSamples = new HashSet<>(sampleIds);
-            for (Entry<ISampleId, SamplePE> entry : map.entrySet())
+            Map<ID, ENTITY> entitiesByIds = getEntitiesByIds(context, ids);
+            Set<ID> unknownIds = new HashSet<>(ids);
+            for (Entry<ID, ENTITY> entry : entitiesByIds.entrySet())
             {
                 Set<Right> rights = new HashSet<>();
-                ISampleId id = entry.getKey();
-                SamplePE object = entry.getValue();
-
+                ID id = entry.getKey();
+                ENTITY entity = entry.getValue();
                 try
                 {
-                    sampleAuthorizationExecutor.canUpdate(context, id, object);
+                    canUpdate(context, id, entity);
                     rights.add(Right.UPDATE);
                 } catch (AuthorizationFailureException e)
                 {
                     // silently ignored
                 }
                 rightsByIds.put(id, new Rights(rights));
-                unknownSamples.remove(id);
+                unknownIds.remove(id);
             }
-            for (ISampleId id : unknownSamples)
+            for (ID id : unknownIds)
             {
                 Set<Right> rights = new HashSet<>();
                 try
                 {
-                    SamplePE sample = createDummySample(context, id);
-                    sampleAuthorizationExecutor.canCreate(context, sample);
+                    ENTITY entity = createDummyEntity(context, id);
+                    canCreate(context, entity);
                     rights.add(Right.CREATE);
                 } catch (AuthorizationFailureException e)
                 {
@@ -171,95 +213,193 @@ public class GetRightsExecutor implements IGetRightsExecutor
                 rightsByIds.put(id, new Rights(rights));
             }
         }
+
+        abstract Map<ID, ENTITY> getEntitiesByIds(IOperationContext context, Collection<ID> ids);
+
+        abstract void canUpdate(IOperationContext context, ID id, ENTITY entity);
+
+        abstract ENTITY createDummyEntity(IOperationContext context, ID id);
+
+        abstract void canCreate(IOperationContext context, ENTITY entity);
+
     }
 
-    private SamplePE createDummySample(IOperationContext context, ISampleId sampleId)
+    private class SampleHandler extends AbstractHandler<ISampleId, SamplePE>
     {
-        if (sampleId == null)
+        SampleHandler()
         {
-            throw new UserFailureException("Unspecified sample id.");
+            super(ISampleId.class);
         }
-        if (sampleId instanceof CreationId)
+
+        @Override
+        Map<ISampleId, SamplePE> getEntitiesByIds(IOperationContext context, Collection<ISampleId> ids)
         {
-            throw new UserFailureException("Sample id '" + sampleId + "' can not be a CreationId.");
+            return mapSampleByIdExecutor.map(context, ids);
         }
-        if (sampleId instanceof SamplePermId)
+
+        @Override
+        void canUpdate(IOperationContext context, ISampleId id, SamplePE entity)
         {
-            throw new UserFailureException("Sample id '" + sampleId + "' can not be a SamplePermId.");
+            sampleAuthorizationExecutor.canUpdate(context, id, entity);
         }
-        if (sampleId instanceof SampleIdentifier == false)
+
+        @Override
+        SamplePE createDummyEntity(IOperationContext context, ISampleId sampleId)
         {
-            throw new UserFailureException("Sample id '" + sampleId + "' is of unknown type "
-                    + sampleId.getClass().getName() + ".");
-        }
-        SpacePE homeSpace = context.getSession().tryGetHomeGroup();
-        FullSampleIdentifier sampleIdentifier = new FullSampleIdentifier(((SampleIdentifier) sampleId).getIdentifier(),
-                homeSpace == null ? null : homeSpace.getCode());
-        SampleIdentifierParts parts = sampleIdentifier.getParts();
-        SamplePE samplePE = new SamplePE();
-        samplePE.setCode(sampleIdentifier.getSampleCode());
-        String spaceCode = parts.getSpaceCodeOrNull();
-        if (StringUtils.isNotBlank(spaceCode))
-        {
-            SpacePermId spacePermId = new SpacePermId(spaceCode);
-            SpacePE spacePE = mapSpaceByIdExecutor.map(context, Arrays.asList(spacePermId)).get(spacePermId);
-            if (spacePE == null)
+            if (sampleId instanceof SamplePermId)
             {
-                throw new UserFailureException("Unknown space in sample identifier '" + sampleId + "'.");
+                throw new UserFailureException("Unknown sample with perm id " + sampleId + ".");
             }
-            samplePE.setSpace(spacePE);
-        }
-        String projectCode = parts.getProjectCodeOrNull();
-        if (StringUtils.isNotBlank(projectCode))
-        {
-            if (StringUtils.isBlank(spaceCode))
+            if (sampleId instanceof SampleIdentifier == false)
             {
-                throw new UserFailureException("Unknown space in sample identifier '" + sampleId + "'.");
+                throw new UserFailureException("Sample identifier of unsupported type ("
+                        + sampleId.getClass().getName() + "): " + sampleId);
             }
-            ProjectIdentifier projectIdentifier = new ProjectIdentifier(spaceCode, projectCode);
+            SpacePE homeSpace = context.getSession().tryGetHomeGroup();
+            FullSampleIdentifier sampleIdentifier = new FullSampleIdentifier(((SampleIdentifier) sampleId).getIdentifier(),
+                    homeSpace == null ? null : homeSpace.getCode());
+            SampleIdentifierParts parts = sampleIdentifier.getParts();
+            SamplePE samplePE = new SamplePE();
+            samplePE.setCode(sampleIdentifier.getSampleCode());
+            String spaceCode = parts.getSpaceCodeOrNull();
+            if (StringUtils.isNotBlank(spaceCode))
+            {
+                SpacePermId spacePermId = new SpacePermId(spaceCode);
+                SpacePE spacePE = mapSpaceByIdExecutor.map(context, Arrays.asList(spacePermId)).get(spacePermId);
+                if (spacePE == null)
+                {
+                    throw new UserFailureException("Unknown space in sample identifier '" + sampleId + "'.");
+                }
+                samplePE.setSpace(spacePE);
+            }
+            String projectCode = parts.getProjectCodeOrNull();
+            if (StringUtils.isNotBlank(projectCode))
+            {
+                if (StringUtils.isBlank(spaceCode))
+                {
+                    throw new UserFailureException("Unknown space in sample identifier '" + sampleId + "'.");
+                }
+                ProjectIdentifier projectIdentifier = new ProjectIdentifier(spaceCode, projectCode);
+                ProjectPE projectPE = mapProjectByIdExecutor.map(context, Arrays.asList(projectIdentifier)).get(projectIdentifier);
+                if (projectPE == null)
+                {
+                    throw new UserFailureException("Unknown project in sample identifier '" + sampleId + "'.");
+                }
+                samplePE.setProject(projectPE);
+            }
+            return samplePE;
+        }
+
+        @Override
+        void canCreate(IOperationContext context, SamplePE sample)
+        {
+            sampleAuthorizationExecutor.canCreate(context, sample);
+        }
+    }
+
+    private class ExperimentHandler extends AbstractHandler<IExperimentId, ExperimentPE>
+    {
+        ExperimentHandler()
+        {
+            super(IExperimentId.class);
+        }
+
+        @Override
+        Map<IExperimentId, ExperimentPE> getEntitiesByIds(IOperationContext context, Collection<IExperimentId> ids)
+        {
+            return mapExperimentByIdExecutor.map(context, ids);
+        }
+
+        @Override
+        void canUpdate(IOperationContext context, IExperimentId id, ExperimentPE entity)
+        {
+            experimentAuthorizationExecutor.canUpdate(context, id, entity);
+        }
+
+        @Override
+        ExperimentPE createDummyEntity(IOperationContext context, IExperimentId id)
+        {
+            if (id instanceof ExperimentPermId)
+            {
+                throw new UserFailureException("Unknown experiment with perm id " + id + ".");
+            }
+            if (id instanceof ExperimentIdentifier == false)
+            {
+                throw new UserFailureException("Experiment identifier of unsupported type ("
+                        + id.getClass().getName() + "): " + id);
+            }
+
+            ch.systemsx.cisd.openbis.generic.shared.dto.identifier.ExperimentIdentifier expeId =
+                    ExperimentIdentifierFactory.parse(((ExperimentIdentifier) id).getIdentifier());
+
+            ProjectIdentifier projectIdentifier = new ProjectIdentifier(expeId.getSpaceCode(), expeId.getProjectCode());
             ProjectPE projectPE = mapProjectByIdExecutor.map(context, Arrays.asList(projectIdentifier)).get(projectIdentifier);
             if (projectPE == null)
             {
-                throw new UserFailureException("Unknown project in sample identifier '" + sampleId + "'.");
+                throw new UserFailureException("Unknown project in experiment identifier '" + id + "'.");
             }
-            samplePE.setProject(projectPE);
+            ExperimentPE experimentPE = new ExperimentPE();
+            experimentPE.setProject(projectPE);
+            experimentPE.setCode(expeId.getExperimentCode());
+            return experimentPE;
         }
-        return samplePE;
+
+        @Override
+        void canCreate(IOperationContext context, ExperimentPE entity)
+        {
+            experimentAuthorizationExecutor.canCreate(context, entity);
+
+        }
     }
-
-    private class ExperimentHandler implements IHandler
+    
+    private class ProjectHandler extends AbstractHandler<IProjectId, ProjectPE>
     {
-        private List<IExperimentId> experimentIds = new ArrayList<>();
-
-        @Override
-        public void handle(IObjectId id)
+        ProjectHandler()
         {
-            if (id instanceof IExperimentId)
-            {
-                experimentIds.add((IExperimentId) id);
-            }
+            super(IProjectId.class);
         }
 
         @Override
-        public void addRights(IOperationContext context, Map<IObjectId, Rights> rightsByIds)
+        Map<IProjectId, ProjectPE> getEntitiesByIds(IOperationContext context, Collection<IProjectId> ids)
         {
-            Map<IExperimentId, ExperimentPE> map = mapExperimentByIdExecutor.map(context, experimentIds);
-            for (Entry<IExperimentId, ExperimentPE> entry : map.entrySet())
-            {
-                Set<Right> rights = new HashSet<>();
-                IExperimentId id = entry.getKey();
-                ExperimentPE object = entry.getValue();
+            return mapProjectByIdExecutor.map(context, ids);
+        }
 
-                try
-                {
-                    experimentAuthorizationExecutor.canUpdate(context, id, object);
-                    rights.add(Right.UPDATE);
-                } catch (AuthorizationFailureException e)
-                {
-                    // silently ignored
-                }
-                rightsByIds.put(id, new Rights(rights));
+        @Override
+        void canUpdate(IOperationContext context, IProjectId id, ProjectPE entity)
+        {
+            projectAuthorizationExecutor.canUpdate(context, id, entity);
+        }
+
+        @Override
+        ProjectPE createDummyEntity(IOperationContext context, IProjectId id)
+        {
+            if (id instanceof ProjectPermId)
+            {
+                throw new UserFailureException("Unknown project with perm id " + id + ".");
             }
+            if (id instanceof ProjectIdentifier == false)
+            {
+                throw new UserFailureException("Project identifier of unsupported type ("
+                        + id.getClass().getName() + "): " + id);
+            }
+            ISpaceId spaceId = new SpacePermId(ProjectIdentifierFactory.parse(((ProjectIdentifier) id).getIdentifier())
+                    .getSpaceCode());
+            SpacePE spacePE = mapSpaceByIdExecutor.map(context, Arrays.asList(spaceId)).get(spaceId);
+            if (spacePE == null)
+            {
+                throw new UserFailureException("Unknown space in project identifier '" + id + "'.");
+            }
+            ProjectPE projectPE = new ProjectPE();
+            projectPE.setSpace(spacePE);
+            projectPE.setCode("DUMMY");
+            return projectPE;
+        }
+
+        @Override
+        void canCreate(IOperationContext context, ProjectPE entity)
+        {
+            projectAuthorizationExecutor.canCreate(context, entity);
         }
     }
 
