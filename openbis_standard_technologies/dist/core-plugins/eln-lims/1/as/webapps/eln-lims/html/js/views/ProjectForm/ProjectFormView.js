@@ -252,7 +252,7 @@ function ProjectFormView(projectFormController, projectFormModel) {
 				_this._projectFormModel.isFormDirty = true;
 			};
 			$textBox.val(description);
-			$textBox = FormUtil.activateRichTextProperties($textBox, textBoxEvent, null);
+			$textBox = FormUtil.activateRichTextProperties($textBox, textBoxEvent, null, description, false);
 			$formColumn.append(FormUtil.getFieldForComponentWithLabel($textBox, "Description"));
 		} else {
 			$formColumn.append(FormUtil.getFieldForLabelWithText("Description", description));
