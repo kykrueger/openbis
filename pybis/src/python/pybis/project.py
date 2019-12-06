@@ -24,6 +24,10 @@ class Project(
             'save()', 'delete()'
         ] + super().__dir__()
 
+    @property
+    def props(self):
+        return self.__dict__['p']
+
     def get_samples(self, **kwargs):
         return self.openbis.get_samples(project=self.permId, **kwargs)
     get_objects = get_samples # Alias
