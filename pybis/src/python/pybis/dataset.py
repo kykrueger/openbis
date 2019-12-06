@@ -18,6 +18,7 @@ import time
 # needed for Data upload
 PYBIS_PLUGIN = "dataset-uploader-api"
 dataset_definitions = openbis_definitions('dataSet')
+dss_endpoint = '/datastore_server/rmi-data-store-server-v3.json'
 
 
 class DataSet(
@@ -202,6 +203,33 @@ class DataSet(
 
     set_props = set_properties
 
+    def get_dataset_files(self, **properties):
+
+
+        search_criteria = get_search_type_for_entity('datasetFiles')
+        search_criteria['criteria'] = sub_criteria
+        search_criteria['operator'] = 'AND'
+
+
+        request = {
+            "method": "searchFiles",
+            "params": [
+                self.token,
+                search_criteria,
+                fetchopts,
+            ],
+        }
+        resp = self._post_request(datastore.url, dss_endpoint, request)
+
+        return self._dataset_list_for_response(
+            response=resp['objects'],
+            props=props,
+            start_with=start_with,
+            count=count,
+            totalCount=resp['totalCount'],
+        )
+
+
     def download(self, files=None, destination=None, wait_until_finished=True, workers=10,
         linked_dataset_fileservice_url=None, content_copy_index=0):
         """ download the actual files and put them by default in the following folder:
@@ -247,6 +275,7 @@ class DataSet(
                 file_info = self.get_file_list(start_folder=filename)
                 file_size = file_info[0]['fileSize']
                 download_url = base_url + filename + '?sessionID=' + self.openbis.token
+                #print(download_url)
                 filename_dest = os.path.join(destination, self.permId, filename)
                 queue.put([download_url, filename, filename_dest, file_size, self.openbis.verify_certificates, 'wb'])
 
@@ -771,11 +800,18 @@ class DataSetDownloadQueue():
                 if r.ok == False:
                     raise ValueError("Could not download from {}: HTTP {}. Reason: {}".format(url, r.status_code, r.reason))
 
-                with open(filename_dest, write_mode) as f:
-                    for chunk in r.iter_content(chunk_size=1024):
+                with open(filename_dest, write_mode) as fh:
+                    for chunk in r.iter_content(chunk_size=1024*1024):
+                        #size += len(chunk)
+                        #print("WRITE     ", datetime.now(), len(chunk))
                         if chunk:  # filter out keep-alive new chunks
-                            f.write(chunk)
+                            fh.write(chunk)
+                        #print("DONE WRITE", datetime.now())
 
+                #print("DONE", datetime.now())
+
+                r.raise_for_status()
+                #print("{} bytes written".format(size))
                 actual_file_size = os.path.getsize(filename_dest)
                 if actual_file_size != int(file_size):
                     if self.collect_files_with_wrong_length:
@@ -785,6 +821,12 @@ class DataSetDownloadQueue():
                             "WARNING! File {} has the wrong length: Expected: {} Actual size: {}".format(
                                 filename_dest, int(file_size), actual_file_size)
                         )
+                        print (
+                            "REASON: The connection has been silently dropped upstreams.",
+                            "Please check the http timeout settings of the openBIS datastore server"
+                        )
+            except Exception as err:
+                print("ERROR while writing file {}: {}".format(filename_dest, err))
 
             finally:
                 self.download_queue.task_done()
