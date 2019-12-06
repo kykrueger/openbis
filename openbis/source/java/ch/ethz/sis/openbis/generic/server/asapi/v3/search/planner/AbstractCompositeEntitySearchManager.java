@@ -151,6 +151,7 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
      * @param relatedEntitiesCriteria parent or child criteria.
      * @return IDs found from parent/child criteria.
      */
+    @SuppressWarnings("unchecked")
     private Set<Long> findFinalRelationshipIds(final Long userId, final SearchOperator operator,
             final Collection<ISearchCriteria> relatedEntitiesCriteria)
     {
@@ -170,8 +171,8 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
      * Queries the DB to return all entity IDs.
      *
      * @return set of IDs of all entities.
-     * @param userId
-     * @param idsColumnName
+     * @param userId requesting user ID.
+     * @param idsColumnName the name of the column, whose values to be returned.
      */
     private Set<Long> getAllIds(final Long userId, final String idsColumnName)
     {
