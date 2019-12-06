@@ -16,16 +16,6 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractFieldSearchCriteria;
@@ -37,13 +27,16 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 
+import java.util.*;
+import java.util.stream.Collectors;
+
 /**
  * Manages detailed search with complex search criteria.
  *
  * @author Viktor Kovtun
  * @author Juan Fuentes
  */
-public abstract class AbstractSearchManager<CRITERIA extends ISearchCriteria, FETCH_OPTIONS extends FetchOptions<OBJECT>, OBJECT, OBJECT_PE>
+public abstract class AbstractSearchManager<CRITERIA extends ISearchCriteria, OBJECT, OBJECT_PE>
         implements ISearchManager<CRITERIA, OBJECT, OBJECT_PE>
 {
     private final ISQLSearchDAO searchDAO;

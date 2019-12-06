@@ -16,12 +16,9 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
-import java.util.Set;
-
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.SemanticAnnotation;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.fetchoptions.SemanticAnnotationFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.search.SemanticAnnotationSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
@@ -29,13 +26,15 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 
+import java.util.Set;
+
 /**
  * Manages detailed search with complex semantic annotation search criteria.
  * 
  * @author Viktor Kovtun
  */
 public class SemanticAnnotationSearchManager extends
-        AbstractSearchManager<SemanticAnnotationSearchCriteria, SemanticAnnotationFetchOptions, SemanticAnnotation, Long>
+        AbstractSearchManager<SemanticAnnotationSearchCriteria, SemanticAnnotation, Long>
 {
 
     public SemanticAnnotationSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,

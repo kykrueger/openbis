@@ -16,19 +16,18 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
-import java.util.Collections;
-import java.util.Set;
-
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyAssignmentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.search.PropertyAssignmentSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
+
+import java.util.Collections;
+import java.util.Set;
 
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.SAMPLE_TYPE_COLUMN;
 
@@ -38,7 +37,7 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.SAMPLE_TYP
  * @author Viktor Kovtun
  */
 public class PropertyAssignmentSearchManager extends
-        AbstractSearchManager<PropertyAssignmentSearchCriteria, PropertyAssignmentFetchOptions, PropertyAssignment, Long>
+        AbstractSearchManager<PropertyAssignmentSearchCriteria, PropertyAssignment, Long>
 {
 
     public PropertyAssignmentSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,

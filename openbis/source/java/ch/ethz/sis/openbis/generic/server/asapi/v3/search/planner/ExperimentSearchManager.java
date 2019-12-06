@@ -16,12 +16,9 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
-import java.util.Set;
-
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
@@ -29,12 +26,14 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 
+import java.util.Set;
+
 /**
  * Manages detailed search with complex experiment search criteria.
  *
  * @author Viktor Kovtun
  */
-public class ExperimentSearchManager extends AbstractSearchManager<ExperimentSearchCriteria, ExperimentFetchOptions, Experiment, Long>
+public class ExperimentSearchManager extends AbstractSearchManager<ExperimentSearchCriteria, Experiment, Long>
 {
     public ExperimentSearchManager(final ISQLSearchDAO searchDAO,
             final ISQLAuthorisationInformationProviderDAO authProvider,
