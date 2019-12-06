@@ -38,8 +38,7 @@ const styles = theme => ({
   },
   partEmpty: {
     fontStyle: 'italic',
-    opacity: 0.7,
-    color: theme.palette.grey.main
+    opacity: 0.7
   },
   partSelected: {
     cursor: 'pointer',
@@ -211,6 +210,7 @@ class ObjectTypePreviewProperty extends React.PureComponent {
         description={this.getDescription()}
         mandatory={this.getMandatory()}
         metadata={this.getMetadata()}
+        error={this.getError()}
         styles={this.getStyles()}
         onClick={this.handlePropertyClick}
       />
@@ -225,6 +225,7 @@ class ObjectTypePreviewProperty extends React.PureComponent {
         description={this.getDescription()}
         mandatory={this.getMandatory()}
         metadata={this.getMetadata()}
+        error={this.getError()}
         styles={this.getStyles()}
         onClick={this.handlePropertyClick}
       />
@@ -239,6 +240,7 @@ class ObjectTypePreviewProperty extends React.PureComponent {
           description={this.getDescription()}
           mandatory={this.getMandatory()}
           metadata={this.getMetadata()}
+          error={this.getError()}
           styles={this.getStyles()}
           onClick={this.handlePropertyClick}
         />
@@ -268,6 +270,7 @@ class ObjectTypePreviewProperty extends React.PureComponent {
         mandatory={this.getMandatory()}
         options={options}
         metadata={this.getMetadata()}
+        error={this.getError()}
         styles={this.getStyles()}
         onClick={this.handlePropertyClick}
       />
@@ -295,6 +298,7 @@ class ObjectTypePreviewProperty extends React.PureComponent {
         mandatory={this.getMandatory()}
         options={options}
         metadata={this.getMetadata()}
+        error={this.getError()}
         styles={this.getStyles()}
         onClick={this.handlePropertyClick}
       />
@@ -345,6 +349,15 @@ class ObjectTypePreviewProperty extends React.PureComponent {
         ]
       </React.Fragment>
     )
+  }
+
+  getError() {
+    const errors = this.props.property.errors
+    if (_.isEmpty(errors)) {
+      return null
+    } else {
+      return 'Property configuration is incorrect'
+    }
   }
 
   getStyles() {

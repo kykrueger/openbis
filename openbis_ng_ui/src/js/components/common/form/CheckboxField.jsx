@@ -66,6 +66,7 @@ class CheckboxFormField extends React.PureComponent {
       value,
       mandatory,
       disabled,
+      error,
       metadata,
       styles,
       classes,
@@ -75,6 +76,7 @@ class CheckboxFormField extends React.PureComponent {
     return (
       <FormFieldContainer
         description={description}
+        error={error}
         metadata={metadata}
         styles={styles}
         onClick={onClick}

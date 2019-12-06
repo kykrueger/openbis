@@ -35,8 +35,8 @@ class FormFieldContainer extends React.PureComponent {
         <div onClick={onClick} className={styles.container}>
           {this.renderMetadata()}
           {this.renderControl()}
-          {this.renderDescription()}
           {this.renderError()}
+          {this.renderDescription()}
         </div>
       </FormControl>
     )

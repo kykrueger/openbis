@@ -74,9 +74,9 @@ class ObjectTypeParametersProperty extends React.PureComponent {
     if (property) {
       const dataType = property.dataType
 
-      if (dataType === 'CONTROLLEDVOCABULARY') {
+      if (dataType === dto.DataType.CONTROLLEDVOCABULARY) {
         this.loadVocabularies()
-      } else if (dataType === 'MATERIAL') {
+      } else if (dataType === dto.DataType.MATERIAL) {
         this.loadMaterialTypes()
       }
     }
@@ -307,7 +307,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
 
     return (
       <Collapse
-        in={property.dataType === 'CONTROLLEDVOCABULARY'}
+        in={property.dataType === dto.DataType.CONTROLLEDVOCABULARY}
         mountOnEnter={true}
         unmountOnExit={true}
       >
@@ -341,7 +341,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
 
     return (
       <Collapse
-        in={property.dataType === 'MATERIAL'}
+        in={property.dataType === dto.DataType.MATERIAL}
         mountOnEnter={true}
         unmountOnExit={true}
       >
