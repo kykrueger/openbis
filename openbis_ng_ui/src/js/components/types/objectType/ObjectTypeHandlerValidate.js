@@ -7,10 +7,23 @@ export default class ObjectTypeHandlerValidate {
     this.setState = setState
   }
 
-  execute(enable) {
+  setEnabled(enabled) {
+    return new Promise(resolve => {
+      this.setState(
+        {
+          validate: enabled
+        },
+        () => {
+          resolve()
+        }
+      )
+    })
+  }
+
+  execute(autofocus) {
     const { validate, type, properties } = this.getState()
 
-    if (!validate && !enable) {
+    if (!validate) {
       return
     }
 
@@ -22,7 +35,7 @@ export default class ObjectTypeHandlerValidate {
 
     let errorSelection = null
 
-    if (enable) {
+    if (autofocus) {
       if (!_.isEmpty(typeErrors)) {
         errorSelection = {
           type: 'type',
@@ -52,7 +65,6 @@ export default class ObjectTypeHandlerValidate {
       }))
 
       return {
-        validate: validate || enable,
         type: newType,
         properties: newProperties,
         selection: errorSelection ? errorSelection : state.selection

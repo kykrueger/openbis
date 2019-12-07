@@ -224,11 +224,18 @@ export default class ObjectTypeHandlerSave {
   }
 
   execute() {
-    if (!this.validateHandler.execute(true)) {
-      return
-    }
+    this.validateHandler.setEnabled(true).then(() => {
+      if (!this.validateHandler.execute(true)) {
+        return
+      }
+      this.doExecute().then(() => {
+        this.validateHandler.setEnabled(false)
+      })
+    })
+  }
 
-    this.facade
+  doExecute() {
+    return this.facade
       .loadTypePropertyTypes(this.type.code)
       .then(loadedPropertyTypes => {
         const { toCreate, toUpdate, toDelete } = this.preparePropertyChanges(
@@ -247,23 +254,22 @@ export default class ObjectTypeHandlerSave {
         const options = new dto.SynchronousOperationExecutionOptions()
         options.setExecuteInOrder(true)
 
-        this.facade
-          .executeOperations(
-            [
-              ...deletePropertyAssignmentsOperations,
-              ...createUpdateDeletePropertyTypesOperations,
-              ...updateTypeAndAssignmentsOperations
-            ],
-            options
-          )
-          .then(
-            () => {
-              this.loadHandler.execute()
-            },
-            error => {
-              alert(JSON.stringify(error))
-            }
-          )
+        return this.facade.executeOperations(
+          [
+            ...deletePropertyAssignmentsOperations,
+            ...createUpdateDeletePropertyTypesOperations,
+            ...updateTypeAndAssignmentsOperations
+          ],
+          options
+        )
       })
+      .then(
+        () => {
+          this.loadHandler.execute()
+        },
+        error => {
+          alert(JSON.stringify(error))
+        }
+      )
   }
 }
