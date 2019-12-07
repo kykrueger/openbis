@@ -25,7 +25,8 @@ class SelectFormField extends React.PureComponent {
       styles,
       onClick,
       onChange,
-      onFocus
+      onFocus,
+      onBlur
     } = this.props
 
     return (
@@ -52,6 +53,7 @@ class SelectFormField extends React.PureComponent {
           disabled={disabled}
           onChange={onChange}
           onFocus={onFocus}
+          onBlur={onBlur}
           fullWidth={true}
           SelectProps={{
             native: true

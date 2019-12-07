@@ -1,8 +1,7 @@
 export default class ObjectTypeHandlerChange {
-  constructor(state, setState, validateHandler) {
+  constructor(state, setState) {
     this.state = state
     this.setState = setState
-    this.validateHandler = validateHandler
   }
 
   execute(type, params) {
@@ -19,18 +18,13 @@ export default class ObjectTypeHandlerChange {
   }
 
   handleChangeType(field, value) {
-    this.setState(
-      state => ({
-        ...state,
-        type: {
-          ...state.type,
-          [field]: value
-        }
-      }),
-      () => {
-        this.validateHandler.execute()
+    this.setState(state => ({
+      ...state,
+      type: {
+        ...state.type,
+        [field]: value
       }
-    )
+    }))
   }
 
   handleChangeSection(id, field, value) {
@@ -45,15 +39,10 @@ export default class ObjectTypeHandlerChange {
     }
     newSections[index] = newSection
 
-    this.setState(
-      state => ({
-        ...state,
-        sections: newSections
-      }),
-      () => {
-        this.validateHandler.execute()
-      }
-    )
+    this.setState(state => ({
+      ...state,
+      sections: newSections
+    }))
   }
 
   handleChangeProperty(id, field, value) {
@@ -68,14 +57,9 @@ export default class ObjectTypeHandlerChange {
     }
     newProperties[index] = newProperty
 
-    this.setState(
-      state => ({
-        ...state,
-        properties: newProperties
-      }),
-      () => {
-        this.validateHandler.execute()
-      }
-    )
+    this.setState(state => ({
+      ...state,
+      properties: newProperties
+    }))
   }
 }

@@ -42,6 +42,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
     }
     this.handleChange = this.handleChange.bind(this)
     this.handleFocus = this.handleFocus.bind(this)
+    this.handleBlur = this.handleBlur.bind(this)
   }
 
   componentDidMount() {
@@ -145,27 +146,27 @@ class ObjectTypeParametersProperty extends React.PureComponent {
     }
   }
 
-  handleChange(event) {
+  params(event) {
     const property = this.getProperty(this.props)
 
-    const params = {
+    return {
       id: property.id,
       field: event.target.name,
+      part: event.target.name,
       value: event.target.value
     }
+  }
 
-    this.props.onChange('property', params)
+  handleChange(event) {
+    this.props.onChange('property', this.params(event))
   }
 
   handleFocus(event) {
-    const property = this.getProperty(this.props)
+    this.props.onSelectionChange('property', this.params(event))
+  }
 
-    const params = {
-      id: property.id,
-      part: event.target.name
-    }
-
-    this.props.onSelectionChange('property', params)
+  handleBlur(event) {
+    this.props.onBlur('property', this.params(event))
   }
 
   render() {
@@ -226,6 +227,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
           value={property.label}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
+          onBlur={this.handleBlur}
         />
       </div>
     )
@@ -245,6 +247,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
           value={property.code}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
+          onBlur={this.handleBlur}
         />
       </div>
     )
@@ -263,6 +266,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
           value={property.description}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
+          onBlur={this.handleBlur}
         />
       </div>
     )
@@ -289,6 +293,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
           options={options}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
+          onBlur={this.handleBlur}
         />
       </div>
     )
@@ -318,6 +323,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
               options={options}
               onChange={this.handleChange}
               onFocus={this.handleFocus}
+              onBlur={this.handleBlur}
             />
           </div>
         </Collapse>
@@ -351,6 +357,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
               options={options}
               onChange={this.handleChange}
               onFocus={this.handleFocus}
+              onBlur={this.handleBlur}
             />
           </div>
         </Collapse>
@@ -371,6 +378,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
           value={property.mandatory}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
+          onBlur={this.handleBlur}
         />
       </div>
     )
@@ -397,6 +405,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
             value={property.initialValueForExistingEntities}
             onChange={this.handleChange}
             onFocus={this.handleFocus}
+            onBlur={this.handleBlur}
           />
         </div>
       </Collapse>
@@ -413,6 +422,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
           value={property.showInEditView}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
+          onBlur={this.handleBlur}
         />
       </div>
     )

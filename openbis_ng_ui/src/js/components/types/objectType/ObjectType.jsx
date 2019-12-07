@@ -63,6 +63,7 @@ class ObjectType extends React.PureComponent {
     this.handleOrderChange = this.handleOrderChange.bind(this)
     this.handleSelectionChange = this.handleSelectionChange.bind(this)
     this.handleChange = this.handleChange.bind(this)
+    this.handleBlur = this.handleBlur.bind(this)
     this.handleAddSection = this.handleAddSection.bind(this)
     this.handleAddProperty = this.handleAddProperty.bind(this)
     this.handleRemove = this.handleRemove.bind(this)
@@ -95,14 +96,16 @@ class ObjectType extends React.PureComponent {
   }
 
   handleChange(type, params) {
-    const validateHandler = new ObjectTypeHandlerValidate(() => {
+    new ObjectTypeHandlerChange(this.state, this.setState.bind(this)).execute(
+      type,
+      params
+    )
+  }
+
+  handleBlur() {
+    new ObjectTypeHandlerValidate(() => {
       return this.state
-    }, this.setState.bind(this))
-    new ObjectTypeHandlerChange(
-      this.state,
-      this.setState.bind(this),
-      validateHandler
-    ).execute(type, params)
+    }, this.setState.bind(this)).execute()
   }
 
   handleAddSection() {
@@ -242,6 +245,7 @@ class ObjectType extends React.PureComponent {
               selection={selection}
               onChange={this.handleChange}
               onSelectionChange={this.handleSelectionChange}
+              onBlur={this.handleBlur}
             />
           </div>
         </Resizable>

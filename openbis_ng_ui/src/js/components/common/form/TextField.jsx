@@ -36,7 +36,8 @@ class TextFormField extends React.PureComponent {
       classes,
       onClick,
       onChange,
-      onFocus
+      onFocus,
+      onBlur
     } = this.props
 
     return (
@@ -81,6 +82,7 @@ class TextFormField extends React.PureComponent {
           disabled={disabled}
           onChange={onChange}
           onFocus={onFocus}
+          onBlur={onBlur}
           fullWidth={true}
           autoComplete='off'
           variant='filled'

@@ -21,7 +21,8 @@ class ObjectTypeParameters extends React.PureComponent {
       properties,
       selection,
       onChange,
-      onSelectionChange
+      onSelectionChange,
+      onBlur
     } = this.props
 
     return (
@@ -31,12 +32,14 @@ class ObjectTypeParameters extends React.PureComponent {
           selection={selection}
           onChange={onChange}
           onSelectionChange={onSelectionChange}
+          onBlur={onBlur}
         />
         <ObjectTypeParametersSection
           sections={sections}
           selection={selection}
           onChange={onChange}
           onSelectionChange={onSelectionChange}
+          onBlur={onBlur}
         />
         <ObjectTypeParametersProperty
           type={type}
@@ -44,6 +47,7 @@ class ObjectTypeParameters extends React.PureComponent {
           selection={selection}
           onChange={onChange}
           onSelectionChange={onSelectionChange}
+          onBlur={onBlur}
         />
       </div>
     )
