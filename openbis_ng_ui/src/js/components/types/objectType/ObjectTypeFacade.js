@@ -4,6 +4,7 @@ export default class ObjectTypeFacade {
   loadType(typeId) {
     const id = new dto.EntityTypePermId(typeId)
     const fo = new dto.SampleTypeFetchOptions()
+    fo.withValidationPlugin()
     fo.withPropertyAssignments().withPlugin()
     fo.withPropertyAssignments()
       .withPropertyType()

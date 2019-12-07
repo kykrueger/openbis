@@ -38,7 +38,11 @@ class ObjectTypeParametersProperty extends React.PureComponent {
       label: React.createRef(),
       description: React.createRef(),
       dataType: React.createRef(),
-      mandatory: React.createRef()
+      vocabulary: React.createRef(),
+      materialType: React.createRef(),
+      initialValueForExistingEntities: React.createRef(),
+      mandatory: React.createRef(),
+      showInEditView: React.createRef()
     }
     this.handleChange = this.handleChange.bind(this)
     this.handleFocus = this.handleFocus.bind(this)
@@ -88,20 +92,6 @@ class ObjectTypeParametersProperty extends React.PureComponent {
     let fo = new dto.VocabularyFetchOptions()
 
     return facade.searchVocabularies(criteria, fo).then(result => {
-      const property = this.getProperty(this.props)
-
-      if (!property.vocabulary && result.objects.length > 0) {
-        let vocabulary = result.objects[0]
-
-        const params = {
-          id: property.id,
-          field: 'vocabulary',
-          value: vocabulary.code
-        }
-
-        this.props.onChange('property', params)
-      }
-
       this.setState(() => ({
         vocabularies: result.objects
       }))
@@ -113,20 +103,6 @@ class ObjectTypeParametersProperty extends React.PureComponent {
     let fo = new dto.MaterialTypeFetchOptions()
 
     return facade.searchMaterialTypes(criteria, fo).then(result => {
-      const property = this.getProperty(this.props)
-
-      if (!property.materialType && result.objects.length > 0) {
-        let materialType = result.objects[0]
-
-        const params = {
-          id: property.id,
-          field: 'materialType',
-          value: materialType.code
-        }
-
-        this.props.onChange('property', params)
-      }
-
       this.setState(() => ({
         materialTypes: result.objects
       }))
@@ -188,7 +164,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
         {this.renderCode(property)}
         {this.renderDataType(property)}
         {this.renderVocabulary(property)}
-        {this.renderMaterial(property)}
+        {this.renderMaterialType(property)}
         {this.renderLabel(property)}
         {this.renderDescription(property)}
         {this.renderVisible(property)}
@@ -273,13 +249,15 @@ class ObjectTypeParametersProperty extends React.PureComponent {
   }
 
   renderDataType(property) {
+    const { classes } = this.props
+
     const options = dto.DataType.values.sort().map(dataType => {
       return {
         label: dataType,
         value: dataType
       }
     })
-    const { classes } = this.props
+
     return (
       <div className={classes.field}>
         <SelectField
@@ -303,68 +281,74 @@ class ObjectTypeParametersProperty extends React.PureComponent {
     const { classes } = this.props
     const { vocabularies } = this.state
 
+    let options = []
+
     if (vocabularies) {
-      const options = vocabularies.map(vocabulary => {
+      options = vocabularies.map(vocabulary => {
         return {
           label: vocabulary.code,
           value: vocabulary.code
         }
       })
-      return (
-        <Collapse in={property.dataType === dto.DataType.CONTROLLEDVOCABULARY}>
-          <div className={classes.field}>
-            <SelectField
-              label='Vocabulary'
-              name='vocabulary'
-              mandatory={true}
-              error={property.errors.vocabulary}
-              disabled={property.used}
-              value={property.vocabulary ? property.vocabulary : ''}
-              options={options}
-              onChange={this.handleChange}
-              onFocus={this.handleFocus}
-              onBlur={this.handleBlur}
-            />
-          </div>
-        </Collapse>
-      )
-    } else {
-      return null
+      options.unshift({})
     }
+
+    return (
+      <Collapse in={property.dataType === dto.DataType.CONTROLLEDVOCABULARY}>
+        <div className={classes.field}>
+          <SelectField
+            reference={this.references.vocabulary}
+            label='Vocabulary'
+            name='vocabulary'
+            mandatory={true}
+            error={property.errors.vocabulary}
+            disabled={property.used}
+            value={property.vocabulary}
+            options={options}
+            onChange={this.handleChange}
+            onFocus={this.handleFocus}
+            onBlur={this.handleBlur}
+          />
+        </div>
+      </Collapse>
+    )
   }
 
-  renderMaterial(property) {
+  renderMaterialType(property) {
     const { classes } = this.props
     const { materialTypes } = this.state
 
+    let options = []
+
     if (materialTypes) {
-      const options = materialTypes.map(materialType => {
+      options = materialTypes.map(materialType => {
         return {
           label: materialType.code,
           value: materialType.code
         }
       })
-      return (
-        <Collapse in={property.dataType === dto.DataType.MATERIAL}>
-          <div className={classes.field}>
-            <SelectField
-              label='Material Type'
-              name='materialType'
-              mandatory={true}
-              error={property.errors.materialType}
-              disabled={property.used}
-              value={property.materialType ? property.materialType : ''}
-              options={options}
-              onChange={this.handleChange}
-              onFocus={this.handleFocus}
-              onBlur={this.handleBlur}
-            />
-          </div>
-        </Collapse>
-      )
-    } else {
-      return null
+      options.unshift({})
     }
+
+    return (
+      <Collapse in={property.dataType === dto.DataType.MATERIAL}>
+        <div className={classes.field}>
+          <SelectField
+            reference={this.references.materialType}
+            label='Material Type'
+            name='materialType'
+            mandatory={true}
+            error={property.errors.materialType}
+            disabled={property.used}
+            value={property.materialType}
+            options={options}
+            onChange={this.handleChange}
+            onFocus={this.handleFocus}
+            onBlur={this.handleBlur}
+          />
+        </div>
+      </Collapse>
+    )
   }
 
   renderMandatory(property) {
@@ -398,6 +382,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
       >
         <div className={classes.field}>
           <TextField
+            reference={this.references.initialValueForExistingEntities}
             label='Initial Value'
             name='initialValueForExistingEntities'
             mandatory={true}
@@ -417,6 +402,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
     return (
       <div className={classes.field}>
         <CheckboxField
+          reference={this.references.showInEditView}
           label='Visible'
           name='showInEditView'
           value={property.showInEditView}

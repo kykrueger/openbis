@@ -77,8 +77,8 @@ class TextFormField extends React.PureComponent {
             ) : null
           }}
           name={name}
-          value={value}
-          error={error !== null && error !== undefined}
+          value={value || ''}
+          error={!!error}
           disabled={disabled}
           onChange={onChange}
           onFocus={onFocus}

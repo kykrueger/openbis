@@ -48,8 +48,8 @@ class SelectFormField extends React.PureComponent {
             />
           }
           name={name}
-          value={value}
-          error={error !== null && error !== undefined}
+          value={value || ''}
+          error={!!error}
           disabled={disabled}
           onChange={onChange}
           onFocus={onFocus}
@@ -58,12 +58,13 @@ class SelectFormField extends React.PureComponent {
           SelectProps={{
             native: true
           }}
+          InputLabelProps={{ shrink: !!value }}
           variant='filled'
         >
           {options &&
             options.map(option => (
-              <option key={option.value} value={option.value}>
-                {option.label || option.value}
+              <option key={option.value || ''} value={option.value || ''}>
+                {option.label || option.value || ''}
               </option>
             ))}
         </TextField>

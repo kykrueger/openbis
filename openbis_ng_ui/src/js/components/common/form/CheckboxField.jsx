@@ -86,7 +86,7 @@ class CheckboxFormField extends React.PureComponent {
             inputRef={this.getReference()}
             action={action => (this.action = action)}
             value={name}
-            checked={value}
+            checked={!!value}
             disabled={disabled}
             onChange={this.handleChange}
             onFocus={this.handleFocus}

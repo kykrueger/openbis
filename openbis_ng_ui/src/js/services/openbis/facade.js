@@ -55,6 +55,10 @@ export class Facade {
     return this.v3.searchPropertyTypes(criteria, fo)
   }
 
+  searchPlugins(criteria, fo) {
+    return this.v3.searchPlugins(criteria, fo)
+  }
+
   searchMaterials(criteria, fo) {
     return this.v3.searchMaterials(criteria, fo)
   }

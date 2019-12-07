@@ -66,9 +66,12 @@ const styles = theme => ({
 class ObjectTypePreviewProperty extends React.PureComponent {
   constructor(props) {
     super(props)
-    this.state = {}
+    this.state = {
+      values: {}
+    }
     this.handleDraggableClick = this.handleDraggableClick.bind(this)
     this.handlePropertyClick = this.handlePropertyClick.bind(this)
+    this.handleChange = this.handleChange.bind(this)
   }
 
   componentDidMount() {
@@ -155,6 +158,18 @@ class ObjectTypePreviewProperty extends React.PureComponent {
     })
   }
 
+  handleChange(event) {
+    const name = event.target.name
+    const value = event.target.value
+
+    this.setState(state => ({
+      values: {
+        ...state.values,
+        [name]: value
+      }
+    }))
+  }
+
   render() {
     logger.log(logger.DEBUG, 'ObjectTypePreviewProperty.render')
 
@@ -204,103 +219,122 @@ class ObjectTypePreviewProperty extends React.PureComponent {
   }
 
   renderVarcharProperty() {
+    const { property } = this.props
+    const { values } = this.state
     return (
       <TextField
+        name={property.id}
         label={this.getLabel()}
         description={this.getDescription()}
+        value={values[property.id]}
         mandatory={this.getMandatory()}
         metadata={this.getMetadata()}
         error={this.getError()}
         styles={this.getStyles()}
         onClick={this.handlePropertyClick}
+        onChange={this.handleChange}
       />
     )
   }
 
   renderNumberProperty() {
+    const { property } = this.props
+    const { values } = this.state
     return (
       <TextField
         type='number'
+        name={property.id}
         label={this.getLabel()}
         description={this.getDescription()}
+        value={values[property.id]}
         mandatory={this.getMandatory()}
         metadata={this.getMetadata()}
         error={this.getError()}
         styles={this.getStyles()}
         onClick={this.handlePropertyClick}
+        onChange={this.handleChange}
       />
     )
   }
 
   renderBooleanProperty() {
+    const { property } = this.props
+    const { values } = this.state
     return (
       <div>
         <CheckboxField
+          name={property.id}
           label={this.getLabel()}
           description={this.getDescription()}
+          value={values[property.id]}
           mandatory={this.getMandatory()}
           metadata={this.getMetadata()}
           error={this.getError()}
           styles={this.getStyles()}
           onClick={this.handlePropertyClick}
+          onChange={this.handleChange}
         />
       </div>
     )
   }
 
   renderVocabularyProperty() {
-    const { terms } = this.state
+    const { property } = this.props
+    const { terms, values } = this.state
 
     let options = []
+
     if (terms) {
       options = terms.map(term => ({
         value: term.code,
         label: term.label
       }))
-      options.unshift({
-        value: '',
-        label: ''
-      })
+      options.unshift({})
     }
 
     return (
       <SelectField
+        name={property.id}
         label={this.getLabel()}
         description={this.getDescription()}
+        value={values[property.id]}
         mandatory={this.getMandatory()}
         options={options}
         metadata={this.getMetadata()}
         error={this.getError()}
         styles={this.getStyles()}
         onClick={this.handlePropertyClick}
+        onChange={this.handleChange}
       />
     )
   }
 
   renderMaterialProperty() {
-    const { materials } = this.state
+    const { property } = this.props
+    const { materials, values } = this.state
 
     let options = []
+
     if (materials) {
       options = materials.map(material => ({
         value: material.code
       }))
-      options.unshift({
-        value: '',
-        label: ''
-      })
+      options.unshift({})
     }
 
     return (
       <SelectField
+        name={property.id}
         label={this.getLabel()}
         description={this.getDescription()}
+        value={values[property.id]}
         mandatory={this.getMandatory()}
         options={options}
         metadata={this.getMetadata()}
         error={this.getError()}
         styles={this.getStyles()}
         onClick={this.handlePropertyClick}
+        onChange={this.handleChange}
       />
     )
   }
