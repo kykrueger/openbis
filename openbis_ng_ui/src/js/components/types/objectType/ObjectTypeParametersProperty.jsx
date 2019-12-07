@@ -296,70 +296,68 @@ class ObjectTypeParametersProperty extends React.PureComponent {
 
   renderVocabulary(property) {
     const { classes } = this.props
-    const { vocabularies = [] } = this.state
+    const { vocabularies } = this.state
 
-    const options = vocabularies.map(vocabulary => {
-      return {
-        label: vocabulary.code,
-        value: vocabulary.code
-      }
-    })
-
-    return (
-      <Collapse
-        in={property.dataType === dto.DataType.CONTROLLEDVOCABULARY}
-        mountOnEnter={true}
-        unmountOnExit={true}
-      >
-        <div className={classes.field}>
-          <SelectField
-            label='Vocabulary'
-            name='vocabulary'
-            mandatory={true}
-            error={property.errors.vocabulary}
-            disabled={property.used}
-            value={property.vocabulary ? property.vocabulary : ''}
-            options={options}
-            onChange={this.handleChange}
-            onFocus={this.handleFocus}
-          />
-        </div>
-      </Collapse>
-    )
+    if (vocabularies) {
+      const options = vocabularies.map(vocabulary => {
+        return {
+          label: vocabulary.code,
+          value: vocabulary.code
+        }
+      })
+      return (
+        <Collapse in={property.dataType === dto.DataType.CONTROLLEDVOCABULARY}>
+          <div className={classes.field}>
+            <SelectField
+              label='Vocabulary'
+              name='vocabulary'
+              mandatory={true}
+              error={property.errors.vocabulary}
+              disabled={property.used}
+              value={property.vocabulary ? property.vocabulary : ''}
+              options={options}
+              onChange={this.handleChange}
+              onFocus={this.handleFocus}
+            />
+          </div>
+        </Collapse>
+      )
+    } else {
+      return null
+    }
   }
 
   renderMaterial(property) {
     const { classes } = this.props
-    const { materialTypes = [] } = this.state
+    const { materialTypes } = this.state
 
-    const options = materialTypes.map(materialType => {
-      return {
-        label: materialType.code,
-        value: materialType.code
-      }
-    })
-
-    return (
-      <Collapse
-        in={property.dataType === dto.DataType.MATERIAL}
-        mountOnEnter={true}
-        unmountOnExit={true}
-      >
-        <div className={classes.field}>
-          <SelectField
-            label='Material Type'
-            name='materialType'
-            mandatory={true}
-            error={property.errors.materialType}
-            disabled={property.used}
-            value={property.materialType ? property.materialType : ''}
-            options={options}
-            onChange={this.handleChange}
-            onFocus={this.handleFocus}
-          />
-        </div>
-      </Collapse>
-    )
+    if (materialTypes) {
+      const options = materialTypes.map(materialType => {
+        return {
+          label: materialType.code,
+          value: materialType.code
+        }
+      })
+      return (
+        <Collapse in={property.dataType === dto.DataType.MATERIAL}>
+          <div className={classes.field}>
+            <SelectField
+              label='Material Type'
+              name='materialType'
+              mandatory={true}
+              error={property.errors.materialType}
+              disabled={property.used}
+              value={property.materialType ? property.materialType : ''}
+              options={options}
+              onChange={this.handleChange}
+              onFocus={this.handleFocus}
+            />
+          </div>
+        </Collapse>
+      )
+    } else {
+      return null
+    }
   }
 
   renderMandatory(property) {
