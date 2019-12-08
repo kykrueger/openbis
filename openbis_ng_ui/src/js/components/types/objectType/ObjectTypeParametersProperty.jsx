@@ -4,7 +4,6 @@ import Typography from '@material-ui/core/Typography'
 import CheckboxField from '../../common/form/CheckboxField.jsx'
 import TextField from '../../common/form/TextField.jsx'
 import SelectField from '../../common/form/SelectField.jsx'
-import Collapse from '@material-ui/core/Collapse'
 import WarningIcon from '@material-ui/icons/Warning'
 import { facade, dto } from '../../../services/openbis.js'
 import logger from '../../../common/logger.js'
@@ -282,23 +281,23 @@ class ObjectTypeParametersProperty extends React.PureComponent {
   }
 
   renderVocabulary(property) {
-    const { classes } = this.props
-    const { vocabularies } = this.state
+    if (property.dataType === dto.DataType.CONTROLLEDVOCABULARY) {
+      const { classes } = this.props
+      const { vocabularies } = this.state
 
-    let options = []
+      let options = []
 
-    if (vocabularies) {
-      options = vocabularies.map(vocabulary => {
-        return {
-          label: vocabulary.code,
-          value: vocabulary.code
-        }
-      })
-      options.unshift({})
-    }
+      if (vocabularies) {
+        options = vocabularies.map(vocabulary => {
+          return {
+            label: vocabulary.code,
+            value: vocabulary.code
+          }
+        })
+        options.unshift({})
+      }
 
-    return (
-      <Collapse in={property.dataType === dto.DataType.CONTROLLEDVOCABULARY}>
+      return (
         <div className={classes.field}>
           <SelectField
             reference={this.references.vocabulary}
@@ -314,28 +313,30 @@ class ObjectTypeParametersProperty extends React.PureComponent {
             onBlur={this.handleBlur}
           />
         </div>
-      </Collapse>
-    )
+      )
+    } else {
+      return null
+    }
   }
 
   renderMaterialType(property) {
-    const { classes } = this.props
-    const { materialTypes } = this.state
+    if (property.dataType === dto.DataType.MATERIAL) {
+      const { classes } = this.props
+      const { materialTypes } = this.state
 
-    let options = []
+      let options = []
 
-    if (materialTypes) {
-      options = materialTypes.map(materialType => {
-        return {
-          label: materialType.code,
-          value: materialType.code
-        }
-      })
-      options.unshift({})
-    }
+      if (materialTypes) {
+        options = materialTypes.map(materialType => {
+          return {
+            label: materialType.code,
+            value: materialType.code
+          }
+        })
+        options.unshift({})
+      }
 
-    return (
-      <Collapse in={property.dataType === dto.DataType.MATERIAL}>
+      return (
         <div className={classes.field}>
           <SelectField
             reference={this.references.materialType}
@@ -351,14 +352,16 @@ class ObjectTypeParametersProperty extends React.PureComponent {
             onBlur={this.handleBlur}
           />
         </div>
-      </Collapse>
-    )
+      )
+    } else {
+      return null
+    }
   }
 
   renderSchema(property) {
-    const { classes } = this.props
-    return (
-      <Collapse in={property.dataType === dto.DataType.XML}>
+    if (property.dataType === dto.DataType.XML) {
+      const { classes } = this.props
+      return (
         <div className={classes.field}>
           <TextField
             reference={this.references.schema}
@@ -372,14 +375,16 @@ class ObjectTypeParametersProperty extends React.PureComponent {
             onBlur={this.handleBlur}
           />
         </div>
-      </Collapse>
-    )
+      )
+    } else {
+      return null
+    }
   }
 
   renderTransformation(property) {
-    const { classes } = this.props
-    return (
-      <Collapse in={property.dataType === dto.DataType.XML}>
+    if (property.dataType === dto.DataType.XML) {
+      const { classes } = this.props
+      return (
         <div className={classes.field}>
           <TextField
             reference={this.references.transformation}
@@ -393,8 +398,10 @@ class ObjectTypeParametersProperty extends React.PureComponent {
             onBlur={this.handleBlur}
           />
         </div>
-      </Collapse>
-    )
+      )
+    } else {
+      return null
+    }
   }
 
   renderMandatory(property) {
@@ -420,12 +427,8 @@ class ObjectTypeParametersProperty extends React.PureComponent {
     const wasMandatory = property.original ? property.original.mandatory : false
     const isMandatory = property.mandatory
 
-    return (
-      <Collapse
-        in={type.used && !wasMandatory && isMandatory}
-        mountOnEnter={true}
-        unmountOnExit={true}
-      >
+    if (type.used && !wasMandatory && isMandatory) {
+      return (
         <div className={classes.field}>
           <TextField
             reference={this.references.initialValueForExistingEntities}
@@ -439,8 +442,10 @@ class ObjectTypeParametersProperty extends React.PureComponent {
             onBlur={this.handleBlur}
           />
         </div>
-      </Collapse>
-    )
+      )
+    } else {
+      return null
+    }
   }
 
   renderVisible(property) {
