@@ -203,15 +203,24 @@ class ObjectTypePreviewProperty extends React.PureComponent {
   renderProperty() {
     const { dataType } = this.props.property
 
-    if (dataType === 'VARCHAR' || dataType === 'MULTILINE_VARCHAR') {
+    if (
+      dataType === dto.DataType.VARCHAR ||
+      dataType === dto.DataType.MULTILINE_VARCHAR ||
+      dataType === dto.DataType.HYPERLINK ||
+      dataType === dto.DataType.TIMESTAMP ||
+      dataType === dto.DataType.XML
+    ) {
       return this.renderVarcharProperty()
-    } else if (dataType === 'REAL' || dataType === 'INTEGER') {
+    } else if (
+      dataType === dto.DataType.REAL ||
+      dataType === dto.DataType.INTEGER
+    ) {
       return this.renderNumberProperty()
-    } else if (dataType === 'BOOLEAN') {
+    } else if (dataType === dto.DataType.BOOLEAN) {
       return this.renderBooleanProperty()
-    } else if (dataType === 'CONTROLLEDVOCABULARY') {
+    } else if (dataType === dto.DataType.CONTROLLEDVOCABULARY) {
       return this.renderVocabularyProperty()
-    } else if (dataType === 'MATERIAL') {
+    } else if (dataType === dto.DataType.MATERIAL) {
       return this.renderMaterialProperty()
     } else {
       return <span>Data type not supported yet</span>
@@ -228,6 +237,7 @@ class ObjectTypePreviewProperty extends React.PureComponent {
         description={this.getDescription()}
         value={values[property.id]}
         mandatory={this.getMandatory()}
+        multiline={this.getMultiline()}
         metadata={this.getMetadata()}
         error={this.getError()}
         styles={this.getStyles()}
@@ -357,6 +367,13 @@ class ObjectTypePreviewProperty extends React.PureComponent {
 
   getMandatory() {
     return this.props.property.mandatory
+  }
+
+  getMultiline() {
+    return (
+      this.props.property.dataType === dto.DataType.MULTILINE_VARCHAR ||
+      this.props.property.dataType === dto.DataType.XML
+    )
   }
 
   getMetadata() {

@@ -29,6 +29,7 @@ class TextFormField extends React.PureComponent {
       mandatory,
       disabled,
       error,
+      multiline,
       metadata,
       startAdornment,
       endAdornment,
@@ -80,6 +81,7 @@ class TextFormField extends React.PureComponent {
           value={value || ''}
           error={!!error}
           disabled={disabled}
+          multiline={multiline}
           onChange={onChange}
           onFocus={onFocus}
           onBlur={onBlur}

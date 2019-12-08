@@ -40,6 +40,8 @@ class ObjectTypeParametersProperty extends React.PureComponent {
       dataType: React.createRef(),
       vocabulary: React.createRef(),
       materialType: React.createRef(),
+      schema: React.createRef(),
+      transformation: React.createRef(),
       initialValueForExistingEntities: React.createRef(),
       mandatory: React.createRef(),
       showInEditView: React.createRef()
@@ -165,6 +167,8 @@ class ObjectTypeParametersProperty extends React.PureComponent {
         {this.renderDataType(property)}
         {this.renderVocabulary(property)}
         {this.renderMaterialType(property)}
+        {this.renderSchema(property)}
+        {this.renderTransformation(property)}
         {this.renderLabel(property)}
         {this.renderDescription(property)}
         {this.renderVisible(property)}
@@ -342,6 +346,48 @@ class ObjectTypeParametersProperty extends React.PureComponent {
             disabled={property.used}
             value={property.materialType}
             options={options}
+            onChange={this.handleChange}
+            onFocus={this.handleFocus}
+            onBlur={this.handleBlur}
+          />
+        </div>
+      </Collapse>
+    )
+  }
+
+  renderSchema(property) {
+    const { classes } = this.props
+    return (
+      <Collapse in={property.dataType === dto.DataType.XML}>
+        <div className={classes.field}>
+          <TextField
+            reference={this.references.schema}
+            label='XML Schema'
+            name='schema'
+            error={property.errors.schema}
+            value={property.schema}
+            multiline={true}
+            onChange={this.handleChange}
+            onFocus={this.handleFocus}
+            onBlur={this.handleBlur}
+          />
+        </div>
+      </Collapse>
+    )
+  }
+
+  renderTransformation(property) {
+    const { classes } = this.props
+    return (
+      <Collapse in={property.dataType === dto.DataType.XML}>
+        <div className={classes.field}>
+          <TextField
+            reference={this.references.transformation}
+            label='XSLT Script'
+            name='transformation'
+            error={property.errors.transformation}
+            value={property.transformation}
+            multiline={true}
             onChange={this.handleChange}
             onFocus={this.handleFocus}
             onBlur={this.handleBlur}

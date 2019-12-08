@@ -64,6 +64,8 @@ export default class ObjectTypeHandlerLoad {
           materialType: assignment.propertyType.materialType
             ? assignment.propertyType.materialType.code
             : null,
+          schema: assignment.propertyType.schema,
+          transformation: assignment.propertyType.transformation,
           mandatory: assignment.mandatory,
           showInEditView: assignment.showInEditView,
           showRawValueInForms: assignment.showRawValueInForms,

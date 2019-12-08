@@ -151,6 +151,8 @@ export default class ObjectTypeHandlerSave {
       creation.setLabel(property.label)
       creation.setDescription(property.description)
       creation.setDataType(property.dataType)
+      creation.setSchema(property.schema)
+      creation.setTransformation(property.transformation)
 
       if (
         property.dataType === dto.DataType.CONTROLLEDVOCABULARY &&
@@ -179,6 +181,8 @@ export default class ObjectTypeHandlerSave {
       }
       update.setLabel(property.label)
       update.setDescription(property.description)
+      update.setSchema(property.schema)
+      update.setTransformation(property.transformation)
       operations.push(new dto.UpdatePropertyTypesOperation([update]))
     })
 
