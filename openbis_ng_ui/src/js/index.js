@@ -13,7 +13,7 @@ const theme = createMuiTheme({
   },
   palette: {
     grey: {
-      main: '#5d5d5d'
+      main: '#757575'
     },
     primary: {
       main: indigo[700]
