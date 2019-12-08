@@ -57,7 +57,7 @@ export default class ObjectTypeHandlerLoad {
           label: assignment.propertyType.label,
           description: assignment.propertyType.description,
           dataType: assignment.propertyType.dataType,
-          pluginId: assignment.plugin ? assignment.plugin.name : null,
+          plugin: assignment.plugin ? assignment.plugin.name : null,
           vocabulary: assignment.propertyType.vocabulary
             ? assignment.propertyType.vocabulary.code
             : null,

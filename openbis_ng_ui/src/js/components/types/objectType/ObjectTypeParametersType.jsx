@@ -176,11 +176,11 @@ class ObjectTypeParametersType extends React.PureComponent {
 
   renderValidationPlugin(type) {
     const { classes } = this.props
-    const { validationPlugins } = this.state
+    const { validationPlugins = [] } = this.state
 
     let options = []
 
-    if (validationPlugins) {
+    if (validationPlugins.length > 0) {
       options = validationPlugins.map(validationPlugin => {
         return {
           label: validationPlugin.name,

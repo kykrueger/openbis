@@ -89,10 +89,12 @@ export default class ObjectTypeHandlerSave {
     function isUpdatePossible(type, property) {
       const typeVocabulary = type.vocabulary ? type.vocabulary.code : null
       const typeMaterialType = type.materialType ? type.materialType.code : null
+      const originalPlugin = property.original ? property.original.plugin : null
       return (
         type.dataType === property.dataType &&
         typeVocabulary === property.vocabulary &&
-        typeMaterialType === property.materialType
+        typeMaterialType === property.materialType &&
+        originalPlugin === property.plugin
       )
     }
 
@@ -228,8 +230,8 @@ export default class ObjectTypeHandlerSave {
         )
       }
 
-      if (property.pluginId) {
-        updateProperties.setPluginId(new dto.PluginPermId(property.pluginId))
+      if (property.plugin) {
+        updateProperty.setPluginId(new dto.PluginPermId(property.plugin))
       }
 
       return updateProperty

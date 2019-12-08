@@ -43,6 +43,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
       transformation: React.createRef(),
       initialValueForExistingEntities: React.createRef(),
       mandatory: React.createRef(),
+      plugin: React.createRef(),
       showInEditView: React.createRef()
     }
     this.handleChange = this.handleChange.bind(this)
@@ -85,7 +86,21 @@ class ObjectTypeParametersProperty extends React.PureComponent {
       } else if (dataType === dto.DataType.MATERIAL) {
         this.loadMaterialTypes()
       }
+
+      this.loadDynamicPlugins()
     }
+  }
+
+  loadDynamicPlugins() {
+    let criteria = new dto.PluginSearchCriteria()
+    criteria.withPluginType().thatEquals(dto.PluginType.DYNAMIC_PROPERTY)
+    let fo = new dto.PluginFetchOptions()
+
+    return facade.searchPlugins(criteria, fo).then(result => {
+      this.setState(() => ({
+        dynamicPlugins: result.objects
+      }))
+    })
   }
 
   loadVocabularies() {
@@ -170,6 +185,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
         {this.renderTransformation(property)}
         {this.renderLabel(property)}
         {this.renderDescription(property)}
+        {this.renderDynamicPlugin(property)}
         {this.renderVisible(property)}
         {this.renderMandatory(property)}
         {this.renderInitialValue(property)}
@@ -283,11 +299,11 @@ class ObjectTypeParametersProperty extends React.PureComponent {
   renderVocabulary(property) {
     if (property.dataType === dto.DataType.CONTROLLEDVOCABULARY) {
       const { classes } = this.props
-      const { vocabularies } = this.state
+      const { vocabularies = [] } = this.state
 
       let options = []
 
-      if (vocabularies) {
+      if (vocabularies.length > 0) {
         options = vocabularies.map(vocabulary => {
           return {
             label: vocabulary.code,
@@ -322,11 +338,11 @@ class ObjectTypeParametersProperty extends React.PureComponent {
   renderMaterialType(property) {
     if (property.dataType === dto.DataType.MATERIAL) {
       const { classes } = this.props
-      const { materialTypes } = this.state
+      const { materialTypes = [] } = this.state
 
       let options = []
 
-      if (materialTypes) {
+      if (materialTypes.length > 0) {
         options = materialTypes.map(materialType => {
           return {
             label: materialType.code,
@@ -402,6 +418,39 @@ class ObjectTypeParametersProperty extends React.PureComponent {
     } else {
       return null
     }
+  }
+
+  renderDynamicPlugin(property) {
+    const { classes } = this.props
+    const { dynamicPlugins = [] } = this.state
+
+    let options = []
+
+    if (dynamicPlugins.length > 0) {
+      options = dynamicPlugins.map(dynamicPlugin => {
+        return {
+          label: dynamicPlugin.name,
+          value: dynamicPlugin.name
+        }
+      })
+      options.unshift({})
+    }
+
+    return (
+      <div className={classes.field}>
+        <SelectField
+          reference={this.references.plugin}
+          label='Dynamic Plugin'
+          name='plugin'
+          error={property.errors.plugin}
+          value={property.plugin}
+          options={options}
+          onChange={this.handleChange}
+          onFocus={this.handleFocus}
+          onBlur={this.handleBlur}
+        />
+      </div>
+    )
   }
 
   renderMandatory(property) {
