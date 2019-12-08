@@ -1,3 +1,4 @@
+import _ from 'lodash'
 import { dto } from '../../../services/openbis.js'
 
 export default class ObjectTypeHandlerSave {
@@ -14,6 +15,16 @@ export default class ObjectTypeHandlerSave {
     this.validateHandler = validateHandler
   }
 
+  prepareValue(value) {
+    if (value) {
+      if (_.isString(value)) {
+        const trimmedValue = value.trim()
+        return trimmedValue.length > 0 ? trimmedValue : null
+      }
+    }
+    return value
+  }
+
   prepareType(type) {
     let code = type.code
 
@@ -21,10 +32,15 @@ export default class ObjectTypeHandlerSave {
       code = code.toUpperCase()
     }
 
-    return {
-      ...type,
-      code
-    }
+    const newType = _.mapValues(
+      {
+        ...type,
+        code
+      },
+      this.prepareValue
+    )
+
+    return newType
   }
 
   prepareProperties(type, properties, sections) {
@@ -49,11 +65,16 @@ export default class ObjectTypeHandlerSave {
           }
         }
 
-        results.push({
-          ...property,
-          code,
-          section: section.name
-        })
+        const newProperty = _.mapValues(
+          {
+            ...property,
+            code,
+            section: section.name
+          },
+          this.prepareValue
+        )
+
+        results.push(newProperty)
       })
     })
 
