@@ -2,8 +2,7 @@ import _ from 'lodash'
 import React from 'react'
 import { DragDropContext, Droppable } from 'react-beautiful-dnd'
 import { withStyles } from '@material-ui/core/styles'
-import Typography from '@material-ui/core/Typography'
-import ObjectTypePreviewCode from './ObjectTypePreviewCode.jsx'
+import ObjectTypePreviewHeader from './ObjectTypePreviewHeader.jsx'
 import ObjectTypePreviewProperty from './ObjectTypePreviewProperty.jsx'
 import ObjectTypePreviewSection from './ObjectTypePreviewSection.jsx'
 import logger from '../../../common/logger.js'
@@ -13,9 +12,6 @@ const styles = theme => ({
     flex: '1 1 auto',
     display: 'flex',
     padding: `${theme.spacing(2)}px ${theme.spacing(4)}px`
-  },
-  header: {
-    marginBottom: theme.spacing(2)
   },
   form: {},
   droppable: {
@@ -79,10 +75,7 @@ class ObjectTypePreview extends React.PureComponent {
     return (
       <div className={classes.container} onClick={this.handleClick}>
         <div className={classes.form}>
-          <Typography variant='h6' className={classes.header}>
-            Form Preview
-          </Typography>
-          <ObjectTypePreviewCode type={type} />
+          <ObjectTypePreviewHeader type={type} />
           <DragDropContext
             onDragStart={this.handleDragStart}
             onDragEnd={this.handleDragEnd}
