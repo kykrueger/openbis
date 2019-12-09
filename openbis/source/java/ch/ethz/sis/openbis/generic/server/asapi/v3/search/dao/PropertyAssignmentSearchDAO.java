@@ -34,7 +34,8 @@ public class PropertyAssignmentSearchDAO implements IPropertyAssignmentSearchDAO
                 + SP + FROM + SP + SEMANTIC_ANNOTATIONS_TABLE + NL
                 + SP + WHERE + SP + SAMPLE_TYPE_PROPERTY_TYPE_COLUMN + SP + IS_NOT_NULL + NL
                 + RP + SP + AND + SP + PROPERTY_TYPE_COLUMN + SP + IN + SP + LP
-                + SELECT + SP + UNNEST + LP + QU + RP + RP;
+                + SELECT + SP + UNNEST + LP + QU + RP + RP + NL
+                + AND + SP + PROPERTY_TYPE_COLUMN + SP + IS_NOT_NULL;
 
         final List<Object> args = new ArrayList<>(1);
         args.add(semanticAnnotationsPropertyIds.toArray(new Long[0]));
