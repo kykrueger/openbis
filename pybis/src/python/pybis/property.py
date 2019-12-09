@@ -26,6 +26,8 @@ class PropertyHolder():
 
     def _all_props(self):
         props = {}
+        if not getattr(self, '_type'):
+            return props
         for code in self._type.codes():
             props[code] = getattr(self, code)
         return props
