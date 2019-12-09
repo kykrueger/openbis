@@ -16,10 +16,6 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractStringValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.IdentifierSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringFieldSearchCriteria;
@@ -27,21 +23,16 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils;
 
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator.MAIN_TABLE_ALIAS;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.FROM;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.IN;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.LP;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.PERIOD;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.RP;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SELECT;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SP;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.WHERE;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.*;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils.appendStringComparatorOp;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils.buildFullIdentifierConcatenationString;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.PROJECTS_TABLE;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SAMPLES_ALL_TABLE;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SPACES_TABLE;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.*;
 
 public class IdentifierSearchConditionTranslator implements IConditionTranslator<IdentifierSearchCriteria>
 {
@@ -69,7 +60,8 @@ public class IdentifierSearchConditionTranslator implements IConditionTranslator
     {
         final AbstractStringValue fieldValue = criterion.getFieldValue();
         final String entitiesTable = tableMapper.getEntitiesTable();
-        final String spacesTableAlias = aliases.get(prefix + SPACES_TABLE).getSubTableAlias();
+        final String spacesTableAlias = entitiesTable.equals(SAMPLES_ALL_TABLE)
+                ? aliases.get(prefix + SPACES_TABLE).getSubTableAlias() : null;
         final String projectsTableAlias = aliases.get(prefix + PROJECTS_TABLE).getSubTableAlias();
         final String samplesTableAlias = entitiesTable.equals(SAMPLES_ALL_TABLE)
                 ? aliases.get(prefix + entitiesTable).getSubTableAlias() : null;

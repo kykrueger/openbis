@@ -16,76 +16,25 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils;
 
-import java.text.ParseException;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.EntityWithPropertiesSortOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractDateObjectValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractDateValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractNumberValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractStringValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AnyStringValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateEarlierThanOrEqualToValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateEqualToValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateLaterThanOrEqualToValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateObjectEarlierThanOrEqualToValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateObjectEqualToValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateObjectLaterThanOrEqualToValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.IDate;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.NumberEqualToValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.NumberGreaterThanOrEqualToValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.NumberGreaterThanValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.NumberLessThanOrEqualToValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.NumberLessThanValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringContainsValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringEndsWithValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringEqualToValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringStartsWithValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.*;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.IAliasFactory;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
 import ch.systemsx.cisd.openbis.generic.shared.dto.TableNames;
 
+import java.text.ParseException;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator.DATE_FORMAT;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator.MAIN_TABLE_ALIAS;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.AND;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.ASTERISK;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.BACKSLASH;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.BARS;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.COALESCE;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.COMMA;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.EQ;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.GE;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.GT;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.ILIKE;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.IS_NOT_NULL;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.JOIN;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.LE;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.LP;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.LT;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.NL;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.ON;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.PERCENT;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.PERIOD;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.QU;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.RP;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SP;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SQ;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.UNDERSCORE;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.CODE_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PART_OF_SAMPLE_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PROJECT_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.RELATIONSHIP_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.SPACE_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.PROJECTS_TABLE;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.RELATIONSHIP_TYPES_TABLE;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SAMPLES_ALL_TABLE;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SPACES_TABLE;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.*;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.*;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.*;
 
 public class TranslatorUtils
 {
@@ -482,8 +431,14 @@ public class TranslatorUtils
         final String colon = ":";
         sqlBuilder.append(SQ).append(slash).append(SQ).append(SP).append(BARS);
 
-        appendCoalesce(sqlBuilder, spacesTableAlias, slash);
-        appendCoalesce(sqlBuilder, projectsTableAlias, slash);
+        if (spacesTableAlias != null)
+        {
+            appendCoalesce(sqlBuilder, spacesTableAlias, slash);
+        }
+        if (projectsTableAlias != null)
+        {
+            appendCoalesce(sqlBuilder, projectsTableAlias, slash);
+        }
         if (samplesTableAlias != null)
         {
             appendCoalesce(sqlBuilder, samplesTableAlias, colon);
@@ -524,15 +479,19 @@ public class TranslatorUtils
     {
         final String entitiesTable = tableMapper.getEntitiesTable();
 
-        final JoinInformation joinInformation1 = new JoinInformation();
-        joinInformation1.setJoinType(JoinType.LEFT);
-        joinInformation1.setMainTable(entitiesTable);
-        joinInformation1.setMainTableAlias(MAIN_TABLE_ALIAS);
-        joinInformation1.setMainTableIdField(SPACE_COLUMN);
-        joinInformation1.setSubTable(SPACES_TABLE);
-        joinInformation1.setSubTableAlias(aliasFactory.createAlias());
-        joinInformation1.setSubTableIdField(ID_COLUMN);
-        result.put(prefix + SPACES_TABLE, joinInformation1);
+        if (entitiesTable.equals(SAMPLES_ALL_TABLE))
+        {
+            // Only samples can have spaces.
+            final JoinInformation joinInformation1 = new JoinInformation();
+            joinInformation1.setJoinType(JoinType.LEFT);
+            joinInformation1.setMainTable(entitiesTable);
+            joinInformation1.setMainTableAlias(MAIN_TABLE_ALIAS);
+            joinInformation1.setMainTableIdField(SPACE_COLUMN);
+            joinInformation1.setSubTable(SPACES_TABLE);
+            joinInformation1.setSubTableAlias(aliasFactory.createAlias());
+            joinInformation1.setSubTableIdField(ID_COLUMN);
+            result.put(prefix + SPACES_TABLE, joinInformation1);
+        }
 
         final JoinInformation joinInformation2 = new JoinInformation();
         joinInformation2.setJoinType(JoinType.LEFT);
