@@ -1,3 +1,7 @@
+## Changes with pybis-1.10.5
+
+* bugfix: creating projects
+
 ## Changes with pybis-1.10.4
 
 * better error messages when downloading files from datastore server
