@@ -20,16 +20,18 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.search.PropertyAssignmentSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.IPropertyAssignmentSearchDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.SAMPLE_TYPE_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PROPERTY_TYPE_COLUMN;
 
 /**
  * Manages detailed search with complex property assignment search criteria.
@@ -40,10 +42,13 @@ public class PropertyAssignmentSearchManager extends
         AbstractSearchManager<PropertyAssignmentSearchCriteria, PropertyAssignment, Long>
 {
 
+    private IPropertyAssignmentSearchDAO assignmentsSearchDAO;
+
     public PropertyAssignmentSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
-            final IID2PETranslator idsTranslator)
+            final IID2PETranslator idsTranslator, final IPropertyAssignmentSearchDAO assignmentsSearchDAO)
     {
         super(searchDAO, authProvider, idsTranslator);
+        this.assignmentsSearchDAO = assignmentsSearchDAO;
     }
 
     @Override
@@ -64,15 +69,27 @@ public class PropertyAssignmentSearchManager extends
             final SortOptions<PropertyAssignment> sortOptions,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
-        final Set<Long> mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId, criteria, getTableMapper(),
-                SAMPLE_TYPE_COLUMN);
+        final Set<Long> mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId,
+                criteria, getTableMapper(), idsColumnName);
 
-        // If we have results, we use them
-        // If we don't have results and criteria are not empty, there are no results.
-        final Set<Long> resultBeforeFiltering =
-                containsValues(mainCriteriaIntermediateResults) ? mainCriteriaIntermediateResults : Collections.emptySet();
+        if (parentCriteria.getClass() == SampleTypeSearchCriteria.class)
+        {
+            final DummyCompositeSearchCriterion compositeSearchCriterion = new DummyCompositeSearchCriterion(
+                    criteria.getCriteria(), criteria.getOperator());
 
-        return filterIDsByUserRights(userId, resultBeforeFiltering);
+            final Set<Long> propertyTypesIds = getSearchDAO().queryDBWithNonRecursiveCriteria(userId,
+                    compositeSearchCriterion, TableMapper.SEMANTIC_ANNOTATION, PROPERTY_TYPE_COLUMN);
+
+            final Set<Long> assignmentIDsWithoutAnnotations = assignmentsSearchDAO.findAssignmentsWithoutAnnotations(
+                    propertyTypesIds, idsColumnName);
+
+            final Set<Long> finalResults = new HashSet<>(mainCriteriaIntermediateResults);
+            finalResults.addAll(assignmentIDsWithoutAnnotations);
+            return finalResults;
+        } else
+        {
+            return mainCriteriaIntermediateResults;
+        }
     }
 
 }

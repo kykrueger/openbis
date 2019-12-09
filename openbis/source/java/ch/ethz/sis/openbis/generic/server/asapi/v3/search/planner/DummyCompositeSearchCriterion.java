@@ -16,11 +16,12 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
-import java.util.Collection;
-
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchCriteriaToStringBuilder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
+
+import java.util.Collection;
 
 /**
  * Composite search criterion which is not linked to any search criteria.
@@ -36,6 +37,14 @@ class DummyCompositeSearchCriterion extends AbstractCompositeSearchCriteria
     {
         this.criteria = criteria;
         this.operator = operator;
+    }
+
+    @Override
+    protected SearchCriteriaToStringBuilder createBuilder()
+    {
+        SearchCriteriaToStringBuilder builder = super.createBuilder();
+        builder.setName("-");
+        return builder;
     }
 
 }
