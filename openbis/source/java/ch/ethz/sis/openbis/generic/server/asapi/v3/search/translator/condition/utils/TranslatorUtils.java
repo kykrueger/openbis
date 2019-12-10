@@ -479,7 +479,8 @@ public class TranslatorUtils
     {
         final String entitiesTable = tableMapper.getEntitiesTable();
 
-        if (entitiesTable.equals(SAMPLES_ALL_TABLE))
+        final String samplesTableName = TableMapper.SAMPLE.getEntitiesTable();
+        if (entitiesTable.equals(samplesTableName))
         {
             // Only samples can have spaces.
             final JoinInformation joinInformation1 = new JoinInformation();
@@ -503,7 +504,7 @@ public class TranslatorUtils
         joinInformation2.setSubTableIdField(ID_COLUMN);
         result.put(prefix + PROJECTS_TABLE, joinInformation2);
 
-        if (entitiesTable.equals(SAMPLES_ALL_TABLE))
+        if (entitiesTable.equals(samplesTableName))
         {
             // Only samples can have containers.
             final JoinInformation joinInformation3 = new JoinInformation();

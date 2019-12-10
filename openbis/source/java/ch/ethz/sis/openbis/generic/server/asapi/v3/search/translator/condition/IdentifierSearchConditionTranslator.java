@@ -32,7 +32,8 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLL
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils.appendStringComparatorOp;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils.buildFullIdentifierConcatenationString;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.*;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.PROJECTS_TABLE;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SPACES_TABLE;
 
 public class IdentifierSearchConditionTranslator implements IConditionTranslator<IdentifierSearchCriteria>
 {
@@ -60,10 +61,11 @@ public class IdentifierSearchConditionTranslator implements IConditionTranslator
     {
         final AbstractStringValue fieldValue = criterion.getFieldValue();
         final String entitiesTable = tableMapper.getEntitiesTable();
-        final String spacesTableAlias = entitiesTable.equals(SAMPLES_ALL_TABLE)
+        final String samplesTableName = TableMapper.SAMPLE.getEntitiesTable();
+        final String spacesTableAlias = entitiesTable.equals(samplesTableName)
                 ? aliases.get(prefix + SPACES_TABLE).getSubTableAlias() : null;
         final String projectsTableAlias = aliases.get(prefix + PROJECTS_TABLE).getSubTableAlias();
-        final String samplesTableAlias = entitiesTable.equals(SAMPLES_ALL_TABLE)
+        final String samplesTableAlias = entitiesTable.equals(samplesTableName)
                 ? aliases.get(prefix + entitiesTable).getSubTableAlias() : null;
 
         buildFullIdentifierConcatenationString(sqlBuilder, spacesTableAlias, projectsTableAlias, samplesTableAlias);

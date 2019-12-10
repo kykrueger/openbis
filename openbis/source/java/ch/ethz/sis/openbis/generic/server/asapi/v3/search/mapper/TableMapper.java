@@ -16,87 +16,13 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes;
 
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ACCESS_TIMESTAMP;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.CHILD_SAMPLE_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.CODE_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.DATA_CHILD_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.DATA_ID_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.DATA_PARENT_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.DATA_PRODUCER_CODE_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.DATA_SET_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.DATA_SET_KIND_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.DATA_SET_TYPE_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.DATA_SET_TYPE_PROPERTY_TYPE_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.DATA_STORE_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.DATA_TYPE_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.DELETION_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.DELETION_DISALLOW;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.DESCRIPTION_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.EMAIL_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.EXPERIMENT_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.EXPERIMENT_TYPE_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.EXPERIMENT_TYPE_PROPERTY_TYPE_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.FIRST_NAME_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.GENERATED_CODE_PREFIX;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.GENERATED_FROM_DEPTH;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.IS_AUTO_GENERATED_CODE;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.IS_DERIVED;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.IS_LISTABLE;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.IS_PUBLIC;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.IS_SUBCODE_UNIQUE;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.LAST_NAME_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.MAIN_DS_PATH;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.MAIN_DS_PATTERN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.MODIFICATION_TIMESTAMP_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ORIGINAL_DELETION_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PARENT_SAMPLE_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PART_OF_DEPTH;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PART_OF_SAMPLE_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PERSON_IS_ACTIVE_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PERSON_LEADER_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PERSON_MODIFIER_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PERSON_REGISTERER_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PRODUCTION_TIMESTAMP_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PROJECT_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PROPERTY_TYPE_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.REGISTRATION_TIMESTAMP_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.SAMPLE_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.SAMPLE_TYPE_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.SAMPLE_TYPE_PROPERTY_TYPE_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.SHOW_PARENT_METADATA;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.SPACE_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.USER_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.VALIDATION_SCRIPT_ID_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.DATA_ALL_TABLE;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.DATA_SET_PROPERTIES_TABLE;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.DATA_SET_RELATIONSHIPS_ALL_TABLE;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.DATA_SET_TYPES_TABLE;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.DATA_SET_TYPE_PROPERTY_TYPE_TABLE;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.EXPERIMENTS_ALL_TABLE;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.EXPERIMENT_PROPERTIES_TABLE;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.EXPERIMENT_TYPES_TABLE;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.EXPERIMENT_TYPE_PROPERTY_TYPE_TABLE;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.METAPROJECTS_TABLE;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.PERSONS_TABLE;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.PROJECTS_TABLE;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.PROPERTY_TYPES_TABLE;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SAMPLES_ALL_TABLE;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SAMPLE_PROPERTIES_TABLE;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SAMPLE_RELATIONSHIPS_ALL_TABLE;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SAMPLE_TYPES_TABLE;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SAMPLE_TYPE_PROPERTY_TYPE_TABLE;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SEMANTIC_ANNOTATIONS_TABLE;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SPACES_TABLE;
+import java.util.*;
+
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.*;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.*;
 
 /**
  * Extension of enum {@link EntityKind} to contain extra information about tables related to the entities which can
@@ -109,23 +35,23 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SPACES_TABL
 public enum TableMapper
 {
 
-    SAMPLE(SAMPLES_ALL_TABLE, SAMPLE_TYPE_COLUMN, PROPERTY_TYPES_TABLE, DATA_TYPE_COLUMN, SAMPLE_TYPES_TABLE,
+    SAMPLE(SAMPLES_VIEW, SAMPLE_TYPE_COLUMN, PROPERTY_TYPES_TABLE, DATA_TYPE_COLUMN, SAMPLE_TYPES_TABLE,
             SAMPLE_TYPE_PROPERTY_TYPE_TABLE, SAMPLE_TYPE_COLUMN, PROPERTY_TYPE_COLUMN, SAMPLE_PROPERTIES_TABLE, SAMPLE_COLUMN,
-            SAMPLE_TYPE_PROPERTY_TYPE_COLUMN, SAMPLE_RELATIONSHIPS_ALL_TABLE, PARENT_SAMPLE_COLUMN, CHILD_SAMPLE_COLUMN, DATA_ALL_TABLE,
+            SAMPLE_TYPE_PROPERTY_TYPE_COLUMN, SAMPLE_RELATIONSHIPS_ALL_TABLE, PARENT_SAMPLE_COLUMN, CHILD_SAMPLE_COLUMN, DATA_VIEW,
             SAMPLE_COLUMN, SAMPLE_COLUMN),
 
     SAMPLE_TYPE(SAMPLE_TYPES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null,
             null, null, null, null),
 
-    EXPERIMENT(EXPERIMENTS_ALL_TABLE, EXPERIMENT_TYPE_COLUMN, PROPERTY_TYPES_TABLE, DATA_TYPE_COLUMN, EXPERIMENT_TYPES_TABLE,
+    EXPERIMENT(EXPERIMENTS_VIEW, EXPERIMENT_TYPE_COLUMN, PROPERTY_TYPES_TABLE, DATA_TYPE_COLUMN, EXPERIMENT_TYPES_TABLE,
             EXPERIMENT_TYPE_PROPERTY_TYPE_TABLE, EXPERIMENT_TYPE_COLUMN, PROPERTY_TYPE_COLUMN, EXPERIMENT_PROPERTIES_TABLE, EXPERIMENT_COLUMN,
-            EXPERIMENT_TYPE_PROPERTY_TYPE_COLUMN, null, null, null, DATA_ALL_TABLE, EXPERIMENT_COLUMN, EXPERIMENT_COLUMN),
+            EXPERIMENT_TYPE_PROPERTY_TYPE_COLUMN, null, null, null, DATA_VIEW, EXPERIMENT_COLUMN, EXPERIMENT_COLUMN),
 
     EXPERIMENT_TYPE(EXPERIMENT_TYPES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
 
-    DATA_SET(DATA_ALL_TABLE, DATA_SET_TYPE_COLUMN, PROPERTY_TYPES_TABLE, DATA_TYPE_COLUMN, DATA_SET_TYPES_TABLE, DATA_SET_TYPE_PROPERTY_TYPE_TABLE,
+    DATA_SET(DATA_VIEW, DATA_SET_TYPE_COLUMN, PROPERTY_TYPES_TABLE, DATA_TYPE_COLUMN, DATA_SET_TYPES_TABLE, DATA_SET_TYPE_PROPERTY_TYPE_TABLE,
             DATA_SET_TYPE_COLUMN, PROPERTY_TYPE_COLUMN, DATA_SET_PROPERTIES_TABLE, DATA_SET_COLUMN, DATA_SET_TYPE_PROPERTY_TYPE_COLUMN,
-            DATA_SET_RELATIONSHIPS_ALL_TABLE, DATA_PARENT_COLUMN, DATA_CHILD_COLUMN, DATA_ALL_TABLE, ID_COLUMN, DATA_ID_COLUMN),
+            DATA_SET_RELATIONSHIPS_ALL_TABLE, DATA_PARENT_COLUMN, DATA_CHILD_COLUMN, DATA_VIEW, ID_COLUMN, DATA_ID_COLUMN),
 
     DATA_SET_TYPE(DATA_SET_TYPES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
 
