@@ -16,13 +16,10 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.EntityWithPropertiesSortOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.*;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.IAliasFactory;
-import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
-import ch.systemsx.cisd.openbis.generic.shared.dto.TableNames;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator.*;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.*;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.*;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.*;
 
 import java.text.ParseException;
 import java.util.LinkedHashMap;
@@ -30,11 +27,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator.DATE_FORMAT;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator.MAIN_TABLE_ALIAS;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.*;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.*;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.*;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.EntityWithPropertiesSortOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.*;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.IAliasFactory;
+import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
+import ch.systemsx.cisd.openbis.generic.shared.dto.TableNames;
 
 public class TranslatorUtils
 {
@@ -264,6 +263,30 @@ public class TranslatorUtils
         return result;
     }
 
+    public static void appendCastedTimestamp(final StringBuilder sqlBuilder, final String columnName, final IDate fieldValue)
+    {
+        sqlBuilder.append(columnName);
+        if (fieldValue instanceof AbstractDateValue)
+        {
+            // String type date value.
+            final String dateString = ((AbstractDateValue) fieldValue).getValue();
+            try
+            {
+                DATE_FORMAT.parse(dateString);
+            } catch (final ParseException e)
+            {
+                try
+                {
+                    DATE_WITHOUT_TIME_FORMAT.parse(dateString);
+                    sqlBuilder.append(DOUBLE_COLON).append(DATE);
+                } catch (final ParseException e1)
+                {
+                    throw new IllegalArgumentException("Illegal date [dateString='" + dateString + "']", e1);
+                }
+            }
+        }
+    }
+
     public static void addDateValueToArgs(final IDate fieldValue, final List<Object> args)
     {
         if (fieldValue instanceof AbstractDateValue)
@@ -273,9 +296,15 @@ public class TranslatorUtils
             try
             {
                 args.add(DATE_FORMAT.parse(dateString));
-            } catch (ParseException e)
+            } catch (final ParseException e)
             {
-                throw new IllegalArgumentException("Illegal date [dateString='" + dateString + "']", e);
+                try
+                {
+                    args.add(DATE_WITHOUT_TIME_FORMAT.parse(dateString));
+                } catch (final ParseException e1)
+                {
+                    throw new IllegalArgumentException("Illegal date [dateString='" + dateString + "']", e1);
+                }
             }
         } else
         {

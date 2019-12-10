@@ -27,6 +27,8 @@ public class SQLLexemes
 
     public static final String TIMESTAMPTZ = "timestamptz";
 
+    public static final String DATE = "date";
+
     public static final String SELECT = "SELECT";
 
     public static final String INSERT = "INSERT";

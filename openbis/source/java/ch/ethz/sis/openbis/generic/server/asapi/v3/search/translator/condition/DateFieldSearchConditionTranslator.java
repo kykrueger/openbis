@@ -16,6 +16,10 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.*;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.MODIFICATION_TIMESTAMP_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.REGISTRATION_TIMESTAMP_COLUMN;
+
 import java.util.List;
 import java.util.Map;
 
@@ -29,21 +33,6 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.u
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinType;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
-
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.AND;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.CASE;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.DOUBLE_COLON;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.ELSE;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.END;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.EQ;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.PERIOD;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.QU;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SP;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.THEN;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.TIMESTAMPTZ;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.WHEN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.MODIFICATION_TIMESTAMP_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.REGISTRATION_TIMESTAMP_COLUMN;
 
 public class DateFieldSearchConditionTranslator implements IConditionTranslator<DateFieldSearchCriteria>
 {
@@ -78,19 +67,19 @@ public class DateFieldSearchConditionTranslator implements IConditionTranslator<
         switch (criterion.getFieldType()) {
             case ATTRIBUTE:
             {
-                final Object fieldName = criterion.getFieldName();
+                final String fieldName = criterion.getFieldName();
                 final IDate fieldValue = criterion.getFieldValue();
 
                 sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD);
                 if (criterion instanceof RegistrationDateSearchCriteria)
                 {
-                    sqlBuilder.append(REGISTRATION_TIMESTAMP_COLUMN);
+                    TranslatorUtils.appendCastedTimestamp(sqlBuilder, REGISTRATION_TIMESTAMP_COLUMN, fieldValue);
                 } else if (criterion instanceof ModificationDateSearchCriteria)
                 {
-                    sqlBuilder.append(MODIFICATION_TIMESTAMP_COLUMN);
+                    TranslatorUtils.appendCastedTimestamp(sqlBuilder, MODIFICATION_TIMESTAMP_COLUMN, fieldValue);
                 } else
                 {
-                    sqlBuilder.append(fieldName);
+                    TranslatorUtils.appendCastedTimestamp(sqlBuilder, fieldName, fieldValue);
                 }
                 sqlBuilder.append(SP);
 
