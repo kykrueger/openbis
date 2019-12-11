@@ -692,7 +692,8 @@ var FormUtil = new function() {
 		if(text) {
 			text = text.replace(/(?:\r\n|\r|\n)/g, '\n'); //Normalise carriage returns
 		}
-		text = html.sanitize(text);
+		//text = html.sanitize(text);
+		text = DOMPurify.sanitize(text);
 		$component.html(hyperlink ? this.asHyperlink(text) : text);
 		
 		if(id) {
@@ -934,7 +935,8 @@ this._getTextBox = function(id, alt, isRequired) {
 				originalValue = originalValue.substring(bodyStart + 6, bodyEnd);
 			}
 			//Clean the contents
-			originalValue = html.sanitize(originalValue);
+			//originalValue = html.sanitize(originalValue);
+			originalValue = DOMPurify.sanitize(originalValue);
 		}
 		return originalValue;
 	}

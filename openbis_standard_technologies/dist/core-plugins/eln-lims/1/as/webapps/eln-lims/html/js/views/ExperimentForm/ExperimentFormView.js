@@ -42,7 +42,8 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		var $formTitle = $("<div>");
 		var nameLabel = this._experimentFormModel.experiment.properties[profile.propertyReplacingCode];
 		if(nameLabel) {
-			nameLabel = html.sanitize(nameLabel);
+			//nameLabel = html.sanitize(nameLabel);
+			nameLabel = DOMPurify.sanitize(nameLabel);
 		} else {
 			nameLabel = this._experimentFormModel.experiment.code;
 		}

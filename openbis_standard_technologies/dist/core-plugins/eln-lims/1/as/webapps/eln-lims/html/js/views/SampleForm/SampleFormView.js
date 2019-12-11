@@ -72,7 +72,8 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		var $formTitle = $("<div>");
 		var nameLabel = this._sampleFormModel.sample.properties[profile.propertyReplacingCode];
 		if(nameLabel) {
-			nameLabel = html.sanitize(nameLabel);
+			//nameLabel = html.sanitize(nameLabel);
+			nameLabel = DOMPurify.sanitize(nameLabel);
 		} else if(this._sampleFormModel.sample.sampleTypeCode === "STORAGE_POSITION") {
 			var properties = this._sampleFormModel.sample.properties;
 			var storagePropertyGroup = profile.getStoragePropertyGroup();
