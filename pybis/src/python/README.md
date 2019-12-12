@@ -546,7 +546,7 @@ ds.file_list                      # get file list as array
 ds.download()                     # simply download all files to hostname/permId/
 ds.download(
 	destination = 'my_data',       # download files to folder my_data/
-	create_subfolders = False,     # ignore the /original/DEFAULT folders from openBIS
+	create_default_folders = False,# ignore the /original/DEFAULT folders made by openBIS
 	wait_until_finished = False,   # download in background, continue immediately
 	workers = 10                   # 10 downloads parallel (default)
 )
