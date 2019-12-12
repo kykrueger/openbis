@@ -1033,6 +1033,38 @@ function ServerFacade(openbisServer) {
 	// New Advanced Search
 	//
 
+  /**
+   * Returns a String where those characters that QueryParser
+   * expects to be escaped are escaped by a preceding <code>\</code>.
+   *
+   * This is a Javascript version of the Java method found at org.apache.lucene.queryparser.classic.QueryParserBase.escape
+   */
+    this.queryParserEscape = function(s) {
+        var sb = "";
+        for (var i = 0; i < s.length; i++) {
+          var c = s.charAt(i);
+          // These characters are part of the query syntax and must be escaped
+          if (c == '\\' || c == '+' || c == '-' || c == '!' || c == '(' || c == ')' || c == ':'
+            || c == '^' || c == '[' || c == ']' || c == '\"' || c == '{' || c == '}' || c == '~'
+            || c == '*' || c == '?' || c == '|' || c == '&' || c == '/') {
+            sb = sb + '\\';
+          }
+          sb = sb + c;
+        }
+        return sb;
+    }
+
+    this.queryParserUnEscape = function(s) {
+            var sb = "";
+            for (var i = 0; i < s.length; i++) {
+              var c = s.charAt(i);
+              if (c != '\\') {
+                sb = sb + c;
+              }
+            }
+            return sb;
+    }
+
 	this.getSearchCriteriaAndFetchOptionsForDataSetSearch = function(advancedSearchCriteria, advancedFetchOptions, callback) {
 		var criteriaClass = 'as/dto/dataset/search/DataSetSearchCriteria';
 		var fetchOptionsClass = 'as/dto/dataset/fetchoptions/DataSetFetchOptions';
@@ -1087,6 +1119,9 @@ function ServerFacade(openbisServer) {
 	}
 
 	this.getSearchCriteriaAndFetchOptionsForEntitySearch = function(advancedSearchCriteria, advancedFetchOptions, callback, criteriaClass, fetchOptionsClass) {
+		var queryParserEscape = this.queryParserEscape;
+		var queryParserUnEscape = this.queryParserUnEscape;
+
 		require([criteriaClass,
 		         fetchOptionsClass,
 		         'as/dto/common/search/DateObjectEqualToValue',
@@ -1104,8 +1139,13 @@ function ServerFacade(openbisServer) {
 
 				//Setting the fetchOptions given standard settings
 				var fetchOptions = new EntityFetchOptions();
-				
-				
+
+				var escapeWildcards = false;
+
+				if(advancedFetchOptions && advancedFetchOptions.escapeWildcards) {
+				    escapeWildcards = true;
+				}
+
 				//Optional fetchOptions
 				if(!advancedFetchOptions ||
 				   (advancedFetchOptions && !(advancedFetchOptions.minTableInfo || advancedFetchOptions.only))
@@ -1304,7 +1344,17 @@ function ServerFacade(openbisServer) {
 				
 					if(!fieldValue) {
 						fieldValue = "*";
-					}
+					} else if(escapeWildcards &&
+					            (
+					            !fieldOperator ||
+					            (fieldOperator == "thatEqualsString") ||
+					            (fieldOperator == "thatContainsString") ||
+					            (fieldOperator == "thatStartsWithString") ||
+					            (fieldOperator == "thatEndsWithString")
+					            )
+					    ) {
+                        fieldValue = queryParserEscape(fieldValue);
+                    }
 				
 					var setPropertyCriteria = function(criteria, propertyName, propertyValue, comparisonOperator) {
 						if(comparisonOperator) {
@@ -1546,18 +1596,29 @@ function ServerFacade(openbisServer) {
 				var hackFixForBrokenEquals = [];
 				if(searchCriteria.criteria) {
 					for(var cIdx = 0; cIdx < searchCriteria.criteria.length; cIdx++) {
+
+                        var value = null;
+                        if(searchCriteria.criteria[cIdx].fieldValue) {
+                            value = searchCriteria.criteria[cIdx].fieldValue.value;
+                            if(escapeWildcards && value) {
+                                value = queryParserUnEscape(value);
+                                console.log(searchCriteria.criteria[cIdx].fieldValue.value + " --> " + value);
+                            }
+
+                        }
+
 						if(searchCriteria.criteria[cIdx].fieldType === "PROPERTY" && 
 								searchCriteria.criteria[cIdx].fieldValue.__proto__["@type"] === "as.dto.common.search.StringEqualToValue") {
 							hackFixForBrokenEquals.push({
 								propertyCode : searchCriteria.criteria[cIdx].fieldName,
-								value : searchCriteria.criteria[cIdx].fieldValue.value
+								value : value
 							});
 						}
 
 						if(searchCriteria.criteria[cIdx].fieldType === "ATTRIBUTE" && searchCriteria.criteria[cIdx].fieldName === "perm id" &&
                             searchCriteria.criteria[cIdx].fieldValue.__proto__["@type"] === "as.dto.common.search.StringEqualToValue") {
                         	hackFixForBrokenEquals.push({
-                        	    permId : searchCriteria.criteria[cIdx].fieldValue.value
+                        	    permId : value
                             });
                         }
 					}
@@ -2141,6 +2202,7 @@ function ServerFacade(openbisServer) {
 			advancedSearchCriteria.rules[Util.guid()] = { type : "Property", name : "PROP." + propertyTypeCode, value : propertyTypeValue, operator : "thatEqualsString" }
 		}
 		var advancedFetchOptions = {
+		    "escapeWildcards" : true,
 			"withProperties" : true,
 			"withAncestors" : isComplete,
 			"withDescendants" : isComplete,

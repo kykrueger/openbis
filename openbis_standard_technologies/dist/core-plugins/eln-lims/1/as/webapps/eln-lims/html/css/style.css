@@ -45,6 +45,10 @@ a:hover {
 
 body {
 	overflow:hidden;
+
+	/*ckeditor 5 z-index*/
+    --ck-z-default: 100;
+    --ck-z-modal: 200;
 }
 
 h1, h2, legend {
@@ -791,4 +795,14 @@ span.fancytree-custom-icon {
 
 .jexcel > thead > tr > td {
     z-index : auto !important;
+}
+
+/*ckeditor5 add border*/
+.ck-editor__editable_inline {
+    min-height: 100px;
+    border-radius: 4px !important;
+}
+
+.ck-blurred {
+    border: 1px solid #dedede !important;
 }
