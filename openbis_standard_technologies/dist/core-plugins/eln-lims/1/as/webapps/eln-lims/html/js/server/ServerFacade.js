@@ -1461,6 +1461,9 @@ function ServerFacade(openbisServer) {
 							case "PROJECT_SPACE":
 								criteria.withProject().withSpace().withCode().thatEquals(attributeValue);
 								break;
+							case "PHYSICAL_STATUS":
+								criteria.withPhysicalData().withStatus().thatEquals(attributeValue);
+								break;
 						}
 					}
 				
