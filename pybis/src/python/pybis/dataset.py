@@ -118,8 +118,8 @@ class DataSet(
             'set_parents()', 'set_children()', 'set_components()', 'set_contained()', 'set_containers()',
             'set_tags()', 'add_tags()', 'del_tags()',
             'add_attachment()', 'get_attachments()', 'download_attachments()',
-            "get_files(start_folder='/')", 'file_list',
-            'download(files=None, destination=None, wait_until_finished=True)', 
+            "get_files()", 'file_list',
+            'download()', 
             'archive()', 'unarchive()' 
         ] + super().__dir__()
 
@@ -203,6 +203,7 @@ class DataSet(
 
     set_props = set_properties
 
+
     def get_dataset_files(self, **properties):
 
 
@@ -230,14 +231,15 @@ class DataSet(
         )
 
 
-    def download(self, files=None, destination=None, wait_until_finished=True, workers=10,
+    def download(self, files=None, destination=None, create_default_folders=True, wait_until_finished=True, workers=10,
         linked_dataset_fileservice_url=None, content_copy_index=0):
-        """ download the actual files and put them by default in the following folder:
-        __current_dir__/destination/dataset_permId/
-        If no files are specified, all files of a given dataset are downloaded.
-        If no destination is specified, the hostname is chosen instead.
-        Files are usually downloaded in parallel, using 10 workers by default. If you want to wait until
-        all the files are downloaded, set the wait_until_finished option to True.
+        """ download the files of the dataSet.
+
+        files -- a single file or a list of files. If no files are specified, all files of a given dataset are downloaded.
+        destination -- if destination is specified, files are downloaded in __current_dir__/destination/permId/ If no destination is specified, the hostname is chosen instead of destination
+        create_default_folders -- by default, this download method will automatically create destination/permId/original/DEFAULT. If create_default_folders is set to False, all these folders will be ommited. Use with care and by specifying the destination folder.
+        workers -- Default: 10. Files are usually downloaded in parallel, using 10 workers by default.
+        wait_unitl_finished -- True. If you want to immediately continue and run the download in background, set this to False.
         """
 
         if files == None:
@@ -255,7 +257,7 @@ class DataSet(
             kind =self.data['type']['kind']
         
         if kind == 'PHYSICAL':
-            return self._download_physical(files, destination, wait_until_finished, workers)
+            return self._download_physical(files, destination, create_default_folders, wait_until_finished, workers)
         elif kind == 'LINK':
             if linked_dataset_fileservice_url is None:
                 raise ValueError("Can't download a LINK data set without the linked_dataset_fileservice_url parameters.")
@@ -264,9 +266,16 @@ class DataSet(
             raise ValueError("Can't download data set of kind {}.".format(kind))
 
 
-    def _download_physical(self, files, destination, wait_until_finished, workers):
+    def _download_physical(self, files, destination, create_default_folders, wait_until_finished, workers):
         """ Download for data sets of kind PHYSICAL.
         """
+
+        final_destination = ""
+        if create_default_folders:
+            final_destination = os.path.join(destination, self.permId)
+        else:
+            final_destination = destination
+
 
         base_url = self.data['dataStore']['downloadUrl'] + '/datastore_server/' + self.permId + '/'
         with DataSetDownloadQueue(workers=workers) as queue:
@@ -276,15 +285,26 @@ class DataSet(
                 file_size = file_info[0]['fileSize']
                 download_url = base_url + filename + '?sessionID=' + self.openbis.token
                 #print(download_url)
-                filename_dest = os.path.join(destination, self.permId, filename)
+                filename_dest = ""
+                if create_default_folders:
+                    # create original/ or original/DEFAULT subfolders
+                    filename_dest = os.path.join(final_destination, filename)
+                else:
+                    # ignore original/ and original/DEFAULT folders that come from openBIS
+                    if filename.startswith('original/'):
+                        filename = filename.replace('original/', '', 1)
+                    if filename.startswith('DEFAULT/'):
+                        filename = filename.replace('DEFAULT/', '', 1)
+                    filename_dest = os.path.join(final_destination, filename)
+
                 queue.put([download_url, filename, filename_dest, file_size, self.openbis.verify_certificates, 'wb'])
 
             # wait until all files have downloaded
             if wait_until_finished:
                 queue.join()
 
-            if VERBOSE: print("Files downloaded to: %s" % os.path.join(destination, self.permId))
-            return destination
+            if VERBOSE: print("Files downloaded to: {}".format(os.path.join(final_destination)))
+            return final_destination
 
 
     def _download_link(self, files, destination, wait_until_finished, workers, linked_dataset_fileservice_url, content_copy_index):
