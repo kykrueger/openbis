@@ -532,13 +532,26 @@ ds.unarchive()
 ds.attrs.all()                    # returns all attributes as a dict
 ds.props.all()                    # returns all properties as a dict
 
-ds.get_files(start_folder="/")
-ds.file_list
-ds.add_attachment()
-ds.get_attachments()
+ds.add_attachment()               # attachments usually contain meta-data
+ds.get_attachments()              # about the dataSet, not the data itself.
 ds.download_attachments()
-ds.download(destination='/tmp', wait_until_finished=False)
 ```
+
+### download dataSets
+
+```
+ds.get_files(start_folder="/")    # get file list as pandas table
+ds.file_list                      # get file list as array
+
+ds.download()                     # simply download all files to hostname/permId/
+ds.download(
+	destination = 'my_data',       # download files to folder my_data/
+	create_subfolders = False,     # ignore the /original/DEFAULT folders from openBIS
+	wait_until_finished = False,   # download in background, continue immediately
+	workers = 10                   # 10 downloads parallel (default)
+)
+```
+
 ### dataSet attributes and properties
 
 ```
