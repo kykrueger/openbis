@@ -16,16 +16,16 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.Role;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.ISQLExecutor;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.*;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.*;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.*;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.*;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.*;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.Role;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.ISQLExecutor;
 
 public class PostgresAuthorisationInformationProviderDAO implements ISQLAuthorisationInformationProviderDAO
 {
@@ -123,12 +123,18 @@ public class PostgresAuthorisationInformationProviderDAO implements ISQLAuthoris
     {
         final String query = SELECT + SP + DISTINCT + SP + ID_COLUMN + NL +
                 FROM + SP + TableMapper.SAMPLE.getEntitiesTable() + NL +
-                WHERE + SP + ID_COLUMN + SP + IN + LP + SELECT + SP + UNNEST + LP + QU + RP + RP + SP + AND + SP + LP + SPACE_COLUMN + SP + IN + SP +
-                LP + SELECT + SP + UNNEST + LP + QU + RP + RP + SP + OR +
-                SP + PROJECT_COLUMN + SP + IN + SP + LP + SELECT + SP + UNNEST + LP + QU + RP + RP +
-                SP + OR + SP + SPACE_COLUMN + SP + IS_NULL + SP + AND + SP + PROJECT_COLUMN + SP + IS_NULL + RP;
+                WHERE + SP + ID_COLUMN + SP + IN + LP + SELECT + SP + UNNEST + LP + QU + RP + RP + SP + AND + NL +
+                LP + SPACE_COLUMN + SP + IN + SP + LP +
+                SELECT + SP + UNNEST + LP + QU + RP + RP + SP + OR + NL +
+                PROJECT_COLUMN + SP + IN + SP + LP + SELECT + SP + UNNEST + LP + QU + RP + RP + SP + OR + SP +
+                EXPERIMENT_COLUMN + SP + IN + SP + LP +
+                        SELECT + SP + ID_COLUMN + SP +
+                        FROM + SP + TableMapper.EXPERIMENT.getEntitiesTable() + SP +
+                        WHERE + SP + PROJECT_COLUMN + SP + IN + SP + SELECT_UNNEST + RP + OR + NL +
+                SPACE_COLUMN + SP + IS_NULL + SP + AND + SP + PROJECT_COLUMN + SP + IS_NULL + RP;
+        final Long[] projectIds = authInfo.getProjectIds().toArray(new Long[0]);
         final List<Object> args = Arrays.asList(requestedIDs.toArray(new Long[0]), authInfo.getSpaceIds().toArray(new Long[0]),
-                authInfo.getProjectIds().toArray(new Long[0]));
+                projectIds, projectIds);
         final List<Map<String, Object>> queryResultList = executor.execute(query, args);
 
         return collectIDs(queryResultList);
