@@ -275,7 +275,7 @@ function DataSetFormController(parentController, mode, entity, dataSet, isMini, 
 				var callback = function() {
 					_this.forceUnarchiving(dataSetPermId)
 				};
-				if (info["total size"] > 5 * info[dataSetPermId]["size"]) {
+				if (info["total size"] > 2 * info[dataSetPermId]["size"]) {
 					Util.showWarning(text, callback);
 				} else {
 					callback();
