@@ -140,13 +140,13 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 						archiveAction = function() {
 							_this.requestOrLockArchiving();
 						}
-						archiveTooltip = "Request or lock archiving";
+						archiveTooltip = "Request or disallow archiving";
 					}
 				} else if (physicalData.status == "LOCKED") {
 					archiveAction = function() {
 						_this._dataSetFormController.setArchivingLock(false);
 					}
-					archiveTooltip = "Unlock";
+					archiveTooltip = "Allow archiving";
 				} else if (physicalData.status == "ARCHIVED") {
 					archiveAction = function() {
 						_this._dataSetFormController.unarchive();
@@ -772,7 +772,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 		var _this = this;
 
 		var $window = $('<form>', { 'action' : 'javascript:void(0);' });
-		$window.append($('<legend>').append("Request or lock archiving"));
+		$window.append($('<legend>').append("Request or disallow archiving"));
 		var $buttons = $('<div>', {'id' : 'rol_archving_buttons'});
 		$window.append($buttons);
 		
@@ -780,7 +780,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 		$requestButton.click(function() {
 			_this.requestArchiving();
 		});
-		var $lockButton = $('<div>', {'class' : 'btn btn-default', 'text' : 'Lock archiving', 'id' : 'lock_archiving'});
+		var $lockButton = $('<div>', {'class' : 'btn btn-default', 'text' : 'Disallow archiving', 'id' : 'lock_archiving'});
 		$lockButton.click(function() {
 			_this.lockArchiving();
 		});
@@ -848,7 +848,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 		    Util.unblockUI();
 		});
 
-		$window.append($('<legend>').append('Lock archiving'));
+		$window.append($('<legend>').append('Disallow archiving'));
 		$window.append($('<p>').text("Prevent your dataset from being archived."));
 
 		var $btnAccept = $('<input>', { 'type': 'submit', 'class' : 'btn btn-primary', 'value' : 'Accept' });

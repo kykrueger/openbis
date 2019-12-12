@@ -1,3 +1,7 @@
+## Changes with pybis-1.10.6
+
+* added possibility to download files without /original/DEFAULT folders
+
 ## Changes with pybis-1.10.5
 
 * bugfix: creating projects
