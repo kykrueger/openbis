@@ -16,6 +16,11 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator;
 
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.*;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils.buildFullIdentifierConcatenationString;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.*;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.*;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -23,39 +28,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.EntityWithPropertiesSortOptions;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.AnyFieldSearchConditionTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.Attributes;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinType;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils;
-
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.AND;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.AS;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.COMMA;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.DISTINCT;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.DOUBLE_COLON;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.EQ;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.FROM;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.IN;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.INNER_JOIN;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.LP;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.NL;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.ON;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.ORDER_BY;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.PERIOD;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.QU;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.RP;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SELECT;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SP;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.UNNEST;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.WHERE;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils.buildFullIdentifierConcatenationString;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.CODE_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.VALUE_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.DATA_TYPES_TABLE;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.PROJECTS_TABLE;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SPACES_TABLE;
 
 public class OrderTranslator
 {
@@ -65,7 +41,7 @@ public class OrderTranslator
 
     private static final String IDENTIFIER = "IDENTIFIER";
 
-    private static final String UNIQUE_PREFIX = OrderTranslator.class.getName();
+    private static final String UNIQUE_PREFIX = OrderTranslator.class.getName() + ":";
 
     /** Column name in select for sorting by identifier (which is a generated string). */
     private static final String IDENTIFIER_SORTING_COLUMN = "i";
@@ -184,7 +160,7 @@ public class OrderTranslator
 
     /**
      * Appends sorting column to SQL builder. Adds type casting when needed.
-     *  @param vo order translation value object.
+     * @param vo order translation value object.
      * @param sqlBuilder string builder to which the column should be appended.
      * @param sortingCriteriaFieldName the name of the field to sort by.
      * @param inSelect {@code true} if this method is used in the {@code SELECT} clause.
@@ -213,12 +189,13 @@ public class OrderTranslator
         {
             if (inSelect)
             {
-                final String entitiesTable = vo.getTableMapper().getEntitiesTable();
                 final Map<String, JoinInformation> aliases = vo.getAliases().get(UNIQUE_PREFIX);
-                final JoinInformation entitiesTableAlias = aliases.get(entitiesTable);
+                final JoinInformation entitiesTableAlias = aliases.get(vo.getTableMapper().getEntitiesTable());
+                final JoinInformation spacesTableAlias = aliases.get(UNIQUE_PREFIX + SPACES_TABLE);
+                final JoinInformation projectsTableAlias = aliases.get(UNIQUE_PREFIX + PROJECTS_TABLE);
 
-                buildFullIdentifierConcatenationString(sqlBuilder, aliases.get(UNIQUE_PREFIX + SPACES_TABLE).getSubTableAlias(),
-                        aliases.get(UNIQUE_PREFIX + PROJECTS_TABLE).getSubTableAlias(),
+                buildFullIdentifierConcatenationString(sqlBuilder, (spacesTableAlias != null) ? spacesTableAlias.getSubTableAlias() : null,
+                        (projectsTableAlias != null) ? projectsTableAlias.getSubTableAlias() : null,
                         (entitiesTableAlias != null) ? entitiesTableAlias.getSubTableAlias() : null);
                 sqlBuilder.append(SP);
             }
