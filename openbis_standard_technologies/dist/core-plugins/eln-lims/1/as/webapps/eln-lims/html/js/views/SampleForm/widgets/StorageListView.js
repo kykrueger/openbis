@@ -163,7 +163,13 @@ function StorageListView(storageListController, storageListModel) {
 		this._dataGrid.init($dataGridContainer, extraOptions);
 		$container.append($dataGridContainer);
 		
-		var $storageAddButton = $("<a id='add-storage-btn'>", { class : 'btn btn-default', style : "float: right; background-color:#f9f9f9;" }).append($("<i>", { class : "glyphicon glyphicon-plus" } ));
+		var $storageAddButton = $("<a id='add-storage-btn'>");
+		$storageAddButton.addClass("btn");
+		$storageAddButton.addClass("btn-default");
+		$storageAddButton.css("float", "right");
+		$storageAddButton.css("background-color", "#f9f9f9");
+
+		$storageAddButton.append($("<i>", { class : "glyphicon glyphicon-plus" } ));
 		
 		$storageAddButton.on("click", function(event) {
 			var uuid = Util.guid();

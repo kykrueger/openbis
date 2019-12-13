@@ -72,7 +72,8 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		var $formTitle = $("<div>");
 		var nameLabel = this._sampleFormModel.sample.properties[profile.propertyReplacingCode];
 		if(nameLabel) {
-			nameLabel = html.sanitize(nameLabel);
+			//nameLabel = html.sanitize(nameLabel);
+			nameLabel = DOMPurify.sanitize(nameLabel);
 		} else if(this._sampleFormModel.sample.sampleTypeCode === "STORAGE_POSITION") {
 			var properties = this._sampleFormModel.sample.properties;
 			var storagePropertyGroup = profile.getStoragePropertyGroup();
@@ -743,6 +744,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 				}
 				var $controlGroup =  null;
 				var value = this._sampleFormModel.sample.properties[propertyType.code];
+
 				if(!value && propertyType.code.charAt(0) === '$') {
 					value = this._sampleFormModel.sample.properties[propertyType.code.substr(1)];
 					this._sampleFormModel.sample.properties[propertyType.code] = value;
@@ -752,10 +754,14 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 				if(this._sampleFormModel.mode === FormMode.VIEW) { //Show values without input boxes if the form is in view mode
 					if(Util.getEmptyIfNull(value) !== "") { //Don't show empty fields, whole empty sections will show the title
 						var customWidget = profile.customWidgetSettings[propertyType.code];
-						if(customWidget === 'Spreadsheet') {
+						if (customWidget === 'Spreadsheet') {
 						    var $jexcelContainer = $("<div>");
                             JExcelEditorManager.createField($jexcelContainer, this._sampleFormModel.mode, propertyType.code, this._sampleFormModel.sample);
 						    $controlGroup = FormUtil.getFieldForComponentWithLabel($jexcelContainer, propertyType.label);
+						} else if (customWidget === 'Word Processor') {
+						    var $component = FormUtil.getFieldForPropertyType(propertyType, value);
+						    $component = FormUtil.activateRichTextProperties($component, undefined, propertyType, value, true);
+						    $controlGroup = FormUtil.getFieldForComponentWithLabel($component, propertyType.label);
 						} else {
 						    $controlGroup = FormUtil.createPropertyField(propertyType, value);
 						}
@@ -808,7 +814,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 					    switch(customWidget) {
 					        case 'Word Processor':
 					            if(propertyType.dataType === "MULTILINE_VARCHAR") {
-					                $component = FormUtil.activateRichTextProperties($component, changeEvent(propertyType), propertyType);
+					                $component = FormUtil.activateRichTextProperties($component, changeEvent(propertyType), propertyType, value, false);
 					            } else {
 					                alert("Word Processor only works with MULTILINE_VARCHAR data type, " + propertyType.code + " is " + propertyType.dataType + ".");
 					            }
