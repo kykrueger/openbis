@@ -16,17 +16,6 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractStringValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.IdentifierSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringFieldSearchCriteria;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinInformation;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils;
-
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator.MAIN_TABLE_ALIAS;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.*;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils.appendStringComparatorOp;
@@ -35,10 +24,21 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.PROJECTS_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SPACES_TABLE;
 
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractStringValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.IdentifierSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringFieldSearchCriteria;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinInformation;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils;
+
 public class IdentifierSearchConditionTranslator implements IConditionTranslator<IdentifierSearchCriteria>
 {
 
-    private static final String UNIQUE_PREFIX = IdentifierSearchConditionTranslator.class.getName();
+    private static final String UNIQUE_PREFIX = IdentifierSearchConditionTranslator.class.getName() + ":";
 
     @Override
     public Map<String, JoinInformation> getJoinInformationMap(final IdentifierSearchCriteria criterion, final TableMapper tableMapper,
@@ -62,7 +62,11 @@ public class IdentifierSearchConditionTranslator implements IConditionTranslator
         final AbstractStringValue fieldValue = criterion.getFieldValue();
         final String entitiesTable = tableMapper.getEntitiesTable();
         final String samplesTableName = TableMapper.SAMPLE.getEntitiesTable();
-        final String spacesTableAlias = entitiesTable.equals(samplesTableName)
+        final String projectsTableName = TableMapper.PROJECT.getEntitiesTable();
+        final String experimentsTableName = TableMapper.EXPERIMENT.getEntitiesTable();
+        final boolean hasSpaces = entitiesTable.equals(samplesTableName) || entitiesTable.equals(experimentsTableName) ||
+                entitiesTable.equals(projectsTableName);
+        final String spacesTableAlias = hasSpaces
                 ? aliases.get(prefix + SPACES_TABLE).getSubTableAlias() : null;
         final String projectsTableAlias = aliases.get(prefix + PROJECTS_TABLE).getSubTableAlias();
         final String samplesTableAlias = entitiesTable.equals(samplesTableName)

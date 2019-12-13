@@ -507,45 +507,61 @@ public class TranslatorUtils
             final IAliasFactory aliasFactory, final String prefix)
     {
         final String entitiesTable = tableMapper.getEntitiesTable();
-
         final String samplesTableName = TableMapper.SAMPLE.getEntitiesTable();
-        if (entitiesTable.equals(samplesTableName))
+        final String projectsTableName = TableMapper.PROJECT.getEntitiesTable();
+        final String experimentsTableName = TableMapper.EXPERIMENT.getEntitiesTable();
+
+        if (entitiesTable.equals(samplesTableName) || entitiesTable.equals(projectsTableName))
         {
-            // Only samples can have spaces.
-            final JoinInformation joinInformation1 = new JoinInformation();
-            joinInformation1.setJoinType(JoinType.LEFT);
-            joinInformation1.setMainTable(entitiesTable);
-            joinInformation1.setMainTableAlias(MAIN_TABLE_ALIAS);
-            joinInformation1.setMainTableIdField(SPACE_COLUMN);
-            joinInformation1.setSubTable(SPACES_TABLE);
-            joinInformation1.setSubTableAlias(aliasFactory.createAlias());
-            joinInformation1.setSubTableIdField(ID_COLUMN);
-            result.put(prefix + SPACES_TABLE, joinInformation1);
+            // Only samples and projects can have spaces.
+            final JoinInformation spacesJoinInformation = createSpacesJoinInformation(aliasFactory, entitiesTable, MAIN_TABLE_ALIAS);
+            result.put(prefix + SPACES_TABLE, spacesJoinInformation);
         }
 
-        final JoinInformation joinInformation2 = new JoinInformation();
-        joinInformation2.setJoinType(JoinType.LEFT);
-        joinInformation2.setMainTable(entitiesTable);
-        joinInformation2.setMainTableAlias(MAIN_TABLE_ALIAS);
-        joinInformation2.setMainTableIdField(PROJECT_COLUMN);
-        joinInformation2.setSubTable(PROJECTS_TABLE);
-        joinInformation2.setSubTableAlias(aliasFactory.createAlias());
-        joinInformation2.setSubTableIdField(ID_COLUMN);
-        result.put(prefix + PROJECTS_TABLE, joinInformation2);
+        final String projectsTableAlias = aliasFactory.createAlias();
+        final JoinInformation projectsJoinInformation = new JoinInformation();
+        projectsJoinInformation.setJoinType(JoinType.LEFT);
+        projectsJoinInformation.setMainTable(entitiesTable);
+        projectsJoinInformation.setMainTableAlias(MAIN_TABLE_ALIAS);
+        projectsJoinInformation.setMainTableIdField(PROJECT_COLUMN);
+        projectsJoinInformation.setSubTable(PROJECTS_TABLE);
+        projectsJoinInformation.setSubTableAlias(projectsTableAlias);
+        projectsJoinInformation.setSubTableIdField(ID_COLUMN);
+        result.put(prefix + PROJECTS_TABLE, projectsJoinInformation);
+
+        if (entitiesTable.equals(experimentsTableName))
+        {
+            // Experiments link to spaces via projects.
+            final JoinInformation experimentsSpacesJoinInformation = createSpacesJoinInformation(aliasFactory, entitiesTable, projectsTableAlias);
+            result.put(prefix + SPACES_TABLE, experimentsSpacesJoinInformation);
+        }
 
         if (entitiesTable.equals(samplesTableName))
         {
             // Only samples can have containers.
-            final JoinInformation joinInformation3 = new JoinInformation();
-            joinInformation3.setJoinType(JoinType.LEFT);
-            joinInformation3.setMainTable(entitiesTable);
-            joinInformation3.setMainTableAlias(MAIN_TABLE_ALIAS);
-            joinInformation3.setMainTableIdField(PART_OF_SAMPLE_COLUMN);
-            joinInformation3.setSubTable(entitiesTable);
-            joinInformation3.setSubTableAlias(aliasFactory.createAlias());
-            joinInformation3.setSubTableIdField(ID_COLUMN);
-            result.put(prefix + entitiesTable, joinInformation3);
+            final JoinInformation containerSampleJoinInformation = new JoinInformation();
+            containerSampleJoinInformation.setJoinType(JoinType.LEFT);
+            containerSampleJoinInformation.setMainTable(entitiesTable);
+            containerSampleJoinInformation.setMainTableAlias(MAIN_TABLE_ALIAS);
+            containerSampleJoinInformation.setMainTableIdField(PART_OF_SAMPLE_COLUMN);
+            containerSampleJoinInformation.setSubTable(entitiesTable);
+            containerSampleJoinInformation.setSubTableAlias(aliasFactory.createAlias());
+            containerSampleJoinInformation.setSubTableIdField(ID_COLUMN);
+            result.put(prefix + entitiesTable, containerSampleJoinInformation);
         }
+    }
+
+    private static JoinInformation createSpacesJoinInformation(IAliasFactory aliasFactory, String entitiesTable, String mainTableAlias)
+    {
+        final JoinInformation spacesJoinInformation = new JoinInformation();
+        spacesJoinInformation.setJoinType(JoinType.LEFT);
+        spacesJoinInformation.setMainTable(entitiesTable);
+        spacesJoinInformation.setMainTableAlias(mainTableAlias);
+        spacesJoinInformation.setMainTableIdField(SPACE_COLUMN);
+        spacesJoinInformation.setSubTable(SPACES_TABLE);
+        spacesJoinInformation.setSubTableAlias(aliasFactory.createAlias());
+        spacesJoinInformation.setSubTableIdField(ID_COLUMN);
+        return spacesJoinInformation;
     }
 
 }
