@@ -24,6 +24,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchO
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SearchSamplesOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SearchSamplesOperationResult;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.ISearchObjectExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.SearchObjectsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
@@ -82,6 +83,13 @@ public class SearchSamplesOperationExecutor extends SearchObjectsOperationExecut
     protected SearchObjectsOperationResult<Sample> getOperationResult(SearchResult<Sample> searchResult)
     {
         return new SearchSamplesOperationResult(searchResult);
+    }
+
+    @Override
+    protected SearchObjectsOperationResult<Sample> doExecute(final IOperationContext context,
+            final SearchObjectsOperation<SampleSearchCriteria, SampleFetchOptions> operation)
+    {
+        return doExecuteNewSearch(context, operation);
     }
 
 }

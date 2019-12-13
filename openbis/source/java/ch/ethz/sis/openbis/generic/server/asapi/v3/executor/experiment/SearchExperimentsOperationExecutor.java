@@ -24,6 +24,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.Experime
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.SearchExperimentsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.SearchExperimentsOperationResult;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.ISearchObjectExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.SearchObjectsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ExperimentSearchManager;
@@ -81,4 +82,9 @@ public class SearchExperimentsOperationExecutor
         return new SearchExperimentsOperationResult(searchResult);
     }
 
+    @Override
+    protected SearchObjectsOperationResult<Experiment> doExecute(IOperationContext context, SearchObjectsOperation<ExperimentSearchCriteria, ExperimentFetchOptions> operation)
+    {
+        return doExecuteNewSearch(context, operation);
+    }
 }

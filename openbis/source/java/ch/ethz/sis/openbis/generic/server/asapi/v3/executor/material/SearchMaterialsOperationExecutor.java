@@ -24,6 +24,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.fetchoptions.MaterialFe
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.SearchMaterialsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.SearchMaterialsOperationResult;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.ISearchObjectExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.SearchObjectsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
@@ -76,4 +77,9 @@ public class SearchMaterialsOperationExecutor extends SearchObjectsOperationExec
         return new SearchMaterialsOperationResult(searchResult);
     }
 
+    @Override
+    protected SearchObjectsOperationResult<Material> doExecute(IOperationContext context, SearchObjectsOperation<MaterialSearchCriteria, MaterialFetchOptions> operation)
+    {
+        return doExecuteNewSearch(context, operation);
+    }
 }

@@ -16,6 +16,8 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search;
 
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -28,15 +30,10 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchObjectsOpera
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchObjectsOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset.SearchDataSetsOperationExecutor;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.experiment.SearchExperimentsOperationExecutor;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.sample.SearchSamplesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sort.SortAndPage;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.ITranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.TranslationContext;
-
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
 
 /**
  * @author pkupczyk
@@ -63,17 +60,11 @@ public abstract class SearchObjectsOperationExecutor<OBJECT, OBJECT_PE, CRITERIA
         return getTranslator().translate(translationContext, ids, fetchOptions);
     }
 
-    @Override
-    protected SearchObjectsOperationResult<OBJECT> doExecute(final IOperationContext context,
+
+    // TODO: remove this hack when all implementations of this executor implement getSearchManager() which is not throwing an exception
+    protected SearchObjectsOperationResult<OBJECT> doExecuteNewSearch(final IOperationContext context,
             final SearchObjectsOperation<CRITERIA, FETCH_OPTIONS> operation)
     {
-        // TODO: remove this hack when all implementations of this executor implement getSearchManager() which is not throwing an exception
-        if (!(this instanceof SearchSamplesOperationExecutor || this instanceof SearchExperimentsOperationExecutor ||
-                this instanceof SearchDataSetsOperationExecutor))
-        {
-            return super.doExecute(context, operation);
-        }
-
         final CRITERIA criteria = operation.getCriteria();
         final FETCH_OPTIONS fetchOptions = operation.getFetchOptions();
 
