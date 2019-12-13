@@ -877,28 +877,32 @@ this._getTextBox = function(id, alt, isRequired) {
 
 	this.createCkeditor = function($component, componentOnChange, value, isReadOnly) {
 
-	    InlineEditor.create($component[0], {
-                         simpleUpload: {
-                             uploadUrl: "/openbis/openbis/file-service/eln-lims?type=Files&sessionID=" + mainController.serverFacade.getSession()
-                         }
-                    })
-                    .then( editor => {
-                        if (value) {
-                            editor.setData(value);
-                        }
+        if(isReadOnly && value) {
+            $component.append(value);
+        } else {
+            InlineEditor.create($component[0], {
+                             simpleUpload: {
+                                 uploadUrl: "/openbis/openbis/file-service/eln-lims?type=Files&sessionID=" + mainController.serverFacade.getSession()
+                             }
+                        })
+                        .then( editor => {
+                            if (value) {
+                                editor.setData(value);
+                            }
 
-                        editor.isReadOnly = isReadOnly;
+                            editor.isReadOnly = isReadOnly;
 
-                        editor.model.document.on('change:data', function (event) {
-                            var value = editor.getData();
-                            componentOnChange(event, value);
+                            editor.model.document.on('change:data', function (event) {
+                                var value = editor.getData();
+                                componentOnChange(event, value);
+                            });
+
+                            CKEditorManager.addEditor($component.attr('id'), editor);
+                        })
+                        .catch(error => {
+                            console.error( error );
                         });
-
-                        CKEditorManager.addEditor($component.attr('id'), editor);
-                    })
-                    .catch(error => {
-                        console.error( error );
-                    });
+        }
 	}
 
 	this.activateRichTextProperties = function($component, componentOnChange, propertyType, value, isReadOnly) {
