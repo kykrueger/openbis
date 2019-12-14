@@ -8,6 +8,7 @@ import * as selectors from '../../../store/selectors/selectors.js'
 import * as actions from '../../../store/actions/actions.js'
 
 import ContentTabs from './ContentTabs.jsx'
+import ErrorBoundary from '../error/ErrorBoundary.jsx'
 
 const styles = {
   container: {
@@ -78,7 +79,9 @@ class Content extends React.Component {
                   visible ? classes.visible : classes.hidden
                 )}
               >
-                <ObjectComponent objectId={object.id} />
+                <ErrorBoundary>
+                  <ObjectComponent objectId={object.id} />
+                </ErrorBoundary>
               </div>
             )
           }

@@ -55,11 +55,14 @@ const styles = theme => ({
 class ObjectType extends React.PureComponent {
   constructor(props) {
     super(props)
+
     this.facade = new ObjectTypeFacade()
+
     this.state = {
       loaded: false,
       validate: false
     }
+
     this.handleOrderChange = this.handleOrderChange.bind(this)
     this.handleSelectionChange = this.handleSelectionChange.bind(this)
     this.handleChange = this.handleChange.bind(this)
@@ -171,6 +174,8 @@ class ObjectType extends React.PureComponent {
       return <div></div>
     }
 
+    let { facade } = this
+
     let {
       type,
       properties,
@@ -179,6 +184,7 @@ class ObjectType extends React.PureComponent {
       removePropertyDialogOpen,
       removeSectionDialogOpen
     } = this.state
+
     let { classes } = this.props
 
     return (
@@ -186,6 +192,7 @@ class ObjectType extends React.PureComponent {
         <div className={classes.content}>
           <div className={classes.preview}>
             <ObjectTypePreview
+              facade={facade}
               type={type}
               properties={properties}
               sections={sections}
@@ -239,6 +246,7 @@ class ObjectType extends React.PureComponent {
         >
           <div className={classes.parameters}>
             <ObjectTypeParameters
+              facade={facade}
               type={type}
               properties={properties}
               sections={sections}

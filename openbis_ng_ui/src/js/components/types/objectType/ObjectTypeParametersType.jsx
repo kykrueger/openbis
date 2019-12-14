@@ -4,7 +4,6 @@ import Typography from '@material-ui/core/Typography'
 import CheckboxField from '../../common/form/CheckboxField.jsx'
 import TextField from '../../common/form/TextField.jsx'
 import SelectField from '../../common/form/SelectField.jsx'
-import { facade, dto } from '../../../services/openbis.js'
 import logger from '../../../common/logger.js'
 
 const styles = theme => ({
@@ -63,15 +62,17 @@ class ObjectTypeParametersType extends React.PureComponent {
   }
 
   loadValidationPlugins() {
-    let criteria = new dto.PluginSearchCriteria()
-    criteria.withPluginType().thatEquals(dto.PluginType.ENTITY_VALIDATION)
-    let fo = new dto.PluginFetchOptions()
-
-    return facade.searchPlugins(criteria, fo).then(result => {
-      this.setState(() => ({
-        validationPlugins: result.objects
-      }))
-    })
+    const { facade } = this.props
+    return facade
+      .loadValidationPlugins()
+      .then(result => {
+        this.setState(() => ({
+          validationPlugins: result.objects
+        }))
+      })
+      .catch(error => {
+        facade.catch(error)
+      })
   }
 
   focus() {

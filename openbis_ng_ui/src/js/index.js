@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom'
 import store from './store/store.js'
 import { Provider } from 'react-redux'
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles'
+import ErrorBoundary from './components/common/error/ErrorBoundary.jsx'
 import indigo from '@material-ui/core/colors/indigo'
 import lightBlue from '@material-ui/core/colors/lightBlue'
 
@@ -37,7 +38,9 @@ const render = () => {
   ReactDOM.render(
     <Provider store={store}>
       <MuiThemeProvider theme={theme}>
-        <App />
+        <ErrorBoundary>
+          <App />
+        </ErrorBoundary>
       </MuiThemeProvider>
     </Provider>,
     document.getElementById('app')

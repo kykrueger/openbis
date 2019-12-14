@@ -5,7 +5,7 @@ import CheckboxField from '../../common/form/CheckboxField.jsx'
 import TextField from '../../common/form/TextField.jsx'
 import SelectField from '../../common/form/SelectField.jsx'
 import WarningIcon from '@material-ui/icons/Warning'
-import { facade, dto } from '../../../services/openbis.js'
+import { dto } from '../../../services/openbis.js'
 import logger from '../../../common/logger.js'
 
 const styles = theme => ({
@@ -92,37 +92,45 @@ class ObjectTypeParametersProperty extends React.PureComponent {
   }
 
   loadDynamicPlugins() {
-    let criteria = new dto.PluginSearchCriteria()
-    criteria.withPluginType().thatEquals(dto.PluginType.DYNAMIC_PROPERTY)
-    let fo = new dto.PluginFetchOptions()
-
-    return facade.searchPlugins(criteria, fo).then(result => {
-      this.setState(() => ({
-        dynamicPlugins: result.objects
-      }))
-    })
+    const { facade } = this.props
+    return facade
+      .loadDynamicPlugins()
+      .then(result => {
+        this.setState(() => ({
+          dynamicPlugins: result.objects
+        }))
+      })
+      .catch(error => {
+        facade.catch(error)
+      })
   }
 
   loadVocabularies() {
-    let criteria = new dto.VocabularySearchCriteria()
-    let fo = new dto.VocabularyFetchOptions()
-
-    return facade.searchVocabularies(criteria, fo).then(result => {
-      this.setState(() => ({
-        vocabularies: result.objects
-      }))
-    })
+    const { facade } = this.props
+    return facade
+      .loadVocabularies()
+      .then(result => {
+        this.setState(() => ({
+          vocabularies: result.objects
+        }))
+      })
+      .catch(error => {
+        facade.catch(error)
+      })
   }
 
   loadMaterialTypes() {
-    let criteria = new dto.MaterialTypeSearchCriteria()
-    let fo = new dto.MaterialTypeFetchOptions()
-
-    return facade.searchMaterialTypes(criteria, fo).then(result => {
-      this.setState(() => ({
-        materialTypes: result.objects
-      }))
-    })
+    const { facade } = this.props
+    return facade
+      .loadMaterialTypes()
+      .then(result => {
+        this.setState(() => ({
+          materialTypes: result.objects
+        }))
+      })
+      .catch(error => {
+        facade.catch(error)
+      })
   }
 
   focus() {

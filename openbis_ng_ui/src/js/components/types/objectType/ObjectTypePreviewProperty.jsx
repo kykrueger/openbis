@@ -5,7 +5,7 @@ import { withStyles } from '@material-ui/core/styles'
 import CheckboxField from '../../common/form/CheckboxField.jsx'
 import TextField from '../../common/form/TextField.jsx'
 import SelectField from '../../common/form/SelectField.jsx'
-import { facade, dto } from '../../../services/openbis.js'
+import { dto } from '../../../services/openbis.js'
 import logger from '../../../common/logger.js'
 import * as util from '../../../common/util.js'
 
@@ -77,10 +77,10 @@ class ObjectTypePreviewProperty extends React.PureComponent {
   componentDidMount() {
     const { dataType } = this.props.property
 
-    if (dataType === 'MATERIAL') {
-      this.loadMaterialProperty()
-    } else if (dataType === 'CONTROLLEDVOCABULARY') {
-      this.loadVocabularyProperty()
+    if (dataType === dto.DataType.MATERIAL) {
+      this.loadMaterials()
+    } else if (dataType === dto.DataType.CONTROLLEDVOCABULARY) {
+      this.loadVocabularyTerms()
     }
   }
 
@@ -89,29 +89,26 @@ class ObjectTypePreviewProperty extends React.PureComponent {
     let { property } = this.props
 
     if (property.materialType !== prevProperty.materialType) {
-      this.loadMaterialProperty()
+      this.loadMaterials()
     } else if (property.vocabulary !== prevProperty.vocabulary) {
-      this.loadVocabularyProperty()
+      this.loadVocabularyTerms()
     }
   }
 
-  loadMaterialProperty() {
-    const materialType = this.props.property.materialType
+  loadMaterials() {
+    const { facade, property } = this.props
 
-    if (materialType) {
-      let criteria = new dto.MaterialSearchCriteria()
-      let fo = new dto.MaterialFetchOptions()
-
-      criteria
-        .withType()
-        .withCode()
-        .thatEquals(materialType)
-
-      return facade.searchMaterials(criteria, fo).then(result => {
-        this.setState(() => ({
-          materials: result.objects
-        }))
-      })
+    if (property.materialType) {
+      return facade
+        .loadMaterials(property.materialType)
+        .then(result => {
+          this.setState(() => ({
+            materials: result.objects
+          }))
+        })
+        .catch(error => {
+          facade.catch(error)
+        })
     } else {
       this.setState(() => ({
         materials: null
@@ -119,23 +116,20 @@ class ObjectTypePreviewProperty extends React.PureComponent {
     }
   }
 
-  loadVocabularyProperty() {
-    const vocabulary = this.props.property.vocabulary
+  loadVocabularyTerms() {
+    const { facade, property } = this.props
 
-    if (vocabulary) {
-      let criteria = new dto.VocabularyTermSearchCriteria()
-      let fo = new dto.VocabularyTermFetchOptions()
-
-      criteria
-        .withVocabulary()
-        .withCode()
-        .thatEquals(vocabulary)
-
-      return facade.searchVocabularyTerms(criteria, fo).then(result => {
-        this.setState(() => ({
-          terms: result.objects
-        }))
-      })
+    if (property.vocabulary) {
+      return facade
+        .loadVocabularyTerms(property.vocabulary)
+        .then(result => {
+          this.setState(() => ({
+            terms: result.objects
+          }))
+        })
+        .catch(error => {
+          facade.catch(error)
+        })
     } else {
       this.setState(() => ({
         terms: null

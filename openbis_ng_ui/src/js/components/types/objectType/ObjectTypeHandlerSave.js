@@ -260,14 +260,23 @@ export default class ObjectTypeHandlerSave {
   }
 
   execute() {
-    this.validateHandler.setEnabled(true).then(() => {
-      if (!this.validateHandler.execute(true)) {
-        return
-      }
-      this.doExecute().then(() => {
-        this.validateHandler.setEnabled(false)
+    return this.validateHandler
+      .setEnabled(true)
+      .then(() => {
+        if (!this.validateHandler.execute(true)) {
+          return
+        }
+        return this.doExecute()
+          .then(() => {
+            return this.validateHandler.setEnabled(false)
+          })
+          .then(() => {
+            return this.loadHandler.execute()
+          })
       })
-    })
+      .catch(error => {
+        this.facade.catch(error)
+      })
   }
 
   doExecute() {
@@ -299,13 +308,5 @@ export default class ObjectTypeHandlerSave {
           options
         )
       })
-      .then(
-        () => {
-          this.loadHandler.execute()
-        },
-        error => {
-          alert(JSON.stringify(error))
-        }
-      )
   }
 }

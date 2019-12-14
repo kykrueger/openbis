@@ -56,7 +56,61 @@ export default class ObjectTypeFacade {
     })
   }
 
+  loadValidationPlugins() {
+    let criteria = new dto.PluginSearchCriteria()
+    criteria.withPluginType().thatEquals(dto.PluginType.ENTITY_VALIDATION)
+    let fo = new dto.PluginFetchOptions()
+    return facade.searchPlugins(criteria, fo)
+  }
+
+  loadDynamicPlugins() {
+    let criteria = new dto.PluginSearchCriteria()
+    criteria.withPluginType().thatEquals(dto.PluginType.DYNAMIC_PROPERTY)
+    let fo = new dto.PluginFetchOptions()
+    return facade.searchPlugins(criteria, fo)
+  }
+
+  loadVocabularies() {
+    let criteria = new dto.VocabularySearchCriteria()
+    let fo = new dto.VocabularyFetchOptions()
+    return facade.searchVocabularies(criteria, fo)
+  }
+
+  loadVocabularyTerms(vocabulary) {
+    let criteria = new dto.VocabularyTermSearchCriteria()
+    let fo = new dto.VocabularyTermFetchOptions()
+
+    criteria
+      .withVocabulary()
+      .withCode()
+      .thatEquals(vocabulary)
+
+    return facade.searchVocabularyTerms(criteria, fo)
+  }
+
+  loadMaterialTypes() {
+    let criteria = new dto.MaterialTypeSearchCriteria()
+    let fo = new dto.MaterialTypeFetchOptions()
+    return facade.searchMaterialTypes(criteria, fo)
+  }
+
+  loadMaterials(materialType) {
+    let criteria = new dto.MaterialSearchCriteria()
+    let fo = new dto.MaterialFetchOptions()
+
+    criteria
+      .withType()
+      .withCode()
+      .thatEquals(materialType)
+
+    return facade.searchMaterials(criteria, fo)
+  }
+
   executeOperations(operations, options) {
     return facade.executeOperations(operations, options)
+  }
+
+  catch(error) {
+    return facade.catch(error)
   }
 }

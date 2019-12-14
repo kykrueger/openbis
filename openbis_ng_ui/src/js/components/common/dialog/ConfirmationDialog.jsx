@@ -47,17 +47,17 @@ class ConfirmationDialog extends React.Component {
           variant='contained'
           color='secondary'
           classes={{ root: classes.button }}
-          onClick={onCancel}
+          onClick={onConfirm}
         >
-          Cancel
+          Confirm
         </Button>
         <Button
           variant='contained'
           color='primary'
           classes={{ root: classes.button }}
-          onClick={onConfirm}
+          onClick={onCancel}
         >
-          Confirm
+          Cancel
         </Button>
       </div>
     )
