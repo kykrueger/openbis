@@ -37,6 +37,14 @@ def openbis_definitions(entity):
             "create": { "@type": "as.dto.experiment.create.ExperimentCreation"},
             "update": { "@type": "as.dto.experiment.update.ExperimentUpdate"},
         },
+        "externalDms": {
+            "attrs_new": "code label address addressType creationId".split(),
+            "attrs_up": "label address".split(),
+            "attrs": "code permId label address addressType urlTemplate".split(),
+            "identifier": "externalDmsId",
+            "create": { "@type": "as.dto.externaldms.create.ExternalDmsCreation"},
+            "update": { "@type": "as.dto.externaldms.update.ExternalDmsUpdate"},
+        },
         "sample": {
             "attrs_new": "code type project parents children container components space experiment tags attachments".split(),
             "attrs_up": "project parents children container components space experiment tags attachments freeze freezeForComponents freezeForChildren freezeForParents freezeForDataSets".split(),
@@ -453,6 +461,7 @@ fetch_option = {
     "vocabularyTerm": {"@type": "as.dto.vocabulary.fetchoptions.VocabularyTermFetchOptions"},
     "deletedObjects": { "@type": "as.dto.deletion.fetchoptions.DeletedObjectFetchOptions" },
     "deletion": { "@type": "as.dto.deletion.fetchoptions.DeletionFetchOptions" },
+    "externalDms": { "@type": "as.dto.externaldms.fetchoptions.ExternalDmsFetchOptions"},
 }
 
 def get_fetchoption_for_entity(entity):
