@@ -703,6 +703,7 @@ class Openbis:
             "get_collections()",
             "get_collection_type()",
             "get_collection_types()",
+            "get_external_data_management_systems()",
             "get_external_data_management_system()",
             "get_material_type()",
             "get_material_types()",
@@ -930,6 +931,15 @@ class Openbis:
             if os.environ.get('OPENBIS_URL') == self.url:
                 os.environ['OPENBIS_TOKEN'] = self.token
             return self.token
+
+    def mount(self, username, mountpoint, volname, password, port=2222, kex_algorithms ='+diffie-hellman-group1-sha1'):
+        """
+        echo password | sshfs -o port=2222 -o ssh_command="ssh -oKexAlgorithms=+diffie-hellman-group1-sha1"
+        vermeul@openbis-tst.ethz.ch:/SIS_VERMEUL/MY-FIRST-PROJECT/MY-FIRST-PROJECT_EXP_1/20190403133112022-611/original/DEFAULT ~/mnt
+        -oauto_cache,reconnect,defer_permissions,noappledouble,negative_vncache,volname=myVolumeName -o password_stdin
+        """
+        pass
+        
 
 
     def get_server_information(self):
@@ -3242,6 +3252,43 @@ class Openbis:
     get_object = get_sample # Alias
 
 
+    def get_external_data_management_systems(self, start_with=None, count=None, only_data=False):
+        entity = 'externalDms'
+
+        criteria = get_type_for_entity(entity, 'search')
+        fetchopts = get_fetchoption_for_entity(entity)
+        request = {
+            "method": "searchExternalDataManagementSystems",
+            "params": [self.token,
+                       criteria,
+                       fetchopts,
+                       ],
+        }
+        response = self._post_request(self.as_v3, request)
+        parse_jackson(response)
+        attrs= "code label address addressType urlTemplate openbis".split()
+
+
+        if len(response['objects']) == 0:
+            entities = DataFrame(columns=attrs)
+        else: 
+            objects = response['objects']
+            parse_jackson(objects)
+            entities = DataFrame(objects)
+            entities['permId'] = entities['permId'].map(extract_permid)
+
+        totalCount = response.get('totalCount')
+        return Things(
+            openbis_obj = self,
+            entity = 'externalDms',
+            df = entities[attrs],
+            identifier_name = 'permId',
+            start_with=start_with,
+            count=count,
+            totalCount=totalCount,
+        )
+
+
     def get_external_data_management_system(self, permId, only_data=False):
         """Retrieve metadata for the external data management system.
         :param permId: A permId for an external DMS.
@@ -3273,6 +3320,9 @@ class Openbis:
                     return resp[ident]
                 else:
                     return ExternalDMS(self, resp[ident])
+
+    get_externalDms = get_external_data_management_system  # alias
+
 
     def new_space(self, **kwargs):
         """ Creates a new space in the openBIS instance.
