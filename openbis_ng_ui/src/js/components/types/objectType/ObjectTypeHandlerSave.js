@@ -266,6 +266,9 @@ export default class ObjectTypeHandlerSave {
         if (!this.validateHandler.execute(true)) {
           return
         }
+        this.setState({
+          loading: true
+        })
         return this.doExecute()
           .then(() => {
             return this.validateHandler.setEnabled(false)
@@ -276,6 +279,11 @@ export default class ObjectTypeHandlerSave {
       })
       .catch(error => {
         this.facade.catch(error)
+      })
+      .finally(() => {
+        this.setState({
+          loading: false
+        })
       })
   }
 

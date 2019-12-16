@@ -12,6 +12,10 @@ import FilterField from './../form/FilterField.jsx'
 import BrowserNodes from './BrowserNodes.jsx'
 
 const styles = {
+  resizable: {
+    zIndex: 2000,
+    position: 'relative'
+  },
   paper: {
     height: '100%',
     display: 'flex',
@@ -75,6 +79,7 @@ class Browser extends React.PureComponent {
           bottomLeft: false,
           topLeft: false
         }}
+        className={classes.resizable}
       >
         <Paper square={true} elevation={3} classes={{ root: classes.paper }}>
           <FilterField

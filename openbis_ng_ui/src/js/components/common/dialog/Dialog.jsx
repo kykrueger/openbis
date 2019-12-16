@@ -11,6 +11,10 @@ import Slide from '@material-ui/core/Slide'
 import logger from '../../../common/logger.js'
 
 const styles = theme => ({
+  dialog: {
+    position: 'relative',
+    zIndex: '20000 !important'
+  },
   actions: {
     marginLeft: theme.spacing(2),
     marginRight: theme.spacing(2),
@@ -39,6 +43,7 @@ class DialogWindow extends React.Component {
         scroll='paper'
         fullWidth={true}
         maxWidth='md'
+        classes={{ root: classes.dialog }}
         TransitionComponent={Transition}
       >
         <DialogTitle>{_.isFunction(title) ? title(this) : title}</DialogTitle>

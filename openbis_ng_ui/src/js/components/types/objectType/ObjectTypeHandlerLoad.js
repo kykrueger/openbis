@@ -8,7 +8,7 @@ export default class ObjectTypeHandlerLoad {
 
   execute() {
     this.setState({
-      loaded: false
+      loading: true
     })
 
     return Promise.all([
@@ -94,7 +94,6 @@ export default class ObjectTypeHandlerLoad {
         })
 
         this.setState(() => ({
-          loaded: true,
           type,
           properties,
           propertiesCounter,
@@ -107,6 +106,11 @@ export default class ObjectTypeHandlerLoad {
       })
       .catch(error => {
         this.facade.catch(error)
+      })
+      .finally(() => {
+        this.setState({
+          loading: false
+        })
       })
   }
 }

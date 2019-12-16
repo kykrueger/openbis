@@ -2,6 +2,7 @@ import _ from 'lodash'
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import { Resizable } from 're-resizable'
+import Loading from '../../common/loading/Loading.jsx'
 
 import ObjectTypeFacade from './ObjectTypeFacade.js'
 import ObjectTypeHandlerLoad from './ObjectTypeHandlerLoad.js'
@@ -59,7 +60,7 @@ class ObjectType extends React.PureComponent {
     this.facade = new ObjectTypeFacade()
 
     this.state = {
-      loaded: false,
+      loading: true,
       validate: false
     }
 
@@ -170,10 +171,12 @@ class ObjectType extends React.PureComponent {
   render() {
     logger.log(logger.DEBUG, 'ObjectType.render')
 
-    if (!this.state.loaded) {
-      return <div></div>
-    }
+    const { loading, type } = this.state
 
+    return <Loading loading={loading}>{!!type && this.doRender()}</Loading>
+  }
+
+  doRender() {
     let { facade } = this
 
     let {
