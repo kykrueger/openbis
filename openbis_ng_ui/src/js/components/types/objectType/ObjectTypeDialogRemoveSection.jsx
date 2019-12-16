@@ -15,7 +15,7 @@ class ObjectTypeDialogRemoveSection extends React.Component {
         onConfirm={onConfirm}
         onCancel={onCancel}
         title={this.getTitle()}
-        content='This section contains properties which are already used by some entities. Are you sure you want to remove it?'
+        content='This section contains properties which are already used by some entities. Removing the section and the contained property definitions is going to remove the existing property values as well - data will be lost! Are you sure you want to proceed?'
       />
     )
   }
@@ -26,9 +26,9 @@ class ObjectTypeDialogRemoveSection extends React.Component {
     if (open) {
       const section = _.find(sections, ['id', selection.params.id])
       if (section.name) {
-        return `Remove "${section.name}" section`
+        return `Do you want to remove "${section.name}" section? Some data will be lost!`
       } else {
-        return 'Remove section'
+        return 'Do you want to remove the section? Some data will be lost!'
       }
     } else {
       return null

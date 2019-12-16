@@ -15,7 +15,7 @@ class ObjectTypeDialogRemoveProperty extends React.Component {
         onConfirm={onConfirm}
         onCancel={onCancel}
         title={this.getTitle()}
-        content='This property is already used by some entities. Are you sure you want to remove it?'
+        content='This property is already used by some entities. Removing the property definition is going to remove the existing property values as well - data will be lost! Are you sure you want to proceed?'
       />
     )
   }
@@ -26,9 +26,9 @@ class ObjectTypeDialogRemoveProperty extends React.Component {
     if (open) {
       const property = _.find(properties, ['id', selection.params.id])
       if (property.code) {
-        return `Remove "${property.code}" property`
+        return `Do you want to remove "${property.code}" property? Some data will be lost!`
       } else {
-        return 'Remove property'
+        return 'Do you want to remove the property? Some data will be lost!'
       }
     } else {
       return null

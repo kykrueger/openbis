@@ -2,11 +2,22 @@ import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import Button from '@material-ui/core/Button'
 import Dialog from '../../common/dialog/Dialog.jsx'
+import * as util from '../../../common/util.js'
 import logger from '../../../common/logger.js'
 
 const styles = theme => ({
   button: {
     marginLeft: theme.spacing(2)
+  },
+  confirm: {
+    backgroundColor: theme.palette.error.main,
+    color: theme.palette.error.contrastText,
+    '&:hover': {
+      backgroundColor: theme.palette.error.dark
+    },
+    '&:disabled': {
+      backgroundColor: theme.palette.error.light
+    }
   }
 })
 
@@ -46,7 +57,9 @@ class ConfirmationDialog extends React.Component {
         <Button
           variant='contained'
           color='secondary'
-          classes={{ root: classes.button }}
+          classes={{
+            root: util.classNames(classes.button, classes.confirm)
+          }}
           onClick={onConfirm}
         >
           Confirm
