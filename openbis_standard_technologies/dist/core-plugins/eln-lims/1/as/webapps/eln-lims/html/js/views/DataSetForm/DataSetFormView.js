@@ -61,7 +61,8 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 		
 		var nameLabel = this._dataSetFormModel.dataSet.properties[profile.propertyReplacingCode];
 		if(nameLabel) {
-			nameLabel = html.sanitize(nameLabel);
+			//nameLabel = html.sanitize(nameLabel);
+			nameLabel = DOMPurify.sanitize(nameLabel);
 		} else {
 			nameLabel = this._dataSetFormModel.dataSet.code;
 		}
@@ -138,10 +139,15 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 						archiveTooltip = "Revoke archiving request";
 					} else {
 						archiveAction = function() {
-							_this.requestArchiving();
+							_this.requestOrLockArchiving();
 						}
-						archiveTooltip = "Request archiving";
+						archiveTooltip = "Request or disallow archiving";
 					}
+				} else if (physicalData.status == "LOCKED") {
+					archiveAction = function() {
+						_this._dataSetFormController.setArchivingLock(false);
+					}
+					archiveTooltip = "Allow archiving";
 				} else if (physicalData.status == "ARCHIVED") {
 					archiveAction = function() {
 						_this._dataSetFormController.unarchive();
@@ -657,10 +663,15 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 					if(this._dataSetFormModel.mode === FormMode.VIEW) {
 						if(Util.getEmptyIfNull(value) !== "") { //Don't show empty fields, whole empty sections will show the title
                             var customWidget = profile.customWidgetSettings[propertyType.code];
-                                if(customWidget === 'Spreadsheet') {
+                                if (customWidget === 'Spreadsheet') {
                                     var $jexcelContainer = $("<div>");
                                     JExcelEditorManager.createField($jexcelContainer, this._dataSetFormModel.mode, propertyType.code, this._dataSetFormModel.dataSet);
                                     $controlGroup = FormUtil.getFieldForComponentWithLabel($jexcelContainer, propertyType.label);
+                                    $fieldset.append($controlGroup);
+                                } else if (customWidget === 'Word Processor') {
+                                    var $component = FormUtil.getFieldForPropertyType(propertyType, value);
+                                    $component = FormUtil.activateRichTextProperties($component, undefined, propertyType, value, true);
+                                    $controlGroup = FormUtil.getFieldForComponentWithLabel($component, propertyType.label);
                                     $fieldset.append($controlGroup);
                                 } else {
                                     $controlGroup = FormUtil.createPropertyField(propertyType, value);
@@ -724,7 +735,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
                             switch(customWidget) {
                                 case 'Word Processor':
                                     if(propertyType.dataType === "MULTILINE_VARCHAR") {
-                                        $component = FormUtil.activateRichTextProperties($component, changeEvent(propertyType), propertyType);
+                                        $component = FormUtil.activateRichTextProperties($component, changeEvent(propertyType), propertyType, value, false);
                                     } else {
                                         alert("Word Processor only works with MULTILINE_VARCHAR data type.");
                                     }
@@ -763,6 +774,39 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 		$("#metadataContainer").append($wrapper);
 	}
 
+	this.requestOrLockArchiving = function() {
+		var _this = this;
+
+		var $window = $('<form>', { 'action' : 'javascript:void(0);' });
+		$window.append($('<legend>').append("Request or disallow archiving"));
+		var $buttons = $('<div>', {'id' : 'rol_archving_buttons'});
+		$window.append($buttons);
+		
+		var $requestButton = $('<div>', {'class' : 'btn btn-default', 'text' : 'Request archiving', 'id' : 'request_archiving'});
+		$requestButton.click(function() {
+			_this.requestArchiving();
+		});
+		var $lockButton = $('<div>', {'class' : 'btn btn-default', 'text' : 'Disallow archiving', 'id' : 'lock_archiving'});
+		$lockButton.click(function() {
+			_this.lockArchiving();
+		});
+		var $cancelButton = $('<div>', {'class' : 'btn btn-default', 'text' : 'Cancel', 'id' : 'cancel'});
+		$cancelButton.click(function() {
+			Util.unblockUI();
+		});
+		$buttons.append($requestButton).append('&nbsp;').append($lockButton).append('&nbsp;').append($cancelButton);
+		
+		var css = {
+				'text-align' : 'left',
+				'top' : '15%',
+				'width' : '50%',
+				'left' : '15%',
+				'right' : '20%',
+				'overflow' : 'hidden'
+		};
+		Util.blockUI($window, css);
+	}
+
 	this.requestArchiving = function() {
 		var _this = this;
 
@@ -779,6 +823,39 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 				"Your dataset will be archived if enough other archiving requests are gather from your group (" + threshold + ").";
 		var $warning = $('<p>').text(warning);
 		$window.append($warning);
+
+		var $btnAccept = $('<input>', { 'type': 'submit', 'class' : 'btn btn-primary', 'value' : 'Accept' });
+		var $btnCancel = $('<a>', { 'class' : 'btn btn-default' }).append('Cancel');
+		$btnCancel.click(function() {
+		    Util.unblockUI();
+		});
+
+		$window.append($btnAccept).append('&nbsp;').append($btnCancel);
+
+		var css = {
+		        'text-align' : 'left',
+		        'top' : '15%',
+		        'width' : '70%',
+		        'left' : '15%',
+		        'right' : '20%',
+		        'overflow' : 'hidden',
+				'background' : '#ffffbf'
+		};
+
+		Util.blockUI($window, css);
+	}
+	
+	this.lockArchiving = function() {
+		var _this = this;
+
+		var $window = $('<form>', { 'action' : 'javascript:void(0);' });
+		$window.submit(function() {
+		    _this._dataSetFormController.setArchivingLock(true);
+		    Util.unblockUI();
+		});
+
+		$window.append($('<legend>').append('Disallow archiving'));
+		$window.append($('<p>').text("Prevent your dataset from being archived."));
 
 		var $btnAccept = $('<input>', { 'type': 'submit', 'class' : 'btn btn-primary', 'value' : 'Accept' });
 		var $btnCancel = $('<a>', { 'class' : 'btn btn-default' }).append('Cancel');

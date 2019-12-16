@@ -692,7 +692,8 @@ var FormUtil = new function() {
 		if(text) {
 			text = text.replace(/(?:\r\n|\r|\n)/g, '\n'); //Normalise carriage returns
 		}
-		text = html.sanitize(text);
+		//text = html.sanitize(text);
+		text = DOMPurify.sanitize(text);
 		$component.html(hyperlink ? this.asHyperlink(text) : text);
 		
 		if(id) {
@@ -829,14 +830,22 @@ var FormUtil = new function() {
 		return $component;
 	}
 	
-	this._getTextBox = function(id, alt, isRequired) {
+this._getTextBox = function(id, alt, isRequired) {
 		var $component = $('<textarea>', {'id' : id, 'alt' : alt, 'style' : 'height: 80px; width: 450px;', 'placeholder' : alt, 'class' : 'form-control'});
 		if (isRequired) {
 			$component.attr('required', '');
 		}
 		return $component;
 	}
-	
+
+	this._getDiv = function(id, alt, isRequired) {
+        var $component = $('<div>', {'id' : id, 'alt' : alt, 'placeholder' : alt});
+        if (isRequired) {
+            $component.attr('required', '');
+        }
+        return $component;
+    }
+
 	this._getDatePickerField = function(id, alt, isRequired, value) {
 		var $component = $('<div>', {'class' : 'form-group', 'style' : 'margin-left: 0px;', 'placeholder' : alt });
 		var $subComponent = $('<div>', {'class' : 'input-group date', 'id' : 'datetimepicker_' + id });
@@ -846,58 +855,70 @@ var FormUtil = new function() {
 		}
 		var $spanAddOn = $('<span>', {'class' : 'input-group-addon'})
 							.append($('<span>', {'class' : 'glyphicon glyphicon-calendar' }));
-		
+
 		$subComponent.append($input);
 		$subComponent.append($spanAddOn);
-		
+
 		var date = null;
 		if(value) {
 			date = Util.parseDate(value);
 		}
-		
-		var datetimepicker = $subComponent.datetimepicker({ 
-			format : 'YYYY-MM-DD HH:mm:ss', 
+
+		var datetimepicker = $subComponent.datetimepicker({
+			format : 'YYYY-MM-DD HH:mm:ss',
 			useCurrent : false,
 			defaultDate : date
 		});
-		
-		
-		
+
 		$component.append($subComponent);
-		
+
 		return $component;
 	}
-	
-	
-	//
-	// Rich Text Editor Support - (CKEditor)
-	//
-	CKEDITOR.on( 'instanceReady', function( ev ) {
-		ev.editor.config.filebrowserUploadMethod = "form";
-		ev.editor.config.filebrowserUploadUrl = "/openbis/openbis/file-service/eln-lims?type=Files&sessionID=" + mainController.serverFacade.getSession();
-		ev.editor.dataProcessor.writer.selfClosingEnd = ' />';
-		ev.editor.document.on('drop', function (ev) {
-		      ev.data.preventDefault(true);
-		});
-	});
-	
-	this.activateRichTextProperties = function($component, componentOnChange, propertyType) {
-		
-		if(profile.isForcedMonospaceFont(propertyType)) {
-			$component.css("font-family", "Consolas, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace");
-		}
-		
+
+	this.createCkeditor = function($component, componentOnChange, value, isReadOnly) {
+
+        if(isReadOnly && value) {
+            $component.append(value);
+        } else {
+            InlineEditor.create($component[0], {
+                             simpleUpload: {
+                                 uploadUrl: "/openbis/openbis/file-service/eln-lims?type=Files&sessionID=" + mainController.serverFacade.getSession()
+                             }
+                        })
+                        .then( editor => {
+                            if (value) {
+                                editor.setData(value);
+                            }
+
+                            editor.isReadOnly = isReadOnly;
+
+                            editor.model.document.on('change:data', function (event) {
+                                var value = editor.getData();
+                                componentOnChange(event, value);
+                            });
+
+                            CKEditorManager.addEditor($component.attr('id'), editor);
+                        })
+                        .catch(error => {
+                            console.error( error );
+                        });
+        }
+	}
+
+	this.activateRichTextProperties = function($component, componentOnChange, propertyType, value, isReadOnly) {
 		if(profile.isForcedDisableRTF(propertyType)) {
 			$component.change(function(event) {
 				componentOnChange(event, $(this).val());
 			});
 		} else {
-			var editor = $component.ckeditor().editor;
-			editor.on('change', function(event) {
-				var value = event.editor.getData();
-				componentOnChange(event, value);
-			});
+		    // InlineEditor is not working with textarea that is why $component was changed on div
+		    var $component = this._getDiv($component.attr('id'), $component.attr('alt'), $component.attr('isRequired'));
+		    FormUtil.createCkeditor($component, componentOnChange, value, isReadOnly);
 		}
+
+        if(profile.isForcedMonospaceFont(propertyType)) {
+            $component.css("font-family", "Consolas, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace");
+        }
 		
 		return $component;
 	}
@@ -910,7 +931,7 @@ var FormUtil = new function() {
 	}
 	
 	this.sanitizeRichHTMLText = function(originalValue) {
-		if(typeof originalValue === "string") {
+		if (typeof originalValue === "string") {
 			//Take envelope out if pressent
 			var bodyStart = originalValue.indexOf("<body>");
 			var bodyEnd = originalValue.indexOf("</body>");
@@ -918,7 +939,8 @@ var FormUtil = new function() {
 				originalValue = originalValue.substring(bodyStart + 6, bodyEnd);
 			}
 			//Clean the contents
-			originalValue = html.sanitize(originalValue);
+			//originalValue = html.sanitize(originalValue);
+			originalValue = DOMPurify.sanitize(originalValue);
 		}
 		return originalValue;
 	}
@@ -961,7 +983,7 @@ var FormUtil = new function() {
 		return $dropDownMenu;
 	}
 	
-	this.getFormLink = function(displayName, entityKind, permIdOrIdentifier, paginationInfo) {
+	this.getFormLink = function(displayName, entityKind, permIdOrIdentifier, paginationInfo, id) {
 		var view = null;
 		switch(entityKind) {
 			case "Space":
@@ -999,7 +1021,7 @@ var FormUtil = new function() {
 			mainController.changeView(view, arg, true);
 		}
 		displayName = String(displayName).replace(/<(?:.|\n)*?>/gm, ''); //Clean any HTML tags
-		var link = $("<a>", { "href" : href, "class" : "browser-compatible-javascript-link" }).text(displayName);
+		var link = $("<a>", { "href" : href, "class" : "browser-compatible-javascript-link", "id" : id }).text(displayName);
 		link.click(click);
 		return link;
 	}
@@ -1770,8 +1792,10 @@ var FormUtil = new function() {
 	}
 
 	this.prepareId = function(id) {
-	    id = id[0] === '$' ? id.substring(1) : id;
-	    id = id.split(".").join("");
-        return id;
-    }
+		if (id) {
+			id = id[0] === '$' ? id.substring(1) : id;
+			id = id.split(".").join("");
+		}
+		return id;
+	}
 }

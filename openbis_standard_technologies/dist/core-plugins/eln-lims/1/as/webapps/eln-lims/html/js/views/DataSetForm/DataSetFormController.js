@@ -253,11 +253,43 @@ function DataSetFormController(parentController, mode, entity, dataSet, isMini, 
 		});
 	}
 
-	this.unarchive = function() {
+	this.setArchivingLock = function(lock) {
 		var _this = this;
 		var dataSetPermId = this._dataSetFormModel.dataSetV3.permId.permId;
 		Util.blockUI();
-		mainController.serverFacade.unarchiveDataSet(dataSetPermId, function() {
+		mainController.serverFacade.lockDataSet(dataSetPermId, lock, function() {
+			_this._reloadView();
+			Util.unblockUI();
+		});
+	}
+
+	this.unarchive = function() {
+		var _this = this;
+		var dataSetPermId = this._dataSetFormModel.dataSetV3.permId.permId;
+		mainController.serverFacade.getArchivingInfo([dataSetPermId], function(info) {
+			var containerSize = info[dataSetPermId]["container"].length;
+			if (containerSize > 1) {
+				var text = "Unarchiving this data set leads to unarchiving of additional " 
+					+ (containerSize - 1) + " data sets. All these data sets need " 
+					+ PrintUtil.renderNumberOfBytes(info["total size"]) + " memory.\n Do you want to unarchive this data set anyway?";
+				var callback = function() {
+					_this.forceUnarchiving(dataSetPermId)
+				};
+				if (info["total size"] > 2 * info[dataSetPermId]["size"]) {
+					Util.showWarning(text, callback);
+				} else {
+					callback();
+				}
+			} else {
+				_this.forceUnarchiving(dataSetPermId);
+			}
+		});
+	}
+
+	this.forceUnarchiving = function(dataSetPermId) {
+		var _this = this;
+		Util.blockUI();
+		mainController.serverFacade.unarchiveDataSets([dataSetPermId], function() {
 			_this._reloadView();
 			Util.unblockUI();
 		});

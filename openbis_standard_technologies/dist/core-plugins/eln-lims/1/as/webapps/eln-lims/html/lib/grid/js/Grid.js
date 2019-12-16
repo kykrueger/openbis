@@ -184,7 +184,10 @@ $.extend(Grid.prototype, {
 				} else if(thisGrid.showAllColumns || columnIndex < (defaultNumColumns - 1) || (columnIndex+1 === currentColumns.length)) { //Defaults
 					checkbox.attr("checked", "checked");
 				}
-				
+				if (column.canNotBeHidden) {
+					checkbox.attr("checked", "checked");
+					checkbox.prop("disabled", true);
+				}
 				checkbox.change(function(e) {
 					var $checkbox = $(this);
 					var propertyName = $checkbox.prop('value');

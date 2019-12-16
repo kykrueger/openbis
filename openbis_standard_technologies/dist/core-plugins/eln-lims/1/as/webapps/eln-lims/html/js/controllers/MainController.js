@@ -462,6 +462,11 @@ function MainController(profile) {
 					this._showAdvancedSearchPage(argToUse);
 					//window.scrollTo(0,0);
 					break;
+				case "showUnarchivingHelperPage":
+					document.title = "Unarchiving Helper";
+					this._showUnarchivingHelper();
+					//window.scrollTo(0,0);
+					break;
 				case "showUserManagerPage":
 					document.title = "User Manager";
 					this._showUserManager();
@@ -873,7 +878,9 @@ function MainController(profile) {
 			header.css({ 
 				"padding" : "10px",
 				"height" : "100%",
-				"background-color" : "rgb(248, 248, 248)"
+				"background-color" : "rgb(248, 248, 248)",
+				"position" : "relative",
+                "z-index" : 500
 			});
 			
 			if((typeof withHeaderOrHeaderId === 'string' || withHeaderOrHeaderId instanceof String)) {
@@ -1017,6 +1024,14 @@ function MainController(profile) {
 		var userManagerController = new UserManagerController(this);
 		userManagerController.init(views);
 		this.currentView = userManagerController;
+	}
+	
+	this._showUnarchivingHelper = function() {
+		var views = this._getNewViewModel(true, true, false);
+		
+		var unarchivingHelperController = new UnarchivingHelperController(this);
+		unarchivingHelperController.init(views);
+		this.currentView = unarchivingHelperController;
 	}
 	
 	this._showSamplesPage = function(experimentIdentifier) {

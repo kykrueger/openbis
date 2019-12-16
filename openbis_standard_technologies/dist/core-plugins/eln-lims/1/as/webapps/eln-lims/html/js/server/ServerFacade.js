@@ -477,14 +477,21 @@ function ServerFacade(openbisServer) {
 	};
 
 	//
-	// Gets submission types
+	// Gets archiving info for specified data set codes
 	//
-	this.listSubmissionTypes = function(callbackFunction) {
+	this.getArchivingInfo = function(dataSets, callbackFunction) {
 		this.customELNApi({
-			"method" : "getSubmissionTypes",
-		}, callbackFunction, "rc-exports-api");
+			"method" : "getArchivingInfo",
+			"args" : dataSets.join(","),
+		}, function(error, result) {
+			if (error) {
+				Util.showError(error);
+			} else {
+				callbackFunction(result.data);
+			}
+		}, "archiving-api");
 	};
-	
+
 	//
 	// Metadata Related Functions
 	//
@@ -1026,6 +1033,38 @@ function ServerFacade(openbisServer) {
 	// New Advanced Search
 	//
 
+  /**
+   * Returns a String where those characters that QueryParser
+   * expects to be escaped are escaped by a preceding <code>\</code>.
+   *
+   * This is a Javascript version of the Java method found at org.apache.lucene.queryparser.classic.QueryParserBase.escape
+   */
+    this.queryParserEscape = function(s) {
+        var sb = "";
+        for (var i = 0; i < s.length; i++) {
+          var c = s.charAt(i);
+          // These characters are part of the query syntax and must be escaped
+          if (c == '\\' || c == '+' || c == '-' || c == '!' || c == '(' || c == ')' || c == ':'
+            || c == '^' || c == '[' || c == ']' || c == '\"' || c == '{' || c == '}' || c == '~'
+            || c == '*' || c == '?' || c == '|' || c == '&' || c == '/') {
+            sb = sb + '\\';
+          }
+          sb = sb + c;
+        }
+        return sb;
+    }
+
+    this.queryParserUnEscape = function(s) {
+            var sb = "";
+            for (var i = 0; i < s.length; i++) {
+              var c = s.charAt(i);
+              if (c != '\\') {
+                sb = sb + c;
+              }
+            }
+            return sb;
+    }
+
 	this.getSearchCriteriaAndFetchOptionsForDataSetSearch = function(advancedSearchCriteria, advancedFetchOptions, callback) {
 		var criteriaClass = 'as/dto/dataset/search/DataSetSearchCriteria';
 		var fetchOptionsClass = 'as/dto/dataset/fetchoptions/DataSetFetchOptions';
@@ -1080,6 +1119,9 @@ function ServerFacade(openbisServer) {
 	}
 
 	this.getSearchCriteriaAndFetchOptionsForEntitySearch = function(advancedSearchCriteria, advancedFetchOptions, callback, criteriaClass, fetchOptionsClass) {
+		var queryParserEscape = this.queryParserEscape;
+		var queryParserUnEscape = this.queryParserUnEscape;
+
 		require([criteriaClass,
 		         fetchOptionsClass,
 		         'as/dto/common/search/DateObjectEqualToValue',
@@ -1097,8 +1139,13 @@ function ServerFacade(openbisServer) {
 
 				//Setting the fetchOptions given standard settings
 				var fetchOptions = new EntityFetchOptions();
-				
-				
+
+				var escapeWildcards = false;
+
+				if(advancedFetchOptions && advancedFetchOptions.escapeWildcards) {
+				    escapeWildcards = true;
+				}
+
 				//Optional fetchOptions
 				if(!advancedFetchOptions ||
 				   (advancedFetchOptions && !(advancedFetchOptions.minTableInfo || advancedFetchOptions.only))
@@ -1297,7 +1344,17 @@ function ServerFacade(openbisServer) {
 				
 					if(!fieldValue) {
 						fieldValue = "*";
-					}
+					} else if(escapeWildcards &&
+					            (
+					            !fieldOperator ||
+					            (fieldOperator == "thatEqualsString") ||
+					            (fieldOperator == "thatContainsString") ||
+					            (fieldOperator == "thatStartsWithString") ||
+					            (fieldOperator == "thatEndsWithString")
+					            )
+					    ) {
+                        fieldValue = queryParserEscape(fieldValue);
+                    }
 				
 					var setPropertyCriteria = function(criteria, propertyName, propertyValue, comparisonOperator) {
 						if(comparisonOperator) {
@@ -1454,6 +1511,9 @@ function ServerFacade(openbisServer) {
 							case "PROJECT_SPACE":
 								criteria.withProject().withSpace().withCode().thatEquals(attributeValue);
 								break;
+							case "PHYSICAL_STATUS":
+								criteria.withPhysicalData().withStatus().thatEquals(attributeValue);
+								break;
 						}
 					}
 				
@@ -1536,13 +1596,31 @@ function ServerFacade(openbisServer) {
 				var hackFixForBrokenEquals = [];
 				if(searchCriteria.criteria) {
 					for(var cIdx = 0; cIdx < searchCriteria.criteria.length; cIdx++) {
+
+                        var value = null;
+                        if(searchCriteria.criteria[cIdx].fieldValue) {
+                            value = searchCriteria.criteria[cIdx].fieldValue.value;
+                            if(escapeWildcards && value) {
+                                value = queryParserUnEscape(value);
+                                console.log(searchCriteria.criteria[cIdx].fieldValue.value + " --> " + value);
+                            }
+
+                        }
+
 						if(searchCriteria.criteria[cIdx].fieldType === "PROPERTY" && 
 								searchCriteria.criteria[cIdx].fieldValue.__proto__["@type"] === "as.dto.common.search.StringEqualToValue") {
 							hackFixForBrokenEquals.push({
 								propertyCode : searchCriteria.criteria[cIdx].fieldName,
-								value : searchCriteria.criteria[cIdx].fieldValue.value
+								value : value
 							});
 						}
+
+						if(searchCriteria.criteria[cIdx].fieldType === "ATTRIBUTE" && searchCriteria.criteria[cIdx].fieldName === "perm id" &&
+                            searchCriteria.criteria[cIdx].fieldValue.__proto__["@type"] === "as.dto.common.search.StringEqualToValue") {
+                        	hackFixForBrokenEquals.push({
+                        	    permId : value
+                            });
+                        }
 					}
 				}
 				//
@@ -1578,9 +1656,14 @@ function ServerFacade(openbisServer) {
             for(var rIdx = 0; rIdx < results.length; rIdx++) {
         	    var result = results[rIdx];
         	    for(var fIdx = 0; fIdx < hackFixForBrokenEquals.length; fIdx++) {
-        		    if(	result &&
-        		        result.properties &&
-        			    result.properties[hackFixForBrokenEquals[fIdx].propertyCode] === hackFixForBrokenEquals[fIdx].value) {
+        	        var propertyFound = hackFixForBrokenEquals[fIdx].propertyCode && result &&
+                                        result.properties &&
+                                        result.properties[hackFixForBrokenEquals[fIdx].propertyCode] === hackFixForBrokenEquals[fIdx].value;
+
+                    var permIdFound = hackFixForBrokenEquals[fIdx].permId && result &&
+                                        result.permId && result.permId.permId
+                                        result.permId.permId === hackFixForBrokenEquals[fIdx].value;
+        		    if(propertyFound || permIdFound) {
         			    switch(operator) {
                             case "AND":
                                 resultsValid[rIdx] = resultsValid[rIdx] && true;
@@ -1956,6 +2039,14 @@ function ServerFacade(openbisServer) {
 						value : sampleCriteria.matchClauses[cIdx].desiredValue.substring(1,sampleCriteria.matchClauses[cIdx].desiredValue.length-1)
 					});
 				}
+//              TODO : This could be supported as done on V3 but is untested, so is commented out in case is buggy
+//				if(sampleCriteria.matchClauses[cIdx]["@type"] === "AttributeMatchClause" &&
+//				        sampleCriteria.matchClauses[cIdx]["attribute"] === "PERM_ID" &&
+//						sampleCriteria.matchClauses[cIdx]["compareMode"] === "EQUALS") {
+//					hackFixForBrokenEquals.push({
+//                        permId : sampleCriteria.matchClauses[cIdx].desiredValue.substring(1,sampleCriteria.matchClauses[cIdx].desiredValue.length-1)
+//                    });
+//				}
 			}
 		}
 		//
@@ -2111,6 +2202,7 @@ function ServerFacade(openbisServer) {
 			advancedSearchCriteria.rules[Util.guid()] = { type : "Property", name : "PROP." + propertyTypeCode, value : propertyTypeValue, operator : "thatEqualsString" }
 		}
 		var advancedFetchOptions = {
+		    "escapeWildcards" : true,
 			"withProperties" : true,
 			"withAncestors" : isComplete,
 			"withDescendants" : isComplete,
@@ -2651,17 +2743,19 @@ function ServerFacade(openbisServer) {
 
 			mainController.openbisV3.updateDataSets([update]).done(function(result) {
 				callbackFunction(true);
-            }).fail(function(result) {
+			}).fail(function(result) {
 				Util.showFailedServerCallError(result);
 				callbackFunction(false);
 			});
 		});
 	}
 
-	this.unarchiveDataSet = function(dataSetPermId, callbackFunction) {
+	this.unarchiveDataSets = function(dataSetPermIds, callbackFunction) {
 		require(["as/dto/dataset/id/DataSetPermId", "as/dto/dataset/unarchive/DataSetUnarchiveOptions"], 
 			function(DataSetPermId, DataSetUnarchiveOptions) {
-				var ids = [new DataSetPermId(dataSetPermId)];
+				var ids = dataSetPermIds.map(function(dataSetPermId) {
+					return new DataSetPermId(dataSetPermId);
+				});
 				var options = new DataSetUnarchiveOptions();
 				mainController.openbisV3.unarchiveDataSets(ids, options).done(function(result) {
 					callbackFunction(true);
@@ -2670,6 +2764,28 @@ function ServerFacade(openbisServer) {
 					callbackFunction(false);
 				});
 			});
+	}
+	
+	this.lockDataSet = function(dataSetPermId, lock, callbackFunction) {
+		require(["as/dto/dataset/id/DataSetPermId", "as/dto/dataset/lock/DataSetLockOptions", "as/dto/dataset/unlock/DataSetUnlockOptions"], 
+				function(DataSetPermId, DataSetLockOptions, DataSetUnlockOptions) {
+			var ids = [new DataSetPermId(dataSetPermId)];
+			if (lock) {
+				mainController.openbisV3.lockDataSets(ids, new DataSetLockOptions()).done(function(result) {
+					callbackFunction(true);
+				}).fail(function(result) {
+					Util.showFailedServerCallError(result);
+					callbackFunction(false);
+				});
+			} else {
+				mainController.openbisV3.unlockDataSets(ids, new DataSetUnlockOptions()).done(function(result) {
+					callbackFunction(true);
+				}).fail(function(result) {
+					Util.showFailedServerCallError(result);
+					callbackFunction(false);
+				});
+			}
+		});
 	}
 
 	// errorHandler: optional. if present, it is called instead of showing the error and the callbackFunction is not called
