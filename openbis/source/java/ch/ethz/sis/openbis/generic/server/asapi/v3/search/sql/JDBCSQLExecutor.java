@@ -16,18 +16,9 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.sql.*;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes;
 
@@ -151,6 +142,10 @@ public class JDBCSQLExecutor implements ISQLExecutor
             {
                 final Date date = (Date) object;
                 preparedStatement.setTimestamp(index + 1, new Timestamp(date.getTime()));
+            } else if (object instanceof Calendar)
+            {
+                final Calendar calendar = (Calendar) object;
+                preparedStatement.setTimestamp(index + 1, new Timestamp(calendar.getTimeInMillis()), calendar);
             } else
             {
                 preparedStatement.setObject(index + 1, object);

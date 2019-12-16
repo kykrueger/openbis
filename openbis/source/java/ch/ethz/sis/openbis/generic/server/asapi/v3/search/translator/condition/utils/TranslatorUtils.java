@@ -22,12 +22,13 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.*;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.*;
 
 import java.text.ParseException;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.EntityWithPropertiesSortOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.TimeZone;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.*;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator;
@@ -273,43 +274,75 @@ public class TranslatorUtils
             try
             {
                 DATE_FORMAT.parse(dateString);
-            } catch (final ParseException e)
+            } catch (final ParseException e1)
             {
                 try
                 {
-                    DATE_WITHOUT_TIME_FORMAT.parse(dateString);
-                    sqlBuilder.append(DOUBLE_COLON).append(DATE);
-                } catch (final ParseException e1)
+                    DATE_WITH_SHORT_TIME_FORMAT.parse(dateString);
+                } catch (ParseException e)
                 {
-                    throw new IllegalArgumentException("Illegal date [dateString='" + dateString + "']", e1);
+                    try
+                    {
+                        DATE_WITHOUT_TIME_FORMAT.parse(dateString);
+                        sqlBuilder.append(DOUBLE_COLON).append(DATE);
+                    } catch (final ParseException e3)
+                    {
+                        throw new IllegalArgumentException("Illegal date [dateString='" + dateString + "']", e3);
+                    }
                 }
             }
         }
     }
 
-    public static void addDateValueToArgs(final IDate fieldValue, final List<Object> args)
+    public static void addDateValueToArgs(final IDate fieldValue, final List<Object> args, ITimeZone timeZone)
     {
         if (fieldValue instanceof AbstractDateValue)
         {
             // String type date value.
-            final String dateString = ((AbstractDateValue) fieldValue).getValue();
-            try
+            final Date date = getDate((AbstractDateValue) fieldValue);
+
+            final TimeZone timeZoneImpl;
+            if (timeZone instanceof TimeZone)
             {
-                args.add(DATE_FORMAT.parse(dateString));
-            } catch (final ParseException e)
+                // Add calendar if there is time zone information.
+                timeZoneImpl = (TimeZone) timeZone;
+                final ZoneId zoneId = ZoneId.ofOffset("UTC", ZoneOffset.ofHours(timeZoneImpl.getHourOffset()));
+                final Calendar calendar = Calendar.getInstance(java.util.TimeZone.getTimeZone(zoneId));
+                calendar.setTime(date);
+                args.add(calendar);
+            } else
             {
-                try
-                {
-                    args.add(DATE_WITHOUT_TIME_FORMAT.parse(dateString));
-                } catch (final ParseException e1)
-                {
-                    throw new IllegalArgumentException("Illegal date [dateString='" + dateString + "']", e1);
-                }
+                // Add calendar if there is no time zone information.
+                args.add(date);
             }
         } else
         {
             // Date type date value.
             args.add(((AbstractDateObjectValue) fieldValue).getValue());
+        }
+    }
+
+    private static Date getDate(AbstractDateValue fieldValue)
+    {
+        final String dateString = fieldValue.getValue();
+        try
+        {
+            return DATE_FORMAT.parse(dateString);
+        } catch (final ParseException e1)
+        {
+            try
+            {
+                return DATE_WITH_SHORT_TIME_FORMAT.parse(dateString);
+            } catch (ParseException e2)
+            {
+                try
+                {
+                    return DATE_WITHOUT_TIME_FORMAT.parse(dateString);
+                } catch (final ParseException e3)
+                {
+                    throw new IllegalArgumentException("Illegal date [dateString='" + dateString + "']", e3);
+                }
+            }
         }
     }
 

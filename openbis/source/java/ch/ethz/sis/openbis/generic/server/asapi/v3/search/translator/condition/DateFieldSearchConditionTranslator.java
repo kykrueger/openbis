@@ -84,7 +84,7 @@ public class DateFieldSearchConditionTranslator implements IConditionTranslator<
                 sqlBuilder.append(SP);
 
                 TranslatorUtils.appendDateComparatorOp(fieldValue, sqlBuilder);
-                TranslatorUtils.addDateValueToArgs(fieldValue, args);
+                TranslatorUtils.addDateValueToArgs(fieldValue, args, criterion.getTimeZone());
                 break;
             }
 
@@ -113,7 +113,7 @@ public class DateFieldSearchConditionTranslator implements IConditionTranslator<
                 sqlBuilder.append(aliases.get(tableMapper.getEntitiesTable()).getSubTableAlias())
                         .append(PERIOD).append(ColumnNames.VALUE_COLUMN).append(DOUBLE_COLON).append(TIMESTAMPTZ).append(SP);
                 TranslatorUtils.appendDateComparatorOp(value, sqlBuilder);
-                TranslatorUtils.addDateValueToArgs(value, args);
+                TranslatorUtils.addDateValueToArgs(value, args, criterion.getTimeZone());
 
                 sqlBuilder.append(SP).append(ELSE).append(SP).append(false).append(SP).append(END);
 
