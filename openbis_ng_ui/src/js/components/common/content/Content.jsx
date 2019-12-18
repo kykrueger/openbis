@@ -19,7 +19,7 @@ const styles = {
     zIndex: 1000
   },
   component: {
-    height: '100%',
+    height: 0,
     flex: '1 1 100%'
   },
   visible: {
