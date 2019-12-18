@@ -43,7 +43,10 @@ const styles = theme => ({
     overflow: 'auto'
   },
   buttons: {
-    flex: '0 0 auto'
+    flex: '0 0 auto',
+    borderWidth: '1px 0px 0px 0px',
+    borderColor: theme.palette.background.secondary,
+    borderStyle: 'solid'
   },
   parameters: {
     backgroundColor: theme.palette.action.selected,

@@ -6,10 +6,12 @@ import logger from '../../../common/logger.js'
 const styles = theme => ({
   container: {
     padding: theme.spacing(2),
+    paddingLeft: theme.spacing(4),
     display: 'flex'
   },
   button: {
-    marginRight: theme.spacing(2)
+    marginRight: theme.spacing(2),
+    whiteSpace: 'nowrap'
   }
 })
 
