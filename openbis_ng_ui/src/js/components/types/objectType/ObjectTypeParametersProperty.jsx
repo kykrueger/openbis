@@ -4,7 +4,7 @@ import Typography from '@material-ui/core/Typography'
 import CheckboxField from '../../common/form/CheckboxField.jsx'
 import TextField from '../../common/form/TextField.jsx'
 import SelectField from '../../common/form/SelectField.jsx'
-import WarningIcon from '@material-ui/icons/Warning'
+import ObjectTypeUsageWarning from './ObjectTypeUsageWarning.jsx'
 import { dto } from '../../../services/openbis.js'
 import logger from '../../../common/logger.js'
 
@@ -17,14 +17,6 @@ const styles = theme => ({
   },
   field: {
     paddingBottom: theme.spacing(2)
-  },
-  warning: {
-    display: 'flex',
-    alignItems: 'center',
-    '& svg': {
-      marginRight: theme.spacing(1),
-      color: theme.palette.warning.main
-    }
   }
 })
 
@@ -202,14 +194,11 @@ class ObjectTypeParametersProperty extends React.PureComponent {
   }
 
   renderWarning(property) {
-    if (property.used) {
+    if (property.usages > 0) {
       const { classes } = this.props
       return (
         <div className={classes.field}>
-          <Typography variant='body2' className={classes.warning}>
-            <WarningIcon />
-            This property is already used by some entities.
-          </Typography>
+          <ObjectTypeUsageWarning subject='property' usages={property.usages} />
         </div>
       )
     } else {
@@ -246,7 +235,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
           name='code'
           mandatory={true}
           error={property.errors.code}
-          disabled={property.used}
+          disabled={property.usages > 0}
           value={property.code}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
@@ -293,7 +282,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
           name='dataType'
           mandatory={true}
           error={property.errors.dataType}
-          disabled={property.used}
+          disabled={property.usages > 0}
           value={property.dataType}
           options={options}
           onChange={this.handleChange}
@@ -329,7 +318,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
             name='vocabulary'
             mandatory={true}
             error={property.errors.vocabulary}
-            disabled={property.used}
+            disabled={property.usages > 0}
             value={property.vocabulary}
             options={options}
             onChange={this.handleChange}
@@ -368,7 +357,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
             name='materialType'
             mandatory={true}
             error={property.errors.materialType}
-            disabled={property.used}
+            disabled={property.usages > 0}
             value={property.materialType}
             options={options}
             onChange={this.handleChange}
@@ -479,12 +468,12 @@ class ObjectTypeParametersProperty extends React.PureComponent {
   }
 
   renderInitialValue(property) {
-    const { type, classes } = this.props
+    const { classes } = this.props
 
     const wasMandatory = property.original ? property.original.mandatory : false
     const isMandatory = property.mandatory
 
-    if (type.used && !wasMandatory && isMandatory) {
+    if (property.usages > 0 && !wasMandatory && isMandatory) {
       return (
         <div className={classes.field}>
           <TextField

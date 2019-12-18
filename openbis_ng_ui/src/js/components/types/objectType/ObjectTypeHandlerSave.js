@@ -289,7 +289,7 @@ export default class ObjectTypeHandlerSave {
 
   doExecute() {
     return this.facade
-      .loadTypePropertyTypes(this.type.code)
+      .loadPropertyTypes(this.type.code)
       .then(loadedPropertyTypes => {
         const { toCreate, toUpdate, toDelete } = this.preparePropertyChanges(
           loadedPropertyTypes

@@ -4,6 +4,7 @@ import Typography from '@material-ui/core/Typography'
 import CheckboxField from '../../common/form/CheckboxField.jsx'
 import TextField from '../../common/form/TextField.jsx'
 import SelectField from '../../common/form/SelectField.jsx'
+import ObjectTypeUsageWarning from './ObjectTypeUsageWarning.jsx'
 import logger from '../../../common/logger.js'
 
 const styles = theme => ({
@@ -123,6 +124,7 @@ class ObjectTypeParametersType extends React.PureComponent {
         <Typography variant='h6' className={classes.header}>
           Type
         </Typography>
+        {this.renderWarning(type)}
         {this.renderCode(type)}
         {this.renderDescription(type)}
         {this.renderValidationPlugin(type)}
@@ -137,6 +139,19 @@ class ObjectTypeParametersType extends React.PureComponent {
     )
   }
 
+  renderWarning(type) {
+    if (type.usages > 0) {
+      const { classes } = this.props
+      return (
+        <div className={classes.field}>
+          <ObjectTypeUsageWarning subject='type' usages={type.usages} />
+        </div>
+      )
+    } else {
+      return null
+    }
+  }
+
   renderCode(type) {
     const { classes } = this.props
     return (
@@ -147,7 +162,7 @@ class ObjectTypeParametersType extends React.PureComponent {
           name='code'
           mandatory={true}
           error={type.errors.code}
-          disabled={type.used}
+          disabled={type.usages > 0}
           value={type.code}
           onChange={this.handleChange}
           onFocus={this.handleFocus}

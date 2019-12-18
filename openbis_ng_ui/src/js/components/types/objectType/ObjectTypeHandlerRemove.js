@@ -114,6 +114,6 @@ export default class ObjectTypeHandlerRemove {
   }
 
   isPropertyUsed(property) {
-    return property.used
+    return property.usages !== 0
   }
 }

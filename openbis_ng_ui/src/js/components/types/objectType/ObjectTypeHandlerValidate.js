@@ -148,7 +148,7 @@ export default class ObjectTypeHandlerValidate {
     const wasMandatory = property.original ? property.original.mandatory : false
     const isMandatory = property.mandatory
 
-    if (type.used && !wasMandatory && isMandatory) {
+    if (property.usages > 0 && !wasMandatory && isMandatory) {
       this.validateNotEmpty(
         'Initial Value',
         'initialValueForExistingEntities',

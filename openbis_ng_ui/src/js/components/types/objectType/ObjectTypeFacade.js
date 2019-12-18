@@ -21,7 +21,7 @@ export default class ObjectTypeFacade {
     })
   }
 
-  loadTypePropertyTypes(typeId) {
+  loadPropertyTypes(typeId) {
     const criteria = new dto.PropertyTypeSearchCriteria()
     criteria.withCode().thatStartsWith(typeId + '.')
 
@@ -34,24 +34,67 @@ export default class ObjectTypeFacade {
     })
   }
 
-  loadTypeLatestEntity(typeId) {
-    const criteria = new dto.SampleSearchCriteria()
-    criteria
-      .withType()
-      .withCode()
-      .thatEquals(typeId)
+  loadUsages(typeId) {
+    function createTypeUsedOperation(typeId) {
+      const criteria = new dto.SampleSearchCriteria()
+      criteria
+        .withType()
+        .withCode()
+        .thatEquals(typeId)
 
-    const fo = new dto.SampleFetchOptions()
-    fo.sortBy()
-      .modificationDate()
-      .desc()
-    fo.count(1)
+      const fo = new dto.SampleFetchOptions()
+      fo.count(0)
 
-    return facade.searchSamples(criteria, fo).then(result => {
-      if (result.objects.length > 0) {
-        return result.objects[0]
+      return new dto.SearchSamplesOperation(criteria, fo)
+    }
+
+    function createPropertyUsedOperation(propertyTypeCode) {
+      const criteria = new dto.SampleSearchCriteria()
+      criteria.withProperty(propertyTypeCode).thatEquals('*')
+
+      const fo = new dto.SampleFetchOptions()
+      fo.count(0)
+
+      return new dto.SearchSamplesOperation(criteria, fo)
+    }
+
+    const id = new dto.EntityTypePermId(typeId)
+    const fo = new dto.SampleTypeFetchOptions()
+    fo.withPropertyAssignments().withPropertyType()
+
+    return facade.getSampleTypes([id], fo).then(map => {
+      const type = map[typeId]
+
+      if (type) {
+        const operations = []
+
+        operations.push(createTypeUsedOperation(typeId))
+        type.getPropertyAssignments().forEach(assignment => {
+          operations.push(
+            createPropertyUsedOperation(assignment.getPropertyType().getCode())
+          )
+        })
+
+        const options = new dto.SynchronousOperationExecutionOptions()
+        options.setExecuteInOrder(true)
+
+        return facade.executeOperations(operations, options).then(result => {
+          const results = result.getResults()
+          const map = { property: {} }
+
+          map.type = results[0].getSearchResult().getTotalCount()
+          type.getPropertyAssignments().forEach((assignment, index) => {
+            map.property[assignment.getPropertyType().getCode()] = results[
+              index + 1
+            ]
+              .getSearchResult()
+              .getTotalCount()
+          })
+
+          return map
+        })
       } else {
-        return null
+        return {}
       }
     })
   }

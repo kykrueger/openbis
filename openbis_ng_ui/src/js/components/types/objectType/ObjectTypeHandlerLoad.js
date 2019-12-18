@@ -13,11 +13,9 @@ export default class ObjectTypeHandlerLoad {
 
     return Promise.all([
       this.facade.loadType(this.objectId),
-      this.facade.loadTypeLatestEntity(this.objectId)
+      this.facade.loadUsages(this.objectId)
     ])
-      .then(([loadedType, latestEntity]) => {
-        const used = latestEntity !== null
-
+      .then(([loadedType, loadedUsages]) => {
         const type = {
           code: loadedType.code,
           description: loadedType.description,
@@ -32,7 +30,7 @@ export default class ObjectTypeHandlerLoad {
             ? loadedType.validationPlugin.name
             : null,
           errors: {},
-          used: used
+          usages: loadedUsages.type
         }
 
         type.original = {
@@ -47,11 +45,6 @@ export default class ObjectTypeHandlerLoad {
         let propertiesCounter = 0
 
         loadedType.propertyAssignments.forEach(assignment => {
-          const used =
-            assignment.registrationDate &&
-            latestEntity &&
-            latestEntity.modificationDate > assignment.registrationDate
-
           currentProperty = {
             id: 'property-' + propertiesCounter++,
             code: assignment.propertyType.code,
@@ -71,7 +64,7 @@ export default class ObjectTypeHandlerLoad {
             showInEditView: assignment.showInEditView,
             showRawValueInForms: assignment.showRawValueInForms,
             errors: {},
-            used: used
+            usages: loadedUsages.property[assignment.propertyType.code] || 0
           }
 
           if (currentSection && currentSection.name === assignment.section) {

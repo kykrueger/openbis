@@ -46,7 +46,7 @@ export default class ObjectTypeHandlerAddProperty {
       mandatory: false,
       section: section.id,
       errors: {},
-      used: false
+      usages: 0
     }
     newProperties.splice(propertyIndex, 0, newProperty)
 

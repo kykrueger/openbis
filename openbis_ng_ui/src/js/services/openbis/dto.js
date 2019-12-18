@@ -9,6 +9,7 @@ const CLASS_FULL_NAMES = [
   'as/dto/entitytype/EntityKind',
   'as/dto/sample/fetchoptions/SampleFetchOptions',
   'as/dto/sample/fetchoptions/SampleTypeFetchOptions',
+  'as/dto/sample/search/SearchSamplesOperation',
   'as/dto/sample/update/SampleTypeUpdate',
   'as/dto/sample/update/UpdateSampleTypesOperation',
   'as/dto/sample/search/SampleSearchCriteria',
