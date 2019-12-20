@@ -932,14 +932,36 @@ class Openbis:
                 os.environ['OPENBIS_TOKEN'] = self.token
             return self.token
 
-    def mount(self, username, mountpoint, volname, password, port=2222, kex_algorithms ='+diffie-hellman-group1-sha1'):
+    def mount(self, username, servername, mountpoint, volname, password, path='/', port=2222, kex_algorithms ='+diffie-hellman-group1-sha1', shell=False):
+
+        """Mounts openBIS dataStore without root, using sshfs and fuse.
         """
-        echo password | sshfs -o port=2222 -o ssh_command="ssh -oKexAlgorithms=+diffie-hellman-group1-sha1"
-        vermeul@openbis-tst.ethz.ch:/SIS_VERMEUL/MY-FIRST-PROJECT/MY-FIRST-PROJECT_EXP_1/20190403133112022-611/original/DEFAULT ~/mnt
-        -oauto_cache,reconnect,defer_permissions,noappledouble,negative_vncache,volname=myVolumeName -o password_stdin
-        """
-        pass
-        
+
+        import subprocess
+        args = {
+            "username": username,
+            "password": password,
+            "servername": servername,
+            "port": port,
+            "path": path,
+            "mountpoint": mountpoint,
+            "volname": volname,
+            "kex_algroithms": kex_algroithms,
+        }
+        cmd = (
+            'echo "{password}" | sshfs -o port={port}'
+            ' -o ssh_command="ssh -oKexAlgorithms={kex_algroithms}+diffie-hellman-group1-sha1"'
+            ' {username}@{servername}:{path} {mountpoint}'
+            ' -oauto_cache,reconnect,defer_permissions,noappledouble,negative_vncache,volname={volname}'
+            ' -o password_stdin'
+        )
+
+        subprocess.run(cmd.format(**args), 
+            stdout=subprocess.PIPE, 
+            stderr=subprocess.PIPE, 
+            input=password,
+            shell=shell
+        )
 
 
     def get_server_information(self):
@@ -988,6 +1010,8 @@ class Openbis:
         there might be multiple servers. If you upload a file, you need to specifiy the datastore you want
         the file uploaded to.
         """
+        if hasattr(self, 'datastores'):
+            return self.datastores
 
         request = {
             "method": "searchDataStores",
@@ -1009,6 +1033,7 @@ class Openbis:
             objects = resp['objects']
             parse_jackson(objects)
             datastores = DataFrame(objects)
+            self.datastores = datastores[attrs]
             return datastores[attrs]
 
     def gen_code(self, entity, prefix=""):
