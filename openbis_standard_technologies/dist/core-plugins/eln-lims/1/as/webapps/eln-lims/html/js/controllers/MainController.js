@@ -878,7 +878,9 @@ function MainController(profile) {
 			header.css({ 
 				"padding" : "10px",
 				"height" : "100%",
-				"background-color" : "rgb(248, 248, 248)"
+				"background-color" : "rgb(248, 248, 248)",
+				"position" : "relative",
+                "z-index" : 500
 			});
 			
 			if((typeof withHeaderOrHeaderId === 'string' || withHeaderOrHeaderId instanceof String)) {

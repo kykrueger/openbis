@@ -358,20 +358,14 @@ var LayoutManager = {
 			}
 		}
 	},
-	canReload : function() {
-		// Don't reload when CKEditor is maximized
-		var ckMaximized = false;
-		for(editorId in CKEDITOR.instances) {
-			var commands = CKEDITOR.instances[editorId].commands;
-			if(commands && commands.maximize && commands.maximize.state == 1) {
-				ckMaximized = true;
-			}
-		}
-		
-		return  this.isResizingColumn === false && 
-				this.isLoadingView === false && 
-				!ckMaximized;
-	},
+    canReload : function() {
+        // Don't reload when CKEditor is maximized
+        var ckMaximized = CKEditorManager.getMaximized();
+
+        return  this.isResizingColumn === false &&
+                this.isLoadingView === false &&
+                !ckMaximized;
+    },
 	getContentWidth : function() {
 		var width = $( window ).width();
 		if (width > this.DESKTOP_SIZE) {

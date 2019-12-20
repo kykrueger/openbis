@@ -1,3 +1,7 @@
+## Changes with pybis-1.10.7
+
+* made download work, even downloadUrl attribute is missing in dataSets
+
 ## Changes with pybis-1.10.6
 
 * added possibility to download files without /original/DEFAULT folders
