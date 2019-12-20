@@ -19,7 +19,7 @@ def parse_jackson(input_json):
         'children', 'containers', 'container', 'properties', 'experiment', 'sample',
         'project', 'space', 'propertyType', 'entityType', 'propertyType', 'propertyAssignment',
         'externalDms', 'roleAssignments', 'user', 'users', 'authorizationGroup', 'vocabulary',
-        'validationPlugin'
+        'validationPlugin', 'dataSetPermId', 'dataStore'
     ]
     found = {} 
     def build_cache(graph):
@@ -142,6 +142,11 @@ def extract_code(obj):
     if not isinstance(obj, dict):
         return '' if obj is None else str(obj)
     return '' if obj['code'] is None else obj['code']
+
+def extract_downloadUrl(obj):
+    if not isinstance(obj, dict):
+        return '' if obj is None else str(obj)
+    return '' if obj['downloadUrl'] is None else obj['downloadUrl']
 
 def extract_name(obj):
     if not isinstance(obj, dict):
