@@ -302,6 +302,9 @@ def openbis_definitions(entity):
             'experimentId': {'permId': {'@type': 'as.dto.experiment.id.ExperimentPermId'}},
             'tagIds': {'code': {'@type': 'as.dto.tag.id.TagCode'}},
         },
+        "dataSetFile": {
+            "search": { "@type": "dss.dto.datasetfile.search.DataSetFileSearchCriteria" }
+        },
     }
     return entities[entity]
 
@@ -462,6 +465,7 @@ fetch_option = {
     "deletedObjects": { "@type": "as.dto.deletion.fetchoptions.DeletedObjectFetchOptions" },
     "deletion": { "@type": "as.dto.deletion.fetchoptions.DeletionFetchOptions" },
     "externalDms": { "@type": "as.dto.externaldms.fetchoptions.ExternalDmsFetchOptions"},
+    "dataSetFile": { "@type": "dss.dto.datasetfile.fetchoptions.DataSetFileFetchOptions"},
 }
 
 def get_fetchoption_for_entity(entity):
