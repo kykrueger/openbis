@@ -162,7 +162,7 @@ class ObjectTypeParametersType extends React.PureComponent {
           name='code'
           mandatory={true}
           error={type.errors.code}
-          disabled={type.usages > 0}
+          disabled={!!type.original}
           value={type.code}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
