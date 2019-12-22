@@ -4,7 +4,7 @@ import Typography from '@material-ui/core/Typography'
 import CheckboxField from '../../common/form/CheckboxField.jsx'
 import TextField from '../../common/form/TextField.jsx'
 import SelectField from '../../common/form/SelectField.jsx'
-import ObjectTypeUsageWarning from './ObjectTypeUsageWarning.jsx'
+import ObjectTypeWarningUsage from './ObjectTypeWarningUsage.jsx'
 import logger from '../../../common/logger.js'
 
 const styles = theme => ({
@@ -144,7 +144,7 @@ class ObjectTypeParametersType extends React.PureComponent {
       const { classes } = this.props
       return (
         <div className={classes.field}>
-          <ObjectTypeUsageWarning subject='type' usages={type.usages} />
+          <ObjectTypeWarningUsage subject='type' usages={type.usages} />
         </div>
       )
     } else {

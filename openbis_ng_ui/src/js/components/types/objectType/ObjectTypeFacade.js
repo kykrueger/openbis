@@ -21,19 +21,6 @@ export default class ObjectTypeFacade {
     })
   }
 
-  loadPropertyTypes(typeId) {
-    const criteria = new dto.PropertyTypeSearchCriteria()
-    criteria.withCode().thatStartsWith(typeId + '.')
-
-    const fo = new dto.PropertyTypeFetchOptions()
-    fo.withVocabulary()
-    fo.withMaterialType()
-
-    return facade.searchPropertyTypes(criteria, fo).then(result => {
-      return result.objects
-    })
-  }
-
   loadUsages(typeId) {
     function createTypeUsedOperation(typeId) {
       const criteria = new dto.SampleSearchCriteria()

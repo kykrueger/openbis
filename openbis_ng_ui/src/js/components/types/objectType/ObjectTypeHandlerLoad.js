@@ -33,10 +33,6 @@ export default class ObjectTypeHandlerLoad {
           usages: loadedUsages.type
         }
 
-        type.original = {
-          ...type
-        }
-
         const sections = []
         const properties = []
         let currentSection = null
@@ -85,6 +81,11 @@ export default class ObjectTypeHandlerLoad {
 
           properties.push(currentProperty)
         })
+
+        type.original = {
+          ...type,
+          properties
+        }
 
         this.setState(() => ({
           type,

@@ -15,20 +15,19 @@ const styles = theme => ({
   }
 })
 
-class ObjectTypeUsageWarning extends React.PureComponent {
+class ObjectTypeWarning extends React.PureComponent {
   render() {
-    logger.log(logger.DEBUG, 'ObjectTypeUsageWarning.render')
+    logger.log(logger.DEBUG, 'ObjectTypeWarning.render')
 
-    const { classes, subject, usages } = this.props
+    const { classes, children } = this.props
 
     return (
       <Typography variant='body2' className={classes.warning}>
         <WarningIcon />
-        This {subject} is already used by {usages}
-        {usages > 1 ? ' entities' : ' entity'}.
+        {children}
       </Typography>
     )
   }
 }
 
-export default withStyles(styles)(ObjectTypeUsageWarning)
+export default withStyles(styles)(ObjectTypeWarning)

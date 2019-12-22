@@ -4,7 +4,8 @@ import Typography from '@material-ui/core/Typography'
 import CheckboxField from '../../common/form/CheckboxField.jsx'
 import TextField from '../../common/form/TextField.jsx'
 import SelectField from '../../common/form/SelectField.jsx'
-import ObjectTypeUsageWarning from './ObjectTypeUsageWarning.jsx'
+import ObjectTypeWarningUsage from './ObjectTypeWarningUsage.jsx'
+import ObjectTypeWarningLegacy from './ObjectTypeWarningLegacy.jsx'
 import { dto } from '../../../services/openbis.js'
 import logger from '../../../common/logger.js'
 
@@ -176,7 +177,8 @@ class ObjectTypeParametersProperty extends React.PureComponent {
         <Typography variant='h6' className={classes.header}>
           Property
         </Typography>
-        {this.renderWarning(property)}
+        {this.renderWarningLegacy(property)}
+        {this.renderWarningUsage(property)}
         {this.renderCode(property)}
         {this.renderDataType(property)}
         {this.renderVocabulary(property)}
@@ -193,12 +195,25 @@ class ObjectTypeParametersProperty extends React.PureComponent {
     )
   }
 
-  renderWarning(property) {
+  renderWarningLegacy(property) {
+    if (this.isLegacy(property)) {
+      const { classes } = this.props
+      return (
+        <div className={classes.field}>
+          <ObjectTypeWarningLegacy />
+        </div>
+      )
+    } else {
+      return null
+    }
+  }
+
+  renderWarningUsage(property) {
     if (property.usages > 0) {
       const { classes } = this.props
       return (
         <div className={classes.field}>
-          <ObjectTypeUsageWarning subject='property' usages={property.usages} />
+          <ObjectTypeWarningUsage subject='property' usages={property.usages} />
         </div>
       )
     } else {
@@ -216,6 +231,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
           name='label'
           mandatory={true}
           error={property.errors.label}
+          disabled={this.isLegacy(property)}
           value={property.label}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
@@ -255,6 +271,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
           name='description'
           mandatory={true}
           error={property.errors.description}
+          disabled={this.isLegacy(property)}
           value={property.description}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
@@ -282,7 +299,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
           name='dataType'
           mandatory={true}
           error={property.errors.dataType}
-          disabled={property.usages > 0}
+          disabled={property.usages > 0 || this.isLegacy(property)}
           value={property.dataType}
           options={options}
           onChange={this.handleChange}
@@ -318,7 +335,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
             name='vocabulary'
             mandatory={true}
             error={property.errors.vocabulary}
-            disabled={property.usages > 0}
+            disabled={property.usages > 0 || this.isLegacy(property)}
             value={property.vocabulary}
             options={options}
             onChange={this.handleChange}
@@ -357,7 +374,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
             name='materialType'
             mandatory={true}
             error={property.errors.materialType}
-            disabled={property.usages > 0}
+            disabled={property.usages > 0 || this.isLegacy(property)}
             value={property.materialType}
             options={options}
             onChange={this.handleChange}
@@ -381,6 +398,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
             label='XML Schema'
             name='schema'
             error={property.errors.schema}
+            disabled={this.isLegacy(property)}
             value={property.schema}
             multiline={true}
             onChange={this.handleChange}
@@ -404,6 +422,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
             label='XSLT Script'
             name='transformation'
             error={property.errors.transformation}
+            disabled={this.isLegacy(property)}
             value={property.transformation}
             multiline={true}
             onChange={this.handleChange}
@@ -440,6 +459,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
           label='Dynamic Plugin'
           name='plugin'
           error={property.errors.plugin}
+          disabled={property.usages > 0}
           value={property.plugin}
           options={options}
           onChange={this.handleChange}
@@ -534,6 +554,12 @@ class ObjectTypeParametersProperty extends React.PureComponent {
     } else {
       return null
     }
+  }
+
+  isLegacy(property) {
+    return (
+      property.original && !property.code.startsWith(this.props.type.code + '.')
+    )
   }
 }
 
