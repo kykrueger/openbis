@@ -16,6 +16,14 @@ const styles = theme => ({
 })
 
 class ObjectTypeButtons extends React.PureComponent {
+  isSectionOrPropertySelected() {
+    const { selection } = this.props
+    return (
+      selection &&
+      (selection.type === 'property' || selection.type === 'section')
+    )
+  }
+
   render() {
     logger.log(logger.DEBUG, 'ObjectTypeButtons.render')
 
@@ -24,11 +32,7 @@ class ObjectTypeButtons extends React.PureComponent {
       onAddSection,
       onAddProperty,
       onRemove,
-      onSave,
-      addSectionEnabled,
-      addPropertyEnabled,
-      removeEnabled,
-      saveEnabled
+      onSave
     } = this.props
 
     return (
@@ -37,7 +41,6 @@ class ObjectTypeButtons extends React.PureComponent {
           classes={{ root: classes.button }}
           variant='contained'
           color='secondary'
-          disabled={!addSectionEnabled}
           onClick={onAddSection}
         >
           Add Section
@@ -46,7 +49,7 @@ class ObjectTypeButtons extends React.PureComponent {
           classes={{ root: classes.button }}
           variant='contained'
           color='secondary'
-          disabled={!addPropertyEnabled}
+          disabled={!this.isSectionOrPropertySelected()}
           onClick={onAddProperty}
         >
           Add Property
@@ -55,7 +58,7 @@ class ObjectTypeButtons extends React.PureComponent {
           classes={{ root: classes.button }}
           variant='contained'
           color='secondary'
-          disabled={!removeEnabled}
+          disabled={!this.isSectionOrPropertySelected()}
           onClick={onRemove}
         >
           Remove
@@ -64,7 +67,6 @@ class ObjectTypeButtons extends React.PureComponent {
           classes={{ root: classes.button }}
           variant='contained'
           color='primary'
-          disabled={!saveEnabled}
           onClick={onSave}
         >
           Save

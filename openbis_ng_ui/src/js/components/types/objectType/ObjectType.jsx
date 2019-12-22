@@ -213,10 +213,7 @@ class ObjectType extends React.PureComponent {
               onAddProperty={this.handleAddProperty}
               onRemove={this.handleRemove}
               onSave={this.handleSave}
-              addSectionEnabled={true}
-              addPropertyEnabled={selection !== null}
-              removeEnabled={selection !== null}
-              saveEnabled={true}
+              selection={selection}
             />
             <ObjectTypeDialogRemoveSection
               open={removeSectionDialogOpen}
