@@ -16,9 +16,7 @@ const styles = theme => ({
     zIndex: '20000 !important'
   },
   actions: {
-    marginLeft: theme.spacing(2),
-    marginRight: theme.spacing(2),
-    marginBottom: theme.spacing(1)
+    margin: theme.spacing(1)
   }
 })
 
@@ -48,7 +46,7 @@ class DialogWindow extends React.Component {
       >
         <DialogTitle>{_.isFunction(title) ? title(this) : title}</DialogTitle>
         <DialogContent>
-          <DialogContentText>
+          <DialogContentText component='div'>
             {_.isFunction(content) ? content(this) : content}
           </DialogContentText>
         </DialogContent>

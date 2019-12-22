@@ -21,16 +21,25 @@ class ErrorDialog extends React.Component {
 
     const { error, onClose } = this.props
 
-    const content = error && error.message ? error.message : error
-
     return (
       <Dialog
         open={!!error}
         onClose={onClose}
         title={'Error'}
-        content={content || ''}
+        content={this.renderContent()}
         actions={this.renderButtons()}
       />
+    )
+  }
+
+  renderContent() {
+    const message = this.getErrorMessage()
+    const stack = this.getErrorStack()
+    return (
+      <div>
+        <div>{message}</div>
+        <pre>{stack}</pre>
+      </div>
     )
   }
 
@@ -59,31 +68,61 @@ class ErrorDialog extends React.Component {
   }
 
   getErrorMailtoHref() {
+    const message = this.getErrorMessage()
+    const stack = this.getErrorStack()
+
     let report =
       'agent: ' +
       navigator.userAgent +
-      '%0D%0A' +
+      '\n' +
       'domain: ' +
       location.hostname +
-      '%0D%0A' +
+      '\n' +
       'timestamp: ' +
       new Date() +
-      '%0D%0A' +
+      '\n' +
       'href: ' +
-      location.href.replace(new RegExp('&', 'g'), ' - ') +
-      '%0D%0A' +
+      location.href +
+      '\n' +
       'error: ' +
-      JSON.stringify(this.props.error)
+      (message ? message : '') +
+      '\n' +
+      'stack: ' +
+      (stack ? stack : '')
 
     let href =
       'mailto:' +
       profile.devEmail +
-      '?subject=openBIS Error Report [' +
-      location.hostname +
-      ']' +
+      '?subject=' +
+      encodeURIComponent('openBIS Error Report [' + location.hostname + ']') +
       '&body=' +
-      report
+      encodeURIComponent(report)
+
     return href
+  }
+
+  getErrorMessage() {
+    const { error } = this.props
+
+    if (error) {
+      if (error.message) {
+        return error.message
+      } else {
+        return error
+      }
+    } else {
+      return null
+    }
+  }
+
+  getErrorStack() {
+    const { error } = this.props
+
+    if (error && error.stack) {
+      return error.stack
+    } else {
+      return null
+    }
   }
 }
 
