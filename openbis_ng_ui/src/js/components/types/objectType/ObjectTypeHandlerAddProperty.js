@@ -9,26 +9,23 @@ export default class ObjectTypeHandlerAddProperty {
 
     let sectionIndex = null
     let sectionPropertyIndex = null
-    let propertyIndex = null
 
-    if (selection.type === 'section') {
-      sectionIndex = sections.findIndex(
-        section => section.id === selection.params.id
-      )
-      sectionPropertyIndex = sections[sectionIndex].properties.length
-      propertyIndex = properties.length
-    } else if (selection.type === 'property') {
-      sections.forEach((section, i) => {
-        section.properties.forEach((property, j) => {
-          if (property === selection.params.id) {
-            sectionIndex = i
-            sectionPropertyIndex = j + 1
-          }
+    if (selection) {
+      if (selection.type === 'section') {
+        sectionIndex = sections.findIndex(
+          section => section.id === selection.params.id
+        )
+        sectionPropertyIndex = sections[sectionIndex].properties.length
+      } else if (selection.type === 'property') {
+        sections.forEach((section, i) => {
+          section.properties.forEach((property, j) => {
+            if (property === selection.params.id) {
+              sectionIndex = i
+              sectionPropertyIndex = j + 1
+            }
+          })
         })
-      })
-      propertyIndex =
-        properties.findIndex(property => property.id === selection.params.id) +
-        1
+      }
     }
 
     let section = sections[sectionIndex]
@@ -36,9 +33,9 @@ export default class ObjectTypeHandlerAddProperty {
     let newProperties = Array.from(properties)
     let newProperty = {
       id: 'property-' + propertiesCounter++,
-      code: '',
-      label: '',
-      description: '',
+      code: null,
+      label: null,
+      description: null,
       dataType: 'VARCHAR',
       vocabulary: null,
       materialType: null,
@@ -48,7 +45,7 @@ export default class ObjectTypeHandlerAddProperty {
       errors: {},
       usages: 0
     }
-    newProperties.splice(propertyIndex, 0, newProperty)
+    newProperties.push(newProperty)
 
     let newSection = {
       ...section,
