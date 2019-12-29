@@ -1,9 +1,9 @@
 import ObjectTypeHandlerAddProperty from '../../../../../src/js/components/types/objectType/ObjectTypeHandlerAddProperty.js'
-import componentState from '../../../common/componentState.js'
+import ComponentState from '../../../common/ComponentState.js'
 
 describe('ObjectTypeHandlerAddPropertyTest', () => {
   test('add with a section selected', () => {
-    let state = {
+    const componentState = new ComponentState({
       selection: {
         type: 'section',
         params: { id: 'section-0' }
@@ -20,11 +20,11 @@ describe('ObjectTypeHandlerAddPropertyTest', () => {
       ],
       properties: [{ id: 'property-9', section: 'section-0' }],
       propertiesCounter: 10
-    }
+    })
 
-    execute(state)
+    execute(componentState)
 
-    expect(state).toEqual({
+    componentState.assertState({
       selection: {
         type: 'property',
         params: { id: 'property-10' }
@@ -61,7 +61,7 @@ describe('ObjectTypeHandlerAddPropertyTest', () => {
   })
 
   test('add with a property selected', () => {
-    let state = {
+    const componentState = new ComponentState({
       selection: {
         type: 'property',
         params: { id: 'property-0' }
@@ -82,11 +82,11 @@ describe('ObjectTypeHandlerAddPropertyTest', () => {
         { id: 'property-2', section: 'section-1' }
       ],
       propertiesCounter: 3
-    }
+    })
 
-    execute(state)
+    execute(componentState)
 
-    expect(state).toEqual({
+    componentState.assertState({
       selection: {
         type: 'property',
         params: { id: 'property-3' }
@@ -125,9 +125,9 @@ describe('ObjectTypeHandlerAddPropertyTest', () => {
   })
 })
 
-const execute = state => {
+const execute = componentState => {
   new ObjectTypeHandlerAddProperty(
-    state,
-    componentState.createSetState(state)
+    componentState.getState(),
+    componentState.getSetState()
   ).execute()
 }

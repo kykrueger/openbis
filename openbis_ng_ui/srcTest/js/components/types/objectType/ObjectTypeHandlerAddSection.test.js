@@ -1,16 +1,16 @@
 import ObjectTypeHandlerAddSection from '../../../../../src/js/components/types/objectType/ObjectTypeHandlerAddSection.js'
-import componentState from '../../../common/componentState.js'
+import ComponentState from '../../../common/ComponentState.js'
 
 describe('ObjectTypeHandlerAddSectionTest', () => {
   test('add with nothing selected', () => {
-    let state = {
+    const componentState = new ComponentState({
       sections: [],
       sectionsCounter: 10
-    }
+    })
 
-    execute(state)
+    execute(componentState)
 
-    expect(state).toEqual({
+    componentState.assertState({
       selection: {
         type: 'section',
         params: {
@@ -29,7 +29,7 @@ describe('ObjectTypeHandlerAddSectionTest', () => {
   })
 
   test('add with a section selected', () => {
-    let state = {
+    const componentState = new ComponentState({
       selection: {
         type: 'section',
         params: { id: 'section-0' }
@@ -46,11 +46,11 @@ describe('ObjectTypeHandlerAddSectionTest', () => {
       ],
       properties: [{ id: 'property-9', section: 'section-0' }],
       sectionsCounter: 2
-    }
+    })
 
-    execute(state)
+    execute(componentState)
 
-    expect(state).toEqual({
+    componentState.assertState({
       selection: {
         type: 'section',
         params: { id: 'section-2' }
@@ -76,7 +76,7 @@ describe('ObjectTypeHandlerAddSectionTest', () => {
   })
 
   test('add with a property selected', () => {
-    let state = {
+    const componentState = new ComponentState({
       selection: {
         type: 'property',
         params: { id: 'property-0' }
@@ -97,11 +97,11 @@ describe('ObjectTypeHandlerAddSectionTest', () => {
         { id: 'property-2', section: 'section-1' }
       ],
       sectionsCounter: 2
-    }
+    })
 
-    execute(state)
+    execute(componentState)
 
-    expect(state).toEqual({
+    componentState.assertState({
       selection: {
         type: 'section',
         params: { id: 'section-2' }
@@ -131,9 +131,9 @@ describe('ObjectTypeHandlerAddSectionTest', () => {
   })
 })
 
-const execute = state => {
+const execute = componentState => {
   new ObjectTypeHandlerAddSection(
-    state,
-    componentState.createSetState(state)
+    componentState.getState(),
+    componentState.getSetState()
   ).execute()
 }
