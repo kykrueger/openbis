@@ -6,37 +6,39 @@ export default class ObjectTypeHandlerRemove {
     this.setState = setState
   }
 
-  executeRemove() {
+  executeRemove(confirmed = false) {
     const { selection } = this.state
     if (selection.type === 'section') {
-      this.handleRemoveSection(selection.params.id)
+      this.handleRemoveSection(selection.params.id, confirmed)
     } else if (selection.type === 'property') {
-      this.handleRemoveProperty(selection.params.id)
+      this.handleRemoveProperty(selection.params.id, confirmed)
     }
   }
 
-  executeRemoveConfirm() {
-    this.setState({
-      removeSectionDialogOpen: false,
-      removePropertyDialogOpen: false
-    })
-    this.executeRemove()
+  executeCancel() {
+    const { selection } = this.state
+    if (selection.type === 'section') {
+      this.setState({
+        removeSectionDialogOpen: false
+      })
+    } else if (selection.type === 'property') {
+      this.setState({
+        removePropertyDialogOpen: false
+      })
+    }
   }
 
-  executeRemoveCancel() {
-    this.setState({
-      removeSectionDialogOpen: false,
-      removePropertyDialogOpen: false
-    })
-  }
-
-  handleRemoveSection(sectionId) {
-    const { sections, properties, removeSectionDialogOpen } = this.state
+  handleRemoveSection(sectionId, confirmed) {
+    const { sections, properties } = this.state
 
     const sectionIndex = sections.findIndex(section => section.id === sectionId)
     const section = sections[sectionIndex]
 
-    if (this.isSectionUsed(section) && !removeSectionDialogOpen) {
+    if (confirmed) {
+      this.setState({
+        removeSectionDialogOpen: false
+      })
+    } else if (this.isSectionUsed(section)) {
       this.setState({
         removeSectionDialogOpen: true
       })
@@ -60,15 +62,19 @@ export default class ObjectTypeHandlerRemove {
     }))
   }
 
-  handleRemoveProperty(propertyId) {
-    const { sections, properties, removePropertyDialogOpen } = this.state
+  handleRemoveProperty(propertyId, confirmed) {
+    const { sections, properties } = this.state
 
     const propertyIndex = properties.findIndex(
       property => property.id === propertyId
     )
     const property = properties[propertyIndex]
 
-    if (this.isPropertyUsed(property) && !removePropertyDialogOpen) {
+    if (confirmed) {
+      this.setState({
+        removePropertyDialogOpen: false
+      })
+    } else if (this.isPropertyUsed(property)) {
       this.setState({
         removePropertyDialogOpen: true
       })
@@ -114,6 +120,6 @@ export default class ObjectTypeHandlerRemove {
   }
 
   isPropertyUsed(property) {
-    return property.usages !== 0
+    return _.isFinite(property.usages) && property.usages !== 0
   }
 }

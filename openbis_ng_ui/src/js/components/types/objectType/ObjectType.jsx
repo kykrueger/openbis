@@ -140,14 +140,14 @@ class ObjectType extends React.PureComponent {
     new ObjectTypeHandlerRemove(
       this.state,
       this.setState.bind(this)
-    ).executeRemoveConfirm()
+    ).executeRemove(true)
   }
 
   handleRemoveCancel() {
     new ObjectTypeHandlerRemove(
       this.state,
       this.setState.bind(this)
-    ).executeRemoveCancel()
+    ).executeCancel()
   }
 
   handleSave() {

@@ -11,8 +11,14 @@ class ComponentState {
     return this.state
   }
 
+  getGetState() {
+    return () => {
+      return this.getState()
+    }
+  }
+
   getSetState() {
-    return newStateOrFunction => {
+    return (newStateOrFunction, callback) => {
       let changes
 
       if (_.isFunction(newStateOrFunction)) {
@@ -22,6 +28,10 @@ class ComponentState {
       }
 
       this.state = { ...this.state, ...changes }
+
+      if (callback) {
+        callback()
+      }
     }
   }
 

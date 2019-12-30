@@ -24,7 +24,7 @@ export default class ObjectTypeHandlerValidate {
     const { validate, type, properties } = this.getState()
 
     if (!validate) {
-      return
+      return true
     }
 
     const [typeErrors, typeErrorsMap] = this.validateType(type)
@@ -66,10 +66,15 @@ export default class ObjectTypeHandlerValidate {
 
       return {
         type: newType,
-        properties: newProperties,
-        selection: errorSelection ? errorSelection : state.selection
+        properties: newProperties
       }
     })
+
+    if (errorSelection) {
+      this.setState({
+        selection: errorSelection
+      })
+    }
 
     return _.isEmpty(typeErrors) && _.isEmpty(propertiesErrors)
   }
