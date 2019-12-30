@@ -887,6 +887,7 @@ this._getTextBox = function(id, alt, isRequired) {
                         })
                         .then( editor => {
                             if (value) {
+                                value = this.prepareValue(value);
                                 editor.setData(value);
                             }
 
@@ -900,9 +901,13 @@ this._getTextBox = function(id, alt, isRequired) {
                             CKEditorManager.addEditor($component.attr('id'), editor);
                         })
                         .catch(error => {
-                            console.error( error );
+                            Util.showError(error);
                         });
         }
+	}
+
+	this.prepareValue = function(value) {
+	    return value.replace(/&quot;/g, "\'");
 	}
 
 	this.activateRichTextProperties = function($component, componentOnChange, propertyType, value, isReadOnly) {
