@@ -1,11 +1,11 @@
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
-import Typography from '@material-ui/core/Typography'
 import CheckboxField from '../../common/form/CheckboxField.jsx'
 import TextField from '../../common/form/TextField.jsx'
 import SelectField from '../../common/form/SelectField.jsx'
 import ObjectTypeWarningUsage from './ObjectTypeWarningUsage.jsx'
 import ObjectTypeWarningLegacy from './ObjectTypeWarningLegacy.jsx'
+import ObjectTypeHeader from './ObjectTypeHeader.jsx'
 import { dto } from '../../../services/openbis.js'
 import logger from '../../../common/logger.js'
 
@@ -174,9 +174,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
 
     return (
       <div className={classes.container}>
-        <Typography variant='h6' className={classes.header}>
-          Property
-        </Typography>
+        <ObjectTypeHeader className={classes.header}>Property</ObjectTypeHeader>
         {this.renderWarningLegacy(property)}
         {this.renderWarningUsage(property)}
         {this.renderCode(property)}

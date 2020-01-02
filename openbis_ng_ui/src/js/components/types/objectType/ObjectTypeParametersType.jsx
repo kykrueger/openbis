@@ -1,10 +1,10 @@
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
-import Typography from '@material-ui/core/Typography'
 import CheckboxField from '../../common/form/CheckboxField.jsx'
 import TextField from '../../common/form/TextField.jsx'
 import SelectField from '../../common/form/SelectField.jsx'
 import ObjectTypeWarningUsage from './ObjectTypeWarningUsage.jsx'
+import ObjectTypeHeader from './ObjectTypeHeader.jsx'
 import logger from '../../../common/logger.js'
 
 const styles = theme => ({
@@ -121,9 +121,7 @@ class ObjectTypeParametersType extends React.PureComponent {
 
     return (
       <div className={classes.container}>
-        <Typography variant='h6' className={classes.header}>
-          Type
-        </Typography>
+        <ObjectTypeHeader className={classes.header}>Type</ObjectTypeHeader>
         {this.renderWarning(type)}
         {this.renderCode(type)}
         {this.renderDescription(type)}

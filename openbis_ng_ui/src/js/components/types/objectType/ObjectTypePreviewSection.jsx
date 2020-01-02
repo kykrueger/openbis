@@ -2,7 +2,7 @@ import _ from 'lodash'
 import React from 'react'
 import { Draggable, Droppable } from 'react-beautiful-dnd'
 import { withStyles } from '@material-ui/core/styles'
-import Typography from '@material-ui/core/Typography'
+import ObjectTypeHeader from './ObjectTypeHeader.jsx'
 import logger from '../../../common/logger.js'
 import * as util from '../../../common/util.js'
 
@@ -78,9 +78,7 @@ class ObjectTypePreviewSection extends React.PureComponent {
             <Droppable droppableId={id} type='property'>
               {provided => (
                 <div>
-                  <Typography variant='h6' data-part='name'>
-                    {name}
-                  </Typography>
+                  <ObjectTypeHeader>{name}</ObjectTypeHeader>
                   <div
                     ref={provided.innerRef}
                     {...provided.droppableProps}

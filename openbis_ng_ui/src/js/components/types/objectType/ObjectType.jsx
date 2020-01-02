@@ -60,7 +60,7 @@ class ObjectType extends React.PureComponent {
   constructor(props) {
     super(props)
 
-    this.facade = new ObjectTypeFacade()
+    this.facade = this.props.facade ? this.props.facade : new ObjectTypeFacade()
 
     this.state = {
       loading: true,

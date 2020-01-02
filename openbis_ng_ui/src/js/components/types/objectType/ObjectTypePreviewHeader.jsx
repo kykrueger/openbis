@@ -1,8 +1,8 @@
 import _ from 'lodash'
 import React from 'react'
-import Typography from '@material-ui/core/Typography'
 import TextField from '../../common/form/TextField.jsx'
 import { withStyles } from '@material-ui/core/styles'
+import ObjectTypeHeader from './ObjectTypeHeader.jsx'
 import logger from '../../../common/logger.js'
 
 const styles = theme => ({
@@ -48,9 +48,9 @@ class ObjectTypePreviewHeader extends React.PureComponent {
   renderTitle() {
     const { classes } = this.props
     return (
-      <Typography variant='h6' className={classes.field}>
-        Form Preview
-      </Typography>
+      <div className={classes.field}>
+        <ObjectTypeHeader>Form Preview</ObjectTypeHeader>
+      </div>
     )
   }
 

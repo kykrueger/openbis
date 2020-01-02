@@ -3,45 +3,19 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import store from './store/store.js'
 import { Provider } from 'react-redux'
-import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles'
 import ErrorBoundary from './components/common/error/ErrorBoundary.jsx'
-import indigo from '@material-ui/core/colors/indigo'
-import lightBlue from '@material-ui/core/colors/lightBlue'
-
-const theme = createMuiTheme({
-  typography: {
-    useNextVariants: true
-  },
-  palette: {
-    grey: {
-      main: '#757575'
-    },
-    primary: {
-      main: indigo[700]
-    },
-    secondary: {
-      main: lightBlue[600]
-    },
-    warning: {
-      main: '#ff9609'
-    },
-    background: {
-      primary: '#ebebeb',
-      secondary: '#dbdbdb'
-    }
-  }
-})
+import ThemeProvider from './components/common/theme/ThemeProvider.jsx'
 
 const render = () => {
   let App = require('./components/App.jsx').default
 
   ReactDOM.render(
     <Provider store={store}>
-      <MuiThemeProvider theme={theme}>
+      <ThemeProvider>
         <ErrorBoundary>
           <App />
         </ErrorBoundary>
-      </MuiThemeProvider>
+      </ThemeProvider>
     </Provider>,
     document.getElementById('app')
   )

@@ -1,7 +1,7 @@
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
-import Typography from '@material-ui/core/Typography'
 import TextField from '../../common/form/TextField.jsx'
+import ObjectTypeHeader from './ObjectTypeHeader.jsx'
 import logger from '../../../common/logger.js'
 
 const styles = theme => ({
@@ -75,9 +75,7 @@ class ObjectTypeParametersSection extends React.PureComponent {
 
     return (
       <div className={classes.container}>
-        <Typography variant='h6' className={classes.header}>
-          Section
-        </Typography>
+        <ObjectTypeHeader className={classes.header}>Section</ObjectTypeHeader>
         <div className={classes.field}>
           <TextField
             reference={this.reference}
