@@ -887,7 +887,7 @@ this._getTextBox = function(id, alt, isRequired) {
                         })
                         .then( editor => {
                             if (value) {
-                                value = this.prepareValue(value);
+                                value = this.prepareCkeditorData(value);
                                 editor.setData(value);
                             }
 
@@ -906,8 +906,10 @@ this._getTextBox = function(id, alt, isRequired) {
         }
 	}
 
-	this.prepareValue = function(value) {
-	    return value.replace(/&quot;/g, "\'");
+	this.prepareCkeditorData = function(value) {
+	    value = value.replace(/&quot;/g, "\'");
+	    value = value.replace(/(font-size:\d+\.*\d+)pt/g, "$1" + "px"); // https://ckeditor.com/docs/ckeditor5/latest/features/font.html#using-numerical-values
+	    return value;
 	}
 
 	this.activateRichTextProperties = function($component, componentOnChange, propertyType, value, isReadOnly) {
