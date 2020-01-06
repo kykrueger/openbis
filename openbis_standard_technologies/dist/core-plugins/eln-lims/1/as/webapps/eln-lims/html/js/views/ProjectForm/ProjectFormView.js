@@ -255,7 +255,9 @@ function ProjectFormView(projectFormController, projectFormModel) {
 			$textBox = FormUtil.activateRichTextProperties($textBox, textBoxEvent, null, description, false);
 			$formColumn.append(FormUtil.getFieldForComponentWithLabel($textBox, "Description"));
 		} else {
-			$formColumn.append(FormUtil.getFieldForLabelWithText("Description", description));
+            var $textBox = FormUtil._getTextBox(null, "Description", false);
+			$textBox = FormUtil.activateRichTextProperties($textBox, undefined, null, description, true);
+            $formColumn.append(FormUtil.getFieldForComponentWithLabel($textBox, "Description"));
 		}
 		
 		// Experiment And Samples Table
