@@ -75,7 +75,7 @@ function UnarchivingHelperView(unarchivingHelperController, unarchivingHelperMod
 						numberOfDataSets++;
 					}
 					if (totalSize > 0) {
-						$infoSummary.text("Unarchiving all " + numberOfDataSets + " datasets needs " 
+						$infoSummary.text("Unarchiving all selected data sets needs " 
 								+ PrintUtil.renderNumberOfBytes(totalSize) + " free scratch disk space.");
 					} else {
 						$infoSummary.text("");
