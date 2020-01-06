@@ -582,13 +582,20 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 	
 	this._allowedToEdit = function() {
 		var experiment = this._experimentFormModel.v3_experiment;
-		var updateAllowed = this._experimentFormModel.rights.rights.indexOf("UPDATE") >= 0;
+		var updateAllowed = this._allowedToUpdate(this._experimentFormModel.rights);
 		return updateAllowed && experiment.frozen == false;
+	}
+
+	this._allowedToUpdate = function(rights) {
+		return rights && rights.rights.indexOf("UPDATE") >= 0;
 	}
 
 	this._allowedToMove = function() {
 		var experiment = this._experimentFormModel.v3_experiment;
-		return experiment.project.frozenForExperiments == false;
+		if (experiment.project.frozenForExperiments) {
+			return false;
+		}
+		return this._allowedToUpdate(this._experimentFormModel.rights);
 	}
 	
 	this._allowedToDelete = function() {

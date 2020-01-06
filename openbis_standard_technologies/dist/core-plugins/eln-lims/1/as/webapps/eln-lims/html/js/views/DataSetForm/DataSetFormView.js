@@ -884,9 +884,12 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 
 	this._allowedToEdit = function() {
 		var dataSet = this._dataSetFormModel.v3_dataset;
-		var rights = this._dataSetFormModel.rights;
-		var updateAllowed = rights && rights.rights.indexOf("UPDATE") >= 0;
+		var updateAllowed = this._allowedToUpdate(this._dataSetFormModel.rights);
 		return updateAllowed && dataSet.frozen == false;
+	}
+	
+	this._allowedToUpdate = function(rights) {
+		return rights && rights.rights.indexOf("UPDATE") >= 0;
 	}
 
 	this._allowedToMove = function() {
@@ -899,7 +902,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 		if (sample && sample.frozenForDataSets) {
 			return false;
 		}
-		return true;
+		return this._allowedToUpdate(this._dataSetFormModel.rights);
 	}
 	
 	this._allowedToDelete = function() {
