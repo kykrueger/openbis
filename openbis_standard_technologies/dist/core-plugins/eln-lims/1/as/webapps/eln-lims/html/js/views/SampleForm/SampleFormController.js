@@ -38,11 +38,30 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 					fetchOptions.withChildren();
 					mainController.openbisV3.getSamples([ id ], fetchOptions).done(function(map) {
 						_this._sampleFormModel.v3_sample = map[id];
-						var expeId = _this._sampleFormModel.v3_sample.getExperiment().getIdentifier().getIdentifier();
-						var dummySampleId = new SampleIdentifier(IdentifierUtil.createDummySampleIdentifierFromExperimentIdentifier(expeId));
+
+						var hasExperiment = false;
+						if(_this._sampleFormModel.v3_sample.getExperiment()) {
+						    hasExperiment = true;
+						}
+
+                        var dummySampleId = null;
+
+                        if(hasExperiment) {
+						    var expeId = _this._sampleFormModel.v3_sample.getExperiment().getIdentifier().getIdentifier();
+						    var dummySampleId = new SampleIdentifier(IdentifierUtil.createDummySampleIdentifierFromExperimentIdentifier(expeId));
+                        }
+
 						mainController.openbisV3.getRights([ id, dummySampleId ], null).done(function(rightsByIds) {
 							_this._sampleFormModel.rights = rightsByIds[id];
-							_this._sampleFormModel.sampleRights = rightsByIds[dummySampleId]; 
+
+							if(dummySampleId) {
+							    _this._sampleFormModel.sampleRights = rightsByIds[dummySampleId];
+							} else {
+							     _this._sampleFormModel.sampleRights = {};
+							     _this._sampleFormModel.sampleRights.rights = [];
+							}
+
+
 							mainController.serverFacade.listDataSetsForSample(_this._sampleFormModel.sample, true, function(datasets) {
 								if(!datasets.error) {
 									_this._sampleFormModel.datasets = datasets.result;
