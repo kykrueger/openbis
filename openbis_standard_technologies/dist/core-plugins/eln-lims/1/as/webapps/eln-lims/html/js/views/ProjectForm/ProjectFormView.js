@@ -255,7 +255,9 @@ function ProjectFormView(projectFormController, projectFormModel) {
 			$textBox = FormUtil.activateRichTextProperties($textBox, textBoxEvent, null, description, false);
 			$formColumn.append(FormUtil.getFieldForComponentWithLabel($textBox, "Description"));
 		} else {
-			$formColumn.append(FormUtil.getFieldForLabelWithText("Description", description));
+            var $textBox = FormUtil._getTextBox(null, "Description", false);
+			$textBox = FormUtil.activateRichTextProperties($textBox, undefined, null, description, true);
+            $formColumn.append(FormUtil.getFieldForComponentWithLabel($textBox, "Description"));
 		}
 		
 		// Experiment And Samples Table
@@ -291,12 +293,19 @@ function ProjectFormView(projectFormController, projectFormModel) {
 	
 	this._allowedToEdit = function() {
 		var project = this._projectFormModel.v3_project;
-		return project.frozen == false && this._projectFormModel.rights.rights.indexOf("UPDATE") >= 0;
+		return project.frozen == false && this._allowedToUpdate(this._projectFormModel.rights);
 	};
+	
+	this._allowedToUpdate = function(rights) {
+		return rights && rights.rights.indexOf("UPDATE") >= 0;
+	}
 
 	this._allowedToMove = function() {
 		var project = this._projectFormModel.v3_project;
-		return project.frozen == false && project.space.frozenForProjects == false;
+		if (project.frozen || project.space.frozenForProjects) {
+			return false;
+		}
+		return this._allowedToUpdate(this._projectFormModel.rights);
 	};
 	
 	this._allowedToDelete = function() {

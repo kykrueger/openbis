@@ -20,6 +20,7 @@ import java.util.List;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.operation.IOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.operation.IOperationResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.IOperationExecutionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.id.OperationExecutionPermId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 
@@ -29,6 +30,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 public interface IAsynchronousOperationThreadPoolExecutor
 {
 
-    List<IOperationResult> execute(IOperationContext context, OperationExecutionPermId executionId, List<? extends IOperation> operations);
+    List<IOperationResult> execute(IOperationContext context, OperationExecutionPermId executionId, List<? extends IOperation> operations,
+            IOperationExecutionOptions options);
 
 }

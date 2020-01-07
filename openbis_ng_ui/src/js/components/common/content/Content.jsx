@@ -8,16 +8,18 @@ import * as selectors from '../../../store/selectors/selectors.js'
 import * as actions from '../../../store/actions/actions.js'
 
 import ContentTabs from './ContentTabs.jsx'
+import ErrorBoundary from '../error/ErrorBoundary.jsx'
 
 const styles = {
   container: {
     display: 'flex',
     flexDirection: 'column',
     flex: 1,
-    width: '100px'
+    width: '100px',
+    zIndex: 1000
   },
   component: {
-    height: '100%',
+    height: 0,
     flex: '1 1 100%'
   },
   visible: {
@@ -78,7 +80,9 @@ class Content extends React.Component {
                   visible ? classes.visible : classes.hidden
                 )}
               >
-                <ObjectComponent objectId={object.id} />
+                <ErrorBoundary>
+                  <ObjectComponent objectId={object.id} />
+                </ErrorBoundary>
               </div>
             )
           }

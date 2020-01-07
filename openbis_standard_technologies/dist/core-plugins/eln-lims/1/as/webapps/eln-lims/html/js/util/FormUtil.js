@@ -830,7 +830,7 @@ var FormUtil = new function() {
 		return $component;
 	}
 	
-this._getTextBox = function(id, alt, isRequired) {
+    this._getTextBox = function(id, alt, isRequired) {
 		var $component = $('<textarea>', {'id' : id, 'alt' : alt, 'style' : 'height: 80px; width: 450px;', 'placeholder' : alt, 'class' : 'form-control'});
 		if (isRequired) {
 			$component.attr('required', '');
@@ -876,33 +876,35 @@ this._getTextBox = function(id, alt, isRequired) {
 	}
 
 	this.createCkeditor = function($component, componentOnChange, value, isReadOnly) {
+        InlineEditor.create($component[0], {
+                         simpleUpload: {
+                             uploadUrl: "/openbis/openbis/file-service/eln-lims?type=Files&sessionID=" + mainController.serverFacade.getSession()
+                         }
+                    })
+                    .then( editor => {
+                        if (value) {
+                            value = this.prepareCkeditorData(value);
+                            editor.setData(value);
+                        }
 
-        if(isReadOnly && value) {
-            $component.append(value);
-        } else {
-            InlineEditor.create($component[0], {
-                             simpleUpload: {
-                                 uploadUrl: "/openbis/openbis/file-service/eln-lims?type=Files&sessionID=" + mainController.serverFacade.getSession()
-                             }
-                        })
-                        .then( editor => {
-                            if (value) {
-                                editor.setData(value);
-                            }
+                        editor.isReadOnly = isReadOnly;
 
-                            editor.isReadOnly = isReadOnly;
-
-                            editor.model.document.on('change:data', function (event) {
-                                var value = editor.getData();
-                                componentOnChange(event, value);
-                            });
-
-                            CKEditorManager.addEditor($component.attr('id'), editor);
-                        })
-                        .catch(error => {
-                            console.error( error );
+                        editor.model.document.on('change:data', function (event) {
+                            var value = editor.getData();
+                            componentOnChange(event, value);
                         });
-        }
+
+                        CKEditorManager.addEditor($component.attr('id'), editor);
+                    })
+                    .catch(error => {
+                        Util.showError(error);
+                    });
+	}
+
+	this.prepareCkeditorData = function(value) {
+	    value = value.replace(/&quot;/g, "\'");
+	    value = value.replace(/(font-size:\d+\.*\d+)pt/g, "$1" + "px"); // https://ckeditor.com/docs/ckeditor5/latest/features/font.html#using-numerical-values
+	    return value;
 	}
 
 	this.activateRichTextProperties = function($component, componentOnChange, propertyType, value, isReadOnly) {

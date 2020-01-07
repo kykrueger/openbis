@@ -79,7 +79,7 @@ public class SynchronousOperationExecutor implements ISynchronousOperationExecut
                 executionStore.executionRunning(context, executionId);
             }
 
-            List<IOperationResult> results = operationsExecutor.execute(context, operations);
+            List<IOperationResult> results = operationsExecutor.execute(context, operations, options);
 
             if (executionId != null)
             {

@@ -11,6 +11,7 @@ define([ "stjs", "as/dto/operation/IOperationExecutionOptions" ], function(stjs,
 		prototype.availabilityTime = null;
 		prototype.summaryAvailabilityTime = null;
 		prototype.detailsAvailabilityTime = null;
+		prototype.executeInOrder = false;
 
 		prototype.setDescription = function(description) {
 			this.description = description;
@@ -41,6 +42,12 @@ define([ "stjs", "as/dto/operation/IOperationExecutionOptions" ], function(stjs,
 		};
 		prototype.getDetailsAvailabilityTime = function() {
 			return this.detailsAvailabilityTime;
+		};
+		prototype.setExecuteInOrder = function(executeInOrder) {
+			this.executeInOrder = executeInOrder;
+		};
+		prototype.isExecuteInOrder = function() {
+			return this.executeInOrder;
 		};
 
 	}, {

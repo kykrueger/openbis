@@ -37,6 +37,8 @@ public class AbstractOperationExecutionOptions implements IOperationExecutionOpt
     private Integer summaryAvailabilityTime;
 
     private Integer detailsAvailabilityTime;
+    
+    private boolean executeInOrder;
 
     public void setDescription(String description)
     {
@@ -91,6 +93,17 @@ public class AbstractOperationExecutionOptions implements IOperationExecutionOpt
     public void setDetailsAvailabilityTime(Integer detailsAvailabilityTime)
     {
         this.detailsAvailabilityTime = detailsAvailabilityTime;
+    }
+
+    @Override
+    public boolean isExecuteInOrder()
+    {
+        return executeInOrder;
+    }
+    
+    public void setExecuteInOrder(boolean executeInOrder)
+    {
+        this.executeInOrder = executeInOrder;
     }
 
     @Override

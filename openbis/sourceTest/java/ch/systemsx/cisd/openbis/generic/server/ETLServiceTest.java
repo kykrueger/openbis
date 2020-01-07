@@ -38,6 +38,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.CreateDataSetsOperationResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.IOperationExecutionOptions;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.operation.IOperationsExecutor;
 import ch.rinn.restrictions.Friend;
@@ -1275,7 +1276,7 @@ public class ETLServiceTest extends AbstractServerTestCase
                     allowing(entityOperationChecker).assertInstanceSampleCreationAllowed(with(any(IAuthSession.class)), with(any(List.class)));
                     allowing(entityOperationChecker).assertInstanceSampleUpdateAllowed(with(any(IAuthSession.class)), with(any(List.class)));
 
-                    one(operationsExecutor).execute(with(any(IOperationContext.class)), with(any(List.class)));
+                    one(operationsExecutor).execute(with(any(IOperationContext.class)), with(any(List.class)), with(any(IOperationExecutionOptions.class)));
                     will(returnValue(Collections.singletonList(new CreateDataSetsOperationResult(Collections.emptyList()))));
                 }
             });

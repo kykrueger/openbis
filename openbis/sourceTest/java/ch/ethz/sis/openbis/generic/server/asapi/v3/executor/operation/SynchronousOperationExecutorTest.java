@@ -53,7 +53,7 @@ public class SynchronousOperationExecutorTest
         mockery.checking(new Expectations()
             {
                 {
-                    oneOf(operationsExecutor).execute(context, operations);
+                    oneOf(operationsExecutor).execute(context, operations, options);
                     will(returnValue(operationResults));
                 }
             });
@@ -73,7 +73,7 @@ public class SynchronousOperationExecutorTest
                     oneOf(executionStore).executionNew(context, options.getExecutionId(), operations, options);
                     oneOf(executionStore).executionRunning(context, options.getExecutionId());
 
-                    oneOf(operationsExecutor).execute(context, operations);
+                    oneOf(operationsExecutor).execute(context, operations, options);
                     will(returnValue(operationResults));
 
                     oneOf(executionStore).executionFinished(context, options.getExecutionId(), operationResults);
@@ -96,7 +96,7 @@ public class SynchronousOperationExecutorTest
                     oneOf(executionStore).executionNew(context, options.getExecutionId(), operations, options);
                     oneOf(executionStore).executionRunning(context, options.getExecutionId());
 
-                    oneOf(operationsExecutor).execute(context, operations);
+                    oneOf(operationsExecutor).execute(context, operations, options);
                     will(throwException(exception));
 
                     oneOf(executionStore).executionFailed(context, options.getExecutionId(), new OperationExecutionError(exception));
@@ -161,7 +161,7 @@ public class SynchronousOperationExecutorTest
                     oneOf(executionStore).executionNew(context, options.getExecutionId(), operations, options);
                     oneOf(executionStore).executionRunning(context, options.getExecutionId());
 
-                    oneOf(operationsExecutor).execute(context, operations);
+                    oneOf(operationsExecutor).execute(context, operations, options);
                     will(returnValue(operationResults));
 
                     oneOf(executionStore).executionFinished(context, options.getExecutionId(), operationResults);
@@ -188,7 +188,7 @@ public class SynchronousOperationExecutorTest
                     oneOf(executionStore).executionNew(context, options.getExecutionId(), operations, options);
                     oneOf(executionStore).executionRunning(context, options.getExecutionId());
 
-                    oneOf(operationsExecutor).execute(context, operations);
+                    oneOf(operationsExecutor).execute(context, operations, options);
                     will(throwException(exception1));
 
                     oneOf(executionStore).executionFailed(context, options.getExecutionId(), new OperationExecutionError(exception1));
