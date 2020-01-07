@@ -238,7 +238,7 @@ $.extend(DefaultProfile.prototype, {
 		this.settingsSpaces = [];
 		//Ending in "ELN_SETTINGS", "STORAGE"
 		this.hideSpacesPostFixes = ["ELN_SETTINGS", "STORAGE"];
-		this.hideSpaces = []; 
+		this.hideSpaces = ["NAGIOS"];
 		
 		this.initSpaces = function(callback) {
 			var _this = this;
