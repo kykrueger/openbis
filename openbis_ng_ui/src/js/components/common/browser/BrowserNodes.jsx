@@ -7,8 +7,7 @@ import * as util from '../../../common/util.js'
 
 const styles = () => ({
   container: {
-    flex: '1 1 100%',
-    overflowY: 'overlay'
+    flex: '1 1 100%'
   },
   list: {
     paddingTop: '0',

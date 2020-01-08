@@ -1054,17 +1054,6 @@ function ServerFacade(openbisServer) {
         return sb;
     }
 
-    this.queryParserUnEscape = function(s) {
-            var sb = "";
-            for (var i = 0; i < s.length; i++) {
-              var c = s.charAt(i);
-              if (c != '\\') {
-                sb = sb + c;
-              }
-            }
-            return sb;
-    }
-
 	this.getSearchCriteriaAndFetchOptionsForDataSetSearch = function(advancedSearchCriteria, advancedFetchOptions, callback) {
 		var criteriaClass = 'as/dto/dataset/search/DataSetSearchCriteria';
 		var fetchOptionsClass = 'as/dto/dataset/fetchoptions/DataSetFetchOptions';
@@ -1120,7 +1109,7 @@ function ServerFacade(openbisServer) {
 
 	this.getSearchCriteriaAndFetchOptionsForEntitySearch = function(advancedSearchCriteria, advancedFetchOptions, callback, criteriaClass, fetchOptionsClass) {
 		var queryParserEscape = this.queryParserEscape;
-		var queryParserUnEscape = this.queryParserUnEscape;
+		var escapeToUnEscapeMap = {};
 
 		require([criteriaClass,
 		         fetchOptionsClass,
@@ -1140,11 +1129,7 @@ function ServerFacade(openbisServer) {
 				//Setting the fetchOptions given standard settings
 				var fetchOptions = new EntityFetchOptions();
 
-				var escapeWildcards = false;
-
-				if(advancedFetchOptions && advancedFetchOptions.escapeWildcards) {
-				    escapeWildcards = true;
-				}
+				var escapeWildcards = advancedFetchOptions && advancedFetchOptions.escapeWildcards;
 
 				//Optional fetchOptions
 				if(!advancedFetchOptions ||
@@ -1353,7 +1338,9 @@ function ServerFacade(openbisServer) {
 					            (fieldOperator == "thatEndsWithString")
 					            )
 					    ) {
-                        fieldValue = queryParserEscape(fieldValue);
+                        var fieldValueUnEscape = fieldValue;
+                        fieldValue = queryParserEscape(fieldValueUnEscape);
+                        escapeToUnEscapeMap[fieldValue] = fieldValueUnEscape;
                     }
 				
 					var setPropertyCriteria = function(criteria, propertyName, propertyValue, comparisonOperator) {
@@ -1600,8 +1587,10 @@ function ServerFacade(openbisServer) {
                         var value = null;
                         if(searchCriteria.criteria[cIdx].fieldValue) {
                             value = searchCriteria.criteria[cIdx].fieldValue.value;
-                            if(escapeWildcards && value) {
-                                value = queryParserUnEscape(value);
+                            if (escapeWildcards && value) {
+                                if (escapeToUnEscapeMap[value]) {
+                                    value = escapeToUnEscapeMap[value];
+                                }
                                 console.log(searchCriteria.criteria[cIdx].fieldValue.value + " --> " + value);
                             }
 

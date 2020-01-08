@@ -1280,13 +1280,21 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 	
 	this._allowedToEdit = function() {
 		var sample = this._sampleFormModel.v3_sample;
-		var updateAllowed = this._sampleFormModel.rights.rights.indexOf("UPDATE") >= 0;
+		var updateAllowed = this._allowedToUpdate(this._sampleFormModel.rights);
 		return updateAllowed && sample.frozen == false;
 	}
 	
+	this._allowedToUpdate = function(rights) {
+		return rights && rights.rights.indexOf("UPDATE") >= 0;
+	}
+
 	this._allowedToMove = function() {
 		var sample = this._sampleFormModel.v3_sample;
-		return !sample.experiment || sample.experiment.frozenForSamples == false;
+		var experiment = sample.experiment;
+		if (experiment && experiment.frozenForSamples) {
+			return false;
+		}
+		return this._allowedToUpdate(this._sampleFormModel.rights);
 	}
 	
 	this._allowedToDelete = function() {

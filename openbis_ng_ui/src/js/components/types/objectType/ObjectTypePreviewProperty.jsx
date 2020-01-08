@@ -5,7 +5,7 @@ import { withStyles } from '@material-ui/core/styles'
 import CheckboxField from '../../common/form/CheckboxField.jsx'
 import TextField from '../../common/form/TextField.jsx'
 import SelectField from '../../common/form/SelectField.jsx'
-import { facade, dto } from '../../../services/openbis.js'
+import { dto } from '../../../services/openbis.js'
 import logger from '../../../common/logger.js'
 import * as util from '../../../common/util.js'
 
@@ -16,17 +16,21 @@ const styles = theme => ({
     width: '100%',
     padding: theme.spacing(2),
     boxSizing: 'border-box',
+    borderWidth: '2px',
+    borderStyle: 'solid',
+    borderColor: theme.palette.background.paper,
+    backgroundColor: theme.palette.background.paper,
     '&:last-child': {
       marginBottom: 0
     },
     '&:hover': {
-      backgroundColor: theme.palette.background.primary
+      borderColor: theme.palette.background.secondary
     }
   },
   selected: {
-    backgroundColor: theme.palette.background.secondary,
+    borderColor: theme.palette.secondary.main,
     '&:hover': {
-      backgroundColor: theme.palette.background.secondary
+      borderColor: theme.palette.secondary.main
     }
   },
   hidden: {
@@ -34,8 +38,7 @@ const styles = theme => ({
   },
   partEmpty: {
     fontStyle: 'italic',
-    opacity: 0.7,
-    color: theme.palette.grey.main
+    opacity: 0.7
   },
   partSelected: {
     cursor: 'pointer',
@@ -55,7 +58,7 @@ const styles = theme => ({
     '&:hover': {
       borderStyle: 'solid',
       borderWidth: '0px 0px 2px 0px',
-      borderColor: theme.palette.primary.main
+      borderColor: theme.palette.background.secondary
     }
   }
 })
@@ -63,18 +66,21 @@ const styles = theme => ({
 class ObjectTypePreviewProperty extends React.PureComponent {
   constructor(props) {
     super(props)
-    this.state = {}
+    this.state = {
+      values: {}
+    }
     this.handleDraggableClick = this.handleDraggableClick.bind(this)
     this.handlePropertyClick = this.handlePropertyClick.bind(this)
+    this.handleChange = this.handleChange.bind(this)
   }
 
   componentDidMount() {
     const { dataType } = this.props.property
 
-    if (dataType === 'MATERIAL') {
-      this.loadMaterialProperty()
-    } else if (dataType === 'CONTROLLEDVOCABULARY') {
-      this.loadVocabularyProperty()
+    if (dataType === dto.DataType.MATERIAL) {
+      this.loadMaterials()
+    } else if (dataType === dto.DataType.CONTROLLEDVOCABULARY) {
+      this.loadVocabularyTerms()
     }
   }
 
@@ -83,29 +89,26 @@ class ObjectTypePreviewProperty extends React.PureComponent {
     let { property } = this.props
 
     if (property.materialType !== prevProperty.materialType) {
-      this.loadMaterialProperty()
+      this.loadMaterials()
     } else if (property.vocabulary !== prevProperty.vocabulary) {
-      this.loadVocabularyProperty()
+      this.loadVocabularyTerms()
     }
   }
 
-  loadMaterialProperty() {
-    const materialType = this.props.property.materialType
+  loadMaterials() {
+    const { facade, property } = this.props
 
-    if (materialType) {
-      let criteria = new dto.MaterialSearchCriteria()
-      let fo = new dto.MaterialFetchOptions()
-
-      criteria
-        .withType()
-        .withCode()
-        .thatEquals(materialType)
-
-      return facade.searchMaterials(criteria, fo).then(result => {
-        this.setState(() => ({
-          materials: result.objects
-        }))
-      })
+    if (property.materialType) {
+      return facade
+        .loadMaterials(property.materialType)
+        .then(result => {
+          this.setState(() => ({
+            materials: result.objects
+          }))
+        })
+        .catch(error => {
+          facade.catch(error)
+        })
     } else {
       this.setState(() => ({
         materials: null
@@ -113,23 +116,20 @@ class ObjectTypePreviewProperty extends React.PureComponent {
     }
   }
 
-  loadVocabularyProperty() {
-    const vocabulary = this.props.property.vocabulary
+  loadVocabularyTerms() {
+    const { facade, property } = this.props
 
-    if (vocabulary) {
-      let criteria = new dto.VocabularyTermSearchCriteria()
-      let fo = new dto.VocabularyTermFetchOptions()
-
-      criteria
-        .withVocabulary()
-        .withCode()
-        .thatEquals(vocabulary)
-
-      return facade.searchVocabularyTerms(criteria, fo).then(result => {
-        this.setState(() => ({
-          terms: result.objects
-        }))
-      })
+    if (property.vocabulary) {
+      return facade
+        .loadVocabularyTerms(property.vocabulary)
+        .then(result => {
+          this.setState(() => ({
+            terms: result.objects
+          }))
+        })
+        .catch(error => {
+          facade.catch(error)
+        })
     } else {
       this.setState(() => ({
         terms: null
@@ -150,6 +150,18 @@ class ObjectTypePreviewProperty extends React.PureComponent {
       id: this.props.property.id,
       part: event.target.dataset.part
     })
+  }
+
+  handleChange(event) {
+    const name = event.target.name
+    const value = event.target.value
+
+    this.setState(state => ({
+      values: {
+        ...state.values,
+        [name]: value
+      }
+    }))
   }
 
   render() {
@@ -185,15 +197,24 @@ class ObjectTypePreviewProperty extends React.PureComponent {
   renderProperty() {
     const { dataType } = this.props.property
 
-    if (dataType === 'VARCHAR' || dataType === 'MULTILINE_VARCHAR') {
+    if (
+      dataType === dto.DataType.VARCHAR ||
+      dataType === dto.DataType.MULTILINE_VARCHAR ||
+      dataType === dto.DataType.HYPERLINK ||
+      dataType === dto.DataType.TIMESTAMP ||
+      dataType === dto.DataType.XML
+    ) {
       return this.renderVarcharProperty()
-    } else if (dataType === 'REAL' || dataType === 'INTEGER') {
+    } else if (
+      dataType === dto.DataType.REAL ||
+      dataType === dto.DataType.INTEGER
+    ) {
       return this.renderNumberProperty()
-    } else if (dataType === 'BOOLEAN') {
+    } else if (dataType === dto.DataType.BOOLEAN) {
       return this.renderBooleanProperty()
-    } else if (dataType === 'CONTROLLEDVOCABULARY') {
+    } else if (dataType === dto.DataType.CONTROLLEDVOCABULARY) {
       return this.renderVocabularyProperty()
-    } else if (dataType === 'MATERIAL') {
+    } else if (dataType === dto.DataType.MATERIAL) {
       return this.renderMaterialProperty()
     } else {
       return <span>Data type not supported yet</span>
@@ -201,90 +222,123 @@ class ObjectTypePreviewProperty extends React.PureComponent {
   }
 
   renderVarcharProperty() {
+    const { property } = this.props
+    const { values } = this.state
     return (
       <TextField
+        name={property.id}
         label={this.getLabel()}
         description={this.getDescription()}
+        value={values[property.id]}
         mandatory={this.getMandatory()}
+        multiline={this.getMultiline()}
         metadata={this.getMetadata()}
+        error={this.getError()}
         styles={this.getStyles()}
         onClick={this.handlePropertyClick}
+        onChange={this.handleChange}
       />
     )
   }
 
   renderNumberProperty() {
+    const { property } = this.props
+    const { values } = this.state
     return (
       <TextField
         type='number'
+        name={property.id}
         label={this.getLabel()}
         description={this.getDescription()}
+        value={values[property.id]}
         mandatory={this.getMandatory()}
         metadata={this.getMetadata()}
+        error={this.getError()}
         styles={this.getStyles()}
         onClick={this.handlePropertyClick}
+        onChange={this.handleChange}
       />
     )
   }
 
   renderBooleanProperty() {
+    const { property } = this.props
+    const { values } = this.state
     return (
       <div>
         <CheckboxField
+          name={property.id}
           label={this.getLabel()}
           description={this.getDescription()}
+          value={values[property.id]}
           mandatory={this.getMandatory()}
           metadata={this.getMetadata()}
+          error={this.getError()}
           styles={this.getStyles()}
           onClick={this.handlePropertyClick}
+          onChange={this.handleChange}
         />
       </div>
     )
   }
 
   renderVocabularyProperty() {
-    const { terms } = this.state
+    const { property } = this.props
+    const { terms, values } = this.state
 
     let options = []
+
     if (terms) {
       options = terms.map(term => ({
         value: term.code,
         label: term.label
       }))
+      options.unshift({})
     }
 
     return (
       <SelectField
+        name={property.id}
         label={this.getLabel()}
         description={this.getDescription()}
+        value={values[property.id]}
         mandatory={this.getMandatory()}
         options={options}
         metadata={this.getMetadata()}
+        error={this.getError()}
         styles={this.getStyles()}
         onClick={this.handlePropertyClick}
+        onChange={this.handleChange}
       />
     )
   }
 
   renderMaterialProperty() {
-    const { materials } = this.state
+    const { property } = this.props
+    const { materials, values } = this.state
 
     let options = []
+
     if (materials) {
       options = materials.map(material => ({
         value: material.code
       }))
+      options.unshift({})
     }
 
     return (
       <SelectField
+        name={property.id}
         label={this.getLabel()}
         description={this.getDescription()}
+        value={values[property.id]}
         mandatory={this.getMandatory()}
         options={options}
         metadata={this.getMetadata()}
+        error={this.getError()}
         styles={this.getStyles()}
         onClick={this.handlePropertyClick}
+        onChange={this.handleChange}
       />
     )
   }
@@ -307,6 +361,13 @@ class ObjectTypePreviewProperty extends React.PureComponent {
 
   getMandatory() {
     return this.props.property.mandatory
+  }
+
+  getMultiline() {
+    return (
+      this.props.property.dataType === dto.DataType.MULTILINE_VARCHAR ||
+      this.props.property.dataType === dto.DataType.XML
+    )
   }
 
   getMetadata() {
@@ -333,6 +394,15 @@ class ObjectTypePreviewProperty extends React.PureComponent {
         ]
       </React.Fragment>
     )
+  }
+
+  getError() {
+    const errors = this.props.property.errors
+    if (_.isEmpty(errors)) {
+      return null
+    } else {
+      return 'Property configuration is incorrect'
+    }
   }
 
   getStyles() {
@@ -368,7 +438,7 @@ class ObjectTypePreviewProperty extends React.PureComponent {
       }
     })
 
-    if (!property.visible) {
+    if (!property.showInEditView) {
       styles = {
         ...styles,
         container: classes.hidden

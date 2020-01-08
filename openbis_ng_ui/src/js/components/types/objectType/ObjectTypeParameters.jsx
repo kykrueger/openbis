@@ -16,32 +16,41 @@ class ObjectTypeParameters extends React.PureComponent {
     logger.log(logger.DEBUG, 'ObjectTypeParameters.render')
 
     const {
+      facade,
       type,
       sections,
       properties,
       selection,
       onChange,
-      onSelectionChange
+      onSelectionChange,
+      onBlur
     } = this.props
 
     return (
       <div>
         <ObjectTypeParametersType
+          facade={facade}
           type={type}
           selection={selection}
           onChange={onChange}
+          onSelectionChange={onSelectionChange}
+          onBlur={onBlur}
         />
         <ObjectTypeParametersSection
           sections={sections}
           selection={selection}
           onChange={onChange}
           onSelectionChange={onSelectionChange}
+          onBlur={onBlur}
         />
         <ObjectTypeParametersProperty
+          facade={facade}
+          type={type}
           properties={properties}
           selection={selection}
           onChange={onChange}
           onSelectionChange={onSelectionChange}
+          onBlur={onBlur}
         />
       </div>
     )

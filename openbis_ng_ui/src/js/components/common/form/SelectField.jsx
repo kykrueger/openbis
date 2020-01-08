@@ -19,17 +19,20 @@ class SelectFormField extends React.PureComponent {
       value,
       mandatory,
       disabled,
+      error,
       options,
       metadata,
       styles,
       onClick,
       onChange,
-      onFocus
+      onFocus,
+      onBlur
     } = this.props
 
     return (
       <FormFieldContainer
         description={description}
+        error={error}
         metadata={metadata}
         styles={styles}
         onClick={onClick}
@@ -45,20 +48,23 @@ class SelectFormField extends React.PureComponent {
             />
           }
           name={name}
-          value={value}
+          value={value || ''}
+          error={!!error}
           disabled={disabled}
           onChange={onChange}
           onFocus={onFocus}
+          onBlur={onBlur}
           fullWidth={true}
           SelectProps={{
             native: true
           }}
+          InputLabelProps={{ shrink: !!value }}
           variant='filled'
         >
           {options &&
             options.map(option => (
-              <option key={option.value} value={option.value}>
-                {option.label || option.value}
+              <option key={option.value || ''} value={option.value || ''}>
+                {option.label || option.value || ''}
               </option>
             ))}
         </TextField>

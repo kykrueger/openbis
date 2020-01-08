@@ -18,6 +18,10 @@ import * as selectors from '../../../store/selectors/selectors.js'
 import * as pages from '../../../common/consts/pages.js'
 
 const styles = theme => ({
+  bar: {
+    position: 'relative',
+    zIndex: 4000
+  },
   tabs: {
     flexGrow: 1
   },
@@ -95,7 +99,7 @@ class Menu extends React.Component {
     const { classes, searchText } = this.props
 
     return (
-      <AppBar position='static'>
+      <AppBar position='static' classes={{ root: classes.bar }}>
         <Toolbar>
           <Tabs
             value={this.props.currentPage}

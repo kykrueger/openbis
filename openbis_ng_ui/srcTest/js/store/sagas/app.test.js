@@ -36,7 +36,7 @@ describe('app', () => {
     const state = store.getState()
     expect(selectors.getSession(state)).toBeNull()
     expect(selectors.getError(state)).toEqual({
-      message: 'Incorrect used or password'
+      message: 'Incorrect user or password'
     })
   })
 

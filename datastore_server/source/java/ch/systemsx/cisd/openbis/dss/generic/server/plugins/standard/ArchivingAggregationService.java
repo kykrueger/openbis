@@ -30,6 +30,8 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
@@ -201,7 +203,11 @@ public class ArchivingAggregationService extends AggregationService
             String[] splitted = ((String) args).split(",");
             for (String string : splitted)
             {
-                result.add(string.trim());
+                String arg = string.trim();
+                if (StringUtils.isNotBlank(arg))
+                {
+                    result.add(arg);
+                }
             }
         }
         return result;

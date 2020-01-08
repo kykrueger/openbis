@@ -36,5 +36,7 @@ public interface IOperationExecutionOptions extends Serializable
     Integer getSummaryAvailabilityTime();
 
     Integer getDetailsAvailabilityTime();
+    
+    boolean isExecuteInOrder();
 
 }

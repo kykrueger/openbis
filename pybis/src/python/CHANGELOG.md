@@ -1,3 +1,7 @@
+## Changes with pybis-1.10.8
+
+* dataSets of kind CONTAINER now also allow download of files
+
 ## Changes with pybis-1.10.7
 
 * made download work, even downloadUrl attribute is missing in dataSets

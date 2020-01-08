@@ -17,6 +17,7 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.operation;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +29,7 @@ import org.springframework.stereotype.Component;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.operation.IOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.operation.IOperationResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.IOperationExecutionOptions;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.authorizationgroup.ICreateAuthorizationGroupsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.authorizationgroup.IDeleteAuthorizationGroupsOperationExecutor;
@@ -313,7 +315,7 @@ public class OperationsExecutor implements IOperationsExecutor
 
     @Autowired
     private ICreatePermIdsOperationExecutor createPermIdsExecutor;
-    
+
     @Autowired
     private IUpdateSpacesOperationExecutor updateSpacesExecutor;
 
@@ -397,7 +399,7 @@ public class OperationsExecutor implements IOperationsExecutor
 
     @Autowired
     private IGetSpacesOperationExecutor getSpacesExecutor;
-    
+
     @Autowired
     private IGetProjectsOperationExecutor getProjectsExecutor;
 
@@ -463,7 +465,7 @@ public class OperationsExecutor implements IOperationsExecutor
 
     @Autowired
     private IGetServerInformationOperationExecutor getServerInformationExecutor;
-    
+
     @Autowired
     private ISearchSpacesOperationExecutor searchSpacesExecutor;
 
@@ -603,7 +605,26 @@ public class OperationsExecutor implements IOperationsExecutor
     private IGetSessionInformationOperationExecutor getSessionInformationExecutor;
 
     @Override
-    public List<IOperationResult> execute(IOperationContext context, List<? extends IOperation> operations)
+    public List<IOperationResult> execute(IOperationContext context, List<? extends IOperation> operations, IOperationExecutionOptions options)
+    {
+        if (options != null && options.isExecuteInOrder())
+        {
+            List<IOperationResult> results = new ArrayList<IOperationResult>();
+
+            for (IOperation operation : operations)
+            {
+                List<IOperationResult> result = doExecute(context, Collections.singletonList(operation), options);
+                results.add(result.get(0));
+            }
+
+            return results;
+        } else
+        {
+            return doExecute(context, operations, options);
+        }
+    }
+
+    private List<IOperationResult> doExecute(IOperationContext context, List<? extends IOperation> operations, IOperationExecutionOptions options)
     {
         Map<IOperation, IOperationResult> resultMap = new HashMap<IOperation, IOperationResult>();
 
