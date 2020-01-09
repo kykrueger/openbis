@@ -2674,6 +2674,30 @@ class Openbis:
         schema = None,
         transformation = None,
     ):
+        """ Creates a new property type.
+
+        code               -- name of the property type
+        internalNameSpace  -- must be set to True if code starts with a $
+        label              -- displayed label of that property
+        description        --
+        dataType           -- must contain any of these values:
+                              INTEGER VARCHAR MULTILINE_VARCHAR
+                              REAL TIMESTAMP BOOLEAN HYPERLINK
+                              XML CONTROLLEDVOCABULARY MATERIAL
+        vocabulary         -- if dataType is CONTROLLEDVOCABULARY, this attribute
+                              must contain the code of the vocabulary object.
+        managedInternally  -- default: False
+        materialType       --
+        schema             --
+        transformation     --
+
+        PropertyTypes can be assigned to
+        - sampleTypes
+        - dataSetTypes
+        - experimentTypes
+        - materialTypes (deprecated)
+        """
+
         return PropertyType(
             openbis_obj=self,
             code=code,
