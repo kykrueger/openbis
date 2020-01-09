@@ -117,7 +117,14 @@ pt = o.new_property_type(
     code        = 'MY_NEW_PROPERTY_TYPE', 
     label       = 'yet another property type', 
     description = 'my first property',
-    dataType    = 'VARCHAR'
+    dataType    = 'VARCHAR',
+)
+
+pt_int = o.new_property_type(
+    code        = '$DEFAULT_OBJECT_TYPE', 
+    label       = 'default object type for ELN-LIMS', 
+    dataType    = 'VARCHAR',
+    internalNameSpace = True,
 )
 
 pt_voc = o.new_property_type(
@@ -125,7 +132,7 @@ pt_voc = o.new_property_type(
     label       = 'label me', 
     description = 'give me a description',
     dataType    = 'CONTROLLEDVOCABULARY',
-    vocabulary  = 'STORAGE'
+    vocabulary  = 'STORAGE',
 )
 ```
 
@@ -142,10 +149,10 @@ The `dataType` attribute can contain any of these values:
 * `CONTROLLEDVOCABULARY`
 * `MATERIAL`
 
-When choosing `CONTROLLEDVOCABULARY`, you must specify a `vocabulary` attribute (see example). Likewise, when choosing `MATERIAL`, a `materialType` attribute must be provided.
+When choosing `CONTROLLEDVOCABULARY`, you must specify a `vocabulary` attribute (see example). Likewise, when choosing `MATERIAL`, a `materialType` attribute must be provided. PropertyTypes that start with a $ belong by definition to the `internalNameSpace` and therefore this attribute must be set to True.
+
 
 ## create sample types
-
 
 ```
 sample_type = o.new_sample_type(
