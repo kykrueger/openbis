@@ -969,7 +969,7 @@ class Openbis:
            self.mountpoint = None
 
 
-    def is_mounted(self, mountpoint, None):
+    def is_mounted(self, mountpoint=None):
         if mountpoint is None:
             mountpoint = getattr(self, 'mountpoint', None)
 
