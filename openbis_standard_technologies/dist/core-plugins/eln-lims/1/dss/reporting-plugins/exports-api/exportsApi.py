@@ -258,18 +258,6 @@ def cleanUp(tempDirPath, tempZipFilePath):
     FileUtils.forceDelete(File(tempZipFilePath));
 
 
-# Generates ZIP file and stores it in workspace
-def generateZipFile(entities, includeRoot, sessionToken, tempDirPath, tempZipFilePath):
-    # Create Zip File
-    fos = FileOutputStream(tempZipFilePath);
-    zos = ZipOutputStream(fos);
-
-    generateFilesInZip(zos, entities, includeRoot, sessionToken, tempDirPath)
-
-    zos.close();
-    fos.close();
-
-
 def generateFilesInZip(zos, entities, includeRoot, sessionToken, tempDirPath):
     # Services used during the export process
     v3 = ServiceProvider.getV3ApplicationService();
@@ -660,7 +648,6 @@ def generateZipFile(entities, params, tempDirPath, tempZipFilePath, deflated=Tru
     try:
         fos = FileOutputStream(tempZipFilePath)
         zos = ZipOutputStream(fos)
-        # zos.setMethod(deflated if ZipOutputStream.DEFLATED else ZipOutputStream.STORED)
         if not deflated:
             zos.setLevel(Deflater.NO_COMPRESSION)
 
