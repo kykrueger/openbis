@@ -296,8 +296,6 @@ def generateXML(zipOutputStream, fileMetadata, exportDirPath, userInformation, e
     elnLimsURLPattern = '/openbis-test/webapp/eln-lims/?menuUniqueId=null&viewName='
 
     for entity in entities:
-        print('entity=%s' % str(entity))
-
         type = entity['type']
         viewName = ''
         if type == 'SPACE':
