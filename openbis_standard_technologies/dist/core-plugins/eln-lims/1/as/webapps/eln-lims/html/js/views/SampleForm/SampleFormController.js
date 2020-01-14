@@ -327,6 +327,7 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 						if(!samplesToDelete) {
 							samplesToDelete = [];
 						}
+						sampleChildrenRemovedFinal.push(child.identifier);
 						samplesToDelete.push(child.permId);
 					}
 				});
