@@ -653,6 +653,14 @@ function ServerFacade(openbisServer) {
 				});
 		});
 	}
+
+	this.trashStorageSamplesWithoutParents = function(samplePermIds, reason, callback) {
+	    this.customELNASAPI({
+	        method : "trashStorageSamplesWithoutParents",
+	        samplePermIds : samplePermIds,
+	        reason : reason
+	    }, callback);
+	}
 	
 	this.deleteExperiments = function(experimentIds, reason, callback) {
 		this.openbisServer.deleteExperiments(experimentIds, reason, "TRASH", callback);
