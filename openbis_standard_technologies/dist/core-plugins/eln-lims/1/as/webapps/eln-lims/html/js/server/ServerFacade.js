@@ -328,6 +328,21 @@ function ServerFacade(openbisServer) {
 						callback(false, data.error.message);
 					} else {
 						_this.openbisServer.registerPersonSpaceRole(userId, userId, "ADMIN", function(data) {
+                            // Assign home space
+                            require([   "as/dto/person/update/PersonUpdate",
+                            	        "as/dto/person/id/PersonPermId",
+                            	        "as/dto/space/id/SpacePermId" ],
+                                    function(PersonUpdate, PersonPermId, SpacePermId) {
+                            	        var personUpdate = new PersonUpdate();
+                            		    personUpdate.setUserId(new PersonPermId(userId));
+                            		    personUpdate.setSpaceId(new SpacePermId(userId.toUpperCase()));
+                                        mainController.openbisV3.updatePersons([personUpdate]).done(function(response) {
+                                            //
+                                        }).fail(function(error) {
+                                            //
+                                        });
+                            });
+
 							if(data.error) {
 								callback(false, data.error.message);
 							} else {
@@ -345,7 +360,7 @@ function ServerFacade(openbisServer) {
 								if(spaceToRegister) {
 									spaceToRegister();
 								} else {
-									callback(true, "User " + userId + " created successfully.");
+								    callback(true, "User " + userId + " created successfully.");
 								}
 							}
 						});
