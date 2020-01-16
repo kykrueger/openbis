@@ -1,5 +1,6 @@
 import ch.systemsx.cisd.openbis.generic.server.ComponentNames as ComponentNames
 import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider as CommonServiceProvider
+import ch.systemsx.cisd.common.exceptions.UserFailureException as UserFailureException
 
 def process(context, parameters):
     method = parameters.get("method");
@@ -17,6 +18,8 @@ def process(context, parameters):
 
 def getServiceProperty(context, parameters):
     propertyKey = parameters.get("propertyKey")
+    if propertyKey not in ["ui.unarchiving.threshold.relative", "ui.unarchiving.threshold.absolute"]:
+        raise UserFailureException("Invalid property: %s" % propertyKey)
     property = CommonServiceProvider.tryToGetBean("propertyConfigurer").getResolvedProps().getProperty(propertyKey)
     if property is None:
         return parameters.get("defaultValue")
