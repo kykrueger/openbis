@@ -669,12 +669,22 @@ function ServerFacade(openbisServer) {
 		});
 	}
 	
+	this.cachedServiceProperties = {};
+	
 	this.getServiceProperty = function(propertyKey, defaultValue, callback) {
-		this.customELNASAPI({
-			method : "getServiceProperty",
-			propertyKey : propertyKey,
-			defaultValue : defaultValue
-		}, callback);
+		var _this = this;
+		if (propertyKey in this.cachedServiceProperties) {
+			callback(this.cachedServiceProperties[propertyKey]);
+		} else {
+			this.customELNASAPI({
+				method : "getServiceProperty",
+				propertyKey : propertyKey,
+				defaultValue : defaultValue
+			}, function(property) {
+				_this.cachedServiceProperties[propertyKey] = property;
+				callback(property);
+			});
+		}
 	}
 
 	this.trashStorageSamplesWithoutParents = function(samplePermIds, reason, callback) {
