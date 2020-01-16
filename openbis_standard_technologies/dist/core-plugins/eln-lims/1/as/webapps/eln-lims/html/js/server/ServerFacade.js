@@ -668,6 +668,14 @@ function ServerFacade(openbisServer) {
 				});
 		});
 	}
+	
+	this.getServiceProperty = function(propertyKey, defaultValue, callback) {
+		this.customELNASAPI({
+			method : "getServiceProperty",
+			propertyKey : propertyKey,
+			defaultValue : defaultValue
+		}, callback);
+	}
 
 	this.trashStorageSamplesWithoutParents = function(samplePermIds, reason, callback) {
 	    this.customELNASAPI({

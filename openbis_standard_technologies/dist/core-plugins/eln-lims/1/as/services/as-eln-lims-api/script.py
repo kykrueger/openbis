@@ -5,13 +5,22 @@ def process(context, parameters):
     method = parameters.get("method");
     result = None;
 
-    if method == "getNextSequenceForType":
+    if method == "getServiceProperty":
+        result = getServiceProperty(context, parameters);
+    elif method == "getNextSequenceForType":
         result = getNextSequenceForType(context, parameters);
-    if method == "doSpacesBelongToDisabledUsers":
+    elif method == "doSpacesBelongToDisabledUsers":
         result = doSpacesBelongToDisabledUsers(context, parameters);
-    if method == "trashStorageSamplesWithoutParents":
+    elif method == "trashStorageSamplesWithoutParents":
         result = trashStorageSamplesWithoutParents(context, parameters);
     return result;
+
+def getServiceProperty(context, parameters):
+    propertyKey = parameters.get("propertyKey")
+    property = CommonServiceProvider.tryToGetBean("propertyConfigurer").getResolvedProps().getProperty(propertyKey)
+    if property is None:
+        return parameters.get("defaultValue")
+    return property
 
 def getNextSequenceForType(context, parameters):
     sampleTypeCode = parameters.get("sampleTypeCode");
