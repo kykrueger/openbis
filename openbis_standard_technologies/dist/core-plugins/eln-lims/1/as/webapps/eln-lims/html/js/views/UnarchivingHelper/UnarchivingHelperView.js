@@ -1,6 +1,7 @@
 function UnarchivingHelperView(unarchivingHelperController, unarchivingHelperModel) {
 	this._unarchivingHelperController = unarchivingHelperController;
 	this._unarchivingHelperModel = unarchivingHelperModel;
+	this._unarchivingCheckBoxes = [];
 	
 	this.repaint = function(views) {
 		var _this = this;
@@ -52,7 +53,7 @@ function UnarchivingHelperView(unarchivingHelperController, unarchivingHelperMod
 		searchView.hideByDefaultColumns = ['$NAME', 'bundle', 'registrator', 'modificationDate', 'modifier'];
 		searchController.fetchWithSample = true;
 		searchView.firstColumns = [{
-			label : "Should be unarchive",
+			label : "Should be unarchived",
 			property : "unarchive",
 			value : false,
 			isExportable : false,
@@ -60,23 +61,29 @@ function UnarchivingHelperView(unarchivingHelperController, unarchivingHelperMod
 			canNotBeHidden : true,
 			render : function(data, grid) {
 				var $checkbox = $("<input>", { type : "checkbox"});
+				_this._unarchivingCheckBoxes.push($checkbox);
 				$checkbox.prop("checked", _this._unarchivingHelperModel.dataSetsForUnarchiving[data.code]);
 				$checkbox.change(data, function (event) {
 					var dataSetsForUnarchiving = _this._unarchivingHelperModel.dataSetsForUnarchiving;
 					if (this.checked) {
-						dataSetsForUnarchiving[data.code] = event.data.bundlesize;
+						dataSetsForUnarchiving[data.code] = event.data;
 					} else {
 						delete dataSetsForUnarchiving[data.code];
 					}
-					var totalSize = 0.0;
 					var numberOfDataSets = 0;
+					var bundleSizes = {}
 					for (var dataSetCode in dataSetsForUnarchiving) {
-						totalSize += dataSetsForUnarchiving[dataSetCode];
+						var dataSet = dataSetsForUnarchiving[dataSetCode];
+						bundleSizes[dataSet.bundleKey] = dataSet.bundlesize
 						numberOfDataSets++;
 					}
+					var totalSize = 0.0;
+					for (var key in bundleSizes) {
+						totalSize += bundleSizes[key];
+					}
 					if (totalSize > 0) {
-						$infoSummary.text("Unarchiving all selected data sets needs " 
-								+ PrintUtil.renderNumberOfBytes(totalSize) + " free scratch disk space.");
+						$infoSummary.text("Unarchiving all selected data sets (" + numberOfDataSets + " in total) needs " 
+								+ PrintUtil.renderNumberOfBytes(totalSize) + " of free disk space.");
 					} else {
 						$infoSummary.text("");
 					}
@@ -131,6 +138,24 @@ function UnarchivingHelperView(unarchivingHelperController, unarchivingHelperMod
 			$explanationBox.show();
 			$infoSummary.text("");
 		}
+		searchView.beforeGetData = function() {
+			_this._unarchivingCheckBoxes = [];
+		}
+		searchView.extraOptions = [{
+			name : "Select all data sets of this page",
+			action : function(selected) {
+				_this._unarchivingCheckBoxes.forEach(function(checkBox) {
+					checkBox.prop("checked", true).change();
+				});
+			}
+		}, {
+			name : "Unselect all data sets of this page",
+			action : function(selected) {
+				_this._unarchivingCheckBoxes.forEach(function(checkBox) {
+					checkBox.prop("checked", false).change()
+				});
+			}
+		}];
 		searchController.additionalRules = [{
 			"type" : "Attribute",
 			"name" : "PHYSICAL_STATUS",
@@ -139,10 +164,12 @@ function UnarchivingHelperView(unarchivingHelperController, unarchivingHelperMod
 		searchController.enrichResultsFunction = function(results, callback) {
 			var codes = results.map(row => row.code);
 			unarchivingHelperController.getInfo(codes, function(infos) {
+				_this._unarchivingCheckBoxes = [];
 				results.forEach(function(row) {
 					info = infos[row.code];
 					row.size = info.size;
 					row.bundle = info.container.length;
+					row.bundleKey = info.container.join('_');
 					row.bundlesize = info["container size"];
 				});
 				callback(results);
