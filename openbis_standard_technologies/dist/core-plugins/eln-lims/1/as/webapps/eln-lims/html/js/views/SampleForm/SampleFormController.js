@@ -377,6 +377,7 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 			if(isCopyWithNewCode) {
 				parameters["method"] = "copySample";
 				parameters["sampleCode"] = isCopyWithNewCode;
+				parameters["sampleCodeOrig"] = sampleCode;
 				parameters["notCopyProperties"] = [];
 				parameters["defaultBenchPropertyList"] = [];
 				
@@ -390,11 +391,7 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 				}
 				
 				parameters["sampleChildren"] = sampleChildrenFinal;
-				if(!copyChildrenOnCopy) {
-					parameters["sampleChildren"] = [];
-				} else if(profile.storagesConfiguration["isEnabled"]) {
-					// Copying children no longer copies storage information
-				}
+				parameters["copyChildrenOnCopy"] = copyChildrenOnCopy;
 				parameters["sampleChildrenNew"] = [];
 				parameters["sampleChildrenRemoved"] = [];
 			}
