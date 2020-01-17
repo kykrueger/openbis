@@ -117,13 +117,25 @@ var BarcodeUtil = new function() {
             }
         });
 
-        $toolbar.append($generateBtn)
-                .append($("<span>", { style:"width:15%; margin-left: 10px; display:inline-block;"}).append($barcodeTypesDropdown))
+        var $lineHeaders = $("<div>");
+        $lineHeaders.append($("<span>", { style:"width:15%; margin-left: 10px; display:inline-block;"}).append($("<label>", { class : "control-label"}).append("Type:")))
+                .append($("<span>", { style:"width:10%; margin-left: 10px; display:inline-block;"}).append($("<label>", { class : "control-label"}).append("Count:")))
+                .append($("<span>", { style:"width:15%; margin-left: 10px; display:inline-block;"}).append($("<label>", { class : "control-label"}).append("Layout:")))
+                .append($("<span>", { style:"width:15%; margin-left: 10px; display:inline-block;"}).append($("<label>", { class : "control-label"}).append("Width:")))
+                .append($("<span>", { style:"width:15%; margin-left: 10px; display:inline-block;"}).append($("<label>", { class : "control-label"}).append("Height:")));
+        $toolbar.append($lineHeaders);
+
+        var $lineOne = $("<div>");
+        $lineOne.append($("<span>", { style:"width:15%; margin-left: 10px; display:inline-block;"}).append($barcodeTypesDropdown))
                 .append($("<span>", { style:"width:10%; margin-left: 10px; display:inline-block;"}).append($numberDropdown))
                 .append($("<span>", { style:"width:15%; margin-left: 10px; display:inline-block;"}).append($layout))
                 .append($("<span>", { style:"width:15%; margin-left: 10px; display:inline-block;"}).append($width))
                 .append($("<span>", { style:"width:15%; margin-left: 10px; display:inline-block;"}).append($height))
-                .append($("<span>", { style:"width:8%; margin-left: 10px; display:inline-block;"}).append($printButton));
+                .append($("<span>", { style:"margin-left: 10px; display:inline-block;"}).append($generateBtn))
+                .append($("<span>", { style:"margin-left: 10px; display:inline-block;"}).append($printButton));
+        $toolbar.append($lineOne);
+
+
 
         views.header.append($toolbar);
 
