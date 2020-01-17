@@ -165,7 +165,7 @@ function GridView(gridModel) {
 						}).bind(this, sample));
 					}
 
-                    var storageBoxId = this._gridModel.gridId + "-" + posX + "-" + posY + "-storage-box";
+                    var storageBoxId = Util.guid();
 					var labelContainer = $("<div>", { class: "storageBox", id : storageBoxId }).text(labels[i].displayName);
 					if (sample) {
 						var tooltip = PrintUtil.getTable(sample, false, optSampleTitle, 'inspectorWhiteFont', 'colorEncodedWellAnnotations-holder-' + sample.permId, null, null);
