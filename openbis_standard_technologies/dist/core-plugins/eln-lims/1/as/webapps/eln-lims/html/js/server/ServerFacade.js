@@ -56,7 +56,12 @@ function ServerFacade(openbisServer) {
 				isError = true;
 				Util.showError(response.error.message, function() {
 					location.reload(true);
-				}, true);
+				}, true, false, false, true);
+			} else if(response.error.message.indexOf("has no role assignments") !== -1) {
+				isError = true;
+				Util.showError("User has no assigned rights. Please contact your group admin.", function() {
+					location.reload(true);
+				}, true, false, false, true);
 			} else if(response.error === "Request failed: ") {
 				Util.showError(response.error + "openBIS or DSS cannot be reached. Please try again or contact your admin.", null, true, false, true);
 			}
