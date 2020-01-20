@@ -645,24 +645,26 @@ public abstract class AbstractServer<T> extends AbstractServiceWithLogger<T> imp
                 grantRoleAtFirstLogin(persons, person, RoleCode.ETL_SERVER);
             } else
             {
-                authenticationLog.info(String.format(
-                        "User '%s' has no role assignments and thus is not permitted to login.",
-                        person.getUserId()));
-                return null;
+                throw createException(person, "has no role assignments");
             }
         }
 
         if (false == person.isActive())
         {
-            authenticationLog.info(String.format(
-                    "User '%s' has been deactivated and thus is not permitted to login.",
-                    person.getUserId()));
-            return null;
+            throw createException(person, "has been deactivated");
         }
 
         removeNotExistingVisits(session);
 
         return asDTO(session);
+    }
+
+    private UserFailureException createException(PersonPE person, String reason)
+    {
+        String message = String.format("User '%s' %s and thus is not permitted to login.", person.getUserId(), reason);
+        authenticationLog.info(message);
+        UserFailureException failureException = new UserFailureException(message);
+        return failureException;
     }
 
     @SuppressWarnings("deprecation")
