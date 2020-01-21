@@ -208,7 +208,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		
 		var $header = views.header;
 		$header.append($formTitle);
-        toolbarModel.push({ component : FormUtil.getOptionsDropdown(dropdownOptionsModel), tooltip: null });
+		FormUtil.addOptionsDropdownToToolbar(toolbarModel, dropdownOptionsModel);
 		$header.append(FormUtil.getToolbar(toolbarModel));
 		
 		//
