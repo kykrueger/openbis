@@ -83,7 +83,7 @@ function SpaceFormView(spaceFormController, spaceFormModel) {
 			var isEntityFrozen = _this._spaceFormModel.v3_space.frozen;
             if(isEntityFrozen) {
 			    var $freezeButton = FormUtil.getFreezeButton("SPACE", _this._spaceFormModel.v3_space.permId.permId, isEntityFrozen);
-			    toolbarModel.push({ component : $freezeButton, tooltip: isEntityFrozenTooltip });
+			    toolbarModel.push({ component : $freezeButton, tooltip: "Entity Frozen" });
             } else {
                 dropdownOptionsModel.push({
                     label : "Freeze Entity (Disable further modifications)",
