@@ -60,6 +60,7 @@ function ProjectFormView(projectFormController, projectFormModel) {
 		// Toolbar
 		//
 		var toolbarModel = [];
+		var dropdownOptionsModel = [];
 		if(this._projectFormModel.mode === FormMode.VIEW) {
 			var experimentKindName = ELNDictionary.getExperimentKindName(projectIdentifier);
 			if (_this._allowedToCreateExperiments()) {
@@ -106,11 +107,13 @@ function ProjectFormView(projectFormController, projectFormModel) {
 			}
             if (_this._allowedToMove()) {
                 //Move
-                var $moveBtn = FormUtil.getButtonWithIcon("glyphicon-move", function () {
-                    var moveEntityController = new MoveEntityController("PROJECT", _this._projectFormModel.project.permId);
-                    moveEntityController.init();
+				dropdownOptionsModel.push({
+                    label : "Move",
+                    action : function() {
+                        var moveEntityController = new MoveEntityController("PROJECT", _this._projectFormModel.project.permId);
+                        moveEntityController.init();
+                    }
                 });
-				toolbarModel.push({ component : $moveBtn, tooltip: "Move" });
             }
 			if(_this._allowedToEdit()) {
 				//Edit
@@ -121,66 +124,67 @@ function ProjectFormView(projectFormController, projectFormModel) {
 			}
 			if(_this._allowedToDelete()) {
 				//Delete
-				var $deleteBtn = FormUtil.getDeleteButton(function(reason) {
-					_this._projectFormController.deleteProject(reason);
-				}, true);
-				toolbarModel.push({ component : $deleteBtn, tooltip: "Delete" });
+				dropdownOptionsModel.push({
+                    label : "Delete",
+                    action : function() {
+                        var modalView = new DeleteEntityController(function(reason) {
+					        _this._projectFormController.deleteProject(reason);
+                        }, true);
+                        modalView.init();
+                    }
+                });
 			}
 			
 			//Export
-			var $exportAll = FormUtil.getExportButton([{ type: "PROJECT", permId : _this._projectFormModel.project.permId, expand : true }], false);
-			toolbarModel.push({ component : $exportAll, tooltip: "Export Metadata & Data" });
-		
-			var $exportOnlyMetadata = FormUtil.getExportButton([{ type: "PROJECT", permId : _this._projectFormModel.project.permId, expand : true }], true);
-			toolbarModel.push({ component : $exportOnlyMetadata, tooltip: "Export Metadata only" });
-		
+			dropdownOptionsModel.push({
+                label : "Export Metadata",
+                action : FormUtil.getExportAction([{ type: "PROJECT", permId : _this._projectFormModel.project.permId, expand : true }], true)
+            });
+
+            dropdownOptionsModel.push({
+                label : "Export Metadata & Data",
+                action : FormUtil.getExportAction([{ type: "PROJECT", permId : _this._projectFormModel.project.permId, expand : true }], false)
+            });
+
 			//Jupyter Button
 			if(profile.jupyterIntegrationServerEndpoint) {
-				var $jupyterBtn = FormUtil.getButtonWithImage("./img/jupyter-icon.png", function () {
-					var jupyterNotebook = new JupyterNotebookController(_this._projectFormModel.project);
-					jupyterNotebook.init();
-				});
-				toolbarModel.push({ component : $jupyterBtn, tooltip: "Create Jupyter notebook" });
+			    dropdownOptionsModel.push({
+                    label : "New Jupyter notebook",
+                    action : function () {
+                        var jupyterNotebook = new JupyterNotebookController(_this._projectFormModel.project);
+                        jupyterNotebook.init();
+                    }
+                });
 			}
 
 			// authorization
 			if (this._projectFormModel.roles.indexOf("ADMIN") > -1 ) {
-				var $share = FormUtil.getButtonWithIcon("fa fa-users", function() {
-					FormUtil.showAuthorizationDialog({
-						project: _this._projectFormModel.project,
-					});
-				});
-				toolbarModel.push({ component : $share, tooltip: "Manage access" });
+				dropdownOptionsModel.push({
+                    label : "Manage access",
+                    action : function () {
+                        FormUtil.showAuthorizationDialog({
+                            project: _this._projectFormModel.project,
+                        });
+                    }
+                });
 			}
 
             //Freeze
             if(_this._projectFormModel.v3_project && _this._projectFormModel.v3_project.frozen !== undefined) { //Freezing available on the API
                 var isEntityFrozen = _this._projectFormModel.v3_project.frozen;
-                var isEntityFrozenTooltip = (isEntityFrozen)?"Entity Frozen":"Freeze Entity (Disable further modifications)";
-                var $freezeButton = FormUtil.getFreezeButton("PROJECT", this._projectFormModel.v3_project.permId.permId, isEntityFrozen);
-                toolbarModel.push({ component : $freezeButton, tooltip: isEntityFrozenTooltip });
+                if(isEntityFrozen) {
+                    var $freezeButton = FormUtil.getFreezeButton("PROJECT", this._projectFormModel.v3_project.permId.permId, "Entity Frozen");
+                    toolbarModel.push({ component : $freezeButton, tooltip: "Entity Frozen" });
+                } else {
+                    dropdownOptionsModel.push({
+                        label : "Freeze Entity (Disable further modifications)",
+                        action : function() {
+                            FormUtil.showFreezeForm("PROJECT", _this._projectFormModel.v3_project.permId.permId);
+                        }
+                    });
+                }
+
             }
-
-			var showSelectExperimentType = function() {
-				var $dropdown = FormUtil.getExperimentTypeDropdown("experimentTypeDropdown", true);
-				Util.showDropdownAndBlockUI("experimentTypeDropdown", $dropdown);
-
-				$("#experimentTypeDropdown").on("change", function(event) {
-					var experimentTypeCode = $("#experimentTypeDropdown")[0].value;
-					_this._projectFormController.createNewExperiment(experimentTypeCode);
-				});
-
-				$("#experimentTypeDropdownCancel").on("click", function(event) {
-					Util.unblockUI();
-				});
-			};
-			if (_this._allowedToCreateExperiments()) {
-				//Operations
-				var $operationsMenu = FormUtil.getOperationsMenu([{ label: "Create " + experimentKindName, event: function() {
-					showSelectExperimentType();
-				}}]);
-				toolbarModel.push({ component : $operationsMenu, tooltip: "Extra operations" });
-			}
 		} else {
 			var $saveBtn = FormUtil.getButtonWithIcon("glyphicon-floppy-disk", function() {
 				_this._projectFormController.updateProject();
@@ -192,6 +196,7 @@ function ProjectFormView(projectFormController, projectFormModel) {
 		
 		var $header = views.header;
 		$header.append($formTitle);
+		toolbarModel.push({ component : FormUtil.getOptionsDropdown(dropdownOptionsModel), tooltip: null });
 		$header.append(FormUtil.getToolbar(toolbarModel));
 
 		//
