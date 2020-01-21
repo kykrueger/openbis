@@ -112,6 +112,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		// Toolbar
 		//
 		var toolbarModel = [];
+        var dropdownOptionsModel = [];
 		var toolbarConfig = profile.getSampleTypeToolbarConfiguration(_this._sampleFormModel.sample.sampleTypeCode);
 		
 		if(this._sampleFormModel.mode === FormMode.VIEW) {
@@ -163,14 +164,16 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 				}
 			}
 			if (_this._allowedToMove()) {
-				//Move
-				var $moveBtn = FormUtil.getButtonWithIcon("glyphicon-move", function () {
-					var moveEntityController = new MoveEntityController("SAMPLE", _this._sampleFormModel.sample.permId);
-					moveEntityController.init();
-				});
-				if(toolbarConfig.MOVE) {
-					toolbarModel.push({ component : $moveBtn, tooltip: "Move" });
-				}
+			    //Move
+			    if(toolbarConfig.MOVE) {
+                    dropdownOptionsModel.push({
+                        label : "Move",
+                        action : function() {
+                                var moveEntityController = new MoveEntityController("SAMPLE", _this._sampleFormModel.sample.permId);
+                                moveEntityController.init();
+                                }
+                    });
+                }
 			}
 			if (_this._allowedToDelete()) {
 				//Delete
@@ -215,71 +218,79 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 						}
 					}
 				}
-				
-				var $deleteButton = FormUtil.getDeleteButton(function(reason) {
-					_this._sampleFormController.deleteSample(reason);
-				}, true, warningText);
-				
+
 				if(toolbarConfig.DELETE) {
-					toolbarModel.push({ component : $deleteButton, tooltip: "Delete" });
+			        dropdownOptionsModel.push({
+                        label : "Delete",
+                        action : function() {
+                            var modalView = new DeleteEntityController(function(reason) {
+                                _this._sampleFormController.deleteSample(reason);
+                            }, true, warningText);
+                            modalView.init();
+                        }
+                    });
 				}
 				
 			}
 			if (_this._allowedToCopy()) {
 				//Copy
-				var $copyButton = $("<a>", { 'class' : 'btn btn-default'} )
-				.append($('<img>', { 'src' : './img/copy-icon.png', 'style' : 'width:16px; height:16px;' }));
-				$copyButton.click(_this._getCopyButtonEvent());
 				if(toolbarConfig.COPY) {
-					toolbarModel.push({ component : $copyButton, tooltip: "Copy" });
+				    dropdownOptionsModel.push({
+                        label : "Copy",
+                        action : _this._getCopyButtonEvent()
+                    });
 				}
 			}
 
 			//Print
-			var $printButton = $("<a>", { 'class' : 'btn btn-default'} ).append($('<span>', { 'class' : 'glyphicon glyphicon-print' }));
-			$printButton.click(function() {
-				PrintUtil.printEntity(_this._sampleFormModel.sample);
-			});
 			if(toolbarConfig.PRINT) {
-				toolbarModel.push({ component : $printButton, tooltip: "Print" });
+			    dropdownOptionsModel.push({
+                    label : "Print",
+                    action : function() {
+                        PrintUtil.printEntity(_this._sampleFormModel.sample);
+                    }
+                });
 			}
 
 			//Barcode
 			if(profile.mainMenu.showBarcodes) {
-                var $barcodeButton = $("<a>", { 'class' : 'btn btn-default'} ).append($('<span>', { 'class' : 'glyphicon glyphicon-barcode' }));
-                $barcodeButton.click(function() {
-                    BarcodeUtil.showBarcode(_this._sampleFormModel.sample);
-                });
                 if(toolbarConfig.BARCODE) {
-                    toolbarModel.push({ component : $barcodeButton, tooltip: "Barcode" });
-                }
-
-                if(profile.isPropertyPressent(sampleType, "$BARCODE")) {
-                    var $barcodeReadButton = $("<a>", { 'class' : 'btn btn-default'} ).append($('<span>', { 'class' : 'glyphicon glyphicon-barcode' }));
-                    $barcodeReadButton.append(" R");
-                    $barcodeReadButton.click(function() {
-                        BarcodeUtil.readBarcode(_this._sampleFormModel.sample);
+                    dropdownOptionsModel.push({
+                                        label : "Barcode Print",
+                                        action : function() {
+                                            BarcodeUtil.showBarcode(_this._sampleFormModel.sample);
+                                        }
                     });
-                    if(toolbarConfig.BARCODE) {
-                        toolbarModel.push({ component : $barcodeReadButton, tooltip: "Update Barcode" });
+
+                    if(profile.isPropertyPressent(sampleType, "$BARCODE")) {
+                        dropdownOptionsModel.push({
+                            label : "Barcode Update",
+                            action : function() {
+                                BarcodeUtil.readBarcode(_this._sampleFormModel.sample);
+                            }
+                        });
                     }
                 }
             }
 
 			//Hierarchy Graph
-			var $hierarchyGraph = FormUtil.getButtonWithImage("./img/hierarchy-icon.png", function () {
-				mainController.changeView('showSampleHierarchyPage', _this._sampleFormModel.sample.permId);
-			});
 			if(toolbarConfig.HIERARCHY_GRAPH) {
-				toolbarModel.push({ component : $hierarchyGraph, tooltip: "Hierarchy Graph" });
+				dropdownOptionsModel.push({
+                    label : "Hierarchy Graph",
+                    action : function() {
+                        mainController.changeView('showSampleHierarchyPage', _this._sampleFormModel.sample.permId);
+                    }
+                });
 			}
 			
 			//Hierarchy Table
-			var $hierarchyTable = FormUtil.getButtonWithIcon("glyphicon-list", function () {
-				mainController.changeView('showSampleHierarchyTablePage', _this._sampleFormModel.sample.permId);
-			});
 			if(toolbarConfig.HIERARCHY_TABLE) {
-				toolbarModel.push({ component : $hierarchyTable, tooltip: "Hierarchy Table" });
+				dropdownOptionsModel.push({
+                    label : "Hierarchy Table",
+                    action : function() {
+                        mainController.changeView('showSampleHierarchyTablePage', _this._sampleFormModel.sample.permId);
+                    }
+                });
 			}
 			
 			if(_this._allowedToRegisterDataSet()) {
@@ -292,47 +303,63 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 				}
 			
 				//Get dropbox folder name
-				var $uploadBtn = FormUtil.getButtonWithIcon("glyphicon-circle-arrow-up", (function () {
-					var nameElements = [
-						"O",
-						_this._sampleFormModel.sample.spaceCode,
-						IdentifierUtil.getProjectCodeFromSampleIdentifier(_this._sampleFormModel.sample.identifier),
-						_this._sampleFormModel.sample.code,
-					];
-					FormUtil.showDropboxFolderNameDialog(nameElements);
-				}).bind(this));
 				if(toolbarConfig.UPLOAD_DATASET_HELPER) {
-					toolbarModel.push({ component : $uploadBtn, tooltip: "Helper tool for Dataset upload using eln-lims dropbox" });
+					dropdownOptionsModel.push({
+                        label : "Dataset upload helper tool for eln-lims dropbox",
+                        action : function() {
+                            var nameElements = [
+                                "O",
+                                _this._sampleFormModel.sample.spaceCode,
+                                IdentifierUtil.getProjectCodeFromSampleIdentifier(_this._sampleFormModel.sample.identifier),
+                                _this._sampleFormModel.sample.code,
+                            ];
+					        FormUtil.showDropboxFolderNameDialog(nameElements);
+                        }
+                    });
 				}
 			}
 			
 			//Export
-			var $exportAll = FormUtil.getExportButton([{ type: "SAMPLE", permId : _this._sampleFormModel.sample.permId, expand : true }], false);
+            if(toolbarConfig.EXPORT_METADATA) {
+                dropdownOptionsModel.push({
+                    label : "Export Metadata",
+                    action : FormUtil.getExportAction([{ type: "SAMPLE", permId : _this._sampleFormModel.sample.permId, expand : true }], true)
+                });
+            }
+
 			if(toolbarConfig.EXPORT_ALL) {
-				toolbarModel.push({ component : $exportAll, tooltip: "Export Metadata & Data" });
-			}
-			
-			var $exportOnlyMetadata = FormUtil.getExportButton([{ type: "SAMPLE", permId : _this._sampleFormModel.sample.permId, expand : true }], true);
-			if(toolbarConfig.EXPORT_METADATA) {
-				toolbarModel.push({ component : $exportOnlyMetadata, tooltip: "Export Metadata only" });
+				dropdownOptionsModel.push({
+                    label : "Export Metadata & Data",
+                    action : FormUtil.getExportAction([{ type: "SAMPLE", permId : _this._sampleFormModel.sample.permId, expand : true }], false)
+                });
 			}
 			
 			//Jupyter Button
 			if(profile.jupyterIntegrationServerEndpoint) {
-				var $jupyterBtn = FormUtil.getButtonWithImage("./img/jupyter-icon.png", function () {
-					var jupyterNotebook = new JupyterNotebookController(_this._sampleFormModel.sample);
-					jupyterNotebook.init();
-				});
-				toolbarModel.push({ component : $jupyterBtn, tooltip: "Create Jupyter notebook" });
+				dropdownOptionsModel.push({
+                    label : "New Jupyter notebook",
+                    action : function () {
+                        var jupyterNotebook = new JupyterNotebookController(_this._sampleFormModel.sample);
+                        jupyterNotebook.init();
+                    }
+                });
 			}
 
             //Freeze
             if(_this._sampleFormModel.v3_sample && _this._sampleFormModel.v3_sample.frozen !== undefined) { //Freezing available on the API
                 var isEntityFrozen = _this._sampleFormModel.v3_sample.frozen;
-                var isEntityFrozenTooltip = (isEntityFrozen)?"Entity Frozen":"Freeze Entity (Disable further modifications)";
-            	var $freezeButton = FormUtil.getFreezeButton("SAMPLE", this._sampleFormModel.v3_sample.permId.permId, isEntityFrozen);
                 if(toolbarConfig.FREEZE) {
-                    toolbarModel.push({ component : $freezeButton, tooltip: isEntityFrozenTooltip });
+                    if(isEntityFrozen) {
+                        var $freezeButton = FormUtil.getFreezeButton("SAMPLE", this._sampleFormModel.v3_sample.permId.permId, isEntityFrozen);
+                        toolbarModel.push({ component : $freezeButton, tooltip: "Entity Frozen" });
+                    } else {
+                        dropdownOptionsModel.push({
+                            label : "Freeze Entity (Disable further modifications)",
+                            action : function () {
+                                FormUtil.showFreezeForm("SAMPLE", _this._sampleFormModel.v3_sample.permId.permId);
+                            }
+                        });
+                    }
                 }
             }
 		} else { //Create and Edit
@@ -447,6 +474,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		if(sampleTypeDefinitionsExtension && sampleTypeDefinitionsExtension.extraToolbar) {
 		    toolbarModel = toolbarModel.concat(sampleTypeDefinitionsExtension.extraToolbar(_this._sampleFormModel.mode, _this._sampleFormModel.sample));
 		}
+		toolbarModel.push({ component : FormUtil.getOptionsDropdown(dropdownOptionsModel), tooltip: null });
 		$header.append(FormUtil.getToolbar(toolbarModel));
 		
 		//

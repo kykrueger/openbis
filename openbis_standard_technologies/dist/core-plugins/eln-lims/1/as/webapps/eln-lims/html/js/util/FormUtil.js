@@ -946,7 +946,21 @@ var FormUtil = new function() {
 		}
 		return originalValue;
 	}
-	
+
+    this.getOptionsDropdown = function(optionsModel) {
+        var $dropdownOptionsMenu = $("<span>", { class : 'dropdown' });
+        var $dropdownOptionsMenuCaret = $("<a>", { 'href' : '#', 'data-toggle' : 'dropdown', class : 'dropdown-toggle btn btn-default', 'id' : 'options-menu-btn'}).append("Operations ").append($("<b>", { class : 'caret' }));
+        var $dropdownOptionsMenuList = $("<ul>", { class : 'dropdown-menu', 'role' : 'menu' });
+        $dropdownOptionsMenu.append($dropdownOptionsMenuCaret);
+        $dropdownOptionsMenu.append($dropdownOptionsMenuList);
+        for(var idx = 0; idx < optionsModel.length; idx++) {
+            var $dropdownElement = $("<li>", { 'role' : 'presentation' }).append($("<a>", {'title' : optionsModel[idx].label }).append(optionsModel[idx].label));
+            $dropdownElement.click(optionsModel[idx].action);
+            $dropdownOptionsMenuList.append($dropdownElement);
+        }
+        return $dropdownOptionsMenu;
+    };
+
 	this.getToolbar = function(toolbarModel) {
 		var $toolbarContainer = $("<div>", { class : 'toolBox', style : "width: 100%;" });
 		
@@ -1541,18 +1555,22 @@ var FormUtil = new function() {
 		});
 	}
 
+    this.getExportAction = function(exportConfig, metadataOnly, includeRoot) {
+        return function() {
+            Util.blockUI();
+            var facade = mainController.serverFacade;
+            facade.exportAll(exportConfig, (includeRoot)?true:false, metadataOnly, function(error, result) {
+                if(error) {
+                    Util.showError(error);
+                } else {
+               	    Util.showSuccess("Export is being processed, you will receive an email when is ready, if you logout the process will stop.", function() { Util.unblockUI(); });
+                }
+            });
+        };
+    }
+
 	this.getExportButton = function(exportConfig, metadataOnly, includeRoot) {
-			var $export = FormUtil.getButtonWithIcon("glyphicon-export", function() {
-					Util.blockUI();
-					var facade = mainController.serverFacade;
-					facade.exportAll(exportConfig, (includeRoot)?true:false, metadataOnly, function(error, result) {
-						if(error) {
-							Util.showError(error);
-						} else {
-							Util.showSuccess("Export is being processed, you will receive an email when is ready, if you logout the process will stop.", function() { Util.unblockUI(); });
-						}
-					});
-			});
+			var $export = FormUtil.getButtonWithIcon("glyphicon-export", this.getExportAction(exportConfig, metadataOnly, includeRoot));
 			if(metadataOnly) {
 				$export.append(" M");
 			}
