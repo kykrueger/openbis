@@ -30,7 +30,7 @@ function ProjectFormView(projectFormController, projectFormModel) {
 		});
 		
 		$form.append($formColumn);
-		
+
 		//
 		// Title
 		//
@@ -196,15 +196,37 @@ function ProjectFormView(projectFormController, projectFormModel) {
 		
 		var $header = views.header;
 		$header.append($formTitle);
+
+
+
+        //TODO : Save on the user settings the default state after update by Kind, for example project-identification-info
+        var $identificationInfoLabel = $("<span>").append("Hide Identification Info");
+
+		dropdownOptionsModel.push({
+                                label : $identificationInfoLabel,
+                                action : function() {
+                                    $("#project-identification-info").toggle(300,function() {
+                                        $identificationInfoLabel.empty();
+                                        if($("#project-identification-info").css("display") === "none") {
+                                            $identificationInfoLabel.append("Show Identification Info");
+                                        } else {
+                                            $identificationInfoLabel.append("Hide Identification Info");
+                                        }
+                                    });
+                                }
+        });
+
 		toolbarModel.push({ component : FormUtil.getOptionsDropdown(dropdownOptionsModel), tooltip: null });
 		$header.append(FormUtil.getToolbar(toolbarModel));
 
 		//
 		// Identification info
 		//
-		$formColumn.append($("<legend>").append("Identification Info"));
+		var $identificationInfo = $("<div>", { id : "project-identification-info" });
 
-		$formColumn.append(FormUtil.getFieldForLabelWithText("Space", this._projectFormModel.project.spaceCode));
+		$identificationInfo.append($("<legend>").append("Identification Info"));
+
+		$identificationInfo.append(FormUtil.getFieldForLabelWithText("Space", this._projectFormModel.project.spaceCode));
 
 		if(this._projectFormModel.mode === FormMode.CREATE) {
 			var $textField = FormUtil._getInputField('text', null, "Project Code", null, true);
@@ -217,26 +239,28 @@ function ProjectFormView(projectFormController, projectFormModel) {
 				_this._projectFormModel.project.code = textField.val();
 				_this._projectFormModel.isFormDirty = true;
 			});
-			$formColumn.append(FormUtil.getFieldForComponentWithLabel($textField, "Code"));
+			$identificationInfo.append(FormUtil.getFieldForComponentWithLabel($textField, "Code"));
 		} else {
-			$formColumn.append(FormUtil.getFieldForLabelWithText("Code", this._projectFormModel.project.code));
+			$identificationInfo.append(FormUtil.getFieldForLabelWithText("Code", this._projectFormModel.project.code));
 		}
 
 		if(this._projectFormModel.mode !== FormMode.CREATE) {
 			var registrationDetails = this._projectFormModel.project.registrationDetails;
 
 			var $registrator = FormUtil.getFieldForLabelWithText("Registrator", registrationDetails.userId);
-			$formColumn.append($registrator);
+			$identificationInfo.append($registrator);
 
 			var $registationDate = FormUtil.getFieldForLabelWithText("Registration Date", Util.getFormatedDate(new Date(registrationDetails.registrationDate)));
-			$formColumn.append($registationDate);
+			$identificationInfo.append($registationDate);
 
 			var $modifier = FormUtil.getFieldForLabelWithText("Modifier", registrationDetails.modifierUserId);
-			$formColumn.append($modifier);
+			$identificationInfo.append($modifier);
 
 			var $modificationDate = FormUtil.getFieldForLabelWithText("Modification Date", Util.getFormatedDate(new Date(registrationDetails.modificationDate)));
-			$formColumn.append($modificationDate);
+			$identificationInfo.append($modificationDate);
 		}
+
+        $formColumn.append($identificationInfo);
 
 		//
 		// Metadata Fields
