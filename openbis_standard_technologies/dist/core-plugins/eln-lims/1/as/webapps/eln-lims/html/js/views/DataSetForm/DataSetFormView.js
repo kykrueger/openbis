@@ -85,6 +85,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 		// Toolbar
 		//
 		var toolbarModel = [];
+		var dropdownOptionsModel = [];
 		if(this._dataSetFormModel.mode === FormMode.VIEW && !this._dataSetFormModel.isMini) {
 			var toolbarConfig = profile.getDataSetTypeToolbarConfiguration(_this._dataSetFormModel.dataSet.dataSetTypeCode);
 			if (_this._allowedToEdit()) {
@@ -98,21 +99,28 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 			}
 			if(_this._allowedToMove()) {
 				//Move
-				var $moveBtn = FormUtil.getButtonWithIcon("glyphicon-move", function () {
-					var moveEntityController = new MoveEntityController("DATASET", _this._dataSetFormModel.dataSet.code);
-					moveEntityController.init();
-				});
 				if(toolbarConfig.MOVE) {
-					toolbarModel.push({ component : $moveBtn, tooltip: "Move" });
+                    dropdownOptionsModel.push({
+                        label : "Move",
+                        action : function() {
+                                var moveEntityController = new MoveEntityController("DATASET", _this._dataSetFormModel.dataSet.code);
+                                moveEntityController.init();
+                        }
+                    });
 				}
 			}
 			if(_this._allowedToDelete()) {
 				//Delete Button
-				var $deleteBtn = FormUtil.getDeleteButton(function(reason) {
-					_this._dataSetFormController.deleteDataSet(reason);
-				}, true);
 				if(toolbarConfig.DELETE) {
-					toolbarModel.push({ component : $deleteBtn, tooltip: "Delete" });
+                    dropdownOptionsModel.push({
+                        label : "Delete",
+                        action : function() {
+                            var modalView = new DeleteEntityController(function(reason) {
+					            _this._dataSetFormController.deleteDataSet(reason);
+                            }, true);
+                            modalView.init();
+                        }
+                    });
 				}
 			}
 			
@@ -177,22 +185,28 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 			}
 			
 			//Hierarchy Table
-			var $hierarchyTable = FormUtil.getButtonWithIcon("glyphicon-list", function () {
-				mainController.changeView('showDatasetHierarchyTablePage', _this._dataSetFormModel.dataSet.code);
-			});
 			if(toolbarConfig.HIERARCHY_TABLE) {
-				toolbarModel.push({ component : $hierarchyTable, tooltip: "Hierarchy Table" });
+				dropdownOptionsModel.push({
+                    label : "Hierarchy Table",
+                    action : function() {
+                        mainController.changeView('showDatasetHierarchyTablePage', _this._dataSetFormModel.dataSet.code);
+                    }
+                });
 			}
 			
 			//Export
-			var $exportAll = FormUtil.getExportButton([{ type: "DATASET", permId : _this._dataSetFormModel.dataSet.code, expand : true }], false);
+            if(toolbarConfig.EXPORT_METADATA) {
+                dropdownOptionsModel.push({
+                    label : "Export Metadata",
+                    action : FormUtil.getExportAction([{ type: "DATASET", permId : _this._dataSetFormModel.dataSet.code, expand : true }], true)
+                });
+            }
+
 			if(toolbarConfig.EXPORT_ALL) {
-				toolbarModel.push({ component : $exportAll, tooltip: "Export Metadata & Data" });
-			}
-			
-			var $exportOnlyMetadata = FormUtil.getExportButton([{ type: "DATASET", permId : _this._dataSetFormModel.dataSet.code, expand : true }], true);
-			if(toolbarConfig.EXPORT_METADATA) {
-				toolbarModel.push({ component : $exportOnlyMetadata, tooltip: "Export Metadata only" });
+				dropdownOptionsModel.push({
+                    label : "Export Metadata & Data",
+                    action : FormUtil.getExportAction([{ type: "DATASET", permId : _this._dataSetFormModel.dataSet.code, expand : true }], false)
+                });
 			}
 			
 			//Jupyter Button
@@ -229,6 +243,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
             if(dataSetTypeDefinitionsExtension && dataSetTypeDefinitionsExtension.extraToolbar) {
                 toolbarModel = toolbarModel.concat(dataSetTypeDefinitionsExtension.extraToolbar(_this._dataSetFormModel.mode, _this._dataSetFormModel.dataSet));
             }
+            FormUtil.addOptionsDropdownToToolbar(toolbarModel, dropdownOptionsModel);
 			$header.append(FormUtil.getToolbar(toolbarModel));
 		}
 		
