@@ -158,7 +158,7 @@ function GridView(gridModel) {
 						}
 						
 						sample = sample.parents[0];
-						extraProperties = {code : {label : "code", value : sample.code}};
+						extraProperties = {code : {label : "Code", value : sample.code}};
 							
 						var href = Util.getURLFor(null, "showViewSamplePageFromPermId", sample.permId);
 						optSampleTitle = $("<a>", { "href" : href, "class" : "browser-compatible-javascript-link" }).text(labels[i].displayName);
