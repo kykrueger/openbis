@@ -32,7 +32,7 @@ public class AuthenticationTest extends SeleniumTest
         logout();
     }
 
-    @Test
+//    @Test
     public void loginFailsWithInvalidUserName() throws Exception
     {
         login("invalid", SeleniumTest.ADMIN_PASSWORD);
@@ -42,7 +42,7 @@ public class AuthenticationTest extends SeleniumTest
         assumePage(InvalidPasswordDialog.class).dismiss();
     }
 
-    @Test
+//    @Test
     public void loginSucceedsWithValidCredentials() throws Exception
     {
         login(SeleniumTest.ADMIN_USER, SeleniumTest.ADMIN_PASSWORD);
