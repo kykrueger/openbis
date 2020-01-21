@@ -24,6 +24,8 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.*;
 import java.text.ParseException;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -33,11 +35,18 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.*;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.IAliasFactory;
+import ch.systemsx.cisd.openbis.generic.shared.basic.BasicConstant;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
 import ch.systemsx.cisd.openbis.generic.shared.dto.TableNames;
 
 public class TranslatorUtils
 {
+
+    public static final DateTimeFormatter DATE_WITHOUT_TIME_FORMATTER = DateTimeFormatter.ofPattern(BasicConstant.DATE_WITHOUT_TIME_FORMAT_PATTERN);
+
+    public static final DateTimeFormatter DATE_WITH_SHORT_TIME_FORMATTER = DateTimeFormatter.ofPattern(BasicConstant.DATE_WITH_SHORT_TIME_PATTERN);
+
+    public static final DateTimeFormatter DATE_WITHOUT_TIMEZONE_FORMATTER = DateTimeFormatter.ofPattern(BasicConstant.DATE_WITHOUT_TIMEZONE_PATTERN);
 
     /** Indicator that the property is internal. */
     private static final String INTERNAL_PROPERTY_PREFIX = "$";
@@ -273,19 +282,19 @@ public class TranslatorUtils
             final String dateString = ((AbstractDateValue) fieldValue).getValue();
             try
             {
-                DATE_FORMAT.parse(dateString);
-            } catch (final ParseException e1)
+                DATE_WITHOUT_TIMEZONE_FORMATTER.parse(dateString);
+            } catch (final DateTimeParseException e1)
             {
                 try
                 {
-                    DATE_WITH_SHORT_TIME_FORMAT.parse(dateString);
-                } catch (ParseException e)
+                    DATE_WITH_SHORT_TIME_FORMATTER.parse(dateString);
+                } catch (final DateTimeParseException e2)
                 {
                     try
                     {
-                        DATE_WITHOUT_TIME_FORMAT.parse(dateString);
+                        DATE_WITHOUT_TIME_FORMATTER.parse(dateString);
                         sqlBuilder.append(DOUBLE_COLON).append(DATE);
-                    } catch (final ParseException e3)
+                    } catch (final DateTimeParseException e3)
                     {
                         throw new IllegalArgumentException("Illegal date [dateString='" + dateString + "']", e3);
                     }
@@ -294,18 +303,29 @@ public class TranslatorUtils
         }
     }
 
+    public static void appendTimeZoneConversion(final IDate fieldValue, final StringBuilder sqlBuilder, final ITimeZone timeZone)
+    {
+        if (fieldValue instanceof AbstractDateValue)
+        {
+            if (timeZone instanceof TimeZone)
+            {
+                final TimeZone timeZoneImpl = (TimeZone) timeZone;
+                final ZoneId zoneId = ZoneId.ofOffset("UTC", ZoneOffset.ofHours(-timeZoneImpl.getHourOffset()));
+
+                sqlBuilder.append(AT_TIME_ZONE).append(SP).append(SQ).append(zoneId.getId()).append(SQ);
+            }
+        }
+    }
+
     public static void addDateValueToArgs(final IDate fieldValue, final List<Object> args, ITimeZone timeZone)
     {
         if (fieldValue instanceof AbstractDateValue)
         {
-            // String type date value.
             final Date date = getDate((AbstractDateValue) fieldValue);
-
-            final TimeZone timeZoneImpl;
             if (timeZone instanceof TimeZone)
             {
                 // Add calendar if there is time zone information.
-                timeZoneImpl = (TimeZone) timeZone;
+                final TimeZone timeZoneImpl = (TimeZone) timeZone;
                 final ZoneId zoneId = ZoneId.ofOffset("UTC", ZoneOffset.ofHours(timeZoneImpl.getHourOffset()));
                 final Calendar calendar = Calendar.getInstance(java.util.TimeZone.getTimeZone(zoneId));
                 calendar.setTime(date);
@@ -322,7 +342,7 @@ public class TranslatorUtils
         }
     }
 
-    private static Date getDate(AbstractDateValue fieldValue)
+    private static Date getDate(final AbstractDateValue fieldValue)
     {
         final String dateString = fieldValue.getValue();
         try
@@ -346,6 +366,18 @@ public class TranslatorUtils
         }
     }
 
+    public static boolean isDateWithoutTime(final String dateString)
+    {
+        try
+        {
+            DATE_WITHOUT_TIME_FORMATTER.parse(dateString);
+            return true;
+        } catch (final DateTimeParseException e)
+        {
+            return false;
+        }
+    }
+
     public static void appendDateComparatorOp(final Object fieldValue, final StringBuilder sqlBuilder)
     {
         if (fieldValue instanceof DateEqualToValue || fieldValue instanceof DateObjectEqualToValue)
@@ -361,7 +393,16 @@ public class TranslatorUtils
         {
             throw new IllegalArgumentException("Unsupported field value: " + fieldValue.getClass().getSimpleName());
         }
-        sqlBuilder.append(SP).append(QU);
+        sqlBuilder.append(SP);
+
+        final boolean bareDateValue = fieldValue instanceof AbstractDateValue && TranslatorUtils.isDateWithoutTime(((AbstractDateValue) fieldValue).getValue());
+        if (bareDateValue)
+        {
+            sqlBuilder.append(DATE).append(LP).append(QU).append(RP);
+        } else
+        {
+            sqlBuilder.append(QU);
+        }
     }
 
     public static boolean isPropertyInternal(final String propertyName)

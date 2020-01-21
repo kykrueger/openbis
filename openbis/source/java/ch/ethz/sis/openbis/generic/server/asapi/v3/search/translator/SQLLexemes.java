@@ -27,6 +27,8 @@ public class SQLLexemes
 
     public static final String TIMESTAMPTZ = "timestamptz";
 
+    public static final String AT_TIME_ZONE = "AT TIME ZONE";
+
     public static final String DATE = "date";
 
     public static final String SELECT = "SELECT";

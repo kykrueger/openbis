@@ -23,10 +23,7 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.REGISTRATI
 import java.util.List;
 import java.util.Map;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateFieldSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.IDate;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ModificationDateSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.RegistrationDateSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.*;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinInformation;
@@ -110,8 +107,22 @@ public class DateFieldSearchConditionTranslator implements IConditionTranslator<
                 args.add(TIMESTAMP_DATA_TYPE_CODE);
 
                 sqlBuilder.append(SP).append(THEN).append(SP);
+
+                final boolean bareDateValue = value instanceof AbstractDateValue && TranslatorUtils.isDateWithoutTime(((AbstractDateValue) value).getValue());
+                if (bareDateValue)
+                {
+                    sqlBuilder.append(DATE).append(LP);
+                }
+
                 sqlBuilder.append(aliases.get(tableMapper.getEntitiesTable()).getSubTableAlias())
                         .append(PERIOD).append(ColumnNames.VALUE_COLUMN).append(DOUBLE_COLON).append(TIMESTAMPTZ).append(SP);
+                TranslatorUtils.appendTimeZoneConversion(value, sqlBuilder, criterion.getTimeZone());
+
+                if (bareDateValue)
+                {
+                    sqlBuilder.append(RP).append(SP);
+                }
+
                 TranslatorUtils.appendDateComparatorOp(value, sqlBuilder);
                 TranslatorUtils.addDateValueToArgs(value, args, criterion.getTimeZone());
 
