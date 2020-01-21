@@ -241,15 +241,18 @@ var Util = new function() {
 		});
 	}
 	
-	this.showInfo = function(withHTML, andCallback, noBlock) {
+	this.showInfo = function(withHTML, andCallback, noBlock, buttonLabel) {
 		
 		if(!noBlock) {
 			this.blockUINoMessage();
 		}
+		if (!buttonLabel) {
+			buttonLabel = "Dismiss";
+		}
 		
 		var localReference = this;
 		var popUp = jNotify(
-				withHTML + "<br>" + "<a id='jNotifyDismiss' class='btn btn-default'>Dismiss</a>",
+				withHTML + "<br>" + "<a id='jNotifyDismiss' class='btn btn-default'>" + buttonLabel + "</a>",
 				{
 				  autoHide : false,
 				  clickOverlay : false,
