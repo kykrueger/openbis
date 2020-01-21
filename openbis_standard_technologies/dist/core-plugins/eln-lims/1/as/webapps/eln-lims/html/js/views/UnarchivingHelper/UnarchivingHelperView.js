@@ -36,6 +36,38 @@ function UnarchivingHelperView(unarchivingHelperController, unarchivingHelperMod
 		});
 	}
 	
+	this._updateInfoSummary = function($infoSummary) {
+		var dataSetsForUnarchiving = this._unarchivingHelperModel.dataSetsForUnarchiving;
+		var numberOfDataSets = 0;
+		var bundleSizes = {}
+		for (var dataSetCode in dataSetsForUnarchiving) {
+			var dataSet = dataSetsForUnarchiving[dataSetCode];
+			bundleSizes[dataSet.bundleId] = dataSet.bundleSize
+			numberOfDataSets++;
+		}
+		var totalSize = 0.0;
+		for (var key in bundleSizes) {
+			totalSize += bundleSizes[key];
+		}
+		if (totalSize > 0) {
+			$infoSummary.text("Unarchiving all selected data sets (" + numberOfDataSets + " in total) needs " 
+					+ PrintUtil.renderNumberOfBytes(totalSize) + " of free disk space.");
+		} else {
+			$infoSummary.text("");
+		}
+	}
+	
+	this._addForUnarchiving = function(dataSet) {
+		this._unarchivingHelperModel.dataSetsForUnarchiving[dataSet.code] = {
+				bundleId : dataSet.bundleId, 
+				bundleSize : dataSet.bundleSize
+			};
+	}
+	
+	this._removeForUnarchiving = function(dataSet) {
+		delete this._unarchivingHelperModel.dataSetsForUnarchiving[dataSet.code];
+	}
+	
 	this._advancedSearch = function($container, $infoSummary, mainController) {
 		var _this = this;
 		var $explanationBox = this._createStepExplanationElement("2. Check all datasets you want to unarchive and click the 'Unarchive' button:");
@@ -64,29 +96,12 @@ function UnarchivingHelperView(unarchivingHelperController, unarchivingHelperMod
 				_this._unarchivingCheckBoxes.push($checkbox);
 				$checkbox.prop("checked", _this._unarchivingHelperModel.dataSetsForUnarchiving[data.code]);
 				$checkbox.change(data, function (event) {
-					var dataSetsForUnarchiving = _this._unarchivingHelperModel.dataSetsForUnarchiving;
 					if (this.checked) {
-						dataSetsForUnarchiving[data.code] = event.data;
+						_this._addForUnarchiving(event.data);
 					} else {
-						delete dataSetsForUnarchiving[data.code];
+						_this._removeForUnarchiving(event.data);
 					}
-					var numberOfDataSets = 0;
-					var bundleSizes = {}
-					for (var dataSetCode in dataSetsForUnarchiving) {
-						var dataSet = dataSetsForUnarchiving[dataSetCode];
-						bundleSizes[dataSet.bundleKey] = dataSet.bundlesize
-						numberOfDataSets++;
-					}
-					var totalSize = 0.0;
-					for (var key in bundleSizes) {
-						totalSize += bundleSizes[key];
-					}
-					if (totalSize > 0) {
-						$infoSummary.text("Unarchiving all selected data sets (" + numberOfDataSets + " in total) needs " 
-								+ PrintUtil.renderNumberOfBytes(totalSize) + " of free disk space.");
-					} else {
-						$infoSummary.text("");
-					}
+					_this._updateInfoSummary($infoSummary);
 				});
 				return $checkbox;
 			}
@@ -117,11 +132,11 @@ function UnarchivingHelperView(unarchivingHelperController, unarchivingHelperMod
 		},
 		{
 			label : "Bundle Size",
-			property : "bundlesize",
+			property : "bundleSize",
 			isExportable : false,
 			sortable : true,
 			render : function(data, grid) {
-				return PrintUtil.renderNumberOfBytes(data.bundlesize);
+				return PrintUtil.renderNumberOfBytes(data.bundleSize);
 			}
 		}];
 		searchView._paintRulesPanel($rulesPanel);
@@ -138,22 +153,28 @@ function UnarchivingHelperView(unarchivingHelperController, unarchivingHelperMod
 			$explanationBox.show();
 			$infoSummary.text("");
 		}
-		searchView.beforeGetData = function() {
-			_this._unarchivingCheckBoxes = [];
-		}
 		searchView.extraOptions = [{
-			name : "Select all data sets of this page",
+			name : "Select all data sets",
 			action : function(selected) {
+				var search = searchController.searchWithPagination(searchView._advancedSearchModel.criteria, false);
+				search(function(results) {
+					results.objects.forEach(function(dataSet) {
+						_this._addForUnarchiving(dataSet);
+					});
+					_this._updateInfoSummary($infoSummary);
+				});
 				_this._unarchivingCheckBoxes.forEach(function(checkBox) {
-					checkBox.prop("checked", true).change();
+					checkBox.prop("checked", true);
 				});
 			}
 		}, {
-			name : "Unselect all data sets of this page",
+			name : "Unselect all data sets",
 			action : function(selected) {
 				_this._unarchivingCheckBoxes.forEach(function(checkBox) {
-					checkBox.prop("checked", false).change()
+					checkBox.prop("checked", false);
 				});
+				_this._unarchivingHelperModel.dataSetsForUnarchiving = {};
+				_this._updateInfoSummary($infoSummary);
 			}
 		}];
 		searchController.additionalRules = [{
@@ -168,9 +189,9 @@ function UnarchivingHelperView(unarchivingHelperController, unarchivingHelperMod
 				results.forEach(function(row) {
 					info = infos[row.code];
 					row.size = info.size;
-					row.bundle = info.container.length;
-					row.bundleKey = info.container.join('_');
-					row.bundlesize = info["container size"];
+					row.bundle = info.numberOfDataSets;
+					row.bundleId = info.bundleId;
+					row.bundleSize = info.bundleSize;
 				});
 				callback(results);
 			})
