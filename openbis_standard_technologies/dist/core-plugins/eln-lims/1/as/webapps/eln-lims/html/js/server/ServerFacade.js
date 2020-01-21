@@ -56,7 +56,12 @@ function ServerFacade(openbisServer) {
 				isError = true;
 				Util.showError(response.error.message, function() {
 					location.reload(true);
-				}, true);
+				}, true, false, false, true);
+			} else if(response.error.message.indexOf("has no role assignments") !== -1) {
+				isError = true;
+				Util.showError("User has no assigned rights. Please contact your group admin.", function() {
+					location.reload(true);
+				}, true, false, false, true);
 			} else if(response.error === "Request failed: ") {
 				Util.showError(response.error + "openBIS or DSS cannot be reached. Please try again or contact your admin.", null, true, false, true);
 			}
@@ -434,7 +439,7 @@ function ServerFacade(openbisServer) {
 			});
 	};
 
-    this.exportZenodo = function(entities, includeRoot, metadataOnly, userInformation, title, accessToken, callbackFunction) {
+    this.exportZenodo = function(entities, includeRoot, metadataOnly, userInformation, title, callbackFunction) {
         this.asyncExportZenodo({
             "method": "exportAll",
             "includeRoot": includeRoot,
@@ -443,8 +448,7 @@ function ServerFacade(openbisServer) {
             "userInformation": userInformation,
             "originUrl": window.location.origin,
             "sessionToken": this.openbisServer.getSession(),
-			"submissionTitle": title,
-			"accessToken": accessToken
+			"submissionTitle": title
         }, callbackFunction, "zenodo-exports-api");
     };
 
@@ -469,7 +473,6 @@ function ServerFacade(openbisServer) {
 				options.withParameter("submissionUrl", parameters["submissionUrl"]);
 				options.withParameter("entities", parameters["entities"]);
 				options.withParameter("submissionTitle", parameters["submissionTitle"]);
-				options.withParameter("accessToken", parameters["accessToken"]);
 				options.withParameter("userId", parameters["userInformation"]["id"]);
 				options.withParameter("userEmail", parameters["userInformation"]["email"]);
 				options.withParameter("userFirstName", parameters["userInformation"]["firstName"]);

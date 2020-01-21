@@ -93,7 +93,7 @@ def export(entities, tr, params):
 def sendToZenodo(tr, params, tempZipFilePath, entities):
     depositRootUrl = str(getConfigurationProperty(tr, 'zenodoUrl')) + '/api/deposit/depositions'
 
-    accessToken = params.get('accessToken')
+    accessToken = str(getConfigurationProperty(tr, 'personal-zenodo-api-token'))
     operationLog.info('accessToken: %s' % accessToken)
 
     httpClient = None
