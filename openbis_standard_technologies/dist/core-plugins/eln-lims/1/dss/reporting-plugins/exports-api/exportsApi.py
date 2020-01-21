@@ -247,7 +247,7 @@ def findEntitiesToExport(params):
             operationLog.info("Found: " + str(results.getTotalCount()) + " files");
             for file in results.getObjects():
                 entityFound = {"type": "FILE", "permId": permId, "path": file.getPath(), "isDirectory": file.isDirectory(),
-                               "length": file.getFileLength(), "registrationDate": dataset.getRegistrationDate()};
+                               "length": file.getFileLength()};
                 addToExportWithoutRepeating(entitiesToExport, entityFound);
     return entitiesToExport
 
