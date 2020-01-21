@@ -198,69 +198,11 @@ function ProjectFormView(projectFormController, projectFormModel) {
 		$header.append($formTitle);
 
 
+		$formColumn.append(this._createIdentificationInfo(dropdownOptionsModel));
 
-        //TODO : Save on the user settings the default state after update by Kind, for example project-identification-info
-        var $identificationInfoLabel = $("<span>").append("Hide Identification Info");
-
-		dropdownOptionsModel.push({
-                                label : $identificationInfoLabel,
-                                action : function() {
-                                    $("#project-identification-info").toggle(300,function() {
-                                        $identificationInfoLabel.empty();
-                                        if($("#project-identification-info").css("display") === "none") {
-                                            $identificationInfoLabel.append("Show Identification Info");
-                                        } else {
-                                            $identificationInfoLabel.append("Hide Identification Info");
-                                        }
-                                    });
-                                }
-        });
-
-		toolbarModel.push({ component : FormUtil.getOptionsDropdown(dropdownOptionsModel), tooltip: null });
+		FormUtil.addOptionsDropdownToToolbar(toolbarModel, dropdownOptionsModel);
 		$header.append(FormUtil.getToolbar(toolbarModel));
 
-		//
-		// Identification info
-		//
-		var $identificationInfo = $("<div>", { id : "project-identification-info" });
-
-		$identificationInfo.append($("<legend>").append("Identification Info"));
-
-		$identificationInfo.append(FormUtil.getFieldForLabelWithText("Space", this._projectFormModel.project.spaceCode));
-
-		if(this._projectFormModel.mode === FormMode.CREATE) {
-			var $textField = FormUtil._getInputField('text', null, "Project Code", null, true);
-			$textField.keyup(function(event){
-				var textField = $(this);
-				var caretPosition = this.selectionStart;
-				textField.val(textField.val().toUpperCase());
-				this.selectionStart = caretPosition;
-				this.selectionEnd = caretPosition;
-				_this._projectFormModel.project.code = textField.val();
-				_this._projectFormModel.isFormDirty = true;
-			});
-			$identificationInfo.append(FormUtil.getFieldForComponentWithLabel($textField, "Code"));
-		} else {
-			$identificationInfo.append(FormUtil.getFieldForLabelWithText("Code", this._projectFormModel.project.code));
-		}
-
-		if(this._projectFormModel.mode !== FormMode.CREATE) {
-			var registrationDetails = this._projectFormModel.project.registrationDetails;
-
-			var $registrator = FormUtil.getFieldForLabelWithText("Registrator", registrationDetails.userId);
-			$identificationInfo.append($registrator);
-
-			var $registationDate = FormUtil.getFieldForLabelWithText("Registration Date", Util.getFormatedDate(new Date(registrationDetails.registrationDate)));
-			$identificationInfo.append($registationDate);
-
-			var $modifier = FormUtil.getFieldForLabelWithText("Modifier", registrationDetails.modifierUserId);
-			$identificationInfo.append($modifier);
-
-			var $modificationDate = FormUtil.getFieldForLabelWithText("Modification Date", Util.getFormatedDate(new Date(registrationDetails.modificationDate)));
-			$identificationInfo.append($modificationDate);
-		}
-
-        $formColumn.append($identificationInfo);
 
 		//
 		// Metadata Fields
@@ -314,6 +256,63 @@ function ProjectFormView(projectFormController, projectFormModel) {
 
 		$container.append($form);
 	};
+	
+	this._createIdentificationInfo = function(dropdownOptionsModel) {
+		//TODO : Save on the user settings the default state after update by Kind, for example project-identification-info
+		var $identificationInfoLabel = $("<span>").append("Hide Identification Info");
+		dropdownOptionsModel.push({
+			label : $identificationInfoLabel,
+			action : function() {
+				$("#project-identification-info").toggle(300,function() {
+					$identificationInfoLabel.empty();
+					if( $("#project-identification-info").css("display") === "none") {
+						$identificationInfoLabel.append("Show Identification Info");
+					} else {
+						$identificationInfoLabel.append("Hide Identification Info");
+					}
+				});
+			}
+		});
+
+		var $identificationInfo = $("<div>", { id : "project-identification-info" });
+
+		$identificationInfo.append($("<legend>").append("Identification Info"));
+
+		$identificationInfo.append(FormUtil.getFieldForLabelWithText("Space", this._projectFormModel.project.spaceCode));
+
+		if(this._projectFormModel.mode === FormMode.CREATE) {
+			var $textField = FormUtil._getInputField('text', null, "Project Code", null, true);
+			$textField.keyup(function(event){
+				var textField = $(this);
+				var caretPosition = this.selectionStart;
+				textField.val(textField.val().toUpperCase());
+				this.selectionStart = caretPosition;
+				this.selectionEnd = caretPosition;
+				_this._projectFormModel.project.code = textField.val();
+				_this._projectFormModel.isFormDirty = true;
+			});
+			$identificationInfo.append(FormUtil.getFieldForComponentWithLabel($textField, "Code"));
+		} else {
+			$identificationInfo.append(FormUtil.getFieldForLabelWithText("Code", this._projectFormModel.project.code));
+		}
+
+		if(this._projectFormModel.mode !== FormMode.CREATE) {
+			var registrationDetails = this._projectFormModel.project.registrationDetails;
+
+			var $registrator = FormUtil.getFieldForLabelWithText("Registrator", registrationDetails.userId);
+			$identificationInfo.append($registrator);
+
+			var $registationDate = FormUtil.getFieldForLabelWithText("Registration Date", Util.getFormatedDate(new Date(registrationDetails.registrationDate)));
+			$identificationInfo.append($registationDate);
+
+			var $modifier = FormUtil.getFieldForLabelWithText("Modifier", registrationDetails.modifierUserId);
+			$identificationInfo.append($modifier);
+
+			var $modificationDate = FormUtil.getFieldForLabelWithText("Modification Date", Util.getFormatedDate(new Date(registrationDetails.modificationDate)));
+			$identificationInfo.append($modificationDate);
+		}
+		return $identificationInfo;
+	}
 	
 	this._allowedToCreateExperiments = function() {
 		var project = this._projectFormModel.v3_project;

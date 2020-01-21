@@ -946,20 +946,20 @@ var FormUtil = new function() {
 		}
 		return originalValue;
 	}
-
-    this.getOptionsDropdown = function(optionsModel) {
-        var $dropdownOptionsMenu = $("<span>", { class : 'dropdown' });
-        var $dropdownOptionsMenuCaret = $("<a>", { 'href' : '#', 'data-toggle' : 'dropdown', class : 'dropdown-toggle btn btn-default', 'id' : 'options-menu-btn'}).append("Operations ").append($("<b>", { class : 'caret' }));
-        var $dropdownOptionsMenuList = $("<ul>", { class : 'dropdown-menu', 'role' : 'menu' });
-        $dropdownOptionsMenu.append($dropdownOptionsMenuCaret);
-        $dropdownOptionsMenu.append($dropdownOptionsMenuList);
-        for(var idx = 0; idx < optionsModel.length; idx++) {
-            var $dropdownElement = $("<li>", { 'role' : 'presentation' }).append($("<a>", {'title' : optionsModel[idx].label }).append(optionsModel[idx].label));
-            $dropdownElement.click(optionsModel[idx].action);
-            $dropdownOptionsMenuList.append($dropdownElement);
-        }
-        return $dropdownOptionsMenu;
-    };
+	
+	this.addOptionsDropdownToToolbar = function(toolbarModel, dropdownOptionsModel) {
+		var $dropdownOptionsMenu = $("<span>", { class : 'dropdown' });
+		var $dropdownOptionsMenuCaret = $("<a>", { 'href' : '#', 'data-toggle' : 'dropdown', class : 'dropdown-toggle btn btn-default', 'id' : 'options-menu-btn'}).append("Operations ").append($("<b>", { class : 'caret' }));
+		var $dropdownOptionsMenuList = $("<ul>", { class : 'dropdown-menu', 'role' : 'menu' });
+		$dropdownOptionsMenu.append($dropdownOptionsMenuCaret);
+		$dropdownOptionsMenu.append($dropdownOptionsMenuList);
+		for(var idx = 0; idx < dropdownOptionsModel.length; idx++) {
+			var $dropdownElement = $("<li>", { 'role' : 'presentation' }).append($("<a>", {'title' : dropdownOptionsModel[idx].label }).append(dropdownOptionsModel[idx].label));
+			$dropdownElement.click(dropdownOptionsModel[idx].action);
+			$dropdownOptionsMenuList.append($dropdownElement);
+		}
+		toolbarModel.push({ component : $dropdownOptionsMenu, tooltip: null });
+	}
 
 	this.getToolbar = function(toolbarModel) {
 		var $toolbarContainer = $("<div>", { class : 'toolBox', style : "width: 100%;" });
