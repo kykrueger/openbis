@@ -347,12 +347,6 @@ public class SearchObjectsOperationExecutorStressTest
         }
 
         @Override
-        protected IOperationResult doExecute(final IOperationContext context, final IOperation operation)
-        {
-            return super.doExecute(context, (SearchObjectsOperation) operation);
-        }
-
-        @Override
         protected SearchObjectsOperationResult getOperationResult(SearchResult searchResult)
         {
             return new TestSearchOperationResult(searchResult);
