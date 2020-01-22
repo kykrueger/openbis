@@ -253,6 +253,8 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 			profile.dataSetFormTop($datasetFormTop, this._dataSetFormModel);
 		}
 		
+		hideShowOptionsModel = [];
+		$wrapper.append(this._createIdentificationInfoSection(hideShowOptionsModel));
 		if (!this._dataSetFormModel.isMini) {
 			var $header = views.header;
 			$header.append($title);
@@ -260,8 +262,6 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 			if(dataSetTypeDefinitionsExtension && dataSetTypeDefinitionsExtension.extraToolbar) {
 				toolbarModel = toolbarModel.concat(dataSetTypeDefinitionsExtension.extraToolbar(_this._dataSetFormModel.mode, _this._dataSetFormModel.dataSet));
 			}
-			hideShowOptionsModel = [];
-			$wrapper.append(this._createIdentificationInfoSection(hideShowOptionsModel));
 			FormUtil.addOptionsToToolbar(toolbarModel, dropdownOptionsModel, hideShowOptionsModel, "DATA-SET-VIEW");
 			$header.append(FormUtil.getToolbar(toolbarModel));
 		}
