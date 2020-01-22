@@ -474,7 +474,9 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		if(sampleTypeDefinitionsExtension && sampleTypeDefinitionsExtension.extraToolbar) {
 		    toolbarModel = toolbarModel.concat(sampleTypeDefinitionsExtension.extraToolbar(_this._sampleFormModel.mode, _this._sampleFormModel.sample));
 		}
-		FormUtil.addOptionsDropdownToToolbar(toolbarModel, dropdownOptionsModel);
+
+		var hideShowOptionsModel = [];
+		FormUtil.addOptionsToToolbar(toolbarModel, dropdownOptionsModel, hideShowOptionsModel);
 		$header.append(FormUtil.getToolbar(toolbarModel));
 		
 		//

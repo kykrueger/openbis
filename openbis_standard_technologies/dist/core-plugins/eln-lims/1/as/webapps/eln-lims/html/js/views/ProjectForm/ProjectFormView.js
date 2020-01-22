@@ -197,10 +197,11 @@ function ProjectFormView(projectFormController, projectFormModel) {
 		var $header = views.header;
 		$header.append($formTitle);
 
+		var hideShowOptionsModel = [];
 
-		$formColumn.append(this._createIdentificationInfo(dropdownOptionsModel));
+		$formColumn.append(this._createIdentificationInfo(hideShowOptionsModel));
 
-		FormUtil.addOptionsDropdownToToolbar(toolbarModel, dropdownOptionsModel);
+		FormUtil.addOptionsToToolbar(toolbarModel, dropdownOptionsModel, hideShowOptionsModel);
 		$header.append(FormUtil.getToolbar(toolbarModel));
 
 
@@ -257,23 +258,13 @@ function ProjectFormView(projectFormController, projectFormModel) {
 		$container.append($form);
 	};
 	
-	this._createIdentificationInfo = function(dropdownOptionsModel) {
+	this._createIdentificationInfo = function(hideShowOptionsModel) {
 		//TODO : Save on the user settings the default state after update by Kind, for example project-identification-info
-		var $identificationInfoLabel = $("<span>").append("Hide Identification Info");
-		dropdownOptionsModel.push({
-			label : $identificationInfoLabel,
-			action : function() {
-				$("#project-identification-info").toggle(300,function() {
-					$identificationInfoLabel.empty();
-					if( $("#project-identification-info").css("display") === "none") {
-						$identificationInfoLabel.append("Show Identification Info");
-					} else {
-						$identificationInfoLabel.append("Hide Identification Info");
-					}
-				});
-			}
+		hideShowOptionsModel.push({
+			label : "Identification Info",
+			section : "#project-identification-info"
 		});
-
+		
 		var $identificationInfo = $("<div>", { id : "project-identification-info" });
 
 		$identificationInfo.append($("<legend>").append("Identification Info"));

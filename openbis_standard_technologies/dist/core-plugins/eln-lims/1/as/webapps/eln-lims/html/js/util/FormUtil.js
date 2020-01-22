@@ -947,18 +947,45 @@ var FormUtil = new function() {
 		return originalValue;
 	}
 	
-	this.addOptionsDropdownToToolbar = function(toolbarModel, dropdownOptionsModel) {
-		var $dropdownOptionsMenu = $("<span>", { class : 'dropdown' });
-		var $dropdownOptionsMenuCaret = $("<a>", { 'href' : '#', 'data-toggle' : 'dropdown', class : 'dropdown-toggle btn btn-default', 'id' : 'options-menu-btn'}).append("Operations ").append($("<b>", { class : 'caret' }));
-		var $dropdownOptionsMenuList = $("<ul>", { class : 'dropdown-menu', 'role' : 'menu' });
-		$dropdownOptionsMenu.append($dropdownOptionsMenuCaret);
-		$dropdownOptionsMenu.append($dropdownOptionsMenuList);
+	this.addOptionsToToolbar = function(toolbarModel, dropdownOptionsModel, hideShowOptionsModel) {
+		var $dropdownOptionsMenuList = this._createAndAddOptionsMenu(toolbarModel, "Operations");
 		for(var idx = 0; idx < dropdownOptionsModel.length; idx++) {
-			var $dropdownElement = $("<li>", { 'role' : 'presentation' }).append($("<a>", {'title' : dropdownOptionsModel[idx].label }).append(dropdownOptionsModel[idx].label));
+			var label = dropdownOptionsModel[idx].label
+			var $dropdownElement = $("<li>", { 'role' : 'presentation' }).append($("<a>", {'title' : label }).append(label));
 			$dropdownElement.click(dropdownOptionsModel[idx].action);
 			$dropdownOptionsMenuList.append($dropdownElement);
 		}
+		
+		var $hidShowOptionsMenuList = this._createAndAddOptionsMenu(toolbarModel, "Show/Hide Sections");
+		for(var idx = 0; idx < hideShowOptionsModel.length; idx++) {
+			var option = hideShowOptionsModel[idx];
+			var $label = $("<span>").append("Hide " + option.label);
+			var $dropdownElement = $("<li>", { 'role' : 'presentation' }).append($("<a>", {'title' : $label }).append($label));
+			var action = function() {
+				var section = $(option.section);
+				section.toggle(300, function() {
+					$label.empty();
+					if (section.css("display") === "none") {
+						$label.append("Show " + option.label);
+					} else {
+						$label.append("Hide " + option.label);
+					}
+				});
+			};
+			$dropdownElement.click(action);
+			$hidShowOptionsMenuList.append($dropdownElement);
+		}
+	}
+	
+	this._createAndAddOptionsMenu = function(toolbarModel, title) {
+		var $dropdownOptionsMenu = $("<span>", { class : 'dropdown' });
 		toolbarModel.push({ component : $dropdownOptionsMenu, tooltip: null });
+		var $dropdownOptionsMenuCaret = $("<a>", { 'href' : '#', 'data-toggle' : 'dropdown', class : 'dropdown-toggle btn btn-default', 'id' : 'options-menu-btn'})
+				.append(title + " ").append($("<b>", { class : 'caret' }));
+		var $dropdownOptionsMenuList = $("<ul>", { class : 'dropdown-menu', 'role' : 'menu' });
+		$dropdownOptionsMenu.append($dropdownOptionsMenuCaret);
+		$dropdownOptionsMenu.append($dropdownOptionsMenuList);
+		return $dropdownOptionsMenuList;
 	}
 
 	this.getToolbar = function(toolbarModel) {
