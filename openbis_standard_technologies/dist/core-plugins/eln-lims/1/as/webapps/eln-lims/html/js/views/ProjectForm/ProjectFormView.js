@@ -201,7 +201,7 @@ function ProjectFormView(projectFormController, projectFormModel) {
 
 		$formColumn.append(this._createIdentificationInfo(hideShowOptionsModel));
 
-		FormUtil.addOptionsToToolbar(toolbarModel, dropdownOptionsModel, hideShowOptionsModel);
+		FormUtil.addOptionsToToolbar(toolbarModel, dropdownOptionsModel, hideShowOptionsModel, "PROJECT-VIEW");
 		$header.append(FormUtil.getToolbar(toolbarModel));
 
 
@@ -259,7 +259,6 @@ function ProjectFormView(projectFormController, projectFormModel) {
 	};
 	
 	this._createIdentificationInfo = function(hideShowOptionsModel) {
-		//TODO : Save on the user settings the default state after update by Kind, for example project-identification-info
 		hideShowOptionsModel.push({
 			label : "Identification Info",
 			section : "#project-identification-info"

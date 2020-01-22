@@ -947,7 +947,7 @@ var FormUtil = new function() {
 		return originalValue;
 	}
 	
-	this.addOptionsToToolbar = function(toolbarModel, dropdownOptionsModel, hideShowOptionsModel) {
+	this.addOptionsToToolbar = function(toolbarModel, dropdownOptionsModel, hideShowOptionsModel, namespace) {
 		var $dropdownOptionsMenuList = this._createAndAddOptionsMenu(toolbarModel, "Operations");
 		for(var idx = 0; idx < dropdownOptionsModel.length; idx++) {
 			var label = dropdownOptionsModel[idx].label
@@ -959,21 +959,28 @@ var FormUtil = new function() {
 		var $hidShowOptionsMenuList = this._createAndAddOptionsMenu(toolbarModel, "Show/Hide Sections");
 		for(var idx = 0; idx < hideShowOptionsModel.length; idx++) {
 			var option = hideShowOptionsModel[idx];
-			var $label = $("<span>").append("Hide " + option.label);
-			var $dropdownElement = $("<li>", { 'role' : 'presentation' }).append($("<a>", {'title' : $label }).append($label));
-			var action = function() {
+			var settingsKey = namespace + "-" + option.label;
+			mainController.serverFacade.getSetting(settingsKey, function(settingsValue) {
+				var shown = settingsValue === "shown";
 				var section = $(option.section);
-				section.toggle(300, function() {
-					$label.empty();
-					if (section.css("display") === "none") {
-						$label.append("Show " + option.label);
-					} else {
-						$label.append("Hide " + option.label);
-					}
-				});
-			};
-			$dropdownElement.click(action);
-			$hidShowOptionsMenuList.append($dropdownElement);
+				section.toggle(shown);
+				var $label = $("<span>").append((shown ? "Hide " : "Show ") + option.label);
+				var $dropdownElement = $("<li>", { 'role' : 'presentation' }).append($("<a>", {'title' : $label }).append($label));
+				var action = function() {
+					section.toggle(300, function() {
+						$label.empty();
+						if (section.css("display") === "none") {
+							$label.append("Show " + option.label);
+							mainController.serverFacade.setSetting(settingsKey, "hidden");
+						} else {
+							$label.append("Hide " + option.label);
+							mainController.serverFacade.setSetting(settingsKey, "shown");
+						}
+					});
+				};
+				$dropdownElement.click(action);
+				$hidShowOptionsMenuList.append($dropdownElement);
+			});
 		}
 	}
 	
