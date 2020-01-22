@@ -476,15 +476,12 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		}
 
 		var hideShowOptionsModel = [];
-		FormUtil.addOptionsToToolbar(toolbarModel, dropdownOptionsModel, hideShowOptionsModel, 
-				"SAMPLE-VIEW-" + _this._sampleFormModel.sample.sampleTypeCode);
-		$header.append(FormUtil.getToolbar(toolbarModel));
 		
 		//
 		// Identification Info on Create
 		//
 		if(this._sampleFormModel.mode === FormMode.CREATE) {
-			this._paintIdentificationInfo($formColumn, sampleType);
+			$formColumn.append(this._createIdentificationInfoSection(hideShowOptionsModel, sampleType));
 		}
 		
 		// Plugin Hook
@@ -505,98 +502,17 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		//
 		// LINKS TO PARENTS
 		//
-		var requiredParents = [];
-		if(sampleTypeDefinitionsExtension && sampleTypeDefinitionsExtension["SAMPLE_PARENTS_HINT"]) {
-			requiredParents = sampleTypeDefinitionsExtension["SAMPLE_PARENTS_HINT"];
+		if (this._sampleFormModel.mode !== FormMode.VIEW || (this._sampleFormModel.mode === FormMode.VIEW && this._sampleFormModel.sample.parents.length > 0)) {
+			$formColumn.append(this._createParentsSection(hideShowOptionsModel, sampleTypeDefinitionsExtension, sampleTypeCode));
 		}
-		
-		var sampleParentsWidgetId = "sampleParentsWidgetId";
-		var $sampleParentsWidget = $("<div>", { "id" : sampleParentsWidgetId });
-		
-		if(this._sampleFormModel.mode !== FormMode.VIEW || (this._sampleFormModel.mode === FormMode.VIEW && this._sampleFormModel.sample.parents.length > 0)) {
-			$formColumn.append($sampleParentsWidget);
-		}
-		
-		
-		var isDisabled = this._sampleFormModel.mode === FormMode.VIEW;
-		
-		var currentParentsLinks = (this._sampleFormModel.sample)?this._sampleFormModel.sample.parents:null;
-		var parentsTitle = "Parents";
-		if(sampleTypeDefinitionsExtension && sampleTypeDefinitionsExtension["SAMPLE_PARENTS_TITLE"]) {
-			parentsTitle = sampleTypeDefinitionsExtension["SAMPLE_PARENTS_TITLE"];
-		}
-		var parentsAnyTypeDisabled = sampleTypeDefinitionsExtension && sampleTypeDefinitionsExtension["SAMPLE_PARENTS_ANY_TYPE_DISABLED"];
-		this._sampleFormModel.sampleLinksParents = new LinksController(parentsTitle,
-																			requiredParents,
-																			isDisabled,
-																			currentParentsLinks,
-																			this._sampleFormModel.mode === FormMode.CREATE || this._sampleFormModel.mode === FormMode.EDIT,
-																			parentsAnyTypeDisabled,
-																			sampleTypeCode);
-		if(!sampleTypeDefinitionsExtension || !sampleTypeDefinitionsExtension["SAMPLE_PARENTS_DISABLED"]) {
-			this._sampleFormModel.sampleLinksParents.init($sampleParentsWidget);
-		}
-		
+
 		//
 		// LINKS TO CHILDREN
 		//
-		var requiredChildren = [];
-		if(sampleTypeDefinitionsExtension && sampleTypeDefinitionsExtension["SAMPLE_CHILDREN_HINT"]) {
-			requiredChildren = sampleTypeDefinitionsExtension["SAMPLE_CHILDREN_HINT"];
+		if (this._sampleFormModel.mode !== FormMode.VIEW || (this._sampleFormModel.mode === FormMode.VIEW && this._sampleFormModel.sample.children.length > 0)) {
+			$formColumn.append(this._createChildrenSection(hideShowOptionsModel, sampleTypeDefinitionsExtension, sampleTypeCode));
 		}
-			
-		var sampleChildrenWidgetId = "sampleChildrenWidgetId";
-		var $sampleChildrenWidget = $("<div>", { "id" : sampleChildrenWidgetId });
-		
-		if(this._sampleFormModel.mode !== FormMode.VIEW || (this._sampleFormModel.mode === FormMode.VIEW && this._sampleFormModel.sample.children.length > 0)) {
-			$formColumn.append($sampleChildrenWidget);
-		}
-			
-		var currentChildrenLinks = (this._sampleFormModel.sample)?this._sampleFormModel.sample.children:null;
-		
-		var childrenTitle = "Children";
-		if(sampleTypeDefinitionsExtension && sampleTypeDefinitionsExtension["SAMPLE_CHILDREN_TITLE"]) {
-			childrenTitle = sampleTypeDefinitionsExtension["SAMPLE_CHILDREN_TITLE"];
-		}
-		
-		var currentChildrenLinksNoStorage = [];
-		if(currentChildrenLinks != null) {
-			for(var cIdx = 0; cIdx < currentChildrenLinks.length; cIdx++) {
-				if(currentChildrenLinks[cIdx].sampleTypeCode !== "STORAGE_POSITION") {
-					currentChildrenLinksNoStorage.push(currentChildrenLinks[cIdx]);
-				}
-			}
-		}
-		
-		var childrenAnyTypeDisabled = sampleTypeDefinitionsExtension && sampleTypeDefinitionsExtension["SAMPLE_CHILDREN_ANY_TYPE_DISABLED"];
-		this._sampleFormModel.sampleLinksChildren = new LinksController(childrenTitle,
-															requiredChildren,
-															isDisabled,
-															currentChildrenLinksNoStorage,
-															this._sampleFormModel.mode === FormMode.CREATE,
-															childrenAnyTypeDisabled,
-															sampleTypeCode);
-		if(!sampleTypeDefinitionsExtension || !sampleTypeDefinitionsExtension["SAMPLE_CHILDREN_DISABLED"]) {
-			this._sampleFormModel.sampleLinksChildren.init($sampleChildrenWidget);
-		}
-		
-		//
-		// GENERATE CHILDREN
-		//
-		var childrenDisabled = sampleTypeDefinitionsExtension && sampleTypeDefinitionsExtension["SAMPLE_CHILDREN_DISABLED"];
-		
-		if((this._sampleFormModel.mode !== FormMode.VIEW) && this._sampleFormModel.isELNSample && !childrenDisabled) {
-			var $generateChildrenBtn = $("<a>", { 'class' : 'btn btn-default', 'style' : 'margin-top:15px;', 'id' : 'generate_children'}).text("Generate Children");
-			$generateChildrenBtn.click(function(event) {
-				_this._generateChildren();
-			});
-			
-			var $generateChildrenBox = $("<div>")
-											.append($("<div>", { 'class' : 'form-group' }).append($generateChildrenBtn))
-											.append($("<div>", { 'id' : 'newChildrenOnBenchDropDown' }))
-			$formColumn.append($generateChildrenBox);
-		}
-		
+
 		//
 		// Form Defined Properties from non General Section
 		//
@@ -651,7 +567,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		// Identification Info on View/Edit
 		//
 		if(this._sampleFormModel.mode !== FormMode.CREATE) {
-			this._paintIdentificationInfo($formColumn);
+			$formColumn.append(this._createIdentificationInfoSection(hideShowOptionsModel, sampleType));
 		}
 		
 		//
@@ -702,6 +618,9 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		//
 		// INIT
 		//
+		FormUtil.addOptionsToToolbar(toolbarModel, dropdownOptionsModel, hideShowOptionsModel, 
+				"SAMPLE-VIEW-" + _this._sampleFormModel.sample.sampleTypeCode);
+		$header.append(FormUtil.getToolbar(toolbarModel));
 		$container.append($form);
 		
 		//
@@ -886,17 +805,19 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		return false;
 	}
 	
-	this._paintIdentificationInfo = function($formColumn, sampleType) {
+	this._createIdentificationInfoSection = function(hideShowOptionsModel, sampleType) {
+		hideShowOptionsModel.push({
+			label : "Identification Info",
+			section : "#sample-identification-info"
+		});
+		
 		var _this = this;
-		//
-		// Identification Info
-		//
-		var $fieldsetOwner = $("<div>");
+		var $identificationInfo = $("<div>", { id : "sample-identification-info" });
 		var $legend = $("<legend>").append("Identification Info");
 		var $fieldset = $("<div>");
 		
-		$fieldsetOwner.append($legend);
-		$fieldsetOwner.append($fieldset);
+		$identificationInfo.append($legend);
+		$identificationInfo.append($fieldset);
 		
 		$fieldset.append(FormUtil.getFieldForLabelWithText("Type", this._sampleFormModel.sample.sampleTypeCode));
 		if(this._sampleFormModel.sample.experimentIdentifierOrNull) {
@@ -952,7 +873,100 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		}
 		
 		$legend.prepend(FormUtil.getShowHideButton($fieldset, "SAMPLE-" + this._sampleFormModel.sample.sampleTypeCode + "-identificationInfo"));
-		$formColumn.append($fieldsetOwner);
+		return $identificationInfo;
+	}
+	
+	this._createParentsSection = function(hideShowOptionsModel, sampleTypeDefinitionsExtension, sampleTypeCode) {
+		hideShowOptionsModel.push({
+			label : "Parents",
+			section : "#sample-parents"
+		});
+		
+		var requiredParents = [];
+		if (sampleTypeDefinitionsExtension && sampleTypeDefinitionsExtension["SAMPLE_PARENTS_HINT"]) {
+			requiredParents = sampleTypeDefinitionsExtension["SAMPLE_PARENTS_HINT"];
+		}
+		
+		var sampleParentsWidgetId = "sample-parents";
+		var $sampleParentsWidget = $("<div>", { "id" : sampleParentsWidgetId });
+		
+		var isDisabled = this._sampleFormModel.mode === FormMode.VIEW;
+		
+		var currentParentsLinks = this._sampleFormModel.sample ? this._sampleFormModel.sample.parents : null;
+		var parentsTitle = "Parents";
+		if (sampleTypeDefinitionsExtension && sampleTypeDefinitionsExtension["SAMPLE_PARENTS_TITLE"]) {
+			parentsTitle = sampleTypeDefinitionsExtension["SAMPLE_PARENTS_TITLE"];
+		}
+		var parentsAnyTypeDisabled = sampleTypeDefinitionsExtension && sampleTypeDefinitionsExtension["SAMPLE_PARENTS_ANY_TYPE_DISABLED"];
+		this._sampleFormModel.sampleLinksParents = new LinksController(parentsTitle,
+																			requiredParents,
+																			isDisabled,
+																			currentParentsLinks,
+																			this._sampleFormModel.mode === FormMode.CREATE || this._sampleFormModel.mode === FormMode.EDIT,
+																			parentsAnyTypeDisabled,
+																			sampleTypeCode);
+		if (!sampleTypeDefinitionsExtension || !sampleTypeDefinitionsExtension["SAMPLE_PARENTS_DISABLED"]) {
+			this._sampleFormModel.sampleLinksParents.init($sampleParentsWidget);
+		}
+		return $sampleParentsWidget;
+	}
+	
+	this._createChildrenSection = function(hideShowOptionsModel, sampleTypeDefinitionsExtension, sampleTypeCode) {
+		hideShowOptionsModel.push({
+			label : "Children",
+			section : "#sample-children"
+		});
+
+		var _this = this;
+		var requiredChildren = [];
+		if(sampleTypeDefinitionsExtension && sampleTypeDefinitionsExtension["SAMPLE_CHILDREN_HINT"]) {
+			requiredChildren = sampleTypeDefinitionsExtension["SAMPLE_CHILDREN_HINT"];
+		}
+			
+		var sampleChildrenWidgetId = "sample-children";
+		var $sampleChildrenWidget = $("<div>", { "id" : sampleChildrenWidgetId });
+		
+		var currentChildrenLinks = (this._sampleFormModel.sample)?this._sampleFormModel.sample.children:null;
+		
+		var childrenTitle = "Children";
+		if(sampleTypeDefinitionsExtension && sampleTypeDefinitionsExtension["SAMPLE_CHILDREN_TITLE"]) {
+			childrenTitle = sampleTypeDefinitionsExtension["SAMPLE_CHILDREN_TITLE"];
+		}
+		
+		var currentChildrenLinksNoStorage = [];
+		if(currentChildrenLinks != null) {
+			for(var cIdx = 0; cIdx < currentChildrenLinks.length; cIdx++) {
+				if(currentChildrenLinks[cIdx].sampleTypeCode !== "STORAGE_POSITION") {
+					currentChildrenLinksNoStorage.push(currentChildrenLinks[cIdx]);
+				}
+			}
+		}
+		var isDisabled = this._sampleFormModel.mode === FormMode.VIEW;
+		var childrenAnyTypeDisabled = sampleTypeDefinitionsExtension && sampleTypeDefinitionsExtension["SAMPLE_CHILDREN_ANY_TYPE_DISABLED"];
+		this._sampleFormModel.sampleLinksChildren = new LinksController(childrenTitle,
+															requiredChildren,
+															isDisabled,
+															currentChildrenLinksNoStorage,
+															this._sampleFormModel.mode === FormMode.CREATE,
+															childrenAnyTypeDisabled,
+															sampleTypeCode);
+		if(!sampleTypeDefinitionsExtension || !sampleTypeDefinitionsExtension["SAMPLE_CHILDREN_DISABLED"]) {
+			this._sampleFormModel.sampleLinksChildren.init($sampleChildrenWidget);
+		}
+
+		var childrenDisabled = sampleTypeDefinitionsExtension && sampleTypeDefinitionsExtension["SAMPLE_CHILDREN_DISABLED"];
+		if ((this._sampleFormModel.mode !== FormMode.VIEW) && this._sampleFormModel.isELNSample && !childrenDisabled) {
+			var $generateChildrenBtn = $("<a>", { 'class' : 'btn btn-default', 'style' : 'margin-top:15px;', 'id' : 'generate_children'}).text("Generate Children");
+			$generateChildrenBtn.click(function(event) {
+				_this._generateChildren();
+			});
+			
+			var $generateChildrenBox = $("<div>")
+											.append($("<div>", { 'class' : 'form-group' }).append($generateChildrenBtn))
+											.append($("<div>", { 'id' : 'newChildrenOnBenchDropDown' }))
+			$sampleChildrenWidget.append($generateChildrenBox);
+		}
+		return $sampleChildrenWidget;
 	}
 	
 	//

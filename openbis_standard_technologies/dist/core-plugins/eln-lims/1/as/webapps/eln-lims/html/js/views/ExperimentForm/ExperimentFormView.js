@@ -210,15 +210,12 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		$header.append($formTitle);
 
 		var hideShowOptionsModel = [];
-		FormUtil.addOptionsToToolbar(toolbarModel, dropdownOptionsModel, hideShowOptionsModel, 
-				"EXPERIMENT-VIEW-" + this._experimentFormModel.experiment.experimentTypeCode);
-		$header.append(FormUtil.getToolbar(toolbarModel));
 		
 		//
 		// Identification Info on Create
 		//
 		if(this._experimentFormModel.mode === FormMode.CREATE) {
-			this._paintIdentificationInfo($formColumn);
+			$formColumn.append(this._createIdentificationInfoSection(hideShowOptionsModel));
 		}
 		
 		//
@@ -234,24 +231,14 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		
 		//Sample List Container
 		if(this._experimentFormModel.mode !== FormMode.CREATE) {
-			$formColumn.append($("<legend>").append(ELNDictionary.Samples));
-			var sampleListHeader = $("<div>");
-			var sampleListContainer = $("<div>");
-			$formColumn.append(sampleListHeader);
-			$formColumn.append(sampleListContainer);
-			var views = {
-					header : sampleListHeader,
-					content : sampleListContainer
-			}
-			var sampleList = new SampleTableController(this._experimentFormController, null, this._experimentFormModel.experiment.identifier, null, null, this._experimentFormModel.experiment);
-			sampleList.init(views);
+			$formColumn.append(this._createSamplesSection(hideShowOptionsModel));
 		}
 		
 		//
 		// Identification Info on not Create
 		//
 		if(this._experimentFormModel.mode !== FormMode.CREATE) {
-			this._paintIdentificationInfo($formColumn);
+			$formColumn.append(this._createIdentificationInfoSection(hideShowOptionsModel));
 		}
 		
 		//
@@ -295,6 +282,9 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		//
 		// INIT
 		//
+		FormUtil.addOptionsToToolbar(toolbarModel, dropdownOptionsModel, hideShowOptionsModel, 
+				"EXPERIMENT-VIEW-" + this._experimentFormModel.experiment.experimentTypeCode);
+		$header.append(FormUtil.getToolbar(toolbarModel));
 		$container.append($form);
 		
 		Util.unblockUI();
@@ -323,27 +313,31 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		}
 	}
 	
-	this._paintIdentificationInfo = function($formColumn) {
-		var _this = this;
+	this._createIdentificationInfoSection = function(hideShowOptionsModel) {
+		hideShowOptionsModel.push({
+			label : "Identification Info",
+			section : "#experiment-identification-info"
+		});
 		
-		var $identificationInfo = $('<div>').append($('<legend>').text("Identification Info"));
-		$formColumn.append($identificationInfo);
+		var _this = this;
+		var $identificationInfo = $("<div>", { id : "experiment-identification-info" });
+		$identificationInfo.append($('<legend>').text("Identification Info"));
 		
 		var projectIdentifier = IdentifierUtil.getProjectIdentifierFromExperimentIdentifier(this._experimentFormModel.experiment.identifier);
-		$formColumn.append(FormUtil.getFieldForLabelWithText("Type", this._experimentFormModel.experiment.experimentTypeCode));
-		$formColumn.append(FormUtil.getFieldForLabelWithText("Project", projectIdentifier));
+		$identificationInfo.append(FormUtil.getFieldForLabelWithText("Type", this._experimentFormModel.experiment.experimentTypeCode));
+		$identificationInfo.append(FormUtil.getFieldForLabelWithText("Project", projectIdentifier));
 		var $projectField = FormUtil._getInputField("text", null, "project", null, true);
 		$projectField.val(projectIdentifier);
 		$projectField.hide();
-		$formColumn.append($projectField);
+		$identificationInfo.append($projectField);
 		
 		if(this._experimentFormModel.mode === FormMode.VIEW || this._experimentFormModel.mode === FormMode.EDIT) {
-			$formColumn.append(FormUtil.getFieldForLabelWithText("Code", this._experimentFormModel.experiment.code));
+			$identificationInfo.append(FormUtil.getFieldForLabelWithText("Code", this._experimentFormModel.experiment.code));
 			
 			var $codeField = FormUtil._getInputField("text", null, "code", null, true);
 			$codeField.val(IdentifierUtil.getCodeFromIdentifier(this._experimentFormModel.experiment.identifier));
 			$codeField.hide();
-			$formColumn.append($codeField);
+			$identificationInfo.append($codeField);
 		} else if(this._experimentFormModel.mode === FormMode.CREATE) {
 			var $codeField = FormUtil._getInputField("text", null, "code", null, true);
 			$codeField.keyup(function() {
@@ -361,7 +355,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 				_this._experimentFormModel.experiment.identifier = experimentIdentifier;
 			})
 			var $codeFieldRow = FormUtil.getFieldForComponentWithLabel($codeField, "Code");
-			$formColumn.append($codeFieldRow);
+			$identificationInfo.append($codeFieldRow);
 			
 			mainController.serverFacade.getProjectFromIdentifier($projectField.val(), function(project) {
 				delete project["@id"];
@@ -389,17 +383,41 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 			var registrationDetails = this._experimentFormModel.experiment.registrationDetails;
 			
 			var $registrator = FormUtil.getFieldForLabelWithText("Registrator", registrationDetails.userId);
-			$formColumn.append($registrator);
+			$identificationInfo.append($registrator);
 			
 			var $registationDate = FormUtil.getFieldForLabelWithText("Registration Date", Util.getFormatedDate(new Date(registrationDetails.registrationDate)))
-			$formColumn.append($registationDate);
+			$identificationInfo.append($registationDate);
 			
 			var $modifier = FormUtil.getFieldForLabelWithText("Modifier", registrationDetails.modifierUserId);
-			$formColumn.append($modifier);
+			$identificationInfo.append($modifier);
 			
 			var $modificationDate = FormUtil.getFieldForLabelWithText("Modification Date", Util.getFormatedDate(new Date(registrationDetails.modificationDate)));
-			$formColumn.append($modificationDate);
+			$identificationInfo.append($modificationDate);
 		}
+		return $identificationInfo;
+	}
+	
+	this._createSamplesSection = function(hideShowOptionsModel) {
+		hideShowOptionsModel.push({
+			label : ELNDictionary.Samples,
+			section : "#experiment-samples"
+		});
+		
+		var _this = this;
+		var $samples = $("<div>", { id : "experiment-samples" });
+		$samples.append($('<legend>').text(ELNDictionary.Samples));
+		var sampleListHeader = $("<div>");
+		var sampleListContainer = $("<div>");
+		$samples.append(sampleListHeader);
+		$samples.append(sampleListContainer);
+		var views = {
+				header : sampleListHeader,
+				content : sampleListContainer
+		}
+		var sampleList = new SampleTableController(this._experimentFormController, null, this._experimentFormModel.experiment.identifier, null, null, this._experimentFormModel.experiment);
+		sampleList.init(views);
+
+		return $samples;
 	}
 	
 	this._paintPropertiesForSection = function($formColumn, propertyTypeGroup, i) {

@@ -246,182 +246,24 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 			toolbarModel.push({ component : $saveBtn, tooltip: "Save" });
 		}
 		
-		if(!this._dataSetFormModel.isMini) {
-			var $header = views.header;
-			$header.append($title);
-	        var dataSetTypeDefinitionsExtension = profile.dataSetTypeDefinitionsExtension[_this._dataSetFormModel.dataSet.dataSetTypeCode];
-            if(dataSetTypeDefinitionsExtension && dataSetTypeDefinitionsExtension.extraToolbar) {
-                toolbarModel = toolbarModel.concat(dataSetTypeDefinitionsExtension.extraToolbar(_this._dataSetFormModel.mode, _this._dataSetFormModel.dataSet));
-            }
-            FormUtil.addOptionsDropdownToToolbar(toolbarModel, dropdownOptionsModel);
-			$header.append(FormUtil.getToolbar(toolbarModel));
-		}
-		
 		// Plugin Hook
-		if(!this._dataSetFormModel.isMini) {
+		if (!this._dataSetFormModel.isMini) {
 			var $datasetFormTop = new $('<div>');
 			$wrapper.append($datasetFormTop);
 			profile.dataSetFormTop($datasetFormTop, this._dataSetFormModel);
 		}
 		
-		//Drop Down DataSetType Field Set
-		var $dataSetTypeFieldSet = $('<div>');
-		if(!this._dataSetFormModel.isMini) {
-			$dataSetTypeFieldSet.append($('<legend>').text('Identification Info'));
-		}
-		$wrapper.append($dataSetTypeFieldSet);
-		
-		var $dataSetTypeSelector = null;
-		
-		if(this._dataSetFormModel.mode === FormMode.CREATE) {
-			$dataSetTypeSelector = FormUtil.getDataSetsDropDown('DATASET_TYPE', this._dataSetFormModel.dataSetTypes);
-			$dataSetTypeSelector.change(function() { 
-				if(!_this._dataSetFormModel.isMini) {
-					_this._repaintMetadata(
-							_this._dataSetFormController._getDataSetType($('#DATASET_TYPE').val())
-					);
-				}
-				_this.isFormDirty = true;
-			});
-			var $dataSetTypeDropDown = $('<div>', { class : 'form-group' });
-			if(!this._dataSetFormModel.isMini) {
-				$dataSetTypeDropDown.append($('<label>', {class: "control-label"}).html('Data Set Type&nbsp;(*):'));
+		if (!this._dataSetFormModel.isMini) {
+			var $header = views.header;
+			$header.append($title);
+			var dataSetTypeDefinitionsExtension = profile.dataSetTypeDefinitionsExtension[_this._dataSetFormModel.dataSet.dataSetTypeCode];
+			if(dataSetTypeDefinitionsExtension && dataSetTypeDefinitionsExtension.extraToolbar) {
+				toolbarModel = toolbarModel.concat(dataSetTypeDefinitionsExtension.extraToolbar(_this._dataSetFormModel.mode, _this._dataSetFormModel.dataSet));
 			}
-			
-			var $dataSetTypeDropDowContainer = $('<div>');
-			if(this._dataSetFormModel.isMini) {
-				$dataSetTypeDropDowContainer.css('width', '100%');
-			}
-			$dataSetTypeDropDown.append(
-				$dataSetTypeDropDowContainer.append($dataSetTypeSelector)
-			);
-			$dataSetTypeFieldSet.append($dataSetTypeDropDown);
-		} else {
-			var $dataSetTypeLabel = FormUtil.getFieldForLabelWithText('Data Set Type', this._dataSetFormModel.dataSet.dataSetTypeCode, "CODE");
-			$dataSetTypeFieldSet.append($dataSetTypeLabel);
-			var $dataSetCodeLabel = FormUtil.getFieldForLabelWithText('Code', this._dataSetFormModel.dataSet.code, null);
-			$dataSetTypeFieldSet.append($dataSetCodeLabel);
-		}
-		
-		// Parents
-		var $dataSetParentsCodeLabel = $("<div>");
-		if(this._dataSetFormModel.mode === FormMode.VIEW) {
-			for(var i = 0; i < this._dataSetFormModel.dataSetV3.parents.length; i++) {
-					var parent = this._dataSetFormModel.dataSetV3.parents[i];
-					var $span = $("<span>");
-					$span.append(FormUtil.getFormLink(parent.permId.permId, "DataSet", parent.permId.permId));
-					var name = parent.properties[profile.propertyReplacingCode];
-					if(name) {
-						$span.append(" : ").append(name);
-					}
-					$dataSetParentsCodeLabel.append($("<div>").append($span));
-			}
-			
-		} else if(!this._dataSetFormModel.isMini) {
-			var dataSetType = this._dataSetFormModel.dataSet.dataSetTypeCode;
-			var parentsEditingDisabled = profile.dataSetTypeDefinitionsExtension[dataSetType] && profile.dataSetTypeDefinitionsExtension[dataSetType]["DATASET_PARENTS_DISABLED"]
-			if(!parentsEditingDisabled) {
-				this._dataSetFormModel.datasetParentsComponent = new AdvancedEntitySearchDropdown(true, false, "Search parents to add",
-						false, false, true, false, false);
-				this._dataSetFormModel.datasetParentsComponent.init($dataSetParentsCodeLabel);
-				this._dataSetFormModel.datasetParentsComponent.addSelectedDataSets(this._dataSetFormModel.dataSet.parentCodes);
-			}
-		}
-		
-		if((this._dataSetFormModel.mode === FormMode.VIEW && this._dataSetFormModel.dataSetV3.parents.length !== 0) 
-			|| 
-			(this._dataSetFormModel.mode !== FormMode.VIEW && !this._dataSetFormModel.isMini)
-			) {
-			$dataSetTypeFieldSet.append(FormUtil.getFieldForComponentWithLabel($dataSetParentsCodeLabel, 'Parents'));
-		}
-		
-		// Children
-		
-		var $dataSetChildrenCodeLabel = $("<div>");
-		if(this._dataSetFormModel.mode === FormMode.VIEW) {
-			for(var i = 0; i < this._dataSetFormModel.dataSetV3.children.length; i++) {
-					var child = this._dataSetFormModel.dataSetV3.children[i];
-					var $span = $("<span>");
-					$span.append(FormUtil.getFormLink(child.permId.permId, "DataSet", child.permId.permId));
-					var name = child.properties[profile.propertyReplacingCode];
-					if(name) {
-						$span.append(" : ").append(name);
-					}
-					$dataSetChildrenCodeLabel.append($("<div>").append($span));
-			}
-		}
-		
-		if(this._dataSetFormModel.mode === FormMode.VIEW && this._dataSetFormModel.dataSetV3.children.length !== 0) {
-			$dataSetTypeFieldSet.append(FormUtil.getFieldForComponentWithLabel($dataSetChildrenCodeLabel, 'Children'));
-		}
-		
-		//
-		
-		var ownerName = null;
-		var owner = null;
-		if(this._dataSetFormModel.isExperiment()) { 
-			ownerName = ELNDictionary.ExperimentELN; //Only experiments on the ELN have datasets
-			owner = this._dataSetFormModel.entity.identifier.identifier;
-		} else {
-			ownerName = ELNDictionary.Sample;
-			owner = this._dataSetFormModel.entity.identifier;
-		}
-		
-		if(!this._dataSetFormModel.isMini) {
-			$dataSetTypeFieldSet.append(FormUtil.getFieldForLabelWithText(ownerName, owner));
-		}
-		
-		//
-		// Content copies info
-		//
-		if(this._dataSetFormModel.linkedData && this._dataSetFormModel.linkedData.contentCopies) {
-			var $ccn = FormUtil.getFieldForLabelWithText("Number of content copies", "" + this._dataSetFormModel.linkedData.contentCopies.length);
-			$dataSetTypeFieldSet.append($ccn);
-			for(var cIdx = 0; cIdx < this._dataSetFormModel.linkedData.contentCopies.length; cIdx++) {
-				var cc = this._dataSetFormModel.linkedData.contentCopies[cIdx];
-				
-				var externalDmsCode = null;
-				if(cc.externalDms && cc.externalDms.code) {
-					externalDmsCode = cc.externalDms.code;
-				}
-				
-				var host = null;
-				if(cc.externalDms && cc.externalDms.address) {
-					host = cc.externalDms.address.split(":")[0];
-				}
-				
-				if(cc) {
-					var $cc = FormUtil.getFieldForLabelWithText("Content Copy " + (cIdx+1) , 
-							"- <u>External DMS</u>: " + externalDmsCode + "<br>" + 
-							"- <u>Host</u>: " + host + "<br>" +
-							"- <u>Directory</u>: " + cc.path + "<br>" +
-							"- <u>Commit Hash</u>: " + cc.gitCommitHash + "<br>" + 
-							"- <u>Repository Id</u>: " + cc.gitRepositoryId + "<br>" +
-							"- <u>Connect cmd</u>: " +  "ssh -t " + host + " \"cd " + cc.path + "; bash\""
-							);
-					$dataSetTypeFieldSet.append($cc);
-				}
-			}
-			
-		}
-		
-		//
-		// Registration and modification info
-		//
-		if(this._dataSetFormModel.mode !== FormMode.CREATE) {
-			var registrationDetails = this._dataSetFormModel.dataSet.registrationDetails;
-			
-			var $registrator = FormUtil.getFieldForLabelWithText("Registrator", registrationDetails.userId);
-			$dataSetTypeFieldSet.append($registrator);
-			
-			var $registationDate = FormUtil.getFieldForLabelWithText("Registration Date", Util.getFormatedDate(new Date(registrationDetails.registrationDate)))
-			$dataSetTypeFieldSet.append($registationDate);
-			
-			var $modifier = FormUtil.getFieldForLabelWithText("Modifier", registrationDetails.modifierUserId);
-			$dataSetTypeFieldSet.append($modifier);
-			
-			var $modificationDate = FormUtil.getFieldForLabelWithText("Modification Date", Util.getFormatedDate(new Date(registrationDetails.modificationDate)));
-			$dataSetTypeFieldSet.append($modificationDate);
+			hideShowOptionsModel = [];
+			$wrapper.append(this._createIdentificationInfoSection(hideShowOptionsModel));
+			FormUtil.addOptionsToToolbar(toolbarModel, dropdownOptionsModel, hideShowOptionsModel, "DATA-SET-VIEW");
+			$header.append(FormUtil.getToolbar(toolbarModel));
 		}
 		
 		//Metadata Container
@@ -558,6 +400,173 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 			var dataSetViewer = new DataSetViewerController("filesViewer", profile, this._dataSetFormModel.entity, mainController.serverFacade, profile.getDefaultDataStoreURL(), [this._dataSetFormModel.dataSet], false, true);
 			dataSetViewer.init();
 		}
+	}
+	
+	this._createIdentificationInfoSection = function(hideShowOptionsModel) {
+		hideShowOptionsModel.push({
+			label : "Identification Info",
+			section : "#data-set-identification-info"
+		});
+		
+		var _this = this;
+
+		var $dataSetTypeFieldSet = $('<div>', { id : "data-set-identification-info" });
+		if (!this._dataSetFormModel.isMini) {
+			$dataSetTypeFieldSet.append($('<legend>').text('Identification Info'));
+		}
+		
+		var $dataSetTypeSelector = null;
+		if (this._dataSetFormModel.mode === FormMode.CREATE) {
+			$dataSetTypeSelector = FormUtil.getDataSetsDropDown('DATASET_TYPE', this._dataSetFormModel.dataSetTypes);
+			$dataSetTypeSelector.change(function() { 
+				if (!_this._dataSetFormModel.isMini) {
+					_this._repaintMetadata(
+							_this._dataSetFormController._getDataSetType($('#DATASET_TYPE').val())
+					);
+				}
+				_this.isFormDirty = true;
+			});
+			var $dataSetTypeDropDown = $('<div>', { class : 'form-group' });
+			if (!this._dataSetFormModel.isMini) {
+				$dataSetTypeDropDown.append($('<label>', {class: "control-label"}).html('Data Set Type&nbsp;(*):'));
+			}
+			
+			var $dataSetTypeDropDowContainer = $('<div>');
+			if (this._dataSetFormModel.isMini) {
+				$dataSetTypeDropDowContainer.css('width', '100%');
+			}
+			$dataSetTypeDropDown.append(
+				$dataSetTypeDropDowContainer.append($dataSetTypeSelector)
+			);
+			$dataSetTypeFieldSet.append($dataSetTypeDropDown);
+		} else {
+			var $dataSetTypeLabel = FormUtil.getFieldForLabelWithText('Data Set Type', this._dataSetFormModel.dataSet.dataSetTypeCode, "CODE");
+			$dataSetTypeFieldSet.append($dataSetTypeLabel);
+			var $dataSetCodeLabel = FormUtil.getFieldForLabelWithText('Code', this._dataSetFormModel.dataSet.code, null);
+			$dataSetTypeFieldSet.append($dataSetCodeLabel);
+		}
+		
+		// Parents
+		var $dataSetParentsCodeLabel = $("<div>");
+		if (this._dataSetFormModel.mode === FormMode.VIEW) {
+			for(var i = 0; i < this._dataSetFormModel.dataSetV3.parents.length; i++) {
+					var parent = this._dataSetFormModel.dataSetV3.parents[i];
+					var $span = $("<span>");
+					$span.append(FormUtil.getFormLink(parent.permId.permId, "DataSet", parent.permId.permId));
+					var name = parent.properties[profile.propertyReplacingCode];
+					if(name) {
+						$span.append(" : ").append(name);
+					}
+					$dataSetParentsCodeLabel.append($("<div>").append($span));
+			}
+			
+		} else if (!this._dataSetFormModel.isMini) {
+			var dataSetType = this._dataSetFormModel.dataSet.dataSetTypeCode;
+			var parentsEditingDisabled = profile.dataSetTypeDefinitionsExtension[dataSetType] && profile.dataSetTypeDefinitionsExtension[dataSetType]["DATASET_PARENTS_DISABLED"]
+			if (!parentsEditingDisabled) {
+				this._dataSetFormModel.datasetParentsComponent = new AdvancedEntitySearchDropdown(true, false, "Search parents to add",
+						false, false, true, false, false);
+				this._dataSetFormModel.datasetParentsComponent.init($dataSetParentsCodeLabel);
+				this._dataSetFormModel.datasetParentsComponent.addSelectedDataSets(this._dataSetFormModel.dataSet.parentCodes);
+			}
+		}
+		
+		if ((this._dataSetFormModel.mode === FormMode.VIEW && this._dataSetFormModel.dataSetV3.parents.length !== 0) 
+			|| 
+			(this._dataSetFormModel.mode !== FormMode.VIEW && !this._dataSetFormModel.isMini)
+			) {
+			$dataSetTypeFieldSet.append(FormUtil.getFieldForComponentWithLabel($dataSetParentsCodeLabel, 'Parents'));
+		}
+		
+		// Children
+		
+		var $dataSetChildrenCodeLabel = $("<div>");
+		if (this._dataSetFormModel.mode === FormMode.VIEW) {
+			for (var i = 0; i < this._dataSetFormModel.dataSetV3.children.length; i++) {
+					var child = this._dataSetFormModel.dataSetV3.children[i];
+					var $span = $("<span>");
+					$span.append(FormUtil.getFormLink(child.permId.permId, "DataSet", child.permId.permId));
+					var name = child.properties[profile.propertyReplacingCode];
+					if(name) {
+						$span.append(" : ").append(name);
+					}
+					$dataSetChildrenCodeLabel.append($("<div>").append($span));
+			}
+		}
+		
+		if (this._dataSetFormModel.mode === FormMode.VIEW && this._dataSetFormModel.dataSetV3.children.length !== 0) {
+			$dataSetTypeFieldSet.append(FormUtil.getFieldForComponentWithLabel($dataSetChildrenCodeLabel, 'Children'));
+		}
+		
+		//
+		
+		var ownerName = null;
+		var owner = null;
+		if (this._dataSetFormModel.isExperiment()) { 
+			ownerName = ELNDictionary.ExperimentELN; //Only experiments on the ELN have datasets
+			owner = this._dataSetFormModel.entity.identifier.identifier;
+		} else {
+			ownerName = ELNDictionary.Sample;
+			owner = this._dataSetFormModel.entity.identifier;
+		}
+		
+		if (!this._dataSetFormModel.isMini) {
+			$dataSetTypeFieldSet.append(FormUtil.getFieldForLabelWithText(ownerName, owner));
+		}
+		
+		//
+		// Content copies info
+		//
+		if (this._dataSetFormModel.linkedData && this._dataSetFormModel.linkedData.contentCopies) {
+			var $ccn = FormUtil.getFieldForLabelWithText("Number of content copies", "" + this._dataSetFormModel.linkedData.contentCopies.length);
+			$dataSetTypeFieldSet.append($ccn);
+			for (var cIdx = 0; cIdx < this._dataSetFormModel.linkedData.contentCopies.length; cIdx++) {
+				var cc = this._dataSetFormModel.linkedData.contentCopies[cIdx];
+				
+				var externalDmsCode = null;
+				if (cc.externalDms && cc.externalDms.code) {
+					externalDmsCode = cc.externalDms.code;
+				}
+				
+				var host = null;
+				if (cc.externalDms && cc.externalDms.address) {
+					host = cc.externalDms.address.split(":")[0];
+				}
+				
+				if (cc) {
+					var $cc = FormUtil.getFieldForLabelWithText("Content Copy " + (cIdx+1) , 
+							"- <u>External DMS</u>: " + externalDmsCode + "<br>" + 
+							"- <u>Host</u>: " + host + "<br>" +
+							"- <u>Directory</u>: " + cc.path + "<br>" +
+							"- <u>Commit Hash</u>: " + cc.gitCommitHash + "<br>" + 
+							"- <u>Repository Id</u>: " + cc.gitRepositoryId + "<br>" +
+							"- <u>Connect cmd</u>: " +  "ssh -t " + host + " \"cd " + cc.path + "; bash\""
+							);
+					$dataSetTypeFieldSet.append($cc);
+				}
+			}
+			
+		}
+		
+		//
+		// Registration and modification info
+		//
+		if (this._dataSetFormModel.mode !== FormMode.CREATE) {
+			var registrationDetails = this._dataSetFormModel.dataSet.registrationDetails;
+			
+			var $registrator = FormUtil.getFieldForLabelWithText("Registrator", registrationDetails.userId);
+			$dataSetTypeFieldSet.append($registrator);
+			
+			var $registationDate = FormUtil.getFieldForLabelWithText("Registration Date", Util.getFormatedDate(new Date(registrationDetails.registrationDate)))
+			$dataSetTypeFieldSet.append($registationDate);
+			
+			var $modifier = FormUtil.getFieldForLabelWithText("Modifier", registrationDetails.modifierUserId);
+			$dataSetTypeFieldSet.append($modifier);
+			
+			var $modificationDate = FormUtil.getFieldForLabelWithText("Modification Date", Util.getFormatedDate(new Date(registrationDetails.modificationDate)));
+			$dataSetTypeFieldSet.append($modificationDate);
+		}
+		return $dataSetTypeFieldSet;
 	}
 	
 	this._updateFileOptions = function() {
