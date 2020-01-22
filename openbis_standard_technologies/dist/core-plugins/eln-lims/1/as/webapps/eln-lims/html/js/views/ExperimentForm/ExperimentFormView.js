@@ -210,7 +210,8 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		$header.append($formTitle);
 
 		var hideShowOptionsModel = [];
-		FormUtil.addOptionsToToolbar(toolbarModel, dropdownOptionsModel, hideShowOptionsModel, "EXPERIMENT-VIEW");
+		FormUtil.addOptionsToToolbar(toolbarModel, dropdownOptionsModel, hideShowOptionsModel, 
+				"EXPERIMENT-VIEW-" + this._experimentFormModel.experiment.experimentTypeCode);
 		$header.append(FormUtil.getToolbar(toolbarModel));
 		
 		//

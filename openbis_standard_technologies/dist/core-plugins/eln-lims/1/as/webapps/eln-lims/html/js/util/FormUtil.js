@@ -948,7 +948,13 @@ var FormUtil = new function() {
 	}
 	
 	this.addOptionsToToolbar = function(toolbarModel, dropdownOptionsModel, hideShowOptionsModel, namespace) {
-		var $dropdownOptionsMenuList = this._createAndAddOptionsMenu(toolbarModel, "Operations");
+		var $dropdownOptionsMenu = $("<span>", { class : 'dropdown' });
+		toolbarModel.push({ component : $dropdownOptionsMenu, tooltip: null });
+		var $dropdownOptionsMenuCaret = $("<a>", { 'href' : '#', 'data-toggle' : 'dropdown', class : 'dropdown-toggle btn btn-default', 'id' : 'options-menu-btn'})
+				.append("Actions ").append($("<b>", { class : 'caret' }));
+		var $dropdownOptionsMenuList = $("<ul>", { class : 'dropdown-menu', 'role' : 'menu' });
+		$dropdownOptionsMenu.append($dropdownOptionsMenuCaret);
+		$dropdownOptionsMenu.append($dropdownOptionsMenuList);
 		for(var idx = 0; idx < dropdownOptionsModel.length; idx++) {
 			var label = dropdownOptionsModel[idx].label
 			var $dropdownElement = $("<li>", { 'role' : 'presentation' }).append($("<a>", {'title' : label }).append(label));
@@ -956,7 +962,6 @@ var FormUtil = new function() {
 			$dropdownOptionsMenuList.append($dropdownElement);
 		}
 		
-		var $hidShowOptionsMenuList = this._createAndAddOptionsMenu(toolbarModel, "Show/Hide Sections");
 		for(var idx = 0; idx < hideShowOptionsModel.length; idx++) {
 			var option = hideShowOptionsModel[idx];
 			var settingsKey = namespace + "-" + option.label;
@@ -979,22 +984,11 @@ var FormUtil = new function() {
 					});
 				};
 				$dropdownElement.click(action);
-				$hidShowOptionsMenuList.append($dropdownElement);
+				$dropdownOptionsMenuList.append($dropdownElement);
 			});
 		}
 	}
 	
-	this._createAndAddOptionsMenu = function(toolbarModel, title) {
-		var $dropdownOptionsMenu = $("<span>", { class : 'dropdown' });
-		toolbarModel.push({ component : $dropdownOptionsMenu, tooltip: null });
-		var $dropdownOptionsMenuCaret = $("<a>", { 'href' : '#', 'data-toggle' : 'dropdown', class : 'dropdown-toggle btn btn-default', 'id' : 'options-menu-btn'})
-				.append(title + " ").append($("<b>", { class : 'caret' }));
-		var $dropdownOptionsMenuList = $("<ul>", { class : 'dropdown-menu', 'role' : 'menu' });
-		$dropdownOptionsMenu.append($dropdownOptionsMenuCaret);
-		$dropdownOptionsMenu.append($dropdownOptionsMenuList);
-		return $dropdownOptionsMenuList;
-	}
-
 	this.getToolbar = function(toolbarModel) {
 		var $toolbarContainer = $("<div>", { class : 'toolBox', style : "width: 100%;" });
 		

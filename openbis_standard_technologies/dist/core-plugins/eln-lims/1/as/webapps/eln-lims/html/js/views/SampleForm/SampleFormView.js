@@ -476,7 +476,8 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		}
 
 		var hideShowOptionsModel = [];
-		FormUtil.addOptionsToToolbar(toolbarModel, dropdownOptionsModel, hideShowOptionsModel, "SAMPLE-VIEW");
+		FormUtil.addOptionsToToolbar(toolbarModel, dropdownOptionsModel, hideShowOptionsModel, 
+				"SAMPLE-VIEW-" + _this._sampleFormModel.sample.sampleTypeCode);
 		$header.append(FormUtil.getToolbar(toolbarModel));
 		
 		//
