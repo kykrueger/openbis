@@ -72,12 +72,14 @@ var BarcodeUtil = new function() {
 
         var $barcodeTypesDropdown = FormUtil.getDropdown(this.supportedBarcodes());
 
-        var $numberDropdown = FormUtil.getDropdown([
-            { label: '10', value: 10, selected: true },
-            { label: '25', value: 25 },
-            { label: '50', value: 50 },
-            { label: '100', value: 100 }
-        ]);
+        var numberDropdownModel = [];
+        for(var nIdx = 1; nIdx <= 100; nIdx++) {
+            numberDropdownModel.push({ label: '' + nIdx, value: nIdx });
+            if(nIdx === 10) {
+                numberDropdownModel[nIdx-1].selected = true;
+            }
+        }
+        var $numberDropdown = FormUtil.getDropdown(numberDropdownModel);
 
         var $width = FormUtil.getDropdown([ { label: '10 mm', value: 10 },
                                             { label: '15 mm', value: 15 },
