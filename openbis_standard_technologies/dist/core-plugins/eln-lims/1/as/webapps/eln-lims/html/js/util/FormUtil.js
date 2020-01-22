@@ -963,7 +963,9 @@ var FormUtil = new function() {
 		}
 
 		$dropdownOptionsMenuList.append($("<li>", { 'role' : 'presentation' }).append($("<hr>", { style : "margin-top: 5px; margin-bottom: 5px;"})));
-		mainController.serverFacade.getSetting(namespace, function(settingsValue) {
+
+		var settingsKey = namespace + "-showing-sections";
+		mainController.serverFacade.getSetting(settingsKey, function(settingsValue) {
 			var sectionsSettings = settingsValue ? JSON.parse(settingsValue) : {};
 			for (var idx = 0; idx < hideShowOptionsModel.length; idx++) {
 				var option = hideShowOptionsModel[idx];
@@ -984,7 +986,7 @@ var FormUtil = new function() {
 							$label.text("Hide " + option.label);
 							sectionsSettings[option.label] = "shown";
 						}
-						mainController.serverFacade.setSetting(namespace, JSON.stringify(sectionsSettings));
+						mainController.serverFacade.setSetting(settingsKey, JSON.stringify(sectionsSettings));
 					});
 				};
 				$dropdownElement.click({option : option, label : $label, section : section}, action);
