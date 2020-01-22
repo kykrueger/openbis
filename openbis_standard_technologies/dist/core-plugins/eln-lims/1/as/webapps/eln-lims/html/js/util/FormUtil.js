@@ -962,7 +962,7 @@ var FormUtil = new function() {
 			$dropdownOptionsMenuList.append($dropdownElement);
 		}
 
-        $dropdownOptionsMenuList.append($("<li>", { 'role' : 'presentation' }).append($("<hr>")));
+        $dropdownOptionsMenuList.append($("<li>", { 'role' : 'presentation' }).append($("<hr>", { style : "margin-top: 5px; margin-bottom: 5px;"})));
 
 		for(var idx = 0; idx < hideShowOptionsModel.length; idx++) {
 			var option = hideShowOptionsModel[idx];
