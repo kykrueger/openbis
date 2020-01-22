@@ -746,9 +746,9 @@ $.extend(Grid.prototype, {
 					thisGrid.firstLoad = false;
 				}
 				
-				// Fix table width since fuelux 3.1.0
-				var newWidth = $(thisGrid.panel).find(".repeater-list-wrapper > .table").width();
-				$(thisGrid.panel).find(".repeater").width(newWidth);
+//              Fix table width since fuelux 3.1.0
+//				var newWidth = $(thisGrid.panel).find(".repeater-list-wrapper > .table").width();
+//				$(thisGrid.panel).find(".repeater").width(newWidth);
 				
 				var optionsDropdowns = $(".dropdown.table-options-dropdown");
 				for(var i = 0; i < optionsDropdowns.length; i++) {
