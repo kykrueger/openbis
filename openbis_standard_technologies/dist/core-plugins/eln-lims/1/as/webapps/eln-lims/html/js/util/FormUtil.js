@@ -955,40 +955,42 @@ var FormUtil = new function() {
 		var $dropdownOptionsMenuList = $("<ul>", { class : 'dropdown-menu', 'role' : 'menu' });
 		$dropdownOptionsMenu.append($dropdownOptionsMenuCaret);
 		$dropdownOptionsMenu.append($dropdownOptionsMenuList);
-		for(var idx = 0; idx < dropdownOptionsModel.length; idx++) {
+		for (var idx = 0; idx < dropdownOptionsModel.length; idx++) {
 			var label = dropdownOptionsModel[idx].label
 			var $dropdownElement = $("<li>", { 'role' : 'presentation' }).append($("<a>", {'title' : label }).append(label));
 			$dropdownElement.click(dropdownOptionsModel[idx].action);
 			$dropdownOptionsMenuList.append($dropdownElement);
 		}
 
-        $dropdownOptionsMenuList.append($("<li>", { 'role' : 'presentation' }).append($("<hr>", { style : "margin-top: 5px; margin-bottom: 5px;"})));
-
-		for(var idx = 0; idx < hideShowOptionsModel.length; idx++) {
-			var option = hideShowOptionsModel[idx];
-			var settingsKey = namespace + "-" + option.label;
-			mainController.serverFacade.getSetting(settingsKey, function(settingsValue) {
-				var shown = settingsValue === "shown";
+		$dropdownOptionsMenuList.append($("<li>", { 'role' : 'presentation' }).append($("<hr>", { style : "margin-top: 5px; margin-bottom: 5px;"})));
+		mainController.serverFacade.getSetting(namespace, function(settingsValue) {
+			var sectionsSettings = settingsValue ? JSON.parse(settingsValue) : {};
+			for (var idx = 0; idx < hideShowOptionsModel.length; idx++) {
+				var option = hideShowOptionsModel[idx];
+				var shown = sectionsSettings[option.label] === "shown";
 				var section = $(option.section);
 				section.toggle(shown);
 				var $label = $("<span>").append((shown ? "Hide " : "Show ") + option.label);
 				var $dropdownElement = $("<li>", { 'role' : 'presentation' }).append($("<a>", {'title' : $label }).append($label));
-				var action = function() {
+				var action = function(event) {
+					var option = event.data.option;
+					var $label = event.data.label;
+					var section = event.data.section;
 					section.toggle(300, function() {
-						$label.empty();
 						if (section.css("display") === "none") {
-							$label.append("Show " + option.label);
-							mainController.serverFacade.setSetting(settingsKey, "hidden");
+							$label.text("Show " + option.label);
+							sectionsSettings[option.label] = "hidden";
 						} else {
-							$label.append("Hide " + option.label);
-							mainController.serverFacade.setSetting(settingsKey, "shown");
+							$label.text("Hide " + option.label);
+							sectionsSettings[option.label] = "shown";
 						}
+						mainController.serverFacade.setSetting(namespace, JSON.stringify(sectionsSettings));
 					});
 				};
-				$dropdownElement.click(action);
+				$dropdownElement.click({option : option, label : $label, section : section}, action);
 				$dropdownOptionsMenuList.append($dropdownElement);
-			});
-		}
+			}
+		});
 	}
 	
 	this.getToolbar = function(toolbarModel) {
