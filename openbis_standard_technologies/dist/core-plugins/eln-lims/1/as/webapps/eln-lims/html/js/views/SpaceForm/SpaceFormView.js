@@ -96,7 +96,7 @@ function SpaceFormView(spaceFormController, spaceFormModel) {
 
 		var $header = views.header;
 		$header.append($formTitle);
-	    toolbarModel.push({ component : FormUtil.getOptionsDropdown(dropdownOptionsModel), tooltip: null });
+        FormUtil.addOptionsToToolbar(toolbarModel, dropdownOptionsModel, [], "SPACE-VIEW");
 		$header.append(FormUtil.getToolbar(toolbarModel));
 		
 		$container.append($form);

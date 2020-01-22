@@ -962,7 +962,9 @@ var FormUtil = new function() {
 			$dropdownOptionsMenuList.append($dropdownElement);
 		}
 
-		$dropdownOptionsMenuList.append($("<li>", { 'role' : 'presentation' }).append($("<hr>", { style : "margin-top: 5px; margin-bottom: 5px;"})));
+        if(hideShowOptionsModel.length > 0 && dropdownOptionsModel.length > 0) {
+		    $dropdownOptionsMenuList.append($("<li>", { 'role' : 'presentation' }).append($("<hr>", { style : "margin-top: 5px; margin-bottom: 5px;"})));
+        }
 
 		var settingsKey = namespace + "-showing-sections";
 		mainController.serverFacade.getSetting(settingsKey, function(settingsValue) {
@@ -985,10 +987,6 @@ var FormUtil = new function() {
 						} else {
 							$label.text("Hide " + option.label);
 							sectionsSettings[option.label] = "shown";
-							var $repeater = $section.find(".repeater");
-							if ($repeater) {
-								$repeater.width($section.parent().width());
-							}
 						}
 						$(window).trigger('resize'); // HACK: Fixes table rendering issues when refreshing the grid on fuelux 3.1.0 for all browsers
 						mainController.serverFacade.setSetting(settingsKey, JSON.stringify(sectionsSettings));
