@@ -405,11 +405,9 @@ public class SearchExperimentTest extends AbstractExperimentTest
         testSearch(TEST_USER, criteria, 0);
 
         criteria = new ExperimentSearchCriteria();
-        criteria.withDateProperty("PURCHASE_DATE").thatEquals(format.parse("2009-02-09 00:00"));
-        testSearch(TEST_USER, criteria, "/CISD/NEMO/EXP-TEST-2", "/TEST-SPACE/NOE/EXP-TEST-2");
-
-        criteria = new ExperimentSearchCriteria();
-        criteria.withDateProperty("PURCHASE_DATE").thatEquals(format.parse("2009-02-09 23:59"));
+        criteria.withDateProperty("PURCHASE_DATE").thatEquals(format.parse("2009-02-09 23:00"));
+        criteria.withDateProperty("PURCHASE_DATE").thatEquals(format.parse("2009-02-09 09:00"));
+        criteria.withOrOperator();
         testSearch(TEST_USER, criteria, "/CISD/NEMO/EXP-TEST-2", "/TEST-SPACE/NOE/EXP-TEST-2");
 
         criteria = new ExperimentSearchCriteria();
