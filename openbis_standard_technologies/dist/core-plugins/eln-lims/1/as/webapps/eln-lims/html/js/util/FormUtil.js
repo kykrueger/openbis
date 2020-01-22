@@ -962,9 +962,9 @@ var FormUtil = new function() {
 			$dropdownOptionsMenuList.append($dropdownElement);
 		}
 
-        if(hideShowOptionsModel.length > 0 && dropdownOptionsModel.length > 0) {
-		    $dropdownOptionsMenuList.append($("<li>", { 'role' : 'presentation' }).append($("<hr>", { style : "margin-top: 5px; margin-bottom: 5px;"})));
-        }
+		if(hideShowOptionsModel.length > 0 && dropdownOptionsModel.length > 0) {
+			$dropdownOptionsMenuList.append($("<li>", { 'role' : 'presentation' }).append($("<hr>", { style : "margin-top: 5px; margin-bottom: 5px;"})));
+		}
 
 		var settingsKey = namespace + "-showing-sections";
 		mainController.serverFacade.getSetting(settingsKey, function(settingsValue) {

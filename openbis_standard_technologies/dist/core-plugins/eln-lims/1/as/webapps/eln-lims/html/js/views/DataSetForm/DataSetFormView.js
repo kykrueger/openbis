@@ -566,6 +566,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 			var $modificationDate = FormUtil.getFieldForLabelWithText("Modification Date", Util.getFormatedDate(new Date(registrationDetails.modificationDate)));
 			$dataSetTypeFieldSet.append($modificationDate);
 		}
+		$dataSetTypeFieldSet.hide();
 		return $dataSetTypeFieldSet;
 	}
 	

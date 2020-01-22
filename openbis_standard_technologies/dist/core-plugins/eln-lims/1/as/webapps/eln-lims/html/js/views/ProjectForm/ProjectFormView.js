@@ -255,6 +255,7 @@ function ProjectFormView(projectFormController, projectFormModel) {
 			var $modificationDate = FormUtil.getFieldForLabelWithText("Modification Date", Util.getFormatedDate(new Date(registrationDetails.modificationDate)));
 			$identificationInfo.append($modificationDate);
 		}
+		$identificationInfo.hide();
 		return $identificationInfo;
 	}
 	
@@ -287,6 +288,7 @@ function ProjectFormView(projectFormController, projectFormModel) {
 			$textBox = FormUtil.activateRichTextProperties($textBox, undefined, null, description, true);
 			$description.append(FormUtil.getFieldForComponentWithLabel($textBox, "Description"));
 		}
+		$description.hide();
 		return $description;
 	}
 	
@@ -304,6 +306,7 @@ function ProjectFormView(projectFormController, projectFormModel) {
 		
 		var experimentTableController = new ExperimentTableController(this._projectFormController, null, jQuery.extend(true, {}, this._projectFormModel.project), true);
 		experimentTableController.init($experimentsContainer);
+		$experiments.hide();
 		return $experiments;
 	}
 	
@@ -328,6 +331,7 @@ function ProjectFormView(projectFormController, projectFormModel) {
 		}
 		var sampleTableController = new SampleTableController(this._projectFormController, null, null, this._projectFormModel.project.permId, true);
 		sampleTableController.init(views);
+		$samples.hide();
 		return $samples;
 	}
 	

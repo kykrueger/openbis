@@ -394,6 +394,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 			var $modificationDate = FormUtil.getFieldForLabelWithText("Modification Date", Util.getFormatedDate(new Date(registrationDetails.modificationDate)));
 			$identificationInfo.append($modificationDate);
 		}
+		$identificationInfo.hide();
 		return $identificationInfo;
 	}
 	
@@ -416,7 +417,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		}
 		var sampleList = new SampleTableController(this._experimentFormController, null, this._experimentFormModel.experiment.identifier, null, null, this._experimentFormModel.experiment);
 		sampleList.init(views);
-
+		$samples.hide();
 		return $samples;
 	}
 	

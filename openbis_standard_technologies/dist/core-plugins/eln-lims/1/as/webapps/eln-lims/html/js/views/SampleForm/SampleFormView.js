@@ -873,6 +873,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		}
 		
 		$legend.prepend(FormUtil.getShowHideButton($fieldset, "SAMPLE-" + this._sampleFormModel.sample.sampleTypeCode + "-identificationInfo"));
+		$identificationInfo.hide();
 		return $identificationInfo;
 	}
 	
@@ -908,6 +909,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		if (!sampleTypeDefinitionsExtension || !sampleTypeDefinitionsExtension["SAMPLE_PARENTS_DISABLED"]) {
 			this._sampleFormModel.sampleLinksParents.init($sampleParentsWidget);
 		}
+		$sampleParentsWidget.hide();
 		return $sampleParentsWidget;
 	}
 	
@@ -966,6 +968,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 											.append($("<div>", { 'id' : 'newChildrenOnBenchDropDown' }))
 			$sampleChildrenWidget.append($generateChildrenBox);
 		}
+		$sampleChildrenWidget.hide();
 		return $sampleChildrenWidget;
 	}
 	
