@@ -961,7 +961,9 @@ var FormUtil = new function() {
 			$dropdownElement.click(dropdownOptionsModel[idx].action);
 			$dropdownOptionsMenuList.append($dropdownElement);
 		}
-		
+
+        $dropdownOptionsMenuList.append($("<li>", { 'role' : 'presentation' }).append($("<hr>")));
+
 		for(var idx = 0; idx < hideShowOptionsModel.length; idx++) {
 			var option = hideShowOptionsModel[idx];
 			var settingsKey = namespace + "-" + option.label;
