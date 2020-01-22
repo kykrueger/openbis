@@ -119,39 +119,47 @@ function ServerFacade(openbisServer) {
 	//
 	// Display Settings
 	//
+
+	var settingsCache = null;
+
+    this.getSettingsCacheEmpty = function(callback) {
+        if(settingsCache === null) {
+            mainController.serverFacade.openbisServer.getWebAppSettings("ELN-LIMS", function(response) {
+                var settings = response.result.settings;
+                if(!settings) {
+                    settings = {};
+                }
+                settingsCache = settings;
+                callback();
+            });
+        } else {
+            setTimeout(callback, 0); // Don't ask me please, please don't
+        }
+    }
+
 	this.getSetting = function(keyOrNull, callback) {
-		mainController.serverFacade.openbisServer.getWebAppSettings("ELN-LIMS", function(response) {
-			var settings = response.result.settings;
-			if(!settings) {
-				settings = {};
-			}
-			if(keyOrNull) {
-				callback(settings[keyOrNull]);
-			} else {
-				callback(settings);
-			}
-		});
+        this.getSettingsCacheEmpty(function() {
+            if(keyOrNull) {
+                callback(settingsCache[keyOrNull]);
+            } else {
+                callback(settingsCache);
+            }
+        });
 	}
-	
+
 	this.setSetting = function(key, value) {
-		var _this = this;
-		var webAppId = "ELN-LIMS";
-		this.openbisServer.getWebAppSettings(webAppId, function(response) {
-			var settings = response.result.settings;
-			if(!settings) {
-				settings = {};
-			}
-			settings[key] = value;
-			
-			var webAppSettings = {
-					"@type" : "WebAppSettings",
-					"webAppId" : webAppId,
-					"settings" : settings
-			}
-			
-			_this.openbisServer.setWebAppSettings(webAppSettings, function(result) {});
-		});
+        var _this = this;
+        this.getSettingsCacheEmpty(function() {
+            settingsCache[key] = value;
+            var webAppSettings = {
+                "@type" : "WebAppSettings",
+                "webAppId" : "ELN-LIMS",
+                "settings" : settingsCache
+            }
+            _this.openbisServer.setWebAppSettings(webAppSettings, function(result) {});
+        });
 	}
+
 	/* New Settings API - To use with new release
 	this.getSetting = function(key, callback) {
 		require([ "jquery", "openbis", "as/dto/person/update/PersonUpdate", "as/dto/person/id/Me", "as/dto/webapp/create/WebAppSettingCreation", "as/dto/person/fetchoptions/PersonFetchOptions" ],
