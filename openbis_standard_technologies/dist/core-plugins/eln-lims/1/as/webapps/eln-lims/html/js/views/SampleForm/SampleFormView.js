@@ -872,7 +872,6 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 			$fieldset.append($modificationDate);
 		}
 		
-		$legend.prepend(FormUtil.getShowHideButton($fieldset, "SAMPLE-" + this._sampleFormModel.sample.sampleTypeCode + "-identificationInfo"));
 		$identificationInfo.hide();
 		return $identificationInfo;
 	}
