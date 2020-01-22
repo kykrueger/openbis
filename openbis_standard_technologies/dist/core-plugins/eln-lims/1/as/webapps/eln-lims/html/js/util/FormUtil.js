@@ -970,26 +970,30 @@ var FormUtil = new function() {
 			for (var idx = 0; idx < hideShowOptionsModel.length; idx++) {
 				var option = hideShowOptionsModel[idx];
 				var shown = sectionsSettings[option.label] === "shown";
-				var section = $(option.section);
-				section.toggle(shown);
+				var $section = $(option.section);
+				$section.toggle(shown);
 				var $label = $("<span>").append((shown ? "Hide " : "Show ") + option.label);
 				var $dropdownElement = $("<li>", { 'role' : 'presentation' }).append($("<a>", {'title' : $label }).append($label));
 				var action = function(event) {
 					var option = event.data.option;
 					var $label = event.data.label;
-					var section = event.data.section;
-					section.toggle(300, function() {
-						if (section.css("display") === "none") {
+					var $section = event.data.section;
+					$section.toggle(300, function() {
+						if ($section.css("display") === "none") {
 							$label.text("Show " + option.label);
 							sectionsSettings[option.label] = "hidden";
 						} else {
 							$label.text("Hide " + option.label);
 							sectionsSettings[option.label] = "shown";
+							var $repeater = $section.find(".repeater");
+							if ($repeater) {
+								$repeater.width($section.parent().width());
+							}
 						}
 						mainController.serverFacade.setSetting(settingsKey, JSON.stringify(sectionsSettings));
 					});
 				};
-				$dropdownElement.click({option : option, label : $label, section : section}, action);
+				$dropdownElement.click({option : option, label : $label, section : $section}, action);
 				$dropdownOptionsMenuList.append($dropdownElement);
 			}
 		});
