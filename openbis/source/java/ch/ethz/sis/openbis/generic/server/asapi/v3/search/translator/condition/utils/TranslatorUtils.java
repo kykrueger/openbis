@@ -317,24 +317,12 @@ public class TranslatorUtils
         }
     }
 
-    public static void addDateValueToArgs(final IDate fieldValue, final List<Object> args, ITimeZone timeZone)
+    public static void addDateValueToArgs(final IDate fieldValue, final List<Object> args)
     {
         if (fieldValue instanceof AbstractDateValue)
         {
-            final Date date = getDate((AbstractDateValue) fieldValue);
-            if (timeZone instanceof TimeZone)
-            {
-                // Add calendar if there is time zone information.
-                final TimeZone timeZoneImpl = (TimeZone) timeZone;
-                final ZoneId zoneId = ZoneId.ofOffset("UTC", ZoneOffset.ofHours(timeZoneImpl.getHourOffset()));
-                final Calendar calendar = Calendar.getInstance(java.util.TimeZone.getTimeZone(zoneId));
-                calendar.setTime(date);
-                args.add(calendar);
-            } else
-            {
-                // Add calendar if there is no time zone information.
-                args.add(date);
-            }
+            // String type date value.
+            args.add(getDate((AbstractDateValue) fieldValue));
         } else
         {
             // Date type date value.
