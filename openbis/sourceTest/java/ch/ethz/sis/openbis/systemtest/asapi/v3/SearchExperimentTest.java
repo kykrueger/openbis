@@ -777,29 +777,6 @@ public class SearchExperimentTest extends AbstractExperimentTest
     }
 
     @Test
-    public void testSearchWithSortingByCodeScore()
-    {
-        ExperimentSearchCriteria criteria = new ExperimentSearchCriteria();
-        criteria.withOrOperator();
-        criteria.withCode().thatContains("EXP-");
-        criteria.withCode().thatContains("-SPACE-TEST");
-
-        String sessionToken = v3api.login(TEST_USER, PASSWORD);
-
-        ExperimentFetchOptions fo = new ExperimentFetchOptions();
-
-        fo.sortBy().fetchedFieldsScore().asc();
-        List<Experiment> experiments1 = v3api.searchExperiments(sessionToken, criteria, fo).getObjects();
-        assertTrue(experiments1.get(0).getCode().equals("EXP-SPACE-TEST"));
-
-        fo.sortBy().fetchedFieldsScore().desc();
-        List<Experiment> experiments2 = v3api.searchExperiments(sessionToken, criteria, fo).getObjects();
-        assertTrue(experiments2.get(experiments2.size() - 1).getCode().equals("EXP-SPACE-TEST"));
-
-        v3api.logout(sessionToken);
-    }
-
-    @Test
     public void testSearchWithSortingByIdentifier()
     {
         ExperimentSearchCriteria criteria = new ExperimentSearchCriteria();
