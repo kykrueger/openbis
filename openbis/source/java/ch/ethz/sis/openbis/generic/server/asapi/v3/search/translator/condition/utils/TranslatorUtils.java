@@ -215,6 +215,16 @@ public class TranslatorUtils
         joinInformation4.setSubTableIdField(ColumnNames.ID_COLUMN);
         result.put(tableMapper.getAttributeTypesTable(), joinInformation4);
 
+        final JoinInformation joinInformation5 = new JoinInformation();
+        joinInformation5.setJoinType(JoinType.LEFT);
+        joinInformation5.setMainTable(tableMapper.getValuesTable());
+        joinInformation5.setMainTableAlias(valuesTableAlias);
+        joinInformation5.setMainTableIdField(VOCABULARY_TERM_COLUMN);
+        joinInformation5.setSubTable(CONTROLLED_VOCABULARY_TERM_TABLE);
+        joinInformation5.setSubTableAlias(aliasFactory.createAlias());
+        joinInformation5.setSubTableIdField(ColumnNames.ID_COLUMN);
+        result.put(CONTROLLED_VOCABULARY_TERM_TABLE, joinInformation5);
+
         return result;
     }
 
