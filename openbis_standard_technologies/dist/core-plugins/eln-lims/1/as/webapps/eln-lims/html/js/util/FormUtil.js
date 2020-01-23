@@ -1016,7 +1016,7 @@ var FormUtil = new function() {
 	}
 	
 	this.getToolbar = function(toolbarModel) {
-		var $toolbarContainer = $("<div>", { class : 'toolBox', style : "width: 100%;" });
+		var $toolbarContainer = $("<span>", { class : 'toolBox' });
 		
 		for(var tbIdx = 0; tbIdx < toolbarModel.length; tbIdx++) {
 			var $toolbarComponent = toolbarModel[tbIdx].component;
