@@ -447,7 +447,7 @@ function ServerFacade(openbisServer) {
 			});
 	};
 
-    this.exportZenodo = function(entities, includeRoot, metadataOnly, userInformation, title, callbackFunction) {
+    this.exportZenodo = function(entities, includeRoot, metadataOnly, userInformation, title, accessToken, callbackFunction) {
         this.asyncExportZenodo({
             "method": "exportAll",
             "includeRoot": includeRoot,
@@ -456,7 +456,8 @@ function ServerFacade(openbisServer) {
             "userInformation": userInformation,
             "originUrl": window.location.origin,
             "sessionToken": this.openbisServer.getSession(),
-			"submissionTitle": title
+			"submissionTitle": title,
+			"accessToken": accessToken
         }, callbackFunction, "zenodo-exports-api");
     };
 
@@ -481,6 +482,7 @@ function ServerFacade(openbisServer) {
 				options.withParameter("submissionUrl", parameters["submissionUrl"]);
 				options.withParameter("entities", parameters["entities"]);
 				options.withParameter("submissionTitle", parameters["submissionTitle"]);
+				options.withParameter("accessToken", parameters["accessToken"]);
 				options.withParameter("userId", parameters["userInformation"]["id"]);
 				options.withParameter("userEmail", parameters["userInformation"]["email"]);
 				options.withParameter("userFirstName", parameters["userInformation"]["firstName"]);
