@@ -516,21 +516,29 @@ var FormUtil = new function() {
 		return $("<i>", { 'class' : 'fa ' + iconClass });
 	}
 	
-	this.getButtonWithIcon = function(iconClass, clickEvent, text, tooltip, id) {
-		var $btn = $("<a>", { 'class' : 'btn btn-default' }).append($("<span>", { 'class' : 'glyphicon ' + iconClass }));
-		if(text) {
-			$btn.append("&nbsp;").append(text);
-		}
-		if(tooltip) {
-			$btn.attr("title", tooltip);
-			$btn.tooltipster();
-		}
-		if(id) {
+    this.getButtonWithIcon = function(iconClass, clickEvent, text, tooltip, id) {
+        var $btn = null;
+        if(iconClass) {
+            $btn = $("<a>", { 'class' : 'btn btn-default' }).append($("<span>", { 'class' : 'glyphicon ' + iconClass }));
+        } else {
+            $btn = $("<a>", { 'class' : 'btn btn-default' });
+        }
+        if(text && iconClass) {
+            $btn.append("&nbsp;");
+        }
+        if(text) {
+            $btn.append(text);
+        }
+        if(tooltip) {
+            $btn.attr("title", tooltip);
+            $btn.tooltipster();
+        }
+        if(id) {
             $btn.attr("id", id);
         }
-		$btn.click(clickEvent);
-		return $btn;
-	}
+        $btn.click(clickEvent);
+        return $btn;
+    }
 
 	this.getButtonGroup = function(buttons, size) {
 		var styleClass = "btn-group" + (size ? "-" + size : "");
@@ -946,12 +954,21 @@ var FormUtil = new function() {
 		}
 		return originalValue;
 	}
-	
-	this.addOptionsToToolbar = function(toolbarModel, dropdownOptionsModel, hideShowOptionsModel, namespace) {
+
+	this.getCreateSampleDropdown = function(parentSample, experiment) {
+
+	}
+
+	this.addOptionsToToolbar = function(toolbarModel, dropdownOptionsModel, hideShowOptionsModel, namespace, title) {
+	    if(!title) {
+	        title = "More ... ";
+	    }
 		var $dropdownOptionsMenu = $("<span>", { class : 'dropdown' });
-		toolbarModel.push({ component : $dropdownOptionsMenu, tooltip: null });
+		if(toolbarModel) {
+		    toolbarModel.push({ component : $dropdownOptionsMenu, tooltip: null });
+		}
 		var $dropdownOptionsMenuCaret = $("<a>", { 'href' : '#', 'data-toggle' : 'dropdown', class : 'dropdown-toggle btn btn-default', 'id' : 'options-menu-btn'})
-				.append("Actions ").append($("<b>", { class : 'caret' }));
+				.append(title).append($("<b>", { class : 'caret' }));
 		var $dropdownOptionsMenuList = $("<ul>", { class : 'dropdown-menu', 'role' : 'menu' });
 		$dropdownOptionsMenu.append($dropdownOptionsMenuCaret);
 		$dropdownOptionsMenu.append($dropdownOptionsMenuList);
@@ -999,7 +1016,7 @@ var FormUtil = new function() {
 	}
 	
 	this.getToolbar = function(toolbarModel) {
-		var $toolbarContainer = $("<div>", { class : 'toolBox', style : "width: 100%;" });
+		var $toolbarContainer = $("<span>", { class : 'toolBox' });
 		
 		for(var tbIdx = 0; tbIdx < toolbarModel.length; tbIdx++) {
 			var $toolbarComponent = toolbarModel[tbIdx].component;
