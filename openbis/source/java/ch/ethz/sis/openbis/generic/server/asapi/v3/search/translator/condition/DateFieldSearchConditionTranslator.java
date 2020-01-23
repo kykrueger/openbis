@@ -61,33 +61,45 @@ public class DateFieldSearchConditionTranslator implements IConditionTranslator<
             final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases,
             final Map<String, String> dataTypeByPropertyName)
     {
+        final IDate value = criterion.getFieldValue();
+        final boolean bareDateValue = value instanceof AbstractDateValue && TranslatorUtils.isDateWithoutTime(((AbstractDateValue) value).getValue());
+
         switch (criterion.getFieldType()) {
             case ATTRIBUTE:
             {
                 final String fieldName = criterion.getFieldName();
-                final IDate fieldValue = criterion.getFieldValue();
+
+                if (bareDateValue)
+                {
+                    sqlBuilder.append(DATE).append(LP);
+                }
 
                 sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD);
                 if (criterion instanceof RegistrationDateSearchCriteria)
                 {
-                    TranslatorUtils.appendCastedTimestamp(sqlBuilder, REGISTRATION_TIMESTAMP_COLUMN, fieldValue);
+                    TranslatorUtils.appendCastedTimestamp(sqlBuilder, REGISTRATION_TIMESTAMP_COLUMN, value);
                 } else if (criterion instanceof ModificationDateSearchCriteria)
                 {
-                    TranslatorUtils.appendCastedTimestamp(sqlBuilder, MODIFICATION_TIMESTAMP_COLUMN, fieldValue);
+                    TranslatorUtils.appendCastedTimestamp(sqlBuilder, MODIFICATION_TIMESTAMP_COLUMN, value);
                 } else
                 {
-                    TranslatorUtils.appendCastedTimestamp(sqlBuilder, fieldName, fieldValue);
+                    TranslatorUtils.appendCastedTimestamp(sqlBuilder, fieldName, value);
                 }
+
+                if (bareDateValue)
+                {
+                    sqlBuilder.append(RP);
+                }
+
                 sqlBuilder.append(SP);
 
-                TranslatorUtils.appendDateComparatorOp(fieldValue, sqlBuilder);
-                TranslatorUtils.addDateValueToArgs(fieldValue, args);
+                TranslatorUtils.appendDateComparatorOp(value, sqlBuilder);
+                TranslatorUtils.addDateValueToArgs(value, args);
                 break;
             }
 
             case PROPERTY:
             {
-                final IDate value = criterion.getFieldValue();
                 final String propertyName = TranslatorUtils.normalisePropertyName(criterion.getFieldName());
                 final boolean internalProperty = TranslatorUtils.isPropertyInternal(criterion.getFieldName());
                 final String entityTypesSubTableAlias = aliases.get(tableMapper.getEntityTypesAttributeTypesTable()).getSubTableAlias();
@@ -108,7 +120,6 @@ public class DateFieldSearchConditionTranslator implements IConditionTranslator<
 
                 sqlBuilder.append(SP).append(THEN).append(SP);
 
-                final boolean bareDateValue = value instanceof AbstractDateValue && TranslatorUtils.isDateWithoutTime(((AbstractDateValue) value).getValue());
                 if (bareDateValue)
                 {
                     sqlBuilder.append(DATE).append(LP);
