@@ -116,35 +116,38 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		var toolbarConfig = profile.getSampleTypeToolbarConfiguration(_this._sampleFormModel.sample.sampleTypeCode);
 		
 		if(this._sampleFormModel.mode === FormMode.VIEW) {
-			//Create Experiment Step
-			if(_this._sampleFormModel.sample.sampleTypeCode === "EXPERIMENTAL_STEP" && _this._allowedToCreateChild()) {
-				var $createBtn = FormUtil.getButtonWithIcon("glyphicon-plus", function() {
-					var argsMap = {
-							"sampleTypeCode" : "EXPERIMENTAL_STEP",
-							"experimentIdentifier" : _this._sampleFormModel.sample.experimentIdentifierOrNull
-					}
-					var argsMapStr = JSON.stringify(argsMap);
-					
-					mainController.changeView("showCreateSubExperimentPage", argsMapStr);
-					
-					var setParent = function() {
-						mainController.currentView._sampleFormModel.sampleLinksParents.addSample(_this._sampleFormModel.sample);
-						Util.unblockUI();
-					}
-					
-					var repeatUntilSet = function() {
-						if(mainController.currentView.isLoaded()) {
-							setParent();
-						} else {
-							setTimeout(repeatUntilSet, 100);
-						}
-					}
-					
-					repeatUntilSet();
-				},"New");
-				if(toolbarConfig.CREATE) {
-					toolbarModel.push({ component : $createBtn, tooltip: null });
-				}
+			// New
+			if(_this._allowedToCreateChild() && toolbarConfig.CREATE && _this._sampleFormModel.sample.sampleTypeCode === "EXPERIMENTAL_STEP") {
+			    var dropdownNewModel = [];
+			    var sampleTypes = profile.getAllSampleTypes(true);
+                var getNewSampleOfTypeWithParent = function(sampleTypeCode, experimentIdentifier, sampleIdentifier) {
+                    return function() {
+                        Util.blockUI();
+                        setTimeout(function() {
+                            FormUtil.createNewSampleOfTypeWithParent(sampleTypeCode, experimentIdentifier, sampleIdentifier);
+                        }, 100);
+                    };
+                }
+
+			    if(_this._sampleFormModel.sample.sampleTypeCode === "EXPERIMENTAL_STEP") {
+                    dropdownNewModel.push({
+                        label : Util.getDisplayNameFromCode(_this._sampleFormModel.sample.sampleTypeCode),
+                        action : getNewSampleOfTypeWithParent("EXPERIMENTAL_STEP", _this._sampleFormModel.sample.experimentIdentifierOrNull, _this._sampleFormModel.sample.identifier)
+                    });
+                    dropdownNewModel.push({ separator : true });
+			    }
+
+			    for(var tIdx = 0; tIdx < sampleTypes.length; tIdx++) {
+			        if(sampleTypes[tIdx].code === "EXPERIMENTAL_STEP") {
+                        continue;
+			        }
+			        dropdownNewModel.push({
+                        label : Util.getDisplayNameFromCode(sampleTypes[tIdx].code),
+                        action : getNewSampleOfTypeWithParent(sampleTypes[tIdx].code, _this._sampleFormModel.sample.experimentIdentifierOrNull, _this._sampleFormModel.sample.identifier)
+                    });
+			    }
+
+			    FormUtil.addOptionsToToolbar(toolbarModel, dropdownNewModel, [], null, "New ");
 			}
 			
 			if (_this._allowedToEdit()) {

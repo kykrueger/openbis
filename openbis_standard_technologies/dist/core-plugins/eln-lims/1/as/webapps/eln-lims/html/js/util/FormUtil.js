@@ -973,10 +973,14 @@ var FormUtil = new function() {
 		$dropdownOptionsMenu.append($dropdownOptionsMenuCaret);
 		$dropdownOptionsMenu.append($dropdownOptionsMenuList);
 		for (var idx = 0; idx < dropdownOptionsModel.length; idx++) {
-			var label = dropdownOptionsModel[idx].label
-			var $dropdownElement = $("<li>", { 'role' : 'presentation' }).append($("<a>", {'title' : label }).append(label));
-			$dropdownElement.click(dropdownOptionsModel[idx].action);
-			$dropdownOptionsMenuList.append($dropdownElement);
+			var label = dropdownOptionsModel[idx].label;
+			if(dropdownOptionsModel[idx].separator) {
+			    $dropdownOptionsMenuList.append($("<li>", { 'role' : 'presentation' }).append($("<hr>", { style : "margin-top: 5px; margin-bottom: 5px;"})));
+			} else {
+			    var $dropdownElement = $("<li>", { 'role' : 'presentation' }).append($("<a>", {'title' : label }).append(label));
+                $dropdownElement.click(dropdownOptionsModel[idx].action);
+                $dropdownOptionsMenuList.append($dropdownElement);
+			}
 		}
 
 		if(hideShowOptionsModel.length > 0 && dropdownOptionsModel.length > 0) {
@@ -1645,6 +1649,31 @@ var FormUtil = new function() {
 		
 		return $freezeButton;
 	}
+
+    this.createNewSampleOfTypeWithParent = function(sampleTypeCode, experimentIdentifier, sampleIdentifier) {
+        var argsMap = {
+	        "sampleTypeCode" : sampleTypeCode,
+	        "experimentIdentifier" : experimentIdentifier
+	    }
+	    var argsMapStr = JSON.stringify(argsMap);
+
+        mainController.changeView("showCreateSubExperimentPage", argsMapStr);
+
+	    var setParent = function() {
+	        mainController.currentView._sampleFormModel.sampleLinksParents.getSampleByIdentifier(sampleIdentifier);
+		    Util.unblockUI();
+	    }
+
+	    var repeatUntilSet = function() {
+	        if(mainController.currentView.isLoaded()) {
+		        setParent();
+	        } else {
+		        setTimeout(repeatUntilSet, 100);
+		    }
+	    }
+
+	    repeatUntilSet();
+    }
 
 	this.createNewSample = function(experimentIdentifier) {
     		var _this = this;
