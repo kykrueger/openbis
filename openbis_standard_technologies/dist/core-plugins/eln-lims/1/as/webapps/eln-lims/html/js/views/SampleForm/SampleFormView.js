@@ -94,19 +94,19 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		
 		switch(this._sampleFormModel.mode) {
 	    	case FormMode.CREATE:
-	    		title = "Create " + ELNDictionary.Sample + " " + Util.getDisplayNameFromCode(this._sampleFormModel.sample.sampleTypeCode);
+	    		title = "New " + Util.getDisplayNameFromCode(this._sampleFormModel.sample.sampleTypeCode);
 	    		break;
 	    	case FormMode.EDIT:
-	    		title = "Update " + ELNDictionary.Sample + ": " + nameLabel;
+	    		title = "Update " + Util.getDisplayNameFromCode(this._sampleFormModel.sample.sampleTypeCode) + ": " + nameLabel;
 	    		break;
 	    	case FormMode.VIEW:
-	    		title = "" + ELNDictionary.Sample + ": " + nameLabel;
+	    		title = "" + Util.getDisplayNameFromCode(this._sampleFormModel.sample.sampleTypeCode) + ": " + nameLabel;
 	    		break;
 		}
 		
 		$formTitle
-			.append($("<h2 id='sampleFormTitle'>").append(title))
-			.append($("<h4>", { "style" : "font-weight:normal;" } ).append(entityPath));
+			.append($("<h2 id='sampleFormTitle'>").append(title));
+			//.append($("<h4>", { "style" : "font-weight:normal;" } ).append(entityPath));
 		
 		//
 		// Toolbar
@@ -141,9 +141,9 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 					}
 					
 					repeatUntilSet();
-				});
+				},"New");
 				if(toolbarConfig.CREATE) {
-					toolbarModel.push({ component : $createBtn, tooltip: "Create Experimental Step" });
+					toolbarModel.push({ component : $createBtn, tooltip: null });
 				}
 			}
 			
@@ -157,9 +157,9 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 						}
 						
 						mainController.changeView('showEditSamplePageFromPermId', args);
-					}, null, null, "edit-btn");
+					}, "Edit", null, "edit-btn");
 					if(toolbarConfig.EDIT) {
-						toolbarModel.push({ component : $editButton, tooltip: "Edit" });
+						toolbarModel.push({ component : $editButton, tooltip: null });
 					}
 				}
 			}
@@ -297,9 +297,9 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 				//Create Dataset
 				var $uploadBtn = FormUtil.getButtonWithIcon("glyphicon-upload", function () {
 					mainController.changeView('showCreateDataSetPageFromPermId',_this._sampleFormModel.sample.permId);
-				});
+				}, "Upload");
 				if(toolbarConfig.UPLOAD_DATASET) {
-					toolbarModel.push({ component : $uploadBtn, tooltip: "Upload Dataset" });
+					toolbarModel.push({ component : $uploadBtn, tooltip: null });
 				}
 			
 				//Get dropbox folder name
@@ -432,7 +432,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
                 toolbarModel.push({ component : $templateBtn, tooltip: "Templates" });
             }
 		}
-		
+
 		if(this._sampleFormModel.mode !== FormMode.CREATE && this._sampleFormModel.paginationInfo) {
 			var moveToIndex = function(index) {
 				var pagOptionsToSend = $.extend(true, {}, _this._sampleFormModel.paginationInfo.pagOptions);
@@ -481,7 +481,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		// Identification Info on Create
 		//
 		if(this._sampleFormModel.mode === FormMode.CREATE) {
-			$formColumn.append(this._createIdentificationInfoSection(hideShowOptionsModel, sampleType));
+			$formColumn.append(this._createIdentificationInfoSection(hideShowOptionsModel, sampleType, entityPath));
 		}
 		
 		// Plugin Hook
@@ -567,7 +567,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		// Identification Info on View/Edit
 		//
 		if(this._sampleFormModel.mode !== FormMode.CREATE) {
-			$formColumn.append(this._createIdentificationInfoSection(hideShowOptionsModel, sampleType));
+			$formColumn.append(this._createIdentificationInfoSection(hideShowOptionsModel, sampleType, entityPath));
 		}
 		
 		//
@@ -618,7 +618,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		//
 		// INIT
 		//
-		FormUtil.addOptionsToToolbar(toolbarModel, dropdownOptionsModel, hideShowOptionsModel, 
+		FormUtil.addOptionsToToolbar(toolbarModel, dropdownOptionsModel, hideShowOptionsModel,
 				"SAMPLE-VIEW-" + _this._sampleFormModel.sample.sampleTypeCode);
 		$header.append(FormUtil.getToolbar(toolbarModel));
 		$container.append($form);
@@ -805,7 +805,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		return false;
 	}
 	
-	this._createIdentificationInfoSection = function(hideShowOptionsModel, sampleType) {
+	this._createIdentificationInfoSection = function(hideShowOptionsModel, sampleType, entityPath) {
 		hideShowOptionsModel.push({
 			label : "Identification Info",
 			section : "#sample-identification-info"
@@ -818,7 +818,8 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		
 		$identificationInfo.append($legend);
 		$identificationInfo.append($fieldset);
-		
+
+	    $fieldset.append(FormUtil.getFieldForComponentWithLabel(entityPath, "Path"));
 		$fieldset.append(FormUtil.getFieldForLabelWithText("Type", this._sampleFormModel.sample.sampleTypeCode));
 		if(this._sampleFormModel.sample.experimentIdentifierOrNull) {
 			$fieldset.append(FormUtil.getFieldForLabelWithText(ELNDictionary.getExperimentKindName(this._sampleFormModel.sample.experimentIdentifierOrNull), this._sampleFormModel.sample.experimentIdentifierOrNull));
