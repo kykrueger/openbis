@@ -1,9 +1,9 @@
-function Grid(columnsFirst, columnsLast, columnsDynamicFunc, getDataList, showAllColumns, tableSettings, onChangeState, isMultiselectable, staticHeight) {
-	this.init(columnsFirst, columnsLast, columnsDynamicFunc, getDataList, showAllColumns, tableSettings, onChangeState, isMultiselectable, staticHeight);
+function Grid(columnsFirst, columnsLast, columnsDynamicFunc, getDataList, showAllColumns, tableSettings, onChangeState, isMultiselectable, staticHeight, heightPercentage) {
+	this.init(columnsFirst, columnsLast, columnsDynamicFunc, getDataList, showAllColumns, tableSettings, onChangeState, isMultiselectable, staticHeight, heightPercentage);
 }
 
 $.extend(Grid.prototype, {
-	init : function(columnsFirst, columnsLast, columnsDynamicFunc, getDataList, showAllColumns, tableSettings, onChangeState, isMultiselectable, staticHeight) {
+	init : function(columnsFirst, columnsLast, columnsDynamicFunc, getDataList, showAllColumns, tableSettings, onChangeState, isMultiselectable, staticHeight, heightPercentage) {
 		this.columnsFirst = columnsFirst;
 		this.columnsDynamicFunc = columnsDynamicFunc;
 		this.columnsDynamic = [];
@@ -31,7 +31,9 @@ $.extend(Grid.prototype, {
 			this.addMultiSelect(columnsFirst);
 		}
 		this.lastUsedColumns = [];
-		this.staticHeight;
+		if(heightPercentage) {
+		    this.staticHeight = ($(window).height() - LayoutManager.secondColumnHeader.outerHeight()) * (heightPercentage/100) - 30
+		}
 	},
 	getSearchOperator : function() {
 		var thisGrid = this;
@@ -136,7 +138,7 @@ $.extend(Grid.prototype, {
 						thisGrid.list(options, callback);
 					}
 				},
-				staticHeight : thisGrid.staticHeight, //$( window ).height() - LayoutManager.secondColumnHeader.outerHeight() - 30,
+				staticHeight : thisGrid.staticHeight,
 				list_selectable : false,
 				list_noItemsHTML : 'No items found',
 				list_rowRendered : function(helpers, callback) {

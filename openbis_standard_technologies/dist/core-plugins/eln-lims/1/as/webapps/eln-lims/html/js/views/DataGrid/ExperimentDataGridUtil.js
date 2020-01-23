@@ -1,5 +1,5 @@
 var ExperimentDataGridUtil = new function() {
-	this.getExperimentDataGrid = function(typeCode, entities, rowClick) {
+	this.getExperimentDataGrid = function(typeCode, entities, rowClick, heightPercentage) {
 		var type = profile.getExperimentTypeForExperimentTypeCode(typeCode);
 		var propertyCodes = profile.getAllPropertiCodesForExperimentTypeCode(typeCode);
 		var propertyCodesDisplayNames = profile.getPropertiesDisplayNamesForExperimentTypeCode(typeCode, propertyCodes);
@@ -172,7 +172,7 @@ var ExperimentDataGridUtil = new function() {
 			
 		//Create and return a data grid controller
 		var configKey = "ENTITY_TABLE_"+ typeCode;
-		var dataGridController = new DataGridController(null, columns, [], null, getDataList, rowClick, false, configKey);
+		var dataGridController = new DataGridController(null, columns, [], null, getDataList, rowClick, false, configKey, null, heightPercentage);
 		return dataGridController;
 	}
 

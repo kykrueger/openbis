@@ -151,7 +151,7 @@ function LinksView(linksController, linksModel) {
 			postFix = "ANNOTATIONS_ALL" + linksModel.title;
 		}
 		
-		var dataGrid = SampleDataGridUtil.getSampleDataGrid(containerCode, samplesOnGrid, null, linksView.getCustomOperationsForGrid(), allCustomAnnotations, postFix, linksModel.isDisabled, false);
+		var dataGrid = SampleDataGridUtil.getSampleDataGrid(containerCode, samplesOnGrid, null, linksView.getCustomOperationsForGrid(), allCustomAnnotations, postFix, linksModel.isDisabled, false, false, false, 40);
 		dataGrid.init($dataGridContainer);
 		linksModel.writeState(sample, null, null, false);
 	}
@@ -433,7 +433,7 @@ function LinksView(linksController, linksModel) {
 			$container.empty().hide();
 		}
 		
-		var dataGrid = SampleDataGridUtil.getSampleDataGrid(sampleTypeCode, advancedSampleSearchCriteria, rowClick, null, null, null, true, true, true);
+		var dataGrid = SampleDataGridUtil.getSampleDataGrid(sampleTypeCode, advancedSampleSearchCriteria, rowClick, null, null, null, true, true, true, 30);
 		dataGrid.init($gridContainer, extraOptions);
 	}
 			

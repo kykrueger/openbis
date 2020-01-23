@@ -157,7 +157,7 @@ function StorageListView(storageListController, storageListModel) {
 			}});
 		}
 
-		this._dataGrid = new DataGridController(null, columns, [], null, getDataList, rowClick, false, "STORAGE_WIDGET", isMultiselectable);
+		this._dataGrid = new DataGridController(null, columns, [], null, getDataList, rowClick, false, "STORAGE_WIDGET", isMultiselectable, 30);
 
 		var $dataGridContainer = $("<div>");
 		this._dataGrid.init($dataGridContainer, extraOptions);
