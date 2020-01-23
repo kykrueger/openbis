@@ -112,6 +112,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		// Toolbar
 		//
 		var toolbarModel = [];
+		var rightToolbarModel = [];
         var dropdownOptionsModel = [];
 		var toolbarConfig = profile.getSampleTypeToolbarConfiguration(_this._sampleFormModel.sample.sampleTypeCode);
 		
@@ -354,7 +355,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
                 if(toolbarConfig.FREEZE) {
                     if(isEntityFrozen) {
                         var $freezeButton = FormUtil.getFreezeButton("SAMPLE", this._sampleFormModel.v3_sample.permId.permId, isEntityFrozen);
-                        toolbarModel.push({ component : $freezeButton, tooltip: "Entity Frozen" });
+                        rightToolbarModel.push({ component : $freezeButton, tooltip: null });
                     } else {
                         dropdownOptionsModel.push({
                             label : "Freeze Entity (Disable further modifications)",
@@ -436,7 +437,6 @@ function SampleFormView(sampleFormController, sampleFormModel) {
             }
 		}
 
-        var paginationToolbarModel = [];
 		if(this._sampleFormModel.mode !== FormMode.CREATE && this._sampleFormModel.paginationInfo) {
 			var moveToIndex = function(index) {
 				var pagOptionsToSend = $.extend(true, {}, _this._sampleFormModel.paginationInfo.pagOptions);
@@ -460,14 +460,14 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 				var $backBtn = FormUtil.getButtonWithIcon("glyphicon-arrow-left", function () {
 					moveToIndex(_this._sampleFormModel.paginationInfo.currentIndex-1);
 				}, "Previous");
-				paginationToolbarModel.push({ component : $backBtn, tooltip: null });
+				rightToolbarModel.push({ component : $backBtn, tooltip: null });
 			}
 			
 			if(this._sampleFormModel.paginationInfo.currentIndex+1 < this._sampleFormModel.paginationInfo.totalCount) {
 				var $nextBtn = FormUtil.getButtonWithIcon("glyphicon-arrow-right", function () {
 					moveToIndex(_this._sampleFormModel.paginationInfo.currentIndex+1);
 				}, "Next");
-				paginationToolbarModel.push({ component : $nextBtn, tooltip: null });
+				rightToolbarModel.push({ component : $nextBtn, tooltip: null });
 			}
 		}
 		
@@ -625,7 +625,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		FormUtil.addOptionsToToolbar(toolbarModel, dropdownOptionsModel, hideShowOptionsModel,
 				"SAMPLE-VIEW-" + _this._sampleFormModel.sample.sampleTypeCode);
 		$header.append(FormUtil.getToolbar(toolbarModel));
-		$header.append(FormUtil.getToolbar(paginationToolbarModel).css("float", "right"));
+		$header.append(FormUtil.getToolbar(rightToolbarModel).css("float", "right"));
 		$container.append($form);
 		
 		//

@@ -1641,6 +1641,7 @@ var FormUtil = new function() {
 		
 		if(isEntityFrozen) {
 			$freezeButton.attr("disabled", "disabled");
+			$freezeButton.append("Frozen");
 		} else {
 			$freezeButton.click(function() {
 				_this.showFreezeForm(entityType, permId);
