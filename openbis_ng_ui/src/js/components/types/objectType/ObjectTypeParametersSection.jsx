@@ -1,7 +1,7 @@
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
-import Typography from '@material-ui/core/Typography'
 import TextField from '../../common/form/TextField.jsx'
+import ObjectTypeHeader from './ObjectTypeHeader.jsx'
 import logger from '../../../common/logger.js'
 
 const styles = theme => ({
@@ -21,6 +21,7 @@ class ObjectTypeParametersSection extends React.PureComponent {
     super(props)
     this.reference = React.createRef()
     this.handleChange = this.handleChange.bind(this)
+    this.handleBlur = this.handleBlur.bind(this)
   }
 
   componentDidMount() {
@@ -43,16 +44,23 @@ class ObjectTypeParametersSection extends React.PureComponent {
     }
   }
 
-  handleChange(event) {
+  params(event) {
     const section = this.getSection(this.props)
 
-    const params = {
+    return {
       id: section.id,
       field: event.target.name,
+      part: event.target.name,
       value: event.target.value
     }
+  }
 
-    this.props.onChange('section', params)
+  handleChange(event) {
+    this.props.onChange('section', this.params(event))
+  }
+
+  handleBlur(event) {
+    this.props.onBlur('section', this.params(event))
   }
 
   render() {
@@ -67,9 +75,7 @@ class ObjectTypeParametersSection extends React.PureComponent {
 
     return (
       <div className={classes.container}>
-        <Typography variant='h6' className={classes.header}>
-          Section
-        </Typography>
+        <ObjectTypeHeader className={classes.header}>Section</ObjectTypeHeader>
         <div className={classes.field}>
           <TextField
             reference={this.reference}
@@ -77,6 +83,7 @@ class ObjectTypeParametersSection extends React.PureComponent {
             name='name'
             value={section.name || ''}
             onChange={this.handleChange}
+            onBlur={this.handleBlur}
           />
         </div>
       </div>

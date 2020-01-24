@@ -39,11 +39,17 @@ class ContentTabs extends React.Component {
   render() {
     logger.log(logger.DEBUG, 'ContentTabs.render')
 
-    const { classes } = this.props
+    const { objects, selectedObject, classes } = this.props
+
+    let selectedIndex = false
+
+    if (selectedObject) {
+      selectedIndex = _.findIndex(objects, selectedObject)
+    }
 
     return (
       <Tabs
-        value={_.findIndex(this.props.objects, this.props.selectedObject)}
+        value={selectedIndex}
         variant='scrollable'
         scrollButtons='on'
         onChange={this.handleTabChange}

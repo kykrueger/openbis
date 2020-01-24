@@ -51,27 +51,32 @@ class Search extends React.Component {
       this.searchCollectionTypes(),
       this.searchDataSetTypes(),
       this.searchMaterialTypes()
-    ]).then(([objectTypes, collectionTypes, dataSetTypes, materialTypes]) => {
-      let allTypes = [].concat(
-        objectTypes,
-        collectionTypes,
-        dataSetTypes,
-        materialTypes
-      )
-
-      let query = this.props.objectId.toUpperCase()
-
-      return allTypes
-        .filter(
-          type =>
-            (type.code && type.code.toUpperCase().includes(query)) ||
-            (type.description && type.description.toUpperCase().includes(query))
+    ])
+      .then(([objectTypes, collectionTypes, dataSetTypes, materialTypes]) => {
+        let allTypes = [].concat(
+          objectTypes,
+          collectionTypes,
+          dataSetTypes,
+          materialTypes
         )
-        .map(type => ({
-          ...type,
-          id: type.permId.entityKind + '-' + type.permId.permId
-        }))
-    })
+
+        let query = this.props.objectId.toUpperCase()
+
+        return allTypes
+          .filter(
+            type =>
+              (type.code && type.code.toUpperCase().includes(query)) ||
+              (type.description &&
+                type.description.toUpperCase().includes(query))
+          )
+          .map(type => ({
+            ...type,
+            id: type.permId.entityKind + '-' + type.permId.permId
+          }))
+      })
+      .catch(error => {
+        facade.catch(error)
+      })
   }
 
   searchObjectTypes() {

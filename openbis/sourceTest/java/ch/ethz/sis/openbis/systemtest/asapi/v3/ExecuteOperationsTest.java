@@ -57,6 +57,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.PropertyHistoryEntry;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.AsynchronousOperationExecutionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.AsynchronousOperationExecutionResults;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.IOperationExecutionResults;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.OperationExecution;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.OperationExecutionEmailNotification;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.OperationExecutionState;
@@ -78,8 +79,11 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.create.CreateSpacesOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.create.CreateSpacesOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.create.SpaceCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.delete.DeleteSpacesOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.delete.SpaceDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.fetchoptions.SpaceFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.get.GetSpacesOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.get.GetSpacesOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.ISpaceId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.search.SpaceSearchCriteria;
@@ -939,6 +943,48 @@ public class ExecuteOperationsTest extends AbstractOperationExecutionTest
 
         assertAccessLog(
                 "execute-operations  OPERATIONS('[CreateSpacesOperation 1 creation(s)]') EXECUTION_OPTIONS('SynchronousOperationExecutionOptions[description=test-description,notification=OperationExecutionEmailNotification[emails=[test@email.com]]]')");
+    }
+
+    @Test
+    public void testExecuteWithExecuteInOrder()
+    {
+        SpacePermId id = new SpacePermId("EXECUTE_IN_ORDER_TEST");
+
+        SpaceCreation creation = new SpaceCreation();
+        creation.setCode(id.getPermId());
+
+        CreateSpacesOperation create = new CreateSpacesOperation(Arrays.asList(creation));
+        GetSpacesOperation get = new GetSpacesOperation(Arrays.asList(id), new SpaceFetchOptions());
+        SpaceDeletionOptions deletionOptions = new SpaceDeletionOptions();
+        deletionOptions.setReason("testing");
+        DeleteSpacesOperation delete = new DeleteSpacesOperation(Arrays.asList(id), deletionOptions);
+
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        List<IOperation> operations = Arrays.asList(create, get, delete, get);
+
+        // in order
+
+        SynchronousOperationExecutionOptions inOrderOptions = new SynchronousOperationExecutionOptions();
+        inOrderOptions.setExecuteInOrder(true);
+
+        SynchronousOperationExecutionResults inOrderResults =
+                (SynchronousOperationExecutionResults) v3api.executeOperations(sessionToken, operations, inOrderOptions);
+
+        GetSpacesOperationResult firstGetResults = (GetSpacesOperationResult) inOrderResults.getResults().get(1);
+        assertNotNull(firstGetResults.getObjectMap().get(id));
+        GetSpacesOperationResult secondGetResults = (GetSpacesOperationResult) inOrderResults.getResults().get(3);
+        assertNull(secondGetResults.getObjectMap().get(id));
+
+        // not in order
+
+        SynchronousOperationExecutionOptions notInOrderOptions = new SynchronousOperationExecutionOptions();
+        SynchronousOperationExecutionResults notInOrderResults =
+                (SynchronousOperationExecutionResults) v3api.executeOperations(sessionToken, operations, notInOrderOptions);
+
+        firstGetResults = (GetSpacesOperationResult) notInOrderResults.getResults().get(1);
+        assertNotNull(firstGetResults.getObjectMap().get(id));
+        secondGetResults = (GetSpacesOperationResult) notInOrderResults.getResults().get(3);
+        assertNotNull(secondGetResults.getObjectMap().get(id));
     }
 
     private OperationExecution executeWithAvailabilities(String sessionToken, Integer availability, Integer summaryAvailability,

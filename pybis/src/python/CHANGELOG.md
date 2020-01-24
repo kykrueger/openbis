@@ -1,3 +1,23 @@
+## Changes with pybis-1.10.7
+
+* made download work, even downloadUrl attribute is missing in dataSets
+
+## Changes with pybis-1.10.6
+
+* added possibility to download files without /original/DEFAULT folders
+
+## Changes with pybis-1.10.5
+
+* bugfix: creating projects
+
+## Changes with pybis-1.10.4
+
+* better error messages when downloading files from datastore server
+
+## Changes with pybis-1.10.3
+
+* print warning message when downloaded file-size does not match with promised file-size. Do not die.
+
 ## Changes with pybis-1.10.2
 
 * typo bugfix

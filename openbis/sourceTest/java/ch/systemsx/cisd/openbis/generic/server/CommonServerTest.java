@@ -414,9 +414,14 @@ public final class CommonServerTest extends AbstractServerTestCase
                 }
             });
 
-        final SessionContextDTO s = createServer().tryAuthenticate(user, password);
-
-        assertNull(s);
+        try
+        {
+            createServer().tryAuthenticate(user, password);
+            fail("UserFailureException expected");
+        } catch (UserFailureException e)
+        {
+            assertEquals("User 'test' has no role assignments and thus is not permitted to login.", e.getMessage());
+        }
         context.assertIsSatisfied();
     }
 

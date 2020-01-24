@@ -54,7 +54,7 @@ function* login(action) {
       let route = routes.parse(path)
       yield put(actions.routeChange(route.path))
     } else {
-      throw { message: 'Incorrect used or password' }
+      throw { message: 'Incorrect user or password' }
     }
   } catch (e) {
     yield put(actions.setError(e))

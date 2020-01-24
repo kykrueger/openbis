@@ -35,12 +35,17 @@ class Search extends React.Component {
     criteria.withFirstName().thatContains(query)
     criteria.withLastName().thatContains(query)
 
-    return facade.searchPersons(criteria, fo).then(result => {
-      return result.objects.map(user => ({
-        ...user,
-        id: user.userId
-      }))
-    })
+    return facade
+      .searchPersons(criteria, fo)
+      .then(result => {
+        return result.objects.map(user => ({
+          ...user,
+          id: user.userId
+        }))
+      })
+      .catch(error => {
+        facade.catch(error)
+      })
   }
 
   render() {

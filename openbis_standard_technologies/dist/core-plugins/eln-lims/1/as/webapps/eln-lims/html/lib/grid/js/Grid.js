@@ -184,7 +184,10 @@ $.extend(Grid.prototype, {
 				} else if(thisGrid.showAllColumns || columnIndex < (defaultNumColumns - 1) || (columnIndex+1 === currentColumns.length)) { //Defaults
 					checkbox.attr("checked", "checked");
 				}
-				
+				if (column.canNotBeHidden) {
+					checkbox.attr("checked", "checked");
+					checkbox.prop("disabled", true);
+				}
 				checkbox.change(function(e) {
 					var $checkbox = $(this);
 					var propertyName = $checkbox.prop('value');
@@ -743,9 +746,9 @@ $.extend(Grid.prototype, {
 					thisGrid.firstLoad = false;
 				}
 				
-				// Fix table width since fuelux 3.1.0
-				var newWidth = $(thisGrid.panel).find(".repeater-list-wrapper > .table").width();
-				$(thisGrid.panel).find(".repeater").width(newWidth);
+//              Fix table width since fuelux 3.1.0
+//				var newWidth = $(thisGrid.panel).find(".repeater-list-wrapper > .table").width();
+//				$(thisGrid.panel).find(".repeater").width(newWidth);
 				
 				var optionsDropdowns = $(".dropdown.table-options-dropdown");
 				for(var i = 0; i < optionsDropdowns.length; i++) {

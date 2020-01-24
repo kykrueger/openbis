@@ -42,7 +42,8 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		var $formTitle = $("<div>");
 		var nameLabel = this._experimentFormModel.experiment.properties[profile.propertyReplacingCode];
 		if(nameLabel) {
-			nameLabel = html.sanitize(nameLabel);
+			//nameLabel = html.sanitize(nameLabel);
+			nameLabel = DOMPurify.sanitize(nameLabel);
 		} else {
 			nameLabel = this._experimentFormModel.experiment.code;
 		}
@@ -76,6 +77,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		// Toolbar
 		//
 		var toolbarModel = [];
+		var dropdownOptionsModel = [];
 		if(this._experimentFormModel.mode === FormMode.VIEW) {
 			if (_this._allowedToCreateSample()) {
 				//Create Experiment Step
@@ -114,18 +116,25 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 			}
 			if (_this._allowedToMove()) {
 				//Move
-				var $moveBtn = FormUtil.getButtonWithIcon("glyphicon-move", function () {
-					var moveEntityController = new MoveEntityController("EXPERIMENT", experimentFormModel.experiment.permId);
-					moveEntityController.init();
-				});
-				toolbarModel.push({ component : $moveBtn, tooltip: "Move" });
+				dropdownOptionsModel.push({
+                    label : "Move",
+                    action : function() {
+                        var moveEntityController = new MoveEntityController("EXPERIMENT", experimentFormModel.experiment.permId);
+                        moveEntityController.init();
+                    }
+                });
 			}
 			if (_this._allowedToDelete()) {
 				//Delete
-				var $deleteBtn = FormUtil.getDeleteButton(function(reason) {
-					_this._experimentFormController.deleteExperiment(reason);
-				}, true);
-				toolbarModel.push({ component : $deleteBtn, tooltip: "Delete" });
+	            dropdownOptionsModel.push({
+                    label : "Delete",
+                    action : function() {
+                        var modalView = new DeleteEntityController(function(reason) {
+                            _this._experimentFormController.deleteExperiment(reason);
+                        }, true);
+                        modalView.init();
+                    }
+                });
 			}
 			if(_this._allowedToRegisterDataSet()) {
 				//Create Dataset
@@ -135,42 +144,58 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 				toolbarModel.push({ component : $uploadBtn, tooltip: "Upload Dataset" });
 	
 				//Get dropbox folder name
-				var $uploadBtn = FormUtil.getButtonWithIcon("glyphicon-circle-arrow-up", (function () {
-					var space = IdentifierUtil.getSpaceCodeFromIdentifier(_this._experimentFormModel.experiment.identifier);
-					var project = IdentifierUtil.getProjectCodeFromExperimentIdentifier(_this._experimentFormModel.experiment.identifier);
-					var nameElements = [
-						"E",
-						space,
-						project,
-						_this._experimentFormModel.experiment.code,
-					];
-					FormUtil.showDropboxFolderNameDialog(nameElements);
-				}).bind(this));
-				toolbarModel.push({ component : $uploadBtn, tooltip: "Helper tool for Dataset upload using eln-lims dropbox" });
+                dropdownOptionsModel.push({
+                    label : "Dataset upload helper tool for eln-lims dropbox",
+                    action : function() {
+                        var space = IdentifierUtil.getSpaceCodeFromIdentifier(_this._experimentFormModel.experiment.identifier);
+                        var project = IdentifierUtil.getProjectCodeFromExperimentIdentifier(_this._experimentFormModel.experiment.identifier);
+                        var nameElements = [
+                            "E",
+                            space,
+                            project,
+                            _this._experimentFormModel.experiment.code,
+                        ];
+                	    FormUtil.showDropboxFolderNameDialog(nameElements);
+                    }
+                });
 			}
 			
 			//Export
-			var $exportAll = FormUtil.getExportButton([{ type: "EXPERIMENT", permId : _this._experimentFormModel.experiment.permId, expand : true }], false);
-			toolbarModel.push({ component : $exportAll, tooltip: "Export Metadata & Data" });
-		
-			var $exportOnlyMetadata = FormUtil.getExportButton([{ type: "EXPERIMENT", permId : _this._experimentFormModel.experiment.permId, expand : true }], true);
-			toolbarModel.push({ component : $exportOnlyMetadata, tooltip: "Export Metadata only" });
-		
+            dropdownOptionsModel.push({
+                label : "Export Metadata",
+                action : FormUtil.getExportAction([{ type: "EXPERIMENT", permId : _this._experimentFormModel.experiment.permId, expand : true }], true)
+            });
+
+            dropdownOptionsModel.push({
+                label : "Export Metadata & Data",
+                action : FormUtil.getExportAction([{ type: "EXPERIMENT", permId : _this._experimentFormModel.experiment.permId, expand : true }], false)
+            });
+
 			//Jupyter Button
 			if(profile.jupyterIntegrationServerEndpoint) {
-				var $jupyterBtn = FormUtil.getButtonWithImage("./img/jupyter-icon.png", function () {
-					var jupyterNotebook = new JupyterNotebookController(_this._experimentFormModel.experiment);
-					jupyterNotebook.init();
-				});
-				toolbarModel.push({ component : $jupyterBtn, tooltip: "Create Jupyter notebook" });
+				dropdownOptionsModel.push({
+                    label : "New Jupyter notebook",
+                    action : function () {
+                        var jupyterNotebook = new JupyterNotebookController(_this._experimentFormModel.experiment);
+                        jupyterNotebook.init();
+                    }
+                });
 			}
 
             //Freeze
             if(_this._experimentFormModel.v3_experiment && _this._experimentFormModel.v3_experiment.frozen !== undefined) { //Freezing available on the API
                 var isEntityFrozen = _this._experimentFormModel.v3_experiment.frozen;
-                var isEntityFrozenTooltip = (isEntityFrozen)?"Entity Frozen":"Freeze Entity (Disable further modifications)";
-                var $freezeButton = FormUtil.getFreezeButton("EXPERIMENT", this._experimentFormModel.v3_experiment.permId.permId, isEntityFrozen);
-                toolbarModel.push({ component : $freezeButton, tooltip: isEntityFrozenTooltip });
+                if(isEntityFrozen) {
+                    var $freezeButton = FormUtil.getFreezeButton("EXPERIMENT", this._experimentFormModel.v3_experiment.permId.permId, isEntityFrozen);
+                    toolbarModel.push({ component : $freezeButton, tooltip: "Entity Frozen" });
+                } else {
+                    dropdownOptionsModel.push({
+                        label : "Freeze Entity (Disable further modifications)",
+                        action : function () {
+                            FormUtil.showFreezeForm("EXPERIMENT", _this._experimentFormModel.v3_experiment.permId.permId);
+                        }
+                    });
+                }
             }
 		} else { //Create and Edit
 			var $saveBtn = FormUtil.getButtonWithIcon("glyphicon-floppy-disk", function() {
@@ -183,13 +208,14 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		
 		var $header = views.header;
 		$header.append($formTitle);
-		$header.append(FormUtil.getToolbar(toolbarModel));
+
+		var hideShowOptionsModel = [];
 		
 		//
 		// Identification Info on Create
 		//
 		if(this._experimentFormModel.mode === FormMode.CREATE) {
-			this._paintIdentificationInfo($formColumn);
+			$formColumn.append(this._createIdentificationInfoSection(hideShowOptionsModel));
 		}
 		
 		//
@@ -205,24 +231,14 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		
 		//Sample List Container
 		if(this._experimentFormModel.mode !== FormMode.CREATE) {
-			$formColumn.append($("<legend>").append(ELNDictionary.Samples));
-			var sampleListHeader = $("<div>");
-			var sampleListContainer = $("<div>");
-			$formColumn.append(sampleListHeader);
-			$formColumn.append(sampleListContainer);
-			var views = {
-					header : sampleListHeader,
-					content : sampleListContainer
-			}
-			var sampleList = new SampleTableController(this._experimentFormController, null, this._experimentFormModel.experiment.identifier, null, null, this._experimentFormModel.experiment);
-			sampleList.init(views);
+			$formColumn.append(this._createSamplesSection(hideShowOptionsModel));
 		}
 		
 		//
 		// Identification Info on not Create
 		//
 		if(this._experimentFormModel.mode !== FormMode.CREATE) {
-			this._paintIdentificationInfo($formColumn);
+			$formColumn.append(this._createIdentificationInfoSection(hideShowOptionsModel));
 		}
 		
 		//
@@ -266,6 +282,9 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		//
 		// INIT
 		//
+		FormUtil.addOptionsToToolbar(toolbarModel, dropdownOptionsModel, hideShowOptionsModel, 
+				"EXPERIMENT-VIEW-" + this._experimentFormModel.experiment.experimentTypeCode);
+		$header.append(FormUtil.getToolbar(toolbarModel));
 		$container.append($form);
 		
 		Util.unblockUI();
@@ -294,27 +313,31 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		}
 	}
 	
-	this._paintIdentificationInfo = function($formColumn) {
-		var _this = this;
+	this._createIdentificationInfoSection = function(hideShowOptionsModel) {
+		hideShowOptionsModel.push({
+			label : "Identification Info",
+			section : "#experiment-identification-info"
+		});
 		
-		var $identificationInfo = $('<div>').append($('<legend>').text("Identification Info"));
-		$formColumn.append($identificationInfo);
+		var _this = this;
+		var $identificationInfo = $("<div>", { id : "experiment-identification-info" });
+		$identificationInfo.append($('<legend>').text("Identification Info"));
 		
 		var projectIdentifier = IdentifierUtil.getProjectIdentifierFromExperimentIdentifier(this._experimentFormModel.experiment.identifier);
-		$formColumn.append(FormUtil.getFieldForLabelWithText("Type", this._experimentFormModel.experiment.experimentTypeCode));
-		$formColumn.append(FormUtil.getFieldForLabelWithText("Project", projectIdentifier));
+		$identificationInfo.append(FormUtil.getFieldForLabelWithText("Type", this._experimentFormModel.experiment.experimentTypeCode));
+		$identificationInfo.append(FormUtil.getFieldForLabelWithText("Project", projectIdentifier));
 		var $projectField = FormUtil._getInputField("text", null, "project", null, true);
 		$projectField.val(projectIdentifier);
 		$projectField.hide();
-		$formColumn.append($projectField);
+		$identificationInfo.append($projectField);
 		
 		if(this._experimentFormModel.mode === FormMode.VIEW || this._experimentFormModel.mode === FormMode.EDIT) {
-			$formColumn.append(FormUtil.getFieldForLabelWithText("Code", this._experimentFormModel.experiment.code));
+			$identificationInfo.append(FormUtil.getFieldForLabelWithText("Code", this._experimentFormModel.experiment.code));
 			
 			var $codeField = FormUtil._getInputField("text", null, "code", null, true);
 			$codeField.val(IdentifierUtil.getCodeFromIdentifier(this._experimentFormModel.experiment.identifier));
 			$codeField.hide();
-			$formColumn.append($codeField);
+			$identificationInfo.append($codeField);
 		} else if(this._experimentFormModel.mode === FormMode.CREATE) {
 			var $codeField = FormUtil._getInputField("text", null, "code", null, true);
 			$codeField.keyup(function() {
@@ -332,7 +355,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 				_this._experimentFormModel.experiment.identifier = experimentIdentifier;
 			})
 			var $codeFieldRow = FormUtil.getFieldForComponentWithLabel($codeField, "Code");
-			$formColumn.append($codeFieldRow);
+			$identificationInfo.append($codeFieldRow);
 			
 			mainController.serverFacade.getProjectFromIdentifier($projectField.val(), function(project) {
 				delete project["@id"];
@@ -360,17 +383,42 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 			var registrationDetails = this._experimentFormModel.experiment.registrationDetails;
 			
 			var $registrator = FormUtil.getFieldForLabelWithText("Registrator", registrationDetails.userId);
-			$formColumn.append($registrator);
+			$identificationInfo.append($registrator);
 			
 			var $registationDate = FormUtil.getFieldForLabelWithText("Registration Date", Util.getFormatedDate(new Date(registrationDetails.registrationDate)))
-			$formColumn.append($registationDate);
+			$identificationInfo.append($registationDate);
 			
 			var $modifier = FormUtil.getFieldForLabelWithText("Modifier", registrationDetails.modifierUserId);
-			$formColumn.append($modifier);
+			$identificationInfo.append($modifier);
 			
 			var $modificationDate = FormUtil.getFieldForLabelWithText("Modification Date", Util.getFormatedDate(new Date(registrationDetails.modificationDate)));
-			$formColumn.append($modificationDate);
+			$identificationInfo.append($modificationDate);
 		}
+		$identificationInfo.hide();
+		return $identificationInfo;
+	}
+	
+	this._createSamplesSection = function(hideShowOptionsModel) {
+		hideShowOptionsModel.push({
+			label : ELNDictionary.Samples,
+			section : "#experiment-samples"
+		});
+		
+		var _this = this;
+		var $samples = $("<div>", { id : "experiment-samples" });
+		$samples.append($('<legend>').text(ELNDictionary.Samples));
+		var sampleListHeader = $("<div>");
+		var sampleListContainer = $("<div>");
+		$samples.append(sampleListHeader);
+		$samples.append(sampleListContainer);
+		var views = {
+				header : sampleListHeader,
+				content : sampleListContainer
+		}
+		var sampleList = new SampleTableController(this._experimentFormController, null, this._experimentFormModel.experiment.identifier, null, null, this._experimentFormModel.experiment);
+		sampleList.init(views);
+		$samples.hide();
+		return $samples;
 	}
 	
 	this._paintPropertiesForSection = function($formColumn, propertyTypeGroup, i) {
@@ -425,10 +473,14 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 				if(this._experimentFormModel.mode === FormMode.VIEW) { //Show values without input boxes if the form is in view mode
 		            if(Util.getEmptyIfNull(value) !== "") { //Don't show empty fields, whole empty sections will show the title
                         var customWidget = profile.customWidgetSettings[propertyType.code];
-                        if(customWidget === 'Spreadsheet') {
+                        if (customWidget === 'Spreadsheet') {
                     	    var $jexcelContainer = $("<div>");
                             JExcelEditorManager.createField($jexcelContainer, this._experimentFormModel.mode, propertyType.code, this._experimentFormModel.experiment);
                             $controlGroup = FormUtil.getFieldForComponentWithLabel($jexcelContainer, propertyType.label);
+                        } else if (customWidget === 'Word Processor') {
+                            var $component = FormUtil.getFieldForPropertyType(propertyType, value);
+                            $component = FormUtil.activateRichTextProperties($component, undefined, propertyType, value, true);
+                            $controlGroup = FormUtil.getFieldForComponentWithLabel($component, propertyType.label);
                         } else {
                     	    $controlGroup = FormUtil.createPropertyField(propertyType, value);
                         }
@@ -485,7 +537,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
                         switch(customWidget) {
                             case 'Word Processor':
                                 if(propertyType.dataType === "MULTILINE_VARCHAR") {
-                    		        $component = FormUtil.activateRichTextProperties($component, changeEvent(propertyType), propertyType);
+                    		        $component = FormUtil.activateRichTextProperties($component, changeEvent(propertyType), propertyType, value, false);
                     	        } else {
                     		        alert("Word Processor only works with MULTILINE_VARCHAR data type.");
                     		    }
@@ -577,13 +629,20 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 	
 	this._allowedToEdit = function() {
 		var experiment = this._experimentFormModel.v3_experiment;
-		var updateAllowed = this._experimentFormModel.rights.rights.indexOf("UPDATE") >= 0;
+		var updateAllowed = this._allowedToUpdate(this._experimentFormModel.rights);
 		return updateAllowed && experiment.frozen == false;
+	}
+
+	this._allowedToUpdate = function(rights) {
+		return rights && rights.rights.indexOf("UPDATE") >= 0;
 	}
 
 	this._allowedToMove = function() {
 		var experiment = this._experimentFormModel.v3_experiment;
-		return experiment.project.frozenForExperiments == false;
+		if (experiment.project.frozenForExperiments) {
+			return false;
+		}
+		return this._allowedToUpdate(this._experimentFormModel.rights);
 	}
 	
 	this._allowedToDelete = function() {

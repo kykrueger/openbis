@@ -4,19 +4,25 @@ import CircularProgress from '@material-ui/core/CircularProgress'
 import logger from '../../../common/logger.js'
 
 const styles = theme => ({
-  loader: {
+  container: {
+    width: '100%',
+    height: '100%',
+    position: 'relative'
+  },
+  mask: {
     position: 'absolute',
     width: '100%',
     height: '100%',
-    zIndex: 1000,
+    zIndex: 10000,
     backgroundColor: theme.palette.background.paper,
-    opacity: 0.8,
+    opacity: 0.6,
     textAlign: 'center'
   },
   progress: {
     position: 'absolute',
     top: '20%',
-    left: 'calc(50% - 20px)'
+    left: 'calc(50% - 20px)',
+    zIndex: 10001
   }
 })
 
@@ -27,11 +33,12 @@ class Loading extends React.Component {
     const classes = this.props.classes
 
     return (
-      <div>
+      <div className={classes.container}>
         {this.props.loading && (
-          <div className={classes.loader}>
+          <React.Fragment>
+            <div className={classes.mask}></div>
             <CircularProgress className={classes.progress} />
-          </div>
+          </React.Fragment>
         )}
         {this.props.children}
       </div>

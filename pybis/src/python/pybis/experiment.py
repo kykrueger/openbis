@@ -36,6 +36,10 @@ class Experiment(
         ] + super().__dir__()
 
     @property
+    def props(self):
+        return self.__dict__['p']
+
+    @property
     def type(self):
         return self.__dict__['type']
 

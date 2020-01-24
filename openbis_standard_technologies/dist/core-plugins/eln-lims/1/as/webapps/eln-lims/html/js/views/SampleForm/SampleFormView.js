@@ -72,7 +72,8 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		var $formTitle = $("<div>");
 		var nameLabel = this._sampleFormModel.sample.properties[profile.propertyReplacingCode];
 		if(nameLabel) {
-			nameLabel = html.sanitize(nameLabel);
+			//nameLabel = html.sanitize(nameLabel);
+			nameLabel = DOMPurify.sanitize(nameLabel);
 		} else if(this._sampleFormModel.sample.sampleTypeCode === "STORAGE_POSITION") {
 			var properties = this._sampleFormModel.sample.properties;
 			var storagePropertyGroup = profile.getStoragePropertyGroup();
@@ -93,24 +94,25 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		
 		switch(this._sampleFormModel.mode) {
 	    	case FormMode.CREATE:
-	    		title = "Create " + ELNDictionary.Sample + " " + Util.getDisplayNameFromCode(this._sampleFormModel.sample.sampleTypeCode);
+	    		title = "New " + Util.getDisplayNameFromCode(this._sampleFormModel.sample.sampleTypeCode);
 	    		break;
 	    	case FormMode.EDIT:
-	    		title = "Update " + ELNDictionary.Sample + ": " + nameLabel;
+	    		title = "Update " + Util.getDisplayNameFromCode(this._sampleFormModel.sample.sampleTypeCode) + ": " + nameLabel;
 	    		break;
 	    	case FormMode.VIEW:
-	    		title = "" + ELNDictionary.Sample + ": " + nameLabel;
+	    		title = "" + Util.getDisplayNameFromCode(this._sampleFormModel.sample.sampleTypeCode) + ": " + nameLabel;
 	    		break;
 		}
 		
 		$formTitle
-			.append($("<h2 id='sampleFormTitle'>").append(title))
-			.append($("<h4>", { "style" : "font-weight:normal;" } ).append(entityPath));
+			.append($("<h2 id='sampleFormTitle'>").append(title));
+			//.append($("<h4>", { "style" : "font-weight:normal;" } ).append(entityPath));
 		
 		//
 		// Toolbar
 		//
 		var toolbarModel = [];
+        var dropdownOptionsModel = [];
 		var toolbarConfig = profile.getSampleTypeToolbarConfiguration(_this._sampleFormModel.sample.sampleTypeCode);
 		
 		if(this._sampleFormModel.mode === FormMode.VIEW) {
@@ -139,9 +141,9 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 					}
 					
 					repeatUntilSet();
-				});
+				},"New");
 				if(toolbarConfig.CREATE) {
-					toolbarModel.push({ component : $createBtn, tooltip: "Create Experimental Step" });
+					toolbarModel.push({ component : $createBtn, tooltip: null });
 				}
 			}
 			
@@ -155,21 +157,23 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 						}
 						
 						mainController.changeView('showEditSamplePageFromPermId', args);
-					}, null, null, "edit-btn");
+					}, "Edit", null, "edit-btn");
 					if(toolbarConfig.EDIT) {
-						toolbarModel.push({ component : $editButton, tooltip: "Edit" });
+						toolbarModel.push({ component : $editButton, tooltip: null });
 					}
 				}
 			}
 			if (_this._allowedToMove()) {
-				//Move
-				var $moveBtn = FormUtil.getButtonWithIcon("glyphicon-move", function () {
-					var moveEntityController = new MoveEntityController("SAMPLE", _this._sampleFormModel.sample.permId);
-					moveEntityController.init();
-				});
-				if(toolbarConfig.MOVE) {
-					toolbarModel.push({ component : $moveBtn, tooltip: "Move" });
-				}
+			    //Move
+			    if(toolbarConfig.MOVE) {
+                    dropdownOptionsModel.push({
+                        label : "Move",
+                        action : function() {
+                                var moveEntityController = new MoveEntityController("SAMPLE", _this._sampleFormModel.sample.permId);
+                                moveEntityController.init();
+                                }
+                    });
+                }
 			}
 			if (_this._allowedToDelete()) {
 				//Delete
@@ -214,124 +218,148 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 						}
 					}
 				}
-				
-				var $deleteButton = FormUtil.getDeleteButton(function(reason) {
-					_this._sampleFormController.deleteSample(reason);
-				}, true, warningText);
-				
+
 				if(toolbarConfig.DELETE) {
-					toolbarModel.push({ component : $deleteButton, tooltip: "Delete" });
+			        dropdownOptionsModel.push({
+                        label : "Delete",
+                        action : function() {
+                            var modalView = new DeleteEntityController(function(reason) {
+                                _this._sampleFormController.deleteSample(reason);
+                            }, true, warningText);
+                            modalView.init();
+                        }
+                    });
 				}
 				
 			}
 			if (_this._allowedToCopy()) {
 				//Copy
-				var $copyButton = $("<a>", { 'class' : 'btn btn-default'} )
-				.append($('<img>', { 'src' : './img/copy-icon.png', 'style' : 'width:16px; height:16px;' }));
-				$copyButton.click(_this._getCopyButtonEvent());
 				if(toolbarConfig.COPY) {
-					toolbarModel.push({ component : $copyButton, tooltip: "Copy" });
+				    dropdownOptionsModel.push({
+                        label : "Copy",
+                        action : _this._getCopyButtonEvent()
+                    });
 				}
 			}
 
 			//Print
-			var $printButton = $("<a>", { 'class' : 'btn btn-default'} ).append($('<span>', { 'class' : 'glyphicon glyphicon-print' }));
-			$printButton.click(function() {
-				PrintUtil.printEntity(_this._sampleFormModel.sample);
-			});
 			if(toolbarConfig.PRINT) {
-				toolbarModel.push({ component : $printButton, tooltip: "Print" });
+			    dropdownOptionsModel.push({
+                    label : "Print",
+                    action : function() {
+                        PrintUtil.printEntity(_this._sampleFormModel.sample);
+                    }
+                });
 			}
 
 			//Barcode
 			if(profile.mainMenu.showBarcodes) {
-                var $barcodeButton = $("<a>", { 'class' : 'btn btn-default'} ).append($('<span>', { 'class' : 'glyphicon glyphicon-barcode' }));
-                $barcodeButton.click(function() {
-                    BarcodeUtil.showBarcode(_this._sampleFormModel.sample);
-                });
                 if(toolbarConfig.BARCODE) {
-                    toolbarModel.push({ component : $barcodeButton, tooltip: "Barcode" });
-                }
-
-                if(profile.isPropertyPressent(sampleType, "$BARCODE")) {
-                    var $barcodeReadButton = $("<a>", { 'class' : 'btn btn-default'} ).append($('<span>', { 'class' : 'glyphicon glyphicon-barcode' }));
-                    $barcodeReadButton.append(" R");
-                    $barcodeReadButton.click(function() {
-                        BarcodeUtil.readBarcode(_this._sampleFormModel.sample);
+                    dropdownOptionsModel.push({
+                                        label : "Barcode Print",
+                                        action : function() {
+                                            BarcodeUtil.showBarcode(_this._sampleFormModel.sample);
+                                        }
                     });
-                    if(toolbarConfig.BARCODE) {
-                        toolbarModel.push({ component : $barcodeReadButton, tooltip: "Update Barcode" });
+
+                    if(profile.isPropertyPressent(sampleType, "$BARCODE")) {
+                        dropdownOptionsModel.push({
+                            label : "Barcode Update",
+                            action : function() {
+                                BarcodeUtil.readBarcode(_this._sampleFormModel.sample);
+                            }
+                        });
                     }
                 }
             }
 
 			//Hierarchy Graph
-			var $hierarchyGraph = FormUtil.getButtonWithImage("./img/hierarchy-icon.png", function () {
-				mainController.changeView('showSampleHierarchyPage', _this._sampleFormModel.sample.permId);
-			});
 			if(toolbarConfig.HIERARCHY_GRAPH) {
-				toolbarModel.push({ component : $hierarchyGraph, tooltip: "Hierarchy Graph" });
+				dropdownOptionsModel.push({
+                    label : "Hierarchy Graph",
+                    action : function() {
+                        mainController.changeView('showSampleHierarchyPage', _this._sampleFormModel.sample.permId);
+                    }
+                });
 			}
 			
 			//Hierarchy Table
-			var $hierarchyTable = FormUtil.getButtonWithIcon("glyphicon-list", function () {
-				mainController.changeView('showSampleHierarchyTablePage', _this._sampleFormModel.sample.permId);
-			});
 			if(toolbarConfig.HIERARCHY_TABLE) {
-				toolbarModel.push({ component : $hierarchyTable, tooltip: "Hierarchy Table" });
+				dropdownOptionsModel.push({
+                    label : "Hierarchy Table",
+                    action : function() {
+                        mainController.changeView('showSampleHierarchyTablePage', _this._sampleFormModel.sample.permId);
+                    }
+                });
 			}
 			
 			if(_this._allowedToRegisterDataSet()) {
 				//Create Dataset
 				var $uploadBtn = FormUtil.getButtonWithIcon("glyphicon-upload", function () {
 					mainController.changeView('showCreateDataSetPageFromPermId',_this._sampleFormModel.sample.permId);
-				});
+				}, "Upload");
 				if(toolbarConfig.UPLOAD_DATASET) {
-					toolbarModel.push({ component : $uploadBtn, tooltip: "Upload Dataset" });
+					toolbarModel.push({ component : $uploadBtn, tooltip: null });
 				}
 			
 				//Get dropbox folder name
-				var $uploadBtn = FormUtil.getButtonWithIcon("glyphicon-circle-arrow-up", (function () {
-					var nameElements = [
-						"O",
-						_this._sampleFormModel.sample.spaceCode,
-						IdentifierUtil.getProjectCodeFromSampleIdentifier(_this._sampleFormModel.sample.identifier),
-						_this._sampleFormModel.sample.code,
-					];
-					FormUtil.showDropboxFolderNameDialog(nameElements);
-				}).bind(this));
 				if(toolbarConfig.UPLOAD_DATASET_HELPER) {
-					toolbarModel.push({ component : $uploadBtn, tooltip: "Helper tool for Dataset upload using eln-lims dropbox" });
+					dropdownOptionsModel.push({
+                        label : "Dataset upload helper tool for eln-lims dropbox",
+                        action : function() {
+                            var nameElements = [
+                                "O",
+                                _this._sampleFormModel.sample.spaceCode,
+                                IdentifierUtil.getProjectCodeFromSampleIdentifier(_this._sampleFormModel.sample.identifier),
+                                _this._sampleFormModel.sample.code,
+                            ];
+					        FormUtil.showDropboxFolderNameDialog(nameElements);
+                        }
+                    });
 				}
 			}
 			
 			//Export
-			var $exportAll = FormUtil.getExportButton([{ type: "SAMPLE", permId : _this._sampleFormModel.sample.permId, expand : true }], false);
+            if(toolbarConfig.EXPORT_METADATA) {
+                dropdownOptionsModel.push({
+                    label : "Export Metadata",
+                    action : FormUtil.getExportAction([{ type: "SAMPLE", permId : _this._sampleFormModel.sample.permId, expand : true }], true)
+                });
+            }
+
 			if(toolbarConfig.EXPORT_ALL) {
-				toolbarModel.push({ component : $exportAll, tooltip: "Export Metadata & Data" });
-			}
-			
-			var $exportOnlyMetadata = FormUtil.getExportButton([{ type: "SAMPLE", permId : _this._sampleFormModel.sample.permId, expand : true }], true);
-			if(toolbarConfig.EXPORT_METADATA) {
-				toolbarModel.push({ component : $exportOnlyMetadata, tooltip: "Export Metadata only" });
+				dropdownOptionsModel.push({
+                    label : "Export Metadata & Data",
+                    action : FormUtil.getExportAction([{ type: "SAMPLE", permId : _this._sampleFormModel.sample.permId, expand : true }], false)
+                });
 			}
 			
 			//Jupyter Button
 			if(profile.jupyterIntegrationServerEndpoint) {
-				var $jupyterBtn = FormUtil.getButtonWithImage("./img/jupyter-icon.png", function () {
-					var jupyterNotebook = new JupyterNotebookController(_this._sampleFormModel.sample);
-					jupyterNotebook.init();
-				});
-				toolbarModel.push({ component : $jupyterBtn, tooltip: "Create Jupyter notebook" });
+				dropdownOptionsModel.push({
+                    label : "New Jupyter notebook",
+                    action : function () {
+                        var jupyterNotebook = new JupyterNotebookController(_this._sampleFormModel.sample);
+                        jupyterNotebook.init();
+                    }
+                });
 			}
 
             //Freeze
             if(_this._sampleFormModel.v3_sample && _this._sampleFormModel.v3_sample.frozen !== undefined) { //Freezing available on the API
                 var isEntityFrozen = _this._sampleFormModel.v3_sample.frozen;
-                var isEntityFrozenTooltip = (isEntityFrozen)?"Entity Frozen":"Freeze Entity (Disable further modifications)";
-            	var $freezeButton = FormUtil.getFreezeButton("SAMPLE", this._sampleFormModel.v3_sample.permId.permId, isEntityFrozen);
                 if(toolbarConfig.FREEZE) {
-                    toolbarModel.push({ component : $freezeButton, tooltip: isEntityFrozenTooltip });
+                    if(isEntityFrozen) {
+                        var $freezeButton = FormUtil.getFreezeButton("SAMPLE", this._sampleFormModel.v3_sample.permId.permId, isEntityFrozen);
+                        toolbarModel.push({ component : $freezeButton, tooltip: "Entity Frozen" });
+                    } else {
+                        dropdownOptionsModel.push({
+                            label : "Freeze Entity (Disable further modifications)",
+                            action : function () {
+                                FormUtil.showFreezeForm("SAMPLE", _this._sampleFormModel.v3_sample.permId.permId);
+                            }
+                        });
+                    }
                 }
             }
 		} else { //Create and Edit
@@ -404,7 +432,8 @@ function SampleFormView(sampleFormController, sampleFormModel) {
                 toolbarModel.push({ component : $templateBtn, tooltip: "Templates" });
             }
 		}
-		
+
+        var paginationToolbarModel = [];
 		if(this._sampleFormModel.mode !== FormMode.CREATE && this._sampleFormModel.paginationInfo) {
 			var moveToIndex = function(index) {
 				var pagOptionsToSend = $.extend(true, {}, _this._sampleFormModel.paginationInfo.pagOptions);
@@ -427,15 +456,15 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 			if(this._sampleFormModel.paginationInfo.currentIndex > 0) {
 				var $backBtn = FormUtil.getButtonWithIcon("glyphicon-arrow-left", function () {
 					moveToIndex(_this._sampleFormModel.paginationInfo.currentIndex-1);
-				});
-				toolbarModel.push({ component : $backBtn, tooltip: "Go to previous Object from list" });
+				}, "Previous");
+				paginationToolbarModel.push({ component : $backBtn, tooltip: null });
 			}
 			
 			if(this._sampleFormModel.paginationInfo.currentIndex+1 < this._sampleFormModel.paginationInfo.totalCount) {
 				var $nextBtn = FormUtil.getButtonWithIcon("glyphicon-arrow-right", function () {
 					moveToIndex(_this._sampleFormModel.paginationInfo.currentIndex+1);
-				});
-				toolbarModel.push({ component : $nextBtn, tooltip: "Go to next Object from list" });
+				}, "Next");
+				paginationToolbarModel.push({ component : $nextBtn, tooltip: null });
 			}
 		}
 		
@@ -446,13 +475,14 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		if(sampleTypeDefinitionsExtension && sampleTypeDefinitionsExtension.extraToolbar) {
 		    toolbarModel = toolbarModel.concat(sampleTypeDefinitionsExtension.extraToolbar(_this._sampleFormModel.mode, _this._sampleFormModel.sample));
 		}
-		$header.append(FormUtil.getToolbar(toolbarModel));
+
+		var hideShowOptionsModel = [];
 		
 		//
 		// Identification Info on Create
 		//
 		if(this._sampleFormModel.mode === FormMode.CREATE) {
-			this._paintIdentificationInfo($formColumn, sampleType);
+			$formColumn.append(this._createIdentificationInfoSection(hideShowOptionsModel, sampleType, entityPath));
 		}
 		
 		// Plugin Hook
@@ -473,98 +503,17 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		//
 		// LINKS TO PARENTS
 		//
-		var requiredParents = [];
-		if(sampleTypeDefinitionsExtension && sampleTypeDefinitionsExtension["SAMPLE_PARENTS_HINT"]) {
-			requiredParents = sampleTypeDefinitionsExtension["SAMPLE_PARENTS_HINT"];
+		if (this._sampleFormModel.mode !== FormMode.VIEW || (this._sampleFormModel.mode === FormMode.VIEW && this._sampleFormModel.sample.parents.length > 0)) {
+			$formColumn.append(this._createParentsSection(hideShowOptionsModel, sampleTypeDefinitionsExtension, sampleTypeCode));
 		}
-		
-		var sampleParentsWidgetId = "sampleParentsWidgetId";
-		var $sampleParentsWidget = $("<div>", { "id" : sampleParentsWidgetId });
-		
-		if(this._sampleFormModel.mode !== FormMode.VIEW || (this._sampleFormModel.mode === FormMode.VIEW && this._sampleFormModel.sample.parents.length > 0)) {
-			$formColumn.append($sampleParentsWidget);
-		}
-		
-		
-		var isDisabled = this._sampleFormModel.mode === FormMode.VIEW;
-		
-		var currentParentsLinks = (this._sampleFormModel.sample)?this._sampleFormModel.sample.parents:null;
-		var parentsTitle = "Parents";
-		if(sampleTypeDefinitionsExtension && sampleTypeDefinitionsExtension["SAMPLE_PARENTS_TITLE"]) {
-			parentsTitle = sampleTypeDefinitionsExtension["SAMPLE_PARENTS_TITLE"];
-		}
-		var parentsAnyTypeDisabled = sampleTypeDefinitionsExtension && sampleTypeDefinitionsExtension["SAMPLE_PARENTS_ANY_TYPE_DISABLED"];
-		this._sampleFormModel.sampleLinksParents = new LinksController(parentsTitle,
-																			requiredParents,
-																			isDisabled,
-																			currentParentsLinks,
-																			this._sampleFormModel.mode === FormMode.CREATE || this._sampleFormModel.mode === FormMode.EDIT,
-																			parentsAnyTypeDisabled,
-																			sampleTypeCode);
-		if(!sampleTypeDefinitionsExtension || !sampleTypeDefinitionsExtension["SAMPLE_PARENTS_DISABLED"]) {
-			this._sampleFormModel.sampleLinksParents.init($sampleParentsWidget);
-		}
-		
+
 		//
 		// LINKS TO CHILDREN
 		//
-		var requiredChildren = [];
-		if(sampleTypeDefinitionsExtension && sampleTypeDefinitionsExtension["SAMPLE_CHILDREN_HINT"]) {
-			requiredChildren = sampleTypeDefinitionsExtension["SAMPLE_CHILDREN_HINT"];
+		if (this._sampleFormModel.mode !== FormMode.VIEW || (this._sampleFormModel.mode === FormMode.VIEW && this._sampleFormModel.sample.children.length > 0)) {
+			$formColumn.append(this._createChildrenSection(hideShowOptionsModel, sampleTypeDefinitionsExtension, sampleTypeCode));
 		}
-			
-		var sampleChildrenWidgetId = "sampleChildrenWidgetId";
-		var $sampleChildrenWidget = $("<div>", { "id" : sampleChildrenWidgetId });
-		
-		if(this._sampleFormModel.mode !== FormMode.VIEW || (this._sampleFormModel.mode === FormMode.VIEW && this._sampleFormModel.sample.children.length > 0)) {
-			$formColumn.append($sampleChildrenWidget);
-		}
-			
-		var currentChildrenLinks = (this._sampleFormModel.sample)?this._sampleFormModel.sample.children:null;
-		
-		var childrenTitle = "Children";
-		if(sampleTypeDefinitionsExtension && sampleTypeDefinitionsExtension["SAMPLE_CHILDREN_TITLE"]) {
-			childrenTitle = sampleTypeDefinitionsExtension["SAMPLE_CHILDREN_TITLE"];
-		}
-		
-		var currentChildrenLinksNoStorage = [];
-		if(currentChildrenLinks != null) {
-			for(var cIdx = 0; cIdx < currentChildrenLinks.length; cIdx++) {
-				if(currentChildrenLinks[cIdx].sampleTypeCode !== "STORAGE_POSITION") {
-					currentChildrenLinksNoStorage.push(currentChildrenLinks[cIdx]);
-				}
-			}
-		}
-		
-		var childrenAnyTypeDisabled = sampleTypeDefinitionsExtension && sampleTypeDefinitionsExtension["SAMPLE_CHILDREN_ANY_TYPE_DISABLED"];
-		this._sampleFormModel.sampleLinksChildren = new LinksController(childrenTitle,
-															requiredChildren,
-															isDisabled,
-															currentChildrenLinksNoStorage,
-															this._sampleFormModel.mode === FormMode.CREATE,
-															childrenAnyTypeDisabled,
-															sampleTypeCode);
-		if(!sampleTypeDefinitionsExtension || !sampleTypeDefinitionsExtension["SAMPLE_CHILDREN_DISABLED"]) {
-			this._sampleFormModel.sampleLinksChildren.init($sampleChildrenWidget);
-		}
-		
-		//
-		// GENERATE CHILDREN
-		//
-		var childrenDisabled = sampleTypeDefinitionsExtension && sampleTypeDefinitionsExtension["SAMPLE_CHILDREN_DISABLED"];
-		
-		if((this._sampleFormModel.mode !== FormMode.VIEW) && this._sampleFormModel.isELNSample && !childrenDisabled) {
-			var $generateChildrenBtn = $("<a>", { 'class' : 'btn btn-default', 'style' : 'margin-top:15px;', 'id' : 'generate_children'}).text("Generate Children");
-			$generateChildrenBtn.click(function(event) {
-				_this._generateChildren();
-			});
-			
-			var $generateChildrenBox = $("<div>")
-											.append($("<div>", { 'class' : 'form-group' }).append($generateChildrenBtn))
-											.append($("<div>", { 'id' : 'newChildrenOnBenchDropDown' }))
-			$formColumn.append($generateChildrenBox);
-		}
-		
+
 		//
 		// Form Defined Properties from non General Section
 		//
@@ -619,7 +568,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		// Identification Info on View/Edit
 		//
 		if(this._sampleFormModel.mode !== FormMode.CREATE) {
-			this._paintIdentificationInfo($formColumn);
+			$formColumn.append(this._createIdentificationInfoSection(hideShowOptionsModel, sampleType, entityPath));
 		}
 		
 		//
@@ -670,6 +619,10 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		//
 		// INIT
 		//
+		FormUtil.addOptionsToToolbar(toolbarModel, dropdownOptionsModel, hideShowOptionsModel,
+				"SAMPLE-VIEW-" + _this._sampleFormModel.sample.sampleTypeCode);
+		$header.append(FormUtil.getToolbar(toolbarModel));
+		$header.append(FormUtil.getToolbar(paginationToolbarModel).css("float", "right"));
 		$container.append($form);
 		
 		//
@@ -743,6 +696,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 				}
 				var $controlGroup =  null;
 				var value = this._sampleFormModel.sample.properties[propertyType.code];
+
 				if(!value && propertyType.code.charAt(0) === '$') {
 					value = this._sampleFormModel.sample.properties[propertyType.code.substr(1)];
 					this._sampleFormModel.sample.properties[propertyType.code] = value;
@@ -752,10 +706,14 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 				if(this._sampleFormModel.mode === FormMode.VIEW) { //Show values without input boxes if the form is in view mode
 					if(Util.getEmptyIfNull(value) !== "") { //Don't show empty fields, whole empty sections will show the title
 						var customWidget = profile.customWidgetSettings[propertyType.code];
-						if(customWidget === 'Spreadsheet') {
+						if (customWidget === 'Spreadsheet') {
 						    var $jexcelContainer = $("<div>");
                             JExcelEditorManager.createField($jexcelContainer, this._sampleFormModel.mode, propertyType.code, this._sampleFormModel.sample);
 						    $controlGroup = FormUtil.getFieldForComponentWithLabel($jexcelContainer, propertyType.label);
+						} else if (customWidget === 'Word Processor') {
+						    var $component = FormUtil.getFieldForPropertyType(propertyType, value);
+						    $component = FormUtil.activateRichTextProperties($component, undefined, propertyType, value, true);
+						    $controlGroup = FormUtil.getFieldForComponentWithLabel($component, propertyType.label);
 						} else {
 						    $controlGroup = FormUtil.createPropertyField(propertyType, value);
 						}
@@ -808,7 +766,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 					    switch(customWidget) {
 					        case 'Word Processor':
 					            if(propertyType.dataType === "MULTILINE_VARCHAR") {
-					                $component = FormUtil.activateRichTextProperties($component, changeEvent(propertyType), propertyType);
+					                $component = FormUtil.activateRichTextProperties($component, changeEvent(propertyType), propertyType, value, false);
 					            } else {
 					                alert("Word Processor only works with MULTILINE_VARCHAR data type, " + propertyType.code + " is " + propertyType.dataType + ".");
 					            }
@@ -849,18 +807,21 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		return false;
 	}
 	
-	this._paintIdentificationInfo = function($formColumn, sampleType) {
+	this._createIdentificationInfoSection = function(hideShowOptionsModel, sampleType, entityPath) {
+		hideShowOptionsModel.push({
+			label : "Identification Info",
+			section : "#sample-identification-info"
+		});
+		
 		var _this = this;
-		//
-		// Identification Info
-		//
-		var $fieldsetOwner = $("<div>");
+		var $identificationInfo = $("<div>", { id : "sample-identification-info" });
 		var $legend = $("<legend>").append("Identification Info");
 		var $fieldset = $("<div>");
 		
-		$fieldsetOwner.append($legend);
-		$fieldsetOwner.append($fieldset);
-		
+		$identificationInfo.append($legend);
+		$identificationInfo.append($fieldset);
+
+	    $fieldset.append(FormUtil.getFieldForComponentWithLabel(entityPath, "Path"));
 		$fieldset.append(FormUtil.getFieldForLabelWithText("Type", this._sampleFormModel.sample.sampleTypeCode));
 		if(this._sampleFormModel.sample.experimentIdentifierOrNull) {
 			$fieldset.append(FormUtil.getFieldForLabelWithText(ELNDictionary.getExperimentKindName(this._sampleFormModel.sample.experimentIdentifierOrNull), this._sampleFormModel.sample.experimentIdentifierOrNull));
@@ -914,8 +875,103 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 			$fieldset.append($modificationDate);
 		}
 		
-		$legend.prepend(FormUtil.getShowHideButton($fieldset, "SAMPLE-" + this._sampleFormModel.sample.sampleTypeCode + "-identificationInfo"));
-		$formColumn.append($fieldsetOwner);
+		$identificationInfo.hide();
+		return $identificationInfo;
+	}
+	
+	this._createParentsSection = function(hideShowOptionsModel, sampleTypeDefinitionsExtension, sampleTypeCode) {
+		hideShowOptionsModel.push({
+			label : "Parents",
+			section : "#sample-parents"
+		});
+		
+		var requiredParents = [];
+		if (sampleTypeDefinitionsExtension && sampleTypeDefinitionsExtension["SAMPLE_PARENTS_HINT"]) {
+			requiredParents = sampleTypeDefinitionsExtension["SAMPLE_PARENTS_HINT"];
+		}
+		
+		var sampleParentsWidgetId = "sample-parents";
+		var $sampleParentsWidget = $("<div>", { "id" : sampleParentsWidgetId });
+		
+		var isDisabled = this._sampleFormModel.mode === FormMode.VIEW;
+		
+		var currentParentsLinks = this._sampleFormModel.sample ? this._sampleFormModel.sample.parents : null;
+		var parentsTitle = "Parents";
+		if (sampleTypeDefinitionsExtension && sampleTypeDefinitionsExtension["SAMPLE_PARENTS_TITLE"]) {
+			parentsTitle = sampleTypeDefinitionsExtension["SAMPLE_PARENTS_TITLE"];
+		}
+		var parentsAnyTypeDisabled = sampleTypeDefinitionsExtension && sampleTypeDefinitionsExtension["SAMPLE_PARENTS_ANY_TYPE_DISABLED"];
+		this._sampleFormModel.sampleLinksParents = new LinksController(parentsTitle,
+																			requiredParents,
+																			isDisabled,
+																			currentParentsLinks,
+																			this._sampleFormModel.mode === FormMode.CREATE || this._sampleFormModel.mode === FormMode.EDIT,
+																			parentsAnyTypeDisabled,
+																			sampleTypeCode);
+		if (!sampleTypeDefinitionsExtension || !sampleTypeDefinitionsExtension["SAMPLE_PARENTS_DISABLED"]) {
+			this._sampleFormModel.sampleLinksParents.init($sampleParentsWidget);
+		}
+		$sampleParentsWidget.hide();
+		return $sampleParentsWidget;
+	}
+	
+	this._createChildrenSection = function(hideShowOptionsModel, sampleTypeDefinitionsExtension, sampleTypeCode) {
+		hideShowOptionsModel.push({
+			label : "Children",
+			section : "#sample-children"
+		});
+
+		var _this = this;
+		var requiredChildren = [];
+		if(sampleTypeDefinitionsExtension && sampleTypeDefinitionsExtension["SAMPLE_CHILDREN_HINT"]) {
+			requiredChildren = sampleTypeDefinitionsExtension["SAMPLE_CHILDREN_HINT"];
+		}
+			
+		var sampleChildrenWidgetId = "sample-children";
+		var $sampleChildrenWidget = $("<div>", { "id" : sampleChildrenWidgetId });
+		
+		var currentChildrenLinks = (this._sampleFormModel.sample)?this._sampleFormModel.sample.children:null;
+		
+		var childrenTitle = "Children";
+		if(sampleTypeDefinitionsExtension && sampleTypeDefinitionsExtension["SAMPLE_CHILDREN_TITLE"]) {
+			childrenTitle = sampleTypeDefinitionsExtension["SAMPLE_CHILDREN_TITLE"];
+		}
+		
+		var currentChildrenLinksNoStorage = [];
+		if(currentChildrenLinks != null) {
+			for(var cIdx = 0; cIdx < currentChildrenLinks.length; cIdx++) {
+				if(currentChildrenLinks[cIdx].sampleTypeCode !== "STORAGE_POSITION") {
+					currentChildrenLinksNoStorage.push(currentChildrenLinks[cIdx]);
+				}
+			}
+		}
+		var isDisabled = this._sampleFormModel.mode === FormMode.VIEW;
+		var childrenAnyTypeDisabled = sampleTypeDefinitionsExtension && sampleTypeDefinitionsExtension["SAMPLE_CHILDREN_ANY_TYPE_DISABLED"];
+		this._sampleFormModel.sampleLinksChildren = new LinksController(childrenTitle,
+															requiredChildren,
+															isDisabled,
+															currentChildrenLinksNoStorage,
+															this._sampleFormModel.mode === FormMode.CREATE,
+															childrenAnyTypeDisabled,
+															sampleTypeCode);
+		if(!sampleTypeDefinitionsExtension || !sampleTypeDefinitionsExtension["SAMPLE_CHILDREN_DISABLED"]) {
+			this._sampleFormModel.sampleLinksChildren.init($sampleChildrenWidget);
+		}
+
+		var childrenDisabled = sampleTypeDefinitionsExtension && sampleTypeDefinitionsExtension["SAMPLE_CHILDREN_DISABLED"];
+		if ((this._sampleFormModel.mode !== FormMode.VIEW) && this._sampleFormModel.isELNSample && !childrenDisabled) {
+			var $generateChildrenBtn = $("<a>", { 'class' : 'btn btn-default', 'style' : 'margin-top:15px;', 'id' : 'generate_children'}).text("Generate Children");
+			$generateChildrenBtn.click(function(event) {
+				_this._generateChildren();
+			});
+			
+			var $generateChildrenBox = $("<div>")
+											.append($("<div>", { 'class' : 'form-group' }).append($generateChildrenBtn))
+											.append($("<div>", { 'id' : 'newChildrenOnBenchDropDown' }))
+			$sampleChildrenWidget.append($generateChildrenBox);
+		}
+		$sampleChildrenWidget.hide();
+		return $sampleChildrenWidget;
 	}
 	
 	//
@@ -937,9 +993,12 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 					component += "<div class='form-group'>";
 					component += "<label class='control-label'>Options </label>";
 					component += "<div class='controls'>";
-					component += "<span class='checkbox'><label><input type='checkbox' id='linkParentsOnCopy'> Link Parents </label></span>";
-					component += "<span class='checkbox'><label><input type='checkbox' id='copyChildrenOnCopy'> Copy Children </label></span>";
-					component += "<span class='checkbox'><label><input type='checkbox' id='copyCommentsLogOnCopy'> Copy Comments Log </label></span>";
+					component += "<span class='checkbox'><label><input type='checkbox' id='copyCommentsLogOnCopy'>Copy Comments Log</label></span>";
+				    component += "<span class='checkbox'><label><input type='checkbox' id='linkParentsOnCopy'>Link Parents</label></span>";
+					component += "<span>Copy Children</span>";
+					component += "<span class='checkbox'><label><input type='radio' name='copyChildrenOnCopy' value='None' checked>Don't Copy</label></span>";
+					component += "<span class='checkbox'><label><input type='radio' name='copyChildrenOnCopy' value='ToParentCollection'>Into parents collection</label></span>";
+					component += "<span class='checkbox'><label><input type='radio' name='copyChildrenOnCopy' value='ToOriginalCollection'>Into original collection</label></span>";
 					component += "</div>";
 					component += "</div>";
 					component += "</div>";
@@ -964,7 +1023,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 				$("#copyAccept").on("click", function(event) {
 					var newSampleCodeForCopy = $("#newSampleCodeForCopy");
 					var linkParentsOnCopy = $("#linkParentsOnCopy")[0].checked;
-					var copyChildrenOnCopy = $("#copyChildrenOnCopy")[0].checked;
+					var copyChildrenOnCopy = $("input[name=copyChildrenOnCopy]:checked").val();
 					var copyCommentsLogOnCopy = $("#copyCommentsLogOnCopy")[0].checked;
 					var isValid = newSampleCodeForCopy[0].checkValidity();
 					if(isValid) {
@@ -1274,13 +1333,21 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 	
 	this._allowedToEdit = function() {
 		var sample = this._sampleFormModel.v3_sample;
-		var updateAllowed = this._sampleFormModel.rights.rights.indexOf("UPDATE") >= 0;
+		var updateAllowed = this._allowedToUpdate(this._sampleFormModel.rights);
 		return updateAllowed && sample.frozen == false;
 	}
 	
+	this._allowedToUpdate = function(rights) {
+		return rights && rights.rights.indexOf("UPDATE") >= 0;
+	}
+
 	this._allowedToMove = function() {
 		var sample = this._sampleFormModel.v3_sample;
-		return !sample.experiment || sample.experiment.frozenForSamples == false;
+		var experiment = sample.experiment;
+		if (experiment && experiment.frozenForSamples) {
+			return false;
+		}
+		return this._allowedToUpdate(this._sampleFormModel.rights);
 	}
 	
 	this._allowedToDelete = function() {

@@ -703,6 +703,7 @@ class Openbis:
             "get_collections()",
             "get_collection_type()",
             "get_collection_types()",
+            "get_external_data_management_systems()",
             "get_external_data_management_system()",
             "get_material_type()",
             "get_material_types()",
@@ -931,6 +932,37 @@ class Openbis:
                 os.environ['OPENBIS_TOKEN'] = self.token
             return self.token
 
+    def mount(self, username, servername, mountpoint, volname, password, path='/', port=2222, kex_algorithms ='+diffie-hellman-group1-sha1', shell=False):
+
+        """Mounts openBIS dataStore without root, using sshfs and fuse.
+        """
+
+        import subprocess
+        args = {
+            "username": username,
+            "password": password,
+            "servername": servername,
+            "port": port,
+            "path": path,
+            "mountpoint": mountpoint,
+            "volname": volname,
+            "kex_algroithms": kex_algroithms,
+        }
+        cmd = (
+            'echo "{password}" | sshfs -o port={port}'
+            ' -o ssh_command="ssh -oKexAlgorithms={kex_algroithms}+diffie-hellman-group1-sha1"'
+            ' {username}@{servername}:{path} {mountpoint}'
+            ' -oauto_cache,reconnect,defer_permissions,noappledouble,negative_vncache,volname={volname}'
+            ' -o password_stdin'
+        )
+
+        subprocess.run(cmd.format(**args), 
+            stdout=subprocess.PIPE, 
+            stderr=subprocess.PIPE, 
+            input=password,
+            shell=shell
+        )
+
 
     def get_server_information(self):
         """ Returns a dict containing the following server information:
@@ -978,6 +1010,8 @@ class Openbis:
         there might be multiple servers. If you upload a file, you need to specifiy the datastore you want
         the file uploaded to.
         """
+        if hasattr(self, 'datastores'):
+            return self.datastores
 
         request = {
             "method": "searchDataStores",
@@ -999,6 +1033,7 @@ class Openbis:
             objects = resp['objects']
             parse_jackson(objects)
             datastores = DataFrame(objects)
+            self.datastores = datastores[attrs]
             return datastores[attrs]
 
     def gen_code(self, entity, prefix=""):
@@ -3242,6 +3277,43 @@ class Openbis:
     get_object = get_sample # Alias
 
 
+    def get_external_data_management_systems(self, start_with=None, count=None, only_data=False):
+        entity = 'externalDms'
+
+        criteria = get_type_for_entity(entity, 'search')
+        fetchopts = get_fetchoption_for_entity(entity)
+        request = {
+            "method": "searchExternalDataManagementSystems",
+            "params": [self.token,
+                       criteria,
+                       fetchopts,
+                       ],
+        }
+        response = self._post_request(self.as_v3, request)
+        parse_jackson(response)
+        attrs= "code label address addressType urlTemplate openbis".split()
+
+
+        if len(response['objects']) == 0:
+            entities = DataFrame(columns=attrs)
+        else: 
+            objects = response['objects']
+            parse_jackson(objects)
+            entities = DataFrame(objects)
+            entities['permId'] = entities['permId'].map(extract_permid)
+
+        totalCount = response.get('totalCount')
+        return Things(
+            openbis_obj = self,
+            entity = 'externalDms',
+            df = entities[attrs],
+            identifier_name = 'permId',
+            start_with=start_with,
+            count=count,
+            totalCount=totalCount,
+        )
+
+
     def get_external_data_management_system(self, permId, only_data=False):
         """Retrieve metadata for the external data management system.
         :param permId: A permId for an external DMS.
@@ -3273,6 +3345,9 @@ class Openbis:
                     return resp[ident]
                 else:
                     return ExternalDMS(self, resp[ident])
+
+    get_externalDms = get_external_data_management_system  # alias
+
 
     def new_space(self, **kwargs):
         """ Creates a new space in the openBIS instance.

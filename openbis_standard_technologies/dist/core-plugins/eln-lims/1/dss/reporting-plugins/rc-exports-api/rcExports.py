@@ -28,7 +28,7 @@ from java.net import URI
 from java.nio.file import Paths
 from java.text import SimpleDateFormat
 from java.util import UUID
-from java.util.zip import ZipOutputStream
+from java.util.zip import ZipOutputStream, Deflater
 from org.apache.commons.io import FileUtils
 from org.apache.log4j import Logger
 from org.eclipse.jetty.client import HttpClient
@@ -94,7 +94,7 @@ def export(entities, tr, params, userInformation):
     exportZipFilePath = exportDirPath + '.zip'
     exportZipFileName = exportDirName + '.zip'
 
-    generateZipFile(entities, params, contentDirPath, contentZipFilePath)
+    generateZipFile(entities, params, contentDirPath, contentZipFilePath, deflated=False)
     FileUtils.forceDelete(File(contentDirPath))
 
     generateExternalZipFile(params=params, exportDirPath=exportDirPath, contentZipFilePath=contentZipFilePath, contentZipFileName=contentZipFileName,
@@ -178,7 +178,8 @@ def fetchServiceDocument(url, httpClient):
     return json.dumps(map(collectionToDictionaryMapper, collections))
 
 
-def generateExternalZipFile(params, exportDirPath, contentZipFilePath, contentZipFileName, exportZipFileName, userInformation, entities):
+def generateExternalZipFile(params, exportDirPath, contentZipFilePath, contentZipFileName, exportZipFileName, userInformation, entities,
+                            deflated=True):
     # Generates ZIP file which will go to the research collection server
 
     fileMetadata = [
@@ -193,6 +194,8 @@ def generateExternalZipFile(params, exportDirPath, contentZipFilePath, contentZi
     try:
         fos = FileOutputStream(exportZipFileName)
         zos = ZipOutputStream(fos)
+        if not deflated:
+            zos.setLevel(Deflater.NO_COMPRESSION)
 
         addToZipFile(' ' + contentZipFileName, File(contentZipFilePath), zos)
 

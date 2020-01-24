@@ -176,11 +176,9 @@ function LinksView(linksController, linksModel) {
 		$legend.append(linksModel.title).append("&nbsp;").append(addAnyBtn); //.css("margin-top", "20px").css("margin-bottom", "20px");
 
 		if(!linksModel.disableAddAnyType && profile.mainMenu.showBarcodes) {
-		    $legend.append(linksView.getAddAnyBarcode());
+			$legend.append(linksView.getAddAnyBarcode());
 		}
 
-		$legend.prepend(FormUtil.getShowHideButton($fieldset, "SAMPLE-" + linksModel.sampleTypeCode + "-" + linksModel.title));
-		
 		$fieldset.append($samplePicker);
 	}
 	

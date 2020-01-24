@@ -17,22 +17,22 @@ from collections import deque
 
 import jarray
 # To obtain the openBIS URL
-from ch.systemsx.cisd.openbis.dss.generic.server import DataStoreServer;
+from ch.systemsx.cisd.openbis.dss.generic.server import DataStoreServer
 from ch.systemsx.cisd.openbis.generic.client.web.client.exception import UserFailureException
 # Zip Format
-from java.io import File;
-from java.io import FileInputStream;
-from java.io import FileOutputStream;
+from java.io import File
+from java.io import FileInputStream
+from java.io import FileOutputStream
 from java.lang import String
 from java.lang import StringBuilder
-from java.util.zip import ZipEntry;
-from java.util.zip import ZipOutputStream;
+from java.util.zip import ZipEntry, Deflater
+from java.util.zip import ZipOutputStream
 from org.apache.commons.io import FileUtils
 # Java Core
 from org.apache.commons.io import IOUtils
 
-OPENBISURL = DataStoreServer.getConfigParameters().getServerURL() + "/openbis/openbis";
-V3_DSS_BEAN = "data-store-server_INTERNAL";
+OPENBISURL = DataStoreServer.getConfigParameters().getServerURL() + "/openbis/openbis"
+V3_DSS_BEAN = "data-store-server_INTERNAL"
 
 #V3 API - Metadata
 
@@ -247,7 +247,7 @@ def findEntitiesToExport(params):
             operationLog.info("Found: " + str(results.getTotalCount()) + " files");
             for file in results.getObjects():
                 entityFound = {"type": "FILE", "permId": permId, "path": file.getPath(), "isDirectory": file.isDirectory(),
-                               "length": file.getFileLength(), "registrationDate": dataset.getRegistrationDate()};
+                               "length": file.getFileLength()};
                 addToExportWithoutRepeating(entitiesToExport, entityFound);
     return entitiesToExport
 
@@ -256,18 +256,6 @@ def findEntitiesToExport(params):
 def cleanUp(tempDirPath, tempZipFilePath):
     FileUtils.forceDelete(File(tempDirPath));
     FileUtils.forceDelete(File(tempZipFilePath));
-
-
-# Generates ZIP file and stores it in workspace
-def generateZipFile(entities, includeRoot, sessionToken, tempDirPath, tempZipFilePath):
-    # Create Zip File
-    fos = FileOutputStream(tempZipFilePath);
-    zos = ZipOutputStream(fos);
-
-    generateFilesInZip(zos, entities, includeRoot, sessionToken, tempDirPath)
-
-    zos.close();
-    fos.close();
 
 
 def generateFilesInZip(zos, entities, includeRoot, sessionToken, tempDirPath):
@@ -649,7 +637,7 @@ def getConfigurationProperty(transaction, propertyName):
         return None
 
 
-def generateZipFile(entities, params, tempDirPath, tempZipFilePath):
+def generateZipFile(entities, params, tempDirPath, tempZipFilePath, deflated=True):
     # Generates ZIP file with selected item for export
 
     sessionToken = params.get('sessionToken')
@@ -660,6 +648,8 @@ def generateZipFile(entities, params, tempDirPath, tempZipFilePath):
     try:
         fos = FileOutputStream(tempZipFilePath)
         zos = ZipOutputStream(fos)
+        if not deflated:
+            zos.setLevel(Deflater.NO_COMPRESSION)
 
         fileMetadata = generateFilesInZip(zos, entities, includeRoot, sessionToken, tempDirPath)
     finally:

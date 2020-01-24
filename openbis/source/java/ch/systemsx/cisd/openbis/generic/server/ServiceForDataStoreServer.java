@@ -2700,7 +2700,7 @@ public class ServiceForDataStoreServer extends AbstractCommonServer<IServiceForD
         try
         {
             CreateDataSetsOperation operation = new CreateDataSetsOperation(creations);
-            List<IOperationResult> results = operationsExecutor.execute(context, Arrays.asList(operation));
+            List<IOperationResult> results = operationsExecutor.execute(context, Arrays.asList(operation), null);
             return ((CreateDataSetsOperationResult) results.get(0)).getObjectIds().size();
         } catch (Throwable t)
         {

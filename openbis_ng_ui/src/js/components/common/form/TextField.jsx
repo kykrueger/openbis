@@ -1,15 +1,23 @@
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import TextField from '@material-ui/core/TextField'
+import InputAdornment from '@material-ui/core/InputAdornment'
 import FormFieldContainer from './FormFieldContainer.jsx'
 import FormFieldLabel from './FormFieldLabel.jsx'
 import logger from '../../../common/logger.js'
 
-const styles = () => ({})
+const styles = () => ({
+  startAdornment: {
+    marginRight: 0
+  },
+  endAdornment: {
+    marginLeft: 0
+  }
+})
 
-class SelectFormField extends React.PureComponent {
+class TextFormField extends React.PureComponent {
   render() {
-    logger.log(logger.DEBUG, 'SelectFormField.render')
+    logger.log(logger.DEBUG, 'TextFormField.render')
 
     const {
       reference,
@@ -20,16 +28,23 @@ class SelectFormField extends React.PureComponent {
       value,
       mandatory,
       disabled,
+      error,
+      multiline,
       metadata,
+      startAdornment,
+      endAdornment,
       styles,
+      classes,
       onClick,
       onChange,
-      onFocus
+      onFocus,
+      onBlur
     } = this.props
 
     return (
       <FormFieldContainer
         description={description}
+        error={error}
         metadata={metadata}
         styles={styles}
         onClick={onClick}
@@ -44,12 +59,34 @@ class SelectFormField extends React.PureComponent {
               styles={styles}
             />
           }
+          InputProps={{
+            startAdornment: startAdornment ? (
+              <InputAdornment
+                position='start'
+                classes={{ positionStart: classes.startAdornment }}
+              >
+                {startAdornment}
+              </InputAdornment>
+            ) : null,
+            endAdornment: endAdornment ? (
+              <InputAdornment
+                position='end'
+                classes={{ positionEnd: classes.endAdornment }}
+              >
+                {endAdornment}
+              </InputAdornment>
+            ) : null
+          }}
           name={name}
-          value={value}
+          value={value || ''}
+          error={!!error}
           disabled={disabled}
+          multiline={multiline}
           onChange={onChange}
           onFocus={onFocus}
+          onBlur={onBlur}
           fullWidth={true}
+          autoComplete='off'
           variant='filled'
         />
       </FormFieldContainer>
@@ -57,4 +94,4 @@ class SelectFormField extends React.PureComponent {
   }
 }
 
-export default withStyles(styles)(SelectFormField)
+export default withStyles(styles)(TextFormField)

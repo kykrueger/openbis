@@ -3,13 +3,14 @@ from threading import Thread
 from queue import Queue
 from tabulate import tabulate
 from .openbis_object import OpenBisObject 
-from .definitions import openbis_definitions
-from .utils import VERBOSE
+from .definitions import openbis_definitions, get_type_for_entity, get_fetchoption_for_entity
+from .utils import VERBOSE, parse_jackson, extract_permid, extract_code, extract_downloadUrl
+from .things import Things
 import requests
 from requests import Request, Session
 import json
 from pandas import DataFrame
-#from urllib.parse import urlparse, urljoin, quote
+from urllib.parse import urlparse, urljoin, quote
 import urllib.parse
 import zipfile
 import random
@@ -18,6 +19,7 @@ import time
 # needed for Data upload
 PYBIS_PLUGIN = "dataset-uploader-api"
 dataset_definitions = openbis_definitions('dataSet')
+dss_endpoint = '/datastore_server/rmi-data-store-server-v3.json'
 
 
 class DataSet(
@@ -117,8 +119,8 @@ class DataSet(
             'set_parents()', 'set_children()', 'set_components()', 'set_contained()', 'set_containers()',
             'set_tags()', 'add_tags()', 'del_tags()',
             'add_attachment()', 'get_attachments()', 'download_attachments()',
-            "get_files(start_folder='/')", 'file_list',
-            'download(files=None, destination=None, wait_until_finished=True)', 
+            "get_files()", 'file_list',
+            'download()', 
             'archive()', 'unarchive()' 
         ] + super().__dir__()
 
@@ -202,14 +204,80 @@ class DataSet(
 
     set_props = set_properties
 
-    def download(self, files=None, destination=None, wait_until_finished=True, workers=10,
+
+    def get_dataset_files(self, start_with=None, count=None, **properties):
+
+        search_criteria = get_type_for_entity('dataSetFile', 'search')
+        search_criteria["operator"] = "AND"
+        search_criteria["criteria"] = [
+            {
+              "criteria": [
+                {
+                  "fieldName": "code",
+                  "fieldType": "ATTRIBUTE",
+                  "fieldValue": {
+                    "value": self.permId,
+                    "@type": "as.dto.common.search.StringEqualToValue"
+                  },
+                  "@type": "as.dto.common.search.CodeSearchCriteria"
+                }
+              ],
+              "operator": "OR",
+              "@type": "as.dto.dataset.search.DataSetSearchCriteria"
+            }
+        ]
+
+
+        fetchopts = get_fetchoption_for_entity('dataSetFile')
+
+        request = {
+            "method": "searchFiles",
+            "params": [
+                self.openbis.token,
+                search_criteria,
+                fetchopts,
+            ],
+        }
+        full_url = urljoin(self._get_download_url(), dss_endpoint)
+        resp = self.openbis._post_request_full_url(full_url, request)
+        objects = resp['objects']
+        parse_jackson(objects)
+
+        attrs = [
+            'dataSetPermId', 'dataStore', 'downloadUrl',
+            'path', 'directory',
+            'fileLength',
+            'checksumCRC32', 'checksum', 'checksumType'
+        ]
+        dataSetFiles = None
+        if len(objects) == 0:
+            dataSetFiles = DataFrame(columns=attrs)
+        else:
+            dataSetFiles = DataFrame(objects)
+            dataSetFiles['downloadUrl'] = dataSetFiles['dataStore'].map(extract_downloadUrl)
+            dataSetFiles['dataStore'] = dataSetFiles['dataStore'].map(extract_code)
+            dataSetFiles['dataSetPermId'] = dataSetFiles['dataSetPermId'].map(extract_permid)
+
+        return Things(
+            openbis_obj = self.openbis,
+            entity = 'dataSetFile',
+            df = dataSetFiles[attrs],
+            identifier_name = 'dataSetPermId',
+            start_with=start_with,
+            count=count,
+            totalCount = resp.get('totalCount'),
+        )
+
+
+    def download(self, files=None, destination=None, create_default_folders=True, wait_until_finished=True, workers=10,
         linked_dataset_fileservice_url=None, content_copy_index=0):
-        """ download the actual files and put them by default in the following folder:
-        __current_dir__/destination/dataset_permId/
-        If no files are specified, all files of a given dataset are downloaded.
-        If no destination is specified, the hostname is chosen instead.
-        Files are usually downloaded in parallel, using 10 workers by default. If you want to wait until
-        all the files are downloaded, set the wait_until_finished option to True.
+        """ download the files of the dataSet.
+
+        files -- a single file or a list of files. If no files are specified, all files of a given dataset are downloaded.
+        destination -- if destination is specified, files are downloaded in __current_dir__/destination/permId/ If no destination is specified, the hostname is chosen instead of destination
+        create_default_folders -- by default, this download method will automatically create destination/permId/original/DEFAULT. If create_default_folders is set to False, all these folders will be ommited. Use with care and by specifying the destination folder.
+        workers -- Default: 10. Files are usually downloaded in parallel, using 10 workers by default.
+        wait_unitl_finished -- True. If you want to immediately continue and run the download in background, set this to False.
         """
 
         if files == None:
@@ -227,7 +295,7 @@ class DataSet(
             kind =self.data['type']['kind']
         
         if kind == 'PHYSICAL':
-            return self._download_physical(files, destination, wait_until_finished, workers)
+            return self._download_physical(files, destination, create_default_folders, wait_until_finished, workers)
         elif kind == 'LINK':
             if linked_dataset_fileservice_url is None:
                 raise ValueError("Can't download a LINK data set without the linked_dataset_fileservice_url parameters.")
@@ -236,26 +304,45 @@ class DataSet(
             raise ValueError("Can't download data set of kind {}.".format(kind))
 
 
-    def _download_physical(self, files, destination, wait_until_finished, workers):
+    def _download_physical(self, files, destination, create_default_folders, wait_until_finished, workers):
         """ Download for data sets of kind PHYSICAL.
         """
 
-        base_url = self.data['dataStore']['downloadUrl'] + '/datastore_server/' + self.permId + '/'
+        final_destination = ""
+        if create_default_folders:
+            final_destination = os.path.join(destination, self.permId)
+        else:
+            final_destination = destination
+
+        download_url = self._get_download_url()
+        base_url = download_url + '/datastore_server/' + self.permId + '/'
         with DataSetDownloadQueue(workers=workers) as queue:
             # get file list and start download
             for filename in files:
                 file_info = self.get_file_list(start_folder=filename)
                 file_size = file_info[0]['fileSize']
                 download_url = base_url + filename + '?sessionID=' + self.openbis.token
-                filename_dest = os.path.join(destination, self.permId, filename)
+                #print(download_url)
+                filename_dest = ""
+                if create_default_folders:
+                    # create original/ or original/DEFAULT subfolders
+                    filename_dest = os.path.join(final_destination, filename)
+                else:
+                    # ignore original/ and original/DEFAULT folders that come from openBIS
+                    if filename.startswith('original/'):
+                        filename = filename.replace('original/', '', 1)
+                    if filename.startswith('DEFAULT/'):
+                        filename = filename.replace('DEFAULT/', '', 1)
+                    filename_dest = os.path.join(final_destination, filename)
+
                 queue.put([download_url, filename, filename_dest, file_size, self.openbis.verify_certificates, 'wb'])
 
             # wait until all files have downloaded
             if wait_until_finished:
                 queue.join()
 
-            if VERBOSE: print("Files downloaded to: %s" % os.path.join(destination, self.permId))
-            return destination
+            if VERBOSE: print("Files downloaded to: {}".format(os.path.join(final_destination)))
+            return final_destination
 
 
     def _download_link(self, files, destination, wait_until_finished, workers, linked_dataset_fileservice_url, content_copy_index):
@@ -347,6 +434,17 @@ class DataSet(
         df['crc32Checksum'] = df['crc32Checksum'].fillna(0.0).astype(int).map(signed_to_unsigned)
         return df[['isDirectory', 'pathInDataSet', 'fileSize', 'crc32Checksum']]
 
+    def _get_download_url(self):
+        download_url = ""
+        if "downloadUrl" in self.data["dataStore"]:
+            download_url = self.data["dataStore"]["downloadUrl"]  
+        else:
+            # fallback, if there is no dataStore defined
+            datastores = self.openbis.get_datastores()
+            download_url = datastores['downloadUrl'][0]
+        return download_url
+
+
     def get_file_list(self, recursive=True, start_folder="/"):
         """Lists all files of a given dataset. You can specifiy a start_folder other than "/".
         By default, all directories and their containing files are listed recursively. You can
@@ -362,9 +460,9 @@ class DataSet(
             ],
             "id": "1"
         }
-
+        download_url = self._get_download_url()
         resp = requests.post(
-            self.data["dataStore"]["downloadUrl"] + '/datastore_server/rmi-dss-api-v1.json',
+            download_url+ '/datastore_server/rmi-dss-api-v1.json',
             json.dumps(request),
             verify=self.openbis.verify_certificates
         )
@@ -771,16 +869,34 @@ class DataSetDownloadQueue():
                 if r.ok == False:
                     raise ValueError("Could not download from {}: HTTP {}. Reason: {}".format(url, r.status_code, r.reason))
 
-                with open(filename_dest, write_mode) as f:
-                    for chunk in r.iter_content(chunk_size=1024):
+                with open(filename_dest, write_mode) as fh:
+                    for chunk in r.iter_content(chunk_size=1024*1024):
+                        #size += len(chunk)
+                        #print("WRITE     ", datetime.now(), len(chunk))
                         if chunk:  # filter out keep-alive new chunks
-                            f.write(chunk)
+                            fh.write(chunk)
+                        #print("DONE WRITE", datetime.now())
 
-                if os.path.getsize(filename_dest) != int(file_size):
+                #print("DONE", datetime.now())
+
+                r.raise_for_status()
+                #print("{} bytes written".format(size))
+                actual_file_size = os.path.getsize(filename_dest)
+                if actual_file_size != int(file_size):
                     if self.collect_files_with_wrong_length:
                         self.files_with_wrong_length.append(filename)
                     else:
-                        raise ValueError("File has the wrong length: {}".format(filename_dest))
+                        print (
+                            "WARNING! File {} has the wrong length: Expected: {} Actual size: {}".format(
+                                filename_dest, int(file_size), actual_file_size)
+                        )
+                        print (
+                            "REASON: The connection has been silently dropped upstreams.",
+                            "Please check the http timeout settings of the openBIS datastore server"
+                        )
+            except Exception as err:
+                print("ERROR while writing file {}: {}".format(filename_dest, err))
+
             finally:
                 self.download_queue.task_done()
 

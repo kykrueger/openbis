@@ -25,6 +25,7 @@ import org.springframework.stereotype.Component;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.operation.IOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.operation.IOperationResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.IOperationExecutionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.id.OperationExecutionPermId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 
@@ -49,9 +50,10 @@ public class AsynchronousOperationThreadPoolExecutor implements IAsynchronousOpe
 
     @Override
     @Transactional
-    public List<IOperationResult> execute(IOperationContext context, OperationExecutionPermId executionId, List<? extends IOperation> operations)
+    public List<IOperationResult> execute(IOperationContext context, OperationExecutionPermId executionId, List<? extends IOperation> operations,
+            IOperationExecutionOptions options)
     {
-        return operationsExecutor.execute(context, operations);
+        return operationsExecutor.execute(context, operations, options);
     }
 
 }
