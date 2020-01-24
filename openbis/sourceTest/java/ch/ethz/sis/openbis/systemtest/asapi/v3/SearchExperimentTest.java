@@ -841,31 +841,18 @@ public class SearchExperimentTest extends AbstractExperimentTest
 
         String sessionToken = v3api.login(user.getUserId(), PASSWORD);
 
-        if (user.isDisabledProjectUser())
+        SearchResult<Experiment> result = v3api.searchExperiments(sessionToken, criteria, experimentFetchOptionsFull());
+
+        if (user.isInstanceUser())
         {
-            assertAuthorizationFailureException(new IDelegatedAction()
-                {
-                    @Override
-                    public void execute()
-                    {
-                        v3api.searchExperiments(sessionToken, criteria, experimentFetchOptionsFull());
-                    }
-                });
+            assertEquals(result.getObjects().size(), 2);
+        } else if ((user.isTestSpaceUser() || user.isTestProjectUser()) && !user.isDisabledProjectUser())
+        {
+            assertEquals(result.getObjects().size(), 1);
+            assertEquals(result.getObjects().get(0).getIdentifier(), new ExperimentIdentifier("/TEST-SPACE/TEST-PROJECT/EXP-SPACE-TEST"));
         } else
         {
-            SearchResult<Experiment> result = v3api.searchExperiments(sessionToken, criteria, experimentFetchOptionsFull());
-
-            if (user.isInstanceUser())
-            {
-                assertEquals(result.getObjects().size(), 2);
-            } else if (user.isTestSpaceUser() || user.isTestProjectUser())
-            {
-                assertEquals(result.getObjects().size(), 1);
-                assertEquals(result.getObjects().get(0).getIdentifier(), new ExperimentIdentifier("/TEST-SPACE/TEST-PROJECT/EXP-SPACE-TEST"));
-            } else
-            {
-                assertEquals(result.getObjects().size(), 0);
-            }
+            assertEquals(result.getObjects().size(), 0);
         }
 
         v3api.logout(sessionToken);
