@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import json
 from collections import deque
 
 import jarray
@@ -486,12 +487,18 @@ def getDOCX(entityObj, v3, sessionToken, isHTML):
             propertyType = propertyAssigment.getPropertyType();
             if propertyType.getCode() in properties:
                 propertyValue = properties[propertyType.getCode()];
-                if propertyType.getDataType() is DataType.MULTILINE_VARCHAR:
+                if propertyType.getDataType() is DataType.MULTILINE_VARCHAR and propertyType.getMetaData().get("custom_widget") == "Word Processor":
                     doc = Jsoup.parse(propertyValue);
                     imageElements = doc.select("img");
                     for imageElement in imageElements:
                         imageSrc = imageElement.attr("src");
                         propertyValue = propertyValue.replace(imageSrc, DataStoreServer.getConfigParameters().getServerURL() + imageSrc + "?sessionID=" + sessionToken);
+                if propertyType.getDataType() is DataType.XML and propertyType.getMetaData().get("custom_widget") == "Spreadsheet" \
+                        and propertyValue.upper().startswith("<DATA>") and propertyValue.upper().endswith("</DATA>"):
+                    propertyValue = propertyValue[6:-7].decode('base64')
+                    propertyValue = convertJsonToHtml(json.loads(propertyValue))
+                    print "Corrected propertyValue. propertyValue='%s'" % propertyValue
+
                 if propertyValue != u"\uFFFD(undefined)":
                     docxBuilder.addProperty(propertyType.getLabel(), propertyValue);
     
@@ -499,6 +506,20 @@ def getDOCX(entityObj, v3, sessionToken, isHTML):
         return docxBuilder.getHTMLBytes();
     else:
         return docxBuilder.getDocBytes();
+
+
+def convertJsonToHtml(json):
+    data = json["data"]
+
+    commonStyle = "border: 1px solid black;"
+    tableStyle = commonStyle + " border-collapse: collapse;"
+
+    tableBody = ""
+    for dataRow in data:
+        rowString = ("<tr>\n  <td style='%s'>" % commonStyle) + ("</td>\n  <td style='%s'>" % commonStyle).join(dataRow) + "</td>\n</tr>\n"
+        tableBody += rowString
+    return ("<table style='%s'>\n" % tableStyle) + tableBody + "</table>"
+
 
 def getTXT(entityObj, v3, sessionToken, isRichText):
     txtBuilder = StringBuilder();
