@@ -15,8 +15,10 @@
 #
 import json
 from collections import deque
+from json.decoder import JSONArray
 
 import jarray
+import array
 # To obtain the openBIS URL
 from ch.systemsx.cisd.openbis.dss.generic.server import DataStoreServer
 from ch.systemsx.cisd.openbis.generic.client.web.client.exception import UserFailureException
@@ -26,6 +28,7 @@ from java.io import FileInputStream
 from java.io import FileOutputStream
 from java.lang import String
 from java.lang import StringBuilder
+from java.util import ArrayList
 from java.util.zip import ZipEntry, Deflater
 from java.util.zip import ZipOutputStream
 from org.apache.commons.io import FileUtils
@@ -94,6 +97,8 @@ from ch.ethz.sis import DOCXBuilder
 
 #Images export for word
 from org.jsoup import Jsoup;
+
+from com.github.freva.asciitable import AsciiTable
 
 class MLStripper(HTMLParser):
     def __init__(self):
@@ -497,7 +502,6 @@ def getDOCX(entityObj, v3, sessionToken, isHTML):
                         and propertyValue.upper().startswith("<DATA>") and propertyValue.upper().endswith("</DATA>"):
                     propertyValue = propertyValue[6:-7].decode('base64')
                     propertyValue = convertJsonToHtml(json.loads(propertyValue))
-                    print "Corrected propertyValue. propertyValue='%s'" % propertyValue
 
                 if propertyValue != u"\uFFFD(undefined)":
                     docxBuilder.addProperty(propertyType.getLabel(), propertyValue);
@@ -510,15 +514,16 @@ def getDOCX(entityObj, v3, sessionToken, isHTML):
 
 def convertJsonToHtml(json):
     data = json["data"]
+    # widths = json["width"]
 
     commonStyle = "border: 1px solid black;"
     tableStyle = commonStyle + " border-collapse: collapse;"
 
-    tableBody = ""
+    tableBody = StringBuilder()
     for dataRow in data:
         rowString = ("<tr>\n  <td style='%s'>" % commonStyle) + ("</td>\n  <td style='%s'>" % commonStyle).join(dataRow) + "</td>\n</tr>\n"
-        tableBody += rowString
-    return ("<table style='%s'>\n" % tableStyle) + tableBody + "</table>"
+        tableBody.append(rowString)
+    return ("<table style='%s'>\n" % tableStyle) + tableBody.toString() + "</table>"
 
 
 def getTXT(entityObj, v3, sessionToken, isRichText):
@@ -556,7 +561,7 @@ def getTXT(entityObj, v3, sessionToken, isRichText):
     
     if not isinstance(entityObj, Project):
         txtBuilder.append("- Type: " + entityObj.getType().getCode()).append("\n");
-    
+
     if(entityObj.getRegistrator() is not None):
         txtBuilder.append("- Registrator: ").append(entityObj.getRegistrator().getUserId()).append("\n");
         txtBuilder.append("- Registration Date: ").append(str(entityObj.getRegistrationDate())).append("\n");
@@ -597,10 +602,45 @@ def getTXT(entityObj, v3, sessionToken, isRichText):
             if propertyType.getCode() in properties:
                 propertyValue = properties[propertyType.getCode()];
                 if propertyValue != u"\uFFFD(undefined)":
-                    if(propertyType.getDataType() == DataType.MULTILINE_VARCHAR and isRichText is False):
+                    if propertyType.getDataType() is DataType.XML and propertyType.getMetaData().get("custom_widget") == "Spreadsheet" \
+                            and propertyValue.upper().startswith("<DATA>") and propertyValue.upper().endswith("</DATA>"):
+                        propertyValue = propertyValue[6:-7].decode('base64')
+                        propertyValue = "\n" + convertJsonToText(json.loads(propertyValue))
+                        # txtBuilder.append(text)
+                    elif(propertyType.getDataType() == DataType.MULTILINE_VARCHAR and isRichText is False):
                         propertyValue = strip_tags(propertyValue).strip();
                     txtBuilder.append("- ").append(propertyType.getLabel()).append(": ").append(propertyValue).append("\n");
+
     return txtBuilder.toString();
+
+
+def convertJsonToText(json):
+    data = json["data"]
+    return doConvertJsonToText(data)
+
+
+def doConvertJsonToText(json):
+    data = jsonArrayToArray(json)
+    print ("Type: %s, Data: %s" % (type(data), str(data)))
+    return AsciiTable.getTable(objToStrArray(data))
+
+
+def jsonArrayToArray(json):
+    stringList = ArrayList()
+    for s in json:
+        stringList.add(s)
+    return stringList.toArray()
+
+
+def objToStrArray(objArray):
+    result = []
+    for subObjArray in objArray:
+        row = []
+        for obj in subObjArray:
+            row.append(str(obj))
+        result.append(row)
+    return result
+
 
 def addFile(tempDirPath, entityFilePath, extension, fileContent, zos):
     entityFileNameWithExtension = entityFilePath + "." + extension
