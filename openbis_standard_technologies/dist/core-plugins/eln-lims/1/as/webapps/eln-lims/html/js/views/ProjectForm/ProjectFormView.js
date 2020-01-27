@@ -214,17 +214,19 @@ function ProjectFormView(projectFormController, projectFormModel) {
 	
 	this._createIdentificationInfoSection = function(hideShowOptionsModel) {
 		hideShowOptionsModel.push({
+			forceToShow : this._projectFormModel.mode === FormMode.CREATE,
 			label : "Identification Info",
 			section : "#project-identification-info"
 		});
 		
+		var _this = this;
 		var $identificationInfo = $("<div>", { id : "project-identification-info" });
 
 		$identificationInfo.append($("<legend>").append("Identification Info"));
 
 		$identificationInfo.append(FormUtil.getFieldForLabelWithText("Space", this._projectFormModel.project.spaceCode));
 
-		if(this._projectFormModel.mode === FormMode.CREATE) {
+		if (this._projectFormModel.mode === FormMode.CREATE) {
 			var $textField = FormUtil._getInputField('text', null, "Project Code", null, true);
 			$textField.keyup(function(event){
 				var textField = $(this);
@@ -265,6 +267,7 @@ function ProjectFormView(projectFormController, projectFormModel) {
 			section : "#project-description"
 		});
 		
+		var _this = this;
 		var $description = $("<div>", { id : "project-description" });
 		$description.append($("<legend>").append("General"));
 		var description = Util.getEmptyIfNull(this._projectFormModel.project.description);

@@ -960,9 +960,9 @@ var FormUtil = new function() {
 	}
 
 	this.addOptionsToToolbar = function(toolbarModel, dropdownOptionsModel, hideShowOptionsModel, namespace, title) {
-	    if(!title) {
-	        title = "More ... ";
-	    }
+		if(!title) {
+			title = "More ... ";
+		}
 		var $dropdownOptionsMenu = $("<span>", { class : 'dropdown' });
 		if(toolbarModel) {
 		    toolbarModel.push({ component : $dropdownOptionsMenu, tooltip: null });
@@ -975,11 +975,11 @@ var FormUtil = new function() {
 		for (var idx = 0; idx < dropdownOptionsModel.length; idx++) {
 			var label = dropdownOptionsModel[idx].label;
 			if(dropdownOptionsModel[idx].separator) {
-			    $dropdownOptionsMenuList.append($("<li>", { 'role' : 'presentation' }).append($("<hr>", { style : "margin-top: 5px; margin-bottom: 5px;"})));
+				$dropdownOptionsMenuList.append($("<li>", { 'role' : 'presentation' }).append($("<hr>", { style : "margin-top: 5px; margin-bottom: 5px;"})));
 			} else {
-			    var $dropdownElement = $("<li>", { 'role' : 'presentation' }).append($("<a>", {'title' : label }).append(label));
-                $dropdownElement.click(dropdownOptionsModel[idx].action);
-                $dropdownOptionsMenuList.append($dropdownElement);
+				var $dropdownElement = $("<li>", { 'role' : 'presentation' }).append($("<a>", {'title' : label }).append(label));
+				$dropdownElement.click(dropdownOptionsModel[idx].action);
+				$dropdownOptionsMenuList.append($dropdownElement);
 			}
 		}
 
@@ -992,7 +992,7 @@ var FormUtil = new function() {
 			var sectionsSettings = settingsValue ? JSON.parse(settingsValue) : {};
 			for (var idx = 0; idx < hideShowOptionsModel.length; idx++) {
 				var option = hideShowOptionsModel[idx];
-				var shown = sectionsSettings[option.label] === "shown";
+				var shown = sectionsSettings[option.label] === "shown" || option.forceToShow === true;
 				var $section = $(option.section);
 				$section.toggle(shown);
 				var $label = $("<span>").append((shown ? "Hide " : "Show ") + option.label);
