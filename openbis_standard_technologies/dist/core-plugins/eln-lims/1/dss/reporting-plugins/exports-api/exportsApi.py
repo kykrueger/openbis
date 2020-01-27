@@ -15,10 +15,8 @@
 #
 import json
 from collections import deque
-from json.decoder import JSONArray
 
 import jarray
-import array
 # To obtain the openBIS URL
 from ch.systemsx.cisd.openbis.dss.generic.server import DataStoreServer
 from ch.systemsx.cisd.openbis.generic.client.web.client.exception import UserFailureException
@@ -108,6 +106,7 @@ class MLStripper(HTMLParser):
         self.fed.append(d)
     def get_data(self):
         return ''.join(self.fed)
+
 
 def strip_tags(html):
     s = MLStripper()
@@ -514,16 +513,29 @@ def getDOCX(entityObj, v3, sessionToken, isHTML):
 
 def convertJsonToHtml(json):
     data = json["data"]
-    # widths = json["width"]
+    styles = json["style"]
 
     commonStyle = "border: 1px solid black;"
     tableStyle = commonStyle + " border-collapse: collapse;"
 
     tableBody = StringBuilder()
-    for dataRow in data:
-        rowString = ("<tr>\n  <td style='%s'>" % commonStyle) + ("</td>\n  <td style='%s'>" % commonStyle).join(dataRow) + "</td>\n</tr>\n"
-        tableBody.append(rowString)
+    for i, dataRow in enumerate(data):
+        tableBody.append("<tr>\n")
+        for j, cell in enumerate(dataRow):
+            stylesKey = convertNumericToAlphanumeric(i, j)
+            style = styles[stylesKey]
+            tableBody.append("  <td style='").append(commonStyle).append(" ").append(style).append("'> ").append(cell).append(" </td>\n")
+        tableBody.append("</tr>\n")
     return ("<table style='%s'>\n" % tableStyle) + tableBody.toString() + "</table>"
+
+
+def convertNumericToAlphanumeric(row, col):
+    aCharCode = ord("A")
+    ord0 = col % 26
+    ord1 = col / 26
+    char0 = chr(aCharCode + ord0)
+    char1 = chr(aCharCode + ord1 - 1) if ord1 > 0 else ""
+    return char1 + char0 + str(row + 1)
 
 
 def getTXT(entityObj, v3, sessionToken, isRichText):
@@ -606,7 +618,6 @@ def getTXT(entityObj, v3, sessionToken, isRichText):
                             and propertyValue.upper().startswith("<DATA>") and propertyValue.upper().endswith("</DATA>"):
                         propertyValue = propertyValue[6:-7].decode('base64')
                         propertyValue = "\n" + convertJsonToText(json.loads(propertyValue))
-                        # txtBuilder.append(text)
                     elif(propertyType.getDataType() == DataType.MULTILINE_VARCHAR and isRichText is False):
                         propertyValue = strip_tags(propertyValue).strip();
                     txtBuilder.append("- ").append(propertyType.getLabel()).append(": ").append(propertyValue).append("\n");
@@ -621,7 +632,6 @@ def convertJsonToText(json):
 
 def doConvertJsonToText(json):
     data = jsonArrayToArray(json)
-    print ("Type: %s, Data: %s" % (type(data), str(data)))
     return AsciiTable.getTable(objToStrArray(data))
 
 
