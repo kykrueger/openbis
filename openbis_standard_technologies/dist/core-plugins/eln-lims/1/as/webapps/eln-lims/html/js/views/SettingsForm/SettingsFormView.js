@@ -171,7 +171,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 				logicalOperator : "AND",
 				rules : { "1" : { type : "Attribute", name : "SAMPLE_TYPE", value : "STORAGE" } }
 		}
-		var dataGrid = SampleDataGridUtil.getSampleDataGrid(experimentIdentifier, advancedSampleSearchCriteria, null, null, null, null, true, null, false, 30);
+		var dataGrid = SampleDataGridUtil.getSampleDataGrid(experimentIdentifier, advancedSampleSearchCriteria, null, null, null, null, true, null, false, false, 30);
 		var extraOptions = [];
 		dataGrid.init($gridContainer, extraOptions);
 	}
@@ -210,7 +210,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 				          "3" : { type : "Space",       name : "ATTR.CODE", value : this._settingsFormModel.settingsSample.spaceCode }
 			    }
 		}
-		var dataGrid = SampleDataGridUtil.getSampleDataGrid(null, advancedSampleSearchCriteria, null, null, null, null, true, null, false, 30);
+		var dataGrid = SampleDataGridUtil.getSampleDataGrid(null, advancedSampleSearchCriteria, null, null, null, null, true, null, false, false, 30);
 		var extraOptions = [];
 		dataGrid.init($gridContainer, extraOptions);
 	}
