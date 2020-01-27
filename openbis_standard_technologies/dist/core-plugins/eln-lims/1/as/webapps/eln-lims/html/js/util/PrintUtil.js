@@ -267,13 +267,7 @@ var PrintUtil = new function() {
 				var cell = dataRow[j];
 				stylesKey = this._convertNumericToAlphanumeric(i, j);
 				style = styles[stylesKey];
-				tableBody.push("  <td style='");
-				tableBody.push(commonStyle);
-				tableBody.push(" ");
-				tableBody.push(style);
-				tableBody.push("'> ");
-				tableBody.push(cell);
-				tableBody.push(" </td>\n");
+				tableBody.push("  <td style='", commonStyle, " ", style, "'> ", cell, " </td>\n");
 			}
 			tableBody.push("</tr>\n");
 		}
