@@ -955,8 +955,35 @@ var FormUtil = new function() {
 		return originalValue;
 	}
 
-	this.getCreateSampleDropdown = function(parentSample, experiment) {
-
+	this.addCreationDropdown = function(toolbarModel, types, priorityTypeCodes, actionFactory) {
+		var priorityTypes = [];
+		var otherTypes = [];
+		for (var idx = 0; idx < types.length; idx++) {
+			var type = types[idx];
+			if ($.inArray(type.code, priorityTypeCodes) !== -1) {
+				priorityTypes.push(type);
+			} else {
+				otherTypes.push(type);
+			}
+		}
+		
+		var dropdownModel = [];
+		this._populateDropdownModel(dropdownModel, priorityTypes, actionFactory);
+		if (priorityTypes.length > 0 && otherTypes.length > 0) {
+			dropdownModel.push({ separator : true });
+		}
+		this._populateDropdownModel(dropdownModel, otherTypes, actionFactory);
+		
+		FormUtil.addOptionsToToolbar(toolbarModel, dropdownModel, [], null, "New ");
+	}
+	
+	this._populateDropdownModel = function(dropdownModel, types, actionFactory) {
+		types.forEach(function (type) {
+			dropdownModel.push({
+				label : Util.getDisplayNameFromCode(type.code),
+				action : actionFactory(type.code)
+			});
+		});
 	}
 
 	this.addOptionsToToolbar = function(toolbarModel, dropdownOptionsModel, hideShowOptionsModel, namespace, title) {

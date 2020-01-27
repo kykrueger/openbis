@@ -119,45 +119,18 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		if(this._sampleFormModel.mode === FormMode.VIEW) {
 			// New
 			if(_this._allowedToCreateChild() && toolbarConfig.CREATE && _this._sampleFormModel.sample.sampleTypeCode === "EXPERIMENTAL_STEP") {
-			    var dropdownNewModel = [];
-			    var sampleTypes = profile.getAllSampleTypes(true);
-                var getNewSampleOfTypeWithParent = function(sampleTypeCode, experimentIdentifier, sampleIdentifier) {
-                    return function() {
-                        Util.blockUI();
-                        setTimeout(function() {
-                            FormUtil.createNewSampleOfTypeWithParent(sampleTypeCode, experimentIdentifier, sampleIdentifier);
-                        }, 100);
-                    };
-                }
-
-                var sampleTypeCodePriority = ["ENTRY", "EXPERIMENTAL_STEP"];
-                var sampleTypesPriority = [];
-                var sampleTypesOthers = [];
-                for(var tIdx = 0; tIdx < sampleTypes.length; tIdx++) {
-                    if($.inArray(sampleTypes[tIdx].code, sampleTypeCodePriority) !== -1) {
-                        sampleTypesPriority.push(sampleTypes[tIdx]);
-                    } else {
-                        sampleTypesOthers.push(sampleTypes[tIdx]);
-                    }
-                }
-
-			    for(var tIdx = 0; tIdx < sampleTypesPriority.length; tIdx++) {
-			        dropdownNewModel.push({
-                        label : Util.getDisplayNameFromCode(sampleTypesPriority[tIdx].code),
-                        action : getNewSampleOfTypeWithParent(sampleTypesPriority[tIdx].code, _this._sampleFormModel.sample.experimentIdentifierOrNull, _this._sampleFormModel.sample.identifier)
-                    });
-			    }
-                if(sampleTypesPriority && sampleTypesOthers) {
-                    dropdownNewModel.push({ separator : true });
-                }
-                for(var tIdx = 0; tIdx < sampleTypesOthers.length; tIdx++) {
-			        dropdownNewModel.push({
-                        label : Util.getDisplayNameFromCode(sampleTypesOthers[tIdx].code),
-                        action : getNewSampleOfTypeWithParent(sampleTypesOthers[tIdx].code, _this._sampleFormModel.sample.experimentIdentifierOrNull, _this._sampleFormModel.sample.identifier)
-                    });
-			    }
-
-			    FormUtil.addOptionsToToolbar(toolbarModel, dropdownNewModel, [], null, "New ");
+				var sampleTypes = profile.getAllSampleTypes(true);
+				FormUtil.addCreationDropdown(toolbarModel, sampleTypes, ["ENTRY", "EXPERIMENTAL_STEP"], function(typeCode) {
+					return function() {
+						Util.blockUI();
+						setTimeout(function() {
+							FormUtil.createNewSampleOfTypeWithParent(typeCode,
+									_this._sampleFormModel.sample.experimentIdentifierOrNull, 
+									_this._sampleFormModel.sample.identifier);
+						}, 100);
+					}
+					getNewSampleOfTypeWithParent(typeCode,);
+				});
 			}
 			
 			if (_this._allowedToEdit()) {
