@@ -65,47 +65,18 @@ function ProjectFormView(projectFormController, projectFormModel) {
 			var experimentKindName = ELNDictionary.getExperimentKindName(projectIdentifier);
 			if (_this._allowedToCreateExperiments()) {
 				//Create Experiment
-				var isDefaultExperimentPresent = mainController.profile.getExperimentTypeForExperimentTypeCode("DEFAULT_EXPERIMENT") != null;
-				if(isDefaultExperimentPresent) {
-					var newExperimentTypeDropdownId = "new-experiment-type-dropdown";
-					var defaultValueKey = entityPath.text() + "-FORM-" + newExperimentTypeDropdownId;
-
-					this._projectFormController.getDefaultSpaceValue(defaultValueKey, function (settingsValue) {
-						var defaultValue;
-						if (settingsValue) {
-							defaultValue = settingsValue;
-						} else if (profile.isInventorySpace(_this._projectFormModel.project.spaceCode)) {
-							var experimentType = profile.getExperimentTypeForExperimentTypeCode(_this._projectFormModel.project.spaceCode);
-							if (experimentType) {
-								defaultValue = _this._projectFormModel.project.spaceCode;
-							} else {
-								defaultValue = "COLLECTION";
-							}
-						} else {
-							defaultValue = "DEFAULT_EXPERIMENT";
-						}
-
-						$("option[value=" + defaultValue + "]").prop("selected", true);
-					});
-
-					var $experimentTypeDropdown = FormUtil.getInlineExperimentTypeDropdown(newExperimentTypeDropdownId, true);
-					var $createExpBtn = FormUtil.getButtonWithIcon("glyphicon-plus", function() {
-						var experimentTypeCode = $("#" + newExperimentTypeDropdownId)[0].value;
-
-						if (experimentTypeCode && experimentTypeCode !== "") {
-							_this._projectFormController.createNewExperiment(experimentTypeCode);
-						}
-					});
-
-					toolbarModel.push({ component: $createExpBtn, tooltip: "Create " + experimentKindName });
-					toolbarModel.push({ component: $experimentTypeDropdown, tooltip: "Type of the " + experimentKindName + " to create" });
-
-					$experimentTypeDropdown.change(function(event) {
-						_this._projectFormController.setDefaultSpaceValue(defaultValueKey, $(event.target).val());
-					});
-				}
+				var experimentTypes = mainController.profile.allExperimentTypes;
+				FormUtil.addCreationDropdown(toolbarModel, experimentTypes, ["DEFAULT_EXPERIMENT", "COLLECTION"], function(typeCode) {
+					return function() {
+						Util.blockUI();
+						setTimeout(function() {
+							_this._projectFormController.createNewExperiment(typeCode);
+						}, 100);
+					}
+					getNewSampleOfTypeWithParent(typeCode,);
+				});
 			}
-            if (_this._allowedToMove()) {
+			if (_this._allowedToMove()) {
                 //Move
 				dropdownOptionsModel.push({
                     label : "Move",
@@ -119,8 +90,8 @@ function ProjectFormView(projectFormController, projectFormModel) {
 				//Edit
 				var $editBtn = FormUtil.getButtonWithIcon("glyphicon-edit", function () {
 					_this._projectFormController.enableEditing();
-				});
-				toolbarModel.push({ component : $editBtn, tooltip: "Edit" });
+				}, "Edit");
+				toolbarModel.push({ component : $editBtn });
 			}
 			if(_this._allowedToDelete()) {
 				//Delete
