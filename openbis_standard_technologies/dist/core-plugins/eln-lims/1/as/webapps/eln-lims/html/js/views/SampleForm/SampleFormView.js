@@ -112,39 +112,25 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		// Toolbar
 		//
 		var toolbarModel = [];
+		var rightToolbarModel = [];
         var dropdownOptionsModel = [];
 		var toolbarConfig = profile.getSampleTypeToolbarConfiguration(_this._sampleFormModel.sample.sampleTypeCode);
 		
 		if(this._sampleFormModel.mode === FormMode.VIEW) {
-			//Create Experiment Step
-			if(_this._sampleFormModel.sample.sampleTypeCode === "EXPERIMENTAL_STEP" && _this._allowedToCreateChild()) {
-				var $createBtn = FormUtil.getButtonWithIcon("glyphicon-plus", function() {
-					var argsMap = {
-							"sampleTypeCode" : "EXPERIMENTAL_STEP",
-							"experimentIdentifier" : _this._sampleFormModel.sample.experimentIdentifierOrNull
+			// New
+			if(_this._allowedToCreateChild() && toolbarConfig.CREATE && _this._sampleFormModel.sample.sampleTypeCode === "EXPERIMENTAL_STEP") {
+				var sampleTypes = profile.getAllSampleTypes(true);
+				FormUtil.addCreationDropdown(toolbarModel, sampleTypes, ["ENTRY", "EXPERIMENTAL_STEP"], function(typeCode) {
+					return function() {
+						Util.blockUI();
+						setTimeout(function() {
+							FormUtil.createNewSampleOfTypeWithParent(typeCode,
+									_this._sampleFormModel.sample.experimentIdentifierOrNull, 
+									_this._sampleFormModel.sample.identifier);
+						}, 100);
 					}
-					var argsMapStr = JSON.stringify(argsMap);
-					
-					mainController.changeView("showCreateSubExperimentPage", argsMapStr);
-					
-					var setParent = function() {
-						mainController.currentView._sampleFormModel.sampleLinksParents.addSample(_this._sampleFormModel.sample);
-						Util.unblockUI();
-					}
-					
-					var repeatUntilSet = function() {
-						if(mainController.currentView.isLoaded()) {
-							setParent();
-						} else {
-							setTimeout(repeatUntilSet, 100);
-						}
-					}
-					
-					repeatUntilSet();
-				},"New");
-				if(toolbarConfig.CREATE) {
-					toolbarModel.push({ component : $createBtn, tooltip: null });
-				}
+					getNewSampleOfTypeWithParent(typeCode,);
+				});
 			}
 			
 			if (_this._allowedToEdit()) {
@@ -351,7 +337,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
                 if(toolbarConfig.FREEZE) {
                     if(isEntityFrozen) {
                         var $freezeButton = FormUtil.getFreezeButton("SAMPLE", this._sampleFormModel.v3_sample.permId.permId, isEntityFrozen);
-                        toolbarModel.push({ component : $freezeButton, tooltip: "Entity Frozen" });
+                        rightToolbarModel.push({ component : $freezeButton, tooltip: null });
                     } else {
                         dropdownOptionsModel.push({
                             label : "Freeze Entity (Disable further modifications)",
@@ -433,7 +419,6 @@ function SampleFormView(sampleFormController, sampleFormModel) {
             }
 		}
 
-        var paginationToolbarModel = [];
 		if(this._sampleFormModel.mode !== FormMode.CREATE && this._sampleFormModel.paginationInfo) {
 			var moveToIndex = function(index) {
 				var pagOptionsToSend = $.extend(true, {}, _this._sampleFormModel.paginationInfo.pagOptions);
@@ -457,14 +442,14 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 				var $backBtn = FormUtil.getButtonWithIcon("glyphicon-arrow-left", function () {
 					moveToIndex(_this._sampleFormModel.paginationInfo.currentIndex-1);
 				}, "Previous");
-				paginationToolbarModel.push({ component : $backBtn, tooltip: null });
+				rightToolbarModel.push({ component : $backBtn, tooltip: null });
 			}
 			
 			if(this._sampleFormModel.paginationInfo.currentIndex+1 < this._sampleFormModel.paginationInfo.totalCount) {
 				var $nextBtn = FormUtil.getButtonWithIcon("glyphicon-arrow-right", function () {
 					moveToIndex(_this._sampleFormModel.paginationInfo.currentIndex+1);
 				}, "Next");
-				paginationToolbarModel.push({ component : $nextBtn, tooltip: null });
+				rightToolbarModel.push({ component : $nextBtn, tooltip: null });
 			}
 		}
 		
@@ -622,7 +607,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		FormUtil.addOptionsToToolbar(toolbarModel, dropdownOptionsModel, hideShowOptionsModel,
 				"SAMPLE-VIEW-" + _this._sampleFormModel.sample.sampleTypeCode);
 		$header.append(FormUtil.getToolbar(toolbarModel));
-		$header.append(FormUtil.getToolbar(paginationToolbarModel).css("float", "right"));
+		$header.append(FormUtil.getToolbar(rightToolbarModel).css("float", "right"));
 		$container.append($form);
 		
 		//

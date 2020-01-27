@@ -955,14 +955,41 @@ var FormUtil = new function() {
 		return originalValue;
 	}
 
-	this.getCreateSampleDropdown = function(parentSample, experiment) {
-
+	this.addCreationDropdown = function(toolbarModel, types, priorityTypeCodes, actionFactory) {
+		var priorityTypes = [];
+		var otherTypes = [];
+		for (var idx = 0; idx < types.length; idx++) {
+			var type = types[idx];
+			if ($.inArray(type.code, priorityTypeCodes) !== -1) {
+				priorityTypes.push(type);
+			} else {
+				otherTypes.push(type);
+			}
+		}
+		
+		var dropdownModel = [];
+		this._populateDropdownModel(dropdownModel, priorityTypes, actionFactory);
+		if (priorityTypes.length > 0 && otherTypes.length > 0) {
+			dropdownModel.push({ separator : true });
+		}
+		this._populateDropdownModel(dropdownModel, otherTypes, actionFactory);
+		
+		FormUtil.addOptionsToToolbar(toolbarModel, dropdownModel, [], null, "New ");
+	}
+	
+	this._populateDropdownModel = function(dropdownModel, types, actionFactory) {
+		types.forEach(function (type) {
+			dropdownModel.push({
+				label : Util.getDisplayNameFromCode(type.code),
+				action : actionFactory(type.code)
+			});
+		});
 	}
 
 	this.addOptionsToToolbar = function(toolbarModel, dropdownOptionsModel, hideShowOptionsModel, namespace, title) {
-	    if(!title) {
-	        title = "More ... ";
-	    }
+		if(!title) {
+			title = "More ... ";
+		}
 		var $dropdownOptionsMenu = $("<span>", { class : 'dropdown' });
 		if(toolbarModel) {
 		    toolbarModel.push({ component : $dropdownOptionsMenu, tooltip: null });
@@ -973,10 +1000,14 @@ var FormUtil = new function() {
 		$dropdownOptionsMenu.append($dropdownOptionsMenuCaret);
 		$dropdownOptionsMenu.append($dropdownOptionsMenuList);
 		for (var idx = 0; idx < dropdownOptionsModel.length; idx++) {
-			var label = dropdownOptionsModel[idx].label
-			var $dropdownElement = $("<li>", { 'role' : 'presentation' }).append($("<a>", {'title' : label }).append(label));
-			$dropdownElement.click(dropdownOptionsModel[idx].action);
-			$dropdownOptionsMenuList.append($dropdownElement);
+			var label = dropdownOptionsModel[idx].label;
+			if(dropdownOptionsModel[idx].separator) {
+				$dropdownOptionsMenuList.append($("<li>", { 'role' : 'presentation' }).append($("<hr>", { style : "margin-top: 5px; margin-bottom: 5px;"})));
+			} else {
+				var $dropdownElement = $("<li>", { 'role' : 'presentation' }).append($("<a>", {'title' : label }).append(label));
+				$dropdownElement.click(dropdownOptionsModel[idx].action);
+				$dropdownOptionsMenuList.append($dropdownElement);
+			}
 		}
 
 		if(hideShowOptionsModel.length > 0 && dropdownOptionsModel.length > 0) {
@@ -988,7 +1019,7 @@ var FormUtil = new function() {
 			var sectionsSettings = settingsValue ? JSON.parse(settingsValue) : {};
 			for (var idx = 0; idx < hideShowOptionsModel.length; idx++) {
 				var option = hideShowOptionsModel[idx];
-				var shown = sectionsSettings[option.label] === "shown";
+				var shown = sectionsSettings[option.label] === "shown" || option.forceToShow === true;
 				var $section = $(option.section);
 				$section.toggle(shown);
 				var $label = $("<span>").append((shown ? "Hide " : "Show ") + option.label);
@@ -1637,6 +1668,7 @@ var FormUtil = new function() {
 		
 		if(isEntityFrozen) {
 			$freezeButton.attr("disabled", "disabled");
+			$freezeButton.append("Frozen");
 		} else {
 			$freezeButton.click(function() {
 				_this.showFreezeForm(entityType, permId);
@@ -1645,6 +1677,31 @@ var FormUtil = new function() {
 		
 		return $freezeButton;
 	}
+
+    this.createNewSampleOfTypeWithParent = function(sampleTypeCode, experimentIdentifier, sampleIdentifier) {
+        var argsMap = {
+	        "sampleTypeCode" : sampleTypeCode,
+	        "experimentIdentifier" : experimentIdentifier
+	    }
+	    var argsMapStr = JSON.stringify(argsMap);
+
+        mainController.changeView("showCreateSubExperimentPage", argsMapStr);
+
+	    var setParent = function() {
+	        mainController.currentView._sampleFormModel.sampleLinksParents.getSampleByIdentifier(sampleIdentifier);
+		    Util.unblockUI();
+	    }
+
+	    var repeatUntilSet = function() {
+	        if(mainController.currentView.isLoaded()) {
+		        setParent();
+	        } else {
+		        setTimeout(repeatUntilSet, 100);
+		    }
+	    }
+
+	    repeatUntilSet();
+    }
 
 	this.createNewSample = function(experimentIdentifier) {
     		var _this = this;

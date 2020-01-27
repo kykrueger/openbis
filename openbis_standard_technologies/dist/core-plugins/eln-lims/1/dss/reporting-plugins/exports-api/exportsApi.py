@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import json
 from collections import deque
 
 import jarray
@@ -25,6 +26,7 @@ from java.io import FileInputStream
 from java.io import FileOutputStream
 from java.lang import String
 from java.lang import StringBuilder
+from java.util import ArrayList
 from java.util.zip import ZipEntry, Deflater
 from java.util.zip import ZipOutputStream
 from org.apache.commons.io import FileUtils
@@ -94,6 +96,8 @@ from ch.ethz.sis import DOCXBuilder
 #Images export for word
 from org.jsoup import Jsoup;
 
+from com.github.freva.asciitable import AsciiTable
+
 class MLStripper(HTMLParser):
     def __init__(self):
         self.reset()
@@ -102,6 +106,7 @@ class MLStripper(HTMLParser):
         self.fed.append(d)
     def get_data(self):
         return ''.join(self.fed)
+
 
 def strip_tags(html):
     s = MLStripper()
@@ -368,7 +373,6 @@ def generateFilesInZip(zos, entities, includeRoot, sessionToken, tempDirPath):
                 baseDirToCut = entityFilePath[:entityFilePath.rfind('/')];
             if entityFilePath is not None:
                 entityFilePath = entityFilePath[len(baseDirToCut):]
-        #
 
         if entityObj is not None:
             objectCache[permId] = entityObj;
@@ -486,12 +490,17 @@ def getDOCX(entityObj, v3, sessionToken, isHTML):
             propertyType = propertyAssigment.getPropertyType();
             if propertyType.getCode() in properties:
                 propertyValue = properties[propertyType.getCode()];
-                if propertyType.getDataType() is DataType.MULTILINE_VARCHAR:
+                if propertyType.getDataType() is DataType.MULTILINE_VARCHAR and propertyType.getMetaData().get("custom_widget") == "Word Processor":
                     doc = Jsoup.parse(propertyValue);
                     imageElements = doc.select("img");
                     for imageElement in imageElements:
                         imageSrc = imageElement.attr("src");
                         propertyValue = propertyValue.replace(imageSrc, DataStoreServer.getConfigParameters().getServerURL() + imageSrc + "?sessionID=" + sessionToken);
+                if propertyType.getDataType() is DataType.XML and propertyType.getMetaData().get("custom_widget") == "Spreadsheet" \
+                        and propertyValue.upper().startswith("<DATA>") and propertyValue.upper().endswith("</DATA>"):
+                    propertyValue = propertyValue[6:-7].decode('base64')
+                    propertyValue = convertJsonToHtml(json.loads(propertyValue))
+
                 if propertyValue != u"\uFFFD(undefined)":
                     docxBuilder.addProperty(propertyType.getLabel(), propertyValue);
     
@@ -499,6 +508,34 @@ def getDOCX(entityObj, v3, sessionToken, isHTML):
         return docxBuilder.getHTMLBytes();
     else:
         return docxBuilder.getDocBytes();
+
+
+def convertJsonToHtml(json):
+    data = json["data"]
+    styles = json["style"]
+
+    commonStyle = "border: 1px solid black;"
+    tableStyle = commonStyle + " border-collapse: collapse;"
+
+    tableBody = StringBuilder()
+    for i, dataRow in enumerate(data):
+        tableBody.append("<tr>\n")
+        for j, cell in enumerate(dataRow):
+            stylesKey = convertNumericToAlphanumeric(i, j)
+            style = styles[stylesKey]
+            tableBody.append("  <td style='").append(commonStyle).append(" ").append(style).append("'> ").append(cell).append(" </td>\n")
+        tableBody.append("</tr>\n")
+    return ("<table style='%s'>\n" % tableStyle) + tableBody.toString() + "</table>"
+
+
+def convertNumericToAlphanumeric(row, col):
+    aCharCode = ord("A")
+    ord0 = col % 26
+    ord1 = col / 26
+    char0 = chr(aCharCode + ord0)
+    char1 = chr(aCharCode + ord1 - 1) if ord1 > 0 else ""
+    return char1 + char0 + str(row + 1)
+
 
 def getTXT(entityObj, v3, sessionToken, isRichText):
     txtBuilder = StringBuilder();
@@ -535,7 +572,7 @@ def getTXT(entityObj, v3, sessionToken, isRichText):
     
     if not isinstance(entityObj, Project):
         txtBuilder.append("- Type: " + entityObj.getType().getCode()).append("\n");
-    
+
     if(entityObj.getRegistrator() is not None):
         txtBuilder.append("- Registrator: ").append(entityObj.getRegistrator().getUserId()).append("\n");
         txtBuilder.append("- Registration Date: ").append(str(entityObj.getRegistrationDate())).append("\n");
@@ -576,10 +613,43 @@ def getTXT(entityObj, v3, sessionToken, isRichText):
             if propertyType.getCode() in properties:
                 propertyValue = properties[propertyType.getCode()];
                 if propertyValue != u"\uFFFD(undefined)":
-                    if(propertyType.getDataType() == DataType.MULTILINE_VARCHAR and isRichText is False):
+                    if propertyType.getDataType() is DataType.XML and propertyType.getMetaData().get("custom_widget") == "Spreadsheet" \
+                            and propertyValue.upper().startswith("<DATA>") and propertyValue.upper().endswith("</DATA>"):
+                        propertyValue = propertyValue[6:-7].decode('base64')
+                        propertyValue = "\n" + convertJsonToText(json.loads(propertyValue))
+                    elif(propertyType.getDataType() == DataType.MULTILINE_VARCHAR and isRichText is False):
                         propertyValue = strip_tags(propertyValue).strip();
                     txtBuilder.append("- ").append(propertyType.getLabel()).append(": ").append(propertyValue).append("\n");
+
     return txtBuilder.toString();
+
+
+def convertJsonToText(json):
+    data = json["data"]
+    return doConvertJsonToText(data)
+
+
+def doConvertJsonToText(json):
+    data = jsonArrayToArray(json)
+    return AsciiTable.getTable(objToStrArray(data))
+
+
+def jsonArrayToArray(json):
+    stringList = ArrayList()
+    for s in json:
+        stringList.add(s)
+    return stringList.toArray()
+
+
+def objToStrArray(objArray):
+    result = []
+    for subObjArray in objArray:
+        row = []
+        for obj in subObjArray:
+            row.append(str(obj))
+        result.append(row)
+    return result
+
 
 def addFile(tempDirPath, entityFilePath, extension, fileContent, zos):
     entityFileNameWithExtension = entityFilePath + "." + extension
