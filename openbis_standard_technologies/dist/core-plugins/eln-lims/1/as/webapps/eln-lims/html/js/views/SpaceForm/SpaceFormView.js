@@ -40,8 +40,8 @@ function SpaceFormView(spaceFormController, spaceFormModel) {
 		if (_this._allowedToCreateProject()) {
 			var $createProj = FormUtil.getButtonWithIcon("glyphicon-plus", function() {
 				_this._spaceFormController.createProject();
-			});
-			toolbarModel.push({ component : $createProj, tooltip: "Create Project" });
+			}, "New Project");
+			toolbarModel.push({ component : $createProj});
 		}
 
 		//Export
