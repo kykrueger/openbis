@@ -373,7 +373,6 @@ def generateFilesInZip(zos, entities, includeRoot, sessionToken, tempDirPath):
                 baseDirToCut = entityFilePath[:entityFilePath.rfind('/')];
             if entityFilePath is not None:
                 entityFilePath = entityFilePath[len(baseDirToCut):]
-        #
 
         if entityObj is not None:
             objectCache[permId] = entityObj;
