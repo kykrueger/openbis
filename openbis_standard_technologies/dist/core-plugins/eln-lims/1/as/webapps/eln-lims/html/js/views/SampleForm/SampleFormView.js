@@ -130,21 +130,30 @@ function SampleFormView(sampleFormController, sampleFormModel) {
                     };
                 }
 
-			    if(_this._sampleFormModel.sample.sampleTypeCode === "EXPERIMENTAL_STEP") {
-                    dropdownNewModel.push({
-                        label : Util.getDisplayNameFromCode(_this._sampleFormModel.sample.sampleTypeCode),
-                        action : getNewSampleOfTypeWithParent("EXPERIMENTAL_STEP", _this._sampleFormModel.sample.experimentIdentifierOrNull, _this._sampleFormModel.sample.identifier)
-                    });
-                    dropdownNewModel.push({ separator : true });
-			    }
+                var sampleTypeCodePriority = ["ENTRY", "EXPERIMENTAL_STEP"];
+                var sampleTypesPriority = [];
+                var sampleTypesOthers = [];
+                for(var tIdx = 0; tIdx < sampleTypes.length; tIdx++) {
+                    if($.inArray(sampleTypes[tIdx].code, sampleTypeCodePriority) !== -1) {
+                        sampleTypesPriority.push(sampleTypes[tIdx]);
+                    } else {
+                        sampleTypesOthers.push(sampleTypes[tIdx]);
+                    }
+                }
 
-			    for(var tIdx = 0; tIdx < sampleTypes.length; tIdx++) {
-			        if(sampleTypes[tIdx].code === "EXPERIMENTAL_STEP") {
-                        continue;
-			        }
+			    for(var tIdx = 0; tIdx < sampleTypesPriority.length; tIdx++) {
 			        dropdownNewModel.push({
-                        label : Util.getDisplayNameFromCode(sampleTypes[tIdx].code),
-                        action : getNewSampleOfTypeWithParent(sampleTypes[tIdx].code, _this._sampleFormModel.sample.experimentIdentifierOrNull, _this._sampleFormModel.sample.identifier)
+                        label : Util.getDisplayNameFromCode(sampleTypesPriority[tIdx].code),
+                        action : getNewSampleOfTypeWithParent(sampleTypesPriority[tIdx].code, _this._sampleFormModel.sample.experimentIdentifierOrNull, _this._sampleFormModel.sample.identifier)
+                    });
+			    }
+                if(sampleTypesPriority && sampleTypesOthers) {
+                    dropdownNewModel.push({ separator : true });
+                }
+                for(var tIdx = 0; tIdx < sampleTypesOthers.length; tIdx++) {
+			        dropdownNewModel.push({
+                        label : Util.getDisplayNameFromCode(sampleTypesOthers[tIdx].code),
+                        action : getNewSampleOfTypeWithParent(sampleTypesOthers[tIdx].code, _this._sampleFormModel.sample.experimentIdentifierOrNull, _this._sampleFormModel.sample.identifier)
                     });
 			    }
 
