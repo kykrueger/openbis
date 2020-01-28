@@ -69,6 +69,10 @@ class Browser extends React.PureComponent {
 
     return (
       <Resizable
+        defaultSize={{
+          width: 300,
+          height: 'auto'
+        }}
         enable={{
           right: true,
           left: false,
