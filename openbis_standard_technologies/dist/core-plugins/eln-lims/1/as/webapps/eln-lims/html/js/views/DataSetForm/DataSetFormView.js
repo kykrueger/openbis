@@ -34,30 +34,6 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 		//
 		// Title
 		//
-		var spaceCode;
-		var projectCode;
-		var experimentCode;
-		
-		var experimentIdentifier = null;
-		if(this._dataSetFormModel.isExperiment()) {
-			experimentIdentifier = this._dataSetFormModel.entity.identifier.identifier;
-		} else { //Both Sample and Experiment exist
-			experimentIdentifier = this._dataSetFormModel.entity.experimentIdentifierOrNull;
-		}
-		if(experimentIdentifier) {
-			spaceCode = IdentifierUtil.getSpaceCodeFromIdentifier(experimentIdentifier);
-			projectCode = IdentifierUtil.getProjectCodeFromExperimentIdentifier(experimentIdentifier);
-			experimentCode = IdentifierUtil.getCodeFromIdentifier(experimentIdentifier);
-		}
-		var sampleCode;
-		var sampleIdentifier;
-		if(!this._dataSetFormModel.isExperiment()) {
-			sampleCode = this._dataSetFormModel.entity.code;
-			spaceCode = IdentifierUtil.getSpaceCodeFromIdentifier(this._dataSetFormModel.entity.identifier);
-			sampleIdentifier = this._dataSetFormModel.entity.identifier;
-		}
-		var datasetCodeAndPermId = this._dataSetFormModel.dataSet.code;
-		var entityPath = FormUtil.getFormPath(spaceCode, projectCode, experimentCode, null, null, sampleCode, sampleIdentifier, datasetCodeAndPermId);
 		
 		var nameLabel = this._dataSetFormModel.dataSet.properties[profile.propertyReplacingCode];
 		if(nameLabel) {
@@ -77,9 +53,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 		}
 		
 		var $title = $('<div>');
-		$title
-			.append($("<h2>").append(titleText))
-			.append($("<h4>", { "style" : "font-weight:normal;" } ).append(entityPath));
+		$title.append($("<h2>").append(titleText));
 		
 		//
 		// Toolbar
@@ -92,9 +66,9 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 				//Edit Button
 				var $editBtn = FormUtil.getButtonWithIcon("glyphicon-edit", function () {
 					mainController.changeView('showEditDataSetPageFromPermId', _this._dataSetFormModel.dataSet.code);
-				});
+				}, "Edit");
 				if(toolbarConfig.EDIT) {
-					toolbarModel.push({ component : $editBtn, tooltip: "Edit" });
+					toolbarModel.push({ component : $editBtn });
 				}
 			}
 			if(_this._allowedToMove()) {
@@ -441,6 +415,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 			);
 			$dataSetTypeFieldSet.append($dataSetTypeDropDown);
 		} else {
+			$dataSetTypeFieldSet.append(FormUtil.getFieldForComponentWithLabel(this._createEntityPath(), "Path"));
 			var $dataSetTypeLabel = FormUtil.getFieldForLabelWithText('Data Set Type', this._dataSetFormModel.dataSet.dataSetTypeCode, "CODE");
 			$dataSetTypeFieldSet.append($dataSetTypeLabel);
 			var $dataSetCodeLabel = FormUtil.getFieldForLabelWithText('Code', this._dataSetFormModel.dataSet.code, null);
@@ -569,6 +544,34 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 		}
 		$dataSetTypeFieldSet.hide();
 		return $dataSetTypeFieldSet;
+	}
+	
+	this._createEntityPath = function() {
+		var spaceCode;
+		var projectCode;
+		var experimentCode;
+		
+		var experimentIdentifier = null;
+		if (this._dataSetFormModel.isExperiment()) {
+			experimentIdentifier = this._dataSetFormModel.entity.identifier.identifier;
+		} else { //Both Sample and Experiment exist
+			experimentIdentifier = this._dataSetFormModel.entity.experimentIdentifierOrNull;
+		}
+		if (experimentIdentifier) {
+			spaceCode = IdentifierUtil.getSpaceCodeFromIdentifier(experimentIdentifier);
+			projectCode = IdentifierUtil.getProjectCodeFromExperimentIdentifier(experimentIdentifier);
+			experimentCode = IdentifierUtil.getCodeFromIdentifier(experimentIdentifier);
+		}
+		var sampleCode;
+		var sampleIdentifier;
+		if (!this._dataSetFormModel.isExperiment()) {
+			sampleCode = this._dataSetFormModel.entity.code;
+			spaceCode = IdentifierUtil.getSpaceCodeFromIdentifier(this._dataSetFormModel.entity.identifier);
+			sampleIdentifier = this._dataSetFormModel.entity.identifier;
+		}
+		var datasetCodeAndPermId = this._dataSetFormModel.dataSet.code;
+		return FormUtil.getFormPath(spaceCode, projectCode, experimentCode, null, null, sampleCode, 
+				sampleIdentifier, datasetCodeAndPermId);
 	}
 	
 	this._updateFileOptions = function() {
