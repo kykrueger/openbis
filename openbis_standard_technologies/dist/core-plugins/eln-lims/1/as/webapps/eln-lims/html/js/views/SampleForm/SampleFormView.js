@@ -482,13 +482,33 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		//
 		// Form Defined Properties from General Section
 		//
-		for(var i = 0; i < sampleType.propertyTypeGroups.length; i++) {
-			var propertyTypeGroup = sampleType.propertyTypeGroups[i];
-			if(propertyTypeGroup.name === "General" || propertyTypeGroup.name === "General info") {
-				this._paintPropertiesForSection($formColumn, propertyTypeGroup, i, loadFromTemplate, toolbarContainer);
-			}
+		if(sampleTypeCode !== "ENTRY") {
+            for(var i = 0; i < sampleType.propertyTypeGroups.length; i++) {
+                var propertyTypeGroup = sampleType.propertyTypeGroups[i];
+                if(propertyTypeGroup.name === "General" || propertyTypeGroup.name === "General info") {
+                    this._paintPropertiesForSection($formColumn, propertyTypeGroup, i, loadFromTemplate, toolbarContainer);
+                }
+            }
 		}
-		
+
+		//
+		//
+		//
+		if(sampleTypeCode === "ENTRY") {
+		    var documentPropertyType = profile.getPropertyType("DOCUMENT");
+		    FormUtil.fixStringPropertiesForForm(documentPropertyType, this._sampleFormModel.sample);
+            var documentChangeEvent = function(jsEvent, newValue) {
+                _this._sampleFormModel.isFormDirty = true;
+                _this._sampleFormModel.sample.properties["DOCUMENT"] = Util.getEmptyIfNull(newValue);
+			}
+
+		    var isReadOnly = this._sampleFormModel.mode === FormMode.VIEW;
+		    var value = Util.getEmptyIfNull(this._sampleFormModel.sample.properties[documentPropertyType.code]);
+            var $entryDocument = FormUtil.getFieldForPropertyType(documentPropertyType);
+                $entryDocument = FormUtil.activateRichTextProperties($entryDocument, documentChangeEvent, documentPropertyType, value, isReadOnly, toolbarContainer);
+            $formColumn.append($entryDocument);
+		}
+
 		//
 		// LINKS TO PARENTS
 		//
@@ -506,11 +526,13 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		//
 		// Form Defined Properties from non General Section
 		//
-		for(var i = 0; i < sampleType.propertyTypeGroups.length; i++) {
-			var propertyTypeGroup = sampleType.propertyTypeGroups[i];
-			if(propertyTypeGroup.name !== "General" && propertyTypeGroup.name !== "General info") {
-				this._paintPropertiesForSection($formColumn, propertyTypeGroup, i, loadFromTemplate, toolbarContainer);
-			}
+		if(sampleTypeCode !== "ENTRY") {
+            for(var i = 0; i < sampleType.propertyTypeGroups.length; i++) {
+                var propertyTypeGroup = sampleType.propertyTypeGroups[i];
+                if(propertyTypeGroup.name !== "General" && propertyTypeGroup.name !== "General info") {
+                    this._paintPropertiesForSection($formColumn, propertyTypeGroup, i, loadFromTemplate, toolbarContainer);
+                }
+            }
 		}
 		
 		//
