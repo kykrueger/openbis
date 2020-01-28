@@ -807,6 +807,8 @@ span.fancytree-custom-icon {
     border: 1px solid #dedede !important;
 }
 
+/* ckeditor5 detached */
+
 .document-editor {
     border: 1px solid var(--ck-color-base-border);
     border-radius: var(--ck-border-radius);

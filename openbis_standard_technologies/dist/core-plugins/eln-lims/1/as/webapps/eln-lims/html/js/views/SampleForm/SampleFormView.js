@@ -489,7 +489,10 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		//
 		//
 		//
+		var documentEditorEditableToolbar = null;
+
 		if(sampleTypeCode === "ENTRY") {
+		    var isReadOnly = this._sampleFormModel.mode === FormMode.VIEW;
 		    var documentPropertyType = profile.getPropertyType("DOCUMENT");
 		    FormUtil.fixStringPropertiesForForm(documentPropertyType, this._sampleFormModel.sample);
             var documentChangeEvent = function(jsEvent, newValue) {
@@ -498,22 +501,20 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 			}
             // https://ckeditor.com/docs/ckeditor5/latest/framework/guides/deep-dive/ui/document-editor.html
             var documentEditor = $("<div>", { class : "document-editor" });
-            var documentEditorEditableToolbar = $("<div>", { class : "document-editor__toolbar" });
+            if(!isReadOnly) {
+                documentEditorEditableToolbar = $("<div>", { class : "document-editor__toolbar" });
+            }
             var documentEditorEditableContainer = $("<div>", { class : "document-editor__editable-container" });
 
             var documentEditorEditable = $("<div>", { class : "document-editor__editable", id : "DOCUMENT" });
 
 
-		    var isReadOnly = this._sampleFormModel.mode === FormMode.VIEW;
 		    var value = Util.getEmptyIfNull(this._sampleFormModel.sample.properties[documentPropertyType.code]);
             var documentEditorEditableFinal = FormUtil.activateRichTextProperties(documentEditorEditable, documentChangeEvent, documentPropertyType, value, isReadOnly, documentEditorEditableToolbar);
 
             documentEditorEditableFinal.addClass("document-editor__editable");
             documentEditorEditableFinal.attr("id", "DOCUMENT");
 
-            if(!isReadOnly) {
-                documentEditor.append(documentEditorEditableToolbar);
-            }
             documentEditor.append(documentEditorEditableContainer.append(documentEditorEditableFinal));
 
             $formColumn.append(documentEditor);
@@ -644,7 +645,10 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 				"SAMPLE-VIEW-" + _this._sampleFormModel.sample.sampleTypeCode);
 		$header.append(FormUtil.getToolbar(toolbarModel));
 		$header.append(FormUtil.getToolbar(rightToolbarModel).css("float", "right"));
-
+        if(documentEditorEditableToolbar) {
+            documentEditorEditableToolbar.css("margin-top", "10px");
+            $header.append($("<br>")).append(documentEditorEditableToolbar);
+        }
 		$container.append($form);
 		
 		//
