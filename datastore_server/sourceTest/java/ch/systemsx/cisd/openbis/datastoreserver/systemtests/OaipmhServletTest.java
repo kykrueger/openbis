@@ -72,7 +72,9 @@ public class OaipmhServletTest extends SystemTestCase
     public void testWithIncorrectCredentials()
     {
         GetResponse method = HttpTest.sendRequest("incorrect", USER_PASSWORD, OAIPMH_SERVLET_URL + "?verb=Identify");
-        Assert.assertEquals(401, method.getStatus());
+        Assert.assertEquals(500, method.getStatus());
+        String content = method.getContent();
+        Assert.assertTrue(content, content.contains("has no role assignments"));
     }
 
     @Test
