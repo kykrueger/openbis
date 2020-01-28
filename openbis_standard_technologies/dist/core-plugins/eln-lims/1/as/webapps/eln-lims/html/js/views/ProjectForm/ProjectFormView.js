@@ -38,10 +38,6 @@ function ProjectFormView(projectFormController, projectFormModel) {
 		var isInventoryProject = this._projectFormModel.project && profile.isInventorySpace(this._projectFormModel.project.spaceCode);
 		var typeTitle = "Project: ";
 		
-		var spaceCode = this._projectFormModel.project.spaceCode;
-		var projectCode = (this._projectFormModel.mode !== FormMode.CREATE)?this._projectFormModel.project.code:null;
-		var entityPath = FormUtil.getFormPath(spaceCode, projectCode);
-		
 		if(this._projectFormModel.mode === FormMode.CREATE) {
 			title = "Create " + typeTitle;
 		} else if (this._projectFormModel.mode === FormMode.EDIT) {
@@ -51,10 +47,7 @@ function ProjectFormView(projectFormController, projectFormModel) {
 		}
 		
 		var $formTitle = $("<div>");
-			$formTitle
-				.append($("<h2>").append(title))
-				.append($("<h4>", { "style" : "font-weight:normal;" } ).append(entityPath));
-		
+		$formTitle.append($("<h2>").append(title));
 		
 		//
 		// Toolbar
@@ -194,8 +187,12 @@ function ProjectFormView(projectFormController, projectFormModel) {
 		var $identificationInfo = $("<div>", { id : "project-identification-info" });
 
 		$identificationInfo.append($("<legend>").append("Identification Info"));
-
-		$identificationInfo.append(FormUtil.getFieldForLabelWithText("Space", this._projectFormModel.project.spaceCode));
+		var spaceCode = this._projectFormModel.project.spaceCode;
+		if (this._projectFormModel.mode !== FormMode.CREATE) {
+			var entityPath = FormUtil.getFormPath(spaceCode, this._projectFormModel.project.code);
+			$identificationInfo.append(FormUtil.getFieldForComponentWithLabel(entityPath, "Path"));
+		}
+		$identificationInfo.append(FormUtil.getFieldForLabelWithText("Space", spaceCode));
 
 		if (this._projectFormModel.mode === FormMode.CREATE) {
 			var $textField = FormUtil._getInputField('text', null, "Project Code", null, true);

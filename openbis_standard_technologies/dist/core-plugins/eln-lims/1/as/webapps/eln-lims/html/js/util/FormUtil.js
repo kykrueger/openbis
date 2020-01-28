@@ -980,6 +980,7 @@ var FormUtil = new function() {
 	this._populateDropdownModel = function(dropdownModel, types, actionFactory) {
 		types.forEach(function (type) {
 			dropdownModel.push({
+				title : type.description,
 				label : Util.getDisplayNameFromCode(type.code),
 				action : actionFactory(type.code)
 			});
@@ -1000,12 +1001,14 @@ var FormUtil = new function() {
 		$dropdownOptionsMenu.append($dropdownOptionsMenuCaret);
 		$dropdownOptionsMenu.append($dropdownOptionsMenuList);
 		for (var idx = 0; idx < dropdownOptionsModel.length; idx++) {
-			var label = dropdownOptionsModel[idx].label;
-			if(dropdownOptionsModel[idx].separator) {
+			var option = dropdownOptionsModel[idx];
+			if(option.separator) {
 				$dropdownOptionsMenuList.append($("<li>", { 'role' : 'presentation' }).append($("<hr>", { style : "margin-top: 5px; margin-bottom: 5px;"})));
 			} else {
-				var $dropdownElement = $("<li>", { 'role' : 'presentation' }).append($("<a>", {'title' : label }).append(label));
-				$dropdownElement.click(dropdownOptionsModel[idx].action);
+				var label = option.label;
+				var title = option.title ? option.title : label;
+				var $dropdownElement = $("<li>", { 'role' : 'presentation' }).append($("<a>", {'title' : title }).append(label));
+				$dropdownElement.click(option.action);
 				$dropdownOptionsMenuList.append($dropdownElement);
 			}
 		}
@@ -1023,7 +1026,7 @@ var FormUtil = new function() {
 				var $section = $(option.section);
 				$section.toggle(shown);
 				var $label = $("<span>").append((shown ? "Hide " : "Show ") + option.label);
-				var $dropdownElement = $("<li>", { 'role' : 'presentation' }).append($("<a>", {'title' : $label }).append($label));
+				var $dropdownElement = $("<li>", { 'role' : 'presentation' }).append($("<a>").append($label));
 				var action = function(event) {
 					var option = event.data.option;
 					var $label = event.data.label;
