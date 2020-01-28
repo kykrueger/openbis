@@ -67,31 +67,19 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		if(this._experimentFormModel.mode === FormMode.VIEW) {
 			if (_this._allowedToCreateSample()) {
 				//Create Experiment Step
-				var mandatorySampleTypeCode = null;
-				var mandatorySampleType = null;
-				
-				if(this._experimentFormModel.experiment && 
-						this._experimentFormModel.experiment.properties &&
-						this._experimentFormModel.experiment.properties["$DEFAULT_OBJECT_TYPE"]) {
-					mandatorySampleTypeCode = this._experimentFormModel.experiment.properties["$DEFAULT_OBJECT_TYPE"];
-				} else if(profile.getSampleTypeForSampleTypeCode("EXPERIMENTAL_STEP")) {
-					mandatorySampleTypeCode = "EXPERIMENTAL_STEP";
-				}
-				
-				mandatorySampleType = profile.getSampleTypeForSampleTypeCode(mandatorySampleTypeCode);
-				
-				if(mandatorySampleType) {
-					var $createBtn = FormUtil.getButtonWithIcon("glyphicon-plus", function() {
-						var argsMap = {
-								"sampleTypeCode" : mandatorySampleTypeCode,
+				var sampleTypes = profile.getAllSampleTypes(true);
+				FormUtil.addCreationDropdown(toolbarModel, sampleTypes, ["ENTRY", "EXPERIMENTAL_STEP"], function(typeCode) {
+					return function() {
+						Util.blockUI();
+						setTimeout(function() {
+							var argsMap = {
+								"sampleTypeCode" : typeCode,
 								"experimentIdentifier" : _this._experimentFormModel.experiment.identifier
-						}
-						var argsMapStr = JSON.stringify(argsMap);
-						Util.unblockUI();
-						mainController.changeView("showCreateSubExperimentPage", argsMapStr);
-					});
-					toolbarModel.push({ component : $createBtn, tooltip: "Create " + Util.getDisplayNameFromCode(mandatorySampleTypeCode) });
-				}
+							};
+							mainController.changeView("showCreateSubExperimentPage", JSON.stringify(argsMap));
+						}, 100);
+					}
+				});
 			}
 			if (_this._allowedToEdit()) {
 				//Edit

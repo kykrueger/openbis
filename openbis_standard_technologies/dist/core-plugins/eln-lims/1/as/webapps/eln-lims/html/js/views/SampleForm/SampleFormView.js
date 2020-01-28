@@ -129,7 +129,6 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 									_this._sampleFormModel.sample.identifier);
 						}, 100);
 					}
-					getNewSampleOfTypeWithParent(typeCode,);
 				});
 			}
 			
