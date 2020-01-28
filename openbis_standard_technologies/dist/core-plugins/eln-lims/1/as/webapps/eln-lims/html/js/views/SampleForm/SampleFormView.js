@@ -116,11 +116,6 @@ function SampleFormView(sampleFormController, sampleFormModel) {
         var dropdownOptionsModel = [];
 		var toolbarConfig = profile.getSampleTypeToolbarConfiguration(_this._sampleFormModel.sample.sampleTypeCode);
 
-		var toolbarContainer = null;
-        if(sampleTypeCode === "ENTRY") {
-            toolbarContainer = $("<div>", { style : "margin-top : 10px;"});
-        }
-
 		if(this._sampleFormModel.mode === FormMode.VIEW) {
 			// New
 			if(_this._allowedToCreateChild() && toolbarConfig.CREATE && _this._sampleFormModel.sample.sampleTypeCode === "EXPERIMENTAL_STEP") {
@@ -486,7 +481,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
             for(var i = 0; i < sampleType.propertyTypeGroups.length; i++) {
                 var propertyTypeGroup = sampleType.propertyTypeGroups[i];
                 if(propertyTypeGroup.name === "General" || propertyTypeGroup.name === "General info") {
-                    this._paintPropertiesForSection($formColumn, propertyTypeGroup, i, loadFromTemplate, toolbarContainer);
+                    this._paintPropertiesForSection($formColumn, propertyTypeGroup, i, loadFromTemplate);
                 }
             }
 		}
@@ -501,12 +496,27 @@ function SampleFormView(sampleFormController, sampleFormModel) {
                 _this._sampleFormModel.isFormDirty = true;
                 _this._sampleFormModel.sample.properties["DOCUMENT"] = Util.getEmptyIfNull(newValue);
 			}
+            // https://ckeditor.com/docs/ckeditor5/latest/framework/guides/deep-dive/ui/document-editor.html
+            var documentEditor = $("<div>", { class : "document-editor" });
+            var documentEditorEditableToolbar = $("<div>", { class : "document-editor__toolbar" });
+            var documentEditorEditableContainer = $("<div>", { class : "document-editor__editable-container" });
+
+            var documentEditorEditable = $("<div>", { class : "document-editor__editable", id : "DOCUMENT" });
+
 
 		    var isReadOnly = this._sampleFormModel.mode === FormMode.VIEW;
 		    var value = Util.getEmptyIfNull(this._sampleFormModel.sample.properties[documentPropertyType.code]);
-            var $entryDocument = FormUtil.getFieldForPropertyType(documentPropertyType);
-                $entryDocument = FormUtil.activateRichTextProperties($entryDocument, documentChangeEvent, documentPropertyType, value, isReadOnly, toolbarContainer);
-            $formColumn.append($entryDocument);
+            var documentEditorEditableFinal = FormUtil.activateRichTextProperties(documentEditorEditable, documentChangeEvent, documentPropertyType, value, isReadOnly, documentEditorEditableToolbar);
+
+            documentEditorEditableFinal.addClass("document-editor__editable");
+            documentEditorEditableFinal.attr("id", "DOCUMENT");
+
+            if(!isReadOnly) {
+                documentEditor.append(documentEditorEditableToolbar);
+            }
+            documentEditor.append(documentEditorEditableContainer.append(documentEditorEditableFinal));
+
+            $formColumn.append(documentEditor);
 		}
 
 		//
@@ -530,7 +540,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
             for(var i = 0; i < sampleType.propertyTypeGroups.length; i++) {
                 var propertyTypeGroup = sampleType.propertyTypeGroups[i];
                 if(propertyTypeGroup.name !== "General" && propertyTypeGroup.name !== "General info") {
-                    this._paintPropertiesForSection($formColumn, propertyTypeGroup, i, loadFromTemplate, toolbarContainer);
+                    this._paintPropertiesForSection($formColumn, propertyTypeGroup, i, loadFromTemplate);
                 }
             }
 		}
@@ -634,9 +644,6 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 				"SAMPLE-VIEW-" + _this._sampleFormModel.sample.sampleTypeCode);
 		$header.append(FormUtil.getToolbar(toolbarModel));
 		$header.append(FormUtil.getToolbar(rightToolbarModel).css("float", "right"));
-	    if(sampleTypeCode === "ENTRY") {
-            $header.append(toolbarContainer);
-        }
 
 		$container.append($form);
 		
@@ -665,7 +672,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		this._sampleFormModel.isFormLoaded = true;
 	}
 	
-	this._paintPropertiesForSection = function($formColumn, propertyTypeGroup, i, loadFromTemplate, toolbarContainer) {
+	this._paintPropertiesForSection = function($formColumn, propertyTypeGroup, i, loadFromTemplate) {
 		var _this = this;
 		var sampleTypeCode = this._sampleFormModel.sample.sampleTypeCode;
 		var sampleType = mainController.profile.getSampleTypeForSampleTypeCode(sampleTypeCode);
@@ -727,7 +734,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 						    $controlGroup = FormUtil.getFieldForComponentWithLabel($jexcelContainer, propertyType.label);
 						} else if (customWidget === 'Word Processor') {
 						    var $component = FormUtil.getFieldForPropertyType(propertyType, value);
-						    $component = FormUtil.activateRichTextProperties($component, undefined, propertyType, value, true, toolbarContainer);
+						    $component = FormUtil.activateRichTextProperties($component, undefined, propertyType, value, true);
 						    $controlGroup = FormUtil.getFieldForComponentWithLabel($component, propertyType.label);
 						} else {
 						    $controlGroup = FormUtil.createPropertyField(propertyType, value);
@@ -781,7 +788,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 					    switch(customWidget) {
 					        case 'Word Processor':
 					            if(propertyType.dataType === "MULTILINE_VARCHAR") {
-					                $component = FormUtil.activateRichTextProperties($component, changeEvent(propertyType), propertyType, value, false, toolbarContainer);
+					                $component = FormUtil.activateRichTextProperties($component, changeEvent(propertyType), propertyType, value, false);
 					            } else {
 					                alert("Word Processor only works with MULTILINE_VARCHAR data type, " + propertyType.code + " is " + propertyType.dataType + ".");
 					            }
