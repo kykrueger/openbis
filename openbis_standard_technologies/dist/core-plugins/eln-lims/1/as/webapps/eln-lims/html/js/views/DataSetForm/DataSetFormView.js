@@ -404,6 +404,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 	
 	this._createIdentificationInfoSection = function(hideShowOptionsModel) {
 		hideShowOptionsModel.push({
+			forceToShow : this._dataSetFormModel.mode === FormMode.CREATE,
 			label : "Identification Info",
 			section : "#data-set-identification-info"
 		});
