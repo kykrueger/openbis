@@ -40,38 +40,24 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		// Title
 		//
 		var $formTitle = $("<div>");
-		var nameLabel = this._experimentFormModel.experiment.properties[profile.propertyReplacingCode];
-		if(nameLabel) {
-			//nameLabel = html.sanitize(nameLabel);
-			nameLabel = DOMPurify.sanitize(nameLabel);
+		var typeTitle = Util.getDisplayNameFromCode(this._experimentFormModel.experiment.experimentTypeCode);
+		var title = "";
+		if (this._experimentFormModel.mode === FormMode.CREATE) {
+			title = "Create " + typeTitle;
 		} else {
-			nameLabel = this._experimentFormModel.experiment.code;
+			var nameLabel = this._experimentFormModel.experiment.properties[profile.propertyReplacingCode];
+			if(nameLabel) {
+				//nameLabel = html.sanitize(nameLabel);
+				nameLabel = DOMPurify.sanitize(nameLabel);
+			} else {
+				nameLabel = this._experimentFormModel.experiment.code;
+			}
+			title = typeTitle + ": " + nameLabel;
+			if (this._experimentFormModel.mode === FormMode.EDIT) {
+				title = "Update " + title;
+			}
 		}
-		
-		var spaceCode = IdentifierUtil.getSpaceCodeFromIdentifier(this._experimentFormModel.experiment.identifier);
-		var projectCode = IdentifierUtil.getProjectCodeFromExperimentIdentifier(this._experimentFormModel.experiment.identifier);
-		var experimentCode = (this._experimentFormModel.mode !== FormMode.CREATE)?IdentifierUtil.getCodeFromIdentifier(this._experimentFormModel.experiment.identifier):null;
-		var entityPath = FormUtil.getFormPath(spaceCode, projectCode, experimentCode);
-		
-		
-		var typeTitle = "" + ELNDictionary.getExperimentKindName(this._experimentFormModel.experiment.identifier) + ": ";
-		
-		var title = null;
-		switch(this._experimentFormModel.mode) {
-	    	case FormMode.CREATE:
-	    		title = "Create " + typeTitle + this._experimentFormModel.experiment.experimentTypeCode;
-	    		break;
-	    	case FormMode.EDIT:
-	    		title = "Update " + typeTitle + nameLabel;
-	    		break;
-	    	case FormMode.VIEW:
-	    		title = typeTitle + nameLabel;
-	    		break;
-		}
-		
-		$formTitle
-			.append($("<h2>").append(title))
-			.append($("<h4>", { "style" : "font-weight:normal;" } ).append(entityPath));
+		$formTitle.append($("<h2>").append(title));
 		
 		//
 		// Toolbar
@@ -111,8 +97,8 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 				//Edit
 				var $editBtn = FormUtil.getButtonWithIcon("glyphicon-edit", function () {
 					mainController.changeView("showEditExperimentPageFromIdentifier", _this._experimentFormModel.experiment.identifier);
-				});
-				toolbarModel.push({ component : $editBtn, tooltip: "Edit" });
+				}, "Edit");
+				toolbarModel.push({ component : $editBtn });
 			}
 			if (_this._allowedToMove()) {
 				//Move
@@ -140,8 +126,8 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 				//Create Dataset
 				var $uploadBtn = FormUtil.getButtonWithIcon("glyphicon-upload", function () {
 					mainController.changeView('showCreateDataSetPageFromExpPermId',_this._experimentFormModel.experiment.permId);
-				});
-				toolbarModel.push({ component : $uploadBtn, tooltip: "Upload Dataset" });
+				}, "Upload Dataset");
+				toolbarModel.push({ component : $uploadBtn });
 	
 				//Get dropbox folder name
                 dropdownOptionsModel.push({
@@ -322,7 +308,14 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		var _this = this;
 		var $identificationInfo = $("<div>", { id : "experiment-identification-info" });
 		$identificationInfo.append($('<legend>').text("Identification Info"));
-		
+		if (this._experimentFormModel.mode !== FormMode.CREATE) {
+			var spaceCode = IdentifierUtil.getSpaceCodeFromIdentifier(this._experimentFormModel.experiment.identifier);
+			var projectCode = IdentifierUtil.getProjectCodeFromExperimentIdentifier(this._experimentFormModel.experiment.identifier);
+			var experimentCode = this._experimentFormModel.experiment.code;
+			var entityPath = FormUtil.getFormPath(spaceCode, projectCode, experimentCode);
+			$identificationInfo.append(FormUtil.getFieldForComponentWithLabel(entityPath, "Path"));
+		}
+
 		var projectIdentifier = IdentifierUtil.getProjectIdentifierFromExperimentIdentifier(this._experimentFormModel.experiment.identifier);
 		$identificationInfo.append(FormUtil.getFieldForLabelWithText("Type", this._experimentFormModel.experiment.experimentTypeCode));
 		$identificationInfo.append(FormUtil.getFieldForLabelWithText("Project", projectIdentifier));
