@@ -115,7 +115,12 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		var rightToolbarModel = [];
         var dropdownOptionsModel = [];
 		var toolbarConfig = profile.getSampleTypeToolbarConfiguration(_this._sampleFormModel.sample.sampleTypeCode);
-		
+
+		var toolbarContainer = null;
+        if(sampleTypeCode === "ENTRY") {
+            toolbarContainer = $("<div>", { style : "margin-top : 10px;"});
+        }
+
 		if(this._sampleFormModel.mode === FormMode.VIEW) {
 			// New
 			if(_this._allowedToCreateChild() && toolbarConfig.CREATE && _this._sampleFormModel.sample.sampleTypeCode === "EXPERIMENTAL_STEP") {
@@ -480,7 +485,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		for(var i = 0; i < sampleType.propertyTypeGroups.length; i++) {
 			var propertyTypeGroup = sampleType.propertyTypeGroups[i];
 			if(propertyTypeGroup.name === "General" || propertyTypeGroup.name === "General info") {
-				this._paintPropertiesForSection($formColumn, propertyTypeGroup, i, loadFromTemplate);
+				this._paintPropertiesForSection($formColumn, propertyTypeGroup, i, loadFromTemplate, toolbarContainer);
 			}
 		}
 		
@@ -504,7 +509,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		for(var i = 0; i < sampleType.propertyTypeGroups.length; i++) {
 			var propertyTypeGroup = sampleType.propertyTypeGroups[i];
 			if(propertyTypeGroup.name !== "General" && propertyTypeGroup.name !== "General info") {
-				this._paintPropertiesForSection($formColumn, propertyTypeGroup, i, loadFromTemplate);
+				this._paintPropertiesForSection($formColumn, propertyTypeGroup, i, loadFromTemplate, toolbarContainer);
 			}
 		}
 		
@@ -607,6 +612,10 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 				"SAMPLE-VIEW-" + _this._sampleFormModel.sample.sampleTypeCode);
 		$header.append(FormUtil.getToolbar(toolbarModel));
 		$header.append(FormUtil.getToolbar(rightToolbarModel).css("float", "right"));
+	    if(sampleTypeCode === "ENTRY") {
+            $header.append(toolbarContainer);
+        }
+
 		$container.append($form);
 		
 		//
@@ -634,7 +643,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		this._sampleFormModel.isFormLoaded = true;
 	}
 	
-	this._paintPropertiesForSection = function($formColumn, propertyTypeGroup, i, loadFromTemplate) {
+	this._paintPropertiesForSection = function($formColumn, propertyTypeGroup, i, loadFromTemplate, toolbarContainer) {
 		var _this = this;
 		var sampleTypeCode = this._sampleFormModel.sample.sampleTypeCode;
 		var sampleType = mainController.profile.getSampleTypeForSampleTypeCode(sampleTypeCode);
@@ -696,7 +705,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 						    $controlGroup = FormUtil.getFieldForComponentWithLabel($jexcelContainer, propertyType.label);
 						} else if (customWidget === 'Word Processor') {
 						    var $component = FormUtil.getFieldForPropertyType(propertyType, value);
-						    $component = FormUtil.activateRichTextProperties($component, undefined, propertyType, value, true);
+						    $component = FormUtil.activateRichTextProperties($component, undefined, propertyType, value, true, toolbarContainer);
 						    $controlGroup = FormUtil.getFieldForComponentWithLabel($component, propertyType.label);
 						} else {
 						    $controlGroup = FormUtil.createPropertyField(propertyType, value);
@@ -750,7 +759,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 					    switch(customWidget) {
 					        case 'Word Processor':
 					            if(propertyType.dataType === "MULTILINE_VARCHAR") {
-					                $component = FormUtil.activateRichTextProperties($component, changeEvent(propertyType), propertyType, value, false);
+					                $component = FormUtil.activateRichTextProperties($component, changeEvent(propertyType), propertyType, value, false, toolbarContainer);
 					            } else {
 					                alert("Word Processor only works with MULTILINE_VARCHAR data type, " + propertyType.code + " is " + propertyType.dataType + ".");
 					            }

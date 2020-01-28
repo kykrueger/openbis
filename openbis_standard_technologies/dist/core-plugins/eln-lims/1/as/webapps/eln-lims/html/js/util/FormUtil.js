@@ -883,8 +883,15 @@ var FormUtil = new function() {
 		return $component;
 	}
 
-	this.createCkeditor = function($component, componentOnChange, value, isReadOnly) {
-        CKEDITOR.InlineEditor.create($component[0], {
+    this.createCkeditor = function($component, componentOnChange, value, isReadOnly, toolbarContainer) {
+	    var Builder = null;
+	    if(toolbarContainer) {
+            Builder = CKEDITOR.DecoupledEditor;
+	    } else {
+	        Builder = CKEDITOR.InlineEditor;
+	    }
+
+        Builder.create($component[0], {
                          simpleUpload: {
                              uploadUrl: "/openbis/openbis/file-service/eln-lims?type=Files&sessionID=" + mainController.serverFacade.getSession()
                          }
@@ -902,6 +909,10 @@ var FormUtil = new function() {
                             componentOnChange(event, value);
                         });
 
+                        if(toolbarContainer) {
+                            toolbarContainer.append(editor.ui.view.toolbar.element);
+                        }
+
                         CKEditorManager.addEditor($component.attr('id'), editor);
                     })
                     .catch(error => {
@@ -915,7 +926,7 @@ var FormUtil = new function() {
 	    return value;
 	}
 
-	this.activateRichTextProperties = function($component, componentOnChange, propertyType, value, isReadOnly) {
+	this.activateRichTextProperties = function($component, componentOnChange, propertyType, value, isReadOnly, toolbarContainer) {
 		if(profile.isForcedDisableRTF(propertyType)) {
 			$component.change(function(event) {
 				componentOnChange(event, $(this).val());
@@ -923,7 +934,7 @@ var FormUtil = new function() {
 		} else {
 		    // InlineEditor is not working with textarea that is why $component was changed on div
 		    var $component = this._getDiv($component.attr('id'), $component.attr('alt'), $component.attr('isRequired'));
-		    FormUtil.createCkeditor($component, componentOnChange, value, isReadOnly);
+		    FormUtil.createCkeditor($component, componentOnChange, value, isReadOnly, toolbarContainer);
 		}
 
         if(profile.isForcedMonospaceFont(propertyType)) {
