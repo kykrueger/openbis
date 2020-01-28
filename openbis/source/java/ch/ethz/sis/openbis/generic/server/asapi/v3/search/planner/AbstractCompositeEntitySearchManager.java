@@ -89,8 +89,7 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
         if (!mainCriteria.isEmpty())
         {
             // The main criteria have no recursive ISearchCriteria into it, to facilitate building a query
-            final DummyCompositeSearchCriterion containerCriterion = new DummyCompositeSearchCriterion();
-            containerCriterion.setCriteria(mainCriteria);
+            final DummyCompositeSearchCriterion containerCriterion = new DummyCompositeSearchCriterion(mainCriteria, finalSearchOperator);
             final Set<Long> mainCriteriaNotFilteredResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId, containerCriterion, tableMapper,
                     idsColumnName);
             mainCriteriaIntermediateResults = filterIDsByUserRights(userId, mainCriteriaNotFilteredResults);
