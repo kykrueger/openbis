@@ -974,7 +974,10 @@ var FormUtil = new function() {
 		}
 		this._populateDropdownModel(dropdownModel, otherTypes, actionFactory);
 		
-		FormUtil.addOptionsToToolbar(toolbarModel, dropdownModel, [], null, "New ");
+		var newWithIcon = $('<span>')
+			.append($('<span>', {'class' : 'glyphicon glyphicon-plus' }))
+			.append('&nbsp;New&nbsp;');
+		FormUtil.addOptionsToToolbar(toolbarModel, dropdownModel, [], null, newWithIcon);
 	}
 	
 	this._populateDropdownModel = function(dropdownModel, types, actionFactory) {
