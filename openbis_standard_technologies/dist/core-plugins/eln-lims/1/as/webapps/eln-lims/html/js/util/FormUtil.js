@@ -884,7 +884,7 @@ var FormUtil = new function() {
 	}
 
 	this.createCkeditor = function($component, componentOnChange, value, isReadOnly) {
-        InlineEditor.create($component[0], {
+        CKEDITOR.InlineEditor.create($component[0], {
                          simpleUpload: {
                              uploadUrl: "/openbis/openbis/file-service/eln-lims?type=Files&sessionID=" + mainController.serverFacade.getSession()
                          }
