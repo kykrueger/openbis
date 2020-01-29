@@ -57,8 +57,13 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 					//Edit
 					var $editButton = FormUtil.getButtonWithIcon("glyphicon-edit", function () {
 						mainController.changeView("showEditSettingsPage", _this._settingsFormModel.settingsSample.identifier);
-					}, null, null, "edit-btn");
-					toolbarModel.push({ component : $editButton, tooltip: "Edit" });
+					}, "Edit", null, "edit-btn");
+					toolbarModel.push({ component : $editButton });
+					
+					var $diskSpaceButton = FormUtil.getButtonWithIcon("glyphicon-hdd", function () {
+						FormUtil.showDiskSpaceDialog();
+					}, "Show available storage space");
+					toolbarModel.push({ component : $diskSpaceButton });
 				}
 			} else { //Create and Edit
 				//Save
@@ -73,11 +78,6 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 				$saveBtn.addClass("btn-primary");
 				toolbarModel.push({ component : $saveBtn, tooltip: "Save" });
 			}
-
-			var $diskSpaceButton = FormUtil.getButtonWithIcon("glyphicon-hdd", function () {
-				FormUtil.showDiskSpaceDialog();
-			});
-			toolbarModel.push({ component : $diskSpaceButton, tooltip: "Show available storage space" });
 
 			var $header = views.header;
 			$header.append($formTitle);
