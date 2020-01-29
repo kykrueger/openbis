@@ -493,12 +493,12 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 
 		if(sampleTypeCode === "ENTRY") {
 		    var isReadOnly = this._sampleFormModel.mode === FormMode.VIEW;
-		    var documentPropertyType = profile.getPropertyType("DOCUMENT");
+		    var documentPropertyType = profile.getPropertyType("$DOCUMENT");
 		    FormUtil.fixStringPropertiesForForm(documentPropertyType, this._sampleFormModel.sample);
             var documentChangeEvent = function(jsEvent, newValue) {
                 var newCleanValue = Util.getEmptyIfNull(newValue);
                 _this._sampleFormModel.isFormDirty = true;
-                _this._sampleFormModel.sample.properties["DOCUMENT"] = Util.getEmptyIfNull(newValue);
+                _this._sampleFormModel.sample.properties["$DOCUMENT"] = Util.getEmptyIfNull(newValue);
 			    var titleStart = newCleanValue.indexOf("<h2>");
 			    var titleEnd = newCleanValue.indexOf("</h2>");
 			    if(titleStart !== -1 && titleEnd !== -1) {
@@ -515,7 +515,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 
             var documentEditorEditableContainer = $("<div>", { class : "document-editor__editable-container", style : "height: " + height + "px; overflow: hidden;" });
 
-            var documentEditorEditable = $("<div>", { class : "document-editor__editable", id : "DOCUMENT" });
+            var documentEditorEditable = $("<div>", { class : "document-editor__editable", id : "$DOCUMENT" });
 
 		    var value = Util.getEmptyIfNull(this._sampleFormModel.sample.properties[documentPropertyType.code]);
 		    if(this._sampleFormModel.mode === FormMode.CREATE) {
@@ -524,7 +524,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
             var documentEditorEditableFinal = FormUtil.activateRichTextProperties(documentEditorEditable, documentChangeEvent, documentPropertyType, value, isReadOnly, documentEditorEditableToolbar);
 
             documentEditorEditableFinal.addClass("document-editor__editable");
-            documentEditorEditableFinal.attr("id", "DOCUMENT");
+            documentEditorEditableFinal.attr("id", "$DOCUMENT");
             documentEditorEditableFinal.css("height", "100%");
 
             documentEditor.append(documentEditorEditableContainer.append(documentEditorEditableFinal));
