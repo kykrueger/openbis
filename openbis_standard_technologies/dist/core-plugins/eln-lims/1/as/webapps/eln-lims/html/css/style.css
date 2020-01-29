@@ -894,8 +894,6 @@ Preserve the relative scale, though. */
 
 .document-editor .ck-content h2 {
     line-height: 1.37em;
-    padding-top: .342em;
-    margin-bottom: .142em;
 }
 
 /* Set the styles for "Heading 2". */
@@ -933,9 +931,7 @@ Preserve the relative scale, though. */
 /* Set the styles for "Paragraph". */
 .document-editor .ck-content p {
     font-size: 1em;
-    line-height: 1.63em;
-    padding-top: .5em;
-    margin-bottom: 1.13em;
+    margin: 0px;
 }
 
 /* Make the block quoted text serif with some additional spacing. */
@@ -943,4 +939,8 @@ Preserve the relative scale, though. */
     font-family: Georgia, serif;
     margin-left: calc( 2 * var(--ck-spacing-large) );
     margin-right: calc( 2 * var(--ck-spacing-large) );
+}
+
+.ck.ck-editor__editable_inline>:first-child {
+     margin-top: 5px !important;
 }
