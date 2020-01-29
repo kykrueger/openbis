@@ -1680,11 +1680,9 @@ var FormUtil = new function() {
     }
 
 	this.getExportButton = function(exportConfig, metadataOnly, includeRoot) {
-			var $export = FormUtil.getButtonWithIcon("glyphicon-export", this.getExportAction(exportConfig, metadataOnly, includeRoot));
-			if(metadataOnly) {
-				$export.append(" M");
-			}
-			return $export;
+			return FormUtil.getButtonWithIcon("glyphicon-export", 
+					this.getExportAction(exportConfig, metadataOnly, includeRoot),
+					metadataOnly ? "Export Metadata only" : "Export Metadata & Data");
 	};
 	
 	this.getFreezeButton = function(entityType, permId, isEntityFrozen) {
