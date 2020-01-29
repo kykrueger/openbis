@@ -115,6 +115,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 			inventorySpaces : this._inventorySpacesTableModel.getValues(),
 			sampleTypeDefinitionsExtension : this._getSampleTypeDefinitionsExtension(),
 			showDatasetArchivingButton : this._miscellaneousTableModel.getValues()["Show Dataset archiving button"],
+			hideSectionsByDefault : this._miscellaneousTableModel.getValues()["Hide sections by default"],
 		};
 	}
 
@@ -472,7 +473,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 		tableModel.columns = [{ label : "Setting"}, { label : "enabled"}];
 		tableModel.rowBuilders = {
 			"Setting" : function(rowData) {
-				return $("<span>").text(rowData.showDataSetArchivingButton);
+				return $("<span>").text(rowData.label);
 			},
 			"enabled" : function(rowData) {
 				var $checkbox = $("<input>", { type : "checkbox", name : "cb" });
@@ -484,8 +485,13 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 		};
 		// add data
 		tableModel.addRow({
-			showDataSetArchivingButton : "Show Dataset archiving button",
+			label : "Show Dataset archiving button",
 			enabled : this._profileToEdit.showDatasetArchivingButton
+		});
+		tableModel.addRow({
+			label : "Hide sections by default",
+			enabled : this._profileToEdit.hideSectionsByDefault
+			
 		});
 		// transform output
 		tableModel.valuesTransformer = function(values) {

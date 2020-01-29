@@ -1036,7 +1036,15 @@ var FormUtil = new function() {
 			var sectionsSettings = settingsValue ? JSON.parse(settingsValue) : {};
 			for (var idx = 0; idx < hideShowOptionsModel.length; idx++) {
 				var option = hideShowOptionsModel[idx];
-				var shown = sectionsSettings[option.label] === "shown" || option.forceToShow === true;
+				var shown = option.forceToShow === true;
+				if (shown === false) {
+					var sectionSetting = sectionsSettings[option.label];
+					if (sectionSetting !== undefined) {
+						shown = sectionSetting === 'shown';
+					} else {
+						shown = ! profile.hideSectionsByDefault;
+					}
+				}
 				var $section = $(option.section);
 				$section.toggle(shown);
 				var $label = $("<span>").append((shown ? "Hide " : "Show ") + option.label);
