@@ -247,6 +247,7 @@ def generateExternalZipFile(params, exportDirPath, contentZipFilePath, contentZi
 
 def generateXML(zipOutputStream, fileMetadata, exportDirPath, userInformation, entities, params):
     originUrl=params.get('originUrl')
+    pathNameUrl=params.get('pathNameUrl')
     submissionType = str(params.get('submissionType'))
 
     ns = {
@@ -324,9 +325,7 @@ def generateXML(zipOutputStream, fileMetadata, exportDirPath, userInformation, e
     openBisApiUrlField.set('mdschema', 'ethz')
     openBisApiUrlField.set('element', 'identifier')
     openBisApiUrlField.set('qualifier', 'openBisApiUrl')
-    openBisApiUrlField.text = originUrl + '/openbis-test/'
-
-    elnLimsURLPattern = '/openbis-test/webapp/eln-lims/?menuUniqueId=null&viewName='
+    openBisApiUrlField.text = originUrl + '/openbis/'
 
     for entity in entities:
         type = entity['type']
@@ -346,7 +345,7 @@ def generateXML(zipOutputStream, fileMetadata, exportDirPath, userInformation, e
             urlField.set('mdschema', 'ethz')
             urlField.set('element', 'identifier')
             urlField.set('qualifier', 'url')
-            urlField.text = originUrl + elnLimsURLPattern + viewName + '&viewData=' + entity['permId']
+            urlField.text = originUrl + pathNameUrl + '?menuUniqueId=null&viewName=' + viewName + '&viewData=' + entity['permId']
 
     if minDateStr is not None and maxDateStr is not None:
         creationDateField = ET.SubElement(dim, ET.QName(dimNS, 'field'))
