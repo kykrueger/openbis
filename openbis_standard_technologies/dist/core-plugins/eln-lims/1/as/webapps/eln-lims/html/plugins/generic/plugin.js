@@ -70,7 +70,7 @@ $.extend(GenericTechnology.prototype, ELNLIMSPlugin.prototype, {
 			}]
 		},
 		"EXPERIMENTAL_STEP" : {
-			"SHOW" : false,
+			"SHOW" : true,
 			"SHOW_ON_NAV" : true,
 			"SAMPLE_PARENTS_HINT" : [{
 				"LABEL" : "General protocol",
@@ -79,6 +79,11 @@ $.extend(GenericTechnology.prototype, ELNLIMSPlugin.prototype, {
 				"ANNOTATION_PROPERTIES" : [{"TYPE" : "ANNOTATION.SYSTEM.COMMENTS", "MANDATORY" : false }]
 			}],
 		},
+		"ENTRY" : {
+        			"SHOW" : true,
+        			"SHOW_ON_NAV" : true,
+        			"SAMPLE_PARENTS_HINT" : [],
+        },
 		"GENERAL_PROTOCOL" : {
 			"SHOW" : false,
 			"USE_AS_PROTOCOL" : true,
