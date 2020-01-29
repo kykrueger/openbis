@@ -504,16 +504,23 @@ function SampleFormView(sampleFormController, sampleFormModel) {
             if(!isReadOnly) {
                 documentEditorEditableToolbar = $("<div>", { class : "document-editor__toolbar" });
             }
-            var documentEditorEditableContainer = $("<div>", { class : "document-editor__editable-container" });
+
+            var height = LayoutManager.secondColumnContent.outerHeight() * 0.93;
+
+            var documentEditorEditableContainer = $("<div>", { class : "document-editor__editable-container", style : "height: " + height + "px; overflow: hidden;" });
 
             var documentEditorEditable = $("<div>", { class : "document-editor__editable", id : "DOCUMENT" });
 
 
 		    var value = Util.getEmptyIfNull(this._sampleFormModel.sample.properties[documentPropertyType.code]);
+		    if(this._sampleFormModel.mode === FormMode.CREATE) {
+                value = "<h1>New Title </h1> <br> <p>new content</p>";
+		    }
             var documentEditorEditableFinal = FormUtil.activateRichTextProperties(documentEditorEditable, documentChangeEvent, documentPropertyType, value, isReadOnly, documentEditorEditableToolbar);
 
             documentEditorEditableFinal.addClass("document-editor__editable");
             documentEditorEditableFinal.attr("id", "DOCUMENT");
+            documentEditorEditableFinal.css("height", "100%");
 
             documentEditor.append(documentEditorEditableContainer.append(documentEditorEditableFinal));
 
