@@ -114,7 +114,7 @@ def strip_tags(html):
     return s.get_data()
 
 
-def displayResult(isOk, tableBuilder, result=None):
+def displayResult(isOk, tableBuilder, result=None, errorMessage="Operation Failed"):
     if isOk:
         tableBuilder.addHeader("STATUS");
         tableBuilder.addHeader("MESSAGE");
@@ -125,10 +125,10 @@ def displayResult(isOk, tableBuilder, result=None):
         row.setCell("RESULT", result);
     else:
         tableBuilder.addHeader("STATUS");
-        tableBuilder.addHeader("MESSAGE");
+        tableBuilder.addHeader("Error");
         row = tableBuilder.addRow();
         row.setCell("STATUS", "FAIL");
-        row.setCell("MESSAGE", "Operation Failed");
+        row.setCell("Error", errorMessage);
 
 
 def addToExportWithoutRepeating(entitiesToExport, entityFound):
