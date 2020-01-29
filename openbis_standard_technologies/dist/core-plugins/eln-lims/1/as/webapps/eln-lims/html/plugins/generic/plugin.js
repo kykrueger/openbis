@@ -23,6 +23,7 @@ $.extend(GenericTechnology.prototype, ELNLIMSPlugin.prototype, {
 		},
 		"REQUEST" : {
 			"SHOW" : false,
+			"FORCE_TO_SHOW_PARENTS_SECTION" : true,
 			"SAMPLE_PARENTS_TITLE" : "Products from Catalog",
 			"SAMPLE_PARENTS_ANY_TYPE_DISABLED" : true,
 			"SAMPLE_CHILDREN_DISABLED" : true,
@@ -36,6 +37,7 @@ $.extend(GenericTechnology.prototype, ELNLIMSPlugin.prototype, {
 		},
 		"ORDER" : {
 			"SHOW" : false,
+			"FORCE_TO_SHOW_PARENTS_SECTION" : true,
 			"SAMPLE_PARENTS_TITLE" : "Requests",
 			"SAMPLE_PARENTS_ANY_TYPE_DISABLED" : true,
 			"SAMPLE_CHILDREN_DISABLED" : true,
@@ -58,6 +60,7 @@ $.extend(GenericTechnology.prototype, ELNLIMSPlugin.prototype, {
 		},
 		"PRODUCT" : {
 			"SHOW" : false,
+			"FORCE_TO_SHOW_PARENTS_SECTION" : true,
 			"SAMPLE_CHILDREN_DISABLED" : true,
 			"SAMPLE_PARENTS_TITLE" : "Suppliers",
 			"SAMPLE_PARENTS_ANY_TYPE_DISABLED" : true,
