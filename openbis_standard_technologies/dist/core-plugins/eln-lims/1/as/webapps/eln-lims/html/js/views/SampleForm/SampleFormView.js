@@ -511,9 +511,9 @@ function SampleFormView(sampleFormController, sampleFormModel) {
                 documentEditorEditableToolbar = $("<div>", { class : "document-editor__toolbar" });
             }
 
-            var height = LayoutManager.secondColumnContent.outerHeight() * 0.93;
+            var height = LayoutManager.secondColumnContent.outerHeight();
 
-            var documentEditorEditableContainer = $("<div>", { class : "document-editor__editable-container", style : "height: " + height + "px; overflow: hidden;" });
+            var documentEditorEditableContainer = $("<div>", { class : "document-editor__editable-container", style : "min-height: " + height + "px; overflow: hidden;" });
 
             var documentEditorEditable = $("<div>", { class : "document-editor__editable", id : "$DOCUMENT" });
 
