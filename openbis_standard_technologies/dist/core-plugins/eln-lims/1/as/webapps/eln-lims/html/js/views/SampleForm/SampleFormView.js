@@ -503,6 +503,8 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 			    var titleEnd = newCleanValue.indexOf("</h2>");
 			    if(titleStart !== -1 && titleEnd !== -1) {
 			        _this._sampleFormModel.sample.properties["$NAME"] = newCleanValue.substring(titleStart+4, titleEnd);
+			    } else {
+			        _this._sampleFormModel.sample.properties["$NAME"] = null;
 			    }
 			}
             // https://ckeditor.com/docs/ckeditor5/latest/framework/guides/deep-dive/ui/document-editor.html
@@ -519,7 +521,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 
 		    var value = Util.getEmptyIfNull(this._sampleFormModel.sample.properties[documentPropertyType.code]);
 		    if(this._sampleFormModel.mode === FormMode.CREATE) {
-                value = "<h2>New Title </h2> <br> <p>new content</p>";
+                value = "<h2>New Title</h2><br><p>new content</p>";
 		    }
             var documentEditorEditableFinal = FormUtil.activateRichTextProperties(documentEditorEditable, documentChangeEvent, documentPropertyType, value, isReadOnly, documentEditorEditableToolbar);
 
