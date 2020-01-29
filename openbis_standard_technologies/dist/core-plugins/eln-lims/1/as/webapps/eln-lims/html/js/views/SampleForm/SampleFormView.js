@@ -496,8 +496,14 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		    var documentPropertyType = profile.getPropertyType("DOCUMENT");
 		    FormUtil.fixStringPropertiesForForm(documentPropertyType, this._sampleFormModel.sample);
             var documentChangeEvent = function(jsEvent, newValue) {
+                var newCleanValue = Util.getEmptyIfNull(newValue);
                 _this._sampleFormModel.isFormDirty = true;
                 _this._sampleFormModel.sample.properties["DOCUMENT"] = Util.getEmptyIfNull(newValue);
+			    var titleStart = newCleanValue.indexOf("<h2>");
+			    var titleEnd = newCleanValue.indexOf("</h2>");
+			    if(titleStart !== -1 && titleEnd !== -1) {
+			        _this._sampleFormModel.sample.properties["$NAME"] = newCleanValue.substring(titleStart+4, titleEnd);
+			    }
 			}
             // https://ckeditor.com/docs/ckeditor5/latest/framework/guides/deep-dive/ui/document-editor.html
             var documentEditor = $("<div>", { class : "document-editor" });
@@ -511,10 +517,9 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 
             var documentEditorEditable = $("<div>", { class : "document-editor__editable", id : "DOCUMENT" });
 
-
 		    var value = Util.getEmptyIfNull(this._sampleFormModel.sample.properties[documentPropertyType.code]);
 		    if(this._sampleFormModel.mode === FormMode.CREATE) {
-                value = "<h1>New Title </h1> <br> <p>new content</p>";
+                value = "<h2>New Title </h2> <br> <p>new content</p>";
 		    }
             var documentEditorEditableFinal = FormUtil.activateRichTextProperties(documentEditorEditable, documentChangeEvent, documentPropertyType, value, isReadOnly, documentEditorEditableToolbar);
 
