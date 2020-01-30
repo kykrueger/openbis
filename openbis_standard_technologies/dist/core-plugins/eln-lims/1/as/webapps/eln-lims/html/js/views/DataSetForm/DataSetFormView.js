@@ -161,7 +161,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 			}, "Save");
 			$saveBtn.removeClass("btn-default");
 			$saveBtn.addClass("btn-primary");
-			toolbarModel.push({ component : $saveBtn " });
+			toolbarModel.push({ component : $saveBtn });
 		}
 		
 		// Plugin Hook
