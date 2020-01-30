@@ -322,31 +322,17 @@ def generateXML(zipOutputStream, fileMetadata, exportDirPath, userInformation, e
     publicationDateField.set('qualifier', 'issued')
     publicationDateField.text = datetime.date.today().strftime('%Y-%m-%d')
 
+    notesField = ET.SubElement(dim, ET.QName(dimNS, 'field'))
+    notesField.set('mdschema', 'ethz')
+    notesField.set('element', 'notes')
+    notesField.text = 'This export has been made from the openBIS installation %s, if you wish to access the original information please contact the data creator.' \
+                      % (originUrl + pathNameUrl)
+
     openBisApiUrlField = ET.SubElement(dim, ET.QName(dimNS, 'field'))
     openBisApiUrlField.set('mdschema', 'ethz')
     openBisApiUrlField.set('element', 'identifier')
     openBisApiUrlField.set('qualifier', 'openBisApiUrl')
     openBisApiUrlField.text = originUrl + '/openbis/'
-
-    for entity in entities:
-        type = entity['type']
-        viewName = ''
-        if type == 'SPACE':
-            viewName = 'showSpacePage'
-        if type == 'PROJECT':
-            viewName = 'showProjectPageFromPermId'
-        if type == 'EXPERIMENT':
-            viewName = 'showExperimentPageFromPermId'
-        if type == 'SAMPLE':
-            viewName = 'showViewSamplePageFromPermId'
-        if type == 'DATASET':
-            viewName = 'showViewDataSetPageFromPermId'
-        if type != 'FILE':
-            urlField = ET.SubElement(dim, ET.QName(dimNS, 'field'))
-            urlField.set('mdschema', 'ethz')
-            urlField.set('element', 'identifier')
-            urlField.set('qualifier', 'url')
-            urlField.text = originUrl + pathNameUrl + '?menuUniqueId=null&viewName=' + viewName + '&viewData=' + entity['permId']
 
     if minDateStr is not None and maxDateStr is not None:
         creationDateField = ET.SubElement(dim, ET.QName(dimNS, 'field'))
