@@ -127,7 +127,8 @@ def export(entities, tr, params, userInformation):
     exportZipFilePath = exportDirPath + '.zip'
     exportZipFileName = exportDirName + '.zip'
 
-    generateZipFile(entities, params, contentDirPath, contentZipFilePath, deflated=False)
+    indefiniteReterntion = (params.get('retentionPeriod') == 'indefinite')
+    generateZipFile(entities, params, contentDirPath, contentZipFilePath, deflated=not indefiniteReterntion)
     FileUtils.forceDelete(File(contentDirPath))
 
     generateExternalZipFile(params=params, exportDirPath=exportDirPath, contentZipFilePath=contentZipFilePath, contentZipFileName=contentZipFileName,
