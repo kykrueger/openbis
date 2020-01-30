@@ -177,7 +177,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 			}, "Save");
 			$saveBtn.removeClass("btn-default");
 			$saveBtn.addClass("btn-primary");
-			toolbarModel.push({ component : $saveBtn, tooltip: "Save" });
+			toolbarModel.push({ component : $saveBtn });
 		}
 		
 		var $header = views.header;

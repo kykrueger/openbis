@@ -353,7 +353,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 			}, "Save", null, "save-btn");
 			$saveBtn.removeClass("btn-default");
 			$saveBtn.addClass("btn-primary");
-			toolbarModel.push({ component : $saveBtn, tooltip: "Save" });
+			toolbarModel.push({ component : $saveBtn });
 
             // Templates
             if(toolbarConfig.TEMPLATES && this._sampleFormModel.mode === FormMode.CREATE) {

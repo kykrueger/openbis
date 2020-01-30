@@ -85,7 +85,7 @@ function SampleTableView(sampleTableController, sampleTableModel) {
 					var argsMapStr = JSON.stringify(argsMap);
 					Util.unblockUI();
 					mainController.changeView("showCreateSubExperimentPage", argsMapStr);
-				}, "Create " + Util.getDisplayNameFromCode(sampleTypeCodeToUse), null, "create-btn");
+				}, "New " + Util.getDisplayNameFromCode(sampleTypeCodeToUse), null, "create-btn");
 				
 				toolbarModel.push({ component : $createButton });
 			}

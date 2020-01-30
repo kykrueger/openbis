@@ -76,7 +76,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 				}).bind(this), "Save", null, "save-btn");
 				$saveBtn.removeClass("btn-default");
 				$saveBtn.addClass("btn-primary");
-				toolbarModel.push({ component : $saveBtn, tooltip: "Save" });
+				toolbarModel.push({ component : $saveBtn });
 			}
 
 			var $header = views.header;
