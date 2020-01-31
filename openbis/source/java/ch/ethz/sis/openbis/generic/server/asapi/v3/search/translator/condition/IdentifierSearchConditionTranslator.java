@@ -66,9 +66,10 @@ public class IdentifierSearchConditionTranslator implements IConditionTranslator
         final String experimentsTableName = TableMapper.EXPERIMENT.getEntitiesTable();
         final boolean hasSpaces = entitiesTable.equals(samplesTableName) || entitiesTable.equals(experimentsTableName) ||
                 entitiesTable.equals(projectsTableName);
+        final boolean hasProjects = entitiesTable.equals(samplesTableName) || entitiesTable.equals(experimentsTableName);
         final String spacesTableAlias = hasSpaces
                 ? aliases.get(prefix + SPACES_TABLE).getSubTableAlias() : null;
-        final String projectsTableAlias = aliases.get(prefix + PROJECTS_TABLE).getSubTableAlias();
+        final String projectsTableAlias = hasProjects ? aliases.get(prefix + PROJECTS_TABLE).getSubTableAlias() : null;
         final String samplesTableAlias = entitiesTable.equals(samplesTableName)
                 ? aliases.get(prefix + entitiesTable).getSubTableAlias() : null;
 

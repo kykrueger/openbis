@@ -590,22 +590,23 @@ public class TranslatorUtils
             result.put(prefix + SPACES_TABLE, spacesJoinInformation);
         }
 
-        final String projectsTableAlias = aliasFactory.createAlias();
-        final JoinInformation projectsJoinInformation = new JoinInformation();
-        projectsJoinInformation.setJoinType(JoinType.LEFT);
-        projectsJoinInformation.setMainTable(entitiesTable);
-        projectsJoinInformation.setMainTableAlias(MAIN_TABLE_ALIAS);
-        projectsJoinInformation.setMainTableIdField(PROJECT_COLUMN);
-        projectsJoinInformation.setSubTable(PROJECTS_TABLE);
-        projectsJoinInformation.setSubTableAlias(projectsTableAlias);
-        projectsJoinInformation.setSubTableIdField(ID_COLUMN);
-        result.put(prefix + PROJECTS_TABLE, projectsJoinInformation);
+        if (entitiesTable.equals(samplesTableName) || entitiesTable.equals(experimentsTableName)) {
+            final String projectsTableAlias = aliasFactory.createAlias();
+            final JoinInformation projectsJoinInformation = new JoinInformation();
+            projectsJoinInformation.setJoinType(JoinType.LEFT);
+            projectsJoinInformation.setMainTable(entitiesTable);
+            projectsJoinInformation.setMainTableAlias(MAIN_TABLE_ALIAS);
+            projectsJoinInformation.setMainTableIdField(PROJECT_COLUMN);
+            projectsJoinInformation.setSubTable(PROJECTS_TABLE);
+            projectsJoinInformation.setSubTableAlias(projectsTableAlias);
+            projectsJoinInformation.setSubTableIdField(ID_COLUMN);
+            result.put(prefix + PROJECTS_TABLE, projectsJoinInformation);
 
-        if (entitiesTable.equals(experimentsTableName))
-        {
-            // Experiments link to spaces via projects.
-            final JoinInformation experimentsSpacesJoinInformation = createSpacesJoinInformation(aliasFactory, entitiesTable, projectsTableAlias);
-            result.put(prefix + SPACES_TABLE, experimentsSpacesJoinInformation);
+            if (entitiesTable.equals(experimentsTableName)) {
+                // Experiments link to spaces via projects.
+                final JoinInformation experimentsSpacesJoinInformation = createSpacesJoinInformation(aliasFactory, entitiesTable, projectsTableAlias);
+                result.put(prefix + SPACES_TABLE, experimentsSpacesJoinInformation);
+            }
         }
 
         if (entitiesTable.equals(samplesTableName))
