@@ -332,7 +332,7 @@ def generateXML(zipOutputStream, fileMetadata, exportDirPath, userInformation, e
     openBisApiUrlField.set('mdschema', 'ethz')
     openBisApiUrlField.set('element', 'identifier')
     openBisApiUrlField.set('qualifier', 'openBisApiUrl')
-    openBisApiUrlField.text = originUrl + '/openbis/'
+    openBisApiUrlField.text = originUrl + '/openbis/openbis/rmi-application-server-v3.json'
 
     if minDateStr is not None and maxDateStr is not None:
         creationDateField = ET.SubElement(dim, ET.QName(dimNS, 'field'))
