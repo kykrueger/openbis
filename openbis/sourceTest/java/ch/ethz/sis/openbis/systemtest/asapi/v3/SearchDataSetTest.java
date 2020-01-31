@@ -257,7 +257,7 @@ public class SearchDataSetTest extends AbstractDataSetTest
     public void testSearchWithAnyProperty()
     {
         DataSetSearchCriteria criteria = new DataSetSearchCriteria();
-        criteria.withAnyProperty().thatEquals("non-virtual");
+        criteria.withAnyProperty().thatStartsWith("non-virtual");
         testSearch(TEST_USER, criteria, "20110509092359990-11", "20110509092359990-12");
     }
 
