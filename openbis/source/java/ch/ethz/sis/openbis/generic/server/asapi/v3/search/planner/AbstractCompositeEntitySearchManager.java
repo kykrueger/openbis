@@ -75,10 +75,10 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
         }
         final SearchOperator finalSearchOperator = (searchOperator == null) ? criteria.getOperator() : searchOperator;
 
-        return doSearchForIds(userId, parentsCriteria, childrenCriteria, mainCriteria, finalSearchOperator, sortOptions, criteria, idsColumnName);
+        return doSearchForIDs(userId, parentsCriteria, childrenCriteria, mainCriteria, finalSearchOperator, sortOptions, criteria, idsColumnName);
     }
 
-    protected Set<Long> doSearchForIds(final Long userId, final Collection<ISearchCriteria> parentsCriteria,
+    protected Set<Long> doSearchForIDs(final Long userId, final Collection<ISearchCriteria> parentsCriteria,
             final Collection<ISearchCriteria> childrenCriteria, final Collection<ISearchCriteria> mainCriteria,
             final SearchOperator finalSearchOperator, final SortOptions<OBJECT> sortOptions, final AbstractCompositeSearchCriteria parentCriteria,
             final String idsColumnName)

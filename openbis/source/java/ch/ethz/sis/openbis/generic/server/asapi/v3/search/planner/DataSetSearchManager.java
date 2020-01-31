@@ -17,12 +17,10 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CodeSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.PermIdSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.*;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetChildrenSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetContainerSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetParentsSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
@@ -53,6 +51,11 @@ public class DataSetSearchManager extends AbstractCompositeEntitySearchManager<D
     protected TableMapper getTableMapper()
     {
         return TableMapper.DATA_SET;
+    }
+
+    protected Class<? extends AbstractCompositeSearchCriteria> getContainerSearchCriteriaClass()
+    {
+        return DataSetContainerSearchCriteria.class;
     }
 
     @Override
@@ -90,11 +93,14 @@ public class DataSetSearchManager extends AbstractCompositeEntitySearchManager<D
     public Set<Long> searchForIDs(final Long userId, final DataSetSearchCriteria criteria, final SortOptions<DataSet> sortOptions,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
-        final Class<? extends AbstractCompositeSearchCriteria> parentsSearchCriteriaClass = getParentsSearchCriteriaClass();
-        final Class<? extends AbstractCompositeSearchCriteria> childrenSearchCriteriaClass = getChildrenSearchCriteriaClass();
-        final Collection<ISearchCriteria> parentsCriteria = getCriteria(criteria, parentsSearchCriteriaClass);
+        final Class<? extends ISearchCriteria> parentsSearchCriteriaClass = getParentsSearchCriteriaClass();
+        final Class<? extends ISearchCriteria> containerSearchCriteriaClass = getContainerSearchCriteriaClass();
+        final Class<? extends ISearchCriteria> childrenSearchCriteriaClass = getChildrenSearchCriteriaClass();
+
+        final Collection<ISearchCriteria> parentsAndContainerCriteria = getCriteria(criteria, parentsSearchCriteriaClass);
+        parentsAndContainerCriteria.addAll(getCriteria(criteria, containerSearchCriteriaClass));
         final Collection<ISearchCriteria> childrenCriteria = getCriteria(criteria, childrenSearchCriteriaClass);
-        final Collection<ISearchCriteria> mainCriteria = getOtherCriteriaThan(criteria, parentsSearchCriteriaClass, childrenSearchCriteriaClass);
+        final Collection<ISearchCriteria> mainCriteria = getOtherCriteriaThan(criteria, parentsSearchCriteriaClass, childrenSearchCriteriaClass, containerSearchCriteriaClass);
 
         // Replacing perm ID search criteria with code search criteria, because for datasets perm ID is equivalent to code
         final Collection<ISearchCriteria> newCriteria = mainCriteria.stream().map(searchCriterion ->
@@ -108,7 +114,7 @@ public class DataSetSearchManager extends AbstractCompositeEntitySearchManager<D
             }
         }).collect(Collectors.toList());
 
-        return super.doSearchForIds(userId, parentsCriteria, childrenCriteria, newCriteria, criteria.getOperator(), sortOptions, parentCriteria,
+        return super.doSearchForIDs(userId, parentsAndContainerCriteria, childrenCriteria, newCriteria, criteria.getOperator(), sortOptions, parentCriteria,
                 idsColumnName);
     }
 

@@ -19,6 +19,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 import java.util.List;
 import java.util.Map;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleContainerSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.relationship.IGetRelationshipIdExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
@@ -32,17 +33,17 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLL
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.CODE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.RELATIONSHIP_TYPES_TABLE;
 
-public class SampleContainerRelationshipSearchConditionTranslator implements IConditionTranslator<SampleContainerSearchCriteria>
+public class ContainerRelationshipSearchConditionTranslator implements IConditionTranslator<ISearchCriteria>
 {
     @Override
-    public Map<String, JoinInformation> getJoinInformationMap(final SampleContainerSearchCriteria criterion, final TableMapper tableMapper,
+    public Map<String, JoinInformation> getJoinInformationMap(final ISearchCriteria criterion, final TableMapper tableMapper,
             final IAliasFactory aliasFactory)
     {
         return TranslatorUtils.getRelationshipsJoinInformationMap(tableMapper, aliasFactory);
     }
 
     @Override
-    public void translate(final SampleContainerSearchCriteria criterion, final TableMapper tableMapper, final List<Object> args,
+    public void translate(final ISearchCriteria criterion, final TableMapper tableMapper, final List<Object> args,
             final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases, final Map<String, String> dataTypeByPropertyName)
     {
         sqlBuilder.append(aliases.get(RELATIONSHIP_TYPES_TABLE).getSubTableAlias()).append(PERIOD).append(CODE_COLUMN).append(SP).append(EQ).append(SP).
