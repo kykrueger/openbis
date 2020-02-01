@@ -637,14 +637,9 @@ function SampleFormView(sampleFormController, sampleFormModel) {
             // Dataset Viewer
             var $dataSetViewerContainer = new $('<div>', { id : "dataSetViewerContainer" });
 	        $dataSetViewerContainer.append($("<legend>").append("DataSets"));
-            $formColumn.append($dataSetViewerContainer);
+            mainController.sideMenu.addSubSideMenu($dataSetViewerContainer);
             this._sampleFormModel.dataSetViewer = new DataSetViewerController("dataSetViewerContainer", profile, this._sampleFormModel.sample, mainController.serverFacade, profile.getDefaultDataStoreURL(), this._sampleFormModel.datasets, false, true);
             this._sampleFormModel.dataSetViewer.init();
-
-		    hideShowOptionsModel.push({
-                label : "DataSets",
-                section : "#dataSetViewerContainer"
-            });
 		}
 
 		//

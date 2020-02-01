@@ -251,14 +251,9 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
             // Dataset Viewer
 	        var $dataSetViewerContainer = new $('<div>', { id : "dataSetViewerContainer" });
             $dataSetViewerContainer.append($("<legend>").append("DataSets"));
-            $formColumn.append($dataSetViewerContainer);
+            mainController.sideMenu.addSubSideMenu($dataSetViewerContainer);
             this._experimentFormModel.dataSetViewer = new DataSetViewerController("dataSetViewerContainer", profile, this._experimentFormModel.v3_experiment, mainController.serverFacade, profile.getDefaultDataStoreURL(), null, false, true);
             this._experimentFormModel.dataSetViewer.init();
-
-            hideShowOptionsModel.push({
-                label : "DataSets",
-                section : "#dataSetViewerContainer"
-            });
         }
 		
 		//

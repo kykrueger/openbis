@@ -770,6 +770,18 @@ span.fancytree-custom-icon {
 }
 
 /*
+ *
+ */
+
+.vl {
+  display: inline-block;
+  border-left: 1px dashed #ddd;
+  height: 30px;
+  margin-left: 3px;
+  vertical-align: middle;
+}
+
+/*
  * JExcel Bootstrap overrides / fixes
  */
 

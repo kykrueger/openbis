@@ -32,7 +32,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
     this.repaint = function($container) {
         var _this = this;
         this._$container = $container;
-        var $widget = $("<div>");
+        var $widget = $("<div>", { id : "sideMenuTopContainer" });
         //
         // Fix Header
         //
@@ -100,7 +100,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
                 return false;  
               }
         });
-        searchElement.css({"display" : "inline", "width" : "50%"});
+        searchElement.css({"display" : "inline", "width" : "30%"});
         searchElement.css({"padding-top" : "2px"});
         searchElement.css({"margin-left" : "2px"});
         searchElement.css({"margin-right" : "2px"});
@@ -143,12 +143,13 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
             },
         ];
         var $sortButtonGroup = this._makeSortButtonGroup(sortOptions);
-        var $sortBar = $("<div>", { "id": "sideMenuSortBar" });
+        var $sortBar = $("<span>", { "id": "sideMenuSortBar" });
         $sortBar.append($sortButtonGroup);
 
+        $searchForm.append($("<span>", { class : "vl" }));
+        $searchForm.append($sortBar);
         $widget.append($header)
-               .append($body)
-               .append($sortBar);
+               .append($body);
         $container.empty();
         $container.append($widget);
 

@@ -369,6 +369,7 @@ function MainController(profile) {
 		}
 		
 		CKEditorManager.destroy();
+		this.sideMenu.removeSubSideMenu();
 		
 		//
 		//
