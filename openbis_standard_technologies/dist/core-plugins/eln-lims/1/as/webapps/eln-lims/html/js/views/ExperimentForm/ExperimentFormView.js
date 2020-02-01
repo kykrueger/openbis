@@ -372,7 +372,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		var _this = this;
 		var $samples = $("<div>", { id : "experiment-samples" });
 		$samples.append($('<legend>').text(ELNDictionary.Samples));
-		var sampleListHeader = $("<div>");
+		var sampleListHeader = $("<p>");
 		var sampleListContainer = $("<div>");
 		$samples.append(sampleListHeader);
 		$samples.append(sampleListContainer);
