@@ -151,7 +151,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 		$fieldset.append(FormUtil.getInfoText(text.info));
 
 		var experimentIdentifier = profile.getStorageConfigCollectionForConfigSample(this._settingsFormModel.settingsSample); //"/ELN_SETTINGS/STORAGES/STORAGES_COLLECTION";
-		
+
 		var $addBtn = FormUtil.getButtonWithIcon("glyphicon-plus", function() {
 			var argsMap = {
 					"sampleTypeCode" : "STORAGE",
@@ -160,7 +160,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 			var argsMapStr = JSON.stringify(argsMap);
 			Util.unblockUI();
 			mainController.changeView("showCreateSubExperimentPage", argsMapStr);
-		}, null, "Create storage");
+		}, "New Storage");
 
 		$fieldset.append($("<p>").append($addBtn));
 
@@ -181,24 +181,11 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 		var $fieldset = this._getFieldset($container, text.title, "settings-section-templates");
 		$fieldset.append(FormUtil.getInfoText(text.info));
 
-		var $dropdownContainer = $("<p>");
-	    var $dropDownMenu = $("<span>", { class : 'dropdown' });
-        var $caret = $("<a>", { 'href' : '#', 'data-toggle' : 'dropdown', class : 'dropdown-toggle btn btn-default'}).append("Operations ").append($("<b>", { class : 'caret' }));
-        var $list = $("<ul>", { class : 'dropdown-menu', 'role' : 'menu', 'aria-labelledby' :'sampleTableDropdown' });
-        $dropdownContainer.append($dropDownMenu);
-        $dropDownMenu.append($caret);
-        $dropDownMenu.append($list);
+        var $createTemplate = FormUtil.getButtonWithIcon("glyphicon-plus", function() {
+                FormUtil.createNewSample("/" + _this._settingsFormModel.settingsSample.spaceCode + "/TEMPLATES/TEMPLATES_COLLECTION");
+        }, "New Template");
 
-        var $createSampleOption = $("<li>", { 'role' : 'presentation' }).append($("<a>", {'title' : 'Create ' + ELNDictionary.Sample + ''}).append('Create ' + ELNDictionary.Sample + ''));
-
-        var _this = this;
-        $createSampleOption.click(function() {
-            FormUtil.createNewSample("/" + _this._settingsFormModel.settingsSample.spaceCode + "/TEMPLATES/TEMPLATES_COLLECTION");
-        });
-        $list.append($createSampleOption);
-
-        $fieldset.append($dropdownContainer);
-
+        $fieldset.append($("<p>").append($createTemplate));
         var $gridContainer = $("<div>");
 		$fieldset.append($gridContainer);
 

@@ -1095,7 +1095,7 @@ var FormUtil = new function() {
 	
 	this.getOperationsMenu = function(items) {
 		var $dropDownMenu = $("<span>", { class : 'dropdown' });
-		var $caret = $("<a>", { 'href' : '#', 'data-toggle' : 'dropdown', class : 'dropdown-toggle btn btn-default'}).append("Operations ").append($("<b>", { class : 'caret' }));
+		var $caret = $("<a>", { 'href' : '#', 'data-toggle' : 'dropdown', class : 'dropdown-toggle btn btn-default'}).append("More ... ").append($("<b>", { class : 'caret' }));
 		var $list = $("<ul>", { class : 'dropdown-menu', 'role' : 'menu', 'aria-labelledby' :'sampleTableDropdown' });
 		$dropDownMenu.append($caret);
 		$dropDownMenu.append($list);
