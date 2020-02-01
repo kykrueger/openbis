@@ -87,11 +87,14 @@ var SampleDataGridUtil = new function() {
 			label : 'Type',
 			property : 'sampleTypeCode',
 			isExportable: false,
-			sortable : true
+			sortable : true,
+		    render : function(data, grid) {
+                return Util.getDisplayNameFromCode(data.sampleTypeCode);
+            },
 		});
 		
 		columnsFirst.push({
-			label : 'Name',
+			label : 'Name / Code',
 			property : '$NAME',
 			isExportable: true,
 			sortable : true,
@@ -99,6 +102,8 @@ var SampleDataGridUtil = new function() {
 				var nameToUse = "";
 				if(data[profile.propertyReplacingCode]) {
 					nameToUse = data[profile.propertyReplacingCode];
+				} else {
+				    nameToUse = data.code;
 				}
 				return (isLinksDisabled)?nameToUse:FormUtil.getFormLink(nameToUse, "Sample", data.permId);
 			}

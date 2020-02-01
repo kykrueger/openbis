@@ -29,7 +29,7 @@ function SpaceFormView(spaceFormController, spaceFormModel) {
 		
 		var typeTitle = "Space: ";
 		
-		var $formTitle = $("<h2>").append(typeTitle + this._spaceFormModel.space);
+		var $formTitle = $("<h2>").append(typeTitle + Util.getDisplayNameFromCode(this._spaceFormModel.space));
 		
 		//
 		// Toolbar
