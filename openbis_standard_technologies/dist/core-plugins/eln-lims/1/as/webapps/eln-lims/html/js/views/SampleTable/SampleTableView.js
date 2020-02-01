@@ -34,11 +34,8 @@ function SampleTableView(sampleTableController, sampleTableModel) {
 			var spaceCode = IdentifierUtil.getSpaceCodeFromIdentifier(this._sampleTableModel.experimentIdentifier);
 			var projectCode = IdentifierUtil.getProjectCodeFromExperimentIdentifier(this._sampleTableModel.experimentIdentifier);
 			var experimentCode = IdentifierUtil.getCodeFromIdentifier(this._sampleTableModel.experimentIdentifier);
-			var entityPath = FormUtil.getFormPath(spaceCode, projectCode, experimentCode);
-			
-			$title
-				.append($("<h2>").append(title))
-				.append($("<h4>", { "style" : "font-weight:normal;" } ).append(entityPath));
+
+			$title.append($("<h2>").append(title));
 		} else if(this._sampleTableModel.title) {
 			$title.append($("<h2>").append(this._sampleTableModel.title));
 		}
@@ -164,6 +161,12 @@ function SampleTableView(sampleTableController, sampleTableModel) {
 				mainController.changeView("showAdvancedSearchPage", JSON.stringify(rules));
 			});
 			$list.append($searchCollectionOption);
+
+			var $detailsOption = $("<li>", { 'role' : 'presentation' }).append($("<a>", {'title' : 'Detail View', 'id' : 'detail-btn'}).append('Detail View'));
+            $detailsOption.click(function() {
+                mainController.changeView("showExperimentPageFromIdentifier", _this._sampleTableModel.experimentIdentifier);
+            });
+            $list.append($detailsOption);
 		}
 		
 		return $dropDownMenu;
