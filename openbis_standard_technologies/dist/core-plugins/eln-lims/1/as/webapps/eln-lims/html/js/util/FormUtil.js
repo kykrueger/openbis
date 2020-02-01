@@ -1198,8 +1198,7 @@ var FormUtil = new function() {
 	}
 	
 	this.isNumber = function(str) {
-    	var n = Number(str);
-    	return String(n) === str;
+    	return !isNaN(str);
 	}
 
 	//
