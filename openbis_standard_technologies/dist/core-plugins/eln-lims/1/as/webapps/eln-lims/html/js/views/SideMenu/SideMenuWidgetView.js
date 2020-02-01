@@ -225,7 +225,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
         
         if(profile.mainMenu.showInventory) {
             var inventoryLink = _this.getLinkForNode("Inventory", "INVENTORY", "showInventoryPage", null, null);
-            treeModel.push({ displayName: "Inventory", title : inventoryLink, entityType: "INVENTORY", key : "INVENTORY", folder : true, lazy : true, view : "showInventoryPage" });
+            treeModel.push({ displayName: "Inventory", title : inventoryLink, entityType: "INVENTORY", key : "INVENTORY", folder : true, lazy : true, view : "showInventoryPage", icon : "fa fa-cubes" });
         }
         
         if(profile.mainMenu.showStock) {
@@ -512,7 +512,6 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
                                     viewData: space.getCode(),
                                     registrationDate: space.registrationDate,
                                 };
-                                spaceNode.icon = "fa fa-shopping-cart";
                                 results.push(spaceNode);
                             }
                         }
@@ -599,9 +598,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
                         for(var sIdx = 0; sIdx < samples.length; sIdx++) {
                             var sample = samples[sIdx];
                             var sampleIsExperiment = sample.type.code.indexOf("EXPERIMENT") > -1;
-                            var sampleTypeOnNav = profile.sampleTypeDefinitionsExtension[sample.type.code] &&
-                                                  profile.sampleTypeDefinitionsExtension[sample.type.code]["SHOW_ON_NAV"] &&
-                                                  !profile.sampleTypeDefinitionsExtension[sample.type.code]["SHOW_ON_NAV_FOR_PARENT_TYPES"];
+                            var sampleTypeOnNav = profile.showOnNav(sample.type.code);
                             if(sampleIsExperiment || sampleTypeOnNav) {
                                 var parentIsExperiment = false;
                                 if(sample.parents) {
@@ -628,6 +625,8 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
                                     var sampleIcon;
                                     if(sampleIsExperiment) {
                                         sampleIcon = "fa fa-flask";
+                                    } else if(sample.type.code === "ENTRY") {
+                                        sampleIcon = "fa fa-file-text";
                                     } else {
                                         sampleIcon = "fa fa-file";
                                     }
@@ -739,6 +738,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
                                         sampleIcon = "fa fa-file";
                                     }
                                     if(sample.type.code.indexOf("EXPERIMENT") > -1 ||
+                                    !profile.sampleTypeDefinitionsExtension[sample.type.code] ||
                                     (profile.sampleTypeDefinitionsExtension[sample.type.code] && profile.sampleTypeDefinitionsExtension[sample.type.code]["SHOW_ON_NAV"])) {
                                         var parentTypeCode = samples[0].type.code;
                                         var showOnNavForParentTypes = profile.sampleTypeDefinitionsExtension[sample.type.code]["SHOW_ON_NAV_FOR_PARENT_TYPES"];

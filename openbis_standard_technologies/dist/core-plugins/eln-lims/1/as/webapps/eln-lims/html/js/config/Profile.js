@@ -289,6 +289,23 @@ $.extend(DefaultProfile.prototype, {
 			});
 		}
 
+		this.showOnNav = function(sampleTypeCode) {
+		    var sampleTypeOnNav = true;
+
+		    if(profile.sampleTypeDefinitionsExtension[sampleTypeCode]) {
+		        var sampleTypeDefinitionsExtensionOnNav = null;
+		        if(profile.sampleTypeDefinitionsExtension[sampleTypeCode]["SHOW_ON_NAV"] === undefined) {
+		            sampleTypeDefinitionsExtensionOnNav = true;
+		        } else {
+		            sampleTypeDefinitionsExtensionOnNav = profile.sampleTypeDefinitionsExtension[sampleTypeCode]["SHOW_ON_NAV"];
+		        }
+		        sampleTypeOnNav = profile.sampleTypeDefinitionsExtension[sampleTypeCode] &&
+                                sampleTypeDefinitionsExtensionOnNav &&
+                                !profile.sampleTypeDefinitionsExtension[sampleTypeCode]["SHOW_ON_NAV_FOR_PARENT_TYPES"];
+		    }
+		    return sampleTypeOnNav;
+		}
+
 		this.getSampleConfigSpacePrefix = function(sample) {
 			var prefix = null;
 			var spaceCode = sample.spaceCode;

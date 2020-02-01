@@ -542,9 +542,13 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 				enabled : sampleTypeSettings["SHOW"],
 				id : code + "_show_in_drop_downs"
 			});
+			var showOnNav = sampleTypeSettings["SHOW_ON_NAV"];
+			if(showOnNav === undefined) {
+			    showOnNav = true;
+			}
 			tableModel.addRow({
                 name : "Show in main menu",
-                enabled : sampleTypeSettings["SHOW_ON_NAV"]
+                enabled : showOnNav
             });
 		} else { // default values
 			tableModel.addRow({
@@ -561,7 +565,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
             });
             tableModel.addRow({
                 name : "Show in main menu",
-                enabled : false
+                enabled : true
             });
 		}
 		// transform output
