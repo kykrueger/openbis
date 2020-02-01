@@ -289,6 +289,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 	
 	this._createIdentificationInfoSection = function(hideShowOptionsModel) {
 		hideShowOptionsModel.push({
+		    forceToShow : this._experimentFormModel.mode === FormMode.CREATE,
 			label : "Identification Info",
 			section : "#experiment-identification-info"
 		});
@@ -305,8 +306,11 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		}
 
 		var projectIdentifier = IdentifierUtil.getProjectIdentifierFromExperimentIdentifier(this._experimentFormModel.experiment.identifier);
-		$identificationInfo.append(FormUtil.getFieldForLabelWithText("Type", this._experimentFormModel.experiment.experimentTypeCode));
-		$identificationInfo.append(FormUtil.getFieldForLabelWithText("Project", projectIdentifier));
+		if(!this._experimentFormModel.mode === FormMode.CREATE) {
+		    $identificationInfo.append(FormUtil.getFieldForLabelWithText("Type", this._experimentFormModel.experiment.experimentTypeCode));
+		    $identificationInfo.append(FormUtil.getFieldForLabelWithText("Project", projectIdentifier));
+		}
+
 		var $projectField = FormUtil._getInputField("text", null, "project", null, true);
 		$projectField.val(projectIdentifier);
 		$projectField.hide();
@@ -427,6 +431,10 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 				continue;
 			} else if(propertyType.dinamic && this._experimentFormController.mode === FormMode.CREATE) { //Skip
 				continue;
+			} else if(this._experimentFormModel.mode === FormMode.CREATE &&
+			        propertyType.code !== "$NAME" &&
+			        !propertyType.mandatory) {
+			    continue;
 			}
 
             if(propertyType.code === "$XMLCOMMENTS") {
