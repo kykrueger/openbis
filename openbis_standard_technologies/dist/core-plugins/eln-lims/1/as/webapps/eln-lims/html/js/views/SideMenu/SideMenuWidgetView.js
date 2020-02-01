@@ -573,17 +573,21 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
                             }
                             
                             var experimentLink = _this.getLinkForNode(experimentDisplayName, experiment.getPermId().getPermId(), viewToUse, experiment.getIdentifier().getIdentifier(), experiment.getIdentifier().getIdentifier().split('/').join('_'));
-                            results.push({
-                                displayName: experimentDisplayName,
-                                title : experimentLink,
-                                entityType: "EXPERIMENT",
-                                key : experiment.getPermId().getPermId(),
-                                folder : true,
-                                lazy : loadSamples,
-                                view : viewToUse,
-                                viewData: experiment.getIdentifier().getIdentifier(),
-                                registrationDate: experiment.registrationDate,
-                            });
+                            var experimentResult = {
+                                    displayName: experimentDisplayName,
+                                    title : experimentLink,
+                                    entityType: "EXPERIMENT",
+                                    key : experiment.getPermId().getPermId(),
+                                    folder : true,
+                                    lazy : loadSamples,
+                                    view : viewToUse,
+                                    viewData: experiment.getIdentifier().getIdentifier(),
+                                    registrationDate: experiment.registrationDate,
+                            };
+                            if(experiment.type.code === "COLLECTION") {
+                                experimentResult.icon = "fa fa-table";
+                            }
+                            results.push(experimentResult);
                         }
                         results.sort(sortItems);
                         dfd.resolve(results);
