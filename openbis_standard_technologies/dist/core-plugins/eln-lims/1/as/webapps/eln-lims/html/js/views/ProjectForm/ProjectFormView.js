@@ -164,7 +164,11 @@ function ProjectFormView(projectFormController, projectFormModel) {
 		var hideShowOptionsModel = [];
 
 		$formColumn.append(this._createIdentificationInfoSection(hideShowOptionsModel));
-		$formColumn.append(this._createDescriptionSection(hideShowOptionsModel));
+
+		if(this._projectFormModel.mode !== FormMode.CREATE) {
+		    $formColumn.append(this._createDescriptionSection(hideShowOptionsModel));
+		}
+
 		if (this._projectFormModel.mode !== FormMode.CREATE && !isInventoryProject) {
 			$formColumn.append(this._createExperimentsSection(projectIdentifier, hideShowOptionsModel));
 			$formColumn.append(this._createSamplesSection(hideShowOptionsModel));
@@ -186,9 +190,7 @@ function ProjectFormView(projectFormController, projectFormModel) {
 		var _this = this;
 		var $identificationInfo = $("<div>", { id : "project-identification-info" });
 
-		if(this._projectFormModel.mode !== FormMode.CREATE) {
-		    $identificationInfo.append($("<legend>").append("Identification Info"));
-		}
+        $identificationInfo.append($("<legend>").append("Identification Info"));
 
 		var spaceCode = this._projectFormModel.project.spaceCode;
 		if (this._projectFormModel.mode !== FormMode.CREATE) {
@@ -244,11 +246,9 @@ function ProjectFormView(projectFormController, projectFormModel) {
 		
 		var _this = this;
 		var $description = $("<div>", { id : "project-description" });
-		if(this._projectFormModel.mode !== FormMode.CREATE) {
-		    $description.append($("<legend>").append("General"));
-		}
+		$description.append($("<legend>").append("General"));
 		var description = Util.getEmptyIfNull(this._projectFormModel.project.description);
-		if(this._projectFormModel.mode === FormMode.EDIT) {
+		if(this._projectFormModel.mode !== FormMode.VIEW) {
 			var $textBox = FormUtil._getTextBox(null, "Description", false);
 			var textBoxEvent = function(jsEvent, newValue) {
 				var valueToUse = null;
@@ -263,7 +263,7 @@ function ProjectFormView(projectFormController, projectFormModel) {
 			$textBox.val(description);
 			$textBox = FormUtil.activateRichTextProperties($textBox, textBoxEvent, null, description, false);
 			$description.append(FormUtil.getFieldForComponentWithLabel($textBox, "Description"));
-		} else if(this._projectFormModel.mode === FormMode.VIEW) {
+		} else {
 			var $textBox = FormUtil._getTextBox(null, "Description", false);
 			$textBox = FormUtil.activateRichTextProperties($textBox, undefined, null, description, true);
 			$description.append(FormUtil.getFieldForComponentWithLabel($textBox, "Description"));
