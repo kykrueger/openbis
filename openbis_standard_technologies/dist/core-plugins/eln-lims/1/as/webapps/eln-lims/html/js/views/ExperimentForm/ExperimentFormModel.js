@@ -22,4 +22,5 @@ function ExperimentFormModel(mode, experiment) {
 		experiment.properties = {};
 	}
 	this.experiment = experiment;
+	this.v3_experiment = null;
 }

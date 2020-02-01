@@ -410,12 +410,13 @@ var LayoutManager = {
 		//
 		
 		var width = $( window ).width();
-		if (width > this.DESKTOP_SIZE) {
-			if (this.FOUND_SIZE !== this.DESKTOP_SIZE) {
-				isFirstTime = true;
-				this.FOUND_SIZE = this.DESKTOP_SIZE;
-			}
-		} else if (width > this.TABLET_SIZE) {
+//		if (width > this.DESKTOP_SIZE) {
+//			if (this.FOUND_SIZE !== this.DESKTOP_SIZE) {
+//				isFirstTime = true;
+//				this.FOUND_SIZE = this.DESKTOP_SIZE;
+//			}
+//		} else
+		if (width > this.TABLET_SIZE) {
 			if (this.FOUND_SIZE !== this.TABLET_SIZE) {
 				isFirstTime = true;
 				this.FOUND_SIZE = this.TABLET_SIZE;

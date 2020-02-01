@@ -32,11 +32,6 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 			'action' : 'javascript:void(0);'
 		});
 		
-		var $rightPanel = null;
-		if(this._sampleFormModel.mode === FormMode.VIEW) {
-			$rightPanel = views.auxContent;
-		}
-		
 		$form.append($formColumn);
 		
 		//
@@ -461,7 +456,13 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		}
 
 		var hideShowOptionsModel = [];
-		
+
+		// Preview
+        var $previewImageContainer = new $('<div>', { id : "previewImageContainer" });
+        $previewImageContainer.append($("<legend>").append("Preview"));
+        $previewImageContainer.hide();
+        $formColumn.append($previewImageContainer);
+
 		//
 		// Identification Info on Create
 		//
@@ -621,37 +622,31 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 				Util.showImage($("#preview-image").attr("src"));
 			});
 			
-			if($rightPanel !== null) { //Min Desktop resolution
-				$rightPanel.append($previewImage);
-			} else {
-				$formColumn.append($previewImage);
-			}
+		    $previewImageContainer.append($previewImage);
 		}
-		
+
 		//
-		// DATASETS
-		//
-		var $dataSetViewerContainer = $("<div>", { 'id' : 'dataSetViewerContainer', 'style' : 'margin-top:10px;'});
-		if($rightPanel) {
-			$rightPanel.append($dataSetViewerContainer);
-		} else {
-			$formColumn.append($dataSetViewerContainer);
+        // DATASETS
+        //
+		if(this._sampleFormModel.mode !== FormMode.CREATE &&
+		   this._sampleFormModel.datasets.length > 0) {
+
+            //Preview image
+            this._reloadPreviewImage();
+
+            // Dataset Viewer
+            var $dataSetViewerContainer = new $('<div>', { id : "dataSetViewerContainer" });
+	        $dataSetViewerContainer.append($("<legend>").append("DataSets"));
+            $formColumn.append($dataSetViewerContainer);
+            this._sampleFormModel.dataSetViewer = new DataSetViewerController("dataSetViewerContainer", profile, this._sampleFormModel.sample, mainController.serverFacade, profile.getDefaultDataStoreURL(), this._sampleFormModel.datasets, false, true);
+            this._sampleFormModel.dataSetViewer.init();
+
+		    hideShowOptionsModel.push({
+                label : "DataSets",
+                section : "#dataSetViewerContainer"
+            });
 		}
-		
-		if(this._sampleFormModel.mode === FormMode.VIEW && _this._allowedToRegisterDataSet()) {
-			var $inlineDataSetForm = $("<div>");
-			if($rightPanel) {
-				$rightPanel.append($inlineDataSetForm);
-			} else {
-				$formColumn.append($inlineDataSetForm);
-			}
-			var $dataSetFormController = new DataSetFormController(this, FormMode.CREATE, this._sampleFormModel.sample, null, true);
-			var viewsForDS = {
-					content : $inlineDataSetForm
-			}
-			$dataSetFormController.init(viewsForDS);
-		}
-		
+
 		//
 		// INIT
 		//
@@ -673,18 +668,6 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 			profile.sampleFormContentExtra(this._sampleFormModel.sample.sampleTypeCode, this._sampleFormModel.sample, "sample-form-content-extra");
 		} catch(err) {
 			Util.manageError(err);
-		}
-		
-		//
-		// TO-DO: Legacy code to be refactored
-		//
-		if(this._sampleFormModel.mode !== FormMode.CREATE) {
-			//Preview image
-			this._reloadPreviewImage();
-			
-			// Dataset Viewer
-			this._sampleFormModel.dataSetViewer = new DataSetViewerController("dataSetViewerContainer", profile, this._sampleFormModel.sample, mainController.serverFacade, profile.getDefaultDataStoreURL(), this._sampleFormModel.datasets, false, true);
-			this._sampleFormModel.dataSetViewer.init();
 		}
 		
 		this._sampleFormModel.isFormLoaded = true;
@@ -1118,6 +1101,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 										img.attr('src', downloadUrl);
 										img.attr('data-preview-loaded', 'true');
 										img.show();
+										$("#previewImageContainer").show();
 										break;
 									}
 								}

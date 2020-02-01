@@ -184,7 +184,13 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		$header.append($formTitle);
 
 		var hideShowOptionsModel = [];
-		
+
+		// Preview
+        var $previewImageContainer = new $('<div>', { id : "previewImageContainer" });
+        $previewImageContainer.append($("<legend>").append("Preview"));
+        $previewImageContainer.hide();
+        $formColumn.append($previewImageContainer);
+
 		//
 		// Identification Info on Create
 		//
@@ -229,29 +235,31 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 				Util.showImage($("#preview-image").attr("src"));
 			});
 			
-			if($rightPanel !== null) { //Min Desktop resolution
-				$rightPanel.append($previewImage);
-			} else {
-				$formColumn.append($previewImage);
-			}
+			$previewImageContainer.append($previewImage);
 		}
 		
 		//
 		// DATASETS
 		//
-		
-		// Viewer
-		var $dataSetViewerContainer = $("<div>", { 'id' : 'dataSetViewerContainer', 'style' : 'margin-top:10px;'});
-		// Uploader
-		var $dataSetUploaderContainer = $("<div>");
-		
-		if($rightPanel) {
-			$rightPanel.append($dataSetViewerContainer);
-			$rightPanel.append($dataSetUploaderContainer);
-		} else {
-			$formColumn.append($dataSetViewerContainer);
-			$formColumn.append($dataSetUploaderContainer);
-		}
+
+	    if(this._experimentFormModel.mode !== FormMode.CREATE &&
+	        this._experimentFormModel.v3_experiment.dataSets.length > 0) {
+
+	        //Preview image
+            this._reloadPreviewImage();
+
+            // Dataset Viewer
+	        var $dataSetViewerContainer = new $('<div>', { id : "dataSetViewerContainer" });
+            $dataSetViewerContainer.append($("<legend>").append("DataSets"));
+            $formColumn.append($dataSetViewerContainer);
+            this._experimentFormModel.dataSetViewer = new DataSetViewerController("dataSetViewerContainer", profile, this._experimentFormModel.v3_experiment, mainController.serverFacade, profile.getDefaultDataStoreURL(), null, false, true);
+            this._experimentFormModel.dataSetViewer.init();
+
+            hideShowOptionsModel.push({
+                label : "DataSets",
+                section : "#dataSetViewerContainer"
+            });
+        }
 		
 		//
 		// INIT
@@ -262,29 +270,6 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		$container.append($form);
 		
 		Util.unblockUI();
-		
-		if(this._experimentFormModel.mode !== FormMode.CREATE) {
-			var experimentRules = { "UUIDv4" : { type : "Attribute", name : "PERM_ID", value : this._experimentFormModel.experiment.permId } };
-			var experimentCriteria = { entityKind : "EXPERIMENT", logicalOperator : "AND", rules : experimentRules };
-			mainController.serverFacade.searchForExperimentsAdvanced(experimentCriteria, null, function(data) {
-				// Viewer
-				_this._experimentFormModel.dataSetViewer = new DataSetViewerController("dataSetViewerContainer", profile, data.objects[0], mainController.serverFacade, profile.getDefaultDataStoreURL(), null, false, true);
-				_this._experimentFormModel.dataSetViewer.init();
-				if(_this._experimentFormModel.mode === FormMode.VIEW && _this._allowedToRegisterDataSet()) {
-					// Uploader
-					var $dataSetFormController = new DataSetFormController(_this, FormMode.CREATE, data.objects[0], null, true);
-					var viewsForDS = {
-							content : $dataSetUploaderContainer
-					}
-					$dataSetFormController.init(viewsForDS);
-				}
-			});
-		}
-		
-		if(this._experimentFormModel.mode !== FormMode.CREATE) {
-			//Preview image
-			this._reloadPreviewImage();
-		}
 	}
 	
 	this._createIdentificationInfoSection = function(hideShowOptionsModel) {
@@ -585,6 +570,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 										img.attr('src', downloadUrl);
 										img.attr('data-preview-loaded', 'true');
 										img.show();
+										$("#previewImageContainer").show();
 										break;
 									}
 								}
