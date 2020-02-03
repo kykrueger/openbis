@@ -114,7 +114,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 				//Create Dataset
 				var $uploadBtn = FormUtil.getButtonWithIcon("glyphicon-upload", function () {
 					mainController.changeView('showCreateDataSetPageFromExpPermId',_this._experimentFormModel.experiment.permId);
-				}, "Upload Dataset");
+				}, "Upload");
 				toolbarModel.push({ component : $uploadBtn });
 	
 				//Get dropbox folder name
