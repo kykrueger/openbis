@@ -333,6 +333,21 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
             treeModelUtils.push({ displayName: "Settings", title : settingsLink, entityType: "SETTINGS", key : "SETTINGS", folder : false, lazy : false, view : "showSettingsPage", icon : "glyphicon glyphicon-cog" });
         }
 
+        var extraPluginUtilities = profile.getPluginUtilities();
+        for(var ePIdx = 0; ePIdx < extraPluginUtilities.length; ePIdx++) {
+            var extraPluginUtility = extraPluginUtilities[ePIdx];
+            var extraUtilityLink = _this.getLinkForNode(extraPluginUtility.label, "EXTRA_PLUGIN_UTILITY", "EXTRA_PLUGIN_UTILITY", extraPluginUtility.uniqueViewName, null);
+            treeModelUtils.push({   displayName: extraPluginUtility.label,
+                                    title : extraUtilityLink,
+                                    entityType: "EXTRA_PLUGIN_UTILITY",
+                                    key : extraPluginUtility.uniqueViewName,
+                                    viewData : extraPluginUtility.uniqueViewName,
+                                    folder : false,
+                                    lazy : false,
+                                    view : "EXTRA_PLUGIN_UTILITY",
+                                    icon : extraPluginUtility.icon });
+        }
+
         treeModel.push({ displayName: "Utilities", title : "Utilities", entityType: "UTILITIES", key : "UTILITIES", folder : true, lazy : false, expanded : true, children : treeModelUtils, view: "showBlancPage", icon : "glyphicon glyphicon-wrench" });
         treeModel.push({ displayName: "About", title : "About", entityType: "ABOUT", key : "ABOUT", folder : false, lazy : false, view : "showAbout", icon : "glyphicon glyphicon-info-sign" });
         

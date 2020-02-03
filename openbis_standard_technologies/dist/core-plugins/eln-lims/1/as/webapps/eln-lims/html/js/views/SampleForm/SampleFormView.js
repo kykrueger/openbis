@@ -113,7 +113,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 
 		if(this._sampleFormModel.mode === FormMode.VIEW) {
 			// New
-			if(_this._allowedToCreateChild() && toolbarConfig.CREATE && _this._sampleFormModel.sample.sampleTypeCode === "EXPERIMENTAL_STEP") {
+			if(_this._allowedToCreateChild() && toolbarConfig.CREATE) {
 				var sampleTypes = profile.getAllSampleTypes(true);
 				FormUtil.addCreationDropdown(toolbarModel, sampleTypes, ["ENTRY", "EXPERIMENTAL_STEP"], function(typeCode) {
 					return function() {
@@ -528,7 +528,9 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 
             documentEditorEditableFinal.addClass("document-editor__editable");
             documentEditorEditableFinal.attr("id", "$DOCUMENT");
-            documentEditorEditableFinal.css("height", "100%");
+            //  documentEditorEditableFinal.css("height", "100%");
+            //  Bugfix for Webkit Chrome/Safari
+            documentEditorEditableFinal.css("min-height", height + "px");
 
             documentEditor.append(documentEditorEditableContainer.append(documentEditorEditableFinal));
 
@@ -901,7 +903,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 	
 	this._createParentsSection = function(hideShowOptionsModel, sampleTypeDefinitionsExtension, sampleTypeCode) {
 		hideShowOptionsModel.push({
-			forceToShow : this._sampleFormModel.mode === FormMode.CREATE && sampleTypeDefinitionsExtension["FORCE_TO_SHOW_PARENTS_SECTION"],
+			forceToShow : this._sampleFormModel.mode === FormMode.CREATE && (sampleTypeDefinitionsExtension && sampleTypeDefinitionsExtension["FORCE_TO_SHOW_PARENTS_SECTION"]),
 			label : "Parents",
 			section : "#sample-parents"
 		});
@@ -1019,7 +1021,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 					component += "<span>Copy Children</span>";
 					component += "<span class='checkbox'><label><input type='radio' name='copyChildrenOnCopy' value='None' checked>Don't Copy</label></span>";
 					component += "<span class='checkbox'><label><input type='radio' name='copyChildrenOnCopy' value='ToParentCollection'>Into parents collection</label></span>";
-					component += "<span class='checkbox'><label><input type='radio' name='copyChildrenOnCopy' value='ToOriginalCollection'>Into original collection</label></span>";
+					//component += "<span class='checkbox'><label><input type='radio' name='copyChildrenOnCopy' value='ToOriginalCollection'>Into original collection</label></span>";
 					component += "</div>";
 					component += "</div>";
 					component += "</div>";

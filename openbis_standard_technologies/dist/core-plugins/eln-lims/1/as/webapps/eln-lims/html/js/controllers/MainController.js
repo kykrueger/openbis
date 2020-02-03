@@ -795,6 +795,12 @@ function MainController(profile) {
 						Util.showInfo("Current Version: " + data);
 					}, 'text');
 					break;
+				case "EXTRA_PLUGIN_UTILITY":
+				    var uniqueViewName = arg;
+				    var viewContainers = mainController._getNewViewModel(true, true, false);
+                    var pluginUtility = profile.getPluginUtility(uniqueViewName);
+                    pluginUtility.paintView(viewContainers.header, viewContainers.content);
+				    break
 				default:
 					window.alert("The system tried to create a non existing view: " + newViewChange);
 					break;
