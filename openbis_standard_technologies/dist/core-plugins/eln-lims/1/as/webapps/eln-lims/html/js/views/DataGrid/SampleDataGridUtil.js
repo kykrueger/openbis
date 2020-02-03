@@ -7,7 +7,7 @@ var SampleDataGridUtil = new function() {
 		var columnsFirst = [];
 		
 		columnsFirst.push({
-			label : 'Name / Code',
+			label : 'Name/Code',
 			property : '$NAME',
 			isExportable: true,
 			sortable : true,
