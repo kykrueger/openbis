@@ -903,7 +903,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 	
 	this._createParentsSection = function(hideShowOptionsModel, sampleTypeDefinitionsExtension, sampleTypeCode) {
 		hideShowOptionsModel.push({
-			forceToShow : this._sampleFormModel.mode === FormMode.CREATE && sampleTypeDefinitionsExtension["FORCE_TO_SHOW_PARENTS_SECTION"],
+			forceToShow : this._sampleFormModel.mode === FormMode.CREATE && (sampleTypeDefinitionsExtension && sampleTypeDefinitionsExtension["FORCE_TO_SHOW_PARENTS_SECTION"]),
 			label : "Parents",
 			section : "#sample-parents"
 		});
