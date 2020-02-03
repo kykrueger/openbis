@@ -114,8 +114,7 @@ public class DataSetSearchManager extends AbstractCompositeEntitySearchManager<D
             }
         }).collect(Collectors.toList());
 
-        return super.doSearchForIDs(userId, parentsAndContainerCriteria, childrenCriteria, newCriteria, criteria.getOperator(), sortOptions, parentCriteria,
-                idsColumnName);
+        return super.doSearchForIDs(userId, parentsAndContainerCriteria, childrenCriteria, newCriteria, criteria.getOperator(), idsColumnName);
     }
 
 }

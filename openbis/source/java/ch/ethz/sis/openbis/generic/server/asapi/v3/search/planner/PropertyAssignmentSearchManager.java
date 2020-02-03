@@ -65,8 +65,7 @@ public class PropertyAssignmentSearchManager extends
     }
 
     @Override
-    public Set<Long> searchForIDs(final Long userId, final PropertyAssignmentSearchCriteria criteria,
-            final SortOptions<PropertyAssignment> sortOptions,
+    public Set<Long> searchForIDs(final Long userId, final PropertyAssignmentSearchCriteria criteria, final SortOptions<PropertyAssignment> sortOptions,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
         final Set<Long> mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId,

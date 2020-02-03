@@ -52,11 +52,10 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
     public Set<Long> searchForIDs(final Long userId, final CRITERIA criteria, SortOptions<OBJECT> sortOptions,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
-        return doSearchForIDs(userId, criteria, null, sortOptions, idsColumnName);
+        return doSearchForIDs(userId, criteria, null, idsColumnName);
     }
 
-    private Set<Long> doSearchForIDs(final Long userId, final CRITERIA criteria, final SearchOperator searchOperator,
-            final SortOptions<OBJECT> sortOptions, final String idsColumnName)
+    private Set<Long> doSearchForIDs(final Long userId, final CRITERIA criteria, final SearchOperator searchOperator, final String idsColumnName)
     {
         final Class<? extends AbstractCompositeSearchCriteria> parentsSearchCriteriaClass = getParentsSearchCriteriaClass();
         final Class<? extends AbstractCompositeSearchCriteria> childrenSearchCriteriaClass = getChildrenSearchCriteriaClass();
@@ -75,13 +74,12 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
         }
         final SearchOperator finalSearchOperator = (searchOperator == null) ? criteria.getOperator() : searchOperator;
 
-        return doSearchForIDs(userId, parentsCriteria, childrenCriteria, mainCriteria, finalSearchOperator, sortOptions, criteria, idsColumnName);
+        return doSearchForIDs(userId, parentsCriteria, childrenCriteria, mainCriteria, finalSearchOperator, idsColumnName);
     }
 
     protected Set<Long> doSearchForIDs(final Long userId, final Collection<ISearchCriteria> parentsCriteria,
             final Collection<ISearchCriteria> childrenCriteria, final Collection<ISearchCriteria> mainCriteria,
-            final SearchOperator finalSearchOperator, final SortOptions<OBJECT> sortOptions, final AbstractCompositeSearchCriteria parentCriteria,
-            final String idsColumnName)
+            final SearchOperator finalSearchOperator, final String idsColumnName)
     {
         final TableMapper tableMapper = getTableMapper();
 
@@ -157,7 +155,7 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
             final Collection<ISearchCriteria> relatedEntitiesCriteria)
     {
         final List<Set<Long>> relatedIds = relatedEntitiesCriteria.stream().flatMap(entitySearchCriteria -> {
-            final Set<Long> foundParentIds = doSearchForIDs(userId, (CRITERIA) entitySearchCriteria, operator, null, null);
+            final Set<Long> foundParentIds = doSearchForIDs(userId, (CRITERIA) entitySearchCriteria, operator, null);
             return foundParentIds.isEmpty() ? Stream.empty() : Stream.of(foundParentIds);
         }).collect(Collectors.toList());
 

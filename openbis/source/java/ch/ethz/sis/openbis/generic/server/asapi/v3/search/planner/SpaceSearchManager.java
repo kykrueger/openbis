@@ -71,25 +71,12 @@ public class SpaceSearchManager extends AbstractSearchManager<SpaceSearchCriteri
     public Set<Long> searchForIDs(final Long userId, final SpaceSearchCriteria criteria, final SortOptions<Space> sortOptions,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
-        // Replacing perm ID search criteria with code search criteria, because for spaces perm ID is equivalent to code
-        final Collection<ISearchCriteria> newCriteria = criteria.getCriteria().stream().map(searchCriterion ->
-        {
-            if (searchCriterion instanceof PermIdSearchCriteria)
-            {
-                return convertToCodeSearchCriterion((PermIdSearchCriteria) searchCriterion);
-            } else
-            {
-                return searchCriterion;
-            }
-        }).collect(Collectors.toList());
-
         final Set<Long> mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId, criteria, TableMapper.SPACE,
                 idsColumnName);
 
         // If we have results, we use them
         // If we don't have results and criteria are not empty, there are no results.
-        final Set<Long> resultBeforeFiltering =
-                containsValues(mainCriteriaIntermediateResults) ? mainCriteriaIntermediateResults : Collections.emptySet();
+        final Set<Long> resultBeforeFiltering = containsValues(mainCriteriaIntermediateResults) ? mainCriteriaIntermediateResults : Collections.emptySet();
 
         return filterIDsByUserRights(userId, resultBeforeFiltering);
     }
