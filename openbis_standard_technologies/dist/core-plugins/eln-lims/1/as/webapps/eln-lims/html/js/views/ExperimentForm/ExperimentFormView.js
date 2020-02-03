@@ -421,7 +421,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 				continue;
 			} else if(propertyType.dinamic && this._experimentFormController.mode === FormMode.CREATE) { //Skip
 				continue;
-			} else if(this._experimentFormModel.mode === FormMode.CREATE &&
+			} else if(this._experimentFormModel.isSimpleFolder && this._experimentFormModel.mode === FormMode.CREATE &&
 			        propertyType.code !== "$NAME" &&
 			        !propertyType.mandatory) {
 			    continue;
