@@ -528,7 +528,9 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 
             documentEditorEditableFinal.addClass("document-editor__editable");
             documentEditorEditableFinal.attr("id", "$DOCUMENT");
-            documentEditorEditableFinal.css("height", "100%");
+            //  documentEditorEditableFinal.css("height", "100%");
+            //  Bugfix for Webkit Chrome/Safari
+            documentEditorEditableFinal.css("min-height", height + "px");
 
             documentEditor.append(documentEditorEditableContainer.append(documentEditorEditableFinal));
 
