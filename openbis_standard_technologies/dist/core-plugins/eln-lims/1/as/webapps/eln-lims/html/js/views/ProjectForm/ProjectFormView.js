@@ -165,8 +165,10 @@ function ProjectFormView(projectFormController, projectFormModel) {
 
 		$formColumn.append(this._createIdentificationInfoSection(hideShowOptionsModel));
 
-		if(this._projectFormModel.mode !== FormMode.CREATE) {
-		    $formColumn.append(this._createDescriptionSection(hideShowOptionsModel));
+		if(this._projectFormModel.isSimpleFolder && this._projectFormModel.mode === FormMode.CREATE) {
+		    //
+		} else {
+            $formColumn.append(this._createDescriptionSection(hideShowOptionsModel));
 		}
 
 		if (this._projectFormModel.mode !== FormMode.CREATE && !isInventoryProject) {
