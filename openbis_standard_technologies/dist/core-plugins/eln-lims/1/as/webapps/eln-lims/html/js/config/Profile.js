@@ -329,8 +329,7 @@ $.extend(DefaultProfile.prototype, {
 		            sampleTypeDefinitionsExtensionOnNav = profile.sampleTypeDefinitionsExtension[sampleTypeCode]["SHOW_ON_NAV"];
 		        }
 		        sampleTypeOnNav = profile.sampleTypeDefinitionsExtension[sampleTypeCode] &&
-                                sampleTypeDefinitionsExtensionOnNav &&
-                                !profile.sampleTypeDefinitionsExtension[sampleTypeCode]["SHOW_ON_NAV_FOR_PARENT_TYPES"];
+                                sampleTypeDefinitionsExtensionOnNav;
 		    }
 		    return sampleTypeOnNav;
 		}

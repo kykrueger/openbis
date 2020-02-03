@@ -620,17 +620,17 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
                             var sampleIsExperiment = sample.type.code.indexOf("EXPERIMENT") > -1;
                             var sampleTypeOnNav = profile.showOnNav(sample.type.code);
                             if(sampleIsExperiment || sampleTypeOnNav) {
-                                var parentIsExperiment = false;
+                                var parentInELN = false;
                                 if(sample.parents) {
                                     for(var pIdx = 0; pIdx < sample.parents.length; pIdx++) {
                                         var parentIdentifier = sample.parents[pIdx].identifier.identifier;
-                                        var parentInELN = profile.isELNIdentifier(parentIdentifier);
+                                        parentInELN = profile.isELNIdentifier(parentIdentifier);
                                         if(parentInELN) {
-                                            parentIsExperiment = parentIsExperiment || sample.parents[pIdx].type.code.indexOf("EXPERIMENT") > -1;
+                                            break;
                                         }
                                     }
                                 }
-                                if(!parentIsExperiment) {
+                                if(!parentInELN) {
                                     samplesToShow.push(sample);
                                 }
                             }
@@ -754,12 +754,12 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
                                     var sampleIcon;
                                     if(sampleIsExperiment) {
                                         sampleIcon = "fa fa-flask";
+                                    } else if(sample.type.code === "ENTRY") {
+                                        sampleIcon = "fa fa-file-text";
                                     } else {
                                         sampleIcon = "fa fa-file";
                                     }
-                                    if(sample.type.code.indexOf("EXPERIMENT") > -1 ||
-                                    !profile.sampleTypeDefinitionsExtension[sample.type.code] ||
-                                    (profile.sampleTypeDefinitionsExtension[sample.type.code] && profile.sampleTypeDefinitionsExtension[sample.type.code]["SHOW_ON_NAV"])) {
+                                    if(profile.showOnNav(sample.type.code)) {
                                         var parentTypeCode = samples[0].type.code;
                                         var showOnNavForParentTypes = profile.sampleTypeDefinitionsExtension[sample.type.code]["SHOW_ON_NAV_FOR_PARENT_TYPES"];
                                         var showSampleOnNav = false;
