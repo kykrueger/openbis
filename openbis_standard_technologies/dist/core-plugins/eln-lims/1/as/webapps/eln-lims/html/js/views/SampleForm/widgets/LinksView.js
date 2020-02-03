@@ -432,8 +432,7 @@ function LinksView(linksController, linksModel) {
 			linksController.addSample(e.data["$object"]);
 			$container.empty().hide();
 		}
-		
-		var dataGrid = SampleDataGridUtil.getSampleDataGrid(sampleTypeCode, advancedSampleSearchCriteria, rowClick, null, null, null, true, true, true, 30);
+		var dataGrid = SampleDataGridUtil.getSampleDataGrid(sampleTypeCode, advancedSampleSearchCriteria, rowClick, null, null, null, true, true, true, false, 60);
 		dataGrid.init($gridContainer, extraOptions);
 	}
 			
