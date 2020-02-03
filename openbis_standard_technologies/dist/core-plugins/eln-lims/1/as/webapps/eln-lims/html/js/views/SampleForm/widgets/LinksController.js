@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-var DummyLinksController = {
+var EmptyLinksController = {
 	    init : function($container) {
 	    },
         isValid : function() {
