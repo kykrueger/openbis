@@ -190,7 +190,27 @@ $.extend(DefaultProfile.prototype, {
                 }
             next();
         }
-		
+		this.getPluginUtilities = function() {
+		    var extraUtilities = [];
+            for(var eIdx = 0; eIdx < this.plugins.length; eIdx++) {
+                var pluginExtraUtilities = this.plugins[eIdx].getExtraUtilities();
+                for(var pIdx = 0; pIdx < pluginExtraUtilities.length; pIdx++) {
+                    extraUtilities.push(pluginExtraUtilities[pIdx]);
+                }
+            }
+            return extraUtilities;
+        }
+        this.getPluginUtility = function(uniqueViewName) {
+            for(var eIdx = 0; eIdx < this.plugins.length; eIdx++) {
+                var pluginExtraUtilities = this.plugins[eIdx].getExtraUtilities();
+                for(var pIdx = 0; pIdx < pluginExtraUtilities.length; pIdx++) {
+                   if(pluginExtraUtilities[pIdx].uniqueViewName === uniqueViewName) {
+                        return pluginExtraUtilities[pIdx];
+                   }
+                }
+            }
+            return null;
+        }
 //		Jupyter integration config
 //		this.jupyterIntegrationServerEndpoint = "https://bs-openbis-sis-dev.ethz.ch:8002";
 //		this.jupyterEndpoint = "https://bs-openbis-sis-dev.ethz.ch:8000/";
