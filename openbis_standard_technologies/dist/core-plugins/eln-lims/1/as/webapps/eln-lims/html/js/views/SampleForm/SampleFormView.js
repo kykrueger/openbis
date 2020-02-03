@@ -113,7 +113,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 
 		if(this._sampleFormModel.mode === FormMode.VIEW) {
 			// New
-			if(_this._allowedToCreateChild() && toolbarConfig.CREATE && _this._sampleFormModel.sample.sampleTypeCode === "EXPERIMENTAL_STEP") {
+			if(_this._allowedToCreateChild() && toolbarConfig.CREATE) {
 				var sampleTypes = profile.getAllSampleTypes(true);
 				FormUtil.addCreationDropdown(toolbarModel, sampleTypes, ["ENTRY", "EXPERIMENTAL_STEP"], function(typeCode) {
 					return function() {
