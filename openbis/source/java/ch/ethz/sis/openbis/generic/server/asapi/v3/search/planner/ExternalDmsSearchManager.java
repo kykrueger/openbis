@@ -19,7 +19,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetType;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.LinkedDataSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.ExternalDmsSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
@@ -29,17 +29,15 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
 
 import java.util.Set;
 
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PROPERTY_TYPE_COLUMN;
-
 /**
- * Manages detailed search with linked data set search criteria.
+ * Manages detailed search with external data management system search criteria.
  *
  * @author Viktor Kovtun
  */
-public class LinkedDataSetKindSearchManager extends AbstractSearchManager<LinkedDataSearchCriteria, DataSetType, Long>
+public class ExternalDmsSearchManager extends AbstractSearchManager<ExternalDmsSearchCriteria, DataSetType, Long>
 {
 
-    public LinkedDataSetKindSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
+    public ExternalDmsSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
             final IID2PETranslator<Long> idsTranslator)
     {
         super(searchDAO, authProvider, idsTranslator);
@@ -54,14 +52,14 @@ public class LinkedDataSetKindSearchManager extends AbstractSearchManager<Linked
     @Override
     protected TableMapper getTableMapper()
     {
-        return TableMapper.CONTENT_COPIES;
+        return TableMapper.EXTERNAL_DMS;
     }
 
     @Override
-    public Set<Long> searchForIDs(final Long userId, final LinkedDataSearchCriteria criteria, final SortOptions<DataSetType> sortOptions,
+    public Set<Long> searchForIDs(final Long userId, final ExternalDmsSearchCriteria criteria, final SortOptions<DataSetType> sortOptions,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
-        return super.searchForIDs(userId, criteria, ColumnNames.DATA_ID_COLUMN);
+        return super.searchForIDs(userId, criteria, ColumnNames.ID_COLUMN);
     }
 
 }
