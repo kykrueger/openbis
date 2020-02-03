@@ -197,6 +197,11 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		if(this._experimentFormModel.mode === FormMode.CREATE) {
 			$formColumn.append(this._createIdentificationInfoSection(hideShowOptionsModel));
 		}
+
+        // Plugin Hook
+        var $experimentFormTop = new $('<div>');
+        $formColumn.append($experimentFormTop);
+        profile.experimentFormTop($experimentFormTop, this._experimentFormModel);
 		
 		//
 		// Form Defined Properties from General Section
@@ -237,7 +242,12 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 			
 			$previewImageContainer.append($previewImage);
 		}
-		
+
+		// Plugin Hook
+		var $experimentFormBottom = new $('<div>');
+		$formColumn.append($experimentFormBottom);
+		profile.experimentFormBottom($experimentFormBottom, this._experimentFormModel);
+
 		//
 		// DATASETS
 		//

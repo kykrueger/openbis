@@ -14,6 +14,12 @@ $.extend(ELNLIMSPlugin.prototype, {
 	dataSetTypeDefinitionsExtension : {
 	
 	},
+	experimentFormTop : function($container, model) {
+
+    },
+    experimentFormBottom : function($container, model) {
+
+    },
 	sampleFormTop : function($container, model) {
 	
 	},
@@ -23,10 +29,13 @@ $.extend(ELNLIMSPlugin.prototype, {
 	dataSetFormTop : function($container, model) {
 	
 	},
+	dataSetFormBottom : function($container, model) {
+
+	},
 	onSampleSave : function(sample, changesToDo, success, failed) {
         success();
 	},
-	dataSetFormBottom : function($container, model) {
-	
+	extraUtilities : function() {
+	    return [];
 	}
 });

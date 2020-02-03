@@ -141,7 +141,16 @@ $.extend(DefaultProfile.prototype, {
         this.customWidgetSettings = {};
 
 		this.plugins = [new GenericTechnology()];
-
+		this.experimentFormTop = function($container, model) {
+			for(var i = 0; i < this.plugins.length; i++) {
+				this.plugins[i].experimentFormTop($container, model);
+			}
+		}
+		this.experimentFormBottom = function($container, model) {
+			for(var i = 0; i < this.plugins.length; i++) {
+				this.plugins[i].experimentFormBottom($container, model);
+			}
+		}
 		this.sampleFormTop = function($container, model) {
 			for(var i = 0; i < this.plugins.length; i++) {
 				this.plugins[i].sampleFormTop($container, model);
@@ -155,6 +164,11 @@ $.extend(DefaultProfile.prototype, {
 		this.dataSetFormTop = function($container, model) {
 			for(var i = 0; i < this.plugins.length; i++) {
 				this.plugins[i].dataSetFormTop($container, model);
+			}
+		}
+		this.dataSetFormBottom = function($container, model) {
+			for(var i = 0; i < this.plugins.length; i++) {
+				this.plugins[i].dataSetFormBottom($container, model);
 			}
 		}
 		this.onSampleSave = function(sample, changesToDo, action) {
@@ -176,11 +190,6 @@ $.extend(DefaultProfile.prototype, {
                 }
             next();
         }
-		this.dataSetFormBottom = function($container, model) {
-			for(var i = 0; i < this.plugins.length; i++) {
-				this.plugins[i].dataSetFormBottom($container, model);
-			}
-		}
 		
 //		Jupyter integration config
 //		this.jupyterIntegrationServerEndpoint = "https://bs-openbis-sis-dev.ethz.ch:8002";
