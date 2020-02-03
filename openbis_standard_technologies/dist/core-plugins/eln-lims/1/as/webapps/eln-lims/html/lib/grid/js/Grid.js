@@ -1,9 +1,8 @@
-function Grid(columnsFirst, columnsLast, columnsDynamicFunc, getDataList, showAllColumns, tableSettings, onChangeState, isMultiselectable, staticHeight, heightPercentage) {
-	this.init(columnsFirst, columnsLast, columnsDynamicFunc, getDataList, showAllColumns, tableSettings, onChangeState, isMultiselectable, staticHeight, heightPercentage);
+function Grid(columnsFirst, columnsLast, columnsDynamicFunc, getDataList, showAllColumns, tableSettings, onChangeState, isMultiselectable, maxHeight, heightPercentage, scrollbarWidth) {
+	this.init(columnsFirst, columnsLast, columnsDynamicFunc, getDataList, showAllColumns, tableSettings, onChangeState, isMultiselectable, maxHeight, heightPercentage, scrollbarWidth);
 }
-
 $.extend(Grid.prototype, {
-	init : function(columnsFirst, columnsLast, columnsDynamicFunc, getDataList, showAllColumns, tableSettings, onChangeState, isMultiselectable, staticHeight, heightPercentage) {
+	init : function(columnsFirst, columnsLast, columnsDynamicFunc, getDataList, showAllColumns, tableSettings, onChangeState, isMultiselectable, maxHeight, heightPercentage, scrollbarWidth) {
 		this.columnsFirst = columnsFirst;
 		this.columnsDynamicFunc = columnsDynamicFunc;
 		this.columnsDynamic = [];
@@ -32,8 +31,9 @@ $.extend(Grid.prototype, {
 		}
 		this.lastUsedColumns = [];
 		if(heightPercentage) {
-		    this.staticHeight = ($(window).height() - LayoutManager.secondColumnHeader.outerHeight()) * (heightPercentage/100) - 30
+			this.maxHeight = ($(window).height() - LayoutManager.secondColumnHeader.outerHeight()) * (heightPercentage/100) - 30;
 		}
+		this.scrollbarWidth = scrollbarWidth;
 	},
 	getSearchOperator : function() {
 		var thisGrid = this;
@@ -115,7 +115,7 @@ $.extend(Grid.prototype, {
 				thisGrid.panel.addClass("fuelux-selectable");
 			}
 			
-			thisGrid.panel.repeater({
+			var repeater = thisGrid.panel.repeater({
 				defaultView : "list",
 				dataSource : function(options, callback) {
 					//Set default sort
@@ -138,7 +138,7 @@ $.extend(Grid.prototype, {
 						thisGrid.list(options, callback);
 					}
 				},
-				staticHeight : thisGrid.staticHeight,
+				staticHeight : thisGrid.maxHeight,
 				list_selectable : false,
 				list_noItemsHTML : 'No items found',
 				list_rowRendered : function(helpers, callback) {
@@ -154,6 +154,7 @@ $.extend(Grid.prototype, {
 					callback();
 				}
 			});
+			thisGrid.viewOptions = repeater.data('fu.repeater').viewOptions;
 		});
 		
 		return thisGrid.panel;
@@ -751,6 +752,14 @@ $.extend(Grid.prototype, {
 //              Fix table width since fuelux 3.1.0
 //				var newWidth = $(thisGrid.panel).find(".repeater-list-wrapper > .table").width();
 //				$(thisGrid.panel).find(".repeater").width(newWidth);
+				
+				var headerHeight = $(thisGrid.panel).find(".repeater-header").outerHeight(true);
+				var listHeight = $(thisGrid.panel).find(".repeater-list").outerHeight(true);
+				var footerHeight = $(thisGrid.panel).find(".repeater-footer").outerHeight(true);
+				var viewport = $(thisGrid.panel).find(".repeater-canvas")[0];
+				var scrollbarHeight = viewport.scrollWidth > viewport.offsetWidth ? thisGrid.scrollbarWidth : 0;
+				var totalHeight = headerHeight + listHeight + footerHeight + scrollbarHeight;
+				thisGrid.viewOptions.staticHeight = Math.min(totalHeight, thisGrid.maxHeight);
 				
 				var optionsDropdowns = $(".dropdown.table-options-dropdown");
 				for(var i = 0; i < optionsDropdowns.length; i++) {
