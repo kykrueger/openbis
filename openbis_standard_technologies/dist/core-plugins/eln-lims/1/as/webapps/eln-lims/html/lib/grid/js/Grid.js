@@ -168,7 +168,7 @@ $.extend(Grid.prototype, {
 			e.stopPropagation();
 		});
 		
-		var defaultNumColumns = 5; //Including last always
+		var defaultNumColumns = 50; //Including last always
 		
 		var currentColumns = this.getAllColumns();
 		
@@ -435,7 +435,7 @@ $.extend(Grid.prototype, {
 		var columns = [];
 
 		var columnsModel = {};
-		var maxColumns = 50;
+		var maxColumns = 200;
 		var enabledColumns = 0;
 		
 		_this.getAllColumns().forEach(function(column) {
