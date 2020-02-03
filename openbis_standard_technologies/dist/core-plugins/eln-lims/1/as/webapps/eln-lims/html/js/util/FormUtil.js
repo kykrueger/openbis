@@ -1700,7 +1700,7 @@ var FormUtil = new function() {
 		return $freezeButton;
 	}
 
-    this.createNewSampleOfTypeWithParent = function(sampleTypeCode, experimentIdentifier, sampleIdentifier) {
+    this.createNewSampleOfTypeWithParent = function(sampleTypeCode, experimentIdentifier, sampleIdentifier, parentSample) {
         var argsMap = {
 	        "sampleTypeCode" : sampleTypeCode,
 	        "experimentIdentifier" : experimentIdentifier
@@ -1710,7 +1710,7 @@ var FormUtil = new function() {
         mainController.changeView("showCreateSubExperimentPage", argsMapStr);
 
 	    var setParent = function() {
-	        mainController.currentView._sampleFormModel.sampleLinksParents.getSampleByIdentifier(sampleIdentifier);
+	        mainController.currentView._sampleFormModel.sampleLinksParents.addSample(parentSample);
 		    Util.unblockUI();
 	    }
 

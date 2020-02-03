@@ -121,7 +121,8 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 						setTimeout(function() {
 							FormUtil.createNewSampleOfTypeWithParent(typeCode,
 									_this._sampleFormModel.sample.experimentIdentifierOrNull, 
-									_this._sampleFormModel.sample.identifier);
+									_this._sampleFormModel.sample.identifier,
+									_this._sampleFormModel.sample);
 						}, 100);
 					}
 				});
