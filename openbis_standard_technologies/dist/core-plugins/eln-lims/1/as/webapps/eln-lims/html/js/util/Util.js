@@ -687,7 +687,13 @@ var Util = new function() {
 	}
 	
 	this.manageError = function(err) {
-		Util.showError(JSON.stringify(err, null, 2));
+	    var errorString = null;
+	    if(err.stack) {
+	        errorString = err.stack.toString();
+	    } else {
+	        errorString = err.toString();
+	    }
+		Util.showError(errorString);
 	}
 	
 	//
