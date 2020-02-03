@@ -68,7 +68,9 @@ public enum TableMapper
     PROPERTY_TYPE(PROPERTY_TYPES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
 
     SAMPLE_PROPERTY_ASSIGNMENT(SAMPLE_TYPE_PROPERTY_TYPE_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
-            null, null);
+            null, null),
+
+    CONTENT_COPIES(CONTENT_COPIES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
 
     static
     {
