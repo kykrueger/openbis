@@ -106,6 +106,7 @@ function SideMenuWidgetController(mainController) {
     }
 
     this.addSubSideMenu = function(subSideMenu) {
+        subSideMenu.css("margin-left", "3px");
         this._sideMenuWidgetModel.subSideMenu = subSideMenu;
         this._sideMenuWidgetModel.percentageOfUsage = 0.5;
         $("#sideMenuTopContainer").append(subSideMenu);
