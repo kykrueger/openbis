@@ -311,7 +311,7 @@ function ProjectFormView(projectFormController, projectFormModel) {
 				header : $samplesContainerHeader,
 				content : $samplesContainer
 		}
-		var sampleTableController = new SampleTableController(this._projectFormController, null, null, this._projectFormModel.project.permId, true, null, 30);
+		var sampleTableController = new SampleTableController(this._projectFormController, null, null, this._projectFormModel.project.permId, true, null, 40);
 		sampleTableController.init(views);
 		$samples.hide();
 		return $samples;

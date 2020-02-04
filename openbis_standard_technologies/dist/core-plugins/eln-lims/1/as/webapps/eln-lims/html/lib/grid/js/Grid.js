@@ -31,9 +31,7 @@ $.extend(Grid.prototype, {
 		}
 		this.lastUsedColumns = [];
 		if(heightPercentage) {
-//              TODO Dynamic Height - Now Disabled
-//		    this.maxHeight = ($(window).height() - LayoutManager.secondColumnHeader.outerHeight()) * (heightPercentage/100) - 30;
-			this.staticHeight = ($(window).height() - LayoutManager.secondColumnHeader.outerHeight()) * (heightPercentage/100) - 30;
+			this.maxHeight = ($(window).height() - LayoutManager.secondColumnHeader.outerHeight()) * (heightPercentage/100) - 30;
 		}
 		this.scrollbarWidth = scrollbarWidth;
 	},
@@ -140,9 +138,7 @@ $.extend(Grid.prototype, {
 						thisGrid.list(options, callback);
 					}
 				},
-//              TODO Dynamic Height - Now Disabled
-//			    staticHeight : thisGrid.maxHeight,
-				staticHeight : thisGrid.staticHeight,
+				staticHeight : 10,
 				list_selectable : false,
 				list_noItemsHTML : 'No items found',
 				list_rowRendered : function(helpers, callback) {
@@ -757,14 +753,16 @@ $.extend(Grid.prototype, {
 //				var newWidth = $(thisGrid.panel).find(".repeater-list-wrapper > .table").width();
 //				$(thisGrid.panel).find(".repeater").width(newWidth);
 
-//              TODO Dynamic Height - Now Disabled
-//				var headerHeight = $(thisGrid.panel).find(".repeater-header").outerHeight(true);
-//				var listHeight = $(thisGrid.panel).find(".repeater-list").outerHeight(true);
-//				var footerHeight = $(thisGrid.panel).find(".repeater-footer").outerHeight(true);
-//				var viewport = $(thisGrid.panel).find(".repeater-canvas")[0];
-//				var scrollbarHeight = viewport.scrollWidth > viewport.offsetWidth ? thisGrid.scrollbarWidth : 0;
-//				var totalHeight = headerHeight + listHeight + footerHeight + scrollbarHeight;
-//				thisGrid.viewOptions.staticHeight = Math.min(totalHeight, thisGrid.maxHeight);
+				var headerHeight = $(thisGrid.panel).find(".repeater-header").outerHeight(true);
+				var listHeight = Math.max(100, $(thisGrid.panel).find(".repeater-list").outerHeight(true));
+				var footerHeight = $(thisGrid.panel).find(".repeater-footer").outerHeight(true);
+				var viewport = $(thisGrid.panel).find(".repeater-canvas")[0];
+				var scrollbarHeight = viewport.scrollWidth > viewport.offsetWidth ? thisGrid.scrollbarWidth : 0;
+				var totalHeight = headerHeight + listHeight + footerHeight + scrollbarHeight;
+				totalHeight = Math.min(totalHeight, thisGrid.maxHeight);
+				if (thisGrid.viewOptions.staticHeight < totalHeight) {
+					thisGrid.viewOptions.staticHeight = totalHeight;
+				}
 				
 				var optionsDropdowns = $(".dropdown.table-options-dropdown");
 				for(var i = 0; i < optionsDropdowns.length; i++) {
