@@ -581,6 +581,18 @@ var Util = new function() {
 		           s4() + '-' + s4() + s4() + s4();
 	};
 	
+	this.getNameOrCode = function(data) {
+		var name = data[profile.propertyReplacingCode];
+		if (name) {
+			return name;
+		}
+		if (data.code) {
+			return data.code;
+		}
+		var identifierSegments = data.identifier.split('/');
+		return identifierSegments[identifierSegments.length - 1];
+	}
+
 	this.getDisplayNameForEntity = function(entity) {
 		var displayName = "";
 		if(profile.propertyReplacingCode && 

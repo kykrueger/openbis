@@ -10,14 +10,9 @@ var SampleDataGridUtil = new function() {
 			label : 'Name/Code',
 			property : '$NAME',
 			isExportable: true,
-			sortable : true,
+			sortable : false,
 			render : function(data) {
-				var nameToUse = "";
-				if(data[profile.propertyReplacingCode]) {
-					nameToUse = data[profile.propertyReplacingCode];
-				} else {
-				    nameToUse = data.code;
-				}
+				var nameToUse = Util.getNameOrCode(data);
 				return (isLinksDisabled)?nameToUse:FormUtil.getFormLink(nameToUse, "Sample", data.permId);
 			}
 		});
@@ -690,4 +685,5 @@ var SampleDataGridUtil = new function() {
 			}
 		}
 	}
+	
 }
