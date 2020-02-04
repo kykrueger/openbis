@@ -254,15 +254,23 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 
 	    if(this._experimentFormModel.mode !== FormMode.CREATE &&
 	        this._experimentFormModel.v3_experiment.dataSets.length > 0) {
+            var belongToExperiment = false;
+            for(var dIdx = 0; dIdx < this._experimentFormModel.v3_experiment.dataSets.length; dIdx++) {
+                if(this._experimentFormModel.v3_experiment.dataSets[dIdx].sample === null) {
+                    belongToExperiment = true;
+                    break;
+                }
+            }
+            if(belongToExperiment) {
+                //Preview image
+                this._reloadPreviewImage();
 
-	        //Preview image
-            this._reloadPreviewImage();
-
-            // Dataset Viewer
-            var $dataSetViewerContainer = new $('<div>', { id : "dataSetViewerContainer", style: "overflow: scroll; margin-top: 5px; padding-top: 5px; border-top: 1px dashed #ddd; " });
-            mainController.sideMenu.addSubSideMenu($dataSetViewerContainer);
-            this._experimentFormModel.dataSetViewer = new DataSetViewerController("dataSetViewerContainer", profile, this._experimentFormModel.v3_experiment, mainController.serverFacade, profile.getDefaultDataStoreURL(), null, false, true);
-            this._experimentFormModel.dataSetViewer.init();
+                // Dataset Viewer
+                var $dataSetViewerContainer = new $('<div>', { id : "dataSetViewerContainer", style: "overflow: scroll; margin-top: 5px; padding-top: 5px; border-top: 1px dashed #ddd; " });
+                mainController.sideMenu.addSubSideMenu($dataSetViewerContainer);
+                this._experimentFormModel.dataSetViewer = new DataSetViewerController("dataSetViewerContainer", profile, this._experimentFormModel.v3_experiment, mainController.serverFacade, profile.getDefaultDataStoreURL(), null, false, true);
+                this._experimentFormModel.dataSetViewer.init();
+            }
         }
 		
 		//
