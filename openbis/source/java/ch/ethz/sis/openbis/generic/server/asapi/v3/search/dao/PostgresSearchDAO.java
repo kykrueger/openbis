@@ -18,10 +18,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.*;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetTypeSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.ExternalDmsSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.LinkedDataSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.*;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.ModifierSearchCriteria;
@@ -204,6 +201,7 @@ public class PostgresSearchDAO implements ISQLSearchDAO
                 ISearchManager.class));
         criteriaToManagerMap.put(PropertyTypeSearchCriteria.class, applicationContext.getBean("property-type-search-manager", ISearchManager.class));
         criteriaToManagerMap.put(LinkedDataSearchCriteria.class, applicationContext.getBean("linked-data-set-kind-search-manager", ISearchManager.class));
+        criteriaToManagerMap.put(PhysicalDataSearchCriteria.class, applicationContext.getBean("physical-data-set-kind-search-manager", ISearchManager.class));
         criteriaToManagerMap.put(ExternalDmsSearchCriteria.class, applicationContext.getBean("external-dms-search-manager", ISearchManager.class));
     }
 

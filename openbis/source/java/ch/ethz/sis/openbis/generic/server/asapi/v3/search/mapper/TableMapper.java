@@ -72,6 +72,8 @@ public enum TableMapper
 
     CONTENT_COPIES(CONTENT_COPIES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
 
+    EXTERNAL_DATA(EXTERNAL_DATA_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
+
     EXTERNAL_DMS(EXTERNAL_DATA_MANAGEMENT_SYSTEMS_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
 
     static

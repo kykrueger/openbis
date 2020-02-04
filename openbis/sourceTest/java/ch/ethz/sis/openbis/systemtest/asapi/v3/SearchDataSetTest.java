@@ -329,7 +329,7 @@ public class SearchDataSetTest extends AbstractDataSetTest
     public void testSearchWithPhysicalDataWithLocationThatEquals()
     {
         DataSetSearchCriteria criteria = new DataSetSearchCriteria();
-        criteria.withPhysicalData().withLocation().thatEquals("analysis");
+        criteria.withPhysicalData().withLocation().thatEquals("analysis/result");
         testSearch(TEST_USER, criteria, "20081105092159188-3");
 
         criteria = new DataSetSearchCriteria();
@@ -337,7 +337,7 @@ public class SearchDataSetTest extends AbstractDataSetTest
         testSearch(TEST_USER, criteria);
 
         criteria = new DataSetSearchCriteria();
-        criteria.withPhysicalData().withLocation().thatEquals("ysis");
+        criteria.withPhysicalData().withLocation().thatEquals("result");
         testSearch(TEST_USER, criteria);
     }
 
@@ -345,7 +345,7 @@ public class SearchDataSetTest extends AbstractDataSetTest
     public void testSearchWithPhysicalDataWithLocationThatStartsWith()
     {
         DataSetSearchCriteria criteria = new DataSetSearchCriteria();
-        criteria.withPhysicalData().withLocation().thatStartsWith("analysis");
+        criteria.withPhysicalData().withLocation().thatStartsWith("analysis/result");
         testSearch(TEST_USER, criteria, "20081105092159188-3");
 
         criteria = new DataSetSearchCriteria();
@@ -353,7 +353,7 @@ public class SearchDataSetTest extends AbstractDataSetTest
         testSearch(TEST_USER, criteria, "20081105092159188-3");
 
         criteria = new DataSetSearchCriteria();
-        criteria.withPhysicalData().withLocation().thatStartsWith("ysis");
+        criteria.withPhysicalData().withLocation().thatStartsWith("result");
         testSearch(TEST_USER, criteria);
     }
 
@@ -361,7 +361,7 @@ public class SearchDataSetTest extends AbstractDataSetTest
     public void testSearchWithPhysicalDataWithLocationThatEndsWith()
     {
         DataSetSearchCriteria criteria = new DataSetSearchCriteria();
-        criteria.withPhysicalData().withLocation().thatEndsWith("analysis");
+        criteria.withPhysicalData().withLocation().thatEndsWith("analysis/result");
         testSearch(TEST_USER, criteria, "20081105092159188-3");
 
         criteria = new DataSetSearchCriteria();
@@ -369,7 +369,7 @@ public class SearchDataSetTest extends AbstractDataSetTest
         testSearch(TEST_USER, criteria);
 
         criteria = new DataSetSearchCriteria();
-        criteria.withPhysicalData().withLocation().thatEndsWith("ysis");
+        criteria.withPhysicalData().withLocation().thatEndsWith("result");
         testSearch(TEST_USER, criteria, "20081105092159188-3");
     }
 

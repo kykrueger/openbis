@@ -219,4 +219,19 @@ public abstract class AbstractSearchManager<CRITERIA extends ISearchCriteria, OB
         return filterIDsByUserRights(userId, resultBeforeFiltering);
     }
 
+    protected Set<Long> searchForIDsByCriteriaCollection(final Long userId, final Collection<ISearchCriteria> criteria, final SearchOperator finalSearchOperator, final TableMapper tableMapper,
+            final String idsColumnName)
+    {
+        if (!criteria.isEmpty())
+        {
+            final DummyCompositeSearchCriterion containerCriterion = new DummyCompositeSearchCriterion(criteria, finalSearchOperator);
+            final Set<Long> mainCriteriaNotFilteredResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId, containerCriterion, tableMapper,
+                    idsColumnName);
+            return filterIDsByUserRights(userId, mainCriteriaNotFilteredResults);
+        } else
+        {
+            return Collections.emptySet();
+        }
+    }
+
 }
