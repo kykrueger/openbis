@@ -130,7 +130,7 @@ function SampleTableView(sampleTableController, sampleTableModel) {
 		$dropDownMenu.append($list);
 		
 		if(_this._sampleTableModel.experimentIdentifier && _this._sampleTableModel.sampleRights.rights.indexOf("CREATE") >= 0) {
-			var $createSampleOption = $("<li>", { 'role' : 'presentation' }).append($("<a>", {'title' : 'Create ' + ELNDictionary.Sample + '', 'id' : 'create-' + ELNDictionary.Sample.toLowerCase() + '-btn'}).append('Create ' + ELNDictionary.Sample + ''));
+			var $createSampleOption = $("<li>", { 'role' : 'presentation' }).append($("<a>", {'title' : 'New ' + ELNDictionary.Sample + '', 'id' : 'create-' + ELNDictionary.Sample.toLowerCase() + '-btn'}).append('New ' + ELNDictionary.Sample + ''));
 			$createSampleOption.click(function() {
 				_this.createNewSample(_this._sampleTableModel.experimentIdentifier);
 			});
@@ -162,7 +162,7 @@ function SampleTableView(sampleTableController, sampleTableModel) {
 			});
 			$list.append($searchCollectionOption);
 
-			var $detailsOption = $("<li>", { 'role' : 'presentation' }).append($("<a>", {'title' : 'Detail View', 'id' : 'detail-btn'}).append('Detail View'));
+			var $detailsOption = $("<li>", { 'role' : 'presentation' }).append($("<a>", {'title' : 'Edit Collection', 'id' : 'detail-btn'}).append('Edit Collection'));
             $detailsOption.click(function() {
                 mainController.changeView("showExperimentPageFromIdentifier", _this._sampleTableModel.experimentIdentifier);
             });
