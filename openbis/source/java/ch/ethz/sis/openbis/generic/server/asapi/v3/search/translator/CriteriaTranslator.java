@@ -121,6 +121,7 @@ public class CriteriaTranslator
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(CompleteSearchCriteria.class, new CompleteSearchConditionTranslator());
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(PresentInArchiveSearchCriteria.class, booleanFieldSearchConditionTranslator);
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(ShareIdSearchCriteria.class, stringFieldSearchConditionTranslator);
+        CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(SizeSearchCriteria.class, numberFieldSearchConditionTranslator);
 
         CRITERIA_TO_IN_COLUMN_MAP.put(DataSetSearchCriteria.class, ColumnNames.DATA_SET_COLUMN);
         CRITERIA_TO_IN_COLUMN_MAP.put(RegistratorSearchCriteria.class, ColumnNames.PERSON_REGISTERER_COLUMN);
