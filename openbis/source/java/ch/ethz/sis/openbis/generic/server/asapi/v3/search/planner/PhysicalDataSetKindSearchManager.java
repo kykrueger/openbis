@@ -18,6 +18,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DataSetKindSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.PhysicalDataSearchCriteria;
@@ -27,9 +28,10 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 
+import java.util.Collections;
 import java.util.Set;
 
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper.CONTENT_COPIES;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper.DATA_SET;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper.EXTERNAL_DATA;
 
 /**
@@ -55,7 +57,7 @@ public class PhysicalDataSetKindSearchManager extends AbstractSearchManager<Phys
     @Override
     protected TableMapper getTableMapper()
     {
-        return CONTENT_COPIES;
+        return EXTERNAL_DATA;
     }
 
     @Override
@@ -74,12 +76,30 @@ public class PhysicalDataSetKindSearchManager extends AbstractSearchManager<Phys
     {
         final SearchOperator finalSearchOperator = (searchOperator == null) ? criteria.getOperator() : searchOperator;
 
-        final Set<Long> mainCriteriaIds = searchForIDs(userId, new PhysicalDataSearchCriteria(), idsColumnName);
+        final Set<Long> mainCriteriaIds = doSearchForIDs(userId, new PhysicalDataSearchCriteria(), idsColumnName);
         final Set<Long> childCriteriaIds = searchForIDsByCriteriaCollection(userId, criteria.getCriteria(), finalSearchOperator, EXTERNAL_DATA, idsColumnName);
 
         mainCriteriaIds.retainAll(childCriteriaIds);
 
         return mainCriteriaIds;
+    }
+
+    private Set<Long> doSearchForIDs(final Long userId, final PhysicalDataSearchCriteria criteria, final String idsColumnName)
+    {
+        final DataSetKindSearchCriteria dataSetKindSearchCriteria = new DataSetKindSearchCriteria();
+        dataSetKindSearchCriteria.thatEquals("PHYSICAL");
+
+        final DummyCompositeSearchCriterion compositeSearchCriterion = new DummyCompositeSearchCriterion();
+        compositeSearchCriterion.setCriteria(Collections.singletonList(dataSetKindSearchCriteria));
+
+        final Set<Long> mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId, compositeSearchCriterion, DATA_SET, idsColumnName);
+
+        // If we have results, we use them
+        // If we don't have results and criteria are not empty, there are no results.
+        final Set<Long> resultBeforeFiltering =
+                containsValues(mainCriteriaIntermediateResults) ? mainCriteriaIntermediateResults : Collections.emptySet();
+
+        return filterIDsByUserRights(userId, resultBeforeFiltering);
     }
 
 }

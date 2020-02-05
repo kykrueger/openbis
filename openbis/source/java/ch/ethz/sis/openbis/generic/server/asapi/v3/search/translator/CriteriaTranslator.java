@@ -45,6 +45,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.search.NoSpaceSearchCriter
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.search.SpaceSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.search.TagSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DataSetKindSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.*;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinInformation;
@@ -76,6 +77,7 @@ public class CriteriaTranslator
     static
     {
         final StringFieldSearchConditionTranslator stringFieldSearchConditionTranslator = new StringFieldSearchConditionTranslator();
+        final BooleanFieldSearchConditionTranslator booleanFieldSearchConditionTranslator = new BooleanFieldSearchConditionTranslator();
         final DateFieldSearchConditionTranslator dateFieldSearchConditionTranslator = new DateFieldSearchConditionTranslator();
         final NumberFieldSearchConditionTranslator numberFieldSearchConditionTranslator = new NumberFieldSearchConditionTranslator();
         final CollectionFieldSearchConditionTranslator collectionFieldSearchConditionTranslator = new CollectionFieldSearchConditionTranslator();
@@ -114,6 +116,8 @@ public class CriteriaTranslator
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(NameSearchCriteria.class, codeSearchConditionTranslator);
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(ExternalCodeSearchCriteria.class, stringFieldSearchConditionTranslator);
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(LocationSearchCriteria.class, stringFieldSearchConditionTranslator);
+        CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(ArchivingRequestedSearchCriteria.class, booleanFieldSearchConditionTranslator);
+        CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(DataSetKindSearchCriteria.class, new DataSetKindSearchConditionTranslator());
 
         CRITERIA_TO_IN_COLUMN_MAP.put(DataSetSearchCriteria.class, ColumnNames.DATA_SET_COLUMN);
         CRITERIA_TO_IN_COLUMN_MAP.put(RegistratorSearchCriteria.class, ColumnNames.PERSON_REGISTERER_COLUMN);
