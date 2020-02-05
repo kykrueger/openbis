@@ -18,6 +18,8 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DataSetKindSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.LinkedDataSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
@@ -27,8 +29,11 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETransl
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
 
+import java.util.Collections;
 import java.util.Set;
 
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper.*;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.DATA_ID_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PROPERTY_TYPE_COLUMN;
 
 /**
@@ -61,7 +66,33 @@ public class LinkedDataSetKindSearchManager extends AbstractSearchManager<Linked
     public Set<Long> searchForIDs(final Long userId, final LinkedDataSearchCriteria criteria, final SortOptions<DataSetType> sortOptions,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
-        return super.searchForIDs(userId, criteria, ColumnNames.DATA_ID_COLUMN);
+        final SearchOperator searchOperator = criteria.getOperator();
+        final SearchOperator finalSearchOperator = (searchOperator == null) ? criteria.getOperator() : searchOperator;
+
+        final Set<Long> mainCriteriaIds = doSearchForIDs(userId, idsColumnName);
+        final Set<Long> childCriteriaIds = searchForIDsByCriteriaCollection(userId, criteria.getCriteria(), finalSearchOperator, CONTENT_COPIES, DATA_ID_COLUMN);
+
+        mainCriteriaIds.retainAll(childCriteriaIds);
+
+        return mainCriteriaIds;
+    }
+
+    private Set<Long> doSearchForIDs(final Long userId, final String idsColumnName)
+    {
+        final DataSetKindSearchCriteria dataSetKindSearchCriteria = new DataSetKindSearchCriteria();
+        dataSetKindSearchCriteria.thatEquals("LINK");
+
+        final DummyCompositeSearchCriterion compositeSearchCriterion = new DummyCompositeSearchCriterion();
+        compositeSearchCriterion.setCriteria(Collections.singletonList(dataSetKindSearchCriteria));
+
+        final Set<Long> mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId, compositeSearchCriterion, DATA_SET, idsColumnName);
+
+        // If we have results, we use them
+        // If we don't have results and criteria are not empty, there are no results.
+        final Set<Long> resultBeforeFiltering =
+                containsValues(mainCriteriaIntermediateResults) ? mainCriteriaIntermediateResults : Collections.emptySet();
+
+        return filterIDsByUserRights(userId, resultBeforeFiltering);
     }
 
 }

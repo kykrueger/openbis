@@ -64,19 +64,10 @@ public class PhysicalDataSetKindSearchManager extends AbstractSearchManager<Phys
     public Set<Long> searchForIDs(final Long userId, final PhysicalDataSearchCriteria criteria, final SortOptions<DataSetType> sortOptions,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
-        if (criteria.getCriteria() == null || criteria.getCriteria().isEmpty())
-        {
-            return super.searchForIDs(userId, criteria, idsColumnName);
-        } else {
-            return doSearchForIDs(userId, criteria, criteria.getOperator(), idsColumnName);
-        }
-    }
-
-    private Set<Long> doSearchForIDs(final Long userId, final PhysicalDataSearchCriteria criteria, final SearchOperator searchOperator, final String idsColumnName)
-    {
+        final SearchOperator searchOperator = criteria.getOperator();
         final SearchOperator finalSearchOperator = (searchOperator == null) ? criteria.getOperator() : searchOperator;
 
-        final Set<Long> mainCriteriaIds = doSearchForIDs(userId, new PhysicalDataSearchCriteria(), idsColumnName);
+        final Set<Long> mainCriteriaIds = doSearchForIDs(userId, idsColumnName);
         final Set<Long> childCriteriaIds = searchForIDsByCriteriaCollection(userId, criteria.getCriteria(), finalSearchOperator, EXTERNAL_DATA, idsColumnName);
 
         mainCriteriaIds.retainAll(childCriteriaIds);
@@ -84,7 +75,7 @@ public class PhysicalDataSetKindSearchManager extends AbstractSearchManager<Phys
         return mainCriteriaIds;
     }
 
-    private Set<Long> doSearchForIDs(final Long userId, final PhysicalDataSearchCriteria criteria, final String idsColumnName)
+    private Set<Long> doSearchForIDs(final Long userId, final String idsColumnName)
     {
         final DataSetKindSearchCriteria dataSetKindSearchCriteria = new DataSetKindSearchCriteria();
         dataSetKindSearchCriteria.thatEquals("PHYSICAL");
