@@ -83,6 +83,7 @@ public class CriteriaTranslator
         final CollectionFieldSearchConditionTranslator collectionFieldSearchConditionTranslator = new CollectionFieldSearchConditionTranslator();
         final AbsenceConditionTranslator absenceConditionTranslator = new AbsenceConditionTranslator();
         final CodeSearchConditionTranslator codeSearchConditionTranslator = new CodeSearchConditionTranslator();
+        final EnumFieldSearchConditionTranslator enumFieldConditionTranslator = new EnumFieldSearchConditionTranslator();
 
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(IdSearchCriteria.class, new IdSearchConditionTranslator());
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(IdentifierSearchCriteria.class, new IdentifierSearchConditionTranslator());
@@ -123,6 +124,7 @@ public class CriteriaTranslator
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(ShareIdSearchCriteria.class, stringFieldSearchConditionTranslator);
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(SizeSearchCriteria.class, numberFieldSearchConditionTranslator);
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(SpeedHintSearchCriteria.class, numberFieldSearchConditionTranslator);
+        CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(StatusSearchCriteria.class, enumFieldConditionTranslator);
 
         CRITERIA_TO_IN_COLUMN_MAP.put(DataSetSearchCriteria.class, ColumnNames.DATA_SET_COLUMN);
         CRITERIA_TO_IN_COLUMN_MAP.put(RegistratorSearchCriteria.class, ColumnNames.PERSON_REGISTERER_COLUMN);
