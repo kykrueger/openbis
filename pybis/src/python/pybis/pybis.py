@@ -11,6 +11,8 @@ Work with openBIS from Python.
 from __future__ import print_function
 import os
 import random
+import subprocess
+import errno
 
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
@@ -932,10 +934,100 @@ class Openbis:
                 os.environ['OPENBIS_TOKEN'] = self.token
             return self.token
 
-    def mount(self, username, servername, mountpoint, volname, password, path='/', port=2222, kex_algorithms ='+diffie-hellman-group1-sha1', shell=False):
 
-        """Mounts openBIS dataStore without root, using sshfs and fuse.
+    def unmount(self, mountpoint=None):
+        """Unmount a given mountpoint or unmount the stored mountpoint.
+        If the umount command does not work, try the pkill command.
+        If still not successful, throw an error message.
         """
+
+        if mountpoint is None and not getattr(self, 'mountpoint', None):
+            raise ValueError("please provide a mountpoint to unmount")
+
+        if mountpoint is None:
+            mountpoint = self.mountpoint
+
+        full_mountpoint_path = os.path.abspath(os.path.expanduser(mountpoint))
+
+        if not os.path.exists(full_mountpoint_path):
+            return
+
+        # mountpoint is not a mountpoint path
+        if not os.path.ismount(full_mountpoint_path):
+            return
+
+        status = subprocess.call('umount {}'.format(full_mountpoint_path), shell=True)
+        if status == 1:
+            status = subprocess.call(
+                'pkill -9 sshfs && umount "{}"'.format(full_mountpoint_path),
+                shell = True
+            )
+
+        if status == 1:
+            raise OSError("could not unmount mountpoint: {} Please try to unmount manually".format(full_mountpoint_path))
+        else:
+           if VERBOSE: print("Successfully unmounted {}".format(full_mountpoint_path))
+           self.mountpoint = None
+
+
+    def is_mounted(self, mountpoint=None):
+        if mountpoint is None:
+            mountpoint = getattr(self, 'mountpoint', None)
+
+        if mountpoint is None:
+            return False
+
+        return os.path.ismount(mountpoint)
+
+
+    def mount(self, username, password, servername, mountpoint, volname=None, path='/', port=2222, kex_algorithms ='+diffie-hellman-group1-sha1'):
+
+        """Mounts openBIS dataStore without being root, using sshfs and fuse. Both SSHFS and FUSE must be installed on the system (the installation requires root privileges):
+
+        Mac OS X
+        ========
+        Follow the installation instructions on
+        https://osxfuse.github.io
+
+        Unix Cent OS 7
+        ==============
+        $ sudo yum install epel-release
+        $ sudo yum --enablerepo=epel -y install fuse-sshfs
+        $ user="$(whoami)"
+        $ usermod -a -G fuse "$user"
+        """
+
+        def check_sshfs_is_installed():
+            import subprocess
+            import errno
+            try:
+                subprocess.call('sshfs --help', shell=True)
+            except OSError as e:
+                if e.errno == errno.ENOENT:
+                    raise ValueError('Your system seems not to have SSHFS installed. For Mac OS X, see installation instructions on https://osxfuse.github.io For Unix: $ sudo yum install epel-release && sudo yum --enablerepo=epel -y install fuse-sshfs && user="$(whoami)" && usermod -a -G fuse "$user"')
+
+        check_sshfs_is_installed()
+
+        # check if mountpoint exists, otherwise create it
+        full_mountpoint_path = os.path.abspath(os.path.expanduser(mountpoint))
+        if not os.path.exists(full_mountpoint_path):
+            os.makedirs(full_mountpoint_path)
+
+        self.mountpoint = full_mountpoint_path
+
+        from sys import platform
+        supported_platforms = ['darwin', 'linux']
+        if platform not in supported_platforms:
+            raise ValueError("This method is not yet supported on {} plattform".format(platform))
+
+
+        os_options = {
+            "darwin": "-oauto_cache,reconnect,defer_permissions,noappledouble,negative_vncache,volname={}".format(servername),
+            "linux": "-oauto_cache,reconnect",
+        }
+
+        if volname is None:
+            volname = servername
 
         import subprocess
         args = {
@@ -946,22 +1038,21 @@ class Openbis:
             "path": path,
             "mountpoint": mountpoint,
             "volname": volname,
-            "kex_algroithms": kex_algroithms,
+            "os_options": os_options[platform],
+            "kex_algorithms": kex_algorithms,
         }
-        cmd = (
-            'echo "{password}" | sshfs -o port={port}'
-            ' -o ssh_command="ssh -oKexAlgorithms={kex_algroithms}+diffie-hellman-group1-sha1"'
-            ' {username}@{servername}:{path} {mountpoint}'
-            ' -oauto_cache,reconnect,defer_permissions,noappledouble,negative_vncache,volname={volname}'
-            ' -o password_stdin'
-        )
 
-        subprocess.run(cmd.format(**args), 
-            stdout=subprocess.PIPE, 
-            stderr=subprocess.PIPE, 
-            input=password,
-            shell=shell
-        )
+        cmd = 'echo "{password}" | sshfs'\
+              ' {username}@{servername}:{path} {mountpoint}' \
+              ' -o port={port} -o ssh_command="ssh -oKexAlgorithms={kex_algorithms}" -o password_stdin'\
+              ' {os_options}'.format(**args)
+
+        status = subprocess.call(cmd, shell=True)
+
+        if status == 0:
+            if VERBOSE: print("Mounted successfully to {}".format(full_mountpoint_path))
+        else:
+            raise OSError("mount failed")
 
 
     def get_server_information(self):
@@ -2674,6 +2765,30 @@ class Openbis:
         schema = None,
         transformation = None,
     ):
+        """ Creates a new property type.
+
+        code               -- name of the property type
+        internalNameSpace  -- must be set to True if code starts with a $
+        label              -- displayed label of that property
+        description        --
+        dataType           -- must contain any of these values:
+                              INTEGER VARCHAR MULTILINE_VARCHAR
+                              REAL TIMESTAMP BOOLEAN HYPERLINK
+                              XML CONTROLLEDVOCABULARY MATERIAL
+        vocabulary         -- if dataType is CONTROLLEDVOCABULARY, this attribute
+                              must contain the code of the vocabulary object.
+        managedInternally  -- default: False
+        materialType       --
+        schema             --
+        transformation     --
+
+        PropertyTypes can be assigned to
+        - sampleTypes
+        - dataSetTypes
+        - experimentTypes
+        - materialTypes (deprecated)
+        """
+
         return PropertyType(
             openbis_obj=self,
             code=code,
