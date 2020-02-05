@@ -28,6 +28,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import ch.systemsx.cisd.authentication.Principal;
+import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.common.test.RecordingMatcher;
 import ch.systemsx.cisd.openbis.common.spring.IInvocationLoggerContext;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
@@ -151,8 +152,7 @@ public class AbstractServerTest extends AssertJUnit
                     will(returnValue(personsList));
                 }
             });
-        SessionContextDTO session = server.tryAuthenticate(USERNAME, PASSWORD);
-        assertNull(session);
+        assertNotAuthorized(USERNAME);
     }
 
     @Test
@@ -193,8 +193,19 @@ public class AbstractServerTest extends AssertJUnit
                     will(returnValue(personsList));
                 }
             });
-        SessionContextDTO session = server.tryAuthenticate(ETL_SERVER, PASSWORD);
-        assertNull(session);
+        assertNotAuthorized(ETL_SERVER);
+    }
+
+    private void assertNotAuthorized(String user)
+    {
+        try
+        {
+            server.tryAuthenticate(user, PASSWORD);
+            fail("UserFailureException expected");
+        } catch (UserFailureException e)
+        {
+            assertEquals("User '" + user + "' has no role assignments and thus is not permitted to login.", e.getMessage());
+        }
     }
 
     private void prepareLoginExpectations(final String username, final String password)

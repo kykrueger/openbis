@@ -15,7 +15,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.fetchoptions.SpaceFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.search.SpaceSearchCriteria;
 import ch.systemsx.cisd.common.test.AssertionUtil;
-
 import junit.framework.Assert;
 
 public class LoginTest extends AbstractTest
@@ -44,15 +43,15 @@ public class LoginTest extends AbstractTest
     @Test
     public void testLoginWithNotExistingUser()
     {
-        String sessionToken = v3api.login(NOT_EXISTING_USER, PASSWORD);
-        Assert.assertNull(sessionToken);
+        assertUserFailureException(Void -> v3api.login(NOT_EXISTING_USER, PASSWORD),
+                "User '" + NOT_EXISTING_USER + "' has no role assignments and thus is not permitted to login.");
     }
 
     @Test
     public void testLoginAsWithNotExistingUser()
     {
-        String sessionToken = v3api.loginAs(NOT_EXISTING_USER, PASSWORD, TEST_USER);
-        Assert.assertNull(sessionToken);
+        assertUserFailureException(Void -> v3api.loginAs(NOT_EXISTING_USER, PASSWORD, TEST_USER),
+                "User '" + NOT_EXISTING_USER + "' has no role assignments and thus is not permitted to login.");
     }
 
     @Test

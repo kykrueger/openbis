@@ -34,6 +34,7 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 	this.additionalLastColumns = [];
 	this.resultsTitle = "Results";
 	this.beforeRenderingHook = null;
+	this.extraOptions = null;
 	
 	//
 	// Main Repaint Method
@@ -680,7 +681,7 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 		}
 		var isGlobalSearch = this._advancedSearchModel.criteria.entityKind === "ALL";
 		var dataGridController = this._getGridForResults(criteria, isGlobalSearch);
-		dataGridController.init(this._$dataGridContainer);
+		dataGridController.init(this._$dataGridContainer, this.extraOptions);
 	}
 	
 	this._getGridForResults = function(criteria, isGlobalSearch) {
@@ -896,7 +897,7 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 
 			var getDataRows = this._advancedSearchController.searchWithPagination(criteria, isGlobalSearch);
 			
-			var dataGrid = new DataGridController(this.resultsTitle, this._filterColumns(columns), columnsLast, dynamicColumnsFunc, getDataRows, null, false, this.configKeyPrefix + this._advancedSearchModel.criteria.entityKind);
+			var dataGrid = new DataGridController(this.resultsTitle, this._filterColumns(columns), columnsLast, dynamicColumnsFunc, getDataRows, null, false, this.configKeyPrefix + this._advancedSearchModel.criteria.entityKind, false, 70);
 			return dataGrid;
 	}
 	

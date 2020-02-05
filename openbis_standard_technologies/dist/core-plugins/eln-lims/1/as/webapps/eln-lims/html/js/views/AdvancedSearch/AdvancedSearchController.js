@@ -248,7 +248,7 @@ function AdvancedSearchController(mainController, forceSearch) {
 
 	this._getSearchCriteriaV3 = function(callback) {
 		var criteriaToSend = $.extend(true, {}, this._advancedSearchModel.criteria);
-		_this.additionalRules.forEach(rule => criteriaToSend.rules[Util.guid()] = rule);
+		this.additionalRules.forEach(rule => criteriaToSend.rules[Util.guid()] = rule);
 
 		switch(criteriaToSend.entityKind) {
 			case "ALL":

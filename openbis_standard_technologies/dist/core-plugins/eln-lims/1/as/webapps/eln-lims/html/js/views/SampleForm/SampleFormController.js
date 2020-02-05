@@ -327,6 +327,7 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 						if(!samplesToDelete) {
 							samplesToDelete = [];
 						}
+						sampleChildrenRemovedFinal.push(child.identifier);
 						samplesToDelete.push(child.permId);
 					}
 				});
@@ -376,6 +377,7 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 			if(isCopyWithNewCode) {
 				parameters["method"] = "copySample";
 				parameters["sampleCode"] = isCopyWithNewCode;
+				parameters["sampleCodeOrig"] = sampleCode;
 				parameters["notCopyProperties"] = [];
 				parameters["defaultBenchPropertyList"] = [];
 				
@@ -389,11 +391,7 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 				}
 				
 				parameters["sampleChildren"] = sampleChildrenFinal;
-				if(!copyChildrenOnCopy) {
-					parameters["sampleChildren"] = [];
-				} else if(profile.storagesConfiguration["isEnabled"]) {
-					// Copying children no longer copies storage information
-				}
+				parameters["copyChildrenOnCopy"] = copyChildrenOnCopy;
 				parameters["sampleChildrenNew"] = [];
 				parameters["sampleChildrenRemoved"] = [];
 			}
@@ -467,16 +465,22 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 			}
 			
 			if(samplesToDelete) {
-				mainController.serverFacade.deleteSamples(samplesToDelete,  "Deleted to trashcan from eln sample form " + _this._sampleFormModel.sample.identifier, 
-															function(response) {
-																if(response.error) {
-																	Util.showError("Deletions failed, other changes were committed: " + response.error.message, callbackOk);
-																} else {
-																	Util.showSuccess(message, callbackOk);
-																}
-																_this._sampleFormModel.isFormDirty = false;
-															}, 
-															false);
+			    mainController.serverFacade.trashStorageSamplesWithoutParents(samplesToDelete,
+			                                                                    "Deleted to trashcan from eln sample form " + _this._sampleFormModel.sample.identifier,
+			                                                                    function(response) {
+			                                                                        Util.showSuccess(message, callbackOk);
+			                                                                    });
+
+//				mainController.serverFacade.deleteSamples(samplesToDelete,  "Deleted to trashcan from eln sample form " + _this._sampleFormModel.sample.identifier,
+//															function(response) {
+//																if(response.error) {
+//																	Util.showError("Deletions failed, other changes were committed: " + response.error.message, callbackOk);
+//																} else {
+//																	Util.showSuccess(message, callbackOk);
+//																}
+//																_this._sampleFormModel.isFormDirty = false;
+//															},
+//															false);
 			} else {
 				Util.showSuccess(message, callbackOk);
 				_this._sampleFormModel.isFormDirty = false;
