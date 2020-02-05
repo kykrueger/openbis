@@ -127,24 +127,25 @@ public class CriteriaTranslator
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(UserIdSearchCriteria.class, new UserIdSearchConditionTranslator());
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(UserIdsSearchCriteria.class, collectionFieldSearchConditionTranslator);
 
-        CRITERIA_TO_IN_COLUMN_MAP.put(DataSetSearchCriteria.class, ColumnNames.DATA_SET_COLUMN);
-        CRITERIA_TO_IN_COLUMN_MAP.put(RegistratorSearchCriteria.class, ColumnNames.PERSON_REGISTERER_COLUMN);
-        CRITERIA_TO_IN_COLUMN_MAP.put(ModifierSearchCriteria.class, ColumnNames.PERSON_MODIFIER_COLUMN);
-        CRITERIA_TO_IN_COLUMN_MAP.put(SampleSearchCriteria.class, ColumnNames.SAMPLE_COLUMN);
-        CRITERIA_TO_IN_COLUMN_MAP.put(SampleContainerSearchCriteria.class, ColumnNames.PART_OF_SAMPLE_COLUMN);
-        CRITERIA_TO_IN_COLUMN_MAP.put(SampleTypeSearchCriteria.class, ColumnNames.SAMPLE_TYPE_COLUMN);
-        CRITERIA_TO_IN_COLUMN_MAP.put(ExperimentTypeSearchCriteria.class, ColumnNames.EXPERIMENT_TYPE_COLUMN);
-        CRITERIA_TO_IN_COLUMN_MAP.put(ExperimentSearchCriteria.class, ColumnNames.EXPERIMENT_COLUMN);
-        CRITERIA_TO_IN_COLUMN_MAP.put(ProjectSearchCriteria.class, ColumnNames.PROJECT_COLUMN);
-        CRITERIA_TO_IN_COLUMN_MAP.put(SpaceSearchCriteria.class, ColumnNames.SPACE_COLUMN);
-        CRITERIA_TO_IN_COLUMN_MAP.put(PropertyTypeSearchCriteria.class, PROPERTY_TYPE_COLUMN);
+        CRITERIA_TO_IN_COLUMN_MAP.put(DataSetSearchCriteria.class, DATA_SET_COLUMN);
+        CRITERIA_TO_IN_COLUMN_MAP.put(DataSetTypeSearchCriteria.class, DATA_SET_TYPE_COLUMN);
+        CRITERIA_TO_IN_COLUMN_MAP.put(ExperimentSearchCriteria.class, EXPERIMENT_COLUMN);
+        CRITERIA_TO_IN_COLUMN_MAP.put(ExperimentTypeSearchCriteria.class, EXPERIMENT_TYPE_COLUMN);
         CRITERIA_TO_IN_COLUMN_MAP.put(ExternalDmsSearchCriteria.class, EXTERNAL_DATA_MANAGEMENT_SYSTEM_ID_COLUMN);
+        CRITERIA_TO_IN_COLUMN_MAP.put(ModifierSearchCriteria.class, PERSON_MODIFIER_COLUMN);
+        CRITERIA_TO_IN_COLUMN_MAP.put(ProjectSearchCriteria.class, PROJECT_COLUMN);
+        CRITERIA_TO_IN_COLUMN_MAP.put(PropertyTypeSearchCriteria.class, PROPERTY_TYPE_COLUMN);
+        CRITERIA_TO_IN_COLUMN_MAP.put(RegistratorSearchCriteria.class, PERSON_REGISTERER_COLUMN);
+        CRITERIA_TO_IN_COLUMN_MAP.put(SampleContainerSearchCriteria.class, PART_OF_SAMPLE_COLUMN);
+        CRITERIA_TO_IN_COLUMN_MAP.put(SampleSearchCriteria.class, SAMPLE_COLUMN);
+        CRITERIA_TO_IN_COLUMN_MAP.put(SampleTypeSearchCriteria.class, SAMPLE_TYPE_COLUMN);
+        CRITERIA_TO_IN_COLUMN_MAP.put(SpaceSearchCriteria.class, SPACE_COLUMN);
 
-        CRITERIA_TO_IN_COLUMN_MAP.put(TagSearchCriteria.class, ID_COLUMN);
-        CRITERIA_TO_IN_COLUMN_MAP.put(SemanticAnnotationSearchCriteria.class, ID_COLUMN);
-        CRITERIA_TO_IN_COLUMN_MAP.put(PropertyAssignmentSearchCriteria.class, ID_COLUMN);
         CRITERIA_TO_IN_COLUMN_MAP.put(LinkedDataSearchCriteria.class, ID_COLUMN);
         CRITERIA_TO_IN_COLUMN_MAP.put(PhysicalDataSearchCriteria.class, ID_COLUMN);
+        CRITERIA_TO_IN_COLUMN_MAP.put(PropertyAssignmentSearchCriteria.class, ID_COLUMN);
+        CRITERIA_TO_IN_COLUMN_MAP.put(SemanticAnnotationSearchCriteria.class, ID_COLUMN);
+        CRITERIA_TO_IN_COLUMN_MAP.put(TagSearchCriteria.class, ID_COLUMN);
 
         //noinspection unchecked
         PARENT_CHILD_CRITERIA_TO_CHILD_SELECT_ID_MAP.put(
