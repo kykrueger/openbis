@@ -278,6 +278,14 @@ public class SearchDataSetTest extends AbstractDataSetTest
     }
 
     @Test
+    public void testSearchWithPhysicalData()
+    {
+        final DataSetSearchCriteria criteria = new DataSetSearchCriteria();
+        criteria.withPhysicalData();
+        testSearch(TEST_USER, criteria, 25);
+    }
+
+    @Test
     public void testSearchWithPhysicalDataWithShareIdThatEquals()
     {
         DataSetSearchCriteria criteria = new DataSetSearchCriteria();
@@ -579,6 +587,14 @@ public class SearchDataSetTest extends AbstractDataSetTest
         criteria = new DataSetSearchCriteria();
         criteria.withPhysicalData().withSpeedHint().thatIsLessThan(50);
         testSearch(TEST_USER, criteria, 25);
+    }
+
+    @Test
+    public void testSearchWithLinkedData()
+    {
+        final DataSetSearchCriteria criteria = new DataSetSearchCriteria();
+        criteria.withLinkedData();
+        testSearch(TEST_USER, criteria, 4);
     }
 
     @Test

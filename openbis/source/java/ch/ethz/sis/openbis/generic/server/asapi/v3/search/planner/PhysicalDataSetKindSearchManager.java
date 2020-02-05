@@ -68,9 +68,12 @@ public class PhysicalDataSetKindSearchManager extends AbstractSearchManager<Phys
         final SearchOperator finalSearchOperator = (searchOperator == null) ? criteria.getOperator() : searchOperator;
 
         final Set<Long> mainCriteriaIds = doSearchForIDs(userId, idsColumnName);
-        final Set<Long> childCriteriaIds = searchForIDsByCriteriaCollection(userId, criteria.getCriteria(), finalSearchOperator, EXTERNAL_DATA, idsColumnName);
 
-        mainCriteriaIds.retainAll(childCriteriaIds);
+        if (!criteria.getCriteria().isEmpty())
+        {
+            final Set<Long> childCriteriaIds = searchForIDsByCriteriaCollection(userId, criteria.getCriteria(), finalSearchOperator, EXTERNAL_DATA, idsColumnName);
+            mainCriteriaIds.retainAll(childCriteriaIds);
+        }
 
         return mainCriteriaIds;
     }
