@@ -966,6 +966,7 @@ class Openbis:
         if status == 1:
             raise OSError("could not unmount mountpoint: {} Please try to unmount manually".format(full_mountpoint_path))
         else:
+           if VERBOSE: print("Successfully unmounted {}".format(full_mountpoint_path))
            self.mountpoint = None
 
 
