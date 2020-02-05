@@ -857,31 +857,18 @@ public class SearchDataSetTest extends AbstractDataSetTest
 
         String sessionToken = v3api.login(user.getUserId(), PASSWORD);
 
-        if (user.isDisabledProjectUser())
+        SearchResult<DataSet> result = v3api.searchDataSets(sessionToken, criteria, new DataSetFetchOptions());
+
+        if (user.isInstanceUser())
         {
-            assertAuthorizationFailureException(new IDelegatedAction()
-                {
-                    @Override
-                    public void execute()
-                    {
-                        v3api.searchDataSets(sessionToken, criteria, new DataSetFetchOptions());
-                    }
-                });
+            assertEquals(result.getObjects().size(), 2);
+        } else if ((user.isTestSpaceUser() || user.isTestProjectUser()) && !user.isDisabledProjectUser())
+        {
+            assertEquals(result.getObjects().size(), 1);
+            assertEquals(result.getObjects().get(0).getCode(), "20120619092259000-22");
         } else
         {
-            SearchResult<DataSet> result = v3api.searchDataSets(sessionToken, criteria, new DataSetFetchOptions());
-
-            if (user.isInstanceUser())
-            {
-                assertEquals(result.getObjects().size(), 2);
-            } else if (user.isTestSpaceUser() || user.isTestProjectUser())
-            {
-                assertEquals(result.getObjects().size(), 1);
-                assertEquals(result.getObjects().get(0).getCode(), "20120619092259000-22");
-            } else
-            {
-                assertEquals(result.getObjects().size(), 0);
-            }
+            assertEquals(result.getObjects().size(), 0);
         }
 
         v3api.logout(sessionToken);
