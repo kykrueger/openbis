@@ -78,7 +78,9 @@ public enum TableMapper
 
     FILE_FORMAT_TYPES(FILE_FORMAT_TYPES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
 
-    LOCATOR_TYPES(LOCATOR_TYPES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+    LOCATOR_TYPES(LOCATOR_TYPES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
+
+    CONTROLLED_VOCABULARY_TERMS(CONTROLLED_VOCABULARY_TERM_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
 
     static
     {

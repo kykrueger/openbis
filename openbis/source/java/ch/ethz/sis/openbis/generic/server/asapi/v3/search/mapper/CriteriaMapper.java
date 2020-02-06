@@ -150,6 +150,7 @@ public class CriteriaMapper {
         CRITERIA_TO_IN_COLUMN_MAP.put(SpaceSearchCriteria.class, SPACE_COLUMN);
         CRITERIA_TO_IN_COLUMN_MAP.put(FileFormatTypeSearchCriteria.class, FILE_FORMAT_TYPE);
         CRITERIA_TO_IN_COLUMN_MAP.put(LocatorTypeSearchCriteria.class, LOCATOR_TYPE_COLUMN);
+        CRITERIA_TO_IN_COLUMN_MAP.put(StorageFormatSearchCriteria.class, STORAGE_FORMAT_COLUMN);
 
         CRITERIA_TO_IN_COLUMN_MAP.put(LinkedDataSearchCriteria.class, ID_COLUMN);
         CRITERIA_TO_IN_COLUMN_MAP.put(PhysicalDataSearchCriteria.class, ID_COLUMN);
@@ -216,6 +217,8 @@ public class CriteriaMapper {
                 applicationContext.getBean("ffty-search-manager", ISearchManager.class));
         CRITERIA_TO_MANAGER_MAP.put(LocatorTypeSearchCriteria.class,
                 applicationContext.getBean("locator-type-search-manager", ISearchManager.class));
+        CRITERIA_TO_MANAGER_MAP.put(StorageFormatSearchCriteria.class,
+                applicationContext.getBean("storage-format-search-manager", ISearchManager.class));
     }
 
     public static Map<Class<? extends ISearchCriteria>, ISearchManager<ISearchCriteria, ?, ?>> getCriteriaToManagerMap()
