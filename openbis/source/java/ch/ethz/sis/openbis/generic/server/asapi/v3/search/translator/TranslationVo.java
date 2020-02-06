@@ -46,8 +46,6 @@ public class TranslationVo
 
     private Map<Object, Map<String, JoinInformation>> aliases = new HashMap<>();
 
-    private Map<Class<? extends ISearchCriteria>, ISearchManager<ISearchCriteria, ?, ?>> criteriaToManagerMap;
-
     private List<Object> args = new ArrayList<>();
 
     private Map<String, String> dataTypeByPropertyName;
@@ -119,17 +117,6 @@ public class TranslationVo
             final Map<Object, Map<String, JoinInformation>> aliases)
     {
         this.aliases = aliases;
-    }
-
-    public Map<Class<? extends ISearchCriteria>, ISearchManager<ISearchCriteria, ?, ?>> getCriteriaToManagerMap()
-    {
-        return criteriaToManagerMap;
-    }
-
-    public void setCriteriaToManagerMap(
-            final Map<Class<? extends ISearchCriteria>, ISearchManager<ISearchCriteria, ?, ?>> criteriaToManagerMap)
-    {
-        this.criteriaToManagerMap = criteriaToManagerMap;
     }
 
     public List<Object> getArgs()

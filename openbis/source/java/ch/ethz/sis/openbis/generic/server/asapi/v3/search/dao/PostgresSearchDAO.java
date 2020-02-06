@@ -18,22 +18,8 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.*;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.*;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentTypeSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.ModifierSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.RegistratorSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.search.ProjectSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.search.PropertyAssignmentSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.search.PropertyTypeSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleContainerSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleTypeSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.search.SemanticAnnotationSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.search.SpaceSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.search.TagSearchCriteria;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.CriteriaMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.ISQLExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.OrderTranslator;
@@ -57,8 +43,6 @@ public class PostgresSearchDAO implements ISQLSearchDAO
 
     private ISQLExecutor sqlExecutor;
 
-    private Map<Class<? extends ISearchCriteria>, ISearchManager<ISearchCriteria, ?, ?>> criteriaToManagerMap = new HashMap<>();
-
     public PostgresSearchDAO(final ISQLExecutor sqlExecutor)
     {
         this.sqlExecutor = sqlExecutor;
@@ -78,7 +62,6 @@ public class PostgresSearchDAO implements ISQLSearchDAO
         translationVo.setParentCriterion(criterion);
         translationVo.setCriteria(criteria);
         translationVo.setOperator(operator);
-        translationVo.setCriteriaToManagerMap(criteriaToManagerMap);
         translationVo.setIdColumnName(finalIdColumnName);
 
         final boolean containsProperties = criteria.stream().anyMatch(
@@ -178,33 +161,10 @@ public class PostgresSearchDAO implements ISQLSearchDAO
         translationVo.setDataTypeByPropertyName(typeByPropertyName);
     }
 
-    @SuppressWarnings("unchecked")
     @Autowired
     public void setApplicationContext(final ApplicationContext applicationContext)
     {
-        criteriaToManagerMap.put(DataSetSearchCriteria.class, applicationContext.getBean("data-set-search-manager", ISearchManager.class));
-        criteriaToManagerMap.put(DataSetTypeSearchCriteria.class, applicationContext.getBean("data-set-type-search-manager", ISearchManager.class));
-        criteriaToManagerMap.put(ExperimentSearchCriteria.class, applicationContext.getBean("experiment-search-manager", ISearchManager.class));
-        criteriaToManagerMap.put(ExperimentTypeSearchCriteria.class, applicationContext.getBean("experiment-type-search-manager",
-                ISearchManager.class));
-        criteriaToManagerMap.put(SampleSearchCriteria.class, applicationContext.getBean("sample-search-manager", ISearchManager.class));
-        criteriaToManagerMap.put(SampleTypeSearchCriteria.class, applicationContext.getBean("sample-type-search-manager", ISearchManager.class));
-        criteriaToManagerMap.put(SampleContainerSearchCriteria.class, applicationContext.getBean("sample-search-manager", ISearchManager.class));
-        criteriaToManagerMap.put(RegistratorSearchCriteria.class, applicationContext.getBean("person-search-manager", ISearchManager.class));
-        criteriaToManagerMap.put(ModifierSearchCriteria.class, applicationContext.getBean("person-search-manager", ISearchManager.class));
-        criteriaToManagerMap.put(ProjectSearchCriteria.class, applicationContext.getBean("project-search-manager", ISearchManager.class));
-        criteriaToManagerMap.put(SpaceSearchCriteria.class, applicationContext.getBean("space-search-manager", ISearchManager.class));
-        criteriaToManagerMap.put(TagSearchCriteria.class, applicationContext.getBean("tag-search-manager", ISearchManager.class));
-        criteriaToManagerMap.put(SemanticAnnotationSearchCriteria.class, applicationContext.getBean("semantic-annotation-search-manager",
-                ISearchManager.class));
-        criteriaToManagerMap.put(PropertyAssignmentSearchCriteria.class, applicationContext.getBean("property-assignment-search-manager",
-                ISearchManager.class));
-        criteriaToManagerMap.put(PropertyTypeSearchCriteria.class, applicationContext.getBean("property-type-search-manager", ISearchManager.class));
-        criteriaToManagerMap.put(LinkedDataSearchCriteria.class, applicationContext.getBean("linked-data-set-kind-search-manager", ISearchManager.class));
-        criteriaToManagerMap.put(PhysicalDataSearchCriteria.class, applicationContext.getBean("physical-data-set-kind-search-manager", ISearchManager.class));
-        criteriaToManagerMap.put(ExternalDmsSearchCriteria.class, applicationContext.getBean("external-dms-search-manager", ISearchManager.class));
-        criteriaToManagerMap.put(FileFormatTypeSearchCriteria.class, applicationContext.getBean("ffty-search-manager", ISearchManager.class));
-        criteriaToManagerMap.put(LocatorTypeSearchCriteria.class, applicationContext.getBean("locator-type-search-manager", ISearchManager.class));
+        CriteriaMapper.initCriteriaToManagerMap(applicationContext);
     }
 
 }

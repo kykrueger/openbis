@@ -73,7 +73,6 @@ public class TranslatorTest
         criteriaTranslationVo.setTableMapper(TableMapper.SAMPLE);
         criteriaTranslationVo.setCriteria(Collections.singletonList(sampleSearchCriteria));
         criteriaTranslationVo.setOperator(SearchOperator.AND);
-        criteriaTranslationVo.setCriteriaToManagerMap(CRITERIA_TO_MANAGER_MAP);
         final SelectQuery result = CriteriaTranslator.translate(criteriaTranslationVo);
 
         assertEquals(result, new SelectQuery(String.format(
@@ -93,7 +92,6 @@ public class TranslatorTest
         criteriaTranslationVo.setTableMapper(TableMapper.SAMPLE);
         criteriaTranslationVo.setCriteria(sampleSearchCriteria.getCriteria());
         criteriaTranslationVo.setOperator(SearchOperator.AND);
-        criteriaTranslationVo.setCriteriaToManagerMap(CRITERIA_TO_MANAGER_MAP);
 
         final SelectQuery result = CriteriaTranslator.translate(criteriaTranslationVo);
 
@@ -118,7 +116,6 @@ public class TranslatorTest
         criteriaTranslationVo.setTableMapper(TableMapper.SAMPLE);
         criteriaTranslationVo.setCriteria(sampleSearchCriteria.getCriteria());
         criteriaTranslationVo.setOperator(SearchOperator.AND);
-        criteriaTranslationVo.setCriteriaToManagerMap(CRITERIA_TO_MANAGER_MAP);
 
         final SelectQuery result = CriteriaTranslator.translate(criteriaTranslationVo);
 
@@ -144,7 +141,6 @@ public class TranslatorTest
         criteriaTranslationVo.setTableMapper(TableMapper.SAMPLE);
         criteriaTranslationVo.setCriteria(sampleSearchCriteria.getCriteria());
         criteriaTranslationVo.setOperator(SearchOperator.OR);
-        criteriaTranslationVo.setCriteriaToManagerMap(CRITERIA_TO_MANAGER_MAP);
 
         final SelectQuery result = CriteriaTranslator.translate(criteriaTranslationVo);
 
