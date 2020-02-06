@@ -33,6 +33,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.*;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.CONTROLLED_VOCABULARY_TERM_TABLE;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.MATERIALS_TABLE;
 
 public class StringFieldSearchConditionTranslator implements IConditionTranslator<StringFieldSearchCriteria>
 {
@@ -110,10 +111,16 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
                         TranslatorUtils.appendStringComparatorOp(value, sqlBuilder, args);
                     }
 
+                    final String bareValue = TranslatorUtils.stripQuotationMarks(value.getValue());
+
                     sqlBuilder.append(SP).append(OR).append(SP).append(aliases.get(CONTROLLED_VOCABULARY_TERM_TABLE).getSubTableAlias())
                             .append(PERIOD).append(ColumnNames.CODE_COLUMN).append(SP);
-                    TranslatorUtils.appendStringComparatorOp(value.getClass(), TranslatorUtils.stripQuotationMarks(value.getValue()), sqlBuilder,
-                            args);
+                    TranslatorUtils.appendStringComparatorOp(value.getClass(), bareValue, sqlBuilder, args);
+
+                    sqlBuilder.append(SP).append(OR).append(SP).append(aliases.get(MATERIALS_TABLE).getSubTableAlias())
+                            .append(PERIOD).append(ColumnNames.CODE_COLUMN).append(SP);
+                    TranslatorUtils.appendStringComparatorOp(value.getClass(), bareValue, sqlBuilder, args);
+
                     sqlBuilder.append(RP);
                 }
                 break;
