@@ -18,27 +18,27 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetType;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.ExternalDmsSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.LocatorTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExternalDataManagementSystem;
-import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.LocatorType;
 
 import java.util.Set;
 
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
+
 /**
- * Manages detailed search with external data management system search criteria.
+ * Manages detailed search with file format type search criteria.
  *
  * @author Viktor Kovtun
  */
-public class ExternalDmsSearchManager extends AbstractSearchManager<ExternalDmsSearchCriteria, ExternalDataManagementSystem, Long>
+public class LocatorTypeSearchManager extends AbstractSearchManager<LocatorTypeSearchCriteria, LocatorType, Long>
 {
 
-    public ExternalDmsSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
+    public LocatorTypeSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
             final IID2PETranslator<Long> idsTranslator)
     {
         super(searchDAO, authProvider, idsTranslator);
@@ -53,14 +53,14 @@ public class ExternalDmsSearchManager extends AbstractSearchManager<ExternalDmsS
     @Override
     protected TableMapper getTableMapper()
     {
-        return TableMapper.EXTERNAL_DMS;
+        return TableMapper.LOCATOR_TYPES;
     }
 
     @Override
-    public Set<Long> searchForIDs(final Long userId, final ExternalDmsSearchCriteria criteria, final SortOptions<ExternalDataManagementSystem> sortOptions,
+    public Set<Long> searchForIDs(final Long userId, final LocatorTypeSearchCriteria criteria, final SortOptions<LocatorType> sortOptions,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
-        return super.searchForIDs(userId, criteria, ColumnNames.ID_COLUMN);
+        return super.searchForIDs(userId, criteria, ID_COLUMN);
     }
 
 }

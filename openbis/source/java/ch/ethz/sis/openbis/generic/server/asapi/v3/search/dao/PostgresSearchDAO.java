@@ -203,6 +203,8 @@ public class PostgresSearchDAO implements ISQLSearchDAO
         criteriaToManagerMap.put(LinkedDataSearchCriteria.class, applicationContext.getBean("linked-data-set-kind-search-manager", ISearchManager.class));
         criteriaToManagerMap.put(PhysicalDataSearchCriteria.class, applicationContext.getBean("physical-data-set-kind-search-manager", ISearchManager.class));
         criteriaToManagerMap.put(ExternalDmsSearchCriteria.class, applicationContext.getBean("external-dms-search-manager", ISearchManager.class));
+        criteriaToManagerMap.put(FileFormatTypeSearchCriteria.class, applicationContext.getBean("ffty-search-manager", ISearchManager.class));
+        criteriaToManagerMap.put(LocatorTypeSearchCriteria.class, applicationContext.getBean("locator-type-search-manager", ISearchManager.class));
     }
 
 }

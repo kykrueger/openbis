@@ -68,7 +68,6 @@ public class LinkedDataSetKindSearchManager extends AbstractSearchManager<Linked
     {
         final SearchOperator searchOperator = criteria.getOperator();
         final SearchOperator finalSearchOperator = (searchOperator == null) ? criteria.getOperator() : searchOperator;
-
         final Set<Long> mainCriteriaIds = doSearchForIDs(userId, idsColumnName);
 
         if (!criteria.getCriteria().isEmpty())

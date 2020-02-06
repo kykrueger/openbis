@@ -140,6 +140,8 @@ public class CriteriaTranslator
         CRITERIA_TO_IN_COLUMN_MAP.put(SampleSearchCriteria.class, SAMPLE_COLUMN);
         CRITERIA_TO_IN_COLUMN_MAP.put(SampleTypeSearchCriteria.class, SAMPLE_TYPE_COLUMN);
         CRITERIA_TO_IN_COLUMN_MAP.put(SpaceSearchCriteria.class, SPACE_COLUMN);
+        CRITERIA_TO_IN_COLUMN_MAP.put(FileFormatTypeSearchCriteria.class, FILE_FORMAT_TYPE);
+        CRITERIA_TO_IN_COLUMN_MAP.put(LocatorTypeSearchCriteria.class, LOCATOR_TYPE_COLUMN);
 
         CRITERIA_TO_IN_COLUMN_MAP.put(LinkedDataSearchCriteria.class, ID_COLUMN);
         CRITERIA_TO_IN_COLUMN_MAP.put(PhysicalDataSearchCriteria.class, ID_COLUMN);
