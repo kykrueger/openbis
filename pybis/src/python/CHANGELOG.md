@@ -1,7 +1,6 @@
 ## Changes with pybis-1.11.0
 
 * implemented mount() and unmount() methods to mount openBIS dataStore server via SSHFS and FUSE
-* use link() instead of download() method to create symbolic links for dataSets, instead of downloading
 
 ## Changes with pybis-1.10.8
 
