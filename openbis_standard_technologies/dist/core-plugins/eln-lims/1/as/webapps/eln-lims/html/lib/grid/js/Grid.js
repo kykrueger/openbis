@@ -754,7 +754,7 @@ $.extend(Grid.prototype, {
 //				$(thisGrid.panel).find(".repeater").width(newWidth);
 
 				var headerHeight = $(thisGrid.panel).find(".repeater-header").outerHeight(true);
-				var listHeight = Math.max(100, $(thisGrid.panel).find(".repeater-list").outerHeight(true));
+				var listHeight = Math.max(144, $(thisGrid.panel).find(".repeater-list").outerHeight(true));
 				var footerHeight = $(thisGrid.panel).find(".repeater-footer").outerHeight(true);
 				var viewport = $(thisGrid.panel).find(".repeater-canvas")[0];
 				var scrollbarHeight = viewport.scrollWidth > viewport.offsetWidth ? thisGrid.scrollbarWidth : 0;
