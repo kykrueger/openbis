@@ -565,21 +565,21 @@ def _subcriteria_for_code(code, entity):
     Example::
         _subcriteria_for_code("username", "space")
 
-	{
-	    "criteria": [
-		{
-		    "fieldType": "ATTRIBUTE",
-		    "@type": "as.dto.common.search.CodeSearchCriteria",
-		    "fieldName": "code",
-		    "fieldValue": {
-			"@type": "as.dto.common.search.StringEqualToValue",
-			"value": "USERNAME"
-		    }
-		}
-	    ],
-	    "operator": "AND",
-	    "@type": "as.dto.space.search.SpaceSearchCriteria"
-	}
+    {
+        "criteria": [
+            {
+                "fieldType": "ATTRIBUTE",
+                "@type": "as.dto.common.search.CodeSearchCriteria",
+                "fieldName": "code",
+                "fieldValue": {
+                    "@type": "as.dto.common.search.StringEqualToValue",
+                    "value": "USERNAME"
+                }
+            }
+        ],
+        "operator": "AND",
+        "@type": "as.dto.space.search.SpaceSearchCriteria"
+    }
     """
     if code is not None:
         if is_permid(code):
@@ -682,6 +682,13 @@ class Openbis:
             print("Session is no longer valid. Please log in again.")
 
 
+    def _get_username(self):
+        if self.token:
+            username, rest = self.token.split('-')
+            return username
+        return ''
+
+
     def __dir__(self):
         return [
             'url', 'port', 'hostname', 'token',
@@ -689,6 +696,8 @@ class Openbis:
             'logout()', 
             'is_session_active()', 
             'is_token_valid()',
+            "mount()",
+            "unmount()",
             "get_server_information()",
             "get_dataset()",
             "get_datasets()",
@@ -929,11 +938,26 @@ class Openbis:
 
             if save_token:
                 self.save_token()
+                self._password(password)
             # update the OPENBIS_TOKEN environment variable, if OPENBIS_URL is identical to self.url
             if os.environ.get('OPENBIS_URL') == self.url:
                 os.environ['OPENBIS_TOKEN'] = self.token
             return self.token
 
+    def _password(self, password=None, pstore={} ):
+        """An elegant way to store passwords which are used later
+        without giving the user an easy possibility to retrieve it.
+        """
+        import inspect
+        allowed_methods = ['mount']
+
+        if password is not None:
+            pstore['password'] = password
+        else:
+            if inspect.stack()[1][3] in allowed_methods:
+                return pstore.get('password')
+            else:
+                raise Exception("This method can only be called from these internal methods: {}".format(allowed_methods))
 
     def unmount(self, mountpoint=None):
         """Unmount a given mountpoint or unmount the stored mountpoint.
@@ -979,10 +1003,54 @@ class Openbis:
 
         return os.path.ismount(mountpoint)
 
+    def get_mountpoint(self):
+        """Returns the path to the active mountpoint.
+        Returns None if no mountpoint is found or if the mountpoint is not mounted anymore.
+        Experimental: Tries to figure out an existing mountpoint for a given hostname.
+        """
 
-    def mount(self, username, password, servername, mountpoint, volname=None, path='/', port=2222, kex_algorithms ='+diffie-hellman-group1-sha1'):
+        mountpoint = getattr(self, 'mountpoint', None)
+        if mountpoint:
+            if self.is_mounted(mountpoint):
+                return mountpoint
+            else:
+                return None
 
-        """Mounts openBIS dataStore without being root, using sshfs and fuse. Both SSHFS and FUSE must be installed on the system (the installation requires root privileges):
+        # try to find out the mountpoint
+        import subprocess
+        p1 = subprocess.Popen(["mount", "-d"], stdout=subprocess.PIPE)
+        p2 = subprocess.Popen(["grep", "--fixed-strings", self.hostname], stdin=p1.stdout, stdout=subprocess.PIPE)
+        p1.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
+        output = p2.communicate()[0]
+        output = output.decode()
+        # output will either be '' (=not mounted) or a string like this:
+        # {username}@{hostname}:{path} on {mountpoint} (osxfuse, nodev, nosuid, synchronous, mounted by vermeul)
+        try:
+            mountpoint = output.split()[2]
+            self.mountpoint = mountpoint
+            return mountpoint
+        except Exception:
+            return None
+
+
+    def mount(self,
+        username=None, password=None,
+        hostname=None, mountpoint=None,
+        volname=None, path='/', port=2222,
+        kex_algorithms ='+diffie-hellman-group1-sha1'
+    ):
+
+        """Mounts openBIS dataStore without being root, using sshfs and fuse. Both
+        SSHFS and FUSE must be installed on the system (see below)
+
+        Params:
+        username -- default: the currently used username
+        password -- default: the currently used password
+        hostname -- default: the current hostname
+        mountpoint -- default: ~/hostname
+
+
+        FUSE / SSHFS Installation (requires root privileges):
 
         Mac OS X
         ========
@@ -995,7 +1063,11 @@ class Openbis:
         $ sudo yum --enablerepo=epel -y install fuse-sshfs
         $ user="$(whoami)"
         $ usermod -a -G fuse "$user"
+
         """
+        if self.is_mounted():
+            if VERBOSE: print("openBIS dataStore is already mounted on {}".format(self.mountpoint))
+            return
 
         def check_sshfs_is_installed():
             import subprocess
@@ -1007,6 +1079,17 @@ class Openbis:
                     raise ValueError('Your system seems not to have SSHFS installed. For Mac OS X, see installation instructions on https://osxfuse.github.io For Unix: $ sudo yum install epel-release && sudo yum --enablerepo=epel -y install fuse-sshfs && user="$(whoami)" && usermod -a -G fuse "$user"')
 
         check_sshfs_is_installed()
+
+        if username is None: username = self._get_username()
+        if not username: raise ValueError("no token available - pleas provide a username")
+        if password is None: password = self._password()
+        if not password: raise ValueError("please provide a password")
+
+        if hostname is None: hostname = self.hostname
+        if not hostname: raise ValueError("please provide a hostname")
+
+        if mountpoint is None: mountpoint = os.path.join('~', self.hostname)
+
 
         # check if mountpoint exists, otherwise create it
         full_mountpoint_path = os.path.abspath(os.path.expanduser(mountpoint))
@@ -1022,18 +1105,18 @@ class Openbis:
 
 
         os_options = {
-            "darwin": "-oauto_cache,reconnect,defer_permissions,noappledouble,negative_vncache,volname={}".format(servername),
+            "darwin": "-oauto_cache,reconnect,defer_permissions,noappledouble,negative_vncache,volname={}".format(hostname),
             "linux": "-oauto_cache,reconnect",
         }
 
         if volname is None:
-            volname = servername
+            volname = hostname
 
         import subprocess
         args = {
             "username": username,
             "password": password,
-            "servername": servername,
+            "hostname": hostname,
             "port": port,
             "path": path,
             "mountpoint": mountpoint,
@@ -1043,7 +1126,7 @@ class Openbis:
         }
 
         cmd = 'echo "{password}" | sshfs'\
-              ' {username}@{servername}:{path} {mountpoint}' \
+              ' {username}@{hostname}:{path} {mountpoint}' \
               ' -o port={port} -o ssh_command="ssh -oKexAlgorithms={kex_algorithms}" -o password_stdin'\
               ' {os_options}'.format(**args)
 
@@ -1403,18 +1486,16 @@ class Openbis:
             "method": "createRoleAssignments",
             "params": [
                 self.token,
-                [
-	            {
-                        "role": role,
-                        "userId": userId,
-		        "authorizationGroupId": groupId,
-                        "spaceId": spaceId,
-		        "projectId": projectId,
-		        "@type": "as.dto.roleassignment.create.RoleAssignmentCreation",
-	            }
-	        ]
-	    ]
-	}
+                [ {
+                    "role": role,
+                    "userId": userId,
+                    "authorizationGroupId": groupId,
+                    "spaceId": spaceId,
+                    "projectId": projectId,
+                    "@type": "as.dto.roleassignment.create.RoleAssignmentCreation",
+                } ]
+            ]
+        }
         resp = self._post_request(self.as_v3, request)
         return
 
