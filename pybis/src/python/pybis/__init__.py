@@ -1,7 +1,7 @@
 name = 'pybis'
 __author__ = 'Swen Vermeul'
 __email__ = 'swen@ethz.ch'
-__version__ = '1.10.8'
+__version__ = '1.11.0'
 
 from . import pybis
 from .pybis import Openbis

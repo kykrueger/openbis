@@ -17,6 +17,7 @@
 package ch.systemsx.cisd.openbis.systemtest.task;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.fail;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -43,6 +44,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.IApplicationServerInternalApi
 import ch.ethz.sis.openbis.systemtest.asapi.v3.AbstractTest;
 import ch.systemsx.cisd.authentication.NullAuthenticationService;
 import ch.systemsx.cisd.authentication.Principal;
+import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.common.logging.ISimpleLogger;
 import ch.systemsx.cisd.common.logging.MockLogger;
@@ -265,7 +267,14 @@ public class UserManagerTest extends AbstractTest
     public void testCreateOneGroupWithAUserWhichAlreadyTriedToLogin()
     {
         // Given
-        assertEquals(v3api.login(U2.getUserId(), PASSWORD), null);
+        try
+        {
+            v3api.login(U2.getUserId(), PASSWORD);
+            fail("UserFailureException expected");
+        } catch (UserFailureException e)
+        {
+            // expected exception ignored
+        }
         MockLogger logger = new MockLogger();
         Map<Role, List<String>> commonSpaces = commonSpaces();
         UserManager userManager = new UserManagerBuilder(v3api, logger, report()).commonSpaces(commonSpaces).get();

@@ -55,6 +55,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.IApplicationServerInternalApi
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.OperationContext;
 import ch.systemsx.cisd.authentication.Principal;
+import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.common.shared.basic.string.CommaSeparatedListBuilder;
 import ch.systemsx.cisd.openbis.generic.server.task.UserManager;
 import ch.systemsx.cisd.openbis.generic.shared.IOpenBisSessionManager;
@@ -213,11 +214,17 @@ class UserManagerExpectationsBuilder
         CommaSeparatedListBuilder builder = new CommaSeparatedListBuilder();
         for (String userId : usersWithoutAuthentication)
         {
-            String sessionToken = v3api.login(userId, PASSWORD);
-            if (sessionToken != null)
+            try
             {
-                builder.append(userId);
-                v3api.logout(sessionToken);
+                String sessionToken = v3api.login(userId, PASSWORD);
+                if (sessionToken != null)
+                {
+                    builder.append(userId);
+                    v3api.logout(sessionToken);
+                }
+            } catch (UserFailureException e)
+            {
+                // expected exception silently ignored
             }
         }
         if (builder.toString().length() > 0)
