@@ -228,9 +228,10 @@ def generateExternalZipFile(params, exportDirPath, contentZipFilePath, contentZi
         fos = FileOutputStream(exportZipFileName)
         zos = ZipOutputStream(fos)
         if not deflated:
+            zos.setMethod(ZipOutputStream.STORED)
             zos.setLevel(Deflater.NO_COMPRESSION)
 
-        addToZipFile(' ' + contentZipFileName, File(contentZipFilePath), zos)
+        addToZipFile(' ' + contentZipFileName, File(contentZipFilePath), zos, deflated)
 
         generateXML(zipOutputStream=zos, fileMetadata=fileMetadata, exportDirPath=exportDirPath,
                     userInformation=userInformation, entities=entities, params=params)
