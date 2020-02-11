@@ -84,18 +84,20 @@ $ usermod -a -G fuse "$user"
 ```
 After the installation, an `sshfs` command should be available.
 
-### Mount from pyBIS
+### Mount dataStore server with pyBIS
 
 Because the mount/unmount procedure differs from platform to platform, pyBIS offers two simple methods:
 
 ```
 o.mount()
 o.mount(username, password, hostname, mountpoint, volname)
+o.is_mounted()
 o.unmount()
+o.get_mountpoint()
 ```
 Currently, mounting is supported for Linux and Mac OS X only.
 
-All attributes, if not provided, are re-used by a previous login() command. If no mountpoint is provided, the default mounpoint will be `~/hostname`. If this directory does not exist, it will be created. The directory must be empty.
+All attributes, if not provided, are re-used by a previous login() command. If no mountpoint is provided, the default mounpoint will be `~/hostname`. If this directory does not exist, it will be created. The directory must be empty before mounting.
 
 
 # Masterdata
