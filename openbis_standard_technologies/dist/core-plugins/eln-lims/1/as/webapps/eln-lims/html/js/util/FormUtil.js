@@ -1041,6 +1041,8 @@ var FormUtil = new function() {
 					var sectionSetting = sectionsSettings[option.label];
 					if (sectionSetting !== undefined) {
 						shown = sectionSetting === 'shown';
+					} else if (option.showByDefault) {
+						shown = true;
 					} else {
 						shown = ! profile.hideSectionsByDefault;
 					}

@@ -905,7 +905,8 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		hideShowOptionsModel.push({
 			forceToShow : this._sampleFormModel.mode === FormMode.CREATE && (sampleTypeDefinitionsExtension && sampleTypeDefinitionsExtension["FORCE_TO_SHOW_PARENTS_SECTION"]),
 			label : "Parents",
-			section : "#sample-parents"
+			section : "#sample-parents",
+			showByDefault : true
 		});
 		
 		var requiredParents = [];
@@ -941,7 +942,8 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 	this._createChildrenSection = function(hideShowOptionsModel, sampleTypeDefinitionsExtension, sampleTypeCode) {
 		hideShowOptionsModel.push({
 			label : "Children",
-			section : "#sample-children"
+			section : "#sample-children",
+			showByDefault : true
 		});
 
 		var _this = this;
