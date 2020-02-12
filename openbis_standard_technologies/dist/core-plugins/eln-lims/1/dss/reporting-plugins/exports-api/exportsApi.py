@@ -685,8 +685,7 @@ def getFilePath(spaceCode, projCode, expCode, sampCode, dataCode):
     return fileName;
 
 def addToZipFile(path, file, zos, deflated=True):
-    fis = FileInputStream(file);
-    zipEntry = ZipEntry(path[1:]); # Making paths relative to make them compatible with Windows zip implementation
+    zipEntry = ZipEntry(path[1:]) # Making paths relative to make them compatible with Windows zip implementation
     if not deflated:
         zipEntry.setMethod(ZipOutputStream.STORED)
         zipEntry.setSize(file.length())
@@ -695,27 +694,31 @@ def addToZipFile(path, file, zos, deflated=True):
         zipEntry.setCrc(crc)
     else:
         zipEntry.setMethod(ZipOutputStream.DEFLATED)
-    zos.putNextEntry(zipEntry);
 
-    bytes = jarray.zeros(1024, "b");
-    length = fis.read(bytes);
-    while length >= 0:
-        zos.write(bytes, 0, length);
-        length = fis.read(bytes);
+    zos.putNextEntry(zipEntry)
 
-    zos.closeEntry();
-    fis.close();
+    try:
+        bis = BufferedInputStream(FileInputStream(file))
+        bytes = jarray.zeros(1024, "b")
+        length = bis.read(bytes)
+        while length >= 0:
+            zos.write(bytes, 0, length)
+            length = bis.read(bytes)
+    finally:
+        zos.closeEntry()
+        if bis is not None:
+            bis.close()
 
 def getFileCRC(file):
     bis = None
     crc = CRC32()
     try:
-        bis = BufferedInputStream(FileInputStream(file), 1024)
+        bis = BufferedInputStream(FileInputStream(file))
         b = jarray.zeros(1024, "b")
-        i = bis.read(b)
-        while i != -1:
-            crc.update(b, 0, i)
-            i = bis.read(b)
+        length = bis.read(b)
+        while length != -1:
+            crc.update(b, 0, length)
+            length = bis.read(b)
     finally:
         if bis is not None:
             bis.close()
