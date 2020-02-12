@@ -48,7 +48,7 @@ public class MaterialSearchManager extends AbstractCompositeEntitySearchManager<
     @Override
     protected TableMapper getTableMapper()
     {
-        return TableMapper.SAMPLE;
+        return TableMapper.MATERIAL;
     }
 
     @Override
