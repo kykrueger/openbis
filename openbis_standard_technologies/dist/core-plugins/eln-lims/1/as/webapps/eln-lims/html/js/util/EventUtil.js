@@ -115,6 +115,17 @@ var EventUtil = new function() {
         });
     };
 
+    this.waitForCkeditor = function(id, data) {
+        return new Promise(function executor(resolve, reject) {
+            editor = CKEditorManager.getEditorById(id);
+            if(editor === undefined) {
+                setTimeout(executor.bind(null, resolve, reject), DEFAULT_TIMEOUT_STEP);
+            } else {
+                resolve();
+            }
+        });
+    }
+
     this.checkTimeout = function(elementId, timeout, ignoreError, resolve, reject) {
         if (!timeout) {
             timeout = DEFAULT_TIMEOUT;
@@ -129,6 +140,10 @@ var EventUtil = new function() {
             }
         }
         return timeout;
+    }
+
+    this.sleep = function(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
     }
 
     this.dragAndDrop = function(dragId, dropId, ignoreError) {

@@ -66,36 +66,48 @@ var UserTests = new function() {
     this.createBacteria = function(code, name) {
         return new Promise(function executor(resolve, reject) {
             var e = EventUtil;
+            var testChain = Promise.resolve();
 
             var richText = '<p><span style="color:#000080;"><strong>F-&nbsp;tonA21 thi-1 thr-1 leuB6 lacY1</strong></span><strong>&nbsp;</strong><span style="color:#008000;"><i><strong>glnV44 rfbC1 fhuA1 ?? mcrB e14-(mcrA-)</strong></i></span><i><strong>&nbsp;</strong></i><span style="color:#cc99ff;"><strong><u>hsdR(rK&nbsp;-mK&nbsp;+) λ-</u></strong></span></p>';
 
-            Promise.resolve().then(() => e.waitForId("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
-                             .then(() => e.click("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
-                             .then(() => e.waitForId("create-btn"))
-                             .then(() => e.click("create-btn"))
-                             .then(() => e.waitForId("sampleFormTitle"))
-                             .then(() => e.equalTo("sampleFormTitle", "Create Object Bacteria", true, false))
-                             .then(() => e.waitForId("codeId"))
-                             .then(() => e.waitForFill("codeId"))
-                             .then(() => e.equalTo("codeId", code, true, false))
-                             .then(() => e.waitForId("NAME"))
-                             .then(() => e.change("NAME", name, false))
-                             //Paste from Word
-                             .then(() =>  TestUtil.ckeditorSetData("BACTERIA.GENOTYPE", richText))
-                             .then(() => e.waitForId("save-btn"))
-                             .then(() => e.click("save-btn"))
-                             //Check saving results
-                             .then(() => e.waitForId("edit-btn"))
-                             .then(() => e.waitForId("NAME"))
-                             .then(() => e.equalTo("NAME", name, true, false))
-                             .then(() => TestUtil.ckeditorTestData("BACTERIA.GENOTYPE", richText))
-                             .then(() => resolve());
+            testChain.then(() => e.waitForId("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
+                     .then(() => e.click("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
+                     .then(() => e.waitForId("create-btn"))
+                     .then(() => e.click("create-btn"))
+                     .then(() => e.waitForId("sampleFormTitle"))
+                     .then(() => e.equalTo("sampleFormTitle", "New Bacteria", true, false));
+
+            if (code === "BAC1") {
+                // Show Code
+                testChain.then(() => e.waitForId("options-menu-btn"))
+                         .then(() => e.click("options-menu-btn"))
+                         .then(() => e.waitForId("options-menu-btn-identification-info"))
+                         .then(() => e.click("options-menu-btn-identification-info"));
+            }
+
+            testChain.then(() => e.waitForId("codeId"))
+                     .then(() => e.waitForFill("codeId"))
+                     .then(() => e.equalTo("codeId", code, true, false))
+                     .then(() => e.waitForId("NAME"))
+                     .then(() => e.change("NAME", name, false))
+                     //Paste from Word
+                     .then(() => e.waitForCkeditor("BACTERIA.GENOTYPE"))
+                     .then(() => TestUtil.ckeditorSetData("BACTERIA.GENOTYPE", richText))
+                     .then(() => e.waitForId("save-btn"))
+                     .then(() => e.click("save-btn"))
+                     //Check saving results
+                     .then(() => e.waitForId("edit-btn"))
+                     .then(() => e.waitForId("NAME"))
+                     .then(() => e.equalTo("NAME", name, true, false))
+                     .then(() => TestUtil.ckeditorTestData("BACTERIA.GENOTYPE", richText))
+                     .then(() => resolve());
         });
     }
 
     this.importsAutomaticCodes = function() {
         var baseURL = location.protocol + '//' + location.host + location.pathname;
         var pathToResource = "js/test/resources/bacteria_for_test_without_identifier.tsv";
+
         return new Promise(function executor(resolve, reject) {
             var e = EventUtil;
             Promise.resolve().then(() => UserTests.importBacteriasFromFile(baseURL + pathToResource))
@@ -111,6 +123,7 @@ var UserTests = new function() {
     this.importsGivenCodes = function() {
         var baseURL = location.protocol + '//' + location.host + location.pathname;
         var pathToResource = "js/test/resources/bacteria_for_test_with_identifier.tsv";
+
         return new Promise(function executor(resolve, reject) {
             var e = EventUtil;
             Promise.resolve().then(() => UserTests.importBacteriasFromFile(baseURL + pathToResource))
@@ -157,6 +170,7 @@ var UserTests = new function() {
                              // we wait for the save-button, cause page contains add-storage-btn
                              // even when page can't be edit. So we wait when page be reloaded.
                              .then(() => e.waitForId("save-btn"))
+                             .then(() => e.sleep(2000))
                              .then(() => e.waitForId("add-storage-btn"))
                              .then(() => e.click("add-storage-btn"))
                              .then(() => e.waitForId("storage-drop-down-id"))

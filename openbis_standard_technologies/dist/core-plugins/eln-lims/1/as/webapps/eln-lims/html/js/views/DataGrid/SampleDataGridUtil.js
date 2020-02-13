@@ -13,7 +13,8 @@ var SampleDataGridUtil = new function() {
 			sortable : false,
 			render : function(data) {
 				var nameToUse = Util.getNameOrCode(data);
-				return (isLinksDisabled)?nameToUse:FormUtil.getFormLink(nameToUse, "Sample", data.permId);
+				var codeId = data.code.toLowerCase() + "-column-id";
+				return (isLinksDisabled)?nameToUse:FormUtil.getFormLink(nameToUse, "Sample", data.permId, null, codeId);
 			}
 		});
 
@@ -191,8 +192,7 @@ var SampleDataGridUtil = new function() {
 						}
 					}
 				}
-				var codeId = data.code.toLowerCase() + "-column-id";
-				return (isLinksDisabled)?data.code:FormUtil.getFormLink(data.code, "Sample", data.permId, paginationInfo, codeId);
+				return (isLinksDisabled)?data.code:FormUtil.getFormLink(data.code, "Sample", data.permId, paginationInfo);
 			},
 			filter : function(data, filter) {
 				return data.identifier.toLowerCase().indexOf(filter) !== -1;

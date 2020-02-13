@@ -1050,7 +1050,8 @@ var FormUtil = new function() {
 				var $section = $(option.section);
 				$section.toggle(shown);
 				var $label = $("<span>").append((shown ? "Hide " : "Show ") + option.label);
-				var $dropdownElement = $("<li>", { 'role' : 'presentation' }).append($("<a>").append($label));
+				var id = 'options-menu-btn-' + option.label.split(" ").join("-").toLowerCase();
+				var $dropdownElement = $("<li>", { 'role' : 'presentation' }).append($("<a>", { 'id' : id }).append($label));
 				var action = function(event) {
 					var option = event.data.option;
 					var $label = event.data.label;
