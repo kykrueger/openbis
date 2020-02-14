@@ -5,6 +5,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.*;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.NoExperimentSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.*;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.search.NoProjectSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.search.ProjectSearchCriteria;
@@ -219,6 +220,8 @@ public class CriteriaMapper {
                 applicationContext.getBean("locator-type-search-manager", ISearchManager.class));
         CRITERIA_TO_MANAGER_MAP.put(StorageFormatSearchCriteria.class,
                 applicationContext.getBean("storage-format-search-manager", ISearchManager.class));
+        CRITERIA_TO_MANAGER_MAP.put(MaterialSearchCriteria.class,
+                applicationContext.getBean("material-search-manager", ISearchManager.class));
     }
 
     public static Map<Class<? extends ISearchCriteria>, ISearchManager<ISearchCriteria, ?, ?>> getCriteriaToManagerMap()
