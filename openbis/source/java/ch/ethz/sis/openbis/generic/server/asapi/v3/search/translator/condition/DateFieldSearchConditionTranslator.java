@@ -30,6 +30,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.u
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinType;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
+import ch.systemsx.cisd.openbis.generic.shared.dto.TableNames;
 
 public class DateFieldSearchConditionTranslator implements IConditionTranslator<DateFieldSearchCriteria>
 {
@@ -102,19 +103,19 @@ public class DateFieldSearchConditionTranslator implements IConditionTranslator<
             {
                 final String propertyName = TranslatorUtils.normalisePropertyName(criterion.getFieldName());
                 final boolean internalProperty = TranslatorUtils.isPropertyInternal(criterion.getFieldName());
-                final String entityTypesSubTableAlias = aliases.get(tableMapper.getEntityTypesAttributeTypesTable()).getSubTableAlias();
+                final String entityTypesSubTableAlias = aliases.get(tableMapper.getAttributeTypesTable()).getSubTableAlias();
 
                 sqlBuilder.append(CASE).append(SP).append(WHEN).append(SP);
 
                 TranslatorUtils.appendInternalExternalConstraint(sqlBuilder, args, entityTypesSubTableAlias, internalProperty);
 
-                sqlBuilder.append(SP).append(aliases.get(tableMapper.getEntityTypesAttributeTypesTable()).getSubTableAlias())
+                sqlBuilder.append(SP).append(aliases.get(tableMapper.getAttributeTypesTable()).getSubTableAlias())
                         .append(PERIOD).append(ColumnNames.CODE_COLUMN).append(SP).append(EQ).append(SP).append(QU);
                 args.add(propertyName);
 
                 sqlBuilder.append(SP).append(AND);
 
-                sqlBuilder.append(SP).append(aliases.get(tableMapper.getAttributeTypesTable()).getSubTableAlias())
+                sqlBuilder.append(SP).append(aliases.get(TableNames.DATA_TYPES_TABLE).getSubTableAlias())
                         .append(PERIOD).append(ColumnNames.CODE_COLUMN).append(SP).append(EQ).append(SP).append(QU);
                 args.add(TIMESTAMP_DATA_TYPE_CODE);
 
@@ -125,7 +126,7 @@ public class DateFieldSearchConditionTranslator implements IConditionTranslator<
                     sqlBuilder.append(DATE).append(LP);
                 }
 
-                sqlBuilder.append(aliases.get(tableMapper.getEntitiesTable()).getSubTableAlias())
+                sqlBuilder.append(aliases.get(tableMapper.getValuesTable()).getSubTableAlias())
                         .append(PERIOD).append(ColumnNames.VALUE_COLUMN).append(DOUBLE_COLON).append(TIMESTAMPTZ).append(SP);
                 TranslatorUtils.appendTimeZoneConversion(value, sqlBuilder, criterion.getTimeZone());
 

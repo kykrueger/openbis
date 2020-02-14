@@ -72,7 +72,7 @@ public class MaterialSearchManager extends AbstractCompositeEntitySearchManager<
     @Override
     protected Set<Long> doFilterIDsByUserRights(final Set<Long> ids, final AuthorisationInformation authorisationInformation)
     {
-        return getAuthProvider().getAuthorisedSamples(ids, authorisationInformation);
+        return ids;
     }
 
 }

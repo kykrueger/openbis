@@ -183,7 +183,7 @@ public class TranslatorUtils
         joinInformation1.setSubTable(tableMapper.getValuesTable());
         joinInformation1.setSubTableAlias(valuesTableAlias);
         joinInformation1.setSubTableIdField(tableMapper.getValuesTableEntityIdField());
-        result.put(tableMapper.getEntitiesTable(), joinInformation1);
+        result.put(tableMapper.getValuesTable(), joinInformation1);
 
         final JoinInformation joinInformation2 = new JoinInformation();
         joinInformation2.setJoinType(joinType);
@@ -193,7 +193,7 @@ public class TranslatorUtils
         joinInformation2.setSubTable(tableMapper.getEntityTypesAttributeTypesTable());
         joinInformation2.setSubTableAlias(entityTypesAttributeTypesTableAlias);
         joinInformation2.setSubTableIdField(ID_COLUMN);
-        result.put(tableMapper.getValuesTable(), joinInformation2);
+        result.put(tableMapper.getEntityTypesAttributeTypesTable(), joinInformation2);
 
         final JoinInformation joinInformation3 = new JoinInformation();
         joinInformation3.setJoinType(joinType);
@@ -203,7 +203,7 @@ public class TranslatorUtils
         joinInformation3.setSubTable(tableMapper.getAttributeTypesTable());
         joinInformation3.setSubTableAlias(attributeTypesTableAlias);
         joinInformation3.setSubTableIdField(ID_COLUMN);
-        result.put(tableMapper.getEntityTypesAttributeTypesTable(), joinInformation3);
+        result.put(tableMapper.getAttributeTypesTable(), joinInformation3);
 
         final JoinInformation joinInformation4 = new JoinInformation();
         joinInformation4.setJoinType(joinType);
@@ -213,7 +213,7 @@ public class TranslatorUtils
         joinInformation4.setSubTable(TableNames.DATA_TYPES_TABLE);
         joinInformation4.setSubTableAlias(aliasFactory.createAlias());
         joinInformation4.setSubTableIdField(ColumnNames.ID_COLUMN);
-        result.put(tableMapper.getAttributeTypesTable(), joinInformation4);
+        result.put(TableNames.DATA_TYPES_TABLE, joinInformation4);
 
         final JoinInformation joinInformation5 = new JoinInformation();
         joinInformation5.setJoinType(JoinType.LEFT);

@@ -64,7 +64,7 @@ public class BooleanFieldSearchConditionTranslator implements IConditionTranslat
             case ATTRIBUTE:
             {
                 final String criterionFieldName = criterion.getFieldName();
-                final String columnName = Attributes.getColumnName(criterionFieldName, tableMapper.getEntitiesTable(), criterionFieldName);
+                final String columnName = Attributes.getColumnName(criterionFieldName, tableMapper.getValuesTable(), criterionFieldName);
                 final Boolean value = criterion.getFieldValue();
 
                 sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(columnName).append(SP).append(EQ).append(SP).append(QU);
@@ -77,7 +77,7 @@ public class BooleanFieldSearchConditionTranslator implements IConditionTranslat
                 final Boolean value = criterion.getFieldValue();
                 final String propertyName = TranslatorUtils.normalisePropertyName(criterion.getFieldName());
                 final boolean internalProperty = TranslatorUtils.isPropertyInternal(criterion.getFieldName());
-                final String entityTypesSubTableAlias = aliases.get(tableMapper.getEntityTypesAttributeTypesTable()).getSubTableAlias();
+                final String entityTypesSubTableAlias = aliases.get(tableMapper.getAttributeTypesTable()).getSubTableAlias();
 
                 TranslatorUtils.appendInternalExternalConstraint(sqlBuilder, args, entityTypesSubTableAlias, internalProperty);
 
@@ -87,7 +87,7 @@ public class BooleanFieldSearchConditionTranslator implements IConditionTranslat
 
                 if (value != null)
                 {
-                    sqlBuilder.append(SP).append(AND).append(SP).append(LP).append(aliases.get(tableMapper.getEntitiesTable()).getSubTableAlias())
+                    sqlBuilder.append(SP).append(AND).append(SP).append(LP).append(aliases.get(tableMapper.getValuesTable()).getSubTableAlias())
                             .append(PERIOD).append(ColumnNames.VALUE_COLUMN);
 
                     sqlBuilder.append(SP).append(EQ).append(SP).append(QU);
