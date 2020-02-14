@@ -54,20 +54,20 @@ public class SearchMaterialTest extends AbstractTest
         testSearch(TEST_USER, criteria, permId);
     }
 
-    @Test
-    public void testSearchWithPermId()
-    {
-        final MaterialSearchCriteria criteria = new MaterialSearchCriteria();
-        criteria.withPermId().thatEquals("NOT SUPPORTED YET");
-        assertRuntimeException(new IDelegatedAction()
-            {
-                @Override
-                public void execute()
-                {
-                    testSearch(TEST_USER, criteria);
-                }
-            }, "Please use criteria.withId().thatEquals(new MaterialPermId('CODE','TYPE')) instead.");
-    }
+//    @Test
+//    public void testSearchWithPermId()
+//    {
+//        final MaterialSearchCriteria criteria = new MaterialSearchCriteria();
+//        criteria.withPermId().thatEquals("NOT SUPPORTED YET");
+//        assertRuntimeException(new IDelegatedAction()
+//            {
+//                @Override
+//                public void execute()
+//                {
+//                    testSearch(TEST_USER, criteria);
+//                }
+//            }, "Please use criteria.withId().thatEquals(new MaterialPermId('CODE','TYPE')) instead.");
+//    }
 
     @Test
     public void testSearchWithCode()
