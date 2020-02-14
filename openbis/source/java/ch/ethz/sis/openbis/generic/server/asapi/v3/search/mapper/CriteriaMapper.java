@@ -6,6 +6,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSear
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.NoExperimentSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.*;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.search.NoProjectSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.search.ProjectSearchCriteria;
@@ -141,6 +142,7 @@ public class CriteriaMapper {
         CRITERIA_TO_IN_COLUMN_MAP.put(ExperimentSearchCriteria.class, EXPERIMENT_COLUMN);
         CRITERIA_TO_IN_COLUMN_MAP.put(ExperimentTypeSearchCriteria.class, EXPERIMENT_TYPE_COLUMN);
         CRITERIA_TO_IN_COLUMN_MAP.put(ExternalDmsSearchCriteria.class, EXTERNAL_DATA_MANAGEMENT_SYSTEM_ID_COLUMN);
+        CRITERIA_TO_IN_COLUMN_MAP.put(MaterialTypeSearchCriteria.class, MATERIAL_TYPE_COLUMN);
         CRITERIA_TO_IN_COLUMN_MAP.put(ModifierSearchCriteria.class, PERSON_MODIFIER_COLUMN);
         CRITERIA_TO_IN_COLUMN_MAP.put(ProjectSearchCriteria.class, PROJECT_COLUMN);
         CRITERIA_TO_IN_COLUMN_MAP.put(PropertyTypeSearchCriteria.class, PROPERTY_TYPE_COLUMN);
@@ -222,6 +224,8 @@ public class CriteriaMapper {
                 applicationContext.getBean("storage-format-search-manager", ISearchManager.class));
         CRITERIA_TO_MANAGER_MAP.put(MaterialSearchCriteria.class,
                 applicationContext.getBean("material-search-manager", ISearchManager.class));
+        CRITERIA_TO_MANAGER_MAP.put(MaterialTypeSearchCriteria.class,
+                applicationContext.getBean("material-type-search-manager", ISearchManager.class));
     }
 
     public static Map<Class<? extends ISearchCriteria>, ISearchManager<ISearchCriteria, ?, ?>> getCriteriaToManagerMap()

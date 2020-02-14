@@ -16,10 +16,10 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.Material;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleParentsSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.MaterialType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
@@ -28,15 +28,17 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 
 import java.util.Set;
 
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
+
 /**
- * Manages detailed search with complex material search criteria.
+ * Manages detailed search with complex material type search criteria.
  * 
  * @author Viktor Kovtun
  */
-public class MaterialSearchManager extends AbstractCompositeEntitySearchManager<MaterialSearchCriteria, Material, Long>
+public class MaterialTypeSearchManager extends AbstractSearchManager<MaterialTypeSearchCriteria, MaterialType, Long>
 {
 
-    public MaterialSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
+    public MaterialTypeSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
             final IID2PETranslator idsTranslator)
     {
         super(searchDAO, authProvider, idsTranslator);
@@ -45,31 +47,18 @@ public class MaterialSearchManager extends AbstractCompositeEntitySearchManager<
     @Override
     protected TableMapper getTableMapper()
     {
-        return TableMapper.MATERIAL;
-    }
-
-    @Override
-    protected Class<? extends AbstractCompositeSearchCriteria> getParentsSearchCriteriaClass()
-    {
-        return SampleParentsSearchCriteria.class;
-    }
-
-    @Override
-    protected Class<? extends AbstractCompositeSearchCriteria> getChildrenSearchCriteriaClass()
-    {
-        return MaterialSearchCriteria.class;
-    }
-
-    @Override
-    protected MaterialSearchCriteria createEmptyCriteria()
-    {
-        return new MaterialSearchCriteria();
+        return TableMapper.MATERIAL_TYPE;
     }
 
     @Override
     protected Set<Long> doFilterIDsByUserRights(final Set<Long> ids, final AuthorisationInformation authorisationInformation)
     {
         return ids;
+    }
+
+    @Override
+    public Set<Long> searchForIDs(final Long userId, final MaterialTypeSearchCriteria criteria, final SortOptions<MaterialType> sortOptions, final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName) {
+        return super.searchForIDs(userId, criteria, ID_COLUMN);
     }
 
 }

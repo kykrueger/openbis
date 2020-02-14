@@ -57,6 +57,8 @@ public enum TableMapper
             MATERIAL_TYPE_PROPERTY_TYPE_TABLE, MATERIAL_TYPE_COLUMN, PROPERTY_TYPE_COLUMN, MATERIAL_PROPERTIES_TABLE, MATERIAL_COLUMN,
             MATERIAL_TYPE_PROPERTY_TYPE_COLUMN, null, null, null, DATA_VIEW, MATERIAL_COLUMN, MATERIAL_COLUMN),
 
+    MATERIAL_TYPE(MATERIAL_TYPES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
+
     DATA_SET_TYPE(DATA_SET_TYPES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
 
     PERSON(PERSONS_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
