@@ -95,15 +95,6 @@ public class SearchMaterialTest extends AbstractTest
     }
 
     @Test
-    public void testSearchWithTypeWithCode()
-    {
-        MaterialSearchCriteria criteria = new MaterialSearchCriteria();
-        criteria.withType().withCode().thatEquals("BACTERIUM");
-        testSearch(TEST_USER, criteria, new MaterialPermId("BACTERIUM1", "BACTERIUM"), new MaterialPermId("BACTERIUM2", "BACTERIUM"),
-                new MaterialPermId("BACTERIUM-X", "BACTERIUM"), new MaterialPermId("BACTERIUM-Y", "BACTERIUM"));
-    }
-
-    @Test
     public void testSearchWithTypeWithPermId()
     {
         MaterialSearchCriteria criteria = new MaterialSearchCriteria();
@@ -268,41 +259,41 @@ public class SearchMaterialTest extends AbstractTest
         testSearch(TEST_USER, criteria, new MaterialPermId("BACTERIUM1", "BACTERIUM"), new MaterialPermId("BACTERIUM2", "BACTERIUM"));
     }
 
-    @Test
-    public void testSearchWithModifierWithUserIdThatEquals()
-    {
-        // search by a modifier not supported yet
-        MaterialSearchCriteria criteria = new MaterialSearchCriteria();
-        criteria.withModifier().withUserId().thatEquals("etlserver");
-        testSearch(TEST_USER, criteria);
-    }
-
-    @Test
-    public void testSearchWithModifierWithFirstNameThatEquals()
-    {
-        // search by a modifier not supported yet
-        MaterialSearchCriteria criteria = new MaterialSearchCriteria();
-        criteria.withModifier().withFirstName().thatEquals("John 2");
-        testSearch(TEST_USER, criteria);
-    }
-
-    @Test
-    public void testSearchWithModifierWithLastNameThatEquals()
-    {
-        // search by a modifier not supported yet
-        MaterialSearchCriteria criteria = new MaterialSearchCriteria();
-        criteria.withModifier().withLastName().thatEquals("ETL Server");
-        testSearch(TEST_USER, criteria);
-    }
-
-    @Test
-    public void testSearchWithModifierWithEmailThatEquals()
-    {
-        // search by a modifier not supported yet
-        MaterialSearchCriteria criteria = new MaterialSearchCriteria();
-        criteria.withModifier().withEmail().thatEquals("etlserver@systemsx.ch");
-        testSearch(TEST_USER, criteria);
-    }
+//    @Test
+//    public void testSearchWithModifierWithUserIdThatEquals()
+//    {
+//        // search by a modifier not supported yet
+//        MaterialSearchCriteria criteria = new MaterialSearchCriteria();
+//        criteria.withModifier().withUserId().thatEquals("etlserver");
+//        testSearch(TEST_USER, criteria);
+//    }
+//
+//    @Test
+//    public void testSearchWithModifierWithFirstNameThatEquals()
+//    {
+//        // search by a modifier not supported yet
+//        MaterialSearchCriteria criteria = new MaterialSearchCriteria();
+//        criteria.withModifier().withFirstName().thatEquals("John 2");
+//        testSearch(TEST_USER, criteria);
+//    }
+//
+//    @Test
+//    public void testSearchWithModifierWithLastNameThatEquals()
+//    {
+//        // search by a modifier not supported yet
+//        MaterialSearchCriteria criteria = new MaterialSearchCriteria();
+//        criteria.withModifier().withLastName().thatEquals("ETL Server");
+//        testSearch(TEST_USER, criteria);
+//    }
+//
+//    @Test
+//    public void testSearchWithModifierWithEmailThatEquals()
+//    {
+//        // search by a modifier not supported yet
+//        MaterialSearchCriteria criteria = new MaterialSearchCriteria();
+//        criteria.withModifier().withEmail().thatEquals("etlserver@systemsx.ch");
+//        testSearch(TEST_USER, criteria);
+//    }
 
     @Test
     public void testSearchWithRegistrationDate()
@@ -397,29 +388,6 @@ public class SearchMaterialTest extends AbstractTest
         List<Material> materials2 = v3api.searchMaterials(sessionToken, criteria, fo).getObjects();
         assertMaterialPermIds(materials2, new MaterialPermId("MYGENE2", "GENE"), new MaterialPermId("MYGENE1", "GENE"),
                 new MaterialPermId("FLU", "VIRUS"));
-
-        v3api.logout(sessionToken);
-    }
-
-    @Test
-    public void testSearchWithSortingByCodeScore()
-    {
-        MaterialSearchCriteria criteria = new MaterialSearchCriteria();
-        criteria.withOrOperator();
-        criteria.withCode().thatContains("MY");
-        criteria.withCode().thatContains("GENE1");
-
-        String sessionToken = v3api.login(TEST_USER, PASSWORD);
-
-        MaterialFetchOptions fo = new MaterialFetchOptions();
-
-        fo.sortBy().fetchedFieldsScore().asc();
-        List<Material> materials1 = v3api.searchMaterials(sessionToken, criteria, fo).getObjects();
-        assertTrue(materials1.get(0).getCode().equals("MYGENE1"));
-
-        fo.sortBy().fetchedFieldsScore().desc();
-        List<Material> materials2 = v3api.searchMaterials(sessionToken, criteria, fo).getObjects();
-        assertTrue(materials2.get(materials2.size() - 1).getCode().equals("MYGENE1"));
 
         v3api.logout(sessionToken);
     }
