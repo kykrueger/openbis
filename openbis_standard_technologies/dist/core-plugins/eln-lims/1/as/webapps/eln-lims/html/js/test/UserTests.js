@@ -18,6 +18,8 @@ var UserTests = new function() {
                  .then(() => this.movingBoxTest())
                  //17. Storage Manager - Moving Sample
                  .then(() => this.movingSampleTest())
+                 //18. Create Protocol
+                 .then(() => this.createProtocol())
                  .catch(error => { console.log(error) });
     }
 
@@ -211,6 +213,7 @@ var UserTests = new function() {
                              .then(() => e.dragAndDrop("storage-drop-down-id-a-1-2-storage-box", "storage-drop-down-id-b-1-1", false))
                              .then(() => e.equalTo("change-log-container-id", "None", false, false))
                              .then(() => e.click("save-changes-btn"))
+                             .then(() => e.sleep(3000))
                              .then(() => resolve());
         });
     }
@@ -218,14 +221,9 @@ var UserTests = new function() {
     this.movingSampleTest = function() {
         return new Promise(function executor(resolve, reject) {
             var e = EventUtil;
-                             // this code is for reloading STORAGE_MANAGER page.
-            Promise.resolve().then(() => e.waitForId("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
-                             .then(() => e.click("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
-                             .then(() => e.waitForId("create-btn"))
-                             //start test
-                             .then(() => e.waitForId("STORAGE_MANAGER"))
+
+            Promise.resolve().then(() => e.waitForId("STORAGE_MANAGER"))
                              .then(() => e.click("STORAGE_MANAGER"))
-                             .then(() => e.sleep(2000))
                              .then(() => e.waitForId("storage-drop-down-id-a"))
                              .then(() => e.change("storage-drop-down-id-a", "BENCH", false))
                              .then(() => e.waitForId("storage-drop-down-id-a-1-1"))
@@ -242,7 +240,28 @@ var UserTests = new function() {
                              .then(() => e.click("bac1-column-id"))
                              .then(() => e.waitForId("testbox-a3-id"))
                              .then(() => e.equalTo("testbox-a3-id", "Test Box - A3", true, false))
+                             .then(() => e.sleep(3000))
                              .then(() => resolve());
         });
     }
+
+    this.createProtocol = function() {
+            return new Promise(function executor(resolve, reject) {
+                var e = EventUtil;
+
+                Promise.resolve().then(() => e.waitForId("_METHODS_PROTOCOLS_GENERAL_PROTOCOLS"))
+                                 .then(() => e.click("_METHODS_PROTOCOLS_GENERAL_PROTOCOLS"))
+                                 .then(() => e.waitForId("create-btn"))
+                                 .then(() => e.click("create-btn"))
+                                 .then(() => e.waitForId("options-menu-btn"))
+                                 .then(() => e.click("options-menu-btn"))
+                                 .then(() => e.waitForId("options-menu-btn-identification-info"))
+                                 .then(() => e.click("options-menu-btn-identification-info"))
+                                 .then(() => e.waitForId("codeId"))
+                                 .then(() => e.waitForFill("codeId"))
+                                 .then(() => e.waitForId("save-btn"))
+                                 .then(() => e.click("save-btn"))
+                                 .then(() => resolve());
+            });
+        }
 }
