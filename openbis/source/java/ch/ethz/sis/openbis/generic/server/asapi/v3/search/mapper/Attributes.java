@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils;
+package ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper;
 
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
@@ -31,6 +31,7 @@ public class Attributes
 
     private static final Map<String, String> ATTRIBUTE_ID_TO_COLUMN_NAME = new HashMap<>();
 
+    /** Defines which columns of which entities should be treated as perm_id. It can be PERM_ID_COLUMN or CODE_COLUMN. */
     private static final Map<String, String> ENTITIES_TABLE_TO_PERM_ID_COLUMN_NAME = new HashMap<>();
 
     static {
@@ -47,6 +48,7 @@ public class Attributes
         ATTRIBUTE_ID_TO_COLUMN_NAME.put("shareId", ColumnNames.SHARE_ID_COLUMN);
         ATTRIBUTE_ID_TO_COLUMN_NAME.put("speedHint", ColumnNames.SPEED_HINT);
         ATTRIBUTE_ID_TO_COLUMN_NAME.put("storageConfirmation", ColumnNames.STORAGE_CONFIRMATION);
+        ATTRIBUTE_ID_TO_COLUMN_NAME.put("gitCommitHash", ColumnNames.GIT_COMMIT_HASH_COLUMN);
 
         ENTITIES_TABLE_TO_PERM_ID_COLUMN_NAME.put(CONTROLLED_VOCABULARY_TABLE, ColumnNames.CODE_COLUMN);
         ENTITIES_TABLE_TO_PERM_ID_COLUMN_NAME.put(CONTROLLED_VOCABULARY_TERM_TABLE, ColumnNames.CODE_COLUMN);
