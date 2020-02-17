@@ -147,8 +147,8 @@ public class SearchMaterialTest extends AbstractTest
     public void testSearchWithPropertyThatEndsWith()
     {
         MaterialSearchCriteria criteria = new MaterialSearchCriteria();
-        criteria.withProperty("DESCRIPTION").thatEndsWith("adenovirus");
-        testSearch(TEST_USER, criteria, new MaterialPermId("AD3", "VIRUS"), new MaterialPermId("AD5", "VIRUS"));
+        criteria.withProperty("DESCRIPTION").thatEndsWith("adenovirus 3");
+        testSearch(TEST_USER, criteria, new MaterialPermId("AD3", "VIRUS"));
 
         criteria = new MaterialSearchCriteria();
         criteria.withProperty("DESCRIPTION").thatEndsWith("adenoviru");
@@ -159,8 +159,8 @@ public class SearchMaterialTest extends AbstractTest
         testSearch(TEST_USER, criteria, 0);
 
         criteria = new MaterialSearchCriteria();
-        criteria.withProperty("DESCRIPTION").thatEndsWith("denovirus");
-        testSearch(TEST_USER, criteria, new MaterialPermId("AD3", "VIRUS"), new MaterialPermId("AD5", "VIRUS"));
+        criteria.withProperty("DESCRIPTION").thatEndsWith("denovirus 5");
+        testSearch(TEST_USER, criteria, new MaterialPermId("AD5", "VIRUS"));
     }
 
     @Test
