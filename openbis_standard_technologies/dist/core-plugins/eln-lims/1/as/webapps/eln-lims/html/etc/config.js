@@ -30,7 +30,7 @@ loadJSResorce("./etc/InstanceProfile.js", onLoadInstanceProfileResorceFunc);
 //</PROFILE_PLACEHOLDER>
 
 var PLUGINS_CONFIGURATION = {
-    extraPlugins : ["life-sciences", "flow", "microscopy", "bbb-hub"]
+    extraPlugins : ["life-sciences", "flow", "microscopy"]
 };
 
 var options = {
