@@ -218,9 +218,14 @@ var UserTests = new function() {
     this.movingSampleTest = function() {
         return new Promise(function executor(resolve, reject) {
             var e = EventUtil;
-
-            Promise.resolve().then(() => e.waitForId("STORAGE_MANAGER"))
+                             // this code is for reloading STORAGE_MANAGER page.
+            Promise.resolve().then(() => e.waitForId("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
+                             .then(() => e.click("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
+                             .then(() => e.waitForId("create-btn"))
+                             //start test
+                             .then(() => e.waitForId("STORAGE_MANAGER"))
                              .then(() => e.click("STORAGE_MANAGER"))
+                             .then(() => e.sleep(2000))
                              .then(() => e.waitForId("storage-drop-down-id-a"))
                              .then(() => e.change("storage-drop-down-id-a", "BENCH", false))
                              .then(() => e.waitForId("storage-drop-down-id-a-1-1"))
