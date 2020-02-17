@@ -79,6 +79,7 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
             case PROPERTY:
             {
                 final AbstractStringValue value = criterion.getFieldValue();
+                final String stringValue = TranslatorUtils.stripQuotationMarks(value.getValue().trim());
                 final String propertyName = TranslatorUtils.normalisePropertyName(criterion.getFieldName());
                 final boolean internalProperty = TranslatorUtils.isPropertyInternal(criterion.getFieldName());
                 final String entityTypesSubTableAlias = aliases.get(tableMapper.getAttributeTypesTable()).getSubTableAlias();
@@ -101,7 +102,6 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
 
                         final String lowerCaseCasting = casting.toLowerCase();
                         sqlBuilder.append(DOUBLE_COLON).append(lowerCaseCasting).append(SP).append(EQ).append(SP).append(QU);
-                        final String stringValue = value.getValue();
 
                         final Object convertedValue = TranslatorUtils.convertStringToType(stringValue,
                                 PSQLTypes.sqlTypeToJavaClass(lowerCaseCasting));

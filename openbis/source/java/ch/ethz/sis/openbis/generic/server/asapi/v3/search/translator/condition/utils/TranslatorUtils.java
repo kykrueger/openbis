@@ -71,7 +71,8 @@ public class TranslatorUtils
             sqlBuilder.append(DOUBLE_COLON).append(casting);
         }
 
-        appendStringComparatorOp(value.getClass(), value.getValue().toLowerCase(), sqlBuilder, args);
+        final String strippedValue = TranslatorUtils.stripQuotationMarks(value.getValue().trim());
+        appendStringComparatorOp(value.getClass(), strippedValue.toLowerCase(), sqlBuilder, args);
     }
 
     public static void appendStringComparatorOp(final AbstractStringValue value, final StringBuilder sqlBuilder, final List<Object> args)
