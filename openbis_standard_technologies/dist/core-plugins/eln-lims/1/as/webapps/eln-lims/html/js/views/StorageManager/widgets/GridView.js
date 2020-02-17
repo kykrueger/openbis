@@ -165,7 +165,7 @@ function GridView(gridModel) {
 						}).bind(this, sample));
 					}
 
-                    var rowLabel = i + 1;
+                    var rowLabel = posX;
                     if(this._gridModel.useLettersOnRows) {
                         rowLabel = Util.getLetterForNumber(rowLabel);
                     }

@@ -16,6 +16,8 @@ var UserTests = new function() {
                  .then(() => this.storageTest())
                  //16. Storage Manager - Moving Box
                  .then(() => this.movingBoxTest())
+                 //17. Storage Manager - Moving Sample
+                 .then(() => this.movingSampleTest())
                  .catch(error => { console.log(error) });
     }
 
@@ -209,6 +211,32 @@ var UserTests = new function() {
                              .then(() => e.dragAndDrop("storage-drop-down-id-a-1-2-storage-box", "storage-drop-down-id-b-1-1", false))
                              .then(() => e.equalTo("change-log-container-id", "None", false, false))
                              .then(() => e.click("save-changes-btn"))
+                             .then(() => resolve());
+        });
+    }
+
+    this.movingSampleTest = function() {
+        return new Promise(function executor(resolve, reject) {
+            var e = EventUtil;
+
+            Promise.resolve().then(() => e.waitForId("STORAGE_MANAGER"))
+                             .then(() => e.click("STORAGE_MANAGER"))
+                             .then(() => e.waitForId("storage-drop-down-id-a"))
+                             .then(() => e.change("storage-drop-down-id-a", "BENCH", false))
+                             .then(() => e.waitForId("storage-drop-down-id-a-1-1"))
+                             .then(() => e.waitForId("storage-drop-down-id-a-1-1-storage-box"))
+                             .then(() => e.click("storage-drop-down-id-a-1-1-storage-box"))
+                             .then(() => e.waitForId("storage-drop-down-id-a-C-2-storage-box"))
+                             .then(() => e.dragAndDrop("storage-drop-down-id-a-C-2-storage-box", "storage-drop-down-id-a-A-3", false))
+                             .then(() => e.equalTo("change-log-container-id", "None", false, false))
+                             .then(() => e.click("save-changes-btn"))
+                             // Open object BAC1 and verify storage.
+                             .then(() => e.waitForId("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
+                             .then(() => e.click("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
+                             .then(() => e.waitForId("bac1-column-id"))
+                             .then(() => e.click("bac1-column-id"))
+                             .then(() => e.waitForId("testbox-a3-id"))
+                             .then(() => e.equalTo("testbox-a3-id", "Test Box - A3", true, false))
                              .then(() => resolve());
         });
     }
