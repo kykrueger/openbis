@@ -41,8 +41,8 @@ public class FullEntityIdentifier
         String spaceCode = null;
         String projectCode = null;
         String containerCode = null;
-        String plainEntityCode = null;
-        String code = null;
+        String plainEntityCode;
+        String code;
         if (parts.length == 2)
         {
             code = parts[1];
@@ -75,7 +75,7 @@ public class FullEntityIdentifier
         verifyCodePattern(spaceCode, "Space code");
         verifyCodePattern(projectCode, "Project code");
         verifyCodePattern(containerCode, "Container entity code");
-        verifyCodePattern(plainEntityCode, containerCode == null ? "Entity code" : "Entity subcode");
+        verifyCodePattern(plainEntityCode, (containerCode == null) ? "Entity code" : "Entity subcode");
 
         entityCode = CodeConverter.tryToDatabase(plainEntityCode);
         entityIdentifierParts = new SampleIdentifierParts(CodeConverter.tryToDatabase(spaceCode),
