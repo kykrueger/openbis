@@ -620,7 +620,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 											 'class' : 'zoomableImage',
 											 'id' : 'preview-image',
 											 'src' : './img/image_loading.gif',
-											 'style' : 'max-width:100%; display:none;'
+											 'style' : 'max-width:300px; display:none;'
 											});
 			$previewImage.click(function() {
 				Util.showImage($("#preview-image").attr("src"));
