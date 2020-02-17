@@ -49,8 +49,8 @@ public class DataSetKindSearchConditionTranslator implements IConditionTranslato
         if (criterion.getFieldType() == ATTRIBUTE)
         {
             final AbstractStringValue value = criterion.getFieldValue();
-            sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(ColumnNames.DATA_SET_KIND_COLUMN).append(SP);
-            TranslatorUtils.appendStringComparatorOp(value, sqlBuilder, args);
+            TranslatorUtils.translateStringComparison(CriteriaTranslator.MAIN_TABLE_ALIAS, ColumnNames.DATA_SET_KIND_COLUMN, value, null,
+                    sqlBuilder, args);
         } else
         {
             throw new IllegalArgumentException();

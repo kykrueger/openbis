@@ -32,6 +32,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.EntityWithPropertiesSortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.TimeZone;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.*;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.IAliasFactory;
@@ -54,6 +55,23 @@ public class TranslatorUtils
     private TranslatorUtils()
     {
         throw new UnsupportedOperationException("Utility class cannot be instantiated");
+    }
+
+    public static void translateStringComparison(final String tableAlias, final String columnName,
+            final AbstractStringValue value, final PSQLTypes casting, final StringBuilder sqlBuilder, final List<Object> args) {
+        final boolean equalsToComparison = (value.getClass() == StringEqualToValue.class);
+        if (equalsToComparison) {
+            sqlBuilder.append(LOWER).append(LP);
+        }
+        sqlBuilder.append(tableAlias).append(PERIOD).append(columnName);
+        if (equalsToComparison) {
+            sqlBuilder.append(RP);
+        }
+        if (casting != null) {
+            sqlBuilder.append(DOUBLE_COLON).append(casting);
+        }
+
+        appendStringComparatorOp(value.getClass(), value.getValue().toLowerCase(), sqlBuilder, args);
     }
 
     public static void appendStringComparatorOp(final AbstractStringValue value, final StringBuilder sqlBuilder, final List<Object> args)
@@ -555,7 +573,7 @@ public class TranslatorUtils
             appendCoalesce(sqlBuilder, samplesTableAlias, colon);
         }
 
-        sqlBuilder.append(SP).append(MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(SP);
+        sqlBuilder.append(SP).append(LOWER).append(LP).append(MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(RP).append(SP);
     }
 
     /**
@@ -571,7 +589,8 @@ public class TranslatorUtils
      */
     private static void appendCoalesce(final StringBuilder sqlBuilder, final String alias, final String separator)
     {
-        sqlBuilder.append(SP).append(COALESCE).append(LP).append(alias).append(PERIOD).append(CODE_COLUMN).append(SP)
+        sqlBuilder.append(SP).append(COALESCE).append(LP)
+                .append(LOWER).append(LP).append(alias).append(PERIOD).append(CODE_COLUMN).append(RP).append(SP)
                 .append(BARS)
                 .append(SP).append(SQ).append(separator).append(SQ).append(COMMA).append(SP).append(SQ).append(SQ).append(RP).append(SP)
                 .append(BARS);

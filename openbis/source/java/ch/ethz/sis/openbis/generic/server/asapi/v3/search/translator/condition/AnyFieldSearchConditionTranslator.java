@@ -106,8 +106,8 @@ public class AnyFieldSearchConditionTranslator implements IConditionTranslator<A
                                 }
                             } else
                             {
-                                stringBuilder.append(separator).append(alias).append(PERIOD).append(fieldName).append(DOUBLE_COLON).append(VARCHAR);
-                                TranslatorUtils.appendStringComparatorOp(value, stringBuilder, args);
+                                stringBuilder.append(separator);
+                                TranslatorUtils.translateStringComparison(alias, fieldName, value, VARCHAR, stringBuilder, args);
                             }
                         },
                         StringBuilder::append

@@ -107,15 +107,15 @@ public class SearchMaterialTest extends AbstractTest
     public void testSearchWithPropertyThatEquals()
     {
         MaterialSearchCriteria criteria = new MaterialSearchCriteria();
-        criteria.withProperty("DESCRIPTION").thatEquals("adenovirus");
-        testSearch(TEST_USER, criteria, new MaterialPermId("AD3", "VIRUS"), new MaterialPermId("AD5", "VIRUS"));
+        criteria.withProperty("DESCRIPTION").thatEquals("adenovirus 5");
+        testSearch(TEST_USER, criteria, new MaterialPermId("AD5", "VIRUS"));
 
         criteria = new MaterialSearchCriteria();
-        criteria.withProperty("DESCRIPTION").thatEquals("adenoviru");
+        criteria.withProperty("DESCRIPTION").thatEquals("adenovirus");
         testSearch(TEST_USER, criteria, 0);
 
         criteria = new MaterialSearchCriteria();
-        criteria.withProperty("DESCRIPTION").thatEquals("denoviru");
+        criteria.withProperty("DESCRIPTION").thatEquals("adenoviru");
         testSearch(TEST_USER, criteria, 0);
 
         criteria = new MaterialSearchCriteria();

@@ -74,7 +74,7 @@ public class IdentifierSearchConditionTranslator implements IConditionTranslator
                 ? aliases.get(prefix + entitiesTable).getSubTableAlias() : null;
 
         buildFullIdentifierConcatenationString(sqlBuilder, spacesTableAlias, projectsTableAlias, samplesTableAlias);
-        appendStringComparatorOp(fieldValue.getClass(), fieldValue.getValue(), sqlBuilder, args);
+        appendStringComparatorOp(fieldValue.getClass(), fieldValue.getValue().toLowerCase(), sqlBuilder, args);
     }
 
     /**

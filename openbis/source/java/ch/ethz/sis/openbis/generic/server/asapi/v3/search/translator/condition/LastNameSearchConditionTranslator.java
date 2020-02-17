@@ -16,9 +16,6 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 
-import java.util.List;
-import java.util.Map;
-
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractStringValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.LastNameSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
@@ -27,9 +24,10 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.u
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
 
+import java.util.List;
+import java.util.Map;
+
 import static ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchFieldType.ATTRIBUTE;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.PERIOD;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SP;
 
 public class LastNameSearchConditionTranslator implements IConditionTranslator<LastNameSearchCriteria>
 {
@@ -49,8 +47,8 @@ public class LastNameSearchConditionTranslator implements IConditionTranslator<L
         if (criterion.getFieldType() == ATTRIBUTE)
         {
             final AbstractStringValue value = criterion.getFieldValue();
-            sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(ColumnNames.LAST_NAME_COLUMN).append(SP);
-            TranslatorUtils.appendStringComparatorOp(value, sqlBuilder, args);
+            TranslatorUtils.translateStringComparison(CriteriaTranslator.MAIN_TABLE_ALIAS, ColumnNames.LAST_NAME_COLUMN, value, null,
+                    sqlBuilder, args);
         } else
         {
             throw new IllegalArgumentException();

@@ -23,6 +23,8 @@ public class SQLLexemes
 
     public static final String COALESCE = "coalesce";
 
+    public static final String LOWER = "lower";
+
     public static final String NUMERIC = "numeric";
 
     public static final String TIMESTAMPTZ = "timestamptz";
