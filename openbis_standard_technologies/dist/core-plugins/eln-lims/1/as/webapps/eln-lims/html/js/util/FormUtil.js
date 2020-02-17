@@ -1061,6 +1061,9 @@ var FormUtil = new function() {
 							$label.text("Show " + option.label);
 							sectionsSettings[option.label] = "hidden";
 						} else {
+							if (option.beforeShowingAction) {
+								option.beforeShowingAction();
+							}
 							$label.text("Hide " + option.label);
 							sectionsSettings[option.label] = "shown";
 						}

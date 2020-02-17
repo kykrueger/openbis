@@ -24,6 +24,8 @@ function LinksView(linksController, linksModel) {
 	var $samplePicker = $("<div>");
 	var $savedContainer = null;
 	
+	var dataGrids = [];
+	
 	//
 	// External API
 	//
@@ -154,6 +156,13 @@ function LinksView(linksController, linksModel) {
 		var dataGrid = SampleDataGridUtil.getSampleDataGrid(containerCode, samplesOnGrid, null, linksView.getCustomOperationsForGrid(), allCustomAnnotations, postFix, linksModel.isDisabled, false, false, false, 40);
 		dataGrid.init($dataGridContainer);
 		linksModel.writeState(sample, null, null, false);
+		dataGrids.push(dataGrid);
+	}
+	
+	this.refreshHeight = function() {
+		dataGrids.forEach(function(dataGrid) {
+			dataGrid.refreshHeight();
+		});
 	}
 	
 	this.repaint = function($container) {
@@ -434,6 +443,7 @@ function LinksView(linksController, linksModel) {
 		}
 		var dataGrid = SampleDataGridUtil.getSampleDataGrid(sampleTypeCode, advancedSampleSearchCriteria, rowClick, null, null, null, true, true, true, false, 60);
 		dataGrid.init($gridContainer, extraOptions);
+		dataGrids.push(dataGrid);
 	}
 			
 	linksView.getAddBtn = function($container, sampleTypeCode) {

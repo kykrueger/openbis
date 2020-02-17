@@ -86,9 +86,9 @@ function SampleTableController(parentController, title, experimentIdentifier, pr
 			var withExperiment = !this._sampleTableModel.experimentIdentifier && !this._sampleTableModel.experiment;
 			var tableHeight = 90;
 			if(this._sampleTableModel.heightOverride) {
-			    tableHeight = this._sampleTableModel.heightOverride;
+				tableHeight = this._sampleTableModel.heightOverride;
 			}
-			var dataGridController = SampleDataGridUtil.getSampleDataGrid(this._sampleTableModel.experimentIdentifier, advancedSampleSearchCriteria, null, null, null, null, null, null, true, withExperiment, tableHeight);
+			this._dataGridController = SampleDataGridUtil.getSampleDataGrid(this._sampleTableModel.experimentIdentifier, advancedSampleSearchCriteria, null, null, null, null, null, null, true, withExperiment, tableHeight);
 			
 			
 			var extraOptions = [];
@@ -138,6 +138,12 @@ function SampleTableController(parentController, title, experimentIdentifier, pr
 				}
 			}});
 			
-			dataGridController.init(this._sampleTableView.getTableContainer(), extraOptions);
+			this._dataGridController.init(this._sampleTableView.getTableContainer(), extraOptions);
+	}
+	
+	this.refreshHeight = function() {
+		if (this._dataGridController) {
+			this._dataGridController.refreshHeight();
+		}
 	}
 }

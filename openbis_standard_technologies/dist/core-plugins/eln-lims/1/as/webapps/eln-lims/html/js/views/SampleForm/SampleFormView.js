@@ -902,13 +902,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 	}
 	
 	this._createParentsSection = function(hideShowOptionsModel, sampleTypeDefinitionsExtension, sampleTypeCode) {
-		hideShowOptionsModel.push({
-			forceToShow : this._sampleFormModel.mode === FormMode.CREATE && (sampleTypeDefinitionsExtension && sampleTypeDefinitionsExtension["FORCE_TO_SHOW_PARENTS_SECTION"]),
-			label : "Parents",
-			section : "#sample-parents",
-			showByDefault : true
-		});
-		
+		var _this = this;
 		var requiredParents = [];
 		if (sampleTypeDefinitionsExtension && sampleTypeDefinitionsExtension["SAMPLE_PARENTS_HINT"]) {
 			requiredParents = sampleTypeDefinitionsExtension["SAMPLE_PARENTS_HINT"];
@@ -936,16 +930,21 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 			this._sampleFormModel.sampleLinksParents.init($sampleParentsWidget);
 		}
 		$sampleParentsWidget.hide();
+		
+		hideShowOptionsModel.push({
+			forceToShow : this._sampleFormModel.mode === FormMode.CREATE && (sampleTypeDefinitionsExtension && sampleTypeDefinitionsExtension["FORCE_TO_SHOW_PARENTS_SECTION"]),
+			label : "Parents",
+			section : "#sample-parents",
+			showByDefault : true,
+			beforeShowingAction : function() {
+				_this._sampleFormModel.sampleLinksParents.refreshHeight();
+			}
+		});
+		
 		return $sampleParentsWidget;
 	}
 	
 	this._createChildrenSection = function(hideShowOptionsModel, sampleTypeDefinitionsExtension, sampleTypeCode) {
-		hideShowOptionsModel.push({
-			label : "Children",
-			section : "#sample-children",
-			showByDefault : true
-		});
-
 		var _this = this;
 		var requiredChildren = [];
 		if(sampleTypeDefinitionsExtension && sampleTypeDefinitionsExtension["SAMPLE_CHILDREN_HINT"]) {
@@ -996,6 +995,16 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 			$sampleChildrenWidget.append($generateChildrenBox);
 		}
 		$sampleChildrenWidget.hide();
+		
+		hideShowOptionsModel.push({
+			label : "Children",
+			section : "#sample-children",
+			showByDefault : true,
+			beforeShowingAction : function() {
+				_this._sampleFormModel.sampleLinksChildren.refreshHeight();
+			}
+		});
+		
 		return $sampleChildrenWidget;
 	}
 	

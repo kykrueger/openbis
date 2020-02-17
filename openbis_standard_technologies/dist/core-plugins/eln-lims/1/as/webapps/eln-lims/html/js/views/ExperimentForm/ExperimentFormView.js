@@ -381,11 +381,6 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 	}
 	
 	this._createSamplesSection = function(hideShowOptionsModel) {
-		hideShowOptionsModel.push({
-			label : ELNDictionary.Samples,
-			section : "#experiment-samples"
-		});
-		
 		var _this = this;
 		var $samples = $("<div>", { id : "experiment-samples" });
 		$samples.append($('<legend>').text(ELNDictionary.Samples));
@@ -400,6 +395,13 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		var sampleList = new SampleTableController(this._experimentFormController, null, this._experimentFormModel.experiment.identifier, null, null, this._experimentFormModel.experiment);
 		sampleList.init(views);
 		$samples.hide();
+		hideShowOptionsModel.push({
+			label : ELNDictionary.Samples,
+			section : "#experiment-samples",
+			beforeShowingAction : function() {
+				sampleList.refreshHeight();
+			}
+		});
 		return $samples;
 	}
 	
