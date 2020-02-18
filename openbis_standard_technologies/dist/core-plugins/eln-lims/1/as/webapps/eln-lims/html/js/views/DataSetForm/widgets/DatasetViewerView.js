@@ -229,9 +229,12 @@ function DataSetViewerView(dataSetViewerController, dataSetViewerModel) {
 	                content : $tooltip,
 	                position : "left",
 	                functionFormat : function(instance, helper, content) {
-
-	                    var containerWidth = $(helper.origin).offset().left*0.9;
-	                    var containerHeight = $(window).height()*0.9;
+	                    var containerWidth = $(helper.origin).offset().left;
+	                    if (containerWidth < 200) {
+	                    	containerWidth = $(helper.origin).width();
+	                    } 
+	                    containerWidth *= 0.9;
+	                    var containerHeight = $(window).height() * 0.9;
 
 	                    var $img = content.find("img");
 	                    var imageSize = Util.getImageSize(containerWidth, containerHeight, $img[0].width, $img[0].height);
