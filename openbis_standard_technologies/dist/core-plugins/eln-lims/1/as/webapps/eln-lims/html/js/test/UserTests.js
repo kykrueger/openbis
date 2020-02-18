@@ -20,6 +20,8 @@ var UserTests = new function() {
                  .then(() => this.movingSampleTest())
                  //18. Create Protocol
                  .then(() => this.createProtocol())
+                 //19. Project Form - Create/Update
+                 .then(() => this.createProject())
                  .catch(error => { console.log(error) });
     }
 
@@ -259,6 +261,32 @@ var UserTests = new function() {
                                  .then(() => e.click("options-menu-btn-identification-info"))
                                  .then(() => e.waitForId("codeId"))
                                  .then(() => e.waitForFill("codeId"))
+                                 .then(() => e.waitForId("save-btn"))
+                                 .then(() => e.click("save-btn"))
+                                 .then(() => resolve());
+            });
+        }
+
+    this.createProject = function() {
+            return new Promise(function executor(resolve, reject) {
+                var e = EventUtil;
+
+                Promise.resolve().then(() => e.waitForId("TESTID"))
+                                 .then(() => e.click("TESTID"))
+                                 .then(() => e.waitForId("create-btn"))
+                                 .then(() => e.click("create-btn"))
+                                 .then(() => e.waitForId("project-code-id"))
+                                 .then(() => e.write("project-code-id", "PROJECT_101", false))
+                                 .then(() => e.waitForId("save-btn"))
+                                 .then(() => e.click("save-btn"))
+                                 .then(() => e.waitForId("edit-btn"))
+                                 .then(() => e.click("edit-btn"))
+                                 .then(() => e.waitForId("options-menu-btn"))
+                                 .then(() => e.click("options-menu-btn"))
+                                 .then(() => e.waitForId("options-menu-btn-description"))
+                                 .then(() => e.click("options-menu-btn-description"))
+                                 .then(() => e.waitForCkeditor("description-id"))
+                                 .then(() => TestUtil.ckeditorSetData("description-id", "Test Description 101"))
                                  .then(() => e.waitForId("save-btn"))
                                  .then(() => e.click("save-btn"))
                                  .then(() => resolve());

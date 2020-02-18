@@ -82,7 +82,7 @@ function ProjectFormView(projectFormController, projectFormModel) {
 				//Edit
 				var $editBtn = FormUtil.getButtonWithIcon("glyphicon-edit", function () {
 					_this._projectFormController.enableEditing();
-				}, "Edit");
+				}, "Edit", null, "edit-btn");
 				toolbarModel.push({ component : $editBtn });
 			}
 			if(_this._allowedToDelete()) {
@@ -151,7 +151,7 @@ function ProjectFormView(projectFormController, projectFormModel) {
 		} else {
 			var $saveBtn = FormUtil.getButtonWithIcon("glyphicon-floppy-disk", function() {
 				_this._projectFormController.updateProject();
-			}, "Save");
+			}, "Save", null, "save-btn");
 			$saveBtn.removeClass("btn-default");
 			$saveBtn.addClass("btn-primary");
 			toolbarModel.push({ component : $saveBtn });
@@ -204,7 +204,7 @@ function ProjectFormView(projectFormController, projectFormModel) {
         }
 
 		if (this._projectFormModel.mode === FormMode.CREATE) {
-			var $textField = FormUtil._getInputField('text', null, "Project Code", null, true);
+			var $textField = FormUtil._getInputField('text', "project-code-id", "Project Code", null, true);
 			$textField.keyup(function(event){
 				var textField = $(this);
 				var caretPosition = this.selectionStart;
@@ -250,7 +250,7 @@ function ProjectFormView(projectFormController, projectFormModel) {
 		$description.append($("<legend>").append("General"));
 		var description = Util.getEmptyIfNull(this._projectFormModel.project.description);
 		if(this._projectFormModel.mode !== FormMode.VIEW) {
-			var $textBox = FormUtil._getTextBox(null, "Description", false);
+			var $textBox = FormUtil._getTextBox("description-id", "Description", false);
 			var textBoxEvent = function(jsEvent, newValue) {
 				var valueToUse = null;
 				if (newValue !== undefined && newValue !== null) {
