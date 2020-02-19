@@ -22,6 +22,8 @@ var UserTests = new function() {
                  .then(() => this.createProtocol())
                  //19. Project Form - Create/Update
                  .then(() => this.createProject())
+                 //20. Experiment Form - Create/Update
+                 .then(() => this.createExperiment())
                  .catch(error => { console.log(error) });
     }
 
@@ -85,8 +87,8 @@ var UserTests = new function() {
 
             if (code === "BAC1") {
                 // Show Code
-                testChain.then(() => e.waitForId("options-menu-btn"))
-                         .then(() => e.click("options-menu-btn"))
+                testChain.then(() => e.waitForId("options-menu-btn-sample-view-bacteria"))
+                         .then(() => e.click("options-menu-btn-sample-view-bacteria"))
                          .then(() => e.waitForId("options-menu-btn-identification-info"))
                          .then(() => e.click("options-menu-btn-identification-info"));
             }
@@ -150,8 +152,8 @@ var UserTests = new function() {
 
             Promise.resolve().then(() => e.waitForId("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
                              .then(() => e.click("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
-                             .then(() => e.waitForId("options-menu-btn"))
-                             .then(() => e.click("options-menu-btn"))
+                             .then(() => e.waitForId("sample-options-menu-btn"))
+                             .then(() => e.click("sample-options-menu-btn"))
                              .then(() => e.waitForId("register-object-btn"))
                              .then(() => e.click("register-object-btn"))
                              .then(() => e.waitForId("choose-type-btn"))
@@ -248,48 +250,106 @@ var UserTests = new function() {
     }
 
     this.createProtocol = function() {
-            return new Promise(function executor(resolve, reject) {
-                var e = EventUtil;
+        return new Promise(function executor(resolve, reject) {
+            var e = EventUtil;
 
-                Promise.resolve().then(() => e.waitForId("_METHODS_PROTOCOLS_GENERAL_PROTOCOLS"))
-                                 .then(() => e.click("_METHODS_PROTOCOLS_GENERAL_PROTOCOLS"))
-                                 .then(() => e.waitForId("create-btn"))
-                                 .then(() => e.click("create-btn"))
-                                 .then(() => e.waitForId("options-menu-btn"))
-                                 .then(() => e.click("options-menu-btn"))
-                                 .then(() => e.waitForId("options-menu-btn-identification-info"))
-                                 .then(() => e.click("options-menu-btn-identification-info"))
-                                 .then(() => e.waitForId("codeId"))
-                                 .then(() => e.waitForFill("codeId"))
-                                 .then(() => e.waitForId("save-btn"))
-                                 .then(() => e.click("save-btn"))
-                                 .then(() => resolve());
-            });
-        }
+            Promise.resolve().then(() => e.waitForId("_METHODS_PROTOCOLS_GENERAL_PROTOCOLS"))
+                             .then(() => e.click("_METHODS_PROTOCOLS_GENERAL_PROTOCOLS"))
+                             .then(() => e.waitForId("create-btn"))
+                             .then(() => e.click("create-btn"))
+                             .then(() => e.waitForId("options-menu-btn-sample-view-general_protocol"))
+                             .then(() => e.click("options-menu-btn-sample-view-general_protocol"))
+                             .then(() => e.waitForId("options-menu-btn-identification-info"))
+                             .then(() => e.click("options-menu-btn-identification-info"))
+                             .then(() => e.waitForId("codeId"))
+                             .then(() => e.waitForFill("codeId"))
+                             .then(() => e.waitForId("save-btn"))
+                             .then(() => e.click("save-btn"))
+                             .then(() => e.waitForId("edit-btn"))
+                             .then(() => resolve());
+        });
+    }
 
     this.createProject = function() {
-            return new Promise(function executor(resolve, reject) {
-                var e = EventUtil;
+        return new Promise(function executor(resolve, reject) {
+            var e = EventUtil;
 
-                Promise.resolve().then(() => e.waitForId("TESTID"))
-                                 .then(() => e.click("TESTID"))
-                                 .then(() => e.waitForId("create-btn"))
-                                 .then(() => e.click("create-btn"))
-                                 .then(() => e.waitForId("project-code-id"))
-                                 .then(() => e.write("project-code-id", "PROJECT_101", false))
-                                 .then(() => e.waitForId("save-btn"))
-                                 .then(() => e.click("save-btn"))
-                                 .then(() => e.waitForId("edit-btn"))
-                                 .then(() => e.click("edit-btn"))
-                                 .then(() => e.waitForId("options-menu-btn"))
-                                 .then(() => e.click("options-menu-btn"))
-                                 .then(() => e.waitForId("options-menu-btn-description"))
-                                 .then(() => e.click("options-menu-btn-description"))
-                                 .then(() => e.waitForCkeditor("description-id"))
-                                 .then(() => TestUtil.ckeditorSetData("description-id", "Test Description 101"))
-                                 .then(() => e.waitForId("save-btn"))
-                                 .then(() => e.click("save-btn"))
-                                 .then(() => resolve());
-            });
-        }
+            Promise.resolve().then(() => e.waitForId("TESTID"))
+                             .then(() => e.click("TESTID"))
+                             .then(() => e.waitForId("create-btn"))
+                             .then(() => e.click("create-btn"))
+                             .then(() => e.waitForId("project-code-id"))
+                             .then(() => e.write("project-code-id", "PROJECT_101", false))
+                             .then(() => e.waitForId("save-btn"))
+                             .then(() => e.click("save-btn"))
+                             .then(() => e.waitForId("edit-btn"))
+                             .then(() => e.click("edit-btn"))
+                             .then(() => e.waitForId("options-menu-btn-project-view"))
+                             .then(() => e.click("options-menu-btn-project-view"))
+                             .then(() => e.waitForId("options-menu-btn-description"))
+                             .then(() => e.click("options-menu-btn-description"))
+                             .then(() => e.waitForCkeditor("description-id"))
+                             .then(() => TestUtil.ckeditorSetData("description-id", "Test Description 101"))
+                             .then(() => e.waitForId("save-btn"))
+                             .then(() => e.click("save-btn"))
+                             .then(() => e.waitForId("edit-btn"))
+                             .then(() => resolve());
+        });
+    }
+
+    this.createExperiment = function() {
+        return new Promise(function executor(resolve, reject) {
+            var e = EventUtil;
+
+            var yesterday = Util.getFormatedDate(new Date(new Date().setDate(new Date().getDate() - 1)));
+            var tomorrow = Util.getFormatedDate(new Date(new Date().setDate(new Date().getDate() + 1)));
+
+            Promise.resolve().then(() => e.waitForId("options-menu-btn"))
+                             .then(() => e.click("options-menu-btn"))
+                             //Create Default Experiment
+                             .then(() => e.waitForId("default-experiment"))
+                             .then(() => e.click("default-experiment"))
+                             .then(() => e.waitForId("codeId"))
+                             .then(() => e.waitForFill("codeId"))
+                             .then(() => e.waitForId("NAME"))
+                             .then(() => e.change("NAME", "Experiment 101", false))
+                             .then(() => e.waitForId("SHOW_IN_PROJECT_OVERVIEW"))
+                             .then(() => e.checked("SHOW_IN_PROJECT_OVERVIEW", true))
+                             .then(() => e.change("SHOW_IN_PROJECT_OVERVIEW", true))
+                             .then(() => e.waitForId("add-comment-btn"))
+                             .then(() => e.click("add-comment-btn"))
+                             .then(() => e.waitForId("comment-0-box"))
+                             .then(() => e.write("comment-0-box", "My first comment", false))
+                             .then(() => e.waitForId("save-comment-0-btn"))
+                             .then(() => e.click("save-comment-0-btn"))
+                             .then(() => e.waitForId("save-btn"))
+                             .then(() => e.click("save-btn"))
+                             //Update date and name for Experiment
+                             .then(() => e.waitForId("edit-btn"))
+                             .then(() => e.click("edit-btn"))
+                             .then(() => e.waitForId("save-btn"))
+                             .then(() => e.waitForId("NAME"))
+                             .then(() => e.change("NAME", "Experiment 101 Bis", false))
+                             .then(() => e.waitForId("START_DATE"))
+                             .then(() => e.change("START_DATE", tomorrow, false))
+                             .then(() => e.waitForId("END_DATE"))
+                             .then(() => e.change("END_DATE", yesterday, false))
+                             .then(() => e.waitForId("add-comment-btn"))
+                             .then(() => e.click("add-comment-btn"))
+                             .then(() => e.waitForId("comment-0-box"))
+                             .then(() => e.write("comment-0-box", "My second comment", false))
+                             .then(() => e.waitForId("save-comment-0-btn"))
+                             .then(() => e.click("save-comment-0-btn"))
+                             .then(() => e.waitForId("save-btn"))
+                             .then(() => e.click("save-btn"))
+                             //You should see the error
+                             .then(() => e.waitForId("jNotifyDismiss"))
+                             .then(() => e.click("jNotifyDismiss"))
+                             // fix the error and save experiment
+                             .then(() => e.change("END_DATE", "", false))
+                             .then(() => e.waitForId("save-btn"))
+                             .then(() => e.click("save-btn"))
+                             .then(() => resolve());
+        });
+    }
 }

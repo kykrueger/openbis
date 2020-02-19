@@ -501,12 +501,15 @@ var FormUtil = new function() {
 		return $btn;
 	}
 	
-	this.getButtonWithText = function(text, clickEvent, btnClass) {
+	this.getButtonWithText = function(text, clickEvent, btnClass, id) {
 		var auxBtnClass = "btn-default";
 		if(btnClass) {
 			auxBtnClass = btnClass;
 		}
 		var $pinBtn = $("<a>", { 'class' : 'btn ' + auxBtnClass });
+		if(id) {
+            $pinBtn.attr("id", id);
+        }
 		$pinBtn.append(text);
 		$pinBtn.click(clickEvent);
 		return $pinBtn;
@@ -786,6 +789,11 @@ var FormUtil = new function() {
 	// Form Fields
 	//
 	this._getBooleanField = function(id, alt, checked) {
+	    if (id) {
+	        if(id.charAt(0) === '$') {
+	            id = id.substring(1);
+	        }
+	    }
 		var attr = {'type' : 'checkbox', 'id' : id, 'alt' : alt, 'placeholder' : alt };
 		if(checked) {
 			attr['checked'] = '';
@@ -1005,11 +1013,16 @@ var FormUtil = new function() {
 		if(!title) {
 			title = "More ... ";
 		}
+		var id = 'options-menu-btn';
+		if (namespace) {
+		    id = id + "-" + namespace;
+		    id = id.toLowerCase();
+		}
 		var $dropdownOptionsMenu = $("<span>", { class : 'dropdown' });
 		if(toolbarModel) {
 		    toolbarModel.push({ component : $dropdownOptionsMenu, tooltip: null });
 		}
-		var $dropdownOptionsMenuCaret = $("<a>", { 'href' : '#', 'data-toggle' : 'dropdown', class : 'dropdown-toggle btn btn-default', 'id' : 'options-menu-btn'})
+		var $dropdownOptionsMenuCaret = $("<a>", { 'href' : '#', 'data-toggle' : 'dropdown', class : 'dropdown-toggle btn btn-default', 'id' : id})
 				.append(title).append($("<b>", { class : 'caret' }));
 		var $dropdownOptionsMenuList = $("<ul>", { class : 'dropdown-menu', 'role' : 'menu' });
 		$dropdownOptionsMenu.append($dropdownOptionsMenuCaret);
@@ -1021,7 +1034,8 @@ var FormUtil = new function() {
 			} else {
 				var label = option.label;
 				var title = option.title ? option.title : label;
-				var $dropdownElement = $("<li>", { 'role' : 'presentation' }).append($("<a>", {'title' : title }).append(label));
+				var id = title.split(" ").join("-").toLowerCase();
+				var $dropdownElement = $("<li>", { 'role' : 'presentation' }).append($("<a>", {'title' : title, 'id' : id}).append(label));
 				$dropdownElement.click(option.action);
 				$dropdownOptionsMenuList.append($dropdownElement);
 			}

@@ -85,7 +85,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 				//Edit
 				var $editBtn = FormUtil.getButtonWithIcon("glyphicon-edit", function () {
 					mainController.changeView("showEditExperimentPageFromIdentifier", _this._experimentFormModel.experiment.identifier);
-				}, "Edit");
+				}, "Edit", null, "edit-btn");
 				toolbarModel.push({ component : $editBtn });
 			}
 			if (_this._allowedToMove()) {
@@ -174,7 +174,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		} else { //Create and Edit
 			var $saveBtn = FormUtil.getButtonWithIcon("glyphicon-floppy-disk", function() {
 				_this._experimentFormController.updateExperiment();
-			}, "Save");
+			}, "Save", null, "save-btn");
 			$saveBtn.removeClass("btn-default");
 			$saveBtn.addClass("btn-primary");
 			toolbarModel.push({ component : $saveBtn });
@@ -316,12 +316,12 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		if(this._experimentFormModel.mode === FormMode.VIEW || this._experimentFormModel.mode === FormMode.EDIT) {
 			$identificationInfo.append(FormUtil.getFieldForLabelWithText("Code", this._experimentFormModel.experiment.code));
 			
-			var $codeField = FormUtil._getInputField("text", null, "code", null, true);
+			var $codeField = FormUtil._getInputField("text", "codeId", "code", null, true);
 			$codeField.val(IdentifierUtil.getCodeFromIdentifier(this._experimentFormModel.experiment.identifier));
 			$codeField.hide();
 			$identificationInfo.append($codeField);
 		} else if(this._experimentFormModel.mode === FormMode.CREATE) {
-			var $codeField = FormUtil._getInputField("text", null, "code", null, true);
+			var $codeField = FormUtil._getInputField("text", "codeId", "code", null, true);
 			$codeField.keyup(function() {
 				_this._experimentFormModel.isFormDirty = true;
 				var caretPosition = this.selectionStart;
