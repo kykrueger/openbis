@@ -14,7 +14,8 @@ var SampleDataGridUtil = new function() {
 			render : function(data) {
 				var nameToUse = Util.getNameOrCode(data);
 				var codeId = data.code.toLowerCase() + "-column-id";
-				return (isLinksDisabled)?nameToUse:FormUtil.getFormLink(nameToUse, "Sample", data.permId, null, codeId);
+				var $controlLabel = $('<label>', { 'id' : codeId }).html(nameToUse);
+				return (isLinksDisabled) ? $controlLabel : FormUtil.getFormLink(nameToUse, "Sample", data.permId, null, codeId);
 			}
 		});
 

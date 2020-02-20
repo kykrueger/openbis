@@ -24,6 +24,8 @@ var UserTests = new function() {
                  .then(() => this.createProject())
                  //20. Experiment Form - Create/Update
                  .then(() => this.createExperiment())
+                 //21. Experiment Step Form - Create/Update
+                 .then(() => this.createExperimentStep())
                  .catch(error => { console.log(error) });
     }
 
@@ -306,16 +308,19 @@ var UserTests = new function() {
 
             Promise.resolve().then(() => e.waitForId("options-menu-btn"))
                              .then(() => e.click("options-menu-btn"))
-                             //Create Default Experiment
+                             // Create Default Experiment
                              .then(() => e.waitForId("default-experiment"))
                              .then(() => e.click("default-experiment"))
                              .then(() => e.waitForId("codeId"))
                              .then(() => e.waitForFill("codeId"))
+                             // add Name
                              .then(() => e.waitForId("NAME"))
                              .then(() => e.change("NAME", "Experiment 101", false))
+                             // show in project overview checked
                              .then(() => e.waitForId("SHOW_IN_PROJECT_OVERVIEW"))
                              .then(() => e.checked("SHOW_IN_PROJECT_OVERVIEW", true))
                              .then(() => e.change("SHOW_IN_PROJECT_OVERVIEW", true))
+                             // add first comment
                              .then(() => e.waitForId("add-comment-btn"))
                              .then(() => e.click("add-comment-btn"))
                              .then(() => e.waitForId("comment-0-box"))
@@ -324,16 +329,20 @@ var UserTests = new function() {
                              .then(() => e.click("save-comment-0-btn"))
                              .then(() => e.waitForId("save-btn"))
                              .then(() => e.click("save-btn"))
-                             //Update date and name for Experiment
+                             // Update date and name for Experiment
                              .then(() => e.waitForId("edit-btn"))
                              .then(() => e.click("edit-btn"))
                              .then(() => e.waitForId("save-btn"))
+                             // edit name
                              .then(() => e.waitForId("NAME"))
                              .then(() => e.change("NAME", "Experiment 101 Bis", false))
+                             // set start date
                              .then(() => e.waitForId("START_DATE"))
                              .then(() => e.change("START_DATE", tomorrow, false))
+                             // set end date
                              .then(() => e.waitForId("END_DATE"))
                              .then(() => e.change("END_DATE", yesterday, false))
+                             // add second comment
                              .then(() => e.waitForId("add-comment-btn"))
                              .then(() => e.click("add-comment-btn"))
                              .then(() => e.waitForId("comment-0-box"))
@@ -345,8 +354,72 @@ var UserTests = new function() {
                              //You should see the error
                              .then(() => e.waitForId("jNotifyDismiss"))
                              .then(() => e.click("jNotifyDismiss"))
-                             // fix the error and save experiment
+                             // fix the error (remove end date) and save experiment
                              .then(() => e.change("END_DATE", "", false))
+                             .then(() => e.waitForId("save-btn"))
+                             .then(() => e.click("save-btn"))
+                             .then(() => resolve());
+        });
+    }
+
+    this.createExperimentStep = function() {
+        return new Promise(function executor(resolve, reject) {
+            var e = EventUtil;
+
+            var tomorrow = Util.getFormatedDate(new Date(new Date().setDate(new Date().getDate() + 1)));
+
+            Promise.resolve().then(() => e.waitForId("options-menu-btn"))
+                             .then(() => e.click("options-menu-btn"))
+                             // add Experimental Step
+                             .then(() => e.waitForId("experimental-step"))
+                             .then(() => e.click("experimental-step"))
+                             .then(() => e.waitForId("options-menu-btn-sample-view-experimental_step"))
+                             .then(() => e.click("options-menu-btn-sample-view-experimental_step"))
+                             .then(() => e.waitForId("codeId"))
+                             .then(() => e.click("codeId"))
+                             // add name
+                             .then(() => e.waitForId("NAME"))
+                             .then(() => e.change("NAME", "Step 101", false))
+                             // show in project overview checked
+                             .then(() => e.waitForId("SHOW_IN_PROJECT_OVERVIEW"))
+                             .then(() => e.checked("SHOW_IN_PROJECT_OVERVIEW", true))
+                             .then(() => e.change("SHOW_IN_PROJECT_OVERVIEW", true))
+                             // set start date
+                             .then(() => e.waitForId("START_DATE"))
+                             .then(() => e.change("START_DATE", tomorrow, false))
+                             // add protocol
+                             .then(() => e.waitForId("plus-btn-general_protocol"))
+                             .then(() => e.click("plus-btn-general_protocol"))
+                             .then(() => e.waitForId("gen1-column-id"))
+                             .then(() => e.click("gen1-column-id"))
+                             // Operations
+                             .then(() => e.waitForId("gen1-operations-column-id"))
+                             .then(() => e.click("gen1-operations-column-id"))
+                             .then(() => e.waitForId("gen1-operations-column-id-use-as-template"))
+                             .then(() => e.click("gen1-operations-column-id-use-as-template"))
+                             .then(() => e.waitForId("newSampleCodeForCopy"))
+                             .then(() => e.write("newSampleCodeForCopy", "CODE1", false))
+                             .then(() => e.waitForId("copyAccept"))
+                             .then(() => e.click("copyAccept"))
+                             // add first comment
+                             .then(() => e.waitForId("add-comment-btn"))
+                             .then(() => e.click("add-comment-btn"))
+                             .then(() => e.waitForId("comment-0-box"))
+                             .then(() => e.write("comment-0-box", "My first comment", false))
+                             .then(() => e.waitForId("save-comment-0-btn"))
+                             .then(() => e.click("save-comment-0-btn"))
+                             .then(() => e.waitForId("code1-column-id"))
+                             // save
+                             .then(() => e.waitForId("save-btn"))
+                             .then(() => e.click("save-btn"))
+                             // edit
+                             .then(() => e.waitForId("edit-btn"))
+                             .then(() => e.click("edit-btn"))
+                             .then(() => e.waitForId("save-btn"))
+                             // edit name
+                             .then(() => e.waitForId("NAME"))
+                             .then(() => e.change("NAME", "Step 101 Bis", false))
+                             // save
                              .then(() => e.waitForId("save-btn"))
                              .then(() => e.click("save-btn"))
                              .then(() => resolve());
