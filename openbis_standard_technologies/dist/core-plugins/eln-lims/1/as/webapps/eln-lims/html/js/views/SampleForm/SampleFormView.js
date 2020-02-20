@@ -1,4 +1,4 @@
-/*
+	/*
  * Copyright 2014 ETH Zuerich, Scientific IT Services
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -113,9 +113,9 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 
 		if(this._sampleFormModel.mode === FormMode.VIEW) {
 			// New
-			if(_this._allowedToCreateChild() && toolbarConfig.CREATE) {
+			if(_this._allowedToCreateChild() && this._sampleFormModel.isELNSample && toolbarConfig.CREATE) {
 				var sampleTypes = profile.getAllSampleTypes(true);
-				var priorityTypes = this._sampleFormModel.isELNSample ? ["ENTRY", "EXPERIMENTAL_STEP"] : [];
+				var priorityTypes = ["ENTRY", "EXPERIMENTAL_STEP"];
 				FormUtil.addCreationDropdown(toolbarModel, sampleTypes, priorityTypes, function(typeCode) {
 					return function() {
 						Util.blockUI();
