@@ -19,6 +19,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.deletion;
 import java.util.List;
 import java.util.Map;
 
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -74,6 +75,11 @@ public class SearchDeletionsOperationExecutor extends
     protected SearchObjectsOperationResult<Deletion> getOperationResult(SearchResult<Deletion> searchResult)
     {
         return new SearchDeletionsOperationResult(searchResult);
+    }
+
+    @Override
+    protected ISearchManager<DeletionSearchCriteria, Deletion, ch.systemsx.cisd.openbis.generic.shared.basic.dto.Deletion> getSearchManager() {
+        throw new RuntimeException("This method is not implemented yet.");
     }
 
 }

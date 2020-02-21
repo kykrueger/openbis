@@ -16,6 +16,7 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.roleassignment;
 
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -65,6 +66,11 @@ public class SearchRoleAssignmentsOperationExecutor
     protected SearchObjectsOperationResult<RoleAssignment> getOperationResult(SearchResult<RoleAssignment> searchResult)
     {
         return new SearchRoleAssignmentsOperationResult(searchResult);
+    }
+
+    @Override
+    protected ISearchManager<RoleAssignmentSearchCriteria, RoleAssignment, Long> getSearchManager() {
+        throw new RuntimeException("This method is not implemented yet.");
     }
 
     @Override

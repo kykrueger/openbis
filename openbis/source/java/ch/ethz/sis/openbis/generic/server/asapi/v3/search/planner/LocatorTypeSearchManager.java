@@ -51,16 +51,15 @@ public class LocatorTypeSearchManager extends AbstractSearchManager<LocatorTypeS
     }
 
     @Override
-    protected TableMapper getTableMapper()
-    {
-        return TableMapper.LOCATOR_TYPES;
-    }
-
-    @Override
     public Set<Long> searchForIDs(final Long userId, final LocatorTypeSearchCriteria criteria, final SortOptions<LocatorType> sortOptions,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
-        return super.searchForIDs(userId, criteria, ID_COLUMN);
+        return super.searchForIDs(userId, criteria, ID_COLUMN, TableMapper.LOCATOR_TYPES);
+    }
+
+    @Override
+    public Set<Long> sortIDs(final Set<Long> filteredIDs, final SortOptions<LocatorType> sortOptions) {
+        return doSortIDs(filteredIDs, sortOptions, TableMapper.LOCATOR_TYPES);
     }
 
 }

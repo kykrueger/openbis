@@ -16,6 +16,7 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.vocabulary;
 
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -71,6 +72,11 @@ public class SearchVocabulariesOperationExecutor
     protected SearchObjectsOperationResult<Vocabulary> getOperationResult(SearchResult<Vocabulary> searchResult)
     {
         return new SearchVocabulariesOperationResult(searchResult);
+    }
+
+    @Override
+    protected ISearchManager<VocabularySearchCriteria, Vocabulary, Long> getSearchManager() {
+        throw new RuntimeException("This method is not implemented yet.");
     }
 
 }

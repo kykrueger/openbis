@@ -44,12 +44,6 @@ public class SemanticAnnotationSearchManager extends
     }
 
     @Override
-    protected TableMapper getTableMapper()
-    {
-        return TableMapper.SEMANTIC_ANNOTATION;
-    }
-
-    @Override
     protected Set<Long> doFilterIDsByUserRights(final Set<Long> ids, final AuthorisationInformation authorisationInformation)
     {
         return ids;
@@ -59,7 +53,12 @@ public class SemanticAnnotationSearchManager extends
     public Set<Long> searchForIDs(final Long userId, final SemanticAnnotationSearchCriteria criteria,
             final SortOptions<SemanticAnnotation> sortOptions, final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
-        return super.searchForIDs(userId, criteria, idsColumnName);
+        return super.searchForIDs(userId, criteria, idsColumnName, TableMapper.SEMANTIC_ANNOTATION);
+    }
+
+    @Override
+    public Set<Long> sortIDs(final Set<Long> filteredIDs, final SortOptions<SemanticAnnotation> sortOptions) {
+        return doSortIDs(filteredIDs, sortOptions, TableMapper.SEMANTIC_ANNOTATION);
     }
 
 }

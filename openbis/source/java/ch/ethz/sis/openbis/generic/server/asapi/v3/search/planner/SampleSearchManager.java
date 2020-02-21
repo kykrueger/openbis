@@ -16,6 +16,7 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleChildrenSearchCriteria;
@@ -33,7 +34,6 @@ import java.util.Set;
  * Manages detailed search with complex sample search criteria.
  * 
  * @author Viktor Kovtun
- * @author Juan Fuentes
  */
 public class SampleSearchManager extends AbstractCompositeEntitySearchManager<SampleSearchCriteria, Sample, Long>
 {
@@ -45,15 +45,20 @@ public class SampleSearchManager extends AbstractCompositeEntitySearchManager<Sa
     }
 
     @Override
-    protected TableMapper getTableMapper()
-    {
-        return TableMapper.SAMPLE;
-    }
-
-    @Override
     protected Class<? extends AbstractCompositeSearchCriteria> getParentsSearchCriteriaClass()
     {
         return SampleParentsSearchCriteria.class;
+    }
+
+    public Set<Long> searchForIDs(final Long userId, final SampleSearchCriteria criteria, SortOptions<Sample> sortOptions,
+            final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
+    {
+        return doSearchForIDs(userId, criteria, null, idsColumnName, TableMapper.SAMPLE);
+    }
+
+    @Override
+    public Set<Long> sortIDs(final Set<Long> filteredIDs, final SortOptions<Sample> sortOptions) {
+        return doSortIDs(filteredIDs, sortOptions, TableMapper.SAMPLE);
     }
 
     @Override

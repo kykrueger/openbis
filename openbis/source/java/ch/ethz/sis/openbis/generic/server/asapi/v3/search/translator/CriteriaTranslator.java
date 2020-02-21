@@ -16,9 +16,16 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractEntitySearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.IObjectId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.*;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetTypeSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.search.AbstractEntityTypeSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.search.EntityTypeSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentTypeSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialTypeSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.search.TagSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.CriteriaMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
@@ -80,20 +87,21 @@ public class CriteriaTranslator
     {
         final StringBuilder sqlBuilder = new StringBuilder();
 
-        final String entitiesTableName = vo.getTableMapper().getEntitiesTable();
+        final TableMapper tableMapper = vo.getTableMapper();
+        final String entitiesTableName = tableMapper.getEntitiesTable();
         sqlBuilder.append(FROM).append(SP).append(entitiesTableName).append(SP).append(MAIN_TABLE_ALIAS);
 
         final AtomicInteger indexCounter = new AtomicInteger(1);
         vo.getCriteria().forEach(criterion ->
         {
-            if (!CriteriaMapper.getCriteriaToManagerMap().containsKey(criterion.getClass()))
+            if (!(CriteriaMapper.getCriteriaToManagerMap().containsKey(criterion.getClass()) || criterion instanceof EntityTypeSearchCriteria))
             {
                 final IConditionTranslator conditionTranslator = CriteriaMapper.getCriteriaToConditionTranslatorMap().get(criterion.getClass());
                 if (conditionTranslator != null)
                 {
                     @SuppressWarnings("unchecked")
                     final Map<String, JoinInformation> joinInformationMap = conditionTranslator.getJoinInformationMap(criterion,
-                            vo.getTableMapper(), () -> getAlias(indexCounter));
+                            tableMapper, () -> getAlias(indexCounter));
 
                     if (joinInformationMap != null)
                     {
@@ -143,39 +151,177 @@ public class CriteriaTranslator
      * @param criterion criterion to be translated.
      * @param parentCriterion parent of {@code criterion}.
      */
-    private static void appendCriterionCondition(final TranslationVo vo, final StringBuilder sqlBuilder, final ISearchCriteria criterion,
+    private static void appendCriterionCondition(final TranslationVo vo, final StringBuilder sqlBuilder, ISearchCriteria criterion,
             final AbstractCompositeSearchCriteria parentCriterion)
     {
-        final ISearchManager<ISearchCriteria, ?, ?> subqueryManager = CriteriaMapper.getCriteriaToManagerMap().get(criterion.getClass());
         final TableMapper tableMapper = vo.getTableMapper();
-        if (subqueryManager != null)
+        final ISearchManager<ISearchCriteria, ?, ?> subqueryManager = (criterion instanceof EntityTypeSearchCriteria)
+                ? CriteriaMapper.getEntityKindToManagerMap().get(tableMapper.getEntityKind())
+                : CriteriaMapper.getCriteriaToManagerMap().get(criterion.getClass());
+
+        if (tableMapper == null || isCriterionConsistentWithEntityKind(criterion, tableMapper.getEntityKind()))
         {
-            final String column = CriteriaMapper.getCriteriaToInColumnMap().get(criterion.getClass());
-            if (tableMapper != null && column != null)
+            if (subqueryManager != null)
             {
-                final Set<Long> ids = subqueryManager.searchForIDs(vo.getUserId(), criterion, null, parentCriterion,
-                        CriteriaMapper.getParentChildCriteriaToChildSelectIdMap().getOrDefault(
-                                parentCriterion.getClass().toString() + criterion.getClass().toString(), ID_COLUMN));
-                appendInStatement(sqlBuilder, criterion, column, tableMapper);
-                vo.getArgs().add(ids.toArray(new Long[0]));
+                final String column = (criterion instanceof EntityTypeSearchCriteria)
+                        ? tableMapper.getEntityTypesAttributeTypesTableEntityTypeIdField()
+                        : CriteriaMapper.getCriteriaToInColumnMap().get(criterion.getClass());
+
+                if (tableMapper != null)
+                {
+                    criterion = convertCriterionIfNeeded(criterion, tableMapper.getEntityKind());
+                }
+
+                if (tableMapper != null && column != null)
+                {
+                    final Set<Long> ids = subqueryManager.searchForIDs(vo.getUserId(), criterion, null, parentCriterion,
+                            CriteriaMapper.getParentChildCriteriaToChildSelectIdMap().getOrDefault(
+                                    parentCriterion.getClass().toString() + criterion.getClass().toString(), ID_COLUMN));
+                    appendInStatement(sqlBuilder, criterion, column, tableMapper);
+                    vo.getArgs().add(ids.toArray(new Long[0]));
+                } else
+                {
+                    throw new NullPointerException("tableMapper = " + tableMapper + ", column = " + column + ", criterion.getClass() = " +
+                            criterion.getClass());
+                }
             } else
             {
-                throw new NullPointerException("tableMapper = " + tableMapper + ", column = " + column + ", criterion.getClass() = " +
-                        criterion.getClass());
+                @SuppressWarnings("unchecked")
+                final IConditionTranslator<ISearchCriteria> conditionTranslator =
+                        (IConditionTranslator<ISearchCriteria>) CriteriaMapper.getCriteriaToConditionTranslatorMap().get(criterion.getClass());
+                if (conditionTranslator != null)
+                {
+                    conditionTranslator.translate(criterion, tableMapper, vo.getArgs(), sqlBuilder, vo.getAliases().get(criterion),
+                            vo.getDataTypeByPropertyName());
+                } else
+                {
+                    throw new IllegalArgumentException("Unsupported criterion type: " + criterion.getClass().getSimpleName());
+                }
             }
         } else
         {
-            @SuppressWarnings("unchecked")
-            final IConditionTranslator<ISearchCriteria> conditionTranslator =
-                    (IConditionTranslator<ISearchCriteria>) CriteriaMapper.getCriteriaToConditionTranslatorMap().get(criterion.getClass());
-            if (conditionTranslator != null)
+            sqlBuilder.append(FALSE);
+        }
+    }
+
+    private static ISearchCriteria convertCriterionIfNeeded(final ISearchCriteria criterion, final EntityKind entityKind)
+    {
+        if (criterion instanceof EntityTypeSearchCriteria && entityKind != null)
+        {
+            final EntityTypeSearchCriteria entityTypeSearchCriterion = (EntityTypeSearchCriteria) criterion;
+            switch (entityKind)
             {
-                conditionTranslator.translate(criterion, tableMapper, vo.getArgs(), sqlBuilder, vo.getAliases().get(criterion),
-                        vo.getDataTypeByPropertyName());
+                case MATERIAL:
+                {
+                    final MaterialTypeSearchCriteria newCriterion = new MaterialTypeSearchCriteria();
+                    switch (entityTypeSearchCriterion.getOperator())
+                    {
+                        case AND:
+                        {
+                            newCriterion.withAndOperator();
+                            break;
+                        }
+                        case OR:
+                        {
+                            newCriterion.withOrOperator();
+                            break;
+                        }
+                    }
+                    newCriterion.setCriteria(entityTypeSearchCriterion.getCriteria());
+                    return newCriterion;
+                }
+                case EXPERIMENT:
+                {
+                    final ExperimentTypeSearchCriteria newCriterion = new ExperimentTypeSearchCriteria();
+                    switch (entityTypeSearchCriterion.getOperator())
+                    {
+                        case AND:
+                        {
+                            newCriterion.withAndOperator();
+                            break;
+                        }
+                        case OR:
+                        {
+                            newCriterion.withOrOperator();
+                            break;
+                        }
+                    }
+                    newCriterion.setCriteria(entityTypeSearchCriterion.getCriteria());
+                    return newCriterion;
+                }
+                case SAMPLE:
+                {
+                    final SampleTypeSearchCriteria newCriterion = new SampleTypeSearchCriteria();
+                    switch (entityTypeSearchCriterion.getOperator())
+                    {
+                        case AND:
+                        {
+                            newCriterion.withAndOperator();
+                            break;
+                        }
+                        case OR:
+                        {
+                            newCriterion.withOrOperator();
+                            break;
+                        }
+                    }
+                    newCriterion.setCriteria(entityTypeSearchCriterion.getCriteria());
+                    return newCriterion;
+                }
+                case DATA_SET:
+                {
+                    final DataSetTypeSearchCriteria newCriterion = new DataSetTypeSearchCriteria();
+                    switch (entityTypeSearchCriterion.getOperator())
+                    {
+                        case AND:
+                        {
+                            newCriterion.withAndOperator();
+                            break;
+                        }
+                        case OR:
+                        {
+                            newCriterion.withOrOperator();
+                            break;
+                        }
+                    }
+                    newCriterion.setCriteria(entityTypeSearchCriterion.getCriteria());
+                    return newCriterion;
+                }
+                default:
+                {
+                    throw new IllegalArgumentException("Unknown entity kind: " + entityKind);
+                }
+            }
+        } else
+        {
+            return criterion;
+        }
+    }
+
+    /**
+     * Checks whether criterion is IdSearchCriteria and if so its entity kind should be equal to the provided one (if it is not null).
+     *
+     * @param criterion the criterion to be checked for compatibility.
+     * @param entityKind the entity kind checked for equality, can be null.
+     * @return {@code false} only in the case when {@code entityKind != null} and criterion is an instance of IdSearchCriteria and its entity kind
+     * (if exists) is not equal to {@code entityKind}.
+     */
+    private static boolean isCriterionConsistentWithEntityKind(final ISearchCriteria criterion, final EntityKind entityKind)
+    {
+        if (criterion instanceof IdSearchCriteria<?> && entityKind != null)
+        {
+            final IdSearchCriteria<? extends IObjectId> idSearchCriterion = (IdSearchCriteria<? extends IObjectId>) criterion;
+            if (idSearchCriterion.getId() instanceof EntityTypePermId)
+            {
+                final EntityTypePermId objectPermId = (EntityTypePermId) idSearchCriterion.getId();
+                return objectPermId.getEntityKind() == null || objectPermId.getEntityKind() == entityKind;
             } else
             {
-                throw new IllegalArgumentException("Unsupported criterion type: " + criterion.getClass().getSimpleName());
+                return true;
             }
+        } else
+        {
+            return true;
         }
     }
 

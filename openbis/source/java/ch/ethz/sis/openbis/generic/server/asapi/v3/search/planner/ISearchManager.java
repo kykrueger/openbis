@@ -22,6 +22,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 
 public interface ISearchManager<CRITERIA extends ISearchCriteria, OBJECT, OBJECT_PE> extends IID2PETranslator<OBJECT_PE>
 {
@@ -49,4 +50,5 @@ public interface ISearchManager<CRITERIA extends ISearchCriteria, OBJECT, OBJECT
     Set<Long> filterIDsByUserRights(Long userId, Set<Long> ids);
 
     Set<Long> sortIDs(Set<Long> filteredIDs, SortOptions<OBJECT> sortOptions);
+
 }

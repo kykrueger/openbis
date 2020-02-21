@@ -16,6 +16,7 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.semanticannotation;
 
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -70,6 +71,11 @@ public class SearchSemanticAnnotationsOperationExecutor extends
     protected SearchObjectsOperationResult<SemanticAnnotation> getOperationResult(SearchResult<SemanticAnnotation> searchResult)
     {
         return new SearchSemanticAnnotationsOperationResult(searchResult);
+    }
+
+    @Override
+    protected ISearchManager<SemanticAnnotationSearchCriteria, SemanticAnnotation, Long> getSearchManager() {
+        throw new RuntimeException("This method is not implemented yet.");
     }
 
 }

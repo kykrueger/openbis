@@ -43,12 +43,6 @@ public class PropertyTypeSearchManager extends AbstractSearchManager<PropertyTyp
     }
 
     @Override
-    protected TableMapper getTableMapper()
-    {
-        return TableMapper.PROPERTY_TYPE;
-    }
-
-    @Override
     protected Set<Long> doFilterIDsByUserRights(final Set<Long> ids, final AuthorisationInformation authorisationInformation)
     {
         return ids;
@@ -58,7 +52,12 @@ public class PropertyTypeSearchManager extends AbstractSearchManager<PropertyTyp
     public Set<Long> searchForIDs(final Long userId, final PropertyTypeSearchCriteria criteria, final SortOptions<PropertyType> sortOptions,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
-        return super.searchForIDs(userId, criteria, idsColumnName);
+        return super.searchForIDs(userId, criteria, idsColumnName, TableMapper.PROPERTY_TYPE);
+    }
+
+    @Override
+    public Set<Long> sortIDs(final Set<Long> filteredIDs, final SortOptions<PropertyType> sortOptions) {
+        return doSortIDs(filteredIDs, sortOptions, TableMapper.PROPERTY_TYPE);
     }
 
 }

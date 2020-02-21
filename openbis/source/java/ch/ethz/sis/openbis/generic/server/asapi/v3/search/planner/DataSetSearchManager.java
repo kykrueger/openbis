@@ -17,7 +17,11 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.*;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CodeSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.PermIdSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.ContentCopy;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetChildrenSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetContainerSearchCriteria;
@@ -45,12 +49,6 @@ public class DataSetSearchManager extends AbstractCompositeEntitySearchManager<D
             final IID2PETranslator<Long> idsTranslator)
     {
         super(searchDAO, authProvider, idsTranslator);
-    }
-
-    @Override
-    protected TableMapper getTableMapper()
-    {
-        return TableMapper.DATA_SET;
     }
 
     protected Class<? extends AbstractCompositeSearchCriteria> getContainerSearchCriteriaClass()
@@ -114,7 +112,13 @@ public class DataSetSearchManager extends AbstractCompositeEntitySearchManager<D
             }
         }).collect(Collectors.toList());
 
-        return super.doSearchForIDs(userId, parentsAndContainerCriteria, childrenCriteria, newCriteria, criteria.getOperator(), idsColumnName);
+        return super.doSearchForIDs(userId, parentsAndContainerCriteria, childrenCriteria, newCriteria, criteria.getOperator(), idsColumnName,
+                TableMapper.DATA_SET);
+    }
+
+    @Override
+    public Set<Long> sortIDs(final Set<Long> filteredIDs, final SortOptions<DataSet> sortOptions) {
+        return doSortIDs(filteredIDs, sortOptions, TableMapper.DATA_SET);
     }
 
 }

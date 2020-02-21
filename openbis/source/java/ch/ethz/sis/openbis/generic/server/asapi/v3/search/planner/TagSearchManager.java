@@ -51,12 +51,6 @@ public class TagSearchManager extends AbstractSearchManager<TagSearchCriteria, T
         return ids;
     }
 
-    @Override
-    protected TableMapper getTableMapper()
-    {
-        return TableMapper.TAG;
-    }
-
     private NameSearchCriteria convertToNameSearchCriterion(final AbstractFieldSearchCriteria<AbstractStringValue> criterion)
     {
         return convertToOtherCriterion(criterion, NameSearchCriteria::new);
@@ -97,6 +91,11 @@ public class TagSearchManager extends AbstractSearchManager<TagSearchCriteria, T
         }
 
         return filterIDsByUserRights(userId, resultAfterFiltering);
+    }
+
+    @Override
+    public Set<Long> sortIDs(final Set<Long> filteredIDs, final SortOptions<Tag> sortOptions) {
+        return doSortIDs(filteredIDs, sortOptions, TableMapper.TAG);
     }
 
 }

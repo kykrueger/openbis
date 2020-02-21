@@ -55,12 +55,6 @@ public class PhysicalDataSetKindSearchManager extends AbstractSearchManager<Phys
     }
 
     @Override
-    protected TableMapper getTableMapper()
-    {
-        return EXTERNAL_DATA;
-    }
-
-    @Override
     public Set<Long> searchForIDs(final Long userId, final PhysicalDataSearchCriteria criteria, final SortOptions<DataSetType> sortOptions,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
@@ -76,6 +70,11 @@ public class PhysicalDataSetKindSearchManager extends AbstractSearchManager<Phys
         }
 
         return mainCriteriaIds;
+    }
+
+    @Override
+    public Set<Long> sortIDs(final Set<Long> filteredIDs, final SortOptions<DataSetType> sortOptions) {
+        return doSortIDs(filteredIDs, sortOptions, EXTERNAL_DATA);
     }
 
     private Set<Long> doSearchForIDs(final Long userId, final String idsColumnName)

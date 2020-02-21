@@ -2,6 +2,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.*;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.*;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.NoExperimentSearchCriteria;
@@ -22,6 +23,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.*;
 import org.springframework.context.ApplicationContext;
 
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -43,6 +45,12 @@ public class CriteriaMapper {
      */
     private static final Map<Class<? extends ISearchCriteria>, IConditionTranslator<? extends ISearchCriteria>>
             CRITERIA_TO_CONDITION_TRANSLATOR_MAP = new HashMap<>();
+
+    /**
+     * This map is used for the special case when EntityTypeSearchCriteria should be substituted by a concrete criterion.
+     */
+    private static final Map<EntityKind, ISearchManager<ISearchCriteria, ?, ?>> ENTITY_KIND_TO_MANAGER_MAP =
+            new EnumMap<>(EntityKind.class);
 
     /**
      * This map is used when a subquery manager is used. It maps criteria to a column name which is on the left of the
@@ -164,30 +172,39 @@ public class CriteriaMapper {
 
         //noinspection unchecked
         PARENT_CHILD_CRITERIA_TO_CHILD_SELECT_ID_MAP.put(
-                SampleTypeSearchCriteria.class.toString() + PropertyAssignmentSearchCriteria.class.toString(),
-                SAMPLE_TYPE_COLUMN
-        );
+                SampleTypeSearchCriteria.class.toString() + PropertyAssignmentSearchCriteria.class.toString(), SAMPLE_TYPE_COLUMN);
     }
 
     @SuppressWarnings("unchecked")
     public static void initCriteriaToManagerMap(final ApplicationContext applicationContext)
     {
+        final ISearchManager<ISearchCriteria, ?, ?> sampleTypeSearchManager = applicationContext.getBean("sample-type-search-manager",
+                ISearchManager.class);
+        final ISearchManager<ISearchCriteria, ?, ?> experimentTypeSearchManager = applicationContext.getBean("experiment-type-search-manager",
+                ISearchManager.class);
+        final ISearchManager<ISearchCriteria, ?, ?> materialTypeSearchManager = applicationContext.getBean("material-type-search-manager",
+                ISearchManager.class);
+        final ISearchManager<ISearchCriteria, ?, ?> dataSetTypeSearchManager = applicationContext.getBean("data-set-type-search-manager",
+                ISearchManager.class);
+
+        ENTITY_KIND_TO_MANAGER_MAP.put(EntityKind.SAMPLE, sampleTypeSearchManager);
+        ENTITY_KIND_TO_MANAGER_MAP.put(EntityKind.EXPERIMENT, experimentTypeSearchManager);
+        ENTITY_KIND_TO_MANAGER_MAP.put(EntityKind.DATA_SET, dataSetTypeSearchManager);
+        ENTITY_KIND_TO_MANAGER_MAP.put(EntityKind.MATERIAL, materialTypeSearchManager);
+
         CRITERIA_TO_MANAGER_MAP.put(ContentCopySearchCriteria.class,
                 applicationContext.getBean("content-copy-search-manager", ISearchManager.class));
         CRITERIA_TO_MANAGER_MAP.put(DataSetSearchCriteria.class,
                 applicationContext.getBean("data-set-search-manager", ISearchManager.class));
-        CRITERIA_TO_MANAGER_MAP.put(DataSetTypeSearchCriteria.class,
-                applicationContext.getBean("data-set-type-search-manager", ISearchManager.class));
+        CRITERIA_TO_MANAGER_MAP.put(DataSetTypeSearchCriteria.class, dataSetTypeSearchManager);
         CRITERIA_TO_MANAGER_MAP.put(ExperimentSearchCriteria.class,
                 applicationContext.getBean("experiment-search-manager", ISearchManager.class));
-        CRITERIA_TO_MANAGER_MAP.put(ExperimentTypeSearchCriteria.class,
-                applicationContext.getBean("experiment-type-search-manager", ISearchManager.class));
+        CRITERIA_TO_MANAGER_MAP.put(ExperimentTypeSearchCriteria.class, experimentTypeSearchManager);
         CRITERIA_TO_MANAGER_MAP.put(SampleSearchCriteria.class,
                 applicationContext.getBean("sample-search-manager", ISearchManager.class));
-        CRITERIA_TO_MANAGER_MAP.put(SampleTypeSearchCriteria.class,
-                applicationContext.getBean("sample-type-search-manager", ISearchManager.class));
+        CRITERIA_TO_MANAGER_MAP.put(SampleTypeSearchCriteria.class, sampleTypeSearchManager);
         CRITERIA_TO_MANAGER_MAP.put(SampleContainerSearchCriteria.class,
-                applicationContext.getBean("sample-search-manager", ISearchManager.class));
+                applicationContext.getBean("sample-container-search-manager", ISearchManager.class));
         CRITERIA_TO_MANAGER_MAP.put(RegistratorSearchCriteria.class,
                 applicationContext.getBean("person-search-manager", ISearchManager.class));
         CRITERIA_TO_MANAGER_MAP.put(ModifierSearchCriteria.class,
@@ -218,8 +235,7 @@ public class CriteriaMapper {
                 applicationContext.getBean("storage-format-search-manager", ISearchManager.class));
         CRITERIA_TO_MANAGER_MAP.put(MaterialSearchCriteria.class,
                 applicationContext.getBean("material-search-manager", ISearchManager.class));
-        CRITERIA_TO_MANAGER_MAP.put(MaterialTypeSearchCriteria.class,
-                applicationContext.getBean("material-type-search-manager", ISearchManager.class));
+        CRITERIA_TO_MANAGER_MAP.put(MaterialTypeSearchCriteria.class, materialTypeSearchManager);
     }
 
     public static Map<Class<? extends ISearchCriteria>, ISearchManager<ISearchCriteria, ?, ?>> getCriteriaToManagerMap()
@@ -243,4 +259,7 @@ public class CriteriaMapper {
         return PARENT_CHILD_CRITERIA_TO_CHILD_SELECT_ID_MAP;
     }
 
+    public static Map<EntityKind, ISearchManager<ISearchCriteria, ?, ?>> getEntityKindToManagerMap() {
+        return ENTITY_KIND_TO_MANAGER_MAP;
+    }
 }

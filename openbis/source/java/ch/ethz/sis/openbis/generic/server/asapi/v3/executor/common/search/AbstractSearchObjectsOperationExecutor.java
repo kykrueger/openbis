@@ -16,12 +16,10 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -42,6 +40,8 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.TranslationContext
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
 
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
+
 /**
  * @author pkupczyk
  */
@@ -60,6 +60,8 @@ public abstract class AbstractSearchObjectsOperationExecutor<OBJECT, OBJECT_PE, 
     protected abstract Map<OBJECT_PE, OBJECT> doTranslate(TranslationContext translationContext, List<OBJECT_PE> ids, FETCH_OPTIONS fetchOptions);
 
     protected abstract SearchObjectsOperationResult<OBJECT> getOperationResult(SearchResult<OBJECT> searchResult);
+
+    protected abstract ISearchManager<CRITERIA, OBJECT, OBJECT_PE> getSearchManager();
 
     @Override
     protected SearchObjectsOperationResult<OBJECT> doExecute(IOperationContext context, SearchObjectsOperation<CRITERIA, FETCH_OPTIONS> operation)
@@ -207,6 +209,63 @@ public abstract class AbstractSearchObjectsOperationExecutor<OBJECT, OBJECT_PE, 
                 operationLog.debug("Released lock on cache entry " + entry.hashCode());
             }
         }
+    }
+
+    protected SearchObjectsOperationResult<OBJECT> doExecuteNewSearch(final IOperationContext context,
+            final SearchObjectsOperation<CRITERIA, FETCH_OPTIONS> operation)
+    {
+        final CRITERIA criteria = operation.getCriteria();
+        final FETCH_OPTIONS fetchOptions = operation.getFetchOptions();
+
+        if (criteria == null)
+        {
+            throw new IllegalArgumentException("Criteria cannot be null.");
+        }
+        if (fetchOptions == null)
+        {
+            throw new IllegalArgumentException("Fetch options cannot be null.");
+        }
+
+        final Long userId = context.getSession().tryGetPerson().getId();
+        final TranslationContext translationContext = new TranslationContext(context.getSession());
+        final SortOptions<OBJECT> sortOptions = fetchOptions.getSortBy();
+
+        // There results from the manager should already be filtered.
+        final Set<Long> allResultsIds = getSearchManager().searchForIDs(userId, criteria, sortOptions, null, ID_COLUMN);
+        final List<Long> sortedAndPagedResultIds = sortAndPage(allResultsIds, fetchOptions);
+        final List<OBJECT_PE> sortedAndPagedResultPEs = getSearchManager().translate(sortedAndPagedResultIds);
+        final Map<OBJECT_PE, OBJECT> sortedAndPagedResultV3DTOs = doTranslate(translationContext, sortedAndPagedResultPEs, fetchOptions);
+
+        final List<OBJECT> finalResults = new ArrayList<>(sortedAndPagedResultV3DTOs.values());
+        final List<OBJECT> sortedFinalResults = getSortedFinalResults(criteria, fetchOptions, finalResults);
+        final SearchResult<OBJECT> searchResult = new SearchResult<>(sortedFinalResults, allResultsIds.size());
+
+        return getOperationResult(searchResult);
+    }
+
+    private List<OBJECT> getSortedFinalResults(final CRITERIA criteria, final FETCH_OPTIONS fetchOptions, final List<OBJECT> finalResults)
+    {
+        // No paging is needed, the result should just be sorted.
+        final Integer from = fetchOptions.getFrom();
+        fetchOptions.from(null);
+        final Integer count = fetchOptions.getCount();
+        fetchOptions.count(null);
+        final List<OBJECT> sortedFinalResults = new SortAndPage().sortAndPage(finalResults, criteria, fetchOptions);
+        fetchOptions.from(from);
+        fetchOptions.count(count);
+        return sortedFinalResults;
+    }
+
+    private List<Long> sortAndPage(final Set<Long> ids, final FetchOptions fo)
+    {
+        final SortOptions<OBJECT> sortOptions = fo.getSortBy();
+        final Set<Long> orderedIDs = (sortOptions != null) ? getSearchManager().sortIDs(ids, sortOptions) : ids;
+
+        final List<Long> toPage = new ArrayList<>(orderedIDs);
+        final Integer fromRecord = fo.getFrom();
+        final Integer recordsCount = fo.getCount();
+        final boolean hasPaging = fromRecord != null && recordsCount != null;
+        return hasPaging ? toPage.subList(fromRecord, Math.min(fromRecord + recordsCount, toPage.size())) : toPage;
     }
 
 }

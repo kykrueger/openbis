@@ -18,7 +18,6 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.ExternalDmsSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
@@ -51,16 +50,15 @@ public class ExternalDmsSearchManager extends AbstractSearchManager<ExternalDmsS
     }
 
     @Override
-    protected TableMapper getTableMapper()
-    {
-        return TableMapper.EXTERNAL_DMS;
-    }
-
-    @Override
     public Set<Long> searchForIDs(final Long userId, final ExternalDmsSearchCriteria criteria, final SortOptions<ExternalDataManagementSystem> sortOptions,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
-        return super.searchForIDs(userId, criteria, ColumnNames.ID_COLUMN);
+        return super.searchForIDs(userId, criteria, ColumnNames.ID_COLUMN, TableMapper.EXTERNAL_DMS);
+    }
+
+    @Override
+    public Set<Long> sortIDs(final Set<Long> filteredIDs, final SortOptions<ExternalDataManagementSystem> sortOptions) {
+        return doSortIDs(filteredIDs, sortOptions, TableMapper.EXTERNAL_DMS);
     }
 
 }

@@ -50,16 +50,15 @@ public class ContentCopySearchManager extends AbstractSearchManager<ContentCopyS
     }
 
     @Override
-    protected TableMapper getTableMapper()
-    {
-        return TableMapper.CONTENT_COPIES;
-    }
-
-    @Override
     public Set<Long> searchForIDs(final Long userId, final ContentCopySearchCriteria criteria, final SortOptions<ContentCopy> sortOptions,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
-        return super.searchForIDs(userId, criteria, ColumnNames.ID_COLUMN);
+        return super.searchForIDs(userId, criteria, ColumnNames.ID_COLUMN, TableMapper.CONTENT_COPIES);
+    }
+
+    @Override
+    public Set<Long> sortIDs(final Set<Long> filteredIDs, final SortOptions<ContentCopy> sortOptions) {
+        return doSortIDs(filteredIDs, sortOptions, TableMapper.CONTENT_COPIES);
     }
 
 }

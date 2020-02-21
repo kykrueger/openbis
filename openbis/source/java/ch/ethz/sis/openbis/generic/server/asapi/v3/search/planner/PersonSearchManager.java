@@ -50,16 +50,15 @@ public class PersonSearchManager extends AbstractSearchManager<PersonSearchCrite
     }
 
     @Override
-    protected TableMapper getTableMapper()
-    {
-        return TableMapper.PERSON;
-    }
-
-    @Override
     public Set<Long> searchForIDs(final Long userId, final PersonSearchCriteria criteria, final SortOptions<Person> sortOptions,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
-        return super.searchForIDs(userId, criteria, idsColumnName);
+        return super.searchForIDs(userId, criteria, idsColumnName, TableMapper.PERSON);
+    }
+
+    @Override
+    public Set<Long> sortIDs(final Set<Long> filteredIDs, final SortOptions<Person> sortOptions) {
+        return doSortIDs(filteredIDs, sortOptions, TableMapper.PERSON);
     }
 
 }

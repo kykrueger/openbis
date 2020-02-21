@@ -23,6 +23,7 @@ import java.util.Map;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.ITranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.TranslationContext;
 import ch.systemsx.cisd.openbis.generic.shared.basic.IIdHolder;
@@ -56,6 +57,11 @@ public abstract class SearchObjectsPEOperationExecutor<OBJECT, OBJECT_PE extends
     protected final Map<Long, OBJECT> doTranslate(TranslationContext translationContext, List<Long> ids, FETCH_OPTIONS fetchOptions)
     {
         return getTranslator().translate(translationContext, ids, fetchOptions);
+    }
+
+    @Override
+    protected ISearchManager<CRITERIA, OBJECT, Long> getSearchManager() {
+        throw new RuntimeException("This method is not implemented yet.");
     }
 
 }

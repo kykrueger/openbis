@@ -16,6 +16,7 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.Material;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialSearchCriteria;
@@ -29,7 +30,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import java.util.Set;
 
 /**
- * Manages detailed search with complex material search criteria.
+ * Manages detailed search with material search criteria.
  * 
  * @author Viktor Kovtun
  */
@@ -40,12 +41,6 @@ public class MaterialSearchManager extends AbstractCompositeEntitySearchManager<
             final IID2PETranslator idsTranslator)
     {
         super(searchDAO, authProvider, idsTranslator);
-    }
-
-    @Override
-    protected TableMapper getTableMapper()
-    {
-        return TableMapper.MATERIAL;
     }
 
     @Override
@@ -70,6 +65,17 @@ public class MaterialSearchManager extends AbstractCompositeEntitySearchManager<
     protected Set<Long> doFilterIDsByUserRights(final Set<Long> ids, final AuthorisationInformation authorisationInformation)
     {
         return ids;
+    }
+
+    @Override
+    public Set<Long> searchForIDs(final Long userId, final MaterialSearchCriteria criteria, final SortOptions<Material> sortOptions,
+            final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName) {
+        return doSearchForIDs(userId, criteria, null, idsColumnName, TableMapper.MATERIAL);
+    }
+
+    @Override
+    public Set<Long> sortIDs(final Set<Long> filteredIDs, final SortOptions<Material> sortOptions) {
+        return doSortIDs(filteredIDs, sortOptions, TableMapper.MATERIAL);
     }
 
 }

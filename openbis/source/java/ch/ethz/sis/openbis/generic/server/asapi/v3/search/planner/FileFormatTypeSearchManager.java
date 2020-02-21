@@ -51,16 +51,15 @@ public class FileFormatTypeSearchManager extends AbstractSearchManager<FileForma
     }
 
     @Override
-    protected TableMapper getTableMapper()
-    {
-        return TableMapper.FILE_FORMAT_TYPES;
-    }
-
-    @Override
     public Set<Long> searchForIDs(final Long userId, final FileFormatTypeSearchCriteria criteria, final SortOptions<FileFormatType> sortOptions,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
-        return super.searchForIDs(userId, criteria, ID_COLUMN);
+        return super.searchForIDs(userId, criteria, ID_COLUMN, TableMapper.FILE_FORMAT_TYPES);
+    }
+
+    @Override
+    public Set<Long> sortIDs(final Set<Long> filteredIDs, final SortOptions<FileFormatType> sortOptions) {
+        return doSortIDs(filteredIDs, sortOptions, TableMapper.FILE_FORMAT_TYPES);
     }
 
 }

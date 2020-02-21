@@ -29,6 +29,8 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper.EXTERNAL_DATA;
+
 /**
  * Manages detailed search with project search criteria.
  *
@@ -50,16 +52,15 @@ public class ProjectSearchManager extends AbstractSearchManager<ProjectSearchCri
     }
 
     @Override
-    protected TableMapper getTableMapper()
-    {
-        return TableMapper.PROJECT;
-    }
-
-    @Override
     public Set<Long> searchForIDs(final Long userId, final ProjectSearchCriteria criteria, final SortOptions<Project> sortOptions,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
-        return super.searchForIDs(userId, criteria, idsColumnName);
+        return super.searchForIDs(userId, criteria, idsColumnName, TableMapper.PROJECT);
+    }
+
+    @Override
+    public Set<Long> sortIDs(final Set<Long> filteredIDs, final SortOptions<Project> sortOptions) {
+        return doSortIDs(filteredIDs, sortOptions, TableMapper.PROJECT);
     }
 
 }

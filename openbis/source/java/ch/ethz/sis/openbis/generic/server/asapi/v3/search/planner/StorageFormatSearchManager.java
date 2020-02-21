@@ -52,17 +52,16 @@ public class StorageFormatSearchManager extends AbstractSearchManager<StorageFor
     }
 
     @Override
-    protected TableMapper getTableMapper()
-    {
-        return TableMapper.CONTROLLED_VOCABULARY_TERMS;
-    }
-
-    @Override
     public Set<Long> searchForIDs(final Long userId, final StorageFormatSearchCriteria criteria,
             final SortOptions<StorageFormat> sortOptions, final AbstractCompositeSearchCriteria parentCriteria,
             final String idsColumnName)
     {
-        return super.searchForIDs(userId, criteria, ID_COLUMN);
+        return super.searchForIDs(userId, criteria, ID_COLUMN, TableMapper.CONTROLLED_VOCABULARY_TERMS);
+    }
+
+    @Override
+    public Set<Long> sortIDs(final Set<Long> filteredIDs, final SortOptions<StorageFormat> sortOptions) {
+        return doSortIDs(filteredIDs, sortOptions, TableMapper.CONTROLLED_VOCABULARY_TERMS);
     }
 
 }

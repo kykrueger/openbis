@@ -16,7 +16,6 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
@@ -24,6 +23,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisation
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
+import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -48,14 +48,8 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
 
     protected abstract CRITERIA createEmptyCriteria();
 
-    @Override
-    public Set<Long> searchForIDs(final Long userId, final CRITERIA criteria, SortOptions<OBJECT> sortOptions,
-            final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
-    {
-        return doSearchForIDs(userId, criteria, null, idsColumnName);
-    }
-
-    private Set<Long> doSearchForIDs(final Long userId, final CRITERIA criteria, final SearchOperator searchOperator, final String idsColumnName)
+    protected Set<Long> doSearchForIDs(final Long userId, final CRITERIA criteria, final SearchOperator searchOperator, final String idsColumnName,
+            final TableMapper tableMapper)
     {
         final Class<? extends AbstractCompositeSearchCriteria> parentsSearchCriteriaClass = getParentsSearchCriteriaClass();
         final Class<? extends AbstractCompositeSearchCriteria> childrenSearchCriteriaClass = getChildrenSearchCriteriaClass();
@@ -74,15 +68,13 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
         }
         final SearchOperator finalSearchOperator = (searchOperator == null) ? criteria.getOperator() : searchOperator;
 
-        return doSearchForIDs(userId, parentsCriteria, childrenCriteria, mainCriteria, finalSearchOperator, idsColumnName);
+        return doSearchForIDs(userId, parentsCriteria, childrenCriteria, mainCriteria, finalSearchOperator, idsColumnName, tableMapper);
     }
 
     protected Set<Long> doSearchForIDs(final Long userId, final Collection<ISearchCriteria> parentsCriteria,
             final Collection<ISearchCriteria> childrenCriteria, final Collection<ISearchCriteria> mainCriteria,
-            final SearchOperator finalSearchOperator, final String idsColumnName)
+            final SearchOperator finalSearchOperator, final String idsColumnName, final TableMapper tableMapper)
     {
-        final TableMapper tableMapper = getTableMapper();
-
         final Set<Long> mainCriteriaIntermediateResults;
         if (!mainCriteria.isEmpty())
         {
@@ -100,9 +92,9 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
         if (!parentsCriteria.isEmpty())
         {
             // The parents criteria can be or not recursive, they are resolved by a recursive call
-            final Set<Long> finalParentIds = findFinalRelationshipIds(userId, finalSearchOperator, parentsCriteria);
+            final Set<Long> finalParentIds = findFinalRelationshipIds(userId, finalSearchOperator, parentsCriteria, tableMapper);
             final Set<Long> finalParentIdsFiltered = filterIDsByUserRights(userId, finalParentIds);
-            parentCriteriaIntermediateResults = getChildrenIdsOf(finalParentIdsFiltered);
+            parentCriteriaIntermediateResults = getChildrenIdsOf(finalParentIdsFiltered, tableMapper);
         } else
         {
             parentCriteriaIntermediateResults = null;
@@ -112,9 +104,9 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
         if (!childrenCriteria.isEmpty())
         {
             // The children criteria can be or not recursive, they are resolved by a recursive call
-            final Set<Long> finalChildrenIds = findFinalRelationshipIds(userId, finalSearchOperator, childrenCriteria);
+            final Set<Long> finalChildrenIds = findFinalRelationshipIds(userId, finalSearchOperator, childrenCriteria, tableMapper);
             final Set<Long> finalChildrenIdsFiltered = filterIDsByUserRights(userId, finalChildrenIds);
-            childrenCriteriaIntermediateResults = getParentsIdsOf(finalChildrenIdsFiltered);
+            childrenCriteriaIntermediateResults = getParentsIdsOf(finalChildrenIdsFiltered, tableMapper);
         } else
         {
             childrenCriteriaIntermediateResults = null;
@@ -133,7 +125,7 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
         } else if (mainCriteria.isEmpty() && parentsCriteria.isEmpty() && childrenCriteria.isEmpty())
         {
             // If we don't have results and criteria are empty, return all.
-            results = getAllIds(userId, idsColumnName);
+            results = getAllIds(userId, idsColumnName, tableMapper);
         } else
         {
             // If we don't have results and criteria are not empty, there are no results.
@@ -148,14 +140,16 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
      *
      * @param operator the operator used to merge the results.
      * @param relatedEntitiesCriteria parent or child criteria.
+     * @param tableMapper
      * @return IDs found from parent/child criteria.
      */
     @SuppressWarnings("unchecked")
     private Set<Long> findFinalRelationshipIds(final Long userId, final SearchOperator operator,
-            final Collection<ISearchCriteria> relatedEntitiesCriteria)
+            final Collection<ISearchCriteria> relatedEntitiesCriteria, final TableMapper tableMapper)
     {
         final List<Set<Long>> relatedIds = relatedEntitiesCriteria.stream().flatMap(entitySearchCriteria -> {
-            final Set<Long> foundParentIds = doSearchForIDs(userId, (CRITERIA) entitySearchCriteria, operator, null);
+            final Set<Long> foundParentIds = doSearchForIDs(userId, (CRITERIA) entitySearchCriteria, operator, ColumnNames.ID_COLUMN,
+                    tableMapper);
             return foundParentIds.isEmpty() ? Stream.empty() : Stream.of(foundParentIds);
         }).collect(Collectors.toList());
 
@@ -172,24 +166,24 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
      * @return set of IDs of all entities.
      * @param userId requesting user ID.
      * @param idsColumnName the name of the column, whose values to be returned.
+     * @param tableMapper the table mapper to be used during translation.
      */
-    private Set<Long> getAllIds(final Long userId, final String idsColumnName)
+    private Set<Long> getAllIds(final Long userId, final String idsColumnName, final TableMapper tableMapper)
     {
         final CRITERIA criteria = createEmptyCriteria();
         final DummyCompositeSearchCriterion containerCriterion = new DummyCompositeSearchCriterion();
         containerCriterion.setCriteria(Collections.singletonList(criteria));
-        return getSearchDAO().queryDBWithNonRecursiveCriteria(userId, containerCriterion, getTableMapper(),
-                idsColumnName);
+        return getSearchDAO().queryDBWithNonRecursiveCriteria(userId, containerCriterion, tableMapper, idsColumnName);
     }
 
-    private Set<Long> getChildrenIdsOf(final Set<Long> parentIdSet)
+    private Set<Long> getChildrenIdsOf(final Set<Long> parentIdSet, final TableMapper tableMapper)
     {
-        return getSearchDAO().findChildIDs(getTableMapper(), parentIdSet);
+        return getSearchDAO().findChildIDs(tableMapper, parentIdSet);
     }
 
-    private Set<Long> getParentsIdsOf(final Set<Long> childIdSet)
+    private Set<Long> getParentsIdsOf(final Set<Long> childIdSet, final TableMapper tableMapper)
     {
-        return getSearchDAO().findParentIDs(getTableMapper(), childIdSet);
+        return getSearchDAO().findParentIDs(tableMapper, childIdSet);
     }
 
 }

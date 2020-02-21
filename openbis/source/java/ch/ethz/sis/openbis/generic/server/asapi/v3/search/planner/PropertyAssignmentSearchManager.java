@@ -21,6 +21,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeS
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.search.PropertyAssignmentSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleTypeSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.search.SemanticAnnotationSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.IPropertyAssignmentSearchDAO;
@@ -52,13 +53,6 @@ public class PropertyAssignmentSearchManager extends
     }
 
     @Override
-    protected TableMapper getTableMapper()
-    {
-        // TODO: not always related to samples.
-        return TableMapper.SAMPLE_PROPERTY_ASSIGNMENT;
-    }
-
-    @Override
     protected Set<Long> doFilterIDsByUserRights(final Set<Long> ids, final AuthorisationInformation authorisationInformation)
     {
         return ids;
@@ -68,10 +62,12 @@ public class PropertyAssignmentSearchManager extends
     public Set<Long> searchForIDs(final Long userId, final PropertyAssignmentSearchCriteria criteria, final SortOptions<PropertyAssignment> sortOptions,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
+        // TODO: not always related to samples.
         final Set<Long> mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId,
-                criteria, getTableMapper(), idsColumnName);
+                criteria, TableMapper.SAMPLE_PROPERTY_ASSIGNMENT, idsColumnName);
 
-        if (parentCriteria.getClass() == SampleTypeSearchCriteria.class)
+        // Very special case when property assignments should be linked with semantic annotations both directly and via attribute types
+        if (isSampleTypeWithSemanticAnnotationsCriteria(parentCriteria, criteria))
         {
             final DummyCompositeSearchCriterion compositeSearchCriterion = new DummyCompositeSearchCriterion(
                     criteria.getCriteria(), criteria.getOperator());
@@ -89,6 +85,18 @@ public class PropertyAssignmentSearchManager extends
         {
             return mainCriteriaIntermediateResults;
         }
+    }
+
+    private static boolean isSampleTypeWithSemanticAnnotationsCriteria(final AbstractCompositeSearchCriteria parentCriteria,
+            final PropertyAssignmentSearchCriteria criteria)
+    {
+        return parentCriteria.getClass() == SampleTypeSearchCriteria.class
+                && criteria.getCriteria().stream().anyMatch((subcriterion) -> subcriterion instanceof SemanticAnnotationSearchCriteria);
+    }
+
+    @Override
+    public Set<Long> sortIDs(final Set<Long> filteredIDs, final SortOptions<PropertyAssignment> sortOptions) {
+        return doSortIDs(filteredIDs, sortOptions, TableMapper.SAMPLE_PROPERTY_ASSIGNMENT);
     }
 
 }

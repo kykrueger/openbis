@@ -50,16 +50,15 @@ public class DataSetTypeSearchManager extends AbstractSearchManager<DataSetTypeS
     }
 
     @Override
-    protected TableMapper getTableMapper()
-    {
-        return TableMapper.DATA_SET_TYPE;
-    }
-
-    @Override
     public Set<Long> searchForIDs(final Long userId, final DataSetTypeSearchCriteria criteria, final SortOptions<DataSetType> sortOptions,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
-        return super.searchForIDs(userId, criteria, null);
+        return super.searchForIDs(userId, criteria, null, TableMapper.DATA_SET_TYPE);
+    }
+
+    @Override
+    public Set<Long> sortIDs(final Set<Long> filteredIDs, final SortOptions<DataSetType> sortOptions) {
+        return doSortIDs(filteredIDs, sortOptions, TableMapper.DATA_SET);
     }
 
 }

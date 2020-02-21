@@ -46,8 +46,6 @@ public abstract class SearchObjectsOperationExecutor<OBJECT, OBJECT_PE, CRITERIA
 
     protected abstract ITranslator<OBJECT_PE, OBJECT, FETCH_OPTIONS> getTranslator();
 
-    protected abstract ISearchManager<CRITERIA, OBJECT, OBJECT_PE> getSearchManager();
-
     @Override
     protected final List<OBJECT_PE> doSearch(IOperationContext context, CRITERIA criteria, FETCH_OPTIONS fetchOptions)
     {
@@ -60,63 +58,9 @@ public abstract class SearchObjectsOperationExecutor<OBJECT, OBJECT_PE, CRITERIA
         return getTranslator().translate(translationContext, ids, fetchOptions);
     }
 
-
-    // TODO: remove this hack when all implementations of this executor implement getSearchManager() which is not throwing an exception
-    protected SearchObjectsOperationResult<OBJECT> doExecuteNewSearch(final IOperationContext context,
-            final SearchObjectsOperation<CRITERIA, FETCH_OPTIONS> operation)
-    {
-        final CRITERIA criteria = operation.getCriteria();
-        final FETCH_OPTIONS fetchOptions = operation.getFetchOptions();
-
-        if (criteria == null)
-        {
-            throw new IllegalArgumentException("Criteria cannot be null.");
-        }
-        if (fetchOptions == null)
-        {
-            throw new IllegalArgumentException("Fetch options cannot be null.");
-        }
-
-        final Long userId = context.getSession().tryGetPerson().getId();
-        final TranslationContext translationContext = new TranslationContext(context.getSession());
-        final SortOptions<OBJECT> sortOptions = fetchOptions.getSortBy();
-
-        // There results from the manager should already be filtered.
-        final Set<Long> allResultsIds = getSearchManager().searchForIDs(userId, criteria, sortOptions, null, ID_COLUMN);
-        final List<Long> sortedAndPagedResultIds = sortAndPage(allResultsIds, fetchOptions);
-        final List<OBJECT_PE> sortedAndPagedResultPEs = getSearchManager().translate(sortedAndPagedResultIds);
-        final Map<OBJECT_PE, OBJECT> sortedAndPagedResultV3DTOs = doTranslate(translationContext, sortedAndPagedResultPEs, fetchOptions);
-
-        final List<OBJECT> finalResults = new ArrayList<>(sortedAndPagedResultV3DTOs.values());
-        final List<OBJECT> sortedFinalResults = getSortedFinalResults(criteria, fetchOptions, finalResults);
-        final SearchResult<OBJECT> searchResult = new SearchResult<>(sortedFinalResults, allResultsIds.size());
-
-        return getOperationResult(searchResult);
-    }
-
-    private List<OBJECT> getSortedFinalResults(final CRITERIA criteria, final FETCH_OPTIONS fetchOptions, final List<OBJECT> finalResults)
-    {
-        // No paging is needed, the result should just be sorted.
-        final Integer from = fetchOptions.getFrom();
-        fetchOptions.from(null);
-        final Integer count = fetchOptions.getCount();
-        fetchOptions.count(null);
-        final List<OBJECT> sortedFinalResults = new SortAndPage().sortAndPage(finalResults, criteria, fetchOptions);
-        fetchOptions.from(from);
-        fetchOptions.count(count);
-        return sortedFinalResults;
-    }
-
-    private List<Long> sortAndPage(final Set<Long> ids, final FetchOptions fo)
-    {
-        final SortOptions<OBJECT> sortOptions = fo.getSortBy();
-        final Set<Long> orderedIDs = (sortOptions != null) ? getSearchManager().sortIDs(ids, sortOptions) : ids;
-
-        final List<Long> toPage = new ArrayList<>(orderedIDs);
-        final Integer fromRecord = fo.getFrom();
-        final Integer recordsCount = fo.getCount();
-        final boolean hasPaging = fromRecord != null && recordsCount != null;
-        return hasPaging ? toPage.subList(fromRecord, Math.min(fromRecord + recordsCount, toPage.size())) : toPage;
+    @Override
+    protected ISearchManager<CRITERIA, OBJECT, OBJECT_PE> getSearchManager() {
+        throw new RuntimeException("This method is not implemented yet.");
     }
 
 }

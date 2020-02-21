@@ -185,18 +185,10 @@ public abstract class AbstractSearchManager<CRITERIA extends ISearchCriteria, OB
         return idsTranslator.translate(ids);
     }
 
-    @Override
-    public Set<Long> sortIDs(final Set<Long> filteredIDs, final SortOptions<OBJECT> sortOptions)
+    protected Set<Long> doSortIDs(final Set<Long> filteredIDs, final SortOptions<OBJECT> sortOptions, final TableMapper tableMapper)
     {
-        return getSearchDAO().sortIDs(getTableMapper(), filteredIDs, sortOptions);
+        return getSearchDAO().sortIDs(tableMapper, filteredIDs, sortOptions);
     }
-
-    /**
-     * Returns what kind of entity should be searched.
-     *
-     * @return an entity kind.
-     */
-    protected abstract TableMapper getTableMapper();
 
     protected <T, C extends AbstractFieldSearchCriteria<T>> C convertToOtherCriterion(final AbstractFieldSearchCriteria<T> criterion,
             IFieldSearchCriterionFactory<C> factory)
@@ -206,9 +198,10 @@ public abstract class AbstractSearchManager<CRITERIA extends ISearchCriteria, OB
         return result;
     }
 
-    protected Set<Long> searchForIDs(final Long userId, final AbstractCompositeSearchCriteria criteria, final String selectColumnName)
+    protected Set<Long> searchForIDs(final Long userId, final AbstractCompositeSearchCriteria criteria, final String selectColumnName,
+            final TableMapper tableMapper)
     {
-        final Set<Long> mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId, criteria, getTableMapper(),
+        final Set<Long> mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId, criteria, tableMapper,
                 selectColumnName);
 
         // If we have results, we use them

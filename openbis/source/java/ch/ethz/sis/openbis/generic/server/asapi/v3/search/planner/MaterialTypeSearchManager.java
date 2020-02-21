@@ -45,12 +45,6 @@ public class MaterialTypeSearchManager extends AbstractSearchManager<MaterialTyp
     }
 
     @Override
-    protected TableMapper getTableMapper()
-    {
-        return TableMapper.MATERIAL_TYPE;
-    }
-
-    @Override
     protected Set<Long> doFilterIDsByUserRights(final Set<Long> ids, final AuthorisationInformation authorisationInformation)
     {
         return ids;
@@ -58,7 +52,12 @@ public class MaterialTypeSearchManager extends AbstractSearchManager<MaterialTyp
 
     @Override
     public Set<Long> searchForIDs(final Long userId, final MaterialTypeSearchCriteria criteria, final SortOptions<MaterialType> sortOptions, final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName) {
-        return super.searchForIDs(userId, criteria, ID_COLUMN);
+        return super.searchForIDs(userId, criteria, ID_COLUMN, TableMapper.MATERIAL_TYPE);
+    }
+
+    @Override
+    public Set<Long> sortIDs(final Set<Long> filteredIDs, final SortOptions<MaterialType> sortOptions) {
+        return doSortIDs(filteredIDs, sortOptions, TableMapper.MATERIAL_TYPE);
     }
 
 }

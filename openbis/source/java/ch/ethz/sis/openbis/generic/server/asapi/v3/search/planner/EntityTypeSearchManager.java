@@ -53,7 +53,6 @@ public class EntityTypeSearchManager extends AbstractSearchManager<EntityTypeSea
     @Override
     public Set<Long> searchForIDs(final Long userId, final EntityTypeSearchCriteria criteria, final SortOptions<Void> sortOptions,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName) {
-        // TODO: refactor table mapper so that getTableMapper() method is not needed. A parameter to this method can be added.
         return super.searchForIDs(userId, criteria, ID_COLUMN, TableMapper.DATA_SET_TYPE);
     }
 

@@ -27,14 +27,13 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisation
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
-import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
 
 import java.util.Collections;
 import java.util.Set;
 
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper.*;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper.CONTENT_COPIES;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper.DATA_SET;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.DATA_ID_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PROPERTY_TYPE_COLUMN;
 
 /**
  * Manages detailed search with linked data set search criteria.
@@ -57,12 +56,6 @@ public class LinkedDataSetKindSearchManager extends AbstractSearchManager<Linked
     }
 
     @Override
-    protected TableMapper getTableMapper()
-    {
-        return TableMapper.CONTENT_COPIES;
-    }
-
-    @Override
     public Set<Long> searchForIDs(final Long userId, final LinkedDataSearchCriteria criteria, final SortOptions<DataSetType> sortOptions,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
@@ -77,6 +70,11 @@ public class LinkedDataSetKindSearchManager extends AbstractSearchManager<Linked
         }
 
         return mainCriteriaIds;
+    }
+
+    @Override
+    public Set<Long> sortIDs(final Set<Long> filteredIDs, final SortOptions<DataSetType> sortOptions) {
+        return doSortIDs(filteredIDs, sortOptions, CONTENT_COPIES);
     }
 
     private Set<Long> doSearchForIDs(final Long userId, final String idsColumnName)
