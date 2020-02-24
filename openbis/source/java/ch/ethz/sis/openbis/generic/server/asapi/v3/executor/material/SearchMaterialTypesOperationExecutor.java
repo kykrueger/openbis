@@ -16,7 +16,9 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.material;
 
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.MaterialTypeSearchManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -49,6 +51,9 @@ public class SearchMaterialTypesOperationExecutor
     @Autowired
     private IMaterialTypeTranslator translator;
 
+    @Autowired
+    private MaterialTypeSearchManager materialTypeSearchManager;
+
     @Override
     protected Class<? extends SearchObjectsOperation<MaterialTypeSearchCriteria, MaterialTypeFetchOptions>> getOperationClass()
     {
@@ -74,8 +79,14 @@ public class SearchMaterialTypesOperationExecutor
     }
 
     @Override
+    protected SearchObjectsOperationResult<MaterialType> doExecute(final IOperationContext context, final SearchObjectsOperation<MaterialTypeSearchCriteria, MaterialTypeFetchOptions> operation)
+    {
+        return doExecuteNewSearch(context, operation);
+    }
+
+    @Override
     protected ISearchManager<MaterialTypeSearchCriteria, MaterialType, Long> getSearchManager() {
-        throw new RuntimeException("This method is not implemented yet.");
+        return materialTypeSearchManager;
     }
 
 }
