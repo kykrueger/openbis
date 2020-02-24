@@ -279,7 +279,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 				//Create Dataset
 				var $uploadBtn = FormUtil.getButtonWithIcon("glyphicon-upload", function () {
 					mainController.changeView('showCreateDataSetPageFromPermId',_this._sampleFormModel.sample.permId);
-				}, "Upload");
+				}, "Upload", null, "upload-btn");
 				if(toolbarConfig.UPLOAD_DATASET) {
 					toolbarModel.push({ component : $uploadBtn, tooltip: null });
 				}

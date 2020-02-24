@@ -26,6 +26,10 @@ var UserTests = new function() {
                  .then(() => this.createExperiment())
                  //21. Experiment Step Form - Create/Update
                  .then(() => this.createExperimentStep())
+                 //22. is now disabled
+                 //23. Experiment Step Form - Dataset Uploader and Viewer
+                 .then(() => this.datasetUploader())
+                 //24.  Experiment Step Form - Children Generator (not exist)
                  .catch(error => { console.log(error) });
     }
 
@@ -422,6 +426,45 @@ var UserTests = new function() {
                              // save
                              .then(() => e.waitForId("save-btn"))
                              .then(() => e.click("save-btn"))
+                             .then(() => resolve());
+        });
+    }
+
+    this.datasetUploader = function() {
+        var baseURL = location.protocol + '//' + location.host + location.pathname;
+        var pathToResource = "js/test/resources/test-image.png";
+
+        return new Promise(function executor(resolve, reject) {
+            var e = EventUtil;
+
+            Promise.resolve().then(() => e.waitForId("upload-btn"))
+                             .then(() => e.click("upload-btn"))
+                             // choose type
+                             .then(() => e.waitForId("DATASET_TYPE"))
+                             .then(() => e.changeSelect2("DATASET_TYPE", "ELN_PREVIEW", false))
+                             // add first comment
+                             .then(() => e.waitForId("add-comment-btn"))
+                             .then(() => e.click("add-comment-btn"))
+                             .then(() => e.waitForId("comment-0-box"))
+                             .then(() => e.write("comment-0-box", "My first comment", false))
+                             .then(() => e.waitForId("save-comment-0-btn"))
+                             .then(() => e.click("save-comment-0-btn"))
+                             // upload image
+                             .then(() => e.dropFile("test-image.png", baseURL + pathToResource, "filedrop", false))
+                             .then(() => e.waitForClass("progressbar.ready"))
+                             .then(() => e.waitForId("save-btn"))
+                             .then(() => e.click("save-btn"))
+                             // open data set and edit it
+                             .then(() => e.waitForId("dataSetPosInTree-0"))
+                             .then(() => e.click("dataSetPosInTree-0"))
+                             .then(() => e.waitForId("dataset-edit-btn"))
+                             .then(() => e.click("dataset-edit-btn"))
+                             .then(() => e.waitForId("save-btn"))
+                             // change Name
+                             .then(() => e.waitForId("NAME"))
+                             .then(() => e.change("NAME", "New Name", false))
+                             .then(() => e.click("save-btn"))
+                             .then(() => e.waitForId("dataset-edit-btn"))
                              .then(() => resolve());
         });
     }

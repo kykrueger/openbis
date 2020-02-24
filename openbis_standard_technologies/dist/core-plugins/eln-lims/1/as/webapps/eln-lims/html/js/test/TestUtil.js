@@ -56,10 +56,10 @@ var TestUtil = new function() {
         xhr.responseType = 'blob';
 
         xhr.onload = function(e) {
-          if (this.status == 200) {
+            if (this.status == 200) {
             // get binary data as a response
             action(this.response);
-          }
+            }
         };
 
         xhr.send();

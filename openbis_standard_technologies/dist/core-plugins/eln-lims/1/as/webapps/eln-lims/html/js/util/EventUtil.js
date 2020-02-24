@@ -29,6 +29,21 @@ var EventUtil = new function() {
         });
     };
 
+    this.changeSelect2 = function(elementId, value, ignoreError) {
+        return new Promise(function executor(resolve, reject) {
+            try {
+                var element = EventUtil.getElement(elementId, ignoreError, resolve);
+                element.select2();
+                element.focus();
+                element.val(value);
+                element.select2().trigger('change');
+                resolve();
+            } catch(error) {
+                reject();
+            }
+        });
+    };
+
     this.checked = function(elementId, value, ignoreError) {
         return new Promise(function executor(resolve, reject) {
             try {
@@ -95,6 +110,18 @@ var EventUtil = new function() {
             timeout = EventUtil.checkTimeout(elementId, timeout, ignoreError, resolve, reject);
 
             if($("#" + elementId).length <= 0) {
+                setTimeout(executor.bind(null, resolve, reject), DEFAULT_TIMEOUT_STEP);
+            } else {
+                resolve();
+            }
+        });
+    };
+
+    this.waitForClass = function(className, ignoreError, timeout) {
+        return new Promise(function executor(resolve, reject) {
+            timeout = EventUtil.checkTimeout(className, timeout, ignoreError, resolve, reject);
+
+            if($("." + className).length <= 0) {
                 setTimeout(executor.bind(null, resolve, reject), DEFAULT_TIMEOUT_STEP);
             } else {
                 resolve();
@@ -171,6 +198,27 @@ var EventUtil = new function() {
         });
     };
 
+    this.dropFile = function(fileName, url, dropId, ignoreError) {
+        return new Promise(function executor(resolve, reject) {
+            try {
+                var dropElement = EventUtil.getElement(dropId, ignoreError, resolve).droppable();
+
+                TestUtil.fetchBytes(url, function(file) {
+                    file.name = fileName;
+
+                    var dt = { files: [file] };
+
+                    dropEvent = jQuery.Event("drop");
+                    dropEvent.originalEvent = jQuery.Event("DragEvent");
+                    dropEvent.originalEvent.dataTransfer = dt;
+                    dropElement.trigger(dropEvent);
+                    resolve();
+                });
+            } catch(error) {
+                reject();
+            }
+        });
+    };
 
     this.getElement = function(elementId, ignoreError, resolve) {
         var element = $( "#" + elementId );
@@ -183,5 +231,4 @@ var EventUtil = new function() {
         }
         return element;
     }
-
 }
