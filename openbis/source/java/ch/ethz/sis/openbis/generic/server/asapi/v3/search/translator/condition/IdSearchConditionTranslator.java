@@ -169,7 +169,7 @@ public class IdSearchConditionTranslator implements IConditionTranslator<IdSearc
             args.add(((PropertyTypePermId) entityId).getPermId());
         } else
         {
-            throw new IllegalArgumentException("The following ID class is not supported: " + entityId.getClass().getSimpleName());
+            throw new IllegalArgumentException("Unknown id: class " + entityId.getClass().getSimpleName());
         }
     }
 
