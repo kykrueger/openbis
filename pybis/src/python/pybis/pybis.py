@@ -684,7 +684,8 @@ class Openbis:
 
     def _get_username(self):
         if self.token:
-            username, rest = self.token.split('-')
+            match = re.search(r'(?P<username>.*)-.*', self.token)
+            username = match.groupdict()['username']
             return username
         return ''
 
