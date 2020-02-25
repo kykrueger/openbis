@@ -85,7 +85,7 @@ var TestUtil = new function() {
                     throw "CKEditor #" + elementId + " should be equal " + data;
                 }
             } catch(error) {
-                reject();
+                reject(error);
             }
         });
     }

@@ -11,7 +11,7 @@ var EventUtil = new function() {
                 element.trigger('click');
                 resolve();
             } catch(error) {
-                reject();
+                reject(error);
             }
 	    });
 	};
@@ -24,7 +24,7 @@ var EventUtil = new function() {
                 element.val(value).change();
                 resolve();
             } catch(error) {
-                reject();
+                reject(error);
             }
         });
     };
@@ -39,7 +39,7 @@ var EventUtil = new function() {
                 element.select2().trigger('change');
                 resolve();
             } catch(error) {
-                reject();
+                reject(error);
             }
         });
     };
@@ -52,7 +52,7 @@ var EventUtil = new function() {
                 element.prop('checked', value);
                 resolve();
             } catch(error) {
-                reject();
+                reject(error);
             }
         });
     };
@@ -68,7 +68,7 @@ var EventUtil = new function() {
                     throw "Element #" + elementId + " should" + (isEqual ? "" : " not") + " be equal " + value;
                 }
             } catch(error) {
-                reject();
+                reject(error);
             }
         });
     };
@@ -85,7 +85,7 @@ var EventUtil = new function() {
                 }
                 resolve();
             } catch(error) {
-                reject();
+                reject(error);
             }
 	    });
 	};
@@ -129,6 +129,23 @@ var EventUtil = new function() {
         });
     };
 
+    this.waitForStyle = function(elementId, styleName, styleValue, ignoreError, timeout) {
+        return new Promise(function executor(resolve, reject) {
+            try {
+                timeout = EventUtil.checkTimeout(elementId, timeout, ignoreError, resolve, reject);
+
+                var element = EventUtil.getElement(elementId, ignoreError, resolve);
+                if (element[0].style[styleName] === styleValue) {
+                    resolve();
+                } else {
+                    setTimeout(executor.bind(null, resolve, reject), DEFAULT_TIMEOUT_STEP);
+                }
+            } catch(error) {
+                reject(error);
+            }
+        });
+    }
+
     this.waitForFill = function(elementId, ignoreError, timeout) {
         return new Promise(function executor(resolve, reject) {
             timeout = EventUtil.checkTimeout(elementId, timeout, ignoreError, resolve, reject);
@@ -142,9 +159,11 @@ var EventUtil = new function() {
         });
     };
 
-    this.waitForCkeditor = function(id, data) {
+    this.waitForCkeditor = function(id, data, timeout) {
         return new Promise(function executor(resolve, reject) {
+            timeout = EventUtil.checkTimeout(elementId, timeout, ignoreError, resolve, reject);
             editor = CKEditorManager.getEditorById(id);
+
             if(editor === undefined) {
                 setTimeout(executor.bind(null, resolve, reject), DEFAULT_TIMEOUT_STEP);
             } else {
@@ -193,7 +212,7 @@ var EventUtil = new function() {
                 dropElement.trigger(dropEvent);
                 resolve();
             } catch(error) {
-                reject();
+                reject(error);
             }
         });
     };
@@ -215,7 +234,7 @@ var EventUtil = new function() {
                     resolve();
                 });
             } catch(error) {
-                reject();
+                reject(error);
             }
         });
     };

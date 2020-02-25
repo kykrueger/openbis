@@ -1178,7 +1178,9 @@ var FormUtil = new function() {
 			entityPath.append("/").append(this.getFormLink(spaceCode, 'Space', spaceCode));
 		}
 		if(projectCode) {
-			entityPath.append("/").append(this.getFormLink(projectCode, 'Project', IdentifierUtil.getProjectIdentifier(spaceCode, projectCode)));
+		    var projectIdentifier = IdentifierUtil.getProjectIdentifier(spaceCode, projectCode);
+		    var id = "PATH" + projectIdentifier.split(" ").join("-").split("/").join("_");
+			entityPath.append("/").append(this.getFormLink(projectCode, 'Project', projectIdentifier, null, id));
 		}
 		if(experimentCode) {
 			entityPath.append("/").append(this.getFormLink(experimentCode, 'Experiment', IdentifierUtil.getExperimentIdentifier(spaceCode, projectCode, experimentCode)));

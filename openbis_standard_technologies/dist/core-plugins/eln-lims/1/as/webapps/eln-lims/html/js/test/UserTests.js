@@ -29,7 +29,9 @@ var UserTests = new function() {
                  //22. is now disabled
                  //23. Experiment Step Form - Dataset Uploader and Viewer
                  .then(() => this.datasetUploader())
-                 //24.  Experiment Step Form - Children Generator (not exist)
+                 //24. Experiment Step Form - Children Generator (not exist)
+                 //24. Project  Form - Show in project overview
+                 .then(() => this.showInProjectOverview())
                  .catch(error => { console.log(error) });
     }
 
@@ -465,6 +467,34 @@ var UserTests = new function() {
                              .then(() => e.change("NAME", "New Name", false))
                              .then(() => e.click("save-btn"))
                              .then(() => e.waitForId("dataset-edit-btn"))
+                             .then(() => resolve());
+        });
+    }
+
+    this.showInProjectOverview = function() {
+        return new Promise(function executor(resolve, reject) {
+            var e = EventUtil;
+                             // go to project 101
+            Promise.resolve().then(() => e.waitForId("PATH_TESTID_PROJECT_101"))
+                             .then(() => e.click("PATH_TESTID_PROJECT_101"))
+                             // click "Show Experiments"
+                             .then(() => e.waitForId("options-menu-btn-project-view"))
+                             .then(() => e.waitForId("project-experiments"))
+                             .then(() => e.waitForStyle("project-experiments", "display", "none", false))
+                             .then(() => e.click("options-menu-btn-project-view"))
+                             .then(() => e.waitForId("options-menu-btn-experiments"))
+                             .then(() => e.click("options-menu-btn-experiments"))
+                             .then(() => e.waitForId("project-experiments"))
+                             .then(() => e.waitForStyle("project-experiments", "display", "", false))
+                             // click "Show Objects"
+                             .then(() => e.waitForId("options-menu-btn-project-view"))
+                             .then(() => e.waitForId("project-samples"))
+                             .then(() => e.waitForStyle("project-samples", "display", "none", false))
+                             .then(() => e.click("options-menu-btn-project-view"))
+                             .then(() => e.waitForId("options-menu-btn-objects"))
+                             .then(() => e.click("options-menu-btn-objects"))
+                             .then(() => e.waitForId("project-samples"))
+                             .then(() => e.waitForStyle("project-samples", "display", "", false))
                              .then(() => resolve());
         });
     }
