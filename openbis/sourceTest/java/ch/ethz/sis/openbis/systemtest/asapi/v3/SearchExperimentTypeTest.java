@@ -175,7 +175,7 @@ public class SearchExperimentTypeTest extends AbstractTest
         fetchOptions.withValidationPlugin().withScript();
 
         // When
-        ExperimentType type = v3api.searchExperimentTypes(sessionToken, searchCriteria, fetchOptions).getObjects().get(0);
+        final ExperimentType type = v3api.getExperimentTypes(sessionToken, Arrays.asList(typePermId), fetchOptions).get(typePermId);
 
         // Then
         assertEquals(type.getFetchOptions().hasValidationPlugin(), true);

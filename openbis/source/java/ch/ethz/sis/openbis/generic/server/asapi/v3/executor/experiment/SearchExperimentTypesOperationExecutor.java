@@ -16,6 +16,8 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.experiment;
 
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ExperimentTypeSearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -49,6 +51,9 @@ public class SearchExperimentTypesOperationExecutor
     @Autowired
     private IExperimentTypeTranslator translator;
 
+    @Autowired
+    private ExperimentTypeSearchManager experimentTypeSearchManager;
+
     @Override
     protected Class<? extends SearchObjectsOperation<ExperimentTypeSearchCriteria, ExperimentTypeFetchOptions>> getOperationClass()
     {
@@ -68,14 +73,21 @@ public class SearchExperimentTypesOperationExecutor
     }
 
     @Override
-    protected SearchObjectsOperationResult<ExperimentType> getOperationResult(SearchResult<ExperimentType> searchResult)
+    protected SearchObjectsOperationResult<ExperimentType> getOperationResult(final SearchResult<ExperimentType> searchResult)
     {
         return new SearchExperimentTypesOperationResult(searchResult);
     }
 
     @Override
+    protected SearchObjectsOperationResult<ExperimentType> doExecute(final IOperationContext context,
+            final SearchObjectsOperation<ExperimentTypeSearchCriteria, ExperimentTypeFetchOptions> operation)
+    {
+        return doExecuteNewSearch(context, operation);
+    }
+
+    @Override
     protected ISearchManager<ExperimentTypeSearchCriteria, ExperimentType, Long> getSearchManager() {
-        throw new RuntimeException("This method is not implemented yet.");
+        return experimentTypeSearchManager;
     }
 
 }
