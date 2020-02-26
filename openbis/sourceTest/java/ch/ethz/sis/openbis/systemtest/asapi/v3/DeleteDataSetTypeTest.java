@@ -17,6 +17,7 @@
 package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.testng.annotations.Test;
@@ -90,11 +91,7 @@ public class DeleteDataSetTypeTest extends AbstractDeleteEntityTypeTest
     @Override
     protected ICodeHolder getEntityType(String sessionToken, IEntityTypeId entityTypeId)
     {
-        DataSetTypeSearchCriteria criteria = new DataSetTypeSearchCriteria();
-        criteria.withId().thatEquals(entityTypeId);
-
-        SearchResult<DataSetType> result = v3api.searchDataSetTypes(sessionToken, criteria, new DataSetTypeFetchOptions());
-        return result.getObjects().isEmpty() ? null : result.getObjects().get(0);
+        return v3api.getDataSetTypes(sessionToken, Collections.singletonList(entityTypeId), new DataSetTypeFetchOptions()).get(entityTypeId);
     }
 
     @Override

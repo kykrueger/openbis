@@ -17,8 +17,10 @@
 package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetTypeFetchOptions;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.IObjectId;
@@ -75,11 +77,7 @@ public class DeleteSampleTypeTest extends AbstractDeleteEntityTypeTest
     @Override
     protected ICodeHolder getEntityType(String sessionToken, IEntityTypeId entityTypeId)
     {
-        SampleTypeSearchCriteria criteria = new SampleTypeSearchCriteria();
-        criteria.withId().thatEquals(entityTypeId);
-
-        SearchResult<SampleType> result = v3api.searchSampleTypes(sessionToken, criteria, new SampleTypeFetchOptions());
-        return result.getObjects().isEmpty() ? null : result.getObjects().get(0);
+        return v3api.getSampleTypes(sessionToken, Collections.singletonList(entityTypeId), new SampleTypeFetchOptions()).get(entityTypeId);
     }
 
     @Override

@@ -17,8 +17,10 @@
 package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetTypeFetchOptions;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.IObjectId;
@@ -71,11 +73,7 @@ public class DeleteMaterialTypeTest extends AbstractDeleteEntityTypeTest
     @Override
     protected ICodeHolder getEntityType(String sessionToken, IEntityTypeId entityTypeId)
     {
-        MaterialTypeSearchCriteria criteria = new MaterialTypeSearchCriteria();
-        criteria.withId().thatEquals(entityTypeId);
-
-        SearchResult<MaterialType> result = v3api.searchMaterialTypes(sessionToken, criteria, new MaterialTypeFetchOptions());
-        return result.getObjects().isEmpty() ? null : result.getObjects().get(0);
+        return v3api.getMaterialTypes(sessionToken, Collections.singletonList(entityTypeId), new MaterialTypeFetchOptions()).get(entityTypeId);
     }
 
     @Override
