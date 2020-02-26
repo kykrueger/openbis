@@ -1,4 +1,4 @@
-/*
+	/*
  * Copyright 2014 ETH Zuerich, Scientific IT Services
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,11 +31,6 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 			'role' : "form",
 			'action' : 'javascript:void(0);'
 		});
-		
-		var $rightPanel = null;
-		if(this._sampleFormModel.mode === FormMode.VIEW) {
-			$rightPanel = views.auxContent;
-		}
 		
 		$form.append($formColumn);
 		
@@ -115,21 +110,22 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		var rightToolbarModel = [];
         var dropdownOptionsModel = [];
 		var toolbarConfig = profile.getSampleTypeToolbarConfiguration(_this._sampleFormModel.sample.sampleTypeCode);
-		
+
 		if(this._sampleFormModel.mode === FormMode.VIEW) {
 			// New
-			if(_this._allowedToCreateChild() && toolbarConfig.CREATE && _this._sampleFormModel.sample.sampleTypeCode === "EXPERIMENTAL_STEP") {
+			if(_this._allowedToCreateChild() && this._sampleFormModel.isELNSample && toolbarConfig.CREATE) {
 				var sampleTypes = profile.getAllSampleTypes(true);
-				FormUtil.addCreationDropdown(toolbarModel, sampleTypes, ["ENTRY", "EXPERIMENTAL_STEP"], function(typeCode) {
+				var priorityTypes = ["ENTRY", "EXPERIMENTAL_STEP"];
+				FormUtil.addCreationDropdown(toolbarModel, sampleTypes, priorityTypes, function(typeCode) {
 					return function() {
 						Util.blockUI();
 						setTimeout(function() {
 							FormUtil.createNewSampleOfTypeWithParent(typeCode,
 									_this._sampleFormModel.sample.experimentIdentifierOrNull, 
-									_this._sampleFormModel.sample.identifier);
+									_this._sampleFormModel.sample.identifier,
+									_this._sampleFormModel.sample);
 						}, 100);
 					}
-					getNewSampleOfTypeWithParent(typeCode,);
 				});
 			}
 			
@@ -283,7 +279,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 				//Create Dataset
 				var $uploadBtn = FormUtil.getButtonWithIcon("glyphicon-upload", function () {
 					mainController.changeView('showCreateDataSetPageFromPermId',_this._sampleFormModel.sample.permId);
-				}, "Upload");
+				}, "Upload", null, "upload-btn");
 				if(toolbarConfig.UPLOAD_DATASET) {
 					toolbarModel.push({ component : $uploadBtn, tooltip: null });
 				}
@@ -354,7 +350,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 			}, "Save", null, "save-btn");
 			$saveBtn.removeClass("btn-default");
 			$saveBtn.addClass("btn-primary");
-			toolbarModel.push({ component : $saveBtn, tooltip: "Save" });
+			toolbarModel.push({ component : $saveBtn });
 
             // Templates
             if(toolbarConfig.TEMPLATES && this._sampleFormModel.mode === FormMode.CREATE) {
@@ -462,7 +458,13 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		}
 
 		var hideShowOptionsModel = [];
-		
+
+		// Preview
+        var $previewImageContainer = new $('<div>', { id : "previewImageContainer" });
+        $previewImageContainer.append($("<legend>").append("Preview"));
+        $previewImageContainer.hide();
+        $formColumn.append($previewImageContainer);
+
 		//
 		// Identification Info on Create
 		//
@@ -478,13 +480,65 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		//
 		// Form Defined Properties from General Section
 		//
-		for(var i = 0; i < sampleType.propertyTypeGroups.length; i++) {
-			var propertyTypeGroup = sampleType.propertyTypeGroups[i];
-			if(propertyTypeGroup.name === "General" || propertyTypeGroup.name === "General info") {
-				this._paintPropertiesForSection($formColumn, propertyTypeGroup, i, loadFromTemplate);
-			}
+		if(sampleTypeCode !== "ENTRY") {
+            for(var i = 0; i < sampleType.propertyTypeGroups.length; i++) {
+                var propertyTypeGroup = sampleType.propertyTypeGroups[i];
+                if(propertyTypeGroup.name === "General" || propertyTypeGroup.name === "General info") {
+                    this._paintPropertiesForSection($formColumn, propertyTypeGroup, i, loadFromTemplate);
+                }
+            }
 		}
-		
+
+		//
+		//
+		//
+		var documentEditorEditableToolbar = null;
+
+		if(sampleTypeCode === "ENTRY") {
+		    var isReadOnly = this._sampleFormModel.mode === FormMode.VIEW;
+		    var documentPropertyType = profile.getPropertyType("$DOCUMENT");
+		    FormUtil.fixStringPropertiesForForm(documentPropertyType, this._sampleFormModel.sample);
+            var documentChangeEvent = function(jsEvent, newValue) {
+                var newCleanValue = Util.getEmptyIfNull(newValue);
+                _this._sampleFormModel.isFormDirty = true;
+                _this._sampleFormModel.sample.properties["$DOCUMENT"] = Util.getEmptyIfNull(newValue);
+			    var titleStart = newCleanValue.indexOf("<h2>");
+			    var titleEnd = newCleanValue.indexOf("</h2>");
+			    if(titleStart !== -1 && titleEnd !== -1) {
+			        _this._sampleFormModel.sample.properties["$NAME"] = newCleanValue.substring(titleStart+4, titleEnd);
+			    } else {
+			        _this._sampleFormModel.sample.properties["$NAME"] = null;
+			    }
+			}
+            // https://ckeditor.com/docs/ckeditor5/latest/framework/guides/deep-dive/ui/document-editor.html
+            var documentEditor = $("<div>", { class : "document-editor" });
+            if(!isReadOnly) {
+                documentEditorEditableToolbar = $("<div>", { class : "document-editor__toolbar" });
+            }
+
+            var height = LayoutManager.secondColumnContent.outerHeight();
+
+            var documentEditorEditableContainer = $("<div>", { class : "document-editor__editable-container", style : "min-height: " + height + "px; overflow: hidden;" });
+
+            var documentEditorEditable = $("<div>", { class : "document-editor__editable", id : "$DOCUMENT" });
+
+		    var value = Util.getEmptyIfNull(this._sampleFormModel.sample.properties[documentPropertyType.code]);
+		    if(this._sampleFormModel.mode === FormMode.CREATE) {
+                value = "<h2>New Title</h2><br><p>new content</p>";
+		    }
+            var documentEditorEditableFinal = FormUtil.activateRichTextProperties(documentEditorEditable, documentChangeEvent, documentPropertyType, value, isReadOnly, documentEditorEditableToolbar);
+
+            documentEditorEditableFinal.addClass("document-editor__editable");
+            documentEditorEditableFinal.attr("id", "$DOCUMENT");
+            //  documentEditorEditableFinal.css("height", "100%");
+            //  Bugfix for Webkit Chrome/Safari
+            documentEditorEditableFinal.css("min-height", height + "px");
+
+            documentEditor.append(documentEditorEditableContainer.append(documentEditorEditableFinal));
+
+            $formColumn.append(documentEditor);
+		}
+
 		//
 		// LINKS TO PARENTS
 		//
@@ -502,11 +556,13 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		//
 		// Form Defined Properties from non General Section
 		//
-		for(var i = 0; i < sampleType.propertyTypeGroups.length; i++) {
-			var propertyTypeGroup = sampleType.propertyTypeGroups[i];
-			if(propertyTypeGroup.name !== "General" && propertyTypeGroup.name !== "General info") {
-				this._paintPropertiesForSection($formColumn, propertyTypeGroup, i, loadFromTemplate);
-			}
+		if(sampleTypeCode !== "ENTRY") {
+            for(var i = 0; i < sampleType.propertyTypeGroups.length; i++) {
+                var propertyTypeGroup = sampleType.propertyTypeGroups[i];
+                if(propertyTypeGroup.name !== "General" && propertyTypeGroup.name !== "General info") {
+                    this._paintPropertiesForSection($formColumn, propertyTypeGroup, i, loadFromTemplate);
+                }
+            }
 		}
 		
 		//
@@ -564,43 +620,31 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 											 'class' : 'zoomableImage',
 											 'id' : 'preview-image',
 											 'src' : './img/image_loading.gif',
-											 'style' : 'max-width:100%; display:none;'
+											 'style' : 'max-width:300px; display:none;'
 											});
 			$previewImage.click(function() {
 				Util.showImage($("#preview-image").attr("src"));
 			});
 			
-			if($rightPanel !== null) { //Min Desktop resolution
-				$rightPanel.append($previewImage);
-			} else {
-				$formColumn.append($previewImage);
-			}
+		    $previewImageContainer.append($previewImage);
 		}
-		
+
 		//
-		// DATASETS
-		//
-		var $dataSetViewerContainer = $("<div>", { 'id' : 'dataSetViewerContainer', 'style' : 'margin-top:10px;'});
-		if($rightPanel) {
-			$rightPanel.append($dataSetViewerContainer);
-		} else {
-			$formColumn.append($dataSetViewerContainer);
+        // DATASETS
+        //
+		if(this._sampleFormModel.mode !== FormMode.CREATE &&
+		   this._sampleFormModel.datasets.length > 0) {
+
+            //Preview image
+            this._reloadPreviewImage();
+
+            // Dataset Viewer
+            var $dataSetViewerContainer = new $('<div>', { id : "dataSetViewerContainer", style: "overflow: scroll; margin-top: 5px; padding-top: 5px; border-top: 1px dashed #ddd; " });
+            mainController.sideMenu.addSubSideMenu($dataSetViewerContainer);
+            this._sampleFormModel.dataSetViewer = new DataSetViewerController("dataSetViewerContainer", profile, this._sampleFormModel.sample, mainController.serverFacade, profile.getDefaultDataStoreURL(), this._sampleFormModel.datasets, false, true);
+            this._sampleFormModel.dataSetViewer.init();
 		}
-		
-		if(this._sampleFormModel.mode === FormMode.VIEW && _this._allowedToRegisterDataSet()) {
-			var $inlineDataSetForm = $("<div>");
-			if($rightPanel) {
-				$rightPanel.append($inlineDataSetForm);
-			} else {
-				$formColumn.append($inlineDataSetForm);
-			}
-			var $dataSetFormController = new DataSetFormController(this, FormMode.CREATE, this._sampleFormModel.sample, null, true);
-			var viewsForDS = {
-					content : $inlineDataSetForm
-			}
-			$dataSetFormController.init(viewsForDS);
-		}
-		
+
 		//
 		// INIT
 		//
@@ -608,6 +652,10 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 				"SAMPLE-VIEW-" + _this._sampleFormModel.sample.sampleTypeCode);
 		$header.append(FormUtil.getToolbar(toolbarModel));
 		$header.append(FormUtil.getToolbar(rightToolbarModel).css("float", "right"));
+        if(documentEditorEditableToolbar) {
+            documentEditorEditableToolbar.css("margin-top", "10px");
+            $header.append($("<br>")).append(documentEditorEditableToolbar);
+        }
 		$container.append($form);
 		
 		//
@@ -618,18 +666,6 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 			profile.sampleFormContentExtra(this._sampleFormModel.sample.sampleTypeCode, this._sampleFormModel.sample, "sample-form-content-extra");
 		} catch(err) {
 			Util.manageError(err);
-		}
-		
-		//
-		// TO-DO: Legacy code to be refactored
-		//
-		if(this._sampleFormModel.mode !== FormMode.CREATE) {
-			//Preview image
-			this._reloadPreviewImage();
-			
-			// Dataset Viewer
-			this._sampleFormModel.dataSetViewer = new DataSetViewerController("dataSetViewerContainer", profile, this._sampleFormModel.sample, mainController.serverFacade, profile.getDefaultDataStoreURL(), this._sampleFormModel.datasets, false, true);
-			this._sampleFormModel.dataSetViewer.init();
 		}
 		
 		this._sampleFormModel.isFormLoaded = true;
@@ -664,7 +700,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 				continue;
 			}
 			
-			if(propertyType.code === "$ANNOTATIONS_STATE" || propertyType.code === "$FREEFORM_TABLE_STATE" || propertyType.code === "$ORDER.ORDER_STATE" ) {
+			if(propertyType.code === "$ANNOTATIONS_STATE" || propertyType.code === "FREEFORM_TABLE_STATE" || propertyType.code === "$ORDER.ORDER_STATE" ) {
 				continue;
 			} else if(propertyType.code === "$XMLCOMMENTS") {
 				var $commentsContainer = $("<div>");
@@ -806,7 +842,9 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		$identificationInfo.append($legend);
 		$identificationInfo.append($fieldset);
 
-	    $fieldset.append(FormUtil.getFieldForComponentWithLabel(entityPath, "Path"));
+		if(this._sampleFormModel.mode !== FormMode.CREATE) {
+			$fieldset.append(FormUtil.getFieldForComponentWithLabel(entityPath, "Path"));
+		}
 		$fieldset.append(FormUtil.getFieldForLabelWithText("Type", this._sampleFormModel.sample.sampleTypeCode));
 		if(this._sampleFormModel.sample.experimentIdentifierOrNull) {
 			$fieldset.append(FormUtil.getFieldForLabelWithText(ELNDictionary.getExperimentKindName(this._sampleFormModel.sample.experimentIdentifierOrNull), this._sampleFormModel.sample.experimentIdentifierOrNull));
@@ -865,11 +903,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 	}
 	
 	this._createParentsSection = function(hideShowOptionsModel, sampleTypeDefinitionsExtension, sampleTypeCode) {
-		hideShowOptionsModel.push({
-			label : "Parents",
-			section : "#sample-parents"
-		});
-		
+		var _this = this;
 		var requiredParents = [];
 		if (sampleTypeDefinitionsExtension && sampleTypeDefinitionsExtension["SAMPLE_PARENTS_HINT"]) {
 			requiredParents = sampleTypeDefinitionsExtension["SAMPLE_PARENTS_HINT"];
@@ -897,15 +931,21 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 			this._sampleFormModel.sampleLinksParents.init($sampleParentsWidget);
 		}
 		$sampleParentsWidget.hide();
+		
+		hideShowOptionsModel.push({
+			forceToShow : this._sampleFormModel.mode === FormMode.CREATE && (sampleTypeDefinitionsExtension && sampleTypeDefinitionsExtension["FORCE_TO_SHOW_PARENTS_SECTION"]),
+			label : "Parents",
+			section : "#sample-parents",
+			showByDefault : true,
+			beforeShowingAction : function() {
+				_this._sampleFormModel.sampleLinksParents.refreshHeight();
+			}
+		});
+		
 		return $sampleParentsWidget;
 	}
 	
 	this._createChildrenSection = function(hideShowOptionsModel, sampleTypeDefinitionsExtension, sampleTypeCode) {
-		hideShowOptionsModel.push({
-			label : "Children",
-			section : "#sample-children"
-		});
-
 		var _this = this;
 		var requiredChildren = [];
 		if(sampleTypeDefinitionsExtension && sampleTypeDefinitionsExtension["SAMPLE_CHILDREN_HINT"]) {
@@ -956,6 +996,16 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 			$sampleChildrenWidget.append($generateChildrenBox);
 		}
 		$sampleChildrenWidget.hide();
+		
+		hideShowOptionsModel.push({
+			label : "Children",
+			section : "#sample-children",
+			showByDefault : true,
+			beforeShowingAction : function() {
+				_this._sampleFormModel.sampleLinksChildren.refreshHeight();
+			}
+		});
+		
 		return $sampleChildrenWidget;
 	}
 	
@@ -983,7 +1033,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 					component += "<span>Copy Children</span>";
 					component += "<span class='checkbox'><label><input type='radio' name='copyChildrenOnCopy' value='None' checked>Don't Copy</label></span>";
 					component += "<span class='checkbox'><label><input type='radio' name='copyChildrenOnCopy' value='ToParentCollection'>Into parents collection</label></span>";
-					component += "<span class='checkbox'><label><input type='radio' name='copyChildrenOnCopy' value='ToOriginalCollection'>Into original collection</label></span>";
+					//component += "<span class='checkbox'><label><input type='radio' name='copyChildrenOnCopy' value='ToOriginalCollection'>Into original collection</label></span>";
 					component += "</div>";
 					component += "</div>";
 					component += "</div>";
@@ -1060,6 +1110,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 										img.attr('src', downloadUrl);
 										img.attr('data-preview-loaded', 'true');
 										img.show();
+										$("#previewImageContainer").show();
 										break;
 									}
 								}

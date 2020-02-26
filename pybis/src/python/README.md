@@ -29,9 +29,11 @@ If you are unsure what parameters to add to a , add a question mark right after 
 
 When working with properties of entities, they might use a **controlled vocabulary** or are of a specific **property type**. Add an underscore `_` character right after the property and hit `SHIFT+ENTER` to show the valid values. When a property only acceps a controlled vocabulary, you will be shown the valid terms in a nicely formatted table.
 
-## connect to OpenBIS
+# connect to OpenBIS
 
-Interactivel, i.e. within a Jupyter notebook, you can use `getpass` to enter your password:
+## login
+
+In an **interactive session** e.g. inside a Jupyter notebook, you can use `getpass` to enter your password safely:
 
 ```
 from pybis import Openbis
@@ -43,7 +45,7 @@ password = getpass.getpass()
 o.login('username', password, save_token=True)   # save the session token in ~/.pybis/example.com.token
 ```
 
-In a script you would rather use two environment variables to provide username and password:
+In a **script** you would rather use two **environment variables** to provide username and password:
 
 ```
 from pybis import Openbis
@@ -60,6 +62,43 @@ o.token
 o.is_session_active()
 o.logout()
 ```
+
+## Mount openBIS dataStore server
+
+### Prerequisites: FUSE / SSHFS
+
+Mounting an openBIS dataStore server requires FUSE / SSHFS to be installed (requires root privileges):
+
+**Mac OS X**
+
+Follow the installation instructions on
+https://osxfuse.github.io
+
+**Unix Cent OS 7**
+
+```
+$ sudo yum install epel-release
+$ sudo yum --enablerepo=epel -y install fuse-sshfs
+$ user="$(whoami)"
+$ usermod -a -G fuse "$user"
+```
+After the installation, an `sshfs` command should be available.
+
+### Mount dataStore server with pyBIS
+
+Because the mount/unmount procedure differs from platform to platform, pyBIS offers two simple methods:
+
+```
+o.mount()
+o.mount(username, password, hostname, mountpoint, volname)
+o.is_mounted()
+o.unmount()
+o.get_mountpoint()
+```
+Currently, mounting is supported for Linux and Mac OS X only.
+
+All attributes, if not provided, are re-used by a previous login() command. If no mountpoint is provided, the default mounpoint will be `~/hostname`. If this directory does not exist, it will be created. The directory must be empty before mounting.
+
 
 # Masterdata
 OpenBIS stores quite a lot of meta-data along with your dataSets. The collection of data that describes this meta-data (i.e. meta-meta-data) is called masterdata. It consists of:
@@ -117,7 +156,14 @@ pt = o.new_property_type(
     code        = 'MY_NEW_PROPERTY_TYPE', 
     label       = 'yet another property type', 
     description = 'my first property',
-    dataType    = 'VARCHAR'
+    dataType    = 'VARCHAR',
+)
+
+pt_int = o.new_property_type(
+    code        = '$DEFAULT_OBJECT_TYPE', 
+    label       = 'default object type for ELN-LIMS', 
+    dataType    = 'VARCHAR',
+    internalNameSpace = True,
 )
 
 pt_voc = o.new_property_type(
@@ -125,7 +171,7 @@ pt_voc = o.new_property_type(
     label       = 'label me', 
     description = 'give me a description',
     dataType    = 'CONTROLLEDVOCABULARY',
-    vocabulary  = 'STORAGE'
+    vocabulary  = 'STORAGE',
 )
 ```
 
@@ -142,10 +188,10 @@ The `dataType` attribute can contain any of these values:
 * `CONTROLLEDVOCABULARY`
 * `MATERIAL`
 
-When choosing `CONTROLLEDVOCABULARY`, you must specify a `vocabulary` attribute (see example). Likewise, when choosing `MATERIAL`, a `materialType` attribute must be provided.
+When choosing `CONTROLLEDVOCABULARY`, you must specify a `vocabulary` attribute (see example). Likewise, when choosing `MATERIAL`, a `materialType` attribute must be provided. PropertyTypes that start with a $ belong by definition to the `internalNameSpace` and therefore this attribute must be set to True.
+
 
 ## create sample types
-
 
 ```
 sample_type = o.new_sample_type(
@@ -842,4 +888,3 @@ term.move_after_term('-40')
 term.save()
 term.delete()
 ```
-

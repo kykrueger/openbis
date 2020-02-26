@@ -6,7 +6,20 @@ var ExperimentDataGridUtil = new function() {
 		
 		//Fill Columns model
 		var columns = [];
-		
+
+
+		if($.inArray("$NAME", propertyCodes) !== -1) {
+			columns.push({
+				label : 'Name/Code',
+				property : '$NAME',
+				isExportable: true,
+				sortable : false,
+				render : function(data) {
+					return FormUtil.getFormLink(Util.getNameOrCode(data), "Experiment", data.identifier);
+				}
+			});
+		}
+
 		columns.push({
 			label : 'Identifier',
 			property : 'identifier',
@@ -25,18 +38,6 @@ var ExperimentDataGridUtil = new function() {
 				return sortDirection * naturalSort(value1, value2);
 			}
 		});
-		
-		if($.inArray("$NAME", propertyCodes) !== -1) {
-			columns.push({
-				label : 'Name',
-				property : '$NAME',
-				isExportable: true,
-				sortable : true,
-				render : function(data) {
-					return FormUtil.getFormLink(data[profile.propertyReplacingCode], "Experiment", data.identifier);
-				}
-			});
-		}
 		
 		var propertyColumnsToSort = [];
 		for (var idx = 0; idx < propertyCodes.length; idx++) {

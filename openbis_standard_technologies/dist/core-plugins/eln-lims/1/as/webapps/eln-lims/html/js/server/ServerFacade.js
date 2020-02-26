@@ -409,6 +409,7 @@ function ServerFacade(openbisServer) {
 			"retentionPeriod": retentionPeriod,
             "userInformation": userInformation,
 			"originUrl": window.location.origin,
+			"pathNameUrl": window.location.pathname,
 			"sessionToken": this.openbisServer.getSession(),
 		}, callbackFunction, "rc-exports-api");
 	};
@@ -431,6 +432,7 @@ function ServerFacade(openbisServer) {
 				options.withParameter("metadataOnly", parameters["metadataOnly"]);
 				options.withParameter("method", parameters["method"]);
 				options.withParameter("originUrl", parameters["originUrl"]);
+				options.withParameter("pathNameUrl", parameters["pathNameUrl"]);
 				options.withParameter("submissionType", parameters["submissionType"]);
 				options.withParameter("retentionPeriod", parameters["retentionPeriod"]);
 				options.withParameter("submissionUrl", parameters["submissionUrl"]);
@@ -1309,6 +1311,9 @@ function ServerFacade(openbisServer) {
 						if(advancedFetchOptions.withParentsType) {
 							parentFetchOptions.withType();
 						}
+						if (advancedFetchOptions.withParentsExperiment) {
+							parentFetchOptions.withExperiment();
+						}
 					}
 					if(advancedFetchOptions.withChildren) {
 						var childrenFetchOptions = fetchOptions.withChildren();
@@ -1316,8 +1321,11 @@ function ServerFacade(openbisServer) {
 							childrenFetchOptions.withType();
 						}
 						if(advancedFetchOptions.withChildrenProperties) {
-                            childrenFetchOptions.withProperties();
-                        }
+							childrenFetchOptions.withProperties();
+						}
+						if (advancedFetchOptions.withChildrenExperiment) {
+							childrenFetchOptions.withExperiment();
+						}
 					}
 					if(advancedFetchOptions.withAncestors) {
 						var ancestorsFetchOptions = fetchOptions.withParents();

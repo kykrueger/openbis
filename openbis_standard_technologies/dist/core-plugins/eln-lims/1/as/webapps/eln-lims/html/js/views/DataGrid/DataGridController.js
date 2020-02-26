@@ -42,7 +42,8 @@ function DataGridController(title, columnsFirst, columnsLast, columnsDynamicFunc
 					tableConfig = null;
 				}
 			}
-			_this._grid = new Grid(columnsFirst, columnsLast, columnsDynamicFunc, data, showAllColumns, tableConfig, onColumnsChange, isMultiselectable, null, heightPercentage);
+			_this._grid = new Grid(columnsFirst, columnsLast, columnsDynamicFunc, data, showAllColumns, tableConfig, 
+					onColumnsChange, isMultiselectable, null, heightPercentage, mainController.getScrollbarWidth());
 			if(rowClickEventHandler) {
 				_this._grid.addRowClickListener(rowClickEventHandler);
 			}
@@ -54,6 +55,10 @@ function DataGridController(title, columnsFirst, columnsLast, columnsDynamicFunc
 			_this._dataGridView = new DataGridView(this, _this._dataGridModel);
 			_this._dataGridView.repaint($container);
 		});	
+	}
+	
+	this.refreshHeight = function() {
+		this._grid.calculateHeight();
 	}
 	
 	this.refresh = function() {

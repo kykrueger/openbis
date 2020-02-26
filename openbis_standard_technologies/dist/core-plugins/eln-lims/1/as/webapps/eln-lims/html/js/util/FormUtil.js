@@ -501,12 +501,15 @@ var FormUtil = new function() {
 		return $btn;
 	}
 	
-	this.getButtonWithText = function(text, clickEvent, btnClass) {
+	this.getButtonWithText = function(text, clickEvent, btnClass, id) {
 		var auxBtnClass = "btn-default";
 		if(btnClass) {
 			auxBtnClass = btnClass;
 		}
 		var $pinBtn = $("<a>", { 'class' : 'btn ' + auxBtnClass });
+		if(id) {
+            $pinBtn.attr("id", id);
+        }
 		$pinBtn.append(text);
 		$pinBtn.click(clickEvent);
 		return $pinBtn;
@@ -786,6 +789,11 @@ var FormUtil = new function() {
 	// Form Fields
 	//
 	this._getBooleanField = function(id, alt, checked) {
+	    if (id) {
+	        if(id.charAt(0) === '$') {
+	            id = id.substring(1);
+	        }
+	    }
 		var attr = {'type' : 'checkbox', 'id' : id, 'alt' : alt, 'placeholder' : alt };
 		if(checked) {
 			attr['checked'] = '';
@@ -883,8 +891,15 @@ var FormUtil = new function() {
 		return $component;
 	}
 
-	this.createCkeditor = function($component, componentOnChange, value, isReadOnly) {
-        InlineEditor.create($component[0], {
+    this.createCkeditor = function($component, componentOnChange, value, isReadOnly, toolbarContainer) {
+	    var Builder = null;
+	    if(toolbarContainer) {
+            Builder = CKEDITOR.DecoupledEditor;
+	    } else {
+	        Builder = CKEDITOR.InlineEditor;
+	    }
+
+        Builder.create($component[0], {
                          simpleUpload: {
                              uploadUrl: "/openbis/openbis/file-service/eln-lims?type=Files&sessionID=" + mainController.serverFacade.getSession()
                          }
@@ -902,6 +917,10 @@ var FormUtil = new function() {
                             componentOnChange(event, value);
                         });
 
+                        if(toolbarContainer) {
+                            toolbarContainer.append(editor.ui.view.toolbar.element);
+                        }
+
                         CKEditorManager.addEditor($component.attr('id'), editor);
                     })
                     .catch(error => {
@@ -915,7 +934,7 @@ var FormUtil = new function() {
 	    return value;
 	}
 
-	this.activateRichTextProperties = function($component, componentOnChange, propertyType, value, isReadOnly) {
+	this.activateRichTextProperties = function($component, componentOnChange, propertyType, value, isReadOnly, toolbarContainer) {
 		if(profile.isForcedDisableRTF(propertyType)) {
 			$component.change(function(event) {
 				componentOnChange(event, $(this).val());
@@ -923,7 +942,7 @@ var FormUtil = new function() {
 		} else {
 		    // InlineEditor is not working with textarea that is why $component was changed on div
 		    var $component = this._getDiv($component.attr('id'), $component.attr('alt'), $component.attr('isRequired'));
-		    FormUtil.createCkeditor($component, componentOnChange, value, isReadOnly);
+		    FormUtil.createCkeditor($component, componentOnChange, value, isReadOnly, toolbarContainer);
 		}
 
         if(profile.isForcedMonospaceFont(propertyType)) {
@@ -974,12 +993,16 @@ var FormUtil = new function() {
 		}
 		this._populateDropdownModel(dropdownModel, otherTypes, actionFactory);
 		
-		FormUtil.addOptionsToToolbar(toolbarModel, dropdownModel, [], null, "New ");
+		var newWithIcon = $('<span>')
+			.append($('<span>', {'class' : 'glyphicon glyphicon-plus' }))
+			.append('&nbsp;New&nbsp;');
+		FormUtil.addOptionsToToolbar(toolbarModel, dropdownModel, [], null, newWithIcon);
 	}
 	
 	this._populateDropdownModel = function(dropdownModel, types, actionFactory) {
 		types.forEach(function (type) {
 			dropdownModel.push({
+				title : type.description,
 				label : Util.getDisplayNameFromCode(type.code),
 				action : actionFactory(type.code)
 			});
@@ -990,22 +1013,30 @@ var FormUtil = new function() {
 		if(!title) {
 			title = "More ... ";
 		}
+		var id = 'options-menu-btn';
+		if (namespace) {
+		    id = id + "-" + namespace;
+		    id = id.toLowerCase();
+		}
 		var $dropdownOptionsMenu = $("<span>", { class : 'dropdown' });
 		if(toolbarModel) {
 		    toolbarModel.push({ component : $dropdownOptionsMenu, tooltip: null });
 		}
-		var $dropdownOptionsMenuCaret = $("<a>", { 'href' : '#', 'data-toggle' : 'dropdown', class : 'dropdown-toggle btn btn-default', 'id' : 'options-menu-btn'})
+		var $dropdownOptionsMenuCaret = $("<a>", { 'href' : '#', 'data-toggle' : 'dropdown', class : 'dropdown-toggle btn btn-default', 'id' : id})
 				.append(title).append($("<b>", { class : 'caret' }));
 		var $dropdownOptionsMenuList = $("<ul>", { class : 'dropdown-menu', 'role' : 'menu' });
 		$dropdownOptionsMenu.append($dropdownOptionsMenuCaret);
 		$dropdownOptionsMenu.append($dropdownOptionsMenuList);
 		for (var idx = 0; idx < dropdownOptionsModel.length; idx++) {
-			var label = dropdownOptionsModel[idx].label;
-			if(dropdownOptionsModel[idx].separator) {
+			var option = dropdownOptionsModel[idx];
+			if(option.separator) {
 				$dropdownOptionsMenuList.append($("<li>", { 'role' : 'presentation' }).append($("<hr>", { style : "margin-top: 5px; margin-bottom: 5px;"})));
 			} else {
-				var $dropdownElement = $("<li>", { 'role' : 'presentation' }).append($("<a>", {'title' : label }).append(label));
-				$dropdownElement.click(dropdownOptionsModel[idx].action);
+				var label = option.label;
+				var title = option.title ? option.title : label;
+				var id = title.split(" ").join("-").toLowerCase();
+				var $dropdownElement = $("<li>", { 'role' : 'presentation' }).append($("<a>", {'title' : title, 'id' : id}).append(label));
+				$dropdownElement.click(option.action);
 				$dropdownOptionsMenuList.append($dropdownElement);
 			}
 		}
@@ -1019,11 +1050,22 @@ var FormUtil = new function() {
 			var sectionsSettings = settingsValue ? JSON.parse(settingsValue) : {};
 			for (var idx = 0; idx < hideShowOptionsModel.length; idx++) {
 				var option = hideShowOptionsModel[idx];
-				var shown = sectionsSettings[option.label] === "shown" || option.forceToShow === true;
+				var shown = option.forceToShow === true;
+				if (shown === false) {
+					var sectionSetting = sectionsSettings[option.label];
+					if (sectionSetting !== undefined) {
+						shown = sectionSetting === 'shown';
+					} else if (option.showByDefault) {
+						shown = true;
+					} else {
+						shown = ! profile.hideSectionsByDefault;
+					}
+				}
 				var $section = $(option.section);
 				$section.toggle(shown);
 				var $label = $("<span>").append((shown ? "Hide " : "Show ") + option.label);
-				var $dropdownElement = $("<li>", { 'role' : 'presentation' }).append($("<a>", {'title' : $label }).append($label));
+				var id = 'options-menu-btn-' + option.label.split(" ").join("-").toLowerCase();
+				var $dropdownElement = $("<li>", { 'role' : 'presentation' }).append($("<a>", { 'id' : id }).append($label));
 				var action = function(event) {
 					var option = event.data.option;
 					var $label = event.data.label;
@@ -1033,6 +1075,9 @@ var FormUtil = new function() {
 							$label.text("Show " + option.label);
 							sectionsSettings[option.label] = "hidden";
 						} else {
+							if (option.beforeShowingAction) {
+								option.beforeShowingAction();
+							}
 							$label.text("Hide " + option.label);
 							sectionsSettings[option.label] = "shown";
 						}
@@ -1070,7 +1115,7 @@ var FormUtil = new function() {
 	
 	this.getOperationsMenu = function(items) {
 		var $dropDownMenu = $("<span>", { class : 'dropdown' });
-		var $caret = $("<a>", { 'href' : '#', 'data-toggle' : 'dropdown', class : 'dropdown-toggle btn btn-default'}).append("Operations ").append($("<b>", { class : 'caret' }));
+		var $caret = $("<a>", { 'href' : '#', 'data-toggle' : 'dropdown', class : 'dropdown-toggle btn btn-default'}).append("More ... ").append($("<b>", { class : 'caret' }));
 		var $list = $("<ul>", { class : 'dropdown-menu', 'role' : 'menu', 'aria-labelledby' :'sampleTableDropdown' });
 		$dropDownMenu.append($caret);
 		$dropDownMenu.append($list);
@@ -1133,7 +1178,9 @@ var FormUtil = new function() {
 			entityPath.append("/").append(this.getFormLink(spaceCode, 'Space', spaceCode));
 		}
 		if(projectCode) {
-			entityPath.append("/").append(this.getFormLink(projectCode, 'Project', IdentifierUtil.getProjectIdentifier(spaceCode, projectCode)));
+		    var projectIdentifier = IdentifierUtil.getProjectIdentifier(spaceCode, projectCode);
+		    var id = "PATH" + projectIdentifier.split(" ").join("-").split("/").join("_");
+			entityPath.append("/").append(this.getFormLink(projectCode, 'Project', projectIdentifier, null, id));
 		}
 		if(experimentCode) {
 			entityPath.append("/").append(this.getFormLink(experimentCode, 'Experiment', IdentifierUtil.getExperimentIdentifier(spaceCode, projectCode, experimentCode)));
@@ -1173,8 +1220,7 @@ var FormUtil = new function() {
 	}
 	
 	this.isNumber = function(str) {
-    	var n = Number(str);
-    	return String(n) === str;
+    	return !isNaN(str);
 	}
 
 	//
@@ -1655,11 +1701,9 @@ var FormUtil = new function() {
     }
 
 	this.getExportButton = function(exportConfig, metadataOnly, includeRoot) {
-			var $export = FormUtil.getButtonWithIcon("glyphicon-export", this.getExportAction(exportConfig, metadataOnly, includeRoot));
-			if(metadataOnly) {
-				$export.append(" M");
-			}
-			return $export;
+			return FormUtil.getButtonWithIcon("glyphicon-export", 
+					this.getExportAction(exportConfig, metadataOnly, includeRoot),
+					metadataOnly ? "Export Metadata only" : "Export Metadata & Data");
 	};
 	
 	this.getFreezeButton = function(entityType, permId, isEntityFrozen) {
@@ -1678,7 +1722,7 @@ var FormUtil = new function() {
 		return $freezeButton;
 	}
 
-    this.createNewSampleOfTypeWithParent = function(sampleTypeCode, experimentIdentifier, sampleIdentifier) {
+    this.createNewSampleOfTypeWithParent = function(sampleTypeCode, experimentIdentifier, sampleIdentifier, parentSample) {
         var argsMap = {
 	        "sampleTypeCode" : sampleTypeCode,
 	        "experimentIdentifier" : experimentIdentifier
@@ -1688,7 +1732,7 @@ var FormUtil = new function() {
         mainController.changeView("showCreateSubExperimentPage", argsMapStr);
 
 	    var setParent = function() {
-	        mainController.currentView._sampleFormModel.sampleLinksParents.getSampleByIdentifier(sampleIdentifier);
+	        mainController.currentView._sampleFormModel.sampleLinksParents.addSample(parentSample);
 		    Util.unblockUI();
 	    }
 

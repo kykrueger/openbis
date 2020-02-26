@@ -29,7 +29,7 @@ function SpaceFormView(spaceFormController, spaceFormModel) {
 		
 		var typeTitle = "Space: ";
 		
-		var $formTitle = $("<h2>").append(typeTitle + this._spaceFormModel.space);
+		var $formTitle = $("<h2>").append(typeTitle + Util.getDisplayNameFromCode(this._spaceFormModel.space));
 		
 		//
 		// Toolbar
@@ -40,7 +40,7 @@ function SpaceFormView(spaceFormController, spaceFormModel) {
 		if (_this._allowedToCreateProject()) {
 			var $createProj = FormUtil.getButtonWithIcon("glyphicon-plus", function() {
 				_this._spaceFormController.createProject();
-			}, "New Project");
+			}, "New Project", null, "create-btn");
 			toolbarModel.push({ component : $createProj});
 		}
 

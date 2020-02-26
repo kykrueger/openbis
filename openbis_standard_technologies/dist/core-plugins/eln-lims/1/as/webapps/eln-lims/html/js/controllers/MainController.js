@@ -369,6 +369,7 @@ function MainController(profile) {
 		}
 		
 		CKEditorManager.destroy();
+		this.sideMenu.removeSubSideMenu();
 		
 		//
 		//
@@ -598,7 +599,7 @@ function MainController(profile) {
 					var argsMap = JSON.parse(cleanText);
 					var sampleTypeCode = argsMap["sampleTypeCode"];
 					var experimentIdentifier = argsMap["experimentIdentifier"];
-					document.title = "Create " + ELNDictionary.Sample + " " + arg;
+					document.title = "Create " + Util.getDisplayNameFromCode(sampleTypeCode);
 					this._showCreateSubExperimentPage(sampleTypeCode, experimentIdentifier);
 					//window.scrollTo(0,0);
 					break;
@@ -637,7 +638,7 @@ function MainController(profile) {
 						if(!data[0]) {
 							window.alert("The item is no longer available, refresh the page, if the problem persists tell your admin that the Lucene index is probably corrupted.");
 						} else {
-							document.title = "" + ELNDictionary.Sample + " " + data[0].code;
+							document.title = "" + Util.getDisplayNameFromCode(data[0].sampleTypeCode) + " " + data[0].code;
 							var isELNSubExperiment = $.inArray(data[0].spaceCode, _this.profile.inventorySpaces) === -1 && _this.profile.inventorySpaces.length > 0;
 							_this._showEditSamplePage(data[0], isELNSubExperiment, paginationInfo);
 							//window.scrollTo(0,0);
@@ -659,7 +660,7 @@ function MainController(profile) {
 						if(!data[0]) {
 							window.alert("The item is no longer available, refresh the page, if the problem persists tell your admin that the Lucene index is probably corrupted.");
 						} else {
-							document.title = "" + ELNDictionary.Sample + " " + data[0].code;
+							document.title = "" + Util.getDisplayNameFromCode(data[0].sampleTypeCode) + " " + data[0].code;
 							var isELNSubExperiment = $.inArray(data[0].spaceCode, _this.profile.inventorySpaces) === -1 && _this.profile.inventorySpaces.length > 0;
 							_this._showViewSamplePage(data[0], isELNSubExperiment, paginationInfo);
 							//window.scrollTo(0,0);
@@ -681,7 +682,7 @@ function MainController(profile) {
 						if(!data[0]) {
 							window.alert("The item is no longer available, refresh the page, if the problem persists tell your admin that the Lucene index is probably corrupted.");
 						} else {
-							document.title = "" + ELNDictionary.Sample + " " + data[0].code;
+							document.title = "" + Util.getDisplayNameFromCode(data[0].sampleTypeCode) + " " + data[0].code;
 							var isELNSubExperiment = $.inArray(data[0].spaceCode, _this.profile.inventorySpaces) === -1&& _this.profile.inventorySpaces.length > 0;
 							_this._showViewSamplePage(data[0], isELNSubExperiment, paginationInfo);
 							//window.scrollTo(0,0);
@@ -794,6 +795,12 @@ function MainController(profile) {
 						Util.showInfo("Current Version: " + data);
 					}, 'text');
 					break;
+				case "EXTRA_PLUGIN_UTILITY":
+				    var uniqueViewName = arg;
+				    var viewContainers = mainController._getNewViewModel(true, true, false);
+                    var pluginUtility = profile.getPluginUtility(uniqueViewName);
+                    pluginUtility.paintView(viewContainers.header, viewContainers.content);
+				    break
 				default:
 					window.alert("The system tried to create a non existing view: " + newViewChange);
 					break;
@@ -1620,4 +1627,33 @@ function MainController(profile) {
 			history.pushState(null, "", ""); //History Push State
 		});
 	}
+	
+	this.getScrollbarWidth = function() {
+		if (this.scrollbarWidth === undefined) {
+			var inner = document.createElement('p');
+			inner.style.width = "100%";
+			inner.style.height = "200px";
+			
+			var outer = document.createElement('div');
+			outer.style.position = "absolute";
+			outer.style.top = "0px";
+			outer.style.left = "0px";
+			outer.style.visibility = "hidden";
+			outer.style.width = "200px";
+			outer.style.height = "150px";
+			outer.style.overflow = "hidden";
+			outer.appendChild (inner);
+			
+			document.body.appendChild (outer);
+			var w1 = inner.offsetWidth;
+			outer.style.overflow = 'scroll';
+			var w2 = inner.offsetWidth;
+			if (w1 == w2) w2 = outer.clientWidth;
+			
+			document.body.removeChild (outer);
+			this.scrollbarWidth = w1 - w2;
+		}
+		return this.scrollbarWidth;
+	}
+
 }

@@ -40,38 +40,24 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		// Title
 		//
 		var $formTitle = $("<div>");
-		var nameLabel = this._experimentFormModel.experiment.properties[profile.propertyReplacingCode];
-		if(nameLabel) {
-			//nameLabel = html.sanitize(nameLabel);
-			nameLabel = DOMPurify.sanitize(nameLabel);
+		var typeTitle = Util.getDisplayNameFromCode(this._experimentFormModel.experiment.experimentTypeCode);
+		var title = "";
+		if (this._experimentFormModel.mode === FormMode.CREATE) {
+			title = "Create " + typeTitle;
 		} else {
-			nameLabel = this._experimentFormModel.experiment.code;
+			var nameLabel = this._experimentFormModel.experiment.properties[profile.propertyReplacingCode];
+			if(nameLabel) {
+				//nameLabel = html.sanitize(nameLabel);
+				nameLabel = DOMPurify.sanitize(nameLabel);
+			} else {
+				nameLabel = this._experimentFormModel.experiment.code;
+			}
+			title = typeTitle + ": " + nameLabel;
+			if (this._experimentFormModel.mode === FormMode.EDIT) {
+				title = "Update " + title;
+			}
 		}
-		
-		var spaceCode = IdentifierUtil.getSpaceCodeFromIdentifier(this._experimentFormModel.experiment.identifier);
-		var projectCode = IdentifierUtil.getProjectCodeFromExperimentIdentifier(this._experimentFormModel.experiment.identifier);
-		var experimentCode = (this._experimentFormModel.mode !== FormMode.CREATE)?IdentifierUtil.getCodeFromIdentifier(this._experimentFormModel.experiment.identifier):null;
-		var entityPath = FormUtil.getFormPath(spaceCode, projectCode, experimentCode);
-		
-		
-		var typeTitle = "" + ELNDictionary.getExperimentKindName(this._experimentFormModel.experiment.identifier) + ": ";
-		
-		var title = null;
-		switch(this._experimentFormModel.mode) {
-	    	case FormMode.CREATE:
-	    		title = "Create " + typeTitle + this._experimentFormModel.experiment.experimentTypeCode;
-	    		break;
-	    	case FormMode.EDIT:
-	    		title = "Update " + typeTitle + nameLabel;
-	    		break;
-	    	case FormMode.VIEW:
-	    		title = typeTitle + nameLabel;
-	    		break;
-		}
-		
-		$formTitle
-			.append($("<h2>").append(title))
-			.append($("<h4>", { "style" : "font-weight:normal;" } ).append(entityPath));
+		$formTitle.append($("<h2>").append(title));
 		
 		//
 		// Toolbar
@@ -81,38 +67,26 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		if(this._experimentFormModel.mode === FormMode.VIEW) {
 			if (_this._allowedToCreateSample()) {
 				//Create Experiment Step
-				var mandatorySampleTypeCode = null;
-				var mandatorySampleType = null;
-				
-				if(this._experimentFormModel.experiment && 
-						this._experimentFormModel.experiment.properties &&
-						this._experimentFormModel.experiment.properties["$DEFAULT_OBJECT_TYPE"]) {
-					mandatorySampleTypeCode = this._experimentFormModel.experiment.properties["$DEFAULT_OBJECT_TYPE"];
-				} else if(profile.getSampleTypeForSampleTypeCode("EXPERIMENTAL_STEP")) {
-					mandatorySampleTypeCode = "EXPERIMENTAL_STEP";
-				}
-				
-				mandatorySampleType = profile.getSampleTypeForSampleTypeCode(mandatorySampleTypeCode);
-				
-				if(mandatorySampleType) {
-					var $createBtn = FormUtil.getButtonWithIcon("glyphicon-plus", function() {
-						var argsMap = {
-								"sampleTypeCode" : mandatorySampleTypeCode,
+				var sampleTypes = profile.getAllSampleTypes(true);
+				FormUtil.addCreationDropdown(toolbarModel, sampleTypes, ["ENTRY", "EXPERIMENTAL_STEP"], function(typeCode) {
+					return function() {
+						Util.blockUI();
+						setTimeout(function() {
+							var argsMap = {
+								"sampleTypeCode" : typeCode,
 								"experimentIdentifier" : _this._experimentFormModel.experiment.identifier
-						}
-						var argsMapStr = JSON.stringify(argsMap);
-						Util.unblockUI();
-						mainController.changeView("showCreateSubExperimentPage", argsMapStr);
-					});
-					toolbarModel.push({ component : $createBtn, tooltip: "Create " + Util.getDisplayNameFromCode(mandatorySampleTypeCode) });
-				}
+							};
+							mainController.changeView("showCreateSubExperimentPage", JSON.stringify(argsMap));
+						}, 100);
+					}
+				});
 			}
 			if (_this._allowedToEdit()) {
 				//Edit
 				var $editBtn = FormUtil.getButtonWithIcon("glyphicon-edit", function () {
 					mainController.changeView("showEditExperimentPageFromIdentifier", _this._experimentFormModel.experiment.identifier);
-				});
-				toolbarModel.push({ component : $editBtn, tooltip: "Edit" });
+				}, "Edit", null, "edit-btn");
+				toolbarModel.push({ component : $editBtn });
 			}
 			if (_this._allowedToMove()) {
 				//Move
@@ -140,8 +114,8 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 				//Create Dataset
 				var $uploadBtn = FormUtil.getButtonWithIcon("glyphicon-upload", function () {
 					mainController.changeView('showCreateDataSetPageFromExpPermId',_this._experimentFormModel.experiment.permId);
-				});
-				toolbarModel.push({ component : $uploadBtn, tooltip: "Upload Dataset" });
+				}, "Upload");
+				toolbarModel.push({ component : $uploadBtn });
 	
 				//Get dropbox folder name
                 dropdownOptionsModel.push({
@@ -200,23 +174,34 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		} else { //Create and Edit
 			var $saveBtn = FormUtil.getButtonWithIcon("glyphicon-floppy-disk", function() {
 				_this._experimentFormController.updateExperiment();
-			}, "Save");
+			}, "Save", null, "save-btn");
 			$saveBtn.removeClass("btn-default");
 			$saveBtn.addClass("btn-primary");
-			toolbarModel.push({ component : $saveBtn, tooltip: "Save" });
+			toolbarModel.push({ component : $saveBtn });
 		}
 		
 		var $header = views.header;
 		$header.append($formTitle);
 
 		var hideShowOptionsModel = [];
-		
+
+		// Preview
+        var $previewImageContainer = new $('<div>', { id : "previewImageContainer" });
+        $previewImageContainer.append($("<legend>").append("Preview"));
+        $previewImageContainer.hide();
+        $formColumn.append($previewImageContainer);
+
 		//
 		// Identification Info on Create
 		//
 		if(this._experimentFormModel.mode === FormMode.CREATE) {
 			$formColumn.append(this._createIdentificationInfoSection(hideShowOptionsModel));
 		}
+
+        // Plugin Hook
+        var $experimentFormTop = new $('<div>');
+        $formColumn.append($experimentFormTop);
+        profile.experimentFormTop($experimentFormTop, this._experimentFormModel);
 		
 		//
 		// Form Defined Properties from General Section
@@ -249,35 +234,44 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 											 'class' : 'zoomableImage',
 											 'id' : 'preview-image',
 											 'src' : './img/image_loading.gif',
-											 'style' : 'max-width:100%; display:none;'
+											 'style' : 'max-height:300px; display:none;'
 											});
 			$previewImage.click(function() {
 				Util.showImage($("#preview-image").attr("src"));
 			});
 			
-			if($rightPanel !== null) { //Min Desktop resolution
-				$rightPanel.append($previewImage);
-			} else {
-				$formColumn.append($previewImage);
-			}
+			$previewImageContainer.append($previewImage);
 		}
-		
+
+		// Plugin Hook
+		var $experimentFormBottom = new $('<div>');
+		$formColumn.append($experimentFormBottom);
+		profile.experimentFormBottom($experimentFormBottom, this._experimentFormModel);
+
 		//
 		// DATASETS
 		//
-		
-		// Viewer
-		var $dataSetViewerContainer = $("<div>", { 'id' : 'dataSetViewerContainer', 'style' : 'margin-top:10px;'});
-		// Uploader
-		var $dataSetUploaderContainer = $("<div>");
-		
-		if($rightPanel) {
-			$rightPanel.append($dataSetViewerContainer);
-			$rightPanel.append($dataSetUploaderContainer);
-		} else {
-			$formColumn.append($dataSetViewerContainer);
-			$formColumn.append($dataSetUploaderContainer);
-		}
+
+	    if(this._experimentFormModel.mode !== FormMode.CREATE &&
+	        this._experimentFormModel.v3_experiment.dataSets.length > 0) {
+            var belongToExperiment = false;
+            for(var dIdx = 0; dIdx < this._experimentFormModel.v3_experiment.dataSets.length; dIdx++) {
+                if(this._experimentFormModel.v3_experiment.dataSets[dIdx].sample === null) {
+                    belongToExperiment = true;
+                    break;
+                }
+            }
+            if(belongToExperiment) {
+                //Preview image
+                this._reloadPreviewImage();
+
+                // Dataset Viewer
+                var $dataSetViewerContainer = new $('<div>', { id : "dataSetViewerContainer", style: "overflow: scroll; margin-top: 5px; padding-top: 5px; border-top: 1px dashed #ddd; " });
+                mainController.sideMenu.addSubSideMenu($dataSetViewerContainer);
+                this._experimentFormModel.dataSetViewer = new DataSetViewerController("dataSetViewerContainer", profile, this._experimentFormModel.v3_experiment, mainController.serverFacade, profile.getDefaultDataStoreURL(), null, false, true);
+                this._experimentFormModel.dataSetViewer.init();
+            }
+        }
 		
 		//
 		// INIT
@@ -288,33 +282,11 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		$container.append($form);
 		
 		Util.unblockUI();
-		
-		if(this._experimentFormModel.mode !== FormMode.CREATE) {
-			var experimentRules = { "UUIDv4" : { type : "Attribute", name : "PERM_ID", value : this._experimentFormModel.experiment.permId } };
-			var experimentCriteria = { entityKind : "EXPERIMENT", logicalOperator : "AND", rules : experimentRules };
-			mainController.serverFacade.searchForExperimentsAdvanced(experimentCriteria, null, function(data) {
-				// Viewer
-				_this._experimentFormModel.dataSetViewer = new DataSetViewerController("dataSetViewerContainer", profile, data.objects[0], mainController.serverFacade, profile.getDefaultDataStoreURL(), null, false, true);
-				_this._experimentFormModel.dataSetViewer.init();
-				if(_this._experimentFormModel.mode === FormMode.VIEW && _this._allowedToRegisterDataSet()) {
-					// Uploader
-					var $dataSetFormController = new DataSetFormController(_this, FormMode.CREATE, data.objects[0], null, true);
-					var viewsForDS = {
-							content : $dataSetUploaderContainer
-					}
-					$dataSetFormController.init(viewsForDS);
-				}
-			});
-		}
-		
-		if(this._experimentFormModel.mode !== FormMode.CREATE) {
-			//Preview image
-			this._reloadPreviewImage();
-		}
 	}
 	
 	this._createIdentificationInfoSection = function(hideShowOptionsModel) {
 		hideShowOptionsModel.push({
+		    forceToShow : this._experimentFormModel.mode === FormMode.CREATE,
 			label : "Identification Info",
 			section : "#experiment-identification-info"
 		});
@@ -322,10 +294,20 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		var _this = this;
 		var $identificationInfo = $("<div>", { id : "experiment-identification-info" });
 		$identificationInfo.append($('<legend>').text("Identification Info"));
-		
+		if (this._experimentFormModel.mode !== FormMode.CREATE) {
+			var spaceCode = IdentifierUtil.getSpaceCodeFromIdentifier(this._experimentFormModel.experiment.identifier);
+			var projectCode = IdentifierUtil.getProjectCodeFromExperimentIdentifier(this._experimentFormModel.experiment.identifier);
+			var experimentCode = this._experimentFormModel.experiment.code;
+			var entityPath = FormUtil.getFormPath(spaceCode, projectCode, experimentCode);
+			$identificationInfo.append(FormUtil.getFieldForComponentWithLabel(entityPath, "Path"));
+		}
+
 		var projectIdentifier = IdentifierUtil.getProjectIdentifierFromExperimentIdentifier(this._experimentFormModel.experiment.identifier);
-		$identificationInfo.append(FormUtil.getFieldForLabelWithText("Type", this._experimentFormModel.experiment.experimentTypeCode));
-		$identificationInfo.append(FormUtil.getFieldForLabelWithText("Project", projectIdentifier));
+		if(!this._experimentFormModel.mode === FormMode.CREATE) {
+		    $identificationInfo.append(FormUtil.getFieldForLabelWithText("Type", this._experimentFormModel.experiment.experimentTypeCode));
+		    $identificationInfo.append(FormUtil.getFieldForLabelWithText("Project", projectIdentifier));
+		}
+
 		var $projectField = FormUtil._getInputField("text", null, "project", null, true);
 		$projectField.val(projectIdentifier);
 		$projectField.hide();
@@ -334,12 +316,12 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		if(this._experimentFormModel.mode === FormMode.VIEW || this._experimentFormModel.mode === FormMode.EDIT) {
 			$identificationInfo.append(FormUtil.getFieldForLabelWithText("Code", this._experimentFormModel.experiment.code));
 			
-			var $codeField = FormUtil._getInputField("text", null, "code", null, true);
+			var $codeField = FormUtil._getInputField("text", "codeId", "code", null, true);
 			$codeField.val(IdentifierUtil.getCodeFromIdentifier(this._experimentFormModel.experiment.identifier));
 			$codeField.hide();
 			$identificationInfo.append($codeField);
 		} else if(this._experimentFormModel.mode === FormMode.CREATE) {
-			var $codeField = FormUtil._getInputField("text", null, "code", null, true);
+			var $codeField = FormUtil._getInputField("text", "codeId", "code", null, true);
 			$codeField.keyup(function() {
 				_this._experimentFormModel.isFormDirty = true;
 				var caretPosition = this.selectionStart;
@@ -399,15 +381,10 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 	}
 	
 	this._createSamplesSection = function(hideShowOptionsModel) {
-		hideShowOptionsModel.push({
-			label : ELNDictionary.Samples,
-			section : "#experiment-samples"
-		});
-		
 		var _this = this;
 		var $samples = $("<div>", { id : "experiment-samples" });
 		$samples.append($('<legend>').text(ELNDictionary.Samples));
-		var sampleListHeader = $("<div>");
+		var sampleListHeader = $("<p>");
 		var sampleListContainer = $("<div>");
 		$samples.append(sampleListHeader);
 		$samples.append(sampleListContainer);
@@ -418,6 +395,13 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		var sampleList = new SampleTableController(this._experimentFormController, null, this._experimentFormModel.experiment.identifier, null, null, this._experimentFormModel.experiment);
 		sampleList.init(views);
 		$samples.hide();
+		hideShowOptionsModel.push({
+			label : ELNDictionary.Samples,
+			section : "#experiment-samples",
+			beforeShowingAction : function() {
+				sampleList.refreshHeight();
+			}
+		});
 		return $samples;
 	}
 	
@@ -446,6 +430,10 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 				continue;
 			} else if(propertyType.dinamic && this._experimentFormController.mode === FormMode.CREATE) { //Skip
 				continue;
+			} else if(this._experimentFormModel.isSimpleFolder && this._experimentFormModel.mode === FormMode.CREATE &&
+			        propertyType.code !== "$NAME" &&
+			        !propertyType.mandatory) {
+			    continue;
 			}
 
             if(propertyType.code === "$XMLCOMMENTS") {
@@ -596,6 +584,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 										img.attr('src', downloadUrl);
 										img.attr('data-preview-loaded', 'true');
 										img.show();
+										$("#previewImageContainer").show();
 										break;
 									}
 								}

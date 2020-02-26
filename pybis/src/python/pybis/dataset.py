@@ -294,7 +294,7 @@ class DataSet(
         elif ('type' in self.data) and ('kind' in self.data['type']): # openBIS 16.5.x DTO
             kind =self.data['type']['kind']
         
-        if kind == 'PHYSICAL':
+        if kind in ['PHYSICAL', 'CONTAINER']:
             return self._download_physical(files, destination, create_default_folders, wait_until_finished, workers)
         elif kind == 'LINK':
             if linked_dataset_fileservice_url is None:

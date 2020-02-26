@@ -21,4 +21,4 @@ pip3 install src/python
 # See also
 
   V. Korolev, A. Joshi, V. Korolev, M.A. Grasso, A. Joshi, M.A. Grasso, et al., "PROB: A tool for tracking provenance and reproducibility of big data experiments", Reproduce'14. HPCA 2014, vol. 11, pp. 264-286, 2014.
-  http://ebiquity.umbc.edu/_file_directory_/papers/693.pdf
+  http://ebiquity.umbc.edu/\_file\_directory\_/papers/693.pdf
