@@ -68,7 +68,7 @@ public class CreateDataSetTypeTest extends CreateEntityTypeTest<DataSetTypeCreat
     @Override
     protected DataSetType getType(String sessionToken, String code)
     {
-        DataSetTypeFetchOptions fo = new DataSetTypeFetchOptions();
+        final DataSetTypeFetchOptions fo = new DataSetTypeFetchOptions();
         fo.withPropertyAssignments().withPropertyType();
         fo.withPropertyAssignments().withRegistrator();
 

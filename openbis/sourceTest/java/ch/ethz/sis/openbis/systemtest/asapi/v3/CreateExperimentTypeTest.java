@@ -17,6 +17,7 @@
 package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.testng.annotations.Test;
@@ -63,22 +64,12 @@ public class CreateExperimentTypeTest extends CreateEntityTypeTest<ExperimentTyp
     @Override
     protected ExperimentType getType(String sessionToken, String code)
     {
-        ExperimentTypeSearchCriteria criteria = new ExperimentTypeSearchCriteria();
-        criteria.withId().thatEquals(new EntityTypePermId(code));
-
-        ExperimentTypeFetchOptions fo = new ExperimentTypeFetchOptions();
+        final ExperimentTypeFetchOptions fo = new ExperimentTypeFetchOptions();
         fo.withPropertyAssignments().withPropertyType();
         fo.withPropertyAssignments().withRegistrator();
 
-        SearchResult<ExperimentType> result = v3api.searchExperimentTypes(sessionToken, criteria, fo);
-
-        if (result.getObjects().size() > 0)
-        {
-            return result.getObjects().get(0);
-        } else
-        {
-            return null;
-        }
+        final EntityTypePermId permId = new EntityTypePermId(code);
+        return v3api.getExperimentTypes(sessionToken, Collections.singletonList(permId), fo).get(permId);
     }
 
     @Override
