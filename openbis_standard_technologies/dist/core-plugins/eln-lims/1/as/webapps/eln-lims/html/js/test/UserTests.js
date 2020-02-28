@@ -30,8 +30,10 @@ var UserTests = new function() {
                  //23. Experiment Step Form - Dataset Uploader and Viewer
                  .then(() => this.datasetUploader())
                  //24. Experiment Step Form - Children Generator (not exist)
-                 //24. Project  Form - Show in project overview
+                 //25. Project  Form - Show in project overview
                  .then(() => this.showInProjectOverview())
+                 //26. Search
+                 .then(() => this.search())
                  .catch(error => { console.log(error) });
     }
 
@@ -474,7 +476,7 @@ var UserTests = new function() {
     this.showInProjectOverview = function() {
         return new Promise(function executor(resolve, reject) {
             var e = EventUtil;
-                             // go to project 101
+
             Promise.resolve().then(() => e.waitForId("PATH_TESTID_PROJECT_101"))
                              .then(() => e.click("PATH_TESTID_PROJECT_101"))
                              // click "Show Experiments"
@@ -495,6 +497,50 @@ var UserTests = new function() {
                              .then(() => e.click("options-menu-btn-objects"))
                              .then(() => e.waitForId("project-samples"))
                              .then(() => e.waitForStyle("project-samples", "display", "", false))
+                             .then(() => resolve());
+        });
+    }
+
+    this.search = function() {
+        return new Promise(function executor(resolve, reject) {
+            var e = EventUtil;
+
+            Promise.resolve().then(() => e.waitForId("search"))
+                             // start global search
+                             .then(() => e.click("search"))
+                             .then(() => e.change("search", "BAC5", false))
+                             .then(() => e.keypress("search", 13, false))
+                             .then(() => e.waitForId("save-btn"))
+                             // check searching results
+                             .then(() => e.waitForId("columns-dropdown-id"))
+                             .then(() => e.click("columns-dropdown-id"))
+                             .then(() => e.waitForId("code-cln"))
+                             .then(() => e.checked("code-cln", true))
+                             // todo should be modified after test 10. and BAC5_BAC4 will be available
+                             .then(() => e.waitForId("bac5-id"))
+                             // save query
+                             .then(() => e.waitForId("save-btn"))
+                             .then(() => e.click("save-btn"))
+                             .then(() => e.waitForId("Name"))
+                             .then(() => e.write("Name", "Search for BAC5", false))
+                             .then(() => e.waitForId("advanced-entity-search-dropdown-id"))
+                             .then(() => e.triggerSearchSelect2("advanced-entity-search-dropdown-id", "ba", false))
+                             .then(() => e.waitForId("search-query-save-btn"))
+                             .then(() => e.click("search-query-save-btn"))
+                             // wait for saving
+                             .then(() => e.sleep(3000))
+                             // Click on BAC5
+                             .then(() => e.waitForId("bac5-id"))
+                             .then(() => e.click("bac5-id"))
+                             .then(() => e.waitForId("edit-btn"))
+                             // Click on Advanced Search
+                             .then(() => e.waitForId("ADVANCED_SEARCH"))
+                             .then(() => e.click("ADVANCED_SEARCH"))
+                             .then(() => e.waitForId("saved-search-dropdown-id"))
+                             .then(() => e.triggerSelectSelect2("saved-search-dropdown-id", 0, false))
+                             .then(() => e.waitForId("search-btn"))
+                             .then(() => e.click("search-btn"))
+                             .then(() => e.waitForId("bac5-id"))
                              .then(() => resolve());
         });
     }

@@ -175,10 +175,20 @@ $.extend(Grid.prototype, {
 		
 		columnsForDropdown.forEach(function(column, columnIndex) {
 			if(!column.showByDefault && !column.hide) {
+
 				var checkbox = $("<input>")
 				.attr("type", "checkbox")
 				.attr("value", column.property)
 				.attr("style", "margin-left: 5px;");
+
+				if (column.property != null) {
+				    var id = column.property.split(" ").join("-") + "-cln";
+				    if (id[0] === '$') {
+				        id = id.substring(1, id.length - 1);
+				    }
+				    id = id.toLowerCase();
+				    checkbox.attr("id", id)
+                }
 			
 				if(thisGrid.tableSettings && thisGrid.tableSettings.columns && Object.keys(thisGrid.tableSettings.columns).length !== 0) {
 					if((thisGrid.tableSettings.columns[column.property] === true)) { //If settings are present
