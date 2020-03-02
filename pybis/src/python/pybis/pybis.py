@@ -1727,7 +1727,7 @@ class Openbis:
         self, identifier=None, code=None, permId=None,
         space=None, project=None, experiment=None, collection=None, type=None,
         start_with=None, count=None,
-        withParents=None, withChildren=None, tags=None, props=None, **properties
+        withParents=None, withChildren=None, tags=None, attrs=None, props=None, **properties
     ):
         """ Get a list of all samples for a given space/project/experiment (or any combination)
         """
@@ -1771,12 +1771,14 @@ class Openbis:
             "operator": "AND"
         }
 
+        options = self._get_fetchopts_for_attrs(attrs)
+
         # build the various fetch options
         fetchopts = fetch_option['sample']
         fetchopts['from'] = start_with
         fetchopts['count'] = count
 
-        for option in ['tags', 'properties', 'registrator', 'modifier', 'experiment']:
+        for option in ['tags', 'properties', 'registrator', 'modifier']+options:
             fetchopts[option] = fetch_option[option]
 
         request = {
@@ -1790,14 +1792,27 @@ class Openbis:
 
         return self._sample_list_for_response(
             response=resp['objects'],
+            attrs=attrs,
             props=props,
             start_with=start_with,
             count=count,
             totalCount=resp['totalCount'],
         )
 
-
     get_objects = get_samples # Alias
+
+
+    def _get_fetchopts_for_attrs(self, attrs=None):
+        if attrs is None:
+            return ['experiment']
+
+        fetchopts = []
+        for attr in attrs:
+            if attr.startswith('space'): fetchopts.append('space')
+            if attr.startswith('project'): fetchopts.append('project')
+            if attr.startswith('experiment'): fetchopts.append('experiment')
+
+        return fetchopts
 
 
     def get_experiments(
@@ -3430,27 +3445,45 @@ class Openbis:
                 props=props,
             )
 
+
     def _sample_list_for_response(
-        self, response, props=None,
+        self, response, attrs=None, props=None,
         start_with=None, count=None, totalCount=0
     ):
-        """returns a Things object, containing a DataFrame plus some additional information
+        """returns a Things object, containing a DataFrame plus additional information
         """
 
+        def extract_attribute(attribute_to_extract):
+            def return_attribute(obj):
+                if obj is None: return ''
+                return obj.get(attribute_to_extract,'')
+            return return_attribute
+
+        if attrs is None:
+            attrs = []
         parse_jackson(response)
-        attrs = ['identifier', 'permId', 'experiment', 'type',
+        default_attrs = ['identifier', 'permId', 'type',
                  'registrator', 'registrationDate', 'modifier', 'modificationDate']
+        display_attrs = default_attrs + attrs
         if len(response) == 0:
-            samples = DataFrame(columns=attrs)
+            samples = DataFrame(columns=display_attrs)
         else:
             samples = DataFrame(response)
+            for attr in attrs:
+                if '.' in attr:
+                    entity, attribute_to_extract = attr.split('.')
+                    samples[attr] = samples[entity].map(extract_attribute(attribute_to_extract))
+            for attr in attrs:
+                # if no dot supplied, just display the code of the space, project or experiment
+                if attr in ['space', 'project','experiment']:
+                    samples[attr] = samples[attr].map(extract_nested_identifier)
+
             samples['registrationDate'] = samples['registrationDate'].map(format_timestamp)
             samples['modificationDate'] = samples['modificationDate'].map(format_timestamp)
             samples['registrator'] = samples['registrator'].map(extract_person)
             samples['modifier'] = samples['modifier'].map(extract_person)
             samples['identifier'] = samples['identifier'].map(extract_identifier)
             samples['permId'] = samples['permId'].map(extract_permid)
-            samples['experiment'] = samples['experiment'].map(extract_nested_identifier)
             samples['type'] = samples['type'].map(extract_nested_permid)
 
         if props is not None:
@@ -3458,12 +3491,12 @@ class Openbis:
                 props = [props]
             for prop in props:
                 samples[prop.upper()] = samples['properties'].map(lambda x: x.get(prop.upper(), ''))
-                attrs.append(prop.upper())
+                display_attrs.append(prop.upper())
 
         return Things(
             openbis_obj = self,
             entity = 'sample',
-            df = samples[attrs],
+            df = samples[display_attrs],
             identifier_name = 'identifier',
             start_with=start_with,
             count=count,
