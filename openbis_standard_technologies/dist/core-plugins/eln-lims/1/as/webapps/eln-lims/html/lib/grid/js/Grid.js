@@ -175,10 +175,20 @@ $.extend(Grid.prototype, {
 		
 		columnsForDropdown.forEach(function(column, columnIndex) {
 			if(!column.showByDefault && !column.hide) {
+
 				var checkbox = $("<input>")
 				.attr("type", "checkbox")
 				.attr("value", column.property)
 				.attr("style", "margin-left: 5px;");
+
+				if (column.property != null) {
+				    var id = column.property.split(" ").join("-") + "-cln";
+				    if (id[0] === '$') {
+				        id = id.substring(1, id.length - 1);
+				    }
+				    id = id.toLowerCase();
+				    checkbox.attr("id", id)
+                }
 			
 				if(thisGrid.tableSettings && thisGrid.tableSettings.columns && Object.keys(thisGrid.tableSettings.columns).length !== 0) {
 					if((thisGrid.tableSettings.columns[column.property] === true)) { //If settings are present
@@ -752,17 +762,7 @@ $.extend(Grid.prototype, {
 //              Fix table width since fuelux 3.1.0
 //				var newWidth = $(thisGrid.panel).find(".repeater-list-wrapper > .table").width();
 //				$(thisGrid.panel).find(".repeater").width(newWidth);
-
-				var headerHeight = $(thisGrid.panel).find(".repeater-header").outerHeight(true);
-				var listHeight = Math.max(100, $(thisGrid.panel).find(".repeater-list").outerHeight(true));
-				var footerHeight = $(thisGrid.panel).find(".repeater-footer").outerHeight(true);
-				var viewport = $(thisGrid.panel).find(".repeater-canvas")[0];
-				var scrollbarHeight = viewport.scrollWidth > viewport.offsetWidth ? thisGrid.scrollbarWidth : 0;
-				var totalHeight = headerHeight + listHeight + footerHeight + scrollbarHeight;
-				totalHeight = Math.min(totalHeight, thisGrid.maxHeight);
-				if (thisGrid.viewOptions.staticHeight < totalHeight) {
-					thisGrid.viewOptions.staticHeight = totalHeight;
-				}
+				thisGrid.calculateHeight();
 				
 				var optionsDropdowns = $(".dropdown.table-options-dropdown");
 				for(var i = 0; i < optionsDropdowns.length; i++) {
@@ -783,6 +783,23 @@ $.extend(Grid.prototype, {
 				
 			}, 100);
 		}, options);
+	},
+	
+	calculateHeight : function() {
+		var thisGrid = this;
+		var $panel = $(thisGrid.panel);
+		var $header = $panel.find(".repeater-header");
+		var headerHeight = $header.outerHeight(true);
+		var listHeight = Math.max(144, $(thisGrid.panel).find(".repeater-list").outerHeight(true));
+		var footerHeight = $panel.find(".repeater-footer").outerHeight(true);
+		var viewport = $panel.find(".repeater-canvas")[0];
+		var scrollbarHeight = viewport.scrollWidth > viewport.offsetWidth ? thisGrid.scrollbarWidth : 0;
+		var totalHeight = headerHeight + listHeight + footerHeight + scrollbarHeight;
+		totalHeight = Math.min(totalHeight, thisGrid.maxHeight);
+		if (thisGrid.viewOptions.staticHeight < totalHeight) {
+			thisGrid.viewOptions.staticHeight = totalHeight;
+		}
+
 	},
 
 	addRowClickListener : function(listener) {

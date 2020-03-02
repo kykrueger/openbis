@@ -11,7 +11,7 @@ var EventUtil = new function() {
                 element.trigger('click');
                 resolve();
             } catch(error) {
-                reject();
+                reject(error);
             }
 	    });
 	};
@@ -24,7 +24,55 @@ var EventUtil = new function() {
                 element.val(value).change();
                 resolve();
             } catch(error) {
-                reject();
+                reject(error);
+            }
+        });
+    };
+
+    this.changeSelect2 = function(elementId, value, ignoreError) {
+        return new Promise(function executor(resolve, reject) {
+            try {
+                var element = EventUtil.getElement(elementId, ignoreError, resolve);
+                element.select2();
+                element.focus();
+                element.val(value);
+                element.select2().trigger('change');
+                resolve();
+            } catch(error) {
+                reject(error);
+            }
+        });
+    };
+
+    this.triggerSelectSelect2 = function(elementId, value, ignoreError) {
+        return new Promise(function executor(resolve, reject) {
+            try {
+                var element = EventUtil.getElement(elementId, ignoreError, resolve);
+                element.focus();
+                element.val(value);
+                element.select2().trigger('select2:select');
+                resolve();
+            } catch(error) {
+                reject(error);
+            }
+        });
+    };
+
+    this.triggerSearchSelect2 = function(elementId, value, ignoreError) {
+        return new Promise(function executor(resolve, reject) {
+            try {
+                var element = EventUtil.getElement(elementId, ignoreError, resolve);
+                element.select2('open');
+
+                var $search = element.data('select2').dropdown.$search || element.data('select2').selection.$search;
+                $search.val(value);
+                $search.trigger('input');
+                setTimeout(function() {
+                    $('.select2-results__option').trigger("mouseup");
+                    resolve();
+                }, 2000);
+            } catch(error) {
+                reject(error);
             }
         });
     };
@@ -37,7 +85,7 @@ var EventUtil = new function() {
                 element.prop('checked', value);
                 resolve();
             } catch(error) {
-                reject();
+                reject(error);
             }
         });
     };
@@ -53,7 +101,7 @@ var EventUtil = new function() {
                     throw "Element #" + elementId + " should" + (isEqual ? "" : " not") + " be equal " + value;
                 }
             } catch(error) {
-                reject();
+                reject(error);
             }
         });
     };
@@ -70,10 +118,25 @@ var EventUtil = new function() {
                 }
                 resolve();
             } catch(error) {
-                reject();
+                reject(error);
             }
 	    });
 	};
+
+	this.keypress = function(elementId, key, ignoreError) {
+	    return new Promise(function executor(resolve, reject) {
+            try {
+                var element = EventUtil.getElement(elementId, ignoreError, resolve);
+                element.focus();
+                var e = $.Event('keypress');
+                e.which = key;
+                $(element).trigger(e);
+                resolve();
+            } catch(error) {
+                reject(error);
+            }
+        });
+	}
 
 	this.verifyExistence = function(elementId, isExist, ignoreError) {
 	    return new Promise(function executor(resolve, reject) {
@@ -102,6 +165,35 @@ var EventUtil = new function() {
         });
     };
 
+    this.waitForClass = function(className, ignoreError, timeout) {
+        return new Promise(function executor(resolve, reject) {
+            timeout = EventUtil.checkTimeout(className, timeout, ignoreError, resolve, reject);
+
+            if($("." + className).length <= 0) {
+                setTimeout(executor.bind(null, resolve, reject), DEFAULT_TIMEOUT_STEP);
+            } else {
+                resolve();
+            }
+        });
+    };
+
+    this.waitForStyle = function(elementId, styleName, styleValue, ignoreError, timeout) {
+        return new Promise(function executor(resolve, reject) {
+            try {
+                timeout = EventUtil.checkTimeout(elementId, timeout, ignoreError, resolve, reject);
+
+                var element = EventUtil.getElement(elementId, ignoreError, resolve);
+                if (element[0].style[styleName] === styleValue) {
+                    resolve();
+                } else {
+                    setTimeout(executor.bind(null, resolve, reject), DEFAULT_TIMEOUT_STEP);
+                }
+            } catch(error) {
+                reject(error);
+            }
+        });
+    }
+
     this.waitForFill = function(elementId, ignoreError, timeout) {
         return new Promise(function executor(resolve, reject) {
             timeout = EventUtil.checkTimeout(elementId, timeout, ignoreError, resolve, reject);
@@ -114,6 +206,19 @@ var EventUtil = new function() {
             }
         });
     };
+
+    this.waitForCkeditor = function(id, data, timeout) {
+        return new Promise(function executor(resolve, reject) {
+            timeout = EventUtil.checkTimeout(elementId, timeout, ignoreError, resolve, reject);
+            editor = CKEditorManager.getEditorById(id);
+
+            if(editor === undefined) {
+                setTimeout(executor.bind(null, resolve, reject), DEFAULT_TIMEOUT_STEP);
+            } else {
+                resolve();
+            }
+        });
+    }
 
     this.checkTimeout = function(elementId, timeout, ignoreError, resolve, reject) {
         if (!timeout) {
@@ -129,6 +234,10 @@ var EventUtil = new function() {
             }
         }
         return timeout;
+    }
+
+    this.sleep = function(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
     }
 
     this.dragAndDrop = function(dragId, dropId, ignoreError) {
@@ -151,11 +260,32 @@ var EventUtil = new function() {
                 dropElement.trigger(dropEvent);
                 resolve();
             } catch(error) {
-                reject();
+                reject(error);
             }
         });
     };
 
+    this.dropFile = function(fileName, url, dropId, ignoreError) {
+        return new Promise(function executor(resolve, reject) {
+            try {
+                var dropElement = EventUtil.getElement(dropId, ignoreError, resolve).droppable();
+
+                TestUtil.fetchBytes(url, function(file) {
+                    file.name = fileName;
+
+                    var dt = { files: [file] };
+
+                    dropEvent = jQuery.Event("drop");
+                    dropEvent.originalEvent = jQuery.Event("DragEvent");
+                    dropEvent.originalEvent.dataTransfer = dt;
+                    dropElement.trigger(dropEvent);
+                    resolve();
+                });
+            } catch(error) {
+                reject(error);
+            }
+        });
+    };
 
     this.getElement = function(elementId, ignoreError, resolve) {
         var element = $( "#" + elementId );
@@ -168,5 +298,4 @@ var EventUtil = new function() {
         }
         return element;
     }
-
 }
