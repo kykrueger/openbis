@@ -1,3 +1,7 @@
+## Changes with pybis-1.11.1
+
+- added automatically accepting host key, otherwise mount() will hang the first time 
+
 ## Changes with pybis-1.11.0
 
 * implemented mount() and unmount() methods to mount openBIS dataStore server via SSHFS and FUSE

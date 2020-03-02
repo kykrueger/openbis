@@ -1106,8 +1106,8 @@ class Openbis:
 
 
         os_options = {
-            "darwin": "-oauto_cache,reconnect,defer_permissions,noappledouble,negative_vncache,volname={}".format(hostname),
-            "linux": "-oauto_cache,reconnect",
+            "darwin": "-oauto_cache,reconnect,defer_permissions,noappledouble,negative_vncache,volname={} -oStrictHostKeyChecking=no ".format(hostname),
+            "linux": "-oauto_cache,reconnect -oStrictHostKeyChecking=no",
         }
 
         if volname is None:
