@@ -8,6 +8,8 @@ var UserTests = new function() {
                  .then(() => this.inventorySpaceForTestUser())
                  //6. Sample Form - Creation
                  .then(() => this.creationSampleForm())
+                 //7. Sample Form - Edit: Add a Photo and Parents/Children
+                 .then(() => this.editSampleForm())
                  //13. Inventory Table - Imports for Create - Automatic Codes
                  .then(() => this.importsAutomaticCodes())
                  //14. Inventory Table - Imports for Create - Given Codes
@@ -119,6 +121,56 @@ var UserTests = new function() {
                      .then(() => e.equalTo("NAME", name, true, false))
                      .then(() => TestUtil.ckeditorTestData("BACTERIA.GENOTYPE", richText))
                      .then(() => resolve());
+        });
+    }
+
+    this.editSampleForm = function() {
+        var baseURL = location.protocol + '//' + location.host + location.pathname;
+        var pathToResource = "js/test/resources/test-image.png";
+
+        return new Promise(function executor(resolve, reject) {
+            var e = EventUtil;
+
+            Promise.resolve().then(() => e.waitForId("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
+                             .then(() => e.click("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
+                             .then(() => e.waitForId("bac3-column-id"))
+                             .then(() => e.click("bac3-column-id"))
+                             // Edit Bacteria 3
+                             .then(() => e.waitForId("edit-btn"))
+                             .then(() => e.click("edit-btn"))
+                             // add photo in Bacteria genotype
+                             .then(() => e.waitForCkeditor("BACTERIA.GENOTYPE"))
+                             .then(() => TestUtil.ckeditorDropFile("BACTERIA.GENOTYPE", "test-image.png", baseURL + pathToResource))
+                             // add mother
+                             .then(() => e.waitForId("plus-btn-bacteria-parents"))
+                             .then(() => e.click("plus-btn-bacteria-parents"))
+                             .then(() => e.waitForId("bac1-column-id"))
+                             .then(() => e.click("bac1-column-id"))
+                             .then(() => e.waitForId("comments-bac1"))
+                             .then(() => e.change("comments-bac1", "mother"))
+                             // add father
+                             .then(() => e.click("plus-btn-bacteria-parents"))
+                             .then(() => e.waitForId("bac2-column-id"))
+                             .then(() => e.click("bac2-column-id"))
+                             .then(() => e.waitForId("comments-bac2"))
+                             .then(() => e.change("comments-bac2", "father"))
+                             // add Child
+                             .then(() => e.waitForId("plus-btn-children-type-selector"))
+                             .then(() => e.click("plus-btn-children-type-selector"))
+                             .then(() => e.waitForId("sampleTypeSelector"))
+                             .then(() => e.changeSelect2("sampleTypeSelector", "Bacteria"))
+                             .then(() => e.waitForId("bac4-column-id"))
+                             .then(() => e.click("bac4-column-id"))
+                             .then(() => e.waitForId("bac4-operations-column-id"))
+                             // save
+                             .then(() => e.waitForId("save-btn"))
+                             .then(() => e.click("save-btn"))
+                             .then(() => e.waitForId("edit-btn"))
+                             // check parents and children
+                             .then(() => e.waitForId("bac1-column-id"))
+                             .then(() => e.waitForId("bac2-column-id"))
+                             .then(() => e.waitForId("bac4-column-id"))
+                             .then(() => resolve());
         });
     }
 
