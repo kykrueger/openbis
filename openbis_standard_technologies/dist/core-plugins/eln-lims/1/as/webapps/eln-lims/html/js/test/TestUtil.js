@@ -89,4 +89,20 @@ var TestUtil = new function() {
             }
         });
     }
+
+    this.ckeditorDropFile = function(id, fileName, url) {
+        return new Promise(function executor(resolve, reject) {
+            editor = CKEditorManager.getEditorById(id);
+            TestUtil.fetchBytes(url, function(file) {
+                editor = CKEditorManager.getEditorById(id);
+
+                file.name = fileName;
+
+                editor.model.enqueueChange( 'default', () => {
+                    editor.execute( 'imageUpload', { file: [file] } );
+                } );
+                resolve();
+            });
+        });
+    }
 }

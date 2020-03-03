@@ -207,10 +207,10 @@ var EventUtil = new function() {
         });
     };
 
-    this.waitForCkeditor = function(id, data, timeout) {
+    this.waitForCkeditor = function(elementId, data, timeout) {
         return new Promise(function executor(resolve, reject) {
-            timeout = EventUtil.checkTimeout(elementId, timeout, ignoreError, resolve, reject);
-            editor = CKEditorManager.getEditorById(id);
+            timeout = EventUtil.checkTimeout(elementId, timeout, false, resolve, reject);
+            editor = CKEditorManager.getEditorById(elementId);
 
             if(editor === undefined) {
                 setTimeout(executor.bind(null, resolve, reject), DEFAULT_TIMEOUT_STEP);
