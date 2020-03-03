@@ -1,3 +1,8 @@
+## Changes with pybis-1.12.0
+
+- added possibility to get any additional attributes in the get_samples() method
+- added possibility to get any additional attributes in the get_dataSets() method
+
 ## Changes with pybis-1.11.1
 
 - added automatically accepting host key, otherwise mount() will hang the first time 
