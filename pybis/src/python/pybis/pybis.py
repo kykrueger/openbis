@@ -1729,7 +1729,34 @@ class Openbis:
         start_with=None, count=None,
         withParents=None, withChildren=None, tags=None, attrs=None, props=None, **properties
     ):
-        """ Get a list of all samples for a given space/project/experiment (or any combination)
+        """Returns a DataFrame of all samples for a given space/project/experiment (or any combination)
+        Filters:
+        --------
+        space        -- a space code or a space object
+        project      -- a project code or a project object
+        experiment   -- an experiment code or an experiment object
+        collection   -- same as experiment
+        tags         -- only return samples with the specified tags
+        type         -- a sampleType code
+
+        Paging:
+        -------
+        start_with   -- default=None
+        count        -- number of samples that should be fetched. default=None.
+
+        Include:
+        --------
+        withParents  -- the list of parent's permIds in a column 'parents'
+        withChildren -- the list of children's permIds in a column 'children'
+        attrs        -- list of all desired attributes. Examples:
+                        space, project, experiment: just return their identifier
+                        space.code, project.code, experiment.code
+                        registrator.email, registrator.firstName
+                        type.generatedCodePrefix
+        props        -- list of all desired properties. Returns an empty string if
+                        a) property is not present
+                        b) property is not defined for this sampleType
+
         """
 
         if collection is not None:
@@ -1743,6 +1770,7 @@ class Openbis:
 
         if space:
             sub_criteria.append(_subcriteria_for(space, 'space'))
+
         if project:
             sub_criteria.append(_subcriteria_for(project, 'project'))
         if experiment:
@@ -1783,10 +1811,11 @@ class Openbis:
 
         request = {
             "method": "searchSamples",
-            "params": [self.token,
-                       criteria,
-                       fetchopts,
-                       ],
+            "params": [
+                self.token,
+                criteria,
+                fetchopts,
+            ],
         }
         resp = self._post_request(self.as_v3, request)
 
@@ -1804,13 +1833,16 @@ class Openbis:
 
     def _get_fetchopts_for_attrs(self, attrs=None):
         if attrs is None:
-            return ['experiment']
+            return []
 
         fetchopts = []
         for attr in attrs:
             if attr.startswith('space'): fetchopts.append('space')
             if attr.startswith('project'): fetchopts.append('project')
             if attr.startswith('experiment'): fetchopts.append('experiment')
+            if attr.startswith('sample'): fetchopts.append('sample')
+            if attr.startswith('registrator'): fetchopts.append('registrator')
+            if attr.startswith('modifier'): fetchopts.append('modifier')
 
         return fetchopts
 
@@ -1911,8 +1943,36 @@ class Openbis:
         self, code=None, type=None, withParents=None, withChildren=None,
         start_with=None, count=None, kind=None,
         status=None, sample=None, experiment=None, collection=None, project=None,
-        tags=None, props=None, **properties
+        tags=None, attrs=None, props=None, **properties
     ):
+        """Returns a DataFrame of all dataSets for a given project/experiment/sample (or any combination)
+        Filters:
+        --------
+        project      -- a project code or a project object
+        experiment   -- an experiment code or an experiment object
+        sample       -- a sample code/permId or a sample/object
+        collection   -- same as experiment
+        tags         -- only return dataSets with the specified tags
+        type         -- a dataSetType code
+
+        Paging:
+        -------
+        start_with   -- default=None
+        count        -- number of dataSets that should be fetched. default=None.
+
+        Include:
+        --------
+        withParents  -- the list of parent's permIds in a column 'parents'
+        withChildren -- the list of children's permIds in a column 'children'
+        attrs        -- list of all desired attributes. Examples:
+                        project, experiment, sample: just return their identifier
+                        space.code, project.code, experiment.code
+                        registrator.email, registrator.firstName
+                        type.generatedCodePrefix
+        props        -- list of all desired properties. Returns an empty string if
+                        a) property is not present
+                        b) property is not defined for this dataSetType
+        """
 
         if 'object' in properties:
             sample = properties['object']
@@ -1960,6 +2020,7 @@ class Openbis:
         }
         fetchopts['from'] = start_with
         fetchopts['count'] = count
+
         if kind:
             kind = kind.upper()
             if kind not in ['PHYSICAL_DATA', 'CONTAINER', 'LINK']:
@@ -1967,7 +2028,8 @@ class Openbis:
             fetchopts['kind'] = kind
             raise NotImplementedError('you cannot search for dataSet kinds yet')
 
-        for option in ['tags', 'properties', 'sample', 'experiment', 'physicalData']:
+        options = self._get_fetchopts_for_attrs(attrs)
+        for option in ['tags', 'properties', 'physicalData']+options:
             fetchopts[option] = fetch_option[option]
 
         request = {
@@ -1981,6 +2043,7 @@ class Openbis:
 
         return self._dataset_list_for_response(
             response=resp['objects'],
+            attrs=attrs,
             props=props,
             start_with=start_with,
             count=count,
@@ -3335,22 +3398,40 @@ class Openbis:
 
 
     def _dataset_list_for_response(
-        self, response, props=None, 
+        self, response, attrs=None, props=None, 
         start_with=None, count=None, totalCount=0
     ):
         """returns a Things object, containing a DataFrame plus some additional information
         """
+        def extract_attribute(attribute_to_extract):
+            def return_attribute(obj):
+                if obj is None: return ''
+                return obj.get(attribute_to_extract,'')
+            return return_attribute
 
         parse_jackson(response)
-        attrs = ['permId', 'type', 'experiment', 'sample',
+
+        if attrs is None: attrs=[]
+        default_attrs = ['permId', 'type', 'experiment', 'sample',
                  'registrationDate', 'modificationDate',
                  'location', 'status', 'presentInArchive', 'size',
                  'properties'
                 ]
+        display_attrs = default_attrs + attrs
+
         if len(response) == 0:
-            datasets = DataFrame(columns=attrs)
+            datasets = DataFrame(columns=display_attrs)
         else:
             datasets = DataFrame(response)
+            for attr in attrs:
+                if '.' in attr:
+                    entity, attribute_to_extract = attr.split('.')
+                    datasets[attr] = datasets[entity].map(extract_attribute(attribute_to_extract))
+            for attr in attrs:
+                # if no dot supplied, just display the code of the space, project or experiment
+                if attr in ['space', 'project', 'experiment', 'sample']:
+                    datasets[attr] = datasets[attr].map(extract_nested_identifier)
+
             datasets['registrationDate'] = datasets['registrationDate'].map(format_timestamp)
             datasets['modificationDate'] = datasets['modificationDate'].map(format_timestamp)
             datasets['experiment'] = datasets['experiment'].map(extract_nested_identifier)
@@ -3366,13 +3447,18 @@ class Openbis:
             if isinstance(props, str):
                 props = [props]
             for prop in props:
-                datasets[prop.upper()] = datasets['properties'].map(lambda x: x.get(prop.upper(), ''))
-                attrs.append(prop.upper())
+                if datasets.get('properties') is not None:
+                    datasets[prop.upper()] = datasets['properties'].map(
+                        lambda x: x.get(prop.upper(), '')
+                    )
+                else:
+                    datasets[prop.upper()] = ''
+                display_attrs.append(prop.upper())
 
         return Things(
             openbis_obj = self,
             entity = 'dataset',
-            df = datasets[attrs],
+            df = datasets[display_attrs],
             identifier_name = 'permId',
             start_with=start_with,
             count=count,
@@ -3452,19 +3538,19 @@ class Openbis:
     ):
         """returns a Things object, containing a DataFrame plus additional information
         """
-
         def extract_attribute(attribute_to_extract):
             def return_attribute(obj):
                 if obj is None: return ''
                 return obj.get(attribute_to_extract,'')
             return return_attribute
 
-        if attrs is None:
-            attrs = []
         parse_jackson(response)
+
+        if attrs is None: attrs = []
         default_attrs = ['identifier', 'permId', 'type',
                  'registrator', 'registrationDate', 'modifier', 'modificationDate']
         display_attrs = default_attrs + attrs
+
         if len(response) == 0:
             samples = DataFrame(columns=display_attrs)
         else:
@@ -3475,7 +3561,7 @@ class Openbis:
                     samples[attr] = samples[entity].map(extract_attribute(attribute_to_extract))
             for attr in attrs:
                 # if no dot supplied, just display the code of the space, project or experiment
-                if attr in ['space', 'project','experiment']:
+                if attr in ['space', 'project', 'experiment']:
                     samples[attr] = samples[attr].map(extract_nested_identifier)
 
             samples['registrationDate'] = samples['registrationDate'].map(format_timestamp)
@@ -3490,7 +3576,12 @@ class Openbis:
             if isinstance(props, str):
                 props = [props]
             for prop in props:
-                samples[prop.upper()] = samples['properties'].map(lambda x: x.get(prop.upper(), ''))
+                if samples.get('properties') is not None:
+                    samples[prop.upper()] = samples['properties'].map(
+                        lambda x: x.get(prop.upper(), '')
+                    )
+                else:
+                    samples[prop.upper()] = ''
                 display_attrs.append(prop.upper())
 
         return Things(
