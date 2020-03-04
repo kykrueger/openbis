@@ -10,8 +10,10 @@ var UserTests = new function() {
                  .then(() => this.creationSampleForm())
                  //7. Sample Form - Edit: Add a Photo and Parents/Children
                  .then(() => this.editSampleForm())
-                 // 8. Sample Hierarchy as Graph
+                 //8. Sample Hierarchy as Graph
                  .then(() => this.sampleHierarchyAsGraph())
+                 //9. Sample Hierarchy as Table
+                 .then(() => this.sampleHierarchyAsTable())
                  //13. Inventory Table - Imports for Create - Automatic Codes
                  .then(() => this.importsAutomaticCodes())
                  //14. Inventory Table - Imports for Create - Given Codes
@@ -177,21 +179,63 @@ var UserTests = new function() {
     }
 
     this.sampleHierarchyAsGraph = function() {
-            return new Promise(function executor(resolve, reject) {
-                var e = EventUtil;
-                Promise.resolve().then(() => e.waitForId("options-menu-btn-sample-view-bacteria"))
-                                 .then(() => e.click("options-menu-btn-sample-view-bacteria"))
-                                 // show Hierarchy Graph
-                                 .then(() => e.waitForId("hierarchy-graph"))
-                                 .then(() => e.click("hierarchy-graph"))
-                                 // check parents and children
-                                 .then(() => e.waitForId("bac1"))
-                                 .then(() => e.waitForId("bac2"))
-                                 .then(() => e.waitForId("bac3"))
-                                 .then(() => e.waitForId("bac4"))
-                                 .then(() => resolve());
-            });
-        }
+        return new Promise(function executor(resolve, reject) {
+            var e = EventUtil;
+            Promise.resolve().then(() => e.waitForId("options-menu-btn-sample-view-bacteria"))
+                             .then(() => e.click("options-menu-btn-sample-view-bacteria"))
+                             // show Hierarchy Graph
+                             .then(() => e.waitForId("hierarchy-graph"))
+                             .then(() => e.click("hierarchy-graph"))
+                             // check parents and children
+                             .then(() => e.waitForId("bac1"))
+                             .then(() => e.waitForId("bac2"))
+                             .then(() => e.waitForId("bac3"))
+                             .then(() => e.waitForId("bac4"))
+                             .then(() => resolve());
+        });
+    }
+
+    this.sampleHierarchyAsTable = function() {
+        var parentAnnotations = "<b>Code</b>: BAC1, <b>Comments</b>: mother<br><br><b>Code</b>: BAC2, <b>Comments</b>: father";
+        var childrenAnnotations = "<b>Code</b>: BAC4";
+
+        return new Promise(function executor(resolve, reject) {
+            var e = EventUtil;
+                             // return to bacteria 3
+            Promise.resolve().then(() => e.waitForId("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
+                             .then(() => e.click("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
+                             .then(() => e.waitForId("bac3-column-id"))
+                             .then(() => e.click("bac3-column-id"))
+                             // show Hierarchy Graph
+                             .then(() => e.waitForId("options-menu-btn-sample-view-bacteria"))
+                             .then(() => e.click("options-menu-btn-sample-view-bacteria"))
+                             .then(() => e.waitForId("hierarchy-table"))
+                             .then(() => e.click("hierarchy-table"))
+                             .then(() => e.sleep(2000))
+                             // show Identifier
+                             .then(() => e.waitForId("columns-dropdown-id"))
+                             .then(() => e.click("columns-dropdown-id"))
+                             .then(() => e.waitForId("identifier-cln"))
+                             .then(() => e.click("identifier-cln"))
+                             .then(() => e.click("columns-dropdown-id"))
+                             // check parents and children
+                             .then(() => e.waitForId("bac1"))
+                             .then(() => e.waitForId("bac2"))
+                             .then(() => e.waitForId("bac3"))
+                             .then(() => e.equalTo("children-annotations-bac3", childrenAnnotations, true, false))
+                             .then(() => e.waitForId("bac4"))
+                             // show the Parent/Annotations column
+                             .then(() => e.waitForId("columns-dropdown-id"))
+                             .then(() => e.click("columns-dropdown-id"))
+                             .then(() => e.waitForId("parentannotations-cln"))
+                             .then(() => e.click("parentannotations-cln"))
+                             .then(() => e.click("columns-dropdown-id"))
+                             // check parents comments
+                             .then(() => e.waitForId("parent-annotations-bac3"))
+                             .then(() => e.equalTo("parent-annotations-bac3", parentAnnotations, true, false))
+                             .then(() => resolve());
+        });
+    }
 
     this.importsAutomaticCodes = function() {
         var baseURL = location.protocol + '//' + location.host + location.pathname;
