@@ -10,6 +10,8 @@ var UserTests = new function() {
                  .then(() => this.creationSampleForm())
                  //7. Sample Form - Edit: Add a Photo and Parents/Children
                  .then(() => this.editSampleForm())
+                 // 8. Sample Hierarchy as Graph
+                 .then(() => this.sampleHierarchyAsGraph())
                  //13. Inventory Table - Imports for Create - Automatic Codes
                  .then(() => this.importsAutomaticCodes())
                  //14. Inventory Table - Imports for Create - Given Codes
@@ -173,6 +175,23 @@ var UserTests = new function() {
                              .then(() => resolve());
         });
     }
+
+    this.sampleHierarchyAsGraph = function() {
+            return new Promise(function executor(resolve, reject) {
+                var e = EventUtil;
+                Promise.resolve().then(() => e.waitForId("options-menu-btn-sample-view-bacteria"))
+                                 .then(() => e.click("options-menu-btn-sample-view-bacteria"))
+                                 // show Hierarchy Graph
+                                 .then(() => e.waitForId("hierarchy-graph"))
+                                 .then(() => e.click("hierarchy-graph"))
+                                 // check parents and children
+                                 .then(() => e.waitForId("bac1"))
+                                 .then(() => e.waitForId("bac2"))
+                                 .then(() => e.waitForId("bac3"))
+                                 .then(() => e.waitForId("bac4"))
+                                 .then(() => resolve());
+            });
+        }
 
     this.importsAutomaticCodes = function() {
         var baseURL = location.protocol + '//' + location.host + location.pathname;
