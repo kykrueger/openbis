@@ -513,7 +513,7 @@ def get_fetchoptions(entity, including=None):
     fo = {}
     for inc in including:
         try:
-            item = fetch_option[entity][inc]     
+            item = fetch_option[entity][inc]
             fo[inc] = item
         except KeyError as err:
             pass
