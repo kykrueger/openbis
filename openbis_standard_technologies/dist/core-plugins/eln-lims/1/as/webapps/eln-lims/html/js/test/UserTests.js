@@ -16,6 +16,8 @@ var UserTests = new function() {
                  .then(() => this.sampleHierarchyAsTable())
                  //10. Sample Form - Copy
                  .then(() => this.copySampleForm())
+                 //11. Sample Form - Delete
+                 .then(() => this.deleteSampleForm())
                  //13. Inventory Table - Imports for Create - Automatic Codes
                  .then(() => this.importsAutomaticCodes())
                  //14. Inventory Table - Imports for Create - Given Codes
@@ -279,6 +281,32 @@ var UserTests = new function() {
                              // copy of origin bacteria
                              .then(() => e.waitForId("bac5"))
                              .then(() => e.waitForId("bac5_bac4"))
+                             .then(() => resolve());
+        });
+    }
+
+    this.deleteSampleForm = function() {
+
+        return new Promise(function executor(resolve, reject) {
+            var e = EventUtil;
+            Promise.resolve().then(() => e.waitForId("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
+                             // navigation to BAC5
+                             .then(() => e.click("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
+                             .then(() => e.waitForId("bac5-column-id"))
+                             .then(() => e.click("bac5-column-id"))
+                             // delete
+                             .then(() => e.waitForId("options-menu-btn-sample-view-bacteria"))
+                             .then(() => e.click("options-menu-btn-sample-view-bacteria"))
+                             .then(() => e.waitForId("delete"))
+                             .then(() => e.click("delete"))
+                             // fill Confirm form
+                             .then(() => e.waitForId("reason-to-delete-id"))
+                             .then(() => e.write("reason-to-delete-id", "test"))
+                             .then(() => e.waitForId("accept-btn"))
+                             .then(() => e.click("accept-btn"))
+                             //You should see the error
+                             .then(() => e.waitForId("jNotifyDismiss"))
+                             .then(() => e.click("jNotifyDismiss"))
                              .then(() => resolve());
         });
     }
