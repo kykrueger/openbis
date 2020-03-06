@@ -1,8 +1,8 @@
-function Grid(columnsFirst, columnsLast, columnsDynamicFunc, getDataList, showAllColumns, tableSettings, onChangeState, isMultiselectable, maxHeight, heightPercentage, scrollbarWidth) {
-	this.init(columnsFirst, columnsLast, columnsDynamicFunc, getDataList, showAllColumns, tableSettings, onChangeState, isMultiselectable, maxHeight, heightPercentage, scrollbarWidth);
+function Grid(columnsFirst, columnsLast, columnsDynamicFunc, getDataList, showAllColumns, tableSettings, onChangeState, isMultiselectable, maxHeight, heightPercentage, scrollbarWidth, title) {
+	this.init(columnsFirst, columnsLast, columnsDynamicFunc, getDataList, showAllColumns, tableSettings, onChangeState, isMultiselectable, maxHeight, heightPercentage, scrollbarWidth, title);
 }
 $.extend(Grid.prototype, {
-	init : function(columnsFirst, columnsLast, columnsDynamicFunc, getDataList, showAllColumns, tableSettings, onChangeState, isMultiselectable, maxHeight, heightPercentage, scrollbarWidth) {
+	init : function(columnsFirst, columnsLast, columnsDynamicFunc, getDataList, showAllColumns, tableSettings, onChangeState, isMultiselectable, maxHeight, heightPercentage, scrollbarWidth, title) {
 		this.columnsFirst = columnsFirst;
 		this.columnsDynamicFunc = columnsDynamicFunc;
 		this.columnsDynamic = [];
@@ -11,6 +11,7 @@ $.extend(Grid.prototype, {
 		this.showAllColumns = showAllColumns;
 		this.tableSettings = tableSettings;
 		this.firstLoad = true;
+		this.title = title;
 		
 		if(!this.tableSettings) {
 			this.tableSettings = {
@@ -182,7 +183,12 @@ $.extend(Grid.prototype, {
 				.attr("style", "margin-left: 5px;");
 
 				if (column.property != null) {
-				    var id = column.property.split(" ").join("-") + "-cln";
+
+				    var id = column.property + "-cln";
+				    if (this.title !== undefined && this.title !== null) {
+				        id = this.title + "-" + id;
+				    }
+				    id = id.split(" ").join("-").split(".").join("-");
 				    if (id[0] === '$') {
 				        id = id.substring(1, id.length - 1);
 				    }
