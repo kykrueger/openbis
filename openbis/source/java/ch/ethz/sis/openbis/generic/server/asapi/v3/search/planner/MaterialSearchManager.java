@@ -18,6 +18,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.PermIdSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.Material;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleParentsSearchCriteria;
@@ -70,6 +71,10 @@ public class MaterialSearchManager extends AbstractCompositeEntitySearchManager<
     @Override
     public Set<Long> searchForIDs(final Long userId, final MaterialSearchCriteria criteria, final SortOptions<Material> sortOptions,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName) {
+        if (criteria.getCriteria().stream().anyMatch((criterion) -> criterion instanceof PermIdSearchCriteria))
+        {
+            throw new UnsupportedOperationException("Please use criteria.withId().thatEquals(new MaterialPermId('CODE','TYPE')) instead.");
+        }
         return doSearchForIDs(userId, criteria, null, idsColumnName, TableMapper.MATERIAL);
     }
 

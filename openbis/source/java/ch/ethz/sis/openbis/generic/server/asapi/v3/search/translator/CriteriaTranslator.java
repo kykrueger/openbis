@@ -21,7 +21,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.*;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.search.AbstractEntityTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.search.EntityTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialTypeSearchCriteria;
@@ -134,7 +133,7 @@ public class CriteriaTranslator
                     (sqlBuilder, criterion) ->
                     {
                         sqlBuilder.append(separator);
-                        appendCriterionCondition(vo, sqlBuilder, criterion, vo.getParentCriterion());
+                        appendCriterionCondition(vo, sqlBuilder, criterion);
                     },
                     StringBuilder::append
             );
@@ -145,19 +144,17 @@ public class CriteriaTranslator
 
     /**
      * Appends condition translated from a criterion.
-     *
-     * @param vo value object with miscellaneous information.
+     *  @param vo value object with miscellaneous information.
      * @param sqlBuilder string builder to append the condition to.
      * @param criterion criterion to be translated.
-     * @param parentCriterion parent of {@code criterion}.
      */
-    private static void appendCriterionCondition(final TranslationVo vo, final StringBuilder sqlBuilder, ISearchCriteria criterion,
-            final AbstractCompositeSearchCriteria parentCriterion)
+    private static void appendCriterionCondition(final TranslationVo vo, final StringBuilder sqlBuilder, ISearchCriteria criterion)
     {
         final TableMapper tableMapper = vo.getTableMapper();
         final ISearchManager<ISearchCriteria, ?, ?> subqueryManager = (criterion instanceof EntityTypeSearchCriteria)
                 ? CriteriaMapper.getEntityKindToManagerMap().get(tableMapper.getEntityKind())
                 : CriteriaMapper.getCriteriaToManagerMap().get(criterion.getClass());
+        final AbstractCompositeSearchCriteria parentCriterion = vo.getParentCriterion();
 
         if (tableMapper == null || isCriterionConsistentWithEntityKind(criterion, tableMapper.getEntityKind()))
         {
