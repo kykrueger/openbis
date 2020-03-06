@@ -313,7 +313,10 @@ get_definition_for_entity = openbis_definitions   # Alias
 
 fetch_option = {
     "space": {"@type": "as.dto.space.fetchoptions.SpaceFetchOptions"},
-    "project": {"@type": "as.dto.project.fetchoptions.ProjectFetchOptions"},
+    "project": {
+        "@type": "as.dto.project.fetchoptions.ProjectFetchOptions",
+        "space": {"@type": "as.dto.space.fetchoptions.SpaceFetchOptions"},
+    },
     "person": {"@type": "as.dto.person.fetchoptions.PersonFetchOptions"},
     "users": {"@type": "as.dto.person.fetchoptions.PersonFetchOptions" },
     "user": {"@type": "as.dto.person.fetchoptions.PersonFetchOptions" },
@@ -502,6 +505,19 @@ def get_type_for_entity(entity, action, parents_or_children=''):
                 "@type": "as.dto.{}.{}.{}{}"
                 .format(entity.lower(), action, cap_entity, noun[action])
             }
+
+def get_fetchoptions(entity, including=None):
+    if including is None: including = []
+    including += ['@type']
+    entity = entity[0].lower() + entity[1:]   # make first character lowercase
+    fo = {}
+    for inc in including:
+        try:
+            item = fetch_option[entity][inc]
+            fo[inc] = item
+        except KeyError as err:
+            pass
+    return fo
 
 
 def get_method_for_entity(entity, action):

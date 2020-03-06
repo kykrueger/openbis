@@ -14,8 +14,8 @@ from systemtest.artifactrepository import GitArtifactRepository
 class TestCase(systemtest.testcase.TestCase):
 
     def execute(self):
+        testDataFolder = self.getTestDataFolder()
         openbisController = self.setUpAndStartOpenbis()
-        testDataFolder = self.getTestDataFolder(openbisController)
         for exampleName in sorted(os.listdir(testDataFolder)):
             if os.path.isdir("%s/%s" % (testDataFolder, exampleName)):
                 self.dropTestExample(openbisController, testDataFolder, exampleName)
@@ -47,7 +47,7 @@ class TestCase(systemtest.testcase.TestCase):
                     line = line.replace('[]', str(resolutions))
                 f.write("%s" % line)
 
-    def getTestDataFolder(self, openbisController):
+    def getTestDataFolder(self):
         testDataFolder = "%s/../../test-data/integration_%s" % (self.playgroundFolder, self.name)
         if os.path.exists(testDataFolder):
             util.printAndFlush("Path exists as expected: %s" % testDataFolder)

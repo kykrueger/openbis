@@ -1,3 +1,7 @@
+## Changes with pybis-1.12.1
+
+- datasets, samples and experiments now successfully return project and space attributes
+
 ## Changes with pybis-1.12.0
 
 - added possibility to get any additional attributes in the get_samples() method

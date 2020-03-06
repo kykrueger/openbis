@@ -54,7 +54,7 @@ function LinksView(linksController, linksModel) {
 				var sampleTableContainerLabel = (sampleTypeLabel)?sampleTypeLabel:sampleTypeCode;
 				$sampleTableContainer.append($("<div>").append(sampleTableContainerLabel + ":")
 						.append("&nbsp;")
-						.append(linksView.getAddBtn($samplePickerContainer, sampleTypeCode))
+						.append(linksView.getAddBtn($samplePickerContainer, sampleTypeCode, sampleTableContainerLabel))
 						.css("margin","5px"));
 			}
 			
@@ -293,7 +293,10 @@ function LinksView(linksController, linksModel) {
 					if(currentValue) {
 						FormUtil.setFieldValue(propertyType, $field, currentValue);
 					}
-					$field.attr("id", ""); //Fix for current summernote behaviour
+
+					var id = propertyType.label.split(" ").join("-").toLowerCase();
+					id = id + "-" + sample.code.toLowerCase();
+					$field.attr("id", id); //Fix for current summernote behaviour
 					$field.change(function() {
 						var $field = $(this);
 						propertyTypeValue = FormUtil.getFieldValue(propertyType, $field);
@@ -452,12 +455,12 @@ function LinksView(linksController, linksModel) {
 		dataGrids.push(dataGrid);
 	}
 			
-	linksView.getAddBtn = function($container, sampleTypeCode) {
+	linksView.getAddBtn = function($container, sampleTypeCode, sampleTableContainerLabel) {
 		var enabledFunction = function() {
 			linksView.showSamplePicker($container, sampleTypeCode);
 		};
 
-		var id = "plus-btn-" + sampleTypeCode.toLowerCase();
+		var id = "plus-btn-" + sampleTableContainerLabel.toLowerCase().split(" ").join("-");
 		var $addBtn = FormUtil.getButtonWithIcon("glyphicon-plus", (linksModel.isDisabled)?null:enabledFunction, null, null, id);
 		if(linksModel.isDisabled) {
 			return "";
@@ -481,8 +484,8 @@ function LinksView(linksController, linksModel) {
 				Util.unblockUI();
 			});
 		};
-		
-		var $addBtn = FormUtil.getButtonWithIcon("glyphicon-plus", (linksModel.isDisabled)?null:enabledFunction);
+		var id = "plus-btn-" + linksModel.title.split(" ").join("-").toLowerCase() + "-type-selector";
+		var $addBtn = FormUtil.getButtonWithIcon("glyphicon-plus", (linksModel.isDisabled)?null:enabledFunction, null, null, id);
 		
 		if(linksModel.isDisabled) {
 			return "";
