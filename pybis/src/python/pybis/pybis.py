@@ -1938,7 +1938,7 @@ class Openbis:
                  'registrator', 'registrationDate', 'modifier', 'modificationDate']
         display_attrs = default_attrs + attrs
         if len(response) == 0:
-            experiments = DataFrame(columns=attrs)
+            experiments = DataFrame(columns=display_attrs)
         else:
             experiments = DataFrame(response)
             experiments['space'] = experiments['project'].map(extract_space)
