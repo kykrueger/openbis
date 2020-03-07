@@ -1032,7 +1032,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 				    component += "<span class='checkbox'><label><input type='checkbox' id='linkParentsOnCopy'>Link Parents</label></span>";
 					component += "<span>Copy Children</span>";
 					component += "<span class='checkbox'><label><input type='radio' name='copyChildrenOnCopy' value='None' checked>Don't Copy</label></span>";
-					component += "<span class='checkbox'><label><input type='radio' name='copyChildrenOnCopy' value='ToParentCollection'>Into parents collection</label></span>";
+					component += "<span class='checkbox'><label><input type='radio' id='copyChildrenToParent' name='copyChildrenOnCopy' value='ToParentCollection'>Into parents collection</label></span>";
 					//component += "<span class='checkbox'><label><input type='radio' name='copyChildrenOnCopy' value='ToOriginalCollection'>Into original collection</label></span>";
 					component += "</div>";
 					component += "</div>";

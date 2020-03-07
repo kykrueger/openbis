@@ -289,9 +289,15 @@ $.extend(Grid.prototype, {
 		}
 		
 		// Export all rows with all columns
-		for(option in options) {
+		for (option in options) {
+		    var id = "export-all-columns-and-rows";
+		    if (option.length > 0) {
+		        id = id + "-" + option.split('(').join("").split(')').join("").split(' ').join("-")
+		    }
+
 			var labelARAC = $("<label>", { style : 'white-space: nowrap; cursor:pointer;' })
 							.attr("role", "menuitem")
+							.attr("id", id)
 							.append("Export all columns with all rows " + option);
 	
 			var itemARAC = $("<li>")

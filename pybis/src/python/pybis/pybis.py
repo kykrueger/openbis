@@ -2070,6 +2070,7 @@ class Openbis:
             fetchopts['kind'] = kind
             raise NotImplementedError('you cannot search for dataSet kinds yet')
 
+        if attrs is None: attrs = []
         options = self._get_fetchopts_for_attrs(attrs)
         for option in ['tags', 'properties', 'physicalData']+options:
             fetchopts[option] = fetch_option[option]
