@@ -13,6 +13,20 @@ var TestUtil = new function() {
         });
     }
 
+    this.testPassed = function(id) {
+        return new Promise(function executor(resolve, reject) {
+            console.log("%cTest " + id +" passed", "color: green");
+            resolve();
+        });
+    }
+
+    this.testNotExist = function(id) {
+        return new Promise(function executor(resolve, reject) {
+            console.log("%cTest " + id +" is not exist", "color: grey");
+            resolve();
+        });
+    }
+
     this.setCookies = function(key, value) {
         return new Promise(function executor(resolve, reject) {
             $.cookie(key, value);
