@@ -797,21 +797,10 @@ public class SearchSampleTest extends AbstractSampleTest
     {
         final Long count = (Long) sqlExecutor.execute("SELECT count(*) FROM samples WHERE modification_timestamp::DATE = ?::DATE",
             Arrays.asList("2009-08-18")).get(0).get("count");
-        System.out.println("Found samples count: " + count);
-
-        final List<Map<String, Object>> resultSet = sqlExecutor.execute(
-                "SELECT modification_timestamp FROM samples WHERE perm_id IN (SELECT unnest(?))",
-                Collections.singletonList(new String[] {"200902091219327-1025", "200902091250077-1026", "200902091250077-1050", "200902091250077-1051", "200902091250077-1052",
-                        "200902091219327-1053", "201206191219327-1054", "201206191219327-1055", "201206191219327-1056", "201206191219327-1057",
-                        "201206191219327-1058", "201206191219327-1059", "200902091250077-1060", "201206191219327-1061"}));
-        final List<Date> timestamps = resultSet.stream().map((recordByColumn) -> (Date) recordByColumn.get("modification_timestamp")).
-                collect(Collectors.toList());
-
-        System.out.println("Dates of the samples expected to be found: " + timestamps);
 
         SampleSearchCriteria criteria = new SampleSearchCriteria();
         criteria.withModificationDate().thatEquals("2009-08-18");
-        testSearch(TEST_USER, criteria, 14);
+        testSearch(TEST_USER, criteria, Math.toIntExact(count));
     }
 
     @Test
