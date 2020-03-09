@@ -1,14 +1,14 @@
 import _ from 'lodash'
 import React from 'react'
-import {connect} from 'react-redux'
-import {withStyles} from '@material-ui/core/styles'
+import { connect } from 'react-redux'
+import { withStyles } from '@material-ui/core/styles'
 import Link from '@material-ui/core/Link'
 import Grid from '../../common/grid/Grid.jsx'
 import * as ids from '../../../common/consts/ids.js'
 import * as pages from '../../../common/consts/pages.js'
 import * as objectTypes from '../../../common/consts/objectType.js'
 import * as actions from '../../../store/actions/actions.js'
-import {dto, facade} from '../../../services/openbis.js'
+import { facade, dto } from '../../../services/openbis.js'
 import logger from '../../../common/logger.js'
 
 const styles = () => ({

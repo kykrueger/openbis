@@ -1,5 +1,5 @@
 import React from 'react'
-import {withStyles} from '@material-ui/core/styles'
+import { withStyles } from '@material-ui/core/styles'
 import List from '@material-ui/core/List'
 import BrowserNode from './BrowserNode.jsx'
 import logger from '../../../common/logger.js'

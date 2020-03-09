@@ -1,6 +1,6 @@
 import React from 'react'
-import {withStyles} from '@material-ui/core/styles'
-import {connect} from 'react-redux'
+import { withStyles } from '@material-ui/core/styles'
+import { connect } from 'react-redux'
 import flow from 'lodash/flow'
 
 import Button from '@material-ui/core/Button'

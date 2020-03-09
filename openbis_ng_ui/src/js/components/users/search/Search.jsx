@@ -1,7 +1,7 @@
 import React from 'react'
 import Grid from '../../common/grid/Grid.jsx'
 import * as ids from '../../../common/consts/ids.js'
-import {dto, facade} from '../../../services/openbis.js'
+import { facade, dto } from '../../../services/openbis.js'
 import logger from '../../../common/logger.js'
 
 class Search extends React.Component {

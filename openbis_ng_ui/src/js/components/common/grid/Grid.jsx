@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import React from 'react'
-import {connect} from 'react-redux'
-import {withStyles} from '@material-ui/core/styles'
+import { connect } from 'react-redux'
+import { withStyles } from '@material-ui/core/styles'
 import Table from '@material-ui/core/Table'
 import TableBody from '@material-ui/core/TableBody'
 import TableCell from '@material-ui/core/TableCell'
@@ -13,7 +13,7 @@ import ColumnConfig from '../../common/grid/ColumnConfig.jsx'
 import PageConfig from '../../common/grid/PageConfig.jsx'
 import * as ids from '../../../common/consts/ids.js'
 import * as selectors from '../../../store/selectors/selectors.js'
-import {dto, facade} from '../../../services/openbis.js'
+import { facade, dto } from '../../../services/openbis.js'
 import logger from '../../../common/logger.js'
 
 const styles = theme => ({

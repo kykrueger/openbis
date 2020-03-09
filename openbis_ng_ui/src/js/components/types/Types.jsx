@@ -1,5 +1,5 @@
 import React from 'react'
-import {withStyles} from '@material-ui/core/styles'
+import { withStyles } from '@material-ui/core/styles'
 import logger from '../../common/logger.js'
 import * as pages from '../../common/consts/pages.js'
 import * as objectType from '../../common/consts/objectType.js'
