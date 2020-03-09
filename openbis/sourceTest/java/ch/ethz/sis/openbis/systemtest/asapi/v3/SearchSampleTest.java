@@ -932,7 +932,7 @@ public class SearchSampleTest extends AbstractSampleTest
         v3api.logout(sessionToken);
     }
 
-    // TODO: get rid of SortOrder, it makes sence only for full text search.
+    // TODO: get rid of SortOrder, it makes sense only for full text search.
 //    @Test
 //    public void testSearchWithSortingByCodeScore()
 //    {
