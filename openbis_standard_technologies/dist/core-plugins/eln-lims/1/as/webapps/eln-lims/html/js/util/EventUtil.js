@@ -44,6 +44,39 @@ var EventUtil = new function() {
         });
     };
 
+    this.triggerSelectSelect2 = function(elementId, value, ignoreError) {
+        return new Promise(function executor(resolve, reject) {
+            try {
+                var element = EventUtil.getElement(elementId, ignoreError, resolve);
+                element.focus();
+                element.val(value);
+                element.select2().trigger('select2:select');
+                resolve();
+            } catch(error) {
+                reject(error);
+            }
+        });
+    };
+
+    this.triggerSearchSelect2 = function(elementId, value, ignoreError) {
+        return new Promise(function executor(resolve, reject) {
+            try {
+                var element = EventUtil.getElement(elementId, ignoreError, resolve);
+                element.select2('open');
+
+                var $search = element.data('select2').dropdown.$search || element.data('select2').selection.$search;
+                $search.val(value);
+                $search.trigger('input');
+                setTimeout(function() {
+                    $('.select2-results__option').trigger("mouseup");
+                    resolve();
+                }, 2000);
+            } catch(error) {
+                reject(error);
+            }
+        });
+    };
+
     this.checked = function(elementId, value, ignoreError) {
         return new Promise(function executor(resolve, reject) {
             try {
@@ -89,6 +122,21 @@ var EventUtil = new function() {
             }
 	    });
 	};
+
+	this.keypress = function(elementId, key, ignoreError) {
+	    return new Promise(function executor(resolve, reject) {
+            try {
+                var element = EventUtil.getElement(elementId, ignoreError, resolve);
+                element.focus();
+                var e = $.Event('keypress');
+                e.which = key;
+                $(element).trigger(e);
+                resolve();
+            } catch(error) {
+                reject(error);
+            }
+        });
+	}
 
 	this.verifyExistence = function(elementId, isExist, ignoreError) {
 	    return new Promise(function executor(resolve, reject) {
@@ -159,10 +207,10 @@ var EventUtil = new function() {
         });
     };
 
-    this.waitForCkeditor = function(id, data, timeout) {
+    this.waitForCkeditor = function(elementId, data, timeout) {
         return new Promise(function executor(resolve, reject) {
-            timeout = EventUtil.checkTimeout(elementId, timeout, ignoreError, resolve, reject);
-            editor = CKEditorManager.getEditorById(id);
+            timeout = EventUtil.checkTimeout(elementId, timeout, false, resolve, reject);
+            editor = CKEditorManager.getEditorById(elementId);
 
             if(editor === undefined) {
                 setTimeout(executor.bind(null, resolve, reject), DEFAULT_TIMEOUT_STEP);

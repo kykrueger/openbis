@@ -1,3 +1,16 @@
+## Changes with pybis-1.12.3
+
+- datasets, samples and experiments now successfully return project and space attributes
+
+## Changes with pybis-1.12.0
+
+- added possibility to get any additional attributes in the get_samples() method
+- added possibility to get any additional attributes in the get_dataSets() method
+
+## Changes with pybis-1.11.1
+
+- added automatically accepting host key, otherwise mount() will hang the first time 
+
 ## Changes with pybis-1.11.0
 
 * implemented mount() and unmount() methods to mount openBIS dataStore server via SSHFS and FUSE

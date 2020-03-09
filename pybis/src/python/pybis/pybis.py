@@ -34,7 +34,8 @@ from .utils import extract_attr, extract_permid, extract_code,extract_deletion,e
 from .entity_type import EntityType, SampleType, DataSetType, MaterialType, ExperimentType
 from .vocabulary import Vocabulary, VocabularyTerm
 from .openbis_object import OpenBisObject 
-from .definitions import openbis_definitions, get_definition_for_entity, fetch_option, get_fetchoption_for_entity, get_type_for_entity, get_method_for_entity
+from .definitions import openbis_definitions, get_definition_for_entity, fetch_option, get_fetchoption_for_entity, get_type_for_entity, get_method_for_entity, get_fetchoptions
+
 
 # import the various openBIS entities
 from .things import Things
@@ -684,7 +685,8 @@ class Openbis:
 
     def _get_username(self):
         if self.token:
-            username, rest = self.token.split('-')
+            match = re.search(r'(?P<username>.*)-.*', self.token)
+            username = match.groupdict()['username']
             return username
         return ''
 
@@ -1105,8 +1107,8 @@ class Openbis:
 
 
         os_options = {
-            "darwin": "-oauto_cache,reconnect,defer_permissions,noappledouble,negative_vncache,volname={}".format(hostname),
-            "linux": "-oauto_cache,reconnect",
+            "darwin": "-oauto_cache,reconnect,defer_permissions,noappledouble,negative_vncache,volname={} -oStrictHostKeyChecking=no ".format(hostname),
+            "linux": "-oauto_cache,reconnect -oStrictHostKeyChecking=no",
         }
 
         if volname is None:
@@ -1726,9 +1728,35 @@ class Openbis:
         self, identifier=None, code=None, permId=None,
         space=None, project=None, experiment=None, collection=None, type=None,
         start_with=None, count=None,
-        withParents=None, withChildren=None, tags=None, props=None, **properties
+        withParents=None, withChildren=None, tags=None, attrs=None, props=None, **properties
     ):
-        """ Get a list of all samples for a given space/project/experiment (or any combination)
+        """Returns a DataFrame of all samples for a given space/project/experiment (or any combination)
+        Filters:
+        --------
+        space        -- a space code or a space object
+        project      -- a project code or a project object
+        experiment   -- an experiment code or an experiment object
+        collection   -- same as experiment
+        tags         -- only return samples with the specified tags
+        type         -- a sampleType code
+
+        Paging:
+        -------
+        start_with   -- default=None
+        count        -- number of samples that should be fetched. default=None.
+
+        Include:
+        --------
+        withParents  -- the list of parent's permIds in a column 'parents'
+        withChildren -- the list of children's permIds in a column 'children'
+        attrs        -- list of all desired attributes. Examples:
+                        space, project, experiment: just return their identifier
+                        space.code, project.code, experiment.code
+                        registrator.email, registrator.firstName
+                        type.generatedCodePrefix
+        props        -- list of all desired properties. Returns an empty string if
+                        a) property is not present
+                        b) property is not defined for this sampleType
         """
 
         if collection is not None:
@@ -1742,6 +1770,7 @@ class Openbis:
 
         if space:
             sub_criteria.append(_subcriteria_for(space, 'space'))
+
         if project:
             sub_criteria.append(_subcriteria_for(project, 'project'))
         if experiment:
@@ -1770,53 +1799,96 @@ class Openbis:
             "operator": "AND"
         }
 
+        options = self._get_fetchopts_for_attrs(attrs)
+
         # build the various fetch options
         fetchopts = fetch_option['sample']
         fetchopts['from'] = start_with
         fetchopts['count'] = count
 
-        for option in ['tags', 'properties', 'registrator', 'modifier', 'experiment']:
+        for option in ['tags', 'properties', 'registrator', 'modifier']+options:
             fetchopts[option] = fetch_option[option]
 
         request = {
             "method": "searchSamples",
-            "params": [self.token,
-                       criteria,
-                       fetchopts,
-                       ],
+            "params": [
+                self.token,
+                criteria,
+                fetchopts,
+            ],
         }
         resp = self._post_request(self.as_v3, request)
 
         return self._sample_list_for_response(
             response=resp['objects'],
+            attrs=attrs,
             props=props,
             start_with=start_with,
             count=count,
             totalCount=resp['totalCount'],
         )
 
-
     get_objects = get_samples # Alias
+
+
+    def _get_fetchopts_for_attrs(self, attrs=None):
+        if attrs is None:
+            return []
+
+        fetchopts = []
+        for attr in attrs:
+            if attr.startswith('space'): fetchopts.append('space')
+            if attr.startswith('project'): fetchopts.append('project')
+            if attr.startswith('experiment'): fetchopts.append('experiment')
+            if attr.startswith('sample'): fetchopts.append('sample')
+            if attr.startswith('registrator'): fetchopts.append('registrator')
+            if attr.startswith('modifier'): fetchopts.append('modifier')
+
+        return fetchopts
 
 
     def get_experiments(
         self, code=None, permId=None, type=None, space=None, project=None,
         start_with=None, count=None,
-        tags=None, is_finished=None, props=None, **properties
+        tags=None, is_finished=None, attrs=None, props=None, **properties
     ):
-        """ Searches for all experiment which match the search criteria. Returns a
-        «Things» object which can be used in many different situations.
+        """Returns a DataFrame of all samples for a given space/project (or any combination)
 
-        Usage::
-            experiments = get_experiments(project='PROJECT_NAME', props=['NAME','FINISHED_FLAG'])
-            experiments[0]  # returns first experiment
-            experiments['/MATERIALS/REAGENTS/ANTIBODY_COLLECTION']
-            for experiment in experiment:
-                # handle every experiment
-                ...
-            experiments.df      # returns DataFrame object of the experiment list
-            print(experiments)  # prints a nice ASCII table
+        Filters:
+        --------
+        space        -- a space code or a space object
+        project      -- a project code or a project object
+        tags         -- only experiments with the specified tags
+        type         -- a experimentType code
+
+        Paging:
+        -------
+        start_with   -- default=None
+        count        -- number of samples that should be fetched. default=None.
+
+        Include:
+        --------
+        attrs        -- list of all desired attributes. Examples:
+                        space, project, experiment: just return their identifier
+                        space.code, project.code, experiment.code
+                        registrator.email, registrator.firstName
+                        type.generatedCodePrefix
+        props        -- list of all desired properties. Returns an empty string if
+                        a) property is not present
+                        b) property is not defined for this sampleType
         """
+
+        def extract_attribute(attribute_to_extract):
+            def return_attribute(obj):
+                if obj is None: return ''
+                return obj.get(attribute_to_extract,'')
+            return return_attribute
+
+        def extract_space(obj):
+            if isinstance(obj, dict):
+                return obj.get('space', {})
+            else:
+                return ''
 
         sub_criteria = []
         if space:
@@ -1844,7 +1916,10 @@ class Openbis:
         fetchopts = fetch_option['experiment']
         fetchopts['from'] = start_with
         fetchopts['count'] = count
-        for option in ['tags', 'properties', 'registrator', 'modifier', 'project']:
+
+        if attrs is None: attrs = []
+        options = self._get_fetchopts_for_attrs(attrs)
+        for option in ['tags', 'properties', 'registrator', 'modifier']+options:
             fetchopts[option] = fetch_option[option]
 
         request = {
@@ -1856,15 +1931,28 @@ class Openbis:
             ],
         }
         resp = self._post_request(self.as_v3, request)
-        attrs = ['identifier', 'permId', 'project', 'type',
-                 'registrator', 'registrationDate', 'modifier', 'modificationDate']
-        if len(resp['objects']) == 0:
-            experiments = DataFrame(columns=attrs)
-        else:
-            objects = resp['objects']
-            parse_jackson(objects)
+        response = resp['objects']
+        parse_jackson(response)
 
-            experiments = DataFrame(objects)
+        default_attrs = ['identifier', 'permId', 'type',
+                 'registrator', 'registrationDate', 'modifier', 'modificationDate']
+        display_attrs = default_attrs + attrs
+        if len(response) == 0:
+            experiments = DataFrame(columns=display_attrs)
+        else:
+            experiments = DataFrame(response)
+            experiments['space'] = experiments['project'].map(extract_space)
+            for attr in attrs:
+                if '.' in attr:
+                    entity, attribute_to_extract = attr.split('.')
+                    experiments[attr] = experiments[entity].map(extract_attribute(attribute_to_extract))
+            for attr in attrs:
+                # if no dot supplied, just display the code of the space, project or experiment
+                if attr in ['project']:
+                    experiments[attr] = experiments[attr].map(extract_nested_identifier)
+                if attr in ['space']:
+                    experiments[attr] = experiments[attr].map(extract_code)
+
             experiments['registrationDate'] = experiments['registrationDate'].map(format_timestamp)
             experiments['modificationDate'] = experiments['modificationDate'].map(format_timestamp)
             experiments['project'] = experiments['project'].map(extract_code)
@@ -1876,13 +1964,19 @@ class Openbis:
 
         if props is not None:
             for prop in props:
-                experiments[prop.upper()] = experiments['properties'].map(lambda x: x.get(prop.upper(), ''))
-                attrs.append(prop.upper())
+                if experiments.get('properties') is not None:
+                    experiments[prop.upper()] = experiments['properties'].map(
+                        lambda x: x.get(prop.upper(), '')
+                    )
+                else:
+                    experiments[prop.upper()] = ''
+
+                display_attrs.append(prop.upper())
 
         return Things(
             openbis_obj = self,
             entity = 'experiment',
-            df = experiments[attrs],
+            df = experiments[display_attrs],
             identifier_name ='identifier',
             start_with = start_with,
             count = count,
@@ -1895,8 +1989,36 @@ class Openbis:
         self, code=None, type=None, withParents=None, withChildren=None,
         start_with=None, count=None, kind=None,
         status=None, sample=None, experiment=None, collection=None, project=None,
-        tags=None, props=None, **properties
+        tags=None, attrs=None, props=None, **properties
     ):
+        """Returns a DataFrame of all dataSets for a given project/experiment/sample (or any combination)
+        Filters:
+        --------
+        project      -- a project code or a project object
+        experiment   -- an experiment code or an experiment object
+        sample       -- a sample code/permId or a sample/object
+        collection   -- same as experiment
+        tags         -- only return dataSets with the specified tags
+        type         -- a dataSetType code
+
+        Paging:
+        -------
+        start_with   -- default=None
+        count        -- number of dataSets that should be fetched. default=None.
+
+        Include:
+        --------
+        withParents  -- the list of parent's permIds in a column 'parents'
+        withChildren -- the list of children's permIds in a column 'children'
+        attrs        -- list of all desired attributes. Examples:
+                        project, experiment, sample: just return their identifier
+                        space.code, project.code, experiment.code
+                        registrator.email, registrator.firstName
+                        type.generatedCodePrefix
+        props        -- list of all desired properties. Returns an empty string if
+                        a) property is not present
+                        b) property is not defined for this dataSetType
+        """
 
         if 'object' in properties:
             sample = properties['object']
@@ -1937,13 +2059,10 @@ class Openbis:
         search_criteria['criteria'] = sub_criteria
         search_criteria['operator'] = 'AND'
 
-        fetchopts = {
-            "@type": "as.dto.dataset.fetchoptions.DataSetFetchOptions",
-            "containers": {"@type": "as.dto.dataset.fetchoptions.DataSetFetchOptions"},
-            "type": {"@type": "as.dto.dataset.fetchoptions.DataSetTypeFetchOptions"}
-        }
+        fetchopts = get_fetchoptions('dataSet', including=['type'])
         fetchopts['from'] = start_with
         fetchopts['count'] = count
+
         if kind:
             kind = kind.upper()
             if kind not in ['PHYSICAL_DATA', 'CONTAINER', 'LINK']:
@@ -1951,9 +2070,17 @@ class Openbis:
             fetchopts['kind'] = kind
             raise NotImplementedError('you cannot search for dataSet kinds yet')
 
-        for option in ['tags', 'properties', 'sample', 'experiment', 'physicalData']:
+        if attrs is None: attrs = []
+        options = self._get_fetchopts_for_attrs(attrs)
+        for option in ['tags', 'properties', 'physicalData']+options:
             fetchopts[option] = fetch_option[option]
 
+        # get fetch options for projects and spaces
+        # via experiment, if requested
+        for attr in attrs:
+            if any([entity in attr for entity in ['space','project']]):
+                fetchopts['experiment'] = fetch_option['experiment']
+                fetchopts['experiment']['project'] = fetch_option['project']
         request = {
             "method": "searchDataSets",
             "params": [self.token,
@@ -1965,6 +2092,7 @@ class Openbis:
 
         return self._dataset_list_for_response(
             response=resp['objects'],
+            attrs=attrs,
             props=props,
             start_with=start_with,
             count=count,
@@ -1976,12 +2104,7 @@ class Openbis:
         """ Returns an experiment object for a given identifier (expId).
         """
 
-        fetchopts = {
-            "@type": "as.dto.experiment.fetchoptions.ExperimentFetchOptions",
-            "type": {
-                "@type": "as.dto.experiment.fetchoptions.ExperimentTypeFetchOptions",
-            },
-        }
+        fetchopts = fetch_option['experiment']
 
         search_request = _type_for_id(expId, 'experiment')
         for option in ['tags', 'properties', 'attachments', 'project', 'samples', 'registrator', 'modifier']:
@@ -3319,26 +3442,73 @@ class Openbis:
 
 
     def _dataset_list_for_response(
-        self, response, props=None, 
+        self, response, attrs=None, props=None, 
         start_with=None, count=None, totalCount=0
     ):
         """returns a Things object, containing a DataFrame plus some additional information
         """
+        def extract_attribute(attribute_to_extract):
+            def return_attribute(obj):
+                if obj is None: return ''
+                return obj.get(attribute_to_extract,'')
+            return return_attribute
 
         parse_jackson(response)
-        attrs = ['permId', 'type', 'experiment', 'sample',
-                 'registrationDate', 'modificationDate',
-                 'location', 'status', 'presentInArchive', 'size',
-                 'properties'
-                ]
+
+        if attrs is None: attrs=[]
+        default_attrs = [
+            'permId', 'type', 'experiment', 'sample',
+            'registrationDate', 'modificationDate',
+            'location', 'status', 'presentInArchive', 'size',
+            'properties'
+        ]
+        display_attrs = default_attrs + attrs
+
+        def extract_project(attr):
+            entity, _, attr = attr.partition('.')
+            def extract_attr(obj):
+                try: 
+                    if attr:
+                        return obj['project'][attr]
+                    else:
+                        return obj['project']['identifier']['identifier']
+                except KeyError:
+                    return ''
+            return extract_attr
+
+        def extract_space(attr):
+            entity, _, attr = attr.partition('.')
+            def extract_attr(obj):
+                try: 
+                    if attr:
+                        return obj['project']['space'][attr]
+                    else:
+                        return obj['project']['space']['code']
+                except KeyError:
+                    return ''
+            return extract_attr
+
         if len(response) == 0:
-            datasets = DataFrame(columns=attrs)
+            datasets = DataFrame(columns=display_attrs)
         else:
             datasets = DataFrame(response)
+            for attr in attrs:
+                if 'project' in attr:
+                    datasets[attr] = datasets['experiment'].map(extract_project(attr))
+                elif 'space' in attr:
+                    datasets[attr] = datasets['experiment'].map(extract_space(attr))
+                elif '.' in attr:
+                    entity, attribute_to_extract = attr.split('.')
+                    datasets[attr] = datasets[entity].map(extract_attribute(attribute_to_extract))
+            for attr in attrs:
+                # if no dot supplied, just display the code of the space, project or experiment
+                if any(entity == attr for entity in ['experiment', 'sample']):
+                    datasets[attr] = datasets[attr].map(extract_nested_identifier)
+
             datasets['registrationDate'] = datasets['registrationDate'].map(format_timestamp)
             datasets['modificationDate'] = datasets['modificationDate'].map(format_timestamp)
-            datasets['experiment'] = datasets['experiment'].map(extract_nested_identifier)
-            datasets['sample'] = datasets['sample'].map(extract_nested_identifier)
+            #datasets['experiment'] = datasets['experiment'].map(extract_nested_identifier)
+            #datasets['sample'] = datasets['sample'].map(extract_nested_identifier)
             datasets['type'] = datasets['type'].map(extract_code)
             datasets['permId'] = datasets['code']
             datasets['size'] = datasets['physicalData'].map(lambda x: x.get('size') if x else '')
@@ -3350,13 +3520,18 @@ class Openbis:
             if isinstance(props, str):
                 props = [props]
             for prop in props:
-                datasets[prop.upper()] = datasets['properties'].map(lambda x: x.get(prop.upper(), ''))
-                attrs.append(prop.upper())
+                if datasets.get('properties') is not None:
+                    datasets[prop.upper()] = datasets['properties'].map(
+                        lambda x: x.get(prop.upper(), '')
+                    )
+                else:
+                    datasets[prop.upper()] = ''
+                display_attrs.append(prop.upper())
 
         return Things(
             openbis_obj = self,
             entity = 'dataset',
-            df = datasets[attrs],
+            df = datasets[display_attrs],
             identifier_name = 'permId',
             start_with=start_with,
             count=count,
@@ -3429,46 +3604,70 @@ class Openbis:
                 props=props,
             )
 
+
     def _sample_list_for_response(
-        self, response, props=None,
+        self, response, attrs=None, props=None,
         start_with=None, count=None, totalCount=0
     ):
-        """returns a Things object, containing a DataFrame plus some additional information
+        """returns a Things object, containing a DataFrame plus additional information
         """
+        def extract_attribute(attribute_to_extract):
+            def return_attribute(obj):
+                if obj is None: return ''
+                return obj.get(attribute_to_extract,'')
+            return return_attribute
 
         parse_jackson(response)
-        attrs = ['identifier', 'permId', 'experiment', 'type',
+
+        if attrs is None: attrs = []
+        default_attrs = ['identifier', 'permId', 'type',
                  'registrator', 'registrationDate', 'modifier', 'modificationDate']
+        display_attrs = default_attrs + attrs
+
         if len(response) == 0:
-            samples = DataFrame(columns=attrs)
+            samples = DataFrame(columns=display_attrs)
         else:
             samples = DataFrame(response)
+            for attr in attrs:
+                if '.' in attr:
+                    entity, attribute_to_extract = attr.split('.')
+                    samples[attr] = samples[entity].map(extract_attribute(attribute_to_extract))
+            for attr in attrs:
+                # if no dot supplied, just display the code of the space, project or experiment
+                if attr in ['project', 'experiment']:
+                    samples[attr] = samples[attr].map(extract_nested_identifier)
+                if attr in ['space']:
+                    samples[attr] = samples[attr].map(extract_code)
+
             samples['registrationDate'] = samples['registrationDate'].map(format_timestamp)
             samples['modificationDate'] = samples['modificationDate'].map(format_timestamp)
             samples['registrator'] = samples['registrator'].map(extract_person)
             samples['modifier'] = samples['modifier'].map(extract_person)
             samples['identifier'] = samples['identifier'].map(extract_identifier)
             samples['permId'] = samples['permId'].map(extract_permid)
-            samples['experiment'] = samples['experiment'].map(extract_nested_identifier)
             samples['type'] = samples['type'].map(extract_nested_permid)
 
         if props is not None:
             if isinstance(props, str):
                 props = [props]
             for prop in props:
-                samples[prop.upper()] = samples['properties'].map(lambda x: x.get(prop.upper(), ''))
-                attrs.append(prop.upper())
+                if samples.get('properties') is not None:
+                    samples[prop.upper()] = samples['properties'].map(
+                        lambda x: x.get(prop.upper(), '')
+                    )
+                else:
+                    samples[prop.upper()] = ''
+                display_attrs.append(prop.upper())
 
         return Things(
             openbis_obj = self,
             entity = 'sample',
-            df = samples[attrs],
+            df = samples[display_attrs],
             identifier_name = 'identifier',
             start_with=start_with,
             count=count,
             totalCount=totalCount,
         )
-
 
     get_object = get_sample # Alias
 
