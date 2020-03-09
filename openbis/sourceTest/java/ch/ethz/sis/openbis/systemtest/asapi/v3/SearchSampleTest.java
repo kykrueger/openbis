@@ -39,8 +39,11 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.search.Semant
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagCode;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagPermId;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.ISQLExecutor;
 import ch.systemsx.cisd.common.test.AssertionUtil;
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.IGeneralInformationService;
 import ch.systemsx.cisd.openbis.systemtest.authorization.ProjectAuthorizationUser;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
 import static org.testng.Assert.*;
@@ -50,6 +53,9 @@ import static org.testng.Assert.*;
  */
 public class SearchSampleTest extends AbstractSampleTest
 {
+
+    @Autowired
+    protected ISQLExecutor sqlExecutor;
 
     @Test
     public void testSearchWhichReturnsSharedSamplesForSpaceUser()
@@ -791,6 +797,10 @@ public class SearchSampleTest extends AbstractSampleTest
     @Test
     public void testSearchWithModificationDateThatEquals()
     {
+        final Long count = (Long) sqlExecutor.execute("select count(*) from samples_all WHERE modification_timestamp::DATE = ?::DATE",
+                Arrays.asList("2009-08-18")).get(0).get("count");
+        System.out.println("Found samples count: " + count);
+
         SampleSearchCriteria criteria = new SampleSearchCriteria();
         criteria.withModificationDate().thatEquals("2009-08-18");
         testSearch(TEST_USER, criteria, 14);
