@@ -25,6 +25,23 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes;
 public class JDBCSQLExecutor implements ISQLExecutor
 {
 
+    private static final Map<Class<?>, PSQLTypes> TYPE_CONVERSION_MAP = new HashMap<>();
+
+    static {
+        TYPE_CONVERSION_MAP.put(Boolean[].class, PSQLTypes.BOOLEAN);
+
+        TYPE_CONVERSION_MAP.put(Character[].class, PSQLTypes.CHARACTER);
+        TYPE_CONVERSION_MAP.put(String[].class, PSQLTypes.VARCHAR);
+
+        TYPE_CONVERSION_MAP.put(Double[].class, PSQLTypes.FLOAT8);
+        TYPE_CONVERSION_MAP.put(Float[].class, PSQLTypes.FLOAT4);
+
+        TYPE_CONVERSION_MAP.put(Long[].class, PSQLTypes.INT8);
+        TYPE_CONVERSION_MAP.put(Integer[].class, PSQLTypes.INT4);
+        TYPE_CONVERSION_MAP.put(Short[].class, PSQLTypes.INT2);
+        TYPE_CONVERSION_MAP.put(Byte[].class, PSQLTypes.INT2);
+    }
+
     /** Connection used for this executor. */
     private Connection connection;
 
@@ -96,49 +113,22 @@ public class JDBCSQLExecutor implements ISQLExecutor
             final Object object = args.get(index);
             if (object != null && object.getClass().isArray())
             {
-                final Class<?> componentType = object.getClass().getComponentType();
-                final String dbArrayTypeName;
-
-                if (componentType.isPrimitive()) {
-                    throw new IllegalArgumentException("JDBCSQLExecutor arrays handler does not support arrays of primitive types");
-                } else
-                {
-                    if (Boolean.class.isAssignableFrom(componentType))
-                    {
-                        dbArrayTypeName = PSQLTypes.BOOLEAN.toString();
-                    } else if (Byte.class.isAssignableFrom(componentType))
-                    {
-                        dbArrayTypeName = PSQLTypes.INT2.toString();
-                    } else if (Character.class.isAssignableFrom(componentType))
-                    {
-                        dbArrayTypeName = PSQLTypes.CHARACTER.toString();
-                    } else if (Double.class.isAssignableFrom(componentType))
-                    {
-                        dbArrayTypeName = PSQLTypes.FLOAT8.toString();
-                    } else if (Float.class.isAssignableFrom(componentType))
-                    {
-                        dbArrayTypeName = PSQLTypes.FLOAT4.toString();
-                    } else if (Integer.class.isAssignableFrom(componentType))
-                    {
-                        dbArrayTypeName = PSQLTypes.INT4.toString();
-                    } else if (Long.class.isAssignableFrom(componentType))
-                    {
-                        dbArrayTypeName = PSQLTypes.INT8.toString();
-                    } else if (Short.class.isAssignableFrom(componentType))
-                    {
-                        dbArrayTypeName = PSQLTypes.INT2.toString();
-                    } else if (String.class.isAssignableFrom(componentType))
-                    {
-                        dbArrayTypeName = PSQLTypes.VARCHAR.toString();
-                    } else
-                    {
-                        throw new IllegalArgumentException("JDBCSQLExecutor arrays handler does not support the class " +
-                                componentType.getSimpleName());
+                final PSQLTypes psqlType;
+                final Object[] objectArray = (Object[]) object;
+                if (TYPE_CONVERSION_MAP.containsKey(object.getClass())) {
+                    psqlType = TYPE_CONVERSION_MAP.get(object.getClass());
+                } else if (object.getClass() == Object[].class) {
+                    if(objectArray.length > 0) {
+                        final Object objectArrayItem = objectArray[0];
+                        psqlType = TYPE_CONVERSION_MAP.get(objectArrayItem.getClass());
+                    } else {
+                        psqlType = TYPE_CONVERSION_MAP.get(String[].class); // Default for unknown array types
                     }
+                } else {
+                    throw new IllegalArgumentException("JDBCSQLExecutor don't support arrays of type: " + object.getClass().getName());
                 }
 
-                final Object[] objectArray = (Object[]) object;
-                preparedStatement.setArray(index + 1, connection.createArrayOf(dbArrayTypeName, objectArray));
+                preparedStatement.setArray(index + 1, connection.createArrayOf(psqlType.toString(), objectArray));
             } else if (object instanceof Date)
             {
                 final Date date = (Date) object;
