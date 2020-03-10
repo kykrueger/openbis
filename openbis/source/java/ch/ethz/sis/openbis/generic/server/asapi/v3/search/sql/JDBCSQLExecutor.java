@@ -100,7 +100,7 @@ public class JDBCSQLExecutor implements ISQLExecutor
                 final String dbArrayTypeName;
 
                 if (componentType.isPrimitive()) {
-                    throw new IllegalArgumentException("Arrays of primitive types are not supported");
+                    throw new IllegalArgumentException("JDBCSQLExecutor arrays handler does not support arrays of primitive types");
                 } else
                 {
                     if (Boolean.class.isAssignableFrom(componentType))
@@ -132,7 +132,8 @@ public class JDBCSQLExecutor implements ISQLExecutor
                         dbArrayTypeName = PSQLTypes.VARCHAR.toString();
                     } else
                     {
-                        throw new IllegalArgumentException("Arrays of objects are not supported");
+                        throw new IllegalArgumentException("JDBCSQLExecutor arrays handler does not support the class " +
+                                componentType.getSimpleName());
                     }
                 }
 

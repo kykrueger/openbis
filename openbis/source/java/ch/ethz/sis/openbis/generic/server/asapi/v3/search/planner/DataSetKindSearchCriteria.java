@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search;
+package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
-import ch.systemsx.cisd.base.annotation.JsonObject;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchFieldType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringFieldSearchCriteria;
 
 /**
  * @author Viktor Kovtun
  */
-@JsonObject("as.dto.common.search.DataSetKindSearchCriteria")
 public class DataSetKindSearchCriteria extends StringFieldSearchCriteria
 {
 
