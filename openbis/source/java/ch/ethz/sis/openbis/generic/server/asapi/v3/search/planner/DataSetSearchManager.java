@@ -37,6 +37,8 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.EntityWithPropertiesSortOptions.FETCHED_FIELDS_SCORE;
+
 /**
  * Manages detailed search with dataset search criteria.
  *
@@ -118,6 +120,7 @@ public class DataSetSearchManager extends AbstractCompositeEntitySearchManager<D
 
     @Override
     public Set<Long> sortIDs(final Set<Long> filteredIDs, final SortOptions<DataSet> sortOptions) {
+        sortOptions.getSortings().removeIf((sorting) -> FETCHED_FIELDS_SCORE.equals(sorting.getField()));
         return doSortIDs(filteredIDs, sortOptions, TableMapper.DATA_SET);
     }
 

@@ -30,6 +30,8 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 
 import java.util.Set;
 
+import static ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.EntityWithPropertiesSortOptions.FETCHED_FIELDS_SCORE;
+
 /**
  * Manages detailed search with complex sample search criteria.
  * 
@@ -57,7 +59,9 @@ public class SampleSearchManager extends AbstractCompositeEntitySearchManager<Sa
     }
 
     @Override
-    public Set<Long> sortIDs(final Set<Long> filteredIDs, final SortOptions<Sample> sortOptions) {
+    public Set<Long> sortIDs(final Set<Long> filteredIDs, final SortOptions<Sample> sortOptions)
+    {
+        sortOptions.getSortings().removeIf((sorting) -> FETCHED_FIELDS_SCORE.equals(sorting.getField()));
         return doSortIDs(filteredIDs, sortOptions, TableMapper.SAMPLE);
     }
 

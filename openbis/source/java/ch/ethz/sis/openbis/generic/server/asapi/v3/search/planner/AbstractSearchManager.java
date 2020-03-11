@@ -187,7 +187,13 @@ public abstract class AbstractSearchManager<CRITERIA extends ISearchCriteria, OB
 
     protected Set<Long> doSortIDs(final Set<Long> filteredIDs, final SortOptions<OBJECT> sortOptions, final TableMapper tableMapper)
     {
-        return getSearchDAO().sortIDs(tableMapper, filteredIDs, sortOptions);
+        if (!sortOptions.getSortings().isEmpty())
+        {
+            return getSearchDAO().sortIDs(tableMapper, filteredIDs, sortOptions);
+        } else
+        {
+            return filteredIDs;
+        }
     }
 
     protected <T, C extends AbstractFieldSearchCriteria<T>> C convertToOtherCriterion(final AbstractFieldSearchCriteria<T> criterion,
