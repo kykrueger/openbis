@@ -290,7 +290,7 @@ export default class ObjectTypeHandlerSave {
         ? new dto.PluginPermId(this.type.validationPlugin)
         : null
     )
-    update.getPropertyAssignments().set(assignments)
+    update.getPropertyAssignments().set(assignments.reverse())
 
     return new dto.UpdateSampleTypesOperation([update])
   }
