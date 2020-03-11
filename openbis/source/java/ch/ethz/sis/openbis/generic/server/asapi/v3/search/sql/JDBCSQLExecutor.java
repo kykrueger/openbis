@@ -121,8 +121,8 @@ public class JDBCSQLExecutor implements ISQLExecutor
 
                 if (psqlType == null)
                 {
-                    throw new IllegalArgumentException("JDBCSQLExecutor don't support arrays of type " + object.getClass().getName()
-                            + " with elements of type " + arrayObjectType.getName());
+                    throw new IllegalArgumentException("JDBCSQLExecutor don't support arrays of type: " + object.getClass().getName()
+                            + " - With elements of type: " + arrayObjectType.getName() + " - Data: " + Arrays.toString(objectArray));
                 }
 
                 preparedStatement.setArray(index + 1, connection.createArrayOf(psqlType.toString(), objectArray));

@@ -18,13 +18,11 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search;
 
 import java.util.*;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.*;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.CacheMode;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchObjectsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchObjectsOperationResult;
@@ -256,9 +254,40 @@ public abstract class AbstractSearchObjectsOperationExecutor<OBJECT, OBJECT_PE, 
         return sortedFinalResults;
     }
 
+    String[] sortsToIgnore = new String[] { EntityWithPropertiesSortOptions.FETCHED_FIELDS_SCORE };
+
     private List<Long> sortAndPage(final Set<Long> ids, final FetchOptions fo)
     {
-        final SortOptions<OBJECT> sortOptions = fo.getSortBy();
+        //
+        // Filter out sorts to ignore
+        //
+
+        SortOptions<OBJECT> sortOptions = fo.getSortBy();
+
+        if (sortOptions != null) {
+            List<Sorting> sortingToRemove = new ArrayList<>();
+            for (Sorting sorting:sortOptions.getSortings()) {
+                for (String sortToIgnore:sortsToIgnore) {
+                    if (sorting.getField().equals(sortToIgnore)) {
+                        sortingToRemove.add(sorting);
+                    }
+                }
+            }
+
+            for (Sorting sorting:sortingToRemove) {
+                sortOptions.getSortings().remove(sorting);
+                operationLog.warn("[SQL Query Engine - backwards compatibility warning - stop using this feature] SORTING ORDER IGNORED!: " + sorting.getField());
+            }
+
+            if (sortOptions.getSortings().isEmpty()) {
+                sortOptions = null;
+            }
+        }
+
+        //
+        //
+        //
+
         final Set<Long> orderedIDs = (sortOptions != null) ? getSearchManager().sortIDs(ids, sortOptions) : ids;
 
         final List<Long> toPage = new ArrayList<>(orderedIDs);
