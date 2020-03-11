@@ -113,18 +113,25 @@ public class JDBCSQLExecutor implements ISQLExecutor
             final Object object = args.get(index);
             if (object != null && object.getClass().isArray())
             {
-                final PSQLTypes psqlType;
+                PSQLTypes psqlType = null;
                 final Object[] objectArray = (Object[]) object;
-                if (TYPE_CONVERSION_MAP.containsKey(object.getClass())) {
+                if (TYPE_CONVERSION_MAP.containsKey(object.getClass()))
+                {
                     psqlType = TYPE_CONVERSION_MAP.get(object.getClass());
-                } else if (object.getClass() == Object[].class) {
-                    if(objectArray.length > 0) {
+                } else if (object.getClass() == Object[].class)
+                {
+                    if(objectArray.length > 0)
+                    {
                         final Object objectArrayItem = objectArray[0];
                         psqlType = TYPE_CONVERSION_MAP.get(objectArrayItem.getClass());
-                    } else {
+                    } else
+                    {
                         psqlType = TYPE_CONVERSION_MAP.get(String[].class); // Default for unknown array types
                     }
-                } else {
+                }
+                
+                if (psqlType == null)
+                {
                     throw new IllegalArgumentException("JDBCSQLExecutor don't support arrays of type: " + object.getClass().getName());
                 }
 
