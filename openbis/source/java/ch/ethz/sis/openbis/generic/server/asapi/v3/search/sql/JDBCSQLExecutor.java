@@ -27,19 +27,20 @@ public class JDBCSQLExecutor implements ISQLExecutor
 
     private static final Map<Class<?>, PSQLTypes> TYPE_CONVERSION_MAP = new HashMap<>();
 
-    static {
-        TYPE_CONVERSION_MAP.put(Boolean[].class, PSQLTypes.BOOLEAN);
+    static
+    {
+        TYPE_CONVERSION_MAP.put(Boolean.class, PSQLTypes.BOOLEAN);
 
-        TYPE_CONVERSION_MAP.put(Character[].class, PSQLTypes.CHARACTER);
-        TYPE_CONVERSION_MAP.put(String[].class, PSQLTypes.VARCHAR);
+        TYPE_CONVERSION_MAP.put(Character.class, PSQLTypes.CHARACTER);
+        TYPE_CONVERSION_MAP.put(String.class, PSQLTypes.VARCHAR);
 
-        TYPE_CONVERSION_MAP.put(Double[].class, PSQLTypes.FLOAT8);
-        TYPE_CONVERSION_MAP.put(Float[].class, PSQLTypes.FLOAT4);
+        TYPE_CONVERSION_MAP.put(Double.class, PSQLTypes.FLOAT8);
+        TYPE_CONVERSION_MAP.put(Float.class, PSQLTypes.FLOAT4);
 
-        TYPE_CONVERSION_MAP.put(Long[].class, PSQLTypes.INT8);
-        TYPE_CONVERSION_MAP.put(Integer[].class, PSQLTypes.INT4);
-        TYPE_CONVERSION_MAP.put(Short[].class, PSQLTypes.INT2);
-        TYPE_CONVERSION_MAP.put(Byte[].class, PSQLTypes.INT2);
+        TYPE_CONVERSION_MAP.put(Long.class, PSQLTypes.INT8);
+        TYPE_CONVERSION_MAP.put(Integer.class, PSQLTypes.INT4);
+        TYPE_CONVERSION_MAP.put(Short.class, PSQLTypes.INT2);
+        TYPE_CONVERSION_MAP.put(Byte.class, PSQLTypes.INT2);
     }
 
     /** Connection used for this executor. */
@@ -113,26 +114,15 @@ public class JDBCSQLExecutor implements ISQLExecutor
             final Object object = args.get(index);
             if (object != null && object.getClass().isArray())
             {
-                PSQLTypes psqlType = null;
                 final Object[] objectArray = (Object[]) object;
-                if (TYPE_CONVERSION_MAP.containsKey(object.getClass()))
-                {
-                    psqlType = TYPE_CONVERSION_MAP.get(object.getClass());
-                } else if (object.getClass() == Object[].class)
-                {
-                    if(objectArray.length > 0)
-                    {
-                        final Object objectArrayItem = objectArray[0];
-                        psqlType = TYPE_CONVERSION_MAP.get(objectArrayItem.getClass());
-                    } else
-                    {
-                        psqlType = TYPE_CONVERSION_MAP.get(String[].class); // Default for unknown array types
-                    }
-                }
-                
+                final Class<?> arrayObjectType = (objectArray.length > 0 && objectArray[0] != null)
+                        ? objectArray[0].getClass() : object.getClass().getComponentType();
+                final PSQLTypes psqlType = TYPE_CONVERSION_MAP.get(arrayObjectType);
+
                 if (psqlType == null)
                 {
-                    throw new IllegalArgumentException("JDBCSQLExecutor don't support arrays of type: " + object.getClass().getName());
+                    throw new IllegalArgumentException("JDBCSQLExecutor don't support arrays of type " + object.getClass().getName()
+                            + " with elements of type " + arrayObjectType.getName());
                 }
 
                 preparedStatement.setArray(index + 1, connection.createArrayOf(psqlType.toString(), objectArray));
