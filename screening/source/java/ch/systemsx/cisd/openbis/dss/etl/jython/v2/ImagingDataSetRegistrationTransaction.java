@@ -37,6 +37,7 @@ import javax.imageio.ImageIO;
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.common.exceptions.EnvironmentFailureException;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
+import ch.systemsx.cisd.common.properties.PropertyUtils;
 import ch.systemsx.cisd.etlserver.registrator.DataSetRegistrationDetails;
 import ch.systemsx.cisd.etlserver.registrator.api.v2.IDataSet;
 import ch.systemsx.cisd.etlserver.registrator.api.v2.IDataSetUpdatable;
@@ -89,6 +90,8 @@ import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.ScreeningConst
 @SuppressWarnings("rawtypes")
 public class ImagingDataSetRegistrationTransaction extends DataSetRegistrationTransaction
 {
+    private static final String THUMBNAIL_GENERATION_FAILURE_PROPERTY = "do-not-fail-upon-thumbnail-generation-failure";
+
     private final IDataSetRegistrationDetailsFactory<ImageDataSetInformation> imageDatasetFactory;
 
     private final IDataSetRegistrationDetailsFactory<DataSetInformation> imageContainerDatasetFactory;
@@ -386,26 +389,43 @@ public class ImagingDataSetRegistrationTransaction extends DataSetRegistrationTr
         {
             return;
         }
-        List<BufferedImage> images = algorithm.generateImages(imageDataSetInformation, thumbnailDatasets, imageCache);
-        if (images.size() > 0)
+        try
         {
-            IDataSet representative = createNewDataSet(algorithm.getDataSetTypeCode(), DataSetKind.PHYSICAL);
-            for (int i = 0; i < images.size(); i++)
+            List<BufferedImage> images = algorithm.generateImages(imageDataSetInformation, thumbnailDatasets, imageCache);
+            if (images.size() > 0)
             {
-                BufferedImage imageData = images.get(i);
-                String imageFile = createNewFile(representative, algorithm.getImageFileName(i));
-                File f = new File(imageFile);
-                try
+                IDataSet representative = createNewDataSet(algorithm.getDataSetTypeCode(), DataSetKind.PHYSICAL);
+                for (int i = 0; i < images.size(); i++)
                 {
-                    ImageIO.write(imageData, "png", f);
-                } catch (IOException e)
-                {
-                    throw new EnvironmentFailureException("Can not save representative thumbnail to file '"
-                            + f + "': " + e, e);
+                    BufferedImage imageData = images.get(i);
+                    String imageFile = createNewFile(representative, algorithm.getImageFileName(i));
+                    File f = new File(imageFile);
+                    try
+                    {
+                        ImageIO.write(imageData, "png", f);
+                    } catch (IOException e)
+                    {
+                        throw new EnvironmentFailureException("Can not save representative thumbnail to file '"
+                                + f + "': " + e, e);
+                    }
                 }
+                containedDataSetCodes.add(representative.getDataSetCode());
+                thumbnailDatasets.add(representative);
             }
-            containedDataSetCodes.add(representative.getDataSetCode());
-            thumbnailDatasets.add(representative);
+        } catch (Exception e)
+        {
+            Properties properties = getGlobalState().getThreadParameters().getThreadProperties();
+            if (PropertyUtils.getBoolean(properties, THUMBNAIL_GENERATION_FAILURE_PROPERTY, false))
+            {
+                operationLog.error("Couldn't create representative thumbnail. Reason: " + e, e);
+            } else
+            {
+                String dataSetCode = imageDataSetInformation.getDataSetCode();
+                throw new UserFailureException("Failed to generate thumbnails for data set " + dataSetCode
+                        + ". Either image files are corrupted or our image library can not read the images. "
+                        + "In the later case this error message can be suppressed by setting the property '"
+                        + THUMBNAIL_GENERATION_FAILURE_PROPERTY + "' in DSS service.properties to 'true'.", e);
+            }
         }
     }
 

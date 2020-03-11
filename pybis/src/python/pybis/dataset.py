@@ -3,13 +3,14 @@ from threading import Thread
 from queue import Queue
 from tabulate import tabulate
 from .openbis_object import OpenBisObject 
-from .definitions import openbis_definitions
-from .utils import VERBOSE
+from .definitions import openbis_definitions, get_type_for_entity, get_fetchoption_for_entity
+from .utils import VERBOSE, parse_jackson, extract_permid, extract_code, extract_downloadUrl
+from .things import Things
 import requests
 from requests import Request, Session
 import json
 from pandas import DataFrame
-#from urllib.parse import urlparse, urljoin, quote
+from urllib.parse import urlparse, urljoin, quote
 import urllib.parse
 import zipfile
 import random
@@ -204,30 +205,67 @@ class DataSet(
     set_props = set_properties
 
 
-    def get_dataset_files(self, **properties):
+    def get_dataset_files(self, start_with=None, count=None, **properties):
+
+        search_criteria = get_type_for_entity('dataSetFile', 'search')
+        search_criteria["operator"] = "AND"
+        search_criteria["criteria"] = [
+            {
+              "criteria": [
+                {
+                  "fieldName": "code",
+                  "fieldType": "ATTRIBUTE",
+                  "fieldValue": {
+                    "value": self.permId,
+                    "@type": "as.dto.common.search.StringEqualToValue"
+                  },
+                  "@type": "as.dto.common.search.CodeSearchCriteria"
+                }
+              ],
+              "operator": "OR",
+              "@type": "as.dto.dataset.search.DataSetSearchCriteria"
+            }
+        ]
 
 
-        search_criteria = get_search_type_for_entity('datasetFiles')
-        search_criteria['criteria'] = sub_criteria
-        search_criteria['operator'] = 'AND'
-
+        fetchopts = get_fetchoption_for_entity('dataSetFile')
 
         request = {
             "method": "searchFiles",
             "params": [
-                self.token,
+                self.openbis.token,
                 search_criteria,
                 fetchopts,
             ],
         }
-        resp = self._post_request(datastore.url, dss_endpoint, request)
+        full_url = urljoin(self._get_download_url(), dss_endpoint)
+        resp = self.openbis._post_request_full_url(full_url, request)
+        objects = resp['objects']
+        parse_jackson(objects)
 
-        return self._dataset_list_for_response(
-            response=resp['objects'],
-            props=props,
+        attrs = [
+            'dataSetPermId', 'dataStore', 'downloadUrl',
+            'path', 'directory',
+            'fileLength',
+            'checksumCRC32', 'checksum', 'checksumType'
+        ]
+        dataSetFiles = None
+        if len(objects) == 0:
+            dataSetFiles = DataFrame(columns=attrs)
+        else:
+            dataSetFiles = DataFrame(objects)
+            dataSetFiles['downloadUrl'] = dataSetFiles['dataStore'].map(extract_downloadUrl)
+            dataSetFiles['dataStore'] = dataSetFiles['dataStore'].map(extract_code)
+            dataSetFiles['dataSetPermId'] = dataSetFiles['dataSetPermId'].map(extract_permid)
+
+        return Things(
+            openbis_obj = self.openbis,
+            entity = 'dataSetFile',
+            df = dataSetFiles[attrs],
+            identifier_name = 'dataSetPermId',
             start_with=start_with,
             count=count,
-            totalCount=resp['totalCount'],
+            totalCount = resp.get('totalCount'),
         )
 
 
@@ -256,7 +294,7 @@ class DataSet(
         elif ('type' in self.data) and ('kind' in self.data['type']): # openBIS 16.5.x DTO
             kind =self.data['type']['kind']
         
-        if kind == 'PHYSICAL':
+        if kind in ['PHYSICAL', 'CONTAINER']:
             return self._download_physical(files, destination, create_default_folders, wait_until_finished, workers)
         elif kind == 'LINK':
             if linked_dataset_fileservice_url is None:
@@ -276,8 +314,8 @@ class DataSet(
         else:
             final_destination = destination
 
-
-        base_url = self.data['dataStore']['downloadUrl'] + '/datastore_server/' + self.permId + '/'
+        download_url = self._get_download_url()
+        base_url = download_url + '/datastore_server/' + self.permId + '/'
         with DataSetDownloadQueue(workers=workers) as queue:
             # get file list and start download
             for filename in files:
@@ -396,6 +434,17 @@ class DataSet(
         df['crc32Checksum'] = df['crc32Checksum'].fillna(0.0).astype(int).map(signed_to_unsigned)
         return df[['isDirectory', 'pathInDataSet', 'fileSize', 'crc32Checksum']]
 
+    def _get_download_url(self):
+        download_url = ""
+        if "downloadUrl" in self.data["dataStore"]:
+            download_url = self.data["dataStore"]["downloadUrl"]  
+        else:
+            # fallback, if there is no dataStore defined
+            datastores = self.openbis.get_datastores()
+            download_url = datastores['downloadUrl'][0]
+        return download_url
+
+
     def get_file_list(self, recursive=True, start_folder="/"):
         """Lists all files of a given dataset. You can specifiy a start_folder other than "/".
         By default, all directories and their containing files are listed recursively. You can
@@ -411,9 +460,9 @@ class DataSet(
             ],
             "id": "1"
         }
-
+        download_url = self._get_download_url()
         resp = requests.post(
-            self.data["dataStore"]["downloadUrl"] + '/datastore_server/rmi-dss-api-v1.json',
+            download_url+ '/datastore_server/rmi-dss-api-v1.json',
             json.dumps(request),
             verify=self.openbis.verify_certificates
         )

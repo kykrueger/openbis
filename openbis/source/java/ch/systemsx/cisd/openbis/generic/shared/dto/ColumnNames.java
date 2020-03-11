@@ -356,7 +356,7 @@ public final class ColumnNames
 
     public static final String PLUGIN_TYPE = "plugin_type";
 
-    public static final String IS_AVAILABLE = "" + "is_available";
+    public static final String IS_AVAILABLE = "is_available";
 
     public static final String PRESENT_IN_ARCHIVE = "present_in_archive";
 
@@ -443,6 +443,8 @@ public final class ColumnNames
     public static final String DESCRIPTOR_ACCESSION_ID = "descriptor_accession_id";
 
     public static final String ARCHIVING_REQUESTED = "archiving_requested";
+
+    public static final String EMAIL_COLUMN = "email";
 
     private ColumnNames()
     {

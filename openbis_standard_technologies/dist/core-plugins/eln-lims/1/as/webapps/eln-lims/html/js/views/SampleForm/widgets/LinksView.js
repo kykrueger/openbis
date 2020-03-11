@@ -24,6 +24,8 @@ function LinksView(linksController, linksModel) {
 	var $samplePicker = $("<div>");
 	var $savedContainer = null;
 	
+	var dataGrids = [];
+	
 	//
 	// External API
 	//
@@ -52,7 +54,7 @@ function LinksView(linksController, linksModel) {
 				var sampleTableContainerLabel = (sampleTypeLabel)?sampleTypeLabel:sampleTypeCode;
 				$sampleTableContainer.append($("<div>").append(sampleTableContainerLabel + ":")
 						.append("&nbsp;")
-						.append(linksView.getAddBtn($samplePickerContainer, sampleTypeCode))
+						.append(linksView.getAddBtn($samplePickerContainer, sampleTypeCode, sampleTableContainerLabel))
 						.css("margin","5px"));
 			}
 			
@@ -151,9 +153,16 @@ function LinksView(linksController, linksModel) {
 			postFix = "ANNOTATIONS_ALL" + linksModel.title;
 		}
 		
-		var dataGrid = SampleDataGridUtil.getSampleDataGrid(containerCode, samplesOnGrid, null, linksView.getCustomOperationsForGrid(), allCustomAnnotations, postFix, linksModel.isDisabled, false);
+		var dataGrid = SampleDataGridUtil.getSampleDataGrid(containerCode, samplesOnGrid, null, linksView.getCustomOperationsForGrid(), allCustomAnnotations, postFix, linksModel.isDisabled, false, false, false, 40);
 		dataGrid.init($dataGridContainer);
 		linksModel.writeState(sample, null, null, false);
+		dataGrids.push(dataGrid);
+	}
+	
+	this.refreshHeight = function() {
+		dataGrids.forEach(function(dataGrid) {
+			dataGrid.refreshHeight();
+		});
 	}
 	
 	this.repaint = function($container) {
@@ -176,11 +185,9 @@ function LinksView(linksController, linksModel) {
 		$legend.append(linksModel.title).append("&nbsp;").append(addAnyBtn); //.css("margin-top", "20px").css("margin-bottom", "20px");
 
 		if(!linksModel.disableAddAnyType && profile.mainMenu.showBarcodes) {
-		    $legend.append(linksView.getAddAnyBarcode());
+			$legend.append(linksView.getAddAnyBarcode());
 		}
 
-		$legend.prepend(FormUtil.getShowHideButton($fieldset, "SAMPLE-" + linksModel.sampleTypeCode + "-" + linksModel.title));
-		
 		$fieldset.append($samplePicker);
 	}
 	
@@ -286,7 +293,10 @@ function LinksView(linksController, linksModel) {
 					if(currentValue) {
 						FormUtil.setFieldValue(propertyType, $field, currentValue);
 					}
-					$field.attr("id", ""); //Fix for current summernote behaviour
+
+					var id = propertyType.label.split(" ").join("-").toLowerCase();
+					id = id + "-" + sample.code.toLowerCase();
+					$field.attr("id", id); //Fix for current summernote behaviour
 					$field.change(function() {
 						var $field = $(this);
 						propertyTypeValue = FormUtil.getFieldValue(propertyType, $field);
@@ -308,8 +318,13 @@ function LinksView(linksController, linksModel) {
 			sortable : false,
 			render : function(data) {
 				//Dropdown Setup
+				var codeId = data.code.toLowerCase() + "-operations-column-id";
+
 				var $dropDownMenu = $("<span>", { class : 'dropdown table-options-dropdown' });
-				var $caret = $("<a>", { 'href' : '#', 'data-toggle' : 'dropdown', class : 'dropdown-toggle btn btn-default'}).append("Operations ").append($("<b>", { class : 'caret' }));
+				var $caret = $("<a>", { 'href' : '#',
+				                        'data-toggle' : 'dropdown',
+				                        class : 'dropdown-toggle btn btn-default',
+				                        'id' : codeId}).append("Operations ").append($("<b>", { class : 'caret' }));
 				var $list = $("<ul>", { class : 'dropdown-menu', 'role' : 'menu', 'aria-labelledby' :'sampleTableDropdown' });
 				$dropDownMenu.append($caret);
 				$dropDownMenu.append($list);
@@ -323,7 +338,8 @@ function LinksView(linksController, linksModel) {
 				$dropDownMenu.click(stopEventsBuble);
 				
 				if(profile.isSampleTypeProtocol(data["$object"].sampleTypeCode)) {
-					var $copyAndLink = $("<li>", { 'role' : 'presentation' }).append($("<a>", {'title' : 'Use as template'}).append("Use as template"));
+				    var id = codeId + "-use-as-template";
+					var $copyAndLink = $("<li>", { 'role' : 'presentation' }).append($("<a>", {'id' : id, 'title' : 'Use as template'}).append("Use as template"));
 					$copyAndLink.click(function(e) {
 						stopEventsBuble(e);
 						var copyAndLink = function(code) {
@@ -434,17 +450,18 @@ function LinksView(linksController, linksModel) {
 			linksController.addSample(e.data["$object"]);
 			$container.empty().hide();
 		}
-		
-		var dataGrid = SampleDataGridUtil.getSampleDataGrid(sampleTypeCode, advancedSampleSearchCriteria, rowClick, null, null, null, true, true, true);
+		var dataGrid = SampleDataGridUtil.getSampleDataGrid(sampleTypeCode, advancedSampleSearchCriteria, rowClick, null, null, null, true, true, true, false, 60);
 		dataGrid.init($gridContainer, extraOptions);
+		dataGrids.push(dataGrid);
 	}
 			
-	linksView.getAddBtn = function($container, sampleTypeCode) {
+	linksView.getAddBtn = function($container, sampleTypeCode, sampleTableContainerLabel) {
 		var enabledFunction = function() {
 			linksView.showSamplePicker($container, sampleTypeCode);
 		};
-		
-		var $addBtn = FormUtil.getButtonWithIcon("glyphicon-plus", (linksModel.isDisabled)?null:enabledFunction);
+
+		var id = "plus-btn-" + sampleTableContainerLabel.toLowerCase().split(" ").join("-");
+		var $addBtn = FormUtil.getButtonWithIcon("glyphicon-plus", (linksModel.isDisabled)?null:enabledFunction, null, null, id);
 		if(linksModel.isDisabled) {
 			return "";
 		} else {
@@ -467,8 +484,8 @@ function LinksView(linksController, linksModel) {
 				Util.unblockUI();
 			});
 		};
-		
-		var $addBtn = FormUtil.getButtonWithIcon("glyphicon-plus", (linksModel.isDisabled)?null:enabledFunction);
+		var id = "plus-btn-" + linksModel.title.split(" ").join("-").toLowerCase() + "-type-selector";
+		var $addBtn = FormUtil.getButtonWithIcon("glyphicon-plus", (linksModel.isDisabled)?null:enabledFunction, null, null, id);
 		
 		if(linksModel.isDisabled) {
 			return "";

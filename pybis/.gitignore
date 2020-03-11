@@ -14,3 +14,6 @@ src/python/OBis/build/
 src/python/OBis/dist/
 src/python/PyBis/build/
 src/python/PyBis/dist/
+/.idea/
+*.iml
+*.eml

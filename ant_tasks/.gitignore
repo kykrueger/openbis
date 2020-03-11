@@ -1,2 +1,5 @@
 /targets
 /test-output
+.idea/
+*.iml
+*.eml

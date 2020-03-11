@@ -2,3 +2,6 @@ targets/
 /bin
 /build
 test-output
+/.idea/
+*.iml
+*.eml

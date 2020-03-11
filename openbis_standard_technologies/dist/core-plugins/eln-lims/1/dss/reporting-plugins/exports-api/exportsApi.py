@@ -13,26 +13,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import json
 from collections import deque
 
 import jarray
 # To obtain the openBIS URL
-from ch.systemsx.cisd.openbis.dss.generic.server import DataStoreServer;
+from ch.systemsx.cisd.openbis.dss.generic.server import DataStoreServer
 from ch.systemsx.cisd.openbis.generic.client.web.client.exception import UserFailureException
 # Zip Format
-from java.io import File;
-from java.io import FileInputStream;
-from java.io import FileOutputStream;
+from java.io import File, BufferedInputStream
+from java.io import FileInputStream
+from java.io import FileOutputStream
 from java.lang import String
 from java.lang import StringBuilder
-from java.util.zip import ZipEntry;
-from java.util.zip import ZipOutputStream;
+from java.util import ArrayList
+from java.util.zip import ZipEntry, Deflater, ZipOutputStream, CRC32
 from org.apache.commons.io import FileUtils
 # Java Core
 from org.apache.commons.io import IOUtils
 
-OPENBISURL = DataStoreServer.getConfigParameters().getServerURL() + "/openbis/openbis";
-V3_DSS_BEAN = "data-store-server_INTERNAL";
+OPENBISURL = DataStoreServer.getConfigParameters().getServerURL() + "/openbis/openbis"
+V3_DSS_BEAN = "data-store-server_INTERNAL"
 
 #V3 API - Metadata
 
@@ -94,6 +95,8 @@ from ch.ethz.sis import DOCXBuilder
 #Images export for word
 from org.jsoup import Jsoup;
 
+from com.github.freva.asciitable import AsciiTable
+
 class MLStripper(HTMLParser):
     def __init__(self):
         self.reset()
@@ -103,13 +106,14 @@ class MLStripper(HTMLParser):
     def get_data(self):
         return ''.join(self.fed)
 
+
 def strip_tags(html):
     s = MLStripper()
     s.feed(html)
     return s.get_data()
 
 
-def displayResult(isOk, tableBuilder, result=None):
+def displayResult(isOk, tableBuilder, result=None, errorMessage="Operation Failed"):
     if isOk:
         tableBuilder.addHeader("STATUS");
         tableBuilder.addHeader("MESSAGE");
@@ -120,10 +124,10 @@ def displayResult(isOk, tableBuilder, result=None):
         row.setCell("RESULT", result);
     else:
         tableBuilder.addHeader("STATUS");
-        tableBuilder.addHeader("MESSAGE");
+        tableBuilder.addHeader("Error");
         row = tableBuilder.addRow();
         row.setCell("STATUS", "FAIL");
-        row.setCell("MESSAGE", "Operation Failed");
+        row.setCell("Error", errorMessage);
 
 
 def addToExportWithoutRepeating(entitiesToExport, entityFound):
@@ -247,7 +251,7 @@ def findEntitiesToExport(params):
             operationLog.info("Found: " + str(results.getTotalCount()) + " files");
             for file in results.getObjects():
                 entityFound = {"type": "FILE", "permId": permId, "path": file.getPath(), "isDirectory": file.isDirectory(),
-                               "length": file.getFileLength(), "registrationDate": dataset.getRegistrationDate()};
+                               "length": file.getFileLength()};
                 addToExportWithoutRepeating(entitiesToExport, entityFound);
     return entitiesToExport
 
@@ -258,19 +262,7 @@ def cleanUp(tempDirPath, tempZipFilePath):
     FileUtils.forceDelete(File(tempZipFilePath));
 
 
-# Generates ZIP file and stores it in workspace
-def generateZipFile(entities, includeRoot, sessionToken, tempDirPath, tempZipFilePath):
-    # Create Zip File
-    fos = FileOutputStream(tempZipFilePath);
-    zos = ZipOutputStream(fos);
-
-    generateFilesInZip(zos, entities, includeRoot, sessionToken, tempDirPath)
-
-    zos.close();
-    fos.close();
-
-
-def generateFilesInZip(zos, entities, includeRoot, sessionToken, tempDirPath):
+def generateFilesInZip(zos, entities, includeRoot, sessionToken, tempDirPath, deflated=True):
     # Services used during the export process
     v3 = ServiceProvider.getV3ApplicationService();
     v3d = ServiceProvider.getApplicationContext().getBean(V3_DSS_BEAN);
@@ -371,7 +363,7 @@ def generateFilesInZip(zos, entities, includeRoot, sessionToken, tempDirPath):
             rawFile = File(tempDirPath + filePath + ".json");
             rawFile.getParentFile().mkdirs();
             IOUtils.copyLarge(rawFileInputStream, FileOutputStream(rawFile));
-            addToZipFile(filePath, rawFile, zos);
+            addToZipFile(filePath, rawFile, zos, deflated=deflated);
             emptyZip = False
 
         # To avoid empty directories on the zip file, it makes the first found entity the base directory
@@ -380,7 +372,6 @@ def generateFilesInZip(zos, entities, includeRoot, sessionToken, tempDirPath):
                 baseDirToCut = entityFilePath[:entityFilePath.rfind('/')];
             if entityFilePath is not None:
                 entityFilePath = entityFilePath[len(baseDirToCut):]
-        #
 
         if entityObj is not None:
             objectCache[permId] = entityObj;
@@ -390,20 +381,20 @@ def generateFilesInZip(zos, entities, includeRoot, sessionToken, tempDirPath):
         if entityObj is not None and entityFilePath is not None:
             # JSON
             entityJson = String(objectMapper.writeValueAsString(entityObj));
-            fileMetadatum = addFile(tempDirPath, entityFilePath, "json", entityJson.getBytes(), zos);
+            fileMetadatum = addFile(tempDirPath, entityFilePath, "json", entityJson.getBytes(), zos, deflated=deflated);
             fileMetadata.append(fileMetadatum)
             emptyZip = False
             # TEXT
             entityTXT = String(getTXT(entityObj, v3, sessionToken, False));
-            fileMetadatum = addFile(tempDirPath, entityFilePath, "txt", entityTXT.getBytes(), zos);
+            fileMetadatum = addFile(tempDirPath, entityFilePath, "txt", entityTXT.getBytes(), zos, deflated=deflated);
             fileMetadata.append(fileMetadatum)
             # DOCX
             entityDOCX = getDOCX(entityObj, v3, sessionToken, False);
-            fileMetadatum = addFile(tempDirPath, entityFilePath, "docx", entityDOCX, zos);
+            fileMetadatum = addFile(tempDirPath, entityFilePath, "docx", entityDOCX, zos, deflated=deflated);
             fileMetadata.append(fileMetadatum)
             # HTML
             entityHTML = getDOCX(entityObj, v3, sessionToken, True);
-            fileMetadatum = addFile(tempDirPath, entityFilePath, "html", entityHTML, zos);
+            fileMetadatum = addFile(tempDirPath, entityFilePath, "html", entityHTML, zos, deflated=deflated);
             fileMetadata.append(fileMetadatum)
             operationLog.info("--> Entity type: " + type + " permId: " + permId + " post html.");
     if emptyZip:
@@ -498,12 +489,17 @@ def getDOCX(entityObj, v3, sessionToken, isHTML):
             propertyType = propertyAssigment.getPropertyType();
             if propertyType.getCode() in properties:
                 propertyValue = properties[propertyType.getCode()];
-                if propertyType.getDataType() is DataType.MULTILINE_VARCHAR:
+                if propertyType.getDataType() is DataType.MULTILINE_VARCHAR and propertyType.getMetaData().get("custom_widget") == "Word Processor":
                     doc = Jsoup.parse(propertyValue);
                     imageElements = doc.select("img");
                     for imageElement in imageElements:
                         imageSrc = imageElement.attr("src");
                         propertyValue = propertyValue.replace(imageSrc, DataStoreServer.getConfigParameters().getServerURL() + imageSrc + "?sessionID=" + sessionToken);
+                if propertyType.getDataType() is DataType.XML and propertyType.getMetaData().get("custom_widget") == "Spreadsheet" \
+                        and propertyValue.upper().startswith("<DATA>") and propertyValue.upper().endswith("</DATA>"):
+                    propertyValue = propertyValue[6:-7].decode('base64')
+                    propertyValue = convertJsonToHtml(json.loads(propertyValue))
+
                 if propertyValue != u"\uFFFD(undefined)":
                     docxBuilder.addProperty(propertyType.getLabel(), propertyValue);
     
@@ -511,6 +507,34 @@ def getDOCX(entityObj, v3, sessionToken, isHTML):
         return docxBuilder.getHTMLBytes();
     else:
         return docxBuilder.getDocBytes();
+
+
+def convertJsonToHtml(json):
+    data = json["data"]
+    styles = json["style"]
+
+    commonStyle = "border: 1px solid black;"
+    tableStyle = commonStyle + " border-collapse: collapse;"
+
+    tableBody = StringBuilder()
+    for i, dataRow in enumerate(data):
+        tableBody.append("<tr>\n")
+        for j, cell in enumerate(dataRow):
+            stylesKey = convertNumericToAlphanumeric(i, j)
+            style = styles[stylesKey]
+            tableBody.append("  <td style='").append(commonStyle).append(" ").append(style).append("'> ").append(cell).append(" </td>\n")
+        tableBody.append("</tr>\n")
+    return ("<table style='%s'>\n" % tableStyle) + tableBody.toString() + "</table>"
+
+
+def convertNumericToAlphanumeric(row, col):
+    aCharCode = ord("A")
+    ord0 = col % 26
+    ord1 = col / 26
+    char0 = chr(aCharCode + ord0)
+    char1 = chr(aCharCode + ord1 - 1) if ord1 > 0 else ""
+    return char1 + char0 + str(row + 1)
+
 
 def getTXT(entityObj, v3, sessionToken, isRichText):
     txtBuilder = StringBuilder();
@@ -547,7 +571,7 @@ def getTXT(entityObj, v3, sessionToken, isRichText):
     
     if not isinstance(entityObj, Project):
         txtBuilder.append("- Type: " + entityObj.getType().getCode()).append("\n");
-    
+
     if(entityObj.getRegistrator() is not None):
         txtBuilder.append("- Registrator: ").append(entityObj.getRegistrator().getUserId()).append("\n");
         txtBuilder.append("- Registration Date: ").append(str(entityObj.getRegistrationDate())).append("\n");
@@ -588,17 +612,50 @@ def getTXT(entityObj, v3, sessionToken, isRichText):
             if propertyType.getCode() in properties:
                 propertyValue = properties[propertyType.getCode()];
                 if propertyValue != u"\uFFFD(undefined)":
-                    if(propertyType.getDataType() == DataType.MULTILINE_VARCHAR and isRichText is False):
+                    if propertyType.getDataType() is DataType.XML and propertyType.getMetaData().get("custom_widget") == "Spreadsheet" \
+                            and propertyValue.upper().startswith("<DATA>") and propertyValue.upper().endswith("</DATA>"):
+                        propertyValue = propertyValue[6:-7].decode('base64')
+                        propertyValue = "\n" + convertJsonToText(json.loads(propertyValue))
+                    elif(propertyType.getDataType() == DataType.MULTILINE_VARCHAR and isRichText is False):
                         propertyValue = strip_tags(propertyValue).strip();
                     txtBuilder.append("- ").append(propertyType.getLabel()).append(": ").append(propertyValue).append("\n");
+
     return txtBuilder.toString();
 
-def addFile(tempDirPath, entityFilePath, extension, fileContent, zos):
+
+def convertJsonToText(json):
+    data = json["data"]
+    return doConvertJsonToText(data)
+
+
+def doConvertJsonToText(json):
+    data = jsonArrayToArray(json)
+    return AsciiTable.getTable(objToStrArray(data))
+
+
+def jsonArrayToArray(json):
+    stringList = ArrayList()
+    for s in json:
+        stringList.add(s)
+    return stringList.toArray()
+
+
+def objToStrArray(objArray):
+    result = []
+    for subObjArray in objArray:
+        row = []
+        for obj in subObjArray:
+            row.append(str(obj))
+        result.append(row)
+    return result
+
+
+def addFile(tempDirPath, entityFilePath, extension, fileContent, zos, deflated=True):
     entityFileNameWithExtension = entityFilePath + "." + extension
     entityFile = File(tempDirPath + entityFileNameWithExtension);
     entityFile.getParentFile().mkdirs();
     IOUtils.write(fileContent, FileOutputStream(entityFile));
-    addToZipFile(entityFileNameWithExtension, entityFile, zos);
+    addToZipFile(entityFileNameWithExtension, entityFile, zos, deflated=deflated);
     FileUtils.forceDelete(entityFile);
 
     extensionToMimeType = {
@@ -627,19 +684,45 @@ def getFilePath(spaceCode, projCode, expCode, sampCode, dataCode):
         fileName += "/" + dataCode;
     return fileName;
 
-def addToZipFile(path, file, zos):
-    fis = FileInputStream(file);
-    zipEntry = ZipEntry(path[1:]); # Making paths relative to make them compatible with Windows zip implementation
-    zos.putNextEntry(zipEntry);
+def addToZipFile(path, file, zos, deflated=True):
+    zipEntry = ZipEntry(path[1:]) # Making paths relative to make them compatible with Windows zip implementation
+    if not deflated:
+        zipEntry.setMethod(ZipOutputStream.STORED)
+        zipEntry.setSize(file.length())
+        zipEntry.setCompressedSize(-1)
+        crc = getFileCRC(file)
+        zipEntry.setCrc(crc)
+    else:
+        zipEntry.setMethod(ZipOutputStream.DEFLATED)
 
-    bytes = jarray.zeros(1024, "b");
-    length = fis.read(bytes);
-    while length >= 0:
-        zos.write(bytes, 0, length);
-        length = fis.read(bytes);
+    zos.putNextEntry(zipEntry)
 
-    zos.closeEntry();
-    fis.close();
+    try:
+        bis = BufferedInputStream(FileInputStream(file))
+        bytes = jarray.zeros(1024, "b")
+        length = bis.read(bytes)
+        while length >= 0:
+            zos.write(bytes, 0, length)
+            length = bis.read(bytes)
+    finally:
+        zos.closeEntry()
+        if bis is not None:
+            bis.close()
+
+def getFileCRC(file):
+    bis = None
+    crc = CRC32()
+    try:
+        bis = BufferedInputStream(FileInputStream(file))
+        b = jarray.zeros(1024, "b")
+        length = bis.read(b)
+        while length != -1:
+            crc.update(b, 0, length)
+            length = bis.read(b)
+    finally:
+        if bis is not None:
+            bis.close()
+    return crc.getValue()
 
 def getConfigurationProperty(transaction, propertyName):
     threadProperties = transaction.getGlobalState().getThreadParameters().getThreadProperties();
@@ -649,7 +732,7 @@ def getConfigurationProperty(transaction, propertyName):
         return None
 
 
-def generateZipFile(entities, params, tempDirPath, tempZipFilePath):
+def generateZipFile(entities, params, tempDirPath, tempZipFilePath, deflated=True):
     # Generates ZIP file with selected item for export
 
     sessionToken = params.get('sessionToken')
@@ -660,8 +743,11 @@ def generateZipFile(entities, params, tempDirPath, tempZipFilePath):
     try:
         fos = FileOutputStream(tempZipFilePath)
         zos = ZipOutputStream(fos)
+        if not deflated:
+            zos.setMethod(ZipOutputStream.STORED)
+            zos.setLevel(Deflater.NO_COMPRESSION)
 
-        fileMetadata = generateFilesInZip(zos, entities, includeRoot, sessionToken, tempDirPath)
+        fileMetadata = generateFilesInZip(zos, entities, includeRoot, sessionToken, tempDirPath, deflated=deflated)
     finally:
         if zos is not None:
             zos.close()

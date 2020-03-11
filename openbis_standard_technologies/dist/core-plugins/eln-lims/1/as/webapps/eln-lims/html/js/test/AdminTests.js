@@ -3,7 +3,7 @@ var AdminTests = new function() {
     this.startAdminTests = function() {
         testChain = Promise.resolve();
                  //1. Login
-        testChain.then(() => TestUtil.login("admin", "a"))
+        testChain.then(() => this.login())
                  //2. Inventory Space and Sample Types
                  .then(() => this.inventorySpace())
                  //3. Settings Form - Enable Sample Types to Show in Drop-downs
@@ -11,6 +11,19 @@ var AdminTests = new function() {
                  //5. User Manager
                  .then(() => this.userManager())
                  .catch(error => { console.log(error) });
+    }
+
+    this.login = function() {
+        return new Promise(function executor(resolve, reject) {
+            var e = EventUtil;
+
+            testChain = Promise.resolve();
+
+            testChain.then(() => TestUtil.login("admin", "a"))
+                     .then(() => TestUtil.testPassed(1))
+                     .then(() => resolve())
+                     .catch(() => reject(error));
+        });
     }
 
 	this.inventorySpace = function() {
@@ -50,7 +63,7 @@ var AdminTests = new function() {
                        "TRASHCAN",
                        "SETTINGS"];
 
-            Promise.resolve().then(() => TestUtil.verifyInventory(ids)).then(() => resolve());
+            Promise.resolve().then(() => TestUtil.verifyInventory(ids)).then(() => TestUtil.testPassed(2)).then(() => resolve());
         });
     }
 
@@ -74,6 +87,7 @@ var AdminTests = new function() {
                      .then(() => e.click("save-btn"))
                      // wait until the save
                      .then(() => e.waitForId("edit-btn"))
+                     .then(() => TestUtil.testPassed(3))
                      .then(() => resolve())
                      .catch(() => reject(error));
         });
@@ -86,8 +100,6 @@ var AdminTests = new function() {
             testChain = Promise.resolve();
             testChain.then(() => e.waitForId("USER_MANAGER"))
                      .then(() => e.click("USER_MANAGER"))
-                     .then(() => e.waitForId("optionsMenu"))
-                     .then(() => e.click("optionsMenu"))
                      .then(() => e.waitForId("createUser"))
                      .then(() => e.click("createUser"))
                      .then(() => e.waitForId("userId"))

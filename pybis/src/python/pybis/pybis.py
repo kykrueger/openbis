@@ -11,6 +11,8 @@ Work with openBIS from Python.
 from __future__ import print_function
 import os
 import random
+import subprocess
+import errno
 
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
@@ -32,7 +34,8 @@ from .utils import extract_attr, extract_permid, extract_code,extract_deletion,e
 from .entity_type import EntityType, SampleType, DataSetType, MaterialType, ExperimentType
 from .vocabulary import Vocabulary, VocabularyTerm
 from .openbis_object import OpenBisObject 
-from .definitions import openbis_definitions, get_definition_for_entity, fetch_option, get_fetchoption_for_entity, get_type_for_entity, get_method_for_entity
+from .definitions import openbis_definitions, get_definition_for_entity, fetch_option, get_fetchoption_for_entity, get_type_for_entity, get_method_for_entity, get_fetchoptions
+
 
 # import the various openBIS entities
 from .things import Things
@@ -563,21 +566,21 @@ def _subcriteria_for_code(code, entity):
     Example::
         _subcriteria_for_code("username", "space")
 
-	{
-	    "criteria": [
-		{
-		    "fieldType": "ATTRIBUTE",
-		    "@type": "as.dto.common.search.CodeSearchCriteria",
-		    "fieldName": "code",
-		    "fieldValue": {
-			"@type": "as.dto.common.search.StringEqualToValue",
-			"value": "USERNAME"
-		    }
-		}
-	    ],
-	    "operator": "AND",
-	    "@type": "as.dto.space.search.SpaceSearchCriteria"
-	}
+    {
+        "criteria": [
+            {
+                "fieldType": "ATTRIBUTE",
+                "@type": "as.dto.common.search.CodeSearchCriteria",
+                "fieldName": "code",
+                "fieldValue": {
+                    "@type": "as.dto.common.search.StringEqualToValue",
+                    "value": "USERNAME"
+                }
+            }
+        ],
+        "operator": "AND",
+        "@type": "as.dto.space.search.SpaceSearchCriteria"
+    }
     """
     if code is not None:
         if is_permid(code):
@@ -680,6 +683,14 @@ class Openbis:
             print("Session is no longer valid. Please log in again.")
 
 
+    def _get_username(self):
+        if self.token:
+            match = re.search(r'(?P<username>.*)-.*', self.token)
+            username = match.groupdict()['username']
+            return username
+        return ''
+
+
     def __dir__(self):
         return [
             'url', 'port', 'hostname', 'token',
@@ -687,6 +698,8 @@ class Openbis:
             'logout()', 
             'is_session_active()', 
             'is_token_valid()',
+            "mount()",
+            "unmount()",
             "get_server_information()",
             "get_dataset()",
             "get_datasets()",
@@ -703,6 +716,7 @@ class Openbis:
             "get_collections()",
             "get_collection_type()",
             "get_collection_types()",
+            "get_external_data_management_systems()",
             "get_external_data_management_system()",
             "get_material_type()",
             "get_material_types()",
@@ -926,10 +940,204 @@ class Openbis:
 
             if save_token:
                 self.save_token()
+                self._password(password)
             # update the OPENBIS_TOKEN environment variable, if OPENBIS_URL is identical to self.url
             if os.environ.get('OPENBIS_URL') == self.url:
                 os.environ['OPENBIS_TOKEN'] = self.token
             return self.token
+
+    def _password(self, password=None, pstore={} ):
+        """An elegant way to store passwords which are used later
+        without giving the user an easy possibility to retrieve it.
+        """
+        import inspect
+        allowed_methods = ['mount']
+
+        if password is not None:
+            pstore['password'] = password
+        else:
+            if inspect.stack()[1][3] in allowed_methods:
+                return pstore.get('password')
+            else:
+                raise Exception("This method can only be called from these internal methods: {}".format(allowed_methods))
+
+    def unmount(self, mountpoint=None):
+        """Unmount a given mountpoint or unmount the stored mountpoint.
+        If the umount command does not work, try the pkill command.
+        If still not successful, throw an error message.
+        """
+
+        if mountpoint is None and not getattr(self, 'mountpoint', None):
+            raise ValueError("please provide a mountpoint to unmount")
+
+        if mountpoint is None:
+            mountpoint = self.mountpoint
+
+        full_mountpoint_path = os.path.abspath(os.path.expanduser(mountpoint))
+
+        if not os.path.exists(full_mountpoint_path):
+            return
+
+        # mountpoint is not a mountpoint path
+        if not os.path.ismount(full_mountpoint_path):
+            return
+
+        status = subprocess.call('umount {}'.format(full_mountpoint_path), shell=True)
+        if status == 1:
+            status = subprocess.call(
+                'pkill -9 sshfs && umount "{}"'.format(full_mountpoint_path),
+                shell = True
+            )
+
+        if status == 1:
+            raise OSError("could not unmount mountpoint: {} Please try to unmount manually".format(full_mountpoint_path))
+        else:
+           if VERBOSE: print("Successfully unmounted {}".format(full_mountpoint_path))
+           self.mountpoint = None
+
+
+    def is_mounted(self, mountpoint=None):
+        if mountpoint is None:
+            mountpoint = getattr(self, 'mountpoint', None)
+
+        if mountpoint is None:
+            return False
+
+        return os.path.ismount(mountpoint)
+
+    def get_mountpoint(self):
+        """Returns the path to the active mountpoint.
+        Returns None if no mountpoint is found or if the mountpoint is not mounted anymore.
+        Experimental: Tries to figure out an existing mountpoint for a given hostname.
+        """
+
+        mountpoint = getattr(self, 'mountpoint', None)
+        if mountpoint:
+            if self.is_mounted(mountpoint):
+                return mountpoint
+            else:
+                return None
+
+        # try to find out the mountpoint
+        import subprocess
+        p1 = subprocess.Popen(["mount", "-d"], stdout=subprocess.PIPE)
+        p2 = subprocess.Popen(["grep", "--fixed-strings", self.hostname], stdin=p1.stdout, stdout=subprocess.PIPE)
+        p1.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
+        output = p2.communicate()[0]
+        output = output.decode()
+        # output will either be '' (=not mounted) or a string like this:
+        # {username}@{hostname}:{path} on {mountpoint} (osxfuse, nodev, nosuid, synchronous, mounted by vermeul)
+        try:
+            mountpoint = output.split()[2]
+            self.mountpoint = mountpoint
+            return mountpoint
+        except Exception:
+            return None
+
+
+    def mount(self,
+        username=None, password=None,
+        hostname=None, mountpoint=None,
+        volname=None, path='/', port=2222,
+        kex_algorithms ='+diffie-hellman-group1-sha1'
+    ):
+
+        """Mounts openBIS dataStore without being root, using sshfs and fuse. Both
+        SSHFS and FUSE must be installed on the system (see below)
+
+        Params:
+        username -- default: the currently used username
+        password -- default: the currently used password
+        hostname -- default: the current hostname
+        mountpoint -- default: ~/hostname
+
+
+        FUSE / SSHFS Installation (requires root privileges):
+
+        Mac OS X
+        ========
+        Follow the installation instructions on
+        https://osxfuse.github.io
+
+        Unix Cent OS 7
+        ==============
+        $ sudo yum install epel-release
+        $ sudo yum --enablerepo=epel -y install fuse-sshfs
+        $ user="$(whoami)"
+        $ usermod -a -G fuse "$user"
+
+        """
+        if self.is_mounted():
+            if VERBOSE: print("openBIS dataStore is already mounted on {}".format(self.mountpoint))
+            return
+
+        def check_sshfs_is_installed():
+            import subprocess
+            import errno
+            try:
+                subprocess.call('sshfs --help', shell=True)
+            except OSError as e:
+                if e.errno == errno.ENOENT:
+                    raise ValueError('Your system seems not to have SSHFS installed. For Mac OS X, see installation instructions on https://osxfuse.github.io For Unix: $ sudo yum install epel-release && sudo yum --enablerepo=epel -y install fuse-sshfs && user="$(whoami)" && usermod -a -G fuse "$user"')
+
+        check_sshfs_is_installed()
+
+        if username is None: username = self._get_username()
+        if not username: raise ValueError("no token available - pleas provide a username")
+        if password is None: password = self._password()
+        if not password: raise ValueError("please provide a password")
+
+        if hostname is None: hostname = self.hostname
+        if not hostname: raise ValueError("please provide a hostname")
+
+        if mountpoint is None: mountpoint = os.path.join('~', self.hostname)
+
+
+        # check if mountpoint exists, otherwise create it
+        full_mountpoint_path = os.path.abspath(os.path.expanduser(mountpoint))
+        if not os.path.exists(full_mountpoint_path):
+            os.makedirs(full_mountpoint_path)
+
+        self.mountpoint = full_mountpoint_path
+
+        from sys import platform
+        supported_platforms = ['darwin', 'linux']
+        if platform not in supported_platforms:
+            raise ValueError("This method is not yet supported on {} plattform".format(platform))
+
+
+        os_options = {
+            "darwin": "-oauto_cache,reconnect,defer_permissions,noappledouble,negative_vncache,volname={} -oStrictHostKeyChecking=no ".format(hostname),
+            "linux": "-oauto_cache,reconnect -oStrictHostKeyChecking=no",
+        }
+
+        if volname is None:
+            volname = hostname
+
+        import subprocess
+        args = {
+            "username": username,
+            "password": password,
+            "hostname": hostname,
+            "port": port,
+            "path": path,
+            "mountpoint": mountpoint,
+            "volname": volname,
+            "os_options": os_options[platform],
+            "kex_algorithms": kex_algorithms,
+        }
+
+        cmd = 'echo "{password}" | sshfs'\
+              ' {username}@{hostname}:{path} {mountpoint}' \
+              ' -o port={port} -o ssh_command="ssh -oKexAlgorithms={kex_algorithms}" -o password_stdin'\
+              ' {os_options}'.format(**args)
+
+        status = subprocess.call(cmd, shell=True)
+
+        if status == 0:
+            if VERBOSE: print("Mounted successfully to {}".format(full_mountpoint_path))
+        else:
+            raise OSError("mount failed")
 
 
     def get_server_information(self):
@@ -978,6 +1186,8 @@ class Openbis:
         there might be multiple servers. If you upload a file, you need to specifiy the datastore you want
         the file uploaded to.
         """
+        if hasattr(self, 'datastores'):
+            return self.datastores
 
         request = {
             "method": "searchDataStores",
@@ -999,6 +1209,7 @@ class Openbis:
             objects = resp['objects']
             parse_jackson(objects)
             datastores = DataFrame(objects)
+            self.datastores = datastores[attrs]
             return datastores[attrs]
 
     def gen_code(self, entity, prefix=""):
@@ -1277,18 +1488,16 @@ class Openbis:
             "method": "createRoleAssignments",
             "params": [
                 self.token,
-                [
-	            {
-                        "role": role,
-                        "userId": userId,
-		        "authorizationGroupId": groupId,
-                        "spaceId": spaceId,
-		        "projectId": projectId,
-		        "@type": "as.dto.roleassignment.create.RoleAssignmentCreation",
-	            }
-	        ]
-	    ]
-	}
+                [ {
+                    "role": role,
+                    "userId": userId,
+                    "authorizationGroupId": groupId,
+                    "spaceId": spaceId,
+                    "projectId": projectId,
+                    "@type": "as.dto.roleassignment.create.RoleAssignmentCreation",
+                } ]
+            ]
+        }
         resp = self._post_request(self.as_v3, request)
         return
 
@@ -1519,9 +1728,35 @@ class Openbis:
         self, identifier=None, code=None, permId=None,
         space=None, project=None, experiment=None, collection=None, type=None,
         start_with=None, count=None,
-        withParents=None, withChildren=None, tags=None, props=None, **properties
+        withParents=None, withChildren=None, tags=None, attrs=None, props=None, **properties
     ):
-        """ Get a list of all samples for a given space/project/experiment (or any combination)
+        """Returns a DataFrame of all samples for a given space/project/experiment (or any combination)
+        Filters:
+        --------
+        space        -- a space code or a space object
+        project      -- a project code or a project object
+        experiment   -- an experiment code or an experiment object
+        collection   -- same as experiment
+        tags         -- only return samples with the specified tags
+        type         -- a sampleType code
+
+        Paging:
+        -------
+        start_with   -- default=None
+        count        -- number of samples that should be fetched. default=None.
+
+        Include:
+        --------
+        withParents  -- the list of parent's permIds in a column 'parents'
+        withChildren -- the list of children's permIds in a column 'children'
+        attrs        -- list of all desired attributes. Examples:
+                        space, project, experiment: just return their identifier
+                        space.code, project.code, experiment.code
+                        registrator.email, registrator.firstName
+                        type.generatedCodePrefix
+        props        -- list of all desired properties. Returns an empty string if
+                        a) property is not present
+                        b) property is not defined for this sampleType
         """
 
         if collection is not None:
@@ -1535,6 +1770,7 @@ class Openbis:
 
         if space:
             sub_criteria.append(_subcriteria_for(space, 'space'))
+
         if project:
             sub_criteria.append(_subcriteria_for(project, 'project'))
         if experiment:
@@ -1563,53 +1799,96 @@ class Openbis:
             "operator": "AND"
         }
 
+        options = self._get_fetchopts_for_attrs(attrs)
+
         # build the various fetch options
         fetchopts = fetch_option['sample']
         fetchopts['from'] = start_with
         fetchopts['count'] = count
 
-        for option in ['tags', 'properties', 'registrator', 'modifier', 'experiment']:
+        for option in ['tags', 'properties', 'registrator', 'modifier']+options:
             fetchopts[option] = fetch_option[option]
 
         request = {
             "method": "searchSamples",
-            "params": [self.token,
-                       criteria,
-                       fetchopts,
-                       ],
+            "params": [
+                self.token,
+                criteria,
+                fetchopts,
+            ],
         }
         resp = self._post_request(self.as_v3, request)
 
         return self._sample_list_for_response(
             response=resp['objects'],
+            attrs=attrs,
             props=props,
             start_with=start_with,
             count=count,
             totalCount=resp['totalCount'],
         )
 
-
     get_objects = get_samples # Alias
+
+
+    def _get_fetchopts_for_attrs(self, attrs=None):
+        if attrs is None:
+            return []
+
+        fetchopts = []
+        for attr in attrs:
+            if attr.startswith('space'): fetchopts.append('space')
+            if attr.startswith('project'): fetchopts.append('project')
+            if attr.startswith('experiment'): fetchopts.append('experiment')
+            if attr.startswith('sample'): fetchopts.append('sample')
+            if attr.startswith('registrator'): fetchopts.append('registrator')
+            if attr.startswith('modifier'): fetchopts.append('modifier')
+
+        return fetchopts
 
 
     def get_experiments(
         self, code=None, permId=None, type=None, space=None, project=None,
         start_with=None, count=None,
-        tags=None, is_finished=None, props=None, **properties
+        tags=None, is_finished=None, attrs=None, props=None, **properties
     ):
-        """ Searches for all experiment which match the search criteria. Returns a
-        «Things» object which can be used in many different situations.
+        """Returns a DataFrame of all samples for a given space/project (or any combination)
 
-        Usage::
-            experiments = get_experiments(project='PROJECT_NAME', props=['NAME','FINISHED_FLAG'])
-            experiments[0]  # returns first experiment
-            experiments['/MATERIALS/REAGENTS/ANTIBODY_COLLECTION']
-            for experiment in experiment:
-                # handle every experiment
-                ...
-            experiments.df      # returns DataFrame object of the experiment list
-            print(experiments)  # prints a nice ASCII table
+        Filters:
+        --------
+        space        -- a space code or a space object
+        project      -- a project code or a project object
+        tags         -- only experiments with the specified tags
+        type         -- a experimentType code
+
+        Paging:
+        -------
+        start_with   -- default=None
+        count        -- number of samples that should be fetched. default=None.
+
+        Include:
+        --------
+        attrs        -- list of all desired attributes. Examples:
+                        space, project, experiment: just return their identifier
+                        space.code, project.code, experiment.code
+                        registrator.email, registrator.firstName
+                        type.generatedCodePrefix
+        props        -- list of all desired properties. Returns an empty string if
+                        a) property is not present
+                        b) property is not defined for this sampleType
         """
+
+        def extract_attribute(attribute_to_extract):
+            def return_attribute(obj):
+                if obj is None: return ''
+                return obj.get(attribute_to_extract,'')
+            return return_attribute
+
+        def extract_space(obj):
+            if isinstance(obj, dict):
+                return obj.get('space', {})
+            else:
+                return ''
 
         sub_criteria = []
         if space:
@@ -1637,7 +1916,10 @@ class Openbis:
         fetchopts = fetch_option['experiment']
         fetchopts['from'] = start_with
         fetchopts['count'] = count
-        for option in ['tags', 'properties', 'registrator', 'modifier', 'project']:
+
+        if attrs is None: attrs = []
+        options = self._get_fetchopts_for_attrs(attrs)
+        for option in ['tags', 'properties', 'registrator', 'modifier']+options:
             fetchopts[option] = fetch_option[option]
 
         request = {
@@ -1649,15 +1931,28 @@ class Openbis:
             ],
         }
         resp = self._post_request(self.as_v3, request)
-        attrs = ['identifier', 'permId', 'project', 'type',
-                 'registrator', 'registrationDate', 'modifier', 'modificationDate']
-        if len(resp['objects']) == 0:
-            experiments = DataFrame(columns=attrs)
-        else:
-            objects = resp['objects']
-            parse_jackson(objects)
+        response = resp['objects']
+        parse_jackson(response)
 
-            experiments = DataFrame(objects)
+        default_attrs = ['identifier', 'permId', 'type',
+                 'registrator', 'registrationDate', 'modifier', 'modificationDate']
+        display_attrs = default_attrs + attrs
+        if len(response) == 0:
+            experiments = DataFrame(columns=display_attrs)
+        else:
+            experiments = DataFrame(response)
+            experiments['space'] = experiments['project'].map(extract_space)
+            for attr in attrs:
+                if '.' in attr:
+                    entity, attribute_to_extract = attr.split('.')
+                    experiments[attr] = experiments[entity].map(extract_attribute(attribute_to_extract))
+            for attr in attrs:
+                # if no dot supplied, just display the code of the space, project or experiment
+                if attr in ['project']:
+                    experiments[attr] = experiments[attr].map(extract_nested_identifier)
+                if attr in ['space']:
+                    experiments[attr] = experiments[attr].map(extract_code)
+
             experiments['registrationDate'] = experiments['registrationDate'].map(format_timestamp)
             experiments['modificationDate'] = experiments['modificationDate'].map(format_timestamp)
             experiments['project'] = experiments['project'].map(extract_code)
@@ -1669,13 +1964,19 @@ class Openbis:
 
         if props is not None:
             for prop in props:
-                experiments[prop.upper()] = experiments['properties'].map(lambda x: x.get(prop.upper(), ''))
-                attrs.append(prop.upper())
+                if experiments.get('properties') is not None:
+                    experiments[prop.upper()] = experiments['properties'].map(
+                        lambda x: x.get(prop.upper(), '')
+                    )
+                else:
+                    experiments[prop.upper()] = ''
+
+                display_attrs.append(prop.upper())
 
         return Things(
             openbis_obj = self,
             entity = 'experiment',
-            df = experiments[attrs],
+            df = experiments[display_attrs],
             identifier_name ='identifier',
             start_with = start_with,
             count = count,
@@ -1688,8 +1989,36 @@ class Openbis:
         self, code=None, type=None, withParents=None, withChildren=None,
         start_with=None, count=None, kind=None,
         status=None, sample=None, experiment=None, collection=None, project=None,
-        tags=None, props=None, **properties
+        tags=None, attrs=None, props=None, **properties
     ):
+        """Returns a DataFrame of all dataSets for a given project/experiment/sample (or any combination)
+        Filters:
+        --------
+        project      -- a project code or a project object
+        experiment   -- an experiment code or an experiment object
+        sample       -- a sample code/permId or a sample/object
+        collection   -- same as experiment
+        tags         -- only return dataSets with the specified tags
+        type         -- a dataSetType code
+
+        Paging:
+        -------
+        start_with   -- default=None
+        count        -- number of dataSets that should be fetched. default=None.
+
+        Include:
+        --------
+        withParents  -- the list of parent's permIds in a column 'parents'
+        withChildren -- the list of children's permIds in a column 'children'
+        attrs        -- list of all desired attributes. Examples:
+                        project, experiment, sample: just return their identifier
+                        space.code, project.code, experiment.code
+                        registrator.email, registrator.firstName
+                        type.generatedCodePrefix
+        props        -- list of all desired properties. Returns an empty string if
+                        a) property is not present
+                        b) property is not defined for this dataSetType
+        """
 
         if 'object' in properties:
             sample = properties['object']
@@ -1730,13 +2059,10 @@ class Openbis:
         search_criteria['criteria'] = sub_criteria
         search_criteria['operator'] = 'AND'
 
-        fetchopts = {
-            "@type": "as.dto.dataset.fetchoptions.DataSetFetchOptions",
-            "containers": {"@type": "as.dto.dataset.fetchoptions.DataSetFetchOptions"},
-            "type": {"@type": "as.dto.dataset.fetchoptions.DataSetTypeFetchOptions"}
-        }
+        fetchopts = get_fetchoptions('dataSet', including=['type'])
         fetchopts['from'] = start_with
         fetchopts['count'] = count
+
         if kind:
             kind = kind.upper()
             if kind not in ['PHYSICAL_DATA', 'CONTAINER', 'LINK']:
@@ -1744,9 +2070,17 @@ class Openbis:
             fetchopts['kind'] = kind
             raise NotImplementedError('you cannot search for dataSet kinds yet')
 
-        for option in ['tags', 'properties', 'sample', 'experiment', 'physicalData']:
+        if attrs is None: attrs = []
+        options = self._get_fetchopts_for_attrs(attrs)
+        for option in ['tags', 'properties', 'physicalData']+options:
             fetchopts[option] = fetch_option[option]
 
+        # get fetch options for projects and spaces
+        # via experiment, if requested
+        for attr in attrs:
+            if any([entity in attr for entity in ['space','project']]):
+                fetchopts['experiment'] = fetch_option['experiment']
+                fetchopts['experiment']['project'] = fetch_option['project']
         request = {
             "method": "searchDataSets",
             "params": [self.token,
@@ -1758,6 +2092,7 @@ class Openbis:
 
         return self._dataset_list_for_response(
             response=resp['objects'],
+            attrs=attrs,
             props=props,
             start_with=start_with,
             count=count,
@@ -1769,12 +2104,7 @@ class Openbis:
         """ Returns an experiment object for a given identifier (expId).
         """
 
-        fetchopts = {
-            "@type": "as.dto.experiment.fetchoptions.ExperimentFetchOptions",
-            "type": {
-                "@type": "as.dto.experiment.fetchoptions.ExperimentTypeFetchOptions",
-            },
-        }
+        fetchopts = fetch_option['experiment']
 
         search_request = _type_for_id(expId, 'experiment')
         for option in ['tags', 'properties', 'attachments', 'project', 'samples', 'registrator', 'modifier']:
@@ -2639,6 +2969,30 @@ class Openbis:
         schema = None,
         transformation = None,
     ):
+        """ Creates a new property type.
+
+        code               -- name of the property type
+        internalNameSpace  -- must be set to True if code starts with a $
+        label              -- displayed label of that property
+        description        --
+        dataType           -- must contain any of these values:
+                              INTEGER VARCHAR MULTILINE_VARCHAR
+                              REAL TIMESTAMP BOOLEAN HYPERLINK
+                              XML CONTROLLEDVOCABULARY MATERIAL
+        vocabulary         -- if dataType is CONTROLLEDVOCABULARY, this attribute
+                              must contain the code of the vocabulary object.
+        managedInternally  -- default: False
+        materialType       --
+        schema             --
+        transformation     --
+
+        PropertyTypes can be assigned to
+        - sampleTypes
+        - dataSetTypes
+        - experimentTypes
+        - materialTypes (deprecated)
+        """
+
         return PropertyType(
             openbis_obj=self,
             code=code,
@@ -3088,26 +3442,73 @@ class Openbis:
 
 
     def _dataset_list_for_response(
-        self, response, props=None, 
+        self, response, attrs=None, props=None, 
         start_with=None, count=None, totalCount=0
     ):
         """returns a Things object, containing a DataFrame plus some additional information
         """
+        def extract_attribute(attribute_to_extract):
+            def return_attribute(obj):
+                if obj is None: return ''
+                return obj.get(attribute_to_extract,'')
+            return return_attribute
 
         parse_jackson(response)
-        attrs = ['permId', 'type', 'experiment', 'sample',
-                 'registrationDate', 'modificationDate',
-                 'location', 'status', 'presentInArchive', 'size',
-                 'properties'
-                ]
+
+        if attrs is None: attrs=[]
+        default_attrs = [
+            'permId', 'type', 'experiment', 'sample',
+            'registrationDate', 'modificationDate',
+            'location', 'status', 'presentInArchive', 'size',
+            'properties'
+        ]
+        display_attrs = default_attrs + attrs
+
+        def extract_project(attr):
+            entity, _, attr = attr.partition('.')
+            def extract_attr(obj):
+                try: 
+                    if attr:
+                        return obj['project'][attr]
+                    else:
+                        return obj['project']['identifier']['identifier']
+                except KeyError:
+                    return ''
+            return extract_attr
+
+        def extract_space(attr):
+            entity, _, attr = attr.partition('.')
+            def extract_attr(obj):
+                try: 
+                    if attr:
+                        return obj['project']['space'][attr]
+                    else:
+                        return obj['project']['space']['code']
+                except KeyError:
+                    return ''
+            return extract_attr
+
         if len(response) == 0:
-            datasets = DataFrame(columns=attrs)
+            datasets = DataFrame(columns=display_attrs)
         else:
             datasets = DataFrame(response)
+            for attr in attrs:
+                if 'project' in attr:
+                    datasets[attr] = datasets['experiment'].map(extract_project(attr))
+                elif 'space' in attr:
+                    datasets[attr] = datasets['experiment'].map(extract_space(attr))
+                elif '.' in attr:
+                    entity, attribute_to_extract = attr.split('.')
+                    datasets[attr] = datasets[entity].map(extract_attribute(attribute_to_extract))
+            for attr in attrs:
+                # if no dot supplied, just display the code of the space, project or experiment
+                if any(entity == attr for entity in ['experiment', 'sample']):
+                    datasets[attr] = datasets[attr].map(extract_nested_identifier)
+
             datasets['registrationDate'] = datasets['registrationDate'].map(format_timestamp)
             datasets['modificationDate'] = datasets['modificationDate'].map(format_timestamp)
-            datasets['experiment'] = datasets['experiment'].map(extract_nested_identifier)
-            datasets['sample'] = datasets['sample'].map(extract_nested_identifier)
+            #datasets['experiment'] = datasets['experiment'].map(extract_nested_identifier)
+            #datasets['sample'] = datasets['sample'].map(extract_nested_identifier)
             datasets['type'] = datasets['type'].map(extract_code)
             datasets['permId'] = datasets['code']
             datasets['size'] = datasets['physicalData'].map(lambda x: x.get('size') if x else '')
@@ -3119,13 +3520,18 @@ class Openbis:
             if isinstance(props, str):
                 props = [props]
             for prop in props:
-                datasets[prop.upper()] = datasets['properties'].map(lambda x: x.get(prop.upper(), ''))
-                attrs.append(prop.upper())
+                if datasets.get('properties') is not None:
+                    datasets[prop.upper()] = datasets['properties'].map(
+                        lambda x: x.get(prop.upper(), '')
+                    )
+                else:
+                    datasets[prop.upper()] = ''
+                display_attrs.append(prop.upper())
 
         return Things(
             openbis_obj = self,
             entity = 'dataset',
-            df = datasets[attrs],
+            df = datasets[display_attrs],
             identifier_name = 'permId',
             start_with=start_with,
             count=count,
@@ -3198,48 +3604,109 @@ class Openbis:
                 props=props,
             )
 
+
     def _sample_list_for_response(
-        self, response, props=None,
+        self, response, attrs=None, props=None,
         start_with=None, count=None, totalCount=0
     ):
-        """returns a Things object, containing a DataFrame plus some additional information
+        """returns a Things object, containing a DataFrame plus additional information
         """
+        def extract_attribute(attribute_to_extract):
+            def return_attribute(obj):
+                if obj is None: return ''
+                return obj.get(attribute_to_extract,'')
+            return return_attribute
 
         parse_jackson(response)
-        attrs = ['identifier', 'permId', 'experiment', 'type',
+
+        if attrs is None: attrs = []
+        default_attrs = ['identifier', 'permId', 'type',
                  'registrator', 'registrationDate', 'modifier', 'modificationDate']
+        display_attrs = default_attrs + attrs
+
         if len(response) == 0:
-            samples = DataFrame(columns=attrs)
+            samples = DataFrame(columns=display_attrs)
         else:
             samples = DataFrame(response)
+            for attr in attrs:
+                if '.' in attr:
+                    entity, attribute_to_extract = attr.split('.')
+                    samples[attr] = samples[entity].map(extract_attribute(attribute_to_extract))
+            for attr in attrs:
+                # if no dot supplied, just display the code of the space, project or experiment
+                if attr in ['project', 'experiment']:
+                    samples[attr] = samples[attr].map(extract_nested_identifier)
+                if attr in ['space']:
+                    samples[attr] = samples[attr].map(extract_code)
+
             samples['registrationDate'] = samples['registrationDate'].map(format_timestamp)
             samples['modificationDate'] = samples['modificationDate'].map(format_timestamp)
             samples['registrator'] = samples['registrator'].map(extract_person)
             samples['modifier'] = samples['modifier'].map(extract_person)
             samples['identifier'] = samples['identifier'].map(extract_identifier)
             samples['permId'] = samples['permId'].map(extract_permid)
-            samples['experiment'] = samples['experiment'].map(extract_nested_identifier)
             samples['type'] = samples['type'].map(extract_nested_permid)
 
         if props is not None:
             if isinstance(props, str):
                 props = [props]
             for prop in props:
-                samples[prop.upper()] = samples['properties'].map(lambda x: x.get(prop.upper(), ''))
-                attrs.append(prop.upper())
+                if samples.get('properties') is not None:
+                    samples[prop.upper()] = samples['properties'].map(
+                        lambda x: x.get(prop.upper(), '')
+                    )
+                else:
+                    samples[prop.upper()] = ''
+                display_attrs.append(prop.upper())
 
         return Things(
             openbis_obj = self,
             entity = 'sample',
-            df = samples[attrs],
+            df = samples[display_attrs],
             identifier_name = 'identifier',
             start_with=start_with,
             count=count,
             totalCount=totalCount,
         )
 
-
     get_object = get_sample # Alias
+
+
+    def get_external_data_management_systems(self, start_with=None, count=None, only_data=False):
+        entity = 'externalDms'
+
+        criteria = get_type_for_entity(entity, 'search')
+        fetchopts = get_fetchoption_for_entity(entity)
+        request = {
+            "method": "searchExternalDataManagementSystems",
+            "params": [self.token,
+                       criteria,
+                       fetchopts,
+                       ],
+        }
+        response = self._post_request(self.as_v3, request)
+        parse_jackson(response)
+        attrs= "code label address addressType urlTemplate openbis".split()
+
+
+        if len(response['objects']) == 0:
+            entities = DataFrame(columns=attrs)
+        else: 
+            objects = response['objects']
+            parse_jackson(objects)
+            entities = DataFrame(objects)
+            entities['permId'] = entities['permId'].map(extract_permid)
+
+        totalCount = response.get('totalCount')
+        return Things(
+            openbis_obj = self,
+            entity = 'externalDms',
+            df = entities[attrs],
+            identifier_name = 'permId',
+            start_with=start_with,
+            count=count,
+            totalCount=totalCount,
+        )
 
 
     def get_external_data_management_system(self, permId, only_data=False):
@@ -3273,6 +3740,9 @@ class Openbis:
                     return resp[ident]
                 else:
                     return ExternalDMS(self, resp[ident])
+
+    get_externalDms = get_external_data_management_system  # alias
+
 
     def new_space(self, **kwargs):
         """ Creates a new space in the openBIS instance.

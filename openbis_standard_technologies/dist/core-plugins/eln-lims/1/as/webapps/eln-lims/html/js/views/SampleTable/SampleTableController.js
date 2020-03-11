@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-function SampleTableController(parentController, title, experimentIdentifier, projectPermId, showInProjectOverview, experiment) {
+function SampleTableController(parentController, title, experimentIdentifier, projectPermId, showInProjectOverview, experiment, heightOverride) {
 	this._parentController = parentController;
-	this._sampleTableModel = new SampleTableModel(title, experimentIdentifier, projectPermId, showInProjectOverview, experiment);
+	this._sampleTableModel = new SampleTableModel(title, experimentIdentifier, projectPermId, showInProjectOverview, experiment, heightOverride);
 	this._sampleTableView = new SampleTableView(this, this._sampleTableModel);
 	this.typeAndFileController = null;
 
@@ -82,14 +82,19 @@ function SampleTableController(parentController, title, experimentIdentifier, pr
 	}
 	
 	this._reloadTableWithAllSamples = function(advancedSampleSearchCriteria) {
+			var _this = this;
 			//Create and display table
 			var withExperiment = !this._sampleTableModel.experimentIdentifier && !this._sampleTableModel.experiment;
-			var dataGridController = SampleDataGridUtil.getSampleDataGrid(this._sampleTableModel.experimentIdentifier, advancedSampleSearchCriteria, null, null, null, null, null, null, true, withExperiment);
+			var tableHeight = 90;
+			if(this._sampleTableModel.heightOverride) {
+				tableHeight = this._sampleTableModel.heightOverride;
+			}
+			this._dataGridController = SampleDataGridUtil.getSampleDataGrid(this._sampleTableModel.experimentIdentifier, advancedSampleSearchCriteria, null, null, null, null, null, null, true, withExperiment, tableHeight);
 			
 			
 			var extraOptions = [];
 			extraOptions.push({ name : "Delete selected", action : function(selected) {
-				var grid = dataGridController._grid;
+				var grid = _this._dataGridController._grid;
 				var selected = grid.getSelected();
 				if(selected != undefined && selected.length == 0){
 					Util.showUserError("Please select at least one sample to delete!");
@@ -134,6 +139,12 @@ function SampleTableController(parentController, title, experimentIdentifier, pr
 				}
 			}});
 			
-			dataGridController.init(this._sampleTableView.getTableContainer(), extraOptions);
+			this._dataGridController.init(this._sampleTableView.getTableContainer(), extraOptions);
+	}
+	
+	this.refreshHeight = function() {
+		if (this._dataGridController) {
+			this._dataGridController.refreshHeight();
+		}
 	}
 }

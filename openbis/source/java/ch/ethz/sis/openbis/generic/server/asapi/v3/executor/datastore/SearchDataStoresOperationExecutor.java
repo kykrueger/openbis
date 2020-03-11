@@ -16,6 +16,7 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.datastore;
 
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -70,6 +71,11 @@ public class SearchDataStoresOperationExecutor
     protected SearchObjectsOperationResult<DataStore> getOperationResult(SearchResult<DataStore> searchResult)
     {
         return new SearchDataStoresOperationResult(searchResult);
+    }
+
+    @Override
+    protected ISearchManager<DataStoreSearchCriteria, DataStore, Long> getSearchManager() {
+        throw new RuntimeException("This method is not implemented yet.");
     }
 
 }

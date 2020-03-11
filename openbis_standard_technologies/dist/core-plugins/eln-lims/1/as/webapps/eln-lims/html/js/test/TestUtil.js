@@ -13,6 +13,20 @@ var TestUtil = new function() {
         });
     }
 
+    this.testPassed = function(id) {
+        return new Promise(function executor(resolve, reject) {
+            console.log("%cTest " + id +" passed", "color: green");
+            resolve();
+        });
+    }
+
+    this.testNotExist = function(id) {
+        return new Promise(function executor(resolve, reject) {
+            console.log("%cTest " + id +" is not exist", "color: grey");
+            resolve();
+        });
+    }
+
     this.setCookies = function(key, value) {
         return new Promise(function executor(resolve, reject) {
             $.cookie(key, value);
@@ -56,10 +70,10 @@ var TestUtil = new function() {
         xhr.responseType = 'blob';
 
         xhr.onload = function(e) {
-          if (this.status == 200) {
+            if (this.status == 200) {
             // get binary data as a response
             action(this.response);
-          }
+            }
         };
 
         xhr.send();
@@ -85,8 +99,24 @@ var TestUtil = new function() {
                     throw "CKEditor #" + elementId + " should be equal " + data;
                 }
             } catch(error) {
-                reject();
+                reject(error);
             }
+        });
+    }
+
+    this.ckeditorDropFile = function(id, fileName, url) {
+        return new Promise(function executor(resolve, reject) {
+            editor = CKEditorManager.getEditorById(id);
+            TestUtil.fetchBytes(url, function(file) {
+                editor = CKEditorManager.getEditorById(id);
+
+                file.name = fileName;
+
+                editor.model.enqueueChange( 'default', () => {
+                    editor.execute( 'imageUpload', { file: [file] } );
+                } );
+                resolve();
+            });
         });
     }
 }

@@ -165,10 +165,15 @@ function GridView(gridModel) {
 						}).bind(this, sample));
 					}
 
-                    var storageBoxId = this._gridModel.gridId + "-" + posX + "-" + posY + "-storage-box";
+                    var rowLabel = posX;
+                    if(this._gridModel.useLettersOnRows) {
+                        rowLabel = Util.getLetterForNumber(rowLabel);
+                    }
+                    var storageBoxId = this._gridModel.gridId + "-" + rowLabel + "-" + posY + "-storage-box"
 					var labelContainer = $("<div>", { class: "storageBox", id : storageBoxId }).text(labels[i].displayName);
 					if (sample) {
-						var tooltip = PrintUtil.getTable(sample, false, optSampleTitle, 'inspectorWhiteFont', 'colorEncodedWellAnnotations-holder-' + sample.permId, null, null);
+						var tooltip = PrintUtil.getTable(sample, false, optSampleTitle, 'inspectorWhiteFont', 
+								'colorEncodedWellAnnotations-holder-' + sample.permId, null, null);
 						labelContainer.tooltipster({
 							content: $(tooltip),
 							interactive: true,

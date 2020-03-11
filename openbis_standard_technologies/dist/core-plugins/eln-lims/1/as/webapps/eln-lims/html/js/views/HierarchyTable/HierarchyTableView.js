@@ -32,14 +32,7 @@ function HierarchyTableView(controller, model) {
 		$containerColumn.append(this._container);
 		views.content.append($containerColumn);
 		
-		switch(this._model.entity["@type"]) {
-				case "as.dto.dataset.DataSet":
-					views.header.append($("<h1>").append("Dataset Hierarchy Table for " + this._model.entity.code));
-					break;
-				case "as.dto.sample.Sample":
-					views.header.append($("<h1>").append("" + ELNDictionary.Sample + " Hierarchy Table for " + this._model.entity.identifier));
-					break;
-		}
+		views.header.append($("<h1>").append("Dataset Hierarchy Table: " + Util.getDisplayNameForEntity(this._model.entity)));
 		
 		this._hierarchyFilterController = new HierarchyFilterController(this._model.entity, function() { _this._dataGrid.refresh(); });
 		this._hierarchyFilterController.init(views.header);
@@ -104,7 +97,8 @@ function HierarchyTableView(controller, model) {
 				property : 'identifier',
 				sortable : true,
 				render : function(data) {
-					return FormUtil.getFormLink(data.identifier, "Sample", data.permId, null);
+				    var id = data.code.toLowerCase();
+					return FormUtil.getFormLink(data.identifier, "Sample", data.permId, null, id);
 				}
 			});
 		}
@@ -134,7 +128,10 @@ function HierarchyTableView(controller, model) {
 				property : 'parentAnnotations',
 				sortable : true,
 				render : function(data) {
-					return _this._annotationsRenderer(_this._model.relationShipsMap[data.permId].parents, data.entity);
+				    var id = "parent-annotations-" + data.entity.code.toLowerCase();
+				    var $component = $("<div>", { id : id });
+				    $component.append(_this._annotationsRenderer(_this._model.relationShipsMap[data.permId].parents, data.entity));
+				    return $component;
 				}
 			});
 			columns.push({
@@ -142,7 +139,10 @@ function HierarchyTableView(controller, model) {
 				property : 'childrenAnnotations',
 				sortable : true,
 				render : function(data) {
-					return _this._annotationsRenderer(_this._model.relationShipsMap[data.permId].children, data.entity);
+					var id = "children-annotations-" + data.entity.code.toLowerCase();
+                    var $component = $("<div>", { id : id });
+                    $component.append(_this._annotationsRenderer(_this._model.relationShipsMap[data.permId].children, data.entity));
+                    return $component;
 				}
 			});
 		}
@@ -162,7 +162,7 @@ function HierarchyTableView(controller, model) {
 			callback(filteredData);
 		}
 		
-		this._dataGrid = new DataGridController(null, columns, [], null, getDataList, null, false, this._model.entity["@type"] + "_HIERARCHY_TABLE");
+		this._dataGrid = new DataGridController(null, columns, [], null, getDataList, null, false, this._model.entity["@type"] + "_HIERARCHY_TABLE", false, 90);
 		this._dataGrid.init(this._container);
 		this._container.prepend($("<legend>").append(" " + ELNDictionary.Sample + " Hierarchy"));
 	}

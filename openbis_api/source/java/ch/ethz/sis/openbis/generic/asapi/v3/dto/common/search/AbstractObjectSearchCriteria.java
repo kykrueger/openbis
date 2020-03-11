@@ -23,7 +23,7 @@ import ch.systemsx.cisd.base.annotation.JsonObject;
  * @author pkupczyk
  */
 @JsonObject("as.dto.common.search.AbstractObjectSearchCriteria")
-public class AbstractObjectSearchCriteria<ID extends IObjectId> extends AbstractCompositeSearchCriteria
+public abstract class AbstractObjectSearchCriteria<ID extends IObjectId> extends AbstractCompositeSearchCriteria
 {
 
     private static final long serialVersionUID = 1L;

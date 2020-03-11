@@ -1,0 +1,124 @@
+/*
+ * Copyright 2011 ETH Zuerich, CISD
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
+
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CodeSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.PermIdSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.ContentCopy;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetChildrenSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetContainerSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetParentsSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetSearchCriteria;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
+
+import java.util.Collection;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+/**
+ * Manages detailed search with dataset search criteria.
+ *
+ * @author Viktor Kovtun
+ */
+public class DataSetSearchManager extends AbstractCompositeEntitySearchManager<DataSetSearchCriteria, DataSet, Long>
+{
+
+    public DataSetSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
+            final IID2PETranslator<Long> idsTranslator)
+    {
+        super(searchDAO, authProvider, idsTranslator);
+    }
+
+    protected Class<? extends AbstractCompositeSearchCriteria> getContainerSearchCriteriaClass()
+    {
+        return DataSetContainerSearchCriteria.class;
+    }
+
+    @Override
+    protected Class<? extends AbstractCompositeSearchCriteria> getParentsSearchCriteriaClass()
+    {
+        return DataSetParentsSearchCriteria.class;
+    }
+
+    @Override
+    protected Class<? extends AbstractCompositeSearchCriteria> getChildrenSearchCriteriaClass()
+    {
+        return DataSetChildrenSearchCriteria.class;
+    }
+
+    @Override
+    protected DataSetSearchCriteria createEmptyCriteria()
+    {
+        return new DataSetSearchCriteria();
+    }
+
+    @Override
+    protected Set<Long> doFilterIDsByUserRights(final Set<Long> ids, final AuthorisationInformation authorisationInformation)
+    {
+        return ids;
+    }
+
+    private CodeSearchCriteria convertToCodeSearchCriterion(final PermIdSearchCriteria permIdSearchCriteria)
+    {
+        final CodeSearchCriteria codeSearchCriteria = new CodeSearchCriteria();
+        codeSearchCriteria.setFieldValue(permIdSearchCriteria.getFieldValue());
+        return codeSearchCriteria;
+    }
+
+    @Override
+    public Set<Long> searchForIDs(final Long userId, final DataSetSearchCriteria criteria, final SortOptions<DataSet> sortOptions,
+            final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
+    {
+        final Class<? extends ISearchCriteria> parentsSearchCriteriaClass = getParentsSearchCriteriaClass();
+        final Class<? extends ISearchCriteria> containerSearchCriteriaClass = getContainerSearchCriteriaClass();
+        final Class<? extends ISearchCriteria> childrenSearchCriteriaClass = getChildrenSearchCriteriaClass();
+
+        final Collection<ISearchCriteria> parentsAndContainerCriteria = getCriteria(criteria, parentsSearchCriteriaClass);
+        parentsAndContainerCriteria.addAll(getCriteria(criteria, containerSearchCriteriaClass));
+        final Collection<ISearchCriteria> childrenCriteria = getCriteria(criteria, childrenSearchCriteriaClass);
+        final Collection<ISearchCriteria> mainCriteria = getOtherCriteriaThan(criteria, parentsSearchCriteriaClass, childrenSearchCriteriaClass, containerSearchCriteriaClass);
+
+        // Replacing perm ID search criteria with code search criteria, because for datasets perm ID is equivalent to code
+        final Collection<ISearchCriteria> newCriteria = mainCriteria.stream().map(searchCriterion ->
+        {
+            if (searchCriterion instanceof PermIdSearchCriteria)
+            {
+                return convertToCodeSearchCriterion((PermIdSearchCriteria) searchCriterion);
+            } else
+            {
+                return searchCriterion;
+            }
+        }).collect(Collectors.toList());
+
+        return super.doSearchForIDs(userId, parentsAndContainerCriteria, childrenCriteria, newCriteria, criteria.getOperator(), idsColumnName,
+                TableMapper.DATA_SET);
+    }
+
+    @Override
+    public Set<Long> sortIDs(final Set<Long> filteredIDs, final SortOptions<DataSet> sortOptions) {
+        return doSortIDs(filteredIDs, sortOptions, TableMapper.DATA_SET);
+    }
+
+}

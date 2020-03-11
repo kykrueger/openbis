@@ -257,7 +257,7 @@ public class SearchDataSetTest extends AbstractDataSetTest
     public void testSearchWithAnyProperty()
     {
         DataSetSearchCriteria criteria = new DataSetSearchCriteria();
-        criteria.withAnyProperty().thatEquals("non-virtual");
+        criteria.withAnyProperty().thatStartsWith("non-virtual");
         testSearch(TEST_USER, criteria, "20110509092359990-11", "20110509092359990-12");
     }
 
@@ -275,6 +275,14 @@ public class SearchDataSetTest extends AbstractDataSetTest
         DataSetSearchCriteria criteria = new DataSetSearchCriteria();
         criteria.withTag().withId().thatEquals(new TagPermId("/test/TEST_METAPROJECTS"));
         testSearch(TEST_USER, criteria, "20120619092259000-22");
+    }
+
+    @Test
+    public void testSearchWithPhysicalData()
+    {
+        final DataSetSearchCriteria criteria = new DataSetSearchCriteria();
+        criteria.withPhysicalData();
+        testSearch(TEST_USER, criteria, 25);
     }
 
     @Test
@@ -329,7 +337,7 @@ public class SearchDataSetTest extends AbstractDataSetTest
     public void testSearchWithPhysicalDataWithLocationThatEquals()
     {
         DataSetSearchCriteria criteria = new DataSetSearchCriteria();
-        criteria.withPhysicalData().withLocation().thatEquals("analysis");
+        criteria.withPhysicalData().withLocation().thatEquals("analysis/result");
         testSearch(TEST_USER, criteria, "20081105092159188-3");
 
         criteria = new DataSetSearchCriteria();
@@ -337,7 +345,7 @@ public class SearchDataSetTest extends AbstractDataSetTest
         testSearch(TEST_USER, criteria);
 
         criteria = new DataSetSearchCriteria();
-        criteria.withPhysicalData().withLocation().thatEquals("ysis");
+        criteria.withPhysicalData().withLocation().thatEquals("result");
         testSearch(TEST_USER, criteria);
     }
 
@@ -345,7 +353,7 @@ public class SearchDataSetTest extends AbstractDataSetTest
     public void testSearchWithPhysicalDataWithLocationThatStartsWith()
     {
         DataSetSearchCriteria criteria = new DataSetSearchCriteria();
-        criteria.withPhysicalData().withLocation().thatStartsWith("analysis");
+        criteria.withPhysicalData().withLocation().thatStartsWith("analysis/result");
         testSearch(TEST_USER, criteria, "20081105092159188-3");
 
         criteria = new DataSetSearchCriteria();
@@ -353,7 +361,7 @@ public class SearchDataSetTest extends AbstractDataSetTest
         testSearch(TEST_USER, criteria, "20081105092159188-3");
 
         criteria = new DataSetSearchCriteria();
-        criteria.withPhysicalData().withLocation().thatStartsWith("ysis");
+        criteria.withPhysicalData().withLocation().thatStartsWith("result");
         testSearch(TEST_USER, criteria);
     }
 
@@ -361,7 +369,7 @@ public class SearchDataSetTest extends AbstractDataSetTest
     public void testSearchWithPhysicalDataWithLocationThatEndsWith()
     {
         DataSetSearchCriteria criteria = new DataSetSearchCriteria();
-        criteria.withPhysicalData().withLocation().thatEndsWith("analysis");
+        criteria.withPhysicalData().withLocation().thatEndsWith("analysis/result");
         testSearch(TEST_USER, criteria, "20081105092159188-3");
 
         criteria = new DataSetSearchCriteria();
@@ -369,7 +377,7 @@ public class SearchDataSetTest extends AbstractDataSetTest
         testSearch(TEST_USER, criteria);
 
         criteria = new DataSetSearchCriteria();
-        criteria.withPhysicalData().withLocation().thatEndsWith("ysis");
+        criteria.withPhysicalData().withLocation().thatEndsWith("result");
         testSearch(TEST_USER, criteria, "20081105092159188-3");
     }
 
@@ -582,6 +590,14 @@ public class SearchDataSetTest extends AbstractDataSetTest
     }
 
     @Test
+    public void testSearchWithLinkedData()
+    {
+        final DataSetSearchCriteria criteria = new DataSetSearchCriteria();
+        criteria.withLinkedData();
+        testSearch(TEST_USER, criteria, 4);
+    }
+
+    @Test
     public void testSearchWithLinkedDataWithExternalCodeThatEquals()
     {
         DataSetSearchCriteria criteria = new DataSetSearchCriteria();
@@ -782,29 +798,6 @@ public class SearchDataSetTest extends AbstractDataSetTest
     }
 
     @Test
-    public void testSearchWithSortingByCodeScore()
-    {
-        DataSetSearchCriteria criteria = new DataSetSearchCriteria();
-        criteria.withOrOperator();
-        criteria.withCode().thatContains("COMPONENT");
-        criteria.withCode().thatContains("_1A");
-
-        String sessionToken = v3api.login(TEST_USER, PASSWORD);
-
-        DataSetFetchOptions fo = new DataSetFetchOptions();
-
-        fo.sortBy().fetchedFieldsScore().asc();
-        List<DataSet> dataSets1 = v3api.searchDataSets(sessionToken, criteria, fo).getObjects();
-        assertTrue(dataSets1.get(0).getCode().equals("COMPONENT_1A"));
-
-        fo.sortBy().fetchedFieldsScore().desc();
-        List<DataSet> dataSets2 = v3api.searchDataSets(sessionToken, criteria, fo).getObjects();
-        assertTrue(dataSets2.get(dataSets2.size() - 1).getCode().equals("COMPONENT_1A"));
-
-        v3api.logout(sessionToken);
-    }
-
-    @Test
     public void testSearchWithSortingByType()
     {
         DataSetSearchCriteria criteria = new DataSetSearchCriteria();
@@ -841,31 +834,18 @@ public class SearchDataSetTest extends AbstractDataSetTest
 
         String sessionToken = v3api.login(user.getUserId(), PASSWORD);
 
-        if (user.isDisabledProjectUser())
+        SearchResult<DataSet> result = v3api.searchDataSets(sessionToken, criteria, new DataSetFetchOptions());
+
+        if (user.isInstanceUser())
         {
-            assertAuthorizationFailureException(new IDelegatedAction()
-                {
-                    @Override
-                    public void execute()
-                    {
-                        v3api.searchDataSets(sessionToken, criteria, new DataSetFetchOptions());
-                    }
-                });
+            assertEquals(result.getObjects().size(), 2);
+        } else if ((user.isTestSpaceUser() || user.isTestProjectUser()) && !user.isDisabledProjectUser())
+        {
+            assertEquals(result.getObjects().size(), 1);
+            assertEquals(result.getObjects().get(0).getCode(), "20120619092259000-22");
         } else
         {
-            SearchResult<DataSet> result = v3api.searchDataSets(sessionToken, criteria, new DataSetFetchOptions());
-
-            if (user.isInstanceUser())
-            {
-                assertEquals(result.getObjects().size(), 2);
-            } else if (user.isTestSpaceUser() || user.isTestProjectUser())
-            {
-                assertEquals(result.getObjects().size(), 1);
-                assertEquals(result.getObjects().get(0).getCode(), "20120619092259000-22");
-            } else
-            {
-                assertEquals(result.getObjects().size(), 0);
-            }
+            assertEquals(result.getObjects().size(), 0);
         }
 
         v3api.logout(sessionToken);

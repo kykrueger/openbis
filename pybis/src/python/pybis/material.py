@@ -1,8 +1,8 @@
-from .openbis_object import OpenBisObject 
-from .utils import VERBOSE
-from .property import PropertyHolder
 from .attribute import AttrHolder
-import json
+from .openbis_object import OpenBisObject
+from .property import PropertyHolder
+from .utils import VERBOSE
+
 
 class Material(OpenBisObject):
     """ Managing openBIS materials

@@ -7,3 +7,6 @@ dss-root
 log-registrations
 /bin
 /build/
+/.idea/
+*.iml
+*.eml

@@ -30,12 +30,12 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import ch.systemsx.cisd.common.exceptions.AuthorizationFailureException;
+import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.common.logging.BufferedAppender;
 import ch.systemsx.cisd.openbis.generic.server.CommonServer;
 import ch.systemsx.cisd.openbis.generic.server.ServiceForDataStoreServer;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Person;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.RoleWithHierarchy;
-import ch.systemsx.cisd.openbis.generic.shared.dto.SessionContextDTO;
 import ch.systemsx.cisd.openbis.plugin.generic.server.GenericServer;
 import ch.systemsx.cisd.openbis.plugin.query.server.QueryServer;
 import ch.systemsx.cisd.openbis.systemtest.base.BaseTest;
@@ -155,8 +155,14 @@ public class PersonManagementTest extends BaseTest
         commonServer.deactivatePersons(sessionToken, Arrays.asList("system"));
 
         assertEquals(0, commonServer.countActivePersons(sessionToken) - initialNumberOfActivePersons);
-        SessionContextDTO session = commonServer.tryAuthenticate("system", "password");
-        assertEquals(null, session);
+        try
+        {
+            commonServer.tryAuthenticate("system", "password");
+            fail("UserFailureException expected");
+        } catch (UserFailureException e)
+        {
+            assertEquals("User 'system' has no role assignments and thus is not permitted to login.", e.getMessage());
+        }
         assertEquals("INFO  AUTH.CommonServer - User 'system' has no role assignments "
                 + "and thus is not permitted to login.", logRecorder.getLogContent());
     }

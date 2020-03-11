@@ -1,37 +1,68 @@
 # Welcome to pyBIS!
-pyBIS is a Python module for interacting with openBIS, designed to be used in Jupyter. It offers some sort of IDE for openBIS, supporting TAB completition and input checks, making the life of a researcher hopefully easier.
+
+pyBIS is a Python module for interacting with openBIS. pyBIS is designed to be most useful in a [Jupyter Notebook](https://jupyter.org) or IPython environment, especially if you are developing Python scripts for automatisation. Jupyter Notebooks offer some sort of IDE for openBIS, supporting TAB completition and input checks, making the life of a researcher hopefully easier.
 
 ## Dependencies and Requirements
 - pyBIS relies the openBIS API v3
 - openBIS version 16.05.2 or newer is required
 - 18.06.2 or later is recommended
-- pyBIS uses Python 3.3 and pandas
+- pyBIS uses Python 3.3 and Pandas
 
 ## Installation
 
 ```
-pip install pybis
+pip install --upgrade pybis
 ```
-That command will download install pybis and all its dependencies.
+That command will download install pyBIS and all its dependencies. If pyBIS is already installed, it will be upgraded to the latest version.
 
-If you haven't done yet, install Jupyter Notebook:
-
+If you haven't done yet, install Jupyter and/or Jupyter Lab (the next Generation of Jupyter):
 ```
 pip install jupyter
+pip install jupyterlab
 ```
 
 # General Usage
 
-## Tab completition and other hints
-Used in a Jupyter Notebook environment, pybis helps you to enter the commands. After every dot `.` you might hit the `TAB` key in order to look at the available commands.
+### TAB completition and other hints in Jupyter / IPython
 
-If you are unsure what parameters to add to a , add a question mark right after the method and hit `SHIFT+ENTER`. Jupyter will then look up the signature of the method and show some helpful docstring.
+* in a Jupyter Notebook  or IPython environment, pybis helps you to enter the commands
+* After every dot `.` you might hit the `TAB` key in order to look at the available commands.
+* if you are unsure what parameters to add to a , add a question mark right after the method and hit `SHIFT+ENTER`
+* Jupyter will then look up the signature of the method and show some helpful docstring
 
-When working with properties of entities, they might use a **controlled vocabulary** or are of a specific **property type**. Add an underscore `_` character right after the property and hit `SHIFT+ENTER` to show the valid values. When a property only acceps a controlled vocabulary, you will be shown the valid terms in a nicely formatted table.
 
-## connect to OpenBIS
+### Checking input
 
-Interactivel, i.e. within a Jupyter notebook, you can use `getpass` to enter your password:
+* When working with properties of entities, they might use a **controlled vocabulary** or are of a specific **property type**. 
+* Add an underscore `_` character right after the property and hit `SHIFT+ENTER` to show the valid values
+* When a property only acceps a controlled vocabulary, you will be shown the valid terms in a nicely formatted table
+* if you try to assign an **invalid value** to a property, you'll receive an error immediately
+
+### Glossary
+
+* **spaces:** used for authorisation eg. to separate two working groups. If you have permissions in a space, you can see everything which in that space, but not necessarily in another space (unless you have the permission).
+* **projects:** a space consists of many projects.
+* **experiments / collections:** a projects contain many experiments. Experiments can have *properties*
+* **samples / objects:** an experiment contains many samples. Samples can have *properties*
+* **dataSet:** a dataSet which contains the actual *data files*, either pyhiscal (stored in openBIS dataStore) or linked
+* **attributes:** every entity above contains a number of attributes. They are the same accross all instances of openBIS and independent of their type.
+* **properties:** Additional specific key-value pairs, available for these entities:
+   * experiments
+   * samples
+   * dataSets
+
+  every single instance of an entity must be of a specific **entity type** (see below). The type defines the set of properties.
+* **experiment type / collection type:** a type for experiments which specifies its properties
+* **sample type / object type:** a type for samples / objects which specifies its properties
+* **dataSet type:** a type for dataSets which specifies its properties
+* **property type:** a single property, as defined in the entity types above. It can be of a classic data type (e.g. INTEGER, VARCHAR, BOOLEAN) or its values can be controlled (CONTROLLEDVOCABULARY). 
+* **plugin:** a script written in [Jython](https://www.jython.org) which allows to check property values in a even more detailed fashion 
+
+# connect to OpenBIS
+
+## login
+
+In an **interactive session** e.g. inside a Jupyter notebook, you can use `getpass` to enter your password safely:
 
 ```
 from pybis import Openbis
@@ -43,7 +74,7 @@ password = getpass.getpass()
 o.login('username', password, save_token=True)   # save the session token in ~/.pybis/example.com.token
 ```
 
-In a script you would rather use two environment variables to provide username and password:
+In a **script** you would rather use two **environment variables** to provide username and password:
 
 ```
 from pybis import Openbis
@@ -53,13 +84,50 @@ o.login(os.environ['OPENBIS_USERNAME'], os.environ['OPENBIS_PASSWORD'])
 ```
 
 
-Check whether the session token is still valid and log out:
+Check whether the **session token** is still valid and log out:
 
 ```
 o.token
 o.is_session_active()
 o.logout()
 ```
+
+## Mount openBIS dataStore server
+
+### Prerequisites: FUSE / SSHFS
+
+Mounting an openBIS dataStore server requires FUSE / SSHFS to be installed (requires root privileges). The mounting itself requires no root privileges.
+
+**Mac OS X**
+
+Follow the installation instructions on
+https://osxfuse.github.io
+
+**Unix Cent OS 7**
+
+```
+$ sudo yum install epel-release
+$ sudo yum --enablerepo=epel -y install fuse-sshfs
+$ user="$(whoami)"
+$ usermod -a -G fuse "$user"
+```
+After the installation, an `sshfs` command should be available.
+
+### Mount dataStore server with pyBIS
+
+Because the mount/unmount procedure differs from platform to platform, pyBIS offers two simple methods:
+
+```
+o.mount()
+o.mount(username, password, hostname, mountpoint, volname)
+o.is_mounted()
+o.unmount()
+o.get_mountpoint()
+```
+Currently, mounting is supported for Linux and Mac OS X only.
+
+All attributes, if not provided, are re-used by a previous login() command. If no mountpoint is provided, the default mounpoint will be `~/hostname`. If this directory does not exist, it will be created. The directory must be empty before mounting.
+
 
 # Masterdata
 OpenBIS stores quite a lot of meta-data along with your dataSets. The collection of data that describes this meta-data (i.e. meta-meta-data) is called masterdata. It consists of:
@@ -89,10 +157,10 @@ st.get_validationPlugin()            # returns a plugin object
 
 st.get_property_assignments()        # show the list of properties
                                      # for that sample type
-
 o.get_material_types()
 o.get_dataset_types()
 o.get_experiment_types()
+o.get_collection_types()
 
 o.get_property_types()
 pt = o.get_property_type('BARCODE_COMPLEXITY_CHECKER')
@@ -117,7 +185,14 @@ pt = o.new_property_type(
     code        = 'MY_NEW_PROPERTY_TYPE', 
     label       = 'yet another property type', 
     description = 'my first property',
-    dataType    = 'VARCHAR'
+    dataType    = 'VARCHAR',
+)
+
+pt_int = o.new_property_type(
+    code        = '$DEFAULT_OBJECT_TYPE', 
+    label       = 'default object type for ELN-LIMS', 
+    dataType    = 'VARCHAR',
+    internalNameSpace = True,
 )
 
 pt_voc = o.new_property_type(
@@ -125,7 +200,7 @@ pt_voc = o.new_property_type(
     label       = 'label me', 
     description = 'give me a description',
     dataType    = 'CONTROLLEDVOCABULARY',
-    vocabulary  = 'STORAGE'
+    vocabulary  = 'STORAGE',
 )
 ```
 
@@ -142,40 +217,42 @@ The `dataType` attribute can contain any of these values:
 * `CONTROLLEDVOCABULARY`
 * `MATERIAL`
 
-When choosing `CONTROLLEDVOCABULARY`, you must specify a `vocabulary` attribute (see example). Likewise, when choosing `MATERIAL`, a `materialType` attribute must be provided.
+When choosing `CONTROLLEDVOCABULARY`, you must specify a `vocabulary` attribute (see example). Likewise, when choosing `MATERIAL`, a `materialType` attribute must be provided. PropertyTypes that start with a $ belong by definition to the `internalNameSpace` and therefore this attribute must be set to True.
 
-## create sample types
 
+## create sample types / object types
+
+The new name for `sample_type` is `object_type`. You can use boths names interchangeably.
 
 ```
 sample_type = o.new_sample_type(
-    code = 'my_own_sample_type',      # mandatory
-    generatedCodePrefix	 = 'S',       # mandatory
-    description = '',
-    autoGeneratedCode = True,
-    subcodeUnique = False,
-    listable	= True,
-    showContainer = False,
-    showParents = True,
-    showParentMetadata = False,
-    validationPlugin = 'Has_Parents'  # see plugins below
+    code                = 'my_own_sample_type',  # mandatory
+    generatedCodePrefix = 'S',                   # mandatory
+    description         = '',
+    autoGeneratedCode   = True,
+    subcodeUnique       = False,
+    listable            = True,
+    showContainer       = False,
+    showParents         = True,
+    showParentMetadata  = False,
+    validationPlugin    = 'Has_Parents'          # see plugins below
 )
 sample_type.save()
 ```
 
-## assign properties to sample type
+## assign properties to sample type / object type
 
 A sample type needs to be saved before properties can be assigned to. This assignment procedure applies to all entity types (dataset type, experiment type, material type).
 
 ```
 sample_type.assign_property(
-	prop = 'diff_time',             # mandatory
-	section = '',
-	ordinal = 5,
-	mandatory = True,
+	prop                 = 'diff_time',           # mandatory
+	section              = '',
+	ordinal              = 5,
+	mandatory            = True,
 	initialValueForExistingEntities = 'initial value'
-	showInEditView = True,
-	showRawValueInForms = True
+	showInEditView       = True,
+	showRawValueInForms  = True
 )
 sample_type.revoke_property('diff_time')
 sample_type.get_property_assignments()
@@ -185,12 +262,12 @@ sample_type.get_property_assignments()
 
 ```
 dataset_type = o.new_dataset_type(
-    code = 'my_dataset_type',       # mandatory
-    description=None,
-    mainDataSetPattern=None,
-    mainDataSetPath=None,
-    disallowDeletion=False,
-    validationPlugin=None,
+    code                = 'my_dataset_type',       # mandatory
+    description         = None,
+    mainDataSetPattern  = None,
+    mainDataSetPath     = None,
+    disallowDeletion    = False,
+    validationPlugin    = None,
 )
 dataset_type.save()
 dataset_type.assign_property('property_name')
@@ -198,13 +275,15 @@ dataset_type.revoke_property('property_name')
 dataset_type.get_property_assignments()
 ```
 
-## create experiment types
+## create experiment types / collection types
+
+The new name for `experiment_type` is `collection_type`. You can use boths names interchangeably.
 
 ```
 experiment_type = o.new_experiment_type(
     code, 
-    description=None,
-    validationPlugin=None,
+    description      = None,
+    validationPlugin = None,
 )
 experiment_type.save()
 experiment_type.assign_property('property_name')
@@ -234,9 +313,9 @@ Plugins are Jython scripts that can accomplish more complex data-checks than ord
 ```
 pl = o.new_plugin(
     name       ='my_new_entry_validation_plugin',
-    pluginType ='ENTITY_VALIDATION',               # or 'DYNAMIC_PROPERTY' or 'MANAGED_PROPERTY',
-    entityKind = None,                             # or 'SAMPLE', 'MATERIAL', 'EXPERIMENT', 'DATA_SET'
-    script     = 'def calculate(): pass'           # a JYTHON script
+    pluginType ='ENTITY_VALIDATION',       # or 'DYNAMIC_PROPERTY' or 'MANAGED_PROPERTY',
+    entityKind = None,                     # or 'SAMPLE', 'MATERIAL', 'EXPERIMENT', 'DATA_SET'
+    script     = 'def calculate(): pass'   # a JYTHON script
 )
 pl.save()
 ```
@@ -282,8 +361,8 @@ space = o.new_space(code='space_name', description='')
 space.save()
 space.delete('reason for deletion')
 o.get_spaces(
-    start_with = 1,                   # start_with and count
-    count = 7,                        # enable paging
+    start_with = 0,                   # start_with and count
+    count      = 10,                  # enable paging
 )
 space = o.get_space('MY_SPACE')
 space.code
@@ -298,20 +377,20 @@ space.attrs.all()                     # returns a dict containing all attributes
 ## Projects
 ```
 project = o.new_project(
-    space=space, 
-    code='project_name',
-    description='some project description'
+    space       = space, 
+    code        = 'project_name',
+    description = 'some project description'
 )
 project = space.new_project(
-	code='project_code',
-	description='project description'
+	code         = 'project_code',
+	description  = 'project description'
 )
 project.save()
 
 o.get_projects(
-    space = 'MY_SPACE',               # show only projects in MY_SPACE
-    start_with = 1,                   # start_with and count
-    count = 7,                        # enable paging
+    space       = 'MY_SPACE',         # show only projects in MY_SPACE
+    start_with  = 0,                  # start_with and count
+    count       = 10,                 # enable paging
 )
 o.get_projects(space='MY_SPACE')
 space.get_projects()
@@ -323,7 +402,7 @@ project.download_attachments()
 
 project.code
 project.description
-# ... and many more
+# ... any other attribute
 project.attrs.all()                   # returns a dict containing all attributes
 
 project.freeze = True
@@ -332,19 +411,24 @@ project.freezeForSamples = True
 
 ```
 
-## Samples
-Samples are nowadays called **Objects** in openBIS. pyBIS is not yet thoroughly supporting this term in all methods where «sample» occurs.
+## Samples / Objects
 
-NOTE: In openBIS, `samples` entities have recently been renamed to `objects`. All methods have synonyms using the term `object`, e.g. `get_object`, `new_object`, `get_object_types`.
+The new name for `sample` is `object`. You can use boths names interchangeably:
+
+* `get_sample()`  = `get_object()`
+* `new_sample()`  = `new_object()`
+* `get_samples()` = `get_objects()`
+
+etc.
 
 ```
 sample = o.new_sample(
-    type     = 'YEAST', 
-    space    = 'MY_SPACE',
+    type       = 'YEAST', 
+    space      = 'MY_SPACE',
     experiment = '/MY_SPACE/MY_PROJECT/EXPERIMENT_1',
-    parents  = [parent_sample, '/MY_SPACE/YEA66'], 
-    children = [child_sample],
-    props    = {"name": "some name", "description": "something interesting"}
+    parents    = [parent_sample, '/MY_SPACE/YEA66'], 
+    children   = [child_sample],
+    props      = {"name": "some name", "description": "something interesting"}
 )
 sample = space.new_sample( type='YEAST' )
 sample.save()
@@ -432,22 +516,30 @@ sample.p.my_property = "some value"   # set the value of a property
 sample.save()                         # update the sample in openBIS
 ```
 
-### querying samples
+### search for samples / objects
+
+The result of a search is always list, even when no items are found. The `.df` attribute returns
+the Pandas dataFrame of the results.
 
 ```
 samples = o.get_samples(
-    space ='MY_SPACE',
-    type  ='YEAST',
-    tags  =['*'],                     # only sample with existing tags
-    start_with = 1,                   # start_with and count
-    count = 7,                        # enable paging
-    NAME  = 'some name',              # properties are always uppercase 
+    space      ='MY_SPACE',
+    type       ='YEAST',
+    tags       =['*'],                # only sample with existing tags
+    start_with = 0,                   # start_with and count
+    count      = 10,                  # enable paging
+    NAME       = 'some name',         # properties are always uppercase 
                                       # to distinguish them from attributes
     **{ "SOME.WEIRD:PROP": "value"}   # property name contains a dot or a
                                       # colon: cannot be passed as an argument 
-    props=['NAME', 'MATING_TYPE']     # show these properties in the result
+    attrs=[                           # show these attributes in the dataFrame
+        'sample.code',
+        'registrator.email',
+        'type.generatedCodePrefix'
+    ],
+    props=['$NAME', 'MATING_TYPE']    # show these properties in the result
 )
-samples.df                            # returns a pandas DataFrame object
+samples.df                            # returns a Pandas DataFrame object
 samples.get_datasets(type='ANALYZED_DATA')
 ```
 
@@ -461,9 +553,13 @@ sample.freezeForParents = True
 sample.freezeForDataSets = True
 ```
 
-## Experiments
+## Experiments / Collections
 
-NOTE: In openBIS, `experiment` entities have recently been renamed to `collection`. All methods have synonyms using the term `collection`, e.g. `get_collections`, `new_collection`, `get_collection_types`.
+The new name for `experiment` is `collection`. You can use boths names interchangeably:
+
+* `get_experiment()`  = `get_collection()`
+* `new_experiment()`  = `new_collection()`
+* `get_experiments()` = `get_collections()`
 
 ```
 exp = o.new_experiment
@@ -540,7 +636,7 @@ ds.download_attachments()
 ### download dataSets
 
 ```
-ds.get_files(start_folder="/")    # get file list as pandas table
+ds.get_files(start_folder="/")    # get file list as Pandas table
 ds.file_list                      # get file list as array
 
 ds.download()                     # simply download all files to hostname/permId/
@@ -567,10 +663,34 @@ ds.attrs.all()                    # returns all attributes as a dict
 ds.props.all()                    # returns all properties as a dict
 ```
 
-### querying dataSets
+### search for dataSets
 
-* examples of a complex queries with methods chaining.
-* NOTE: properties must be in UPPERCASE to distinguish them from attributes
+* The result of a search is always list, even when no items are found
+* The `.df` attribute returns the Pandas dataFrame of the results
+* properties must be in UPPERCASE to distinguish them from attributes
+
+```
+dataSets = o.get_dataSets(
+    type  ='MY_DATASET_TYPE',
+    NAME  = 'some name',              # properties are always uppercase 
+                                      # to distinguish them from attributes
+    **{ "SOME.WEIRD:PROP": "value"},  # property name contains a dot or a
+                                      # colon: cannot be passed as an argument 
+    start_with = 0,                   # start_with and count
+    count      = 10,                  # enable paging
+    attrs=[                           # show these attributes in the dataFrame
+        'sample.code',
+        'registrator.email',
+        'type.generatedCodePrefix'
+    ],
+    props=['$NAME', 'MATING_TYPE']    # show these properties in the result
+)
+
+df = dataSets.df                      # returns the Pandas dataFrame object
+```
+
+In some cases, you might want to retrieve precisely certain datasets. This can be achieved by
+methods chaining (but be aware, it might not be very performant): 
 
 ```
 datasets = o.get_experiments(project='YEASTS')\
@@ -581,7 +701,7 @@ datasets = o.get_experiments(project='YEASTS')\
 					MY_PROPERTY='some analyzed data'
 		 	 )
 ```
-
+* another example:
 ```
 datasets = o.get_experiment('/MY_NEW_SPACE/MY_PROJECT/MY_EXPERIMENT4')\
            .get_samples(type='UNKNOWN')\
@@ -589,16 +709,6 @@ datasets = o.get_experiment('/MY_NEW_SPACE/MY_PROJECT/MY_EXPERIMENT4')\
            .get_datasets(type='RAW_DATA')
 ```
 
-### deal with dataSets query results
-
-```
-datasets.df                       # get a pandas dataFrame object
-
-# use it in a for-loop:
-for dataset in datasets:
-    print(dataset.permID)
-    dataset.delete('give me a reason')
-```
 ### freeze dataSets
 * once a dataSet has been frozen, it cannot be changed by anyone anymore
 * so be careful!
@@ -627,8 +737,9 @@ ds_new.save()
 
 ### create dataSet with zipfile
 
-```
-# DataSet containing one zipfile which will be unzipped in openBIS
+DataSet containing one zipfile which will be unzipped in openBIS:
+
+```python
 ds_new = o.new_dataset(
     type       = 'RAW_DATA', 
     sample     = '/SPACE/SAMP1',
@@ -647,15 +758,17 @@ ds_new.save()
    * `my_file.txt` --> `/my_file.txt`
    * `../somwhere/else/my_other_file.txt` --> `/my_other_file.txt`
    * `some/folder/file.txt` --> `/file.txt`
+* useful if DataSet contains files and folders
+* the content of the folder will be zipped (on-the-fly) and uploaded to openBIS
+* openBIS will keep the folder structure intact
+* relative path will be shortened to its basename. For example:
+
+| local                      | openBIS    |
+|----------------------------|------------|
+| `../../myData/`            | `myData/`  |
+| `some/experiment/results/` | `results/` |
 
 ```
-# Dataset containing files and folders
-# the content of the folder will be zipped (on-the-fly) and uploaded to openBIS.
-# openBIS will keep the folder structure intact.
-# relative path will be shortened to its basename. For example:
-# local                         openBIS
-# ../../myData/                 myData/
-# some/experiment/results/      results/
 ds_new = o.new_dataset(
     type       = 'RAW_DATA', 
     sample     = '/SPACE/SAMP1',
@@ -666,8 +779,9 @@ ds_new.save()
 
 ### create dataSet container
 
+A DataSet of kind=CONTAINER contains other DataSets, but no files:
+
 ```
-# DataSet CONTAINER (contains other DataSets, but no files)
 ds_new = o.new_dataset(
     type       = 'ANALYZED_DATA', 
     experiment = '/SPACE/PROJECT/EXP1', 
@@ -720,8 +834,11 @@ dataset.del_components(['20170115220259155-412'])
 ```
 
 ## Semantic Annotations
+
+create semantic annotation for sample type 'UNKNOWN':
+
 ```
-# create semantic annotation for sample type 'UNKNOWN'
+
 sa = o.new_semantic_annotation(
 	entityType = 'UNKNOWN',
 	predicateOntologyId = 'po_id',
@@ -732,33 +849,56 @@ sa = o.new_semantic_annotation(
 	descriptorAccessionId = 'da_id'
 )
 sa.save()
+```
 
-# create semantic annotation for property type 
-# (predicate and descriptor values omitted for brevity)
+Create semantic annotation for property type (predicate and descriptor values omitted for brevity)
+
+```
 sa = o.new_semantic_annotation(propertyType = 'DESCRIPTION', ...)
 sa.save()
+```
 
-# create semantic annotation for sample property assignment (predicate and descriptor values omitted for brevity)
-sa = o.new_semantic_annotation(entityType = 'UNKNOWN', propertyType = 'DESCRIPTION', ...)
+**Create** semantic annotation for sample property assignment (predicate and descriptor values omitted for brevity)
+
+```
+sa = o.new_semantic_annotation(
+	entityType = 'UNKNOWN',
+	propertyType = 'DESCRIPTION', 
+	...
+)
 sa.save()
+```
 
-# create a semantic annotation directly from a sample type
-# will also create sample property assignment annotations when propertyType is given
+**Create** a semantic annotation directly from a sample type. Will also create sample property assignment annotations when propertyType is given:
+
+```
 st = o.get_sample_type("ORDER")
 st.new_semantic_annotation(...)
+```
 
-# get all semantic annotations
+**Get all** semantic annotations
+
+```
 o.get_semantic_annotations()
+```
 
-# get semantic annotation by perm id
+**Get** semantic annotation by perm id
+
+```
 sa = o.get_semantic_annotation("20171015135637955-30")
+```
 
-# update semantic annotation
+**Update** semantic annotation
+
+```
 sa.predicateOntologyId = 'new_po_id'
 sa.descriptorOntologyId = 'new_do_id'
 sa.save()
+```
 
-# delete semantic annotation
+**Delete** semantic annotation
+
+```
 sa.delete('reason')
 ```
 
@@ -784,8 +924,8 @@ tag.delete('why?')
 
 An entity such as Sample (Object), Experiment (Collection), Material or DataSet can be of a specific *entity type*:
 
-* Sample Type
-* Experiment Type
+* Sample Type (Object Type)
+* Experiment Type (Collection Type)
 * DataSet Type
 * Material Type
 
@@ -842,4 +982,3 @@ term.move_after_term('-40')
 term.save()
 term.delete()
 ```
-

@@ -56,7 +56,12 @@ function ServerFacade(openbisServer) {
 				isError = true;
 				Util.showError(response.error.message, function() {
 					location.reload(true);
-				}, true);
+				}, true, false, false, true);
+			} else if(response.error.message.indexOf("has no role assignments") !== -1) {
+				isError = true;
+				Util.showError("User has no assigned rights. Please contact your group admin.", function() {
+					location.reload(true);
+				}, true, false, false, true);
 			} else if(response.error === "Request failed: ") {
 				Util.showError(response.error + "openBIS or DSS cannot be reached. Please try again or contact your admin.", null, true, false, true);
 			}
@@ -114,39 +119,47 @@ function ServerFacade(openbisServer) {
 	//
 	// Display Settings
 	//
+
+	var settingsCache = null;
+
+    this.getSettingsCacheEmpty = function(callback) {
+        if(settingsCache === null) {
+            mainController.serverFacade.openbisServer.getWebAppSettings("ELN-LIMS", function(response) {
+                var settings = response.result.settings;
+                if(!settings) {
+                    settings = {};
+                }
+                settingsCache = settings;
+                callback();
+            });
+        } else {
+            setTimeout(callback, 0); // Don't ask me please, please don't
+        }
+    }
+
 	this.getSetting = function(keyOrNull, callback) {
-		mainController.serverFacade.openbisServer.getWebAppSettings("ELN-LIMS", function(response) {
-			var settings = response.result.settings;
-			if(!settings) {
-				settings = {};
-			}
-			if(keyOrNull) {
-				callback(settings[keyOrNull]);
-			} else {
-				callback(settings);
-			}
-		});
+        this.getSettingsCacheEmpty(function() {
+            if(keyOrNull) {
+                callback(settingsCache[keyOrNull]);
+            } else {
+                callback(settingsCache);
+            }
+        });
 	}
-	
+
 	this.setSetting = function(key, value) {
-		var _this = this;
-		var webAppId = "ELN-LIMS";
-		this.openbisServer.getWebAppSettings(webAppId, function(response) {
-			var settings = response.result.settings;
-			if(!settings) {
-				settings = {};
-			}
-			settings[key] = value;
-			
-			var webAppSettings = {
-					"@type" : "WebAppSettings",
-					"webAppId" : webAppId,
-					"settings" : settings
-			}
-			
-			_this.openbisServer.setWebAppSettings(webAppSettings, function(result) {});
-		});
+        var _this = this;
+        this.getSettingsCacheEmpty(function() {
+            settingsCache[key] = value;
+            var webAppSettings = {
+                "@type" : "WebAppSettings",
+                "webAppId" : "ELN-LIMS",
+                "settings" : settingsCache
+            }
+            _this.openbisServer.setWebAppSettings(webAppSettings, function(result) {});
+        });
 	}
+
 	/* New Settings API - To use with new release
 	this.getSetting = function(key, callback) {
 		require([ "jquery", "openbis", "as/dto/person/update/PersonUpdate", "as/dto/person/id/Me", "as/dto/webapp/create/WebAppSettingCreation", "as/dto/person/fetchoptions/PersonFetchOptions" ],
@@ -328,6 +341,21 @@ function ServerFacade(openbisServer) {
 						callback(false, data.error.message);
 					} else {
 						_this.openbisServer.registerPersonSpaceRole(userId, userId, "ADMIN", function(data) {
+                            // Assign home space
+                            require([   "as/dto/person/update/PersonUpdate",
+                            	        "as/dto/person/id/PersonPermId",
+                            	        "as/dto/space/id/SpacePermId" ],
+                                    function(PersonUpdate, PersonPermId, SpacePermId) {
+                            	        var personUpdate = new PersonUpdate();
+                            		    personUpdate.setUserId(new PersonPermId(userId));
+                            		    personUpdate.setSpaceId(new SpacePermId(userId.toUpperCase()));
+                                        mainController.openbisV3.updatePersons([personUpdate]).done(function(response) {
+                                            //
+                                        }).fail(function(error) {
+                                            //
+                                        });
+                            });
+
 							if(data.error) {
 								callback(false, data.error.message);
 							} else {
@@ -345,7 +373,7 @@ function ServerFacade(openbisServer) {
 								if(spaceToRegister) {
 									spaceToRegister();
 								} else {
-									callback(true, "User " + userId + " created successfully.");
+								    callback(true, "User " + userId + " created successfully.");
 								}
 							}
 						});
@@ -381,6 +409,7 @@ function ServerFacade(openbisServer) {
 			"retentionPeriod": retentionPeriod,
             "userInformation": userInformation,
 			"originUrl": window.location.origin,
+			"pathNameUrl": window.location.pathname,
 			"sessionToken": this.openbisServer.getSession(),
 		}, callbackFunction, "rc-exports-api");
 	};
@@ -403,6 +432,7 @@ function ServerFacade(openbisServer) {
 				options.withParameter("metadataOnly", parameters["metadataOnly"]);
 				options.withParameter("method", parameters["method"]);
 				options.withParameter("originUrl", parameters["originUrl"]);
+				options.withParameter("pathNameUrl", parameters["pathNameUrl"]);
 				options.withParameter("submissionType", parameters["submissionType"]);
 				options.withParameter("retentionPeriod", parameters["retentionPeriod"]);
 				options.withParameter("submissionUrl", parameters["submissionUrl"]);
@@ -652,6 +682,32 @@ function ServerFacade(openbisServer) {
 					Util.unblockUI();
 				});
 		});
+	}
+	
+	this.cachedServiceProperties = {};
+	
+	this.getServiceProperty = function(propertyKey, defaultValue, callback) {
+		var _this = this;
+		if (propertyKey in this.cachedServiceProperties) {
+			callback(this.cachedServiceProperties[propertyKey]);
+		} else {
+			this.customELNASAPI({
+				method : "getServiceProperty",
+				propertyKey : propertyKey,
+				defaultValue : defaultValue
+			}, function(property) {
+				_this.cachedServiceProperties[propertyKey] = property;
+				callback(property);
+			});
+		}
+	}
+
+	this.trashStorageSamplesWithoutParents = function(samplePermIds, reason, callback) {
+	    this.customELNASAPI({
+	        method : "trashStorageSamplesWithoutParents",
+	        samplePermIds : samplePermIds,
+	        reason : reason
+	    }, callback);
 	}
 	
 	this.deleteExperiments = function(experimentIds, reason, callback) {
@@ -1054,17 +1110,6 @@ function ServerFacade(openbisServer) {
         return sb;
     }
 
-    this.queryParserUnEscape = function(s) {
-            var sb = "";
-            for (var i = 0; i < s.length; i++) {
-              var c = s.charAt(i);
-              if (c != '\\') {
-                sb = sb + c;
-              }
-            }
-            return sb;
-    }
-
 	this.getSearchCriteriaAndFetchOptionsForDataSetSearch = function(advancedSearchCriteria, advancedFetchOptions, callback) {
 		var criteriaClass = 'as/dto/dataset/search/DataSetSearchCriteria';
 		var fetchOptionsClass = 'as/dto/dataset/fetchoptions/DataSetFetchOptions';
@@ -1120,7 +1165,7 @@ function ServerFacade(openbisServer) {
 
 	this.getSearchCriteriaAndFetchOptionsForEntitySearch = function(advancedSearchCriteria, advancedFetchOptions, callback, criteriaClass, fetchOptionsClass) {
 		var queryParserEscape = this.queryParserEscape;
-		var queryParserUnEscape = this.queryParserUnEscape;
+		var escapeToUnEscapeMap = {};
 
 		require([criteriaClass,
 		         fetchOptionsClass,
@@ -1140,11 +1185,7 @@ function ServerFacade(openbisServer) {
 				//Setting the fetchOptions given standard settings
 				var fetchOptions = new EntityFetchOptions();
 
-				var escapeWildcards = false;
-
-				if(advancedFetchOptions && advancedFetchOptions.escapeWildcards) {
-				    escapeWildcards = true;
-				}
+				var escapeWildcards = advancedFetchOptions && advancedFetchOptions.escapeWildcards;
 
 				//Optional fetchOptions
 				if(!advancedFetchOptions ||
@@ -1270,6 +1311,9 @@ function ServerFacade(openbisServer) {
 						if(advancedFetchOptions.withParentsType) {
 							parentFetchOptions.withType();
 						}
+						if (advancedFetchOptions.withParentsExperiment) {
+							parentFetchOptions.withExperiment();
+						}
 					}
 					if(advancedFetchOptions.withChildren) {
 						var childrenFetchOptions = fetchOptions.withChildren();
@@ -1277,8 +1321,11 @@ function ServerFacade(openbisServer) {
 							childrenFetchOptions.withType();
 						}
 						if(advancedFetchOptions.withChildrenProperties) {
-                            childrenFetchOptions.withProperties();
-                        }
+							childrenFetchOptions.withProperties();
+						}
+						if (advancedFetchOptions.withChildrenExperiment) {
+							childrenFetchOptions.withExperiment();
+						}
 					}
 					if(advancedFetchOptions.withAncestors) {
 						var ancestorsFetchOptions = fetchOptions.withParents();
@@ -1353,7 +1400,9 @@ function ServerFacade(openbisServer) {
 					            (fieldOperator == "thatEndsWithString")
 					            )
 					    ) {
-                        fieldValue = queryParserEscape(fieldValue);
+                        var fieldValueUnEscape = fieldValue;
+                        fieldValue = queryParserEscape(fieldValueUnEscape);
+                        escapeToUnEscapeMap[fieldValue] = fieldValueUnEscape;
                     }
 				
 					var setPropertyCriteria = function(criteria, propertyName, propertyValue, comparisonOperator) {
@@ -1600,8 +1649,10 @@ function ServerFacade(openbisServer) {
                         var value = null;
                         if(searchCriteria.criteria[cIdx].fieldValue) {
                             value = searchCriteria.criteria[cIdx].fieldValue.value;
-                            if(escapeWildcards && value) {
-                                value = queryParserUnEscape(value);
+                            if (escapeWildcards && value) {
+                                if (escapeToUnEscapeMap[value]) {
+                                    value = escapeToUnEscapeMap[value];
+                                }
                                 console.log(searchCriteria.criteria[cIdx].fieldValue.value + " --> " + value);
                             }
 

@@ -16,6 +16,7 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.project;
 
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -69,6 +70,11 @@ public class SearchProjectsOperationExecutor extends SearchObjectsPEOperationExe
     protected SearchObjectsOperationResult<Project> getOperationResult(SearchResult<Project> searchResult)
     {
         return new SearchProjectsOperationResult(searchResult);
+    }
+
+    @Override
+    protected ISearchManager<ProjectSearchCriteria, Project, Long> getSearchManager() {
+        throw new RuntimeException("This method is not implemented yet.");
     }
 
 }

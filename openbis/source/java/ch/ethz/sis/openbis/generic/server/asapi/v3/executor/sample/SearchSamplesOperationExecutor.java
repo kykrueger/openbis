@@ -16,9 +16,6 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.sample;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchObjectsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchObjectsOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
@@ -27,10 +24,16 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchO
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SearchSamplesOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SearchSamplesOperationResult;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.ISearchObjectExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.SearchObjectsOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SampleSearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.ITranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.sample.ISampleTranslator;
+import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  * @author pkupczyk
@@ -45,6 +48,12 @@ public class SearchSamplesOperationExecutor extends SearchObjectsOperationExecut
 
     @Autowired
     private ISampleTranslator translator;
+
+    @Autowired
+    private SampleSearchManager sampleSearchManager;
+
+    @Autowired
+    protected IDAOFactory daoFactory;
 
     @Override
     protected Class<? extends SearchObjectsOperation<SampleSearchCriteria, SampleFetchOptions>> getOperationClass()
@@ -65,9 +74,22 @@ public class SearchSamplesOperationExecutor extends SearchObjectsOperationExecut
     }
 
     @Override
+    protected ISearchManager<SampleSearchCriteria, Sample, Long> getSearchManager()
+    {
+        return sampleSearchManager;
+    }
+
+    @Override
     protected SearchObjectsOperationResult<Sample> getOperationResult(SearchResult<Sample> searchResult)
     {
         return new SearchSamplesOperationResult(searchResult);
+    }
+
+    @Override
+    protected SearchObjectsOperationResult<Sample> doExecute(final IOperationContext context,
+            final SearchObjectsOperation<SampleSearchCriteria, SampleFetchOptions> operation)
+    {
+        return doExecuteNewSearch(context, operation);
     }
 
 }

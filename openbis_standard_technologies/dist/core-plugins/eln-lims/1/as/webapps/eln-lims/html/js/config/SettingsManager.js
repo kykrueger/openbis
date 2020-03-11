@@ -95,7 +95,8 @@ function SettingsManager(serverFacade) {
 			"dataSetTypeForFileNameMap",
 			"forcedDisableRTF",
 			"forceMonospaceFont",
-			"showDatasetArchivingButton"
+			"showDatasetArchivingButton",
+			"hideSectionsByDefault"
 		];
 		for (var field of fieldsToOverride) {
 			if (settings[field] != null) {

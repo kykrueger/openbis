@@ -6,8 +6,21 @@ var UserTests = new function() {
         testChain.then(() => TestUtil.deleteCookies("suitename"))
                  .then(() => TestUtil.login("testId", "pass"))
                  .then(() => this.inventorySpaceForTestUser())
+                 .then(() => TestUtil.testPassed(5))
                  //6. Sample Form - Creation
                  .then(() => this.creationSampleForm())
+                 //7. Sample Form - Edit: Add a Photo and Parents/Children
+                 .then(() => this.editSampleForm())
+                 //8. Sample Hierarchy as Graph
+                 .then(() => this.sampleHierarchyAsGraph())
+                 //9. Sample Hierarchy as Table
+                 .then(() => this.sampleHierarchyAsTable())
+                 //10. Sample Form - Copy
+                 .then(() => this.copySampleForm())
+                 //11. Sample Form - Delete
+                 .then(() => this.deleteSampleForm())
+                 //12. Inventory Table - Exports/Imports for Update
+                 .then(() => this.exportsImportsUpdate())
                  //13. Inventory Table - Imports for Create - Automatic Codes
                  .then(() => this.importsAutomaticCodes())
                  //14. Inventory Table - Imports for Create - Given Codes
@@ -16,6 +29,26 @@ var UserTests = new function() {
                  .then(() => this.storageTest())
                  //16. Storage Manager - Moving Box
                  .then(() => this.movingBoxTest())
+                 //17. Storage Manager - Moving Sample
+                 .then(() => this.movingSampleTest())
+                 //18. Create Protocol
+                 .then(() => this.createProtocol())
+                 //19. Project Form - Create/Update
+                 .then(() => this.createProject())
+                 //20. Experiment Form - Create/Update
+                 .then(() => this.createExperiment())
+                 //21. Experiment Step Form - Create/Update
+                 .then(() => this.createExperimentStep())
+                 //22. is now disabled
+                 .then(() => TestUtil.testNotExist(22))
+                 //23. Experiment Step Form - Dataset Uploader and Viewer
+                 .then(() => this.datasetUploader())
+                 //24. Experiment Step Form - Children Generator (not exist)
+                 .then(() => TestUtil.testNotExist(24))
+                 //25. Project  Form - Show in project overview
+                 .then(() => this.showInProjectOverview())
+                 //26. Search
+                 .then(() => this.search())
                  .catch(error => { console.log(error) });
     }
 
@@ -59,6 +92,7 @@ var UserTests = new function() {
                              .then(() => UserTests.createBacteria("BAC2", "Burantimonas"))
                              .then(() => UserTests.createBacteria("BAC3", "Curantimonas"))
                              .then(() => UserTests.createBacteria("BAC4", "Durantimonas"))
+                             .then(() => TestUtil.testPassed(6))
                              .then(() => resolve());
         });
     }
@@ -66,29 +100,261 @@ var UserTests = new function() {
     this.createBacteria = function(code, name) {
         return new Promise(function executor(resolve, reject) {
             var e = EventUtil;
+            var testChain = Promise.resolve();
 
             var richText = '<p><span style="color:#000080;"><strong>F-&nbsp;tonA21 thi-1 thr-1 leuB6 lacY1</strong></span><strong>&nbsp;</strong><span style="color:#008000;"><i><strong>glnV44 rfbC1 fhuA1 ?? mcrB e14-(mcrA-)</strong></i></span><i><strong>&nbsp;</strong></i><span style="color:#cc99ff;"><strong><u>hsdR(rK&nbsp;-mK&nbsp;+) λ-</u></strong></span></p>';
 
+            testChain.then(() => e.waitForId("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
+                     .then(() => e.click("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
+                     .then(() => e.waitForId("create-btn"))
+                     .then(() => e.click("create-btn"))
+                     .then(() => e.waitForId("sampleFormTitle"))
+                     .then(() => e.equalTo("sampleFormTitle", "New Bacteria", true, false));
+
+            if (code === "BAC1") {
+                // Show Code
+                testChain.then(() => e.waitForId("options-menu-btn-sample-view-bacteria"))
+                         .then(() => e.click("options-menu-btn-sample-view-bacteria"))
+                         .then(() => e.waitForId("options-menu-btn-identification-info"))
+                         .then(() => e.click("options-menu-btn-identification-info"));
+            }
+
+            testChain.then(() => e.waitForId("codeId"))
+                     .then(() => e.waitForFill("codeId"))
+                     .then(() => e.equalTo("codeId", code, true, false))
+                     .then(() => e.waitForId("NAME"))
+                     .then(() => e.change("NAME", name, false))
+                     //Paste from Word
+                     .then(() => e.waitForCkeditor("BACTERIA.GENOTYPE"))
+                     .then(() => TestUtil.ckeditorSetData("BACTERIA.GENOTYPE", richText))
+                     .then(() => e.waitForId("save-btn"))
+                     .then(() => e.click("save-btn"))
+                     //Check saving results
+                     .then(() => e.waitForId("edit-btn"))
+                     .then(() => e.waitForId("NAME"))
+                     .then(() => e.equalTo("NAME", name, true, false))
+                     .then(() => TestUtil.ckeditorTestData("BACTERIA.GENOTYPE", richText))
+                     .then(() => resolve());
+        });
+    }
+
+    this.editSampleForm = function() {
+        var baseURL = location.protocol + '//' + location.host + location.pathname;
+        var pathToResource = "js/test/resources/test-image.png";
+
+        return new Promise(function executor(resolve, reject) {
+            var e = EventUtil;
+
             Promise.resolve().then(() => e.waitForId("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
                              .then(() => e.click("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
-                             .then(() => e.waitForId("create-btn"))
-                             .then(() => e.click("create-btn"))
-                             .then(() => e.waitForId("sampleFormTitle"))
-                             .then(() => e.equalTo("sampleFormTitle", "Create Object Bacteria", true, false))
-                             .then(() => e.waitForId("codeId"))
-                             .then(() => e.waitForFill("codeId"))
-                             .then(() => e.equalTo("codeId", code, true, false))
-                             .then(() => e.waitForId("NAME"))
-                             .then(() => e.change("NAME", name, false))
-                             //Paste from Word
-                             .then(() =>  TestUtil.ckeditorSetData("BACTERIA.GENOTYPE", richText))
+                             .then(() => e.waitForId("bac3-column-id"))
+                             .then(() => e.click("bac3-column-id"))
+                             // Edit Bacteria 3
+                             .then(() => e.waitForId("edit-btn"))
+                             .then(() => e.click("edit-btn"))
+                             // add photo in Bacteria genotype
+                             .then(() => e.waitForCkeditor("BACTERIA.GENOTYPE"))
+                             .then(() => TestUtil.ckeditorDropFile("BACTERIA.GENOTYPE", "test-image.png", baseURL + pathToResource))
+                             // add mother
+                             .then(() => e.waitForId("plus-btn-bacteria-parents"))
+                             .then(() => e.click("plus-btn-bacteria-parents"))
+                             .then(() => e.waitForId("bac1-column-id"))
+                             .then(() => e.click("bac1-column-id"))
+                             .then(() => e.waitForId("comments-bac1"))
+                             .then(() => e.change("comments-bac1", "mother"))
+                             // add father
+                             .then(() => e.click("plus-btn-bacteria-parents"))
+                             .then(() => e.waitForId("bac2-column-id"))
+                             .then(() => e.click("bac2-column-id"))
+                             .then(() => e.waitForId("comments-bac2"))
+                             .then(() => e.change("comments-bac2", "father"))
+                             // add Child
+                             .then(() => e.waitForId("plus-btn-children-type-selector"))
+                             .then(() => e.click("plus-btn-children-type-selector"))
+                             .then(() => e.waitForId("sampleTypeSelector"))
+                             .then(() => e.changeSelect2("sampleTypeSelector", "Bacteria"))
+                             .then(() => e.waitForId("bac4-column-id"))
+                             .then(() => e.click("bac4-column-id"))
+                             .then(() => e.waitForId("bac4-operations-column-id"))
+                             // save
                              .then(() => e.waitForId("save-btn"))
                              .then(() => e.click("save-btn"))
-                             //Check saving results
                              .then(() => e.waitForId("edit-btn"))
-                             .then(() => e.waitForId("NAME"))
-                             .then(() => e.equalTo("NAME", name, true, false))
-                             .then(() => TestUtil.ckeditorTestData("BACTERIA.GENOTYPE", richText))
+                             // check parents and children
+                             .then(() => e.waitForId("bac1-column-id"))
+                             .then(() => e.waitForId("bac2-column-id"))
+                             .then(() => e.waitForId("bac4-column-id"))
+                             .then(() => TestUtil.testPassed(7))
+                             .then(() => resolve());
+        });
+    }
+
+    this.sampleHierarchyAsGraph = function() {
+        return new Promise(function executor(resolve, reject) {
+            var e = EventUtil;
+            Promise.resolve().then(() => e.waitForId("options-menu-btn-sample-view-bacteria"))
+                             .then(() => e.click("options-menu-btn-sample-view-bacteria"))
+                             // show Hierarchy Graph
+                             .then(() => e.waitForId("hierarchy-graph"))
+                             .then(() => e.click("hierarchy-graph"))
+                             // check parents and children
+                             .then(() => e.waitForId("bac1"))
+                             .then(() => e.waitForId("bac2"))
+                             .then(() => e.waitForId("bac3"))
+                             .then(() => e.waitForId("bac4"))
+                             .then(() => TestUtil.testPassed(8))
+                             .then(() => resolve());
+        });
+    }
+
+    this.sampleHierarchyAsTable = function() {
+        var parentAnnotations = "<b>Code</b>: BAC1, <b>Comments</b>: mother<br><br><b>Code</b>: BAC2, <b>Comments</b>: father";
+        var childrenAnnotations = "<b>Code</b>: BAC4";
+
+        return new Promise(function executor(resolve, reject) {
+            var e = EventUtil;
+
+            // return to bacteria 3
+            Promise.resolve().then(() => e.waitForId("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
+                             .then(() => e.click("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
+                             .then(() => e.waitForId("bac3-column-id"))
+                             .then(() => e.click("bac3-column-id"))
+                             // show Hierarchy Graph
+                             .then(() => e.waitForId("options-menu-btn-sample-view-bacteria"))
+                             .then(() => e.click("options-menu-btn-sample-view-bacteria"))
+                             .then(() => e.waitForId("hierarchy-table"))
+                             .then(() => e.click("hierarchy-table"))
+                             .then(() => e.sleep(2000)) // wait for table
+                             // show Identifier
+                             .then(() => e.waitForId("columns-dropdown-id"))
+                             .then(() => e.click("columns-dropdown-id"))
+                             .then(() => e.waitForId("identifier-cln"))
+                             .then(() => e.click("identifier-cln"))
+                             .then(() => e.click("columns-dropdown-id"))
+                             // check parents and children
+                             .then(() => e.waitForId("bac1"))
+                             .then(() => e.waitForId("bac2"))
+                             .then(() => e.waitForId("bac3"))
+                             .then(() => e.equalTo("children-annotations-bac3", childrenAnnotations, true, false))
+                             .then(() => e.waitForId("bac4"))
+                             // show the Parent/Annotations column
+                             .then(() => e.waitForId("columns-dropdown-id"))
+                             .then(() => e.click("columns-dropdown-id"))
+                             .then(() => e.waitForId("parentannotations-cln"))
+                             .then(() => e.click("parentannotations-cln"))
+                             .then(() => e.click("columns-dropdown-id"))
+                             // check parents comments
+                             .then(() => e.waitForId("parent-annotations-bac3"))
+                             .then(() => e.equalTo("parent-annotations-bac3", parentAnnotations, true, false))
+                             .then(() => TestUtil.testPassed(9))
+                             .then(() => resolve());
+        });
+    }
+
+    this.copySampleForm = function() {
+        return new Promise(function executor(resolve, reject) {
+            var e = EventUtil;
+
+            // return to bacteria 3
+            Promise.resolve().then(() => e.waitForId("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
+                             .then(() => e.click("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
+                             .then(() => e.waitForId("bac3-column-id"))
+                             .then(() => e.click("bac3-column-id"))
+                             .then(() => e.waitForId("edit-btn"))
+                             // copy
+                             .then(() => e.waitForId("options-menu-btn-sample-view-bacteria"))
+                             .then(() => e.click("options-menu-btn-sample-view-bacteria"))
+                             .then(() => e.waitForId("copy"))
+                             .then(() => e.click("copy"))
+                             // link parents
+                             .then(() => e.waitForId("linkParentsOnCopy"))
+                             .then(() => e.checked("linkParentsOnCopy", true))
+                             .then(() => e.waitForId("copyChildrenToParent"))
+                             .then(() => e.checked("copyChildrenToParent", true))
+                             .then(() => e.waitForId("copyAccept"))
+                             .then(() => e.click("copyAccept"))
+                             .then(() => e.sleep(3500)) // wait when copy will finished
+                             // go to bac1
+                             .then(() => e.waitForId("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
+                             .then(() => e.click("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
+                             .then(() => e.waitForId("bac1-column-id"))
+                             .then(() => e.click("bac1-column-id"))
+                             // check new object in bac1 graph
+                             .then(() => e.waitForId("options-menu-btn-sample-view-bacteria"))
+                             .then(() => e.click("options-menu-btn-sample-view-bacteria"))
+                             .then(() => e.waitForId("hierarchy-graph"))
+                             .then(() => e.click("hierarchy-graph"))
+                             // origin bacteria
+                             .then(() => e.waitForId("bac3"))
+                             .then(() => e.waitForId("bac4"))
+                             // copy of origin bacteria
+                             .then(() => e.waitForId("bac5"))
+                             .then(() => e.waitForId("bac5_bac4"))
+                             .then(() => TestUtil.testPassed(10))
+                             .then(() => resolve());
+        });
+    }
+
+    this.deleteSampleForm = function() {
+
+        return new Promise(function executor(resolve, reject) {
+            var e = EventUtil;
+            Promise.resolve().then(() => e.waitForId("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
+                             // navigation to BAC5
+                             .then(() => e.click("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
+                             .then(() => e.waitForId("bac5-column-id"))
+                             .then(() => e.click("bac5-column-id"))
+                             // delete
+                             .then(() => e.waitForId("options-menu-btn-sample-view-bacteria"))
+                             .then(() => e.click("options-menu-btn-sample-view-bacteria"))
+                             .then(() => e.waitForId("delete"))
+                             .then(() => e.click("delete"))
+                             // fill Confirm form
+                             .then(() => e.waitForId("reason-to-delete-id"))
+                             .then(() => e.write("reason-to-delete-id", "test"))
+                             .then(() => e.waitForId("accept-btn"))
+                             .then(() => e.click("accept-btn"))
+                             //You should see the error
+                             .then(() => e.waitForId("jNotifyDismiss"))
+                             .then(() => e.click("jNotifyDismiss"))
+                             .then(() => TestUtil.testPassed(11))
+                             .then(() => resolve());
+        });
+    }
+
+    this.exportsImportsUpdate = function() {
+        var baseURL = location.protocol + '//' + location.host + location.pathname;
+        var pathToResource = "js/test/resources/exportedTableAllColumnsAllRows.tsv";
+
+        return new Promise(function executor(resolve, reject) {
+            var e = EventUtil;
+            Promise.resolve().then(() => e.waitForId("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
+                             .then(() => e.click("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
+                             // export all columns with all rows
+                             .then(() => e.waitForId("export-btn-id"))
+                             .then(() => e.click("export-btn-id"))
+                             .then(() => e.waitForId("export-all-columns-and-rows"))
+                             .then(() => e.click("export-all-columns-and-rows"))
+                             // I can only download the file, but I can't check what is inside.
+                             // Because I don't have an access to downloads Path from browser.
+                             // check names before update
+                             .then(() => e.equalTo("bac1-column-id", "Aurantimonas", true, false))
+                             .then(() => e.equalTo("bac2-column-id", "Burantimonas", true, false))
+                             .then(() => e.equalTo("bac3-column-id", "Curantimonas", true, false))
+                             .then(() => e.equalTo("bac4-column-id", "Durantimonas", true, false))
+                             .then(() => e.equalTo("bac5-column-id", "Curantimonas", true, false))
+                             .then(() => e.equalTo("bac5_bac4-column-id", "Durantimonas", true, false))
+                             // Batch Update Objects
+                             .then(() => UserTests.importBacteriasFromFile(baseURL + pathToResource, false))
+                             .then(() => e.sleep(3500)) // wait for import
+                             // check names after update
+                             .then(() => e.equalTo("bac1-column-id", "AA", true, false))
+                             .then(() => e.equalTo("bac2-column-id", "BB", true, false))
+                             .then(() => e.equalTo("bac3-column-id", "CC", true, false))
+                             .then(() => e.equalTo("bac4-column-id", "DD", true, false))
+                             .then(() => e.equalTo("bac5-column-id", "EE", true, false))
+                             .then(() => e.equalTo("bac5_bac4-column-id", "FF", true, false))
+                             .then(() => TestUtil.testPassed(12))
                              .then(() => resolve());
         });
     }
@@ -96,14 +362,19 @@ var UserTests = new function() {
     this.importsAutomaticCodes = function() {
         var baseURL = location.protocol + '//' + location.host + location.pathname;
         var pathToResource = "js/test/resources/bacteria_for_test_without_identifier.tsv";
+
         return new Promise(function executor(resolve, reject) {
             var e = EventUtil;
-            Promise.resolve().then(() => UserTests.importBacteriasFromFile(baseURL + pathToResource))
+            Promise.resolve().then(() => e.waitForId("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
+                             .then(() => e.click("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
+                             .then(() => UserTests.importBacteriasFromFile(baseURL + pathToResource, true))
+                             .then(() => e.sleep(3500)) // wait for saving
                              // check that bacterias was created
-                             .then(() => e.waitForId("bac5-column-id"))
                              .then(() => e.waitForId("bac6-column-id"))
                              .then(() => e.waitForId("bac7-column-id"))
                              .then(() => e.waitForId("bac8-column-id"))
+                             .then(() => e.waitForId("bac9-column-id"))
+                             .then(() => TestUtil.testPassed(13))
                              .then(() => resolve());
         });
     }
@@ -111,36 +382,46 @@ var UserTests = new function() {
     this.importsGivenCodes = function() {
         var baseURL = location.protocol + '//' + location.host + location.pathname;
         var pathToResource = "js/test/resources/bacteria_for_test_with_identifier.tsv";
+
         return new Promise(function executor(resolve, reject) {
             var e = EventUtil;
-            Promise.resolve().then(() => UserTests.importBacteriasFromFile(baseURL + pathToResource))
+            Promise.resolve().then(() => UserTests.importBacteriasFromFile(baseURL + pathToResource, true))
+                             .then(() => e.sleep(3500)) // wait for saving
                              // check that bacterias was created
-                             .then(() => e.waitForId("bac10-column-id"))
-                             .then(() => e.waitForId("bac11-column-id"))
                              .then(() => e.waitForId("next-page-id"))
                              .then(() => e.click("next-page-id"))
+                             .then(() => e.waitForId("bac10-column-id"))
+                             .then(() => e.waitForId("bac11-column-id"))
                              .then(() => e.waitForId("bac12-column-id"))
                              .then(() => e.waitForId("bac13-column-id"))
+                             .then(() => TestUtil.testPassed(14))
                              .then(() => resolve());
         });
     }
 
-    this.importBacteriasFromFile = function(file) {
+    this.importBacteriasFromFile = function(file, isNew) {
         return new Promise(function executor(resolve, reject) {
             var e = EventUtil;
 
-            Promise.resolve().then(() => e.waitForId("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
-                             .then(() => e.click("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
-                             .then(() => e.waitForId("options-menu-btn"))
-                             .then(() => e.click("options-menu-btn"))
-                             .then(() => e.waitForId("register-object-btn"))
-                             .then(() => e.click("register-object-btn"))
-                             .then(() => e.waitForId("choose-type-btn"))
-                             .then(() => e.change("choose-type-btn", "BACTERIA", false))
-                             .then(() => TestUtil.setFile("name", file, "text"))
-                             .then(() => e.waitForId("accept-type-file"))
-                             .then(() => e.click("accept-type-file"))
-                             .then(() => resolve());
+            var testChain = Promise.resolve();
+
+            testChain.then(() => e.waitForId("sample-options-menu-btn"))
+                     .then(() => e.click("sample-options-menu-btn"));
+
+            if (isNew) {
+                testChain.then(() => e.waitForId("register-object-btn"))
+                         .then(() => e.click("register-object-btn"));
+            } else {
+                testChain.then(() => e.waitForId("update-object-btn"))
+                         .then(() => e.click("update-object-btn"));
+            }
+
+            testChain.then(() => e.waitForId("choose-type-btn"))
+                     .then(() => e.change("choose-type-btn", "BACTERIA", false))
+                     .then(() => TestUtil.setFile("name", file, "text"))
+                     .then(() => e.waitForId("accept-type-file"))
+                     .then(() => e.click("accept-type-file"))
+                     .then(() => resolve());
         });
     }
 
@@ -157,6 +438,7 @@ var UserTests = new function() {
                              // we wait for the save-button, cause page contains add-storage-btn
                              // even when page can't be edit. So we wait when page be reloaded.
                              .then(() => e.waitForId("save-btn"))
+                             .then(() => e.sleep(2000)) // wait for saving
                              .then(() => e.waitForId("add-storage-btn"))
                              .then(() => e.click("add-storage-btn"))
                              .then(() => e.waitForId("storage-drop-down-id"))
@@ -174,6 +456,7 @@ var UserTests = new function() {
                              .then(() => e.click("save-btn"))
                              // check that new storage was created
                              .then(() => e.waitForId("testbox-c2-id"))
+                             .then(() => TestUtil.testPassed(15))
                              .then(() => resolve());
         });
     }
@@ -195,6 +478,329 @@ var UserTests = new function() {
                              .then(() => e.dragAndDrop("storage-drop-down-id-a-1-2-storage-box", "storage-drop-down-id-b-1-1", false))
                              .then(() => e.equalTo("change-log-container-id", "None", false, false))
                              .then(() => e.click("save-changes-btn"))
+                             .then(() => e.sleep(3000)) // wait for saving
+                             .then(() => TestUtil.testPassed(16))
+                             .then(() => resolve());
+        });
+    }
+
+    this.movingSampleTest = function() {
+        return new Promise(function executor(resolve, reject) {
+            var e = EventUtil;
+
+            Promise.resolve().then(() => e.waitForId("STORAGE_MANAGER"))
+                             .then(() => e.click("STORAGE_MANAGER"))
+                             .then(() => e.waitForId("storage-drop-down-id-a"))
+                             .then(() => e.change("storage-drop-down-id-a", "BENCH", false))
+                             .then(() => e.waitForId("storage-drop-down-id-a-1-1"))
+                             .then(() => e.waitForId("storage-drop-down-id-a-1-1-storage-box"))
+                             .then(() => e.click("storage-drop-down-id-a-1-1-storage-box"))
+                             .then(() => e.waitForId("storage-drop-down-id-a-C-2-storage-box"))
+                             .then(() => e.dragAndDrop("storage-drop-down-id-a-C-2-storage-box", "storage-drop-down-id-a-A-3", false))
+                             .then(() => e.equalTo("change-log-container-id", "None", false, false))
+                             .then(() => e.click("save-changes-btn"))
+                             .then(() => e.sleep(3000)) // wait for saving
+                             // Open object BAC1 and verify storage.
+                             .then(() => e.waitForId("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
+                             .then(() => e.click("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
+                             .then(() => e.waitForId("bac1-column-id"))
+                             .then(() => e.click("bac1-column-id"))
+                             .then(() => e.waitForId("testbox-a3-id"))
+                             .then(() => e.equalTo("testbox-a3-id", "Test Box - A3", true, false))
+                             .then(() => TestUtil.testPassed(17))
+                             .then(() => resolve());
+        });
+    }
+
+    this.createProtocol = function() {
+        return new Promise(function executor(resolve, reject) {
+            var e = EventUtil;
+
+            Promise.resolve().then(() => e.waitForId("_METHODS_PROTOCOLS_GENERAL_PROTOCOLS"))
+                             .then(() => e.click("_METHODS_PROTOCOLS_GENERAL_PROTOCOLS"))
+                             .then(() => e.waitForId("create-btn"))
+                             .then(() => e.click("create-btn"))
+                             .then(() => e.waitForId("options-menu-btn-sample-view-general_protocol"))
+                             .then(() => e.click("options-menu-btn-sample-view-general_protocol"))
+                             .then(() => e.waitForId("options-menu-btn-identification-info"))
+                             .then(() => e.click("options-menu-btn-identification-info"))
+                             .then(() => e.waitForId("codeId"))
+                             .then(() => e.waitForFill("codeId"))
+                             .then(() => e.waitForId("save-btn"))
+                             .then(() => e.click("save-btn"))
+                             .then(() => e.waitForId("edit-btn"))
+                             .then(() => TestUtil.testPassed(18))
+                             .then(() => resolve());
+        });
+    }
+
+    this.createProject = function() {
+        return new Promise(function executor(resolve, reject) {
+            var e = EventUtil;
+
+            Promise.resolve().then(() => e.waitForId("TESTID"))
+                             .then(() => e.click("TESTID"))
+                             .then(() => e.waitForId("create-btn"))
+                             .then(() => e.click("create-btn"))
+                             .then(() => e.waitForId("project-code-id"))
+                             .then(() => e.write("project-code-id", "PROJECT_101", false))
+                             .then(() => e.waitForId("save-btn"))
+                             .then(() => e.click("save-btn"))
+                             .then(() => e.waitForId("edit-btn"))
+                             .then(() => e.click("edit-btn"))
+                             .then(() => e.waitForId("options-menu-btn-project-view"))
+                             .then(() => e.click("options-menu-btn-project-view"))
+                             .then(() => e.waitForId("options-menu-btn-description"))
+                             .then(() => e.click("options-menu-btn-description"))
+                             .then(() => e.waitForCkeditor("description-id"))
+                             .then(() => TestUtil.ckeditorSetData("description-id", "Test Description 101"))
+                             .then(() => e.waitForId("save-btn"))
+                             .then(() => e.click("save-btn"))
+                             .then(() => e.waitForId("edit-btn"))
+                             .then(() => TestUtil.testPassed(19))
+                             .then(() => resolve());
+        });
+    }
+
+    this.createExperiment = function() {
+        return new Promise(function executor(resolve, reject) {
+            var e = EventUtil;
+
+            var yesterday = Util.getFormatedDate(new Date(new Date().setDate(new Date().getDate() - 1)));
+            var tomorrow = Util.getFormatedDate(new Date(new Date().setDate(new Date().getDate() + 1)));
+
+            Promise.resolve().then(() => e.waitForId("options-menu-btn"))
+                             .then(() => e.click("options-menu-btn"))
+                             // Create Default Experiment
+                             .then(() => e.waitForId("default-experiment"))
+                             .then(() => e.click("default-experiment"))
+                             .then(() => e.waitForId("codeId"))
+                             .then(() => e.waitForFill("codeId"))
+                             // add Name
+                             .then(() => e.waitForId("NAME"))
+                             .then(() => e.change("NAME", "Experiment 101", false))
+                             // show in project overview checked
+                             .then(() => e.waitForId("SHOW_IN_PROJECT_OVERVIEW"))
+                             .then(() => e.checked("SHOW_IN_PROJECT_OVERVIEW", true))
+                             .then(() => e.change("SHOW_IN_PROJECT_OVERVIEW", true))
+                             // add first comment
+                             .then(() => e.waitForId("add-comment-btn"))
+                             .then(() => e.click("add-comment-btn"))
+                             .then(() => e.waitForId("comment-0-box"))
+                             .then(() => e.write("comment-0-box", "My first comment", false))
+                             .then(() => e.waitForId("save-comment-0-btn"))
+                             .then(() => e.click("save-comment-0-btn"))
+                             .then(() => e.waitForId("save-btn"))
+                             .then(() => e.click("save-btn"))
+                             // Update date and name for Experiment
+                             .then(() => e.waitForId("edit-btn"))
+                             .then(() => e.click("edit-btn"))
+                             .then(() => e.waitForId("save-btn"))
+                             // edit name
+                             .then(() => e.waitForId("NAME"))
+                             .then(() => e.change("NAME", "Experiment 101 Bis", false))
+                             // set start date
+                             .then(() => e.waitForId("START_DATE"))
+                             .then(() => e.change("START_DATE", tomorrow, false))
+                             // set end date
+                             .then(() => e.waitForId("END_DATE"))
+                             .then(() => e.change("END_DATE", yesterday, false))
+                             // add second comment
+                             .then(() => e.waitForId("add-comment-btn"))
+                             .then(() => e.click("add-comment-btn"))
+                             .then(() => e.waitForId("comment-0-box"))
+                             .then(() => e.write("comment-0-box", "My second comment", false))
+                             .then(() => e.waitForId("save-comment-0-btn"))
+                             .then(() => e.click("save-comment-0-btn"))
+                             .then(() => e.waitForId("save-btn"))
+                             .then(() => e.click("save-btn"))
+                             //You should see the error
+                             .then(() => e.waitForId("jNotifyDismiss"))
+                             .then(() => e.click("jNotifyDismiss"))
+                             // fix the error (remove end date) and save experiment
+                             .then(() => e.change("END_DATE", "", false))
+                             .then(() => e.waitForId("save-btn"))
+                             .then(() => e.click("save-btn"))
+                             .then(() => TestUtil.testPassed(20))
+                             .then(() => resolve());
+        });
+    }
+
+    this.createExperimentStep = function() {
+        return new Promise(function executor(resolve, reject) {
+            var e = EventUtil;
+
+            var tomorrow = Util.getFormatedDate(new Date(new Date().setDate(new Date().getDate() + 1)));
+
+            Promise.resolve().then(() => e.waitForId("options-menu-btn"))
+                             .then(() => e.click("options-menu-btn"))
+                             // add Experimental Step
+                             .then(() => e.waitForId("experimental-step"))
+                             .then(() => e.click("experimental-step"))
+                             .then(() => e.waitForId("options-menu-btn-sample-view-experimental_step"))
+                             .then(() => e.click("options-menu-btn-sample-view-experimental_step"))
+                             .then(() => e.waitForId("codeId"))
+                             .then(() => e.click("codeId"))
+                             // add name
+                             .then(() => e.waitForId("NAME"))
+                             .then(() => e.change("NAME", "Step 101", false))
+                             // show in project overview checked
+                             .then(() => e.waitForId("SHOW_IN_PROJECT_OVERVIEW"))
+                             .then(() => e.checked("SHOW_IN_PROJECT_OVERVIEW", true))
+                             .then(() => e.change("SHOW_IN_PROJECT_OVERVIEW", true))
+                             // set start date
+                             .then(() => e.waitForId("START_DATE"))
+                             .then(() => e.change("START_DATE", tomorrow, false))
+                             // add protocol
+                             .then(() => e.waitForId("plus-btn-general-protocol"))
+                             .then(() => e.click("plus-btn-general-protocol"))
+                             .then(() => e.waitForId("gen1-column-id"))
+                             .then(() => e.click("gen1-column-id"))
+                             // Operations
+                             .then(() => e.waitForId("gen1-operations-column-id"))
+                             .then(() => e.click("gen1-operations-column-id"))
+                             .then(() => e.waitForId("gen1-operations-column-id-use-as-template"))
+                             .then(() => e.click("gen1-operations-column-id-use-as-template"))
+                             .then(() => e.waitForId("newSampleCodeForCopy"))
+                             .then(() => e.write("newSampleCodeForCopy", "CODE1", false))
+                             .then(() => e.waitForId("copyAccept"))
+                             .then(() => e.click("copyAccept"))
+                             // add first comment
+                             .then(() => e.waitForId("add-comment-btn"))
+                             .then(() => e.click("add-comment-btn"))
+                             .then(() => e.waitForId("comment-0-box"))
+                             .then(() => e.write("comment-0-box", "My first comment", false))
+                             .then(() => e.waitForId("save-comment-0-btn"))
+                             .then(() => e.click("save-comment-0-btn"))
+                             .then(() => e.waitForId("code1-column-id"))
+                             // save
+                             .then(() => e.waitForId("save-btn"))
+                             .then(() => e.click("save-btn"))
+                             // edit
+                             .then(() => e.waitForId("edit-btn"))
+                             .then(() => e.click("edit-btn"))
+                             .then(() => e.waitForId("save-btn"))
+                             // edit name
+                             .then(() => e.waitForId("NAME"))
+                             .then(() => e.change("NAME", "Step 101 Bis", false))
+                             // save
+                             .then(() => e.waitForId("save-btn"))
+                             .then(() => e.click("save-btn"))
+                             .then(() => TestUtil.testPassed(21))
+                             .then(() => resolve());
+        });
+    }
+
+    this.datasetUploader = function() {
+        var baseURL = location.protocol + '//' + location.host + location.pathname;
+        var pathToResource = "js/test/resources/test-image.png";
+
+        return new Promise(function executor(resolve, reject) {
+            var e = EventUtil;
+
+            Promise.resolve().then(() => e.waitForId("upload-btn"))
+                             .then(() => e.click("upload-btn"))
+                             // choose type
+                             .then(() => e.waitForId("DATASET_TYPE"))
+                             .then(() => e.changeSelect2("DATASET_TYPE", "ELN_PREVIEW", false))
+                             // add first comment
+                             .then(() => e.waitForId("add-comment-btn"))
+                             .then(() => e.click("add-comment-btn"))
+                             .then(() => e.waitForId("comment-0-box"))
+                             .then(() => e.write("comment-0-box", "My first comment", false))
+                             .then(() => e.waitForId("save-comment-0-btn"))
+                             .then(() => e.click("save-comment-0-btn"))
+                             // upload image
+                             .then(() => e.dropFile("test-image.png", baseURL + pathToResource, "filedrop", false))
+                             .then(() => e.waitForClass("progressbar.ready"))
+                             .then(() => e.waitForId("save-btn"))
+                             .then(() => e.click("save-btn"))
+                             // open data set and edit it
+                             .then(() => e.waitForId("dataSetPosInTree-0"))
+                             .then(() => e.click("dataSetPosInTree-0"))
+                             .then(() => e.waitForId("dataset-edit-btn"))
+                             .then(() => e.click("dataset-edit-btn"))
+                             .then(() => e.waitForId("save-btn"))
+                             // change Name
+                             .then(() => e.waitForId("NAME"))
+                             .then(() => e.change("NAME", "New Name", false))
+                             .then(() => e.click("save-btn"))
+                             .then(() => e.waitForId("dataset-edit-btn"))
+                             .then(() => TestUtil.testPassed(23))
+                             .then(() => resolve());
+        });
+    }
+
+    this.showInProjectOverview = function() {
+        return new Promise(function executor(resolve, reject) {
+            var e = EventUtil;
+
+            Promise.resolve().then(() => e.waitForId("PATH_TESTID_PROJECT_101"))
+                             .then(() => e.click("PATH_TESTID_PROJECT_101"))
+                             // click "Show Experiments"
+                             .then(() => e.waitForId("options-menu-btn-project-view"))
+                             .then(() => e.waitForId("project-experiments"))
+                             .then(() => e.waitForStyle("project-experiments", "display", "none", false))
+                             .then(() => e.click("options-menu-btn-project-view"))
+                             .then(() => e.waitForId("options-menu-btn-experiments"))
+                             .then(() => e.click("options-menu-btn-experiments"))
+                             .then(() => e.waitForId("project-experiments"))
+                             .then(() => e.waitForStyle("project-experiments", "display", "", false))
+                             // click "Show Objects"
+                             .then(() => e.waitForId("options-menu-btn-project-view"))
+                             .then(() => e.waitForId("project-samples"))
+                             .then(() => e.waitForStyle("project-samples", "display", "none", false))
+                             .then(() => e.click("options-menu-btn-project-view"))
+                             .then(() => e.waitForId("options-menu-btn-objects"))
+                             .then(() => e.click("options-menu-btn-objects"))
+                             .then(() => e.waitForId("project-samples"))
+                             .then(() => e.waitForStyle("project-samples", "display", "", false))
+                             .then(() => TestUtil.testPassed(25))
+                             .then(() => resolve());
+        });
+    }
+
+    this.search = function() {
+        return new Promise(function executor(resolve, reject) {
+            var e = EventUtil;
+
+            Promise.resolve().then(() => e.waitForId("search"))
+                             // start global search
+                             .then(() => e.click("search"))
+                             .then(() => e.change("search", "BAC5", false))
+                             .then(() => e.keypress("search", 13, false))
+                             .then(() => e.waitForId("save-btn"))
+                             // check searching results
+                             .then(() => e.waitForId("columns-dropdown-id"))
+                             .then(() => e.click("columns-dropdown-id"))
+                             .then(() => e.waitForId("code-cln"))
+                             .then(() => e.click("code-cln"))
+                             .then(() => e.click("columns-dropdown-id"))
+                             .then(() => e.waitForId("bac5-id"))
+                             .then(() => e.waitForId("bac5_bac4-id"))
+                             // save query
+                             .then(() => e.waitForId("save-btn"))
+                             .then(() => e.click("save-btn"))
+                             .then(() => e.waitForId("Name"))
+                             .then(() => e.write("Name", "Search for BAC5", false))
+                             .then(() => e.waitForId("search-query-save-btn"))
+                             .then(() => e.click("search-query-save-btn"))
+                             .then(() => e.sleep(3000)) // wait for saving
+                             // Click on BAC5
+                             .then(() => e.waitForId("bac5-id"))
+                             .then(() => e.click("bac5-id"))
+                             .then(() => e.waitForId("edit-btn"))
+                             // Click on Advanced Search
+                             .then(() => e.waitForId("ADVANCED_SEARCH"))
+                             .then(() => e.click("ADVANCED_SEARCH"))
+                             .then(() => e.waitForId("saved-search-dropdown-id"))
+                             .then(() => e.triggerSelectSelect2("saved-search-dropdown-id", 0, false))
+                             .then(() => e.waitForId("search-btn"))
+                             .then(() => e.click("search-btn"))
+                             // check search results
+                             .then(() => e.waitForId("bac5-id"))
+                             .then(() => e.waitForId("bac5_bac4-id"))
+                             .then(() => TestUtil.testPassed(26))
                              .then(() => resolve());
         });
     }

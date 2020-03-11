@@ -1,8 +1,8 @@
-from .utils import VERBOSE
-from .openbis_object import OpenBisObject 
 from .attribute import AttrHolder
-from .definitions import openbis_definitions, fetch_option, get_type_for_entity, get_method_for_entity
-import json
+from .definitions import openbis_definitions, get_type_for_entity, get_method_for_entity
+from .openbis_object import OpenBisObject
+from .utils import VERBOSE
+
 
 class Vocabulary(
     OpenBisObject,

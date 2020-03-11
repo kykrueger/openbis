@@ -19,10 +19,12 @@ $.extend(GenericTechnology.prototype, ELNLIMSPlugin.prototype, {
 		},
 		"STORAGE_POSITION" : {
 			"SHOW" : false,
+			"SHOW_ON_NAV" : false,
 			"SAMPLE_CHILDREN_DISABLED" : true
 		},
 		"REQUEST" : {
 			"SHOW" : false,
+			"FORCE_TO_SHOW_PARENTS_SECTION" : true,
 			"SAMPLE_PARENTS_TITLE" : "Products from Catalog",
 			"SAMPLE_PARENTS_ANY_TYPE_DISABLED" : true,
 			"SAMPLE_CHILDREN_DISABLED" : true,
@@ -36,6 +38,7 @@ $.extend(GenericTechnology.prototype, ELNLIMSPlugin.prototype, {
 		},
 		"ORDER" : {
 			"SHOW" : false,
+			"FORCE_TO_SHOW_PARENTS_SECTION" : true,
 			"SAMPLE_PARENTS_TITLE" : "Requests",
 			"SAMPLE_PARENTS_ANY_TYPE_DISABLED" : true,
 			"SAMPLE_CHILDREN_DISABLED" : true,
@@ -58,6 +61,7 @@ $.extend(GenericTechnology.prototype, ELNLIMSPlugin.prototype, {
 		},
 		"PRODUCT" : {
 			"SHOW" : false,
+			"FORCE_TO_SHOW_PARENTS_SECTION" : true,
 			"SAMPLE_CHILDREN_DISABLED" : true,
 			"SAMPLE_PARENTS_TITLE" : "Suppliers",
 			"SAMPLE_PARENTS_ANY_TYPE_DISABLED" : true,
@@ -70,7 +74,7 @@ $.extend(GenericTechnology.prototype, ELNLIMSPlugin.prototype, {
 			}]
 		},
 		"EXPERIMENTAL_STEP" : {
-			"SHOW" : false,
+			"SHOW" : true,
 			"SHOW_ON_NAV" : true,
 			"SAMPLE_PARENTS_HINT" : [{
 				"LABEL" : "General protocol",
@@ -79,6 +83,11 @@ $.extend(GenericTechnology.prototype, ELNLIMSPlugin.prototype, {
 				"ANNOTATION_PROPERTIES" : [{"TYPE" : "ANNOTATION.SYSTEM.COMMENTS", "MANDATORY" : false }]
 			}],
 		},
+		"ENTRY" : {
+        			"SHOW" : true,
+        			"SHOW_ON_NAV" : true,
+        			"SAMPLE_PARENTS_HINT" : [],
+        },
 		"GENERAL_PROTOCOL" : {
 			"SHOW" : false,
 			"USE_AS_PROTOCOL" : true,

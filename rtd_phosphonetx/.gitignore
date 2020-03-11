@@ -6,3 +6,6 @@
 /.dynamic_property_evaluator_queue
 /bin
 /build/
+/.idea/
+*.iml
+*.eml

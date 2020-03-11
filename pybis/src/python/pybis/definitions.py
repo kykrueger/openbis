@@ -37,6 +37,14 @@ def openbis_definitions(entity):
             "create": { "@type": "as.dto.experiment.create.ExperimentCreation"},
             "update": { "@type": "as.dto.experiment.update.ExperimentUpdate"},
         },
+        "externalDms": {
+            "attrs_new": "code label address addressType creationId".split(),
+            "attrs_up": "label address".split(),
+            "attrs": "code permId label address addressType urlTemplate".split(),
+            "identifier": "externalDmsId",
+            "create": { "@type": "as.dto.externaldms.create.ExternalDmsCreation"},
+            "update": { "@type": "as.dto.externaldms.update.ExternalDmsUpdate"},
+        },
         "sample": {
             "attrs_new": "code type project parents children container components space experiment tags attachments".split(),
             "attrs_up": "project parents children container components space experiment tags attachments freeze freezeForComponents freezeForChildren freezeForParents freezeForDataSets".split(),
@@ -294,6 +302,9 @@ def openbis_definitions(entity):
             'experimentId': {'permId': {'@type': 'as.dto.experiment.id.ExperimentPermId'}},
             'tagIds': {'code': {'@type': 'as.dto.tag.id.TagCode'}},
         },
+        "dataSetFile": {
+            "search": { "@type": "dss.dto.datasetfile.search.DataSetFileSearchCriteria" }
+        },
     }
     return entities[entity]
 
@@ -302,7 +313,10 @@ get_definition_for_entity = openbis_definitions   # Alias
 
 fetch_option = {
     "space": {"@type": "as.dto.space.fetchoptions.SpaceFetchOptions"},
-    "project": {"@type": "as.dto.project.fetchoptions.ProjectFetchOptions"},
+    "project": {
+        "@type": "as.dto.project.fetchoptions.ProjectFetchOptions",
+        "space": {"@type": "as.dto.space.fetchoptions.SpaceFetchOptions"},
+    },
     "person": {"@type": "as.dto.person.fetchoptions.PersonFetchOptions"},
     "users": {"@type": "as.dto.person.fetchoptions.PersonFetchOptions" },
     "user": {"@type": "as.dto.person.fetchoptions.PersonFetchOptions" },
@@ -453,6 +467,8 @@ fetch_option = {
     "vocabularyTerm": {"@type": "as.dto.vocabulary.fetchoptions.VocabularyTermFetchOptions"},
     "deletedObjects": { "@type": "as.dto.deletion.fetchoptions.DeletedObjectFetchOptions" },
     "deletion": { "@type": "as.dto.deletion.fetchoptions.DeletionFetchOptions" },
+    "externalDms": { "@type": "as.dto.externaldms.fetchoptions.ExternalDmsFetchOptions"},
+    "dataSetFile": { "@type": "dss.dto.datasetfile.fetchoptions.DataSetFileFetchOptions"},
 }
 
 def get_fetchoption_for_entity(entity):
@@ -489,6 +505,19 @@ def get_type_for_entity(entity, action, parents_or_children=''):
                 "@type": "as.dto.{}.{}.{}{}"
                 .format(entity.lower(), action, cap_entity, noun[action])
             }
+
+def get_fetchoptions(entity, including=None):
+    if including is None: including = []
+    including += ['@type']
+    entity = entity[0].lower() + entity[1:]   # make first character lowercase
+    fo = {}
+    for inc in including:
+        try:
+            item = fetch_option[entity][inc]
+            fo[inc] = item
+        except KeyError as err:
+            pass
+    return fo
 
 
 def get_method_for_entity(entity, action):

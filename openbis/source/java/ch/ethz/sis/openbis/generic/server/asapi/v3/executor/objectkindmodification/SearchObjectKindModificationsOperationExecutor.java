@@ -19,6 +19,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.objectkindmodificat
 import java.util.List;
 import java.util.Map;
 
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -71,6 +72,11 @@ public class SearchObjectKindModificationsOperationExecutor extends
     protected SearchObjectsOperationResult<ObjectKindModification> getOperationResult(SearchResult<ObjectKindModification> searchResult)
     {
         return new SearchObjectKindModificationsOperationResult(searchResult);
+    }
+
+    @Override
+    protected ISearchManager<ObjectKindModificationSearchCriteria, ObjectKindModification, ObjectKindModification> getSearchManager() {
+        throw new RuntimeException("This method is not implemented yet.");
     }
 
 }
