@@ -1,0 +1,101 @@
+/*
+ * Copyright 2011 ETH Zuerich, CISD
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
+
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.*;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.Tag;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.search.TagSearchCriteria;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+/**
+ * Manages detailed search with tag search criteria.
+ *
+ * @author Viktor Kovtun
+ */
+public class TagSearchManager extends AbstractSearchManager<TagSearchCriteria, Tag, Long>
+{
+
+    public TagSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
+            final IID2PETranslator<Long> idsTranslator)
+    {
+        super(searchDAO, authProvider, idsTranslator);
+    }
+
+    @Override
+    protected Set<Long> doFilterIDsByUserRights(final Set<Long> ids, final AuthorisationInformation authorisationInformation)
+    {
+        return ids;
+    }
+
+    private NameSearchCriteria convertToNameSearchCriterion(final AbstractFieldSearchCriteria<AbstractStringValue> criterion)
+    {
+        return convertToOtherCriterion(criterion, NameSearchCriteria::new);
+    }
+
+    @Override
+    public Set<Long> searchForIDs(final Long userId, final TagSearchCriteria criteria, final SortOptions<Tag> sortOptions,
+            final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
+    {
+        // Replacing perm ID and code search criteria with name search criteria, because for tags perm ID and code are equivalent to name
+        final Collection<ISearchCriteria> newCriteria = criteria.getCriteria().stream().map(searchCriterion ->
+        {
+            if (searchCriterion instanceof PermIdSearchCriteria)
+            {
+                return convertToNameSearchCriterion((PermIdSearchCriteria) searchCriterion);
+            } else if (searchCriterion instanceof CodeSearchCriteria)
+            {
+                return convertToNameSearchCriterion((CodeSearchCriteria) searchCriterion);
+            } else
+            {
+                return searchCriterion;
+            }
+        }).collect(Collectors.toList());
+
+        final Set<Long> mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId,
+                new DummyCompositeSearchCriterion(newCriteria, criteria.getOperator()), TableMapper.TAG, idsColumnName);
+
+        if (!containsValues(mainCriteriaIntermediateResults))
+        {
+            return Collections.emptySet();
+        }
+
+        final Set<Long> resultAfterFiltering = getAuthProvider().getTagsOfUser(mainCriteriaIntermediateResults, userId);
+
+        if (!containsValues(resultAfterFiltering))
+        {
+            return Collections.emptySet();
+        }
+
+        return filterIDsByUserRights(userId, resultAfterFiltering);
+    }
+
+    @Override
+    public Set<Long> sortIDs(final Set<Long> filteredIDs, final SortOptions<Tag> sortOptions) {
+        return doSortIDs(filteredIDs, sortOptions, TableMapper.TAG);
+    }
+
+}

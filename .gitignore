@@ -13,3 +13,5 @@ openbis/source/core-plugins
 **/.shredder
 ivy-repository
 **/.idea
+*.iml
+*.eml

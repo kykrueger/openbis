@@ -16,9 +16,6 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.material;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchObjectsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchObjectsOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
@@ -27,10 +24,15 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.fetchoptions.MaterialFe
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.SearchMaterialsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.SearchMaterialsOperationResult;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.ISearchObjectExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.SearchObjectsOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.MaterialSearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.ITranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.material.IMaterialTranslator;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  * @author pkupczyk
@@ -45,6 +47,9 @@ public class SearchMaterialsOperationExecutor extends SearchObjectsOperationExec
 
     @Autowired
     private IMaterialTranslator translator;
+
+    @Autowired
+    private MaterialSearchManager materialSearchManager;
 
     @Override
     protected Class<? extends SearchObjectsOperation<MaterialSearchCriteria, MaterialFetchOptions>> getOperationClass()
@@ -65,9 +70,20 @@ public class SearchMaterialsOperationExecutor extends SearchObjectsOperationExec
     }
 
     @Override
+    protected ISearchManager<MaterialSearchCriteria, Material, Long> getSearchManager()
+    {
+        return materialSearchManager;
+    }
+
+    @Override
     protected SearchObjectsOperationResult<Material> getOperationResult(SearchResult<Material> searchResult)
     {
         return new SearchMaterialsOperationResult(searchResult);
     }
 
+    @Override
+    protected SearchObjectsOperationResult<Material> doExecute(IOperationContext context, SearchObjectsOperation<MaterialSearchCriteria, MaterialFetchOptions> operation)
+    {
+        return doExecuteNewSearch(context, operation);
+    }
 }

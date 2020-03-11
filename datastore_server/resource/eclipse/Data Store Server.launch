@@ -7,8 +7,9 @@
 <listEntry value="1"/>
 </listAttribute>
 <booleanAttribute key="org.eclipse.debug.core.appendEnvironmentVariables" value="true"/>
+<booleanAttribute key="org.eclipse.jdt.launching.ATTR_USE_START_ON_FIRST_THREAD" value="true"/>
+<stringAttribute key="org.eclipse.jdt.launching.CLASSPATH_PROVIDER" value="org.eclipse.buildship.core.classpathprovider"/>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="ch.systemsx.cisd.openbis.dss.generic.DataStoreServer"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="datastore_server"/>
-<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-ea&#10;-Dpython.path=../libraries/jython/jython-lib"/>
 <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-ea&#10;-Dpython.path=../libraries/jython/jython-lib&#10;-Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.StrErrLog"/>
 </launchConfiguration>

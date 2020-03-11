@@ -72,7 +72,7 @@ public class SearchLinkDataSetTest extends AbstractLinkDataSetTest
     void searchWithPathOfCopy()
     {
         DataSetSearchCriteria dc = new DataSetSearchCriteria();
-        dc.withLinkedData().withCopy().withPath().thatEquals("/path/to/20120628092259000-41");
+        dc.withLinkedData().withCopy().withPath().thatEquals("path/to/20120628092259000-41");
 
         SearchResult<DataSet> result = searchWith(dc);
 

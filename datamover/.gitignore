@@ -4,3 +4,6 @@
 /.error
 /bin
 /build/
+/.idea/
+*.iml
+*.eml

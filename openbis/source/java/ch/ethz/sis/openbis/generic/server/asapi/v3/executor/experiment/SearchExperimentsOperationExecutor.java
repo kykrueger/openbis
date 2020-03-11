@@ -16,9 +16,6 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.experiment;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchObjectsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchObjectsOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
@@ -27,10 +24,15 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.Experime
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.SearchExperimentsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.SearchExperimentsOperationResult;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.ISearchObjectExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.SearchObjectsOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ExperimentSearchManager;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.ITranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.experiment.IExperimentTranslator;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  * @author pkupczyk
@@ -46,6 +48,9 @@ public class SearchExperimentsOperationExecutor
 
     @Autowired
     private IExperimentTranslator translator;
+
+    @Autowired
+    private ExperimentSearchManager experimentSearchManager;
 
     @Override
     protected Class<? extends SearchObjectsOperation<ExperimentSearchCriteria, ExperimentFetchOptions>> getOperationClass()
@@ -66,9 +71,20 @@ public class SearchExperimentsOperationExecutor
     }
 
     @Override
+    protected ISearchManager<ExperimentSearchCriteria, Experiment, Long> getSearchManager()
+    {
+        return experimentSearchManager;
+    }
+
+    @Override
     protected SearchObjectsOperationResult<Experiment> getOperationResult(SearchResult<Experiment> searchResult)
     {
         return new SearchExperimentsOperationResult(searchResult);
     }
 
+    @Override
+    protected SearchObjectsOperationResult<Experiment> doExecute(IOperationContext context, SearchObjectsOperation<ExperimentSearchCriteria, ExperimentFetchOptions> operation)
+    {
+        return doExecuteNewSearch(context, operation);
+    }
 }

@@ -16,6 +16,7 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.property;
 
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -70,6 +71,11 @@ public class SearchPropertyTypesOperationExecutor extends
     protected SearchObjectsOperationResult<PropertyType> getOperationResult(SearchResult<PropertyType> searchResult)
     {
         return new SearchPropertyTypesOperationResult(searchResult);
+    }
+
+    @Override
+    protected ISearchManager<PropertyTypeSearchCriteria, PropertyType, Long> getSearchManager() {
+        throw new RuntimeException("This method is not implemented yet.");
     }
 
 }

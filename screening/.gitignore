@@ -9,3 +9,6 @@
 /log-registrations
 /.activity
 /build/
+/.idea/
+*.iml
+*.eml

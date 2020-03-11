@@ -20,13 +20,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.operation.IOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.operation.IOperationResult;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.systemsx.cisd.openbis.generic.server.ConcurrentOperation;
 import ch.systemsx.cisd.openbis.generic.server.IConcurrentOperationLimiter;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author pkupczyk
@@ -49,7 +48,7 @@ public abstract class OperationExecutor<OPERATION extends IOperation, RESULT ext
             if (operation != null && operationClass.isAssignableFrom(operation.getClass()))
             {
                 OPERATION theOperation = (OPERATION) operation;
-                RESULT result = null;
+                RESULT result;
 
                 if (context.isAsync())
                 {

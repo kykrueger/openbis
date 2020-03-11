@@ -17,6 +17,7 @@
 package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.testng.annotations.Test;
@@ -63,22 +64,12 @@ public class CreateMaterialTypeTest extends CreateEntityTypeTest<MaterialTypeCre
     @Override
     protected MaterialType getType(String sessionToken, String code)
     {
-        MaterialTypeSearchCriteria criteria = new MaterialTypeSearchCriteria();
-        criteria.withId().thatEquals(new EntityTypePermId(code));
-
-        MaterialTypeFetchOptions fo = new MaterialTypeFetchOptions();
+        final MaterialTypeFetchOptions fo = new MaterialTypeFetchOptions();
         fo.withPropertyAssignments().withPropertyType();
         fo.withPropertyAssignments().withRegistrator();
 
-        SearchResult<MaterialType> result = v3api.searchMaterialTypes(sessionToken, criteria, fo);
-
-        if (result.getObjects().size() > 0)
-        {
-            return result.getObjects().get(0);
-        } else
-        {
-            return null;
-        }
+        final EntityTypePermId permId = new EntityTypePermId(code);
+        return v3api.getMaterialTypes(sessionToken, Collections.singletonList(permId), fo).get(permId);
     }
 
     @Override

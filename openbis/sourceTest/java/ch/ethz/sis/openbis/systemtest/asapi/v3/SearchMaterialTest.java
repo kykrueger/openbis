@@ -95,15 +95,6 @@ public class SearchMaterialTest extends AbstractTest
     }
 
     @Test
-    public void testSearchWithTypeWithCode()
-    {
-        MaterialSearchCriteria criteria = new MaterialSearchCriteria();
-        criteria.withType().withCode().thatEquals("BACTERIUM");
-        testSearch(TEST_USER, criteria, new MaterialPermId("BACTERIUM1", "BACTERIUM"), new MaterialPermId("BACTERIUM2", "BACTERIUM"),
-                new MaterialPermId("BACTERIUM-X", "BACTERIUM"), new MaterialPermId("BACTERIUM-Y", "BACTERIUM"));
-    }
-
-    @Test
     public void testSearchWithTypeWithPermId()
     {
         MaterialSearchCriteria criteria = new MaterialSearchCriteria();
@@ -116,15 +107,15 @@ public class SearchMaterialTest extends AbstractTest
     public void testSearchWithPropertyThatEquals()
     {
         MaterialSearchCriteria criteria = new MaterialSearchCriteria();
-        criteria.withProperty("DESCRIPTION").thatEquals("adenovirus");
-        testSearch(TEST_USER, criteria, new MaterialPermId("AD3", "VIRUS"), new MaterialPermId("AD5", "VIRUS"));
+        criteria.withProperty("DESCRIPTION").thatEquals("adenovirus 5");
+        testSearch(TEST_USER, criteria, new MaterialPermId("AD5", "VIRUS"));
 
         criteria = new MaterialSearchCriteria();
-        criteria.withProperty("DESCRIPTION").thatEquals("adenoviru");
+        criteria.withProperty("DESCRIPTION").thatEquals("adenovirus");
         testSearch(TEST_USER, criteria, 0);
 
         criteria = new MaterialSearchCriteria();
-        criteria.withProperty("DESCRIPTION").thatEquals("denoviru");
+        criteria.withProperty("DESCRIPTION").thatEquals("adenoviru");
         testSearch(TEST_USER, criteria, 0);
 
         criteria = new MaterialSearchCriteria();
@@ -156,8 +147,8 @@ public class SearchMaterialTest extends AbstractTest
     public void testSearchWithPropertyThatEndsWith()
     {
         MaterialSearchCriteria criteria = new MaterialSearchCriteria();
-        criteria.withProperty("DESCRIPTION").thatEndsWith("adenovirus");
-        testSearch(TEST_USER, criteria, new MaterialPermId("AD3", "VIRUS"), new MaterialPermId("AD5", "VIRUS"));
+        criteria.withProperty("DESCRIPTION").thatEndsWith("adenovirus 3");
+        testSearch(TEST_USER, criteria, new MaterialPermId("AD3", "VIRUS"));
 
         criteria = new MaterialSearchCriteria();
         criteria.withProperty("DESCRIPTION").thatEndsWith("adenoviru");
@@ -168,8 +159,8 @@ public class SearchMaterialTest extends AbstractTest
         testSearch(TEST_USER, criteria, 0);
 
         criteria = new MaterialSearchCriteria();
-        criteria.withProperty("DESCRIPTION").thatEndsWith("denovirus");
-        testSearch(TEST_USER, criteria, new MaterialPermId("AD3", "VIRUS"), new MaterialPermId("AD5", "VIRUS"));
+        criteria.withProperty("DESCRIPTION").thatEndsWith("denovirus 5");
+        testSearch(TEST_USER, criteria, new MaterialPermId("AD5", "VIRUS"));
     }
 
     @Test
@@ -397,29 +388,6 @@ public class SearchMaterialTest extends AbstractTest
         List<Material> materials2 = v3api.searchMaterials(sessionToken, criteria, fo).getObjects();
         assertMaterialPermIds(materials2, new MaterialPermId("MYGENE2", "GENE"), new MaterialPermId("MYGENE1", "GENE"),
                 new MaterialPermId("FLU", "VIRUS"));
-
-        v3api.logout(sessionToken);
-    }
-
-    @Test
-    public void testSearchWithSortingByCodeScore()
-    {
-        MaterialSearchCriteria criteria = new MaterialSearchCriteria();
-        criteria.withOrOperator();
-        criteria.withCode().thatContains("MY");
-        criteria.withCode().thatContains("GENE1");
-
-        String sessionToken = v3api.login(TEST_USER, PASSWORD);
-
-        MaterialFetchOptions fo = new MaterialFetchOptions();
-
-        fo.sortBy().fetchedFieldsScore().asc();
-        List<Material> materials1 = v3api.searchMaterials(sessionToken, criteria, fo).getObjects();
-        assertTrue(materials1.get(0).getCode().equals("MYGENE1"));
-
-        fo.sortBy().fetchedFieldsScore().desc();
-        List<Material> materials2 = v3api.searchMaterials(sessionToken, criteria, fo).getObjects();
-        assertTrue(materials2.get(materials2.size() - 1).getCode().equals("MYGENE1"));
 
         v3api.logout(sessionToken);
     }

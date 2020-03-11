@@ -4,3 +4,6 @@
 /.shredder
 /bin
 /build/
+/.idea/
+*.iml
+*.eml

@@ -1,20 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:tx="http://www.springframework.org/schema/tx"
-	xmlns:plugins="http://www.springframework.org/schema/context"
-	xmlns:aop="http://www.springframework.org/schema/aop"
-	xmlns:cache="http://www.springframework.org/schema/cache"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:tx="http://www.springframework.org/schema/tx"
+	   xmlns:plugins="http://www.springframework.org/schema/context"
+	   xmlns:aop="http://www.springframework.org/schema/aop"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans
 			http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
 			http://www.springframework.org/schema/tx
 			http://www.springframework.org/schema/tx/spring-tx-2.5.xsd
             http://www.springframework.org/schema/context
             http://www.springframework.org/schema/context/spring-context-2.5.xsd
             http://www.springframework.org/schema/aop 
-            http://www.springframework.org/schema/aop/spring-aop.xsd
-            http://www.springframework.org/schema/cache
-            http://www.springframework.org/schema/cache/spring-cache.xsd">
+            http://www.springframework.org/schema/aop/spring-aop.xsd">
 
 	<import resource="hibernateContext.xml" />
 	<import resource="dbConfigurationContext.xml" />
@@ -194,6 +191,190 @@
 		class="ch.systemsx.cisd.openbis.generic.server.dataaccess.DataStoreServerBasedDataSourceProvider">
 		<constructor-arg ref="dao-factory" />
 		<constructor-arg value="etc/dss-datasource-mapping" />
+	</bean>
+
+	<bean id="current-session" factory-bean="hibernate-session-factory" factory-method="openSession"/>
+
+	<!--suppress SpringBeanConstructorArgInspection, SpringXmlModelInspection -->
+	<bean id="connection" factory-bean="current-session" factory-method="connection"/>
+
+	<bean id="sql-executor" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.HibernateSQLExecutor">
+		<property name="connection">
+			<!--suppress SpringBeanConstructorArgInspection, SpringXmlModelInspection -->
+			<bean factory-bean="connection" factory-method="getInnermostDelegateInternal"/>
+		</property>
+	</bean>
+
+	<bean id="postgres-search-dao" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.PostgresSearchDAO">
+		<constructor-arg ref="sql-executor"/>
+	</bean>
+
+	<bean id="information-provider-dao" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.PostgresAuthorisationInformationProviderDAO">
+		<constructor-arg ref="sql-executor"/>
+	</bean>
+
+	<bean id="identity-translator" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IdentityTranslator">
+	</bean>
+
+	<bean id="sample-search-manager" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SampleSearchManager" lazy-init="true">
+		<constructor-arg ref="postgres-search-dao"/>
+		<constructor-arg ref="information-provider-dao"/>
+		<constructor-arg ref="identity-translator"/>
+	</bean>
+
+	<bean id="sample-container-search-manager" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SampleContainerSearchManager"
+		  lazy-init="true">
+		<constructor-arg ref="postgres-search-dao"/>
+		<constructor-arg ref="information-provider-dao"/>
+		<constructor-arg ref="identity-translator"/>
+	</bean>
+
+	<bean id="experiment-search-manager" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ExperimentSearchManager" lazy-init="true">
+		<constructor-arg ref="postgres-search-dao"/>
+		<constructor-arg ref="information-provider-dao"/>
+		<constructor-arg ref="identity-translator"/>
+	</bean>
+
+	<bean id="project-search-manager" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ProjectSearchManager" lazy-init="true">
+		<constructor-arg ref="postgres-search-dao"/>
+		<constructor-arg ref="information-provider-dao"/>
+		<constructor-arg ref="identity-translator"/>
+	</bean>
+
+	<bean id="space-search-manager" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SpaceSearchManager" lazy-init="true">
+		<constructor-arg ref="postgres-search-dao"/>
+		<constructor-arg ref="information-provider-dao"/>
+		<constructor-arg ref="identity-translator"/>
+	</bean>
+
+	<bean id="content-copy-search-manager" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ContentCopySearchManager" lazy-init="true">
+		<constructor-arg ref="postgres-search-dao"/>
+		<constructor-arg ref="information-provider-dao"/>
+		<constructor-arg ref="identity-translator"/>
+	</bean>
+
+	<bean id="data-set-search-manager" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DataSetSearchManager" lazy-init="true">
+		<constructor-arg ref="postgres-search-dao"/>
+		<constructor-arg ref="information-provider-dao"/>
+		<constructor-arg ref="identity-translator"/>
+	</bean>
+
+	<bean id="experiment-type-search-manager" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ExperimentTypeSearchManager"
+          lazy-init="true">
+		<constructor-arg ref="postgres-search-dao"/>
+		<constructor-arg ref="information-provider-dao"/>
+		<constructor-arg ref="identity-translator"/>
+	</bean>
+
+	<bean id="sample-type-search-manager" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SampleTypeSearchManager" lazy-init="true">
+		<constructor-arg ref="postgres-search-dao"/>
+		<constructor-arg ref="information-provider-dao"/>
+		<constructor-arg ref="identity-translator"/>
+	</bean>
+
+	<bean id="data-set-type-search-manager" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DataSetTypeSearchManager"
+		  lazy-init="true">
+		<constructor-arg ref="postgres-search-dao"/>
+		<constructor-arg ref="information-provider-dao"/>
+		<constructor-arg ref="identity-translator"/>
+	</bean>
+
+	<bean id="person-search-manager" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.PersonSearchManager" lazy-init="true">
+		<constructor-arg ref="postgres-search-dao"/>
+		<constructor-arg ref="information-provider-dao"/>
+		<constructor-arg ref="identity-translator"/>
+	</bean>
+
+	<bean id="tag-search-manager" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.TagSearchManager" lazy-init="true">
+		<constructor-arg ref="postgres-search-dao"/>
+		<constructor-arg ref="information-provider-dao"/>
+		<constructor-arg ref="identity-translator"/>
+	</bean>
+
+	<bean id="semantic-annotation-search-manager" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SemanticAnnotationSearchManager"
+		  lazy-init="true">
+		<constructor-arg ref="postgres-search-dao"/>
+		<constructor-arg ref="information-provider-dao"/>
+		<constructor-arg ref="identity-translator"/>
+	</bean>
+
+	<bean id="property-assignment-search-manager" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.PropertyAssignmentSearchManager"
+		  lazy-init="true">
+		<constructor-arg ref="postgres-search-dao"/>
+		<constructor-arg ref="information-provider-dao"/>
+		<constructor-arg ref="identity-translator"/>
+		<constructor-arg>
+			<bean class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.PropertyAssignmentSearchDAO">
+				<constructor-arg ref="sql-executor"/>
+			</bean>
+		</constructor-arg>
+	</bean>
+
+	<bean id="property-type-search-manager" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.PropertyTypeSearchManager"
+		  lazy-init="true">
+		<constructor-arg ref="postgres-search-dao"/>
+		<constructor-arg ref="information-provider-dao"/>
+		<constructor-arg ref="identity-translator"/>
+	</bean>
+
+	<bean id="linked-data-set-kind-search-manager" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.LinkedDataSetKindSearchManager"
+		  lazy-init="true">
+		<constructor-arg ref="postgres-search-dao"/>
+		<constructor-arg ref="information-provider-dao"/>
+		<constructor-arg ref="identity-translator"/>
+	</bean>
+
+	<bean id="physical-data-set-kind-search-manager" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.PhysicalDataSetKindSearchManager"
+		  lazy-init="true">
+		<constructor-arg ref="postgres-search-dao"/>
+		<constructor-arg ref="information-provider-dao"/>
+		<constructor-arg ref="identity-translator"/>
+	</bean>
+
+	<bean id="external-dms-search-manager" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ExternalDmsSearchManager"
+		  lazy-init="true">
+		<constructor-arg ref="postgres-search-dao"/>
+		<constructor-arg ref="information-provider-dao"/>
+		<constructor-arg ref="identity-translator"/>
+	</bean>
+
+	<bean id="ffty-search-manager" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.FileFormatTypeSearchManager"
+		  lazy-init="true">
+		<constructor-arg ref="postgres-search-dao"/>
+		<constructor-arg ref="information-provider-dao"/>
+		<constructor-arg ref="identity-translator"/>
+	</bean>
+
+	<bean id="locator-type-search-manager" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.LocatorTypeSearchManager"
+		  lazy-init="true">
+		<constructor-arg ref="postgres-search-dao"/>
+		<constructor-arg ref="information-provider-dao"/>
+		<constructor-arg ref="identity-translator"/>
+	</bean>
+
+	<bean id="storage-format-search-manager" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.StorageFormatSearchManager"
+		  lazy-init="true">
+		<constructor-arg ref="postgres-search-dao"/>
+		<constructor-arg ref="information-provider-dao"/>
+		<constructor-arg ref="identity-translator"/>
+	</bean>
+
+	<bean id="material-search-manager" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.MaterialSearchManager" lazy-init="true">
+		<constructor-arg ref="postgres-search-dao"/>
+		<constructor-arg ref="information-provider-dao"/>
+		<constructor-arg ref="identity-translator"/>
+	</bean>
+
+	<bean id="material-type-search-manager" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.MaterialTypeSearchManager" lazy-init="true">
+		<constructor-arg ref="postgres-search-dao"/>
+		<constructor-arg ref="information-provider-dao"/>
+		<constructor-arg ref="identity-translator"/>
+	</bean>
+
+	<bean id="entity-type-search-manager" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.EntityTypeSearchManager" lazy-init="true">
+		<constructor-arg ref="postgres-search-dao"/>
+		<constructor-arg ref="information-provider-dao"/>
+		<constructor-arg ref="identity-translator"/>
 	</bean>
 
 	<!-- // Common -->

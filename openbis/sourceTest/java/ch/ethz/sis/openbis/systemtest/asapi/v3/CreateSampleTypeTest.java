@@ -19,6 +19,7 @@ package ch.ethz.sis.openbis.systemtest.asapi.v3;
 import static org.testng.Assert.assertEquals;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.testng.annotations.Test;
@@ -71,22 +72,12 @@ public class CreateSampleTypeTest extends CreateEntityTypeTest<SampleTypeCreatio
     @Override
     protected SampleType getType(String sessionToken, String code)
     {
-        SampleTypeSearchCriteria criteria = new SampleTypeSearchCriteria();
-        criteria.withId().thatEquals(new EntityTypePermId(code));
-
-        SampleTypeFetchOptions fo = new SampleTypeFetchOptions();
+        final SampleTypeFetchOptions fo = new SampleTypeFetchOptions();
         fo.withPropertyAssignments().withPropertyType();
         fo.withPropertyAssignments().withRegistrator();
 
-        SearchResult<SampleType> result = v3api.searchSampleTypes(sessionToken, criteria, fo);
-
-        if (result.getObjects().size() > 0)
-        {
-            return result.getObjects().get(0);
-        } else
-        {
-            return null;
-        }
+        final EntityTypePermId permId = new EntityTypePermId(code);
+        return v3api.getSampleTypes(sessionToken, Collections.singletonList(permId), fo).get(permId);
     }
 
     @Override

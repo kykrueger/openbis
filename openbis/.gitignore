@@ -11,3 +11,6 @@
 /build
 /bin
 sourceTest/lucene/
+.idea/
+*.iml
+*.eml

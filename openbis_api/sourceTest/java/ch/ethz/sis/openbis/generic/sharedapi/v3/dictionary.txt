@@ -107,6 +107,7 @@ DataSetFileDownloadReader
 DataSetFilePermId
 DataSetFileSearchCriteria
 DataSetKind
+DataSetKindSearchCriteria
 DataSetParentsSearchCriteria
 DataSetPermId
 DataSetRelationType
