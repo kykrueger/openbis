@@ -19,7 +19,6 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentSortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
@@ -28,8 +27,6 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETransl
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 
 import java.util.Set;
-
-import static ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.EntityWithPropertiesSortOptions.FETCHED_FIELDS_SCORE;
 
 /**
  * Manages detailed search with complex experiment search criteria.
@@ -59,9 +56,7 @@ public class ExperimentSearchManager extends AbstractSearchManager<ExperimentSea
     }
 
     @Override
-    public Set<Long> sortIDs(final Set<Long> filteredIDs, final SortOptions<Experiment> sortOptions)
-    {
-        sortOptions.getSortings().removeIf((sorting) -> FETCHED_FIELDS_SCORE.equals(sorting.getField()));
+    public Set<Long> sortIDs(final Set<Long> filteredIDs, final SortOptions<Experiment> sortOptions) {
         return doSortIDs(filteredIDs, sortOptions, TableMapper.EXPERIMENT);
     }
 

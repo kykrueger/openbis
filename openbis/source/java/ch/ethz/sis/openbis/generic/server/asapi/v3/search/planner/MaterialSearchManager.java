@@ -36,8 +36,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.EntityWithPropertiesSortOptions.FETCHED_FIELDS_SCORE;
-
 /**
  * Manages detailed search with material search criteria.
  * 
@@ -94,7 +92,6 @@ public class MaterialSearchManager extends AbstractCompositeEntitySearchManager<
 
     @Override
     public Set<Long> sortIDs(final Set<Long> filteredIDs, final SortOptions<Material> sortOptions) {
-        sortOptions.getSortings().removeIf((sorting) -> FETCHED_FIELDS_SCORE.equals(sorting.getField()));
         return doSortIDs(filteredIDs, sortOptions, TableMapper.MATERIAL);
     }
 
