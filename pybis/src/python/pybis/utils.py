@@ -48,7 +48,10 @@ def parse_jackson(input_json):
         if isinstance(graph, list):
             for i, list_item in enumerate(graph):
                 if isinstance(list_item, int):
-                    graph[i] = found[list_item]
+                    try:
+                        graph[i] = found[list_item]
+                    except KeyError:
+                        pass
                 else:
                     deref_graph(list_item)
         elif isinstance(graph, dict) and len(graph) > 0:
