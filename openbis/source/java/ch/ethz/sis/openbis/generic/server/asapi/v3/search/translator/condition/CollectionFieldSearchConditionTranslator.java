@@ -24,16 +24,10 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CollectionFieldSea
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.Attributes;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinInformation;
 
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.IN;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.LP;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.PERIOD;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.QU;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.RP;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SELECT;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SP;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.UNNEST;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.*;
 
 public class CollectionFieldSearchConditionTranslator implements IConditionTranslator<CollectionFieldSearchCriteria<?>>
 {
@@ -54,11 +48,14 @@ public class CollectionFieldSearchConditionTranslator implements IConditionTrans
                 final Object fieldName = Attributes.getColumnName(criterion.getFieldName(), tableMapper.getEntitiesTable(), criterion.getFieldName());
                 final Collection<?> fieldValue = criterion.getFieldValue();
 
-                sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(fieldName).append(SP).append(IN).append(SP).append(LP).
-                        append(SELECT).append(SP).append(UNNEST).append(LP).append(QU).append(RP).
-                        append(RP);
-
-                args.add(fieldValue.toArray());
+                if (fieldValue.isEmpty()) {
+                    sqlBuilder.append(FALSE);
+                } else {
+                    sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(fieldName).append(SP).append(IN).append(SP).append(LP).
+                            append(SELECT).append(SP).append(UNNEST).append(LP).append(QU).append(RP).
+                            append(RP);
+                    args.add(fieldValue.toArray());
+                }
                 break;
             }
 
