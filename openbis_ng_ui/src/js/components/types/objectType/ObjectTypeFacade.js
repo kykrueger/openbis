@@ -37,7 +37,7 @@ export default class ObjectTypeFacade {
 
     function createPropertyUsedOperation(propertyTypeCode) {
       const criteria = new dto.SampleSearchCriteria()
-      criteria.withProperty(propertyTypeCode).thatEquals('*')
+      criteria.withProperty(propertyTypeCode)
 
       const fo = new dto.SampleFetchOptions()
       fo.count(0)
