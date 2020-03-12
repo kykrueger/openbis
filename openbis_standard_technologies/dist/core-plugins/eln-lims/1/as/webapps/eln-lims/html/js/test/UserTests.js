@@ -51,6 +51,8 @@ var UserTests = new function() {
                  .then(() => this.search())
                  //27. Supplier Form
                  .then(() => this.supplierForm())
+                 //28. Product Form
+                 .then(() => this.productForm())
                  .catch(error => { console.log(error) });
     }
 
@@ -846,6 +848,58 @@ var UserTests = new function() {
                              .then(() => e.write("SUPPLIERCUSTOMER_NUMBER", langCode + "001"))
                              .then(() => e.waitForId("SUPPLIERPREFERRED_ORDER_METHOD"))
                              .then(() => e.changeSelect2("SUPPLIERPREFERRED_ORDER_METHOD", "MANUAL"))
+                             .then(() => e.waitForId("save-btn"))
+                             .then(() => e.click("save-btn"))
+                             .then(() => e.waitForId("edit-btn")) // wait for saving
+                             .then(() => resolve());
+        });
+    }
+
+    this.productForm = function() {
+        return new Promise(function executor(resolve, reject) {
+            var e = EventUtil;
+
+            Promise.resolve().then(() => e.waitForId("STOCK_CATALOG"))
+                             // path to Supplier Collection
+                             .then(() => e.click("STOCK_CATALOG"))
+                             .then(() => e.waitForId("PRODUCTS"))
+                             .then(() => e.click("PRODUCTS"))
+                             //create English product form
+                             .then(() => UserTests.createProductForm("EN", "EUR", "sup1-column-id"))
+                             //create German product form
+                             .then(() => UserTests.createProductForm("DE", "EUR", "sup2-column-id"))
+                             .then(() => resolve());
+        });
+    }
+
+    this.createProductForm = function(langCode, currency, supId) {
+        return new Promise(function executor(resolve, reject) {
+            var e = EventUtil;
+
+            Promise.resolve().then(() => e.waitForId("_STOCK_CATALOG_PRODUCTS_PRODUCT_COLLECTION"))
+                             .then(() => e.click("_STOCK_CATALOG_PRODUCTS_PRODUCT_COLLECTION"))
+                             .then(() => e.waitForId("create-btn"))
+                             .then(() => e.click("create-btn"))
+                             .then(() => e.waitForId("save-btn"))
+                             .then(() => e.waitForFill("codeId"))
+                             .then(() => e.waitForId("NAME"))
+                             .then(() => e.write("NAME", "Product " + langCode + " Name"))
+                             .then(() => e.waitForId("PRODUCTCATALOG_NUM"))
+                             .then(() => e.write("PRODUCTCATALOG_NUM", "CC " + langCode))
+                             .then(() => e.waitForId("PRODUCTPRICE_PER_UNIT"))
+                             .then(() => e.write("PRODUCTPRICE_PER_UNIT", 2))
+                             .then(() => e.waitForId("PRODUCTCURRENCY"))
+                             .then(() => e.changeSelect2("PRODUCTCURRENCY", currency))
+                             .then(() => e.waitForId("save-btn"))
+                             .then(() => e.click("save-btn"))
+                             // Error: Currently only have 0 of the 1 required SUPPLIER.
+                             .then(() => e.waitForId("jNotifyDismiss"))
+                             .then(() => e.click("jNotifyDismiss"))
+                             .then(() => e.waitForId("plus-btn-suppliers"))
+                             .then(() => e.click("plus-btn-suppliers"))
+                             .then(() => e.waitForId(supId))
+                             .then(() => e.click(supId))
+                             .then(() => e.sleep(2000)) // wait for form's update
                              .then(() => e.waitForId("save-btn"))
                              .then(() => e.click("save-btn"))
                              .then(() => e.waitForId("edit-btn")) // wait for saving
