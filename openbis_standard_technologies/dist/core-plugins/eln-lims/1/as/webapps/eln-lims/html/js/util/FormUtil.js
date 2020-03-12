@@ -789,15 +789,13 @@ var FormUtil = new function() {
 	// Form Fields
 	//
 	this._getBooleanField = function(id, alt, checked) {
-	    if (id) {
-	        if(id.charAt(0) === '$') {
-	            id = id.substring(1);
-	        }
-	    }
-		var attr = {'type' : 'checkbox', 'id' : id, 'alt' : alt, 'placeholder' : alt };
+		var attr = {'type' : 'checkbox', 'alt' : alt, 'placeholder' : alt };
 		if(checked) {
 			attr['checked'] = '';
 		}
+		if (id) {
+            attr['id'] = this.prepareId(id);
+        }
 		return $('<div>', {'class' : 'checkbox'}).append($('<label>').append($('<input>', attr)));
 	}
 	
@@ -807,7 +805,7 @@ var FormUtil = new function() {
 	
 	this._getDropDownFieldForVocabulary = function(code, terms, alt, isRequired) {
 		var $component = $("<select>", {'placeholder' : alt, 'class' : 'form-control'});
-		$component.attr('id', code);
+		$component.attr('id', this.prepareId(code));
 		
 		if (isRequired) {
 			$component.attr('required', '');
@@ -1010,6 +1008,7 @@ var FormUtil = new function() {
 	}
 
 	this.addOptionsToToolbar = function(toolbarModel, dropdownOptionsModel, hideShowOptionsModel, namespace, title) {
+	    var _this = this;
 		if(!title) {
 			title = "More ... ";
 		}
@@ -1034,7 +1033,7 @@ var FormUtil = new function() {
 			} else {
 				var label = option.label;
 				var title = option.title ? option.title : label;
-				var id = title.split(" ").join("-").toLowerCase();
+				var id = _this.prepareId(title).toLowerCase();
 				var $dropdownElement = $("<li>", { 'role' : 'presentation' }).append($("<a>", {'title' : title, 'id' : id}).append(label));
 				$dropdownElement.click(option.action);
 				$dropdownOptionsMenuList.append($dropdownElement);
@@ -1064,7 +1063,7 @@ var FormUtil = new function() {
 				var $section = $(option.section);
 				$section.toggle(shown);
 				var $label = $("<span>").append((shown ? "Hide " : "Show ") + option.label);
-				var id = 'options-menu-btn-' + option.label.split(" ").join("-").toLowerCase();
+				var id = 'options-menu-btn-' + _this.prepareId(option.label).toLowerCase();
 				var $dropdownElement = $("<li>", { 'role' : 'presentation' }).append($("<a>", { 'id' : id }).append($label));
 				var action = function(event) {
 					var option = event.data.option;
@@ -1179,7 +1178,7 @@ var FormUtil = new function() {
 		}
 		if(projectCode) {
 		    var projectIdentifier = IdentifierUtil.getProjectIdentifier(spaceCode, projectCode);
-		    var id = "PATH" + projectIdentifier.split(" ").join("-").split("/").join("_");
+		    var id = "PATH" + this.prepareId(projectIdentifier);
 			entityPath.append("/").append(this.getFormLink(projectCode, 'Project', projectIdentifier, null, id));
 		}
 		if(experimentCode) {
@@ -1970,6 +1969,7 @@ var FormUtil = new function() {
 		if (id) {
 			id = id[0] === '$' ? id.substring(1) : id;
 			id = id.split(".").join("");
+			id = id.split(" ").join("-").split("/").join("_");
 		}
 		return id;
 	}
