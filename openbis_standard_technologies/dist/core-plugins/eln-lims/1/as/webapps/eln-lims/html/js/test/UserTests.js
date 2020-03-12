@@ -49,6 +49,8 @@ var UserTests = new function() {
                  .then(() => this.showInProjectOverview())
                  //26. Search
                  .then(() => this.search())
+                 //27. Supplier Form
+                 .then(() => this.supplierForm())
                  .catch(error => { console.log(error) });
     }
 
@@ -801,6 +803,52 @@ var UserTests = new function() {
                              .then(() => e.waitForId("bac5-id"))
                              .then(() => e.waitForId("bac5_bac4-id"))
                              .then(() => TestUtil.testPassed(26))
+                             .then(() => resolve());
+        });
+    }
+
+    this.supplierForm = function() {
+        return new Promise(function executor(resolve, reject) {
+            var e = EventUtil;
+
+            Promise.resolve().then(() => e.waitForId("STOCK_CATALOG"))
+                             // path to Supplier Collection
+                             .then(() => e.click("STOCK_CATALOG"))
+                             .then(() => e.waitForId("SUPPLIERS"))
+                             .then(() => e.click("SUPPLIERS"))
+                             //create English supplier
+                             .then(() => UserTests.createSupplier("EN", "ENGLISH", "companyen@email.com"))
+                             //create German supplier
+                             .then(() => UserTests.createSupplier("DE", "German", "companyde@email.com"))
+                             .then(() => resolve());
+        });
+    }
+
+    this.createSupplier = function(langCode, language, email) {
+        return new Promise(function executor(resolve, reject) {
+            var e = EventUtil;
+
+            Promise.resolve().then(() => e.waitForId("_STOCK_CATALOG_SUPPLIERS_SUPPLIER_COLLECTION"))
+                             .then(() => e.click("_STOCK_CATALOG_SUPPLIERS_SUPPLIER_COLLECTION"))
+                             .then(() => e.waitForId("create-btn"))
+                             .then(() => e.click("create-btn"))
+                             .then(() => e.waitForId("save-btn"))
+                             .then(() => e.waitForFill("codeId"))
+                             .then(() => e.waitForId("NAME"))
+                             .then(() => e.write("NAME", "Company " + langCode + " Name"))
+                             .then(() => e.waitForId("SUPPLIERCOMPANY_ADDRESS_LINE_1"))
+                             .then(() => e.write("SUPPLIERCOMPANY_ADDRESS_LINE_1", "Company " + langCode + " Address"))
+                             .then(() => e.waitForId("SUPPLIERCOMPANY_EMAIL"))
+                             .then(() => e.write("SUPPLIERCOMPANY_EMAIL", email))
+                             .then(() => e.waitForId("SUPPLIERCOMPANY_LANGUAGE"))
+                             .then(() => e.changeSelect2("SUPPLIERCOMPANY_LANGUAGE", language))
+                             .then(() => e.waitForId("SUPPLIERCUSTOMER_NUMBER"))
+                             .then(() => e.write("SUPPLIERCUSTOMER_NUMBER", langCode + "001"))
+                             .then(() => e.waitForId("SUPPLIERPREFERRED_ORDER_METHOD"))
+                             .then(() => e.changeSelect2("SUPPLIERPREFERRED_ORDER_METHOD", "MANUAL"))
+                             .then(() => e.waitForId("save-btn"))
+                             .then(() => e.click("save-btn"))
+                             .then(() => e.waitForId("edit-btn")) // wait for saving
                              .then(() => resolve());
         });
     }
