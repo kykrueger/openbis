@@ -35,10 +35,12 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLL
 public class CollectionFieldSearchConditionTranslator implements IConditionTranslator<CollectionFieldSearchCriteria<?>>
 {
 
-    private static final Map<Class, Object[]> arrayCasting = new HashMap<>();
-    static {
-        arrayCasting.put(CodesSearchCriteria.class, new String[0]);
-        arrayCasting.put(UserIdsSearchCriteria.class, new String[0]);
+    private static final Map<Class, Object[]> ARRAY_CASTING = new HashMap<>();
+
+    static
+    {
+        ARRAY_CASTING.put(CodesSearchCriteria.class, new String[0]);
+        ARRAY_CASTING.put(UserIdsSearchCriteria.class, new String[0]);
 
         // TODO - Implement IdsSearchCriteria properly - Implementation notes
         // TODO - Before doing any of this, check that this code path is actually triggered
@@ -47,27 +49,31 @@ public class CollectionFieldSearchConditionTranslator implements IConditionTrans
         // If the collection is empty, is a FALSE statement.
         // For each sub collection of each type is necessary to create a statement with its argument.
         // It would also be possible to delegate, the simpler non efficient implementation would be to call IdSearchConditionTransator for each id
-        arrayCasting.put(IdsSearchCriteria.class, new Object[0]);
+        ARRAY_CASTING.put(IdsSearchCriteria.class, new Object[0]);
     }
 
     @Override
     public Map<String, JoinInformation> getJoinInformationMap(final CollectionFieldSearchCriteria<?> criterion, final TableMapper tableMapper,
-                                                              final IAliasFactory aliasFactory) {
+            final IAliasFactory aliasFactory)
+    {
         return null;
     }
 
     @Override
     public void translate(final CollectionFieldSearchCriteria<?> criterion, final TableMapper tableMapper, final List<Object> args,
-                          final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases, final Map<String, String> dataTypeByPropertyName)
+            final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases, final Map<String, String> dataTypeByPropertyName)
     {
-        if (!arrayCasting.containsKey(criterion.getClass())) {
+        if (!ARRAY_CASTING.containsKey(criterion.getClass()))
+        {
             throw new RuntimeException("Unsupported " + CollectionFieldSearchCriteria.class.getSimpleName() + ", this is a core error, contact the development team.");
         }
-        if (criterion.getClass() == IdsSearchCriteria.class) {
+        if (criterion.getClass() == IdsSearchCriteria.class)
+        {
             throw new RuntimeException("Unsupported " + CollectionFieldSearchCriteria.class.getSimpleName() + " : " + IdsSearchCriteria.class + ", this is a core error, contact the development team.");
         }
 
-        switch (criterion.getFieldType()) {
+        switch (criterion.getFieldType())
+        {
             case ATTRIBUTE:
             {
                 final Object fieldName = Attributes.getColumnName(criterion.getFieldName(), tableMapper.getEntitiesTable(), criterion.getFieldName());
@@ -76,7 +82,7 @@ public class CollectionFieldSearchConditionTranslator implements IConditionTrans
                 sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(fieldName).append(SP).append(IN).append(SP).append(LP).
                         append(SELECT).append(SP).append(UNNEST).append(LP).append(QU).append(RP).
                         append(RP);
-                args.add(fieldValue.toArray(arrayCasting.get(criterion.getClass())));
+                args.add(fieldValue.toArray(ARRAY_CASTING.get(criterion.getClass())));
                 break;
             }
 
