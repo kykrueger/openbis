@@ -40,11 +40,13 @@ public class CollectionFieldSearchConditionTranslator implements IConditionTrans
         arrayCasting.put(CodesSearchCriteria.class, new String[0]);
         arrayCasting.put(UserIdsSearchCriteria.class, new String[0]);
 
-        // TODO - Implement IdsSearchCriteria properly
+        // TODO - Implement IdsSearchCriteria properly - Implementation notes
+        // TODO - Before doing any of this, check that this code path is actually triggered
         // These are objects, and can have different types matching different columns.
         // This case requires first to split the Collection of Ids by object type in sub collections.
         // If the collection is empty, is a FALSE statement.
-        // For each sub collection of each type is necessary to create a statement
+        // For each sub collection of each type is necessary to create a statement with its argument.
+        // It would also be possible to delegate, the simpler non efficient implementation would be to call IdSearchConditionTransator for each id
         arrayCasting.put(IdsSearchCriteria.class, new Object[0]);
     }
 
