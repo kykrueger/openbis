@@ -38,7 +38,7 @@ public class CollectionFieldSearchConditionTranslator implements IConditionTrans
     private static final Map<Class, Object[]> arrayCasting = new HashMap<>();
     static {
         arrayCasting.put(CodesSearchCriteria.class, new String[0]);
-        arrayCasting.put(IdsSearchCriteria.class, new Long[0]);
+        arrayCasting.put(IdsSearchCriteria.class, new String[0]); // Only Tech Ids are longs and there is no way to know
         arrayCasting.put(UserIdsSearchCriteria.class, new String[0]);
     }
 
@@ -53,7 +53,7 @@ public class CollectionFieldSearchConditionTranslator implements IConditionTrans
                           final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases, final Map<String, String> dataTypeByPropertyName)
     {
         if (!arrayCasting.containsKey(criterion.getClass())) {
-            throw new RuntimeException("Unsupported CollectionFieldSearchCriteria, this is a core error, contact the development team.");
+            throw new RuntimeException("Unsupported " + CollectionFieldSearchCriteria.class.getSimpleName() + ", this is a core error, contact the development team.");
         }
 
         switch (criterion.getFieldType()) {
