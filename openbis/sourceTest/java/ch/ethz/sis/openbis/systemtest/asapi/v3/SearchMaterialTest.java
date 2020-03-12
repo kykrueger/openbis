@@ -16,7 +16,6 @@
 
 package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
-import static org.junit.Assert.assertTrue;
 import static org.testng.Assert.assertEquals;
 
 import java.util.Arrays;
@@ -52,6 +51,17 @@ public class SearchMaterialTest extends AbstractTest
         MaterialSearchCriteria criteria = new MaterialSearchCriteria();
         criteria.withId().thatEquals(permId);
         testSearch(TEST_USER, criteria, permId);
+    }
+
+    @Test
+    public void testSearchWithIdSetToPermIdSortByPermId()
+    {
+        MaterialPermId permId = new MaterialPermId("VIRUS1", "VIRUS");
+        MaterialSearchCriteria criteria = new MaterialSearchCriteria();
+        criteria.withId().thatEquals(permId);
+        MaterialFetchOptions options = new MaterialFetchOptions();
+        options.sortBy().permId();
+        testSearch(TEST_USER, criteria, options, permId);
     }
 
     @Test
@@ -439,16 +449,21 @@ public class SearchMaterialTest extends AbstractTest
                 "search-materials  SEARCH_CRITERIA:\n'MATERIAL\n    with attribute 'code' equal to 'VIRUS'\n'\nFETCH_OPTIONS:\n'Material\n    with Registrator\n    with Properties\n'");
     }
 
-    private void testSearch(String user, MaterialSearchCriteria criteria, MaterialPermId... expectedPermIds)
+    private void testSearch(String user, MaterialSearchCriteria criteria, MaterialFetchOptions options, MaterialPermId... expectedPermIds)
     {
         String sessionToken = v3api.login(user, PASSWORD);
 
         SearchResult<Material> searchResult =
-                v3api.searchMaterials(sessionToken, criteria, new MaterialFetchOptions());
+                v3api.searchMaterials(sessionToken, criteria, options);
         List<Material> materials = searchResult.getObjects();
 
         assertMaterialPermIds(materials, expectedPermIds);
         v3api.logout(sessionToken);
+    }
+
+    private void testSearch(String user, MaterialSearchCriteria criteria, MaterialPermId... expectedPermIds)
+    {
+        testSearch(user, criteria, new MaterialFetchOptions(), expectedPermIds);
     }
 
     private void testSearch(String user, MaterialSearchCriteria criteria, int expectedCount)
