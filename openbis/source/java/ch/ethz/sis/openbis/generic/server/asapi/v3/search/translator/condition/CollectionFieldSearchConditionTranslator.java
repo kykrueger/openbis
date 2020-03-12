@@ -38,8 +38,14 @@ public class CollectionFieldSearchConditionTranslator implements IConditionTrans
     private static final Map<Class, Object[]> arrayCasting = new HashMap<>();
     static {
         arrayCasting.put(CodesSearchCriteria.class, new String[0]);
-        arrayCasting.put(IdsSearchCriteria.class, new String[0]); // Only Tech Ids are longs and there is no way to know
         arrayCasting.put(UserIdsSearchCriteria.class, new String[0]);
+
+        // TODO - Implement IdsSearchCriteria properly
+        // These are objects, and can have different types matching different columns.
+        // This case requires first to split the Collection of Ids by object type in sub collections.
+        // If the collection is empty, is a FALSE statement.
+        // For each sub collection of each type is necessary to create a statement
+        arrayCasting.put(IdsSearchCriteria.class, new Object[0]);
     }
 
     @Override
@@ -54,6 +60,9 @@ public class CollectionFieldSearchConditionTranslator implements IConditionTrans
     {
         if (!arrayCasting.containsKey(criterion.getClass())) {
             throw new RuntimeException("Unsupported " + CollectionFieldSearchCriteria.class.getSimpleName() + ", this is a core error, contact the development team.");
+        }
+        if (criterion.getClass() == IdsSearchCriteria.class) {
+            throw new RuntimeException("Unsupported " + CollectionFieldSearchCriteria.class.getSimpleName() + " : " + IdsSearchCriteria.class + ", this is a core error, contact the development team.");
         }
 
         switch (criterion.getFieldType()) {
