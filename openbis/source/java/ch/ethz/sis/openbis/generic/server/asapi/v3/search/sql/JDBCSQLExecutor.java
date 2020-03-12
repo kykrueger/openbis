@@ -115,8 +115,7 @@ public class JDBCSQLExecutor implements ISQLExecutor
             if (object != null && object.getClass().isArray())
             {
                 final Object[] objectArray = (Object[]) object;
-                final Class<?> arrayObjectType = (objectArray.length > 0 && objectArray[0] != null)
-                        ? objectArray[0].getClass() : object.getClass().getComponentType();
+                final Class<?> arrayObjectType = object.getClass().getComponentType();
                 final PSQLTypes psqlType = TYPE_CONVERSION_MAP.get(arrayObjectType);
 
                 if (psqlType == null)

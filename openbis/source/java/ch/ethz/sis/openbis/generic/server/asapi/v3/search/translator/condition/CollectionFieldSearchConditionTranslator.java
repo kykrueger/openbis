@@ -17,14 +17,17 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CodesSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CollectionFieldSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.IdsSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.UserIdsSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.Attributes;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinInformation;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.*;
@@ -32,30 +35,37 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLL
 public class CollectionFieldSearchConditionTranslator implements IConditionTranslator<CollectionFieldSearchCriteria<?>>
 {
 
+    private static final Map<Class, Object[]> arrayCasting = new HashMap<>();
+    static {
+        arrayCasting.put(CodesSearchCriteria.class, new String[0]);
+        arrayCasting.put(IdsSearchCriteria.class, new Long[0]);
+        arrayCasting.put(UserIdsSearchCriteria.class, new String[0]);
+    }
+
     @Override
     public Map<String, JoinInformation> getJoinInformationMap(final CollectionFieldSearchCriteria<?> criterion, final TableMapper tableMapper,
-            final IAliasFactory aliasFactory) {
+                                                              final IAliasFactory aliasFactory) {
         return null;
     }
 
     @Override
     public void translate(final CollectionFieldSearchCriteria<?> criterion, final TableMapper tableMapper, final List<Object> args,
-            final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases, final Map<String, String> dataTypeByPropertyName)
+                          final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases, final Map<String, String> dataTypeByPropertyName)
     {
+        if (!arrayCasting.containsKey(criterion.getClass())) {
+            throw new RuntimeException("Unsupported CollectionFieldSearchCriteria, this is a core error, contact the development team.");
+        }
+
         switch (criterion.getFieldType()) {
             case ATTRIBUTE:
             {
                 final Object fieldName = Attributes.getColumnName(criterion.getFieldName(), tableMapper.getEntitiesTable(), criterion.getFieldName());
                 final Collection<?> fieldValue = criterion.getFieldValue();
 
-                if (fieldValue.isEmpty()) {
-                    sqlBuilder.append(FALSE);
-                } else {
-                    sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(fieldName).append(SP).append(IN).append(SP).append(LP).
-                            append(SELECT).append(SP).append(UNNEST).append(LP).append(QU).append(RP).
-                            append(RP);
-                    args.add(fieldValue.toArray());
-                }
+                sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(fieldName).append(SP).append(IN).append(SP).append(LP).
+                        append(SELECT).append(SP).append(UNNEST).append(LP).append(QU).append(RP).
+                        append(RP);
+                args.add(fieldValue.toArray(arrayCasting.get(criterion.getClass())));
                 break;
             }
 

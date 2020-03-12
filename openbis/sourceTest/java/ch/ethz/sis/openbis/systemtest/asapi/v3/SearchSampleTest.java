@@ -21,6 +21,7 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.CacheMode;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CodesSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
@@ -184,6 +185,18 @@ public class SearchSampleTest extends AbstractSampleTest
         criteria.withCodes().thatIn(Arrays.asList(new String[]{null}));
         criteria.withOrOperator();
         testSearch(TEST_USER, criteria, 0);
+    }
+
+    @Test
+    public void testSearchWithCodesWithObjectArray()
+    {
+        SampleSearchCriteria criteria = new SampleSearchCriteria();
+        CodesSearchCriteria codesSearchCriteria = criteria.withCodes();
+        List codes = new ArrayList();
+        codes.add("RP1-A2X");
+        codesSearchCriteria.setFieldValue(codes);
+        criteria.withOrOperator();
+        testSearch(TEST_USER, criteria, "/CISD/RP1-A2X");
     }
 
     @Test
