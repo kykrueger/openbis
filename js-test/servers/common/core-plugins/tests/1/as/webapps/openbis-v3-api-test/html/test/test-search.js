@@ -45,7 +45,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 					c.assertTrue(objects.length > 1, "Got at least 2 objects");
 
 					c.ok("Sorting by " + fieldName);
-
+                    debugger;
 					var fieldGetterName = "get" + fieldName.substr(0, 1).toUpperCase() + fieldName.substr(1);
 
 					if(disableSortCheck && codeOfFirstAsc) {
@@ -303,8 +303,8 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				return facade.searchExperiments(criteria, fo);
 			}, fo);
 		});
-		
-		QUnit.test("searchExperiments() with paging and sorting by score", function(assert) {
+
+		QUnit.test("searchExperiments() with paging and sorting by code", function(assert) {
 			var c = new common(assert, openbis);
 
 			var criteria = new c.ExperimentSearchCriteria();
@@ -316,7 +316,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 
 			testSearchWithPagingAndSorting(c, function(facade) {
 				return facade.searchExperiments(criteria, fo);
-			}, fo, "fetchedFieldsScore", null, true, "EXP-1");
+			}, fo, "code", null, true, "EXP-1");
 		});
 
 		QUnit.test("searchExperiments() with sorting by identifier", function(assert) {
@@ -365,6 +365,8 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testSearch(c, fSearch, fCheck);
 		});
 
+        // TODO This test returns an additional result, was the old search buggy?`
+        // SELECT * FROM experiments_all WHERE pers_id_modifier = (SELECT id FROM persons WHERE user_id = 'etlserver')
 		QUnit.test("searchExperiments() withModifier withUserId", function(assert) {
 			var c = new common(assert, openbis);
 
@@ -551,7 +553,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			}, fo);
 		});
 		
-		QUnit.test("searchSamples() with paging and sorting by score", function(assert) {
+		QUnit.test("searchSamples() with paging and sorting by code", function(assert) {
 			var c = new common(assert, openbis);
 			
 			var criteria = new c.SampleSearchCriteria();
@@ -562,7 +564,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			
 			testSearchWithPagingAndSorting(c, function(facade) {
 				return facade.searchSamples(criteria, fo);
-			}, fo, "fetchedFieldsScore", null, true,"TEST-SAMPLE-1");
+			}, fo, "code", null, true,"TEST-SAMPLE-1");
 		});
 		
 		QUnit.test("searchSamples() withoutSpace", function(assert) {
@@ -761,6 +763,8 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testSearch(c, fSearch, fCheck);
 		});
 
+        // TODO This test returns an additional result, was the old search buggy?
+        // This query returns all three: SELECT * FROM samples_all WHERE pers_id_modifier = (SELECT id FROM persons WHERE user_id = 'etlserver')
 		QUnit.test("searchSamples() withModifier withUserId", function(assert) {
 			var c = new common(assert, openbis);
 
@@ -891,7 +895,9 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			
 			testSearch(c, fSearch, fCheck);
 		});
-		
+
+		// TODO : This test seems to return wrong results, the query below returns the expected one
+		// SELECT * FROM semantic_annotations sa LEFT JOIN sample_types sp ON (sa.saty_id = sp.id) WHERE sa.perm_id = 'ST_SIRNA_WELL'
 		QUnit.test("searchSampleTypes() withSemanticAnnotations", function(assert) {
 			var c = new common(assert, openbis);
 
@@ -1027,6 +1033,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			}, fo, "fetchedFieldsScore", null, true, "20130412142942295-198");
 		});
 
+        // TODO Vocabulary sorting seems broken, maybe is sorting by the term id instead of text?
 		QUnit.test("searchDataSets() with sorting by property", function(assert) {
 			var c = new common(assert, openbis);
 
@@ -1173,7 +1180,8 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			
 			testSearch(c, fSearch, fCheck);
 		});
-		
+
+		// TODO Broken search?
 		QUnit.test("searchDataSets() withPhysicalData", function(assert) {
 			var c = new common(assert, openbis);
 
@@ -1393,8 +1401,8 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				return facade.searchMaterials(criteria, fo);
 			}, fo);
 		});
-		
-		QUnit.test("searchMaterials() with paging and sorting by score", function(assert) {
+
+		QUnit.test("searchMaterials() with paging and sorting by code", function(assert) {
 			var c = new common(assert, openbis);
 
 			var criteria = new c.MaterialSearchCriteria();
@@ -1406,7 +1414,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 
 			testSearchWithPagingAndSorting(c, function(facade) {
 				return facade.searchMaterials(criteria, fo);
-			}, fo, "fetchedFieldsScore", null, true, "SIRNA-2");
+			}, fo, "code", null, true, "SIRNA-1");
 		});
 
 		QUnit.test("searchMaterials() with sorting by type", function(assert) {
