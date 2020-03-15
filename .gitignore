@@ -15,3 +15,5 @@ ivy-repository
 **/.idea
 *.iml
 *.eml
+.metadata
+.recommenders
