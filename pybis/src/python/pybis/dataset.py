@@ -162,6 +162,9 @@ class DataSet(
             return self.data['physicalData']['status']
         except Exception:
             return None
+    @property
+    def sftp_path(self):
+        return os.path(self.experiment.identifier[1:], self.permId)
 
     def archive(self, remove_from_data_store=True):
         fetchopts = {
