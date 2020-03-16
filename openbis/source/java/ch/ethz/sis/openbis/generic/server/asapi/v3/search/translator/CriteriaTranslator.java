@@ -17,7 +17,10 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.IObjectId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.*;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractEntitySearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.IdSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
@@ -36,6 +39,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.BasicConstant;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -173,7 +177,7 @@ public class CriteriaTranslator
                 {
                     final Set<Long> ids = subqueryManager.searchForIDs(vo.getUserId(), criterion, null, parentCriterion,
                             CriteriaMapper.getParentChildCriteriaToChildSelectIdMap().getOrDefault(
-                                    parentCriterion.getClass().toString() + criterion.getClass().toString(), ID_COLUMN));
+                                    Arrays.asList(parentCriterion.getClass(), criterion.getClass()), ID_COLUMN));
                     appendInStatement(sqlBuilder, criterion, column, tableMapper);
                     vo.getArgs().add(ids.toArray(new Long[0]));
                 } else
