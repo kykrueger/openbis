@@ -19,6 +19,8 @@ var AdminTests = new function() {
         testChain.then(() => TestUtil.deleteCookies("suitename"))
                  .then(() => TestUtil.login("admin", "a"))
                  .then(() => this.orderForm())
+                 //32. Order Form - Avoiding modifying orders by deleted requests
+                 .then(() => this.deletedRequests())
                  .catch(error => { console.log(error) });
     }
 
@@ -156,7 +158,7 @@ var AdminTests = new function() {
         });
     }
 
-    this.orderForm = function(testNum) {
+    this.orderForm = function() {
         return new Promise(function executor(resolve, reject) {
             var e = EventUtil;
 
@@ -187,11 +189,65 @@ var AdminTests = new function() {
                      // save
                      .then(() => e.click("save-btn"))
                      .then(() => e.waitForId("edit-btn"))
+                     // check data
                      .then(() => e.waitForId("req1-column-id"))
+                     .then(() => e.waitForId("catalogNum-0"))
                      // print
                      .then(() => e.waitForId("print-order-id"))
                      .then(() => e.click("print-order-id"))
                      .then(() => TestUtil.testPassed(31))
+                     .then(() => resolve());
+        });
+    }
+
+    this.deletedRequests = function() {
+        return new Promise(function executor(resolve, reject) {
+            var e = EventUtil;
+
+            testChain = Promise.resolve();
+
+            testChain.then(() => e.waitForId("catalogNum-0"))
+                     // check data before delete
+                     .then(() => e.equalTo("catalogNum-0", "CC EN", true, false))
+                     .then(() => e.waitForId("supplier-0"))
+                     .then(() => e.equalTo("supplier-0", "Company EN Name", true, false))
+                     .then(() => e.waitForId("name-0"))
+                     .then(() => e.equalTo("name-0", "Product EN Name", true, false))
+                     .then(() => e.waitForId("quantity-0"))
+                     .then(() => e.equalTo("quantity-0", "18", true, false))
+                     .then(() => e.waitForId("currency-0"))
+                     .then(() => e.equalTo("currency-0", "EUR", true, false))
+                     // delete request
+                     .then(() => e.waitForId("req1-column-id"))
+                     .then(() => e.click("req1-column-id"))
+                     .then(() => e.waitForId("pro1-column-id"))
+                     .then(() => e.waitForId("options-menu-btn-sample-view-request"))
+                     .then(() => e.click("options-menu-btn-sample-view-request"))
+                     .then(() => e.waitForId("delete"))
+                     .then(() => e.click("delete"))
+                     .then(() => e.waitForId("reason-to-delete-id"))
+                     .then(() => e.write("reason-to-delete-id", "test"))
+                     .then(() => e.waitForId("accept-btn"))
+                     .then(() => e.click("accept-btn"))
+                     .then(() => e.waitForId("create-btn"))
+                     // go to the Order 1
+                     .then(() => e.waitForId("_STOCK_ORDERS_ORDERS_ORDER_COLLECTION"))
+                     .then(() => e.click("_STOCK_ORDERS_ORDERS_ORDER_COLLECTION"))
+                     .then(() => e.waitForId("ord1-column-id"))
+                     .then(() => e.click("ord1-column-id"))
+                     .then(() => e.waitForId("edit-btn"))
+                     // check data after delete (should be the same)
+                     .then(() => e.waitForId("catalogNum-0"))
+                     .then(() => e.equalTo("catalogNum-0", "CC EN", true, false))
+                     .then(() => e.waitForId("supplier-0"))
+                     .then(() => e.equalTo("supplier-0", "Company EN Name", true, false))
+                     .then(() => e.waitForId("name-0"))
+                     .then(() => e.equalTo("name-0", "Product EN Name", true, false))
+                     .then(() => e.waitForId("quantity-0"))
+                     .then(() => e.equalTo("quantity-0", "18", true, false))
+                     .then(() => e.waitForId("currency-0"))
+                     .then(() => e.equalTo("currency-0", "EUR", true, false))
+                     .then(() => TestUtil.testPassed(32))
                      .then(() => resolve());
         });
     }
