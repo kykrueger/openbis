@@ -389,12 +389,16 @@
 		    mainController.resetPassword();
 		}
 		var test = queryString.test;
-		if(test == "true") {
+		if (test == "true") {
 			TestProtocol.startAdminTests();
 		}
 
 		if ($.cookie("suitename") == "testId") {
 			TestProtocol.startUserTests();
+		}
+
+		if ($.cookie("suitename") == "finishTest") {
+			TestProtocol.finishTests();
 		}
 	}
 

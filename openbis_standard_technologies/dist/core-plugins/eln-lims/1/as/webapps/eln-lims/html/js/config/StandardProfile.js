@@ -284,7 +284,7 @@ $.extend(StandardProfile.prototype, DefaultProfile.prototype, {
 								Util.downloadTextFile(orderPages[pageIdx], "order_" + sample.code + "_p" + pageIdx + ".txt");
 							}
 							
-						}, "Print Order");
+						}, "Print Order", null, "print-order-id");
 						
 						//
 						// Order Summary Grid

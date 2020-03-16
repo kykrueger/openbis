@@ -55,6 +55,10 @@ var UserTests = new function() {
                  .then(() => this.productForm())
                  //29. Request Form
                  .then(() => this.requestForm())
+                 //30. Order Form
+                 //.then(() => this.orderForm()) todo
+                 //31. logout
+                 .then(() => this.logout())
                  .catch(error => { console.log(error) });
     }
 
@@ -958,8 +962,18 @@ var UserTests = new function() {
                               .then(() => e.waitForId("save-btn"))
                               .then(() => e.click("save-btn"))
                               .then(() => e.waitForId("edit-btn")) // wait for saving
-                              .then(() => TestUtil.testPassed(28))
+                              .then(() => TestUtil.testPassed(29))
                               .then(() => resolve());
          });
      }
+
+     this.logout = function() {
+          return new Promise(function executor(resolve, reject) {
+              var e = EventUtil;
+
+              Promise.resolve().then(() => TestUtil.setCookies("suitename", "finishTest"))
+                               .then(() => e.click("logoutBtn"))
+                               .then(() => resolve());
+          });
+      }
 }

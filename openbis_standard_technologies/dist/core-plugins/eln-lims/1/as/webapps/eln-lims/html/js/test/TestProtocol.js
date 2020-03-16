@@ -11,4 +11,10 @@ var TestProtocol = new function () {
         testChain.then(() => UserTests.startUserTests())
                  .catch(error => { console.log(error) });
     }
+
+    this.finishTests = function() {
+        testChain = Promise.resolve();
+        testChain.then(() => AdminTests.finishTests())
+                 .catch(error => { console.log(error) });
+    }
 }

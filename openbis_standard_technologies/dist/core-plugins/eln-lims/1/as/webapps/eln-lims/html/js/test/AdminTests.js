@@ -13,6 +13,15 @@ var AdminTests = new function() {
                  .catch(error => { console.log(error) });
     }
 
+    this.finishTests = function() {
+        testChain = Promise.resolve();
+                 //31 . Order Form
+        testChain.then(() => TestUtil.deleteCookies("suitename"))
+                 .then(() => TestUtil.login("admin", "a"))
+                 .then(() => this.orderForm())
+                 .catch(error => { console.log(error) });
+    }
+
     this.login = function() {
         return new Promise(function executor(resolve, reject) {
             var e = EventUtil;
@@ -144,6 +153,46 @@ var AdminTests = new function() {
                      .then(() => e.click("cancelBtn", true))
                      .then(() => resolve())
                      .catch(() => reject(error));
+        });
+    }
+
+    this.orderForm = function(testNum) {
+        return new Promise(function executor(resolve, reject) {
+            var e = EventUtil;
+
+            testChain = Promise.resolve();
+
+            testChain.then(() => e.waitForId("STOCK_CATALOG"))
+                     // path to Order Collection
+                     .then(() => e.click("STOCK_CATALOG"))
+                     .then(() => e.waitForId("STOCK_ORDERS"))
+                     .then(() => e.click("STOCK_ORDERS"))
+                     .then(() => e.waitForId("ORDERS"))
+                     .then(() => e.click("ORDERS"))
+                     .then(() => e.waitForId("_STOCK_ORDERS_ORDERS_ORDER_COLLECTION"))
+                     .then(() => e.click("_STOCK_ORDERS_ORDERS_ORDER_COLLECTION"))
+                     // create new Order
+                     .then(() => e.waitForId("create-btn"))
+                     .then(() => e.click("create-btn"))
+                     .then(() => e.waitForId("save-btn"))
+                     // add request
+                     .then(() => e.waitForId("plus-btn-requests"))
+                     .then(() => e.click("plus-btn-requests"))
+                     .then(() => e.waitForId("req1-column-id"))
+                     .then(() => e.click("req1-column-id"))
+                     .then(() => e.waitForId("req1-operations-column-id"))
+                     // choose oder status
+                     .then(() => e.waitForId("ORDERINGORDER_STATUS"))
+                     .then(() => e.changeSelect2("ORDERINGORDER_STATUS", "ORDERED"))
+                     // save
+                     .then(() => e.click("save-btn"))
+                     .then(() => e.waitForId("edit-btn"))
+                     .then(() => e.waitForId("req1-column-id"))
+                     // print
+                     .then(() => e.waitForId("print-order-id"))
+                     .then(() => e.click("print-order-id"))
+                     .then(() => TestUtil.testPassed(31))
+                     .then(() => resolve());
         });
     }
 }
