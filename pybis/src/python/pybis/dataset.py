@@ -164,7 +164,7 @@ class DataSet(
             return None
     @property
     def sftp_path(self):
-        return os.path(self.experiment.identifier[1:], self.permId)
+        return os.path.join(self.experiment.identifier[1:], self.permId)
 
     def archive(self, remove_from_data_store=True):
         fetchopts = {
