@@ -896,8 +896,6 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testSearch(c, fSearch, fCheck);
 		});
 
-		// TODO : This test seems to return wrong results, the query below returns the expected one
-		// SELECT * FROM semantic_annotations sa LEFT JOIN sample_types sp ON (sa.saty_id = sp.id) WHERE sa.perm_id = 'ST_SIRNA_WELL'
 		QUnit.test("searchSampleTypes() withSemanticAnnotations", function(assert) {
 			var c = new common(assert, openbis);
 
@@ -1181,7 +1179,6 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testSearch(c, fSearch, fCheck);
 		});
 
-		// TODO Broken search?
 		QUnit.test("searchDataSets() withPhysicalData", function(assert) {
 			var c = new common(assert, openbis);
 
