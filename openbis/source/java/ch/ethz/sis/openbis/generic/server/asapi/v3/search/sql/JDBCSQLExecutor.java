@@ -56,6 +56,10 @@ public class JDBCSQLExecutor implements ISQLExecutor
         this.connection = connection;
     }
 
+    public Connection getConnection() {
+        return this.connection;
+    }
+
     @Override
     public List<Map<String, Object>> execute(final String sqlQuery, final List<Object> args)
     {
@@ -63,7 +67,7 @@ public class JDBCSQLExecutor implements ISQLExecutor
         OPERATION_LOG.info("ARGS: " + Arrays.deepToString(args.toArray()));
 
         final List<Map<String, Object>> results = new ArrayList<>();
-        try (final PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery))
+        try (final PreparedStatement preparedStatement = getConnection().prepareStatement(sqlQuery))
         {
             setArgsForPreparedStatement(args, preparedStatement);
 
@@ -102,7 +106,7 @@ public class JDBCSQLExecutor implements ISQLExecutor
         OPERATION_LOG.info("QUERY: " + sqlQuery);
         OPERATION_LOG.info("ARGS: " + args);
 
-        try (final PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery))
+        try (final PreparedStatement preparedStatement = getConnection().prepareStatement(sqlQuery))
         {
             setArgsForPreparedStatement(args, preparedStatement);
             preparedStatement.executeUpdate();
@@ -129,7 +133,7 @@ public class JDBCSQLExecutor implements ISQLExecutor
                             + " - With elements of type: " + arrayObjectType.getName() + " - Data: " + Arrays.toString(objectArray));
                 }
 
-                preparedStatement.setArray(index + 1, connection.createArrayOf(psqlType.toString(), objectArray));
+                preparedStatement.setArray(index + 1, getConnection().createArrayOf(psqlType.toString(), objectArray));
             } else if (object instanceof Date)
             {
                 final Date date = (Date) object;

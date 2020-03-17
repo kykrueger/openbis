@@ -55,6 +55,7 @@ public class BasicDataSourceFactory implements IDataSourceFactory
             final String owner, final String password, final String validationQuery)
     {
         final MonitoringDataSource dataSource = new MonitoringDataSource();
+        dataSource.setAccessToUnderlyingConnectionAllowed(true);
         dataSource.setDriverClassName(driver);
         dataSource.setUrl(url);
         dataSource.setUsername(owner);
