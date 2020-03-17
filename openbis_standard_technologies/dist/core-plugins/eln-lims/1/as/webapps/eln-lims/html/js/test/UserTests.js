@@ -56,7 +56,7 @@ var UserTests = new function() {
                  //29. Request Form
                  .then(() => this.requestForm())
                  //30. Order Form
-                 //.then(() => this.orderForm()) todo
+                 .then(() => this.orderForm())
                  //31. logout
                  .then(() => this.logout())
                  .catch(error => { console.log(error) });
@@ -967,13 +967,33 @@ var UserTests = new function() {
          });
      }
 
-     this.logout = function() {
-          return new Promise(function executor(resolve, reject) {
-              var e = EventUtil;
+     this.orderForm = function() {
+         return new Promise(function executor(resolve, reject) {
+             var e = EventUtil;
 
-              Promise.resolve().then(() => TestUtil.setCookies("suitename", "finishTest"))
-                               .then(() => e.click("logoutBtn"))
-                               .then(() => resolve());
-          });
+             Promise.resolve().then(() => e.waitForId("STOCK_ORDERS"))
+                              // path to Order Collection
+                              .then(() => e.click("STOCK_ORDERS"))
+                              .then(() => e.waitForId("ORDERS"))
+                              .then(() => e.click("ORDERS"))
+                              .then(() => e.waitForId("_STOCK_ORDERS_ORDERS_ORDER_COLLECTION"))
+                              .then(() => e.click("_STOCK_ORDERS_ORDERS_ORDER_COLLECTION"))
+                              // wait page reload
+                              .then(() => e.waitForId("sample-options-menu-btn"))
+                              // There should be no + button
+                              .then(() => e.verifyExistence("create-btn", false))
+                              .then(() => TestUtil.testPassed(30))
+                              .then(() => resolve());
+         });
       }
+
+     this.logout = function() {
+         return new Promise(function executor(resolve, reject) {
+            var e = EventUtil;
+
+            Promise.resolve().then(() => TestUtil.setCookies("suitename", "finishTest"))
+                             .then(() => e.click("logoutBtn"))
+                             .then(() => resolve());
+         });
+     }
 }
