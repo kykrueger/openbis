@@ -21,6 +21,10 @@ var AdminTests = new function() {
                  .then(() => this.orderForm())
                  //32. Order Form - Avoiding modifying orders by deleted requests
                  .then(() => this.deletedRequests())
+                 //33. Trash Manager
+                 .then(() => this.trashManager())
+                 //34. Vocabulary Viewer
+                 .then(() => this.vocabularyViewer())
                  .catch(error => { console.log(error) });
     }
 
@@ -211,10 +215,6 @@ var AdminTests = new function() {
                      .then(() => e.equalTo("catalogNum-0", "CC EN", true, false))
                      .then(() => e.waitForId("supplier-0"))
                      .then(() => e.equalTo("supplier-0", "Company EN Name", true, false))
-                     .then(() => e.waitForId("name-0"))
-                     .then(() => e.equalTo("name-0", "Product EN Name", true, false))
-                     .then(() => e.waitForId("quantity-0"))
-                     .then(() => e.equalTo("quantity-0", "18", true, false))
                      .then(() => e.waitForId("currency-0"))
                      .then(() => e.equalTo("currency-0", "EUR", true, false))
                      // delete request
@@ -241,13 +241,62 @@ var AdminTests = new function() {
                      .then(() => e.equalTo("catalogNum-0", "CC EN", true, false))
                      .then(() => e.waitForId("supplier-0"))
                      .then(() => e.equalTo("supplier-0", "Company EN Name", true, false))
-                     .then(() => e.waitForId("name-0"))
-                     .then(() => e.equalTo("name-0", "Product EN Name", true, false))
-                     .then(() => e.waitForId("quantity-0"))
-                     .then(() => e.equalTo("quantity-0", "18", true, false))
                      .then(() => e.waitForId("currency-0"))
                      .then(() => e.equalTo("currency-0", "EUR", true, false))
                      .then(() => TestUtil.testPassed(32))
+                     .then(() => resolve());
+        });
+    }
+
+    this.trashManager = function() {
+        return new Promise(function executor(resolve, reject) {
+            var e = EventUtil;
+
+            testChain = Promise.resolve();
+
+            testChain.then(() => e.waitForId("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
+                     .then(() => e.click("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
+                     .then(() => e.waitForId("bac1-column-id"))
+                     .then(() => e.click("bac1-column-id"))
+                     .then(() => e.waitForId("edit-btn")) // wait for page reload
+                     //delete BAC1
+                     .then(() => e.waitForId("options-menu-btn-sample-view-bacteria"))
+                     .then(() => e.click("options-menu-btn-sample-view-bacteria"))
+                     .then(() => e.waitForId("delete"))
+                     .then(() => e.click("delete"))
+                     // fill Confirm form
+                     .then(() => e.waitForId("reason-to-delete-id"))
+                     .then(() => e.write("reason-to-delete-id", "test"))
+                     .then(() => e.waitForId("accept-btn"))
+                     .then(() => e.click("accept-btn"))
+                     .then(() => e.waitForId("create-btn")) // wait for page reload
+                     // go to TRASHCAN
+                     .then(() => e.waitForId("TRASHCAN"))
+                     .then(() => e.click("TRASHCAN"))
+                     // The Objects BAC1 and the deleted request should be there.
+                     .then(() => e.waitForId("deleted--materials-bacteria-bac1-id"))
+                     .then(() => e.waitForId("deleted--stock_catalog-requests-req1-id"))
+                     // clear Trash
+                     .then(() => e.waitForId("empty-trash-btn"))
+                     .then(() => e.click("empty-trash-btn"))
+                     .then(() => e.waitForId("warningAccept"))
+                     .then(() => e.click("warningAccept"))
+                     .then(() => e.sleep(2000)) // wait for delete
+                     // check that trash is empty
+                     .then(() => e.verifyExistence("deleted--materials-bacteria-bac1-id", false))
+                     .then(() => e.verifyExistence("deleted--stock_catalog-requests-req1-id", false))
+                     .then(() => TestUtil.testPassed(33))
+                     .then(() => resolve());
+        });
+    }
+
+    this.vocabularyViewer = function() {
+        return new Promise(function executor(resolve, reject) {
+            var e = EventUtil;
+
+            testChain = Promise.resolve();
+
+            testChain.then(() => TestUtil.testPassed(34))
                      .then(() => resolve());
         });
     }
