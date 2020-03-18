@@ -1,6 +1,9 @@
 import os
+from functools import partialmethod
+from pathlib import Path
 from threading import Thread
 from queue import Queue
+from typing import Set, Optional, List
 from tabulate import tabulate
 from .openbis_object import OpenBisObject 
 from .definitions import openbis_definitions, get_type_for_entity, get_fetchoption_for_entity
@@ -121,7 +124,7 @@ class DataSet(
             'add_attachment()', 'get_attachments()', 'download_attachments()',
             "get_files()", 'file_list',
             'download()', 
-            'archive()', 'unarchive()' 
+            'archive()', 'unarchive()', 'sftp_source_dir', 'sftp_source_absolute_path', 'symlink_to()','is_symlink()','is_physical()' 
         ] + super().__dir__()
 
     def __setattr__(self, name, value):
@@ -163,8 +166,71 @@ class DataSet(
         except Exception:
             return None
     @property
-    def sftp_path(self):
+    def sftp_source_dir(self):
         return os.path.join(self.experiment.identifier[1:], self.permId)
+
+
+    @property
+    def sftp_source_absolute_path(self):
+        # join mountpoint and source_dir
+        # if source_dir is absolute one has to remove "/" to be able to join it with mountpoint
+        # so far did not find way to achieve this in case they are pathlib.Path
+        if not self.openbis.is_mounted():
+            raise ValueError("Not mounted.")
+
+        source_dir = self.sftp_source_dir
+        if source_dir[0] == "/":
+            source_dir = source_dir[1:]
+        return os.path.join(self.openbis.mountpoint, source_dir)
+
+
+    def symlink_to(self, target_dir: str, replace_if_symlink_exists: bool = True):
+        # replace_if_symlink_exists will replace the the target_dir in case it is an existing symlink
+
+        target_dir_path = Path(target_dir)
+        if target_dir_path.is_symlink() and replace_if_symlink_exists:
+            target_dir_path.unlink()
+
+        target_dir_path.symlink_to(self.sftp_source_absolute_path, target_is_directory=True)
+
+
+    @staticmethod
+    def _file_set(target_dir: str) -> Set[str]:
+        target_dir_path = Path(target_dir)
+        return set(
+            str(el.relative_to(target_dir_path))
+            for el in target_dir_path.glob("**/*")
+            if el.is_file()
+        )
+
+
+    def _is_symlink_or_physical(
+        self, target_dir: str, what: str, expected_file_list: Optional[List[str]] = None,
+    ):
+        target_dir_path = Path(target_dir)
+
+        target_file_set = self._file_set(target_dir)
+
+        if expected_file_list is None:
+            source_file_set = set(self.file_list)
+        else:
+            source_file_set = set(expected_file_list)
+
+        res = source_file_set.issubset(target_file_set)
+        if not res:
+            return res
+        elif what == "symlink":
+            return target_dir_path.exists() and target_dir_path.is_symlink()
+        elif what == "physical":
+            return target_dir_path.exists() and not target_dir_path.is_symlink()
+        else:
+            raise ValueError("Unexpected error")
+
+
+    is_symlink = partialmethod(
+        _is_symlink_or_physical, what="symlink", expected_file_list=None
+    )
+    is_physical = partialmethod(_is_symlink_or_physical, what="physical")
 
     def archive(self, remove_from_data_store=True):
         fetchopts = {

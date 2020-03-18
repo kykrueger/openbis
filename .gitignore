@@ -8,7 +8,6 @@ datastore_server/source/core-plugins
 openbis/source/core-plugins
 */bin/*
 **/.DS_Store
-*__pycache__/
 *$py.class
 **/.pydevproject
 **/.shredder

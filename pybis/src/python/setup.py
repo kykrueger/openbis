@@ -28,7 +28,7 @@ setup(
         'texttable',
         'tabulate',
     ],
-    python_requires=">=3.3",
+    python_requires=">=3.6",
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: Apache Software License",
