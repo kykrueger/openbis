@@ -376,8 +376,6 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testSearch(c, fSearch, fCheck);
 		});
 
-        // TODO This test returns an additional result, was the old search buggy?`
-        // SELECT * FROM experiments_all WHERE pers_id_modifier = (SELECT id FROM persons WHERE user_id = 'etlserver')
 		QUnit.test("searchExperiments() withModifier withUserId", function(assert) {
 			var c = new common(assert, openbis);
 
@@ -774,8 +772,6 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testSearch(c, fSearch, fCheck);
 		});
 
-        // TODO This test returns an additional result, was the old search buggy?
-        // This query returns all three: SELECT * FROM samples_all WHERE pers_id_modifier = (SELECT id FROM persons WHERE user_id = 'etlserver')
 		QUnit.test("searchSamples() withModifier withUserId", function(assert) {
 			var c = new common(assert, openbis);
 
@@ -1042,7 +1038,6 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			}, fo, "fetchedFieldsScore", null, true, "20130412142942295-198");
 		});
 
-        // TODO Vocabulary sorting seems broken, maybe is sorting by the term id instead of text?
 		QUnit.test("searchDataSets() with sorting by property", function(assert) {
 			var c = new common(assert, openbis);
 
