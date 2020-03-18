@@ -147,12 +147,12 @@ public class OrderTranslator
             final String sortingCriteriaFieldName = sorting.getField();
             if (TranslatorUtils.isPropertySearchFieldName(sortingCriteriaFieldName))
             {
-                final String propertyName = sortingCriteriaFieldName.substring(EntityWithPropertiesSortOptions.PROPERTY.length());
-                final String attributeTypesTableAlias = aliases.get(propertyName.toLowerCase()).get(TableNames.DATA_TYPES_TABLE).
+                final String fullPropertyName = sortingCriteriaFieldName.substring(EntityWithPropertiesSortOptions.PROPERTY.length());
+                final String attributeTypesTableAlias = aliases.get(fullPropertyName.toLowerCase()).get(TableNames.DATA_TYPES_TABLE).
                         getMainTableAlias();
                 sqlBuilder.append(SP).append(AND).append(SP).append(attributeTypesTableAlias).append(PERIOD).append(CODE_COLUMN).append(SP).
                         append(EQ).append(SP).append(QU);
-                args.add(propertyName);
+                args.add(TranslatorUtils.normalisePropertyName(fullPropertyName));
             }
         });
 

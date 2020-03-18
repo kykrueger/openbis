@@ -30,7 +30,8 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			});
 		}
 
-		var testSearchWithPagingAndSorting = function(c, fSearch, fetchOptions, fieldName, fieldParameters, disableSortCheck, codeOfFirstAsc) {
+		var testSearchWithPagingAndGenericSorting = function(c, fSearch, fetchOptions, fieldName, fieldParameters, disableSortCheck, codeOfFirstAsc,
+				comparator) {
 			c.start();
 
 			fetchOptions.from(null).count(null);
@@ -45,7 +46,6 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 					c.assertTrue(objects.length > 1, "Got at least 2 objects");
 
 					c.ok("Sorting by " + fieldName);
-                    debugger;
 					var fieldGetterName = "get" + fieldName.substr(0, 1).toUpperCase() + fieldName.substr(1);
 
 					if(disableSortCheck && codeOfFirstAsc) {
@@ -54,7 +54,8 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 						var comparatorAsc = function(o1, o2) {
 							var v1 = o1[fieldGetterName](fieldParameters);
 							var v2 = o2[fieldGetterName](fieldParameters);
-							return naturalsort(v1, v2);
+							
+							return comparator(v1, v2);
 						};
 	
 						var comparatorDesc = function(o1, o2) {
@@ -102,7 +103,17 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				c.fail(error.message);
 				c.finish();
 			});
-		}
+		};
+
+		var testSearchWithPagingAndSorting = function(c, fSearch, fetchOptions, fieldName, fieldParameters, disableSortCheck, codeOfFirstAsc) {
+			return testSearchWithPagingAndGenericSorting(c, fSearch, fetchOptions, fieldName, fieldParameters, disableSortCheck, codeOfFirstAsc,
+					naturalsort);
+		};
+
+		var testSearchWithPagingAndStringSorting = function(c, fSearch, fetchOptions, fieldName, fieldParameters, disableSortCheck, codeOfFirstAsc) {
+			return testSearchWithPagingAndGenericSorting(c, fSearch, fetchOptions, fieldName, fieldParameters, disableSortCheck, codeOfFirstAsc,
+				(v1, v2) => (v1 > v2) ? -1 : (v2 > v1) ? 1 : 0);
+		};
 
 		QUnit.test("searchSpaces()", function(assert) {
 			var c = new common(assert, openbis);
@@ -111,7 +122,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				var criteria = new c.SpaceSearchCriteria();
 				criteria.withCode().thatEquals("TEST");
 				return facade.searchSpaces(criteria, c.createSpaceFetchOptions());
-			}
+			};
 
 			var fCheck = function(facade, spaces) {
 				c.assertEqual(spaces.length, 1);
@@ -119,7 +130,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				c.assertEqual(space.getPermId(), "TEST", "PermId");
 				c.assertEqual(space.getCode(), "TEST", "Code");
 				c.assertEqual(space.getDescription(), null, "Description");
-				c.assertDate(space.getRegistrationDate(), "Registration date", 2013, 04, 12, 12, 59);
+				c.assertDate(space.getRegistrationDate(), "Registration date", 2013, 4, 12, 12, 59);
 				c.assertEqual(space.getRegistrator().getUserId(), "admin", "Registrator userId");
 				c.assertObjectsWithCollections(space, function(object) {
 					return object.getSamples()
@@ -146,7 +157,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				var space = spaces[0];
 				c.assertEqual(space.getCode(), "TEST", "Code");
 				c.assertEqual(space.getDescription(), null, "Description");
-				c.assertDate(space.getRegistrationDate(), "Registration date", 2013, 04, 12, 12, 59);
+				c.assertDate(space.getRegistrationDate(), "Registration date", 2013, 4, 12, 12, 59);
 			}
 			
 			testSearch(c, fSearch, fCheck);
@@ -377,7 +388,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			}
 
 			var fCheck = function(facade, experiments) {
-				c.assertObjectsWithValues(experiments, "code", [ "EXP-2", "TEST-EXPERIMENT-3" ]);
+				c.assertObjectsWithValues(experiments, "code", [ "EXP-1", "EXP-2", "TEST-EXPERIMENT-3" ]);
 			}
 
 			testSearch(c, fSearch, fCheck);
@@ -775,7 +786,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			}
 
 			var fCheck = function(facade, samples) {
-				c.assertObjectsWithValues(samples, "code", [ "PLATE-1A", "SERIES-1" ]);
+				c.assertObjectsWithValues(samples, "code", [ "PLATE-1A", "PLATE-2", "SERIES-1" ]);
 			}
 
 			testSearch(c, fSearch, fCheck);
@@ -1043,7 +1054,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 
 			var fo = c.createDataSetFetchOptions();
 
-			testSearchWithPagingAndSorting(c, function(facade) {
+			testSearchWithPagingAndStringSorting(c, function(facade) {
 				return facade.searchDataSets(criteria, fo);
 			}, fo, "property", "$RESOLUTION");
 		});
