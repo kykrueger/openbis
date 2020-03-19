@@ -25,10 +25,10 @@ import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
 import org.apache.log4j.Logger;
 
-public class JDBCSQLExecutor implements ISQLExecutor
+public abstract class AbstractSQLExecutor implements ISQLExecutor
 {
 
-    private static final Logger OPERATION_LOG = LogFactory.getLogger(LogCategory.OPERATION, JDBCSQLExecutor.class);
+    private static final Logger OPERATION_LOG = LogFactory.getLogger(LogCategory.OPERATION, AbstractSQLExecutor.class);
 
     private static final Map<Class<?>, PSQLTypes> TYPE_CONVERSION_MAP = new HashMap<>();
 
@@ -48,17 +48,7 @@ public class JDBCSQLExecutor implements ISQLExecutor
         TYPE_CONVERSION_MAP.put(Byte.class, PSQLTypes.INT2);
     }
 
-    /** Connection used for this executor. */
-    private Connection connection;
-
-    public void setConnection(final Connection connection)
-    {
-        this.connection = connection;
-    }
-
-    public Connection getConnection() {
-        return this.connection;
-    }
+    public abstract Connection getConnection();
 
     @Override
     public List<Map<String, Object>> execute(final String sqlQuery, final List<Object> args)
