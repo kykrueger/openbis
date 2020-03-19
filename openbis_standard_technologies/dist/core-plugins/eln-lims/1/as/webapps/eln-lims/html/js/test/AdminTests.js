@@ -296,7 +296,24 @@ var AdminTests = new function() {
 
             testChain = Promise.resolve();
 
-            testChain.then(() => TestUtil.testPassed(34))
+            testChain.then(() => e.waitForId("VOCABULARY_BROWSER"))
+                     .then(() => e.click("VOCABULARY_BROWSER"))
+                     .then(() => e.waitForId("vocabulary-browser-title-id")) // wait for page reload
+                     // check count
+                     .then(() => e.waitForId("total-count-id"))
+                     .then(() => e.equalTo("total-count-id", "36", true, false))
+                     // search for PLASMID
+                     .then(() => e.waitForId("search-input-id"))
+                     .then(() => e.write("search-input-id", "PLASMID"))
+                     .then(() => e.click("search-button-id"))
+                     .then(() => e.sleep(2000)) // wait for page reload
+                     .then(() => e.waitForId("annotationplasmid_relationship_id"))
+                     .then(() => e.click("annotationplasmid_relationship_id"))
+                     .then(() => e.sleep(2000)) // wait for page reload
+                     // Click on the PLASMID_RELATIONSHIP row, it should show a list with five relationships.
+                     .then(() => e.waitForId("total-count-id"))
+                     .then(() => e.equalTo("total-count-id", "5", true, false))
+                     .then(() => TestUtil.testPassed(34))
                      .then(() => resolve());
         });
     }
