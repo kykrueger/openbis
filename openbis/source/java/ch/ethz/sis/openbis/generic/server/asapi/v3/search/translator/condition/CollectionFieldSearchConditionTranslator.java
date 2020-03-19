@@ -27,7 +27,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.IdsSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.UserIdsSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.Attributes;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.AttributesMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinInformation;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.*;
@@ -76,7 +76,7 @@ public class CollectionFieldSearchConditionTranslator implements IConditionTrans
         {
             case ATTRIBUTE:
             {
-                final Object fieldName = Attributes.getColumnName(criterion.getFieldName(), tableMapper.getEntitiesTable(), criterion.getFieldName());
+                final Object fieldName = AttributesMapper.getColumnName(criterion.getFieldName(), tableMapper.getEntitiesTable(), criterion.getFieldName());
                 final Collection<?> fieldValue = criterion.getFieldValue();
 
                 sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(fieldName).append(SP).append(IN).append(SP).append(LP).

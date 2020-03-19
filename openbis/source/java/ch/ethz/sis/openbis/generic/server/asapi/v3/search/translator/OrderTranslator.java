@@ -16,9 +16,11 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.EntitySortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.EntityWithPropertiesSortOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.Sorting;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.Attributes;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.AttributesMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinType;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils;
@@ -69,8 +71,7 @@ public class OrderTranslator
                 (stringBuilder, sorting) ->
                 {
                     stringBuilder.append(COMMA + SP);
-                    appendSortingColumn(vo, stringBuilder, sorting.getField(), false);
-                    stringBuilder.append(SP).append(sorting.getOrder());
+                    appendSortingColumn(vo, stringBuilder, sorting, false);
                 },
                 StringBuilder::append
         );
@@ -85,7 +86,7 @@ public class OrderTranslator
         vo.getSortOptions().getSortings().forEach((sorting) ->
         {
             sqlBuilder.append(COMMA).append(SP);
-            appendSortingColumn(vo, sqlBuilder, sorting.getField(), true);
+            appendSortingColumn(vo, sqlBuilder, sorting, true);
         });
 
         return sqlBuilder.toString();
@@ -108,7 +109,7 @@ public class OrderTranslator
                 final String propertyName = sortingCriterionFieldName.substring(EntityWithPropertiesSortOptions.PROPERTY.length()).toLowerCase();
                 joinInformationMap = TranslatorUtils.getPropertyJoinInformationMap(tableMapper, () -> getOrderingAlias(indexCounter), JoinType.LEFT);
                 aliasesMapKey = propertyName;
-            } else if (isTypeSearchCriterion(sortingCriterionFieldName))
+            } else if (isTypeSearchCriterion(sortingCriterionFieldName) || isSortingByMaterialPermId(vo, sortingCriterionFieldName))
             {
                 joinInformationMap = TranslatorUtils.getTypeJoinInformationMap(tableMapper, () -> getOrderingAlias(indexCounter));
                 aliasesMapKey = EntityWithPropertiesSortOptions.TYPE;
@@ -160,15 +161,18 @@ public class OrderTranslator
     }
 
     /**
-     * Appends sorting column to SQL builder. Adds type casting when needed.
+     * Appends sorting column to SQL builder. In some cases it can be more columns. Adds type casting when needed.
+     *
      * @param vo order translation value object.
      * @param sqlBuilder string builder to which the column should be appended.
-     * @param sortingCriteriaFieldName the name of the field to sort by.
+     * @param sorting sorting parameters.
      * @param inSelect {@code true} if this method is used in the {@code SELECT} clause.
      */
-    private static void appendSortingColumn(final TranslationVo vo, final StringBuilder sqlBuilder, final String sortingCriteriaFieldName,
+    private static void appendSortingColumn(final TranslationVo vo, final StringBuilder sqlBuilder, final Sorting sorting,
             final boolean inSelect)
     {
+        final String sortingCriteriaFieldName = sorting.getField();
+        final Map<String, JoinInformation> aliases = vo.getAliases().get(UNIQUE_PREFIX);
         if (TranslatorUtils.isPropertySearchFieldName(sortingCriteriaFieldName))
         {
             final String propertyName = sortingCriteriaFieldName.substring(EntityWithPropertiesSortOptions.PROPERTY.length());
@@ -190,7 +194,6 @@ public class OrderTranslator
         {
             if (inSelect)
             {
-                final Map<String, JoinInformation> aliases = vo.getAliases().get(UNIQUE_PREFIX);
                 final JoinInformation entitiesTableAlias = aliases.get(vo.getTableMapper().getEntitiesTable());
                 final JoinInformation spacesTableAlias = aliases.get(UNIQUE_PREFIX + SPACES_TABLE);
                 final JoinInformation projectsTableAlias = aliases.get(UNIQUE_PREFIX + PROJECTS_TABLE);
@@ -201,13 +204,35 @@ public class OrderTranslator
                 sqlBuilder.append(SP);
             }
             sqlBuilder.append(IDENTIFIER_SORTING_COLUMN);
+        } else if (isSortingByMaterialPermId(vo, sortingCriteriaFieldName))
+        {
+            final String materialTypeTableAlias = vo.getAliases().get(EntityWithPropertiesSortOptions.TYPE)
+                    .get(vo.getTableMapper().getEntityTypesTable()).getSubTableAlias();
+            sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN);
+
+            if (!inSelect)
+            {
+                sqlBuilder.append(SP).append(sorting.getOrder());
+            }
+
+            sqlBuilder.append(COMMA).append(SP).append(materialTypeTableAlias).append(PERIOD).append(CODE_COLUMN);
         } else
         {
             final String lowerCaseSortingCriteriaFieldName = sortingCriteriaFieldName.toLowerCase();
-            final String fieldName = Attributes.getColumnName(lowerCaseSortingCriteriaFieldName, vo.getTableMapper().getEntitiesTable(),
+            final String fieldName = AttributesMapper.getColumnName(lowerCaseSortingCriteriaFieldName, vo.getTableMapper().getEntitiesTable(),
                     lowerCaseSortingCriteriaFieldName);
             sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(fieldName);
         }
+
+        if (!inSelect)
+        {
+            sqlBuilder.append(SP).append(sorting.getOrder());
+        }
+    }
+
+    private static boolean isSortingByMaterialPermId(final TranslationVo vo, final String sortingCriteriaFieldName)
+    {
+        return EntitySortOptions.PERM_ID.equals(sortingCriteriaFieldName) && vo.getTableMapper() == TableMapper.MATERIAL;
     }
 
     private static String getOrderingAlias(final AtomicInteger num)
