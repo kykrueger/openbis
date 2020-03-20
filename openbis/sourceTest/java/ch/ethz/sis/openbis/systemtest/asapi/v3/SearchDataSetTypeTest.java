@@ -19,9 +19,11 @@ package ch.ethz.sis.openbis.systemtest.asapi.v3;
 import static org.testng.Assert.assertEquals;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
@@ -101,6 +103,21 @@ public class SearchDataSetTypeTest extends AbstractTest
         List<DataSetType> types = searchResult.getObjects();
         List<String> codes = extractCodes(types);
         Collections.sort(codes);
+        assertEquals(codes.toString(), "[DELETION_TEST_CONTAINER]");
+        v3api.logout(sessionToken);
+    }
+
+    @Test
+    public void testSearchWithIds()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        DataSetTypeSearchCriteria searchCriteria = new DataSetTypeSearchCriteria();
+        searchCriteria.withIds().thatIn(Arrays.asList(new EntityTypePermId("DELETION_TEST_CONTAINER")));
+
+        SearchResult<DataSetType> searchResult = v3api.searchDataSetTypes(sessionToken, searchCriteria, new DataSetTypeFetchOptions());
+
+        List<DataSetType> types = searchResult.getObjects();
+        List<String> codes = extractCodes(types);
         assertEquals(codes.toString(), "[DELETION_TEST_CONTAINER]");
         v3api.logout(sessionToken);
     }

@@ -122,6 +122,21 @@ public class SearchExperimentTypeTest extends AbstractTest
     }
 
     @Test
+    public void testSearchWithIds()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        ExperimentTypeSearchCriteria searchCriteria = new ExperimentTypeSearchCriteria();
+        searchCriteria.withIds().thatIn(Arrays.asList(new EntityTypePermId("SIRNA_HCS")));
+        SearchResult<ExperimentType> searchResult = v3api.searchExperimentTypes(sessionToken, searchCriteria, new ExperimentTypeFetchOptions());
+
+        List<ExperimentType> types = searchResult.getObjects();
+        List<String> codes = extractCodes(types);
+        Collections.sort(codes);
+        assertEquals(codes.toString(), "[SIRNA_HCS]");
+        v3api.logout(sessionToken);
+    }
+
+    @Test
     public void testSearchWithCodeThatStartsWithD()
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);

@@ -19,9 +19,11 @@ package ch.ethz.sis.openbis.systemtest.asapi.v3;
 import static org.testng.Assert.assertEquals;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
@@ -68,6 +70,20 @@ public class SearchMaterialTypeTest extends AbstractTest
         List<MaterialType> types = searchResult.getObjects();
         List<String> codes = extractCodes(types);
         Collections.sort(codes);
+        assertEquals(codes.toString(), "[SELF_REF]");
+        v3api.logout(sessionToken);
+    }
+
+    @Test
+    public void testSearchWithIds()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        MaterialTypeSearchCriteria searchCriteria = new MaterialTypeSearchCriteria();
+        searchCriteria.withIds().thatIn(Arrays.asList(new EntityTypePermId("SELF_REF")));
+        SearchResult<MaterialType> searchResult = v3api.searchMaterialTypes(sessionToken, searchCriteria, new MaterialTypeFetchOptions());
+
+        List<MaterialType> types = searchResult.getObjects();
+        List<String> codes = extractCodes(types);
         assertEquals(codes.toString(), "[SELF_REF]");
         v3api.logout(sessionToken);
     }
