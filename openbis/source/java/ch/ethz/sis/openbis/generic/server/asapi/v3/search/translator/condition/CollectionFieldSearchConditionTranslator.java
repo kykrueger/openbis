@@ -44,11 +44,10 @@ public class CollectionFieldSearchConditionTranslator implements IConditionTrans
 
         // TODO - Implement IdsSearchCriteria properly - Implementation notes
         // TODO - Before doing any of this, check that this code path is actually triggered
-        // These are objects, and can have different types matching different columns.
-        // This case requires first to split the Collection of Ids by object type in sub collections.
-        // If the collection is empty, is a FALSE statement.
-        // For each sub collection of each type is necessary to create a statement with its argument.
-        // It would also be possible to delegate, the simpler non efficient implementation would be to call IdSearchConditionTransator for each id
+        // IPropertyAssignmentId -> PropertyAssignmentPermId (EntityTypePermId, PropertyTypePermId) : Doesn't use query engine
+        // IPropertyTypeId -> PropertyTypePermId : Doesn't use query engine
+        // IPluginId -> PluginPermId : Doesn't use query engine
+        // IEntityTypeId -> EntityTypePermId : Uses it :(
         ARRAY_CASTING.put(IdsSearchCriteria.class, new Object[0]);
     }
 
@@ -69,6 +68,17 @@ public class CollectionFieldSearchConditionTranslator implements IConditionTrans
         }
         if (criterion.getClass() == IdsSearchCriteria.class)
         {
+            if(criterion.getFieldValue().size() > 1)
+            {
+                Class identifierClass = criterion.getFieldValue().iterator().next().getClass();
+                for (Object identifier:criterion.getFieldValue())
+                {
+                    if (identifier.getClass() != identifierClass)
+                    {
+                        throw new IllegalArgumentException("Unsupported " + CollectionFieldSearchCriteria.class.getSimpleName() + " : " + IdsSearchCriteria.class + ", identifiers provided should be of the same type.");
+                    }
+                }
+            }
             throw new RuntimeException("Unsupported " + CollectionFieldSearchCriteria.class.getSimpleName() + " : " + IdsSearchCriteria.class + ", this is a core error, contact the development team.");
         }
 
