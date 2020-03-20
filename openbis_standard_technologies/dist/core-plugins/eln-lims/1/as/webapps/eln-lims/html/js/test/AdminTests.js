@@ -1,33 +1,5 @@
 var AdminTests = new function() {
 
-    this.startAdminTests = function() {
-        testChain = Promise.resolve();
-                 //1. Login
-        testChain.then(() => this.login())
-                 //2. Inventory Space and Sample Types
-                 .then(() => this.inventorySpace())
-                 //3. Settings Form - Enable Sample Types to Show in Drop-downs
-                 .then(() => this.enableBacteriaToShowInDropDowns())
-                 //5. User Manager
-                 .then(() => this.userManager())
-                 .catch(error => { console.log(error) });
-    }
-
-    this.finishTests = function() {
-        testChain = Promise.resolve();
-                 //31 . Order Form
-        testChain.then(() => TestUtil.deleteCookies("suitename"))
-                 .then(() => TestUtil.login("admin", "a"))
-                 .then(() => this.orderForm())
-                 //32. Order Form - Avoiding modifying orders by deleted requests
-                 .then(() => this.deletedRequests())
-                 //33. Trash Manager
-                 .then(() => this.trashManager())
-                 //34. Vocabulary Viewer
-                 .then(() => this.vocabularyViewer())
-                 .catch(error => { console.log(error) });
-    }
-
     this.login = function() {
         return new Promise(function executor(resolve, reject) {
             var e = EventUtil;
@@ -307,10 +279,10 @@ var AdminTests = new function() {
                      .then(() => e.write("search-input-id", "PLASMID"))
                      .then(() => e.click("search-button-id"))
                      .then(() => e.sleep(2000)) // wait for page reload
+                     // Click on the PLASMID_RELATIONSHIP row, it should show a list with five relationships.
                      .then(() => e.waitForId("annotationplasmid_relationship_id"))
                      .then(() => e.click("annotationplasmid_relationship_id"))
                      .then(() => e.sleep(2000)) // wait for page reload
-                     // Click on the PLASMID_RELATIONSHIP row, it should show a list with five relationships.
                      .then(() => e.waitForId("total-count-id"))
                      .then(() => e.equalTo("total-count-id", "5", true, false))
                      .then(() => TestUtil.testPassed(34))
