@@ -83,7 +83,7 @@ public class AttributesMapper
 
     public static String getColumnName(final String attributeId, final String tableName, final String defaultValue)
     {
-        return attributeId.equals(PERM_ID_ATTRIBUTE) ?
+        return PERM_ID_ATTRIBUTE.equals(attributeId) || "ids".equals(attributeId) ?
                 ENTITIES_TABLE_TO_PERM_ID_COLUMN_NAME.getOrDefault(tableName, defaultValue) :
                 ATTRIBUTE_ID_TO_COLUMN_NAME.getOrDefault(attributeId, defaultValue);
     }
