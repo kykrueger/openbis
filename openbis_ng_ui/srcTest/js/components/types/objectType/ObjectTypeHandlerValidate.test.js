@@ -1,13 +1,9 @@
 import ObjectTypeHandlerValidate from '../../../../../src/js/components/types/objectType/ObjectTypeHandlerValidate.js'
 import ComponentState from '../../../common/ComponentState.js'
-import { dto } from '../../../../../src/js/services/openbis.js'
-
-jest.mock('../../../../../src/js/services/openbis.js')
+import { dto } from '../../../services/openbis.js'
 
 beforeEach(() => {
   jest.resetAllMocks()
-  dto.DataType.CONTROLLEDVOCABULARY = 'CONTROLLEDVOCABULARY'
-  dto.DataType.MATERIAL = 'MATERIAL'
 })
 
 describe('ObjectTypeHandlerValidateTest', () => {

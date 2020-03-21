@@ -1,13 +1,11 @@
 import React from 'react'
 import { mount } from 'enzyme'
 import Browser from '../../../../../src/js/components/common/browser/Browser.jsx'
-import { facade, dto } from '../../../../../src/js/services/openbis.js'
+import { facade } from '../../../../../src/js/services/openbis.js'
 import * as actions from '../../../../../src/js/store/actions/actions.js'
 import * as pages from '../../../../../src/js/common/consts/pages.js'
 import { createStore } from '../../../../../src/js/store/store.js'
 import * as fixture from '../../../common/fixture.js'
-
-jest.mock('../../../../../src/js/services/openbis.js')
 
 let store = null
 
@@ -28,12 +26,6 @@ describe('browser', () => {
         fixture.ANOTHER_GROUP_DTO,
         fixture.ALL_USERS_GROUP_DTO
       ]
-    })
-
-    dto.AuthorizationGroupFetchOptions.mockImplementation(() => {
-      return {
-        withUsers: function() {}
-      }
     })
 
     store.dispatch(actions.init())

@@ -5,8 +5,6 @@ import * as pages from '../../../../src/js/common/consts/pages.js'
 import { createStore } from '../../../../src/js/store/store.js'
 import * as fixture from '../../common/fixture.js'
 
-jest.mock('../../../../src/js/services/openbis.js')
-
 let store = null
 
 beforeEach(() => {

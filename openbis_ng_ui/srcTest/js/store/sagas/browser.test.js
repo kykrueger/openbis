@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import { facade, dto } from '../../../../src/js/services/openbis.js'
+import { facade } from '../../../../src/js/services/openbis.js'
 import * as actions from '../../../../src/js/store/actions/actions.js'
 import * as selectors from '../../../../src/js/store/selectors/selectors.js'
 import * as pages from '../../../../src/js/common/consts/pages.js'
@@ -7,8 +7,6 @@ import * as objectType from '../../../../src/js/common/consts/objectType.js'
 import * as common from '../../../../src/js/store/common/browser.js'
 import { createStore } from '../../../../src/js/store/store.js'
 import * as fixture from '../../common/fixture.js'
-
-jest.mock('../../../../src/js/services/openbis.js')
 
 let store = null
 
@@ -33,12 +31,6 @@ describe('browser', () => {
         fixture.ANOTHER_GROUP_DTO,
         fixture.ALL_USERS_GROUP_DTO
       ]
-    })
-
-    dto.AuthorizationGroupFetchOptions.mockImplementation(() => {
-      return {
-        withUsers: function() {}
-      }
     })
 
     store.dispatch(actions.browserInit(pages.USERS))
@@ -118,12 +110,6 @@ describe('browser', () => {
       ]
     })
 
-    dto.AuthorizationGroupFetchOptions.mockImplementation(() => {
-      return {
-        withUsers: function() {}
-      }
-    })
-
     store.dispatch(actions.browserInit(pages.USERS))
     store.dispatch(
       actions.browserFilterChange(
@@ -161,12 +147,6 @@ describe('browser', () => {
       objects: []
     })
 
-    dto.AuthorizationGroupFetchOptions.mockImplementation(() => {
-      return {
-        withUsers: function() {}
-      }
-    })
-
     let testUserObject = fixture.object(
       objectType.USER,
       fixture.TEST_USER_DTO.userId
@@ -200,12 +180,6 @@ describe('browser', () => {
 
     facade.searchAuthorizationGroups.mockReturnValue({
       objects: []
-    })
-
-    dto.AuthorizationGroupFetchOptions.mockImplementation(() => {
-      return {
-        withUsers: function() {}
-      }
     })
 
     let testUserObject = fixture.object(
@@ -253,12 +227,6 @@ describe('browser', () => {
       objects: []
     })
 
-    dto.AuthorizationGroupFetchOptions.mockImplementation(() => {
-      return {
-        withUsers: function() {}
-      }
-    })
-
     store.dispatch(actions.browserInit(pages.USERS))
     store.dispatch(actions.browserNodeSelect(pages.USERS, nodeId(['users'])))
 
@@ -282,12 +250,6 @@ describe('browser', () => {
 
     facade.searchAuthorizationGroups.mockReturnValue({
       objects: [fixture.TEST_GROUP_DTO]
-    })
-
-    dto.AuthorizationGroupFetchOptions.mockImplementation(() => {
-      return {
-        withUsers: function() {}
-      }
     })
 
     let testUserObject = fixture.object(
@@ -388,12 +350,6 @@ describe('browser', () => {
 
     facade.searchAuthorizationGroups.mockReturnValue({
       objects: [fixture.TEST_GROUP_DTO]
-    })
-
-    dto.AuthorizationGroupFetchOptions.mockImplementation(() => {
-      return {
-        withUsers: function() {}
-      }
     })
 
     store.dispatch(actions.browserInit(pages.USERS))

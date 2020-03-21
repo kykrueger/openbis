@@ -2,20 +2,9 @@ import React from 'react'
 import { mount } from 'enzyme'
 import ThemeProvider from '../../../../../src/js/components/common/theme/ThemeProvider.jsx'
 import ObjectType from '../../../../../src/js/components/types/objectType/ObjectType.jsx'
-import { dto } from '../../../../../src/js/services/openbis.js'
-
-jest.mock('../../../../../src/js/services/openbis.js')
 
 beforeEach(() => {
   jest.resetAllMocks()
-  dto.DataType.VARCHAR = 'VARCHAR'
-  dto.DataType.CONTROLLEDVOCABULARY = 'CONTROLLEDVOCABULARY'
-  dto.DataType.MATERIAL = 'MATERIAL'
-  dto.DataType.values = [
-    dto.DataType.VARCHAR,
-    dto.DataType.CONTROLLEDVOCABULARY,
-    dto.DataType.MATERIAL
-  ]
 })
 
 describe('ObjectType', () => {
