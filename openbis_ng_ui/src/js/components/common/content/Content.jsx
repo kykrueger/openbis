@@ -1,14 +1,14 @@
-import React from 'react'
 import _ from 'lodash'
+import React from 'react'
 import { connect } from 'react-redux'
 import { withStyles } from '@material-ui/core/styles'
-import logger from '../../../common/logger.js'
-import * as util from '../../../common/util.js'
-import * as selectors from '../../../store/selectors/selectors.js'
-import * as actions from '../../../store/actions/actions.js'
+import ErrorBoundary from '@src/js/components/common/error/ErrorBoundary.jsx'
+import selectors from '@src/js/store/selectors/selectors.js'
+import actions from '@src/js/store/actions/actions.js'
+import util from '@src/js/common/util.js'
+import logger from '@src/js/common/logger.js'
 
 import ContentTabs from './ContentTabs.jsx'
-import ErrorBoundary from '../error/ErrorBoundary.jsx'
 
 const styles = {
   container: {
@@ -93,9 +93,6 @@ class Content extends React.Component {
 }
 
 export default _.flow(
-  connect(
-    mapStateToProps,
-    mapDispatchToProps
-  ),
+  connect(mapStateToProps, mapDispatchToProps),
   withStyles(styles)
 )(Content)

@@ -1,4 +1,11 @@
-export * from './api.js'
-export * from './app.js'
-export * from './page.js'
-export * from './browser.js'
+import api from './api.js'
+import app from './app.js'
+import page from './page.js'
+import browser from './browser.js'
+
+export default {
+  ...api,
+  ...app,
+  ...page,
+  ...browser
+}

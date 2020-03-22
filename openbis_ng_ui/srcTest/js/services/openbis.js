@@ -1,2 +1,7 @@
-export * from './openbis/dto.js'
-export * from './openbis/facade.js'
+import dto from './openbis/dto.js'
+import api from './openbis/api.js'
+
+export default {
+  ...dto,
+  ...api
+}

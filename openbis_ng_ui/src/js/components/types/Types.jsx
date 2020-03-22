@@ -1,11 +1,11 @@
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
-import logger from '../../common/logger.js'
-import * as pages from '../../common/consts/pages.js'
-import * as objectType from '../../common/consts/objectType.js'
+import logger from '@src/js/common/logger.js'
+import pages from '@src/js/common/consts/pages.js'
+import objectType from '@src/js/common/consts/objectType.js'
 
-import Browser from '../common/browser/Browser.jsx'
-import Content from '../common/content/Content.jsx'
+import Browser from '@src/js/components/common/browser/Browser.jsx'
+import Content from '@src/js/components/common/content/Content.jsx'
 
 import ObjectType from './objectType/ObjectType.jsx'
 import CollectionType from './collectionType/CollectionType.jsx'

@@ -2,12 +2,12 @@ import _ from 'lodash'
 import React from 'react'
 import { Draggable } from 'react-beautiful-dnd'
 import { withStyles } from '@material-ui/core/styles'
-import CheckboxField from '../../common/form/CheckboxField.jsx'
-import TextField from '../../common/form/TextField.jsx'
-import SelectField from '../../common/form/SelectField.jsx'
-import { dto } from '../../../services/openbis.js'
-import logger from '../../../common/logger.js'
-import * as util from '../../../common/util.js'
+import CheckboxField from '@src/js/components/common/form/CheckboxField.jsx'
+import TextField from '@src/js/components/common/form/TextField.jsx'
+import SelectField from '@src/js/components/common/form/SelectField.jsx'
+import openbis from '@src/js/services/openbis.js'
+import logger from '@src/js/common/logger.js'
+import util from '@src/js/common/util.js'
 
 const EMPTY = 'empty'
 
@@ -77,9 +77,9 @@ class ObjectTypePreviewProperty extends React.PureComponent {
   componentDidMount() {
     const { dataType } = this.props.property
 
-    if (dataType === dto.DataType.MATERIAL) {
+    if (dataType === openbis.DataType.MATERIAL) {
       this.loadMaterials()
-    } else if (dataType === dto.DataType.CONTROLLEDVOCABULARY) {
+    } else if (dataType === openbis.DataType.CONTROLLEDVOCABULARY) {
       this.loadVocabularyTerms()
     }
   }
@@ -198,23 +198,23 @@ class ObjectTypePreviewProperty extends React.PureComponent {
     const { dataType } = this.props.property
 
     if (
-      dataType === dto.DataType.VARCHAR ||
-      dataType === dto.DataType.MULTILINE_VARCHAR ||
-      dataType === dto.DataType.HYPERLINK ||
-      dataType === dto.DataType.TIMESTAMP ||
-      dataType === dto.DataType.XML
+      dataType === openbis.DataType.VARCHAR ||
+      dataType === openbis.DataType.MULTILINE_VARCHAR ||
+      dataType === openbis.DataType.HYPERLINK ||
+      dataType === openbis.DataType.TIMESTAMP ||
+      dataType === openbis.DataType.XML
     ) {
       return this.renderVarcharProperty()
     } else if (
-      dataType === dto.DataType.REAL ||
-      dataType === dto.DataType.INTEGER
+      dataType === openbis.DataType.REAL ||
+      dataType === openbis.DataType.INTEGER
     ) {
       return this.renderNumberProperty()
-    } else if (dataType === dto.DataType.BOOLEAN) {
+    } else if (dataType === openbis.DataType.BOOLEAN) {
       return this.renderBooleanProperty()
-    } else if (dataType === dto.DataType.CONTROLLEDVOCABULARY) {
+    } else if (dataType === openbis.DataType.CONTROLLEDVOCABULARY) {
       return this.renderVocabularyProperty()
-    } else if (dataType === dto.DataType.MATERIAL) {
+    } else if (dataType === openbis.DataType.MATERIAL) {
       return this.renderMaterialProperty()
     } else {
       return <span>Data type not supported yet</span>
@@ -365,8 +365,8 @@ class ObjectTypePreviewProperty extends React.PureComponent {
 
   getMultiline() {
     return (
-      this.props.property.dataType === dto.DataType.MULTILINE_VARCHAR ||
-      this.props.property.dataType === dto.DataType.XML
+      this.props.property.dataType === openbis.DataType.MULTILINE_VARCHAR ||
+      this.props.property.dataType === openbis.DataType.XML
     )
   }
 

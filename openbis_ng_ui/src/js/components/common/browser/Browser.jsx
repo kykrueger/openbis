@@ -1,14 +1,14 @@
-import React from 'react'
 import _ from 'lodash'
+import React from 'react'
 import Paper from '@material-ui/core/Paper'
 import { Resizable } from 're-resizable'
 import { connect } from 'react-redux'
 import { withStyles } from '@material-ui/core/styles'
-import logger from '../../../common/logger.js'
-import * as selectors from '../../../store/selectors/selectors.js'
-import * as actions from '../../../store/actions/actions.js'
+import FilterField from '@src/js/components/common/form/FilterField.jsx'
+import selectors from '@src/js/store/selectors/selectors.js'
+import actions from '@src/js/store/actions/actions.js'
+import logger from '@src/js/common/logger.js'
 
-import FilterField from './../form/FilterField.jsx'
 import BrowserNodes from './BrowserNodes.jsx'
 
 const styles = {
@@ -106,9 +106,6 @@ class Browser extends React.PureComponent {
 }
 
 export default _.flow(
-  connect(
-    mapStateToProps,
-    mapDispatchToProps
-  ),
+  connect(mapStateToProps, mapDispatchToProps),
   withStyles(styles)
 )(Browser)

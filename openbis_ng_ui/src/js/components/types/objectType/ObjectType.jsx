@@ -2,7 +2,9 @@ import _ from 'lodash'
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import { Resizable } from 're-resizable'
-import Loading from '../../common/loading/Loading.jsx'
+
+import Loading from '@src/js/components/common/loading/Loading.jsx'
+import logger from '@src/js/common/logger.js'
 
 import ObjectTypeFacade from './ObjectTypeFacade.js'
 import ObjectTypeHandlerLoad from './ObjectTypeHandlerLoad.js'
@@ -20,8 +22,6 @@ import ObjectTypeParameters from './ObjectTypeParameters.jsx'
 import ObjectTypePreview from './ObjectTypePreview.jsx'
 import ObjectTypeDialogRemoveSection from './ObjectTypeDialogRemoveSection.jsx'
 import ObjectTypeDialogRemoveProperty from './ObjectTypeDialogRemoveProperty.jsx'
-
-import logger from '../../../common/logger.js'
 
 const styles = theme => ({
   container: {

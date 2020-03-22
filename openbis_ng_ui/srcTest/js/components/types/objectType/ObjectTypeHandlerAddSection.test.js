@@ -1,5 +1,5 @@
-import ObjectTypeHandlerAddSection from '../../../../../src/js/components/types/objectType/ObjectTypeHandlerAddSection.js'
-import ComponentState from '../../../common/ComponentState.js'
+import ObjectTypeHandlerAddSection from '@src/js/components/types/objectType/ObjectTypeHandlerAddSection.js'
+import ComponentState from '@srcTest/js/common/ComponentState.js'
 
 describe('ObjectTypeHandlerAddSectionTest', () => {
   test('add with nothing selected', () => {

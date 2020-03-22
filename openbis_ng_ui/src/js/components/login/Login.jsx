@@ -9,8 +9,8 @@ import CardContent from '@material-ui/core/CardContent'
 import TextField from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
 
-import logger from '../../common/logger.js'
-import * as actions from '../../store/actions/actions.js'
+import actions from '@src/js/store/actions/actions.js'
+import logger from '@src/js/common/logger.js'
 
 const styles = {
   card: {
@@ -115,9 +115,6 @@ class WithLogin extends React.Component {
 }
 
 export default flow(
-  connect(
-    mapStateToProps,
-    mapDispatchToProps
-  ),
+  connect(mapStateToProps, mapDispatchToProps),
   withStyles(styles)
 )(WithLogin)

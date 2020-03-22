@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import { dto } from '../../../services/openbis.js'
+import openbis from '@src/js/services/openbis.js'
 
 export default class ObjectTypeHandlerSave {
   constructor(state, setState, facade, loadHandler, validateHandler) {
@@ -191,25 +191,25 @@ export default class ObjectTypeHandlerSave {
   }
 
   deletePropertyAssignmentOperation(property) {
-    const assignmentId = new dto.PropertyAssignmentPermId(
-      new dto.EntityTypePermId(this.type.code, dto.EntityKind.SAMPLE),
-      new dto.PropertyTypePermId(property.code)
+    const assignmentId = new openbis.PropertyAssignmentPermId(
+      new openbis.EntityTypePermId(this.type.code, openbis.EntityKind.SAMPLE),
+      new openbis.PropertyTypePermId(property.code)
     )
 
-    const update = new dto.SampleTypeUpdate()
+    const update = new openbis.SampleTypeUpdate()
     update.setTypeId(
-      new dto.EntityTypePermId(this.type.code, dto.EntityKind.SAMPLE)
+      new openbis.EntityTypePermId(this.type.code, openbis.EntityKind.SAMPLE)
     )
     update.getPropertyAssignments().remove([assignmentId])
     update
       .getPropertyAssignments()
       .setForceRemovingAssignments(property.usages > 0)
 
-    return new dto.UpdateSampleTypesOperation([update])
+    return new openbis.UpdateSampleTypesOperation([update])
   }
 
   createPropertyTypeOperation(property) {
-    const creation = new dto.PropertyTypeCreation()
+    const creation = new openbis.PropertyTypeCreation()
     creation.setCode(property.code)
     creation.setLabel(property.label)
     creation.setDescription(property.description)
@@ -218,40 +218,48 @@ export default class ObjectTypeHandlerSave {
     creation.setTransformation(property.transformation)
 
     if (
-      property.dataType === dto.DataType.CONTROLLEDVOCABULARY &&
+      property.dataType === openbis.DataType.CONTROLLEDVOCABULARY &&
       property.vocabulary
     ) {
-      creation.setVocabularyId(new dto.VocabularyPermId(property.vocabulary))
-    }
-    if (property.dataType === dto.DataType.MATERIAL && property.materialType) {
-      creation.setMaterialTypeId(
-        new dto.EntityTypePermId(property.materialType, dto.EntityKind.MATERIAL)
+      creation.setVocabularyId(
+        new openbis.VocabularyPermId(property.vocabulary)
       )
     }
-    return new dto.CreatePropertyTypesOperation([creation])
+    if (
+      property.dataType === openbis.DataType.MATERIAL &&
+      property.materialType
+    ) {
+      creation.setMaterialTypeId(
+        new openbis.EntityTypePermId(
+          property.materialType,
+          openbis.EntityKind.MATERIAL
+        )
+      )
+    }
+    return new openbis.CreatePropertyTypesOperation([creation])
   }
 
   updatePropertyTypeOperation(property) {
-    const update = new dto.PropertyTypeUpdate()
+    const update = new openbis.PropertyTypeUpdate()
     if (property.code) {
-      update.setTypeId(new dto.PropertyTypePermId(property.code))
+      update.setTypeId(new openbis.PropertyTypePermId(property.code))
     }
     update.setLabel(property.label)
     update.setDescription(property.description)
     update.setSchema(property.schema)
     update.setTransformation(property.transformation)
-    return new dto.UpdatePropertyTypesOperation([update])
+    return new openbis.UpdatePropertyTypesOperation([update])
   }
 
   deletePropertyTypeOperation(property) {
-    const id = new dto.PropertyTypePermId(property.code)
-    const options = new dto.PropertyTypeDeletionOptions()
+    const id = new openbis.PropertyTypePermId(property.code)
+    const options = new openbis.PropertyTypeDeletionOptions()
     options.setReason('deleted via ng_ui')
-    return new dto.DeletePropertyTypesOperation([id], options)
+    return new openbis.DeletePropertyTypesOperation([id], options)
   }
 
   propertyAssignmentCreation(property, index) {
-    let creation = new dto.PropertyAssignmentCreation()
+    let creation = new openbis.PropertyAssignmentCreation()
     creation.setOrdinal(index + 1)
     creation.setMandatory(property.mandatory)
     creation.setInitialValueForExistingEntities(
@@ -262,20 +270,20 @@ export default class ObjectTypeHandlerSave {
     creation.setSection(property.section)
 
     if (property.code) {
-      creation.setPropertyTypeId(new dto.PropertyTypePermId(property.code))
+      creation.setPropertyTypeId(new openbis.PropertyTypePermId(property.code))
     }
 
     if (property.plugin) {
-      creation.setPluginId(new dto.PluginPermId(property.plugin))
+      creation.setPluginId(new openbis.PluginPermId(property.plugin))
     }
 
     return creation
   }
 
   updateTypeOperation(assignments) {
-    const update = new dto.SampleTypeUpdate()
+    const update = new openbis.SampleTypeUpdate()
     update.setTypeId(
-      new dto.EntityTypePermId(this.type.code, dto.EntityKind.SAMPLE)
+      new openbis.EntityTypePermId(this.type.code, openbis.EntityKind.SAMPLE)
     )
     update.setDescription(this.type.description)
     update.setListable(this.type.listable)
@@ -287,12 +295,12 @@ export default class ObjectTypeHandlerSave {
     update.setSubcodeUnique(this.type.subcodeUnique)
     update.setValidationPluginId(
       this.type.validationPlugin
-        ? new dto.PluginPermId(this.type.validationPlugin)
+        ? new openbis.PluginPermId(this.type.validationPlugin)
         : null
     )
     update.getPropertyAssignments().set(assignments.reverse())
 
-    return new dto.UpdateSampleTypesOperation([update])
+    return new openbis.UpdateSampleTypesOperation([update])
   }
 
   execute() {
@@ -307,7 +315,7 @@ export default class ObjectTypeHandlerSave {
         })
 
         const operations = this.createOperations()
-        const options = new dto.SynchronousOperationExecutionOptions()
+        const options = new openbis.SynchronousOperationExecutionOptions()
         options.setExecuteInOrder(true)
 
         return this.facade
@@ -320,7 +328,7 @@ export default class ObjectTypeHandlerSave {
           })
       })
       .catch(error => {
-        this.facade.catch(error)
+        this.openbis.catch(error)
       })
       .finally(() => {
         this.setState({

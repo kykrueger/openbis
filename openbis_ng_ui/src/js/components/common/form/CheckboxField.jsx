@@ -2,9 +2,10 @@ import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import Checkbox from '@material-ui/core/Checkbox'
 import Typography from '@material-ui/core/Typography'
+import logger from '@src/js/common/logger.js'
+
 import FormFieldContainer from './FormFieldContainer.jsx'
 import FormFieldLabel from './FormFieldLabel.jsx'
-import logger from '../../../common/logger.js'
 
 const styles = () => ({
   container: {

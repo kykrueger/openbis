@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import { dto } from '../../../services/openbis.js'
+import openbis from '@src/js/services/openbis.js'
 
 export default class ObjectTypeHandlerValidate {
   constructor(getState, setState) {
@@ -134,14 +134,14 @@ export default class ObjectTypeHandlerValidate {
     )
     this.validateNotEmpty('Data Type', 'dataType', property.dataType, errors)
 
-    if (property.dataType === dto.DataType.CONTROLLEDVOCABULARY) {
+    if (property.dataType === openbis.DataType.CONTROLLEDVOCABULARY) {
       this.validateNotEmpty(
         'Vocabulary',
         'vocabulary',
         property.vocabulary,
         errors
       )
-    } else if (property.dataType === dto.DataType.MATERIAL) {
+    } else if (property.dataType === openbis.DataType.MATERIAL) {
       this.validateNotEmpty(
         'Material Type',
         'materialType',

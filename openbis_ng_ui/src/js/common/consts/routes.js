@@ -1,8 +1,8 @@
 import _ from 'lodash'
 import { matchPath } from 'react-router'
 import pathToRegexp from 'path-to-regexp'
-import * as pages from './pages.js'
-import * as objectTypes from './objectType.js'
+import pages from '@src/js/common/consts/pages.js'
+import objectTypes from '@src/js/common/consts/objectType.js'
 
 function doFormat(actualParams, pattern, requiredParams) {
   if (_.isMatch(actualParams, requiredParams)) {

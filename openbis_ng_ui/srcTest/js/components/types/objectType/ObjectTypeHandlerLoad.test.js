@@ -1,5 +1,5 @@
-import ObjectTypeHandlerLoad from '../../../../../src/js/components/types/objectType/ObjectTypeHandlerLoad.js'
-import ComponentState from '../../../common/ComponentState.js'
+import ObjectTypeHandlerLoad from '@src/js/components/types/objectType/ObjectTypeHandlerLoad.js'
+import ComponentState from '@srcTest/js/common/ComponentState.js'
 
 describe('ObjectTypeHandlerLoadTest', () => {
   test('load success', done => {

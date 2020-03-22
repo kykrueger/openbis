@@ -1,8 +1,8 @@
 import _ from 'lodash'
 import { combineReducers } from 'redux'
-import * as actions from '../../../../actions/actions.js'
+import actions from '@src/js/store/actions/actions.js'
 
-export const browser = combineReducers({
+const browser = combineReducers({
   filter,
   nodes,
   selectedNodes,
@@ -86,4 +86,8 @@ function expandedNodes(state = [], action) {
   } else {
     return newState
   }
+}
+
+export default {
+  browser
 }

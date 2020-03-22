@@ -1,3 +1,9 @@
-export const LOGIN = 'login'
-export const TYPES = 'types'
-export const USERS = 'users'
+const LOGIN = 'login'
+const TYPES = 'types'
+const USERS = 'users'
+
+export default {
+  LOGIN,
+  TYPES,
+  USERS
+}

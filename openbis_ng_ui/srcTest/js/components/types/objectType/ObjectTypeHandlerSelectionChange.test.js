@@ -1,5 +1,5 @@
-import ObjectTypeHandlerSelectionChange from '../../../../../src/js/components/types/objectType/ObjectTypeHandlerSelectionChange.js'
-import ComponentState from '../../../common/ComponentState.js'
+import ObjectTypeHandlerSelectionChange from '@src/js/components/types/objectType/ObjectTypeHandlerSelectionChange.js'
+import ComponentState from '@srcTest/js/common/ComponentState.js'
 
 describe('ObjectTypeHandlerSelectionChangeTest', () => {
   test('section', () => {

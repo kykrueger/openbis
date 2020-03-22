@@ -1,5 +1,5 @@
-import ObjectTypeHandlerOrderChange from '../../../../../src/js/components/types/objectType/ObjectTypeHandlerOrderChange.js'
-import ComponentState from '../../../common/ComponentState.js'
+import ObjectTypeHandlerOrderChange from '@src/js/components/types/objectType/ObjectTypeHandlerOrderChange.js'
+import ComponentState from '@srcTest/js/common/ComponentState.js'
 
 describe('ObjectTypeHandlerOrderChangeTest', () => {
   test('section', () => {

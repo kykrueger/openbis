@@ -1,6 +1,6 @@
 import _ from 'lodash'
 
-export function mapNodes(parent, nodes, fn) {
+function mapNodes(parent, nodes, fn) {
   return nodes
     .map(node => {
       return fn(parent, node)
@@ -16,7 +16,7 @@ export function mapNodes(parent, nodes, fn) {
     })
 }
 
-export function getAllNodes(nodes) {
+function getAllNodes(nodes) {
   let levels = getAllNodesByLevel(nodes)
   return _.concat(...levels)
 }
@@ -60,7 +60,7 @@ export function sortNodes(nodes) {
   })
 }
 
-export function getMatchingNodes(nodes, matchesFn) {
+function getMatchingNodes(nodes, matchesFn) {
   let allNodes = getAllNodes(nodes)
   let matchingNodes = {}
 
@@ -80,4 +80,12 @@ export function getMatchingNodes(nodes, matchesFn) {
   })
 
   return _.keys(matchingNodes)
+}
+
+export default {
+  mapNodes,
+  getAllNodes,
+  getAllNodesByLevel,
+  sortNodes,
+  getMatchingNodes
 }

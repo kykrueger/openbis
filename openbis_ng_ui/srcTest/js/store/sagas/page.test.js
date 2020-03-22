@@ -1,9 +1,9 @@
-import * as actions from '../../../../src/js/store/actions/actions.js'
-import * as selectors from '../../../../src/js/store/selectors/selectors.js'
-import * as objectType from '../../../../src/js/common/consts/objectType.js'
-import * as pages from '../../../../src/js/common/consts/pages.js'
-import { createStore } from '../../../../src/js/store/store.js'
-import * as fixture from '../../common/fixture.js'
+import actions from '@src/js/store/actions/actions.js'
+import selectors from '@src/js/store/selectors/selectors.js'
+import objectType from '@src/js/common/consts/objectType.js'
+import pages from '@src/js/common/consts/pages.js'
+import { createStore } from '@src/js/store/store.js'
+import fixture from '@srcTest/js/common/fixture.js'
 
 let store = null
 

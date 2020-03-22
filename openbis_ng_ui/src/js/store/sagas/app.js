@@ -1,9 +1,15 @@
-import { call, put, putAndWait, takeEvery, select } from './effects.js'
-import { facade, dto } from '../../services/openbis.js'
-import * as selectors from '../selectors/selectors.js'
-import * as actions from '../actions/actions.js'
-import * as objectTypes from '../../common/consts/objectType.js'
-import routes from '../../common/consts/routes.js'
+import {
+  call,
+  put,
+  putAndWait,
+  takeEvery,
+  select
+} from '@src/js/store/sagas/effects.js'
+import openbis from '@src/js/services/openbis.js'
+import selectors from '@src/js/store/selectors/selectors.js'
+import actions from '@src/js/store/actions/actions.js'
+import objectType from '@src/js/common/consts/objectType.js'
+import routes from '@src/js/common/consts/routes.js'
 
 export default function* appSaga() {
   yield takeEvery(actions.INIT, init)
@@ -22,8 +28,7 @@ function* init() {
   if (!initialized) {
     try {
       yield put(actions.setLoading(true))
-      yield call([dto, dto.init])
-      yield call([facade, facade.init])
+      yield call([openbis, openbis.init])
       yield put(actions.setInitialized(true))
     } catch (e) {
       yield put(actions.setError(e))
@@ -79,7 +84,7 @@ function* logout() {
 function* search(action) {
   const { page, text } = action.payload
   if (text.trim().length > 0) {
-    yield put(actions.objectOpen(page, objectTypes.SEARCH, text.trim()))
+    yield put(actions.objectOpen(page, objectType.SEARCH, text.trim()))
   }
   yield put(actions.setSearch(''))
 }

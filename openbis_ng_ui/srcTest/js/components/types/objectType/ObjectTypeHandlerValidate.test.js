@@ -1,6 +1,6 @@
-import ObjectTypeHandlerValidate from '../../../../../src/js/components/types/objectType/ObjectTypeHandlerValidate.js'
-import ComponentState from '../../../common/ComponentState.js'
-import { dto } from '../../../services/openbis.js'
+import ObjectTypeHandlerValidate from '@src/js/components/types/objectType/ObjectTypeHandlerValidate.js'
+import ComponentState from '@srcTest/js/common/ComponentState.js'
+import openbis from '@srcTest/js/services/openbis.js'
 
 beforeEach(() => {
   jest.resetAllMocks()
@@ -16,8 +16,8 @@ describe('ObjectTypeHandlerValidateTest', () => {
       type: { usages: 1 },
       properties: [
         { id: 'property-0' },
-        { id: 'property-1', dataType: dto.DataType.CONTROLLEDVOCABULARY },
-        { id: 'property-2', dataType: dto.DataType.MATERIAL },
+        { id: 'property-1', dataType: openbis.DataType.CONTROLLEDVOCABULARY },
+        { id: 'property-2', dataType: openbis.DataType.MATERIAL },
         { id: 'property-3', mandatory: true }
       ]
     })
@@ -50,7 +50,7 @@ describe('ObjectTypeHandlerValidateTest', () => {
           },
           {
             id: 'property-1',
-            dataType: dto.DataType.CONTROLLEDVOCABULARY,
+            dataType: openbis.DataType.CONTROLLEDVOCABULARY,
             errors: {
               code: 'Code cannot be empty',
               description: 'Description cannot be empty',
@@ -60,7 +60,7 @@ describe('ObjectTypeHandlerValidateTest', () => {
           },
           {
             id: 'property-2',
-            dataType: dto.DataType.MATERIAL,
+            dataType: openbis.DataType.MATERIAL,
             errors: {
               code: 'Code cannot be empty',
               description: 'Description cannot be empty',

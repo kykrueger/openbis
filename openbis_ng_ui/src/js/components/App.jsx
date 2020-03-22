@@ -2,15 +2,15 @@ import React from 'react'
 import _ from 'lodash'
 import { connect } from 'react-redux'
 import { withStyles } from '@material-ui/core/styles'
-import logger from '../common/logger.js'
-import * as util from '../common/util.js'
-import * as pages from '../common/consts/pages.js'
-import * as actions from '../store/actions/actions.js'
-import * as selectors from '../store/selectors/selectors.js'
+import logger from '@src/js/common/logger.js'
+import util from '@src/js/common/util.js'
+import pages from '@src/js/common/consts/pages.js'
+import actions from '@src/js/store/actions/actions.js'
+import selectors from '@src/js/store/selectors/selectors.js'
 
-import Loading from './common/loading/Loading.jsx'
-import Error from './common/error/Error.jsx'
-import Menu from './common/menu/Menu.jsx'
+import Loading from '@src/js/components/common/loading/Loading.jsx'
+import Error from '@src/js/components/common/error/Error.jsx'
+import Menu from '@src/js/components/common/menu/Menu.jsx'
 
 import Login from './login/Login.jsx'
 import Users from './users/Users.jsx'
@@ -107,9 +107,6 @@ class App extends React.Component {
 }
 
 export default _.flow(
-  connect(
-    mapStateToProps,
-    mapDispatchToProps
-  ),
+  connect(mapStateToProps, mapDispatchToProps),
   withStyles(styles)
 )(App)

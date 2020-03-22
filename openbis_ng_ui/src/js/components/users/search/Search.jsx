@@ -1,8 +1,8 @@
 import React from 'react'
-import Grid from '../../common/grid/Grid.jsx'
-import * as ids from '../../../common/consts/ids.js'
-import { facade, dto } from '../../../services/openbis.js'
-import logger from '../../../common/logger.js'
+import Grid from '@src/js/components/common/grid/Grid.jsx'
+import ids from '@src/js/common/consts/ids.js'
+import openbis from '@src/js/services/openbis.js'
+import logger from '@src/js/common/logger.js'
 
 class Search extends React.Component {
   constructor(props) {
@@ -27,15 +27,15 @@ class Search extends React.Component {
   load() {
     let query = this.props.objectId
 
-    let criteria = new dto.PersonSearchCriteria()
-    let fo = new dto.PersonFetchOptions()
+    let criteria = new openbis.PersonSearchCriteria()
+    let fo = new openbis.PersonFetchOptions()
 
     criteria.withOrOperator()
     criteria.withUserId().thatContains(query)
     criteria.withFirstName().thatContains(query)
     criteria.withLastName().thatContains(query)
 
-    return facade
+    return openbis
       .searchPersons(criteria, fo)
       .then(result => {
         return result.objects.map(user => ({
@@ -44,7 +44,7 @@ class Search extends React.Component {
         }))
       })
       .catch(error => {
-        facade.catch(error)
+        openbis.catch(error)
       })
   }
 

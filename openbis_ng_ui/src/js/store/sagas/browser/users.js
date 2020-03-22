@@ -1,11 +1,11 @@
 import _ from 'lodash'
-import { putAndWait } from './../effects.js'
-import { dto } from '../../../services/openbis.js'
-import * as objectType from '../../../common/consts/objectType.js'
-import * as actions from '../../actions/actions.js'
-import * as common from '../../common/browser.js'
+import { putAndWait } from '@src/js/store/sagas/effects.js'
+import openbis from '@src/js/services/openbis.js'
+import objectType from '@src/js/common/consts/objectType.js'
+import actions from '@src/js/store/actions/actions.js'
+import common from '@src/js/store/common/browser.js'
 
-export function* createNodes() {
+function* createNodes() {
   let { users, groups } = yield getUsersAndGroups()
 
   let userNodes = _.map(users, user => {
@@ -64,17 +64,23 @@ function* getUsersAndGroups() {
   let getUsersReponse = yield putAndWait(
     actions.apiRequest({
       method: 'searchPersons',
-      params: [new dto.PersonSearchCriteria(), new dto.PersonFetchOptions()]
+      params: [
+        new openbis.PersonSearchCriteria(),
+        new openbis.PersonFetchOptions()
+      ]
     })
   )
 
-  let groupFetchOptions = new dto.AuthorizationGroupFetchOptions()
+  let groupFetchOptions = new openbis.AuthorizationGroupFetchOptions()
   groupFetchOptions.withUsers()
 
   let getGroupsReponse = yield putAndWait(
     actions.apiRequest({
       method: 'searchAuthorizationGroups',
-      params: [new dto.AuthorizationGroupSearchCriteria(), groupFetchOptions]
+      params: [
+        new openbis.AuthorizationGroupSearchCriteria(),
+        groupFetchOptions
+      ]
     })
   )
 
@@ -105,4 +111,8 @@ function* getUsersAndGroups() {
   })
 
   return { users, groups }
+}
+
+export default {
+  createNodes
 }

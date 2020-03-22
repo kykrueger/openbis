@@ -1,11 +1,11 @@
 import _ from 'lodash'
-import { putAndWait } from './../effects.js'
-import { dto } from '../../../services/openbis.js'
-import * as objectType from '../../../common/consts/objectType.js'
-import * as actions from '../../actions/actions.js'
-import * as common from '../../common/browser.js'
+import { putAndWait } from '@src/js/store/sagas/effects.js'
+import openbis from '@src/js/services/openbis.js'
+import objectType from '@src/js/common/consts/objectType.js'
+import actions from '@src/js/store/actions/actions.js'
+import common from '@src/js/store/common/browser.js'
 
-export function* createNodes() {
+function* createNodes() {
   let {
     objectTypes,
     collectionTypes,
@@ -64,29 +64,29 @@ function* getTypes() {
     objectTypes: actions.apiRequest({
       method: 'searchSampleTypes',
       params: [
-        new dto.SampleTypeSearchCriteria(),
-        new dto.SampleTypeFetchOptions()
+        new openbis.SampleTypeSearchCriteria(),
+        new openbis.SampleTypeFetchOptions()
       ]
     }),
     collectionTypes: actions.apiRequest({
       method: 'searchExperimentTypes',
       params: [
-        new dto.ExperimentTypeSearchCriteria(),
-        new dto.ExperimentTypeFetchOptions()
+        new openbis.ExperimentTypeSearchCriteria(),
+        new openbis.ExperimentTypeFetchOptions()
       ]
     }),
     dataSetTypes: actions.apiRequest({
       method: 'searchDataSetTypes',
       params: [
-        new dto.DataSetTypeSearchCriteria(),
-        new dto.DataSetTypeFetchOptions()
+        new openbis.DataSetTypeSearchCriteria(),
+        new openbis.DataSetTypeFetchOptions()
       ]
     }),
     materialTypes: actions.apiRequest({
       method: 'searchMaterialTypes',
       params: [
-        new dto.MaterialTypeSearchCriteria(),
-        new dto.MaterialTypeFetchOptions()
+        new openbis.MaterialTypeSearchCriteria(),
+        new openbis.MaterialTypeFetchOptions()
       ]
     })
   })
@@ -106,4 +106,8 @@ function* getTypes() {
     dataSetTypes: convert(responses.dataSetTypes),
     materialTypes: convert(responses.materialTypes)
   }
+}
+
+export default {
+  createNodes
 }

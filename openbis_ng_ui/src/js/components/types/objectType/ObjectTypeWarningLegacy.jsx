@@ -1,6 +1,7 @@
 import React from 'react'
+import logger from '@src/js/common/logger.js'
+
 import ObjectTypeWarning from './ObjectTypeWarning.jsx'
-import logger from '../../../common/logger.js'
 
 class ObjectTypeWarningLegacy extends React.PureComponent {
   render() {

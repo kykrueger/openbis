@@ -20,4 +20,4 @@ const facade = {
   searchMaterialTypes: jest.fn(),
   executeOperations: jest.fn()
 }
-export { facade }
+export default facade

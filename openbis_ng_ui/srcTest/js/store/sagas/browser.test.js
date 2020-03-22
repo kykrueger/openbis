@@ -1,19 +1,19 @@
 import _ from 'lodash'
-import { facade } from '../../../../src/js/services/openbis.js'
-import * as actions from '../../../../src/js/store/actions/actions.js'
-import * as selectors from '../../../../src/js/store/selectors/selectors.js'
-import * as pages from '../../../../src/js/common/consts/pages.js'
-import * as objectType from '../../../../src/js/common/consts/objectType.js'
-import * as common from '../../../../src/js/store/common/browser.js'
-import { createStore } from '../../../../src/js/store/store.js'
-import * as fixture from '../../common/fixture.js'
+import openbis from '@src/js/services/openbis.js'
+import actions from '@src/js/store/actions/actions.js'
+import selectors from '@src/js/store/selectors/selectors.js'
+import pages from '@src/js/common/consts/pages.js'
+import objectType from '@src/js/common/consts/objectType.js'
+import common from '@src/js/store/common/browser.js'
+import { createStore } from '@src/js/store/store.js'
+import fixture from '@srcTest/js/common/fixture.js'
 
 let store = null
 
 beforeEach(() => {
   jest.resetAllMocks()
 
-  facade.login.mockReturnValue(fixture.TEST_SESSION_TOKEN)
+  openbis.login.mockReturnValue(fixture.TEST_SESSION_TOKEN)
 
   store = createStore()
   store.dispatch(actions.login(fixture.TEST_USER, fixture.TEST_PASSWORD))
@@ -21,11 +21,11 @@ beforeEach(() => {
 
 describe('browser', () => {
   test('init', () => {
-    facade.searchPersons.mockReturnValue({
+    openbis.searchPersons.mockReturnValue({
       objects: [fixture.TEST_USER_DTO, fixture.ANOTHER_USER_DTO]
     })
 
-    facade.searchAuthorizationGroups.mockReturnValue({
+    openbis.searchAuthorizationGroups.mockReturnValue({
       objects: [
         fixture.TEST_GROUP_DTO,
         fixture.ANOTHER_GROUP_DTO,
@@ -98,11 +98,11 @@ describe('browser', () => {
   })
 
   test('filter', () => {
-    facade.searchPersons.mockReturnValue({
+    openbis.searchPersons.mockReturnValue({
       objects: [fixture.TEST_USER_DTO, fixture.ANOTHER_USER_DTO]
     })
 
-    facade.searchAuthorizationGroups.mockReturnValue({
+    openbis.searchAuthorizationGroups.mockReturnValue({
       objects: [
         fixture.TEST_GROUP_DTO,
         fixture.ANOTHER_GROUP_DTO,
@@ -139,11 +139,11 @@ describe('browser', () => {
   })
 
   test('select node', () => {
-    facade.searchPersons.mockReturnValue({
+    openbis.searchPersons.mockReturnValue({
       objects: [fixture.TEST_USER_DTO, fixture.ANOTHER_USER_DTO]
     })
 
-    facade.searchAuthorizationGroups.mockReturnValue({
+    openbis.searchAuthorizationGroups.mockReturnValue({
       objects: []
     })
 
@@ -174,11 +174,11 @@ describe('browser', () => {
   })
 
   test('select another node', () => {
-    facade.searchPersons.mockReturnValue({
+    openbis.searchPersons.mockReturnValue({
       objects: [fixture.TEST_USER_DTO, fixture.ANOTHER_USER_DTO]
     })
 
-    facade.searchAuthorizationGroups.mockReturnValue({
+    openbis.searchAuthorizationGroups.mockReturnValue({
       objects: []
     })
 
@@ -219,11 +219,11 @@ describe('browser', () => {
   })
 
   test('select virtual node', () => {
-    facade.searchPersons.mockReturnValue({
+    openbis.searchPersons.mockReturnValue({
       objects: [fixture.TEST_USER_DTO, fixture.ANOTHER_USER_DTO]
     })
 
-    facade.searchAuthorizationGroups.mockReturnValue({
+    openbis.searchAuthorizationGroups.mockReturnValue({
       objects: []
     })
 
@@ -244,11 +244,11 @@ describe('browser', () => {
   })
 
   test('select two nodes that represent the same object', () => {
-    facade.searchPersons.mockReturnValue({
+    openbis.searchPersons.mockReturnValue({
       objects: [fixture.TEST_USER_DTO]
     })
 
-    facade.searchAuthorizationGroups.mockReturnValue({
+    openbis.searchAuthorizationGroups.mockReturnValue({
       objects: [fixture.TEST_GROUP_DTO]
     })
 
@@ -344,11 +344,11 @@ describe('browser', () => {
   })
 
   test('expand and collapse node', () => {
-    facade.searchPersons.mockReturnValue({
+    openbis.searchPersons.mockReturnValue({
       objects: []
     })
 
-    facade.searchAuthorizationGroups.mockReturnValue({
+    openbis.searchAuthorizationGroups.mockReturnValue({
       objects: [fixture.TEST_GROUP_DTO]
     })
 

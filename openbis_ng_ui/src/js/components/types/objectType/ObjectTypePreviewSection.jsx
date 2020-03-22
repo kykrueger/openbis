@@ -2,9 +2,10 @@ import _ from 'lodash'
 import React from 'react'
 import { Draggable, Droppable } from 'react-beautiful-dnd'
 import { withStyles } from '@material-ui/core/styles'
+import logger from '@src/js/common/logger.js'
+import util from '@src/js/common/util.js'
+
 import ObjectTypeHeader from './ObjectTypeHeader.jsx'
-import logger from '../../../common/logger.js'
-import * as util from '../../../common/util.js'
 
 const styles = theme => ({
   draggable: {

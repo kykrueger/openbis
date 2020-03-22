@@ -1,5 +1,5 @@
-import ObjectTypeHandlerRemove from '../../../../../src/js/components/types/objectType/ObjectTypeHandlerRemove.js'
-import ComponentState from '../../../common/ComponentState.js'
+import ObjectTypeHandlerRemove from '@src/js/components/types/objectType/ObjectTypeHandlerRemove.js'
+import ComponentState from '@srcTest/js/common/ComponentState.js'
 
 describe('ObjectTypeHandlerRemoveTest', () => {
   test('section not used', () => {

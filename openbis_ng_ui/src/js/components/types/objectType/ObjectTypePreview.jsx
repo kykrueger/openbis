@@ -2,10 +2,11 @@ import _ from 'lodash'
 import React from 'react'
 import { DragDropContext, Droppable } from 'react-beautiful-dnd'
 import { withStyles } from '@material-ui/core/styles'
+import logger from '@src/js/common/logger.js'
+
 import ObjectTypePreviewHeader from './ObjectTypePreviewHeader.jsx'
 import ObjectTypePreviewProperty from './ObjectTypePreviewProperty.jsx'
 import ObjectTypePreviewSection from './ObjectTypePreviewSection.jsx'
-import logger from '../../../common/logger.js'
 
 const styles = theme => ({
   container: {

@@ -1,8 +1,8 @@
 import _ from 'lodash'
-import { put, takeEvery, select } from './effects.js'
-import * as selectors from '../selectors/selectors.js'
-import * as actions from '../actions/actions.js'
-import routes from '../../common/consts/routes.js'
+import { put, takeEvery, select } from '@src/js/store/sagas/effects.js'
+import selectors from '@src/js/store/selectors/selectors.js'
+import actions from '@src/js/store/actions/actions.js'
+import routes from '@src/js/common/consts/routes.js'
 
 const getSelectedObject = selectors.createGetSelectedObject()
 

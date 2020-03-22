@@ -1,9 +1,10 @@
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
+import logger from '@src/js/common/logger.js'
+
 import ObjectTypeParametersType from './ObjectTypeParametersType.jsx'
 import ObjectTypeParametersProperty from './ObjectTypeParametersProperty.jsx'
 import ObjectTypeParametersSection from './ObjectTypeParametersSection.jsx'
-import logger from '../../../common/logger.js'
 
 const styles = () => ({})
 

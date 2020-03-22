@@ -1,6 +1,6 @@
 import { createHashHistory } from 'history'
-import * as actions from './actions/actions.js'
-import routes from '../common/consts/routes.js'
+import actions from '@src/js/store/actions/actions.js'
+import routes from '@src/js/common/consts/routes.js'
 
 let history = createHashHistory({
   hashType: 'noslash'

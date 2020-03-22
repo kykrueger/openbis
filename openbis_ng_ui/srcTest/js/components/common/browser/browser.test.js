@@ -1,11 +1,11 @@
 import React from 'react'
 import { mount } from 'enzyme'
-import Browser from '../../../../../src/js/components/common/browser/Browser.jsx'
-import { facade } from '../../../../../src/js/services/openbis.js'
-import * as actions from '../../../../../src/js/store/actions/actions.js'
-import * as pages from '../../../../../src/js/common/consts/pages.js'
-import { createStore } from '../../../../../src/js/store/store.js'
-import * as fixture from '../../../common/fixture.js'
+import Browser from '@src/js/components/common/browser/Browser.jsx'
+import openbis from '@src/js/services/openbis.js'
+import actions from '@src/js/store/actions/actions.js'
+import pages from '@src/js/common/consts/pages.js'
+import { createStore } from '@src/js/store/store.js'
+import fixture from '@srcTest/js/common/fixture.js'
 
 let store = null
 
@@ -16,11 +16,11 @@ beforeEach(() => {
 
 describe('browser', () => {
   test('test', () => {
-    facade.searchPersons.mockReturnValue({
+    openbis.searchPersons.mockReturnValue({
       objects: [fixture.TEST_USER_DTO, fixture.ANOTHER_USER_DTO]
     })
 
-    facade.searchAuthorizationGroups.mockReturnValue({
+    openbis.searchAuthorizationGroups.mockReturnValue({
       objects: [
         fixture.TEST_GROUP_DTO,
         fixture.ANOTHER_GROUP_DTO,

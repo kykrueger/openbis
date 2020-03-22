@@ -100,4 +100,4 @@ const dto = {
   DataType
 }
 
-export { dto }
+export default dto

@@ -1,9 +1,8 @@
 import _ from 'lodash'
-import * as actions from '../../../../actions/actions.js'
+import actions from '@src/js/store/actions/actions.js'
+import browser from './browser.js'
 
-export * from './browser.js'
-
-export function isPageAction(page, action) {
+const isPageAction = (page, action) => {
   return (
     action.type === actions.INIT ||
     action.type === actions.CLEAR ||
@@ -11,7 +10,7 @@ export function isPageAction(page, action) {
   )
 }
 
-export const currentRoute = (state = null, action) => {
+const currentRoute = (state = null, action) => {
   switch (action.type) {
     case actions.SET_CURRENT_ROUTE: {
       return action.payload.currentRoute
@@ -22,7 +21,7 @@ export const currentRoute = (state = null, action) => {
   }
 }
 
-export const openObjects = (state = [], action) => {
+const openObjects = (state = [], action) => {
   let newState = null
 
   switch (action.type) {
@@ -54,7 +53,7 @@ export const openObjects = (state = [], action) => {
   }
 }
 
-export const changedObjects = (state = [], action) => {
+const changedObjects = (state = [], action) => {
   let newState = null
 
   switch (action.type) {
@@ -84,4 +83,12 @@ export const changedObjects = (state = [], action) => {
   } else {
     return newState
   }
+}
+
+export default {
+  ...browser,
+  isPageAction,
+  currentRoute,
+  openObjects,
+  changedObjects
 }

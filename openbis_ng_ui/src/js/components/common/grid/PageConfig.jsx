@@ -9,7 +9,7 @@ import FirstPageIcon from '@material-ui/icons/FirstPage'
 import KeyboardArrowLeft from '@material-ui/icons/KeyboardArrowLeft'
 import KeyboardArrowRight from '@material-ui/icons/KeyboardArrowRight'
 import LastPageIcon from '@material-ui/icons/LastPage'
-import logger from '../../../common/logger.js'
+import logger from '@src/js/common/logger.js'
 
 const styles = () => ({
   container: {

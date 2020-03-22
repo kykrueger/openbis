@@ -1,5 +1,5 @@
-import React from 'react'
 import _ from 'lodash'
+import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import ListItem from '@material-ui/core/ListItem'
 import ListItemIcon from '@material-ui/core/ListItemIcon'
@@ -7,8 +7,9 @@ import ListItemText from '@material-ui/core/ListItemText'
 import Collapse from '@material-ui/core/Collapse'
 import ChevronRightIcon from '@material-ui/icons/ChevronRight'
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
+import logger from '@src/js/common/logger.js'
+
 import BrowserNodes from './BrowserNodes.jsx'
-import logger from '../../../common/logger.js'
 
 const styles = {
   icon: {

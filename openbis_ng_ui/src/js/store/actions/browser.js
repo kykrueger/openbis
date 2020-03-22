@@ -1,25 +1,24 @@
-export const BROWSER_INIT = 'BROWSER_INIT'
-export const BROWSER_FILTER_CHANGE = 'BROWSER_FILTERER_CHANGE'
-export const BROWSER_NODE_SELECT = 'BROWSER_NODE_SELECT'
-export const BROWSER_NODE_EXPAND = 'BROWSER_NODE_EXPAND'
-export const BROWSER_NODE_COLLAPSE = 'BROWSER_NODE_COLLAPSE'
+const BROWSER_INIT = 'BROWSER_INIT'
+const BROWSER_FILTER_CHANGE = 'BROWSER_FILTERER_CHANGE'
+const BROWSER_NODE_SELECT = 'BROWSER_NODE_SELECT'
+const BROWSER_NODE_EXPAND = 'BROWSER_NODE_EXPAND'
+const BROWSER_NODE_COLLAPSE = 'BROWSER_NODE_COLLAPSE'
+const BROWSER_SET_FILTER = 'BROWSER_SET_FILTER'
+const BROWSER_SET_NODES = 'BROWSER_SET_NODES'
+const BROWSER_SET_SELECTED_NODES = 'BROWSER_SET_SELECTED_NODES'
+const BROWSER_SET_VISIBLE_NODES = 'BROWSER_SET_VISIBLE_NODES'
+const BROWSER_SET_EXPANDED_NODES = 'BROWSER_SET_EXPANDED_NODES'
+const BROWSER_ADD_EXPANDED_NODES = 'BROWSER_ADD_EXPANDED_NODES'
+const BROWSER_REMOVE_EXPANDED_NODES = 'BROWSER_REMOVE_EXPANDED_NODES'
 
-export const BROWSER_SET_FILTER = 'BROWSER_SET_FILTER'
-export const BROWSER_SET_NODES = 'BROWSER_SET_NODES'
-export const BROWSER_SET_SELECTED_NODES = 'BROWSER_SET_SELECTED_NODES'
-export const BROWSER_SET_VISIBLE_NODES = 'BROWSER_SET_VISIBLE_NODES'
-export const BROWSER_SET_EXPANDED_NODES = 'BROWSER_SET_EXPANDED_NODES'
-export const BROWSER_ADD_EXPANDED_NODES = 'BROWSER_ADD_EXPANDED_NODES'
-export const BROWSER_REMOVE_EXPANDED_NODES = 'BROWSER_REMOVE_EXPANDED_NODES'
-
-export const browserInit = page => ({
+const browserInit = page => ({
   type: BROWSER_INIT,
   payload: {
     page
   }
 })
 
-export const browserFilterChange = (page, filter) => ({
+const browserFilterChange = (page, filter) => ({
   type: BROWSER_FILTER_CHANGE,
   payload: {
     page,
@@ -27,7 +26,7 @@ export const browserFilterChange = (page, filter) => ({
   }
 })
 
-export const browserNodeSelect = (page, id) => ({
+const browserNodeSelect = (page, id) => ({
   type: BROWSER_NODE_SELECT,
   payload: {
     page,
@@ -35,7 +34,7 @@ export const browserNodeSelect = (page, id) => ({
   }
 })
 
-export const browserNodeExpand = (page, id) => ({
+const browserNodeExpand = (page, id) => ({
   type: BROWSER_NODE_EXPAND,
   payload: {
     page,
@@ -43,7 +42,7 @@ export const browserNodeExpand = (page, id) => ({
   }
 })
 
-export const browserNodeCollapse = (page, id) => ({
+const browserNodeCollapse = (page, id) => ({
   type: BROWSER_NODE_COLLAPSE,
   payload: {
     page,
@@ -51,7 +50,7 @@ export const browserNodeCollapse = (page, id) => ({
   }
 })
 
-export const browserSetFilter = (page, filter) => ({
+const browserSetFilter = (page, filter) => ({
   type: BROWSER_SET_FILTER,
   payload: {
     page,
@@ -59,7 +58,7 @@ export const browserSetFilter = (page, filter) => ({
   }
 })
 
-export const browserSetNodes = (page, nodes) => ({
+const browserSetNodes = (page, nodes) => ({
   type: BROWSER_SET_NODES,
   payload: {
     page,
@@ -67,7 +66,7 @@ export const browserSetNodes = (page, nodes) => ({
   }
 })
 
-export const browserSetSelectedNodes = (page, ids) => ({
+const browserSetSelectedNodes = (page, ids) => ({
   type: BROWSER_SET_SELECTED_NODES,
   payload: {
     page,
@@ -75,7 +74,7 @@ export const browserSetSelectedNodes = (page, ids) => ({
   }
 })
 
-export const browserSetVisibleNodes = (page, ids) => ({
+const browserSetVisibleNodes = (page, ids) => ({
   type: BROWSER_SET_VISIBLE_NODES,
   payload: {
     page,
@@ -83,7 +82,7 @@ export const browserSetVisibleNodes = (page, ids) => ({
   }
 })
 
-export const browserSetExpandedNodes = (page, ids) => ({
+const browserSetExpandedNodes = (page, ids) => ({
   type: BROWSER_SET_EXPANDED_NODES,
   payload: {
     page,
@@ -91,7 +90,7 @@ export const browserSetExpandedNodes = (page, ids) => ({
   }
 })
 
-export const browserAddExpandedNodes = (page, ids) => ({
+const browserAddExpandedNodes = (page, ids) => ({
   type: BROWSER_ADD_EXPANDED_NODES,
   payload: {
     page,
@@ -99,10 +98,37 @@ export const browserAddExpandedNodes = (page, ids) => ({
   }
 })
 
-export const browserRemoveExpandedNodes = (page, ids) => ({
+const browserRemoveExpandedNodes = (page, ids) => ({
   type: BROWSER_REMOVE_EXPANDED_NODES,
   payload: {
     page,
     ids
   }
 })
+
+export default {
+  BROWSER_INIT,
+  BROWSER_FILTER_CHANGE,
+  BROWSER_NODE_SELECT,
+  BROWSER_NODE_EXPAND,
+  BROWSER_NODE_COLLAPSE,
+  BROWSER_SET_FILTER,
+  BROWSER_SET_NODES,
+  BROWSER_SET_SELECTED_NODES,
+  BROWSER_SET_VISIBLE_NODES,
+  BROWSER_SET_EXPANDED_NODES,
+  BROWSER_ADD_EXPANDED_NODES,
+  BROWSER_REMOVE_EXPANDED_NODES,
+  browserInit,
+  browserFilterChange,
+  browserNodeSelect,
+  browserNodeExpand,
+  browserNodeCollapse,
+  browserSetFilter,
+  browserSetNodes,
+  browserSetSelectedNodes,
+  browserSetVisibleNodes,
+  browserSetExpandedNodes,
+  browserAddExpandedNodes,
+  browserRemoveExpandedNodes
+}

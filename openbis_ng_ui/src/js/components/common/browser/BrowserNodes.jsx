@@ -1,9 +1,10 @@
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import List from '@material-ui/core/List'
+import util from '@src/js/common/util.js'
+import logger from '@src/js/common/logger.js'
+
 import BrowserNode from './BrowserNode.jsx'
-import logger from '../../../common/logger.js'
-import * as util from '../../../common/util.js'
 
 const styles = () => ({
   container: {

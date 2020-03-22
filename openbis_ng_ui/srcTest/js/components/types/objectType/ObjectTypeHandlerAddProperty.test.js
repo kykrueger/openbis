@@ -1,5 +1,5 @@
-import ObjectTypeHandlerAddProperty from '../../../../../src/js/components/types/objectType/ObjectTypeHandlerAddProperty.js'
-import ComponentState from '../../../common/ComponentState.js'
+import ObjectTypeHandlerAddProperty from '@src/js/components/types/objectType/ObjectTypeHandlerAddProperty.js'
+import ComponentState from '@srcTest/js/common/ComponentState.js'
 
 describe('ObjectTypeHandlerAddPropertyTest', () => {
   test('add with a section selected', () => {

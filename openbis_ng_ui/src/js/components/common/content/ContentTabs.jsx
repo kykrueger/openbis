@@ -4,8 +4,8 @@ import { withStyles } from '@material-ui/core/styles'
 import Tabs from '@material-ui/core/Tabs'
 import Tab from '@material-ui/core/Tab'
 import CloseIcon from '@material-ui/icons/Close'
-import * as objectTypes from '../../../common/consts/objectType.js'
-import logger from '../../../common/logger.js'
+import objectTypes from '@src/js/common/consts/objectType.js'
+import logger from '@src/js/common/logger.js'
 
 const styles = theme => ({
   tabsRoot: {

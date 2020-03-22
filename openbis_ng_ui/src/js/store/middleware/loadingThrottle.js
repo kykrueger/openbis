@@ -1,4 +1,4 @@
-import * as actions from '../actions/actions.js'
+import actions from '@src/js/store/actions/actions.js'
 
 const MIN_LOADING_TIME = 500
 let startLoadingTimestamp = null

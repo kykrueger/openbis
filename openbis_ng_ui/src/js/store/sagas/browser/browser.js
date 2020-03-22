@@ -1,14 +1,14 @@
 import _ from 'lodash'
-import { put, takeEvery, select } from './../effects.js'
+import { put, takeEvery, select } from '@src/js/store/sagas/effects.js'
 
-import * as selectors from '../../selectors/selectors.js'
-import * as actions from '../../actions/actions.js'
-import * as pages from '../../../common/consts/pages.js'
-import * as common from '../../common/browser.js'
-import routes from '../../../common/consts/routes.js'
+import selectors from '@src/js/store/selectors/selectors.js'
+import actions from '@src/js/store/actions/actions.js'
+import pages from '@src/js/common/consts/pages.js'
+import common from '@src/js/store/common/browser.js'
+import routes from '@src/js/common/consts/routes.js'
 
-import * as typesBrowser from './types.js'
-import * as usersBrowser from './users.js'
+import typesBrowser from './types.js'
+import usersBrowser from './users.js'
 
 export default function* browserSaga() {
   yield takeEvery(actions.BROWSER_INIT, browserInit)

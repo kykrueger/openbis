@@ -1,8 +1,9 @@
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
-import TextField from '../../common/form/TextField.jsx'
+import TextField from '@src/js/components/common/form/TextField.jsx'
+import logger from '@src/js/common/logger.js'
+
 import ObjectTypeHeader from './ObjectTypeHeader.jsx'
-import logger from '../../../common/logger.js'
 
 const styles = theme => ({
   container: {

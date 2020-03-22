@@ -1,16 +1,15 @@
 const autoBind = require('auto-bind')
 
-import store from '../../store/store.js'
-import * as actions from '../../store/actions/actions.js'
+import store from '@src/js/store/store.js'
+import actions from '@src/js/store/actions/actions.js'
+import dto from './dto.js'
 
-import { dto } from './dto.js'
-
-export class Facade {
+class Facade {
   constructor() {
     autoBind(this)
   }
 
-  init() {
+  _init() {
     let _this = this
     return new Promise((resolve, reject) => {
       /* eslint-disable-next-line no-undef */
@@ -132,4 +131,4 @@ export class Facade {
 }
 
 const facade = new Facade()
-export { facade }
+export default facade

@@ -1,7 +1,7 @@
 import React from 'react'
 import { mount } from 'enzyme'
-import ThemeProvider from '../../../../../src/js/components/common/theme/ThemeProvider.jsx'
-import ObjectType from '../../../../../src/js/components/types/objectType/ObjectType.jsx'
+import ThemeProvider from '@src/js/components/common/theme/ThemeProvider.jsx'
+import ObjectType from '@src/js/components/types/objectType/ObjectType.jsx'
 
 beforeEach(() => {
   jest.resetAllMocks()

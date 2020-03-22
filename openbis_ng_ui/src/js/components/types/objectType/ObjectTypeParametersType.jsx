@@ -1,11 +1,12 @@
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
-import CheckboxField from '../../common/form/CheckboxField.jsx'
-import TextField from '../../common/form/TextField.jsx'
-import SelectField from '../../common/form/SelectField.jsx'
+import CheckboxField from '@src/js/components/common/form/CheckboxField.jsx'
+import TextField from '@src/js/components/common/form/TextField.jsx'
+import SelectField from '@src/js/components/common/form/SelectField.jsx'
+import logger from '@src/js/common/logger.js'
+
 import ObjectTypeWarningUsage from './ObjectTypeWarningUsage.jsx'
 import ObjectTypeHeader from './ObjectTypeHeader.jsx'
-import logger from '../../../common/logger.js'
 
 const styles = theme => ({
   container: {

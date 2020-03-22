@@ -1,7 +1,17 @@
-export const OBJECT_TYPE = 'objectType'
-export const COLLECTION_TYPE = 'collectionType'
-export const DATA_SET_TYPE = 'dataSetType'
-export const MATERIAL_TYPE = 'materialType'
-export const USER = 'user'
-export const GROUP = 'group'
-export const SEARCH = 'search'
+const OBJECT_TYPE = 'objectType'
+const COLLECTION_TYPE = 'collectionType'
+const DATA_SET_TYPE = 'dataSetType'
+const MATERIAL_TYPE = 'materialType'
+const USER = 'user'
+const GROUP = 'group'
+const SEARCH = 'search'
+
+export default {
+  OBJECT_TYPE,
+  COLLECTION_TYPE,
+  DATA_SET_TYPE,
+  MATERIAL_TYPE,
+  USER,
+  GROUP,
+  SEARCH
+}

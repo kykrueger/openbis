@@ -52,7 +52,7 @@ const CLASS_FULL_NAMES = [
 ]
 
 class Dto {
-  init() {
+  _init() {
     let _this = this
 
     let load = function(index) {
@@ -90,4 +90,4 @@ CLASS_FULL_NAMES.forEach(classFullName => {
   dto[className] = function() {}
 })
 
-export { dto }
+export default dto

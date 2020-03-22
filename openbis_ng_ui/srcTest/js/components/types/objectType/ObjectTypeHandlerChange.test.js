@@ -1,5 +1,5 @@
-import ObjectTypeHandlerChange from '../../../../../src/js/components/types/objectType/ObjectTypeHandlerChange.js'
-import ComponentState from '../../../common/ComponentState.js'
+import ObjectTypeHandlerChange from '@src/js/components/types/objectType/ObjectTypeHandlerChange.js'
+import ComponentState from '@srcTest/js/common/ComponentState.js'
 
 describe('ObjectTypeHandlerChangeTest', () => {
   test('type', () => {
