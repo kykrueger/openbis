@@ -312,6 +312,17 @@ public class SearchSampleTypeTest extends AbstractTest
     }
 
     @Test
+    public void testSearchWithCodeThatStartsWithStarWildcardWithIn()
+    {
+        final SampleTypeSearchCriteria criteria = new SampleTypeSearchCriteria();
+        criteria.withOrOperator();
+        criteria.withCode().thatStartsWith("D*N_");
+        criteria.withCodes().thatIn(Arrays.asList("MASTER_PLATE", "CELL_PLATE"));
+
+        testSearch(criteria, "CELL_PLATE", "DELETION_TEST", "DILUTION_PLATE", "MASTER_PLATE");
+    }
+
+    @Test
     public void testSearchWithIdsThatIn()
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);

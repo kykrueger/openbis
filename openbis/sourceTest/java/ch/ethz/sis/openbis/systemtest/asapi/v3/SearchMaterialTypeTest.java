@@ -89,6 +89,24 @@ public class SearchMaterialTypeTest extends AbstractTest
     }
 
     @Test
+    public void testSearchWithPropertyAssignments()
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        final MaterialTypeSearchCriteria searchCriteria = new MaterialTypeSearchCriteria();
+        searchCriteria.withAndOperator();
+        searchCriteria.withPropertyAssignments();
+        searchCriteria.withIds().thatIn(Arrays.asList(new EntityTypePermId("BACTERIUM"), new EntityTypePermId("SELF_REF"),
+                new EntityTypePermId("VIRUS")));
+        final SearchResult<MaterialType> searchResult = v3api.searchMaterialTypes(sessionToken, searchCriteria, new MaterialTypeFetchOptions());
+
+        final List<MaterialType> types = searchResult.getObjects();
+        final List<String> codes = extractCodes(types);
+        Collections.sort(codes);
+        assertEquals(codes.toString(), "[SELF_REF, VIRUS]");
+        v3api.logout(sessionToken);
+    }
+
+    @Test
     public void testSearchWithOrOperator()
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
