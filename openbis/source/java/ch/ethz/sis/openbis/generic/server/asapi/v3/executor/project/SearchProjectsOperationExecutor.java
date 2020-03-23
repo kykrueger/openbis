@@ -16,7 +16,9 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.project;
 
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ProjectSearchManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -48,6 +50,9 @@ public class SearchProjectsOperationExecutor extends SearchObjectsPEOperationExe
     @Autowired
     private IProjectTranslator translator;
 
+    @Autowired
+    private ProjectSearchManager manager;
+
     @Override
     protected Class<? extends SearchObjectsOperation<ProjectSearchCriteria, ProjectFetchOptions>> getOperationClass()
     {
@@ -74,7 +79,14 @@ public class SearchProjectsOperationExecutor extends SearchObjectsPEOperationExe
 
     @Override
     protected ISearchManager<ProjectSearchCriteria, Project, Long> getSearchManager() {
-        throw new RuntimeException("This method is not implemented yet.");
+        return manager;
+    }
+
+    @Override
+    protected SearchObjectsOperationResult<Project> doExecute(final IOperationContext context,
+            final SearchObjectsOperation<ProjectSearchCriteria, ProjectFetchOptions> operation)
+    {
+        return executeDirectSQLSearch(context, operation);
     }
 
 }

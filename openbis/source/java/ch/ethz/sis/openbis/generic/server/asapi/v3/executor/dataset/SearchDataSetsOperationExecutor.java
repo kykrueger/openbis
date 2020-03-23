@@ -84,6 +84,6 @@ public class SearchDataSetsOperationExecutor extends SearchObjectsOperationExecu
     @Override
     protected SearchObjectsOperationResult<DataSet> doExecute(IOperationContext context, SearchObjectsOperation<DataSetSearchCriteria, DataSetFetchOptions> operation)
     {
-        return doExecuteNewSearch(context, operation);
+        return executeDirectSQLSearch(context, operation);
     }
 }

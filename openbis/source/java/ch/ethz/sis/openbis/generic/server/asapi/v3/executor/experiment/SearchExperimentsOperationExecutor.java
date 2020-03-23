@@ -85,6 +85,6 @@ public class SearchExperimentsOperationExecutor
     @Override
     protected SearchObjectsOperationResult<Experiment> doExecute(IOperationContext context, SearchObjectsOperation<ExperimentSearchCriteria, ExperimentFetchOptions> operation)
     {
-        return doExecuteNewSearch(context, operation);
+        return executeDirectSQLSearch(context, operation);
     }
 }

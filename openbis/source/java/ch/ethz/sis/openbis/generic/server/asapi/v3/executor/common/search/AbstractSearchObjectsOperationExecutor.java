@@ -209,7 +209,7 @@ public abstract class AbstractSearchObjectsOperationExecutor<OBJECT, OBJECT_PE, 
         }
     }
 
-    protected SearchObjectsOperationResult<OBJECT> doExecuteNewSearch(final IOperationContext context,
+    protected SearchObjectsOperationResult<OBJECT> executeDirectSQLSearch(final IOperationContext context,
             final SearchObjectsOperation<CRITERIA, FETCH_OPTIONS> operation)
     {
         final CRITERIA criteria = operation.getCriteria();
