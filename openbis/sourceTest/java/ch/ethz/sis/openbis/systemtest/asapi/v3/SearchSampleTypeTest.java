@@ -541,7 +541,23 @@ public class SearchSampleTypeTest extends AbstractTest
         assertEquals(type.getPropertyAssignments().size(), 2);
         assertEquals(type.getPropertyAssignments().get(0).getPropertyType().getCode(), "$PLATE_GEOMETRY");
         assertEquals(type.getPropertyAssignments().get(1).getPropertyType().getCode(), "DESCRIPTION");
+    }
 
+    @Test
+    public void testSearchWithIdsThatInWithPropertyAssignmentsWithPropertyTypeWithIdThatEquals()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        SampleTypeSearchCriteria criteria = new SampleTypeSearchCriteria();
+        criteria.withAndOperator();
+        criteria.withPropertyAssignments().withPropertyType().withId().thatEquals(new PropertyTypePermId("DESCRIPTION"));
+        criteria.withIds().thatIn(Arrays.asList(new EntityTypePermId("MASTER_PLATE"), new EntityTypePermId("CONTROL_LAYOUT")));
+
+        SearchResult<SampleType> searchResult = v3api.searchSampleTypes(sessionToken, criteria, new SampleTypeFetchOptions());
+
+        List<String> codes = extractCodes(searchResult.getObjects());
+        Collections.sort(codes);
+        assertEquals(codes.toString(), "[CONTROL_LAYOUT, MASTER_PLATE]");
     }
 
     @Test
