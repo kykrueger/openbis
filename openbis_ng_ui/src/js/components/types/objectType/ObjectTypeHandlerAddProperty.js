@@ -1,11 +1,11 @@
 export default class ObjectTypeHandlerAddProperty {
-  constructor(state, setState) {
-    this.state = state
+  constructor(getState, setState) {
+    this.getState = getState
     this.setState = setState
   }
 
   execute() {
-    let { sections, properties, propertiesCounter, selection } = this.state
+    let { sections, properties, propertiesCounter, selection } = this.getState()
 
     let sectionIndex = null
     let sectionPropertyIndex = null

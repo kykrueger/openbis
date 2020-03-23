@@ -1,6 +1,6 @@
 export default class ObjectTypeHandlerSelectionChange {
-  constructor(state, setState) {
-    this.state = state
+  constructor(getState, setState) {
+    this.getState = getState
     this.setState = setState
   }
 

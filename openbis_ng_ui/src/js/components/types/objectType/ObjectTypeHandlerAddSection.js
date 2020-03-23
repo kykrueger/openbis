@@ -1,11 +1,11 @@
 export default class ObjectTypeHandlerAddSection {
-  constructor(state, setState) {
-    this.state = state
+  constructor(getState, setState) {
+    this.getState = getState
     this.setState = setState
   }
 
   execute() {
-    let { sections, sectionsCounter, selection } = this.state
+    let { sections, sectionsCounter, selection } = this.getState()
 
     let newSections = Array.from(sections)
     let newSection = {

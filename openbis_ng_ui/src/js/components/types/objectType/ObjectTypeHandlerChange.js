@@ -1,6 +1,6 @@
 export default class ObjectTypeHandlerChange {
-  constructor(state, setState) {
-    this.state = state
+  constructor(getState, setState) {
+    this.getState = getState
     this.setState = setState
   }
 
@@ -28,7 +28,7 @@ export default class ObjectTypeHandlerChange {
   }
 
   handleChangeSection(id, field, value) {
-    let sections = this.state.sections
+    let { sections } = this.getState()
     let newSections = Array.from(sections)
 
     let index = sections.findIndex(section => section.id === id)
@@ -46,7 +46,7 @@ export default class ObjectTypeHandlerChange {
   }
 
   handleChangeProperty(id, field, value) {
-    let properties = this.state.properties
+    let { properties } = this.getState()
     let newProperties = Array.from(properties)
 
     let index = properties.findIndex(property => property.id === id)

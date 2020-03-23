@@ -6,17 +6,8 @@ import { Resizable } from 're-resizable'
 import Loading from '@src/js/components/common/loading/Loading.jsx'
 import logger from '@src/js/common/logger.js'
 
+import ObjectTypeController from './ObjectTypeController.js'
 import ObjectTypeFacade from './ObjectTypeFacade.js'
-import ObjectTypeHandlerLoad from './ObjectTypeHandlerLoad.js'
-import ObjectTypeHandlerValidate from './ObjectTypeHandlerValidate.js'
-import ObjectTypeHandlerSave from './ObjectTypeHandlerSave.js'
-import ObjectTypeHandlerRemove from './ObjectTypeHandlerRemove.js'
-import ObjectTypeHandlerAddSection from './ObjectTypeHandlerAddSection.js'
-import ObjectTypeHandlerAddProperty from './ObjectTypeHandlerAddProperty.js'
-import ObjectTypeHandlerChange from './ObjectTypeHandlerChange.js'
-import ObjectTypeHandlerOrderChange from './ObjectTypeHandlerOrderChange.js'
-import ObjectTypeHandlerSelectionChange from './ObjectTypeHandlerSelectionChange.js'
-
 import ObjectTypeButtons from './ObjectTypeButtons.jsx'
 import ObjectTypeParameters from './ObjectTypeParameters.jsx'
 import ObjectTypePreview from './ObjectTypePreview.jsx'
@@ -60,11 +51,20 @@ class ObjectType extends React.PureComponent {
   constructor(props) {
     super(props)
 
-    this.facade = this.props.facade ? this.props.facade : new ObjectTypeFacade()
+    this.state = {}
 
-    this.state = {
-      loading: true,
-      validate: false
+    if (this.props.controller) {
+      this.controller = this.props.controller
+    } else {
+      this.facade = new ObjectTypeFacade()
+      this.controller = new ObjectTypeController(
+        this.props.objectId,
+        () => {
+          return this.state
+        },
+        this.setState.bind(this),
+        this.facade
+      )
     }
 
     this.handleOrderChange = this.handleOrderChange.bind(this)
@@ -80,95 +80,47 @@ class ObjectType extends React.PureComponent {
   }
 
   componentDidMount() {
-    new ObjectTypeHandlerLoad(
-      this.props.objectId,
-      this.state,
-      this.setState.bind(this),
-      this.facade
-    ).execute()
+    this.controller.load()
   }
 
   handleOrderChange(type, params) {
-    new ObjectTypeHandlerOrderChange(
-      this.state,
-      this.setState.bind(this)
-    ).execute(type, params)
+    this.controller.handleOrderChange(type, params)
   }
 
   handleSelectionChange(type, params) {
-    new ObjectTypeHandlerSelectionChange(
-      this.state,
-      this.setState.bind(this)
-    ).execute(type, params)
+    this.controller.handleSelectionChange(type, params)
   }
 
   handleChange(type, params) {
-    new ObjectTypeHandlerChange(this.state, this.setState.bind(this)).execute(
-      type,
-      params
-    )
+    this.controller.handleChange(type, params)
   }
 
   handleBlur() {
-    new ObjectTypeHandlerValidate(() => {
-      return this.state
-    }, this.setState.bind(this)).execute()
+    this.controller.handleBlur()
   }
 
   handleAddSection() {
-    new ObjectTypeHandlerAddSection(
-      this.state,
-      this.setState.bind(this)
-    ).execute()
+    this.controller.handleAddSection()
   }
 
   handleAddProperty() {
-    new ObjectTypeHandlerAddProperty(
-      this.state,
-      this.setState.bind(this)
-    ).execute()
+    this.controller.handleAddProperty()
   }
 
   handleRemove() {
-    new ObjectTypeHandlerRemove(
-      this.state,
-      this.setState.bind(this)
-    ).executeRemove()
+    this.controller.handleRemove()
   }
 
   handleRemoveConfirm() {
-    new ObjectTypeHandlerRemove(
-      this.state,
-      this.setState.bind(this)
-    ).executeRemove(true)
+    this.controller.handleRemoveConfirm()
   }
 
   handleRemoveCancel() {
-    new ObjectTypeHandlerRemove(
-      this.state,
-      this.setState.bind(this)
-    ).executeCancel()
+    this.controller.handleRemoveCancel()
   }
 
   handleSave() {
-    const loadHandler = new ObjectTypeHandlerLoad(
-      this.props.objectId,
-      this.state,
-      this.setState.bind(this),
-      this.facade
-    )
-
-    const validateHandler = new ObjectTypeHandlerValidate(() => {
-      return this.state
-    }, this.setState.bind(this))
-
-    new ObjectTypeHandlerSave(
-      this.state,
-      this.setState.bind(this),
-      this.facade,
-      loadHandler,
-      validateHandler
-    ).execute()
+    this.controller.handleSave()
   }
 
   render() {

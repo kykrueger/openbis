@@ -1,13 +1,13 @@
 import _ from 'lodash'
 
 export default class ObjectTypeHandlerRemove {
-  constructor(state, setState) {
-    this.state = state
+  constructor(getState, setState) {
+    this.getState = getState
     this.setState = setState
   }
 
   executeRemove(confirmed = false) {
-    const { selection } = this.state
+    const { selection } = this.getState()
     if (selection.type === 'section') {
       this.handleRemoveSection(selection.params.id, confirmed)
     } else if (selection.type === 'property') {
@@ -16,7 +16,7 @@ export default class ObjectTypeHandlerRemove {
   }
 
   executeCancel() {
-    const { selection } = this.state
+    const { selection } = this.getState()
     if (selection.type === 'section') {
       this.setState({
         removeSectionDialogOpen: false
@@ -29,7 +29,7 @@ export default class ObjectTypeHandlerRemove {
   }
 
   handleRemoveSection(sectionId, confirmed) {
-    const { sections, properties } = this.state
+    const { sections, properties } = this.getState()
 
     const sectionIndex = sections.findIndex(section => section.id === sectionId)
     const section = sections[sectionIndex]
@@ -63,7 +63,7 @@ export default class ObjectTypeHandlerRemove {
   }
 
   handleRemoveProperty(propertyId, confirmed) {
-    const { sections, properties } = this.state
+    const { sections, properties } = this.getState()
 
     const propertyIndex = properties.findIndex(
       property => property.id === propertyId
@@ -106,7 +106,7 @@ export default class ObjectTypeHandlerRemove {
   }
 
   isSectionUsed(section) {
-    const { properties } = this.state
+    const { properties } = this.getState()
 
     const propertiesMap = properties.reduce((map, property) => {
       map[property.id] = property

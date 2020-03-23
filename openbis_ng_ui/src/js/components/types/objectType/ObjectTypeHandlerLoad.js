@@ -1,14 +1,15 @@
 export default class ObjectTypeHandlerLoad {
-  constructor(objectId, state, setState, facade) {
+  constructor(objectId, getState, setState, facade) {
     this.objectId = objectId
     this.facade = facade
-    this.state = state
+    this.getState = getState
     this.setState = setState
   }
 
   execute() {
     this.setState({
-      loading: true
+      loading: true,
+      validate: false
     })
 
     return Promise.all([

@@ -2,13 +2,10 @@ import _ from 'lodash'
 import openbis from '@src/js/services/openbis.js'
 
 export default class ObjectTypeHandlerSave {
-  constructor(state, setState, facade, loadHandler, validateHandler) {
-    this.type = this.prepareType(state.type)
-    this.properties = this.prepareProperties(
-      state.type,
-      state.properties,
-      state.sections
-    )
+  constructor(getState, setState, facade, loadHandler, validateHandler) {
+    let { type, properties, sections } = getState()
+    this.type = this.prepareType(type)
+    this.properties = this.prepareProperties(type, properties, sections)
     this.setState = setState
     this.facade = facade
     this.loadHandler = loadHandler
