@@ -17,9 +17,9 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.EnumFieldSearchCriteria;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.AttributesMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.Attributes;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinInformation;
 
 import java.util.List;
@@ -47,7 +47,7 @@ public class EnumFieldSearchConditionTranslator implements IConditionTranslator<
         {
             final Enum<?> value = criterion.getFieldValue();
             final String criterionFieldName = criterion.getFieldName();
-            final String columnName = Attributes.getColumnName(criterionFieldName, tableMapper.getEntitiesTable(), criterion.getFieldName());
+            final String columnName = AttributesMapper.getColumnName(criterionFieldName, tableMapper.getEntitiesTable(), criterion.getFieldName());
 
             sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(columnName).append(SP).append(EQ).append(SP).append(QU);
             args.add(value.toString());

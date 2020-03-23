@@ -774,6 +774,31 @@ public class SearchDataSetTest extends AbstractDataSetTest
     }
 
     @Test
+    public void testSearchWithSortingByProperty()
+    {
+        final DataSetSearchCriteria criteria = new DataSetSearchCriteria();
+        criteria.withOrOperator();
+        criteria.withPermId().thatEquals("20110509092359990-12");
+        criteria.withPermId().thatEquals("20081105092259000-18");
+        criteria.withPermId().thatEquals("20081105092159111-1");
+
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        DataSetFetchOptions fo = new DataSetFetchOptions();
+        fo.withProperties();
+
+        fo.sortBy().property("$COMMENT").asc();
+        List<DataSet> dataSets1 = v3api.searchDataSets(sessionToken, criteria, fo).getObjects();
+        assertDataSetCodes(dataSets1, "20081105092259000-18", "20110509092359990-12", "20081105092159111-1");
+
+        fo.sortBy().property("$COMMENT").desc();
+        List<DataSet> dataSets2 = v3api.searchDataSets(sessionToken, criteria, fo).getObjects();
+        assertDataSetCodes(dataSets2, "20081105092159111-1", "20110509092359990-12", "20081105092259000-18");
+
+        v3api.logout(sessionToken);
+    }
+
+    @Test
     public void testSearchWithSortingByCode()
     {
         DataSetSearchCriteria criteria = new DataSetSearchCriteria();

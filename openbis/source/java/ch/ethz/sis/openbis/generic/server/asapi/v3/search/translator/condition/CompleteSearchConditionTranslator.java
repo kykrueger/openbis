@@ -21,8 +21,10 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.CompleteSearchCri
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinInformation;
+import ch.systemsx.cisd.openbis.common.types.BooleanOrUnknown;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
 
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
@@ -31,6 +33,15 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLL
 
 public class CompleteSearchConditionTranslator implements IConditionTranslator<CompleteSearchCriteria>
 {
+
+    private static final Map<Complete, Character> CHARACTER_BY_COMPLETE = new EnumMap<>(Complete.class);
+
+    static
+    {
+        CHARACTER_BY_COMPLETE.put(Complete.YES, BooleanOrUnknown.T.name().charAt(0));
+        CHARACTER_BY_COMPLETE.put(Complete.NO, BooleanOrUnknown.F.name().charAt(0));
+        CHARACTER_BY_COMPLETE.put(Complete.UNKNOWN, BooleanOrUnknown.U.name().charAt(0));
+    }
 
     @Override
     public Map<String, JoinInformation> getJoinInformationMap(final CompleteSearchCriteria criterion, final TableMapper tableMapper,
@@ -48,7 +59,7 @@ public class CompleteSearchConditionTranslator implements IConditionTranslator<C
         {
             final Complete value = criterion.getFieldValue();
             sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(ColumnNames.IS_COMPLETE_COLUMN).append(SP).append(EQ).append(SP).append(QU);
-            args.add(value.toString().substring(0, 1));
+            args.add(CHARACTER_BY_COMPLETE.get(value));
         } else
         {
             throw new IllegalArgumentException();

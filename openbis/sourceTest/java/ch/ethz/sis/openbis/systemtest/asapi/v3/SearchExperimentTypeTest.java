@@ -17,11 +17,9 @@
 package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import org.testng.annotations.Test;
 
@@ -122,6 +120,21 @@ public class SearchExperimentTypeTest extends AbstractTest
     }
 
     @Test
+    public void testSearchWithIds()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        ExperimentTypeSearchCriteria searchCriteria = new ExperimentTypeSearchCriteria();
+        searchCriteria.withIds().thatIn(Arrays.asList(new EntityTypePermId("SIRNA_HCS")));
+        SearchResult<ExperimentType> searchResult = v3api.searchExperimentTypes(sessionToken, searchCriteria, new ExperimentTypeFetchOptions());
+
+        List<ExperimentType> types = searchResult.getObjects();
+        List<String> codes = extractCodes(types);
+        Collections.sort(codes);
+        assertEquals(codes.toString(), "[SIRNA_HCS]");
+        v3api.logout(sessionToken);
+    }
+
+    @Test
     public void testSearchWithCodeThatStartsWithD()
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
@@ -180,6 +193,44 @@ public class SearchExperimentTypeTest extends AbstractTest
         // Then
         assertEquals(type.getFetchOptions().hasValidationPlugin(), true);
         assertEquals(type.getValidationPlugin().getFetchOptions().hasScript(), true);
+        assertEquals(type.getValidationPlugin().getName(), "testEXPERIMENT");
+        assertEquals(type.getValidationPlugin().getScript(), "import time;\ndef validate(entity, isNew):\n  pass\n ");
+
+        v3api.logout(sessionToken);
+    }
+
+    @Test
+    public void testSearchWithValidationPluginAndIn()
+    {
+        // Given
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        final ExperimentTypeCreation creation = new ExperimentTypeCreation();
+        creation.setCode("MY-TYPE-" + System.currentTimeMillis());
+        creation.setValidationPluginId(new PluginPermId("testEXPERIMENT"));
+        final EntityTypePermId typePermId = v3api.createExperimentTypes(sessionToken, Arrays.asList(creation)).get(0);
+        final ExperimentTypeSearchCriteria searchCriteria = new ExperimentTypeSearchCriteria();
+        searchCriteria.withOrOperator();
+        searchCriteria.withId().thatEquals(typePermId);
+        searchCriteria.withIds().thatIn(Arrays.asList(new EntityTypePermId("SIRNA_HCS")));
+        final ExperimentTypeFetchOptions fetchOptions = new ExperimentTypeFetchOptions();
+        fetchOptions.withValidationPlugin().withScript();
+
+        // When
+        final SearchResult<ExperimentType> searchResult = v3api.searchExperimentTypes(sessionToken, searchCriteria, fetchOptions);
+
+        // Then
+        List<ExperimentType> types = searchResult.getObjects();
+        List<String> codes = extractCodes(types);
+        Collections.sort(codes);
+        assertTrue(codes.toString().matches("\\[MY-TYPE-\\d{13}, SIRNA_HCS\\]"));
+
+        final Optional<ExperimentType> typeOptional = types.stream().filter(experimentType -> experimentType.getCode().startsWith("MY-TYPE-"))
+                .findFirst();
+        assertTrue(typeOptional.isPresent());
+
+        final ExperimentType type = typeOptional.get();
+        assertTrue(type.getFetchOptions().hasValidationPlugin());
+        assertTrue(type.getValidationPlugin().getFetchOptions().hasScript());
         assertEquals(type.getValidationPlugin().getName(), "testEXPERIMENT");
         assertEquals(type.getValidationPlugin().getScript(), "import time;\ndef validate(entity, isNew):\n  pass\n ");
 

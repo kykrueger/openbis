@@ -23,9 +23,9 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractStringValu
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AnyStringValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringFieldSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.AttributesMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.Attributes;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinType;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils;
@@ -68,7 +68,7 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
             case ATTRIBUTE:
             {
                 final String criterionFieldName = criterion.getFieldName();
-                final String columnName = Attributes.getColumnName(criterionFieldName, tableMapper.getEntitiesTable(), criterionFieldName);
+                final String columnName = AttributesMapper.getColumnName(criterionFieldName, tableMapper.getEntitiesTable(), criterionFieldName);
                 final AbstractStringValue value = criterion.getFieldValue();
                 normalizeValue(value, columnName);
 

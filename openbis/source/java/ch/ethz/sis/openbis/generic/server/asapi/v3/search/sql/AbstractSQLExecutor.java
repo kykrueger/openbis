@@ -25,10 +25,10 @@ import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
 import org.apache.log4j.Logger;
 
-public class JDBCSQLExecutor implements ISQLExecutor
+public abstract class AbstractSQLExecutor implements ISQLExecutor
 {
 
-    private static final Logger OPERATION_LOG = LogFactory.getLogger(LogCategory.OPERATION, JDBCSQLExecutor.class);
+    private static final Logger OPERATION_LOG = LogFactory.getLogger(LogCategory.OPERATION, AbstractSQLExecutor.class);
 
     private static final Map<Class<?>, PSQLTypes> TYPE_CONVERSION_MAP = new HashMap<>();
 
@@ -48,23 +48,13 @@ public class JDBCSQLExecutor implements ISQLExecutor
         TYPE_CONVERSION_MAP.put(Byte.class, PSQLTypes.INT2);
     }
 
-    /** Connection used for this executor. */
-    private Connection connection;
-
-    public void setConnection(final Connection connection)
-    {
-        this.connection = connection;
-    }
-
-    public Connection getConnection() {
-        return this.connection;
-    }
+    public abstract Connection getConnection();
 
     @Override
     public List<Map<String, Object>> execute(final String sqlQuery, final List<Object> args)
     {
-        OPERATION_LOG.info("QUERY: " + sqlQuery);
-        OPERATION_LOG.info("ARGS: " + Arrays.deepToString(args.toArray()));
+        System.out.println("QUERY: " + sqlQuery);
+        System.out.println("ARGS: " + Arrays.deepToString(args.toArray()));
 
         final List<Map<String, Object>> results = new ArrayList<>();
         try (final PreparedStatement preparedStatement = getConnection().prepareStatement(sqlQuery))
@@ -96,15 +86,15 @@ public class JDBCSQLExecutor implements ISQLExecutor
             throw new RuntimeException(ex);
         }
 
-        OPERATION_LOG.info("RESULTS COUNT: " + results.size());
-        OPERATION_LOG.debug("RESULTS: " + results);
+        System.out.println("RESULTS COUNT: " + results.size());
+        System.out.println("RESULTS: " + results);
         return results;
     }
 
     public void executeUpdate(final String sqlQuery, final List<Object> args)
     {
-        OPERATION_LOG.info("QUERY: " + sqlQuery);
-        OPERATION_LOG.info("ARGS: " + args);
+        System.out.println("QUERY: " + sqlQuery);
+        System.out.println("ARGS: " + args);
 
         try (final PreparedStatement preparedStatement = getConnection().prepareStatement(sqlQuery))
         {

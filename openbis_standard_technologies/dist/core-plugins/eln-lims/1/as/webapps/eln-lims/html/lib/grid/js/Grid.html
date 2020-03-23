@@ -32,9 +32,9 @@
 			
 			<div class="repeater-search">
 				<div class="search input-group">
-					<input type="search" class="form-control" placeholder="Filter" /> 
+					<input type="search" class="form-control" placeholder="Filter" id="search-input-id" />
 					<span class="input-group-btn">
-						<button class="btn btn-default" type="button">
+						<button class="btn btn-default" type="button" id="search-button-id">
 							<span class="glyphicon glyphicon-search"></span> <span class="sr-only">Search</span>
 						</button>
 					</span>
@@ -75,7 +75,7 @@
 	<div class="repeater-footer">
 		<div class="repeater-footer-left">
 			<div class="repeater-itemization">
-				<span><span class="repeater-start"></span> - <span class="repeater-end"></span> of <span class="repeater-count"></span> items</span>
+				<span><span class="repeater-start"></span> - <span class="repeater-end"></span> of <span class="repeater-count" id="total-count-id"></span> items</span>
 				<div class="btn-group selectlist" data-resize="auto">
 					<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
 						<span class="selected-label">&nbsp;</span> <span class="caret"></span> <span class="sr-only">Toggle Dropdown</span>

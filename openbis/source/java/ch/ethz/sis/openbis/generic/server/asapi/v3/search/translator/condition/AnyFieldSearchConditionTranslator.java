@@ -118,7 +118,7 @@ public class AnyFieldSearchConditionTranslator implements IConditionTranslator<A
                     sqlBuilder.append(resultSqlBuilder.substring(separatorLength));
                 }
 
-                if (args.isEmpty())
+                if (args.isEmpty() || resultSqlBuilder.length() <= separatorLength)
                 {
                     // When there are no columns selected (no values added), then the query should return nothing
                     sqlBuilder.append(FALSE);

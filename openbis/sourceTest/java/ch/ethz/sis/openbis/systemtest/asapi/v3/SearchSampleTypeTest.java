@@ -312,6 +312,36 @@ public class SearchSampleTypeTest extends AbstractTest
     }
 
     @Test
+    public void testSearchWithCodeThatStartsWithStarWildcardWithIn()
+    {
+        final SampleTypeSearchCriteria criteria = new SampleTypeSearchCriteria();
+        criteria.withOrOperator();
+        criteria.withCode().thatStartsWith("D*N_");
+        criteria.withCodes().thatIn(Arrays.asList("MASTER_PLATE", "CELL_PLATE"));
+
+        testSearch(criteria, "CELL_PLATE", "DELETION_TEST", "DILUTION_PLATE", "MASTER_PLATE");
+    }
+
+    @Test
+    public void testSearchWithIdsThatIn()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        SampleTypeSearchCriteria searchCriteria = new SampleTypeSearchCriteria();
+        searchCriteria.withIds().thatIn(Arrays.asList(new EntityTypePermId("MASTER_PLATE"), new EntityTypePermId("CELL_PLATE")));
+
+        SearchResult<SampleType> searchResult = v3api.searchSampleTypes(sessionToken, searchCriteria, new SampleTypeFetchOptions());
+
+        List<SampleType> types = searchResult.getObjects();
+        List<String> codes = extractCodes(types);
+        Collections.sort(codes);
+
+        assertEquals(codes.toString(), "[CELL_PLATE, MASTER_PLATE]");
+
+        v3api.logout(sessionToken);
+    }
+
+    @Test
     public void testSearchWithListableOnly()
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);

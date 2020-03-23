@@ -20,14 +20,17 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CodesSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CollectionFieldSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.IdsSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.UserIdsSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.Attributes;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.AttributesMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinInformation;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.*;
@@ -41,15 +44,7 @@ public class CollectionFieldSearchConditionTranslator implements IConditionTrans
     {
         ARRAY_CASTING.put(CodesSearchCriteria.class, new String[0]);
         ARRAY_CASTING.put(UserIdsSearchCriteria.class, new String[0]);
-
-        // TODO - Implement IdsSearchCriteria properly - Implementation notes
-        // TODO - Before doing any of this, check that this code path is actually triggered
-        // These are objects, and can have different types matching different columns.
-        // This case requires first to split the Collection of Ids by object type in sub collections.
-        // If the collection is empty, is a FALSE statement.
-        // For each sub collection of each type is necessary to create a statement with its argument.
-        // It would also be possible to delegate, the simpler non efficient implementation would be to call IdSearchConditionTransator for each id
-        ARRAY_CASTING.put(IdsSearchCriteria.class, new Object[0]);
+        ARRAY_CASTING.put(IdsSearchCriteria.class, new String[0]);
     }
 
     @Override
@@ -69,15 +64,34 @@ public class CollectionFieldSearchConditionTranslator implements IConditionTrans
         }
         if (criterion.getClass() == IdsSearchCriteria.class)
         {
-            throw new RuntimeException("Unsupported " + CollectionFieldSearchCriteria.class.getSimpleName() + " : " + IdsSearchCriteria.class + ", this is a core error, contact the development team.");
+            if (criterion.getFieldValue().size() > 1)
+            {
+                final Class<?> identifierClass = criterion.getFieldValue().iterator().next().getClass();
+                for (Object identifier:criterion.getFieldValue())
+                {
+                    if (identifier.getClass() != identifierClass)
+                    {
+                        throw new IllegalArgumentException("Unsupported " + CollectionFieldSearchCriteria.class.getSimpleName() + ": " + IdsSearchCriteria.class + ", identifiers provided should be of the same type.");
+                    }
+                }
+            }
         }
 
         switch (criterion.getFieldType())
         {
             case ATTRIBUTE:
             {
-                final Object fieldName = Attributes.getColumnName(criterion.getFieldName(), tableMapper.getEntitiesTable(), criterion.getFieldName());
-                final Collection<?> fieldValue = criterion.getFieldValue();
+                final Object fieldName = AttributesMapper.getColumnName(criterion.getFieldName(), tableMapper.getEntitiesTable(), criterion.getFieldName());
+                final Collection<?> initialFieldValue = criterion.getFieldValue();
+
+                final Collection<?> fieldValue;
+                if (!initialFieldValue.isEmpty() && initialFieldValue.stream().anyMatch((o) -> o instanceof EntityTypePermId))
+                {
+                    fieldValue = initialFieldValue.stream().map((o) -> ((EntityTypePermId) o).getPermId()).collect(Collectors.toList());
+                } else
+                {
+                    fieldValue = initialFieldValue;
+                }
 
                 sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(fieldName).append(SP).append(IN).append(SP).append(LP).
                         append(SELECT).append(SP).append(UNNEST).append(LP).append(QU).append(RP).

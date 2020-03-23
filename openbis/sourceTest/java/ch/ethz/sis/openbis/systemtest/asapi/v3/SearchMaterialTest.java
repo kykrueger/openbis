@@ -214,11 +214,12 @@ public class SearchMaterialTest extends AbstractTest
         testSearch(TEST_USER, criteria, 0);
     }
 
+    @Test
     public void testSearchWithAnyField()
     {
         MaterialSearchCriteria criteria = new MaterialSearchCriteria();
-        criteria.withAnyField().thatEquals("MYGENE2");
-        testSearch(TEST_USER, criteria, new MaterialPermId("MYGENE2", "GENE"));
+        criteria.withAnyField().thatEquals("/VIRUS1");
+        testSearch(TEST_USER, criteria, new MaterialPermId("VIRUS1", "VIRUS"));
     }
 
     @Test

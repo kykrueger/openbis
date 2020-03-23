@@ -27,6 +27,20 @@ var TestUtil = new function() {
         });
     }
 
+    this.testLocally = function(id) {
+        return new Promise(function executor(resolve, reject) {
+            console.log("%cTest " + id +" should be tested locally", "color: blue");
+            resolve();
+        });
+    }
+
+    this.allTestsPassed = function() {
+        return new Promise(function executor(resolve, reject) {
+            alert("Tests passed!");
+            resolve();
+        });
+    }
+
     this.setCookies = function(key, value) {
         return new Promise(function executor(resolve, reject) {
             $.cookie(key, value);

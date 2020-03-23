@@ -24,7 +24,7 @@ import org.hibernate.internal.SessionImpl;
 
 import java.sql.Connection;
 
-public class HibernateSQLExecutor extends JDBCSQLExecutor
+public class HibernateSQLExecutor extends AbstractSQLExecutor
 {
 
     public HibernateSQLExecutor()
