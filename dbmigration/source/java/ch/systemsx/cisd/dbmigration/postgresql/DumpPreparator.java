@@ -43,6 +43,7 @@ import org.apache.log4j.Logger;
 
 import ch.systemsx.cisd.base.utilities.OSUtilities;
 import ch.systemsx.cisd.common.exceptions.EnvironmentFailureException;
+import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.common.process.ProcessExecutionHelper;
 import ch.systemsx.cisd.dbmigration.SimpleDatabaseMetaData;
 import ch.systemsx.cisd.dbmigration.SimpleTableMetaData;
@@ -142,6 +143,15 @@ public class DumpPreparator
         command.add(dataBaseName);
         final Logger rootLogger = Logger.getRootLogger();
         final boolean ok = ProcessExecutionHelper.runAndLog(command, rootLogger, rootLogger);
+        if (ok)
+        {
+            // Since PostgreSQL 11 'EXECUTE PROCEDURE' is deprecated. Instead 'EXECUTE FUNCTION' should be used.
+            // pg_dump uses always 'EXECUTE FUNCTION' but the parser tool PgDiff and older PostgreSQL version
+            // do not know the new syntax.
+            String sql = FileUtilities.loadToString(dumpFile);
+            sql = sql.replace("EXECUTE FUNCTION", "EXECUTE PROCEDURE");
+            FileUtilities.writeToFile(dumpFile, sql);
+        }
         return ok;
     }
 
