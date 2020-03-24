@@ -833,7 +833,6 @@ CREATE SEQUENCE attachment_content_id_seq
     NO MAXVALUE
     CACHE 1;
 SET default_tablespace = '';
-SET default_table_access_method = heap;
 CREATE TABLE attachment_contents (
     id tech_id NOT NULL,
     value file NOT NULL
