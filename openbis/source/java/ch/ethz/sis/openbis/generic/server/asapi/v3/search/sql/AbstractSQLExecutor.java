@@ -53,15 +53,13 @@ public abstract class AbstractSQLExecutor implements ISQLExecutor
     @Override
     public List<Map<String, Object>> execute(final String sqlQuery, final List<Object> args)
     {
-        Connection connection = getConnection();
-        System.out.println("CONNECTION: " + connection);
         System.out.println("QUERY: " + sqlQuery);
         System.out.println("ARGS: " + Arrays.deepToString(args.toArray()));
 
         final List<Map<String, Object>> results = new ArrayList<>();
-        try (final PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery))
+        try (final PreparedStatement preparedStatement = getConnection().prepareStatement(sqlQuery))
         {
-            setArgsForPreparedStatement(args, connection, preparedStatement);
+            setArgsForPreparedStatement(args, preparedStatement);
 
             try (final ResultSet resultSet = preparedStatement.executeQuery())
             {
@@ -93,7 +91,7 @@ public abstract class AbstractSQLExecutor implements ISQLExecutor
         return results;
     }
 
-    private void setArgsForPreparedStatement(final List<Object> args, final Connection connection, final PreparedStatement preparedStatement) throws SQLException
+    private void setArgsForPreparedStatement(final List<Object> args, final PreparedStatement preparedStatement) throws SQLException
     {
         for (int index = 0; index < args.size(); index++)
         {
@@ -110,7 +108,7 @@ public abstract class AbstractSQLExecutor implements ISQLExecutor
                             + " - With elements of type: " + arrayObjectType.getName() + " - Data: " + Arrays.toString(objectArray));
                 }
 
-                preparedStatement.setArray(index + 1, connection.createArrayOf(psqlType.toString(), objectArray));
+                preparedStatement.setArray(index + 1, preparedStatement.getConnection().createArrayOf(psqlType.toString(), objectArray));
             } else if (object instanceof Date)
             {
                 final Date date = (Date) object;
