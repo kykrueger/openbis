@@ -163,7 +163,6 @@ public class PostgresAuthorisationInformationProviderDAO implements ISQLAuthoris
     public Set<Long> getAuthorisedProjects(final Set<Long> requestedIDs, final AuthorisationInformation authInfo)
     {
         final String p = "p";
-
         final String query = SELECT + SP + DISTINCT + SP + p + PERIOD + ID_COLUMN + NL +
                 FROM + SP + TableMapper.PROJECT.getEntitiesTable() + SP + p + NL +
                 WHERE + SP + p + PERIOD + ID_COLUMN + SP + IN + SP + LP + SELECT + SP + UNNEST + LP + QU + RP + RP + SP + AND +
@@ -174,6 +173,26 @@ public class PostgresAuthorisationInformationProviderDAO implements ISQLAuthoris
                 authInfo.getProjectIds().toArray(new Long[0]));
         final List<Map<String, Object>> queryResultList = executor.execute(query, args);
 
+        return collectIDs(queryResultList);
+    }
+
+    @Override
+    public Set<Long> getAuthorisedSpaces(final Set<Long> requestedIDs, final AuthorisationInformation authInfo)
+    {
+        final String s = "s";
+        final String p = "p";
+        final String query = SELECT + SP + DISTINCT + SP + s + PERIOD + ID_COLUMN + NL +
+                FROM + SP + TableMapper.SPACE.getEntitiesTable() + SP + s + NL +
+                INNER_JOIN + SP + TableMapper.PROJECT.getEntitiesTable() + SP + p + SP +
+                ON + SP + p + PERIOD + SPACE_COLUMN + SP + EQ + SP + s + PERIOD + ID_COLUMN + NL +
+                WHERE + SP + s + PERIOD + ID_COLUMN + SP + IN + SP + LP + SELECT + SP + UNNEST + LP + QU + RP + RP + SP + AND +
+                SP + LP + s + PERIOD + ID_COLUMN + SP + IN + SP + LP + SELECT + SP + UNNEST + LP + QU + RP + RP + SP + OR +
+                SP + p + PERIOD + ID_COLUMN + SP + IN + SP + LP + SELECT + SP + UNNEST + LP + QU + RP + RP + RP;
+
+        final List<Object> args = Arrays.asList(requestedIDs.toArray(new Long[0]), authInfo.getSpaceIds().toArray(new Long[0]),
+                authInfo.getProjectIds().toArray(new Long[0]));
+        final List<Map<String, Object>> queryResultList = executor.execute(query, args);
+                                                                         
         return collectIDs(queryResultList);
     }
 

@@ -197,31 +197,18 @@ public class SearchSpaceTest extends AbstractTest
 
         String sessionToken = v3api.login(user.getUserId(), PASSWORD);
 
-        if (user.isDisabledProjectUser())
+        SearchResult<Space> result = v3api.searchSpaces(sessionToken, criteria, new SpaceFetchOptions());
+
+        if (user.isInstanceUser())
         {
-            assertAuthorizationFailureException(new IDelegatedAction()
-                {
-                    @Override
-                    public void execute()
-                    {
-                        v3api.searchSpaces(sessionToken, criteria, new SpaceFetchOptions());
-                    }
-                });
+            assertEquals(result.getObjects().size(), 2);
+        } else if ((user.isTestSpaceUser() || user.isTestProjectUser()) && !user.isDisabledProjectUser())
+        {
+            assertEquals(result.getObjects().size(), 1);
+            assertEquals(result.getObjects().get(0).getPermId(), permId2);
         } else
         {
-            SearchResult<Space> result = v3api.searchSpaces(sessionToken, criteria, new SpaceFetchOptions());
-
-            if (user.isInstanceUser())
-            {
-                assertEquals(result.getObjects().size(), 2);
-            } else if (user.isTestSpaceUser() || user.isTestProjectUser())
-            {
-                assertEquals(result.getObjects().size(), 1);
-                assertEquals(result.getObjects().get(0).getPermId(), permId2);
-            } else
-            {
-                assertEquals(result.getObjects().size(), 0);
-            }
+            assertEquals(result.getObjects().size(), 0);
         }
 
         v3api.logout(sessionToken);

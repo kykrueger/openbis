@@ -51,14 +51,7 @@ public class SpaceSearchManager extends AbstractSearchManager<SpaceSearchCriteri
     @Override
     protected Set<Long> doFilterIDsByUserRights(final Set<Long> ids, final AuthorisationInformation authorisationInformation)
     {
-        return authorisationInformation.getSpaceIds().stream().filter(ids::contains).collect(Collectors.toSet());
-    }
-
-    private CodeSearchCriteria convertToCodeSearchCriterion(final PermIdSearchCriteria permIdSearchCriteria)
-    {
-        final CodeSearchCriteria codeSearchCriteria = new CodeSearchCriteria();
-        codeSearchCriteria.setFieldValue(permIdSearchCriteria.getFieldValue());
-        return codeSearchCriteria;
+        return getAuthProvider().getAuthorisedSpaces(ids, authorisationInformation);
     }
 
     @Override

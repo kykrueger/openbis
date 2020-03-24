@@ -52,6 +52,15 @@ public interface ISQLAuthorisationInformationProviderDAO
     Set<Long> getAuthorisedProjects(Set<Long> requestedIDs, AuthorisationInformation authInfo);
 
     /**
+     * Filters space IDs based on their spaces.
+     *
+     * @param requestedIDs the IDs to be filtered
+     * @param authInfo value object that contains space IDs, which should be related to the resulting IDs.
+     * @return the subset of IDs which are related either to one of the specified spaces.
+     */
+    Set<Long> getAuthorisedSpaces(Set<Long> requestedIDs, AuthorisationInformation authInfo);
+
+    /**
      * Filters tag IDs based on whether they belong to a user.
      *
      * @param requestedIDs IDs to be filtered
@@ -59,5 +68,4 @@ public interface ISQLAuthorisationInformationProviderDAO
      * @return the subset of IDs which are linked to the specified user.
      */
     Set<Long> getTagsOfUser(Set<Long> requestedIDs, Long userID);
-
 }
