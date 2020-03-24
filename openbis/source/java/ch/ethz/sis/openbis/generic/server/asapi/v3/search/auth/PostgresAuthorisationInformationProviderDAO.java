@@ -118,9 +118,18 @@ public class PostgresAuthorisationInformationProviderDAO implements ISQLAuthoris
         return result;
     }
 
+    private boolean isSystemUser(AuthorisationInformation authInfo) {
+        return authInfo.getInstanceRoles().isEmpty() &&
+                authInfo.getSpaceIds().isEmpty() &&
+                authInfo.getProjectIds().isEmpty();
+    }
+
     @Override
     public Set<Long> getAuthorisedSamples(final Set<Long> requestedIDs, final AuthorisationInformation authInfo)
     {
+        if (isSystemUser(authInfo)) {
+            return requestedIDs;
+        }
         final String query = SELECT + SP + DISTINCT + SP + ID_COLUMN + NL +
                 FROM + SP + TableMapper.SAMPLE.getEntitiesTable() + NL +
                 WHERE + SP + ID_COLUMN + SP + IN + LP + SELECT + SP + UNNEST + LP + QU + RP + RP + SP + AND + NL +
@@ -143,6 +152,9 @@ public class PostgresAuthorisationInformationProviderDAO implements ISQLAuthoris
     @Override
     public Set<Long> getAuthorisedExperiments(final Set<Long> requestedIDs, final AuthorisationInformation authInfo)
     {
+        if (isSystemUser(authInfo)) {
+            return requestedIDs;
+        }
         final String e = "e";
         final String p = "p";
         final String query = SELECT + SP + DISTINCT + SP + e + PERIOD + ID_COLUMN + NL +
@@ -162,6 +174,9 @@ public class PostgresAuthorisationInformationProviderDAO implements ISQLAuthoris
     @Override
     public Set<Long> getAuthorisedProjects(final Set<Long> requestedIDs, final AuthorisationInformation authInfo)
     {
+        if (isSystemUser(authInfo)) {
+            return requestedIDs;
+        }
         final String p = "p";
         final String query = SELECT + SP + DISTINCT + SP + p + PERIOD + ID_COLUMN + NL +
                 FROM + SP + TableMapper.PROJECT.getEntitiesTable() + SP + p + NL +
@@ -179,6 +194,9 @@ public class PostgresAuthorisationInformationProviderDAO implements ISQLAuthoris
     @Override
     public Set<Long> getAuthorisedSpaces(final Set<Long> requestedIDs, final AuthorisationInformation authInfo)
     {
+        if (isSystemUser(authInfo)) {
+            return requestedIDs;
+        }
         final String s = "s";
         final String p = "p";
         final String query = SELECT + SP + DISTINCT + SP + s + PERIOD + ID_COLUMN + NL +
