@@ -53,13 +53,15 @@ public abstract class AbstractSQLExecutor implements ISQLExecutor
     @Override
     public List<Map<String, Object>> execute(final String sqlQuery, final List<Object> args)
     {
+        Connection connection = getConnection();
+        System.out.println("CONNECTION: " + connection);
         System.out.println("QUERY: " + sqlQuery);
         System.out.println("ARGS: " + Arrays.deepToString(args.toArray()));
 
         final List<Map<String, Object>> results = new ArrayList<>();
-        try (final PreparedStatement preparedStatement = getConnection().prepareStatement(sqlQuery))
+        try (final PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery))
         {
-            setArgsForPreparedStatement(args, preparedStatement);
+            setArgsForPreparedStatement(args, connection, preparedStatement);
 
             try (final ResultSet resultSet = preparedStatement.executeQuery())
             {
@@ -91,22 +93,7 @@ public abstract class AbstractSQLExecutor implements ISQLExecutor
         return results;
     }
 
-    public void executeUpdate(final String sqlQuery, final List<Object> args)
-    {
-        System.out.println("QUERY: " + sqlQuery);
-        System.out.println("ARGS: " + args);
-
-        try (final PreparedStatement preparedStatement = getConnection().prepareStatement(sqlQuery))
-        {
-            setArgsForPreparedStatement(args, preparedStatement);
-            preparedStatement.executeUpdate();
-        } catch (SQLException ex)
-        {
-            throw new RuntimeException(ex);
-        }
-    }
-
-    private void setArgsForPreparedStatement(final List<Object> args, final PreparedStatement preparedStatement) throws SQLException
+    private void setArgsForPreparedStatement(final List<Object> args, final Connection connection, final PreparedStatement preparedStatement) throws SQLException
     {
         for (int index = 0; index < args.size(); index++)
         {
@@ -123,7 +110,7 @@ public abstract class AbstractSQLExecutor implements ISQLExecutor
                             + " - With elements of type: " + arrayObjectType.getName() + " - Data: " + Arrays.toString(objectArray));
                 }
 
-                preparedStatement.setArray(index + 1, getConnection().createArrayOf(psqlType.toString(), objectArray));
+                preparedStatement.setArray(index + 1, connection.createArrayOf(psqlType.toString(), objectArray));
             } else if (object instanceof Date)
             {
                 final Date date = (Date) object;
