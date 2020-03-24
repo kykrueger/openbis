@@ -833,6 +833,7 @@ CREATE SEQUENCE attachment_content_id_seq
     NO MAXVALUE
     CACHE 1;
 SET default_tablespace = '';
+SET default_table_access_method = heap;
 CREATE TABLE attachment_contents (
     id tech_id NOT NULL,
     value file NOT NULL
@@ -1071,8 +1072,7 @@ CREATE TABLE data_set_properties_history (
     valid_from_timestamp time_stamp NOT NULL,
     vocabulary_term identifier,
     material identifier,
-    sample identifier,
-    CONSTRAINT dsprh_ck CHECK ((((value IS NOT NULL) AND (vocabulary_term IS NULL) AND (material IS NULL) AND (sample IS NULL)) OR ((value IS NULL) AND (vocabulary_term IS NOT NULL) AND (material IS NULL) AND (sample IS NULL)) OR ((value IS NULL) AND (vocabulary_term IS NULL) AND (material IS NOT NULL) AND (sample IS NULL)) OR ((value IS NULL) AND (vocabulary_term IS NULL) AND (material IS NULL) AND (sample IS NOT NULL))))
+    CONSTRAINT dsprh_ck CHECK ((((value IS NOT NULL) AND (vocabulary_term IS NULL) AND (material IS NULL)) OR ((value IS NULL) AND (vocabulary_term IS NOT NULL) AND (material IS NULL)) OR ((value IS NULL) AND (vocabulary_term IS NULL) AND (material IS NOT NULL))))
 );
 CREATE TABLE data_set_relationships_history (
     id tech_id NOT NULL,
@@ -1100,7 +1100,6 @@ CREATE VIEW data_set_history_view AS
     NULL::text AS value,
     NULL::character varying AS vocabulary_term,
     NULL::character varying AS material,
-    NULL::character varying AS sample,
     NULL::text AS external_code,
     NULL::text AS path,
     NULL::text AS git_commit_hash,
@@ -1127,7 +1126,6 @@ UNION
     data_set_properties_history.value,
     data_set_properties_history.vocabulary_term,
     data_set_properties_history.material,
-    data_set_properties_history.sample,
     NULL::text AS external_code,
     NULL::text AS path,
     NULL::text AS git_commit_hash,
@@ -1153,7 +1151,6 @@ UNION
     NULL::text AS value,
     NULL::character varying AS vocabulary_term,
     NULL::character varying AS material,
-    NULL::character varying AS sample,
     data_set_copies_history.external_code,
     data_set_copies_history.path,
     data_set_copies_history.git_commit_hash,
@@ -1179,8 +1176,7 @@ CREATE TABLE data_set_properties (
     modification_timestamp time_stamp DEFAULT now(),
     pers_id_author tech_id NOT NULL,
     dase_frozen boolean_char DEFAULT false NOT NULL,
-    samp_prop_id tech_id,
-    CONSTRAINT dspr_ck CHECK ((((value IS NOT NULL) AND (cvte_id IS NULL) AND (mate_prop_id IS NULL) AND (samp_prop_id IS NULL)) OR ((value IS NULL) AND (cvte_id IS NOT NULL) AND (mate_prop_id IS NULL) AND (samp_prop_id IS NULL)) OR ((value IS NULL) AND (cvte_id IS NULL) AND (mate_prop_id IS NOT NULL) AND (samp_prop_id IS NULL)) OR ((value IS NULL) AND (cvte_id IS NULL) AND (mate_prop_id IS NULL) AND (samp_prop_id IS NOT NULL))))
+    CONSTRAINT dspr_ck CHECK ((((value IS NOT NULL) AND (cvte_id IS NULL) AND (mate_prop_id IS NULL)) OR ((value IS NULL) AND (cvte_id IS NOT NULL) AND (mate_prop_id IS NULL)) OR ((value IS NULL) AND (cvte_id IS NULL) AND (mate_prop_id IS NOT NULL))))
 );
 CREATE SEQUENCE data_set_property_id_seq
     START WITH 1
@@ -1389,8 +1385,7 @@ CREATE TABLE experiment_properties_history (
     valid_from_timestamp time_stamp NOT NULL,
     vocabulary_term identifier,
     material identifier,
-    sample identifier,
-    CONSTRAINT exprh_ck CHECK ((((value IS NOT NULL) AND (vocabulary_term IS NULL) AND (material IS NULL) AND (sample IS NULL)) OR ((value IS NULL) AND (vocabulary_term IS NOT NULL) AND (material IS NULL) AND (sample IS NULL)) OR ((value IS NULL) AND (vocabulary_term IS NULL) AND (material IS NOT NULL) AND (sample IS NULL)) OR ((value IS NULL) AND (vocabulary_term IS NULL) AND (material IS NULL) AND (sample IS NOT NULL))))
+    CONSTRAINT exprh_ck CHECK ((((value IS NOT NULL) AND (vocabulary_term IS NULL) AND (material IS NULL)) OR ((value IS NULL) AND (vocabulary_term IS NOT NULL) AND (material IS NULL)) OR ((value IS NULL) AND (vocabulary_term IS NULL) AND (material IS NOT NULL))))
 );
 CREATE TABLE experiment_relationships_history (
     id tech_id NOT NULL,
@@ -1416,7 +1411,6 @@ CREATE VIEW experiment_history_view AS
     NULL::text AS value,
     NULL::character varying AS vocabulary_term,
     NULL::character varying AS material,
-    NULL::character varying AS sample,
     experiment_relationships_history.pers_id_author,
     experiment_relationships_history.valid_from_timestamp,
     experiment_relationships_history.valid_until_timestamp
@@ -1434,7 +1428,6 @@ UNION
     experiment_properties_history.value,
     experiment_properties_history.vocabulary_term,
     experiment_properties_history.material,
-    experiment_properties_history.sample,
     experiment_properties_history.pers_id_author,
     experiment_properties_history.valid_from_timestamp,
     experiment_properties_history.valid_until_timestamp
@@ -1457,8 +1450,7 @@ CREATE TABLE experiment_properties (
     mate_prop_id tech_id,
     pers_id_author tech_id NOT NULL,
     expe_frozen boolean_char DEFAULT false NOT NULL,
-    samp_prop_id tech_id,
-    CONSTRAINT expr_ck CHECK ((((value IS NOT NULL) AND (cvte_id IS NULL) AND (mate_prop_id IS NULL) AND (samp_prop_id IS NULL)) OR ((value IS NULL) AND (cvte_id IS NOT NULL) AND (mate_prop_id IS NULL) AND (samp_prop_id IS NULL)) OR ((value IS NULL) AND (cvte_id IS NULL) AND (mate_prop_id IS NOT NULL) AND (samp_prop_id IS NULL)) OR ((value IS NULL) AND (cvte_id IS NULL) AND (mate_prop_id IS NULL) AND (samp_prop_id IS NOT NULL))))
+    CONSTRAINT expr_ck CHECK ((((value IS NOT NULL) AND (cvte_id IS NULL) AND (mate_prop_id IS NULL)) OR ((value IS NULL) AND (cvte_id IS NOT NULL) AND (mate_prop_id IS NULL)) OR ((value IS NULL) AND (cvte_id IS NULL) AND (mate_prop_id IS NOT NULL))))
 );
 CREATE SEQUENCE experiment_property_id_seq
     START WITH 1
@@ -1890,8 +1882,7 @@ CREATE TABLE property_types (
     maty_prop_id tech_id,
     schema text_value,
     transformation text_value,
-    meta_data jsonb,
-    saty_prop_id tech_id
+    meta_data jsonb
 );
 CREATE TABLE queries (
     id tech_id NOT NULL,
@@ -2271,7 +2262,7 @@ SELECT pg_catalog.setval('data_set_relationships_history_id_seq', 16, true);
 SELECT pg_catalog.setval('data_set_type_id_seq', 11, true);
 SELECT pg_catalog.setval('data_store_id_seq', 1, true);
 SELECT pg_catalog.setval('data_store_services_id_seq', 1, true);
-SELECT pg_catalog.setval('data_type_id_seq', 11, true);
+SELECT pg_catalog.setval('data_type_id_seq', 10, true);
 SELECT pg_catalog.setval('database_instance_id_seq', 1, true);
 SELECT pg_catalog.setval('deletion_id_seq', 4, true);
 SELECT pg_catalog.setval('dstpt_id_seq', 10, true);

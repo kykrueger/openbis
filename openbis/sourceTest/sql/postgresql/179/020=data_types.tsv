@@ -8,4 +8,3 @@
 8	HYPERLINK	Address of a web page
 9	MULTILINE_VARCHAR	Long text
 10	XML	XML document
-11	SAMPLE	Reference to a sample
