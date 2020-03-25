@@ -2261,7 +2261,7 @@ SELECT pg_catalog.setval('data_set_relationships_history_id_seq', 16, true);
 SELECT pg_catalog.setval('data_set_type_id_seq', 11, true);
 SELECT pg_catalog.setval('data_store_id_seq', 1, true);
 SELECT pg_catalog.setval('data_store_services_id_seq', 1, true);
-SELECT pg_catalog.setval('data_type_id_seq', 10, true);
+SELECT pg_catalog.setval('data_type_id_seq', 11, true);
 SELECT pg_catalog.setval('database_instance_id_seq', 1, true);
 SELECT pg_catalog.setval('deletion_id_seq', 4, true);
 SELECT pg_catalog.setval('dstpt_id_seq', 10, true);
