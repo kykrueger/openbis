@@ -13,9 +13,10 @@ export default class BrowserController {
   init() {
     this.setState({
       loaded: false,
-      loadedNodes: {},
-      selectedNodes: {},
-      expandedNodes: {},
+      loadedNodes: [],
+      visibleIds: {},
+      selectedIds: {},
+      expandedIds: {},
       filter: ''
     })
   }
@@ -89,86 +90,102 @@ export default class BrowserController {
         }
       ]
 
+      this._sortNodes(nodes)
+
+      const filteredNodes = this._filterNodes(nodes, this.getFilter())
+      const filteredIds = this._visitNodes(
+        filteredNodes,
+        (node, result) => {
+          result[node.id] = node.id
+        },
+        {}
+      )
+
       this.setState({
         loaded: true,
-        loadedNodes: nodes
+        loadedNodes: nodes,
+        visibleIds: filteredIds
       })
     })
   }
 
   filterChange(filter) {
+    const { loadedNodes } = this.getState()
+
+    const filteredNodes = this._filterNodes(loadedNodes, filter)
+    const filteredIds = this._visitNodes(
+      filteredNodes,
+      (node, result) => {
+        result[node.id] = node.id
+      },
+      {}
+    )
+
     this.setState({
-      filter
+      filter,
+      visibleIds: filteredIds,
+      expandedIds: filteredIds
     })
   }
 
   nodeExpand(nodeId) {
-    const { expandedNodes } = this.getState()
+    const { expandedIds } = this.getState()
 
-    const newExpandedNodes = { ...expandedNodes }
-    newExpandedNodes[nodeId] = nodeId
+    const newExpandedIds = { ...expandedIds }
+    newExpandedIds[nodeId] = nodeId
 
     this.setState({
-      expandedNodes: newExpandedNodes
+      expandedIds: newExpandedIds
     })
   }
 
   nodeCollapse(nodeId) {
-    const { expandedNodes } = this.getState()
+    const { expandedIds } = this.getState()
 
-    const newExpandedNodes = { ...expandedNodes }
-    delete newExpandedNodes[nodeId]
+    const newExpandedIds = { ...expandedIds }
+    delete newExpandedIds[nodeId]
 
     this.setState({
-      expandedNodes: newExpandedNodes
+      expandedIds: newExpandedIds
     })
   }
 
   nodeSelect(nodeId) {
     const { loadedNodes } = this.getState()
 
-    const _findNodes = (nodes, matchFn, matches = []) => {
-      if (nodes) {
-        for (let i = 0; i < nodes.length; i++) {
-          const node = nodes[i]
-
-          if (matchFn(node)) {
-            matches.push(node)
-          } else {
-            _findNodes(node.children, matchFn, matches)
-          }
-        }
+    const nodesWithNodeId = this._visitNodes(loadedNodes, (node, results) => {
+      if (node.id === nodeId) {
+        results.push(node)
       }
-      return matches
-    }
-
-    const nodesWithNodeId = _findNodes(loadedNodes, node => {
-      return node.id === nodeId
     })
 
     if (nodesWithNodeId.length > 0) {
       const nodeWithNodeId = nodesWithNodeId[0]
-      const newSelectedNodes = {}
+      const newSelectedIds = {}
 
       if (nodeWithNodeId.object) {
-        const nodesWithObject = _findNodes(loadedNodes, node => {
-          return node.object && _.isEqual(node.object, nodeWithNodeId.object)
-        })
-        nodesWithObject.forEach(node => {
-          newSelectedNodes[node.id] = node.id
+        this._visitNodes(loadedNodes, node => {
+          if (node.object && _.isEqual(node.object, nodeWithNodeId.object)) {
+            newSelectedIds[node.id] = node.id
+          }
         })
       } else {
-        newSelectedNodes[nodeId] = nodeId
+        newSelectedIds[nodeId] = nodeId
       }
 
       this.setState({
-        selectedNodes: newSelectedNodes
+        selectedIds: newSelectedIds
       })
     } else {
       this.setState({
-        selectedNodes: {}
+        selectedIds: {}
       })
     }
+  }
+
+  getLoaded() {
+    const { loaded } = this.getState()
+    return loaded
   }
 
   getFilter() {
@@ -179,69 +196,95 @@ export default class BrowserController {
   getNodes() {
     const {
       loadedNodes,
-      expandedNodes,
-      selectedNodes,
-      filter
+      visibleIds,
+      expandedIds,
+      selectedIds
     } = this.getState()
 
     const _createNodes = nodes => {
       if (!nodes) {
         return []
       }
-      return _.map(nodes, node => {
-        return {
-          ...node,
-          expanded: !!expandedNodes[node.id],
-          selected: !!selectedNodes[node.id],
-          children: _createNodes(node.children)
+
+      const result = []
+
+      for (let i = 0; i < nodes.length; i++) {
+        let node = nodes[i]
+
+        if (visibleIds[node.id]) {
+          result.push({
+            ...node,
+            expanded: !!expandedIds[node.id],
+            selected: !!selectedIds[node.id],
+            children: _createNodes(node.children)
+          })
         }
-      })
-    }
-
-    const _filterNodes = (nodes, filter, ascendantMatches = false) => {
-      if (!nodes || filter.trim().length === 0) {
-        return nodes
       }
 
-      let matchingNodes = []
-
-      nodes.forEach(node => {
-        const nodeMatches =
-          node.text &&
-          node.text.toLowerCase().indexOf(filter.trim().toLowerCase()) !== -1
-
-        node.children = _filterNodes(
-          node.children,
-          filter,
-          ascendantMatches || nodeMatches
-        )
-
-        if (ascendantMatches || nodeMatches || node.children.length > 0) {
-          node.expanded = true
-          matchingNodes.push(node)
-        }
-      })
-
-      return matchingNodes
+      return result
     }
 
-    const _sortNodes = (nodes, level = 0) => {
-      if (!nodes) {
-        return
-      }
-      if (level > 0) {
-        nodes.sort((n1, n2) => {
-          return n1.text.localeCompare(n2.text)
-        })
-      }
-      nodes.forEach(node => {
-        _sortNodes(node.children, level + 1)
+    return _createNodes(loadedNodes)
+  }
+
+  _sortNodes = (nodes, level = 0) => {
+    if (!nodes) {
+      return
+    }
+    if (level > 0) {
+      nodes.sort((n1, n2) => {
+        return n1.text.localeCompare(n2.text)
       })
     }
+    nodes.forEach(node => {
+      this._sortNodes(node.children, level + 1)
+    })
+  }
 
-    let nodes = _createNodes(loadedNodes)
-    nodes = _filterNodes(nodes, filter)
-    _sortNodes(nodes)
-    return nodes
+  _visitNodes = (nodes, visitFn, results = []) => {
+    if (nodes) {
+      for (let i = 0; i < nodes.length; i++) {
+        const node = nodes[i]
+
+        visitFn(node, results)
+
+        this._visitNodes(node.children, visitFn, results)
+      }
+    }
+    return results
+  }
+
+  _filterNodes = (nodes, filter, ascendantMatches = false) => {
+    if (!nodes || filter.trim().length === 0) {
+      return nodes
+    }
+
+    let newNodes = []
+
+    nodes.forEach(node => {
+      const nodeMatches =
+        node.text &&
+        node.text.toLowerCase().indexOf(filter.trim().toLowerCase()) !== -1
+
+      const newNode = {
+        ...node
+      }
+
+      newNode.children = this._filterNodes(
+        node.children,
+        filter,
+        ascendantMatches || nodeMatches
+      )
+
+      if (
+        ascendantMatches ||
+        nodeMatches ||
+        (newNode.children && newNode.children.length > 0)
+      ) {
+        newNodes.push(newNode)
+      }
+    })
+
+    return newNodes
   }
 }

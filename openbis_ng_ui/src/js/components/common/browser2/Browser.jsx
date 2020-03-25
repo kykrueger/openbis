@@ -45,11 +45,11 @@ class Browser extends React.PureComponent {
   render() {
     logger.log(logger.DEBUG, 'Browser2.render')
 
-    if (!this.state.loaded) {
+    const { controller } = this
+
+    if (!controller.getLoaded()) {
       return null
     }
-
-    const { controller } = this
 
     return (
       <div>
