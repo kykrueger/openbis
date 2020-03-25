@@ -1881,7 +1881,8 @@ CREATE TABLE property_types (
     maty_prop_id tech_id,
     schema text_value,
     transformation text_value,
-    meta_data jsonb
+    meta_data jsonb,
+    saty_prop_id tech_id
 );
 CREATE TABLE queries (
     id tech_id NOT NULL,
