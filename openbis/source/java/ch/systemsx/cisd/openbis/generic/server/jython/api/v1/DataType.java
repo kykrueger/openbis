@@ -26,5 +26,5 @@ import java.io.Serializable;
 public enum DataType implements Serializable
 {
     INTEGER, VARCHAR, MULTILINE_VARCHAR, REAL, TIMESTAMP, BOOLEAN, CONTROLLEDVOCABULARY, MATERIAL,
-    HYPERLINK, XML;
+    HYPERLINK, XML, SAMPLE;
 }
