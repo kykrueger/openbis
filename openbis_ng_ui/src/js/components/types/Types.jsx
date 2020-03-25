@@ -4,7 +4,7 @@ import logger from '@src/js/common/logger.js'
 import pages from '@src/js/common/consts/pages.js'
 import objectType from '@src/js/common/consts/objectType.js'
 
-import Browser from '@src/js/components/common/browser/Browser.jsx'
+import Browser from '@src/js/components/common/browser2/Browser.jsx'
 import Content from '@src/js/components/common/content/Content.jsx'
 
 import ObjectType from './objectType/ObjectType.jsx'
