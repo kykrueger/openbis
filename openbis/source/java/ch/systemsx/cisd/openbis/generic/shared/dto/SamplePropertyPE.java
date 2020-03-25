@@ -50,6 +50,8 @@ public class SamplePropertyPE extends EntityPropertyPE
 
     public static final SamplePropertyPE[] EMPTY_ARRAY = new SamplePropertyPE[0];
 
+    private SamplePE sample;
+
     //
     // EntityPropertyPE
     //
@@ -91,6 +93,18 @@ public class SamplePropertyPE extends EntityPropertyPE
     public boolean isEntityFrozen()
     {
         return entityFrozen;
+    }
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = ColumnNames.SAMPLE_PROP_COLUMN)
+    public SamplePE getSampleValue()
+    {
+        return sample;
+    }
+
+    public void setSampleValue(SamplePE sample)
+    {
+        this.sample = sample;
     }
 
 }
