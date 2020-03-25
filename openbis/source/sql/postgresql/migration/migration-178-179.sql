@@ -1,3 +1,14 @@
+-- add data type SAMPLE
+insert into data_types
+(id
+ ,code
+ ,description)
+ values 
+ (nextval('DATA_TYPE_ID_SEQ')
+ ,'SAMPLE'
+ ,'Reference to a sample'
+);
+
 
 -- add SAMPLE FK to sample properties
 alter table SAMPLE_PROPERTIES add column SAMP_PROP_ID TECH_ID;
