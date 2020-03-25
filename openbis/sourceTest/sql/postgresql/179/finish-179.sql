@@ -1242,6 +1242,8 @@ ALTER TABLE ONLY property_types
     ADD CONSTRAINT prty_maty_fk FOREIGN KEY (maty_prop_id) REFERENCES material_types(id) ON DELETE CASCADE;
 ALTER TABLE ONLY property_types
     ADD CONSTRAINT prty_pers_fk FOREIGN KEY (pers_id_registerer) REFERENCES persons(id) DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE ONLY property_types
+    ADD CONSTRAINT prty_saty_fk FOREIGN KEY (saty_prop_id) REFERENCES sample_types(id) ON DELETE CASCADE;
 ALTER TABLE ONLY queries
     ADD CONSTRAINT quer_pers_fk FOREIGN KEY (pers_id_registerer) REFERENCES persons(id) DEFERRABLE INITIALLY DEFERRED;
 ALTER TABLE ONLY role_assignments

@@ -9,6 +9,9 @@ insert into data_types
  ,'Reference to a sample'
 );
 
+-- add sample tyep FK to property types
+alter table PROPERTY_TYPES add column SATY_PROP_ID TECH_ID;
+ALTER TABLE PROPERTY_TYPES ADD CONSTRAINT PRTY_SATY_FK FOREIGN KEY (SATY_PROP_ID) REFERENCES SAMPLE_TYPES(ID) ON DELETE CASCADE;
 
 -- add SAMPLE FK to sample properties
 alter table SAMPLE_PROPERTIES add column SAMP_PROP_ID TECH_ID;
