@@ -1,12 +1,15 @@
 import _ from 'lodash'
 import autoBind from 'auto-bind'
 import openbis from '@src/js/services/openbis.js'
+import pages from '@src/js/common/consts/pages.js'
 import objectType from '@src/js/common/consts/objectType.js'
+import actions from '@src/js/store/actions/actions.js'
 
 export default class BrowserController {
-  constructor(getState, setState) {
+  constructor(getState, setState, dispatch) {
     this.getState = getState
     this.setState = setState
+    this.dispatch = dispatch
     autoBind(this)
   }
 
@@ -169,6 +172,13 @@ export default class BrowserController {
             newSelectedIds[node.id] = node.id
           }
         })
+        this.dispatch(
+          actions.objectOpen(
+            pages.TYPES,
+            nodeWithNodeId.object.type,
+            nodeWithNodeId.object.id
+          )
+        )
       } else {
         newSelectedIds[nodeId] = nodeId
       }
@@ -181,6 +191,22 @@ export default class BrowserController {
         selectedIds: {}
       })
     }
+  }
+
+  objectSelect(object) {
+    const { loadedNodes } = this.getState()
+
+    const newSelectedIds = {}
+
+    this._visitNodes(loadedNodes, node => {
+      if (node.object && _.isEqual(node.object, object)) {
+        newSelectedIds[node.id] = node.id
+      }
+    })
+
+    this.setState({
+      selectedIds: newSelectedIds
+    })
   }
 
   getLoaded() {

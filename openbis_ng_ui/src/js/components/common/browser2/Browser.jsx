@@ -1,6 +1,11 @@
+import _ from 'lodash'
 import React from 'react'
+import { connect } from 'react-redux'
+import { Resizable } from 're-resizable'
 import { withStyles } from '@material-ui/core/styles'
+import Paper from '@material-ui/core/Paper'
 import FilterField from '@src/js/components/common/form/FilterField.jsx'
+import selectors from '@src/js/store/selectors/selectors.js'
 import logger from '@src/js/common/logger.js'
 
 import BrowserController from './BrowserController.js'
@@ -22,6 +27,15 @@ const styles = {
   }
 }
 
+function mapStateToProps() {
+  const getSelectedObject = selectors.createGetSelectedObject()
+  return (state, ownProps) => {
+    return {
+      selectedObject: getSelectedObject(state, ownProps.page)
+    }
+  }
+}
+
 class Browser extends React.PureComponent {
   constructor(props) {
     super(props)
@@ -31,9 +45,13 @@ class Browser extends React.PureComponent {
     if (props.controller) {
       this.controller = props.controller
     } else {
-      this.controller = new BrowserController(() => {
-        return this.state
-      }, this.setState.bind(this))
+      this.controller = new BrowserController(
+        () => {
+          return this.state
+        },
+        this.setState.bind(this),
+        this.props.dispatch
+      )
     }
   }
 
@@ -42,8 +60,14 @@ class Browser extends React.PureComponent {
     this.controller.load()
   }
 
+  componentDidUpdate(prevProps) {
+    if (this.props.selectedObject !== prevProps.selectedObject) {
+      this.controller.objectSelect(this.props.selectedObject)
+    }
+  }
+
   render() {
-    logger.log(logger.DEBUG, 'Browser2.render')
+    logger.log(logger.DEBUG, 'Browser.render')
 
     const { controller } = this
 
@@ -51,20 +75,42 @@ class Browser extends React.PureComponent {
       return null
     }
 
+    const { classes } = this.props
+
     return (
-      <div>
-        <FilterField
-          filter={controller.getFilter()}
-          filterChange={controller.filterChange}
-        />
-        <BrowserNodes
-          controller={controller}
-          nodes={controller.getNodes()}
-          level={0}
-        />
-      </div>
+      <Resizable
+        defaultSize={{
+          width: 300,
+          height: 'auto'
+        }}
+        enable={{
+          right: true,
+          left: false,
+          top: false,
+          bottom: false,
+          topRight: false,
+          bottomRight: false,
+          bottomLeft: false,
+          topLeft: false
+        }}
+        className={classes.resizable}
+      >
+        <Paper square={true} elevation={3} classes={{ root: classes.paper }}>
+          <FilterField
+            filter={controller.getFilter()}
+            filterChange={controller.filterChange}
+          />
+          <div className={classes.nodes}>
+            <BrowserNodes
+              controller={controller}
+              nodes={controller.getNodes()}
+              level={0}
+            />
+          </div>
+        </Paper>
+      </Resizable>
     )
   }
 }
 
-export default withStyles(styles)(Browser)
+export default _.flow(connect(mapStateToProps), withStyles(styles))(Browser)
