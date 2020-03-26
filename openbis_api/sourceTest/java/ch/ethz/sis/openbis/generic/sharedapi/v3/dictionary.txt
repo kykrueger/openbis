@@ -2334,3 +2334,11 @@ CREATE
 
 is Execute In Order
 set Execute In Order
+
+get Sample Type
+get Sample Type Id
+has Sample Type
+set Sample Type
+set Sample Type Id
+with Sample Type
+with Sample Type Using
