@@ -44,13 +44,11 @@ import ch.systemsx.cisd.openbis.generic.shared.IServer;
 @Table(name = TableNames.SAMPLE_PROPERTIES_TABLE, uniqueConstraints = {
         @UniqueConstraint(columnNames = { ColumnNames.SAMPLE_COLUMN, ColumnNames.SAMPLE_TYPE_PROPERTY_TYPE_COLUMN }) })
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class SamplePropertyPE extends EntityPropertyPE
+public class SamplePropertyPE extends EntityPropertyWithSampleDataTypePE
 {
     private static final long serialVersionUID = IServer.VERSION;
 
     public static final SamplePropertyPE[] EMPTY_ARRAY = new SamplePropertyPE[0];
-
-    private SamplePE sample;
 
     //
     // EntityPropertyPE
@@ -93,18 +91,6 @@ public class SamplePropertyPE extends EntityPropertyPE
     public boolean isEntityFrozen()
     {
         return entityFrozen;
-    }
-
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = ColumnNames.SAMPLE_PROP_COLUMN)
-    public SamplePE getSampleValue()
-    {
-        return sample;
-    }
-
-    public void setSampleValue(SamplePE sample)
-    {
-        this.sample = sample;
     }
 
 }
