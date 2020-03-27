@@ -53,8 +53,8 @@ public abstract class AbstractSQLExecutor implements ISQLExecutor
     @Override
     public List<Map<String, Object>> execute(final String sqlQuery, final List<Object> args)
     {
-        System.out.println("QUERY: " + sqlQuery);
-        System.out.println("ARGS: " + Arrays.deepToString(args.toArray()));
+        OPERATION_LOG.info("QUERY: " + sqlQuery);
+        OPERATION_LOG.info("ARGS: " + Arrays.deepToString(args.toArray()));
 
         final List<Map<String, Object>> results = new ArrayList<>();
         try (final PreparedStatement preparedStatement = getConnection().prepareStatement(sqlQuery))
@@ -86,8 +86,8 @@ public abstract class AbstractSQLExecutor implements ISQLExecutor
             throw new RuntimeException(ex);
         }
 
-        System.out.println("RESULTS COUNT: " + results.size());
-        System.out.println("RESULTS: " + results);
+        OPERATION_LOG.info("RESULTS COUNT: " + results.size());
+        OPERATION_LOG.debug("RESULTS: " + results);
         return results;
     }
 

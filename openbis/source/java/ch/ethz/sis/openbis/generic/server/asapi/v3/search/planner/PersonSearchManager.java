@@ -50,10 +50,11 @@ public class PersonSearchManager extends AbstractSearchManager<PersonSearchCrite
     }
 
     @Override
-    public Set<Long> searchForIDs(final Long userId, final PersonSearchCriteria criteria, final SortOptions<Person> sortOptions,
+    public Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation, final PersonSearchCriteria criteria,
+            final SortOptions<Person> sortOptions,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
-        return super.searchForIDs(userId, criteria, idsColumnName, TableMapper.PERSON);
+        return super.searchForIDs(userId, authorisationInformation, criteria, idsColumnName, TableMapper.PERSON);
     }
 
     @Override

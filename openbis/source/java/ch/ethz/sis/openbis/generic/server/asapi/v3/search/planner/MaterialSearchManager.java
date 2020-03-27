@@ -18,7 +18,6 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.PermIdSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.Material;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialSearchCriteria;
@@ -31,10 +30,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETransl
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Manages detailed search with material search criteria.
@@ -75,7 +71,8 @@ public class MaterialSearchManager extends AbstractCompositeEntitySearchManager<
     }
 
     @Override
-    public Set<Long> searchForIDs(final Long userId, final MaterialSearchCriteria criteria, final SortOptions<Material> sortOptions,
+    public Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation,
+            final MaterialSearchCriteria criteria, final SortOptions<Material> sortOptions,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName) {
         if (criteria.getCriteria().stream().anyMatch((criterion) -> criterion instanceof PermIdSearchCriteria))
         {
@@ -87,7 +84,7 @@ public class MaterialSearchManager extends AbstractCompositeEntitySearchManager<
             // Search by modifier is not supported but the result should be empty.
             return Collections.emptySet();
         }
-        return doSearchForIDs(userId, criteria, null, idsColumnName, TableMapper.MATERIAL);
+        return doSearchForIDs(userId, authorisationInformation, criteria, null, idsColumnName, TableMapper.MATERIAL);
     }
 
     @Override

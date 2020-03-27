@@ -21,7 +21,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeS
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CodeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.PermIdSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.ContentCopy;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetChildrenSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetContainerSearchCriteria;
@@ -88,7 +87,7 @@ public class DataSetSearchManager extends AbstractCompositeEntitySearchManager<D
     }
 
     @Override
-    public Set<Long> searchForIDs(final Long userId, final DataSetSearchCriteria criteria, final SortOptions<DataSet> sortOptions,
+    public Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation, final DataSetSearchCriteria criteria, final SortOptions<DataSet> sortOptions,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
         final Class<? extends ISearchCriteria> parentsSearchCriteriaClass = getParentsSearchCriteriaClass();
@@ -113,7 +112,7 @@ public class DataSetSearchManager extends AbstractCompositeEntitySearchManager<D
         }).collect(Collectors.toList());
 
         return super.doSearchForIDs(userId, parentsAndContainerCriteria, childrenCriteria, newCriteria, criteria.getOperator(), idsColumnName,
-                TableMapper.DATA_SET);
+                TableMapper.DATA_SET, authorisationInformation);
     }
 
     @Override

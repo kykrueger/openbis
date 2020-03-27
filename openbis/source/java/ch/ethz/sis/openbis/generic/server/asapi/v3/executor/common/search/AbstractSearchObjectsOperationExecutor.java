@@ -17,9 +17,13 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.*;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
+import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
+import ch.systemsx.cisd.openbis.generic.shared.dto.RoleAssignmentPE;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -224,12 +228,21 @@ public abstract class AbstractSearchObjectsOperationExecutor<OBJECT, OBJECT_PE, 
             throw new IllegalArgumentException("Fetch options cannot be null.");
         }
 
-        final Long userId = context.getSession().tryGetPerson().getId();
+        final PersonPE personPE = context.getSession().tryGetPerson();
+        final Set<Long> spaceIds = personPE.getAllPersonRoles().stream().filter((roleAssignmentPE) -> roleAssignmentPE.getSpace() != null)
+                .map((roleAssignmentPE) -> roleAssignmentPE.getSpace().getId()).collect(Collectors.toSet());
+        final Set<Long> projectIds = personPE.getAllPersonRoles().stream().filter((roleAssignmentPE) -> roleAssignmentPE.getProject() != null)
+                .map((roleAssignmentPE) -> roleAssignmentPE.getProject().getId()).collect(Collectors.toSet());
+
+        final AuthorisationInformation authorisationInformation = new AuthorisationInformation(!personPE.getRoleAssignments().isEmpty(),
+                spaceIds, projectIds);
+
+        final Long userId = personPE.getId();
         final TranslationContext translationContext = new TranslationContext(context.getSession());
         final SortOptions<OBJECT> sortOptions = fetchOptions.getSortBy();
 
         // There results from the manager should already be filtered.
-        final Set<Long> allResultsIds = getSearchManager().searchForIDs(userId, criteria, sortOptions, null, ID_COLUMN);
+        final Set<Long> allResultsIds = getSearchManager().searchForIDs(userId, authorisationInformation, criteria, sortOptions, null, ID_COLUMN);
         final List<Long> sortedAndPagedResultIds = sortAndPage(allResultsIds, fetchOptions);
         final List<OBJECT_PE> sortedAndPagedResultPEs = getSearchManager().translate(sortedAndPagedResultIds);
         final Map<OBJECT_PE, OBJECT> sortedAndPagedResultV3DTOs = doTranslate(translationContext, sortedAndPagedResultPEs, fetchOptions);

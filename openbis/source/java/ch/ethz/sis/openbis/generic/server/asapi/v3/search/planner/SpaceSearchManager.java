@@ -18,9 +18,6 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CodeSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.PermIdSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.search.SpaceSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
@@ -29,10 +26,8 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Manages detailed search with space search criteria.
@@ -55,17 +50,18 @@ public class SpaceSearchManager extends AbstractSearchManager<SpaceSearchCriteri
     }
 
     @Override
-    public Set<Long> searchForIDs(final Long userId, final SpaceSearchCriteria criteria, final SortOptions<Space> sortOptions,
+    public Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation, final SpaceSearchCriteria criteria,
+            final SortOptions<Space> sortOptions,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
         final Set<Long> mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId, criteria, TableMapper.SPACE,
-                idsColumnName);
+                idsColumnName, authorisationInformation);
 
         // If we have results, we use them
         // If we don't have results and criteria are not empty, there are no results.
         final Set<Long> resultBeforeFiltering = containsValues(mainCriteriaIntermediateResults) ? mainCriteriaIntermediateResults : Collections.emptySet();
 
-        return filterIDsByUserRights(userId, resultBeforeFiltering);
+        return filterIDsByUserRights(userId, authorisationInformation, resultBeforeFiltering);
     }
 
     @Override

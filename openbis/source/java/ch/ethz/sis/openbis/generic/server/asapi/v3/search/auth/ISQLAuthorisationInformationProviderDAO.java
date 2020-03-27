@@ -21,8 +21,6 @@ import java.util.Set;
 public interface ISQLAuthorisationInformationProviderDAO
 {
 
-    AuthorisationInformation findAuthorisedSpaceProjectIDs(Long userId);
-
     /**
      * Filters sample IDs based on their relations to space and projects.
      *

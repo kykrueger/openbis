@@ -50,10 +50,11 @@ public class SemanticAnnotationSearchManager extends
     }
 
     @Override
-    public Set<Long> searchForIDs(final Long userId, final SemanticAnnotationSearchCriteria criteria,
+    public Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation,
+            final SemanticAnnotationSearchCriteria criteria,
             final SortOptions<SemanticAnnotation> sortOptions, final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
-        return super.searchForIDs(userId, criteria, idsColumnName, TableMapper.SEMANTIC_ANNOTATION);
+        return super.searchForIDs(userId, authorisationInformation, criteria, idsColumnName, TableMapper.SEMANTIC_ANNOTATION);
     }
 
     @Override

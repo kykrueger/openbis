@@ -29,6 +29,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentType
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.search.TagSearchCriteria;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.CriteriaMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
@@ -137,7 +138,7 @@ public class CriteriaTranslator
                     (sqlBuilder, criterion) ->
                     {
                         sqlBuilder.append(separator);
-                        appendCriterionCondition(vo, sqlBuilder, criterion);
+                        appendCriterionCondition(vo, vo.getAuthorisationInformation(), sqlBuilder, criterion);
                     },
                     StringBuilder::append
             );
@@ -148,11 +149,13 @@ public class CriteriaTranslator
 
     /**
      * Appends condition translated from a criterion.
-     *  @param vo value object with miscellaneous information.
+     * @param vo value object with miscellaneous information.
+     * @param authorisationInformation
      * @param sqlBuilder string builder to append the condition to.
      * @param criterion criterion to be translated.
      */
-    private static void appendCriterionCondition(final TranslationVo vo, final StringBuilder sqlBuilder, ISearchCriteria criterion)
+    private static void appendCriterionCondition(final TranslationVo vo, final AuthorisationInformation authorisationInformation,
+            final StringBuilder sqlBuilder, ISearchCriteria criterion)
     {
         final TableMapper tableMapper = vo.getTableMapper();
         final ISearchManager<ISearchCriteria, ?, ?> subqueryManager = (criterion instanceof EntityTypeSearchCriteria)
@@ -175,7 +178,7 @@ public class CriteriaTranslator
 
                 if (tableMapper != null && column != null)
                 {
-                    final Set<Long> ids = subqueryManager.searchForIDs(vo.getUserId(), criterion, null, parentCriterion,
+                    final Set<Long> ids = subqueryManager.searchForIDs(vo.getUserId(), authorisationInformation, criterion, null, parentCriterion,
                             CriteriaMapper.getParentChildCriteriaToChildSelectIdMap().getOrDefault(
                                     Arrays.asList(parentCriterion.getClass(), criterion.getClass()), ID_COLUMN));
                     appendInStatement(sqlBuilder, criterion, column, tableMapper);

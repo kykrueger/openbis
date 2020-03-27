@@ -23,7 +23,6 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.Role;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.ISQLExecutor;
 
@@ -37,99 +36,9 @@ public class PostgresAuthorisationInformationProviderDAO implements ISQLAuthoris
         this.executor = executor;
     }
 
-    /**
-     * Finds IDs of spaces and projects to which the current user has access.
-     *
-     * @param userId the ID of the user.
-     * @return set of IDs of spaces authorized for the current user.
-     */
-    @Override @SuppressWarnings("unchecked")
-    public AuthorisationInformation findAuthorisedSpaceProjectIDs(final Long userId)
-    {
-        final String p = "p";
-        final String g = "g";
-        final String ag = "ag";
-        final String per = "per";
-        final String pRoleCode = p + ".role_code";
-        final String gRoleCode = g + ".role_code";
-        final String pSpaceId = p + ".space_id";
-        final String gSpaceId = g + ".space_id";
-        final String pProjectId = p + ".project_id";
-        final String gProjectId = g + ".project_id";
-        final String query = SELECT + SP + p + PERIOD + ROLE_COLUMN + SP + DQ + pRoleCode + DQ + COMMA + SP +
-                g + PERIOD + ROLE_COLUMN + SP + DQ + gRoleCode + DQ + COMMA + SP +
-                p + PERIOD + SPACE_COLUMN + SP + DQ + pSpaceId + DQ + COMMA + SP +
-                p + PERIOD + PROJECT_ID_COLUMN + SP + DQ + pProjectId + DQ + COMMA + SP +
-                g + PERIOD + SPACE_COLUMN + SP + DQ + gSpaceId + DQ + SP + COMMA + SP +
-                g + PERIOD + PROJECT_ID_COLUMN + SP + DQ + gProjectId + DQ + NL +
-                FROM + SP + PERSONS_TABLE + SP + per + NL +
-                LEFT_JOIN + SP + AUTHORIZATION_GROUP_PERSONS_TABLE + SP + ag + SP +
-                ON + SP + per + PERIOD + ID_COLUMN + SP + EQ + SP + ag + PERIOD + PERSON_ID_COLUMN + NL +
-                LEFT_JOIN + SP + ROLE_ASSIGNMENTS_TABLE + SP + p + SP +
-                ON + SP + per + PERIOD + ID_COLUMN + SP + EQ + SP + p + PERIOD + PERSON_GRANTEE_COLUMN + NL +
-                LEFT_JOIN + SP + ROLE_ASSIGNMENTS_TABLE + SP + g + SP +
-                ON + SP + ag + PERIOD + AUTHORIZATION_GROUP_ID_COLUMN + SP + EQ + SP + g + PERIOD +
-                AUTHORIZATION_GROUP_ID_GRANTEE_COLUMN + NL +
-                WHERE + SP + per + PERIOD + ID_COLUMN + SP + EQ + SP + QU;
-        final List<Object> args = Collections.singletonList(userId);
-        final List<Map<String, Object>> queryResultList = executor.execute(query, args);
-
-        final AuthorisationInformation result = new AuthorisationInformation(new HashSet<>(), new HashSet<>(), new HashSet<>());
-        queryResultList.forEach(resultRow ->
-        {
-            final Object roleIdPerson = resultRow.get(p + PERIOD + ROLE_COLUMN);
-            final Object spaceIdPerson = resultRow.get(p + PERIOD + SPACE_COLUMN);
-            final Object projectIdPerson = resultRow.get(p + PERIOD + PROJECT_ID_COLUMN);
-            final Object roleIdGroup = resultRow.get(g + PERIOD + ROLE_COLUMN);
-            final Object spaceIdGroup = resultRow.get(g + PERIOD + SPACE_COLUMN);
-            final Object projectIdGroup = resultRow.get(g + PERIOD + PROJECT_ID_COLUMN);
-
-            final boolean isInstanceRole = spaceIdPerson == null && projectIdPerson == null &&
-                    spaceIdGroup == null && projectIdGroup == null;
-            if (isInstanceRole)
-            {
-                if (roleIdPerson != null)
-                {
-                    result.getInstanceRoles().add(Role.valueOf((String) roleIdPerson));
-                }
-                if (roleIdGroup != null)
-                {
-                    result.getInstanceRoles().add(Role.valueOf((String) roleIdGroup));
-                }
-            }
-
-            if (spaceIdPerson != null)
-            {
-                result.getSpaceIds().add((long) spaceIdPerson);
-            }
-            if (projectIdPerson != null)
-            {
-                result.getProjectIds().add((long) projectIdPerson);
-            }
-            if (spaceIdGroup != null)
-            {
-                result.getSpaceIds().add((long) spaceIdGroup);
-            }
-            if (projectIdGroup != null)
-            {
-                result.getProjectIds().add((long) projectIdGroup);
-            }
-        });
-        return result;
-    }
-
-    private boolean isSystemUser(AuthorisationInformation authInfo) {
-        return authInfo.getInstanceRoles().isEmpty() &&
-                authInfo.getSpaceIds().isEmpty() &&
-                authInfo.getProjectIds().isEmpty();
-    }
-
     @Override
     public Set<Long> getAuthorisedSamples(final Set<Long> requestedIDs, final AuthorisationInformation authInfo)
     {
-        if (isSystemUser(authInfo)) {
-            return requestedIDs;
-        }
         final String query = SELECT + SP + DISTINCT + SP + ID_COLUMN + NL +
                 FROM + SP + TableMapper.SAMPLE.getEntitiesTable() + NL +
                 WHERE + SP + ID_COLUMN + SP + IN + LP + SELECT + SP + UNNEST + LP + QU + RP + RP + SP + AND + NL +
@@ -152,9 +61,6 @@ public class PostgresAuthorisationInformationProviderDAO implements ISQLAuthoris
     @Override
     public Set<Long> getAuthorisedExperiments(final Set<Long> requestedIDs, final AuthorisationInformation authInfo)
     {
-        if (isSystemUser(authInfo)) {
-            return requestedIDs;
-        }
         final String e = "e";
         final String p = "p";
         final String query = SELECT + SP + DISTINCT + SP + e + PERIOD + ID_COLUMN + NL +
@@ -174,9 +80,6 @@ public class PostgresAuthorisationInformationProviderDAO implements ISQLAuthoris
     @Override
     public Set<Long> getAuthorisedProjects(final Set<Long> requestedIDs, final AuthorisationInformation authInfo)
     {
-        if (isSystemUser(authInfo)) {
-            return requestedIDs;
-        }
         final String p = "p";
         final String query = SELECT + SP + DISTINCT + SP + p + PERIOD + ID_COLUMN + NL +
                 FROM + SP + TableMapper.PROJECT.getEntitiesTable() + SP + p + NL +
@@ -194,9 +97,6 @@ public class PostgresAuthorisationInformationProviderDAO implements ISQLAuthoris
     @Override
     public Set<Long> getAuthorisedSpaces(final Set<Long> requestedIDs, final AuthorisationInformation authInfo)
     {
-        if (isSystemUser(authInfo)) {
-            return requestedIDs;
-        }
         final String s = "s";
         final String p = "p";
         final String query = SELECT + SP + DISTINCT + SP + s + PERIOD + ID_COLUMN + NL +

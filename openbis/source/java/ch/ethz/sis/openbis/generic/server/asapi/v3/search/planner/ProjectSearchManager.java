@@ -27,9 +27,6 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETransl
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 
 import java.util.Set;
-import java.util.stream.Collectors;
-
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper.EXTERNAL_DATA;
 
 /**
  * Manages detailed search with project search criteria.
@@ -52,10 +49,11 @@ public class ProjectSearchManager extends AbstractSearchManager<ProjectSearchCri
     }
 
     @Override
-    public Set<Long> searchForIDs(final Long userId, final ProjectSearchCriteria criteria, final SortOptions<Project> sortOptions,
+    public Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation, final ProjectSearchCriteria criteria,
+            final SortOptions<Project> sortOptions,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
-        return super.searchForIDs(userId, criteria, idsColumnName, TableMapper.PROJECT);
+        return super.searchForIDs(userId, authorisationInformation, criteria, idsColumnName, TableMapper.PROJECT);
     }
 
     @Override

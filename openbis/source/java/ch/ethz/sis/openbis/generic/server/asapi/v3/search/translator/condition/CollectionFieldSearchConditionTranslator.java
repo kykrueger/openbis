@@ -64,7 +64,7 @@ public class CollectionFieldSearchConditionTranslator implements IConditionTrans
         }
         if (criterion.getClass() == IdsSearchCriteria.class)
         {
-            if (criterion.getFieldValue().size() > 1)
+            if (criterion.getFieldValue() != null && criterion.getFieldValue().size() > 1)
             {
                 final Class<?> identifierClass = criterion.getFieldValue().iterator().next().getClass();
                 for (Object identifier:criterion.getFieldValue())
@@ -84,19 +84,25 @@ public class CollectionFieldSearchConditionTranslator implements IConditionTrans
                 final Object fieldName = AttributesMapper.getColumnName(criterion.getFieldName(), tableMapper.getEntitiesTable(), criterion.getFieldName());
                 final Collection<?> initialFieldValue = criterion.getFieldValue();
 
-                final Collection<?> fieldValue;
-                if (!initialFieldValue.isEmpty() && initialFieldValue.stream().anyMatch((o) -> o instanceof EntityTypePermId))
+                if (initialFieldValue != null)
                 {
-                    fieldValue = initialFieldValue.stream().map((o) -> ((EntityTypePermId) o).getPermId()).collect(Collectors.toList());
+                    final Collection<?> fieldValue;
+                    if (!initialFieldValue.isEmpty() && initialFieldValue.stream().anyMatch((o) -> o instanceof EntityTypePermId))
+                    {
+                        fieldValue = initialFieldValue.stream().map((o) -> ((EntityTypePermId) o).getPermId()).collect(Collectors.toList());
+                    } else
+                    {
+                        fieldValue = initialFieldValue;
+                    }
+
+                    sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(fieldName).append(SP).append(IN).append(SP).append(LP).
+                            append(SELECT).append(SP).append(UNNEST).append(LP).append(QU).append(RP).
+                            append(RP);
+                    args.add(fieldValue.toArray(ARRAY_CASTING.get(criterion.getClass())));
                 } else
                 {
-                    fieldValue = initialFieldValue;
+                    sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(fieldName).append(SP).append(IS_NOT_NULL);
                 }
-
-                sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(fieldName).append(SP).append(IN).append(SP).append(LP).
-                        append(SELECT).append(SP).append(UNNEST).append(LP).append(QU).append(RP).
-                        append(RP);
-                args.add(fieldValue.toArray(ARRAY_CASTING.get(criterion.getClass())));
                 break;
             }
 

@@ -49,10 +49,11 @@ public class ExperimentSearchManager extends AbstractSearchManager<ExperimentSea
     }
 
     @Override
-    public Set<Long> searchForIDs(final Long userId, final ExperimentSearchCriteria criteria, final SortOptions<Experiment> sortOptions,
+    public Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation,
+            final ExperimentSearchCriteria criteria, final SortOptions<Experiment> sortOptions,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
-        return super.searchForIDs(userId, criteria, null, TableMapper.EXPERIMENT);
+        return super.searchForIDs(userId, authorisationInformation, criteria, null, TableMapper.EXPERIMENT);
     }
 
     @Override
