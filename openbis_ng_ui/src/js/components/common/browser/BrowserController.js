@@ -1,99 +1,44 @@
 import _ from 'lodash'
 import autoBind from 'auto-bind'
-import openbis from '@src/js/services/openbis.js'
-import pages from '@src/js/common/consts/pages.js'
-import objectType from '@src/js/common/consts/objectType.js'
 import actions from '@src/js/store/actions/actions.js'
 
 export default class BrowserController {
-  constructor(getState, setState, dispatch) {
-    this.getState = getState
-    this.setState = setState
-    this.dispatch = dispatch
+  constructor() {
     autoBind(this)
   }
 
-  init() {
-    this.setState({
+  init(getState, setState, dispatch) {
+    this.getState = getState
+    this.setState = setState
+    this.dispatch = dispatch
+
+    return {
       loaded: false,
       loadedNodes: [],
       visibleIds: {},
       selectedIds: {},
       expandedIds: {},
       filter: ''
-    })
+    }
+  }
+
+  getPage() {
+    throw 'Method not implemented'
+  }
+
+  loadNodes() {
+    throw 'Method not implemented'
   }
 
   load() {
-    Promise.all([
-      openbis.searchSampleTypes(
-        new openbis.SampleTypeSearchCriteria(),
-        new openbis.SampleTypeFetchOptions()
-      ),
-      openbis.searchExperimentTypes(
-        new openbis.ExperimentTypeSearchCriteria(),
-        new openbis.ExperimentTypeFetchOptions()
-      ),
-      openbis.searchDataSetTypes(
-        new openbis.DataSetTypeSearchCriteria(),
-        new openbis.DataSetTypeFetchOptions()
-      ),
-      openbis.searchMaterialTypes(
-        new openbis.MaterialTypeSearchCriteria(),
-        new openbis.MaterialTypeFetchOptions()
-      )
-    ]).then(([objectTypes, collectionTypes, dataSetTypes, materialTypes]) => {
-      const _createNodes = (types, typeName) => {
-        return _.map(types, type => {
-          return {
-            id: `${typeName}s/${type.code}`,
-            text: type.code,
-            object: { type: typeName, id: type.code }
-          }
-        })
-      }
-
-      let objectTypeNodes = _createNodes(
-        objectTypes.getObjects(),
-        objectType.OBJECT_TYPE
-      )
-      let collectionTypeNodes = _createNodes(
-        collectionTypes.getObjects(),
-        objectType.COLLECTION_TYPE
-      )
-      let dataSetTypeNodes = _createNodes(
-        dataSetTypes.getObjects(),
-        objectType.DATA_SET_TYPE
-      )
-      let materialTypeNodes = _createNodes(
-        materialTypes.getObjects(),
-        objectType.MATERIAL_TYPE
-      )
-
-      let nodes = [
-        {
-          id: 'objectTypes',
-          text: 'Object Types',
-          children: objectTypeNodes
-        },
-        {
-          id: 'collectionTypes',
-          text: 'Collection Types',
-          children: collectionTypeNodes
-        },
-        {
-          id: 'dataSetTypes',
-          text: 'Data Set Types',
-          children: dataSetTypeNodes
-        },
-        {
-          id: 'materialTypes',
-          text: 'Material Types',
-          children: materialTypeNodes
-        }
-      ]
-
+    return this.loadNodes().then(nodes => {
       this._sortNodes(nodes)
+
+      this._visitNodes(nodes, node => {
+        if (node.children && node.children.length === 0) {
+          delete node.children
+        }
+      })
 
       const filteredNodes = this._filterNodes(nodes, this.getFilter())
       const filteredIds = this._visitNodes(
@@ -116,18 +61,21 @@ export default class BrowserController {
     const { loadedNodes } = this.getState()
 
     const filteredNodes = this._filterNodes(loadedNodes, filter)
-    const filteredIds = this._visitNodes(
-      filteredNodes,
-      (node, result) => {
-        result[node.id] = node.id
-      },
-      {}
-    )
+
+    const filteredIds = {}
+    const expandedIds = {}
+
+    this._visitNodes(filteredNodes, node => {
+      filteredIds[node.id] = node.id
+      if (node.children) {
+        expandedIds[node.id] = node.id
+      }
+    })
 
     this.setState({
       filter,
       visibleIds: filteredIds,
-      expandedIds: filteredIds
+      expandedIds: expandedIds
     })
   }
 
@@ -174,7 +122,7 @@ export default class BrowserController {
         })
         this.dispatch(
           actions.objectOpen(
-            pages.TYPES,
+            this.getPage(),
             nodeWithNodeId.object.type,
             nodeWithNodeId.object.id
           )
@@ -232,22 +180,25 @@ export default class BrowserController {
         return []
       }
 
-      const result = []
+      const newNodes = []
 
       for (let i = 0; i < nodes.length; i++) {
         let node = nodes[i]
 
         if (visibleIds[node.id]) {
-          result.push({
+          const newNode = {
             ...node,
             expanded: !!expandedIds[node.id],
-            selected: !!selectedIds[node.id],
-            children: _createNodes(node.children)
-          })
+            selected: !!selectedIds[node.id]
+          }
+          if (node.children) {
+            newNode.children = _createNodes(node.children)
+          }
+          newNodes.push(newNode)
         }
       }
 
-      return result
+      return newNodes
     }
 
     return _createNodes(loadedNodes)

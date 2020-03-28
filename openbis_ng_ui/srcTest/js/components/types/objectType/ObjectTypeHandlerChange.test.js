@@ -3,7 +3,7 @@ import ComponentState from '@srcTest/js/common/ComponentState.js'
 
 describe('ObjectTypeHandlerChangeTest', () => {
   test('type', () => {
-    const componentState = new ComponentState({
+    const componentState = ComponentState.fromState({
       type: {
         field1: 'value1',
         field2: 'value2'
@@ -24,7 +24,7 @@ describe('ObjectTypeHandlerChangeTest', () => {
   })
 
   test('section', () => {
-    const componentState = new ComponentState({
+    const componentState = ComponentState.fromState({
       sections: [
         {
           id: 'section-0',
@@ -60,7 +60,7 @@ describe('ObjectTypeHandlerChangeTest', () => {
   })
 
   test('property', () => {
-    const componentState = new ComponentState({
+    const componentState = ComponentState.fromState({
       properties: [
         {
           id: 'property-0',
@@ -98,7 +98,7 @@ describe('ObjectTypeHandlerChangeTest', () => {
 
 const execute = (componentState, type, params) => {
   new ObjectTypeHandlerChange(
-    componentState.getState(),
+    componentState.getGetState(),
     componentState.getSetState()
   ).execute(type, params)
 }

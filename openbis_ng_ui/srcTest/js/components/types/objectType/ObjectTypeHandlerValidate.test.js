@@ -8,7 +8,7 @@ beforeEach(() => {
 
 describe('ObjectTypeHandlerValidateTest', () => {
   test('validation enabled with autofocus fails', done => {
-    const componentState = new ComponentState({
+    const componentState = ComponentState.fromState({
       validate: false,
       selection: {
         type: 'testtype'
@@ -87,7 +87,7 @@ describe('ObjectTypeHandlerValidateTest', () => {
   })
 
   test('validation enabled without autofocus fails', done => {
-    const componentState = new ComponentState({
+    const componentState = ComponentState.fromState({
       validate: false,
       selection: {
         type: 'testtype'
@@ -126,7 +126,7 @@ describe('ObjectTypeHandlerValidateTest', () => {
   })
 
   test('validation enabled with autofocus succeeds', done => {
-    const componentState = new ComponentState({
+    const componentState = ComponentState.fromState({
       validate: false,
       selection: {
         type: 'testtype'
@@ -171,7 +171,7 @@ describe('ObjectTypeHandlerValidateTest', () => {
   })
 
   test('validation enabled without autofocus succeeds', done => {
-    const componentState = new ComponentState({
+    const componentState = ComponentState.fromState({
       validate: false,
       selection: {
         type: 'testtype'
@@ -216,7 +216,7 @@ describe('ObjectTypeHandlerValidateTest', () => {
   })
 
   test('validation disabled', done => {
-    const componentState = new ComponentState({
+    const componentState = ComponentState.fromState({
       validate: false,
       selection: {
         type: 'testtype'

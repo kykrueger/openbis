@@ -1,12 +1,11 @@
 import _ from 'lodash'
 import React from 'react'
-import Paper from '@material-ui/core/Paper'
-import { Resizable } from 're-resizable'
 import { connect } from 'react-redux'
+import { Resizable } from 're-resizable'
 import { withStyles } from '@material-ui/core/styles'
+import Paper from '@material-ui/core/Paper'
 import FilterField from '@src/js/components/common/form/FilterField.jsx'
 import selectors from '@src/js/store/selectors/selectors.js'
-import actions from '@src/js/store/actions/actions.js'
 import logger from '@src/js/common/logger.js'
 
 import BrowserNodes from './BrowserNodes.jsx'
@@ -28,44 +27,48 @@ const styles = {
 }
 
 function mapStateToProps() {
-  const getBrowserNodes = selectors.createGetBrowserNodes()
+  const getSelectedObject = selectors.createGetSelectedObject()
   return (state, ownProps) => {
     return {
-      filter: selectors.getBrowserFilter(state, ownProps.page),
-      nodes: getBrowserNodes(state, ownProps.page)
-    }
-  }
-}
-
-function mapDispatchToProps(dispatch, ownProps) {
-  return {
-    init: () => {
-      dispatch(actions.browserInit(ownProps.page))
-    },
-    filterChange: filter => {
-      dispatch(actions.browserFilterChange(ownProps.page, filter))
-    },
-    nodeSelect: id => {
-      dispatch(actions.browserNodeSelect(ownProps.page, id))
-    },
-    nodeExpand: id => {
-      dispatch(actions.browserNodeExpand(ownProps.page, id))
-    },
-    nodeCollapse: id => {
-      dispatch(actions.browserNodeCollapse(ownProps.page, id))
+      selectedObject: getSelectedObject(state, ownProps.controller.getPage())
     }
   }
 }
 
 class Browser extends React.PureComponent {
+  constructor(props) {
+    super(props)
+
+    this.controller = props.controller
+    this.state = props.controller.init(
+      () => {
+        return this.state
+      },
+      this.setState.bind(this),
+      this.props.dispatch
+    )
+  }
+
   componentDidMount() {
-    this.props.init()
+    this.controller.load()
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.selectedObject !== prevProps.selectedObject) {
+      this.controller.objectSelect(this.props.selectedObject)
+    }
   }
 
   render() {
     logger.log(logger.DEBUG, 'Browser.render')
 
-    const classes = this.props.classes
+    const { controller } = this
+
+    if (!controller.getLoaded()) {
+      return null
+    }
+
+    const { classes } = this.props
 
     return (
       <Resizable
@@ -87,15 +90,13 @@ class Browser extends React.PureComponent {
       >
         <Paper square={true} elevation={3} classes={{ root: classes.paper }}>
           <FilterField
-            filter={this.props.filter}
-            filterChange={this.props.filterChange}
+            filter={controller.getFilter()}
+            filterChange={controller.filterChange}
           />
           <div className={classes.nodes}>
             <BrowserNodes
-              nodes={this.props.nodes}
-              nodeSelect={this.props.nodeSelect}
-              nodeExpand={this.props.nodeExpand}
-              nodeCollapse={this.props.nodeCollapse}
+              controller={controller}
+              nodes={controller.getNodes()}
               level={0}
             />
           </div>
@@ -105,7 +106,4 @@ class Browser extends React.PureComponent {
   }
 }
 
-export default _.flow(
-  connect(mapStateToProps, mapDispatchToProps),
-  withStyles(styles)
-)(Browser)
+export default _.flow(connect(mapStateToProps), withStyles(styles))(Browser)

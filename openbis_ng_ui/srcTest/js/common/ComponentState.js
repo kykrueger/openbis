@@ -1,10 +1,30 @@
 import _ from 'lodash'
+import autoBind from 'auto-bind'
 
 class ComponentState {
-  constructor(initialState) {
-    this.initialState = initialState
-    this.initialStateCopy = _.cloneDeep(initialState)
-    this.state = initialState
+  constructor() {
+    autoBind(this)
+  }
+
+  static fromState(initialState) {
+    let instance = new ComponentState()
+    instance.state = initialState
+    instance.initialState = initialState
+    instance.initialStateCopy = _.cloneDeep(initialState)
+    return instance
+  }
+
+  static fromController(controller) {
+    let instance = new ComponentState()
+    let initialState = controller.init(
+      instance.getGetState(),
+      instance.getSetState(),
+      instance.getDispatch()
+    )
+    instance.state = initialState
+    instance.initialState = initialState
+    instance.initialStateCopy = _.cloneDeep(initialState)
+    return instance
   }
 
   getState() {
@@ -33,6 +53,13 @@ class ComponentState {
         callback()
       }
     }
+  }
+
+  getDispatch() {
+    if (!this.dispatch) {
+      this.dispatch = jest.fn()
+    }
+    return this.dispatch
   }
 
   assertState(expectedState) {

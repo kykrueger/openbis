@@ -20,7 +20,7 @@ class BrowserNodes extends React.Component {
   render() {
     logger.log(logger.DEBUG, 'BrowserNodes.render')
 
-    const classes = this.props.classes
+    const { controller, classes } = this.props
 
     return (
       <List
@@ -33,10 +33,8 @@ class BrowserNodes extends React.Component {
           return (
             <BrowserNode
               key={node.id}
+              controller={controller}
               node={node}
-              nodeSelect={this.props.nodeSelect}
-              nodeCollapse={this.props.nodeCollapse}
-              nodeExpand={this.props.nodeExpand}
               level={this.props.level}
             />
           )

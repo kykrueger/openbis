@@ -4,9 +4,9 @@ import logger from '@src/js/common/logger.js'
 import pages from '@src/js/common/consts/pages.js'
 import objectType from '@src/js/common/consts/objectType.js'
 
-import Browser from '@src/js/components/common/browser2/Browser.jsx'
 import Content from '@src/js/components/common/content/Content.jsx'
 
+import TypesBrowser from './browser/TypesBrowser.jsx'
 import ObjectType from './objectType/ObjectType.jsx'
 import CollectionType from './collectionType/CollectionType.jsx'
 import DataSetType from './dataSetType/DataSetType.jsx'
@@ -36,7 +36,7 @@ class Types extends React.Component {
 
     return (
       <div className={classes.container}>
-        <Browser page={pages.TYPES} />
+        <TypesBrowser />
         <Content
           page={pages.TYPES}
           objectTypeToComponent={objectTypeToComponent}

@@ -1,7 +1,9 @@
+import Person from 'as/dto/person/Person'
 import PersonSearchCriteria from 'as/dto/person/search/PersonSearchCriteria'
 import PersonFetchOptions from 'as/dto/person/fetchoptions/PersonFetchOptions'
 import PersonPermId from 'as/dto/person/id/PersonPermId'
 import PersonUpdate from 'as/dto/person/update/PersonUpdate'
+import AuthorizationGroup from 'as/dto/authorizationgroup/AuthorizationGroup'
 import AuthorizationGroupSearchCriteria from 'as/dto/authorizationgroup/search/AuthorizationGroupSearchCriteria'
 import AuthorizationGroupFetchOptions from 'as/dto/authorizationgroup/fetchoptions/AuthorizationGroupFetchOptions'
 import EntityTypePermId from 'as/dto/entitytype/id/EntityTypePermId'
@@ -47,12 +49,15 @@ import CustomASServiceCode from 'as/dto/service/id/CustomASServiceCode'
 import CustomASServiceExecutionOptions from 'as/dto/service/CustomASServiceExecutionOptions'
 import SynchronousOperationExecutionOptions from 'as/dto/operation/SynchronousOperationExecutionOptions'
 import DataType from 'as/dto/property/DataType'
+import SearchResult from 'as/dto/common/search/SearchResult'
 
 const dto = {
+  Person,
   PersonSearchCriteria,
   PersonFetchOptions,
   PersonPermId,
   PersonUpdate,
+  AuthorizationGroup,
   AuthorizationGroupSearchCriteria,
   AuthorizationGroupFetchOptions,
   EntityTypePermId,
@@ -97,7 +102,8 @@ const dto = {
   CustomASServiceCode,
   CustomASServiceExecutionOptions,
   SynchronousOperationExecutionOptions,
-  DataType
+  DataType,
+  SearchResult
 }
 
 export default dto

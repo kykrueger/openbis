@@ -3,7 +3,7 @@ import ComponentState from '@srcTest/js/common/ComponentState.js'
 
 describe('ObjectTypeHandlerLoadTest', () => {
   test('load success', done => {
-    const componentState = new ComponentState({})
+    const componentState = ComponentState.fromState({})
     const facade = {
       loadType: jest.fn(),
       loadUsages: jest.fn()
@@ -193,7 +193,7 @@ describe('ObjectTypeHandlerLoadTest', () => {
   })
 
   test('load failure', done => {
-    const componentState = new ComponentState({})
+    const componentState = ComponentState.fromState({})
     const facade = {
       loadType: jest.fn(),
       loadUsages: jest.fn(),
@@ -218,7 +218,7 @@ describe('ObjectTypeHandlerLoadTest', () => {
 const execute = (objectId, componentState, facade) => {
   return new ObjectTypeHandlerLoad(
     objectId,
-    componentState.getState(),
+    componentState.getGetState(),
     componentState.getSetState(),
     facade
   ).execute()

@@ -3,7 +3,7 @@ import ComponentState from '@srcTest/js/common/ComponentState.js'
 
 describe('ObjectTypeHandlerOrderChangeTest', () => {
   test('section', () => {
-    const componentState = new ComponentState({
+    const componentState = ComponentState.fromState({
       sections: [
         {
           id: 'section-0'
@@ -38,7 +38,7 @@ describe('ObjectTypeHandlerOrderChangeTest', () => {
   })
 
   test('property', () => {
-    const componentState = new ComponentState({
+    const componentState = ComponentState.fromState({
       sections: [
         {
           id: 'section-0',
@@ -128,7 +128,7 @@ describe('ObjectTypeHandlerOrderChangeTest', () => {
 
 const execute = (componentState, type, params) => {
   new ObjectTypeHandlerOrderChange(
-    componentState.getState(),
+    componentState.getGetState(),
     componentState.getSetState()
   ).execute(type, params)
 }

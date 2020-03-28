@@ -3,7 +3,7 @@ import ComponentState from '@srcTest/js/common/ComponentState.js'
 
 describe('ObjectTypeHandlerRemoveTest', () => {
   test('section not used', () => {
-    const componentState = new ComponentState({
+    const componentState = ComponentState.fromState({
       selection: {
         type: 'section',
         params: {
@@ -48,7 +48,7 @@ describe('ObjectTypeHandlerRemoveTest', () => {
   })
 
   test('section used and confirmed', () => {
-    const componentState = new ComponentState({
+    const componentState = ComponentState.fromState({
       selection: {
         type: 'section',
         params: {
@@ -95,7 +95,7 @@ describe('ObjectTypeHandlerRemoveTest', () => {
   })
 
   test('section used and cancelled', () => {
-    const componentState = new ComponentState({
+    const componentState = ComponentState.fromState({
       selection: {
         type: 'section',
         params: {
@@ -152,7 +152,7 @@ describe('ObjectTypeHandlerRemoveTest', () => {
   })
 
   test('property not used', () => {
-    const componentState = new ComponentState({
+    const componentState = ComponentState.fromState({
       selection: {
         type: 'property',
         params: {
@@ -202,7 +202,7 @@ describe('ObjectTypeHandlerRemoveTest', () => {
   })
 
   test('property used and confirmed', () => {
-    const componentState = new ComponentState({
+    const componentState = ComponentState.fromState({
       selection: {
         type: 'property',
         params: {
@@ -254,7 +254,7 @@ describe('ObjectTypeHandlerRemoveTest', () => {
   })
 
   test('property used and cancelled', () => {
-    const componentState = new ComponentState({
+    const componentState = ComponentState.fromState({
       selection: {
         type: 'property',
         params: {
@@ -313,14 +313,14 @@ describe('ObjectTypeHandlerRemoveTest', () => {
 
 const executeRemove = (componentState, confirmed) => {
   new ObjectTypeHandlerRemove(
-    componentState.getState(),
+    componentState.getGetState(),
     componentState.getSetState()
   ).executeRemove(confirmed)
 }
 
 const executeCancel = componentState => {
   new ObjectTypeHandlerRemove(
-    componentState.getState(),
+    componentState.getGetState(),
     componentState.getSetState()
   ).executeCancel()
 }

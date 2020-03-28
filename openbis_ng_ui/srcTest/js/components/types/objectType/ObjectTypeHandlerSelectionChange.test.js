@@ -3,7 +3,7 @@ import ComponentState from '@srcTest/js/common/ComponentState.js'
 
 describe('ObjectTypeHandlerSelectionChangeTest', () => {
   test('section', () => {
-    const componentState = new ComponentState({
+    const componentState = ComponentState.fromState({
       selection: null
     })
 
@@ -22,7 +22,7 @@ describe('ObjectTypeHandlerSelectionChangeTest', () => {
   })
 
   test('property', () => {
-    const componentState = new ComponentState({
+    const componentState = ComponentState.fromState({
       selection: null
     })
 
@@ -43,7 +43,7 @@ describe('ObjectTypeHandlerSelectionChangeTest', () => {
 
 const execute = (componentState, type, params) => {
   new ObjectTypeHandlerSelectionChange(
-    componentState.getState(),
+    componentState.getGetState(),
     componentState.getSetState()
   ).execute(type, params)
 }

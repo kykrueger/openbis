@@ -8,8 +8,8 @@ import ObjectTypeHandlerChange from './ObjectTypeHandlerChange.js'
 import ObjectTypeHandlerOrderChange from './ObjectTypeHandlerOrderChange.js'
 import ObjectTypeHandlerSelectionChange from './ObjectTypeHandlerSelectionChange.js'
 
-export default class ObjectTypeState {
-  constructor(objectId, getState, setState, facade) {
+export default class ObjectTypeController {
+  init(objectId, getState, setState, facade) {
     this.objectId = objectId
     this.getState = getState
     this.setState = setState

@@ -3,7 +3,7 @@ import ComponentState from '@srcTest/js/common/ComponentState.js'
 
 describe('ObjectTypeHandlerAddPropertyTest', () => {
   test('add with a section selected', () => {
-    const componentState = new ComponentState({
+    const componentState = ComponentState.fromState({
       selection: {
         type: 'section',
         params: { id: 'section-0' }
@@ -61,7 +61,7 @@ describe('ObjectTypeHandlerAddPropertyTest', () => {
   })
 
   test('add with a property selected', () => {
-    const componentState = new ComponentState({
+    const componentState = ComponentState.fromState({
       selection: {
         type: 'property',
         params: { id: 'property-0' }
@@ -127,7 +127,7 @@ describe('ObjectTypeHandlerAddPropertyTest', () => {
 
 const execute = componentState => {
   new ObjectTypeHandlerAddProperty(
-    componentState.getState(),
+    componentState.getGetState(),
     componentState.getSetState()
   ).execute()
 }

@@ -1,6 +1,5 @@
 import _ from 'lodash'
 import actions from '@src/js/store/actions/actions.js'
-import browser from './browser.js'
 
 const isPageAction = (page, action) => {
   return (
@@ -86,7 +85,6 @@ const changedObjects = (state = [], action) => {
 }
 
 export default {
-  ...browser,
   isPageAction,
   currentRoute,
   openObjects,

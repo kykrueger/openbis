@@ -4,9 +4,9 @@ import logger from '@src/js/common/logger.js'
 import pages from '@src/js/common/consts/pages.js'
 import objectType from '@src/js/common/consts/objectType.js'
 
-import Browser from '@src/js/components/common/browser/Browser.jsx'
 import Content from '@src/js/components/common/content/Content.jsx'
 
+import UsersBrowser from './browser/UsersBrowser.jsx'
 import User from './user/User.jsx'
 import Group from './group/Group.jsx'
 import Search from './search/Search.jsx'
@@ -32,7 +32,7 @@ class Users extends React.Component {
 
     return (
       <div className={classes.container}>
-        <Browser page={pages.USERS} />
+        <UsersBrowser />
         <Content
           page={pages.USERS}
           objectTypeToComponent={objectTypeToComponent}
