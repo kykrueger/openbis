@@ -10,6 +10,7 @@ import EntityTypePermId from 'as/dto/entitytype/id/EntityTypePermId'
 import EntityKind from 'as/dto/entitytype/EntityKind'
 import SampleFetchOptions from 'as/dto/sample/fetchoptions/SampleFetchOptions'
 import SearchSamplesOperation from 'as/dto/sample/search/SearchSamplesOperation'
+import SampleType from 'as/dto/sample/SampleType'
 import SampleTypeUpdate from 'as/dto/sample/update/SampleTypeUpdate'
 import UpdateSampleTypesOperation from 'as/dto/sample/update/UpdateSampleTypesOperation'
 import SampleSearchCriteria from 'as/dto/sample/search/SampleSearchCriteria'
@@ -19,6 +20,7 @@ import ExperimentTypeSearchCriteria from 'as/dto/experiment/search/ExperimentTyp
 import ExperimentTypeFetchOptions from 'as/dto/experiment/fetchoptions/ExperimentTypeFetchOptions'
 import DataSetTypeSearchCriteria from 'as/dto/dataset/search/DataSetTypeSearchCriteria'
 import DataSetTypeFetchOptions from 'as/dto/dataset/fetchoptions/DataSetTypeFetchOptions'
+import MaterialType from 'as/dto/material/MaterialType'
 import MaterialTypeSearchCriteria from 'as/dto/material/search/MaterialTypeSearchCriteria'
 import MaterialTypeFetchOptions from 'as/dto/material/fetchoptions/MaterialTypeFetchOptions'
 import PropertyType from 'as/dto/property/PropertyType'
@@ -29,17 +31,20 @@ import PropertyTypeDeletionOptions from 'as/dto/property/delete/PropertyTypeDele
 import UpdatePropertyTypesOperation from 'as/dto/property/update/UpdatePropertyTypesOperation'
 import PropertyTypeUpdate from 'as/dto/property/update/PropertyTypeUpdate'
 import PropertyTypePermId from 'as/dto/property/id/PropertyTypePermId'
+import PropertyAssignment from 'as/dto/property/PropertyAssignment'
 import PropertyAssignmentPermId from 'as/dto/property/id/PropertyAssignmentPermId'
 import PropertyTypeSearchCriteria from 'as/dto/property/search/PropertyTypeSearchCriteria'
 import PropertyTypeFetchOptions from 'as/dto/property/fetchoptions/PropertyTypeFetchOptions'
 import PropertyAssignmentCreation from 'as/dto/property/create/PropertyAssignmentCreation'
 import MaterialFetchOptions from 'as/dto/material/fetchoptions/MaterialFetchOptions'
 import MaterialSearchCriteria from 'as/dto/material/search/MaterialSearchCriteria'
+import Vocabulary from 'as/dto/vocabulary/Vocabulary'
 import VocabularyPermId from 'as/dto/vocabulary/id/VocabularyPermId'
 import VocabularySearchCriteria from 'as/dto/vocabulary/search/VocabularySearchCriteria'
 import VocabularyFetchOptions from 'as/dto/vocabulary/fetchoptions/VocabularyFetchOptions'
 import VocabularyTermSearchCriteria from 'as/dto/vocabulary/search/VocabularyTermSearchCriteria'
 import VocabularyTermFetchOptions from 'as/dto/vocabulary/fetchoptions/VocabularyTermFetchOptions'
+import Plugin from 'as/dto/plugin/Plugin'
 import PluginPermId from 'as/dto/plugin/id/PluginPermId'
 import PluginType from 'as/dto/plugin/PluginType'
 import PluginSearchCriteria from 'as/dto/plugin/search/PluginSearchCriteria'
@@ -64,6 +69,7 @@ const dto = {
   EntityKind,
   SampleFetchOptions,
   SearchSamplesOperation,
+  SampleType,
   SampleTypeUpdate,
   UpdateSampleTypesOperation,
   SampleSearchCriteria,
@@ -73,6 +79,7 @@ const dto = {
   ExperimentTypeFetchOptions,
   DataSetTypeSearchCriteria,
   DataSetTypeFetchOptions,
+  MaterialType,
   MaterialTypeSearchCriteria,
   MaterialTypeFetchOptions,
   PropertyType,
@@ -83,17 +90,20 @@ const dto = {
   UpdatePropertyTypesOperation,
   PropertyTypeUpdate,
   PropertyTypePermId,
+  PropertyAssignment,
   PropertyAssignmentPermId,
   PropertyTypeSearchCriteria,
   PropertyTypeFetchOptions,
   PropertyAssignmentCreation,
   MaterialFetchOptions,
   MaterialSearchCriteria,
+  Vocabulary,
   VocabularyPermId,
   VocabularySearchCriteria,
   VocabularyFetchOptions,
   VocabularyTermSearchCriteria,
   VocabularyTermFetchOptions,
+  Plugin,
   PluginPermId,
   PluginType,
   PluginSearchCriteria,

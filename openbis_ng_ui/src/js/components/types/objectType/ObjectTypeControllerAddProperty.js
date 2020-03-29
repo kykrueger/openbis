@@ -1,11 +1,15 @@
 export default class ObjectTypeHandlerAddProperty {
-  constructor(getState, setState) {
-    this.getState = getState
-    this.setState = setState
+  constructor(context) {
+    this.context = context
   }
 
   execute() {
-    let { sections, properties, propertiesCounter, selection } = this.getState()
+    let {
+      sections,
+      properties,
+      propertiesCounter,
+      selection
+    } = this.context.getState()
 
     let sectionIndex = null
     let sectionPropertyIndex = null
@@ -63,7 +67,7 @@ export default class ObjectTypeHandlerAddProperty {
       }
     }
 
-    this.setState(state => ({
+    this.context.setState(state => ({
       ...state,
       sections: newSections,
       properties: newProperties,

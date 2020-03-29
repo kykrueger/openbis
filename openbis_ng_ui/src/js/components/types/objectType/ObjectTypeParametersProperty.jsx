@@ -86,8 +86,9 @@ class ObjectTypeParametersProperty extends React.PureComponent {
   }
 
   loadDynamicPlugins() {
-    const { facade } = this.props
-    return facade
+    const { controller } = this.props
+    return controller
+      .getFacade()
       .loadDynamicPlugins()
       .then(result => {
         this.setState(() => ({
@@ -95,13 +96,14 @@ class ObjectTypeParametersProperty extends React.PureComponent {
         }))
       })
       .catch(error => {
-        facade.catch(error)
+        controller.getFacade().catch(error)
       })
   }
 
   loadVocabularies() {
-    const { facade } = this.props
-    return facade
+    const { controller } = this.props
+    return controller
+      .getFacade()
       .loadVocabularies()
       .then(result => {
         this.setState(() => ({
@@ -109,13 +111,14 @@ class ObjectTypeParametersProperty extends React.PureComponent {
         }))
       })
       .catch(error => {
-        facade.catch(error)
+        controller.getFacade().catch(error)
       })
   }
 
   loadMaterialTypes() {
-    const { facade } = this.props
-    return facade
+    const { controller } = this.props
+    return controller
+      .getFacade()
       .loadMaterialTypes()
       .then(result => {
         this.setState(() => ({
@@ -123,7 +126,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
         }))
       })
       .catch(error => {
-        facade.catch(error)
+        controller.getFacade().catch(error)
       })
   }
 

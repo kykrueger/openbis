@@ -1,20 +1,20 @@
 export default class ObjectTypeHandlerLoad {
-  constructor(objectId, getState, setState, facade) {
-    this.objectId = objectId
+  constructor(context, facade) {
+    this.context = context
     this.facade = facade
-    this.getState = getState
-    this.setState = setState
   }
 
   execute() {
-    this.setState({
+    this.context.setState({
       loading: true,
       validate: false
     })
 
+    const { objectId } = this.context.getProps()
+
     return Promise.all([
-      this.facade.loadType(this.objectId),
-      this.facade.loadUsages(this.objectId)
+      this.facade.loadType(objectId),
+      this.facade.loadUsages(objectId)
     ])
       .then(([loadedType, loadedUsages]) => {
         const type = {
@@ -31,7 +31,7 @@ export default class ObjectTypeHandlerLoad {
             ? loadedType.validationPlugin.name
             : null,
           errors: {},
-          usages: loadedUsages.type
+          usages: loadedUsages.type || 0
         }
 
         const sections = []
@@ -61,7 +61,10 @@ export default class ObjectTypeHandlerLoad {
             showInEditView: assignment.showInEditView,
             showRawValueInForms: assignment.showRawValueInForms,
             errors: {},
-            usages: loadedUsages.property[assignment.propertyType.code] || 0
+            usages:
+              (loadedUsages.property &&
+                loadedUsages.property[assignment.propertyType.code]) ||
+              0
           }
 
           if (currentSection && currentSection.name === assignment.section) {
@@ -88,7 +91,7 @@ export default class ObjectTypeHandlerLoad {
           properties
         }
 
-        this.setState(() => ({
+        this.context.setState(() => ({
           type,
           properties,
           propertiesCounter,
@@ -103,7 +106,7 @@ export default class ObjectTypeHandlerLoad {
         this.facade.catch(error)
       })
       .finally(() => {
-        this.setState({
+        this.context.setState({
           loading: false
         })
       })

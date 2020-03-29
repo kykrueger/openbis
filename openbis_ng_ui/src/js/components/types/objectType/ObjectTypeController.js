@@ -1,96 +1,69 @@
-import ObjectTypeHandlerLoad from './ObjectTypeHandlerLoad.js'
-import ObjectTypeHandlerValidate from './ObjectTypeHandlerValidate.js'
-import ObjectTypeHandlerSave from './ObjectTypeHandlerSave.js'
-import ObjectTypeHandlerRemove from './ObjectTypeHandlerRemove.js'
-import ObjectTypeHandlerAddSection from './ObjectTypeHandlerAddSection.js'
-import ObjectTypeHandlerAddProperty from './ObjectTypeHandlerAddProperty.js'
-import ObjectTypeHandlerChange from './ObjectTypeHandlerChange.js'
-import ObjectTypeHandlerOrderChange from './ObjectTypeHandlerOrderChange.js'
-import ObjectTypeHandlerSelectionChange from './ObjectTypeHandlerSelectionChange.js'
+import autoBind from 'auto-bind'
+import ObjectTypeControllerLoad from './ObjectTypeControllerLoad.js'
+import ObjectTypeControllerValidate from './ObjectTypeControllerValidate.js'
+import ObjectTypeControllerSave from './ObjectTypeControllerSave.js'
+import ObjectTypeControllerRemove from './ObjectTypeControllerRemove.js'
+import ObjectTypeControllerAddSection from './ObjectTypeControllerAddSection.js'
+import ObjectTypeControllerAddProperty from './ObjectTypeControllerAddProperty.js'
+import ObjectTypeControllerChange from './ObjectTypeControllerChange.js'
+import ObjectTypeControllerOrderChange from './ObjectTypeControllerOrderChange.js'
+import ObjectTypeControllerSelectionChange from './ObjectTypeControllerSelectionChange.js'
 
 export default class ObjectTypeController {
-  init(objectId, getState, setState, facade) {
-    this.objectId = objectId
-    this.getState = getState
-    this.setState = setState
+  constructor(facade) {
+    autoBind(this)
     this.facade = facade
   }
 
+  init(context) {
+    this.context = context
+  }
+
   load() {
-    new ObjectTypeHandlerLoad(
-      this.objectId,
-      this.getState,
-      this.setState,
-      this.facade
-    ).execute()
+    return new ObjectTypeControllerLoad(this.context, this.facade).execute()
   }
 
   handleOrderChange(type, params) {
-    new ObjectTypeHandlerOrderChange(this.getState, this.setState).execute(
-      type,
-      params
-    )
+    new ObjectTypeControllerOrderChange(this.context).execute(type, params)
   }
 
   handleSelectionChange(type, params) {
-    new ObjectTypeHandlerSelectionChange(this.getState, this.setState).execute(
-      type,
-      params
-    )
+    new ObjectTypeControllerSelectionChange(this.context).execute(type, params)
   }
 
   handleChange(type, params) {
-    new ObjectTypeHandlerChange(this.getState, this.setState).execute(
-      type,
-      params
-    )
+    new ObjectTypeControllerChange(this.context).execute(type, params)
   }
 
   handleBlur() {
-    new ObjectTypeHandlerValidate(this.getState, this.setState).execute()
+    new ObjectTypeControllerValidate(this.context).execute()
   }
 
   handleAddSection() {
-    new ObjectTypeHandlerAddSection(this.getState, this.setState).execute()
+    new ObjectTypeControllerAddSection(this.context).execute()
   }
 
   handleAddProperty() {
-    new ObjectTypeHandlerAddProperty(this.getState, this.setState).execute()
+    new ObjectTypeControllerAddProperty(this.context).execute()
   }
 
   handleRemove() {
-    new ObjectTypeHandlerRemove(this.getState, this.setState).executeRemove()
+    new ObjectTypeControllerRemove(this.context).executeRemove()
   }
 
   handleRemoveConfirm() {
-    new ObjectTypeHandlerRemove(this.getState, this.setState).executeRemove(
-      true
-    )
+    new ObjectTypeControllerRemove(this.context).executeRemove(true)
   }
 
   handleRemoveCancel() {
-    new ObjectTypeHandlerRemove(this.getState, this.setState).executeCancel()
+    new ObjectTypeControllerRemove(this.context).executeCancel()
   }
 
   handleSave() {
-    let loadHandler = new ObjectTypeHandlerLoad(
-      this.objectId,
-      this.getState,
-      this.setState,
-      this.facade
-    )
+    return new ObjectTypeControllerSave(this.context, this.facade).execute()
+  }
 
-    let validateHandler = new ObjectTypeHandlerValidate(
-      this.getState,
-      this.setState
-    )
-
-    new ObjectTypeHandlerSave(
-      this.getState,
-      this.setState,
-      this.facade,
-      loadHandler,
-      validateHandler
-    ).execute()
+  getFacade() {
+    return this.facade
   }
 }

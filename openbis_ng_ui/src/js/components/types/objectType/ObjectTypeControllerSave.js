@@ -1,15 +1,19 @@
 import _ from 'lodash'
+import ObjectTypeControllerLoad from '@src/js/components/types/objectType/ObjectTypeControllerLoad.js'
+import ObjectTypeControllerValidate from '@src/js/components/types/objectType/ObjectTypeControllerValidate.js'
 import openbis from '@src/js/services/openbis.js'
 
 export default class ObjectTypeHandlerSave {
-  constructor(getState, setState, facade, loadHandler, validateHandler) {
-    let { type, properties, sections } = getState()
+  constructor(context, facade) {
+    let { type, properties, sections } = context.getState()
+
     this.type = this.prepareType(type)
     this.properties = this.prepareProperties(type, properties, sections)
-    this.setState = setState
+    this.context = context
     this.facade = facade
-    this.loadHandler = loadHandler
-    this.validateHandler = validateHandler
+
+    this.loadHandler = new ObjectTypeControllerLoad(context, facade)
+    this.validateHandler = new ObjectTypeControllerValidate(context, facade)
   }
 
   prepareValue(value) {
@@ -300,35 +304,33 @@ export default class ObjectTypeHandlerSave {
     return new openbis.UpdateSampleTypesOperation([update])
   }
 
-  execute() {
-    return this.validateHandler
-      .setEnabled(true)
+  async execute() {
+    await this.context.setState({
+      validate: true
+    })
+
+    if (!this.validateHandler.execute(true)) {
+      return
+    }
+
+    await this.context.setState({
+      loading: true
+    })
+
+    const operations = this.createOperations()
+    const options = new openbis.SynchronousOperationExecutionOptions()
+    options.setExecuteInOrder(true)
+
+    return this.facade
+      .executeOperations(operations, options)
       .then(() => {
-        if (!this.validateHandler.execute(true)) {
-          return
-        }
-        this.setState({
-          loading: true
-        })
-
-        const operations = this.createOperations()
-        const options = new openbis.SynchronousOperationExecutionOptions()
-        options.setExecuteInOrder(true)
-
-        return this.facade
-          .executeOperations(operations, options)
-          .then(() => {
-            return this.validateHandler.setEnabled(false)
-          })
-          .then(() => {
-            return this.loadHandler.execute()
-          })
+        return this.loadHandler.execute()
       })
       .catch(error => {
-        this.openbis.catch(error)
+        this.facade.catch(error)
       })
       .finally(() => {
-        this.setState({
+        this.context.setState({
           loading: false
         })
       })

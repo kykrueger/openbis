@@ -122,13 +122,13 @@ class ObjectTypePreview extends React.PureComponent {
   }
 
   renderProperties(properties, index) {
-    const { facade, selection, onSelectionChange } = this.props
+    const { controller, selection, onSelectionChange } = this.props
 
     return properties.map((property, offset) => {
       return (
         <ObjectTypePreviewProperty
           key={property.id}
-          facade={facade}
+          controller={controller}
           property={property}
           index={index + offset}
           selection={selection}

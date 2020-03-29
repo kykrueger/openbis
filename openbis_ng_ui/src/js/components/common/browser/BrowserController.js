@@ -7,19 +7,16 @@ export default class BrowserController {
     autoBind(this)
   }
 
-  init(getState, setState, dispatch) {
-    this.getState = getState
-    this.setState = setState
-    this.dispatch = dispatch
-
-    return {
+  init(context) {
+    context.initState({
       loaded: false,
       loadedNodes: [],
       visibleIds: {},
       selectedIds: {},
       expandedIds: {},
       filter: ''
-    }
+    })
+    this.context = context
   }
 
   getPage() {
@@ -49,7 +46,7 @@ export default class BrowserController {
         {}
       )
 
-      this.setState({
+      this.context.setState({
         loaded: true,
         loadedNodes: nodes,
         visibleIds: filteredIds
@@ -58,7 +55,7 @@ export default class BrowserController {
   }
 
   filterChange(filter) {
-    const { loadedNodes } = this.getState()
+    const { loadedNodes } = this.context.getState()
 
     const filteredNodes = this._filterNodes(loadedNodes, filter)
 
@@ -72,7 +69,7 @@ export default class BrowserController {
       }
     })
 
-    this.setState({
+    this.context.setState({
       filter,
       visibleIds: filteredIds,
       expandedIds: expandedIds
@@ -80,29 +77,29 @@ export default class BrowserController {
   }
 
   nodeExpand(nodeId) {
-    const { expandedIds } = this.getState()
+    const { expandedIds } = this.context.getState()
 
     const newExpandedIds = { ...expandedIds }
     newExpandedIds[nodeId] = nodeId
 
-    this.setState({
+    this.context.setState({
       expandedIds: newExpandedIds
     })
   }
 
   nodeCollapse(nodeId) {
-    const { expandedIds } = this.getState()
+    const { expandedIds } = this.context.getState()
 
     const newExpandedIds = { ...expandedIds }
     delete newExpandedIds[nodeId]
 
-    this.setState({
+    this.context.setState({
       expandedIds: newExpandedIds
     })
   }
 
   nodeSelect(nodeId) {
-    const { loadedNodes } = this.getState()
+    const { loadedNodes } = this.context.getState()
 
     const nodesWithNodeId = this._visitNodes(loadedNodes, (node, results) => {
       if (node.id === nodeId) {
@@ -120,7 +117,7 @@ export default class BrowserController {
             newSelectedIds[node.id] = node.id
           }
         })
-        this.dispatch(
+        this.context.dispatch(
           actions.objectOpen(
             this.getPage(),
             nodeWithNodeId.object.type,
@@ -131,18 +128,18 @@ export default class BrowserController {
         newSelectedIds[nodeId] = nodeId
       }
 
-      this.setState({
+      this.context.setState({
         selectedIds: newSelectedIds
       })
     } else {
-      this.setState({
+      this.context.setState({
         selectedIds: {}
       })
     }
   }
 
   objectSelect(object) {
-    const { loadedNodes } = this.getState()
+    const { loadedNodes } = this.context.getState()
 
     const newSelectedIds = {}
 
@@ -152,18 +149,18 @@ export default class BrowserController {
       }
     })
 
-    this.setState({
+    this.context.setState({
       selectedIds: newSelectedIds
     })
   }
 
   getLoaded() {
-    const { loaded } = this.getState()
+    const { loaded } = this.context.getState()
     return loaded
   }
 
   getFilter() {
-    const { filter } = this.getState()
+    const { filter } = this.context.getState()
     return filter
   }
 
@@ -173,7 +170,7 @@ export default class BrowserController {
       visibleIds,
       expandedIds,
       selectedIds
-    } = this.getState()
+    } = this.context.getState()
 
     const _createNodes = nodes => {
       if (!nodes) {

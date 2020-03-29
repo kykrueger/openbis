@@ -1,9 +1,8 @@
 import _ from 'lodash'
 
 export default class ObjectTypeHandlerOrderChange {
-  constructor(getState, setState) {
-    this.getState = getState
-    this.setState = setState
+  constructor(context) {
+    this.context = context
   }
 
   execute(type, params) {
@@ -22,11 +21,11 @@ export default class ObjectTypeHandlerOrderChange {
   }
 
   handleOrderChangeSection(fromIndex, toIndex) {
-    let { sections } = this.getState()
+    let { sections } = this.context.getState()
     let newSections = Array.from(sections)
     let [section] = newSections.splice(fromIndex, 1)
     newSections.splice(toIndex, 0, section)
-    this.setState(state => ({
+    this.context.setState(state => ({
       ...state,
       sections: newSections
     }))
@@ -34,7 +33,7 @@ export default class ObjectTypeHandlerOrderChange {
 
   handleOrderChangeProperty(fromSectionId, fromIndex, toSectionId, toIndex) {
     if (fromSectionId === toSectionId) {
-      let { sections } = this.getState()
+      let { sections } = this.context.getState()
       let sectionIndex = _.findIndex(sections, ['id', fromSectionId])
       let section = sections[sectionIndex]
       let newSection = {
@@ -48,12 +47,12 @@ export default class ObjectTypeHandlerOrderChange {
       let newSections = Array.from(sections)
       newSections[sectionIndex] = newSection
 
-      this.setState(state => ({
+      this.context.setState(state => ({
         ...state,
         sections: newSections
       }))
     } else {
-      let { sections } = this.getState()
+      let { sections } = this.context.getState()
       let newSections = Array.from(sections)
 
       let fromSectionIndex = _.findIndex(sections, ['id', fromSectionId])
@@ -76,7 +75,7 @@ export default class ObjectTypeHandlerOrderChange {
       newSections[fromSectionIndex] = newFromSection
       newSections[toSectionIndex] = newToSection
 
-      let { properties } = this.getState()
+      let { properties } = this.context.getState()
       let newProperties = Array.from(properties)
 
       let propertyIndex = _.findIndex(properties, ['id', property])
@@ -87,7 +86,7 @@ export default class ObjectTypeHandlerOrderChange {
       }
       newProperties[propertyIndex] = newPropertyObj
 
-      this.setState(state => ({
+      this.context.setState(state => ({
         ...state,
         sections: newSections,
         properties: newProperties

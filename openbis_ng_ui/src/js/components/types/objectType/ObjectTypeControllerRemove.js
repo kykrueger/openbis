@@ -1,13 +1,12 @@
 import _ from 'lodash'
 
 export default class ObjectTypeHandlerRemove {
-  constructor(getState, setState) {
-    this.getState = getState
-    this.setState = setState
+  constructor(context) {
+    this.context = context
   }
 
   executeRemove(confirmed = false) {
-    const { selection } = this.getState()
+    const { selection } = this.context.getState()
     if (selection.type === 'section') {
       this.handleRemoveSection(selection.params.id, confirmed)
     } else if (selection.type === 'property') {
@@ -16,30 +15,30 @@ export default class ObjectTypeHandlerRemove {
   }
 
   executeCancel() {
-    const { selection } = this.getState()
+    const { selection } = this.context.getState()
     if (selection.type === 'section') {
-      this.setState({
+      this.context.setState({
         removeSectionDialogOpen: false
       })
     } else if (selection.type === 'property') {
-      this.setState({
+      this.context.setState({
         removePropertyDialogOpen: false
       })
     }
   }
 
   handleRemoveSection(sectionId, confirmed) {
-    const { sections, properties } = this.getState()
+    const { sections, properties } = this.context.getState()
 
     const sectionIndex = sections.findIndex(section => section.id === sectionId)
     const section = sections[sectionIndex]
 
     if (confirmed) {
-      this.setState({
+      this.context.setState({
         removeSectionDialogOpen: false
       })
     } else if (this.isSectionUsed(section)) {
-      this.setState({
+      this.context.setState({
         removeSectionDialogOpen: true
       })
       return
@@ -54,7 +53,7 @@ export default class ObjectTypeHandlerRemove {
     const newSections = Array.from(sections)
     newSections.splice(sectionIndex, 1)
 
-    this.setState(state => ({
+    this.context.setState(state => ({
       ...state,
       sections: newSections,
       properties: newProperties,
@@ -63,7 +62,7 @@ export default class ObjectTypeHandlerRemove {
   }
 
   handleRemoveProperty(propertyId, confirmed) {
-    const { sections, properties } = this.getState()
+    const { sections, properties } = this.context.getState()
 
     const propertyIndex = properties.findIndex(
       property => property.id === propertyId
@@ -71,11 +70,11 @@ export default class ObjectTypeHandlerRemove {
     const property = properties[propertyIndex]
 
     if (confirmed) {
-      this.setState({
+      this.context.setState({
         removePropertyDialogOpen: false
       })
     } else if (this.isPropertyUsed(property)) {
-      this.setState({
+      this.context.setState({
         removePropertyDialogOpen: true
       })
       return
@@ -97,7 +96,7 @@ export default class ObjectTypeHandlerRemove {
     const newSections = Array.from(sections)
     newSections[sectionIndex] = newSection
 
-    this.setState(state => ({
+    this.context.setState(state => ({
       ...state,
       sections: newSections,
       properties: newProperties,
@@ -106,7 +105,7 @@ export default class ObjectTypeHandlerRemove {
   }
 
   isSectionUsed(section) {
-    const { properties } = this.getState()
+    const { properties } = this.context.getState()
 
     const propertiesMap = properties.reduce((map, property) => {
       map[property.id] = property

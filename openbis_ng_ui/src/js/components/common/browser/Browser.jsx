@@ -5,6 +5,7 @@ import { Resizable } from 're-resizable'
 import { withStyles } from '@material-ui/core/styles'
 import Paper from '@material-ui/core/Paper'
 import FilterField from '@src/js/components/common/form/FilterField.jsx'
+import ComponentContext from '@src/js/components/common/ComponentContext.js'
 import selectors from '@src/js/store/selectors/selectors.js'
 import logger from '@src/js/common/logger.js'
 
@@ -39,14 +40,10 @@ class Browser extends React.PureComponent {
   constructor(props) {
     super(props)
 
+    this.state = {}
+
     this.controller = props.controller
-    this.state = props.controller.init(
-      () => {
-        return this.state
-      },
-      this.setState.bind(this),
-      this.props.dispatch
-    )
+    this.controller.init(new ComponentContext(this))
   }
 
   componentDidMount() {

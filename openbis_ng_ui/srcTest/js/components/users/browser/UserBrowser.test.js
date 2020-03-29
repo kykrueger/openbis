@@ -3,15 +3,18 @@ import { Provider } from 'react-redux'
 import { mount } from 'enzyme'
 import { createStore } from '@src/js/store/store.js'
 import UserBrowser from '@src/js/components/users/browser/UsersBrowser.jsx'
-import openbis from '@src/js/services/openbis.js'
+import UserBrowserController from '@src/js/components/users/browser/UsersBrowserController.js'
 import actions from '@src/js/store/actions/actions.js'
+import openbis from '@srcTest/js/services/openbis.js'
 import fixture from '@srcTest/js/common/fixture.js'
 
 let store = null
+let controller = null
 
 beforeEach(() => {
   jest.resetAllMocks()
   store = createStore()
+  controller = new UserBrowserController()
 })
 
 describe('browser', () => {
@@ -38,7 +41,7 @@ describe('browser', () => {
 
     let wrapper = mount(
       <Provider store={store}>
-        <UserBrowser />
+        <UserBrowser controller={controller} />
       </Provider>
     )
 

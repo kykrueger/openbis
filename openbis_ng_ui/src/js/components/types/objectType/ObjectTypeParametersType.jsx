@@ -64,8 +64,9 @@ class ObjectTypeParametersType extends React.PureComponent {
   }
 
   loadValidationPlugins() {
-    const { facade } = this.props
-    return facade
+    const { controller } = this.props
+    return controller
+      .getFacade()
       .loadValidationPlugins()
       .then(result => {
         this.setState(() => ({
@@ -73,7 +74,7 @@ class ObjectTypeParametersType extends React.PureComponent {
         }))
       })
       .catch(error => {
-        facade.catch(error)
+        controller.getFacade().catch(error)
       })
   }
 

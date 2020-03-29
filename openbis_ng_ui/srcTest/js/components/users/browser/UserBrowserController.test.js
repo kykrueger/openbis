@@ -1,19 +1,21 @@
 import _ from 'lodash'
 import UsersBrowserController from '@src/js/components/users/browser/UsersBrowserController.js'
-import ComponentState from '@srcTest/js/common/ComponentState.js'
-import openbis from '@src/js/services/openbis.js'
+import ComponentContext from '@srcTest/js/components/common/ComponentContext.js'
+import openbis from '@srcTest/js/services/openbis.js'
 import pages from '@src/js/common/consts/pages.js'
 import objectType from '@src/js/common/consts/objectType.js'
 import actions from '@src/js/store/actions/actions.js'
 import fixture from '@srcTest/js/common/fixture.js'
 
+let context = null
 let controller = null
-let state = null
 
 beforeEach(() => {
   jest.resetAllMocks()
+
+  context = new ComponentContext()
   controller = new UsersBrowserController()
-  state = ComponentState.fromController(controller)
+  controller.init(context)
 })
 
 describe('browser', () => {
@@ -84,7 +86,7 @@ describe('browser', () => {
       ])
     ])
 
-    expectNoActions(state)
+    expectNoActions()
   })
 
   test('filter', async () => {
@@ -119,7 +121,7 @@ describe('browser', () => {
       ])
     ])
 
-    expectNoActions(state)
+    expectNoActions()
   })
 
   test('select node', async () => {
@@ -137,7 +139,7 @@ describe('browser', () => {
       node(['groups'])
     ])
 
-    expectOpenUserAction(state, fixture.TEST_USER_DTO.userId)
+    expectOpenUserAction(fixture.TEST_USER_DTO.userId)
   })
 
   test('select another node', async () => {
@@ -156,8 +158,8 @@ describe('browser', () => {
       node(['groups'])
     ])
 
-    expectOpenUserAction(state, fixture.TEST_USER_DTO.userId)
-    expectOpenUserAction(state, fixture.ANOTHER_USER_DTO.userId)
+    expectOpenUserAction(fixture.TEST_USER_DTO.userId)
+    expectOpenUserAction(fixture.ANOTHER_USER_DTO.userId)
   })
 
   test('select virtual node', async () => {
@@ -175,7 +177,7 @@ describe('browser', () => {
       node(['groups'])
     ])
 
-    expectNoActions(state)
+    expectNoActions()
   })
 
   test('select two nodes that represent the same object', async () => {
@@ -214,7 +216,7 @@ describe('browser', () => {
       ])
     ])
 
-    expectOpenUserAction(state, fixture.TEST_USER_DTO.userId)
+    expectOpenUserAction(fixture.TEST_USER_DTO.userId)
     controller.nodeSelect(nodeId(['groups', fixture.TEST_GROUP_DTO.code]))
 
     expectNodes(controller.getNodes(), [
@@ -246,7 +248,7 @@ describe('browser', () => {
       ])
     ])
 
-    expectOpenGroupAction(state, fixture.TEST_GROUP_DTO.code)
+    expectOpenGroupAction(fixture.TEST_GROUP_DTO.code)
   })
 
   test('expand and collapse node', async () => {
@@ -263,7 +265,7 @@ describe('browser', () => {
       ])
     ])
 
-    expectNoActions(state)
+    expectNoActions()
     controller.nodeCollapse(nodeId(['groups']))
 
     expectNodes(controller.getNodes(), [
@@ -273,7 +275,7 @@ describe('browser', () => {
       ])
     ])
 
-    expectNoActions(state)
+    expectNoActions()
   })
 })
 
@@ -334,18 +336,18 @@ function expectNodes(actualNodes, expectedNodes) {
   expect(actualNodesClone).toEqual(expectedNodes)
 }
 
-function expectOpenUserAction(state, userId) {
-  expect(state.getDispatch()).toHaveBeenCalledWith(
+function expectOpenUserAction(userId) {
+  expect(context.getDispatch()).toHaveBeenCalledWith(
     actions.objectOpen(pages.USERS, objectType.USER, userId)
   )
 }
 
-function expectOpenGroupAction(state, groupId) {
-  expect(state.getDispatch()).toHaveBeenCalledWith(
+function expectOpenGroupAction(groupId) {
+  expect(context.getDispatch()).toHaveBeenCalledWith(
     actions.objectOpen(pages.USERS, objectType.GROUP, groupId)
   )
 }
 
-function expectNoActions(state) {
-  expect(state.getDispatch()).toHaveBeenCalledTimes(0)
+function expectNoActions() {
+  expect(context.getDispatch()).toHaveBeenCalledTimes(0)
 }

@@ -1,7 +1,6 @@
 export default class ObjectTypeHandlerSelectionChange {
-  constructor(getState, setState) {
-    this.getState = getState
-    this.setState = setState
+  constructor(context) {
+    this.context = context
   }
 
   execute(type, params) {
@@ -14,7 +13,7 @@ export default class ObjectTypeHandlerSelectionChange {
       }
     }
 
-    this.setState(state => ({
+    this.context.setState(state => ({
       ...state,
       selection
     }))

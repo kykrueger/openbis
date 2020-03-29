@@ -1,7 +1,6 @@
 export default class ObjectTypeHandlerChange {
-  constructor(getState, setState) {
-    this.getState = getState
-    this.setState = setState
+  constructor(context) {
+    this.context = context
   }
 
   execute(type, params) {
@@ -18,7 +17,7 @@ export default class ObjectTypeHandlerChange {
   }
 
   handleChangeType(field, value) {
-    this.setState(state => ({
+    this.context.setState(state => ({
       ...state,
       type: {
         ...state.type,
@@ -28,7 +27,7 @@ export default class ObjectTypeHandlerChange {
   }
 
   handleChangeSection(id, field, value) {
-    let { sections } = this.getState()
+    let { sections } = this.context.getState()
     let newSections = Array.from(sections)
 
     let index = sections.findIndex(section => section.id === id)
@@ -39,14 +38,14 @@ export default class ObjectTypeHandlerChange {
     }
     newSections[index] = newSection
 
-    this.setState(state => ({
+    this.context.setState(state => ({
       ...state,
       sections: newSections
     }))
   }
 
   handleChangeProperty(id, field, value) {
-    let { properties } = this.getState()
+    let { properties } = this.context.getState()
     let newProperties = Array.from(properties)
 
     let index = properties.findIndex(property => property.id === id)
@@ -57,7 +56,7 @@ export default class ObjectTypeHandlerChange {
     }
     newProperties[index] = newProperty
 
-    this.setState(state => ({
+    this.context.setState(state => ({
       ...state,
       properties: newProperties
     }))

@@ -96,10 +96,11 @@ class ObjectTypePreviewProperty extends React.PureComponent {
   }
 
   loadMaterials() {
-    const { facade, property } = this.props
+    const { controller, property } = this.props
 
     if (property.materialType) {
-      return facade
+      return controller
+        .getFacade()
         .loadMaterials(property.materialType)
         .then(result => {
           this.setState(() => ({
@@ -107,7 +108,7 @@ class ObjectTypePreviewProperty extends React.PureComponent {
           }))
         })
         .catch(error => {
-          facade.catch(error)
+          controller.getFacade().catch(error)
         })
     } else {
       this.setState(() => ({
@@ -117,10 +118,11 @@ class ObjectTypePreviewProperty extends React.PureComponent {
   }
 
   loadVocabularyTerms() {
-    const { facade, property } = this.props
+    const { controller, property } = this.props
 
     if (property.vocabulary) {
-      return facade
+      return controller
+        .getFacade()
         .loadVocabularyTerms(property.vocabulary)
         .then(result => {
           this.setState(() => ({
@@ -128,7 +130,7 @@ class ObjectTypePreviewProperty extends React.PureComponent {
           }))
         })
         .catch(error => {
-          facade.catch(error)
+          controller.getFacade().catch(error)
         })
     } else {
       this.setState(() => ({

@@ -17,7 +17,7 @@ class ObjectTypeParameters extends React.PureComponent {
     logger.log(logger.DEBUG, 'ObjectTypeParameters.render')
 
     const {
-      facade,
+      controller,
       type,
       sections,
       properties,
@@ -30,7 +30,7 @@ class ObjectTypeParameters extends React.PureComponent {
     return (
       <div>
         <ObjectTypeParametersType
-          facade={facade}
+          controller={controller}
           type={type}
           selection={selection}
           onChange={onChange}
@@ -45,7 +45,7 @@ class ObjectTypeParameters extends React.PureComponent {
           onBlur={onBlur}
         />
         <ObjectTypeParametersProperty
-          facade={facade}
+          controller={controller}
           type={type}
           properties={properties}
           selection={selection}

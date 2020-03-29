@@ -2,7 +2,7 @@ import _ from 'lodash'
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import { Resizable } from 're-resizable'
-
+import ComponentContext from '@src/js/components/common/ComponentContext.js'
 import Loading from '@src/js/components/common/loading/Loading.jsx'
 import logger from '@src/js/common/logger.js'
 
@@ -56,71 +56,14 @@ class ObjectType extends React.PureComponent {
     if (this.props.controller) {
       this.controller = this.props.controller
     } else {
-      this.facade = new ObjectTypeFacade()
-      this.controller = new ObjectTypeController(
-        this.props.objectId,
-        () => {
-          return this.state
-        },
-        this.setState.bind(this),
-        this.facade
-      )
+      this.controller = new ObjectTypeController(new ObjectTypeFacade())
     }
 
-    this.handleOrderChange = this.handleOrderChange.bind(this)
-    this.handleSelectionChange = this.handleSelectionChange.bind(this)
-    this.handleChange = this.handleChange.bind(this)
-    this.handleBlur = this.handleBlur.bind(this)
-    this.handleAddSection = this.handleAddSection.bind(this)
-    this.handleAddProperty = this.handleAddProperty.bind(this)
-    this.handleRemove = this.handleRemove.bind(this)
-    this.handleRemoveConfirm = this.handleRemoveConfirm.bind(this)
-    this.handleRemoveCancel = this.handleRemoveCancel.bind(this)
-    this.handleSave = this.handleSave.bind(this)
+    this.controller.init(new ComponentContext(this))
   }
 
   componentDidMount() {
     this.controller.load()
-  }
-
-  handleOrderChange(type, params) {
-    this.controller.handleOrderChange(type, params)
-  }
-
-  handleSelectionChange(type, params) {
-    this.controller.handleSelectionChange(type, params)
-  }
-
-  handleChange(type, params) {
-    this.controller.handleChange(type, params)
-  }
-
-  handleBlur() {
-    this.controller.handleBlur()
-  }
-
-  handleAddSection() {
-    this.controller.handleAddSection()
-  }
-
-  handleAddProperty() {
-    this.controller.handleAddProperty()
-  }
-
-  handleRemove() {
-    this.controller.handleRemove()
-  }
-
-  handleRemoveConfirm() {
-    this.controller.handleRemoveConfirm()
-  }
-
-  handleRemoveCancel() {
-    this.controller.handleRemoveCancel()
-  }
-
-  handleSave() {
-    this.controller.handleSave()
   }
 
   render() {
@@ -132,7 +75,7 @@ class ObjectType extends React.PureComponent {
   }
 
   doRender() {
-    let { facade } = this
+    let { controller } = this
 
     let {
       type,
@@ -150,36 +93,36 @@ class ObjectType extends React.PureComponent {
         <div className={classes.content}>
           <div className={classes.preview}>
             <ObjectTypePreview
-              facade={facade}
+              controller={controller}
               type={type}
               properties={properties}
               sections={sections}
               selection={selection}
-              onOrderChange={this.handleOrderChange}
-              onSelectionChange={this.handleSelectionChange}
+              onOrderChange={controller.handleOrderChange}
+              onSelectionChange={controller.handleSelectionChange}
             />
           </div>
           <div className={classes.buttons}>
             <ObjectTypeButtons
-              onAddSection={this.handleAddSection}
-              onAddProperty={this.handleAddProperty}
-              onRemove={this.handleRemove}
-              onSave={this.handleSave}
+              onAddSection={controller.handleAddSection}
+              onAddProperty={controller.handleAddProperty}
+              onRemove={controller.handleRemove}
+              onSave={controller.handleSave}
               selection={selection}
             />
             <ObjectTypeDialogRemoveSection
               open={removeSectionDialogOpen}
               selection={selection}
               sections={sections}
-              onConfirm={this.handleRemoveConfirm}
-              onCancel={this.handleRemoveCancel}
+              onConfirm={controller.handleRemoveConfirm}
+              onCancel={controller.handleRemoveCancel}
             />
             <ObjectTypeDialogRemoveProperty
               open={removePropertyDialogOpen}
               selection={selection}
               properties={properties}
-              onConfirm={this.handleRemoveConfirm}
-              onCancel={this.handleRemoveCancel}
+              onConfirm={controller.handleRemoveConfirm}
+              onCancel={controller.handleRemoveCancel}
             />
           </div>
         </div>
@@ -201,14 +144,14 @@ class ObjectType extends React.PureComponent {
         >
           <div className={classes.parameters}>
             <ObjectTypeParameters
-              facade={facade}
+              controller={controller}
               type={type}
               properties={properties}
               sections={sections}
               selection={selection}
-              onChange={this.handleChange}
-              onSelectionChange={this.handleSelectionChange}
-              onBlur={this.handleBlur}
+              onChange={controller.handleChange}
+              onSelectionChange={controller.handleSelectionChange}
+              onBlur={controller.handleBlur}
             />
           </div>
         </Resizable>

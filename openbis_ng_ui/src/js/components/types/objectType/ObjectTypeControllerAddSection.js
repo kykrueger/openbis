@@ -1,11 +1,10 @@
 export default class ObjectTypeHandlerAddSection {
-  constructor(getState, setState) {
-    this.getState = getState
-    this.setState = setState
+  constructor(context) {
+    this.context = context
   }
 
   execute() {
-    let { sections, sectionsCounter, selection } = this.getState()
+    let { sections, sectionsCounter, selection } = this.context.getState()
 
     let newSections = Array.from(sections)
     let newSection = {
@@ -38,7 +37,7 @@ export default class ObjectTypeHandlerAddSection {
       newSections.push(newSection)
     }
 
-    this.setState(state => ({
+    this.context.setState(state => ({
       ...state,
       sections: newSections,
       sectionsCounter,

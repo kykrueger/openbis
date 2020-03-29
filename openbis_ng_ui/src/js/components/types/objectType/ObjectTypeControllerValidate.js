@@ -2,26 +2,12 @@ import _ from 'lodash'
 import openbis from '@src/js/services/openbis.js'
 
 export default class ObjectTypeHandlerValidate {
-  constructor(getState, setState) {
-    this.getState = getState
-    this.setState = setState
-  }
-
-  setEnabled(enabled) {
-    return new Promise(resolve => {
-      this.setState(
-        {
-          validate: enabled
-        },
-        () => {
-          resolve()
-        }
-      )
-    })
+  constructor(context) {
+    this.context = context
   }
 
   execute(autofocus) {
-    const { validate, type, properties } = this.getState()
+    const { validate, type, properties } = this.context.getState()
 
     if (!validate) {
       return true
@@ -54,7 +40,7 @@ export default class ObjectTypeHandlerValidate {
       }
     }
 
-    this.setState(state => {
+    this.context.setState(state => {
       const newType = {
         ...state.type,
         errors: typeErrorsMap
@@ -71,7 +57,7 @@ export default class ObjectTypeHandlerValidate {
     })
 
     if (errorSelection) {
-      this.setState({
+      this.context.setState({
         selection: errorSelection
       })
     }
