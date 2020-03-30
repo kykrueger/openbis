@@ -44,7 +44,7 @@ import ch.systemsx.cisd.openbis.generic.shared.IServer;
 @Table(name = TableNames.DATA_SET_PROPERTIES_TABLE, uniqueConstraints = @UniqueConstraint(columnNames =
 { ColumnNames.DATA_SET_COLUMN, ColumnNames.DATA_SET_TYPE_PROPERTY_TYPE_COLUMN }))
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class DataSetPropertyPE extends EntityPropertyPE
+public class DataSetPropertyPE extends EntityPropertyWithSampleDataTypePE
 {
     private static final long serialVersionUID = IServer.VERSION;
 
