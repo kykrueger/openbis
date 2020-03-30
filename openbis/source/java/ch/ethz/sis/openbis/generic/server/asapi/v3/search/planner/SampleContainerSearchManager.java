@@ -51,7 +51,7 @@ public class SampleContainerSearchManager extends AbstractCompositeEntitySearchM
     }
 
     public Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation,
-            final SampleContainerSearchCriteria criteria, SortOptions<Sample> sortOptions,
+            final SampleContainerSearchCriteria criteria,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
         return doSearchForIDs(userId, authorisationInformation, criteria, null, idsColumnName, TableMapper.SAMPLE);

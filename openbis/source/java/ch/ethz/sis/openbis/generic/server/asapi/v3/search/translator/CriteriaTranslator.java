@@ -26,12 +26,15 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.search.EntityTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentTypeSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.search.TagSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.CriteriaMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.IGlobalSearchManager;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ILocalSearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.IConditionTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinInformation;
@@ -158,7 +161,7 @@ public class CriteriaTranslator
             final StringBuilder sqlBuilder, ISearchCriteria criterion)
     {
         final TableMapper tableMapper = vo.getTableMapper();
-        final ISearchManager<ISearchCriteria, ?, ?> subqueryManager = (criterion instanceof EntityTypeSearchCriteria)
+        final ISearchManager<?> subqueryManager = (criterion instanceof EntityTypeSearchCriteria)
                 ? CriteriaMapper.getEntityKindToManagerMap().get(tableMapper.getEntityKind())
                 : CriteriaMapper.getCriteriaToManagerMap().get(criterion.getClass());
         final AbstractCompositeSearchCriteria parentCriterion = vo.getParentCriterion();
@@ -178,9 +181,25 @@ public class CriteriaTranslator
 
                 if (tableMapper != null && column != null)
                 {
-                    final Set<Long> ids = subqueryManager.searchForIDs(vo.getUserId(), authorisationInformation, criterion, null, parentCriterion,
-                            CriteriaMapper.getParentChildCriteriaToChildSelectIdMap().getOrDefault(
-                                    Arrays.asList(parentCriterion.getClass(), criterion.getClass()), ID_COLUMN));
+                    final Set<Long> ids;
+                    if (subqueryManager instanceof ILocalSearchManager<?, ?, ?>)
+                    {
+                        final ILocalSearchManager<ISearchCriteria, ?, ?> localSearchManager =
+                                (ILocalSearchManager<ISearchCriteria, ?, ?>) subqueryManager;
+                        ids = localSearchManager.searchForIDs(vo.getUserId(), authorisationInformation, criterion, parentCriterion,
+                                CriteriaMapper.getParentChildCriteriaToChildSelectIdMap().getOrDefault(
+                                        Arrays.asList(parentCriterion.getClass(), criterion.getClass()), ID_COLUMN));
+                    } else /*if (subqueryManager instanceof IGlobalSearchManager)
+                    {
+                        final IGlobalSearchManager globalSearchManager = (IGlobalSearchManager) subqueryManager;
+                        ids = globalSearchManager.searchForIDs(vo.getUserId(), (GlobalSearchCriteria) criterion, ID_COLUMN,
+                                CriteriaMapper.getParentChildCriteriaToChildSelectIdMap().getOrDefault(
+                                        parentCriterion.getClass().toString() + criterion.getClass().toString()));
+                    } else*/ {
+                        throw new IllegalArgumentException("Only local search subqueries are supported.");
+                    }
+
+
                     appendInStatement(sqlBuilder, criterion, column, tableMapper);
                     vo.getArgs().add(ids.toArray(new Long[0]));
                 } else

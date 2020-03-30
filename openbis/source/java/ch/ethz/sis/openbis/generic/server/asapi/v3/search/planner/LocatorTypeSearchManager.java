@@ -35,7 +35,7 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
  *
  * @author Viktor Kovtun
  */
-public class LocatorTypeSearchManager extends AbstractSearchManager<LocatorTypeSearchCriteria, LocatorType, Long>
+public class LocatorTypeSearchManager extends AbstractLocalSearchManager<LocatorTypeSearchCriteria, LocatorType, Long>
 {
 
     public LocatorTypeSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
@@ -52,7 +52,7 @@ public class LocatorTypeSearchManager extends AbstractSearchManager<LocatorTypeS
 
     @Override
     public Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation,
-            final LocatorTypeSearchCriteria criteria, final SortOptions<LocatorType> sortOptions,
+            final LocatorTypeSearchCriteria criteria,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
         return super.searchForIDs(userId, authorisationInformation, criteria, ID_COLUMN, TableMapper.LOCATOR_TYPES);

@@ -33,7 +33,7 @@ import java.util.Set;
  * 
  * @author Viktor Kovtun
  */
-public class PropertyTypeSearchManager extends AbstractSearchManager<PropertyTypeSearchCriteria, PropertyType, Long>
+public class PropertyTypeSearchManager extends AbstractLocalSearchManager<PropertyTypeSearchCriteria, PropertyType, Long>
 {
 
     public PropertyTypeSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
@@ -50,7 +50,7 @@ public class PropertyTypeSearchManager extends AbstractSearchManager<PropertyTyp
 
     @Override
     public Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation,
-            final PropertyTypeSearchCriteria criteria, final SortOptions<PropertyType> sortOptions,
+            final PropertyTypeSearchCriteria criteria,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
         return super.searchForIDs(userId, authorisationInformation, criteria, idsColumnName, TableMapper.PROPERTY_TYPE);

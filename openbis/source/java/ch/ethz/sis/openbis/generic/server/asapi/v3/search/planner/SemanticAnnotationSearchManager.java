@@ -34,7 +34,7 @@ import java.util.Set;
  * @author Viktor Kovtun
  */
 public class SemanticAnnotationSearchManager extends
-        AbstractSearchManager<SemanticAnnotationSearchCriteria, SemanticAnnotation, Long>
+        AbstractLocalSearchManager<SemanticAnnotationSearchCriteria, SemanticAnnotation, Long>
 {
 
     public SemanticAnnotationSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
@@ -52,7 +52,7 @@ public class SemanticAnnotationSearchManager extends
     @Override
     public Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation,
             final SemanticAnnotationSearchCriteria criteria,
-            final SortOptions<SemanticAnnotation> sortOptions, final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
+            final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
         return super.searchForIDs(userId, authorisationInformation, criteria, idsColumnName, TableMapper.SEMANTIC_ANNOTATION);
     }

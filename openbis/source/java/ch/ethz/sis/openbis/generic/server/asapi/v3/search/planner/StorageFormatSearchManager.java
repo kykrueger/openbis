@@ -35,7 +35,7 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
  *
  * @author Viktor Kovtun
  */
-public class StorageFormatSearchManager extends AbstractSearchManager<StorageFormatSearchCriteria, StorageFormat, Long>
+public class StorageFormatSearchManager extends AbstractLocalSearchManager<StorageFormatSearchCriteria, StorageFormat, Long>
 {
 
     public StorageFormatSearchManager(final ISQLSearchDAO searchDAO,
@@ -54,7 +54,7 @@ public class StorageFormatSearchManager extends AbstractSearchManager<StorageFor
     @Override
     public Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation,
             final StorageFormatSearchCriteria criteria,
-            final SortOptions<StorageFormat> sortOptions, final AbstractCompositeSearchCriteria parentCriteria,
+            final AbstractCompositeSearchCriteria parentCriteria,
             final String idsColumnName)
     {
         return super.searchForIDs(userId, authorisationInformation, criteria, ID_COLUMN, TableMapper.CONTROLLED_VOCABULARY_TERMS);

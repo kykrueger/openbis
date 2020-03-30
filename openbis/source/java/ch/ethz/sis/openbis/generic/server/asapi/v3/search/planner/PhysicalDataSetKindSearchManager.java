@@ -37,7 +37,7 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMap
  *
  * @author Viktor Kovtun
  */
-public class PhysicalDataSetKindSearchManager extends AbstractSearchManager<PhysicalDataSearchCriteria, DataSetType, Long>
+public class PhysicalDataSetKindSearchManager extends AbstractLocalSearchManager<PhysicalDataSearchCriteria, DataSetType, Long>
 {
 
     public PhysicalDataSetKindSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
@@ -54,7 +54,7 @@ public class PhysicalDataSetKindSearchManager extends AbstractSearchManager<Phys
 
     @Override
     public Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation,
-            final PhysicalDataSearchCriteria criteria, final SortOptions<DataSetType> sortOptions,
+            final PhysicalDataSearchCriteria criteria,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
         final SearchOperator searchOperator = criteria.getOperator();

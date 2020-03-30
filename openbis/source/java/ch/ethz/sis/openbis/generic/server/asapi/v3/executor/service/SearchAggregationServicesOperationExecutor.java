@@ -26,7 +26,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.SearchAggregation
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.SearchAggregationServicesOperationResult;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.ISearchObjectExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.SearchObjectsOperationExecutor;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ILocalSearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.AbstractTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.ITranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.TranslationContext;
@@ -66,7 +66,7 @@ public class SearchAggregationServicesOperationExecutor extends
     }
 
     @Override
-    protected ISearchManager<AggregationServiceSearchCriteria, AggregationService, AggregationService> getSearchManager()
+    protected ILocalSearchManager<AggregationServiceSearchCriteria, AggregationService, AggregationService> getSearchManager()
     {
         throw new RuntimeException("This method is not implemented yet.");
     }

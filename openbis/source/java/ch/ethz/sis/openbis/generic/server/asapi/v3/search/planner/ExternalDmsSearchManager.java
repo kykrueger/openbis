@@ -34,7 +34,7 @@ import java.util.Set;
  *
  * @author Viktor Kovtun
  */
-public class ExternalDmsSearchManager extends AbstractSearchManager<ExternalDmsSearchCriteria, ExternalDataManagementSystem, Long>
+public class ExternalDmsSearchManager extends AbstractLocalSearchManager<ExternalDmsSearchCriteria, ExternalDataManagementSystem, Long>
 {
 
     public ExternalDmsSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
@@ -51,7 +51,7 @@ public class ExternalDmsSearchManager extends AbstractSearchManager<ExternalDmsS
 
     @Override
     public Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation,
-            final ExternalDmsSearchCriteria criteria, final SortOptions<ExternalDataManagementSystem> sortOptions,
+            final ExternalDmsSearchCriteria criteria,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
         return super.searchForIDs(userId, authorisationInformation, criteria, ColumnNames.ID_COLUMN, TableMapper.EXTERNAL_DMS);

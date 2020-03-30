@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ILocalSearchManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -129,7 +129,7 @@ public class SearchPropertyAssignmentsOperationExecutor extends
     }
 
     @Override
-    protected ISearchManager<PropertyAssignmentSearchCriteria, PropertyAssignment, EntityTypePropertyTypePE> getSearchManager() {
+    protected ILocalSearchManager<PropertyAssignmentSearchCriteria, PropertyAssignment, EntityTypePropertyTypePE> getSearchManager() {
         throw new RuntimeException("This method is not implemented yet.");
     }
 

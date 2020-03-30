@@ -35,7 +35,7 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
  * 
  * @author Viktor Kovtun
  */
-public class MaterialTypeSearchManager extends AbstractSearchManager<MaterialTypeSearchCriteria, MaterialType, Long>
+public class MaterialTypeSearchManager extends AbstractLocalSearchManager<MaterialTypeSearchCriteria, MaterialType, Long>
 {
 
     public MaterialTypeSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
@@ -52,7 +52,7 @@ public class MaterialTypeSearchManager extends AbstractSearchManager<MaterialTyp
 
     @Override
     public Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation,
-            final MaterialTypeSearchCriteria criteria, final SortOptions<MaterialType> sortOptions, final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName) {
+            final MaterialTypeSearchCriteria criteria, final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName) {
         return super.searchForIDs(userId, authorisationInformation, criteria, ID_COLUMN, TableMapper.MATERIAL_TYPE);
     }
 

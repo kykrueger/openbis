@@ -35,7 +35,7 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
  * @author Viktor Kovtun
  */
 
-public class EntityTypeSearchManager extends AbstractSearchManager<EntityTypeSearchCriteria, Void, Long>
+public class EntityTypeSearchManager extends AbstractLocalSearchManager<EntityTypeSearchCriteria, Void, Long>
 {
 
     public EntityTypeSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
@@ -52,7 +52,7 @@ public class EntityTypeSearchManager extends AbstractSearchManager<EntityTypeSea
 
     @Override
     public Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation,
-            final EntityTypeSearchCriteria criteria, final SortOptions<Void> sortOptions,
+            final EntityTypeSearchCriteria criteria,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName) {
         return super.searchForIDs(userId, authorisationInformation, criteria, ID_COLUMN, TableMapper.DATA_SET_TYPE);
     }

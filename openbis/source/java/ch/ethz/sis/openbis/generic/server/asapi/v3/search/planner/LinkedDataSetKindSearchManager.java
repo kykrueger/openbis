@@ -38,7 +38,7 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.DATA_ID_CO
  *
  * @author Viktor Kovtun
  */
-public class LinkedDataSetKindSearchManager extends AbstractSearchManager<LinkedDataSearchCriteria, DataSetType, Long>
+public class LinkedDataSetKindSearchManager extends AbstractLocalSearchManager<LinkedDataSearchCriteria, DataSetType, Long>
 {
 
     public LinkedDataSetKindSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
@@ -55,7 +55,7 @@ public class LinkedDataSetKindSearchManager extends AbstractSearchManager<Linked
 
     @Override
     public Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation,
-            final LinkedDataSearchCriteria criteria, final SortOptions<DataSetType> sortOptions,
+            final LinkedDataSearchCriteria criteria,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
         final SearchOperator searchOperator = criteria.getOperator();

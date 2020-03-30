@@ -33,7 +33,7 @@ import java.util.Set;
  *
  * @author Viktor Kovtun
  */
-public class ExperimentTypeSearchManager extends AbstractSearchManager<ExperimentTypeSearchCriteria, ExperimentType, Long>
+public class ExperimentTypeSearchManager extends AbstractLocalSearchManager<ExperimentTypeSearchCriteria, ExperimentType, Long>
 {
 
     public ExperimentTypeSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
@@ -51,7 +51,7 @@ public class ExperimentTypeSearchManager extends AbstractSearchManager<Experimen
 
     @Override
     public Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation,
-            final ExperimentTypeSearchCriteria criteria, final SortOptions<ExperimentType> sortOptions,
+            final ExperimentTypeSearchCriteria criteria,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
         return super.searchForIDs(userId, authorisationInformation, criteria, null, TableMapper.EXPERIMENT_TYPE);

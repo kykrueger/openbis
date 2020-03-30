@@ -34,7 +34,7 @@ import java.util.Set;
  *
  * @author Viktor Kovtun
  */
-public class SpaceSearchManager extends AbstractSearchManager<SpaceSearchCriteria, Space, Long>
+public class SpaceSearchManager extends AbstractLocalSearchManager<SpaceSearchCriteria, Space, Long>
 {
 
     public SpaceSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
@@ -51,7 +51,7 @@ public class SpaceSearchManager extends AbstractSearchManager<SpaceSearchCriteri
 
     @Override
     public Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation, final SpaceSearchCriteria criteria,
-            final SortOptions<Space> sortOptions,
+
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
         final Set<Long> mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId, criteria, TableMapper.SPACE,

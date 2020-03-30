@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
  *
  * @author Viktor Kovtun
  */
-public class TagSearchManager extends AbstractSearchManager<TagSearchCriteria, Tag, Long>
+public class TagSearchManager extends AbstractLocalSearchManager<TagSearchCriteria, Tag, Long>
 {
 
     public TagSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
@@ -58,7 +58,6 @@ public class TagSearchManager extends AbstractSearchManager<TagSearchCriteria, T
 
     @Override
     public Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation, final TagSearchCriteria criteria,
-            final SortOptions<Tag> sortOptions,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
         // Replacing perm ID and code search criteria with name search criteria, because for tags perm ID and code are equivalent to name

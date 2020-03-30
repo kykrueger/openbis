@@ -33,7 +33,7 @@ import java.util.Set;
  *
  * @author Viktor Kovtun
  */
-public class DataSetTypeSearchManager extends AbstractSearchManager<DataSetTypeSearchCriteria, DataSetType, Long>
+public class DataSetTypeSearchManager extends AbstractLocalSearchManager<DataSetTypeSearchCriteria, DataSetType, Long>
 {
 
     public DataSetTypeSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
@@ -51,7 +51,7 @@ public class DataSetTypeSearchManager extends AbstractSearchManager<DataSetTypeS
 
     @Override
     public Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation,
-            final DataSetTypeSearchCriteria criteria, final SortOptions<DataSetType> sortOptions,
+            final DataSetTypeSearchCriteria criteria,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
         return super.searchForIDs(userId, authorisationInformation, criteria, null, TableMapper.DATA_SET_TYPE);

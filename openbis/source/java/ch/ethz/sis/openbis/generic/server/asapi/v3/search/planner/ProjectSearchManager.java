@@ -33,7 +33,7 @@ import java.util.Set;
  *
  * @author Viktor Kovtun
  */
-public class ProjectSearchManager extends AbstractSearchManager<ProjectSearchCriteria, Project, Long>
+public class ProjectSearchManager extends AbstractLocalSearchManager<ProjectSearchCriteria, Project, Long>
 {
 
     public ProjectSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
@@ -50,7 +50,7 @@ public class ProjectSearchManager extends AbstractSearchManager<ProjectSearchCri
 
     @Override
     public Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation, final ProjectSearchCriteria criteria,
-            final SortOptions<Project> sortOptions,
+
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
         return super.searchForIDs(userId, authorisationInformation, criteria, idsColumnName, TableMapper.PROJECT);

@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.*;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ILocalSearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.RoleAssignmentPE;
@@ -52,6 +53,8 @@ public abstract class AbstractSearchObjectsOperationExecutor<OBJECT, OBJECT_PE, 
         implements ISearchObjectsOperationExecutor
 {
 
+    private static final String[] SORTS_TO_IGNORE = new String[] { EntityWithPropertiesSortOptions.FETCHED_FIELDS_SCORE };
+
     private final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION, getClass());
 
     @Autowired
@@ -63,7 +66,7 @@ public abstract class AbstractSearchObjectsOperationExecutor<OBJECT, OBJECT_PE, 
 
     protected abstract SearchObjectsOperationResult<OBJECT> getOperationResult(SearchResult<OBJECT> searchResult);
 
-    protected abstract ISearchManager<CRITERIA, OBJECT, OBJECT_PE> getSearchManager();
+    protected abstract ILocalSearchManager<CRITERIA, OBJECT, OBJECT_PE> getSearchManager();
 
     @Override
     protected SearchObjectsOperationResult<OBJECT> doExecute(IOperationContext context, SearchObjectsOperation<CRITERIA, FETCH_OPTIONS> operation)
@@ -233,16 +236,14 @@ public abstract class AbstractSearchObjectsOperationExecutor<OBJECT, OBJECT_PE, 
                 .map((roleAssignmentPE) -> roleAssignmentPE.getSpace().getId()).collect(Collectors.toSet());
         final Set<Long> projectIds = personPE.getAllPersonRoles().stream().filter((roleAssignmentPE) -> roleAssignmentPE.getProject() != null)
                 .map((roleAssignmentPE) -> roleAssignmentPE.getProject().getId()).collect(Collectors.toSet());
-
         final AuthorisationInformation authorisationInformation = new AuthorisationInformation(!personPE.getRoleAssignments().isEmpty(),
                 spaceIds, projectIds);
 
         final Long userId = personPE.getId();
         final TranslationContext translationContext = new TranslationContext(context.getSession());
-        final SortOptions<OBJECT> sortOptions = fetchOptions.getSortBy();
 
         // There results from the manager should already be filtered.
-        final Set<Long> allResultsIds = getSearchManager().searchForIDs(userId, authorisationInformation, criteria, sortOptions, null, ID_COLUMN);
+        final Set<Long> allResultsIds = getSearchManager().searchForIDs(userId, authorisationInformation, criteria, null, ID_COLUMN);
         final List<Long> sortedAndPagedResultIds = sortAndPage(allResultsIds, fetchOptions);
         final List<OBJECT_PE> sortedAndPagedResultPEs = getSearchManager().translate(sortedAndPagedResultIds);
         final Map<OBJECT_PE, OBJECT> sortedAndPagedResultV3DTOs = doTranslate(translationContext, sortedAndPagedResultPEs, fetchOptions);
@@ -254,7 +255,7 @@ public abstract class AbstractSearchObjectsOperationExecutor<OBJECT, OBJECT_PE, 
         return getOperationResult(searchResult);
     }
 
-    private List<OBJECT> getSortedFinalResults(final CRITERIA criteria, final FETCH_OPTIONS fetchOptions, final List<OBJECT> finalResults)
+    protected List<OBJECT> getSortedFinalResults(final CRITERIA criteria, final FETCH_OPTIONS fetchOptions, final List<OBJECT> finalResults)
     {
         // No paging is needed, the result should just be sorted.
         final Integer from = fetchOptions.getFrom();
@@ -267,9 +268,7 @@ public abstract class AbstractSearchObjectsOperationExecutor<OBJECT, OBJECT_PE, 
         return sortedFinalResults;
     }
 
-    String[] sortsToIgnore = new String[] { EntityWithPropertiesSortOptions.FETCHED_FIELDS_SCORE };
-
-    private List<Long> sortAndPage(final Set<Long> ids, final FetchOptions fo)
+    protected List<Long> sortAndPage(final Set<Long> ids, final FetchOptions<OBJECT> fo)
     {
         //
         // Filter out sorts to ignore
@@ -279,8 +278,8 @@ public abstract class AbstractSearchObjectsOperationExecutor<OBJECT, OBJECT_PE, 
 
         if (sortOptions != null) {
             List<Sorting> sortingToRemove = new ArrayList<>();
-            for (Sorting sorting:sortOptions.getSortings()) {
-                for (String sortToIgnore:sortsToIgnore) {
+            for (Sorting sorting : sortOptions.getSortings()) {
+                for (String sortToIgnore : SORTS_TO_IGNORE) {
                     if (sorting.getField().equals(sortToIgnore)) {
                         sortingToRemove.add(sorting);
                     }

@@ -40,7 +40,7 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PROPERTY_T
  * @author Viktor Kovtun
  */
 public class PropertyAssignmentSearchManager extends
-        AbstractSearchManager<PropertyAssignmentSearchCriteria, PropertyAssignment, Long>
+        AbstractLocalSearchManager<PropertyAssignmentSearchCriteria, PropertyAssignment, Long>
 {
 
     private IPropertyAssignmentSearchDAO assignmentsSearchDAO;
@@ -60,7 +60,7 @@ public class PropertyAssignmentSearchManager extends
 
     @Override
     public Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation,
-            final PropertyAssignmentSearchCriteria criteria, final SortOptions<PropertyAssignment> sortOptions,
+            final PropertyAssignmentSearchCriteria criteria,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
         // TODO: not always related to samples.

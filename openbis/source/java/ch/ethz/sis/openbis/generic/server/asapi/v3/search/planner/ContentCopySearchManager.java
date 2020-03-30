@@ -34,7 +34,7 @@ import java.util.Set;
  *
  * @author Viktor Kovtun
  */
-public class ContentCopySearchManager extends AbstractSearchManager<ContentCopySearchCriteria, ContentCopy, Long>
+public class ContentCopySearchManager extends AbstractLocalSearchManager<ContentCopySearchCriteria, ContentCopy, Long>
 {
 
     public ContentCopySearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
@@ -51,7 +51,7 @@ public class ContentCopySearchManager extends AbstractSearchManager<ContentCopyS
 
     @Override
     public Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation,
-            final ContentCopySearchCriteria criteria, final SortOptions<ContentCopy> sortOptions,
+            final ContentCopySearchCriteria criteria,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
         return super.searchForIDs(userId, authorisationInformation, criteria, ColumnNames.ID_COLUMN, TableMapper.CONTENT_COPIES);

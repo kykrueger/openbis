@@ -72,7 +72,7 @@ public class MaterialSearchManager extends AbstractCompositeEntitySearchManager<
 
     @Override
     public Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation,
-            final MaterialSearchCriteria criteria, final SortOptions<Material> sortOptions,
+            final MaterialSearchCriteria criteria,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName) {
         if (criteria.getCriteria().stream().anyMatch((criterion) -> criterion instanceof PermIdSearchCriteria))
         {

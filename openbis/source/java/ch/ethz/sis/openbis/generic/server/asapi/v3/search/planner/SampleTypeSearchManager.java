@@ -33,7 +33,7 @@ import java.util.Set;
  *
  * @author Viktor Kovtun
  */
-public class SampleTypeSearchManager extends AbstractSearchManager<SampleTypeSearchCriteria, SampleType, Long>
+public class SampleTypeSearchManager extends AbstractLocalSearchManager<SampleTypeSearchCriteria, SampleType, Long>
 {
 
     public SampleTypeSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
@@ -51,7 +51,7 @@ public class SampleTypeSearchManager extends AbstractSearchManager<SampleTypeSea
 
     @Override
     public Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation, final SampleTypeSearchCriteria criteria,
-            final SortOptions<SampleType> sortOptions,
+
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
         return super.searchForIDs(userId, authorisationInformation, criteria, idsColumnName, TableMapper.SAMPLE_TYPE);

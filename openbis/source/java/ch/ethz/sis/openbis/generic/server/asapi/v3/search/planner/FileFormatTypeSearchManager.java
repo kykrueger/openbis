@@ -35,7 +35,7 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
  *
  * @author Viktor Kovtun
  */
-public class FileFormatTypeSearchManager extends AbstractSearchManager<FileFormatTypeSearchCriteria, FileFormatType, Long>
+public class FileFormatTypeSearchManager extends AbstractLocalSearchManager<FileFormatTypeSearchCriteria, FileFormatType, Long>
 {
 
     public FileFormatTypeSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
@@ -52,7 +52,7 @@ public class FileFormatTypeSearchManager extends AbstractSearchManager<FileForma
 
     @Override
     public Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation,
-            final FileFormatTypeSearchCriteria criteria, final SortOptions<FileFormatType> sortOptions,
+            final FileFormatTypeSearchCriteria criteria,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
         return super.searchForIDs(userId, authorisationInformation, criteria, ID_COLUMN, TableMapper.FILE_FORMAT_TYPES);

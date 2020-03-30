@@ -1,3 +1,19 @@
+/*
+ * Copyright 2011 ETH Zuerich, CISD
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
@@ -8,48 +24,39 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-public abstract class AbstractSearchManager<OBJECT> implements ISearchManager<OBJECT>
+/**
+ * Manages detailed search with complex search criteria.
+ *
+ * @author Viktor Kovtun
+ */
+public abstract class AbstractLocalSearchManager<CRITERIA extends ISearchCriteria, OBJECT, OBJECT_PE> extends AbstractSearchManager<OBJECT>
+        implements ILocalSearchManager<CRITERIA, OBJECT, OBJECT_PE>
 {
 
-    protected final ISQLAuthorisationInformationProviderDAO authProvider;
+    private final IID2PETranslator<OBJECT_PE> idsTranslator;
 
-    private final ISQLSearchDAO searchDAO;
-
-    public AbstractSearchManager(final ISQLAuthorisationInformationProviderDAO authProvider, final ISQLSearchDAO searchDAO)
+    public AbstractLocalSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
+            final IID2PETranslator<OBJECT_PE> idsTranslator)
     {
-        this.authProvider = authProvider;
-        this.searchDAO = searchDAO;
+        super(authProvider, searchDAO);
+        this.idsTranslator = idsTranslator;
     }
 
-    /**
-     * Checks whether a collection contains any values.
-     *
-     * @param collection collection to be checked for values.
-     * @return {@code false} if collection is {@code null} or empty, true otherwise.
-     */
-    protected static boolean containsValues(final Collection<?> collection)
+    protected List<ISearchCriteria> getOtherCriteriaThan(final AbstractCompositeSearchCriteria searchCriteria,
+            final Class<? extends ISearchCriteria>... classes)
     {
-        return collection != null && !collection.isEmpty();
-    }
+        final List<ISearchCriteria> criteria = searchCriteria.getCriteria().stream().filter(
+                criterion -> Arrays.stream(classes).noneMatch(clazz -> clazz.isInstance(criterion))).
+                collect(Collectors.toList());
 
-    @Override
-    public Set<Long> filterIDsByUserRights(final Long userId, final AuthorisationInformation authorisationInformation, final Set<Long> ids)
-    {
-        if (authorisationInformation.isInstanceRole())
-        {
-            return ids;
-        } else
-        {
-            return doFilterIDsByUserRights(ids, authorisationInformation);
-        }
+        return criteria;
     }
-
-    protected abstract Set<Long> doFilterIDsByUserRights(final Set<Long> ids, final AuthorisationInformation authorisationInformation);
 
     protected List<ISearchCriteria> getCriteria(
             AbstractCompositeSearchCriteria compositeSearchCriteria, Class<? extends ISearchCriteria> clazz)
@@ -79,17 +86,11 @@ public abstract class AbstractSearchManager<OBJECT> implements ISearchManager<OB
         switch (operator)
         {
             case AND:
-            {
                 return intersection(intermediateResults);
-            }
             case OR:
-            {
                 return union(intermediateResults);
-            }
             default:
-            {
                 throw new IllegalArgumentException("Unexpected value for search operator: " + operator);
-            }
         }
     }
 
@@ -139,14 +140,8 @@ public abstract class AbstractSearchManager<OBJECT> implements ISearchManager<OB
         return smallestSet;
     }
 
-    protected ISQLSearchDAO getSearchDAO()
-    {
-        return searchDAO;
-    }
-
-    protected ISQLAuthorisationInformationProviderDAO getAuthProvider()
-    {
-        return authProvider;
+    public List<OBJECT_PE> translate(final List<Long> ids) {
+        return idsTranslator.translate(ids);
     }
 
     protected Set<Long> doSortIDs(final Set<Long> filteredIDs, final SortOptions<OBJECT> sortOptions, final TableMapper tableMapper)
@@ -176,8 +171,7 @@ public abstract class AbstractSearchManager<OBJECT> implements ISearchManager<OB
         return filterIDsByUserRights(userId, authorisationInformation, resultBeforeFiltering);
     }
 
-    protected Set<Long> searchForIDsByCriteriaCollection(final Long userId, final AuthorisationInformation authorisationInformation,
-            final Collection<ISearchCriteria> criteria, final SearchOperator finalSearchOperator, final TableMapper tableMapper,
+    protected Set<Long> searchForIDsByCriteriaCollection(final Long userId, final AuthorisationInformation authorisationInformation, final Collection<ISearchCriteria> criteria, final SearchOperator finalSearchOperator, final TableMapper tableMapper,
             final String idsColumnName)
     {
         if (!criteria.isEmpty())

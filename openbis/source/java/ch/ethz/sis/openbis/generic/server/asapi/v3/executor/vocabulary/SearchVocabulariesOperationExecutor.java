@@ -16,7 +16,7 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.vocabulary;
 
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ILocalSearchManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -75,7 +75,7 @@ public class SearchVocabulariesOperationExecutor
     }
 
     @Override
-    protected ISearchManager<VocabularySearchCriteria, Vocabulary, Long> getSearchManager() {
+    protected ILocalSearchManager<VocabularySearchCriteria, Vocabulary, Long> getSearchManager() {
         throw new RuntimeException("This method is not implemented yet.");
     }
 

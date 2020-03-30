@@ -16,27 +16,29 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
+import java.util.Set;
+
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
 
-import java.util.Set;
-
-public interface ISearchManager<OBJECT>
+public interface ILocalSearchManager<CRITERIA extends ISearchCriteria, OBJECT, OBJECT_PE> extends ISearchManager<OBJECT>, IID2PETranslator<OBJECT_PE>
 {
 
     /**
-     * Filters IDs of certain
+     * Searches for entities using certain criteria.
      *
-     * @param userId
-     * @param authorisationInformation
-     * @param ids
-     * @return
+     * @param userId ID of requesting user.
+     * @param authorisationInformation authorisation information of requesting user.
+     * @param criteria search criteria.
+     * @param parentCriteria parent criteria (if there is one) to {@code criteria}.
+     * @param idsColumnName name of the column to select the ID's by; usually the
+     * {@link ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN}.
+     * @return set of IDs of found entities.
      */
-    Set<Long> filterIDsByUserRights(Long userId, final AuthorisationInformation authorisationInformation, Set<Long> ids);
-
-    Set<Long> sortIDs(Set<Long> filteredIDs, SortOptions<OBJECT> sortOptions);
+    Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation, final CRITERIA criteria,
+            final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName);
 
 }
