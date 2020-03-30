@@ -1196,13 +1196,6 @@ define([ 'jquery', 'openbis', 'underscore', 'test/dtos' ], function($, defaultOp
 			return fo;
 		};
 
-		this.createPropertyTypeFetchOptions = function() {
-			var fo = new dtos.PropertyTyüeFetchOptions();
-			fo.withVocabulary();
-			fo.withMaterialType();
-			return fo;
-		};
-
 		this.createPluginFetchOptions = function() {
 			var fo = new dtos.PluginFetchOptions();
 			fo.withScript();
@@ -1280,6 +1273,7 @@ define([ 'jquery', 'openbis', 'underscore', 'test/dtos' ], function($, defaultOp
 			var fo = new dtos.PropertyTypeFetchOptions();
 			fo.withVocabulary();
 			fo.withMaterialType();
+			fo.withSampleType();
 			fo.withSemanticAnnotations();
 			fo.withRegistrator();
 			return fo;

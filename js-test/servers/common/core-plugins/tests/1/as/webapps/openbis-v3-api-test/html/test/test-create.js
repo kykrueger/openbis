@@ -500,6 +500,35 @@ define(
 					testCreate(c, fCreate, c.findPropertyType, fCheck);
 				});
 
+				QUnit.test("createPropertyType() with data type SAMPLE", function(assert) {
+					var c = new common(assert, openbis);
+					var code = c.generateId("PROPERTY_TYPE");
+					var metaData = {"greetings" : "hello test"};
+					
+					var fCreate = function(facade) {
+						var creation = new c.PropertyTypeCreation();
+						creation.setCode(code);
+						creation.setDescription("hello");
+						creation.setDataType(c.DataType.SAMPLE);
+						creation.setLabel("Test Property Type");
+						creation.setMetaData(metaData);
+						creation.setSampleTypeId(new c.EntityTypePermId("UNKNOWN", "SAMPLE"));
+						return facade.createPropertyTypes([ creation ]);
+					}
+					
+					var fCheck = function(type) {
+						c.assertEqual(type.getCode(), code, "Type code");
+						c.assertEqual(type.getPermId().getPermId(), code, "Type perm id");
+						c.assertEqual(type.getLabel(), "Test Property Type", "Label");
+						c.assertEqual(type.getDescription(), "hello", "Description");
+						c.assertEqual(type.getDataType(), c.DataType.SAMPLE, "Data type");
+						c.assertEqual(type.getMetaData().toString(), metaData, "Meta data");
+						c.assertEqual(type.getSampleType().toString(), "UNKNOWN", "Sample type");
+					}
+					
+					testCreate(c, fCreate, c.findPropertyType, fCheck);
+				});
+				
 				QUnit.test("createPlugins()", function(assert) {
 					var c = new common(assert, openbis);
 					var name = c.generateId("PLUGIN");
