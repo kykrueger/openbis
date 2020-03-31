@@ -1337,4 +1337,5 @@ ALTER TABLE ONLY sample_type_property_types
 ALTER TABLE ONLY sample_type_property_types
     ADD CONSTRAINT stpt_script_fk FOREIGN KEY (script_id) REFERENCES scripts(id);
 GRANT SELECT ON TABLE operation_executions TO openbis_readonly;
-
+REVOKE ALL ON SCHEMA public FROM postgres;
+GRANT ALL ON SCHEMA public TO postgres;
