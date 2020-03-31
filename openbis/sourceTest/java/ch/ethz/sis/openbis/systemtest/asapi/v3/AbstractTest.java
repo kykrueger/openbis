@@ -86,8 +86,11 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.OperationExecution;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.Person;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.fetchoptions.ProjectFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.create.PropertyTypeCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.Query;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.RoleAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
@@ -1434,6 +1437,16 @@ public class AbstractTest extends SystemTestCase
         {
             fail("Event registration date " + event.getRegistrationDate() + " is more than 2 seconds in the past.");
         }
+    }
+
+    protected PropertyTypePermId createAPropertyType(String sessionToken, DataType dataType)
+    {
+        PropertyTypeCreation creation = new PropertyTypeCreation();
+        creation.setCode("TYPE-" + System.currentTimeMillis());
+        creation.setDataType(dataType);
+        creation.setLabel("label");
+        creation.setDescription("description");
+        return v3api.createPropertyTypes(sessionToken, Arrays.asList(creation)).get(0);
     }
 
     protected static List<MethodWrapper> getFreezingMethods(Class<?> clazz)

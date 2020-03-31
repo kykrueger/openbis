@@ -70,12 +70,10 @@ public class UpdateEntityPropertyExecutor implements IUpdateEntityPropertyExecut
                     @Override
                     public Map<String, ISampleId> apply(IPropertiesHolder entity)
                     {
-                        System.out.println("======>>1 " + entity);
                         if (entity instanceof ISamplePropertiesHolder == false)
                         {
                             return null;
                         }
-                        System.out.println("======>>2 " + entity);
                         return ((ISamplePropertiesHolder) entity).getSampleProperties();
                     }
                 };
