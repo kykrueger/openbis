@@ -33,5 +33,7 @@ public class PropertyRecord
     public String materialPropertyValueTypeCode;
 
     public String vocabularyPropertyValue;
+    
+    public String sample_perm_id;
 
 }

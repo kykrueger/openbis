@@ -65,6 +65,9 @@ public abstract class PropertyTranslator extends AbstractCachingTranslator<Long,
             } else if (record.vocabularyPropertyValue != null)
             {
                 objectProperties.put(record.propertyCode, record.vocabularyPropertyValue);
+            } else if (record.sample_perm_id != null)
+            {
+                objectProperties.put(record.propertyCode, record.sample_perm_id);
             } else
             {
                 throw new IllegalArgumentException("Unsupported property kind");

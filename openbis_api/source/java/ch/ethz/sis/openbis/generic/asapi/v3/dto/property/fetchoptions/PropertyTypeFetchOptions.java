@@ -186,6 +186,7 @@ public class PropertyTypeFetchOptions extends FetchOptions<PropertyType> impleme
         FetchOptionsToStringBuilder f = new FetchOptionsToStringBuilder("PropertyType", this);
         f.addFetchOption("Vocabulary", vocabulary);
         f.addFetchOption("MaterialType", materialType);
+        f.addFetchOption("SampleType", sampleType);
         f.addFetchOption("SemanticAnnotations", semanticAnnotations);
         f.addFetchOption("Registrator", registrator);
         return f;
