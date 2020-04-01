@@ -201,13 +201,16 @@ public class SearchSpaceTest extends AbstractTest
 
         if (user.isInstanceUser())
         {
+            assertEquals(result.getTotalCount(), 2);
             assertEquals(result.getObjects().size(), 2);
         } else if ((user.isTestSpaceUser() || user.isTestProjectUser()) && !user.isDisabledProjectUser())
         {
+            assertEquals(result.getTotalCount(), 1);
             assertEquals(result.getObjects().size(), 1);
             assertEquals(result.getObjects().get(0).getPermId(), permId2);
         } else
         {
+            assertEquals(result.getTotalCount(), 0);
             assertEquals(result.getObjects().size(), 0);
         }
 
