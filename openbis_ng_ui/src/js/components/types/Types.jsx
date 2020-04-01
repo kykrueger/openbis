@@ -5,6 +5,9 @@ import pages from '@src/js/common/consts/pages.js'
 import objectType from '@src/js/common/consts/objectType.js'
 
 import Content from '@src/js/components/common/content/Content.jsx'
+import ContentNewObjectTab from '@src/js/components/common/content/ContentNewObjectTab.jsx'
+import ContentObjectTab from '@src/js/components/common/content/ContentObjectTab.jsx'
+import ContentSearchTab from '@src/js/components/common/content/ContentSearchTab.jsx'
 
 import TypesBrowser from './browser/TypesBrowser.jsx'
 import ObjectType from './objectType/ObjectType.jsx'
@@ -20,14 +23,6 @@ const styles = () => ({
   }
 })
 
-const objectTypeToComponent = {
-  [objectType.OBJECT_TYPE]: ObjectType,
-  [objectType.COLLECTION_TYPE]: CollectionType,
-  [objectType.DATA_SET_TYPE]: DataSetType,
-  [objectType.MATERIAL_TYPE]: MaterialType,
-  [objectType.SEARCH]: Search
-}
-
 class Types extends React.Component {
   render() {
     logger.log(logger.DEBUG, 'Types.render')
@@ -39,10 +34,46 @@ class Types extends React.Component {
         <TypesBrowser />
         <Content
           page={pages.TYPES}
-          objectTypeToComponent={objectTypeToComponent}
+          renderComponent={this.renderComponent}
+          renderTab={this.renderTab}
         />
       </div>
     )
+  }
+
+  renderComponent(object) {
+    if (object.type === objectType.OBJECT_TYPE) {
+      return <ObjectType objectId={object.id} />
+    } else if (object.type === objectType.COLLECTION_TYPE) {
+      return <CollectionType objectId={object.id} />
+    } else if (object.type === objectType.DATA_SET_TYPE) {
+      return <DataSetType objectId={object.id} />
+    } else if (object.type === objectType.MATERIAL_TYPE) {
+      return <MaterialType objectId={object.id} />
+    } else if (object.type === objectType.SEARCH) {
+      return <Search objectId={object.id} />
+    }
+  }
+
+  renderTab(object, changed) {
+    if (
+      object.type === objectType.OBJECT_TYPE ||
+      object.type === objectType.COLLECTION_TYPE ||
+      object.type === objectType.DATA_SET_TYPE ||
+      object.type === objectType.MATERIAL_TYPE
+    ) {
+      return <ContentObjectTab object={object} changed={changed} />
+    } else if (object.type === objectType.NEW_OBJECT_TYPE) {
+      return <ContentNewObjectTab name='New Object Type' object={object} />
+    } else if (object.type === objectType.NEW_COLLECTION_TYPE) {
+      return <ContentNewObjectTab name='New Collection Type' object={object} />
+    } else if (object.type === objectType.NEW_DATA_SET_TYPE) {
+      return <ContentNewObjectTab name='New Data Set Type' object={object} />
+    } else if (object.type === objectType.NEW_MATERIAL_TYPE) {
+      return <ContentNewObjectTab name='New Material Type' object={object} />
+    } else if (object.type === objectType.SEARCH) {
+      return <ContentSearchTab object={object} />
+    }
   }
 }
 

@@ -10,6 +10,7 @@ import selectors from '@src/js/store/selectors/selectors.js'
 import logger from '@src/js/common/logger.js'
 
 import BrowserNodes from './BrowserNodes.jsx'
+import BrowserButtons from './BrowserButtons.jsx'
 
 const styles = {
   resizable: {
@@ -97,6 +98,11 @@ class Browser extends React.PureComponent {
               level={0}
             />
           </div>
+          <BrowserButtons
+            controller={controller}
+            addEnabled={controller.isAddEnabled()}
+            removeEnabled={controller.isRemoveEnabled()}
+          />
         </Paper>
       </Resizable>
     )

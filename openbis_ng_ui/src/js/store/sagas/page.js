@@ -10,6 +10,7 @@ export default function* pageSaga() {
   yield takeEvery(actions.OBJECT_OPEN, objectOpen)
   yield takeEvery(actions.OBJECT_CHANGE, objectChange)
   yield takeEvery(actions.OBJECT_CLOSE, objectClose)
+  yield takeEvery(actions.OBJECT_NEW, objectNew)
   yield takeEvery(actions.ROUTE_CHANGE, routeChange)
 }
 
@@ -66,6 +67,22 @@ function* objectClose(action) {
     let route = routes.format({ page })
     yield put(actions.routeChange(route))
   }
+}
+
+function* objectNew(action) {
+  const { page, type } = action.payload
+
+  let id = 1
+
+  const openObjects = yield select(selectors.getOpenObjects, page)
+  openObjects.forEach(openObject => {
+    if (openObject.type === type) {
+      id++
+    }
+  })
+
+  const route = routes.format({ page, type, id })
+  yield put(actions.routeChange(route))
 }
 
 function* routeChange(action) {

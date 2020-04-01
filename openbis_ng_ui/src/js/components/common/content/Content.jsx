@@ -66,9 +66,10 @@ class Content extends React.Component {
           selectedObject={this.props.selectedObject}
           objectSelect={this.props.objectSelect}
           objectClose={this.props.objectClose}
+          renderTab={this.props.renderTab}
         />
         {this.props.openObjects.map(object => {
-          let ObjectComponent = this.props.objectTypeToComponent[object.type]
+          let ObjectComponent = this.props.renderComponent(object)
           if (ObjectComponent) {
             let key = object.type + '/' + object.id
             let visible = _.isEqual(object, this.props.selectedObject)
@@ -80,9 +81,7 @@ class Content extends React.Component {
                   visible ? classes.visible : classes.hidden
                 )}
               >
-                <ErrorBoundary>
-                  <ObjectComponent objectId={object.id} />
-                </ErrorBoundary>
+                <ErrorBoundary>{ObjectComponent}</ErrorBoundary>
               </div>
             )
           }

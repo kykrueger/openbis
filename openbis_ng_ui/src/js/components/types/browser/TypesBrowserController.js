@@ -2,6 +2,7 @@ import _ from 'lodash'
 import openbis from '@src/js/services/openbis.js'
 import pages from '@src/js/common/consts/pages.js'
 import objectType from '@src/js/common/consts/objectType.js'
+import actions from '@src/js/store/actions/actions.js'
 import BrowserController from '@src/js/components/common/browser/BrowserController.js'
 
 export default class TypesBrowserController extends BrowserController {
@@ -59,26 +60,56 @@ export default class TypesBrowserController extends BrowserController {
         {
           id: 'objectTypes',
           text: 'Object Types',
-          children: objectTypeNodes
+          children: objectTypeNodes,
+          childrenType: objectType.NEW_OBJECT_TYPE
         },
         {
           id: 'collectionTypes',
           text: 'Collection Types',
-          children: collectionTypeNodes
+          children: collectionTypeNodes,
+          childrenType: objectType.NEW_COLLECTION_TYPE
         },
         {
           id: 'dataSetTypes',
           text: 'Data Set Types',
-          children: dataSetTypeNodes
+          children: dataSetTypeNodes,
+          childrenType: objectType.NEW_DATA_SET_TYPE
         },
         {
           id: 'materialTypes',
           text: 'Material Types',
-          children: materialTypeNodes
+          children: materialTypeNodes,
+          childrenType: objectType.NEW_MATERIAL_TYPE
         }
       ]
 
       return nodes
     })
+  }
+
+  nodeAdd() {
+    if (!this.isAddEnabled()) {
+      return
+    }
+
+    const selectedNode = this.getSelectedNode()
+
+    if (selectedNode && selectedNode.childrenType) {
+      this.context.dispatch(
+        actions.objectNew(this.getPage(), selectedNode.childrenType)
+      )
+    }
+  }
+
+  nodeRemove() {
+    if (!this.isRemoveEnabled()) {
+      return
+    }
+
+    const selectedNode = this.getSelectedNode()
+
+    if (selectedNode && selectedNode.object) {
+      alert('Object remove')
+    }
   }
 }

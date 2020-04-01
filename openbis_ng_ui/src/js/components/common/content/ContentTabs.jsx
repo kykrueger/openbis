@@ -4,7 +4,6 @@ import { withStyles } from '@material-ui/core/styles'
 import Tabs from '@material-ui/core/Tabs'
 import Tab from '@material-ui/core/Tab'
 import CloseIcon from '@material-ui/icons/Close'
-import objectTypes from '@src/js/common/consts/objectType.js'
 import logger from '@src/js/common/logger.js'
 
 const styles = theme => ({
@@ -69,21 +68,10 @@ class ContentTabs extends React.Component {
   }
 
   renderLabel(object) {
-    let changed = _.find(this.props.changedObjects, object) ? '*' : ''
-    let label = null
-
-    switch (object.type) {
-      case objectTypes.SEARCH:
-        label = 'search: ' + object.id
-        break
-      default:
-        label = object.id + changed
-        break
-    }
-
+    let changed = _.find(this.props.changedObjects, object)
     return (
       <span className={this.props.classes.tabLabel}>
-        {label}
+        {this.props.renderTab(object, changed)}
         {this.renderIcon(object)}
       </span>
     )

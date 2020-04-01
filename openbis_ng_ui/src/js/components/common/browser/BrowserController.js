@@ -27,6 +27,14 @@ export default class BrowserController {
     throw 'Method not implemented'
   }
 
+  nodeAdd() {
+    throw 'Method not implemented'
+  }
+
+  nodeRemove() {
+    throw 'Method not implemented'
+  }
+
   load() {
     return this.loadNodes().then(nodes => {
       this._sortNodes(nodes)
@@ -199,6 +207,28 @@ export default class BrowserController {
     }
 
     return _createNodes(loadedNodes)
+  }
+
+  getSelectedNode() {
+    const { loadedNodes, selectedIds } = this.context.getState()
+
+    let selectedNode = null
+    this._visitNodes(loadedNodes, node => {
+      if (!selectedNode && selectedIds[node.id]) {
+        selectedNode = node
+      }
+    })
+    return selectedNode
+  }
+
+  isAddEnabled() {
+    const selectedNode = this.getSelectedNode()
+    return selectedNode && !selectedNode.object
+  }
+
+  isRemoveEnabled() {
+    const selectedNode = this.getSelectedNode()
+    return selectedNode && selectedNode.object
   }
 
   _sortNodes = (nodes, level = 0) => {
