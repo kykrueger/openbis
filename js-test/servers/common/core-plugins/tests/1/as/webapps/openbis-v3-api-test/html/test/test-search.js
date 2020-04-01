@@ -173,9 +173,13 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 
 			var fo = c.createSpaceFetchOptions();
 
-			testSearchWithPagingAndSortingByAll(c, function(facade) {
+			testSearchWithPagingAndSorting(c, function (facade) {
 				return facade.searchSpaces(criteria, fo);
-			}, fo);
+			}, fo, "code").then(function () {
+				testSearchWithPagingAndSorting(c, function (facade) {
+					return facade.searchSpaces(criteria, fo);
+				}, fo, "registrationDate");
+			});
 		});
 
 		QUnit.test("searchProjects()", function(assert) {
