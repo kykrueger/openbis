@@ -77,6 +77,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.DataStore;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.Deletion;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.id.IDeletionId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.HistoryEntry;
@@ -89,11 +91,13 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.fetchoptions.ProjectFetc
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.create.PropertyAssignmentCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.create.PropertyTypeCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.Query;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.RoleAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleTypeCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.SemanticAnnotation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.Tag;
@@ -1447,6 +1451,33 @@ public class AbstractTest extends SystemTestCase
         creation.setLabel("label");
         creation.setDescription("description");
         return v3api.createPropertyTypes(sessionToken, Arrays.asList(creation)).get(0);
+    }
+
+    protected PropertyTypePermId createASamplePropertyType(String sessionToken, IEntityTypeId sampleTypeId)
+    {
+        PropertyTypeCreation creation = new PropertyTypeCreation();
+        creation.setCode("TYPE-" + System.currentTimeMillis());
+        creation.setDataType(DataType.SAMPLE);
+        creation.setSampleTypeId(sampleTypeId);
+        creation.setLabel("label");
+        creation.setDescription("description");
+        return v3api.createPropertyTypes(sessionToken, Arrays.asList(creation)).get(0);
+    }
+
+    protected EntityTypePermId createASampleType(String sessionToken, boolean mandatory, PropertyTypePermId... propertyTypes)
+    {
+        SampleTypeCreation creation = new SampleTypeCreation();
+        creation.setCode("SAMPLE-TYPE-" + System.currentTimeMillis());
+        List<PropertyAssignmentCreation> assignments = new ArrayList<>();
+        for (PropertyTypePermId propertyType : propertyTypes)
+        {
+            PropertyAssignmentCreation propertyAssignmentCreation = new PropertyAssignmentCreation();
+            propertyAssignmentCreation.setPropertyTypeId(propertyType);
+            propertyAssignmentCreation.setMandatory(mandatory);
+            assignments.add(propertyAssignmentCreation);
+        }
+        creation.setPropertyAssignments(assignments);
+        return v3api.createSampleTypes(sessionToken, Arrays.asList(creation)).get(0);
     }
 
     protected static List<MethodWrapper> getFreezingMethods(Class<?> clazz)

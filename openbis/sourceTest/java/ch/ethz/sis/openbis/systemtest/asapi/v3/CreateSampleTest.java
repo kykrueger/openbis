@@ -39,13 +39,9 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.IExperimentId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.create.PropertyAssignmentCreation;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.create.PropertyTypeCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleCreation;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleTypeCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
@@ -1428,33 +1424,6 @@ public class CreateSampleTest extends AbstractSampleTest
             }, "Type id cannot be null",
                 patternContains("checking data (" + (incorrectSampleIndex + 1) + "/" + sampleCount + ")",
                         toDblQuotes("'code' : 'TEST_SAMPLE_" + (incorrectSampleIndex + 1) + "'")));
-    }
-
-    private PropertyTypePermId createASamplePropertyType(String sessionToken, IEntityTypeId sampleTypeId)
-    {
-        PropertyTypeCreation creation = new PropertyTypeCreation();
-        creation.setCode("TYPE-" + System.currentTimeMillis());
-        creation.setDataType(DataType.SAMPLE);
-        creation.setSampleTypeId(sampleTypeId);
-        creation.setLabel("label");
-        creation.setDescription("description");
-        return v3api.createPropertyTypes(sessionToken, Arrays.asList(creation)).get(0);
-    }
-
-    private EntityTypePermId createASampleType(String sessionToken, boolean mandatory, PropertyTypePermId... propertyTypes)
-    {
-        SampleTypeCreation creation = new SampleTypeCreation();
-        creation.setCode("SAMPLE-TYPE-" + System.currentTimeMillis());
-        List<PropertyAssignmentCreation> assignments = new ArrayList<>();
-        for (PropertyTypePermId propertyType : propertyTypes)
-        {
-            PropertyAssignmentCreation propertyAssignmentCreation = new PropertyAssignmentCreation();
-            propertyAssignmentCreation.setPropertyTypeId(propertyType);
-            propertyAssignmentCreation.setMandatory(mandatory);
-            assignments.add(propertyAssignmentCreation);
-        }
-        creation.setPropertyAssignments(assignments);
-        return v3api.createSampleTypes(sessionToken, Arrays.asList(creation)).get(0);
     }
 
     private SampleCreation sampleCreation(String code)

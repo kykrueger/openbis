@@ -82,7 +82,7 @@ public abstract class PropertyTranslator extends AbstractCachingTranslator<Long,
                 }
             } else
             {
-                throw new IllegalArgumentException("Unsupported property kind");
+                // SAMPLE property with deleted sample. Thus, nothing is put to objectProperties
             }
         }
 
