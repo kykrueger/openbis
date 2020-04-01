@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -38,6 +39,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.batch.MapBatch;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.batch.MapBatchProcessor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.entity.progress.EntityProgress;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.entity.progress.UpdatePropertyProgress;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.sample.ISampleAuthorizationValidator;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.EntityPropertiesConverter;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
@@ -86,6 +88,9 @@ public class UpdateEntityPropertyExecutor implements IUpdateEntityPropertyExecut
 
     @Autowired
     private IMapSampleByIdExecutor mapSampleByIdExecutor;
+
+    @Autowired
+    private ISampleAuthorizationValidator sampleAuthorizationValidator;
 
     @SuppressWarnings("unused")
     private UpdateEntityPropertyExecutor()
@@ -146,8 +151,7 @@ public class UpdateEntityPropertyExecutor implements IUpdateEntityPropertyExecut
     private void injectSampleProperties(final IOperationContext context,
             MapBatch<IEntityInformationWithPropertiesHolder, Map<String, ISampleId>> entityToSamplePropertiesMap)
     {
-        Set<ISampleId> sampleIds = getSampleIds(entityToSamplePropertiesMap);
-        Map<ISampleId, SamplePE> samplesById = mapSampleByIdExecutor.map(context, sampleIds);
+        Map<ISampleId, SamplePE> samplesById = getSamples(context, entityToSamplePropertiesMap);
         new MapBatchProcessor<IEntityInformationWithPropertiesHolder, Map<String, ISampleId>>(context, entityToSamplePropertiesMap)
             {
                 @Override
@@ -209,6 +213,17 @@ public class UpdateEntityPropertyExecutor implements IUpdateEntityPropertyExecut
                     return new EntityProgress("update properties of type sample", key, objectIndex, totalObjectCount);
                 }
             };
+    }
+
+    private Map<ISampleId, SamplePE> getSamples(final IOperationContext context,
+            MapBatch<IEntityInformationWithPropertiesHolder, Map<String, ISampleId>> entityToSamplePropertiesMap)
+    {
+        Set<ISampleId> sampleIds = getSampleIds(entityToSamplePropertiesMap);
+        Map<ISampleId, SamplePE> samplesById = mapSampleByIdExecutor.map(context, sampleIds);
+        Set<Long> validateSampleTechIds = sampleAuthorizationValidator.validate(context.getSession().tryGetPerson(),
+                samplesById.values().stream().map(SamplePE::getId).collect(Collectors.toSet()));
+        return samplesById.entrySet().stream().filter(e -> validateSampleTechIds.contains(e.getValue().getId()))
+                .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
     }
 
     private Set<ISampleId> getSampleIds(MapBatch<IEntityInformationWithPropertiesHolder, Map<String, ISampleId>> entityToSamplePropertiesMap)

@@ -51,7 +51,11 @@ public abstract class SamplePropertyTranslator extends
                 properties = new HashMap<String, Sample>();
                 sampleProperties.put(record.objectId, properties);
             }
-            properties.put(record.propertyCode, samples.get(record.propertyValue));
+            Sample sample = samples.get(record.propertyValue);
+            if (sample != null)
+            {
+                properties.put(record.propertyCode, sample);
+            }
         }
 
         return sampleProperties;

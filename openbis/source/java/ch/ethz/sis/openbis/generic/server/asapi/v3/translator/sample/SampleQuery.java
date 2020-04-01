@@ -63,7 +63,7 @@ public interface SampleQuery extends ObjectQuery
     // PropertyQueryGenerator was used to generate this query
     @Select(sql = "select p.samp_id as objectId, case pt.is_internal_namespace when FALSE then pt.code else '$' || pt.code end as propertyCode, "
             + "p.value as propertyValue, m.code as materialPropertyValueCode, mt.code as materialPropertyValueTypeCode, "
-            + "s.perm_id as sample_perm_id, "
+            + "s.perm_id as sample_perm_id, s.id as sample_id, "
             + "cvt.code as vocabularyPropertyValue "
             + "from sample_properties p "
             + "left join samples s on p.samp_prop_id = s.id "
