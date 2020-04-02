@@ -172,9 +172,10 @@ class DataSet(
 
     @property
     def sftp_source_absolute_path(self):
-        # join mountpoint and source_dir
-        # if source_dir is absolute one has to remove "/" to be able to join it with mountpoint
-        # so far did not find way to achieve this in case they are pathlib.Path
+        """join mountpoint and source_dir
+        if source_dir is absolute one has to remove "/" to be able to join it with mountpoint
+        so far did not find way to achieve this in case they are pathlib.Path
+        """
         if not self.openbis.is_mounted():
             raise ValueError("Not mounted.")
 
@@ -185,7 +186,8 @@ class DataSet(
 
 
     def symlink_to(self, target_dir: str, replace_if_symlink_exists: bool = True):
-        # replace_if_symlink_exists will replace the the target_dir in case it is an existing symlink
+        """replace_if_symlink_exists will replace the the target_dir in case it is an existing symlink
+        """
 
         target_dir_path = Path(target_dir)
         if target_dir_path.is_symlink() and replace_if_symlink_exists:
