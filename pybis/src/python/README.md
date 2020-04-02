@@ -1,12 +1,12 @@
 # Welcome to pyBIS!
 
-pyBIS is a Python module for interacting with openBIS. pyBIS is designed to be most useful in a [Jupyter Notebook](https://jupyter.org) or IPython environment, especially if you are developing Python scripts for automatisation. Jupyter Notebooks offer some sort of IDE for openBIS, supporting TAB completition and input checks, making the life of a researcher hopefully easier.
+pyBIS is a Python module for interacting with openBIS. pyBIS is designed to be most useful in a [Jupyter Notebook](https://jupyter.org) or IPython environment, especially if you are developing Python scripts for automatisation. Jupyter Notebooks offer some sort of IDE for openBIS, supporting TAB completition and immediate data checks, making the life of a researcher hopefully easier.
 
 ## Dependencies and Requirements
 - pyBIS relies the openBIS API v3
 - openBIS version 16.05.2 or newer is required
 - 18.06.2 or later is recommended
-- pyBIS uses Python 3.3 and Pandas
+- pyBIS uses Python 3.5 or newer and the Pandas module
 
 ## Installation
 
@@ -636,7 +636,7 @@ ds.download_attachments()
 ### download dataSets
 
 ```
-ds.get_files(start_folder="/")     # get file list as Pandas table
+ds.get_files(start_folder="/")     # get file list as Pandas dataFrame
 ds.file_list                       # get file list as array
 
 ds.download()                      # simply download all files to data/hostname/permId/
