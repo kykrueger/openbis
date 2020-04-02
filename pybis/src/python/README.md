@@ -636,10 +636,12 @@ ds.download_attachments()
 ### download dataSets
 
 ```
+o.download_prefix                  # used for download() and symlink() method.
+                                   # Is set to data/hostname by default, but can be changed.
 ds.get_files(start_folder="/")     # get file list as Pandas dataFrame
 ds.file_list                       # get file list as array
 
-ds.download()                      # simply download all files to data/hostname/permId/
+ds.download()                      # simply download all files to data/hostnae/permId/
 ds.download(
 	destination = 'my_data',        # download files to folder my_data/
 	create_default_folders = False, # ignore the /original/DEFAULT folders made by openBIS
@@ -651,13 +653,14 @@ ds.is_physical()                   # TRUE if dataset has been physically downloa
 
 ### link dataSets
 
-To create a symbolic link to a dataSet, the openBIS instance needs to be mounted first. **Note:** Symbolic links and the mount() feature currently does not work with Windows.
+Instead of downloading a dataSet, you can create a symbolic link to a dataSet in the openBIS dataStore. To do that, the openBIS dataStore needs to be mounted first (see mount method above). **Note:** Symbolic links and the mount() feature currently do not work with Windows.
 
 ```
-ds.symlink()                       # create a symlink for this dataset 
-                                   # instead of downloading it.
-                                   # mount openBIS instance in case instance
-                                   # is not mounted yet
+o.download_prefix                  # used for download() and symlink() method.
+                                   # Is set to data/hostname by default, but can be changed.
+ds.symlink()                       # creates a symlink for this dataset: data/hostname/permId
+                                   # tries to mount openBIS instance 
+                                   # in case it is not mounted yet
 ds.symlink(
    target_dir = 'data/dataset_1/', # default target_dir is: data/hostname/permId
    replace_if_symlink_exists=True
