@@ -193,17 +193,7 @@
 		<constructor-arg value="etc/dss-datasource-mapping" />
 	</bean>
 
-	<bean id="current-session" factory-bean="hibernate-session-factory" factory-method="openSession"/>
-
-	<!--suppress SpringBeanConstructorArgInspection, SpringXmlModelInspection -->
-	<bean id="connection" factory-bean="current-session" factory-method="connection"/>
-
-	<bean id="sql-executor" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.HibernateSQLExecutor">
-		<property name="connection">
-			<!--suppress SpringBeanConstructorArgInspection, SpringXmlModelInspection -->
-			<bean factory-bean="connection" factory-method="getInnermostDelegateInternal"/>
-		</property>
-	</bean>
+	<bean id="sql-executor" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.HibernateSQLExecutor" />
 
 	<bean id="postgres-search-dao" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.PostgresSearchDAO">
 		<constructor-arg ref="sql-executor"/>

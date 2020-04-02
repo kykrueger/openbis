@@ -19,7 +19,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.BooleanFieldSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.Attributes;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.AttributesMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinType;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils;
@@ -64,7 +64,7 @@ public class BooleanFieldSearchConditionTranslator implements IConditionTranslat
             case ATTRIBUTE:
             {
                 final String criterionFieldName = criterion.getFieldName();
-                final String columnName = Attributes.getColumnName(criterionFieldName, tableMapper.getValuesTable(), criterionFieldName);
+                final String columnName = AttributesMapper.getColumnName(criterionFieldName, tableMapper.getValuesTable(), criterionFieldName);
                 final Boolean value = criterion.getFieldValue();
 
                 sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(columnName).append(SP).append(EQ).append(SP).append(QU);

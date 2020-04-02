@@ -16,7 +16,12 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.space;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.fetchoptions.ProjectFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.search.ProjectSearchCriteria;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SpaceSearchManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -48,6 +53,9 @@ public class SearchSpacesOperationExecutor extends SearchObjectsPEOperationExecu
     @Autowired
     private ISpaceTranslator translator;
 
+    @Autowired
+    private SpaceSearchManager spaceSearchManager;
+
     @Override
     protected Class<? extends SearchObjectsOperation<SpaceSearchCriteria, SpaceFetchOptions>> getOperationClass()
     {
@@ -74,7 +82,14 @@ public class SearchSpacesOperationExecutor extends SearchObjectsPEOperationExecu
 
     @Override
     protected ISearchManager<SpaceSearchCriteria, Space, Long> getSearchManager() {
-        throw new RuntimeException("This method is not implemented yet.");
+        return spaceSearchManager;
+    }
+
+    @Override
+    protected SearchObjectsOperationResult<Space> doExecute(final IOperationContext context,
+            final SearchObjectsOperation<SpaceSearchCriteria, SpaceFetchOptions> operation)
+    {
+        return executeDirectSQLSearch(context, operation);
     }
 
 }

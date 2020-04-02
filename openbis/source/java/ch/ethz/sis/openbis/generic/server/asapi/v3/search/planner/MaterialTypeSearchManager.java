@@ -51,8 +51,9 @@ public class MaterialTypeSearchManager extends AbstractSearchManager<MaterialTyp
     }
 
     @Override
-    public Set<Long> searchForIDs(final Long userId, final MaterialTypeSearchCriteria criteria, final SortOptions<MaterialType> sortOptions, final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName) {
-        return super.searchForIDs(userId, criteria, ID_COLUMN, TableMapper.MATERIAL_TYPE);
+    public Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation,
+            final MaterialTypeSearchCriteria criteria, final SortOptions<MaterialType> sortOptions, final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName) {
+        return super.searchForIDs(userId, authorisationInformation, criteria, ID_COLUMN, TableMapper.MATERIAL_TYPE);
     }
 
     @Override

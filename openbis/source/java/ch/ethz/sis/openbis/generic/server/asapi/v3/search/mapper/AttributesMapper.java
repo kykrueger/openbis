@@ -16,7 +16,6 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper;
 
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
 import ch.systemsx.cisd.openbis.generic.shared.dto.hibernate.SearchFieldConstants;
 
@@ -25,7 +24,7 @@ import java.util.Map;
 
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.*;
 
-public class Attributes
+public class AttributesMapper
 {
     private static final String PERM_ID_ATTRIBUTE = "perm id";
 
@@ -34,7 +33,8 @@ public class Attributes
     /** Defines which columns of which entities should be treated as perm_id. It can be PERM_ID_COLUMN or CODE_COLUMN. */
     private static final Map<String, String> ENTITIES_TABLE_TO_PERM_ID_COLUMN_NAME = new HashMap<>();
 
-    static {
+    static
+    {
         ATTRIBUTE_ID_TO_COLUMN_NAME.put(SearchFieldConstants.CODE, ColumnNames.CODE_COLUMN);
         ATTRIBUTE_ID_TO_COLUMN_NAME.put("codes", ColumnNames.CODE_COLUMN);
         ATTRIBUTE_ID_TO_COLUMN_NAME.put(SearchFieldConstants.ID, ColumnNames.ID_COLUMN);
@@ -76,14 +76,14 @@ public class Attributes
         ENTITIES_TABLE_TO_PERM_ID_COLUMN_NAME.put(SEMANTIC_ANNOTATIONS_TABLE, ColumnNames.PERM_ID_COLUMN);
     }
 
-    private Attributes()
+    private AttributesMapper()
     {
         throw new UnsupportedOperationException("Utility class cannot be instantiated");
     }
 
     public static String getColumnName(final String attributeId, final String tableName, final String defaultValue)
     {
-        return attributeId.equals(PERM_ID_ATTRIBUTE) ?
+        return PERM_ID_ATTRIBUTE.equals(attributeId) || "ids".equals(attributeId) ?
                 ENTITIES_TABLE_TO_PERM_ID_COLUMN_NAME.getOrDefault(tableName, defaultValue) :
                 ATTRIBUTE_ID_TO_COLUMN_NAME.getOrDefault(attributeId, defaultValue);
     }

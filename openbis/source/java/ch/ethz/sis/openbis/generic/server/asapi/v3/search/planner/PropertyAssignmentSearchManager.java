@@ -59,12 +59,13 @@ public class PropertyAssignmentSearchManager extends
     }
 
     @Override
-    public Set<Long> searchForIDs(final Long userId, final PropertyAssignmentSearchCriteria criteria, final SortOptions<PropertyAssignment> sortOptions,
+    public Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation,
+            final PropertyAssignmentSearchCriteria criteria, final SortOptions<PropertyAssignment> sortOptions,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
         // TODO: not always related to samples.
         final Set<Long> mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId,
-                criteria, TableMapper.SAMPLE_PROPERTY_ASSIGNMENT, idsColumnName);
+                criteria, TableMapper.SAMPLE_PROPERTY_ASSIGNMENT, idsColumnName, authorisationInformation);
 
         // Very special case when property assignments should be linked with semantic annotations both directly and via attribute types
         if (isSampleTypeWithSemanticAnnotationsCriteria(parentCriteria, criteria))
@@ -73,7 +74,7 @@ public class PropertyAssignmentSearchManager extends
                     criteria.getCriteria(), criteria.getOperator());
 
             final Set<Long> propertyTypesIds = getSearchDAO().queryDBWithNonRecursiveCriteria(userId,
-                    compositeSearchCriterion, TableMapper.SEMANTIC_ANNOTATION, PROPERTY_TYPE_COLUMN);
+                    compositeSearchCriterion, TableMapper.SEMANTIC_ANNOTATION, PROPERTY_TYPE_COLUMN, authorisationInformation);
 
             final Set<Long> assignmentIDsWithoutAnnotations = assignmentsSearchDAO.findAssignmentsWithoutAnnotations(
                     propertyTypesIds, idsColumnName);

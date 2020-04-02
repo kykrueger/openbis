@@ -18,6 +18,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.*;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.CriteriaMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.ISQLExecutor;
@@ -49,7 +50,7 @@ public class PostgresSearchDAO implements ISQLSearchDAO
     }
 
     public Set<Long> queryDBWithNonRecursiveCriteria(final Long userId, final AbstractCompositeSearchCriteria criterion,
-            final TableMapper tableMapper, final String idsColumnName)
+            final TableMapper tableMapper, final String idsColumnName, final AuthorisationInformation authorisationInformation)
     {
         final Collection<ISearchCriteria> criteria = criterion.getCriteria();
         final SearchOperator operator = criterion.getOperator();
@@ -63,6 +64,7 @@ public class PostgresSearchDAO implements ISQLSearchDAO
         translationVo.setCriteria(criteria);
         translationVo.setOperator(operator);
         translationVo.setIdColumnName(finalIdColumnName);
+        translationVo.setAuthorisationInformation(authorisationInformation);
 
         final boolean containsProperties = criteria.stream().anyMatch(
                 (subcriterion) -> subcriterion instanceof AbstractFieldSearchCriteria &&

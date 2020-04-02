@@ -25,10 +25,10 @@ import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
 import org.apache.log4j.Logger;
 
-public class JDBCSQLExecutor implements ISQLExecutor
+public abstract class AbstractSQLExecutor implements ISQLExecutor
 {
 
-    private static final Logger OPERATION_LOG = LogFactory.getLogger(LogCategory.OPERATION, JDBCSQLExecutor.class);
+    private static final Logger OPERATION_LOG = LogFactory.getLogger(LogCategory.OPERATION, AbstractSQLExecutor.class);
 
     private static final Map<Class<?>, PSQLTypes> TYPE_CONVERSION_MAP = new HashMap<>();
 
@@ -48,13 +48,7 @@ public class JDBCSQLExecutor implements ISQLExecutor
         TYPE_CONVERSION_MAP.put(Byte.class, PSQLTypes.INT2);
     }
 
-    /** Connection used for this executor. */
-    private Connection connection;
-
-    public void setConnection(final Connection connection)
-    {
-        this.connection = connection;
-    }
+    public abstract Connection getConnection();
 
     @Override
     public List<Map<String, Object>> execute(final String sqlQuery, final List<Object> args)
@@ -63,7 +57,7 @@ public class JDBCSQLExecutor implements ISQLExecutor
         OPERATION_LOG.info("ARGS: " + Arrays.deepToString(args.toArray()));
 
         final List<Map<String, Object>> results = new ArrayList<>();
-        try (final PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery))
+        try (final PreparedStatement preparedStatement = getConnection().prepareStatement(sqlQuery))
         {
             setArgsForPreparedStatement(args, preparedStatement);
 
@@ -97,21 +91,6 @@ public class JDBCSQLExecutor implements ISQLExecutor
         return results;
     }
 
-    public void executeUpdate(final String sqlQuery, final List<Object> args)
-    {
-        OPERATION_LOG.info("QUERY: " + sqlQuery);
-        OPERATION_LOG.info("ARGS: " + args);
-
-        try (final PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery))
-        {
-            setArgsForPreparedStatement(args, preparedStatement);
-            preparedStatement.executeUpdate();
-        } catch (SQLException ex)
-        {
-            throw new RuntimeException(ex);
-        }
-    }
-
     private void setArgsForPreparedStatement(final List<Object> args, final PreparedStatement preparedStatement) throws SQLException
     {
         for (int index = 0; index < args.size(); index++)
@@ -129,7 +108,7 @@ public class JDBCSQLExecutor implements ISQLExecutor
                             + " - With elements of type: " + arrayObjectType.getName() + " - Data: " + Arrays.toString(objectArray));
                 }
 
-                preparedStatement.setArray(index + 1, connection.createArrayOf(psqlType.toString(), objectArray));
+                preparedStatement.setArray(index + 1, preparedStatement.getConnection().createArrayOf(psqlType.toString(), objectArray));
             } else if (object instanceof Date)
             {
                 final Date date = (Date) object;

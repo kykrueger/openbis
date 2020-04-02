@@ -1,29 +1,5 @@
 var AdminTests = new function() {
 
-    this.startAdminTests = function() {
-        testChain = Promise.resolve();
-                 //1. Login
-        testChain.then(() => this.login())
-                 //2. Inventory Space and Sample Types
-                 .then(() => this.inventorySpace())
-                 //3. Settings Form - Enable Sample Types to Show in Drop-downs
-                 .then(() => this.enableBacteriaToShowInDropDowns())
-                 //5. User Manager
-                 .then(() => this.userManager())
-                 .catch(error => { console.log(error) });
-    }
-
-    this.finishTests = function() {
-        testChain = Promise.resolve();
-                 //31 . Order Form
-        testChain.then(() => TestUtil.deleteCookies("suitename"))
-                 .then(() => TestUtil.login("admin", "a"))
-                 .then(() => this.orderForm())
-                 //32. Order Form - Avoiding modifying orders by deleted requests
-                 .then(() => this.deletedRequests())
-                 .catch(error => { console.log(error) });
-    }
-
     this.login = function() {
         return new Promise(function executor(resolve, reject) {
             var e = EventUtil;
@@ -159,13 +135,17 @@ var AdminTests = new function() {
     }
 
     this.orderForm = function() {
+        var baseURL = location.protocol + '//' + location.host + location.pathname;
+        var pathToResource = "js/test/resources/order_ORD1_p0.txt";
+
         return new Promise(function executor(resolve, reject) {
             var e = EventUtil;
 
             testChain = Promise.resolve();
 
-            testChain.then(() => e.waitForId("STOCK_CATALOG"))
-                     // path to Order Collection
+            testChain.then(() => TestUtil.overloadSaveAs())
+                    // path to Order Collection
+                    .then(() => e.waitForId("STOCK_CATALOG"))
                      .then(() => e.click("STOCK_CATALOG"))
                      .then(() => e.waitForId("STOCK_ORDERS"))
                      .then(() => e.click("STOCK_ORDERS"))
@@ -195,6 +175,9 @@ var AdminTests = new function() {
                      // print
                      .then(() => e.waitForId("print-order-id"))
                      .then(() => e.click("print-order-id"))
+                     .then(() => e.sleep(3000)) // wait for download
+                     .then(() => TestUtil.checkFileEquality("order_ORD1_p0.txt", baseURL + pathToResource, TestUtil.dateReplacer))
+                     .then(() => TestUtil.returnRealSaveAs())
                      .then(() => TestUtil.testPassed(31))
                      .then(() => resolve());
         });
@@ -211,10 +194,6 @@ var AdminTests = new function() {
                      .then(() => e.equalTo("catalogNum-0", "CC EN", true, false))
                      .then(() => e.waitForId("supplier-0"))
                      .then(() => e.equalTo("supplier-0", "Company EN Name", true, false))
-                     .then(() => e.waitForId("name-0"))
-                     .then(() => e.equalTo("name-0", "Product EN Name", true, false))
-                     .then(() => e.waitForId("quantity-0"))
-                     .then(() => e.equalTo("quantity-0", "18", true, false))
                      .then(() => e.waitForId("currency-0"))
                      .then(() => e.equalTo("currency-0", "EUR", true, false))
                      // delete request
@@ -241,13 +220,79 @@ var AdminTests = new function() {
                      .then(() => e.equalTo("catalogNum-0", "CC EN", true, false))
                      .then(() => e.waitForId("supplier-0"))
                      .then(() => e.equalTo("supplier-0", "Company EN Name", true, false))
-                     .then(() => e.waitForId("name-0"))
-                     .then(() => e.equalTo("name-0", "Product EN Name", true, false))
-                     .then(() => e.waitForId("quantity-0"))
-                     .then(() => e.equalTo("quantity-0", "18", true, false))
                      .then(() => e.waitForId("currency-0"))
                      .then(() => e.equalTo("currency-0", "EUR", true, false))
                      .then(() => TestUtil.testPassed(32))
+                     .then(() => resolve());
+        });
+    }
+
+    this.trashManager = function() {
+        return new Promise(function executor(resolve, reject) {
+            var e = EventUtil;
+
+            testChain = Promise.resolve();
+
+            testChain.then(() => e.waitForId("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
+                     .then(() => e.click("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
+                     .then(() => e.waitForId("bac1-column-id"))
+                     .then(() => e.click("bac1-column-id"))
+                     .then(() => e.waitForId("edit-btn")) // wait for page reload
+                     //delete BAC1
+                     .then(() => e.waitForId("options-menu-btn-sample-view-bacteria"))
+                     .then(() => e.click("options-menu-btn-sample-view-bacteria"))
+                     .then(() => e.waitForId("delete"))
+                     .then(() => e.click("delete"))
+                     // fill Confirm form
+                     .then(() => e.waitForId("reason-to-delete-id"))
+                     .then(() => e.write("reason-to-delete-id", "test"))
+                     .then(() => e.waitForId("accept-btn"))
+                     .then(() => e.click("accept-btn"))
+                     .then(() => e.waitForId("create-btn")) // wait for page reload
+                     // go to TRASHCAN
+                     .then(() => e.waitForId("TRASHCAN"))
+                     .then(() => e.click("TRASHCAN"))
+                     // The Objects BAC1 and the deleted request should be there.
+                     .then(() => e.waitForId("deleted--materials-bacteria-bac1-id"))
+                     .then(() => e.waitForId("deleted--stock_catalog-requests-req1-id"))
+                     // clear Trash
+                     .then(() => e.waitForId("empty-trash-btn"))
+                     .then(() => e.click("empty-trash-btn"))
+                     .then(() => e.waitForId("warningAccept"))
+                     .then(() => e.click("warningAccept"))
+                     .then(() => e.sleep(2000)) // wait for delete
+                     // check that trash is empty
+                     .then(() => e.verifyExistence("deleted--materials-bacteria-bac1-id", false))
+                     .then(() => e.verifyExistence("deleted--stock_catalog-requests-req1-id", false))
+                     .then(() => TestUtil.testPassed(33))
+                     .then(() => resolve());
+        });
+    }
+
+    this.vocabularyViewer = function() {
+        return new Promise(function executor(resolve, reject) {
+            var e = EventUtil;
+
+            testChain = Promise.resolve();
+
+            testChain.then(() => e.waitForId("VOCABULARY_BROWSER"))
+                     .then(() => e.click("VOCABULARY_BROWSER"))
+                     .then(() => e.waitForId("vocabulary-browser-title-id")) // wait for page reload
+                     // check count
+                     .then(() => e.waitForId("total-count-id"))
+                     .then(() => e.equalTo("total-count-id", "36", true, false))
+                     // search for PLASMID
+                     .then(() => e.waitForId("search-input-id"))
+                     .then(() => e.write("search-input-id", "PLASMID"))
+                     .then(() => e.click("search-button-id"))
+                     .then(() => e.sleep(2000)) // wait for page reload
+                     // Click on the PLASMID_RELATIONSHIP row, it should show a list with five relationships.
+                     .then(() => e.waitForId("annotationplasmid_relationship_id"))
+                     .then(() => e.click("annotationplasmid_relationship_id"))
+                     .then(() => e.sleep(2000)) // wait for page reload
+                     .then(() => e.waitForId("total-count-id"))
+                     .then(() => e.equalTo("total-count-id", "5", true, false))
+                     .then(() => TestUtil.testPassed(34))
                      .then(() => resolve());
         });
     }

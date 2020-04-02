@@ -82,7 +82,7 @@ public class SearchExperimentTypesOperationExecutor
     protected SearchObjectsOperationResult<ExperimentType> doExecute(final IOperationContext context,
             final SearchObjectsOperation<ExperimentTypeSearchCriteria, ExperimentTypeFetchOptions> operation)
     {
-        return doExecuteNewSearch(context, operation);
+        return executeDirectSQLSearch(context, operation);
     }
 
     @Override

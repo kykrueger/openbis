@@ -51,9 +51,10 @@ public class EntityTypeSearchManager extends AbstractSearchManager<EntityTypeSea
     }
 
     @Override
-    public Set<Long> searchForIDs(final Long userId, final EntityTypeSearchCriteria criteria, final SortOptions<Void> sortOptions,
+    public Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation,
+            final EntityTypeSearchCriteria criteria, final SortOptions<Void> sortOptions,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName) {
-        return super.searchForIDs(userId, criteria, ID_COLUMN, TableMapper.DATA_SET_TYPE);
+        return super.searchForIDs(userId, authorisationInformation, criteria, ID_COLUMN, TableMapper.DATA_SET_TYPE);
     }
 
     @Override

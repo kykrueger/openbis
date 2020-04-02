@@ -16,10 +16,8 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.sample;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SampleSearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SampleTypeSearchManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -89,7 +87,7 @@ public class SearchSampleTypesOperationExecutor
     protected SearchObjectsOperationResult<SampleType> doExecute(final IOperationContext context,
             final SearchObjectsOperation<SampleTypeSearchCriteria, SampleTypeFetchOptions> operation)
     {
-        return doExecuteNewSearch(context, operation);
+        return executeDirectSQLSearch(context, operation);
     }
 
 }

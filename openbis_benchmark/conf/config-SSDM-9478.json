@@ -1,0 +1,69 @@
+[{
+	"className" : "ch.ethz.sis.benchmark.impl.LoadBenchmark",
+	"user" : "test",
+	"password" : "test",
+	"openbisURL" : "http://localhost:8888/openbis/openbis/rmi-application-server-v3",
+	"openbisTimeout" : "3600000",
+	"datastoreURL" : "http://localhost:8889/datastore_server/rmi-data-store-server-v3",
+	"datastoreTimeout" : "3600000",
+	"threads" : 1,
+	"parameters" : {
+		"SPACES_TO_CREATE" : 4,
+		"SAMPLES_TO_CREATE" : 20000,
+		"USE_DB" : true,
+		"JDBC_CONNECTION_STRING" : null,
+		"JDBC_CONNECTION_USER" : null,
+		"JDBC_CONNECTION_PASS" : null
+	}
+	}, {
+	"className" : "ch.ethz.sis.benchmark.impl.LoadBenchmark",
+	"user" : "test",
+	"password" : "test",
+	"openbisURL" : "http://localhost:8888/openbis/openbis/rmi-application-server-v3",
+	"openbisTimeout" : "3600000",
+	"datastoreURL" : "http://localhost:8889/datastore_server/rmi-data-store-server-v3",
+	"datastoreTimeout" : "3600000",
+	"threads" : 5,
+	"parameters" : {
+	"SPACES_TO_CREATE" : 4,
+	"SAMPLES_TO_CREATE" : 20000,
+	"USE_DB" : true,
+	"JDBC_CONNECTION_STRING" : null,
+	"JDBC_CONNECTION_USER" : null,
+	"JDBC_CONNECTION_PASS" : null
+	}
+	}, {
+	"className" : "ch.ethz.sis.benchmark.impl.LoadBenchmark",
+	"user" : "test",
+	"password" : "test",
+	"openbisURL" : "http://localhost:8888/openbis/openbis/rmi-application-server-v3",
+	"openbisTimeout" : "3600000",
+	"datastoreURL" : "http://localhost:8889/datastore_server/rmi-data-store-server-v3",
+	"datastoreTimeout" : "3600000",
+	"threads" : 1,
+	"parameters" : {
+		"SPACES_TO_CREATE" : 4,
+		"SAMPLES_TO_CREATE" : 20000,
+		"USE_DB" : false,
+		"JDBC_CONNECTION_STRING" : null,
+		"JDBC_CONNECTION_USER" : null,
+		"JDBC_CONNECTION_PASS" : null
+	}
+	}, {
+	"className" : "ch.ethz.sis.benchmark.impl.LoadBenchmark",
+	"user" : "test",
+	"password" : "test",
+	"openbisURL" : "http://localhost:8888/openbis/openbis/rmi-application-server-v3",
+	"openbisTimeout" : "3600000",
+	"datastoreURL" : "http://localhost:8889/datastore_server/rmi-data-store-server-v3",
+	"datastoreTimeout" : "3600000",
+	"threads" : 5,
+	"parameters" : {
+		"SPACES_TO_CREATE" : 4,
+		"SAMPLES_TO_CREATE" : 20000,
+		"USE_DB" : false,
+		"JDBC_CONNECTION_STRING" : null,
+		"JDBC_CONNECTION_USER" : null,
+		"JDBC_CONNECTION_PASS" : null
+	}
+}]

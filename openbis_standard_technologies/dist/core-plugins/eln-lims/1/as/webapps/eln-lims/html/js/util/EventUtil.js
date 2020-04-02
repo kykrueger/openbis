@@ -58,25 +58,6 @@ var EventUtil = new function() {
         });
     };
 
-    this.triggerSearchSelect2 = function(elementId, value, ignoreError) {
-        return new Promise(function executor(resolve, reject) {
-            try {
-                var element = EventUtil.getElement(elementId, ignoreError, resolve);
-                element.select2('open');
-
-                var $search = element.data('select2').dropdown.$search || element.data('select2').selection.$search;
-                $search.val(value);
-                $search.trigger('input');
-                setTimeout(function() {
-                    $('.select2-results__option').trigger("mouseup");
-                    resolve();
-                }, 2000);
-            } catch(error) {
-                reject(error);
-            }
-        });
-    };
-
     this.checked = function(elementId, value, ignoreError) {
         return new Promise(function executor(resolve, reject) {
             try {

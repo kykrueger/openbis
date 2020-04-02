@@ -24,9 +24,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.*;
 import org.springframework.context.ApplicationContext;
 
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.*;
 
@@ -60,7 +58,7 @@ public class CriteriaMapper {
     private static final Map<Class<? extends ISearchCriteria>, String> CRITERIA_TO_IN_COLUMN_MAP = new HashMap<>();
 
     /** This map is used do set an ID different from default for subqueries. The key is the couple (parent, child). */
-    private static final Map<String, String> PARENT_CHILD_CRITERIA_TO_CHILD_SELECT_ID_MAP = new HashMap<>();
+    private static final Map<List<Class<? extends ISearchCriteria>>, String> PARENT_CHILD_CRITERIA_TO_CHILD_SELECT_ID_MAP = new HashMap<>();
 
     static
     {
@@ -162,18 +160,19 @@ public class CriteriaMapper {
         CRITERIA_TO_IN_COLUMN_MAP.put(SemanticAnnotationSearchCriteria.class, ID_COLUMN);
         CRITERIA_TO_IN_COLUMN_MAP.put(TagSearchCriteria.class, ID_COLUMN);
 
-        //noinspection unchecked
         PARENT_CHILD_CRITERIA_TO_CHILD_SELECT_ID_MAP.put(
-                PropertyTypeSearchCriteria.class.toString() + SemanticAnnotationSearchCriteria.class.toString(),
+                Arrays.asList(PropertyTypeSearchCriteria.class, SemanticAnnotationSearchCriteria.class),
                 PROPERTY_TYPE_COLUMN);
-        //noinspection unchecked
+
         PARENT_CHILD_CRITERIA_TO_CHILD_SELECT_ID_MAP.put(
-                PropertyAssignmentSearchCriteria.class.toString() + SemanticAnnotationSearchCriteria.class.toString(),
+                Arrays.asList(PropertyAssignmentSearchCriteria.class, SemanticAnnotationSearchCriteria.class),
                 SAMPLE_TYPE_PROPERTY_TYPE_COLUMN);
 
-        //noinspection unchecked
         PARENT_CHILD_CRITERIA_TO_CHILD_SELECT_ID_MAP.put(
-                SampleTypeSearchCriteria.class.toString() + PropertyAssignmentSearchCriteria.class.toString(), SAMPLE_TYPE_COLUMN);
+                Arrays.asList(SampleTypeSearchCriteria.class, PropertyAssignmentSearchCriteria.class), SAMPLE_TYPE_COLUMN);
+
+        PARENT_CHILD_CRITERIA_TO_CHILD_SELECT_ID_MAP.put(
+                Arrays.asList(SampleTypeSearchCriteria.class, SemanticAnnotationSearchCriteria.class), SAMPLE_TYPE_COLUMN);
     }
 
     @SuppressWarnings("unchecked")
@@ -255,7 +254,7 @@ public class CriteriaMapper {
         return CRITERIA_TO_IN_COLUMN_MAP;
     }
 
-    public static Map<String, String> getParentChildCriteriaToChildSelectIdMap()
+    public static Map<List<Class<? extends ISearchCriteria>>, String> getParentChildCriteriaToChildSelectIdMap()
     {
         return PARENT_CHILD_CRITERIA_TO_CHILD_SELECT_ID_MAP;
     }
@@ -263,4 +262,5 @@ public class CriteriaMapper {
     public static Map<EntityKind, ISearchManager<ISearchCriteria, ?, ?>> getEntityKindToManagerMap() {
         return ENTITY_KIND_TO_MANAGER_MAP;
     }
+
 }

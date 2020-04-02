@@ -1,68 +1,5 @@
 var UserTests = new function() {
 
-    this.startUserTests = function() {
-        testChain = Promise.resolve();
-                 //5. User Manager (end of test)
-        testChain.then(() => TestUtil.deleteCookies("suitename"))
-                 .then(() => TestUtil.login("testId", "pass"))
-                 .then(() => this.inventorySpaceForTestUser())
-                 .then(() => TestUtil.testPassed(5))
-                 //6. Sample Form - Creation
-                 .then(() => this.creationSampleForm())
-                 //7. Sample Form - Edit: Add a Photo and Parents/Children
-                 .then(() => this.editSampleForm())
-                 //8. Sample Hierarchy as Graph
-                 .then(() => this.sampleHierarchyAsGraph())
-                 //9. Sample Hierarchy as Table
-                 .then(() => this.sampleHierarchyAsTable())
-                 //10. Sample Form - Copy
-                 .then(() => this.copySampleForm())
-                 //11. Sample Form - Delete
-                 .then(() => this.deleteSampleForm())
-                 //12. Inventory Table - Exports/Imports for Update
-                 .then(() => this.exportsImportsUpdate())
-                 //13. Inventory Table - Imports for Create - Automatic Codes
-                 .then(() => this.importsAutomaticCodes())
-                 //14. Inventory Table - Imports for Create - Given Codes
-                 .then(() => this.importsGivenCodes())
-                 //15. Sample Form - Storage
-                 .then(() => this.storageTest())
-                 //16. Storage Manager - Moving Box
-                 .then(() => this.movingBoxTest())
-                 //17. Storage Manager - Moving Sample
-                 .then(() => this.movingSampleTest())
-                 //18. Create Protocol
-                 .then(() => this.createProtocol())
-                 //19. Project Form - Create/Update
-                 .then(() => this.createProject())
-                 //20. Experiment Form - Create/Update
-                 .then(() => this.createExperiment())
-                 //21. Experiment Step Form - Create/Update
-                 .then(() => this.createExperimentStep())
-                 //22. is now disabled
-                 .then(() => TestUtil.testNotExist(22))
-                 //23. Experiment Step Form - Dataset Uploader and Viewer
-                 .then(() => this.datasetUploader())
-                 //24. Experiment Step Form - Children Generator (not exist)
-                 .then(() => TestUtil.testNotExist(24))
-                 //25. Project  Form - Show in project overview
-                 .then(() => this.showInProjectOverview())
-                 //26. Search
-                 .then(() => this.search())
-                 //27. Supplier Form
-                 .then(() => this.supplierForm())
-                 //28. Product Form
-                 .then(() => this.productForm())
-                 //29. Request Form
-                 .then(() => this.requestForm())
-                 //30. Order Form
-                 //.then(() => this.orderForm()) todo
-                 //31. logout
-                 .then(() => this.logout())
-                 .catch(error => { console.log(error) });
-    }
-
-
     this.inventorySpaceForTestUser = function() {
         return new Promise(function executor(resolve, reject) {
             var e = EventUtil;
@@ -334,20 +271,21 @@ var UserTests = new function() {
 
     this.exportsImportsUpdate = function() {
         var baseURL = location.protocol + '//' + location.host + location.pathname;
-        var pathToResource = "js/test/resources/exportedTableAllColumnsAllRows.tsv";
+        var pathToCheckResource = "js/test/resources/exportedTableAllColumnsAllRows.tsv";
+        var pathToUpdateResource = "js/test/resources/updateAllColumnsAllRows.tsv";
 
         return new Promise(function executor(resolve, reject) {
             var e = EventUtil;
-            Promise.resolve().then(() => e.waitForId("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
+            Promise.resolve().then(() => TestUtil.overloadSaveAs())
+                             .then(() => e.waitForId("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
                              .then(() => e.click("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
                              // export all columns with all rows
                              .then(() => e.waitForId("export-btn-id"))
                              .then(() => e.click("export-btn-id"))
                              .then(() => e.waitForId("export-all-columns-and-rows"))
                              .then(() => e.click("export-all-columns-and-rows"))
-                             // I can only download the file, but I can't check what is inside.
-                             // Because I don't have an access to downloads Path from browser.
-                             // check names before update
+                             .then(() => e.sleep(3000)) // wait for download
+                             .then(() => TestUtil.checkFileEquality("exportedTableAllColumnsAllRows.tsv", baseURL + pathToCheckResource, TestUtil.idReplacer))
                              .then(() => e.equalTo("bac1-column-id", "Aurantimonas", true, false))
                              .then(() => e.equalTo("bac2-column-id", "Burantimonas", true, false))
                              .then(() => e.equalTo("bac3-column-id", "Curantimonas", true, false))
@@ -355,7 +293,7 @@ var UserTests = new function() {
                              .then(() => e.equalTo("bac5-column-id", "Curantimonas", true, false))
                              .then(() => e.equalTo("bac5_bac4-column-id", "Durantimonas", true, false))
                              // Batch Update Objects
-                             .then(() => UserTests.importBacteriasFromFile(baseURL + pathToResource, false))
+                             .then(() => UserTests.importBacteriasFromFile(baseURL + pathToUpdateResource, false))
                              .then(() => e.sleep(3500)) // wait for import
                              // check names after update
                              .then(() => e.equalTo("bac1-column-id", "AA", true, false))
@@ -364,6 +302,7 @@ var UserTests = new function() {
                              .then(() => e.equalTo("bac4-column-id", "DD", true, false))
                              .then(() => e.equalTo("bac5-column-id", "EE", true, false))
                              .then(() => e.equalTo("bac5_bac4-column-id", "FF", true, false))
+                             .then(() => TestUtil.returnRealSaveAs())
                              .then(() => TestUtil.testPassed(12))
                              .then(() => resolve());
         });
@@ -967,13 +906,33 @@ var UserTests = new function() {
          });
      }
 
-     this.logout = function() {
-          return new Promise(function executor(resolve, reject) {
-              var e = EventUtil;
+     this.orderForm = function() {
+         return new Promise(function executor(resolve, reject) {
+             var e = EventUtil;
 
-              Promise.resolve().then(() => TestUtil.setCookies("suitename", "finishTest"))
-                               .then(() => e.click("logoutBtn"))
-                               .then(() => resolve());
-          });
+             Promise.resolve().then(() => e.waitForId("STOCK_ORDERS"))
+                              // path to Order Collection
+                              .then(() => e.click("STOCK_ORDERS"))
+                              .then(() => e.waitForId("ORDERS"))
+                              .then(() => e.click("ORDERS"))
+                              .then(() => e.waitForId("_STOCK_ORDERS_ORDERS_ORDER_COLLECTION"))
+                              .then(() => e.click("_STOCK_ORDERS_ORDERS_ORDER_COLLECTION"))
+                              // wait page reload
+                              .then(() => e.waitForId("sample-options-menu-btn"))
+                              // There should be no + button
+                              .then(() => e.verifyExistence("create-btn", false))
+                              .then(() => TestUtil.testPassed(30))
+                              .then(() => resolve());
+         });
       }
+
+     this.logout = function() {
+         return new Promise(function executor(resolve, reject) {
+            var e = EventUtil;
+
+            Promise.resolve().then(() => TestUtil.setCookies("suitename", "finishTest"))
+                             .then(() => e.click("logoutBtn"))
+                             .then(() => resolve());
+         });
+     }
 }

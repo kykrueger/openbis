@@ -50,10 +50,11 @@ public class ExternalDmsSearchManager extends AbstractSearchManager<ExternalDmsS
     }
 
     @Override
-    public Set<Long> searchForIDs(final Long userId, final ExternalDmsSearchCriteria criteria, final SortOptions<ExternalDataManagementSystem> sortOptions,
+    public Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation,
+            final ExternalDmsSearchCriteria criteria, final SortOptions<ExternalDataManagementSystem> sortOptions,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
-        return super.searchForIDs(userId, criteria, ColumnNames.ID_COLUMN, TableMapper.EXTERNAL_DMS);
+        return super.searchForIDs(userId, authorisationInformation, criteria, ColumnNames.ID_COLUMN, TableMapper.EXTERNAL_DMS);
     }
 
     @Override
