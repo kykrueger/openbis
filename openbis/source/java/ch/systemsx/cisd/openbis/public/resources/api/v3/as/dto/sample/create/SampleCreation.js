@@ -131,6 +131,10 @@ define([ "stjs" ], function(stjs) {
 			name : "Map",
 			arguments : [ null, null ]
 		},
+		sampleProperties : {
+			name : "Map",
+			arguments : [ null, null ]
+		},
 		containerId : "ISampleId",
 		componentIds : {
 			name : "List",

@@ -26,6 +26,7 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/
 		prototype.freezeForParents = null;
 		prototype.freezeForDataSets = null;
 		prototype.properties = null;
+		prototype.sampleProperties = null;
 		prototype.experimentId = null;
 		prototype.projectId = null;
 		prototype.spaceId = null;
@@ -170,6 +171,10 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/
 			arguments : [ "ITagId" ]
 		},
 		properties : {
+			name : "Map",
+			arguments : [ null, null ]
+		},
+		sampleProperties : {
 			name : "Map",
 			arguments : [ null, null ]
 		},
