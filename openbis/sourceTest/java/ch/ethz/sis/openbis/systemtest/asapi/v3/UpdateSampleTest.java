@@ -830,6 +830,7 @@ public class UpdateSampleTest extends AbstractSampleTest
         assertEquals(sample.getSampleProperties().toString(), "{" + propertyType.getPermId() + "=Sample 200811050924898-997}");
         List<HistoryEntry> history = sample.getHistory();
         assertEquals(history.get(0).getAuthor().getUserId(), TEST_USER);
+        assertEquals(((PropertyHistoryEntry) history.get(0)).getPropertyName(), propertyType.getPermId());
         assertEquals(((PropertyHistoryEntry) history.get(0)).getPropertyValue(), "200811050919915-8");
         assertEquals(history.size(), 1);
     }
@@ -864,6 +865,7 @@ public class UpdateSampleTest extends AbstractSampleTest
         assertEquals(sample.getSampleProperties().toString(), "{}");
         List<HistoryEntry> history = sample.getHistory();
         assertEquals(history.get(0).getAuthor().getUserId(), TEST_USER);
+        assertEquals(((PropertyHistoryEntry) history.get(0)).getPropertyName(), propertyType.getPermId());
         assertEquals(((PropertyHistoryEntry) history.get(0)).getPropertyValue(), "200811050919915-8");
         assertEquals(history.size(), 1);
     }
