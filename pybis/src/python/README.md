@@ -636,16 +636,33 @@ ds.download_attachments()
 ### download dataSets
 
 ```
-ds.get_files(start_folder="/")    # get file list as Pandas table
-ds.file_list                      # get file list as array
+ds.get_files(start_folder="/")     # get file list as Pandas table
+ds.file_list                       # get file list as array
 
-ds.download()                     # simply download all files to hostname/permId/
+ds.download()                      # simply download all files to data/hostname/permId/
 ds.download(
-	destination = 'my_data',       # download files to folder my_data/
-	create_default_folders = False,# ignore the /original/DEFAULT folders made by openBIS
-	wait_until_finished = False,   # download in background, continue immediately
-	workers = 10                   # 10 downloads parallel (default)
+	destination = 'my_data',        # download files to folder my_data/
+	create_default_folders = False, # ignore the /original/DEFAULT folders made by openBIS
+	wait_until_finished = False,    # download in background, continue immediately
+	workers = 10                    # 10 downloads parallel (default)
 )
+ds.is_physical()                   # TRUE if dataset has been physically downloaded
+```
+
+### link dataSets
+
+To create a symbolic link to a dataSet, the openBIS instance needs to be mounted first. **Note:** Symbolic links and the mount() feature currently does not work with Windows.
+
+```
+ds.symlink()                       # create a symlink for this dataset 
+                                   # instead of downloading it.
+                                   # mount openBIS instance in case instance
+                                   # is not mounted yet
+ds.symlink(
+   target_dir = 'data/dataset_1/', # default target_dir is: data/hostname/permId
+   replace_if_symlink_exists=True
+)
+ds.is_symlink()
 ```
 
 ### dataSet attributes and properties
