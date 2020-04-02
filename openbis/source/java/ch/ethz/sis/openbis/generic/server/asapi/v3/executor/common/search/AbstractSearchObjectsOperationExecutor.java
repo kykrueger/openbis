@@ -23,7 +23,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.*;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.RoleAssignmentPE;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -51,6 +50,8 @@ public abstract class AbstractSearchObjectsOperationExecutor<OBJECT, OBJECT_PE, 
         extends OperationExecutor<SearchObjectsOperation<CRITERIA, FETCH_OPTIONS>, SearchObjectsOperationResult<OBJECT>>
         implements ISearchObjectsOperationExecutor
 {
+
+    private static final String[] SORTS_TO_IGNORE = new String[] { EntityWithPropertiesSortOptions.FETCHED_FIELDS_SCORE };
 
     private final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION, getClass());
 
@@ -267,8 +268,6 @@ public abstract class AbstractSearchObjectsOperationExecutor<OBJECT, OBJECT_PE, 
         return sortedFinalResults;
     }
 
-    String[] sortsToIgnore = new String[] { EntityWithPropertiesSortOptions.FETCHED_FIELDS_SCORE };
-
     private List<Long> sortAndPage(final Set<Long> ids, final FetchOptions fo)
     {
         //
@@ -280,7 +279,7 @@ public abstract class AbstractSearchObjectsOperationExecutor<OBJECT, OBJECT_PE, 
         if (sortOptions != null) {
             List<Sorting> sortingToRemove = new ArrayList<>();
             for (Sorting sorting:sortOptions.getSortings()) {
-                for (String sortToIgnore:sortsToIgnore) {
+                for (String sortToIgnore: SORTS_TO_IGNORE) {
                     if (sorting.getField().equals(sortToIgnore)) {
                         sortingToRemove.add(sorting);
                     }
