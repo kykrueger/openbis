@@ -495,6 +495,7 @@ public class SampleFetchOptions extends FetchOptions<Sample> implements Serializ
         f.addFetchOption("Experiment", experiment);
         f.addFetchOption("Properties", properties);
         f.addFetchOption("MaterialProperties", materialProperties);
+        f.addFetchOption("SampleProperties", sampleProperties);
         f.addFetchOption("Parents", parents);
         f.addFetchOption("Children", children);
         f.addFetchOption("Container", container);
