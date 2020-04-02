@@ -662,6 +662,7 @@ class Openbis:
         self.url = url_obj.geturl()
         self.port = url_obj.port
         self.hostname = url_obj.hostname
+        self.download_prefix = os.path.join('data', self.hostname)
         self.as_v3 = '/openbis/openbis/rmi-application-server-v3.json'
         self.as_v1 = '/openbis/openbis/rmi-general-information-v1.json'
         self.reg_v1 = '/openbis/openbis/rmi-query-v1.json'
@@ -700,6 +701,8 @@ class Openbis:
             'is_token_valid()',
             "mount()",
             "unmount()",
+            "download_prefix",
+            "get_mountpoint()",
             "get_server_information()",
             "get_dataset()",
             "get_datasets()",
@@ -1083,7 +1086,7 @@ class Openbis:
         check_sshfs_is_installed()
 
         if username is None: username = self._get_username()
-        if not username: raise ValueError("no token available - pleas provide a username")
+        if not username: raise ValueError("no token available - please provide a username")
         if password is None: password = self._password()
         if not password: raise ValueError("please provide a password")
 
@@ -1098,7 +1101,6 @@ class Openbis:
         if not os.path.exists(full_mountpoint_path):
             os.makedirs(full_mountpoint_path)
 
-        self.mountpoint = full_mountpoint_path
 
         from sys import platform
         supported_platforms = ['darwin', 'linux']
@@ -1136,6 +1138,8 @@ class Openbis:
 
         if status == 0:
             if VERBOSE: print("Mounted successfully to {}".format(full_mountpoint_path))
+            self.mountpoint = full_mountpoint_path
+            return self.mountpoint
         else:
             raise OSError("mount failed")
 
