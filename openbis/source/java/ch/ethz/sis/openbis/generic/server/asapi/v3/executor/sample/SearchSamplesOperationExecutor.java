@@ -89,7 +89,7 @@ public class SearchSamplesOperationExecutor extends SearchObjectsOperationExecut
     protected SearchObjectsOperationResult<Sample> doExecute(final IOperationContext context,
             final SearchObjectsOperation<SampleSearchCriteria, SampleFetchOptions> operation)
     {
-        return doExecuteNewSearch(context, operation);
+        return executeDirectSQLSearch(context, operation);
     }
 
 }

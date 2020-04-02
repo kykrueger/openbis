@@ -49,10 +49,11 @@ public class PropertyTypeSearchManager extends AbstractSearchManager<PropertyTyp
     }
 
     @Override
-    public Set<Long> searchForIDs(final Long userId, final PropertyTypeSearchCriteria criteria, final SortOptions<PropertyType> sortOptions,
+    public Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation,
+            final PropertyTypeSearchCriteria criteria, final SortOptions<PropertyType> sortOptions,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
-        return super.searchForIDs(userId, criteria, idsColumnName, TableMapper.PROPERTY_TYPE);
+        return super.searchForIDs(userId, authorisationInformation, criteria, idsColumnName, TableMapper.PROPERTY_TYPE);
     }
 
     @Override

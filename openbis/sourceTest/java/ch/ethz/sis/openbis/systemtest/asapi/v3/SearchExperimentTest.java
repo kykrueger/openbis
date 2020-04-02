@@ -244,6 +244,14 @@ public class SearchExperimentTest extends AbstractExperimentTest
     }
 
     @Test
+    public void testSearchWithProjectWithId()
+    {
+        ExperimentSearchCriteria criteria = new ExperimentSearchCriteria();
+        criteria.withProject().withId().thatEquals(new ProjectPermId("20120814110011738-106"));
+        testSearch(TEST_USER, criteria, "/TEST-SPACE/NOE/EXP-TEST-2", "/TEST-SPACE/NOE/EXPERIMENT-TO-DELETE");
+    }
+
+    @Test
     public void testSearchWithProjectWithCode()
     {
         ExperimentSearchCriteria criteria = new ExperimentSearchCriteria();

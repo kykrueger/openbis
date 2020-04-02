@@ -1,4 +1,6 @@
 var TestUtil = new function() {
+    this.realSaveAs = null;
+    this.savedFiles = new Map();
 
 	this.login = function(username, password) {
         return new Promise(function executor(resolve, reject) {
@@ -78,6 +80,51 @@ var TestUtil = new function() {
         });
     }
 
+    this.checkFileEquality = function(name, url, replacer) {
+        var _this = this;
+        return new Promise(function executor(resolve, reject) {
+            _this.fetchBytes(url, function(file) {
+                _this.blob2Text(file, function(textFile) {
+                    downloadedFile = _this.savedFiles[name];
+                    downloadedFile = replacer(downloadedFile);
+
+                    _this.savedFiles.delete(name);
+
+                    if (textFile === downloadedFile) {
+                        resolve();
+                    } else {
+                        throw "File " + name + " is not correct!";
+                    }
+                });
+            });
+        });
+    }
+
+    this.blob2Text = function(blob, action) {
+        // get text from blob
+        let fileReader = new FileReader();
+
+        fileReader.readAsText(blob);
+
+        fileReader.onload = function(event) {
+            action(fileReader.result);
+        };
+    }
+
+    this.idReplacer = function(text) {
+        text = text.replaceAll( new RegExp('"/openbis/openbis/file-service/eln-lims/[A-Za-z0-9/-]+"'),
+                                           '"/openbis/openbis/file-service/eln-lims/identifier"');
+
+        return text;
+    }
+
+    this.dateReplacer = function(text) {
+        text = text.replaceAll( new RegExp('Date: [0-9-]+ [0-9:]+'),
+                                           'Date: YYYY-MM-DD HH:MM:SS');
+
+        return text;
+    }
+
     this.fetchBytes = function(url, action) {
 	    var xhr = new XMLHttpRequest();
         xhr.open('GET', url, true);
@@ -85,8 +132,8 @@ var TestUtil = new function() {
 
         xhr.onload = function(e) {
             if (this.status == 200) {
-            // get binary data as a response
-            action(this.response);
+                // get binary data as a response
+                action(this.response);
             }
         };
 
@@ -131,6 +178,30 @@ var TestUtil = new function() {
                 } );
                 resolve();
             });
+        });
+    }
+
+    this.overloadSaveAs = function() {
+        var _this = this;
+        return new Promise(function executor(resolve, reject) {
+            if (_this.realSaveAs === null) {
+                _this.realSaveAs = saveAs;
+            }
+
+            saveAs = function(blob, name, no_auto_bom) {
+                _this.blob2Text(blob, function(textFile) {
+                    _this.savedFiles[name] = textFile;
+                });
+            }
+            resolve();
+        });
+    }
+
+    this.returnRealSaveAs = function() {
+        var _this = this;
+        return new Promise(function executor(resolve, reject) {
+            saveAs = _this.realSaveAs;
+            resolve();
         });
     }
 }

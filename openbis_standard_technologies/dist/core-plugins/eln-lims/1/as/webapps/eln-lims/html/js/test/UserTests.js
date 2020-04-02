@@ -271,20 +271,21 @@ var UserTests = new function() {
 
     this.exportsImportsUpdate = function() {
         var baseURL = location.protocol + '//' + location.host + location.pathname;
-        var pathToResource = "js/test/resources/exportedTableAllColumnsAllRows.tsv";
+        var pathToCheckResource = "js/test/resources/exportedTableAllColumnsAllRows.tsv";
+        var pathToUpdateResource = "js/test/resources/updateAllColumnsAllRows.tsv";
 
         return new Promise(function executor(resolve, reject) {
             var e = EventUtil;
-            Promise.resolve().then(() => e.waitForId("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
+            Promise.resolve().then(() => TestUtil.overloadSaveAs())
+                             .then(() => e.waitForId("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
                              .then(() => e.click("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
                              // export all columns with all rows
                              .then(() => e.waitForId("export-btn-id"))
                              .then(() => e.click("export-btn-id"))
                              .then(() => e.waitForId("export-all-columns-and-rows"))
                              .then(() => e.click("export-all-columns-and-rows"))
-                             // I can only download the file, but I can't check what is inside.
-                             // Because I don't have an access to downloads Path from browser.
-                             // check names before update
+                             .then(() => e.sleep(3000)) // wait for download
+                             .then(() => TestUtil.checkFileEquality("exportedTableAllColumnsAllRows.tsv", baseURL + pathToCheckResource, TestUtil.idReplacer))
                              .then(() => e.equalTo("bac1-column-id", "Aurantimonas", true, false))
                              .then(() => e.equalTo("bac2-column-id", "Burantimonas", true, false))
                              .then(() => e.equalTo("bac3-column-id", "Curantimonas", true, false))
@@ -292,7 +293,7 @@ var UserTests = new function() {
                              .then(() => e.equalTo("bac5-column-id", "Curantimonas", true, false))
                              .then(() => e.equalTo("bac5_bac4-column-id", "Durantimonas", true, false))
                              // Batch Update Objects
-                             .then(() => UserTests.importBacteriasFromFile(baseURL + pathToResource, false))
+                             .then(() => UserTests.importBacteriasFromFile(baseURL + pathToUpdateResource, false))
                              .then(() => e.sleep(3500)) // wait for import
                              // check names after update
                              .then(() => e.equalTo("bac1-column-id", "AA", true, false))
@@ -301,6 +302,7 @@ var UserTests = new function() {
                              .then(() => e.equalTo("bac4-column-id", "DD", true, false))
                              .then(() => e.equalTo("bac5-column-id", "EE", true, false))
                              .then(() => e.equalTo("bac5_bac4-column-id", "FF", true, false))
+                             .then(() => TestUtil.returnRealSaveAs())
                              .then(() => TestUtil.testPassed(12))
                              .then(() => resolve());
         });

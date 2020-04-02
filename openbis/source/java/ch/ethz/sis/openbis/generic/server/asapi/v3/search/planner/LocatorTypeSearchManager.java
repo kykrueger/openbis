@@ -51,10 +51,11 @@ public class LocatorTypeSearchManager extends AbstractSearchManager<LocatorTypeS
     }
 
     @Override
-    public Set<Long> searchForIDs(final Long userId, final LocatorTypeSearchCriteria criteria, final SortOptions<LocatorType> sortOptions,
+    public Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation,
+            final LocatorTypeSearchCriteria criteria, final SortOptions<LocatorType> sortOptions,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
-        return super.searchForIDs(userId, criteria, ID_COLUMN, TableMapper.LOCATOR_TYPES);
+        return super.searchForIDs(userId, authorisationInformation, criteria, ID_COLUMN, TableMapper.LOCATOR_TYPES);
     }
 
     @Override

@@ -50,10 +50,11 @@ public class SampleTypeSearchManager extends AbstractSearchManager<SampleTypeSea
     }
 
     @Override
-    public Set<Long> searchForIDs(final Long userId, final SampleTypeSearchCriteria criteria, final SortOptions<SampleType> sortOptions,
+    public Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation, final SampleTypeSearchCriteria criteria,
+            final SortOptions<SampleType> sortOptions,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
-        return super.searchForIDs(userId, criteria, idsColumnName, TableMapper.SAMPLE_TYPE);
+        return super.searchForIDs(userId, authorisationInformation, criteria, idsColumnName, TableMapper.SAMPLE_TYPE);
     }
 
     @Override

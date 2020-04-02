@@ -50,10 +50,11 @@ public class SampleSearchManager extends AbstractCompositeEntitySearchManager<Sa
         return SampleParentsSearchCriteria.class;
     }
 
-    public Set<Long> searchForIDs(final Long userId, final SampleSearchCriteria criteria, SortOptions<Sample> sortOptions,
+    public Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation, final SampleSearchCriteria criteria,
+            final SortOptions<Sample> sortOptions,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
-        return doSearchForIDs(userId, criteria, null, idsColumnName, TableMapper.SAMPLE);
+        return doSearchForIDs(userId, authorisationInformation, criteria, null, idsColumnName, TableMapper.SAMPLE);
     }
 
     @Override

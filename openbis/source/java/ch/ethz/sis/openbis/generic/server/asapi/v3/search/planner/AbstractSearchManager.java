@@ -65,15 +65,14 @@ public abstract class AbstractSearchManager<CRITERIA extends ISearchCriteria, OB
     }
 
     @Override
-    public Set<Long> filterIDsByUserRights(final Long userId, final Set<Long> ids)
+    public Set<Long> filterIDsByUserRights(final Long userId, final AuthorisationInformation authorisationInformation, final Set<Long> ids)
     {
-        final AuthorisationInformation authorizedSpaceProjectIds = getAuthProvider().findAuthorisedSpaceProjectIDs(userId);
-        if (authorizedSpaceProjectIds.getInstanceRoles().isEmpty())
-        {
-            return doFilterIDsByUserRights(ids, authorizedSpaceProjectIds);
-        } else
+        if (authorisationInformation.isInstanceRole())
         {
             return ids;
+        } else
+        {
+            return doFilterIDsByUserRights(ids, authorisationInformation);
         }
     }
 
@@ -117,11 +116,17 @@ public abstract class AbstractSearchManager<CRITERIA extends ISearchCriteria, OB
         switch (operator)
         {
             case AND:
+            {
                 return intersection(intermediateResults);
+            }
             case OR:
+            {
                 return union(intermediateResults);
+            }
             default:
+            {
                 throw new IllegalArgumentException("Unexpected value for search operator: " + operator);
+            }
         }
     }
 
@@ -198,29 +203,30 @@ public abstract class AbstractSearchManager<CRITERIA extends ISearchCriteria, OB
         return result;
     }
 
-    protected Set<Long> searchForIDs(final Long userId, final AbstractCompositeSearchCriteria criteria, final String selectColumnName,
+    protected Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation, final AbstractCompositeSearchCriteria criteria, final String selectColumnName,
             final TableMapper tableMapper)
     {
         final Set<Long> mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId, criteria, tableMapper,
-                selectColumnName);
+                selectColumnName, authorisationInformation);
 
         // If we have results, we use them
         // If we don't have results and criteria are not empty, there are no results.
         final Set<Long> resultBeforeFiltering =
                 containsValues(mainCriteriaIntermediateResults) ? mainCriteriaIntermediateResults : Collections.emptySet();
 
-        return filterIDsByUserRights(userId, resultBeforeFiltering);
+        return filterIDsByUserRights(userId, authorisationInformation, resultBeforeFiltering);
     }
 
-    protected Set<Long> searchForIDsByCriteriaCollection(final Long userId, final Collection<ISearchCriteria> criteria, final SearchOperator finalSearchOperator, final TableMapper tableMapper,
+    protected Set<Long> searchForIDsByCriteriaCollection(final Long userId, final AuthorisationInformation authorisationInformation,
+            final Collection<ISearchCriteria> criteria, final SearchOperator finalSearchOperator, final TableMapper tableMapper,
             final String idsColumnName)
     {
         if (!criteria.isEmpty())
         {
             final DummyCompositeSearchCriterion containerCriterion = new DummyCompositeSearchCriterion(criteria, finalSearchOperator);
             final Set<Long> mainCriteriaNotFilteredResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId, containerCriterion, tableMapper,
-                    idsColumnName);
-            return filterIDsByUserRights(userId, mainCriteriaNotFilteredResults);
+                    idsColumnName, authorisationInformation);
+            return filterIDsByUserRights(userId, authorisationInformation, mainCriteriaNotFilteredResults);
         } else
         {
             return Collections.emptySet();

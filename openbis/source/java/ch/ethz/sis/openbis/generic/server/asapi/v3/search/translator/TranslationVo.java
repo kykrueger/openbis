@@ -27,6 +27,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinInformation;
@@ -57,6 +58,8 @@ public class TranslationVo
     private String[] typesToFilter;
 
     private String idColumnName;
+
+    private AuthorisationInformation authorisationInformation;
 
     public Long getUserId()
     {
@@ -177,6 +180,16 @@ public class TranslationVo
     public void setIdColumnName(final String idColumnName)
     {
         this.idColumnName = idColumnName;
+    }
+
+    public AuthorisationInformation getAuthorisationInformation()
+    {
+        return authorisationInformation;
+    }
+
+    public void setAuthorisationInformation(final AuthorisationInformation authorisationInformation)
+    {
+        this.authorisationInformation = authorisationInformation;
     }
 
 }

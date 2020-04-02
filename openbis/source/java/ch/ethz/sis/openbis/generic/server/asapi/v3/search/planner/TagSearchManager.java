@@ -57,7 +57,8 @@ public class TagSearchManager extends AbstractSearchManager<TagSearchCriteria, T
     }
 
     @Override
-    public Set<Long> searchForIDs(final Long userId, final TagSearchCriteria criteria, final SortOptions<Tag> sortOptions,
+    public Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation, final TagSearchCriteria criteria,
+            final SortOptions<Tag> sortOptions,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
         // Replacing perm ID and code search criteria with name search criteria, because for tags perm ID and code are equivalent to name
@@ -76,7 +77,7 @@ public class TagSearchManager extends AbstractSearchManager<TagSearchCriteria, T
         }).collect(Collectors.toList());
 
         final Set<Long> mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId,
-                new DummyCompositeSearchCriterion(newCriteria, criteria.getOperator()), TableMapper.TAG, idsColumnName);
+                new DummyCompositeSearchCriterion(newCriteria, criteria.getOperator()), TableMapper.TAG, idsColumnName, authorisationInformation);
 
         if (!containsValues(mainCriteriaIntermediateResults))
         {
@@ -90,7 +91,7 @@ public class TagSearchManager extends AbstractSearchManager<TagSearchCriteria, T
             return Collections.emptySet();
         }
 
-        return filterIDsByUserRights(userId, resultAfterFiltering);
+        return filterIDsByUserRights(userId, authorisationInformation, resultAfterFiltering);
     }
 
     @Override

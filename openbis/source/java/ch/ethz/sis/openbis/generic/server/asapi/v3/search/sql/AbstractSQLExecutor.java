@@ -53,8 +53,8 @@ public abstract class AbstractSQLExecutor implements ISQLExecutor
     @Override
     public List<Map<String, Object>> execute(final String sqlQuery, final List<Object> args)
     {
-        System.out.println("QUERY: " + sqlQuery);
-        System.out.println("ARGS: " + Arrays.deepToString(args.toArray()));
+        OPERATION_LOG.info("QUERY: " + sqlQuery);
+        OPERATION_LOG.info("ARGS: " + Arrays.deepToString(args.toArray()));
 
         final List<Map<String, Object>> results = new ArrayList<>();
         try (final PreparedStatement preparedStatement = getConnection().prepareStatement(sqlQuery))
@@ -86,24 +86,9 @@ public abstract class AbstractSQLExecutor implements ISQLExecutor
             throw new RuntimeException(ex);
         }
 
-        System.out.println("RESULTS COUNT: " + results.size());
-        System.out.println("RESULTS: " + results);
+        OPERATION_LOG.info("RESULTS COUNT: " + results.size());
+        OPERATION_LOG.debug("RESULTS: " + results);
         return results;
-    }
-
-    public void executeUpdate(final String sqlQuery, final List<Object> args)
-    {
-        System.out.println("QUERY: " + sqlQuery);
-        System.out.println("ARGS: " + args);
-
-        try (final PreparedStatement preparedStatement = getConnection().prepareStatement(sqlQuery))
-        {
-            setArgsForPreparedStatement(args, preparedStatement);
-            preparedStatement.executeUpdate();
-        } catch (SQLException ex)
-        {
-            throw new RuntimeException(ex);
-        }
     }
 
     private void setArgsForPreparedStatement(final List<Object> args, final PreparedStatement preparedStatement) throws SQLException
@@ -123,7 +108,7 @@ public abstract class AbstractSQLExecutor implements ISQLExecutor
                             + " - With elements of type: " + arrayObjectType.getName() + " - Data: " + Arrays.toString(objectArray));
                 }
 
-                preparedStatement.setArray(index + 1, getConnection().createArrayOf(psqlType.toString(), objectArray));
+                preparedStatement.setArray(index + 1, preparedStatement.getConnection().createArrayOf(psqlType.toString(), objectArray));
             } else if (object instanceof Date)
             {
                 final Date date = (Date) object;

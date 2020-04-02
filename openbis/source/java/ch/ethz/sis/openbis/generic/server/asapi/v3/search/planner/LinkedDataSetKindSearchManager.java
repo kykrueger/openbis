@@ -54,16 +54,17 @@ public class LinkedDataSetKindSearchManager extends AbstractSearchManager<Linked
     }
 
     @Override
-    public Set<Long> searchForIDs(final Long userId, final LinkedDataSearchCriteria criteria, final SortOptions<DataSetType> sortOptions,
+    public Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation,
+            final LinkedDataSearchCriteria criteria, final SortOptions<DataSetType> sortOptions,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
         final SearchOperator searchOperator = criteria.getOperator();
         final SearchOperator finalSearchOperator = (searchOperator == null) ? criteria.getOperator() : searchOperator;
-        final Set<Long> mainCriteriaIds = doSearchForIDs(userId, idsColumnName);
+        final Set<Long> mainCriteriaIds = doSearchForIDs(userId, authorisationInformation, idsColumnName);
 
         if (!criteria.getCriteria().isEmpty())
         {
-            final Set<Long> childCriteriaIds = searchForIDsByCriteriaCollection(userId, criteria.getCriteria(), finalSearchOperator, CONTENT_COPIES, DATA_ID_COLUMN);
+            final Set<Long> childCriteriaIds = searchForIDsByCriteriaCollection(userId, authorisationInformation, criteria.getCriteria(), finalSearchOperator, CONTENT_COPIES, DATA_ID_COLUMN);
             mainCriteriaIds.retainAll(childCriteriaIds);
         }
 
@@ -75,7 +76,7 @@ public class LinkedDataSetKindSearchManager extends AbstractSearchManager<Linked
         return doSortIDs(filteredIDs, sortOptions, CONTENT_COPIES);
     }
 
-    private Set<Long> doSearchForIDs(final Long userId, final String idsColumnName)
+    private Set<Long> doSearchForIDs(final Long userId, final AuthorisationInformation authorisationInformation, final String idsColumnName)
     {
         final DataSetKindSearchCriteria dataSetKindSearchCriteria = new DataSetKindSearchCriteria();
         dataSetKindSearchCriteria.thatEquals("LINK");
@@ -83,14 +84,14 @@ public class LinkedDataSetKindSearchManager extends AbstractSearchManager<Linked
         final DummyCompositeSearchCriterion compositeSearchCriterion = new DummyCompositeSearchCriterion();
         compositeSearchCriterion.setCriteria(Collections.singletonList(dataSetKindSearchCriteria));
 
-        final Set<Long> mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId, compositeSearchCriterion, DATA_SET, idsColumnName);
+        final Set<Long> mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId, compositeSearchCriterion, DATA_SET, idsColumnName, authorisationInformation);
 
         // If we have results, we use them
         // If we don't have results and criteria are not empty, there are no results.
         final Set<Long> resultBeforeFiltering =
                 containsValues(mainCriteriaIntermediateResults) ? mainCriteriaIntermediateResults : Collections.emptySet();
 
-        return filterIDsByUserRights(userId, resultBeforeFiltering);
+        return filterIDsByUserRights(userId, authorisationInformation, resultBeforeFiltering);
     }
 
 }

@@ -135,13 +135,17 @@ var AdminTests = new function() {
     }
 
     this.orderForm = function() {
+        var baseURL = location.protocol + '//' + location.host + location.pathname;
+        var pathToResource = "js/test/resources/order_ORD1_p0.txt";
+
         return new Promise(function executor(resolve, reject) {
             var e = EventUtil;
 
             testChain = Promise.resolve();
 
-            testChain.then(() => e.waitForId("STOCK_CATALOG"))
-                     // path to Order Collection
+            testChain.then(() => TestUtil.overloadSaveAs())
+                    // path to Order Collection
+                    .then(() => e.waitForId("STOCK_CATALOG"))
                      .then(() => e.click("STOCK_CATALOG"))
                      .then(() => e.waitForId("STOCK_ORDERS"))
                      .then(() => e.click("STOCK_ORDERS"))
@@ -171,6 +175,9 @@ var AdminTests = new function() {
                      // print
                      .then(() => e.waitForId("print-order-id"))
                      .then(() => e.click("print-order-id"))
+                     .then(() => e.sleep(3000)) // wait for download
+                     .then(() => TestUtil.checkFileEquality("order_ORD1_p0.txt", baseURL + pathToResource, TestUtil.dateReplacer))
+                     .then(() => TestUtil.returnRealSaveAs())
                      .then(() => TestUtil.testPassed(31))
                      .then(() => resolve());
         });
