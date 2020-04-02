@@ -262,6 +262,35 @@ public class DeleteSampleTest extends AbstractDeletionTest
         assertEquals(sample.getProperties().toString(), "{}");
     }
 
+    @Test
+    public void testDeleteSampleWithSampleProperty()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createASamplePropertyType(sessionToken, null);
+        EntityTypePermId sampleType = createASampleType(sessionToken, true, propertyType);
+        SampleCreation sampleCreation = new SampleCreation();
+        sampleCreation.setCode("SAMPLE_WITH_SAMPLE_PROPERTY");
+        sampleCreation.setTypeId(sampleType);
+        sampleCreation.setSpaceId(new SpacePermId("TEST-SPACE"));
+        SamplePermId propertySamplePermId = createCisdSample(createCisdExperiment());
+        sampleCreation.setSampleProperty(propertyType.getPermId(), propertySamplePermId);
+        SamplePermId samplePermId = v3api.createSamples(sessionToken, Arrays.asList(sampleCreation)).get(0);
+        SampleDeletionOptions deletionOptions = new SampleDeletionOptions();
+        deletionOptions.setReason("a test");
+
+        // When
+        IDeletionId deletionId = v3api.deleteSamples(sessionToken, Arrays.asList(samplePermId), deletionOptions);
+
+        // Then
+        SampleFetchOptions fetchOptions = new SampleFetchOptions();
+        fetchOptions.withProperties();
+        fetchOptions.withSampleProperties();
+        assertEquals(v3api.getSamples(sessionToken, Arrays.asList(samplePermId), fetchOptions).toString(), "{}");
+        v3api.confirmDeletions(sessionToken, Arrays.asList(deletionId));
+        assertEquals(v3api.getSamples(sessionToken, Arrays.asList(samplePermId), fetchOptions).toString(), "{}");
+    }
+
     @Test(dataProviderClass = ProjectAuthorizationUser.class, dataProvider = ProjectAuthorizationUser.PROVIDER_WITH_ETL)
     public void testDeleteWithProjectAuthorization(ProjectAuthorizationUser user)
     {

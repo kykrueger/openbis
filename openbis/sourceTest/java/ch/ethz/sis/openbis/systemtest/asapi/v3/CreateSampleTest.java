@@ -1107,6 +1107,25 @@ public class CreateSampleTest extends AbstractSampleTest
     }
 
     @Test
+    public void testCreateWithMissingMandatoryPropertyOfTypeSample()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createASamplePropertyType(sessionToken, null);
+        EntityTypePermId sampleType = createASampleType(sessionToken, true, propertyType);
+
+        SampleCreation sample = new SampleCreation();
+        sample.setCode("SAMPLE_WITH_SAMPLE_PROPERTY");
+        sample.setTypeId(sampleType);
+        sample.setSpaceId(new SpacePermId("CISD"));
+
+        // When
+        assertUserFailureException(Void -> v3api.createSamples(sessionToken, Arrays.asList(sample)),
+                // Then
+                "Value of mandatory property '" + propertyType.getPermId() + "' not specified.");
+    }
+
+    @Test
     public void testCreateWithPropertyOfTypeSampleWithSampleOfWrongType()
     {
         // Given

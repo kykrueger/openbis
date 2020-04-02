@@ -16,6 +16,7 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.property;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -107,6 +108,13 @@ public class UpdateEntityPropertyExecutor implements IUpdateEntityPropertyExecut
     public void update(final IOperationContext context,
             final MapBatch<? extends IPropertiesHolder, ? extends IEntityInformationWithPropertiesHolder> holderToEntityMap)
     {
+        updateProperties(context, holderToEntityMap);
+        updatePropertiesOfTypeSample(context, holderToEntityMap);
+    }
+
+    private void updateProperties(final IOperationContext context,
+            MapBatch<? extends IPropertiesHolder, ? extends IEntityInformationWithPropertiesHolder> holderToEntityMap)
+    {
         final MapBatch<IEntityInformationWithPropertiesHolder, Map<String, String>> entityToPropertiesMap =
                 getEntityToPropertiesMap(holderToEntityMap, entity -> entity.getProperties());
 
@@ -138,81 +146,131 @@ public class UpdateEntityPropertyExecutor implements IUpdateEntityPropertyExecut
                     }
                 };
         }
+    }
 
+    private void updatePropertiesOfTypeSample(final IOperationContext context,
+            MapBatch<? extends IPropertiesHolder, ? extends IEntityInformationWithPropertiesHolder> holderToEntityMap)
+    {
         MapBatch<IEntityInformationWithPropertiesHolder, Map<String, ISampleId>> entityToSamplePropertiesMap =
                 getEntityToPropertiesMap(holderToEntityMap, SAMPLE_PROPERTIES_EXTRACTOR);
         if (entityToSamplePropertiesMap != null && entityToSamplePropertiesMap.isEmpty() == false)
         {
-            injectSampleProperties(context, entityToSamplePropertiesMap);
-        }
+            Map<ISampleId, SamplePE> samplesById = getSamples(context, entityToSamplePropertiesMap);
+            new MapBatchProcessor<IEntityInformationWithPropertiesHolder, Map<String, ISampleId>>(context, entityToSamplePropertiesMap)
+                {
+                    @Override
+                    public void process(IEntityInformationWithPropertiesHolder entity, Map<String, ISampleId> properties)
+                    {
+                        Map<String, EntityPropertyPE> existingPropertiesByCode = getExistingPropertiesByCode(entity);
+                        Map<String, EntityTypePropertyTypePE> entityTypePropertyTypeByPropertyType =
+                                getEntityTypePropertyTypeByPropertyType(entity);
+                        updateProperties(context, entity, properties, samplesById, existingPropertiesByCode,
+                                entityTypePropertyTypeByPropertyType);
+                    }
 
+                    @Override
+                    public IProgress createProgress(IEntityInformationWithPropertiesHolder key, Map<String, ISampleId> value, int objectIndex,
+                            int totalObjectCount)
+                    {
+                        return new EntityProgress("update properties of type sample", key, objectIndex, totalObjectCount);
+                    }
+                };
+        }
     }
 
-    private void injectSampleProperties(final IOperationContext context,
-            MapBatch<IEntityInformationWithPropertiesHolder, Map<String, ISampleId>> entityToSamplePropertiesMap)
+    private void updateProperties(final IOperationContext context, IEntityInformationWithPropertiesHolder entity,
+            Map<String, ISampleId> properties, Map<ISampleId, SamplePE> samplesById,
+            Map<String, EntityPropertyPE> existingPropertiesByCode,
+            Map<String, EntityTypePropertyTypePE> entityTypePropertyTypeByPropertyType)
     {
-        Map<ISampleId, SamplePE> samplesById = getSamples(context, entityToSamplePropertiesMap);
-        new MapBatchProcessor<IEntityInformationWithPropertiesHolder, Map<String, ISampleId>>(context, entityToSamplePropertiesMap)
+        for (Entry<String, ISampleId> property : properties.entrySet())
+        {
+            String propertyCode = property.getKey();
+            EntityTypePropertyTypePE etpt = entityTypePropertyTypeByPropertyType.get(propertyCode);
+            if (etpt == null)
             {
-                @Override
-                public void process(IEntityInformationWithPropertiesHolder entity, Map<String, ISampleId> properties)
+                throw new UserFailureException("Not a property of data type SAMPLE: " + propertyCode);
+            }
+            EntityPropertyPE existingProperty = existingPropertiesByCode.get(propertyCode);
+            ISampleId sampleId = property.getValue();
+            SamplePE sample = validateAndGetSample(samplesById, sampleId, etpt, propertyCode);
+            if (existingProperty != null)
+            {
+                if (sample == null)
                 {
-                    Map<String, EntityTypePropertyTypePE> entityTypePropertyTypeByPropertyType =
-                            getEntityTypePropertyTypeByPropertyType(entity);
-                    for (Entry<String, ISampleId> property : properties.entrySet())
+                    if (existingProperty.getEntityTypePropertyType().isMandatory() == false)
                     {
-                        String propertyCode = property.getKey();
-                        EntityTypePropertyTypePE etpt = entityTypePropertyTypeByPropertyType.get(propertyCode);
-                        if (etpt == null)
-                        {
-                            throw new UserFailureException("Not a property of data type SAMPLE: " + propertyCode);
-                        }
-                        ISampleId sampleId = property.getValue();
-                        SamplePE sample = samplesById.get(sampleId);
-                        if (sample == null)
-                        {
-                            throw new UserFailureException("Unknown sample: " + sampleId);
-                        }
-                        SampleTypePE sampleType = etpt.getPropertyType().getSampleType();
-                        if (sampleType != null && sampleType.getCode().equals(sample.getSampleType().getCode()) == false)
-                        {
-                            throw new UserFailureException("Property " + propertyCode + " is not a sample of type "
-                                    + sampleType.getCode() + " but of type " + sample.getSampleType().getCode());
-                        }
-                        EntityPropertyPE entityProperty = EntityPropertyPE.createEntityProperty(entity.getEntityKind());
-                        if (entityProperty instanceof EntityPropertyWithSampleDataTypePE)
-                        {
-                            ((EntityPropertyWithSampleDataTypePE) entityProperty).setSampleValue(sample);
-                            PersonPE registrator = context.getSession().tryGetPerson();
-                            entityProperty.setRegistrator(registrator);
-                            entityProperty.setAuthor(registrator);
-                            entityProperty.setEntityTypePropertyType(etpt);
-                            entity.addProperty(entityProperty);
-                        }
-                    }
-                }
-
-                private Map<String, EntityTypePropertyTypePE> getEntityTypePropertyTypeByPropertyType(IEntityInformationWithPropertiesHolder entity)
-                {
-                    Map<String, EntityTypePropertyTypePE> entityTypePropertyTypeByPropertyType = new HashMap<>();
-                    for (EntityTypePropertyTypePE etpt : entity.getEntityType().getEntityTypePropertyTypes())
+                        entity.removeProperty(existingProperty);
+                    } else
                     {
-                        PropertyTypePE propertyType = etpt.getPropertyType();
-                        if (DataTypeCode.SAMPLE.equals(propertyType.getType().getCode()))
-                        {
-                            entityTypePropertyTypeByPropertyType.put(propertyType.getCode(), etpt);
-                        }
+                        throw new UserFailureException("Property " + propertyCode + " of entity type "
+                                + etpt.getEntityType().getCode()
+                                + " can not be deleted because it is mandatory.");
                     }
-                    return entityTypePropertyTypeByPropertyType;
-                }
-
-                @Override
-                public IProgress createProgress(IEntityInformationWithPropertiesHolder key, Map<String, ISampleId> value, int objectIndex,
-                        int totalObjectCount)
+                } else if (existingProperty instanceof EntityPropertyWithSampleDataTypePE)
                 {
-                    return new EntityProgress("update properties of type sample", key, objectIndex, totalObjectCount);
+                    ((EntityPropertyWithSampleDataTypePE) existingProperty).setSampleValue(sample);
                 }
-            };
+            } else if (sample != null)
+            {
+                EntityPropertyPE entityProperty = EntityPropertyPE.createEntityProperty(entity.getEntityKind());
+                if (entityProperty instanceof EntityPropertyWithSampleDataTypePE)
+                {
+                    PersonPE registrator = context.getSession().tryGetPerson();
+                    entityProperty.setRegistrator(registrator);
+                    entityProperty.setAuthor(registrator);
+                    entityProperty.setEntityTypePropertyType(etpt);
+                    ((EntityPropertyWithSampleDataTypePE) entityProperty).setSampleValue(sample);
+                    entity.addProperty(entityProperty);
+                }
+            }
+        }
+    }
+
+    private SamplePE validateAndGetSample(Map<ISampleId, SamplePE> samplesById, ISampleId sampleId, EntityTypePropertyTypePE etpt,
+            String propertyCode)
+    {
+        if (sampleId == null)
+        {
+            return null;
+        }
+        SamplePE sample = samplesById.get(sampleId);
+        if (sample == null)
+        {
+            throw new UserFailureException("Unknown sample: " + sampleId);
+        }
+        SampleTypePE sampleType = etpt.getPropertyType().getSampleType();
+        if (sampleType != null && sampleType.getCode().equals(sample.getSampleType().getCode()) == false)
+        {
+            throw new UserFailureException("Property " + propertyCode + " is not a sample of type "
+                    + sampleType.getCode() + " but of type " + sample.getSampleType().getCode());
+        }
+        return sample;
+    }
+
+    private Map<String, EntityPropertyPE> getExistingPropertiesByCode(IEntityInformationWithPropertiesHolder entity)
+    {
+        Map<String, EntityPropertyPE> existingPropertiesByCode = new HashMap<>();
+        for (EntityPropertyPE entityProperty : entity.getProperties())
+        {
+            PropertyTypePE propertyType = entityProperty.getEntityTypePropertyType().getPropertyType();
+            existingPropertiesByCode.put(propertyType.getCode(), entityProperty);
+        }
+        return existingPropertiesByCode;
+    }
+
+    private Map<String, EntityTypePropertyTypePE> getEntityTypePropertyTypeByPropertyType(IEntityInformationWithPropertiesHolder entity)
+    {
+        Map<String, EntityTypePropertyTypePE> entityTypePropertyTypeByPropertyType = new HashMap<>();
+        for (EntityTypePropertyTypePE etpt : entity.getEntityType().getEntityTypePropertyTypes())
+        {
+            PropertyTypePE propertyType = etpt.getPropertyType();
+            if (DataTypeCode.SAMPLE.equals(propertyType.getType().getCode()))
+            {
+                entityTypePropertyTypeByPropertyType.put(propertyType.getCode(), etpt);
+            }
+        }
+        return entityTypePropertyTypeByPropertyType;
     }
 
     private Map<ISampleId, SamplePE> getSamples(final IOperationContext context,
@@ -231,7 +289,14 @@ public class UpdateEntityPropertyExecutor implements IUpdateEntityPropertyExecut
         Set<ISampleId> sampleIds = new HashSet<>();
         for (Map<String, ISampleId> map : entityToSamplePropertiesMap.getObjects().values())
         {
-            sampleIds.addAll(map.values());
+            Collection<ISampleId> values = map.values();
+            for (ISampleId sample : values)
+            {
+                if (sample != null)
+                {
+                    sampleIds.add(sample);
+                }
+            }
         }
         return sampleIds;
     }
