@@ -209,723 +209,731 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.update.VocabularyUpda
 import java.util.List;
 import java.util.Map;
 
-public class IApplicationServerApiJDBCWrapper implements IApplicationServerApi {
+public class ApplicationServerApiJDBCWrapper implements IApplicationServerApi {
 
     private IApplicationServerApi instance;
     private String jdbcConnectionString;
     private String jdbcUser;
     private String jdbcPass;
 
-    public
-
+    public ApplicationServerApiJDBCWrapper(IApplicationServerApi instance,
+                                           String jdbcConnectionString,
+                                           String jdbcUser,
+                                           String jdbcPass) {
+        this.instance = instance;
+        this.jdbcConnectionString = jdbcConnectionString;
+        this.jdbcUser = jdbcUser;
+        this.jdbcPass = jdbcPass;
+    }
 
     @Override
     public String login(String s, String s1) {
-        return null;
+        return instance.login(s, s1);
     }
 
     @Override
     public String loginAs(String s, String s1, String s2) {
-        return null;
+        return instance.loginAs(s, s1, s2);
     }
 
     @Override
     public String loginAsAnonymousUser() {
-        return null;
+        return instance.loginAsAnonymousUser();
     }
 
     @Override
     public void logout(String s) {
-
+        instance.logout(s);
     }
 
     @Override
     public SessionInformation getSessionInformation(String s) {
-        return null;
+        return instance.getSessionInformation(s);
     }
 
     @Override
     public boolean isSessionActive(String s) {
-        return false;
+        return instance.isSessionActive(s);
     }
 
     @Override
     public List<SpacePermId> createSpaces(String s, List<SpaceCreation> list) {
-        return null;
+        return instance.createSpaces(s, list);
     }
 
     @Override
     public List<ProjectPermId> createProjects(String s, List<ProjectCreation> list) {
-        return null;
+        return instance.createProjects(s, list);
     }
 
     @Override
     public List<ExperimentPermId> createExperiments(String s, List<ExperimentCreation> list) {
-        return null;
+        return instance.createExperiments(s, list);
     }
 
     @Override
     public List<EntityTypePermId> createExperimentTypes(String s, List<ExperimentTypeCreation> list) {
-        return null;
+        return instance.createExperimentTypes(s, list);
     }
 
     @Override
     public List<SamplePermId> createSamples(String s, List<SampleCreation> list) {
-        return null;
+        return instance.createSamples(s, list);
     }
 
     @Override
     public List<EntityTypePermId> createSampleTypes(String s, List<SampleTypeCreation> list) {
-        return null;
+        return instance.createSampleTypes(s, list);
     }
 
     @Override
     public List<DataSetPermId> createDataSets(String s, List<DataSetCreation> list) {
-        return null;
+        return instance.createDataSets(s, list);
     }
 
     @Override
     public List<EntityTypePermId> createDataSetTypes(String s, List<DataSetTypeCreation> list) {
-        return null;
+        return instance.createDataSetTypes(s, list);
     }
 
     @Override
     public List<MaterialPermId> createMaterials(String s, List<MaterialCreation> list) {
-        return null;
+        return instance.createMaterials(s, list);
     }
 
     @Override
     public List<EntityTypePermId> createMaterialTypes(String s, List<MaterialTypeCreation> list) {
-        return null;
+        return instance.createMaterialTypes(s, list);
     }
 
     @Override
     public List<PropertyTypePermId> createPropertyTypes(String s, List<PropertyTypeCreation> list) {
-        return null;
+        return instance.createPropertyTypes(s, list);
     }
 
     @Override
     public List<PluginPermId> createPlugins(String s, List<PluginCreation> list) {
-        return null;
+        return instance.createPlugins(s, list);
     }
 
     @Override
     public List<VocabularyPermId> createVocabularies(String s, List<VocabularyCreation> list) {
-        return null;
+        return instance.createVocabularies(s, list);
     }
 
     @Override
     public List<VocabularyTermPermId> createVocabularyTerms(String s, List<VocabularyTermCreation> list) {
-        return null;
+        return instance.createVocabularyTerms(s, list);
     }
 
     @Override
     public List<TagPermId> createTags(String s, List<TagCreation> list) {
-        return null;
+        return instance.createTags(s, list);
     }
 
     @Override
     public List<AuthorizationGroupPermId> createAuthorizationGroups(String s, List<AuthorizationGroupCreation> list) {
-        return null;
+        return instance.createAuthorizationGroups(s, list);
     }
 
     @Override
     public List<RoleAssignmentTechId> createRoleAssignments(String s, List<RoleAssignmentCreation> list) {
-        return null;
+        return instance.createRoleAssignments(s, list);
     }
 
     @Override
     public List<PersonPermId> createPersons(String s, List<PersonCreation> list) {
-        return null;
+        return instance.createPersons(s, list);
     }
 
     @Override
     public List<ExternalDmsPermId> createExternalDataManagementSystems(String s, List<ExternalDmsCreation> list) {
-        return null;
+        return instance.createExternalDataManagementSystems(s, list);
     }
 
     @Override
     public List<QueryTechId> createQueries(String s, List<QueryCreation> list) {
-        return null;
+        return instance.createQueries(s, list);
     }
 
     @Override
     public List<SemanticAnnotationPermId> createSemanticAnnotations(String s, List<SemanticAnnotationCreation> list) {
-        return null;
+        return instance.createSemanticAnnotations(s, list);
     }
 
     @Override
     public void updateSpaces(String s, List<SpaceUpdate> list) {
-
+        instance.updateSpaces(s, list);
     }
 
     @Override
     public void updateProjects(String s, List<ProjectUpdate> list) {
-
+        instance.updateProjects(s, list);
     }
 
     @Override
     public void updateExperiments(String s, List<ExperimentUpdate> list) {
-
+        instance.updateExperiments(s, list);
     }
 
     @Override
     public void updateExperimentTypes(String s, List<ExperimentTypeUpdate> list) {
-
+        instance.updateExperimentTypes(s, list);
     }
 
     @Override
     public void updateSamples(String s, List<SampleUpdate> list) {
-
+        instance.updateSamples(s, list);
     }
 
     @Override
     public void updateSampleTypes(String s, List<SampleTypeUpdate> list) {
-
+        instance.updateSampleTypes(s, list);
     }
 
     @Override
     public void updateDataSets(String s, List<DataSetUpdate> list) {
-
+        instance.updateDataSets(s, list);
     }
 
     @Override
     public void updateDataSetTypes(String s, List<DataSetTypeUpdate> list) {
-
+        instance.updateDataSetTypes(s, list);
     }
 
     @Override
     public void updateMaterials(String s, List<MaterialUpdate> list) {
-
+        instance.updateMaterials(s, list);
     }
 
     @Override
     public void updateMaterialTypes(String s, List<MaterialTypeUpdate> list) {
-
+        instance.updateMaterialTypes(s, list);
     }
 
     @Override
     public void updateExternalDataManagementSystems(String s, List<ExternalDmsUpdate> list) {
-
+        instance.updateExternalDataManagementSystems(s, list);
     }
 
     @Override
     public void updatePropertyTypes(String s, List<PropertyTypeUpdate> list) {
-
+        instance.updatePropertyTypes(s, list);
     }
 
     @Override
     public void updatePlugins(String s, List<PluginUpdate> list) {
-
+        instance.updatePlugins(s, list);
     }
 
     @Override
     public void updateVocabularies(String s, List<VocabularyUpdate> list) {
-
+        instance.updateVocabularies(s, list);
     }
 
     @Override
     public void updateVocabularyTerms(String s, List<VocabularyTermUpdate> list) {
-
+        instance.updateVocabularyTerms(s, list);
     }
 
     @Override
     public void updateTags(String s, List<TagUpdate> list) {
-
+        instance.updateTags(s, list);
     }
 
     @Override
     public void updateAuthorizationGroups(String s, List<AuthorizationGroupUpdate> list) {
-
+        instance.updateAuthorizationGroups(s, list);
     }
 
     @Override
     public void updatePersons(String s, List<PersonUpdate> list) {
-
+        instance.updatePersons(s, list);
     }
 
     @Override
     public void updateOperationExecutions(String s, List<OperationExecutionUpdate> list) {
-
+        instance.updateOperationExecutions(s, list);
     }
 
     @Override
     public void updateSemanticAnnotations(String s, List<SemanticAnnotationUpdate> list) {
-
+        instance.updateSemanticAnnotations(s, list);
     }
 
     @Override
     public void updateQueries(String s, List<QueryUpdate> list) {
+        instance.updateQueries(s, list);
 
     }
 
     @Override
     public Map<ISpaceId, Space> getSpaces(String s, List<? extends ISpaceId> list, SpaceFetchOptions spaceFetchOptions) {
-        return null;
+        return instance.getSpaces(s, list, spaceFetchOptions);
     }
 
     @Override
     public Map<IProjectId, Project> getProjects(String s, List<? extends IProjectId> list, ProjectFetchOptions projectFetchOptions) {
-        return null;
+        return instance.getProjects(s, list, projectFetchOptions);
     }
 
     @Override
     public Map<IExperimentId, Experiment> getExperiments(String s, List<? extends IExperimentId> list, ExperimentFetchOptions experimentFetchOptions) {
-        return null;
+        return instance.getExperiments(s, list, experimentFetchOptions);
     }
 
     @Override
     public Map<IEntityTypeId, ExperimentType> getExperimentTypes(String s, List<? extends IEntityTypeId> list, ExperimentTypeFetchOptions experimentTypeFetchOptions) {
-        return null;
+        return instance.getExperimentTypes(s, list, experimentTypeFetchOptions);
     }
 
     @Override
     public Map<ISampleId, Sample> getSamples(String s, List<? extends ISampleId> list, SampleFetchOptions sampleFetchOptions) {
-        return null;
+        return instance.getSamples(s, list, sampleFetchOptions);
     }
 
     @Override
     public Map<IEntityTypeId, SampleType> getSampleTypes(String s, List<? extends IEntityTypeId> list, SampleTypeFetchOptions sampleTypeFetchOptions) {
-        return null;
+        return instance.getSampleTypes(s, list, sampleTypeFetchOptions);
     }
 
     @Override
     public Map<IDataSetId, DataSet> getDataSets(String s, List<? extends IDataSetId> list, DataSetFetchOptions dataSetFetchOptions) {
-        return null;
+        return instance.getDataSets(s, list, dataSetFetchOptions);
     }
 
     @Override
     public Map<IEntityTypeId, DataSetType> getDataSetTypes(String s, List<? extends IEntityTypeId> list, DataSetTypeFetchOptions dataSetTypeFetchOptions) {
-        return null;
+        return instance.getDataSetTypes(s, list, dataSetTypeFetchOptions);
     }
 
     @Override
     public Map<IMaterialId, Material> getMaterials(String s, List<? extends IMaterialId> list, MaterialFetchOptions materialFetchOptions) {
-        return null;
+        return instance.getMaterials(s, list, materialFetchOptions);
     }
 
     @Override
     public Map<IEntityTypeId, MaterialType> getMaterialTypes(String s, List<? extends IEntityTypeId> list, MaterialTypeFetchOptions materialTypeFetchOptions) {
-        return null;
+        return instance.getMaterialTypes(s, list, materialTypeFetchOptions);
     }
 
     @Override
     public Map<IPropertyTypeId, PropertyType> getPropertyTypes(String s, List<? extends IPropertyTypeId> list, PropertyTypeFetchOptions propertyTypeFetchOptions) {
-        return null;
+        return instance.getPropertyTypes(s, list, propertyTypeFetchOptions);
     }
 
     @Override
     public Map<IPluginId, Plugin> getPlugins(String s, List<? extends IPluginId> list, PluginFetchOptions pluginFetchOptions) {
-        return null;
+        return instance.getPlugins(s, list, pluginFetchOptions);
     }
 
     @Override
     public Map<IVocabularyId, Vocabulary> getVocabularies(String s, List<? extends IVocabularyId> list, VocabularyFetchOptions vocabularyFetchOptions) {
-        return null;
+        return instance.getVocabularies(s, list, vocabularyFetchOptions);
     }
 
     @Override
     public Map<IVocabularyTermId, VocabularyTerm> getVocabularyTerms(String s, List<? extends IVocabularyTermId> list, VocabularyTermFetchOptions vocabularyTermFetchOptions) {
-        return null;
+        return instance.getVocabularyTerms(s, list, vocabularyTermFetchOptions);
     }
 
     @Override
     public Map<ITagId, Tag> getTags(String s, List<? extends ITagId> list, TagFetchOptions tagFetchOptions) {
-        return null;
+        return instance.getTags(s, list, tagFetchOptions);
     }
 
     @Override
     public Map<IAuthorizationGroupId, AuthorizationGroup> getAuthorizationGroups(String s, List<? extends IAuthorizationGroupId> list, AuthorizationGroupFetchOptions authorizationGroupFetchOptions) {
-        return null;
+        return instance.getAuthorizationGroups(s, list, authorizationGroupFetchOptions);
     }
 
     @Override
     public Map<IRoleAssignmentId, RoleAssignment> getRoleAssignments(String s, List<? extends IRoleAssignmentId> list, RoleAssignmentFetchOptions roleAssignmentFetchOptions) {
-        return null;
+        return instance.getRoleAssignments(s, list, roleAssignmentFetchOptions);
     }
 
     @Override
     public Map<IPersonId, Person> getPersons(String s, List<? extends IPersonId> list, PersonFetchOptions personFetchOptions) {
-        return null;
+        return instance.getPersons(s, list, personFetchOptions);
     }
 
     @Override
     public Map<IExternalDmsId, ExternalDms> getExternalDataManagementSystems(String s, List<? extends IExternalDmsId> list, ExternalDmsFetchOptions externalDmsFetchOptions) {
-        return null;
+        return instance.getExternalDataManagementSystems(s, list, externalDmsFetchOptions);
     }
 
     @Override
     public Map<ISemanticAnnotationId, SemanticAnnotation> getSemanticAnnotations(String s, List<? extends ISemanticAnnotationId> list, SemanticAnnotationFetchOptions semanticAnnotationFetchOptions) {
-        return null;
+        return instance.getSemanticAnnotations(s, list, semanticAnnotationFetchOptions);
     }
 
     @Override
     public Map<IOperationExecutionId, OperationExecution> getOperationExecutions(String s, List<? extends IOperationExecutionId> list, OperationExecutionFetchOptions operationExecutionFetchOptions) {
-        return null;
+        return instance.getOperationExecutions(s, list, operationExecutionFetchOptions);
     }
 
     @Override
     public Map<IQueryId, Query> getQueries(String s, List<? extends IQueryId> list, QueryFetchOptions queryFetchOptions) {
-        return null;
+        return instance.getQueries(s, list, queryFetchOptions);
     }
 
     @Override
     public SearchResult<Space> searchSpaces(String s, SpaceSearchCriteria spaceSearchCriteria, SpaceFetchOptions spaceFetchOptions) {
-        return null;
+        return instance.searchSpaces(s, spaceSearchCriteria, spaceFetchOptions);
     }
 
     @Override
     public SearchResult<Project> searchProjects(String s, ProjectSearchCriteria projectSearchCriteria, ProjectFetchOptions projectFetchOptions) {
-        return null;
+        return instance.searchProjects(s, projectSearchCriteria, projectFetchOptions);
     }
 
     @Override
     public SearchResult<Experiment> searchExperiments(String s, ExperimentSearchCriteria experimentSearchCriteria, ExperimentFetchOptions experimentFetchOptions) {
-        return null;
+        return instance.searchExperiments(s, experimentSearchCriteria, experimentFetchOptions);
     }
 
     @Override
     public SearchResult<ExperimentType> searchExperimentTypes(String s, ExperimentTypeSearchCriteria experimentTypeSearchCriteria, ExperimentTypeFetchOptions experimentTypeFetchOptions) {
-        return null;
+        return instance.searchExperimentTypes(s, experimentTypeSearchCriteria, experimentTypeFetchOptions);
     }
 
     @Override
     public SearchResult<Sample> searchSamples(String s, SampleSearchCriteria sampleSearchCriteria, SampleFetchOptions sampleFetchOptions) {
-        return null;
+        return instance.searchSamples(s, sampleSearchCriteria, sampleFetchOptions);
     }
 
     @Override
     public SearchResult<SampleType> searchSampleTypes(String s, SampleTypeSearchCriteria sampleTypeSearchCriteria, SampleTypeFetchOptions sampleTypeFetchOptions) {
-        return null;
+        return instance.searchSampleTypes(s, sampleTypeSearchCriteria, sampleTypeFetchOptions);
     }
 
     @Override
     public SearchResult<DataSet> searchDataSets(String s, DataSetSearchCriteria dataSetSearchCriteria, DataSetFetchOptions dataSetFetchOptions) {
-        return null;
+        return instance.searchDataSets(s, dataSetSearchCriteria, dataSetFetchOptions);
     }
 
     @Override
     public SearchResult<DataSetType> searchDataSetTypes(String s, DataSetTypeSearchCriteria dataSetTypeSearchCriteria, DataSetTypeFetchOptions dataSetTypeFetchOptions) {
-        return null;
+        return instance.searchDataSetTypes(s, dataSetTypeSearchCriteria, dataSetTypeFetchOptions);
     }
 
     @Override
     public SearchResult<Material> searchMaterials(String s, MaterialSearchCriteria materialSearchCriteria, MaterialFetchOptions materialFetchOptions) {
-        return null;
+        return instance.searchMaterials(s, materialSearchCriteria, materialFetchOptions);
     }
 
     @Override
     public SearchResult<ExternalDms> searchExternalDataManagementSystems(String s, ExternalDmsSearchCriteria externalDmsSearchCriteria, ExternalDmsFetchOptions externalDmsFetchOptions) {
-        return null;
+        return instance.searchExternalDataManagementSystems(s, externalDmsSearchCriteria, externalDmsFetchOptions);
     }
 
     @Override
     public SearchResult<MaterialType> searchMaterialTypes(String s, MaterialTypeSearchCriteria materialTypeSearchCriteria, MaterialTypeFetchOptions materialTypeFetchOptions) {
-        return null;
+        return instance.searchMaterialTypes(s, materialTypeSearchCriteria, materialTypeFetchOptions);
     }
 
     @Override
     public SearchResult<Plugin> searchPlugins(String s, PluginSearchCriteria pluginSearchCriteria, PluginFetchOptions pluginFetchOptions) {
-        return null;
+        return instance.searchPlugins(s, pluginSearchCriteria, pluginFetchOptions);
     }
 
     @Override
     public SearchResult<Vocabulary> searchVocabularies(String s, VocabularySearchCriteria vocabularySearchCriteria, VocabularyFetchOptions vocabularyFetchOptions) {
-        return null;
+        return instance.searchVocabularies(s, vocabularySearchCriteria, vocabularyFetchOptions);
     }
 
     @Override
     public SearchResult<VocabularyTerm> searchVocabularyTerms(String s, VocabularyTermSearchCriteria vocabularyTermSearchCriteria, VocabularyTermFetchOptions vocabularyTermFetchOptions) {
-        return null;
+        return instance.searchVocabularyTerms(s, vocabularyTermSearchCriteria, vocabularyTermFetchOptions);
     }
 
     @Override
     public SearchResult<Tag> searchTags(String s, TagSearchCriteria tagSearchCriteria, TagFetchOptions tagFetchOptions) {
-        return null;
+        return instance.searchTags(s, tagSearchCriteria, tagFetchOptions);
     }
 
     @Override
     public SearchResult<AuthorizationGroup> searchAuthorizationGroups(String s, AuthorizationGroupSearchCriteria authorizationGroupSearchCriteria, AuthorizationGroupFetchOptions authorizationGroupFetchOptions) {
-        return null;
+        return instance.searchAuthorizationGroups(s, authorizationGroupSearchCriteria, authorizationGroupFetchOptions);
     }
 
     @Override
     public SearchResult<RoleAssignment> searchRoleAssignments(String s, RoleAssignmentSearchCriteria roleAssignmentSearchCriteria, RoleAssignmentFetchOptions roleAssignmentFetchOptions) {
-        return null;
+        return instance.searchRoleAssignments(s, roleAssignmentSearchCriteria, roleAssignmentFetchOptions);
     }
 
     @Override
     public SearchResult<Person> searchPersons(String s, PersonSearchCriteria personSearchCriteria, PersonFetchOptions personFetchOptions) {
-        return null;
+        return instance.searchPersons(s, personSearchCriteria, personFetchOptions);
     }
 
     @Override
     public SearchResult<CustomASService> searchCustomASServices(String s, CustomASServiceSearchCriteria customASServiceSearchCriteria, CustomASServiceFetchOptions customASServiceFetchOptions) {
-        return null;
+        return instance.searchCustomASServices(s, customASServiceSearchCriteria, customASServiceFetchOptions);
     }
 
     @Override
     public SearchResult<SearchDomainService> searchSearchDomainServices(String s, SearchDomainServiceSearchCriteria searchDomainServiceSearchCriteria, SearchDomainServiceFetchOptions searchDomainServiceFetchOptions) {
-        return null;
+        return instance.searchSearchDomainServices(s, searchDomainServiceSearchCriteria, searchDomainServiceFetchOptions);
     }
 
     @Override
     public SearchResult<AggregationService> searchAggregationServices(String s, AggregationServiceSearchCriteria aggregationServiceSearchCriteria, AggregationServiceFetchOptions aggregationServiceFetchOptions) {
-        return null;
+        return instance.searchAggregationServices(s, aggregationServiceSearchCriteria, aggregationServiceFetchOptions);
     }
 
     @Override
     public SearchResult<ReportingService> searchReportingServices(String s, ReportingServiceSearchCriteria reportingServiceSearchCriteria, ReportingServiceFetchOptions reportingServiceFetchOptions) {
-        return null;
+        return instance.searchReportingServices(s, reportingServiceSearchCriteria, reportingServiceFetchOptions);
     }
 
     @Override
     public SearchResult<ProcessingService> searchProcessingServices(String s, ProcessingServiceSearchCriteria processingServiceSearchCriteria, ProcessingServiceFetchOptions processingServiceFetchOptions) {
-        return null;
+        return instance.searchProcessingServices(s, processingServiceSearchCriteria, processingServiceFetchOptions);
     }
 
     @Override
     public SearchResult<ObjectKindModification> searchObjectKindModifications(String s, ObjectKindModificationSearchCriteria objectKindModificationSearchCriteria, ObjectKindModificationFetchOptions objectKindModificationFetchOptions) {
-        return null;
+        return instance.searchObjectKindModifications(s, objectKindModificationSearchCriteria, objectKindModificationFetchOptions);
     }
 
     @Override
     public SearchResult<GlobalSearchObject> searchGlobally(String s, GlobalSearchCriteria globalSearchCriteria, GlobalSearchObjectFetchOptions globalSearchObjectFetchOptions) {
-        return null;
+        return instance.searchGlobally(s, globalSearchCriteria, globalSearchObjectFetchOptions);
     }
 
     @Override
     public SearchResult<OperationExecution> searchOperationExecutions(String s, OperationExecutionSearchCriteria operationExecutionSearchCriteria, OperationExecutionFetchOptions operationExecutionFetchOptions) {
-        return null;
+        return instance.searchOperationExecutions(s, operationExecutionSearchCriteria, operationExecutionFetchOptions);
     }
 
     @Override
     public SearchResult<DataStore> searchDataStores(String s, DataStoreSearchCriteria dataStoreSearchCriteria, DataStoreFetchOptions dataStoreFetchOptions) {
-        return null;
+        return instance.searchDataStores(s, dataStoreSearchCriteria, dataStoreFetchOptions);
     }
 
     @Override
     public SearchResult<SemanticAnnotation> searchSemanticAnnotations(String s, SemanticAnnotationSearchCriteria semanticAnnotationSearchCriteria, SemanticAnnotationFetchOptions semanticAnnotationFetchOptions) {
-        return null;
+        return instance.searchSemanticAnnotations(s, semanticAnnotationSearchCriteria, semanticAnnotationFetchOptions);
     }
 
     @Override
     public SearchResult<PropertyType> searchPropertyTypes(String s, PropertyTypeSearchCriteria propertyTypeSearchCriteria, PropertyTypeFetchOptions propertyTypeFetchOptions) {
-        return null;
+        return instance.searchPropertyTypes(s, propertyTypeSearchCriteria, propertyTypeFetchOptions);
     }
 
     @Override
     public SearchResult<PropertyAssignment> searchPropertyAssignments(String s, PropertyAssignmentSearchCriteria propertyAssignmentSearchCriteria, PropertyAssignmentFetchOptions propertyAssignmentFetchOptions) {
-        return null;
+        return instance.searchPropertyAssignments(s, propertyAssignmentSearchCriteria, propertyAssignmentFetchOptions);
     }
 
     @Override
     public SearchResult<Query> searchQueries(String s, QuerySearchCriteria querySearchCriteria, QueryFetchOptions queryFetchOptions) {
-        return null;
+        return instance.searchQueries(s, querySearchCriteria, queryFetchOptions);
     }
 
     @Override
     public void deleteSpaces(String s, List<? extends ISpaceId> list, SpaceDeletionOptions spaceDeletionOptions) {
-
+        instance.deleteSpaces(s, list, spaceDeletionOptions);
     }
 
     @Override
     public void deleteProjects(String s, List<? extends IProjectId> list, ProjectDeletionOptions projectDeletionOptions) {
-
+        instance.deleteProjects(s, list, projectDeletionOptions);
     }
 
     @Override
     public IDeletionId deleteExperiments(String s, List<? extends IExperimentId> list, ExperimentDeletionOptions experimentDeletionOptions) {
-        return null;
+        return instance.deleteExperiments(s, list, experimentDeletionOptions);
     }
 
     @Override
     public IDeletionId deleteSamples(String s, List<? extends ISampleId> list, SampleDeletionOptions sampleDeletionOptions) {
-        return null;
+        return instance.deleteSamples(s, list, sampleDeletionOptions);
     }
 
     @Override
     public IDeletionId deleteDataSets(String s, List<? extends IDataSetId> list, DataSetDeletionOptions dataSetDeletionOptions) {
-        return null;
+        return instance.deleteDataSets(s, list, dataSetDeletionOptions);
     }
 
     @Override
     public void deleteMaterials(String s, List<? extends IMaterialId> list, MaterialDeletionOptions materialDeletionOptions) {
-
+        instance.deleteMaterials(s, list, materialDeletionOptions);
     }
 
     @Override
     public void deletePlugins(String s, List<? extends IPluginId> list, PluginDeletionOptions pluginDeletionOptions) {
-
+        instance.deletePlugins(s, list, pluginDeletionOptions);
     }
 
     @Override
     public void deletePropertyTypes(String s, List<? extends IPropertyTypeId> list, PropertyTypeDeletionOptions propertyTypeDeletionOptions) {
-
+        instance.deletePropertyTypes(s, list, propertyTypeDeletionOptions);
     }
 
     @Override
     public void deleteVocabularies(String s, List<? extends IVocabularyId> list, VocabularyDeletionOptions vocabularyDeletionOptions) {
-
+        instance.deleteVocabularies(s, list, vocabularyDeletionOptions);
     }
 
     @Override
     public void deleteVocabularyTerms(String s, List<? extends IVocabularyTermId> list, VocabularyTermDeletionOptions vocabularyTermDeletionOptions) {
-
+        instance.deleteVocabularyTerms(s, list, vocabularyTermDeletionOptions);
     }
 
     @Override
     public void deleteExperimentTypes(String s, List<? extends IEntityTypeId> list, ExperimentTypeDeletionOptions experimentTypeDeletionOptions) {
-
+        instance.deleteExperimentTypes(s, list, experimentTypeDeletionOptions);
     }
 
     @Override
     public void deleteSampleTypes(String s, List<? extends IEntityTypeId> list, SampleTypeDeletionOptions sampleTypeDeletionOptions) {
-
+        instance.deleteSampleTypes(s, list, sampleTypeDeletionOptions);
     }
 
     @Override
     public void deleteDataSetTypes(String s, List<? extends IEntityTypeId> list, DataSetTypeDeletionOptions dataSetTypeDeletionOptions) {
-
+        instance.deleteDataSetTypes(s, list, dataSetTypeDeletionOptions);
     }
 
     @Override
     public void deleteMaterialTypes(String s, List<? extends IEntityTypeId> list, MaterialTypeDeletionOptions materialTypeDeletionOptions) {
-
+        instance.deleteMaterialTypes(s, list, materialTypeDeletionOptions);
     }
 
     @Override
     public void deleteExternalDataManagementSystems(String s, List<? extends IExternalDmsId> list, ExternalDmsDeletionOptions externalDmsDeletionOptions) {
-
+        instance.deleteExternalDataManagementSystems(s, list, externalDmsDeletionOptions);
     }
 
     @Override
     public void deleteTags(String s, List<? extends ITagId> list, TagDeletionOptions tagDeletionOptions) {
-
+        instance.deleteTags(s, list, tagDeletionOptions);
     }
 
     @Override
     public void deleteAuthorizationGroups(String s, List<? extends IAuthorizationGroupId> list, AuthorizationGroupDeletionOptions authorizationGroupDeletionOptions) {
-
+        instance.deleteAuthorizationGroups(s, list, authorizationGroupDeletionOptions);
     }
 
     @Override
     public void deleteRoleAssignments(String s, List<? extends IRoleAssignmentId> list, RoleAssignmentDeletionOptions roleAssignmentDeletionOptions) {
-
+        instance.deleteRoleAssignments(s, list, roleAssignmentDeletionOptions);
     }
 
     @Override
     public void deleteOperationExecutions(String s, List<? extends IOperationExecutionId> list, OperationExecutionDeletionOptions operationExecutionDeletionOptions) {
-
+        instance.deleteOperationExecutions(s, list, operationExecutionDeletionOptions);
     }
 
     @Override
     public void deleteSemanticAnnotations(String s, List<? extends ISemanticAnnotationId> list, SemanticAnnotationDeletionOptions semanticAnnotationDeletionOptions) {
-
+        instance.deleteSemanticAnnotations(s, list, semanticAnnotationDeletionOptions);
     }
 
     @Override
     public void deleteQueries(String s, List<? extends IQueryId> list, QueryDeletionOptions queryDeletionOptions) {
-
+        instance.deleteQueries(s, list, queryDeletionOptions);
     }
 
     @Override
     public SearchResult<Deletion> searchDeletions(String s, DeletionSearchCriteria deletionSearchCriteria, DeletionFetchOptions deletionFetchOptions) {
-        return null;
+        return instance.searchDeletions(s, deletionSearchCriteria, deletionFetchOptions);
     }
 
     @Override
     public void revertDeletions(String s, List<? extends IDeletionId> list) {
-
+        instance.revertDeletions(s, list);
     }
 
     @Override
     public void confirmDeletions(String s, List<? extends IDeletionId> list) {
-
+        instance.confirmDeletions(s, list);
     }
 
     @Override
     public Object executeCustomASService(String s, ICustomASServiceId iCustomASServiceId, CustomASServiceExecutionOptions customASServiceExecutionOptions) {
-        return null;
+        return instance.executeCustomASService(s, iCustomASServiceId, customASServiceExecutionOptions);
     }
 
     @Override
     public SearchResult<SearchDomainServiceExecutionResult> executeSearchDomainService(String s, SearchDomainServiceExecutionOptions searchDomainServiceExecutionOptions) {
-        return null;
+        return instance.executeSearchDomainService(s, searchDomainServiceExecutionOptions);
     }
 
     @Override
     public TableModel executeAggregationService(String s, IDssServiceId iDssServiceId, AggregationServiceExecutionOptions aggregationServiceExecutionOptions) {
-        return null;
+        return instance.executeAggregationService(s, iDssServiceId, aggregationServiceExecutionOptions);
     }
 
     @Override
     public TableModel executeReportingService(String s, IDssServiceId iDssServiceId, ReportingServiceExecutionOptions reportingServiceExecutionOptions) {
-        return null;
+        return instance.executeReportingService(s, iDssServiceId, reportingServiceExecutionOptions);
     }
 
     @Override
     public void executeProcessingService(String s, IDssServiceId iDssServiceId, ProcessingServiceExecutionOptions processingServiceExecutionOptions) {
-
+        instance.executeProcessingService(s, iDssServiceId, processingServiceExecutionOptions);
     }
 
     @Override
     public TableModel executeQuery(String s, IQueryId iQueryId, QueryExecutionOptions queryExecutionOptions) {
-        return null;
+        return instance.executeQuery(s, iQueryId, queryExecutionOptions);
     }
 
     @Override
     public TableModel executeSql(String s, String s1, SqlExecutionOptions sqlExecutionOptions) {
-        return null;
+        return instance.executeSql(s, s1, sqlExecutionOptions);
     }
 
     @Override
     public void archiveDataSets(String s, List<? extends IDataSetId> list, DataSetArchiveOptions dataSetArchiveOptions) {
-
+        instance.archiveDataSets(s, list, dataSetArchiveOptions);
     }
 
     @Override
     public void unarchiveDataSets(String s, List<? extends IDataSetId> list, DataSetUnarchiveOptions dataSetUnarchiveOptions) {
-
+        instance.unarchiveDataSets(s, list, dataSetUnarchiveOptions);
     }
 
     @Override
     public void lockDataSets(String s, List<? extends IDataSetId> list, DataSetLockOptions dataSetLockOptions) {
-
+        instance.lockDataSets(s, list, dataSetLockOptions);
     }
 
     @Override
     public void unlockDataSets(String s, List<? extends IDataSetId> list, DataSetUnlockOptions dataSetUnlockOptions) {
-
+        instance.unlockDataSets(s, list, dataSetUnlockOptions);
     }
 
     @Override
     public IOperationExecutionResults executeOperations(String s, List<? extends IOperation> list, IOperationExecutionOptions iOperationExecutionOptions) {
-        return null;
+        return instance.executeOperations(s, list, iOperationExecutionOptions);
     }
 
     @Override
     public Map<String, String> getServerInformation(String s) {
-        return null;
+        return instance.getServerInformation(s);
     }
 
     @Override
     public List<String> createPermIdStrings(String s, int i) {
-        return null;
+        return instance.createPermIdStrings(s, i);
     }
 
     @Override
     public List<String> createCodes(String s, String s1, EntityKind entityKind, int i) {
-        return null;
+        return instance.createCodes(s, s1, entityKind, i);
     }
 
     @Override
     public int getMajorVersion() {
-        return 0;
+        return instance.getMajorVersion();
     }
 
     @Override
     public int getMinorVersion() {
-        return 0;
+        return instance.getMinorVersion();
     }
 }
