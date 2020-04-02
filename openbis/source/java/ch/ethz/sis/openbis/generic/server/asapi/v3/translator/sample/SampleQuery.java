@@ -91,7 +91,7 @@ public interface SampleQuery extends ObjectQuery
     public List<SamplePropertyRecord> getSampleProperties(LongSet sampleIds);
     
     // PropertyQueryGenerator was used to generate this query
-    @Select(sql = "select ph.samp_id as objectId, ph.pers_id_author as authorId, case pt.is_internal_namespace when FALSE then pt.code else '$' || pt.code end as propertyCode, ph.value as propertyValue, ph.material as materialPropertyValue, ph.vocabulary_term as vocabularyPropertyValue, ph.valid_from_timestamp as validFrom, ph.valid_until_timestamp as validTo "
+    @Select(sql = "select ph.samp_id as objectId, ph.pers_id_author as authorId, case pt.is_internal_namespace when FALSE then pt.code else '$' || pt.code end as propertyCode, ph.value as propertyValue, ph.material as materialPropertyValue, ph.sample as samplePropertyValue, ph.vocabulary_term as vocabularyPropertyValue, ph.valid_from_timestamp as validFrom, ph.valid_until_timestamp as validTo "
             + "from sample_properties_history ph "
             + "join sample_type_property_types etpt on ph.stpt_id = etpt.id "
             + "join property_types pt on etpt.prty_id = pt.id "
