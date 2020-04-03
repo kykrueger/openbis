@@ -1,6 +1,9 @@
 import os
+from functools import partialmethod
+from pathlib import Path
 from threading import Thread
 from queue import Queue
+from typing import Set, Optional, List
 from tabulate import tabulate
 from .openbis_object import OpenBisObject 
 from .definitions import openbis_definitions, get_type_for_entity, get_fetchoption_for_entity
@@ -120,8 +123,8 @@ class DataSet(
             'set_tags()', 'add_tags()', 'del_tags()',
             'add_attachment()', 'get_attachments()', 'download_attachments()',
             "get_files()", 'file_list',
-            'download()', 
-            'archive()', 'unarchive()' 
+            'download()','is_physical()', 'symlink()', 'is_symlink()',
+            'archive()', 'unarchive()'
         ] + super().__dir__()
 
     def __setattr__(self, name, value):
@@ -154,6 +157,7 @@ class DataSet(
         if 'linkedData' in self.data:
             return LinkedData(self.data['linkedData'])
 
+
     @property
     def status(self):
         ds = self.openbis.get_dataset(self.permId)
@@ -162,6 +166,97 @@ class DataSet(
             return self.data['physicalData']['status']
         except Exception:
             return None
+
+
+    @property
+    def _sftp_source_dir(self):
+        """The SFTP directory is structured as follows:
+        /SPACE/PROJECT/EXPERIMENT/permId
+
+        For the current dataSet, this method returns the expected path
+        """
+
+        return os.path.join(self.experiment.identifier[1:], self.permId)
+
+
+    def symlink(self, target_dir: str = None, replace_if_symlink_exists: bool = True):
+        """replace_if_symlink_exists will replace the the target_dir
+        in case it is an existing symlink
+        Returns the absolute path of the symlink
+        """
+
+        if target_dir is None:
+            target_dir = os.path.join(self.openbis.download_prefix, self.permId)
+
+        target_dir_path = Path(target_dir)
+        if target_dir_path.is_symlink() and replace_if_symlink_exists:
+            target_dir_path.unlink()
+
+        # create data/openbis-hostname
+        os.makedirs(os.path.dirname(target_dir_path.absolute()), exist_ok=True)
+
+        # make sure we got a mountpoint
+        mountpoint_path = self.openbis.get_mountpoint()
+        if mountpoint_path is None:
+            try:
+                mountpoint_path = self.openbis.mount()
+            except ValueError as err:
+                if 'password' in str(err):
+                    raise ValueError('openBIS instance cannot be mounted, no symlink possible')
+
+        # construct the absolute path of our sftp source
+        sftp_source_path = os.path.join(mountpoint_path, self._sftp_source_dir)
+
+        # make sure our sftp source is really available
+        # create symlink
+        if os.path.exists(sftp_source_path):
+            target_dir_path.symlink_to(sftp_source_path, target_is_directory=True)
+            if VERBOSE: print(f"Symlink created: {target_dir} --> {sftp_source_path}")
+
+            return str(target_dir_path.absolute())
+        else:
+            raise ValueError(f"Source path {sftp_source_path} does not exist, cannot create symlink")
+
+
+    @staticmethod
+    def _file_set(target_dir: str) -> Set[str]:
+        target_dir_path = Path(target_dir)
+        return set(
+            str(el.relative_to(target_dir_path))
+            for el in target_dir_path.glob("**/*")
+            if el.is_file()
+        )
+
+
+    def _is_symlink_or_physical(
+        self, what: str, target_dir: str = None, expected_file_list: Optional[List[str]] = None,
+    ):
+        if target_dir is None:
+            target_dir = os.path.join(self.openbis.download_prefix, self.permId)
+        target_dir_path = Path(target_dir)
+
+        target_file_set = self._file_set(target_dir)
+
+        if expected_file_list is None:
+            source_file_set = set(self.file_list)
+        else:
+            source_file_set = set(expected_file_list)
+
+        res = source_file_set.issubset(target_file_set)
+        if not res:
+            return res
+        elif what == "symlink":
+            return target_dir_path.exists() and target_dir_path.is_symlink()
+        elif what == "physical":
+            return target_dir_path.exists() and not target_dir_path.is_symlink()
+        else:
+            raise ValueError("Unexpected error")
+
+
+    is_symlink = partialmethod(
+        _is_symlink_or_physical, what="symlink", expected_file_list=None
+    )
+    is_physical = partialmethod(_is_symlink_or_physical, what="physical")
 
     def archive(self, remove_from_data_store=True):
         fetchopts = {
@@ -286,7 +381,8 @@ class DataSet(
             files = [files]
 
         if destination is None:
-            destination = self.openbis.hostname
+            destination = self.openbis.download_prefix
+            #destination = self.openbis.hostname
         
         kind = None;
         if 'kind' in self.data: # openBIS 18.6.x DTO

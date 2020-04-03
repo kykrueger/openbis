@@ -1,4 +1,5 @@
 from datetime import datetime
+from pathlib import Path
 import re
 
 # display messages when in a interactive context (IPython or Jupyter)
@@ -253,5 +254,3 @@ def extract_userId(user):
         return user['userId']
     else:
         return str(user)
-
-
