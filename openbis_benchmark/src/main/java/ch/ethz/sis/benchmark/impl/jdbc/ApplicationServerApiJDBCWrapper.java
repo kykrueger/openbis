@@ -1,5 +1,6 @@
-package ch.ethz.sis.benchmark.impl;
+package ch.ethz.sis.benchmark.impl.jdbc;
 
+import ch.ethz.sis.benchmark.impl.IApplicationServerApiWrapper;
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.AuthorizationGroup;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.create.AuthorizationGroupCreation;
@@ -205,29 +206,51 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.search.VocabularySear
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.search.VocabularyTermSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.update.VocabularyTermUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.update.VocabularyUpdate;
+import lombok.SneakyThrows;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.util.List;
 import java.util.Map;
 
-public class ApplicationServerApiJDBCWrapper implements IApplicationServerApi {
+public class ApplicationServerApiJDBCWrapper implements IApplicationServerApiWrapper {
 
     private IApplicationServerApi instance;
-    private String jdbcConnectionString;
-    private String jdbcUser;
-    private String jdbcPass;
+    private String databaseURL;
+    private String databaseUser;
+    private String databasePass;
+    private Connection connection;
+    private AbstractSQLExecutor sqlExecutor;
 
-    public ApplicationServerApiJDBCWrapper(IApplicationServerApi instance,
-                                           String jdbcConnectionString,
-                                           String jdbcUser,
-                                           String jdbcPass) {
-        this.instance = instance;
-        this.jdbcConnectionString = jdbcConnectionString;
-        this.jdbcUser = jdbcUser;
-        this.jdbcPass = jdbcPass;
+    @SneakyThrows
+    public ApplicationServerApiJDBCWrapper(String databaseURL,
+                                           String databaseUser,
+                                           String databasePass) {
+        //
+        this.databaseURL = databaseURL;
+        this.databaseUser = databaseUser;
+        this.databasePass = databasePass;
+        DriverManager.registerDriver(new org.postgresql.Driver());
+        //
     }
 
+
+    public void setInstance(IApplicationServerApi instance) {
+        this.instance = instance;
+    }
+
+    @SneakyThrows
     @Override
     public String login(String s, String s1) {
+        //
+        connection = DriverManager.getConnection(databaseURL, databaseUser, databasePass);
+        sqlExecutor = new AbstractSQLExecutor() {
+            @Override
+            public Connection getConnection() {
+                return connection;
+            }
+        };
+        //
         return instance.login(s, s1);
     }
 
@@ -241,8 +264,13 @@ public class ApplicationServerApiJDBCWrapper implements IApplicationServerApi {
         return instance.loginAsAnonymousUser();
     }
 
+    @SneakyThrows
     @Override
     public void logout(String s) {
+        //
+        connection.close();
+        sqlExecutor = null;
+        //
         instance.logout(s);
     }
 

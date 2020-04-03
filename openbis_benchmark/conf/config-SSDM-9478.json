@@ -10,10 +10,10 @@
 	"parameters" : {
 		"SPACES_TO_CREATE" : 4,
 		"SAMPLES_TO_CREATE" : 20000,
-		"USE_DB" : true,
-		"JDBC_CONNECTION_STRING" : null,
-		"JDBC_CONNECTION_USER" : null,
-		"JDBC_CONNECTION_PASS" : null
+		"USE_DATABASE" : true,
+		"DATABASE_URL" : "jdbc:postgresql://localhost/openbis_dev",
+		"DATABASE_USER" : "juanf",
+		"DATABASE_PASS" : ""
 	}
 	}, {
 	"className" : "ch.ethz.sis.benchmark.impl.LoadBenchmark",
@@ -25,12 +25,12 @@
 	"datastoreTimeout" : "3600000",
 	"threads" : 5,
 	"parameters" : {
-	"SPACES_TO_CREATE" : 4,
-	"SAMPLES_TO_CREATE" : 20000,
-	"USE_DB" : true,
-	"JDBC_CONNECTION_STRING" : null,
-	"JDBC_CONNECTION_USER" : null,
-	"JDBC_CONNECTION_PASS" : null
+		"SPACES_TO_CREATE" : 4,
+		"SAMPLES_TO_CREATE" : 20000,
+		"USE_DATABASE" : true,
+		"DATABASE_URL" : "jdbc:postgresql://localhost/openbis_dev",
+		"DATABASE_USER" : "juanf",
+		"DATABASE_PASS" : ""
 	}
 	}, {
 	"className" : "ch.ethz.sis.benchmark.impl.LoadBenchmark",
@@ -44,10 +44,7 @@
 	"parameters" : {
 		"SPACES_TO_CREATE" : 4,
 		"SAMPLES_TO_CREATE" : 20000,
-		"USE_DB" : false,
-		"JDBC_CONNECTION_STRING" : null,
-		"JDBC_CONNECTION_USER" : null,
-		"JDBC_CONNECTION_PASS" : null
+		"USE_DATABASE" : false
 	}
 	}, {
 	"className" : "ch.ethz.sis.benchmark.impl.LoadBenchmark",
@@ -61,9 +58,6 @@
 	"parameters" : {
 		"SPACES_TO_CREATE" : 4,
 		"SAMPLES_TO_CREATE" : 20000,
-		"USE_DB" : false,
-		"JDBC_CONNECTION_STRING" : null,
-		"JDBC_CONNECTION_USER" : null,
-		"JDBC_CONNECTION_PASS" : null
+		"USE_DATABASE" : false
 	}
 }]

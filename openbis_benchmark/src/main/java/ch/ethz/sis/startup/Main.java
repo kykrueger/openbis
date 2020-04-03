@@ -24,14 +24,13 @@ public class Main
     
     public static void main(String[] args) throws Exception
     {
-    		logger.info("Current Workspace: " + (new File("").getAbsolutePath()));
-    		
+		logger.info("Current Workspace: " + (new File("").getAbsolutePath()));
         File configFile;
         if (args.length < 1)
         {
-            configFile = new File("./conf/config.json");
+            configFile = new File("../openbis_benchmark/conf/config-SSDM-9478.json");
             if(configFile.exists()) {
-            		logger.info("No arguments given, starting with default config file: " + (configFile.getAbsolutePath()));
+            		logger.info("No arguments given, starting with development config file: " + (configFile.getAbsolutePath()));
             } else {
             		configFile = new File("./config.json");
             		if(configFile.exists()) {

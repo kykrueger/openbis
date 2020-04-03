@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 
 import ch.ethz.sis.benchmark.Benchmark;
+import ch.ethz.sis.benchmark.impl.jdbc.ApplicationServerApiJDBCWrapper;
 import ch.ethz.sis.benchmark.util.RandomValueGenerator;
 import ch.ethz.sis.benchmark.util.RandomWord;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
@@ -29,11 +30,20 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
 
 public class LoadBenchmark extends Benchmark {
 	
-	private enum Parameters { SPACES_TO_CREATE, SAMPLES_TO_CREATE }
+	private enum Parameters { SPACES_TO_CREATE, SAMPLES_TO_CREATE, USE_DATABASE, DATABASE_URL, DATABASE_USER, DATABASE_PASS }
 	private enum Prefix { SPACE_, COLLECTION_, PROJECT_, OBJECT_ }
 	
 	@Override
 	public void startInternal() throws Exception {
+	    // Use JDBC If requested
+        boolean useDatabase = Boolean.parseBoolean(this.getConfiguration().getParameters().get(Parameters.USE_DATABASE.name()));
+        if (useDatabase) {
+            String databaseURL = this.getConfiguration().getParameters().get(Parameters.DATABASE_URL.name());
+            String databaseUser = this.getConfiguration().getParameters().get(Parameters.DATABASE_USER.name());
+            String databasePass = this.getConfiguration().getParameters().get(Parameters.DATABASE_PASS.name());
+            this.v3Wrapper = new ApplicationServerApiJDBCWrapper(databaseURL, databaseUser, databasePass);
+        }
+        //
         login();
         
         String propertyTypeCode1 = "BENCHMARK_STRING_1";
@@ -47,7 +57,7 @@ public class LoadBenchmark extends Benchmark {
         List<SampleType> types = v3.searchSampleTypes(sessionToken, stsc, stfo).getObjects();
         
         if(types.isEmpty()) {
-        		//
+        	//
             // Setup - Create Property Types
             //
             
