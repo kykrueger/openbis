@@ -4,8 +4,6 @@ import selectors from '@src/js/store/selectors/selectors.js'
 import actions from '@src/js/store/actions/actions.js'
 import routes from '@src/js/common/consts/routes.js'
 
-const getSelectedObject = selectors.createGetSelectedObject()
-
 export default function* pageSaga() {
   yield takeEvery(actions.OBJECT_NEW, objectNew)
   yield takeEvery(actions.OBJECT_CREATE, objectCreate)
@@ -72,7 +70,7 @@ function* objectClose(action) {
 
   const objectToClose = { type, id }
   const openTabs = yield select(selectors.getOpenTabs, page)
-  let selectedObject = yield select(getSelectedObject, page)
+  let selectedObject = yield select(selectors.getSelectedObject, page)
 
   if (selectedObject && _.isEqual(selectedObject, objectToClose)) {
     if (_.size(openTabs) === 1) {

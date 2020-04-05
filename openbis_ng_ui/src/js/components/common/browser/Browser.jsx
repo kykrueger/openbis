@@ -29,10 +29,12 @@ const styles = {
 }
 
 function mapStateToProps() {
-  const getSelectedObject = selectors.createGetSelectedObject()
   return (state, ownProps) => {
     return {
-      selectedObject: getSelectedObject(state, ownProps.controller.getPage())
+      selectedObject: selectors.getSelectedObject(
+        state,
+        ownProps.controller.getPage()
+      )
     }
   }
 }

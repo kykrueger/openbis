@@ -22,7 +22,7 @@ const getOpenObjects = createSelector(getOpenTabs, openTabs => {
 
 const getSelectedTab = (state, page) => {
   logger.log(logger.DEBUG, 'pageSelector.getSelectedTab')
-  const selectedObject = createGetSelectedObject()(state, page)
+  const selectedObject = getSelectedObject(state, page)
   if (selectedObject) {
     const openTabs = getOpenTabs(state, page)
     return _.find(openTabs, { object: selectedObject })
@@ -31,23 +31,21 @@ const getSelectedTab = (state, page) => {
   }
 }
 
-const createGetSelectedObject = () => {
-  return createSelector([getCurrentRoute], path => {
-    logger.log(logger.DEBUG, 'pageSelector.getSelectedObject')
-    if (path) {
-      let route = routes.parse(path)
-      if (route && route.type && route.id) {
-        return { type: route.type, id: route.id }
-      }
+const getSelectedObject = createSelector(getCurrentRoute, path => {
+  logger.log(logger.DEBUG, 'pageSelector.getSelectedObject')
+  if (path) {
+    let route = routes.parse(path)
+    if (route && route.type && route.id) {
+      return { type: route.type, id: route.id }
     }
-    return null
-  })
-}
+  }
+  return null
+})
 
 export default {
   getCurrentRoute,
   getOpenTabs,
   getOpenObjects,
   getSelectedTab,
-  createGetSelectedObject
+  getSelectedObject
 }

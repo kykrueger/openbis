@@ -1,4 +1,5 @@
 import _ from 'lodash'
+import { defaultMemoize } from 'reselect'
 import autoBind from 'auto-bind'
 import actions from '@src/js/store/actions/actions.js'
 
@@ -107,7 +108,7 @@ export default class BrowserController {
   }
 
   nodeSelect(nodeId) {
-    const { loadedNodes } = this.context.getState()
+    const { loadedNodes, selectedIds } = this.context.getState()
 
     const nodesWithNodeId = this._visitNodes(loadedNodes, (node, results) => {
       if (node.id === nodeId) {
@@ -115,9 +116,10 @@ export default class BrowserController {
       }
     })
 
+    const newSelectedIds = {}
+
     if (nodesWithNodeId.length > 0) {
       const nodeWithNodeId = nodesWithNodeId[0]
-      const newSelectedIds = {}
 
       if (nodeWithNodeId.object) {
         this._visitNodes(loadedNodes, node => {
@@ -135,19 +137,17 @@ export default class BrowserController {
       } else {
         newSelectedIds[nodeId] = nodeId
       }
+    }
 
+    if (!_.isEqual(selectedIds, newSelectedIds)) {
       this.context.setState({
         selectedIds: newSelectedIds
-      })
-    } else {
-      this.context.setState({
-        selectedIds: {}
       })
     }
   }
 
   objectSelect(object) {
-    const { loadedNodes } = this.context.getState()
+    const { loadedNodes, selectedIds } = this.context.getState()
 
     const newSelectedIds = {}
 
@@ -157,9 +157,11 @@ export default class BrowserController {
       }
     })
 
-    this.context.setState({
-      selectedIds: newSelectedIds
-    })
+    if (!_.isEqual(selectedIds, newSelectedIds)) {
+      this.context.setState({
+        selectedIds: newSelectedIds
+      })
+    }
   }
 
   getLoaded() {
@@ -180,33 +182,7 @@ export default class BrowserController {
       selectedIds
     } = this.context.getState()
 
-    const _createNodes = nodes => {
-      if (!nodes) {
-        return []
-      }
-
-      const newNodes = []
-
-      for (let i = 0; i < nodes.length; i++) {
-        let node = nodes[i]
-
-        if (visibleIds[node.id]) {
-          const newNode = {
-            ...node,
-            expanded: !!expandedIds[node.id],
-            selected: !!selectedIds[node.id]
-          }
-          if (node.children) {
-            newNode.children = _createNodes(node.children)
-          }
-          newNodes.push(newNode)
-        }
-      }
-
-      return newNodes
-    }
-
-    return _createNodes(loadedNodes)
+    return this._getNodes(loadedNodes, visibleIds, expandedIds, selectedIds)
   }
 
   getSelectedNode() {
@@ -291,4 +267,36 @@ export default class BrowserController {
 
     return newNodes
   }
+
+  _getNodes = defaultMemoize(
+    (loadedNodes, visibleIds, expandedIds, selectedIds) => {
+      const _createNodes = nodes => {
+        if (!nodes) {
+          return []
+        }
+
+        const newNodes = []
+
+        for (let i = 0; i < nodes.length; i++) {
+          let node = nodes[i]
+
+          if (visibleIds[node.id]) {
+            const newNode = {
+              ...node,
+              expanded: !!expandedIds[node.id],
+              selected: !!selectedIds[node.id]
+            }
+            if (node.children) {
+              newNode.children = _createNodes(node.children)
+            }
+            newNodes.push(newNode)
+          }
+        }
+
+        return newNodes
+      }
+
+      return _createNodes(loadedNodes)
+    }
+  )
 }
