@@ -1,6 +1,7 @@
 import ObjectTypeControler from '@src/js/components/types/objectType/ObjectTypeController.js'
 import ComponentContext from '@srcTest/js/components/common/ComponentContext.js'
 import ObjectTypeFacade from '@src/js/components/types/objectType/ObjectTypeFacade'
+import objectTypes from '@src/js/common/consts/objectType.js'
 import fixture from '@srcTest/js/common/fixture.js'
 
 jest.mock('@src/js/components/types/objectType/ObjectTypeFacade')
@@ -13,7 +14,10 @@ beforeEach(() => {
   jest.resetAllMocks()
   context = new ComponentContext()
   context.setProps({
-    objectId: 'TEST_OBJECT_ID'
+    object: {
+      id: 'TEST_OBJECT_ID',
+      type: objectTypes.OBJECT_TYPE
+    }
   })
   facade = new ObjectTypeFacade()
   controller = new ObjectTypeControler(facade)
@@ -21,8 +25,8 @@ beforeEach(() => {
 })
 
 afterEach(() => {
-  expect(facade.loadType).toHaveBeenCalledWith(context.getProps().objectId)
-  expect(facade.loadUsages).toHaveBeenCalledWith(context.getProps().objectId)
+  expect(facade.loadType).toHaveBeenCalledWith(context.getProps().object.id)
+  expect(facade.loadUsages).toHaveBeenCalledWith(context.getProps().object.id)
 })
 
 describe('ObjectTypeController.handleAddProperty', () => {

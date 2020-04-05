@@ -1,6 +1,7 @@
 import ObjectTypeControler from '@src/js/components/types/objectType/ObjectTypeController.js'
 import ComponentContext from '@srcTest/js/components/common/ComponentContext.js'
 import ObjectTypeFacade from '@src/js/components/types/objectType/ObjectTypeFacade'
+import objectTypes from '@src/js/common/consts/objectType.js'
 import openbis from '@srcTest/js/services/openbis.js'
 
 jest.mock('@src/js/components/types/objectType/ObjectTypeFacade')
@@ -92,7 +93,10 @@ describe('ObjectTypeController.load', () => {
     ])
 
     context.setProps({
-      objectId: 'TEST_OBJECT_ID'
+      object: {
+        id: 'TEST_OBJECT_ID',
+        type: objectTypes.OBJECT_TYPE
+      }
     })
 
     facade.loadType.mockReturnValue(Promise.resolve(TEST_SAMPLE_TYPE_DTO))
@@ -179,16 +183,17 @@ describe('ObjectTypeController.load', () => {
       ]
     })
 
-    expect(facade.loadType).toHaveBeenCalledWith(context.getProps().objectId)
-    expect(facade.loadUsages).toHaveBeenCalledWith(context.getProps().objectId)
+    expect(facade.loadType).toHaveBeenCalledWith(context.getProps().object.id)
+    expect(facade.loadUsages).toHaveBeenCalledWith(context.getProps().object.id)
   })
 
   test('successful new', async () => {
     context.setProps({
-      objectId: 'TEST_OBJECT_ID',
-      isNew: true
+      object: {
+        id: 'TEST_OBJECT_ID',
+        type: objectTypes.NEW_OBJECT_TYPE
+      }
     })
-
     await controller.load()
 
     expect(context.getState()).toMatchObject({

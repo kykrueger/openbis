@@ -107,23 +107,25 @@ function* routeChange(action) {
   const route = routes.parse(action.payload.route)
 
   if (route.type && route.id) {
-    const openTabs = yield select(selectors.getOpenTabs, route.page)
     const object = { type: route.type, id: route.id }
+    const openTabs = yield select(selectors.getOpenTabs, route.page)
 
-    let found = false
-    let id = 1
+    if (openTabs) {
+      let found = false
+      let id = 1
 
-    openTabs.forEach(openTab => {
-      if (_.isMatch(openTab.object, object)) {
-        found = true
+      openTabs.forEach(openTab => {
+        if (_.isMatch(openTab.object, object)) {
+          found = true
+        }
+        if (openTab.id >= id) {
+          id = openTab.id + 1
+        }
+      })
+
+      if (!found) {
+        yield put(actions.addOpenTab(route.page, { id, object }))
       }
-      if (openTab.id >= id) {
-        id = openTab.id + 1
-      }
-    })
-
-    if (!found) {
-      yield put(actions.addOpenTab(route.page, { id, object }))
     }
   }
 

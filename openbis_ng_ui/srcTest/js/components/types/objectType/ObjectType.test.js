@@ -1,18 +1,23 @@
 import React from 'react'
+import { Provider } from 'react-redux'
 import { mount } from 'enzyme'
+import { createStore } from '@src/js/store/store.js'
 import ThemeProvider from '@src/js/components/common/theme/ThemeProvider.jsx'
 import ObjectType from '@src/js/components/types/objectType/ObjectType.jsx'
 import ObjectTypeController from '@src/js/components/types/objectType/ObjectTypeController.js'
 import ObjectTypeFacade from '@src/js/components/types/objectType/ObjectTypeFacade'
+import objectTypes from '@src/js/common/consts/objectType.js'
 import fixture from '@srcTest/js/common/fixture.js'
 
 jest.mock('@src/js/components/types/objectType/ObjectTypeFacade')
 
+let store = null
 let facade = null
 let controller = null
 
 beforeEach(() => {
   jest.resetAllMocks()
+  store = createStore()
   facade = new ObjectTypeFacade()
   controller = new ObjectTypeController(facade)
 })
@@ -29,12 +34,17 @@ describe('ObjectType', () => {
     facade.loadVocabularyTerms.mockReturnValueOnce(Promise.resolve([]))
 
     const wrapper = mount(
-      <ThemeProvider>
-        <ObjectType
-          objectId={fixture.TEST_SAMPLE_TYPE_DTO.getCode()}
-          controller={controller}
-        />
-      </ThemeProvider>
+      <Provider store={store}>
+        <ThemeProvider>
+          <ObjectType
+            object={{
+              id: fixture.TEST_SAMPLE_TYPE_DTO.getCode(),
+              type: objectTypes.OBJECT_TYPE
+            }}
+            controller={controller}
+          />
+        </ThemeProvider>
+      </Provider>
     )
 
     setTimeout(() => {
