@@ -20,41 +20,35 @@ const currentRoute = (state = null, action) => {
   }
 }
 
-const openObjects = (state = [], action) => {
+const openTabs = (state = [], action) => {
   let newState = null
 
   switch (action.type) {
-    case actions.ADD_OPEN_OBJECT: {
-      newState = _.unionWith(
-        state,
-        [{ type: action.payload.type, id: action.payload.id }],
-        _.isEqual
-      )
-      break
-    }
-    case actions.REMOVE_OPEN_OBJECT: {
-      newState = _.differenceWith(
-        state,
-        [{ type: action.payload.type, id: action.payload.id }],
-        _.isEqual
-      )
-      break
-    }
-    case actions.REPLACE_OPEN_OBJECT: {
-      const index = _.findIndex(
-        state,
-        {
-          type: action.payload.oldType,
-          id: action.payload.oldId
-        },
-        _.isEqual
-      )
+    case actions.ADD_OPEN_TAB: {
+      const index = _.findIndex(state, { id: action.payload.id }, _.isMatch)
       if (index !== -1) {
-        newState = [...state]
-        newState[index] = {
-          type: action.payload.newType,
-          id: action.payload.newId
-        }
+        return state
+      } else {
+        newState = Array.from(state)
+        newState.push(action.payload.tab)
+      }
+      break
+    }
+    case actions.REMOVE_OPEN_TAB: {
+      const index = _.findIndex(state, { id: action.payload.id }, _.isMatch)
+      if (index !== -1) {
+        newState = Array.from(state)
+        newState.splice(index, 1)
+      } else {
+        return state
+      }
+      break
+    }
+    case actions.REPLACE_OPEN_TAB: {
+      const index = _.findIndex(state, { id: action.payload.id }, _.isMatch)
+      if (index !== -1) {
+        newState = Array.from(state)
+        newState[index] = action.payload.tab
       } else {
         return state
       }
@@ -72,41 +66,8 @@ const openObjects = (state = [], action) => {
   }
 }
 
-const changedObjects = (state = [], action) => {
-  let newState = null
-
-  switch (action.type) {
-    case actions.ADD_CHANGED_OBJECT: {
-      newState = _.unionWith(
-        state,
-        [{ type: action.payload.type, id: action.payload.id }],
-        _.isEqual
-      )
-      break
-    }
-    case actions.REMOVE_CHANGED_OBJECT: {
-      newState = _.differenceWith(
-        state,
-        [{ type: action.payload.type, id: action.payload.id }],
-        _.isEqual
-      )
-      break
-    }
-    default: {
-      return state
-    }
-  }
-
-  if (_.isEqual(state, newState)) {
-    return state
-  } else {
-    return newState
-  }
-}
-
 export default {
   isPageAction,
   currentRoute,
-  openObjects,
-  changedObjects
+  openTabs
 }

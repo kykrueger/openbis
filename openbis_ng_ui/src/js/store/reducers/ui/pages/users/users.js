@@ -6,8 +6,7 @@ export default function types(state = {}, action) {
   if (page.isPageAction(pages.USERS, action)) {
     return combineReducers({
       currentRoute: page.currentRoute,
-      openObjects: page.openObjects,
-      changedObjects: page.changedObjects
+      openTabs: page.openTabs
     })(state, action)
   } else {
     return state

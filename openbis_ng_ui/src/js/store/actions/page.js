@@ -4,11 +4,9 @@ const OBJECT_OPEN = 'OBJECT_OPEN'
 const OBJECT_SAVE = 'OBJECT_SAVE'
 const OBJECT_CHANGE = 'OBJECT_CHANGE'
 const OBJECT_CLOSE = 'OBJECT_CLOSE'
-const ADD_OPEN_OBJECT = 'ADD_OPEN_OBJECT'
-const REMOVE_OPEN_OBJECT = 'REMOVE_OPEN_OBJECT'
-const REPLACE_OPEN_OBJECT = 'REPLACE_OPEN_OBJECT'
-const ADD_CHANGED_OBJECT = 'ADD_CHANGED_OBJECT'
-const REMOVE_CHANGED_OBJECT = 'REMOVE_CHANGED_OBJECT'
+const ADD_OPEN_TAB = 'ADD_OPEN_TAB'
+const REMOVE_OPEN_TAB = 'REMOVE_OPEN_TAB'
+const REPLACE_OPEN_TAB = 'REPLACE_OPEN_TAB'
 const SET_CURRENT_ROUTE = 'SET_CURRENT_ROUTE'
 
 const objectNew = (page, type) => ({
@@ -67,50 +65,28 @@ const objectClose = (page, type, id) => ({
   }
 })
 
-const addOpenObject = (page, type, id) => ({
-  type: ADD_OPEN_OBJECT,
+const addOpenTab = (page, tab) => ({
+  type: ADD_OPEN_TAB,
   payload: {
     page,
-    type,
+    tab
+  }
+})
+
+const removeOpenTab = (page, id) => ({
+  type: REMOVE_OPEN_TAB,
+  payload: {
+    page,
     id
   }
 })
 
-const removeOpenObject = (page, type, id) => ({
-  type: REMOVE_OPEN_OBJECT,
+const replaceOpenTab = (page, id, tab) => ({
+  type: REPLACE_OPEN_TAB,
   payload: {
     page,
-    type,
-    id
-  }
-})
-
-const replaceOpenObject = (page, oldType, oldId, newType, newId) => ({
-  type: REPLACE_OPEN_OBJECT,
-  payload: {
-    page,
-    oldType,
-    oldId,
-    newType,
-    newId
-  }
-})
-
-const addChangedObject = (page, type, id) => ({
-  type: ADD_CHANGED_OBJECT,
-  payload: {
-    page,
-    type,
-    id
-  }
-})
-
-const removeChangedObject = (page, type, id) => ({
-  type: REMOVE_CHANGED_OBJECT,
-  payload: {
-    page,
-    type,
-    id
+    id,
+    tab
   }
 })
 
@@ -129,11 +105,9 @@ export default {
   OBJECT_SAVE,
   OBJECT_CHANGE,
   OBJECT_CLOSE,
-  ADD_OPEN_OBJECT,
-  REMOVE_OPEN_OBJECT,
-  REPLACE_OPEN_OBJECT,
-  ADD_CHANGED_OBJECT,
-  REMOVE_CHANGED_OBJECT,
+  ADD_OPEN_TAB,
+  REMOVE_OPEN_TAB,
+  REPLACE_OPEN_TAB,
   SET_CURRENT_ROUTE,
   objectNew,
   objectCreate,
@@ -141,10 +115,8 @@ export default {
   objectSave,
   objectChange,
   objectClose,
-  addOpenObject,
-  removeOpenObject,
-  replaceOpenObject,
-  addChangedObject,
-  removeChangedObject,
+  addOpenTab,
+  removeOpenTab,
+  replaceOpenTab,
   setCurrentRoute
 }

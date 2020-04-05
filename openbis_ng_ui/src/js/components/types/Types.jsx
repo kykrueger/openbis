@@ -41,7 +41,8 @@ class Types extends React.Component {
     )
   }
 
-  renderComponent(object) {
+  renderComponent(tab) {
+    const { object } = tab
     if (
       object.type === objectType.OBJECT_TYPE ||
       object.type === objectType.NEW_OBJECT_TYPE
@@ -58,7 +59,8 @@ class Types extends React.Component {
     }
   }
 
-  renderTab(object, changed) {
+  renderTab(tab) {
+    const { object, changed } = tab
     if (
       object.type === objectType.OBJECT_TYPE ||
       object.type === objectType.COLLECTION_TYPE ||

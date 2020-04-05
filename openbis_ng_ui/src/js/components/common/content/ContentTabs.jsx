@@ -26,36 +26,41 @@ const styles = theme => ({
 
 class ContentTabs extends React.Component {
   handleTabChange = (event, value) => {
-    let object = this.props.objects[value]
-    this.props.objectSelect(object.type, object.id)
+    const tab = this.props.tabs[value]
+    this.props.tabSelect(tab)
   }
 
-  handleTabClose = (event, object) => {
-    this.props.objectClose(object.type, object.id)
+  handleTabClose = (event, tab) => {
+    this.props.tabClose(tab)
     event.stopPropagation()
   }
 
   render() {
     logger.log(logger.DEBUG, 'ContentTabs.render')
 
-    const { objects, selectedObject, classes } = this.props
+    const { tabs, selectedTab, classes } = this.props
 
-    let selectedIndex = selectedObject
-      ? _.findIndex(objects, selectedObject)
-      : -1
+    let value = false
+
+    if (selectedTab) {
+      const selectedIndex = _.findIndex(tabs, selectedTab)
+      if (selectedIndex !== -1) {
+        value = selectedIndex
+      }
+    }
 
     return (
       <Tabs
-        value={selectedIndex !== -1 ? selectedIndex : false}
+        value={value}
         variant='scrollable'
         scrollButtons='on'
         onChange={this.handleTabChange}
         classes={{ root: classes.tabsRoot }}
       >
-        {this.props.objects.map(object => (
+        {this.props.tabs.map(tab => (
           <Tab
-            key={`${object.type}/${object.id}`}
-            label={this.renderLabel(object)}
+            key={tab.id}
+            label={this.renderLabel(tab)}
             classes={{
               root: classes.tabRoot
             }}
@@ -65,20 +70,19 @@ class ContentTabs extends React.Component {
     )
   }
 
-  renderLabel(object) {
-    let changed = _.find(this.props.changedObjects, object)
+  renderLabel(tab) {
     return (
       <span className={this.props.classes.tabLabel}>
-        {this.props.renderTab(object, changed)}
-        {this.renderIcon(object)}
+        {this.props.renderTab(tab)}
+        {this.renderIcon(tab)}
       </span>
     )
   }
 
-  renderIcon(object) {
+  renderIcon(tab) {
     return (
       <CloseIcon
-        onClick={event => this.handleTabClose(event, object)}
+        onClick={event => this.handleTabClose(event, tab)}
         classes={{
           root: this.props.classes.iconRoot
         }}

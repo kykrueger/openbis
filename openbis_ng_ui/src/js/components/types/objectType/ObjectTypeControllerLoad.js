@@ -93,8 +93,6 @@ export default class ObjectTypeHandlerLoad {
           }
         }
 
-        console.log('load handler')
-
         this.context.setState(() => ({
           type,
           properties,

@@ -38,7 +38,8 @@ class Users extends React.Component {
     )
   }
 
-  renderComponent(object) {
+  renderComponent(tab) {
+    const { object } = tab
     if (object.type === objectType.USER) {
       return <User objectId={object.id} />
     } else if (object.type === objectType.GROUP) {
@@ -48,7 +49,8 @@ class Users extends React.Component {
     }
   }
 
-  renderTab(object, changed) {
+  renderTab(tab) {
+    const { object, changed } = tab
     if (object.type === objectType.USER || object.type === objectType.GROUP) {
       return <ContentObjectTab object={object} changed={changed} />
     } else if (object.type === objectType.SEARCH) {

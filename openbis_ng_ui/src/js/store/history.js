@@ -9,7 +9,10 @@ let history = createBrowserHistory({
 history.configure = store => {
   history.listen(location => {
     let route = routes.parse(location.pathname)
-    store.dispatch(actions.routeChange(route.path, location.state))
+
+    if (route.path !== store.getState().route) {
+      store.dispatch(actions.routeChange(route.path, location.state))
+    }
   })
 
   let currentRoute = store.getState().route

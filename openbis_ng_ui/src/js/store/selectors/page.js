@@ -1,3 +1,4 @@
+import _ from 'lodash'
 import { createSelector } from 'reselect'
 import logger from '@src/js/common/logger.js'
 import routes from '@src/js/common/consts/routes.js'
@@ -7,14 +8,27 @@ const getCurrentRoute = (state, page) => {
   return state.ui.pages[page].currentRoute
 }
 
-const getOpenObjects = (state, page) => {
-  logger.log(logger.DEBUG, 'pageSelector.getOpenObjects')
-  return state.ui.pages[page].openObjects
+const getOpenTabs = (state, page) => {
+  logger.log(logger.DEBUG, 'pageSelector.getOpenTabs')
+  return state.ui.pages[page].openTabs
 }
 
-const getChangedObjects = (state, page) => {
-  logger.log(logger.DEBUG, 'pageSelector.getChangedObjects')
-  return state.ui.pages[page].changedObjects
+const getOpenObjects = createSelector(getOpenTabs, openTabs => {
+  logger.log(logger.DEBUG, 'pageSelector.getOpenObjects')
+  return openTabs.map(openTab => {
+    return openTab.object
+  })
+})
+
+const getSelectedTab = (state, page) => {
+  logger.log(logger.DEBUG, 'pageSelector.getSelectedTab')
+  const selectedObject = createGetSelectedObject()(state, page)
+  if (selectedObject) {
+    const openTabs = getOpenTabs(state, page)
+    return _.find(openTabs, { object: selectedObject })
+  } else {
+    return null
+  }
 }
 
 const createGetSelectedObject = () => {
@@ -32,7 +46,8 @@ const createGetSelectedObject = () => {
 
 export default {
   getCurrentRoute,
+  getOpenTabs,
   getOpenObjects,
-  getChangedObjects,
+  getSelectedTab,
   createGetSelectedObject
 }
