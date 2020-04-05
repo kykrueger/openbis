@@ -42,8 +42,11 @@ class Types extends React.Component {
   }
 
   renderComponent(object) {
-    if (object.type === objectType.OBJECT_TYPE) {
-      return <ObjectType objectId={object.id} />
+    if (
+      object.type === objectType.OBJECT_TYPE ||
+      object.type === objectType.NEW_OBJECT_TYPE
+    ) {
+      return <ObjectType object={object} />
     } else if (object.type === objectType.COLLECTION_TYPE) {
       return <CollectionType objectId={object.id} />
     } else if (object.type === objectType.DATA_SET_TYPE) {

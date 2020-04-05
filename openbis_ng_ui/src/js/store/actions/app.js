@@ -7,6 +7,7 @@ const CURRENT_PAGE_CHANGE = 'CURRENT_PAGE_CHANGE'
 const SEARCH_CHANGE = 'SEARCH_CHANGE'
 const ERROR_CHANGE = 'ERROR_CHANGE'
 const ROUTE_CHANGE = 'ROUTE_CHANGE'
+const ROUTE_REPLACE = 'ROUTE_REPLACE'
 const SET_INITIALIZED = 'SET_INITIALIZED'
 const SET_LOADING = 'SET_LOADING'
 const SET_SEARCH = 'SET_SEARCH'
@@ -63,10 +64,19 @@ const errorChange = error => ({
   }
 })
 
-const routeChange = route => ({
+const routeChange = (route, state) => ({
   type: ROUTE_CHANGE,
   payload: {
-    route
+    route,
+    state
+  }
+})
+
+const routeReplace = (route, state) => ({
+  type: ROUTE_REPLACE,
+  payload: {
+    route,
+    state
   }
 })
 
@@ -122,6 +132,7 @@ export default {
   SEARCH_CHANGE,
   ERROR_CHANGE,
   ROUTE_CHANGE,
+  ROUTE_REPLACE,
   SET_INITIALIZED,
   SET_LOADING,
   SET_SEARCH,
@@ -137,6 +148,7 @@ export default {
   searchChange,
   errorChange,
   routeChange,
+  routeReplace,
   setInitialized,
   setLoading,
   setSearch,

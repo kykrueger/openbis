@@ -11,7 +11,9 @@ import EntityKind from 'as/dto/entitytype/EntityKind'
 import SampleFetchOptions from 'as/dto/sample/fetchoptions/SampleFetchOptions'
 import SearchSamplesOperation from 'as/dto/sample/search/SearchSamplesOperation'
 import SampleType from 'as/dto/sample/SampleType'
+import SampleTypeCreation from 'as/dto/sample/create/SampleTypeCreation'
 import SampleTypeUpdate from 'as/dto/sample/update/SampleTypeUpdate'
+import CreateSampleTypesOperation from 'as/dto/sample/create/CreateSampleTypesOperation'
 import UpdateSampleTypesOperation from 'as/dto/sample/update/UpdateSampleTypesOperation'
 import SampleSearchCriteria from 'as/dto/sample/search/SampleSearchCriteria'
 import SampleTypeSearchCriteria from 'as/dto/sample/search/SampleTypeSearchCriteria'
@@ -70,7 +72,9 @@ const dto = {
   SampleFetchOptions,
   SearchSamplesOperation,
   SampleType,
+  SampleTypeCreation,
   SampleTypeUpdate,
+  CreateSampleTypesOperation,
   UpdateSampleTypesOperation,
   SampleSearchCriteria,
   SampleTypeSearchCriteria,

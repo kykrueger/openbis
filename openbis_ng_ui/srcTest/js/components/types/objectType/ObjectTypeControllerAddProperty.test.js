@@ -11,11 +11,18 @@ let controller = null
 
 beforeEach(() => {
   jest.resetAllMocks()
-
   context = new ComponentContext()
+  context.setProps({
+    objectId: 'TEST_OBJECT_ID'
+  })
   facade = new ObjectTypeFacade()
   controller = new ObjectTypeControler(facade)
   controller.init(context)
+})
+
+afterEach(() => {
+  expect(facade.loadType).toHaveBeenCalledWith(context.getProps().objectId)
+  expect(facade.loadUsages).toHaveBeenCalledWith(context.getProps().objectId)
 })
 
 describe('ObjectTypeController.handleAddProperty', () => {
@@ -85,6 +92,10 @@ describe('ObjectTypeController.handleAddProperty', () => {
   })
 
   test('add with a property selected', async () => {
+    context.setProps({
+      objectId: 123
+    })
+
     facade.loadType.mockReturnValue(
       Promise.resolve(fixture.TEST_SAMPLE_TYPE_DTO)
     )

@@ -40,15 +40,13 @@ class ContentTabs extends React.Component {
 
     const { objects, selectedObject, classes } = this.props
 
-    let selectedIndex = false
-
-    if (selectedObject) {
-      selectedIndex = _.findIndex(objects, selectedObject)
-    }
+    let selectedIndex = selectedObject
+      ? _.findIndex(objects, selectedObject)
+      : -1
 
     return (
       <Tabs
-        value={selectedIndex}
+        value={selectedIndex !== -1 ? selectedIndex : false}
         variant='scrollable'
         scrollButtons='on'
         onChange={this.handleTabChange}

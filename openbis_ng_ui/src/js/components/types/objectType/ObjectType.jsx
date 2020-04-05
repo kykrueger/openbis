@@ -1,5 +1,6 @@
 import _ from 'lodash'
 import React from 'react'
+import { connect } from 'react-redux'
 import { withStyles } from '@material-ui/core/styles'
 import { Resizable } from 're-resizable'
 import ComponentContext from '@src/js/components/common/ComponentContext.js'
@@ -160,4 +161,4 @@ class ObjectType extends React.PureComponent {
   }
 }
 
-export default _.flow(withStyles(styles))(ObjectType)
+export default _.flow(connect(), withStyles(styles))(ObjectType)

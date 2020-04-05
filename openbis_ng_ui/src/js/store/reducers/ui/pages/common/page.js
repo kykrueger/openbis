@@ -40,6 +40,26 @@ const openObjects = (state = [], action) => {
       )
       break
     }
+    case actions.REPLACE_OPEN_OBJECT: {
+      const index = _.findIndex(
+        state,
+        {
+          type: action.payload.oldType,
+          id: action.payload.oldId
+        },
+        _.isEqual
+      )
+      if (index !== -1) {
+        newState = [...state]
+        newState[index] = {
+          type: action.payload.newType,
+          id: action.payload.newId
+        }
+      } else {
+        return state
+      }
+      break
+    }
     default: {
       return state
     }

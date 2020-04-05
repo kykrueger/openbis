@@ -10,6 +10,7 @@ import selectors from '@src/js/store/selectors/selectors.js'
 import actions from '@src/js/store/actions/actions.js'
 import objectType from '@src/js/common/consts/objectType.js'
 import routes from '@src/js/common/consts/routes.js'
+import history from '@src/js/store/history.js'
 
 export default function* appSaga() {
   yield takeEvery(actions.INIT, init)
@@ -20,6 +21,7 @@ export default function* appSaga() {
   yield takeEvery(actions.SEARCH_CHANGE, searchChange)
   yield takeEvery(actions.ERROR_CHANGE, errorChange)
   yield takeEvery(actions.ROUTE_CHANGE, routeChange)
+  yield takeEvery(actions.ROUTE_REPLACE, routeReplace)
 }
 
 function* init() {
@@ -112,4 +114,9 @@ function* errorChange(action) {
 function* routeChange(action) {
   const route = action.payload.route
   yield put(actions.setRoute(route))
+}
+
+function routeReplace(action) {
+  const { route, state } = action.payload
+  history.replace(route, state)
 }

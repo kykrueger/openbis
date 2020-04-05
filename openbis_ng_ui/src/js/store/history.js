@@ -1,15 +1,15 @@
-import { createHashHistory } from 'history'
+import { createBrowserHistory } from 'history'
 import actions from '@src/js/store/actions/actions.js'
 import routes from '@src/js/common/consts/routes.js'
 
-let history = createHashHistory({
-  hashType: 'noslash'
+let history = createBrowserHistory({
+  basename: '#'
 })
 
 history.configure = store => {
   history.listen(location => {
     let route = routes.parse(location.pathname)
-    store.dispatch(actions.routeChange(route.path))
+    store.dispatch(actions.routeChange(route.path, location.state))
   })
 
   let currentRoute = store.getState().route

@@ -7,11 +7,38 @@ import routes from '@src/js/common/consts/routes.js'
 const getSelectedObject = selectors.createGetSelectedObject()
 
 export default function* pageSaga() {
+  yield takeEvery(actions.OBJECT_NEW, objectNew)
+  yield takeEvery(actions.OBJECT_CREATE, objectCreate)
   yield takeEvery(actions.OBJECT_OPEN, objectOpen)
+  yield takeEvery(actions.OBJECT_SAVE, objectSave)
   yield takeEvery(actions.OBJECT_CHANGE, objectChange)
   yield takeEvery(actions.OBJECT_CLOSE, objectClose)
-  yield takeEvery(actions.OBJECT_NEW, objectNew)
   yield takeEvery(actions.ROUTE_CHANGE, routeChange)
+}
+
+function* objectNew(action) {
+  const { page, type } = action.payload
+
+  let id = 1
+
+  const openObjects = yield select(selectors.getOpenObjects, page)
+  openObjects.forEach(openObject => {
+    if (openObject.type === type) {
+      id++
+    }
+  })
+
+  const route = routes.format({ page, type, id })
+  yield put(actions.routeChange(route))
+}
+
+function* objectCreate(action) {
+  const { page, oldType, oldId, newType, newId } = action.payload
+
+  yield put(actions.replaceOpenObject(page, oldType, oldId, newType, newId))
+
+  let route = routes.format({ page, type: newType, id: newId })
+  yield put(actions.routeReplace(route))
 }
 
 function* objectOpen(action) {
@@ -19,6 +46,8 @@ function* objectOpen(action) {
   let route = routes.format({ page, type, id })
   yield put(actions.routeChange(route))
 }
+
+function objectSave(action) {}
 
 function* objectChange(action) {
   let { page, type, id, changed } = action.payload
@@ -67,22 +96,6 @@ function* objectClose(action) {
     let route = routes.format({ page })
     yield put(actions.routeChange(route))
   }
-}
-
-function* objectNew(action) {
-  const { page, type } = action.payload
-
-  let id = 1
-
-  const openObjects = yield select(selectors.getOpenObjects, page)
-  openObjects.forEach(openObject => {
-    if (openObject.type === type) {
-      id++
-    }
-  })
-
-  const route = routes.format({ page, type, id })
-  yield put(actions.routeChange(route))
 }
 
 function* routeChange(action) {
