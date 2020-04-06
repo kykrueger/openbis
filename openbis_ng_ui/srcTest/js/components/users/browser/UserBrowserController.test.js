@@ -1,4 +1,3 @@
-import _ from 'lodash'
 import UsersBrowserController from '@src/js/components/users/browser/UsersBrowserController.js'
 import ComponentContext from '@srcTest/js/components/common/ComponentContext.js'
 import openbis from '@srcTest/js/services/openbis.js'
@@ -29,7 +28,7 @@ describe('browser', () => {
 
     await controller.load()
 
-    expectNodes(controller.getNodes(), [
+    expect(controller.getNodes()).toMatchObject([
       node(['users'], false, false, [
         node(['users', fixture.ANOTHER_USER_DTO.userId], false, false, [
           node([
@@ -100,7 +99,7 @@ describe('browser', () => {
     await controller.load()
     controller.filterChange(fixture.ANOTHER_GROUP_DTO.code.toUpperCase())
 
-    expectNodes(controller.getNodes(), [
+    expect(controller.getNodes()).toMatchObject([
       node(['users'], true, false, [
         node(['users', fixture.ANOTHER_USER_DTO.userId], true, false, [
           node([
@@ -131,7 +130,7 @@ describe('browser', () => {
     await controller.load()
     controller.nodeSelect(nodeId(['users', fixture.TEST_USER_DTO.userId]))
 
-    expectNodes(controller.getNodes(), [
+    expect(controller.getNodes()).toMatchObject([
       node(['users'], false, false, [
         node(['users', fixture.ANOTHER_USER_DTO.userId], false, false),
         node(['users', fixture.TEST_USER_DTO.userId], false, true)
@@ -150,7 +149,7 @@ describe('browser', () => {
     controller.nodeSelect(nodeId(['users', fixture.TEST_USER_DTO.userId]))
     controller.nodeSelect(nodeId(['users', fixture.ANOTHER_USER_DTO.userId]))
 
-    expectNodes(controller.getNodes(), [
+    expect(controller.getNodes()).toMatchObject([
       node(['users'], false, false, [
         node(['users', fixture.ANOTHER_USER_DTO.userId], false, true),
         node(['users', fixture.TEST_USER_DTO.userId], false, false)
@@ -169,7 +168,7 @@ describe('browser', () => {
     await controller.load()
     controller.nodeSelect(nodeId(['users']))
 
-    expectNodes(controller.getNodes(), [
+    expect(controller.getNodes()).toMatchObject([
       node(['users'], false, true, [
         node(['users', fixture.ANOTHER_USER_DTO.userId], false, false),
         node(['users', fixture.TEST_USER_DTO.userId], false, false)
@@ -187,7 +186,7 @@ describe('browser', () => {
     await controller.load()
     controller.nodeSelect(nodeId(['users', fixture.TEST_USER_DTO.userId]))
 
-    expectNodes(controller.getNodes(), [
+    expect(controller.getNodes()).toMatchObject([
       node(['users'], false, false, [
         node(['users', fixture.TEST_USER_DTO.userId], false, true, [
           node(
@@ -219,7 +218,7 @@ describe('browser', () => {
     expectOpenUserAction(fixture.TEST_USER_DTO.userId)
     controller.nodeSelect(nodeId(['groups', fixture.TEST_GROUP_DTO.code]))
 
-    expectNodes(controller.getNodes(), [
+    expect(controller.getNodes()).toMatchObject([
       node(['users'], false, false, [
         node(['users', fixture.TEST_USER_DTO.userId], false, false, [
           node(
@@ -258,7 +257,7 @@ describe('browser', () => {
     await controller.load()
     controller.nodeExpand(nodeId(['groups']))
 
-    expectNodes(controller.getNodes(), [
+    expect(controller.getNodes()).toMatchObject([
       node(['users']),
       node(['groups'], true, false, [
         node(['groups', fixture.TEST_GROUP_DTO.code])
@@ -268,7 +267,7 @@ describe('browser', () => {
     expectNoActions()
     controller.nodeCollapse(nodeId(['groups']))
 
-    expectNodes(controller.getNodes(), [
+    expect(controller.getNodes()).toMatchObject([
       node(['users']),
       node(['groups'], false, false, [
         node(['groups', fixture.TEST_GROUP_DTO.code])
@@ -311,29 +310,6 @@ function mockSearchGroups(groups) {
   openbis.searchAuthorizationGroups.mockReturnValue(
     Promise.resolve(searchGroupsResult)
   )
-}
-
-function expectNodes(actualNodes, expectedNodes) {
-  function removeKeys(nodes, keys) {
-    if (!nodes) {
-      return
-    }
-    nodes.forEach(node => {
-      _.keys(node).forEach(key => {
-        if (!keys.has(key)) {
-          delete node[key]
-        }
-      })
-      removeKeys(node.children, keys)
-    })
-  }
-
-  const keys = new Set(['id', 'expanded', 'selected', 'children'])
-
-  var actualNodesClone = _.cloneDeep(actualNodes)
-  removeKeys(actualNodesClone, keys)
-
-  expect(actualNodesClone).toEqual(expectedNodes)
 }
 
 function expectOpenUserAction(userId) {

@@ -34,7 +34,8 @@ function mapStateToProps() {
       selectedObject: selectors.getSelectedObject(
         state,
         ownProps.controller.getPage()
-      )
+      ),
+      lastObjectModifications: selectors.getLastObjectModifications(state)
     }
   }
 }
@@ -56,6 +57,11 @@ class Browser extends React.PureComponent {
   componentDidUpdate(prevProps) {
     if (this.props.selectedObject !== prevProps.selectedObject) {
       this.controller.objectSelect(this.props.selectedObject)
+    }
+    if (
+      this.props.lastObjectModifications !== prevProps.lastObjectModifications
+    ) {
+      this.controller.refresh(this.props.lastObjectModifications)
     }
   }
 

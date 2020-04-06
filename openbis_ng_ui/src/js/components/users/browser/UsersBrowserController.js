@@ -2,6 +2,7 @@ import _ from 'lodash'
 import openbis from '@src/js/services/openbis.js'
 import pages from '@src/js/common/consts/pages.js'
 import objectType from '@src/js/common/consts/objectType.js'
+import objectOperation from '@src/js/common/consts/objectOperation.js'
 import BrowserController from '@src/js/components/common/browser/BrowserController.js'
 
 export default class UsersBrowserController extends BrowserController {
@@ -96,5 +97,12 @@ export default class UsersBrowserController extends BrowserController {
 
       return nodes
     })
+  }
+
+  getObservedModifications() {
+    return {
+      [objectType.USER]: [objectOperation.CREATE, objectOperation.DELETE],
+      [objectType.GROUP]: [objectOperation.CREATE, objectOperation.DELETE]
+    }
   }
 }

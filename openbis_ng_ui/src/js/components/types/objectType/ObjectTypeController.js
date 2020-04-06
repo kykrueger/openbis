@@ -20,7 +20,10 @@ export default class ObjectTypeController {
   }
 
   load() {
-    return new ObjectTypeControllerLoad(this.context, this.facade).execute()
+    const { object } = this.context.getProps()
+    return new ObjectTypeControllerLoad(this.context, this.facade).execute(
+      object
+    )
   }
 
   handleOrderChange(type, params) {

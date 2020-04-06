@@ -3,8 +3,18 @@ import Button from '@material-ui/core/Button'
 import { withStyles } from '@material-ui/core/styles'
 import logger from '@src/js/common/logger.js'
 
-const styles = () => ({
-  button: {}
+const styles = theme => ({
+  container: {
+    padding: theme.spacing(2),
+    display: 'flex',
+    borderWidth: '1px 0px 0px 0px',
+    borderColor: theme.palette.background.secondary,
+    borderStyle: 'solid'
+  },
+  button: {
+    marginRight: theme.spacing(2),
+    whiteSpace: 'nowrap'
+  }
 })
 
 class BrowserButtons extends React.Component {
@@ -14,7 +24,7 @@ class BrowserButtons extends React.Component {
     const { controller, classes, addEnabled, removeEnabled } = this.props
 
     return (
-      <div>
+      <div className={classes.container}>
         <Button
           classes={{ root: classes.button }}
           variant='contained'

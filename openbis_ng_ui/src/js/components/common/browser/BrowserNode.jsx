@@ -18,7 +18,7 @@ const styles = {
   }
 }
 
-class BrowserNode extends React.Component {
+class BrowserNode extends React.PureComponent {
   render() {
     logger.log(logger.DEBUG, 'BrowserNode.render')
 

@@ -370,16 +370,22 @@ export default class ObjectTypeHandlerSave {
     return this.facade
       .executeOperations(operations, options)
       .then(() => {
-        return this.loadHandler.execute()
+        return this.loadHandler.execute({
+          type: objectTypes.OBJECT_TYPE,
+          id: this.type.code
+        })
       })
-      .catch(error => {
-        this.facade.catch(error)
-      })
-      .finally(async () => {
+      .then(async () => {
         await this.context.setState({
           loading: false
         })
         this.notify()
+      })
+      .catch(error => {
+        this.context.setState({
+          loading: false
+        })
+        this.facade.catch(error)
       })
   }
 }

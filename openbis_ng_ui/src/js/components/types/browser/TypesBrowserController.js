@@ -1,8 +1,9 @@
 import _ from 'lodash'
 import openbis from '@src/js/services/openbis.js'
+import actions from '@src/js/store/actions/actions.js'
 import pages from '@src/js/common/consts/pages.js'
 import objectType from '@src/js/common/consts/objectType.js'
-import actions from '@src/js/store/actions/actions.js'
+import objectOperation from '@src/js/common/consts/objectOperation.js'
 import BrowserController from '@src/js/components/common/browser/BrowserController.js'
 
 export default class TypesBrowserController extends BrowserController {
@@ -110,6 +111,12 @@ export default class TypesBrowserController extends BrowserController {
 
     if (selectedNode && selectedNode.object) {
       alert('Object remove')
+    }
+  }
+
+  getObservedModifications() {
+    return {
+      [objectType.OBJECT_TYPE]: [objectOperation.CREATE, objectOperation.DELETE]
     }
   }
 }

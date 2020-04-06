@@ -1,21 +1,21 @@
 import _ from 'lodash'
-import { defaultMemoize } from 'reselect'
 import autoBind from 'auto-bind'
 import actions from '@src/js/store/actions/actions.js'
 
 export default class BrowserController {
   constructor() {
     autoBind(this)
+    this.loadedNodes = []
+    this.lastObjectModifications = {}
   }
 
   init(context) {
     context.initState({
       loaded: false,
-      loadedNodes: [],
-      visibleIds: {},
-      selectedIds: {},
-      expandedIds: {},
-      filter: ''
+      filter: '',
+      nodes: [],
+      selectedId: null,
+      selectedObject: null
     })
     this.context = context
   }
@@ -36,132 +36,176 @@ export default class BrowserController {
     throw 'Method not implemented'
   }
 
+  getObservedModifications() {
+    throw 'Method not implemented'
+  }
+
   load() {
-    return this.loadNodes().then(nodes => {
-      this._sortNodes(nodes)
+    return this.loadNodes().then(loadedNodes => {
+      const {
+        filter,
+        nodes,
+        selectedId,
+        selectedObject
+      } = this.context.getState()
 
-      this._visitNodes(nodes, node => {
-        if (node.children && node.children.length === 0) {
-          delete node.children
-        }
-      })
-
-      const filteredNodes = this._filterNodes(nodes, this.getFilter())
-      const filteredIds = this._visitNodes(
-        filteredNodes,
-        (node, result) => {
-          result[node.id] = node.id
-        },
-        {}
+      let newNodes = this._createNodes(loadedNodes)
+      newNodes = this._filterNodes(newNodes, filter)
+      newNodes = this._setNodesExpanded(
+        newNodes,
+        this._getExpandedNodes(nodes),
+        true
       )
+      newNodes = this._setNodesSelected(newNodes, selectedId, selectedObject)
+      this._sortNodes(newNodes)
+
+      this.loadedNodes = loadedNodes
 
       this.context.setState({
         loaded: true,
-        loadedNodes: nodes,
-        visibleIds: filteredIds
+        nodes: newNodes
       })
     })
   }
 
-  filterChange(filter) {
-    const { loadedNodes } = this.context.getState()
+  refresh(fullObjectModifications) {
+    const observedModifications = this.getObservedModifications()
 
-    const filteredNodes = this._filterNodes(loadedNodes, filter)
+    const getTimestamp = (modifications, type, operation) => {
+      return (
+        (modifications &&
+          modifications[type] &&
+          modifications[type][operation]) ||
+        0
+      )
+    }
 
-    const filteredIds = {}
-    const expandedIds = {}
+    const newObjectModifications = {}
+    let refresh = false
 
-    this._visitNodes(filteredNodes, node => {
-      filteredIds[node.id] = node.id
-      if (node.children) {
-        expandedIds[node.id] = node.id
-      }
+    Object.keys(observedModifications).forEach(observedType => {
+      const observedOperations = observedModifications[observedType]
+
+      newObjectModifications[observedType] = {}
+
+      observedOperations.forEach(observedOperation => {
+        const timestamp = getTimestamp(
+          this.lastObjectModifications,
+          observedType,
+          observedOperation
+        )
+        const newTimestamp = getTimestamp(
+          fullObjectModifications,
+          observedType,
+          observedOperation
+        )
+
+        newObjectModifications[observedType][observedOperation] = Math.max(
+          timestamp,
+          newTimestamp
+        )
+
+        if (newTimestamp > timestamp) {
+          refresh = true
+        }
+      })
     })
 
-    this.context.setState({
+    this.lastObjectModifications = newObjectModifications
+
+    if (refresh) {
+      this.load()
+    }
+  }
+
+  filterChange(newFilter) {
+    const {
       filter,
-      visibleIds: filteredIds,
-      expandedIds: expandedIds
+      nodes,
+      selectedId,
+      selectedObject
+    } = this.context.getState()
+
+    let initialNodes = null
+
+    if (newFilter.startsWith(filter)) {
+      initialNodes = nodes
+    } else {
+      initialNodes = this.loadedNodes
+    }
+
+    let newNodes = this._createNodes(initialNodes)
+    newNodes = this._filterNodes(newNodes, newFilter)
+    newNodes = this._setNodesExpanded(
+      newNodes,
+      this._getParentNodes(newNodes),
+      true
+    )
+    newNodes = this._setNodesSelected(newNodes, selectedId, selectedObject)
+    this._sortNodes(newNodes)
+
+    this.context.setState({
+      filter: newFilter,
+      nodes: newNodes
     })
   }
 
   nodeExpand(nodeId) {
-    const { expandedIds } = this.context.getState()
+    const { nodes } = this.context.getState()
 
-    const newExpandedIds = { ...expandedIds }
-    newExpandedIds[nodeId] = nodeId
+    const newNodes = this._setNodesExpanded(nodes, { [nodeId]: nodeId }, true)
 
     this.context.setState({
-      expandedIds: newExpandedIds
+      nodes: newNodes
     })
   }
 
   nodeCollapse(nodeId) {
-    const { expandedIds } = this.context.getState()
+    const { nodes } = this.context.getState()
 
-    const newExpandedIds = { ...expandedIds }
-    delete newExpandedIds[nodeId]
+    const newNodes = this._setNodesExpanded(nodes, { [nodeId]: nodeId }, false)
 
     this.context.setState({
-      expandedIds: newExpandedIds
+      nodes: newNodes
     })
   }
 
   nodeSelect(nodeId) {
-    const { loadedNodes, selectedIds } = this.context.getState()
+    const { nodes } = this.context.getState()
 
-    const nodesWithNodeId = this._visitNodes(loadedNodes, (node, results) => {
+    let nodeObject = null
+
+    this._visitNodes(nodes, node => {
       if (node.id === nodeId) {
-        results.push(node)
+        nodeObject = node.object
       }
     })
 
-    const newSelectedIds = {}
-
-    if (nodesWithNodeId.length > 0) {
-      const nodeWithNodeId = nodesWithNodeId[0]
-
-      if (nodeWithNodeId.object) {
-        this._visitNodes(loadedNodes, node => {
-          if (node.object && _.isEqual(node.object, nodeWithNodeId.object)) {
-            newSelectedIds[node.id] = node.id
-          }
-        })
-        this.context.dispatch(
-          actions.objectOpen(
-            this.getPage(),
-            nodeWithNodeId.object.type,
-            nodeWithNodeId.object.id
-          )
-        )
-      } else {
-        newSelectedIds[nodeId] = nodeId
-      }
+    if (nodeObject) {
+      this.context.dispatch(
+        actions.objectOpen(this.getPage(), nodeObject.type, nodeObject.id)
+      )
     }
 
-    if (!_.isEqual(selectedIds, newSelectedIds)) {
-      this.context.setState({
-        selectedIds: newSelectedIds
-      })
-    }
+    const newNodes = this._setNodesSelected(nodes, nodeId, nodeObject)
+
+    this.context.setState({
+      nodes: newNodes,
+      selectedId: nodeId,
+      selectedObject: nodeObject
+    })
   }
 
   objectSelect(object) {
-    const { loadedNodes, selectedIds } = this.context.getState()
+    const { nodes } = this.context.getState()
 
-    const newSelectedIds = {}
+    const newNodes = this._setNodesSelected(nodes, null, object)
 
-    this._visitNodes(loadedNodes, node => {
-      if (node.object && _.isEqual(node.object, object)) {
-        newSelectedIds[node.id] = node.id
-      }
+    this.context.setState({
+      nodes: newNodes,
+      selectedId: null,
+      selectedObject: object
     })
-
-    if (!_.isEqual(selectedIds, newSelectedIds)) {
-      this.context.setState({
-        selectedIds: newSelectedIds
-      })
-    }
   }
 
   getLoaded() {
@@ -175,25 +219,24 @@ export default class BrowserController {
   }
 
   getNodes() {
-    const {
-      loadedNodes,
-      visibleIds,
-      expandedIds,
-      selectedIds
-    } = this.context.getState()
-
-    return this._getNodes(loadedNodes, visibleIds, expandedIds, selectedIds)
+    const { nodes } = this.context.getState()
+    return nodes
   }
 
   getSelectedNode() {
-    const { loadedNodes, selectedIds } = this.context.getState()
+    const { nodes, selectedId, selectedObject } = this.context.getState()
 
     let selectedNode = null
-    this._visitNodes(loadedNodes, node => {
-      if (!selectedNode && selectedIds[node.id]) {
+
+    this._visitNodes(nodes, node => {
+      if (
+        (selectedId && selectedId === node.id) ||
+        (selectedObject && _.isEqual(selectedObject, node.object))
+      ) {
         selectedNode = node
       }
     })
+
     return selectedNode
   }
 
@@ -205,6 +248,82 @@ export default class BrowserController {
   isRemoveEnabled() {
     const selectedNode = this.getSelectedNode()
     return selectedNode && selectedNode.object
+  }
+
+  _createNodes = nodes => {
+    const newNodes = []
+
+    nodes.forEach(node => {
+      const newNode = {
+        ...node,
+        selected: false,
+        expanded: false
+      }
+      if (node.children && node.children.length > 0) {
+        newNode.children = this._createNodes(node.children)
+      }
+      newNodes.push(newNode)
+    })
+
+    return newNodes
+  }
+
+  _getExpandedNodes(nodes) {
+    return this._visitNodes(
+      nodes,
+      (node, result) => {
+        if (node.expanded) {
+          result[node.id] = node.id
+        }
+      },
+      {}
+    )
+  }
+
+  _getParentNodes(nodes) {
+    return this._visitNodes(
+      nodes,
+      (node, result) => {
+        if (node.children && node.children.length > 0) {
+          result[node.id] = node.id
+        }
+      },
+      {}
+    )
+  }
+
+  _setNodesExpanded(nodes, nodeIds, expanded) {
+    return this._modifyNodes(nodes, node => {
+      if (nodeIds[node.id]) {
+        return {
+          ...node,
+          expanded
+        }
+      } else {
+        return node
+      }
+    })
+  }
+
+  _setNodesSelected(nodes, selectedId, selectedObject) {
+    return this._modifyNodes(nodes, node => {
+      if (
+        (selectedId && selectedId === node.id) ||
+        (selectedObject && _.isEqual(selectedObject, node.object))
+      ) {
+        return {
+          ...node,
+          selected: true
+        }
+      } else if (node.selected) {
+        return {
+          ...node,
+          selected: false
+        }
+      } else {
+        return node
+      }
+    })
   }
 
   _sortNodes = (nodes, level = 0) => {
@@ -268,35 +387,37 @@ export default class BrowserController {
     return newNodes
   }
 
-  _getNodes = defaultMemoize(
-    (loadedNodes, visibleIds, expandedIds, selectedIds) => {
-      const _createNodes = nodes => {
-        if (!nodes) {
-          return []
-        }
+  _modifyNodes = (nodes, modifyFn) => {
+    if (!nodes) {
+      return nodes
+    }
 
-        const newNodes = []
+    let newNodes = []
+    let modified = false
 
-        for (let i = 0; i < nodes.length; i++) {
-          let node = nodes[i]
+    nodes.forEach(node => {
+      let newNode = modifyFn(node)
 
-          if (visibleIds[node.id]) {
-            const newNode = {
-              ...node,
-              expanded: !!expandedIds[node.id],
-              selected: !!selectedIds[node.id]
-            }
-            if (node.children) {
-              newNode.children = _createNodes(node.children)
-            }
-            newNodes.push(newNode)
+      const newChildren = this._modifyNodes(newNode.children, modifyFn)
+
+      if (newNode === node) {
+        if (newChildren !== node.children) {
+          newNode = {
+            ...node,
+            children: newChildren
           }
         }
-
-        return newNodes
+      } else {
+        newNode.children = newChildren
       }
 
-      return _createNodes(loadedNodes)
-    }
-  )
+      newNodes.push(newNode)
+
+      if (newNode !== node) {
+        modified = true
+      }
+    })
+
+    return modified ? newNodes : nodes
+  }
 }

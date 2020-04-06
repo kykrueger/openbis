@@ -7,13 +7,13 @@ export default class ObjectTypeHandlerLoad {
     this.facade = facade
   }
 
-  execute() {
+  execute(object) {
     this.context.setState({
       loading: true,
       validate: false
     })
 
-    return this.load()
+    return this.load(object)
       .then(([loadedType, loadedUsages]) => {
         const type = {
           code: _.get(loadedType, 'code', null),
@@ -114,8 +114,8 @@ export default class ObjectTypeHandlerLoad {
       })
   }
 
-  load() {
-    const { id, type } = this.context.getProps().object
+  load(object) {
+    const { id, type } = object
 
     if (type === objectTypes.NEW_OBJECT_TYPE) {
       return Promise.resolve([null, null])

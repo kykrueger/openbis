@@ -3,6 +3,7 @@ import { put, takeEvery, select } from '@src/js/store/sagas/effects.js'
 import selectors from '@src/js/store/selectors/selectors.js'
 import actions from '@src/js/store/actions/actions.js'
 import routes from '@src/js/common/consts/routes.js'
+import objectOperation from '@src/js/common/consts/objectOperation.js'
 
 export default function* pageSaga() {
   yield takeEvery(actions.OBJECT_NEW, objectNew)
@@ -40,6 +41,14 @@ function* objectCreate(action) {
     const newTab = { ...oldTab, object: { type: newType, id: newId } }
     yield put(actions.replaceOpenTab(page, oldTab.id, newTab))
 
+    yield put(
+      actions.setLastObjectModification(
+        newType,
+        objectOperation.CREATE,
+        Date.now()
+      )
+    )
+
     const route = routes.format({ page, type: newType, id: newId })
     yield put(actions.routeReplace(route))
   }
@@ -51,7 +60,12 @@ function* objectOpen(action) {
   yield put(actions.routeChange(route))
 }
 
-function objectSave(action) {}
+function* objectSave(action) {
+  const { type } = action.payload
+  yield put(
+    actions.setLastObjectModification(type, objectOperation.UPDATE, Date.now())
+  )
+}
 
 function* objectChange(action) {
   const { page, type, id, changed } = action.payload
