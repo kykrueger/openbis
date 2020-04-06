@@ -320,14 +320,26 @@ public class ApplicationServerApiPostgresWrapper implements IApplicationServerAp
         String user_id = sessionInformation.getPerson().getUserId();
         Long personId = SQLQueries.getPersonId(connection, user_id);
 
-
+        Set<String> stIdsptIds = new HashSet<>();
+        for (SampleCreation sampleCreation:list) {
+            Long sampleTypeId = sampleTypeIdsByCode.get(((EntityTypePermId) sampleCreation.getTypeId()).getPermId());
+            for (String propertyCode:sampleCreation.getProperties().keySet()) {
+                Long propertyTypeId = propertyTypeIdsByCode.get(propertyCode);
+                stIdsptIds.add(sampleTypeId + ":" + propertyTypeId);
+            }
+        }
+        Map<String, Long> stIdsptIdsByReference = SQLQueries.getSampleTypePropertyTypeIds(connection, stIdsptIds);
 
         List<SamplePermId> permIds = new ArrayList<>(list.size());
 
+        List<Long> nextIds = SQLQueries.nextSampleIds(connection, list.size());
+
         List<List<Object>> sampleInsertArgs = new ArrayList<>();
+        List<List<Object>> samplePropertiesInsertArgs = new ArrayList<>();
         for (int idx = 0; idx < list.size(); idx++) {
             SampleCreation sampleCreation = list.get(idx);
 
+            Long id = nextIds.get(idx);
             String perm_id = UUID.randomUUID().toString();
             permIds.add(new SamplePermId(perm_id));
             String code = sampleCreation.getCode();
@@ -340,11 +352,18 @@ public class ApplicationServerApiPostgresWrapper implements IApplicationServerAp
             Long pers_id_registerer = personId;
             Long modification_timestamp = personId;
             Long space_id = spaceIdsByCode.get(((SpacePermId) sampleCreation.getSpaceId()).getPermId());
-            sampleInsertArgs.add(Arrays.asList(perm_id, code, proj_id, expe_id, saty_id, pers_id_registerer, modification_timestamp, space_id));
+            sampleInsertArgs.add(Arrays.asList(id, perm_id, code, proj_id, expe_id, saty_id, pers_id_registerer, modification_timestamp, space_id));
+
+            Long sampleTypeId = sampleTypeIdsByCode.get(((EntityTypePermId) sampleCreation.getTypeId()).getPermId());
+            for (String propertyCode:sampleCreation.getProperties().keySet()) {
+                Long propertyTypeId = propertyTypeIdsByCode.get(propertyCode);
+                String reference = sampleTypeId + ":" + propertyTypeId;
+                samplePropertiesInsertArgs.add(Arrays.asList(id, stIdsptIdsByReference.get(reference), sampleCreation.getProperties().get(propertyCode), pers_id_registerer, modification_timestamp));
+            }
         }
 
         int inserts = SQLQueries.insertSamples(connection, sampleInsertArgs);
-
+        int propertyInserts = SQLQueries.insertSamplesProperties(connection, samplePropertiesInsertArgs);
         return permIds;
     }
 

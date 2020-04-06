@@ -102,11 +102,11 @@ public class SQLQueries {
      *  Detail: Key (samp_id)=(6) is not present in table "samples_all".  Call getNextException to see other errors in the batch.
      */
 
-    private static final String SAMPLE_INITIAL_INSERT = "INSERT INTO samples_all(id, perm_id, code, saty_id, registration_timestamp, modification_timestamp, pers_id_registerer, pers_id_modifier) VALUES(nextval('sample_id_seq'), ?, ?, ?, NOW(), NOW(), ?, ?)";
+    private static final String SAMPLE_INITIAL_INSERT = "INSERT INTO samples_all(id, perm_id, code, saty_id, registration_timestamp, modification_timestamp, pers_id_registerer, pers_id_modifier) VALUES(?, ?, ?, ?, NOW(), NOW(), ?, ?)";
 
-    private static final String SAMPLE_UPDATE_INSERT = "UPDATE samples_all SET proj_id = ?, expe_id = ?, space_id = ? WHERE perm_id = ?";
+    private static final String SAMPLE_UPDATE_INSERT = "UPDATE samples_all SET proj_id = ?, expe_id = ?, space_id = ? WHERE id = ?";
 
-    // private static final String SAMPLE_INSERT = "INSERT INTO samples_all(id, perm_id, code, proj_id, expe_id, saty_id, registration_timestamp, modification_timestamp, pers_id_registerer, pers_id_modifier, space_id) VALUES(nextval('sample_id_seq'), ?, ?, ?, ?, ?, NOW(), NOW(), ?, ?, ?)";
+    // private static final String SAMPLE_INSERT = "INSERT INTO samples_all(id, perm_id, code, proj_id, expe_id, saty_id, registration_timestamp, modification_timestamp, pers_id_registerer, pers_id_modifier, space_id) VALUES(?, ?, ?, ?, ?, ?, NOW(), NOW(), ?, ?, ?)";
 
     public static int insertSamples(Connection connection, List<List<Object>> samplesInsertArgs) {
         List<List<Object>> SAMPLE_INITIAL_INSERT_ARGS = new ArrayList<>();
@@ -118,16 +118,17 @@ public class SQLQueries {
             List<Object> SAMPLE_INITIAL_INSERT_ARG = new ArrayList<>();
             SAMPLE_INITIAL_INSERT_ARG.add(sampleInsertArgs.get(0));
             SAMPLE_INITIAL_INSERT_ARG.add(sampleInsertArgs.get(1));
-            SAMPLE_INITIAL_INSERT_ARG.add(sampleInsertArgs.get(4));
+            SAMPLE_INITIAL_INSERT_ARG.add(sampleInsertArgs.get(2));
             SAMPLE_INITIAL_INSERT_ARG.add(sampleInsertArgs.get(5));
             SAMPLE_INITIAL_INSERT_ARG.add(sampleInsertArgs.get(6));
+            SAMPLE_INITIAL_INSERT_ARG.add(sampleInsertArgs.get(7));
             SAMPLE_INITIAL_INSERT_ARGS.add(SAMPLE_INITIAL_INSERT_ARG);
 
             // proj_id = ?, expe_id, = ?, space_id = ? WHERE permId = ?
             List<Object> SAMPLE_UPDATE_INSERT_ARG = new ArrayList<>();
-            SAMPLE_UPDATE_INSERT_ARG.add(sampleInsertArgs.get(2));
             SAMPLE_UPDATE_INSERT_ARG.add(sampleInsertArgs.get(3));
-            SAMPLE_UPDATE_INSERT_ARG.add(sampleInsertArgs.get(7));
+            SAMPLE_UPDATE_INSERT_ARG.add(sampleInsertArgs.get(4));
+            SAMPLE_UPDATE_INSERT_ARG.add(sampleInsertArgs.get(8));
             SAMPLE_UPDATE_INSERT_ARG.add(sampleInsertArgs.get(0));
             SAMPLE_UPDATE_INSERT_ARGS.add(SAMPLE_UPDATE_INSERT_ARG);
         }
@@ -145,7 +146,62 @@ public class SQLQueries {
             connection.setAutoCommit(true);
             } catch (Exception ex3) {}
         }
+
         return samplesInsertArgs.size();
+    }
+
+    private static final String NEXT_SAMPLE_IDS = "SELECT setval('sample_id_seq', nextval('sample_id_seq') + 5000, true)";
+
+    public static List<Long> nextSampleIds(Connection connection, int number) {
+        List<Map<String, Object>> lastRes = SQLExecutor.executeQuery(connection, NEXT_SAMPLE_IDS, Arrays.asList());
+        long last = (Long) lastRes.get(0).get("setval");
+        long first = last - number;
+        List<Long> results = new ArrayList<>(number);
+        for (int i = 0; i < number; i++) {
+            results.add(first + 1 + i);
+        }
+        return results;
+    }
+
+    private static final String SELECT_STPT = "SELECT id, saty_id, prty_id  FROM sample_type_property_types WHERE FALSE";
+
+    public static Map<String, Long> getSampleTypePropertyTypeIds(Connection connection, Collection<String> sampleType_propertyTypes) {
+        Map<String, Long> sampleTypePropertyTypeIdsByIdentifier = new HashMap<>();
+
+        StringBuilder SELECT_STPT_WITH_ORS = new StringBuilder(SELECT_STPT);
+        for (String sampleType_propertyType:sampleType_propertyTypes) {
+            SELECT_STPT_WITH_ORS.append(" OR (saty_id = " + sampleType_propertyType.split(":")[0] + " AND prty_id = " + sampleType_propertyType.split(":")[1] + ")");
+        }
+
+        List<Map<String, Object>> sampleTypePropertyTypeIdsWithReferences = SQLExecutor.executeQuery(connection, SELECT_STPT_WITH_ORS.toString(), Arrays.asList());
+        for (Map<String, Object> sampleTypePropertyTypeIdsWithReference:sampleTypePropertyTypeIdsWithReferences) {
+            sampleTypePropertyTypeIdsByIdentifier.put(
+                    sampleTypePropertyTypeIdsWithReference.get("saty_id") + ":" + sampleTypePropertyTypeIdsWithReference.get("prty_id")
+                    ,
+                    (Long) sampleTypePropertyTypeIdsWithReference.get("id")
+            );
+        }
+
+        return sampleTypePropertyTypeIdsByIdentifier;
+    }
+
+    private static final String SAMPLE_PROPERTIES_INSERT = "INSERT INTO sample_properties(id, samp_id, stpt_id, value, registration_timestamp, modification_timestamp, pers_id_registerer, pers_id_author) VALUES(nextval('sample_property_id_seq'), ?, ?, ?, NOW(), NOW(), ?, ?)";
+
+    public static int insertSamplesProperties(Connection connection, List<List<Object>> samplesPropertiesArgs) {
+        try {
+            connection.setAutoCommit(false);
+            SQLExecutor.executeUpdate(connection, SAMPLE_PROPERTIES_INSERT, samplesPropertiesArgs);
+            connection.commit();
+        } catch (Exception ex) {
+            try {
+                connection.rollback();
+            } catch (Exception ex2) {}
+        } finally {
+            try {
+                connection.setAutoCommit(true);
+            } catch (Exception ex3) {}
+        }
+        return samplesPropertiesArgs.size();
     }
 
     //
