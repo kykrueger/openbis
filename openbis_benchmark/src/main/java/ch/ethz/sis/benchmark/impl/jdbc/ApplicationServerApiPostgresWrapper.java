@@ -49,6 +49,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.delete.ExperimentDele
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.delete.ExperimentTypeDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentTypeFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.IExperimentId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria;
@@ -111,6 +112,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.create.ProjectCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.delete.ProjectDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.fetchoptions.ProjectFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.IProjectId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.search.ProjectSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.update.ProjectUpdate;
@@ -151,6 +153,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.delete.SampleTypeDeletion
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleTypeSearchCriteria;
@@ -210,22 +213,21 @@ import lombok.SneakyThrows;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
-public class ApplicationServerApiJDBCWrapper implements IApplicationServerApiWrapper {
+public class ApplicationServerApiPostgresWrapper implements IApplicationServerApiWrapper {
 
     private IApplicationServerApi instance;
     private String databaseURL;
     private String databaseUser;
     private String databasePass;
     private Connection connection;
-    private AbstractSQLExecutor sqlExecutor;
 
     @SneakyThrows
-    public ApplicationServerApiJDBCWrapper(String databaseURL,
-                                           String databaseUser,
-                                           String databasePass) {
+    public ApplicationServerApiPostgresWrapper(String databaseURL,
+                                               String databaseUser,
+                                               String databasePass) {
         //
         this.databaseURL = databaseURL;
         this.databaseUser = databaseUser;
@@ -244,12 +246,6 @@ public class ApplicationServerApiJDBCWrapper implements IApplicationServerApiWra
     public String login(String s, String s1) {
         //
         connection = DriverManager.getConnection(databaseURL, databaseUser, databasePass);
-        sqlExecutor = new AbstractSQLExecutor() {
-            @Override
-            public Connection getConnection() {
-                return connection;
-            }
-        };
         //
         return instance.login(s, s1);
     }
@@ -269,7 +265,6 @@ public class ApplicationServerApiJDBCWrapper implements IApplicationServerApiWra
     public void logout(String s) {
         //
         connection.close();
-        sqlExecutor = null;
         //
         instance.logout(s);
     }
@@ -306,7 +301,51 @@ public class ApplicationServerApiJDBCWrapper implements IApplicationServerApiWra
 
     @Override
     public List<SamplePermId> createSamples(String s, List<SampleCreation> list) {
-        return instance.createSamples(s, list);
+        Set<String> spaceCodes = list.stream().map(sc -> ((SpacePermId) sc.getSpaceId()).getPermId()).collect(Collectors.toSet());
+        Map<String, Long> spaceIdsByCode = SQLQueries.getSpaceIds(connection, spaceCodes);
+
+        Set<String> projectIdentifiers = list.stream().map(sc -> ((ProjectIdentifier) sc.getProjectId() != null)?((ProjectIdentifier) sc.getProjectId()).getIdentifier():null).collect(Collectors.toSet());
+        Map<String, Long> projectIdsByIdentifier = SQLQueries.getProjectIds(connection, projectIdentifiers, spaceIdsByCode);
+
+        Set<String> experimentIdentifiers = list.stream().map(sc -> ((ExperimentIdentifier) sc.getExperimentId()).getIdentifier()).collect(Collectors.toSet());
+        Map<String, Long> experimentIdsByIdentifier = SQLQueries.getExperimentIds(connection, experimentIdentifiers, projectIdsByIdentifier);
+
+        Set<String> sampleTypeCodes = list.stream().map(sc -> ((EntityTypePermId) sc.getTypeId()).getPermId()).collect(Collectors.toSet());
+        Map<String, Long> sampleTypeIdsByCode = SQLQueries.getTypeIds(connection, sampleTypeCodes);
+
+        Set<String> propertyTypeCodes = list.stream().flatMap(sc -> sc.getProperties().keySet().stream()).collect(Collectors.toSet());
+        Map<String, Long> propertyTypeIdsByCode = SQLQueries.getPropertyTypeIds(connection, propertyTypeCodes);
+
+        SessionInformation sessionInformation = instance.getSessionInformation(s);
+        String user_id = sessionInformation.getPerson().getUserId();
+        Long personId = SQLQueries.getPersonId(connection, user_id);
+
+
+
+        List<SamplePermId> permIds = new ArrayList<>(list.size());
+
+        List<List<Object>> sampleInsertArgs = new ArrayList<>();
+        for (int idx = 0; idx < list.size(); idx++) {
+            SampleCreation sampleCreation = list.get(idx);
+
+            String perm_id = UUID.randomUUID().toString();
+            permIds.add(new SamplePermId(perm_id));
+            String code = sampleCreation.getCode();
+            Long proj_id = null;
+            if (sampleCreation.getProjectId() != null) {
+                proj_id = projectIdsByIdentifier.get(((ProjectIdentifier) sampleCreation.getProjectId()).getIdentifier());
+            }
+            Long expe_id = experimentIdsByIdentifier.get( ((ExperimentIdentifier) sampleCreation.getExperimentId()).getIdentifier());
+            Long saty_id = sampleTypeIdsByCode.get(((EntityTypePermId)sampleCreation.getTypeId()).getPermId());
+            Long pers_id_registerer = personId;
+            Long modification_timestamp = personId;
+            Long space_id = spaceIdsByCode.get(((SpacePermId) sampleCreation.getSpaceId()).getPermId());
+            sampleInsertArgs.add(Arrays.asList(perm_id, code, proj_id, expe_id, saty_id, pers_id_registerer, modification_timestamp, space_id));
+        }
+
+        int inserts = SQLQueries.insertSamples(connection, sampleInsertArgs);
+
+        return permIds;
     }
 
     @Override

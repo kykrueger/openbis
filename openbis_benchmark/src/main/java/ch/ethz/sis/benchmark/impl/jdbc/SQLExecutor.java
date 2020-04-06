@@ -16,7 +16,6 @@
 
 package ch.ethz.sis.benchmark.impl.jdbc;
 
-
 import ch.ethz.sis.logging.LogManager;
 import ch.ethz.sis.logging.Logger;
 
@@ -24,10 +23,10 @@ import java.sql.*;
 import java.util.Date;
 import java.util.*;
 
-public abstract class AbstractSQLExecutor
+public class SQLExecutor
 {
 
-    private Logger logger = LogManager.getLogger(this.getClass());
+    private static Logger logger = LogManager.getLogger(SQLExecutor.class);
 
     private static final Map<Class<?>, String> TYPE_CONVERSION_MAP = new HashMap<>();
 
@@ -47,17 +46,37 @@ public abstract class AbstractSQLExecutor
         TYPE_CONVERSION_MAP.put(Byte.class, "int2");
     }
 
-    public abstract Connection getConnection();
+    public static int executeUpdate(
+            final Connection connection,
+            final String sqlUpdate,
+            final List<List<Object>> parametersBatch) {
+        int results = 0;
+        try (final PreparedStatement preparedStatement = connection.prepareStatement(sqlUpdate))
+        {
+            for (List<Object> parameters : parametersBatch) {
+                setArgsForPreparedStatement(parameters, preparedStatement);
+                preparedStatement.addBatch();
+                int[] batchResults = preparedStatement.executeBatch();
+                for (int result : batchResults) {
+                    results += result;
+                }
+            }
+        } catch (SQLException ex)
+        {
+            throw new RuntimeException(ex);
+        }
+        return results;
+    }
 
-    public List<Map<String, Object>> executeQuery(final String sqlQuery, final List<Object> args)
-    {
+    public static List<Map<String, Object>> executeQuery(final Connection connection, final String sqlQuery, final List<Object> parameters) {
+
         logger.info("QUERY: " + sqlQuery);
-        logger.info("ARGS: " + Arrays.deepToString(args.toArray()));
+        logger.info("PARAM: " + Arrays.deepToString(parameters.toArray()));
 
         final List<Map<String, Object>> results = new ArrayList<>();
-        try (final PreparedStatement preparedStatement = getConnection().prepareStatement(sqlQuery))
+        try (final PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery))
         {
-            setArgsForPreparedStatement(args, preparedStatement);
+            setArgsForPreparedStatement(parameters, preparedStatement);
 
             try (final ResultSet resultSet = preparedStatement.executeQuery())
             {
@@ -88,7 +107,7 @@ public abstract class AbstractSQLExecutor
         return results;
     }
 
-    private void setArgsForPreparedStatement(final List<Object> args, final PreparedStatement preparedStatement) throws SQLException
+    private static void setArgsForPreparedStatement(final List<Object> args, final PreparedStatement preparedStatement) throws SQLException
     {
         for (int index = 0; index < args.size(); index++)
         {

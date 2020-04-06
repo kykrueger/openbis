@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Set;
 
 import ch.ethz.sis.benchmark.Benchmark;
-import ch.ethz.sis.benchmark.impl.jdbc.ApplicationServerApiJDBCWrapper;
+import ch.ethz.sis.benchmark.impl.jdbc.ApplicationServerApiPostgresWrapper;
 import ch.ethz.sis.benchmark.util.RandomValueGenerator;
 import ch.ethz.sis.benchmark.util.RandomWord;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
@@ -35,15 +35,6 @@ public class LoadBenchmark extends Benchmark {
 	
 	@Override
 	public void startInternal() throws Exception {
-	    // Use JDBC If requested
-        boolean useDatabase = Boolean.parseBoolean(this.getConfiguration().getParameters().get(Parameters.USE_DATABASE.name()));
-        if (useDatabase) {
-            String databaseURL = this.getConfiguration().getParameters().get(Parameters.DATABASE_URL.name());
-            String databaseUser = this.getConfiguration().getParameters().get(Parameters.DATABASE_USER.name());
-            String databasePass = this.getConfiguration().getParameters().get(Parameters.DATABASE_PASS.name());
-            this.v3Wrapper = new ApplicationServerApiJDBCWrapper(databaseURL, databaseUser, databasePass);
-        }
-        //
         login();
         
         String propertyTypeCode1 = "BENCHMARK_STRING_1";
@@ -187,10 +178,20 @@ public class LoadBenchmark extends Benchmark {
         		
         		String code = randomValueGenerator.getRandom();
         		sampleCreation.setSpaceId(new SpacePermId(Prefix.SPACE_ + code)); // Spaces are distributed randomly
-        		sampleCreation.setExperimentId(new ExperimentIdentifier("/" + Prefix.SPACE_ + code + "/" + Prefix.PROJECT_ + code + "/" + Prefix.COLLECTION_ + code));
+        		sampleCreation.setProjectId(new ProjectIdentifier("/" + Prefix.SPACE_ + code + "/" + Prefix.PROJECT_ + code));
+                sampleCreation.setExperimentId(new ExperimentIdentifier("/" + Prefix.SPACE_ + code + "/" + Prefix.PROJECT_ + code + "/" + Prefix.COLLECTION_ + code));
         		sampleCreations.add(sampleCreation);
         		if((i+1) % sampleBatchSize == 0) { // Every 5000, send to openBIS
-        			login();
+                    // Use JDBC If requested
+                    boolean useDatabase = Boolean.parseBoolean(this.getConfiguration().getParameters().get(Parameters.USE_DATABASE.name()));
+                    if (useDatabase) {
+                        String databaseURL = this.getConfiguration().getParameters().get(Parameters.DATABASE_URL.name());
+                        String databaseUser = this.getConfiguration().getParameters().get(Parameters.DATABASE_USER.name());
+                        String databasePass = this.getConfiguration().getParameters().get(Parameters.DATABASE_PASS.name());
+                        this.v3Wrapper = new ApplicationServerApiPostgresWrapper(databaseURL, databaseUser, databasePass);
+                    }
+                    //
+                    login();
         			long lapStart4 = System.currentTimeMillis();
         			v3.createSamples(sessionToken, sampleCreations);
         			long lapEnd4 = System.currentTimeMillis();
