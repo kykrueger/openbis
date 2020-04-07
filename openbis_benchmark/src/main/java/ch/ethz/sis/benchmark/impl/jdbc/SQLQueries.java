@@ -212,19 +212,7 @@ public class SQLQueries {
     private static final String SAMPLE_PROPERTIES_INSERT = "INSERT INTO sample_properties(id, samp_id, stpt_id, value, registration_timestamp, modification_timestamp, pers_id_registerer, pers_id_author) VALUES(nextval('sample_property_id_seq'), ?, ?, ?, NOW(), NOW(), ?, ?)";
 
     public static int insertSamplesProperties(Connection connection, List<List<Object>> samplesPropertiesArgs) {
-        try {
-            connection.setAutoCommit(false);
-            SQLExecutor.executeUpdate(connection, SAMPLE_PROPERTIES_INSERT, samplesPropertiesArgs);
-            connection.commit();
-        } catch (Exception ex) {
-            try {
-                connection.rollback();
-            } catch (Exception ex2) {}
-        } finally {
-            try {
-                connection.setAutoCommit(true);
-            } catch (Exception ex3) {}
-        }
+        SQLExecutor.executeUpdate(connection, SAMPLE_PROPERTIES_INSERT, samplesPropertiesArgs);
         return samplesPropertiesArgs.size();
     }
 

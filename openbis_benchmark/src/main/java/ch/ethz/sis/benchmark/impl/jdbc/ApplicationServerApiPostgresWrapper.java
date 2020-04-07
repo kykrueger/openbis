@@ -361,16 +361,32 @@ public class ApplicationServerApiPostgresWrapper implements IApplicationServerAp
                 samplePropertiesInsertArgs.add(Arrays.asList(id, stIdsptIdsByReference.get(reference), sampleCreation.getProperties().get(propertyCode), pers_id_registerer, modification_timestamp));
             }
         }
-        long end = System.currentTimeMillis();
-        System.out.println("ApplicationServerApiPostgresWrapper.createSamples Preparation Took: " + (end-start)/1000 + " sec");
-        int inserts = SQLQueries.insertSamples(connection, sampleInsertArgs);
-        long end2 = System.currentTimeMillis();
-        System.out.println("ApplicationServerApiPostgresWrapper.createSamples inserts Took: " + (end2-end)/1000 + " sec");
-        int propertyInserts = SQLQueries.insertSamplesProperties(connection, samplePropertiesInsertArgs);
-        long end3 = System.currentTimeMillis();
-        System.out.println("ApplicationServerApiPostgresWrapper.createSamples property inserts Took: " + (end3-end2)/1000 + " sec");
-        System.out.println("ApplicationServerApiPostgresWrapper.createSamples Total: " + (end3-start)/1000 + " sec");
-        System.out.println("ApplicationServerApiPostgresWrapper.createSamples Total: " + list.size()/((end3-start)/1000) + " samples/sec");
+
+        try {
+            connection.setAutoCommit(false);
+
+            long end = System.currentTimeMillis();
+            System.out.println("ApplicationServerApiPostgresWrapper.createSamples Preparation Took: " + (end-start)/1000 + " sec");
+            int inserts = SQLQueries.insertSamples(connection, sampleInsertArgs);
+            long end2 = System.currentTimeMillis();
+            System.out.println("ApplicationServerApiPostgresWrapper.createSamples inserts Took: " + (end2-end)/1000 + " sec");
+            int propertyInserts = SQLQueries.insertSamplesProperties(connection, samplePropertiesInsertArgs);
+            long end3 = System.currentTimeMillis();
+            System.out.println("ApplicationServerApiPostgresWrapper.createSamples property inserts Took: " + (end3-end2)/1000 + " sec");
+            System.out.println("ApplicationServerApiPostgresWrapper.createSamples Total: " + (end3-start)/1000 + " sec");
+            System.out.println("ApplicationServerApiPostgresWrapper.createSamples Total: " + list.size()/((end3-start)/1000) + " samples/sec");
+
+            connection.commit();
+        } catch (Exception ex) {
+            try {
+                connection.rollback();
+            } catch (Exception ex2) {}
+        } finally {
+            try {
+                connection.setAutoCommit(true);
+            } catch (Exception ex3) {}
+        }
+
         return permIds;
     }
 
