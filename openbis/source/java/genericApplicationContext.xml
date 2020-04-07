@@ -370,6 +370,7 @@
 	<bean id="global-search-manager" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.GlobalSearchManager" lazy-init="true">
 		<constructor-arg ref="information-provider-dao"/>
 		<constructor-arg ref="postgres-search-dao"/>
+		<constructor-arg ref="identity-translator"/>
 	</bean>
 
 	<!-- // Common -->

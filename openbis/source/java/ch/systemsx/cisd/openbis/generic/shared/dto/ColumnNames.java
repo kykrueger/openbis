@@ -446,7 +446,7 @@ public final class ColumnNames
 
     public static final String EMAIL_COLUMN = "email";
 
-    public static final String TS_RANK_COLUMN = "ts_rank";
+    public static final String TS_VECTOR_COLUMN = "tsvector_document";
 
     private ColumnNames()
     {

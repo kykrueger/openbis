@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes.VARCHAR;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.TS_RANK_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.TS_VECTOR_COLUMN;
 
 public class GlobalSearchTextConditionTranslator implements IConditionTranslator<GlobalSearchTextCriteria>
 {
@@ -31,9 +31,9 @@ public class GlobalSearchTextConditionTranslator implements IConditionTranslator
             {
                 final String criterionFieldName = criterion.getFieldName();
                 final AbstractStringValue value = criterion.getFieldValue();
-                normalizeValue(value, TS_RANK_COLUMN);
+                normalizeValue(value, TS_VECTOR_COLUMN);
 
-                TranslatorUtils.translateStringComparison(CriteriaTranslator.MAIN_TABLE_ALIAS, TS_RANK_COLUMN, value, VARCHAR, sqlBuilder, args);
+                TranslatorUtils.translateStringComparison(CriteriaTranslator.MAIN_TABLE_ALIAS, TS_VECTOR_COLUMN, value, VARCHAR, sqlBuilder, args);
                 break;
             }
 

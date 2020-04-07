@@ -21,10 +21,11 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchCriter
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MatchingEntity;
 
 import java.util.Set;
 
-public interface IGlobalSearchManager extends IID2PETranslator<Long>, ISearchManager<GlobalSearchObject>
+public interface IGlobalSearchManager extends IID2PETranslator<MatchingEntity>, ISearchManager<GlobalSearchObject>
 {
 
     /**
@@ -38,6 +39,7 @@ public interface IGlobalSearchManager extends IID2PETranslator<Long>, ISearchMan
      * @param tableMapper the table mapper that points to the table to run global search on.
      * @return set of IDs of found entities.
      */
-    Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation, final GlobalSearchCriteria criteria, final String idsColumnName, final TableMapper tableMapper);
+    Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation, final GlobalSearchCriteria criteria,
+            final String idsColumnName, final TableMapper tableMapper);
 
 }

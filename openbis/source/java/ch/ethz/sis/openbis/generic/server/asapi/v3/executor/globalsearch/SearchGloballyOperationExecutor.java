@@ -105,7 +105,7 @@ public class SearchGloballyOperationExecutor
         allResultsIds.addAll(materialResultsIds);
 
         final List<Long> sortedAndPagedResultIds = sortAndPage(allResultsIds, fetchOptions);
-        final List<MatchingEntity> sortedAndPagedResultPEs = getSearchManager().translate(sortedAndPagedResultIds);
+        final List<MatchingEntity> sortedAndPagedResultPEs = globalSearchManager.translate(sortedAndPagedResultIds);
         final Map<MatchingEntity, GlobalSearchObject> sortedAndPagedResultV3DTOs = doTranslate(translationContext, sortedAndPagedResultPEs, fetchOptions);
 
         final List<GlobalSearchObject> finalResults = new ArrayList<>(sortedAndPagedResultV3DTOs.values());
@@ -119,7 +119,7 @@ public class SearchGloballyOperationExecutor
     protected List<Long> sortAndPage(final Set<Long> ids, final FetchOptions<GlobalSearchObject> fo)
     {
         final SortOptions<GlobalSearchObject> sortOptions = fo.getSortBy();
-        final Set<Long> orderedIDs = (sortOptions != null) ? getSearchManager().sortIDs(ids, sortOptions) : ids;
+        final Set<Long> orderedIDs = (sortOptions != null) ? globalSearchManager.sortIDs(ids, sortOptions) : ids;
 
         final List<Long> toPage = new ArrayList<>(orderedIDs);
         final Integer fromRecord = fo.getFrom();
@@ -149,7 +149,7 @@ public class SearchGloballyOperationExecutor
     @Override
     protected ILocalSearchManager<GlobalSearchCriteria, GlobalSearchObject, MatchingEntity> getSearchManager()
     {
-        throw new RuntimeException("This method is not implemented yet.");
+        throw new IllegalStateException("This method should not be executed. globalSearchManager should be used instead.");
     }
 
     @Override

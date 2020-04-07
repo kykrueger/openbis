@@ -6,16 +6,21 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchCriter
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MatchingEntity;
 
 import java.util.*;
 
 public class GlobalSearchManager extends AbstractSearchManager<GlobalSearchObject> implements IGlobalSearchManager
 {
 
-    public GlobalSearchManager(final ISQLAuthorisationInformationProviderDAO authProvider, final ISQLSearchDAO searchDAO)
+    private final IID2PETranslator<MatchingEntity> idsTranslator;
+
+    public GlobalSearchManager(final ISQLAuthorisationInformationProviderDAO authProvider, final ISQLSearchDAO searchDAO, final IID2PETranslator<MatchingEntity> idsTranslator)
     {
         super(authProvider, searchDAO);
+        this.idsTranslator = idsTranslator;
     }
 
     @Override
@@ -49,9 +54,9 @@ public class GlobalSearchManager extends AbstractSearchManager<GlobalSearchObjec
     }
 
     @Override
-    public List<Long> translate(final List<Long> ids)
+    public List<MatchingEntity> translate(final List<Long> ids)
     {
-        return null;
+        return idsTranslator.translate(ids);
     }
 
 }
