@@ -25,7 +25,7 @@ $.extend(BBBHubTechnology.prototype, ELNLIMSPlugin.prototype, {
         return [{
             icon : "fa fa-table",
             uniqueViewName : "BBB_VIEW_NAME_TEST",
-            label : "Snakemake",
+            label : "Index Page",
             paintView : function($header, $content) {
                     $header.append($("<h1>").append("Public Index Page"));
                     BBBServerFacade.getExperiments($content);
