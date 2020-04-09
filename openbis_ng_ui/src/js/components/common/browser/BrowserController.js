@@ -3,6 +3,26 @@ import autoBind from 'auto-bind'
 import actions from '@src/js/store/actions/actions.js'
 
 export default class BrowserController {
+  doGetPage() {
+    throw 'Method not implemented'
+  }
+
+  doLoadNodes() {
+    throw 'Method not implemented'
+  }
+
+  doNodeAdd() {
+    throw 'Method not implemented'
+  }
+
+  doNodeRemove() {
+    throw 'Method not implemented'
+  }
+
+  doGetObservedModifications() {
+    throw 'Method not implemented'
+  }
+
   constructor() {
     autoBind(this)
     this.loadedNodes = []
@@ -15,33 +35,14 @@ export default class BrowserController {
       filter: '',
       nodes: [],
       selectedId: null,
-      selectedObject: null
+      selectedObject: null,
+      removeNodeDialogOpen: false
     })
     this.context = context
   }
 
-  getPage() {
-    throw 'Method not implemented'
-  }
-
-  loadNodes() {
-    throw 'Method not implemented'
-  }
-
-  nodeAdd() {
-    throw 'Method not implemented'
-  }
-
-  nodeRemove() {
-    throw 'Method not implemented'
-  }
-
-  getObservedModifications() {
-    throw 'Method not implemented'
-  }
-
   load() {
-    return this.loadNodes().then(loadedNodes => {
+    return this.doLoadNodes().then(loadedNodes => {
       const {
         filter,
         nodes,
@@ -69,7 +70,7 @@ export default class BrowserController {
   }
 
   refresh(fullObjectModifications) {
-    const observedModifications = this.getObservedModifications()
+    const observedModifications = this.doGetObservedModifications()
 
     const getTimestamp = (modifications, type, operation) => {
       return (
@@ -196,6 +197,47 @@ export default class BrowserController {
     })
   }
 
+  nodeAdd() {
+    if (!this.isAddNodeEnabled()) {
+      return
+    }
+
+    const selectedNode = this.getSelectedNode()
+    this.doNodeAdd(selectedNode)
+  }
+
+  nodeRemove() {
+    if (!this.isRemoveNodeEnabled()) {
+      return
+    }
+
+    this.context.setState({
+      removeNodeDialogOpen: true
+    })
+  }
+
+  nodeRemoveConfirm() {
+    const { removeNodeDialogOpen } = this.context.getState()
+
+    if (!removeNodeDialogOpen) {
+      return Promise.resolve()
+    }
+
+    const selectedNode = this.getSelectedNode()
+
+    return this.doNodeRemove(selectedNode).then(() => {
+      return this.context.setState({
+        removeNodeDialogOpen: false
+      })
+    })
+  }
+
+  nodeRemoveCancel() {
+    this.context.setState({
+      removeNodeDialogOpen: false
+    })
+  }
+
   objectSelect(object) {
     const { nodes } = this.context.getState()
 
@@ -206,6 +248,10 @@ export default class BrowserController {
       selectedId: null,
       selectedObject: object
     })
+  }
+
+  getPage() {
+    return this.doGetPage()
   }
 
   getLoaded() {
@@ -240,27 +286,42 @@ export default class BrowserController {
     return selectedNode
   }
 
-  isAddEnabled() {
+  isAddNodeEnabled() {
     const selectedNode = this.getSelectedNode()
-    return selectedNode && !selectedNode.object
+    if (selectedNode && !selectedNode.object) {
+      return true
+    } else {
+      return false
+    }
   }
 
-  isRemoveEnabled() {
+  isRemoveNodeEnabled() {
     const selectedNode = this.getSelectedNode()
-    return selectedNode && selectedNode.object
+    if (selectedNode && selectedNode.object) {
+      return true
+    } else {
+      return false
+    }
+  }
+
+  isRemoveNodeDialogOpen() {
+    const { removeNodeDialogOpen } = this.context.getState()
+    return removeNodeDialogOpen
   }
 
   _createNodes = nodes => {
+    if (!nodes) {
+      return []
+    }
+
     const newNodes = []
 
     nodes.forEach(node => {
       const newNode = {
         ...node,
         selected: false,
-        expanded: false
-      }
-      if (node.children && node.children.length > 0) {
-        newNode.children = this._createNodes(node.children)
+        expanded: false,
+        children: this._createNodes(node.children)
       }
       newNodes.push(newNode)
     })

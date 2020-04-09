@@ -18,13 +18,19 @@ import UpdateSampleTypesOperation from 'as/dto/sample/update/UpdateSampleTypesOp
 import SampleSearchCriteria from 'as/dto/sample/search/SampleSearchCriteria'
 import SampleTypeSearchCriteria from 'as/dto/sample/search/SampleTypeSearchCriteria'
 import SampleTypeFetchOptions from 'as/dto/sample/fetchoptions/SampleTypeFetchOptions'
+import SampleTypeDeletionOptions from 'as/dto/sample/delete/SampleTypeDeletionOptions'
+import ExperimentType from 'as/dto/experiment/ExperimentType'
 import ExperimentTypeSearchCriteria from 'as/dto/experiment/search/ExperimentTypeSearchCriteria'
 import ExperimentTypeFetchOptions from 'as/dto/experiment/fetchoptions/ExperimentTypeFetchOptions'
+import ExperimentTypeDeletionOptions from 'as/dto/experiment/delete/ExperimentTypeDeletionOptions'
+import DataSetType from 'as/dto/dataset/DataSetType'
 import DataSetTypeSearchCriteria from 'as/dto/dataset/search/DataSetTypeSearchCriteria'
 import DataSetTypeFetchOptions from 'as/dto/dataset/fetchoptions/DataSetTypeFetchOptions'
+import DataSetTypeDeletionOptions from 'as/dto/dataset/delete/DataSetTypeDeletionOptions'
 import MaterialType from 'as/dto/material/MaterialType'
 import MaterialTypeSearchCriteria from 'as/dto/material/search/MaterialTypeSearchCriteria'
 import MaterialTypeFetchOptions from 'as/dto/material/fetchoptions/MaterialTypeFetchOptions'
+import MaterialTypeDeletionOptions from 'as/dto/material/delete/MaterialTypeDeletionOptions'
 import PropertyType from 'as/dto/property/PropertyType'
 import PropertyTypeCreation from 'as/dto/property/create/PropertyTypeCreation'
 import CreatePropertyTypesOperation from 'as/dto/property/create/CreatePropertyTypesOperation'
@@ -79,13 +85,19 @@ const dto = {
   SampleSearchCriteria,
   SampleTypeSearchCriteria,
   SampleTypeFetchOptions,
+  SampleTypeDeletionOptions,
+  ExperimentType,
   ExperimentTypeSearchCriteria,
   ExperimentTypeFetchOptions,
+  ExperimentTypeDeletionOptions,
+  DataSetType,
   DataSetTypeSearchCriteria,
   DataSetTypeFetchOptions,
+  DataSetTypeDeletionOptions,
   MaterialType,
   MaterialTypeSearchCriteria,
   MaterialTypeFetchOptions,
+  MaterialTypeDeletionOptions,
   PropertyType,
   PropertyTypeCreation,
   CreatePropertyTypesOperation,

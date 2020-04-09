@@ -8,7 +8,7 @@ import Content from '@src/js/components/common/content/Content.jsx'
 import ContentObjectTab from '@src/js/components/common/content/ContentObjectTab.jsx'
 import ContentSearchTab from '@src/js/components/common/content/ContentSearchTab.jsx'
 
-import UsersBrowser from './browser/UsersBrowser.jsx'
+import UserBrowser from './browser/UserBrowser.jsx'
 import User from './user/User.jsx'
 import Group from './group/Group.jsx'
 import Search from './search/Search.jsx'
@@ -28,7 +28,7 @@ class Users extends React.Component {
 
     return (
       <div className={classes.container}>
-        <UsersBrowser />
+        <UserBrowser />
         <Content
           page={pages.USERS}
           renderComponent={this.renderComponent}

@@ -11,6 +11,7 @@ import logger from '@src/js/common/logger.js'
 
 import BrowserNodes from './BrowserNodes.jsx'
 import BrowserButtons from './BrowserButtons.jsx'
+import BrowserDialogRemoveNode from './BrowserDialogRemoveNode.jsx'
 
 const styles = {
   resizable: {
@@ -108,8 +109,14 @@ class Browser extends React.PureComponent {
           </div>
           <BrowserButtons
             controller={controller}
-            addEnabled={controller.isAddEnabled()}
-            removeEnabled={controller.isRemoveEnabled()}
+            addEnabled={controller.isAddNodeEnabled()}
+            removeEnabled={controller.isRemoveNodeEnabled()}
+          />
+          <BrowserDialogRemoveNode
+            open={controller.isRemoveNodeDialogOpen()}
+            node={controller.getSelectedNode()}
+            onConfirm={controller.nodeRemoveConfirm}
+            onCancel={controller.nodeRemoveCancel}
           />
         </Paper>
       </Resizable>

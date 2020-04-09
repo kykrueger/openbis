@@ -49,4 +49,12 @@ export default class ComponentContext {
   getDispatch() {
     return this.dispatch
   }
+
+  expectAction(action) {
+    expect(this.getDispatch()).toHaveBeenCalledWith(action)
+  }
+
+  expectNoActions() {
+    expect(this.getDispatch()).toHaveBeenCalledTimes(0)
+  }
 }

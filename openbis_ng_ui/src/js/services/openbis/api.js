@@ -101,6 +101,22 @@ class Facade {
     return this.promise(this.v3.searchMaterialTypes(criteria, fo))
   }
 
+  deleteSampleTypes(ids, options) {
+    return this.promise(this.v3.deleteSampleTypes(ids, options))
+  }
+
+  deleteExperimentTypes(ids, options) {
+    return this.promise(this.v3.deleteExperimentTypes(ids, options))
+  }
+
+  deleteDataSetTypes(ids, options) {
+    return this.promise(this.v3.deleteDataSetTypes(ids, options))
+  }
+
+  deleteMaterialTypes(ids, options) {
+    return this.promise(this.v3.deleteMaterialTypes(ids, options))
+  }
+
   executeService() {
     let id = new dto.CustomASServiceCode('openbis-ng-ui-service')
     let options = new dto.CustomASServiceExecutionOptions()

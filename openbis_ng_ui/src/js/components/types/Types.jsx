@@ -9,7 +9,7 @@ import ContentNewObjectTab from '@src/js/components/common/content/ContentNewObj
 import ContentObjectTab from '@src/js/components/common/content/ContentObjectTab.jsx'
 import ContentSearchTab from '@src/js/components/common/content/ContentSearchTab.jsx'
 
-import TypesBrowser from './browser/TypesBrowser.jsx'
+import TypeBrowser from './browser/TypeBrowser.jsx'
 import ObjectType from './objectType/ObjectType.jsx'
 import CollectionType from './collectionType/CollectionType.jsx'
 import DataSetType from './dataSetType/DataSetType.jsx'
@@ -31,7 +31,7 @@ class Types extends React.Component {
 
     return (
       <div className={classes.container}>
-        <TypesBrowser />
+        <TypeBrowser />
         <Content
           page={pages.TYPES}
           renderComponent={this.renderComponent}

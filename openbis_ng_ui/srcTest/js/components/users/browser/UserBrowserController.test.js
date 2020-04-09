@@ -1,4 +1,4 @@
-import UsersBrowserController from '@src/js/components/users/browser/UsersBrowserController.js'
+import UserBrowserController from '@src/js/components/users/browser/UserBrowserController.js'
 import ComponentContext from '@srcTest/js/components/common/ComponentContext.js'
 import openbis from '@srcTest/js/services/openbis.js'
 import pages from '@src/js/common/consts/pages.js'
@@ -13,14 +13,14 @@ beforeEach(() => {
   jest.resetAllMocks()
 
   context = new ComponentContext()
-  controller = new UsersBrowserController()
+  controller = new UserBrowserController()
   controller.init(context)
 })
 
 describe('browser', () => {
   test('load', async () => {
-    mockSearchPersons([fixture.TEST_USER_DTO, fixture.ANOTHER_USER_DTO])
-    mockSearchGroups([
+    openbis.mockSearchPersons([fixture.TEST_USER_DTO, fixture.ANOTHER_USER_DTO])
+    openbis.mockSearchGroups([
       fixture.TEST_GROUP_DTO,
       fixture.ANOTHER_GROUP_DTO,
       fixture.ALL_USERS_GROUP_DTO
@@ -29,132 +29,160 @@ describe('browser', () => {
     await controller.load()
 
     expect(controller.getNodes()).toMatchObject([
-      node(['users'], false, false, [
-        node(['users', fixture.ANOTHER_USER_DTO.userId], false, false, [
-          node([
-            'users',
-            fixture.ANOTHER_USER_DTO.userId,
-            fixture.ALL_USERS_GROUP_DTO.code
-          ]),
-          node([
-            'users',
-            fixture.ANOTHER_USER_DTO.userId,
-            fixture.ANOTHER_GROUP_DTO.code
-          ])
-        ]),
-        node(['users', fixture.TEST_USER_DTO.userId], false, false, [
-          node([
-            'users',
-            fixture.TEST_USER_DTO.userId,
-            fixture.ALL_USERS_GROUP_DTO.code
-          ]),
-          node([
-            'users',
-            fixture.TEST_USER_DTO.userId,
-            fixture.TEST_GROUP_DTO.code
-          ])
-        ])
-      ]),
-      node(['groups'], false, false, [
-        node(['groups', fixture.ALL_USERS_GROUP_DTO.code], false, false, [
-          node([
-            'groups',
-            fixture.ALL_USERS_GROUP_DTO.code,
-            fixture.ANOTHER_USER_DTO.userId
-          ]),
-          node([
-            'groups',
-            fixture.ALL_USERS_GROUP_DTO.code,
-            fixture.TEST_USER_DTO.userId
-          ])
-        ]),
-        node(['groups', fixture.ANOTHER_GROUP_DTO.code], false, false, [
-          node([
-            'groups',
-            fixture.ANOTHER_GROUP_DTO.code,
-            fixture.ANOTHER_USER_DTO.userId
-          ])
-        ]),
-        node(['groups', fixture.TEST_GROUP_DTO.code], false, false, [
-          node([
-            'groups',
-            fixture.TEST_GROUP_DTO.code,
-            fixture.TEST_USER_DTO.userId
-          ])
-        ])
-      ])
+      {
+        text: 'Users',
+        expanded: false,
+        selected: false
+      },
+      {
+        text: 'Groups',
+        expanded: false,
+        selected: false
+      }
     ])
 
-    expectNoActions()
+    context.expectNoActions()
   })
 
   test('filter', async () => {
-    mockSearchPersons([fixture.TEST_USER_DTO, fixture.ANOTHER_USER_DTO])
-    mockSearchGroups([
+    openbis.mockSearchPersons([fixture.TEST_USER_DTO, fixture.ANOTHER_USER_DTO])
+    openbis.mockSearchGroups([
       fixture.TEST_GROUP_DTO,
       fixture.ANOTHER_GROUP_DTO,
       fixture.ALL_USERS_GROUP_DTO
     ])
 
     await controller.load()
-    controller.filterChange(fixture.ANOTHER_GROUP_DTO.code.toUpperCase())
+    controller.filterChange('ANOTHER')
 
     expect(controller.getNodes()).toMatchObject([
-      node(['users'], true, false, [
-        node(['users', fixture.ANOTHER_USER_DTO.userId], true, false, [
-          node([
-            'users',
-            fixture.ANOTHER_USER_DTO.userId,
-            fixture.ANOTHER_GROUP_DTO.code
-          ])
-        ])
-      ]),
-      node(['groups'], true, false, [
-        node(['groups', fixture.ANOTHER_GROUP_DTO.code], true, false, [
-          node([
-            'groups',
-            fixture.ANOTHER_GROUP_DTO.code,
-            fixture.ANOTHER_USER_DTO.userId
-          ])
-        ])
-      ])
+      {
+        text: 'Users',
+        expanded: true,
+        selected: false,
+        children: [
+          {
+            text: fixture.ANOTHER_USER_DTO.userId,
+            expanded: true,
+            selected: false,
+            children: [
+              {
+                text: fixture.ALL_USERS_GROUP_DTO.code,
+                expanded: false,
+                selected: false
+              },
+              {
+                text: fixture.ANOTHER_GROUP_DTO.code,
+                expanded: false,
+                selected: false
+              }
+            ]
+          }
+        ]
+      },
+      {
+        text: 'Groups',
+        expanded: true,
+        selected: false,
+        children: [
+          {
+            text: fixture.ALL_USERS_GROUP_DTO.code,
+            expanded: true,
+            selected: false,
+            children: [
+              {
+                text: fixture.ANOTHER_USER_DTO.userId,
+                expanded: false,
+                selected: false
+              }
+            ]
+          },
+          {
+            text: fixture.ANOTHER_GROUP_DTO.code,
+            expanded: true,
+            selected: false,
+            children: [
+              {
+                text: fixture.ANOTHER_USER_DTO.userId,
+                expanded: false,
+                selected: false
+              }
+            ]
+          }
+        ]
+      }
     ])
 
-    expectNoActions()
+    context.expectNoActions()
   })
 
   test('select node', async () => {
-    mockSearchPersons([fixture.TEST_USER_DTO, fixture.ANOTHER_USER_DTO])
-    mockSearchGroups([])
+    openbis.mockSearchPersons([fixture.TEST_USER_DTO, fixture.ANOTHER_USER_DTO])
+    openbis.mockSearchGroups([])
 
     await controller.load()
-    controller.nodeSelect(nodeId(['users', fixture.TEST_USER_DTO.userId]))
+    controller.nodeSelect('users/' + fixture.TEST_USER_DTO.userId)
 
     expect(controller.getNodes()).toMatchObject([
-      node(['users'], false, false, [
-        node(['users', fixture.ANOTHER_USER_DTO.userId], false, false),
-        node(['users', fixture.TEST_USER_DTO.userId], false, true)
-      ]),
-      node(['groups'])
+      {
+        text: 'Users',
+        expanded: false,
+        selected: false,
+        children: [
+          {
+            text: fixture.ANOTHER_USER_DTO.userId,
+            expanded: false,
+            selected: false
+          },
+          {
+            text: fixture.TEST_USER_DTO.userId,
+            expanded: false,
+            selected: true
+          }
+        ]
+      },
+      {
+        text: 'Groups',
+        expanded: false,
+        selected: false
+      }
     ])
 
     expectOpenUserAction(fixture.TEST_USER_DTO.userId)
   })
 
   test('select another node', async () => {
-    mockSearchPersons([fixture.TEST_USER_DTO, fixture.ANOTHER_USER_DTO])
-    mockSearchGroups([])
+    openbis.mockSearchPersons([fixture.TEST_USER_DTO, fixture.ANOTHER_USER_DTO])
+    openbis.mockSearchGroups([])
 
     await controller.load()
-    controller.nodeSelect(nodeId(['users', fixture.TEST_USER_DTO.userId]))
-    controller.nodeSelect(nodeId(['users', fixture.ANOTHER_USER_DTO.userId]))
+    controller.nodeSelect('users/' + fixture.TEST_USER_DTO.userId)
+    controller.nodeSelect('users/' + fixture.ANOTHER_USER_DTO.userId)
 
     expect(controller.getNodes()).toMatchObject([
-      node(['users'], false, false, [
-        node(['users', fixture.ANOTHER_USER_DTO.userId], false, true),
-        node(['users', fixture.TEST_USER_DTO.userId], false, false)
-      ]),
-      node(['groups'])
+      {
+        text: 'Users',
+        expanded: false,
+        selected: false,
+        children: [
+          {
+            text: fixture.ANOTHER_USER_DTO.userId,
+            expanded: false,
+            selected: true
+          },
+          {
+            text: fixture.TEST_USER_DTO.userId,
+            expanded: false,
+            selected: false
+          }
+        ]
+      },
+      {
+        text: 'Groups',
+        expanded: false,
+        selected: false,
+        children: []
+      }
     ])
 
     expectOpenUserAction(fixture.TEST_USER_DTO.userId)
@@ -162,168 +190,169 @@ describe('browser', () => {
   })
 
   test('select virtual node', async () => {
-    mockSearchPersons([fixture.TEST_USER_DTO, fixture.ANOTHER_USER_DTO])
-    mockSearchGroups([])
+    openbis.mockSearchPersons([fixture.TEST_USER_DTO, fixture.ANOTHER_USER_DTO])
+    openbis.mockSearchGroups([])
 
     await controller.load()
-    controller.nodeSelect(nodeId(['users']))
+    controller.nodeSelect('users')
 
     expect(controller.getNodes()).toMatchObject([
-      node(['users'], false, true, [
-        node(['users', fixture.ANOTHER_USER_DTO.userId], false, false),
-        node(['users', fixture.TEST_USER_DTO.userId], false, false)
-      ]),
-      node(['groups'])
+      {
+        text: 'Users',
+        expanded: false,
+        selected: true
+      },
+      {
+        text: 'Groups',
+        expanded: false,
+        selected: false
+      }
     ])
 
-    expectNoActions()
+    context.expectNoActions()
   })
 
   test('select two nodes that represent the same object', async () => {
-    mockSearchPersons([fixture.TEST_USER_DTO])
-    mockSearchGroups([fixture.TEST_GROUP_DTO])
+    openbis.mockSearchPersons([fixture.TEST_USER_DTO])
+    openbis.mockSearchGroups([fixture.TEST_GROUP_DTO])
 
     await controller.load()
-    controller.nodeSelect(nodeId(['users', fixture.TEST_USER_DTO.userId]))
+    controller.nodeSelect('users/' + fixture.TEST_USER_DTO.userId)
 
     expect(controller.getNodes()).toMatchObject([
-      node(['users'], false, false, [
-        node(['users', fixture.TEST_USER_DTO.userId], false, true, [
-          node(
-            [
-              'users',
-              fixture.TEST_USER_DTO.userId,
-              fixture.TEST_GROUP_DTO.code
-            ],
-            false,
-            false
-          )
-        ])
-      ]),
-      node(['groups'], false, false, [
-        node(['groups', fixture.TEST_GROUP_DTO.code], false, false, [
-          node(
-            [
-              'groups',
-              fixture.TEST_GROUP_DTO.code,
-              fixture.TEST_USER_DTO.userId
-            ],
-            false,
-            true
-          )
-        ])
-      ])
+      {
+        text: 'Users',
+        expanded: false,
+        selected: false,
+        children: [
+          {
+            text: fixture.TEST_USER_DTO.userId,
+            expanded: false,
+            selected: true,
+            children: [
+              {
+                text: fixture.TEST_GROUP_DTO.code,
+                expanded: false,
+                selected: false
+              }
+            ]
+          }
+        ]
+      },
+      {
+        text: 'Groups',
+        expanded: false,
+        selected: false,
+        children: [
+          {
+            text: fixture.TEST_GROUP_DTO.code,
+            expanded: false,
+            selected: false,
+            children: [
+              {
+                text: fixture.TEST_USER_DTO.userId,
+                expanded: false,
+                selected: true
+              }
+            ]
+          }
+        ]
+      }
     ])
 
     expectOpenUserAction(fixture.TEST_USER_DTO.userId)
-    controller.nodeSelect(nodeId(['groups', fixture.TEST_GROUP_DTO.code]))
+    controller.nodeSelect('groups/' + fixture.TEST_GROUP_DTO.code)
 
     expect(controller.getNodes()).toMatchObject([
-      node(['users'], false, false, [
-        node(['users', fixture.TEST_USER_DTO.userId], false, false, [
-          node(
-            [
-              'users',
-              fixture.TEST_USER_DTO.userId,
-              fixture.TEST_GROUP_DTO.code
-            ],
-            false,
-            true
-          )
-        ])
-      ]),
-      node(['groups'], false, false, [
-        node(['groups', fixture.TEST_GROUP_DTO.code], false, true, [
-          node(
-            [
-              'groups',
-              fixture.TEST_GROUP_DTO.code,
-              fixture.TEST_USER_DTO.userId
-            ],
-            false,
-            false
-          )
-        ])
-      ])
+      {
+        text: 'Users',
+        expanded: false,
+        selected: false,
+        children: [
+          {
+            text: fixture.TEST_USER_DTO.userId,
+            expanded: false,
+            selected: false,
+            children: [
+              {
+                text: fixture.TEST_GROUP_DTO.code,
+                expanded: false,
+                selected: true
+              }
+            ]
+          }
+        ]
+      },
+      {
+        text: 'Groups',
+        expanded: false,
+        selected: false,
+        children: [
+          {
+            text: fixture.TEST_GROUP_DTO.code,
+            expanded: false,
+            selected: true,
+            children: [
+              {
+                text: fixture.TEST_USER_DTO.userId,
+                expanded: false,
+                selected: false
+              }
+            ]
+          }
+        ]
+      }
     ])
 
     expectOpenGroupAction(fixture.TEST_GROUP_DTO.code)
   })
 
   test('expand and collapse node', async () => {
-    mockSearchPersons([])
-    mockSearchGroups([fixture.TEST_GROUP_DTO])
+    openbis.mockSearchPersons([])
+    openbis.mockSearchGroups([fixture.TEST_GROUP_DTO])
 
     await controller.load()
-    controller.nodeExpand(nodeId(['groups']))
+    controller.nodeExpand('groups')
 
     expect(controller.getNodes()).toMatchObject([
-      node(['users']),
-      node(['groups'], true, false, [
-        node(['groups', fixture.TEST_GROUP_DTO.code])
-      ])
+      {
+        text: 'Users',
+        expanded: false,
+        selected: false
+      },
+      {
+        text: 'Groups',
+        expanded: true,
+        selected: false
+      }
     ])
 
-    expectNoActions()
-    controller.nodeCollapse(nodeId(['groups']))
+    context.expectNoActions()
+    controller.nodeCollapse('groups')
 
     expect(controller.getNodes()).toMatchObject([
-      node(['users']),
-      node(['groups'], false, false, [
-        node(['groups', fixture.TEST_GROUP_DTO.code])
-      ])
+      {
+        text: 'Users',
+        expanded: false,
+        selected: false
+      },
+      {
+        text: 'Groups',
+        expanded: false,
+        selected: false
+      }
     ])
 
-    expectNoActions()
+    context.expectNoActions()
   })
 })
 
-function nodeId(idParts) {
-  return idParts.join('/')
-}
-
-function node(idParts, expanded = false, selected = false, children) {
-  let node = {
-    id: nodeId(idParts),
-    expanded,
-    selected
-  }
-
-  if (children !== undefined) {
-    node['children'] = children
-  }
-
-  return node
-}
-
-function mockSearchPersons(persons) {
-  const searchPersonResult = new openbis.SearchResult()
-  searchPersonResult.setObjects(persons)
-
-  openbis.searchPersons.mockReturnValue(Promise.resolve(searchPersonResult))
-}
-
-function mockSearchGroups(groups) {
-  const searchGroupsResult = new openbis.SearchResult()
-  searchGroupsResult.setObjects(groups)
-
-  openbis.searchAuthorizationGroups.mockReturnValue(
-    Promise.resolve(searchGroupsResult)
-  )
-}
-
 function expectOpenUserAction(userId) {
-  expect(context.getDispatch()).toHaveBeenCalledWith(
-    actions.objectOpen(pages.USERS, objectType.USER, userId)
-  )
+  context.expectAction(actions.objectOpen(pages.USERS, objectType.USER, userId))
 }
 
 function expectOpenGroupAction(groupId) {
-  expect(context.getDispatch()).toHaveBeenCalledWith(
+  context.expectAction(
     actions.objectOpen(pages.USERS, objectType.GROUP, groupId)
   )
-}
-
-function expectNoActions() {
-  expect(context.getDispatch()).toHaveBeenCalledTimes(0)
 }

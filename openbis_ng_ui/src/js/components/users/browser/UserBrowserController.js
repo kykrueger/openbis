@@ -5,12 +5,12 @@ import objectType from '@src/js/common/consts/objectType.js'
 import objectOperation from '@src/js/common/consts/objectOperation.js'
 import BrowserController from '@src/js/components/common/browser/BrowserController.js'
 
-export default class UsersBrowserController extends BrowserController {
-  getPage() {
+export default class UserBrowserController extends BrowserController {
+  doGetPage() {
     return pages.USERS
   }
 
-  async loadNodes() {
+  async doLoadNodes() {
     let groupFetchOptions = new openbis.AuthorizationGroupFetchOptions()
     groupFetchOptions.withUsers()
 
@@ -99,7 +99,7 @@ export default class UsersBrowserController extends BrowserController {
     })
   }
 
-  getObservedModifications() {
+  doGetObservedModifications() {
     return {
       [objectType.USER]: [objectOperation.CREATE, objectOperation.DELETE],
       [objectType.GROUP]: [objectOperation.CREATE, objectOperation.DELETE]

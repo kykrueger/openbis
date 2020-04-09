@@ -6,12 +6,12 @@ import objectType from '@src/js/common/consts/objectType.js'
 import objectOperation from '@src/js/common/consts/objectOperation.js'
 import BrowserController from '@src/js/components/common/browser/BrowserController.js'
 
-export default class TypesBrowserController extends BrowserController {
-  getPage() {
+export default class TypeBrowserController extends BrowserController {
+  doGetPage() {
     return pages.TYPES
   }
 
-  async loadNodes() {
+  async doLoadNodes() {
     return Promise.all([
       openbis.searchSampleTypes(
         new openbis.SampleTypeSearchCriteria(),
@@ -88,35 +88,76 @@ export default class TypesBrowserController extends BrowserController {
     })
   }
 
-  nodeAdd() {
-    if (!this.isAddEnabled()) {
-      return
-    }
-
-    const selectedNode = this.getSelectedNode()
-
-    if (selectedNode && selectedNode.childrenType) {
+  doNodeAdd(node) {
+    if (node && node.childrenType) {
       this.context.dispatch(
-        actions.objectNew(this.getPage(), selectedNode.childrenType)
+        actions.objectNew(this.getPage(), node.childrenType)
       )
     }
   }
 
-  nodeRemove() {
-    if (!this.isRemoveEnabled()) {
-      return
+  doNodeRemove(node) {
+    if (!node.object) {
+      return Promise.resolve()
     }
 
-    const selectedNode = this.getSelectedNode()
+    const { type, id } = node.object
+    const reason = 'deleted via ng_ui'
+    let promise = null
 
-    if (selectedNode && selectedNode.object) {
-      alert('Object remove')
+    if (type === objectType.OBJECT_TYPE) {
+      const options = new openbis.SampleTypeDeletionOptions()
+      options.setReason(reason)
+      promise = openbis.deleteSampleTypes(
+        [new openbis.EntityTypePermId(id)],
+        options
+      )
+    } else if (type === objectType.COLLECTION_TYPE) {
+      const options = new openbis.ExperimentTypeDeletionOptions()
+      options.setReason(reason)
+      promise = openbis.deleteExperimentTypes(
+        [new openbis.EntityTypePermId(id)],
+        options
+      )
+    } else if (type === objectType.DATA_SET_TYPE) {
+      const options = new openbis.DataSetTypeDeletionOptions()
+      options.setReason(reason)
+      promise = openbis.deleteDataSetTypes(
+        [new openbis.EntityTypePermId(id)],
+        options
+      )
+    } else if (type === objectType.MATERIAL_TYPE) {
+      const options = new openbis.MaterialTypeDeletionOptions()
+      options.setReason(reason)
+      promise = openbis.deleteMaterialTypes(
+        [new openbis.EntityTypePermId(id)],
+        options
+      )
     }
+
+    return promise.then(() => {
+      this.context.dispatch(actions.objectDelete(this.getPage(), type, id))
+    })
   }
 
-  getObservedModifications() {
+  doGetObservedModifications() {
     return {
-      [objectType.OBJECT_TYPE]: [objectOperation.CREATE, objectOperation.DELETE]
+      [objectType.OBJECT_TYPE]: [
+        objectOperation.CREATE,
+        objectOperation.DELETE
+      ],
+      [objectType.COLLECTION_TYPE]: [
+        objectOperation.CREATE,
+        objectOperation.DELETE
+      ],
+      [objectType.DATA_SET_TYPE]: [
+        objectOperation.CREATE,
+        objectOperation.DELETE
+      ],
+      [objectType.MATERIAL_TYPE]: [
+        objectOperation.CREATE,
+        objectOperation.DELETE
+      ]
     }
   }
 }

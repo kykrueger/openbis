@@ -10,6 +10,7 @@ export default function* pageSaga() {
   yield takeEvery(actions.OBJECT_CREATE, objectCreate)
   yield takeEvery(actions.OBJECT_OPEN, objectOpen)
   yield takeEvery(actions.OBJECT_SAVE, objectSave)
+  yield takeEvery(actions.OBJECT_DELETE, objectDelete)
   yield takeEvery(actions.OBJECT_CHANGE, objectChange)
   yield takeEvery(actions.OBJECT_CLOSE, objectClose)
   yield takeEvery(actions.ROUTE_CHANGE, routeChange)
@@ -64,6 +65,14 @@ function* objectSave(action) {
   const { type } = action.payload
   yield put(
     actions.setLastObjectModification(type, objectOperation.UPDATE, Date.now())
+  )
+}
+
+function* objectDelete(action) {
+  const { page, type, id } = action.payload
+  yield put(actions.objectClose(page, type, id))
+  yield put(
+    actions.setLastObjectModification(type, objectOperation.DELETE, Date.now())
   )
 }
 
