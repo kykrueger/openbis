@@ -94,13 +94,15 @@ export default class ObjectTypeHandlerLoad {
           }
         }
 
+        const { selection } = this.context.getState()
+
         return this.context.setState(() => ({
           type,
           properties,
           propertiesCounter,
           sections,
           sectionsCounter,
-          selection: null,
+          selection: selection ? selection : null,
           removeSectionDialogOpen: false,
           removePropertyDialogOpen: false
         }))
