@@ -22,7 +22,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleChildrenSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleContainerSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleParentsSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
@@ -51,10 +50,11 @@ public class SampleContainerSearchManager extends AbstractCompositeEntitySearchM
         return SampleParentsSearchCriteria.class;
     }
 
-    public Set<Long> searchForIDs(final Long userId, final SampleContainerSearchCriteria criteria, SortOptions<Sample> sortOptions,
+    public Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation,
+            final SampleContainerSearchCriteria criteria, SortOptions<Sample> sortOptions,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
-        return doSearchForIDs(userId, criteria, null, idsColumnName, TableMapper.SAMPLE);
+        return doSearchForIDs(userId, authorisationInformation, criteria, null, idsColumnName, TableMapper.SAMPLE);
     }
 
     @Override

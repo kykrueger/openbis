@@ -10,7 +10,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name='PyBIS',
-    version= '1.12.3',
+    version= '1.13.0',
     author='Swen Vermeul • ID SIS • ETH Zürich',
     author_email='swen@ethz.ch',
     description='openBIS connection and interaction, optimized for using with Jupyter',
@@ -28,7 +28,7 @@ setup(
         'texttable',
         'tabulate',
     ],
-    python_requires=">=3.3",
+    python_requires=">=3.6",
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: Apache Software License",

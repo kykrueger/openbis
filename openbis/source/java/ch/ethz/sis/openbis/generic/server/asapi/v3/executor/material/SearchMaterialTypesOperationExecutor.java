@@ -81,7 +81,7 @@ public class SearchMaterialTypesOperationExecutor
     @Override
     protected SearchObjectsOperationResult<MaterialType> doExecute(final IOperationContext context, final SearchObjectsOperation<MaterialTypeSearchCriteria, MaterialTypeFetchOptions> operation)
     {
-        return doExecuteNewSearch(context, operation);
+        return executeDirectSQLSearch(context, operation);
     }
 
     @Override

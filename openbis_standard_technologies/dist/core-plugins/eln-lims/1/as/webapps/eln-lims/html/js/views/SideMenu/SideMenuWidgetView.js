@@ -547,7 +547,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
                               continue;
                           }
                           var normalizedProjectTitle = Util.getDisplayNameFromCode(project.code);
-                          var projectLink = _this.getLinkForNode(normalizedProjectTitle, project.getPermId().getPermId(), "showProjectPageFromPermId", project.getPermId().getPermId(), null);
+                          var projectLink = _this.getLinkForNode(normalizedProjectTitle, project.getPermId().getPermId(), "showProjectPageFromPermId", project.getPermId().getPermId(), project.code);
                           results.push({
                               displayName: normalizedProjectTitle,
                               title : projectLink,

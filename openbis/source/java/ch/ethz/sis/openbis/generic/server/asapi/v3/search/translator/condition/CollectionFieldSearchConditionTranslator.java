@@ -17,14 +17,20 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CodesSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CollectionFieldSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.IdsSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.UserIdsSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.Attributes;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.AttributesMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinInformation;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.*;
@@ -32,9 +38,19 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLL
 public class CollectionFieldSearchConditionTranslator implements IConditionTranslator<CollectionFieldSearchCriteria<?>>
 {
 
+    private static final Map<Class, Object[]> ARRAY_CASTING = new HashMap<>();
+
+    static
+    {
+        ARRAY_CASTING.put(CodesSearchCriteria.class, new String[0]);
+        ARRAY_CASTING.put(UserIdsSearchCriteria.class, new String[0]);
+        ARRAY_CASTING.put(IdsSearchCriteria.class, new String[0]);
+    }
+
     @Override
     public Map<String, JoinInformation> getJoinInformationMap(final CollectionFieldSearchCriteria<?> criterion, final TableMapper tableMapper,
-            final IAliasFactory aliasFactory) {
+            final IAliasFactory aliasFactory)
+    {
         return null;
     }
 
@@ -42,19 +58,50 @@ public class CollectionFieldSearchConditionTranslator implements IConditionTrans
     public void translate(final CollectionFieldSearchCriteria<?> criterion, final TableMapper tableMapper, final List<Object> args,
             final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases, final Map<String, String> dataTypeByPropertyName)
     {
-        switch (criterion.getFieldType()) {
+        if (!ARRAY_CASTING.containsKey(criterion.getClass()))
+        {
+            throw new RuntimeException("Unsupported " + CollectionFieldSearchCriteria.class.getSimpleName() + ", this is a core error, contact the development team.");
+        }
+        if (criterion.getClass() == IdsSearchCriteria.class)
+        {
+            if (criterion.getFieldValue() != null && criterion.getFieldValue().size() > 1)
+            {
+                final Class<?> identifierClass = criterion.getFieldValue().iterator().next().getClass();
+                for (Object identifier:criterion.getFieldValue())
+                {
+                    if (identifier.getClass() != identifierClass)
+                    {
+                        throw new IllegalArgumentException("Unsupported " + CollectionFieldSearchCriteria.class.getSimpleName() + ": " + IdsSearchCriteria.class + ", identifiers provided should be of the same type.");
+                    }
+                }
+            }
+        }
+
+        switch (criterion.getFieldType())
+        {
             case ATTRIBUTE:
             {
-                final Object fieldName = Attributes.getColumnName(criterion.getFieldName(), tableMapper.getEntitiesTable(), criterion.getFieldName());
-                final Collection<?> fieldValue = criterion.getFieldValue();
+                final Object fieldName = AttributesMapper.getColumnName(criterion.getFieldName(), tableMapper.getEntitiesTable(), criterion.getFieldName());
+                final Collection<?> initialFieldValue = criterion.getFieldValue();
 
-                if (fieldValue.isEmpty()) {
-                    sqlBuilder.append(FALSE);
-                } else {
+                if (initialFieldValue != null)
+                {
+                    final Collection<?> fieldValue;
+                    if (!initialFieldValue.isEmpty() && initialFieldValue.stream().anyMatch((o) -> o instanceof EntityTypePermId))
+                    {
+                        fieldValue = initialFieldValue.stream().map((o) -> ((EntityTypePermId) o).getPermId()).collect(Collectors.toList());
+                    } else
+                    {
+                        fieldValue = initialFieldValue;
+                    }
+
                     sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(fieldName).append(SP).append(IN).append(SP).append(LP).
                             append(SELECT).append(SP).append(UNNEST).append(LP).append(QU).append(RP).
                             append(RP);
-                    args.add(fieldValue.toArray());
+                    args.add(fieldValue.toArray(ARRAY_CASTING.get(criterion.getClass())));
+                } else
+                {
+                    sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(fieldName).append(SP).append(IS_NOT_NULL);
                 }
                 break;
             }

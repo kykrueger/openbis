@@ -68,6 +68,7 @@ public class BatchMaterialRegistrationAndUpdateTest extends SystemTestCase
     @AfterMethod
     public void tearDown()
     {
+        deleteTestMaterials();
         commonClientService.unassignPropertyType(EntityKind.MATERIAL, "COMMENT", MATERIAL_TYPE);
     }
 

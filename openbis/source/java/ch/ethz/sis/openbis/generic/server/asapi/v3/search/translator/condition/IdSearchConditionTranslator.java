@@ -37,6 +37,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sample.SampleIdentifie
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinInformation;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -51,7 +52,13 @@ public class IdSearchConditionTranslator implements IConditionTranslator<IdSearc
     @Override
     public Map<String, JoinInformation> getJoinInformationMap(final IdSearchCriteria<?> criterion, final TableMapper tableMapper,
             final IAliasFactory aliasFactory) {
-        return null;
+        if (criterion.getId().getClass() == MaterialPermId.class)
+        {
+            return TranslatorUtils.getTypeJoinInformationMap(tableMapper, aliasFactory);
+        } else
+        {
+            return null;
+        }
     }
 
     @Override
@@ -61,12 +68,12 @@ public class IdSearchConditionTranslator implements IConditionTranslator<IdSearc
     {
         final Object entityId = criterion.getId();
 
-        if (entityId instanceof ObjectIdentifier || entityId.getClass() == TagPermId.class) {
+        if (entityId instanceof ObjectIdentifier || entityId.getClass() == TagPermId.class)
+        {
             final FullSampleIdentifier fullObjectIdentifier = new FullSampleIdentifier(
                     (entityId.getClass() == TagPermId.class)
                             ? ((TagPermId) entityId).getPermId()
-                            : ((ObjectIdentifier) entityId).getIdentifier(),
-                    null);
+                            : ((ObjectIdentifier) entityId).getIdentifier(), null);
             final String objectCode = fullObjectIdentifier.getSampleCode();
             final SampleIdentifierParts identifierParts = fullObjectIdentifier.getParts();
 
@@ -161,8 +168,12 @@ public class IdSearchConditionTranslator implements IConditionTranslator<IdSearc
             args.add(((SemanticAnnotationPermId) entityId).getPermId());
         } else if (entityId.getClass() == MaterialPermId.class)
         {
-            sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(EQ).append(QU);
-            args.add(((MaterialPermId) entityId).getCode());
+            final String materialTypeTableAlias = aliases.get(tableMapper.getEntityTypesTable()).getSubTableAlias();
+            sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(EQ).append(QU)
+                    .append(SP).append(AND).append(SP).append(materialTypeTableAlias).append(PERIOD).append(CODE_COLUMN).append(EQ).append(QU);
+            final MaterialPermId materialPermId = (MaterialPermId) entityId;
+            args.add(materialPermId.getCode());
+            args.add(materialPermId.getTypeCode());
         } else if (entityId.getClass() == PropertyTypePermId.class)
         {
             sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(EQ).append(QU);

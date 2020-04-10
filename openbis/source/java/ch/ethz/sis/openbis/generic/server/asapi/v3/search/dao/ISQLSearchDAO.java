@@ -20,6 +20,7 @@ import java.util.Set;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 
 public interface ISQLSearchDAO
@@ -33,10 +34,11 @@ public interface ISQLSearchDAO
      * @param tableMapper table mapper that contains extra information about tables related to the entities which can have parent-child relationships.
      * @param idsColumnName name of the column to select by, if {@code null} {@link ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN}
      *     is used.
+     * @param authorisationInformation
      * @return set of numbers which represent the IDs of the scpecified ID column name.
      */
     Set<Long> queryDBWithNonRecursiveCriteria(final Long userId, final AbstractCompositeSearchCriteria criterion, final TableMapper tableMapper,
-            final String idsColumnName);
+            final String idsColumnName, final AuthorisationInformation authorisationInformation);
 
     /**
      * Finds child IDs which correspond to parent IDs.

@@ -304,7 +304,7 @@ function ServerFacade(openbisServer) {
 	}
 
 	this._handleAggregationServiceData = function(callbackFunction, data) {
-		if(data.result.rows[0][0].value == "OK") {
+		if (data.result && data.result.rows[0][0].value == "OK") {
 			callbackFunction(true);
 		} else {
 			Util.showError("Call failed to server: <pre>" + JSON.stringify(data, null, 2) + "</pre>");

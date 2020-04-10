@@ -20,8 +20,6 @@ import java.io.File;
 
 import org.apache.log4j.Logger;
 
-import ch.systemsx.cisd.etlserver.registrator.ITransactionalCommand;
-
 /**
  * Reference to {@link ch.systemsx.cisd.etlserver.registrator.api.impl.RollbackStack} kept for backwards compatibility
  * 
@@ -32,24 +30,11 @@ public class RollbackStack extends ch.systemsx.cisd.etlserver.registrator.api.im
 
     public RollbackStack(File queue1File, File queue2File, Logger operationLog)
     {
-        super(queue1File, queue2File, operationLog);
+        super(queue1File, operationLog);
     }
 
     public RollbackStack(File queue1File, File queue2File)
     {
-        super(queue1File, queue2File);
-    }
-
-    @SuppressWarnings("unused")
-    private static class StackElement extends
-            ch.systemsx.cisd.etlserver.registrator.api.impl.RollbackStack.StackElement
-    {
-        private static final long serialVersionUID = 1L;
-
-        protected StackElement(ITransactionalCommand command, int order)
-        {
-            super(command, order);
-            System.out.println("The new stack element has been deserialized");
-        }
+        super(queue1File);
     }
 }

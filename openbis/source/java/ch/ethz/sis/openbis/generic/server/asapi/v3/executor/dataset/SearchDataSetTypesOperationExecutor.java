@@ -81,7 +81,7 @@ public class SearchDataSetTypesOperationExecutor
     @Override
     protected SearchObjectsOperationResult<DataSetType> doExecute(final IOperationContext context, final SearchObjectsOperation<DataSetTypeSearchCriteria, DataSetTypeFetchOptions> operation)
     {
-        return doExecuteNewSearch(context, operation);
+        return executeDirectSQLSearch(context, operation);
     }
 
     @Override

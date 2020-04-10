@@ -1,5 +1,6 @@
 package ch.ethz.sis.benchmark;
 
+import ch.ethz.sis.benchmark.impl.IApplicationServerApiWrapper;
 import ch.ethz.sis.logging.LogManager;
 import ch.ethz.sis.logging.Logger;
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
@@ -11,7 +12,8 @@ public abstract class Benchmark
 	protected BenchmarkConfig configuration;
     protected Logger logger;
     protected IApplicationServerApi v3;
-    protected String sessionToken;
+	protected IApplicationServerApiWrapper v3Wrapper;
+	protected String sessionToken;
     
     protected long maxOpTime = Long.MIN_VALUE;
     protected long minOpTime = Long.MAX_VALUE;
@@ -55,6 +57,11 @@ public abstract class Benchmark
     public IApplicationServerApi login() {
     		if(v3 == null) {
     			v3 = HttpInvokerUtils.createServiceStub(IApplicationServerApi.class, getConfiguration().getOpenbisURL(), getConfiguration().getOpenbisTimeout());
+    			if (v3Wrapper != null) {
+    				v3Wrapper.setInstance(v3);
+    				v3 = v3Wrapper;
+    				v3Wrapper = null;
+				}
     	        sessionToken = v3.login(getConfiguration().getUser(), getConfiguration().getPassword());
     		}
         return v3;

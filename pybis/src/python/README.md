@@ -1,12 +1,12 @@
 # Welcome to pyBIS!
 
-pyBIS is a Python module for interacting with openBIS. pyBIS is designed to be most useful in a [Jupyter Notebook](https://jupyter.org) or IPython environment, especially if you are developing Python scripts for automatisation. Jupyter Notebooks offer some sort of IDE for openBIS, supporting TAB completition and input checks, making the life of a researcher hopefully easier.
+pyBIS is a Python module for interacting with openBIS. pyBIS is designed to be most useful in a [Jupyter Notebook](https://jupyter.org) or IPython environment, especially if you are developing Python scripts for automatisation. Jupyter Notebooks offer some sort of IDE for openBIS, supporting TAB completition and immediate data checks, making the life of a researcher hopefully easier.
 
 ## Dependencies and Requirements
 - pyBIS relies the openBIS API v3
 - openBIS version 16.05.2 or newer is required
 - 18.06.2 or later is recommended
-- pyBIS uses Python 3.3 and Pandas
+- pyBIS uses Python 3.5 or newer and the Pandas module
 
 ## Installation
 
@@ -636,16 +636,36 @@ ds.download_attachments()
 ### download dataSets
 
 ```
-ds.get_files(start_folder="/")    # get file list as Pandas table
-ds.file_list                      # get file list as array
+o.download_prefix                  # used for download() and symlink() method.
+                                   # Is set to data/hostname by default, but can be changed.
+ds.get_files(start_folder="/")     # get file list as Pandas dataFrame
+ds.file_list                       # get file list as array
 
-ds.download()                     # simply download all files to hostname/permId/
+ds.download()                      # simply download all files to data/hostnae/permId/
 ds.download(
-	destination = 'my_data',       # download files to folder my_data/
-	create_default_folders = False,# ignore the /original/DEFAULT folders made by openBIS
-	wait_until_finished = False,   # download in background, continue immediately
-	workers = 10                   # 10 downloads parallel (default)
+	destination = 'my_data',        # download files to folder my_data/
+	create_default_folders = False, # ignore the /original/DEFAULT folders made by openBIS
+	wait_until_finished = False,    # download in background, continue immediately
+	workers = 10                    # 10 downloads parallel (default)
 )
+ds.is_physical()                   # TRUE if dataset has been physically downloaded
+```
+
+### link dataSets
+
+Instead of downloading a dataSet, you can create a symbolic link to a dataSet in the openBIS dataStore. To do that, the openBIS dataStore needs to be mounted first (see mount method above). **Note:** Symbolic links and the mount() feature currently do not work with Windows.
+
+```
+o.download_prefix                  # used for download() and symlink() method.
+                                   # Is set to data/hostname by default, but can be changed.
+ds.symlink()                       # creates a symlink for this dataset: data/hostname/permId
+                                   # tries to mount openBIS instance 
+                                   # in case it is not mounted yet
+ds.symlink(
+   target_dir = 'data/dataset_1/', # default target_dir is: data/hostname/permId
+   replace_if_symlink_exists=True
+)
+ds.is_symlink()
 ```
 
 ### dataSet attributes and properties

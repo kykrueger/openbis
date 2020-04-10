@@ -1,4 +1,5 @@
 from datetime import datetime
+from pathlib import Path
 import re
 
 # display messages when in a interactive context (IPython or Jupyter)
@@ -48,7 +49,10 @@ def parse_jackson(input_json):
         if isinstance(graph, list):
             for i, list_item in enumerate(graph):
                 if isinstance(list_item, int):
-                    graph[i] = found[list_item]
+                    try:
+                        graph[i] = found[list_item]
+                    except KeyError:
+                        pass
                 else:
                     deref_graph(list_item)
         elif isinstance(graph, dict) and len(graph) > 0:
@@ -250,5 +254,3 @@ def extract_userId(user):
         return user['userId']
     else:
         return str(user)
-
-

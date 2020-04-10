@@ -23,23 +23,26 @@ import java.util.Set;
 public class AuthorisationInformation
 {
 
-    private final Set<Role> instanceRoles;
+    /** If an instance role is found, the user can query everything. */
+    private final boolean instanceRole;
 
+    /** If a spaceId is found, the user can query that space. */
     private final Set<Long> spaceIds;
 
+    /** If a spaceId is found, the user can query that project. */
     private final Set<Long> projectIds;
 
-    public AuthorisationInformation(Set<Role> instanceRoles,
+    public AuthorisationInformation(final boolean instanceRole,
             final Set<Long> spaceIds, final Set<Long> projectIds)
     {
-        this.instanceRoles = instanceRoles;
+        this.instanceRole = instanceRole;
         this.spaceIds = spaceIds;
         this.projectIds = projectIds;
     }
 
-    public Set<Role> getInstanceRoles()
+    public boolean isInstanceRole()
     {
-        return instanceRoles;
+        return instanceRole;
     }
 
     public Set<Long> getSpaceIds()

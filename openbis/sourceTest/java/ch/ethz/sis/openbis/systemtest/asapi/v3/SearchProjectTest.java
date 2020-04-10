@@ -230,31 +230,18 @@ public class SearchProjectTest extends AbstractTest
         criteria.withId().thatEquals(identifier1);
         criteria.withId().thatEquals(identifier2);
 
-        if (user.isDisabledProjectUser())
+        SearchResult<Project> result = v3api.searchProjects(sessionToken, criteria, projectFetchOptionsFull());
+
+        if (user.isInstanceUser())
         {
-            assertAuthorizationFailureException(new IDelegatedAction()
-                {
-                    @Override
-                    public void execute()
-                    {
-                        v3api.searchProjects(sessionToken, criteria, projectFetchOptionsFull());
-                    }
-                });
+            assertEquals(result.getObjects().size(), 2);
+        } else if ((user.isTestSpaceUser() || user.isTestProjectUser()) && !user.isDisabledProjectUser())
+        {
+            assertEquals(result.getObjects().size(), 1);
+            assertEquals(result.getObjects().get(0).getIdentifier(), identifier2);
         } else
         {
-            SearchResult<Project> result = v3api.searchProjects(sessionToken, criteria, projectFetchOptionsFull());
-
-            if (user.isInstanceUser())
-            {
-                assertEquals(result.getObjects().size(), 2);
-            } else if (user.isTestSpaceUser() || user.isTestProjectUser())
-            {
-                assertEquals(result.getObjects().size(), 1);
-                assertEquals(result.getObjects().get(0).getIdentifier(), identifier2);
-            } else
-            {
-                assertEquals(result.getObjects().size(), 0);
-            }
+            assertEquals(result.getObjects().size(), 0);
         }
 
         v3api.logout(sessionToken);

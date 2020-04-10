@@ -16,7 +16,15 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql;
 
-public class HibernateSQLExecutor extends JDBCSQLExecutor
+import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
+import ch.systemsx.cisd.openbis.generic.server.ComponentNames;
+import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.DAOFactory;
+import org.apache.commons.dbcp.DelegatingConnection;
+import org.hibernate.internal.SessionImpl;
+
+import java.sql.Connection;
+
+public class HibernateSQLExecutor extends AbstractSQLExecutor
 {
 
     public HibernateSQLExecutor()
@@ -24,4 +32,11 @@ public class HibernateSQLExecutor extends JDBCSQLExecutor
         super();
     }
 
+    public Connection getConnection() {
+        DAOFactory daoFactory = (DAOFactory) CommonServiceProvider.getApplicationContext().getBean(ComponentNames.DAO_FACTORY);
+        SessionImpl currentSession = (SessionImpl) daoFactory.getSessionFactory().getCurrentSession();
+        DelegatingConnection delegatingConnection = (DelegatingConnection) currentSession.connection();
+        Connection connection = delegatingConnection.getInnermostDelegate();
+        return connection;
+    }
 }

@@ -14,53 +14,71 @@
  * limitations under the License.
  */
 
-package ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql;
+package ch.ethz.sis.benchmark.impl.jdbc;
+
+import ch.ethz.sis.logging.LogManager;
+import ch.ethz.sis.logging.Logger;
 
 import java.sql.*;
 import java.util.Date;
 import java.util.*;
 
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes;
-
-public class JDBCSQLExecutor implements ISQLExecutor
+public class SQLExecutor
 {
 
-    private static final Map<Class<?>, PSQLTypes> TYPE_CONVERSION_MAP = new HashMap<>();
+    private static Logger logger = LogManager.getLogger(SQLExecutor.class);
+
+    private static final Map<Class<?>, String> TYPE_CONVERSION_MAP = new HashMap<>();
 
     static
     {
-        TYPE_CONVERSION_MAP.put(Boolean.class, PSQLTypes.BOOLEAN);
+        TYPE_CONVERSION_MAP.put(Boolean.class, "boolean");
 
-        TYPE_CONVERSION_MAP.put(Character.class, PSQLTypes.CHARACTER);
-        TYPE_CONVERSION_MAP.put(String.class, PSQLTypes.VARCHAR);
+        TYPE_CONVERSION_MAP.put(Character.class, "character");
+        TYPE_CONVERSION_MAP.put(String.class, "varchar");
 
-        TYPE_CONVERSION_MAP.put(Double.class, PSQLTypes.FLOAT8);
-        TYPE_CONVERSION_MAP.put(Float.class, PSQLTypes.FLOAT4);
+        TYPE_CONVERSION_MAP.put(Double.class, "float8");
+        TYPE_CONVERSION_MAP.put(Float.class, "float4");
 
-        TYPE_CONVERSION_MAP.put(Long.class, PSQLTypes.INT8);
-        TYPE_CONVERSION_MAP.put(Integer.class, PSQLTypes.INT4);
-        TYPE_CONVERSION_MAP.put(Short.class, PSQLTypes.INT2);
-        TYPE_CONVERSION_MAP.put(Byte.class, PSQLTypes.INT2);
+        TYPE_CONVERSION_MAP.put(Long.class, "int8");
+        TYPE_CONVERSION_MAP.put(Integer.class, "int4");
+        TYPE_CONVERSION_MAP.put(Short.class, "int2");
+        TYPE_CONVERSION_MAP.put(Byte.class, "int2");
     }
 
-    /** Connection used for this executor. */
-    private Connection connection;
+    public static int executeUpdate(
+            final Connection connection,
+            final String sqlUpdate,
+            final List<List<Object>> parametersBatch) {
+        logger.info("QUERY: " + sqlUpdate);
 
-    public void setConnection(final Connection connection)
-    {
-        this.connection = connection;
+        int results = 0;
+        try (final PreparedStatement preparedStatement = connection.prepareStatement(sqlUpdate))
+        {
+            for (List<Object> parameters : parametersBatch) {
+                setArgsForPreparedStatement(parameters, preparedStatement);
+                preparedStatement.addBatch();
+                int[] batchResults = preparedStatement.executeBatch();
+                for (int result : batchResults) {
+                    results += result;
+                }
+            }
+        } catch (SQLException ex)
+        {
+            throw new RuntimeException(ex);
+        }
+        logger.info("RESULTS COUNT: " + results);
+        return results;
     }
 
-    @Override
-    public List<Map<String, Object>> execute(final String sqlQuery, final List<Object> args)
-    {
-        System.out.println("QUERY: " + sqlQuery);
-        System.out.println("ARGS: " + Arrays.deepToString(args.toArray()));
+    public static List<Map<String, Object>> executeQuery(final Connection connection, final String sqlQuery, final List<Object> parameters) {
+
+        logger.info("QUERY: " + sqlQuery);
 
         final List<Map<String, Object>> results = new ArrayList<>();
         try (final PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery))
         {
-            setArgsForPreparedStatement(args, preparedStatement);
+            setArgsForPreparedStatement(parameters, preparedStatement);
 
             try (final ResultSet resultSet = preparedStatement.executeQuery())
             {
@@ -87,27 +105,11 @@ public class JDBCSQLExecutor implements ISQLExecutor
             throw new RuntimeException(ex);
         }
 
-        System.out.println("RESULTS: " + results);
-        System.out.println("RESULTS COUNT: " + results.size());
+        logger.info("RESULTS COUNT: " + results.size());
         return results;
     }
 
-    public void executeUpdate(final String sqlQuery, final List<Object> args)
-    {
-        System.out.println("QUERY: " + sqlQuery);
-        System.out.println("ARGS: " + args);
-
-        try (final PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery))
-        {
-            setArgsForPreparedStatement(args, preparedStatement);
-            preparedStatement.executeUpdate();
-        } catch (SQLException ex)
-        {
-            throw new RuntimeException(ex);
-        }
-    }
-
-    private void setArgsForPreparedStatement(final List<Object> args, final PreparedStatement preparedStatement) throws SQLException
+    private static void setArgsForPreparedStatement(final List<Object> args, final PreparedStatement preparedStatement) throws SQLException
     {
         for (int index = 0; index < args.size(); index++)
         {
@@ -115,9 +117,8 @@ public class JDBCSQLExecutor implements ISQLExecutor
             if (object != null && object.getClass().isArray())
             {
                 final Object[] objectArray = (Object[]) object;
-                final Class<?> arrayObjectType = (objectArray.length > 0 && objectArray[0] != null)
-                        ? objectArray[0].getClass() : object.getClass().getComponentType();
-                final PSQLTypes psqlType = TYPE_CONVERSION_MAP.get(arrayObjectType);
+                final Class<?> arrayObjectType = object.getClass().getComponentType();
+                final String psqlType = TYPE_CONVERSION_MAP.get(arrayObjectType);
 
                 if (psqlType == null)
                 {
@@ -125,7 +126,7 @@ public class JDBCSQLExecutor implements ISQLExecutor
                             + " - With elements of type: " + arrayObjectType.getName() + " - Data: " + Arrays.toString(objectArray));
                 }
 
-                preparedStatement.setArray(index + 1, connection.createArrayOf(psqlType.toString(), objectArray));
+                preparedStatement.setArray(index + 1, preparedStatement.getConnection().createArrayOf(psqlType, objectArray));
             } else if (object instanceof Date)
             {
                 final Date date = (Date) object;
