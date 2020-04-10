@@ -16,7 +16,6 @@ beforeEach(() => {
   context = new ComponentContext()
   facade = new ObjectTypeFacade()
   controller = new ObjectTypeControler(facade)
-  controller.init(context)
 })
 
 describe('ObjectTypeController.load', () => {
@@ -92,13 +91,6 @@ describe('ObjectTypeController.load', () => {
       TEST_PROPERTY_ASSIGNMENT_3
     ])
 
-    context.setProps({
-      object: {
-        id: 'TEST_OBJECT_ID',
-        type: objectTypes.OBJECT_TYPE
-      }
-    })
-
     facade.loadType.mockReturnValue(Promise.resolve(TEST_SAMPLE_TYPE_DTO))
     facade.loadUsages.mockReturnValue(
       Promise.resolve({
@@ -110,6 +102,14 @@ describe('ObjectTypeController.load', () => {
       })
     )
 
+    context.setProps({
+      object: {
+        id: 'TEST_OBJECT_ID',
+        type: objectTypes.OBJECT_TYPE
+      }
+    })
+
+    controller.init(context)
     await controller.load()
 
     expect(context.getState()).toMatchObject({
@@ -194,6 +194,7 @@ describe('ObjectTypeController.load', () => {
         type: objectTypes.NEW_OBJECT_TYPE
       }
     })
+    controller.init(context)
     await controller.load()
 
     expect(context.getState()).toMatchObject({

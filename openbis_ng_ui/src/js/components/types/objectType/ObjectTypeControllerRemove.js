@@ -1,8 +1,8 @@
 import _ from 'lodash'
 
 export default class ObjectTypeHandlerRemove {
-  constructor(context) {
-    this.context = context
+  constructor(controller) {
+    this.context = controller.context
   }
 
   executeRemove(confirmed = false) {

@@ -1,8 +1,8 @@
 import _ from 'lodash'
 
 export default class ObjectTypeHandlerOrderChange {
-  constructor(context) {
-    this.context = context
+  constructor(controller) {
+    this.context = controller.context
   }
 
   execute(type, params) {

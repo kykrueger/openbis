@@ -1,6 +1,6 @@
 export default class ObjectTypeHandlerAddSection {
-  constructor(context) {
-    this.context = context
+  constructor(controller) {
+    this.context = controller.context
   }
 
   execute() {

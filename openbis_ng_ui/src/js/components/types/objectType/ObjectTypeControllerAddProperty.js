@@ -1,6 +1,6 @@
 export default class ObjectTypeHandlerAddProperty {
-  constructor(context) {
-    this.context = context
+  constructor(controller) {
+    this.context = controller.context
   }
 
   execute() {

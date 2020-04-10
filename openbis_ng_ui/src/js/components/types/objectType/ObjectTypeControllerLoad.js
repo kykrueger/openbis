@@ -2,18 +2,19 @@ import _ from 'lodash'
 import objectTypes from '@src/js/common/consts/objectType.js'
 
 export default class ObjectTypeHandlerLoad {
-  constructor(context, facade) {
-    this.context = context
-    this.facade = facade
+  constructor(controller) {
+    this.controller = controller
+    this.context = controller.context
+    this.facade = controller.facade
   }
 
-  execute(object) {
-    this.context.setState({
+  async execute() {
+    await this.context.setState({
       loading: true,
       validate: false
     })
 
-    return this.load(object)
+    return this.load()
       .then(([loadedType, loadedUsages]) => {
         const type = {
           code: _.get(loadedType, 'code', null),
@@ -93,7 +94,7 @@ export default class ObjectTypeHandlerLoad {
           }
         }
 
-        this.context.setState(() => ({
+        return this.context.setState(() => ({
           type,
           properties,
           propertiesCounter,
@@ -114,8 +115,8 @@ export default class ObjectTypeHandlerLoad {
       })
   }
 
-  load(object) {
-    const { id, type } = object
+  load() {
+    const { id, type } = this.controller.object
 
     if (type === objectTypes.NEW_OBJECT_TYPE) {
       return Promise.resolve([null, null])

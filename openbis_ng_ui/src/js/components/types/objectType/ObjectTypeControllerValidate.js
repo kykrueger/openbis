@@ -2,8 +2,8 @@ import _ from 'lodash'
 import openbis from '@src/js/services/openbis.js'
 
 export default class ObjectTypeHandlerValidate {
-  constructor(context) {
-    this.context = context
+  constructor(controller) {
+    this.context = controller.context
   }
 
   execute(autofocus) {

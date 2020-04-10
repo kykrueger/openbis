@@ -1,22 +1,19 @@
 import _ from 'lodash'
-import ObjectTypeControllerLoad from '@src/js/components/types/objectType/ObjectTypeControllerLoad.js'
-import ObjectTypeControllerValidate from '@src/js/components/types/objectType/ObjectTypeControllerValidate.js'
 import pages from '@src/js/common/consts/pages.js'
 import actions from '@src/js/store/actions/actions.js'
 import objectTypes from '@src/js/common/consts/objectType.js'
 import openbis from '@src/js/services/openbis.js'
 
 export default class ObjectTypeHandlerSave {
-  constructor(context, facade) {
-    let { type, properties, sections } = context.getState()
+  constructor(controller) {
+    this.controller = controller
+    this.context = controller.context
+    this.facade = controller.facade
+
+    let { type, properties, sections } = this.context.getState()
 
     this.type = this.prepareType(type)
     this.properties = this.prepareProperties(type, properties, sections)
-    this.context = context
-    this.facade = facade
-
-    this.loadHandler = new ObjectTypeControllerLoad(context, facade)
-    this.validateHandler = new ObjectTypeControllerValidate(context, facade)
   }
 
   prepareValue(value) {
@@ -330,23 +327,21 @@ export default class ObjectTypeHandlerSave {
     return new openbis.UpdateSampleTypesOperation([update])
   }
 
-  notify() {
-    const { id, type } = this.context.getProps().object
-
-    if (type === objectTypes.NEW_OBJECT_TYPE) {
+  dispatchActions(oldObject, newObject) {
+    if (oldObject.type === objectTypes.NEW_OBJECT_TYPE) {
       this.context.dispatch(
         actions.objectCreate(
           pages.TYPES,
-          type,
-          id,
-          objectTypes.OBJECT_TYPE,
-          this.type.code
+          oldObject.type,
+          oldObject.id,
+          newObject.type,
+          newObject.id
         )
       )
-    } else if (type === objectTypes.OBJECT_TYPE) {
-      this.context.dispatch(actions.objectSave(pages.TYPES, type, id))
-    } else {
-      throw 'Unsupported object type: ' + type
+    } else if (oldObject.type === objectTypes.OBJECT_TYPE) {
+      this.context.dispatch(
+        actions.objectSave(pages.TYPES, oldObject.type, oldObject.id)
+      )
     }
   }
 
@@ -355,7 +350,7 @@ export default class ObjectTypeHandlerSave {
       validate: true
     })
 
-    if (!this.validateHandler.execute(true)) {
+    if (!this.controller.validate(true)) {
       return
     }
 
@@ -367,19 +362,21 @@ export default class ObjectTypeHandlerSave {
     const options = new openbis.SynchronousOperationExecutionOptions()
     options.setExecuteInOrder(true)
 
+    const oldObject = this.controller.object
+    const newObject = {
+      type: objectTypes.OBJECT_TYPE,
+      id: this.type.code
+    }
+
     return this.facade
       .executeOperations(operations, options)
-      .then(() => {
-        return this.loadHandler.execute({
-          type: objectTypes.OBJECT_TYPE,
-          id: this.type.code
-        })
-      })
       .then(async () => {
+        this.controller.object = newObject
+        await this.controller.load()
         await this.context.setState({
           loading: false
         })
-        this.notify()
+        this.dispatchActions(oldObject, newObject)
       })
       .catch(error => {
         this.context.setState({

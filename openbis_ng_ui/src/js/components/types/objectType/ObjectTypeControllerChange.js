@@ -1,6 +1,6 @@
 export default class ObjectTypeHandlerChange {
-  constructor(context) {
-    this.context = context
+  constructor(controller) {
+    this.context = controller.context
   }
 
   execute(type, params) {
