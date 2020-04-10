@@ -4,7 +4,7 @@ import ids from '@src/js/common/consts/ids.js'
 import openbis from '@src/js/services/openbis.js'
 import logger from '@src/js/common/logger.js'
 
-class Search extends React.Component {
+class UserSearch extends React.Component {
   constructor(props) {
     super(props)
 
@@ -75,4 +75,4 @@ class Search extends React.Component {
   }
 }
 
-export default Search
+export default UserSearch

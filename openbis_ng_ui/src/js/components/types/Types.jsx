@@ -10,11 +10,11 @@ import ContentObjectTab from '@src/js/components/common/content/ContentObjectTab
 import ContentSearchTab from '@src/js/components/common/content/ContentSearchTab.jsx'
 
 import TypeBrowser from './browser/TypeBrowser.jsx'
+import TypeSearch from './search/TypeSearch.jsx'
 import ObjectType from './objectType/ObjectType.jsx'
 import CollectionType from './collectionType/CollectionType.jsx'
 import DataSetType from './dataSetType/DataSetType.jsx'
 import MaterialType from './materialType/MaterialType.jsx'
-import Search from './search/Search.jsx'
 
 const styles = () => ({
   container: {
@@ -55,7 +55,7 @@ class Types extends React.Component {
     } else if (object.type === objectType.MATERIAL_TYPE) {
       return <MaterialType objectId={object.id} />
     } else if (object.type === objectType.SEARCH) {
-      return <Search objectId={object.id} />
+      return <TypeSearch objectId={object.id} />
     }
   }
 

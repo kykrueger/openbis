@@ -25,7 +25,7 @@ function mapDispatchToProps(dispatch) {
   }
 }
 
-class Search extends React.Component {
+class TypeSearch extends React.Component {
   constructor(props) {
     super(props)
 
@@ -169,4 +169,4 @@ class Search extends React.Component {
 export default _.flow(
   connect(null, mapDispatchToProps),
   withStyles(styles)
-)(Search)
+)(TypeSearch)
