@@ -1,7 +1,7 @@
 const OBJECT_NEW = 'OBJECT_NEW'
 const OBJECT_CREATE = 'OBJECT_CREATE'
 const OBJECT_OPEN = 'OBJECT_OPEN'
-const OBJECT_SAVE = 'OBJECT_SAVE'
+const OBJECT_UPDATE = 'OBJECT_UPDATE'
 const OBJECT_DELETE = 'OBJECT_DELETE'
 const OBJECT_CHANGE = 'OBJECT_CHANGE'
 const OBJECT_CLOSE = 'OBJECT_CLOSE'
@@ -38,8 +38,8 @@ const objectOpen = (page, type, id) => ({
   }
 })
 
-const objectSave = (page, type, id) => ({
-  type: OBJECT_SAVE,
+const objectUpdate = (page, type, id) => ({
+  type: OBJECT_UPDATE,
   payload: {
     page,
     type,
@@ -112,7 +112,7 @@ export default {
   OBJECT_NEW,
   OBJECT_CREATE,
   OBJECT_OPEN,
-  OBJECT_SAVE,
+  OBJECT_UPDATE,
   OBJECT_DELETE,
   OBJECT_CHANGE,
   OBJECT_CLOSE,
@@ -123,7 +123,7 @@ export default {
   objectNew,
   objectCreate,
   objectOpen,
-  objectSave,
+  objectUpdate,
   objectDelete,
   objectChange,
   objectClose,

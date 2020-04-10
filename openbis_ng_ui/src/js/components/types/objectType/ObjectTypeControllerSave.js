@@ -340,7 +340,7 @@ export default class ObjectTypeHandlerSave {
       )
     } else if (oldObject.type === objectTypes.OBJECT_TYPE) {
       this.context.dispatch(
-        actions.objectSave(pages.TYPES, oldObject.type, oldObject.id)
+        actions.objectUpdate(pages.TYPES, oldObject.type, oldObject.id)
       )
     }
   }
