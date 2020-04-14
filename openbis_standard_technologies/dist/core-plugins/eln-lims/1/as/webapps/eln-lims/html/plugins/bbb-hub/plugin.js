@@ -12,6 +12,7 @@ $.extend(BBBHubTechnology.prototype, ELNLIMSPlugin.prototype, {
         loadJSResorce("./plugins/bbb-hub/BBBServerFacade.js");
         loadJSResorce("./plugins/bbb-hub/snakemake-table.js");
         loadJSResorce("./plugins/bbb-hub/snakemake-trigger.js");
+        this.configureFancyTree("LAB_NOTEBOOK", "Datasets", 5000);
 	},
 
 	experimentFormTop : function($container, model) {
@@ -31,6 +32,25 @@ $.extend(BBBHubTechnology.prototype, ELNLIMSPlugin.prototype, {
                     BBBServerFacade.getExperiments($content);
                 }
             }];
+    },
+
+    configureFancyTree : function(elementId, newName, timeout) {
+        var DEFAULT_TIMEOUT_STEP = 300;
+
+        return new Promise(function executor(resolve, reject) {
+            timeout -= DEFAULT_TIMEOUT_STEP;
+
+            if (timeout <= 0) {
+                reject(new Error("Element '" + elementId + "' is not exist."));
+            }
+
+            if($("#" + elementId).length <= 0) {
+                setTimeout(executor.bind(null, resolve, reject), DEFAULT_TIMEOUT_STEP);
+            } else {
+                $("#" + elementId).html(newName);
+                resolve();
+            }
+        });
     }
 });
 
