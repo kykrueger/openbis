@@ -7,6 +7,8 @@
 # git clone https://github.com/ckeditor/ckeditor5-build-inline.git
 # cd ckeditor5-build-inline
 
+# Use as reference for dependency versions: https://github.com/ckeditor/ckeditor5/blob/master/package.json
+
 # Build commands
 
 npm install --save "@ckeditor/ckeditor5-adapter-ckfinder@^18.0.0" \
@@ -34,21 +36,21 @@ npm install --save "@ckeditor/ckeditor5-adapter-ckfinder@^18.0.0" \
 	'@ckeditor/ckeditor5-upload@^18.0.0' \
 	'@ckeditor/ckeditor5-remove-format@^18.0.0' \
 	'@ckeditor/ckeditor5-editor-decoupled@^18.0.0' \
-	"eslint" \
-	"eslint-config-ckeditor5" \
-	"husky" \
-	"lint-staged" \
-	"postcss-loader" \
-	"raw-loader" \
-	"style-loader" \
-	"stylelint" \
-	"stylelint-config-ckeditor5" \
-	"terser-webpack-plugin" \
-	"webpack" \
+	"eslint@^5.5.0" \
+	"eslint-config-ckeditor5@^2.0.0" \
+	"husky@^1.3.1" \
+	"lint-staged@^7.0.0" \
+	"postcss-loader@^3.0.0" \
+	"raw-loader@^3.1.0" \
+	"style-loader@^1.0.0" \
+	"stylelint@^11.1.1" \
+	"stylelint-config-ckeditor5@^1.0.0" \
+	"terser-webpack-plugin@^2.2.1" \
+	"webpack@^4.39.1" \
 	"webpack-cli" \
-	"@ckeditor/ckeditor5-dev-utils@^12.0.7" \
-	"@ckeditor/ckeditor5-dev-webpack-plugin@^8.0.7" \
-	'@wiris/mathtype-ckeditor5@^7.17.1';
+	"@ckeditor/ckeditor5-dev-utils@^12.0.5" \
+	"@ckeditor/ckeditor5-dev-webpack-plugin@^8.0.5" \
+	"@wiris/mathtype-ckeditor5@^7.19.0";
 
 
 yarn run build
