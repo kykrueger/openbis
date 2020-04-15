@@ -10,8 +10,8 @@ import ContentSearchTab from '@src/js/components/common/content/ContentSearchTab
 
 import UserBrowser from './browser/UserBrowser.jsx'
 import UserSearch from './search/UserSearch.jsx'
-import User from './user/User.jsx'
-import Group from './group/Group.jsx'
+import UserForm from './form/UserForm.jsx'
+import UserGroupForm from './form/UserGroupForm.jsx'
 
 const styles = () => ({
   container: {
@@ -41,9 +41,9 @@ class Users extends React.Component {
   renderComponent(tab) {
     const { object } = tab
     if (object.type === objectType.USER) {
-      return <User objectId={object.id} />
+      return <UserForm objectId={object.id} />
     } else if (object.type === objectType.GROUP) {
-      return <Group objectId={object.id} />
+      return <UserGroupForm objectId={object.id} />
     } else if (object.type === objectType.SEARCH) {
       return <UserSearch objectId={object.id} />
     }
