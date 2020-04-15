@@ -23,6 +23,7 @@ $.extend(BBBHubTechnology.prototype, ELNLIMSPlugin.prototype, {
     },
 
     getExtraUtilities : function() {
+        var _this = this;
         return [{
             icon : "fa fa-table",
             uniqueViewName : "BBB_VIEW_NAME_TEST",
@@ -31,7 +32,20 @@ $.extend(BBBHubTechnology.prototype, ELNLIMSPlugin.prototype, {
                     $header.append($("<h1>").append("Public Index Page"));
                     BBBServerFacade.getExperiments($content);
                 }
-            }];
+            }, {
+                icon : "glyphicon glyphicon-list-alt",
+                uniqueViewName : "HELP_VIEW",
+                label : "Help",
+                paintView : function($header, $content) {
+                   $header.append($("<h1>").append("Help"));
+                   _this.paintContent($content);
+            }
+        }];
+    },
+
+    paintContent : function($content) {
+        var src = "https://openbis.ch/index.php/docs/user-documentation-19-06-4/";
+        $content.append($("<iframe src=" + src + " width='99%' height='700px'></iframe>"));
     },
 
     configureFancyTree : function(elementId, newName, timeout) {
