@@ -16,27 +16,7 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
-
-import java.util.Set;
-
-public interface ISearchManager<OBJECT>
+public interface ISearchManager
 {
-
-    /**
-     * Filters IDs of certain
-     *
-     * @param userId
-     * @param authorisationInformation
-     * @param ids
-     * @return
-     */
-    Set<Long> filterIDsByUserRights(Long userId, final AuthorisationInformation authorisationInformation, Set<Long> ids);
-
-    Set<Long> sortIDs(Set<Long> filteredIDs, SortOptions<OBJECT> sortOptions);
 
 }

@@ -39,7 +39,7 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.*;
  */
 public class CriteriaMapper {
 
-    private static final Map<Class<? extends ISearchCriteria>, ISearchManager<?>>
+    private static final Map<Class<? extends ISearchCriteria>, ISearchManager>
             CRITERIA_TO_MANAGER_MAP = new HashMap<>();
 
     /**
@@ -106,7 +106,6 @@ public class CriteriaMapper {
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(FirstNameSearchCriteria.class, new FirstNameSearchConditionTranslator());
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(GitCommitHashSearchCriteria.class, stringFieldSearchConditionTranslator);
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(GitRepositoryIdSearchCriteria.class, stringFieldSearchConditionTranslator);
-        CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(GlobalSearchTextCriteria.class, new GlobalSearchTextConditionTranslator());
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(IdSearchCriteria.class, new IdSearchConditionTranslator());
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(IdsSearchCriteria.class, collectionFieldSearchConditionTranslator);
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(IdentifierSearchCriteria.class, new IdentifierSearchConditionTranslator());
@@ -246,7 +245,7 @@ public class CriteriaMapper {
                 applicationContext.getBean("global-search-manager", IGlobalSearchManager.class));
     }
 
-    public static Map<Class<? extends ISearchCriteria>, ISearchManager<?>> getCriteriaToManagerMap()
+    public static Map<Class<? extends ISearchCriteria>, ISearchManager> getCriteriaToManagerMap()
     {
         return CRITERIA_TO_MANAGER_MAP;
     }

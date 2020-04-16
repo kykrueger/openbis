@@ -25,6 +25,14 @@ public class SQLLexemes
 
     public static final String LOWER = "lower";
 
+    public static final String TS_RANK = "ts_rank";
+
+    public static final String TSVECTOR_DOCUMENT = "tsvector_document";
+
+    public static final String TO_TSQUERY = "to_tsquery";
+
+    public static final String PLAINTO_TSQUERY = "plainto_tsquery";
+
     public static final String NUMERIC = "numeric";
 
     public static final String TIMESTAMPTZ = "timestamptz";
@@ -101,6 +109,12 @@ public class SQLLexemes
 
     public static final String ORDER_BY = "ORDER BY";
 
+    public static final String INTERSECT = "INTERSECT";
+
+    public static final String UNION = "UNION";
+
+    public static final String UNION_ALL = "UNION ALL";
+
     public static final String NL = "\n";
 
     public static final String COMMA = ",";
@@ -138,6 +152,8 @@ public class SQLLexemes
     public static final String SQ = "'";
 
     public static final String DQ = "\"";
+
+    public static final String DOUBLE_AT = "@@";
 
     public static final String TILDA = "~";
 

@@ -146,17 +146,25 @@ public class TranslatorUtils
                 case PERCENT:
                     // Fall through.
                 case BACKSLASH:
+                {
                     sb.append(BACKSLASH).append(ch);
                     break;
+                }
                 case ASTERISK:
+                {
                     sb.append(PERCENT);
                     break;
+                }
                 case QU:
+                {
                     sb.append(UNDERSCORE);
                     break;
+                }
                 default:
+                {
                     sb.append(ch);
                     break;
+                }
             }
         });
         return sb.toString();

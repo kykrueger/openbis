@@ -22,9 +22,9 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PEMapper;
 
-public interface ILocalSearchManager<CRITERIA extends ISearchCriteria, OBJECT, OBJECT_PE> extends ISearchManager<OBJECT>, IID2PETranslator<OBJECT_PE>
+public interface ILocalSearchManager<CRITERIA extends ISearchCriteria, OBJECT, OBJECT_PE> extends ISearchManager, IID2PEMapper<Long, OBJECT_PE>
 {
 
     /**
@@ -40,5 +40,7 @@ public interface ILocalSearchManager<CRITERIA extends ISearchCriteria, OBJECT, O
      */
     Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation, final CRITERIA criteria,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName);
+
+    Set<Long> sortIDs(Set<Long> filteredIDs, SortOptions<OBJECT> sortOptions);
 
 }

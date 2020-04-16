@@ -22,9 +22,7 @@ import java.util.stream.Collectors;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.*;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ILocalSearchManager;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.RoleAssignmentPE;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -245,7 +243,7 @@ public abstract class AbstractSearchObjectsOperationExecutor<OBJECT, OBJECT_PE, 
         // There results from the manager should already be filtered.
         final Set<Long> allResultsIds = getSearchManager().searchForIDs(userId, authorisationInformation, criteria, null, ID_COLUMN);
         final List<Long> sortedAndPagedResultIds = sortAndPage(allResultsIds, fetchOptions);
-        final List<OBJECT_PE> sortedAndPagedResultPEs = getSearchManager().translate(sortedAndPagedResultIds);
+        final List<OBJECT_PE> sortedAndPagedResultPEs = getSearchManager().map(sortedAndPagedResultIds);
         final Map<OBJECT_PE, OBJECT> sortedAndPagedResultV3DTOs = doTranslate(translationContext, sortedAndPagedResultPEs, fetchOptions);
 
         final List<OBJECT> finalResults = new ArrayList<>(sortedAndPagedResultV3DTOs.values());
@@ -268,7 +266,7 @@ public abstract class AbstractSearchObjectsOperationExecutor<OBJECT, OBJECT_PE, 
         return sortedFinalResults;
     }
 
-    protected List<Long> sortAndPage(final Set<Long> ids, final FetchOptions<OBJECT> fo)
+    private List<Long> sortAndPage(final Set<Long> ids, final FetchOptions<OBJECT> fo)
     {
         //
         // Filter out sorts to ignore

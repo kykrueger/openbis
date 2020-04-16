@@ -24,7 +24,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PEMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 
 import java.util.*;
@@ -39,10 +39,10 @@ public abstract class AbstractLocalSearchManager<CRITERIA extends ISearchCriteri
         implements ILocalSearchManager<CRITERIA, OBJECT, OBJECT_PE>
 {
 
-    private final IID2PETranslator<OBJECT_PE> idsTranslator;
+    private final IID2PEMapper<Long, OBJECT_PE> idsTranslator;
 
     public AbstractLocalSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
-            final IID2PETranslator<OBJECT_PE> idsTranslator)
+            final IID2PEMapper<Long, OBJECT_PE> idsTranslator)
     {
         super(authProvider, searchDAO);
         this.idsTranslator = idsTranslator;
@@ -140,8 +140,8 @@ public abstract class AbstractLocalSearchManager<CRITERIA extends ISearchCriteri
         return smallestSet;
     }
 
-    public List<OBJECT_PE> translate(final List<Long> ids) {
-        return idsTranslator.translate(ids);
+    public List<OBJECT_PE> map(final List<Long> ids) {
+        return idsTranslator.map(ids);
     }
 
     protected Set<Long> doSortIDs(final Set<Long> filteredIDs, final SortOptions<OBJECT> sortOptions, final TableMapper tableMapper)

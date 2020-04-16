@@ -26,14 +26,12 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.search.EntityTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentTypeSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.search.TagSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.CriteriaMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.IGlobalSearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ILocalSearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.IConditionTranslator;
@@ -65,6 +63,11 @@ public class CriteriaTranslator
     public static final DateFormat DATE_WITH_SHORT_TIME_FORMAT = new SimpleDateFormat(BasicConstant.DATE_WITH_SHORT_TIME_PATTERN);
 
     public static final String MAIN_TABLE_ALIAS = getAlias(new AtomicInteger(0));
+
+    private CriteriaTranslator()
+    {
+        throw new UnsupportedOperationException();
+    }
 
     public static SelectQuery translate(final TranslationVo vo)
     {
@@ -161,7 +164,7 @@ public class CriteriaTranslator
             final StringBuilder sqlBuilder, ISearchCriteria criterion)
     {
         final TableMapper tableMapper = vo.getTableMapper();
-        final ISearchManager<?> subqueryManager = (criterion instanceof EntityTypeSearchCriteria)
+        final ISearchManager subqueryManager = (criterion instanceof EntityTypeSearchCriteria)
                 ? CriteriaMapper.getEntityKindToManagerMap().get(tableMapper.getEntityKind())
                 : CriteriaMapper.getCriteriaToManagerMap().get(criterion.getClass());
         final AbstractCompositeSearchCriteria parentCriterion = vo.getParentCriterion();

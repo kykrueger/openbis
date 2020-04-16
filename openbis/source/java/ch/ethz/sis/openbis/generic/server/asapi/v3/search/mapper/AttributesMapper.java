@@ -26,7 +26,7 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.*;
 
 public class AttributesMapper
 {
-    private static final String PERM_ID_ATTRIBUTE = "perm id";
+    public static final String PERM_ID_ATTRIBUTE = "perm id";
 
     private static final Map<String, String> ATTRIBUTE_ID_TO_COLUMN_NAME = new HashMap<>();
 

@@ -94,18 +94,19 @@ public class SearchGloballyOperationExecutor
         final TranslationContext translationContext = new TranslationContext(context.getSession());
 
         // There results from the manager should already be filtered.
-        final Set<Long> sampleResultsIds = globalSearchManager.searchForIDs(userId, authorisationInformation, criteria, null, TableMapper.SAMPLE);
-        final Set<Long> experimentResultsIds = globalSearchManager.searchForIDs(userId, authorisationInformation, criteria, null, TableMapper.EXPERIMENT);
-        final Set<Long> dataSetResultsIds = globalSearchManager.searchForIDs(userId, authorisationInformation, criteria, null, TableMapper.DATA_SET);
-        final Set<Long> materialResultsIds = globalSearchManager.searchForIDs(userId, authorisationInformation, criteria, null, TableMapper.MATERIAL);
+        final Set<Map<String, Object>> sampleResultsIds = globalSearchManager.searchForIDs(userId, authorisationInformation, criteria, null, TableMapper.SAMPLE);
+        final Set<Map<String, Object>> experimentResultsIds = globalSearchManager.searchForIDs(userId, authorisationInformation, criteria, null,
+                TableMapper.EXPERIMENT);
+        final Set<Map<String, Object>> dataSetResultsIds = globalSearchManager.searchForIDs(userId, authorisationInformation, criteria, null, TableMapper.DATA_SET);
+        final Set<Map<String, Object>> materialResultsIds = globalSearchManager.searchForIDs(userId, authorisationInformation, criteria, null, TableMapper.MATERIAL);
 
-        final Set<Long> allResultsIds = new HashSet<>(sampleResultsIds);
+        final Set<Map<String, Object>> allResultsIds = new HashSet<>(sampleResultsIds);
         allResultsIds.addAll(experimentResultsIds);
         allResultsIds.addAll(dataSetResultsIds);
         allResultsIds.addAll(materialResultsIds);
 
-        final List<Long> sortedAndPagedResultIds = sortAndPage(allResultsIds, fetchOptions);
-        final List<MatchingEntity> sortedAndPagedResultPEs = globalSearchManager.translate(sortedAndPagedResultIds);
+        final List<Map<String, Object>> sortedAndPagedResultIds = sortAndPage(allResultsIds, fetchOptions);
+        final List<MatchingEntity> sortedAndPagedResultPEs = globalSearchManager.map(sortedAndPagedResultIds);
         final Map<MatchingEntity, GlobalSearchObject> sortedAndPagedResultV3DTOs = doTranslate(translationContext, sortedAndPagedResultPEs, fetchOptions);
 
         final List<GlobalSearchObject> finalResults = new ArrayList<>(sortedAndPagedResultV3DTOs.values());
@@ -116,12 +117,12 @@ public class SearchGloballyOperationExecutor
         return results;
     }
 
-    protected List<Long> sortAndPage(final Set<Long> ids, final FetchOptions<GlobalSearchObject> fo)
+    protected List<Map<String, Object>> sortAndPage(final Set<Map<String, Object>> results, final FetchOptions<GlobalSearchObject> fo)
     {
         final SortOptions<GlobalSearchObject> sortOptions = fo.getSortBy();
-        final Set<Long> orderedIDs = (sortOptions != null) ? globalSearchManager.sortIDs(ids, sortOptions) : ids;
+        final Set<Map<String, Object>> orderedIDs = (sortOptions != null) ? globalSearchManager.sortIDs(results, sortOptions) : results;
 
-        final List<Long> toPage = new ArrayList<>(orderedIDs);
+        final List<Map<String, Object>> toPage = new ArrayList<>(orderedIDs);
         final Integer fromRecord = fo.getFrom();
         final Integer recordsCount = fo.getCount();
         final boolean hasPaging = fromRecord != null && recordsCount != null;

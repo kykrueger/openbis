@@ -21,11 +21,11 @@ import java.util.List;
 /**
  * Translator that translates IDs to the same values.
  */
-public class IdentityTranslator implements IID2PETranslator<Long>
+public class IdentityMapper implements IID2PEMapper<Long, Long>
 {
 
     @Override
-    public List<Long> translate(final List<Long> ids)
+    public List<Long> map(final List<Long> ids)
     {
         return ids;
     }

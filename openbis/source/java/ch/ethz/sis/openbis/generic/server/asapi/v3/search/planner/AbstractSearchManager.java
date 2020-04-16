@@ -13,7 +13,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public abstract class AbstractSearchManager<OBJECT> implements ISearchManager<OBJECT>
+public abstract class AbstractSearchManager<OBJECT>
 {
 
     protected final ISQLAuthorisationInformationProviderDAO authProvider;
@@ -37,7 +37,6 @@ public abstract class AbstractSearchManager<OBJECT> implements ISearchManager<OB
         return collection != null && !collection.isEmpty();
     }
 
-    @Override
     public Set<Long> filterIDsByUserRights(final Long userId, final AuthorisationInformation authorisationInformation, final Set<Long> ids)
     {
         if (authorisationInformation.isInstanceRole())
