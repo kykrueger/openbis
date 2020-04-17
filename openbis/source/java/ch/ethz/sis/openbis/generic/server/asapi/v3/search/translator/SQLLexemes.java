@@ -31,6 +31,8 @@ public class SQLLexemes
 
     public static final String TO_TSQUERY = "to_tsquery";
 
+    public static final String TS_HEADLINE = "ts_headline";
+
     public static final String PLAINTO_TSQUERY = "plainto_tsquery";
 
     public static final String NUMERIC = "numeric";

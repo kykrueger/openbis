@@ -25,6 +25,15 @@ public class GlobalSearchCriteriaTranslator
 
     public static final String IDENTIFIER_ALIAS = "identifier";
 
+    public static final String HEADLINE_ALIAS_SUFFIX = "_headline";
+
+    private static final String START_SEL = "<{(";
+
+    private static final String STOP_SEL = ")}>";
+
+    private static final String TS_HEADLINE_OPTIONS = "HighlightAll=TRUE, StartSel=" + START_SEL
+            +", StopSel=" + STOP_SEL;
+
     private GlobalSearchCriteriaTranslator()
     {
         throw new UnsupportedOperationException();
@@ -115,10 +124,15 @@ public class GlobalSearchCriteriaTranslator
         sqlBuilder.append(TS_RANK).append(LP).append(MAIN_TABLE_ALIAS).append(PERIOD).append(TSVECTOR_DOCUMENT).append(COMMA).append(SP);
 
         buildTsQueryPart(sqlBuilder, value, args);
-        sqlBuilder.append(RP).append(SP).append(RANK_ALIAS)/*.append(COMMA).append(SP)*/;
+        sqlBuilder.append(RP).append(SP).append(RANK_ALIAS).append(COMMA).append(SP);
 
 //        sqlBuilder.append(QU).append(SP).append(SEARCH_STRING_ALIAS).append(NL);
 //        args.add(value);
+
+        sqlBuilder.append(TS_HEADLINE).append(LP).append(MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(COMMA).append(SP);
+        buildTsQueryPart(sqlBuilder, value, args);
+        sqlBuilder.append(COMMA).append(SP).append(SQ).append(TS_HEADLINE_OPTIONS).append(SQ).append(RP).append(SP)
+                .append(CODE_COLUMN).append(HEADLINE_ALIAS_SUFFIX);
 
         sqlBuilder.append(NL);
 
