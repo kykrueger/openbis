@@ -7,7 +7,9 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInfo
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.*;
+import ch.systemsx.cisd.common.collection.SimpleComparator;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MatchingEntity;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -84,7 +86,7 @@ public class GlobalSearchManager implements IGlobalSearchManager
     @Override
     public List<MatchingEntity> map(final List<Map<String, Object>> records)
     {
-        return records.stream().map((fieldsMap) -> {
+        final List<MatchingEntity> result = records.stream().map((fieldsMap) -> {
             final MatchingEntity matchingEntity = new MatchingEntity();
             matchingEntity.setCode((String) fieldsMap.get(CODE_COLUMN));
             matchingEntity.setEntityKind(EntityKind.valueOf((String) fieldsMap.get(OBJECT_KIND_ALIAS)));
@@ -102,13 +104,22 @@ public class GlobalSearchManager implements IGlobalSearchManager
             matchingEntity.setScore((Float) fieldsMap.get(RANK_ALIAS));
 //            }
 
-//            ISearchDomainResultLocation resultLocation = searchResult.getResultLocation();
-//            List<PropertyMatch> matches = createMatches(searchString, resultLocation);
+//            final PropertyMatch match = new PropertyMatch();
+//            match.set
+//
 //            matchingEntity.setMatches(matches);
-//            translatedEntities.add(matchingEntity);
 
             return matchingEntity;
         }).collect(Collectors.toList());
+        result.sort(new SimpleComparator<MatchingEntity, Double>()
+        {
+            @Override
+            public Double evaluate(MatchingEntity item)
+            {
+                return -item.getScore();
+            }
+        });
+        return result;
     }
 
 }

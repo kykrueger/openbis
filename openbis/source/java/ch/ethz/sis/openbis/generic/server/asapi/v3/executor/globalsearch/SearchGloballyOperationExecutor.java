@@ -31,7 +31,8 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.ISearc
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.SearchObjectsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.*;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.GlobalSearchManager;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ILocalSearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.ITranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.TranslationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.globalsearch.IGlobalSearchObjectTranslator;
@@ -94,24 +95,24 @@ public class SearchGloballyOperationExecutor
         final TranslationContext translationContext = new TranslationContext(context.getSession());
 
         // There results from the manager should already be filtered.
-        final Set<Map<String, Object>> sampleResultsIds = globalSearchManager.searchForIDs(userId, authorisationInformation, criteria, null, TableMapper.SAMPLE);
-        final Set<Map<String, Object>> experimentResultsIds = globalSearchManager.searchForIDs(userId, authorisationInformation, criteria, null,
+        final Set<Map<String, Object>> sampleResultMaps = globalSearchManager.searchForIDs(userId, authorisationInformation, criteria, null, TableMapper.SAMPLE);
+        final Set<Map<String, Object>> experimentResultMaps = globalSearchManager.searchForIDs(userId, authorisationInformation, criteria, null,
                 TableMapper.EXPERIMENT);
-        final Set<Map<String, Object>> dataSetResultsIds = globalSearchManager.searchForIDs(userId, authorisationInformation, criteria, null, TableMapper.DATA_SET);
-        final Set<Map<String, Object>> materialResultsIds = globalSearchManager.searchForIDs(userId, authorisationInformation, criteria, null, TableMapper.MATERIAL);
+        final Set<Map<String, Object>> dataSetResultMaps = globalSearchManager.searchForIDs(userId, authorisationInformation, criteria, null, TableMapper.DATA_SET);
+        final Set<Map<String, Object>> materialResultMaps = globalSearchManager.searchForIDs(userId, authorisationInformation, criteria, null, TableMapper.MATERIAL);
 
-        final Set<Map<String, Object>> allResultsIds = new HashSet<>(sampleResultsIds);
-        allResultsIds.addAll(experimentResultsIds);
-        allResultsIds.addAll(dataSetResultsIds);
-        allResultsIds.addAll(materialResultsIds);
+        final Set<Map<String, Object>> allResultMaps = new HashSet<>(sampleResultMaps);
+        allResultMaps.addAll(experimentResultMaps);
+        allResultMaps.addAll(dataSetResultMaps);
+        allResultMaps.addAll(materialResultMaps);
 
-        final List<Map<String, Object>> sortedAndPagedResultIds = sortAndPage(allResultsIds, fetchOptions);
-        final List<MatchingEntity> sortedAndPagedResultPEs = globalSearchManager.map(sortedAndPagedResultIds);
+        final List<Map<String, Object>> sortedAndPagedResultMaps = sortAndPage(allResultMaps, fetchOptions);
+        final List<MatchingEntity> sortedAndPagedResultPEs = globalSearchManager.map(sortedAndPagedResultMaps);
         final Map<MatchingEntity, GlobalSearchObject> sortedAndPagedResultV3DTOs = doTranslate(translationContext, sortedAndPagedResultPEs, fetchOptions);
 
         final List<GlobalSearchObject> finalResults = new ArrayList<>(sortedAndPagedResultV3DTOs.values());
         final List<GlobalSearchObject> sortedFinalResults = getSortedFinalResults(criteria, fetchOptions, finalResults);
-        final SearchResult<GlobalSearchObject> searchResult = new SearchResult<>(sortedFinalResults, allResultsIds.size());
+        final SearchResult<GlobalSearchObject> searchResult = new SearchResult<>(sortedFinalResults, allResultMaps.size());
 
         final SearchObjectsOperationResult<GlobalSearchObject> results = getOperationResult(searchResult);
         return results;

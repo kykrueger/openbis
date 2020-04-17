@@ -2,7 +2,6 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchTextCriteria;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.AttributesMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 
 import java.util.List;
@@ -21,6 +20,8 @@ public class GlobalSearchCriteriaTranslator
     public static final String OBJECT_KIND_ALIAS = "object_kind";
 
     public static final String RANK_ALIAS = "rank";
+
+    public static final String SEARCH_STRING_ALIAS = "search_string";
 
     public static final String IDENTIFIER_ALIAS = "identifier";
 
@@ -84,12 +85,29 @@ public class GlobalSearchCriteriaTranslator
 
         // SELECT
 
-        sqlBuilder.append(SELECT).append(SP).append(MAIN_TABLE_ALIAS).append(PERIOD).append(ID_COLUMN).append(COMMA).append(SP)
-                .append(MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(COMMA).append(SP)
+        sqlBuilder.append(SELECT).append(SP).append(MAIN_TABLE_ALIAS).append(PERIOD).append(ID_COLUMN).append(COMMA).append(SP);
+
+        switch (tableMapper)
+        {
+            case SAMPLE:
+            // Falls through
+            case EXPERIMENT:
+            {
+                sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(PERM_ID_COLUMN).append(COMMA).append(SP);
+                break;
+            }
+            case DATA_SET:
+            {
+                sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(DATA_SET_KIND_COLUMN).append(COMMA).append(SP);
+                break;
+            }
+        }
+
+        sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(COMMA).append(SP)
                 .append(SQ).append(tableMapper.getEntityKind()).append(SQ).append(SP).append(OBJECT_KIND_ALIAS).append(COMMA).append(SP);
 
-        sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD)
-                .append(AttributesMapper.getColumnName(AttributesMapper.PERM_ID_ATTRIBUTE, entitiesTable, null)).append(COMMA).append(SP);
+//        sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD)
+//                .append(AttributesMapper.getColumnName(AttributesMapper.PERM_ID_ATTRIBUTE, entitiesTable, null)).append(COMMA).append(SP);
 
         buildFullIdentifierConcatenationString(sqlBuilder, spacesTableAlias, projectsTableAlias, samplesTableAlias);
         sqlBuilder.append(IDENTIFIER_ALIAS).append(COMMA).append(SP);
@@ -97,7 +115,12 @@ public class GlobalSearchCriteriaTranslator
         sqlBuilder.append(TS_RANK).append(LP).append(MAIN_TABLE_ALIAS).append(PERIOD).append(TSVECTOR_DOCUMENT).append(COMMA).append(SP);
 
         buildTsQueryPart(sqlBuilder, value, args);
-        sqlBuilder.append(RP).append(SP).append(RANK_ALIAS).append(NL);
+        sqlBuilder.append(RP).append(SP).append(RANK_ALIAS)/*.append(COMMA).append(SP)*/;
+
+//        sqlBuilder.append(QU).append(SP).append(SEARCH_STRING_ALIAS).append(NL);
+//        args.add(value);
+
+        sqlBuilder.append(NL);
 
         // FROM
 
