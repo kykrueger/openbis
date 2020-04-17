@@ -59,7 +59,7 @@ export default class TypeFormControllerLoad {
           }
         }
 
-        const { selection } = this.context.getState()
+        const selection = this._createSelection(sections)
 
         return this.context.setState(() => ({
           type,
@@ -67,7 +67,7 @@ export default class TypeFormControllerLoad {
           propertiesCounter,
           sections,
           sectionsCounter,
-          selection: selection ? selection : null,
+          selection: selection,
           removeSectionDialogOpen: false,
           removePropertyDialogOpen: false
         }))
@@ -143,6 +143,67 @@ export default class TypeFormControllerLoad {
           loadedUsages.property &&
           loadedUsages.property[loadedAssignment.propertyType.code]) ||
         0
+    }
+  }
+
+  _createSelection(newSections) {
+    const {
+      selection: oldSelection,
+      sections: oldSections
+    } = this.context.getState()
+
+    if (!oldSelection) {
+      return null
+    } else if (oldSelection.type === 'section') {
+      let sectionIndex = -1
+
+      oldSections.forEach((oldSection, i) => {
+        if (oldSection.id === oldSelection.params.id) {
+          sectionIndex = i
+        }
+      })
+
+      if (sectionIndex >= 0 && sectionIndex < newSections.length) {
+        const newSection = newSections[sectionIndex]
+        return {
+          type: 'section',
+          params: {
+            id: newSection.id,
+            part: oldSelection.params.part
+          }
+        }
+      }
+    } else if (oldSelection.type === 'property') {
+      let sectionIndex = -1
+      let propertyIndex = -1
+
+      oldSections.forEach((oldSection, i) => {
+        oldSection.properties.forEach((oldProperty, j) => {
+          if (oldProperty === oldSelection.params.id) {
+            sectionIndex = i
+            propertyIndex = j
+          }
+        })
+      })
+
+      if (sectionIndex >= 0 && sectionIndex < newSections.length) {
+        const newSection = newSections[sectionIndex]
+        if (
+          propertyIndex >= 0 &&
+          propertyIndex < newSection.properties.length
+        ) {
+          const newProperty = newSection.properties[propertyIndex]
+          return {
+            type: 'property',
+            params: {
+              id: newProperty,
+              part: oldSelection.params.part
+            }
+          }
+        }
+      }
+    } else {
+      return null
     }
   }
 
