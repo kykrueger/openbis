@@ -79,7 +79,6 @@ public class Jython27ClassLoader extends ClassLoader
     @Override
     protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException
     {
-        machineLog.info("loadClass - name: " + name + " resolve: " + resolve);
         Class<?> clazz = cachedClasses.get(name);
         if (clazz == null)
         {
@@ -173,7 +172,7 @@ public class Jython27ClassLoader extends ClassLoader
     
     private Class<?> tryLoadClass(ClassLoader classLoader, String name)
     {
-        machineLog.info("loadClass - classLoader: " + classLoader + " name: " + name);
+        machineLog.info("tryLoadClass - classLoader: " + classLoader + " name: " + name);
         synchronized (getClassLoadingLock(name))
         {
             InputStream stream = classLoader.getResourceAsStream(name.replace('.', '/') + ".class");
