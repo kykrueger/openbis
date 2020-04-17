@@ -24,6 +24,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.AttributesMappe
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinType;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils;
+import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
 import ch.systemsx.cisd.openbis.generic.shared.dto.TableNames;
 
 import java.util.Collections;
@@ -216,6 +217,9 @@ public class OrderTranslator
             }
 
             sqlBuilder.append(COMMA).append(SP).append(materialTypeTableAlias).append(PERIOD).append(CODE_COLUMN);
+        } else if (isSortingBySpaceModificationDate(vo, sortingCriteriaFieldName))
+        {
+            sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(REGISTRATION_TIMESTAMP_COLUMN.toLowerCase());
         } else
         {
             final String lowerCaseSortingCriteriaFieldName = sortingCriteriaFieldName.toLowerCase();
@@ -228,6 +232,11 @@ public class OrderTranslator
         {
             sqlBuilder.append(SP).append(sorting.getOrder());
         }
+    }
+
+    private static boolean isSortingBySpaceModificationDate(final TranslationVo vo, final String sortingCriteriaFieldName)
+    {
+        return EntitySortOptions.MODIFICATION_DATE.equals(sortingCriteriaFieldName) && vo.getTableMapper() == TableMapper.SPACE;
     }
 
     private static boolean isSortingByMaterialPermId(final TranslationVo vo, final String sortingCriteriaFieldName)

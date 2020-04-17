@@ -184,6 +184,54 @@ public class SearchSpaceTest extends AbstractTest
         v3api.logout(sessionToken);
     }
 
+    @Test
+    public void testSearchWithSortingByRegistrationDate()
+    {
+        SpaceSearchCriteria criteria = new SpaceSearchCriteria();
+        criteria.withOrOperator();
+        criteria.withId().thatEquals(new SpacePermId("CISD"));
+        criteria.withId().thatEquals(new SpacePermId("TESTGROUP"));
+        criteria.withId().thatEquals(new SpacePermId("TEST-SPACE"));
+
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        SpaceFetchOptions fo = new SpaceFetchOptions();
+
+        fo.sortBy().registrationDate().asc();
+        List<Space> spaces1 = v3api.searchSpaces(sessionToken, criteria, fo).getObjects();
+        assertSpaceCodes(spaces1, "CISD", "TEST-SPACE", "TESTGROUP");
+
+        fo.sortBy().registrationDate().desc();
+        List<Space> spaces2 = v3api.searchSpaces(sessionToken, criteria, fo).getObjects();
+        assertSpaceCodes(spaces2, "TESTGROUP", "TEST-SPACE", "CISD");
+
+        v3api.logout(sessionToken);
+    }
+
+    @Test
+    public void testSearchWithSortingByModificationDate()
+    {
+        SpaceSearchCriteria criteria = new SpaceSearchCriteria();
+        criteria.withOrOperator();
+        criteria.withId().thatEquals(new SpacePermId("CISD"));
+        criteria.withId().thatEquals(new SpacePermId("TESTGROUP"));
+        criteria.withId().thatEquals(new SpacePermId("TEST-SPACE"));
+
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        SpaceFetchOptions fo = new SpaceFetchOptions();
+
+        fo.sortBy().modificationDate().asc();
+        List<Space> spaces1 = v3api.searchSpaces(sessionToken, criteria, fo).getObjects();
+        assertSpaceCodes(spaces1, "CISD", "TEST-SPACE", "TESTGROUP");
+
+        fo.sortBy().modificationDate().desc();
+        List<Space> spaces2 = v3api.searchSpaces(sessionToken, criteria, fo).getObjects();
+        assertSpaceCodes(spaces2, "TESTGROUP", "TEST-SPACE", "CISD");
+
+        v3api.logout(sessionToken);
+    }
+
     @Test(dataProviderClass = ProjectAuthorizationUser.class, dataProvider = ProjectAuthorizationUser.PROVIDER_WITH_ETL)
     public void testSearchWithProjectAuthorization(ProjectAuthorizationUser user)
     {
@@ -201,13 +249,16 @@ public class SearchSpaceTest extends AbstractTest
 
         if (user.isInstanceUser())
         {
+            assertEquals(result.getTotalCount(), 2);
             assertEquals(result.getObjects().size(), 2);
         } else if ((user.isTestSpaceUser() || user.isTestProjectUser()) && !user.isDisabledProjectUser())
         {
+            assertEquals(result.getTotalCount(), 1);
             assertEquals(result.getObjects().size(), 1);
             assertEquals(result.getObjects().get(0).getPermId(), permId2);
         } else
         {
+            assertEquals(result.getTotalCount(), 0);
             assertEquals(result.getObjects().size(), 0);
         }
 
