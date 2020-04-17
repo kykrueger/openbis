@@ -49,7 +49,7 @@ import ch.systemsx.cisd.common.exceptions.EnvironmentFailureException;
  */
 public class Jython27ClassLoader extends ClassLoader
 {
-    private static final List<String> EXCLUDED_PACKAGES_STARTS = Arrays.asList("java", "sun.", "com.sun.");
+    private static final List<String> EXCLUDED_PACKAGES_STARTS = Arrays.asList("java", "jdk.", "sun.", "com.sun.");
     private final URLClassLoader jythonJarClassLoader;
     private final Map<String, Class<?>> cachedClasses = new HashMap<>();
 
