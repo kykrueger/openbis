@@ -25,8 +25,8 @@ beforeEach(() => {
 })
 
 afterEach(() => {
-  expect(facade.loadType).toHaveBeenCalledWith(context.getProps().object.id)
-  expect(facade.loadUsages).toHaveBeenCalledWith(context.getProps().object.id)
+  expect(facade.loadType).toHaveBeenCalledWith(context.getProps().object)
+  expect(facade.loadUsages).toHaveBeenCalledWith(context.getProps().object)
 })
 
 describe('TypeFormController.handleOrderChange', () => {

@@ -4,19 +4,64 @@ import actions from '@src/js/store/actions/actions.js'
 import objectTypes from '@src/js/common/consts/objectType.js'
 import openbis from '@src/js/services/openbis.js'
 
+import TypeFormControllerStrategies from './TypeFormControllerStrategies.js'
+
 export default class TypeFormControllerSave {
   constructor(controller) {
     this.controller = controller
     this.context = controller.context
     this.facade = controller.facade
+    this.object = controller.object
 
     let { type, properties, sections } = this.context.getState()
 
-    this.type = this.prepareType(type)
-    this.properties = this.prepareProperties(type, properties, sections)
+    this.type = this._prepareType(type)
+    this.properties = this._prepareProperties(type, properties, sections)
   }
 
-  prepareValue(value) {
+  async execute() {
+    await this.context.setState({
+      validate: true
+    })
+
+    if (!this.controller.validate(true)) {
+      return
+    }
+
+    await this.context.setState({
+      loading: true
+    })
+
+    const strategy = this._getStrategy()
+    const operations = this._createOperations()
+    const options = new openbis.SynchronousOperationExecutionOptions()
+    options.setExecuteInOrder(true)
+
+    const oldObject = this.object
+    const newObject = {
+      type: strategy.getExistingObjectType(),
+      id: this.type.code
+    }
+
+    return this.facade
+      .executeOperations(operations, options)
+      .then(async () => {
+        this.controller.object = newObject
+        await this.controller.load()
+        await this.context.setState({
+          loading: false
+        })
+        this._dispatchActions(oldObject, newObject)
+      })
+      .catch(error => {
+        this.context.setState({
+          loading: false
+        })
+        this.facade.catch(error)
+      })
+  }
+
+  _prepareValue(value) {
     if (value) {
       if (_.isString(value)) {
         const trimmedValue = value.trim()
@@ -26,7 +71,7 @@ export default class TypeFormControllerSave {
     return value
   }
 
-  prepareType(type) {
+  _prepareType(type) {
     let code = type.code
 
     if (code) {
@@ -38,13 +83,13 @@ export default class TypeFormControllerSave {
         ...type,
         code
       },
-      this.prepareValue
+      this._prepareValue
     )
 
     return newType
   }
 
-  prepareProperties(type, properties, sections) {
+  _prepareProperties(type, properties, sections) {
     const propertiesMap = properties.reduce((map, property) => {
       map[property.id] = property
       return map
@@ -66,7 +111,7 @@ export default class TypeFormControllerSave {
             code,
             section: section.name
           },
-          this.prepareValue
+          this._prepareValue
         )
 
         results.push(newProperty)
@@ -76,26 +121,26 @@ export default class TypeFormControllerSave {
     return results
   }
 
-  getTypePrefix() {
+  _getTypePrefix() {
     return this.type.code + '.'
   }
 
-  hasTypePrefix(property) {
-    return property.code && property.code.startsWith(this.getTypePrefix())
+  _hasTypePrefix(property) {
+    return property.code && property.code.startsWith(this._getTypePrefix())
   }
 
-  addTypePrefix(property) {
-    if (property.code && !this.hasTypePrefix(property)) {
+  _addTypePrefix(property) {
+    if (property.code && !this._hasTypePrefix(property)) {
       return {
         ...property,
-        code: this.getTypePrefix() + property.code
+        code: this._getTypePrefix() + property.code
       }
     } else {
       return property
     }
   }
 
-  hasPropertyChanged(property, path) {
+  _hasPropertyChanged(property, path) {
     const originalValue = property.original
       ? _.get(property.original, path)
       : null
@@ -103,32 +148,32 @@ export default class TypeFormControllerSave {
     return originalValue !== currentValue
   }
 
-  isPropertyTypeUpdateNeeded(property) {
+  _isPropertyTypeUpdateNeeded(property) {
     return (
-      this.hasPropertyChanged(property, 'dataType') ||
-      this.hasPropertyChanged(property, 'vocabulary') ||
-      this.hasPropertyChanged(property, 'materialType') ||
-      this.hasPropertyChanged(property, 'plugin') ||
-      this.hasPropertyChanged(property, 'label') ||
-      this.hasPropertyChanged(property, 'description') ||
-      this.hasPropertyChanged(property, 'schema') ||
-      this.hasPropertyChanged(property, 'transformation')
+      this._hasPropertyChanged(property, 'dataType') ||
+      this._hasPropertyChanged(property, 'vocabulary') ||
+      this._hasPropertyChanged(property, 'materialType') ||
+      this._hasPropertyChanged(property, 'plugin') ||
+      this._hasPropertyChanged(property, 'label') ||
+      this._hasPropertyChanged(property, 'description') ||
+      this._hasPropertyChanged(property, 'schema') ||
+      this._hasPropertyChanged(property, 'transformation')
     )
   }
 
-  isPropertyTypeUpdatePossible(property) {
+  _isPropertyTypeUpdatePossible(property) {
     if (
-      this.hasPropertyChanged(property, 'dataType') ||
-      this.hasPropertyChanged(property, 'vocabulary') ||
-      this.hasPropertyChanged(property, 'materialType') ||
-      this.hasPropertyChanged(property, 'plugin')
+      this._hasPropertyChanged(property, 'dataType') ||
+      this._hasPropertyChanged(property, 'vocabulary') ||
+      this._hasPropertyChanged(property, 'materialType') ||
+      this._hasPropertyChanged(property, 'plugin')
     ) {
       return false
     }
     return true
   }
 
-  createOperations() {
+  _createOperations() {
     const operations = []
     const assignments = []
 
@@ -136,14 +181,14 @@ export default class TypeFormControllerSave {
       this.type.original.properties.forEach(originalProperty => {
         const property = _.find(this.properties, ['id', originalProperty.id])
         if (!property) {
-          if (this.hasTypePrefix(originalProperty)) {
+          if (this._hasTypePrefix(originalProperty)) {
             operations.push(
-              this.deletePropertyAssignmentOperation(originalProperty)
+              this._deletePropertyAssignmentOperation(originalProperty)
             )
-            operations.push(this.deletePropertyTypeOperation(originalProperty))
+            operations.push(this._deletePropertyTypeOperation(originalProperty))
           } else {
             operations.push(
-              this.deletePropertyAssignmentOperation(originalProperty)
+              this._deletePropertyAssignmentOperation(originalProperty)
             )
           }
         }
@@ -152,68 +197,69 @@ export default class TypeFormControllerSave {
 
     this.properties.forEach((property, index) => {
       if (property.original) {
-        if (this.hasTypePrefix(property)) {
-          if (this.isPropertyTypeUpdateNeeded(property)) {
-            if (this.isPropertyTypeUpdatePossible(property)) {
-              operations.push(this.updatePropertyTypeOperation(property))
+        if (this._hasTypePrefix(property)) {
+          if (this._isPropertyTypeUpdateNeeded(property)) {
+            if (this._isPropertyTypeUpdatePossible(property)) {
+              operations.push(this._updatePropertyTypeOperation(property))
             } else {
-              operations.push(this.deletePropertyAssignmentOperation(property))
-              operations.push(this.deletePropertyTypeOperation(property))
-              operations.push(this.createPropertyTypeOperation(property))
+              operations.push(this._deletePropertyAssignmentOperation(property))
+              operations.push(this._deletePropertyTypeOperation(property))
+              operations.push(this._createPropertyTypeOperation(property))
             }
           }
-          assignments.push(this.propertyAssignmentCreation(property, index))
+          assignments.push(this._propertyAssignmentCreation(property, index))
         } else {
-          if (this.isPropertyTypeUpdateNeeded(property)) {
-            const propertyWithPrefix = this.addTypePrefix(property)
-            operations.push(this.deletePropertyAssignmentOperation(property))
+          if (this._isPropertyTypeUpdateNeeded(property)) {
+            const propertyWithPrefix = this._addTypePrefix(property)
+            operations.push(this._deletePropertyAssignmentOperation(property))
             operations.push(
-              this.createPropertyTypeOperation(propertyWithPrefix)
+              this._createPropertyTypeOperation(propertyWithPrefix)
             )
             assignments.push(
-              this.propertyAssignmentCreation(propertyWithPrefix, index)
+              this._propertyAssignmentCreation(propertyWithPrefix, index)
             )
           } else {
-            assignments.push(this.propertyAssignmentCreation(property, index))
+            assignments.push(this._propertyAssignmentCreation(property, index))
           }
         }
       } else {
-        const propertyWithPrefix = this.addTypePrefix(property)
-        operations.push(this.createPropertyTypeOperation(propertyWithPrefix))
+        const propertyWithPrefix = this._addTypePrefix(property)
+        operations.push(this._createPropertyTypeOperation(propertyWithPrefix))
         assignments.push(
-          this.propertyAssignmentCreation(propertyWithPrefix, index)
+          this._propertyAssignmentCreation(propertyWithPrefix, index)
         )
       }
     })
 
     if (this.type.original) {
-      operations.push(this.updateTypeOperation(assignments))
+      operations.push(this._updateTypeOperation(assignments))
     } else {
-      operations.push(this.createTypeOperation(assignments))
+      operations.push(this._createTypeOperation(assignments))
     }
 
     return operations
   }
 
-  deletePropertyAssignmentOperation(property) {
+  _deletePropertyAssignmentOperation(property) {
+    const strategy = this._getStrategy()
     const assignmentId = new openbis.PropertyAssignmentPermId(
-      new openbis.EntityTypePermId(this.type.code, openbis.EntityKind.SAMPLE),
+      new openbis.EntityTypePermId(this.type.code, strategy.getEntityKind()),
       new openbis.PropertyTypePermId(property.code)
     )
 
-    const update = new openbis.SampleTypeUpdate()
+    const update = strategy.createTypeUpdate()
     update.setTypeId(
-      new openbis.EntityTypePermId(this.type.code, openbis.EntityKind.SAMPLE)
+      new openbis.EntityTypePermId(this.type.code, strategy.getEntityKind())
     )
     update.getPropertyAssignments().remove([assignmentId])
     update
       .getPropertyAssignments()
       .setForceRemovingAssignments(property.usages > 0)
 
-    return new openbis.UpdateSampleTypesOperation([update])
+    return strategy.createTypeUpdateOperation([update])
   }
 
-  createPropertyTypeOperation(property) {
+  _createPropertyTypeOperation(property) {
     const creation = new openbis.PropertyTypeCreation()
     creation.setCode(property.code)
     creation.setLabel(property.label)
@@ -244,7 +290,7 @@ export default class TypeFormControllerSave {
     return new openbis.CreatePropertyTypesOperation([creation])
   }
 
-  updatePropertyTypeOperation(property) {
+  _updatePropertyTypeOperation(property) {
     const update = new openbis.PropertyTypeUpdate()
     if (property.code) {
       update.setTypeId(new openbis.PropertyTypePermId(property.code))
@@ -256,14 +302,14 @@ export default class TypeFormControllerSave {
     return new openbis.UpdatePropertyTypesOperation([update])
   }
 
-  deletePropertyTypeOperation(property) {
+  _deletePropertyTypeOperation(property) {
     const id = new openbis.PropertyTypePermId(property.code)
     const options = new openbis.PropertyTypeDeletionOptions()
     options.setReason('deleted via ng_ui')
     return new openbis.DeletePropertyTypesOperation([id], options)
   }
 
-  propertyAssignmentCreation(property, index) {
+  _propertyAssignmentCreation(property, index) {
     let creation = new openbis.PropertyAssignmentCreation()
     creation.setOrdinal(index + 1)
     creation.setMandatory(property.mandatory)
@@ -285,50 +331,41 @@ export default class TypeFormControllerSave {
     return creation
   }
 
-  createTypeOperation(assignments) {
-    const creation = new openbis.SampleTypeCreation()
+  _createTypeOperation(assignments) {
+    const strategy = this._getStrategy()
+    const creation = strategy.createTypeCreation()
     creation.setCode(this.type.code)
     creation.setDescription(this.type.description)
-    creation.setListable(this.type.listable)
-    creation.setShowContainer(this.type.showContainer)
-    creation.setShowParents(this.type.showParents)
-    creation.setShowParentMetadata(this.type.showParentMetadata)
-    creation.setAutoGeneratedCode(this.type.autoGeneratedCode)
-    creation.setGeneratedCodePrefix(this.type.generatedCodePrefix)
-    creation.setSubcodeUnique(this.type.subcodeUnique)
     creation.setValidationPluginId(
       this.type.validationPlugin
         ? new openbis.PluginPermId(this.type.validationPlugin)
         : null
     )
     creation.setPropertyAssignments(assignments.reverse())
-    return new openbis.CreateSampleTypesOperation([creation])
+    strategy.setTypeAttributes(creation, this.type)
+    return strategy.createTypeCreateOperation([creation])
   }
 
-  updateTypeOperation(assignments) {
-    const update = new openbis.SampleTypeUpdate()
+  _updateTypeOperation(assignments) {
+    const strategy = this._getStrategy()
+    const update = strategy.createTypeUpdate()
     update.setTypeId(
-      new openbis.EntityTypePermId(this.type.code, openbis.EntityKind.SAMPLE)
+      new openbis.EntityTypePermId(this.type.code, strategy.getEntityKind())
     )
     update.setDescription(this.type.description)
-    update.setListable(this.type.listable)
-    update.setShowContainer(this.type.showContainer)
-    update.setShowParents(this.type.showParents)
-    update.setShowParentMetadata(this.type.showParentMetadata)
-    update.setAutoGeneratedCode(this.type.autoGeneratedCode)
-    update.setGeneratedCodePrefix(this.type.generatedCodePrefix)
-    update.setSubcodeUnique(this.type.subcodeUnique)
     update.setValidationPluginId(
       this.type.validationPlugin
         ? new openbis.PluginPermId(this.type.validationPlugin)
         : null
     )
     update.getPropertyAssignments().set(assignments.reverse())
-    return new openbis.UpdateSampleTypesOperation([update])
+    strategy.setTypeAttributes(update, this.type)
+    return strategy.createTypeUpdateOperation([update])
   }
 
-  dispatchActions(oldObject, newObject) {
-    if (oldObject.type === objectTypes.NEW_OBJECT_TYPE) {
+  _dispatchActions(oldObject, newObject) {
+    const strategy = this._getStrategy()
+    if (oldObject.type === strategy.getNewObjectType()) {
       this.context.dispatch(
         actions.objectCreate(
           pages.TYPES,
@@ -338,51 +375,159 @@ export default class TypeFormControllerSave {
           newObject.id
         )
       )
-    } else if (oldObject.type === objectTypes.OBJECT_TYPE) {
+    } else if (oldObject.type === strategy.getExistingObjectType()) {
       this.context.dispatch(
         actions.objectUpdate(pages.TYPES, oldObject.type, oldObject.id)
       )
     }
   }
 
-  async execute() {
-    await this.context.setState({
-      validate: true
-    })
-
-    if (!this.controller.validate(true)) {
-      return
-    }
-
-    await this.context.setState({
-      loading: true
-    })
-
-    const operations = this.createOperations()
-    const options = new openbis.SynchronousOperationExecutionOptions()
-    options.setExecuteInOrder(true)
-
-    const oldObject = this.controller.object
-    const newObject = {
-      type: objectTypes.OBJECT_TYPE,
-      id: this.type.code
-    }
-
-    return this.facade
-      .executeOperations(operations, options)
-      .then(async () => {
-        this.controller.object = newObject
-        await this.controller.load()
-        await this.context.setState({
-          loading: false
-        })
-        this.dispatchActions(oldObject, newObject)
-      })
-      .catch(error => {
-        this.context.setState({
-          loading: false
-        })
-        this.facade.catch(error)
-      })
+  _getStrategy() {
+    const strategies = new TypeFormControllerStrategies()
+    strategies.setObjectTypeStrategy(new ObjectTypeStrategy())
+    strategies.setCollectionTypeStrategy(new CollectionTypeStrategy())
+    strategies.setDataSetTypeStrategy(new DataSetTypeStrategy())
+    strategies.setMaterialTypeStrategy(new MaterialTypeStrategy())
+    return strategies.getStrategy(this.object.type)
   }
+}
+
+class ObjectTypeStrategy {
+  getEntityKind() {
+    return openbis.EntityKind.SAMPLE
+  }
+
+  getNewObjectType() {
+    return objectTypes.NEW_OBJECT_TYPE
+  }
+
+  getExistingObjectType() {
+    return objectTypes.OBJECT_TYPE
+  }
+
+  createTypeCreation() {
+    return new openbis.SampleTypeCreation()
+  }
+
+  createTypeCreateOperation(creations) {
+    return new openbis.CreateSampleTypesOperation(creations)
+  }
+
+  createTypeUpdate() {
+    return new openbis.SampleTypeUpdate()
+  }
+
+  createTypeUpdateOperation(updates) {
+    return new openbis.UpdateSampleTypesOperation(updates)
+  }
+
+  setTypeAttributes(object, type) {
+    object.setListable(type.listable)
+    object.setShowContainer(type.showContainer)
+    object.setShowParents(type.showParents)
+    object.setShowParentMetadata(type.showParentMetadata)
+    object.setAutoGeneratedCode(type.autoGeneratedCode)
+    object.setGeneratedCodePrefix(type.generatedCodePrefix)
+    object.setSubcodeUnique(type.subcodeUnique)
+  }
+}
+
+class CollectionTypeStrategy {
+  getEntityKind() {
+    return openbis.EntityKind.EXPERIMENT
+  }
+
+  getNewObjectType() {
+    return objectTypes.NEW_COLLECTION_TYPE
+  }
+
+  getExistingObjectType() {
+    return objectTypes.COLLECTION_TYPE
+  }
+
+  createTypeCreation() {
+    return new openbis.ExperimentTypeCreation()
+  }
+
+  createTypeCreateOperation(creations) {
+    return new openbis.CreateExperimentTypesOperation(creations)
+  }
+
+  createTypeUpdate() {
+    return new openbis.ExperimentTypeUpdate()
+  }
+
+  createTypeUpdateOperation(updates) {
+    return new openbis.UpdateExperimentTypesOperation(updates)
+  }
+
+  setTypeAttributes() {}
+}
+
+class DataSetTypeStrategy {
+  getEntityKind() {
+    return openbis.EntityKind.DATA_SET
+  }
+
+  getNewObjectType() {
+    return objectTypes.NEW_DATA_SET_TYPE
+  }
+
+  getExistingObjectType() {
+    return objectTypes.DATA_SET_TYPE
+  }
+
+  createTypeCreation() {
+    return new openbis.DataSetTypeCreation()
+  }
+
+  createTypeCreateOperation(creations) {
+    return new openbis.CreateDataSetTypesOperation(creations)
+  }
+
+  createTypeUpdate() {
+    return new openbis.DataSetTypeUpdate()
+  }
+
+  createTypeUpdateOperation(updates) {
+    return new openbis.UpdateDataSetTypesOperation(updates)
+  }
+
+  setTypeAttributes(object, type) {
+    object.setMainDataSetPattern(type.mainDataSetPattern)
+    object.setMainDataSetPath(type.mainDataSetPath)
+    object.setDisallowDeletion(type.disallowDeletion)
+  }
+}
+
+class MaterialTypeStrategy {
+  getEntityKind() {
+    return openbis.EntityKind.MATERIAL
+  }
+
+  getNewObjectType() {
+    return objectTypes.NEW_MATERIAL_TYPE
+  }
+
+  getExistingObjectType() {
+    return objectTypes.MATERIAL_TYPE
+  }
+
+  createTypeCreation() {
+    return new openbis.MaterialTypeCreation()
+  }
+
+  createTypeCreateOperation(creations) {
+    return new openbis.CreateMaterialTypesOperation(creations)
+  }
+
+  createTypeUpdate() {
+    return new openbis.MaterialTypeUpdate()
+  }
+
+  createTypeUpdateOperation(updates) {
+    return new openbis.UpdateMaterialTypesOperation(updates)
+  }
+
+  setTypeAttributes() {}
 }

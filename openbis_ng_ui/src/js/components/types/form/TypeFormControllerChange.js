@@ -6,17 +6,17 @@ export default class TypeFormControllerChange {
   execute(type, params) {
     if (type === 'type') {
       const { field, value } = params
-      this.handleChangeType(field, value)
+      this._handleChangeType(field, value)
     } else if (type === 'section') {
       const { id, field, value } = params
-      this.handleChangeSection(id, field, value)
+      this._handleChangeSection(id, field, value)
     } else if (type === 'property') {
       const { id, field, value } = params
-      this.handleChangeProperty(id, field, value)
+      this._handleChangeProperty(id, field, value)
     }
   }
 
-  handleChangeType(field, value) {
+  _handleChangeType(field, value) {
     this.context.setState(state => ({
       ...state,
       type: {
@@ -26,7 +26,7 @@ export default class TypeFormControllerChange {
     }))
   }
 
-  handleChangeSection(id, field, value) {
+  _handleChangeSection(id, field, value) {
     let { sections } = this.context.getState()
     let newSections = Array.from(sections)
 
@@ -44,7 +44,7 @@ export default class TypeFormControllerChange {
     }))
   }
 
-  handleChangeProperty(id, field, value) {
+  _handleChangeProperty(id, field, value) {
     let { properties } = this.context.getState()
     let newProperties = Array.from(properties)
 

@@ -8,10 +8,10 @@ export default class TypeFormControllerOrderChange {
   execute(type, params) {
     if (type === 'section') {
       let { fromIndex, toIndex } = params
-      this.handleOrderChangeSection(fromIndex, toIndex)
+      this._handleOrderChangeSection(fromIndex, toIndex)
     } else if (type === 'property') {
       let { fromSectionId, toSectionId, fromIndex, toIndex } = params
-      this.handleOrderChangeProperty(
+      this._handleOrderChangeProperty(
         fromSectionId,
         fromIndex,
         toSectionId,
@@ -20,7 +20,7 @@ export default class TypeFormControllerOrderChange {
     }
   }
 
-  handleOrderChangeSection(fromIndex, toIndex) {
+  _handleOrderChangeSection(fromIndex, toIndex) {
     let { sections } = this.context.getState()
     let newSections = Array.from(sections)
     let [section] = newSections.splice(fromIndex, 1)
@@ -31,7 +31,7 @@ export default class TypeFormControllerOrderChange {
     }))
   }
 
-  handleOrderChangeProperty(fromSectionId, fromIndex, toSectionId, toIndex) {
+  _handleOrderChangeProperty(fromSectionId, fromIndex, toSectionId, toIndex) {
     if (fromSectionId === toSectionId) {
       let { sections } = this.context.getState()
       let sectionIndex = _.findIndex(sections, ['id', fromSectionId])

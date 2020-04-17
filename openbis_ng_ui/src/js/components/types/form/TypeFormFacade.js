@@ -1,9 +1,12 @@
 import openbis from '@src/js/services/openbis.js'
 
+import TypeFormControllerStrategies from './TypeFormControllerStrategies.js'
+
 export default class TypeFormFacade {
-  loadType(typeId) {
-    const id = new openbis.EntityTypePermId(typeId)
-    const fo = new openbis.SampleTypeFetchOptions()
+  loadType(object) {
+    const strategy = this._getStrategy(object)
+    const id = new openbis.EntityTypePermId(object.id)
+    const fo = strategy.createTypeFetchOptions()
     fo.withValidationPlugin()
     fo.withPropertyAssignments().withPlugin()
     fo.withPropertyAssignments()
@@ -16,46 +19,48 @@ export default class TypeFormFacade {
       .sortBy()
       .ordinal()
 
-    return openbis.getSampleTypes([id], fo).then(map => {
-      return map[typeId]
+    return strategy.getTypes([id], fo).then(map => {
+      return map[object.id]
     })
   }
 
-  loadUsages(typeId) {
+  loadUsages(object) {
+    const strategy = this._getStrategy(object)
+
     function createTypeUsedOperation(typeId) {
-      const criteria = new openbis.SampleSearchCriteria()
+      const criteria = strategy.createEntitySearchCriteria()
       criteria
         .withType()
         .withCode()
         .thatEquals(typeId)
 
-      const fo = new openbis.SampleFetchOptions()
+      const fo = strategy.createEntityFetchOptions()
       fo.count(0)
 
-      return new openbis.SearchSamplesOperation(criteria, fo)
+      return strategy.createEntitySearchOperation(criteria, fo)
     }
 
     function createPropertyUsedOperation(propertyTypeCode) {
-      const criteria = new openbis.SampleSearchCriteria()
+      const criteria = strategy.createEntitySearchCriteria()
       criteria.withProperty(propertyTypeCode)
 
-      const fo = new openbis.SampleFetchOptions()
+      const fo = strategy.createEntityFetchOptions()
       fo.count(0)
 
-      return new openbis.SearchSamplesOperation(criteria, fo)
+      return strategy.createEntitySearchOperation(criteria, fo)
     }
 
-    const id = new openbis.EntityTypePermId(typeId)
-    const fo = new openbis.SampleTypeFetchOptions()
+    const id = new openbis.EntityTypePermId(object.id)
+    const fo = strategy.createTypeFetchOptions()
     fo.withPropertyAssignments().withPropertyType()
 
-    return openbis.getSampleTypes([id], fo).then(map => {
-      const type = map[typeId]
+    return strategy.getTypes([id], fo).then(map => {
+      const type = map[object.id]
 
       if (type) {
         const operations = []
 
-        operations.push(createTypeUsedOperation(typeId))
+        operations.push(createTypeUsedOperation(object.id))
         type.getPropertyAssignments().forEach(assignment => {
           operations.push(
             createPropertyUsedOperation(assignment.getPropertyType().getCode())
@@ -142,5 +147,86 @@ export default class TypeFormFacade {
 
   catch(error) {
     return openbis.catch(error)
+  }
+
+  _getStrategy(object) {
+    const strategies = new TypeFormControllerStrategies()
+    strategies.setObjectTypeStrategy(new ObjectTypeStrategy())
+    strategies.setCollectionTypeStrategy(new CollectionTypeStrategy())
+    strategies.setDataSetTypeStrategy(new DataSetTypeStrategy())
+    strategies.setMaterialTypeStrategy(new MaterialTypeStrategy())
+    return strategies.getStrategy(object.type)
+  }
+}
+
+class ObjectTypeStrategy {
+  createTypeFetchOptions() {
+    return new openbis.SampleTypeFetchOptions()
+  }
+  createEntityFetchOptions() {
+    return new openbis.SampleFetchOptions()
+  }
+  createEntitySearchCriteria() {
+    return new openbis.SampleSearchCriteria()
+  }
+  createEntitySearchOperation(criteria, fo) {
+    return new openbis.SearchSamplesOperation(criteria, fo)
+  }
+  getTypes(ids, fo) {
+    return openbis.getSampleTypes(ids, fo)
+  }
+}
+
+class CollectionTypeStrategy {
+  createTypeFetchOptions() {
+    return new openbis.ExperimentTypeFetchOptions()
+  }
+  createEntityFetchOptions() {
+    return new openbis.ExperimentFetchOptions()
+  }
+  createEntitySearchCriteria() {
+    return new openbis.ExperimentSearchCriteria()
+  }
+  createEntitySearchOperation(criteria, fo) {
+    return new openbis.SearchExperimentsOperation(criteria, fo)
+  }
+  getTypes(ids, fo) {
+    return openbis.getExperimentTypes(ids, fo)
+  }
+}
+
+class DataSetTypeStrategy {
+  createTypeFetchOptions() {
+    return new openbis.DataSetTypeFetchOptions()
+  }
+  createEntityFetchOptions() {
+    return new openbis.DataSetFetchOptions()
+  }
+  createEntitySearchCriteria() {
+    return new openbis.DataSetSearchCriteria()
+  }
+  createEntitySearchOperation(criteria, fo) {
+    return new openbis.SearchDataSetsOperation(criteria, fo)
+  }
+  getTypes(ids, fo) {
+    return openbis.getDataSetTypes(ids, fo)
+  }
+}
+
+class MaterialTypeStrategy {
+  createTypeFetchOptions() {
+    return new openbis.MaterialTypeFetchOptions()
+  }
+  createEntityFetchOptions() {
+    return new openbis.MaterialFetchOptions()
+  }
+  createEntitySearchCriteria() {
+    return new openbis.MaterialSearchCriteria()
+  }
+  createEntitySearchOperation(criteria, fo) {
+    return new openbis.SearchMaterialsOperation(criteria, fo)
+  }
+  getTypes(ids, fo) {
+    return openbis.getMaterialTypes(ids, fo)
   }
 }

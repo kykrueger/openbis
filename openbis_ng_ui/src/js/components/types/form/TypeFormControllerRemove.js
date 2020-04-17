@@ -8,9 +8,9 @@ export default class TypeFormControllerRemove {
   executeRemove(confirmed = false) {
     const { selection } = this.context.getState()
     if (selection.type === 'section') {
-      this.handleRemoveSection(selection.params.id, confirmed)
+      this._handleRemoveSection(selection.params.id, confirmed)
     } else if (selection.type === 'property') {
-      this.handleRemoveProperty(selection.params.id, confirmed)
+      this._handleRemoveProperty(selection.params.id, confirmed)
     }
   }
 
@@ -27,7 +27,7 @@ export default class TypeFormControllerRemove {
     }
   }
 
-  handleRemoveSection(sectionId, confirmed) {
+  _handleRemoveSection(sectionId, confirmed) {
     const { sections, properties } = this.context.getState()
 
     const sectionIndex = sections.findIndex(section => section.id === sectionId)
@@ -37,7 +37,7 @@ export default class TypeFormControllerRemove {
       this.context.setState({
         removeSectionDialogOpen: false
       })
-    } else if (this.isSectionUsed(section)) {
+    } else if (this._isSectionUsed(section)) {
       this.context.setState({
         removeSectionDialogOpen: true
       })
@@ -61,7 +61,7 @@ export default class TypeFormControllerRemove {
     }))
   }
 
-  handleRemoveProperty(propertyId, confirmed) {
+  _handleRemoveProperty(propertyId, confirmed) {
     const { sections, properties } = this.context.getState()
 
     const propertyIndex = properties.findIndex(
@@ -73,7 +73,7 @@ export default class TypeFormControllerRemove {
       this.context.setState({
         removePropertyDialogOpen: false
       })
-    } else if (this.isPropertyUsed(property)) {
+    } else if (this._isPropertyUsed(property)) {
       this.context.setState({
         removePropertyDialogOpen: true
       })
@@ -104,7 +104,7 @@ export default class TypeFormControllerRemove {
     }))
   }
 
-  isSectionUsed(section) {
+  _isSectionUsed(section) {
     const { properties } = this.context.getState()
 
     const propertiesMap = properties.reduce((map, property) => {
@@ -114,11 +114,11 @@ export default class TypeFormControllerRemove {
 
     return _.some(section.properties, propertyId => {
       const property = propertiesMap[propertyId]
-      return this.isPropertyUsed(property)
+      return this._isPropertyUsed(property)
     })
   }
 
-  isPropertyUsed(property) {
+  _isPropertyUsed(property) {
     return _.isFinite(property.usages) && property.usages !== 0
   }
 }

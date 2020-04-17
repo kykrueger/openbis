@@ -1,9 +1,14 @@
 import _ from 'lodash'
+import FormValidator from '@src/js/components/common/form/FormValidator.js'
 import openbis from '@src/js/services/openbis.js'
+
+import TypeFormControllerStrategies from './TypeFormControllerStrategies.js'
 
 export default class TypeFormControllerValidate {
   constructor(controller) {
+    this.controller = controller
     this.context = controller.context
+    this.object = controller.object
   }
 
   execute(autofocus) {
@@ -13,8 +18,8 @@ export default class TypeFormControllerValidate {
       return true
     }
 
-    const [typeErrors, typeErrorsMap] = this.validateType(type)
-    const [propertiesErrors, propertiesErrorsMap] = this.validateProperties(
+    const [typeErrors, typeErrorsMap] = this._validateType(type)
+    const [propertiesErrors, propertiesErrorsMap] = this._validateProperties(
       type,
       properties
     )
@@ -65,16 +70,12 @@ export default class TypeFormControllerValidate {
     return _.isEmpty(typeErrors) && _.isEmpty(propertiesErrors)
   }
 
-  validateType(type) {
+  _validateType(type) {
+    const strategy = this._getStrategy()
     const errors = []
 
-    this.validateNotEmpty('Code', 'code', type.code, errors)
-    this.validateNotEmpty(
-      'Generated code prefix',
-      'generatedCodePrefix',
-      type.generatedCodePrefix,
-      errors
-    )
+    FormValidator.validateNotEmpty('Code', 'code', type.code, errors)
+    strategy.validateTypeAttributes(type, errors)
 
     const errorsMap = errors.reduce((map, error) => {
       map[error.field] = error.message
@@ -84,12 +85,12 @@ export default class TypeFormControllerValidate {
     return [errors, errorsMap]
   }
 
-  validateProperties(type, properties) {
+  _validateProperties(type, properties) {
     const errors = []
     const errorsMap = {}
 
     properties.forEach(property => {
-      const propertyErrors = this.validateProperty(type, property)
+      const propertyErrors = this._validateProperty(type, property)
 
       if (!_.isEmpty(propertyErrors)) {
         errors.push({
@@ -107,28 +108,33 @@ export default class TypeFormControllerValidate {
     return [errors, errorsMap]
   }
 
-  validateProperty(type, property) {
+  _validateProperty(type, property) {
     const errors = []
 
-    this.validateNotEmpty('Code', 'code', property.code, errors)
-    this.validateNotEmpty('Label', 'label', property.label, errors)
-    this.validateNotEmpty(
+    FormValidator.validateNotEmpty('Code', 'code', property.code, errors)
+    FormValidator.validateNotEmpty('Label', 'label', property.label, errors)
+    FormValidator.validateNotEmpty(
       'Description',
       'description',
       property.description,
       errors
     )
-    this.validateNotEmpty('Data Type', 'dataType', property.dataType, errors)
+    FormValidator.validateNotEmpty(
+      'Data Type',
+      'dataType',
+      property.dataType,
+      errors
+    )
 
     if (property.dataType === openbis.DataType.CONTROLLEDVOCABULARY) {
-      this.validateNotEmpty(
+      FormValidator.validateNotEmpty(
         'Vocabulary',
         'vocabulary',
         property.vocabulary,
         errors
       )
     } else if (property.dataType === openbis.DataType.MATERIAL) {
-      this.validateNotEmpty(
+      FormValidator.validateNotEmpty(
         'Material Type',
         'materialType',
         property.materialType,
@@ -148,7 +154,7 @@ export default class TypeFormControllerValidate {
       propertyIsMandatory &&
       (propertyIsNew || !propertyWasMandatory)
     ) {
-      this.validateNotEmpty(
+      FormValidator.validateNotEmpty(
         'Initial Value',
         'initialValueForExistingEntities',
         property.initialValueForExistingEntities,
@@ -159,12 +165,35 @@ export default class TypeFormControllerValidate {
     return errors
   }
 
-  validateNotEmpty(label, name, value, errors) {
-    if (value === null || value === undefined || value.trim() === '') {
-      errors.push({
-        field: name,
-        message: label + ' cannot be empty'
-      })
-    }
+  _getStrategy() {
+    const strategies = new TypeFormControllerStrategies()
+    strategies.setObjectTypeStrategy(new ObjectTypeStrategy())
+    strategies.setCollectionTypeStrategy(new CollectionTypeStrategy())
+    strategies.setDataSetTypeStrategy(new DataSetTypeStrategy())
+    strategies.setMaterialTypeStrategy(new MaterialTypeStrategy())
+    return strategies.getStrategy(this.object.type)
   }
+}
+
+class ObjectTypeStrategy {
+  validateTypeAttributes(type, errors) {
+    FormValidator.validateNotEmpty(
+      'Generated code prefix',
+      'generatedCodePrefix',
+      type.generatedCodePrefix,
+      errors
+    )
+  }
+}
+
+class CollectionTypeStrategy {
+  validateTypeAttributes() {}
+}
+
+class DataSetTypeStrategy {
+  validateTypeAttributes() {}
+}
+
+class MaterialTypeStrategy {
+  validateTypeAttributes() {}
 }
