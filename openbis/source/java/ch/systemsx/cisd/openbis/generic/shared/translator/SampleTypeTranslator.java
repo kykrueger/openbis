@@ -44,6 +44,10 @@ public class SampleTypeTranslator
     public static SampleType translate(final SampleTypePE sampleTypePE,
             Map<MaterialTypePE, MaterialType> materialTypeCache, Map<PropertyTypePE, PropertyType> cacheOrNull)
     {
+        if (sampleTypePE == null)
+        {
+            return null;
+        }
         final SampleType result = new SampleType();
         result.setId(HibernateUtils.getId(sampleTypePE));
         result.setCode(sampleTypePE.getCode());

@@ -52,6 +52,7 @@ public final class PropertyValidator implements IPropertyValueValidator
         map.put(DataTypeCode.CONTROLLEDVOCABULARY, new ControlledVocabularyValidator());
         map.put(DataTypeCode.MATERIAL, new MaterialValidator());
         map.put(DataTypeCode.XML, new XmlValidator());
+        // TODO add validator for SAMPLE
         return map;
     }
 

@@ -34,6 +34,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IPropertyTypeUpdates;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyType;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Vocabulary;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePE;
@@ -43,6 +44,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.EventType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PropertyTypePE;
+import ch.systemsx.cisd.openbis.generic.shared.dto.SampleTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.Session;
 import ch.systemsx.cisd.openbis.generic.shared.dto.VocabularyPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
@@ -82,6 +84,7 @@ public final class PropertyTypeBO extends VocabularyBO implements IPropertyTypeB
         propertyTypePE.setType(dataTypePE);
         MaterialTypePE materialType = tryGetMaterialType(propertyType.getMaterialType());
         propertyTypePE.setMaterialType(materialType);
+        propertyTypePE.setSampleType(tryGetSampleType(propertyType.getSampleType()));
         propertyTypePE.setRegistrator(findPerson());
         propertyTypePE.setManagedInternally(propertyType.isManagedInternally());
         propertyTypePE.setInternalNamespace(propertyType.isInternalNamespace());
@@ -138,6 +141,20 @@ public final class PropertyTypeBO extends VocabularyBO implements IPropertyTypeB
         }
     }
 
+    private SampleTypePE tryGetSampleType(SampleType sampleType)
+    {
+        if (sampleType != null)
+        {
+            EntityTypePE entityType =
+                    getEntityTypeDAO(EntityKind.SAMPLE).tryToFindEntityTypeByCode(
+                            sampleType.getCode());
+            return (SampleTypePE) entityType;
+        } else
+        {
+            return null;
+        }
+    }
+    
     private DataTypePE getDataTypeCode(final DataType dataType)
     {
         DataTypePE dataTypePE = null;

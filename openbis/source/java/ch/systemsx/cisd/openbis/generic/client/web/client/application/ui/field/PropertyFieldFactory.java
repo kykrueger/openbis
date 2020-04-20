@@ -79,6 +79,8 @@ public class PropertyFieldFactory
             case MATERIAL:
                 return wrapUnaware(MaterialChooserField.create(label, isMandatory, pt
                         .getMaterialType(), originalRawValue, viewContext));
+            case SAMPLE:
+                return wrapUnaware(setValue(new VarcharField(label, isMandatory), originalRawValue));
             case HYPERLINK:
                 return wrapUnaware(setValue(new HyperlinkField(label, isMandatory),
                         originalRawValue));

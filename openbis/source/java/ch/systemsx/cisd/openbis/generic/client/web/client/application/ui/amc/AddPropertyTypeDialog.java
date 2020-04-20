@@ -138,6 +138,8 @@ public class AddPropertyTypeDialog extends AbstractRegistrationDialog
 
     private MaterialTypeSelectionWidget materialTypeSelectionWidget;
 
+    private SampleTypeSelectionWidget sampleTypeSelectionWidget;
+
     private XmlField xmlSchemaField;
 
     private XmlField xslTransformationsField;
@@ -417,6 +419,9 @@ public class AddPropertyTypeDialog extends AbstractRegistrationDialog
         addField(getMaterialTypeSelectionWidget());
         getMaterialTypeSelectionWidget().clear();
         getMaterialTypeSelectionWidget().setVisible(false);
+        addField(getSampleTypeSelectionWidget());
+        getSampleTypeSelectionWidget().clear();
+        getSampleTypeSelectionWidget().setVisible(false);
         addField(getXmlSchemaField());
         getXmlSchemaField().clear();
         getXmlSchemaField().setVisible(false);
@@ -536,6 +541,9 @@ public class AddPropertyTypeDialog extends AbstractRegistrationDialog
             {
                 case MATERIAL:
                     propertyType.setMaterialType(getMaterialTypeSelectionWidget().tryGetSelected());
+                    break;
+                case SAMPLE:
+                    propertyType.setSampleType(getSampleTypeSelectionWidget().tryGetSelected());
                     break;
                 case CONTROLLEDVOCABULARY:
                     propertyType.setVocabulary((Vocabulary) GWTUtils.tryGetSingleSelected(getVocabularySelectionWidget()));
@@ -839,8 +847,8 @@ public class AddPropertyTypeDialog extends AbstractRegistrationDialog
                 && propertyType.getDataType().getCode() != DataTypeCode.CONTROLLEDVOCABULARY
                 ||
                 propertyType != null && propertyType.getDataType() != null
-                && propertyType.getDataType().getCode() == DataTypeCode.CONTROLLEDVOCABULARY
-                && propertyType.getVocabulary() != null)
+                        && propertyType.getDataType().getCode() == DataTypeCode.CONTROLLEDVOCABULARY
+                        && propertyType.getVocabulary() != null)
         {
             if (isExitingEntity && getMandatoryCheckbox().getValue())
             {
@@ -1182,7 +1190,10 @@ public class AddPropertyTypeDialog extends AbstractRegistrationDialog
                                             showFields(vocabularySelectionWidget);
                                             break;
                                         case MATERIAL:
-                                            showFields(materialTypeSelectionWidget);
+                                            showFields(getMaterialTypeSelectionWidget());
+                                            break;
+                                        case SAMPLE:
+                                            showFields(getSampleTypeSelectionWidget());
                                             break;
                                         case XML:
                                             showFields(xmlSchemaField, xslTransformationsField);
@@ -1204,8 +1215,8 @@ public class AddPropertyTypeDialog extends AbstractRegistrationDialog
                             private void hideDataTypeRelatedFields()
                             {
                                 FieldUtil.setVisibility(false, vocabularySelectionWidget,
-                                        materialTypeSelectionWidget, xmlSchemaField,
-                                        xslTransformationsField);
+                                        getMaterialTypeSelectionWidget(), getSampleTypeSelectionWidget(),
+                                        xmlSchemaField, xslTransformationsField);
                             }
                         };
 
@@ -1253,6 +1264,24 @@ public class AddPropertyTypeDialog extends AbstractRegistrationDialog
             FieldUtil.markAsMandatory(materialTypeSelectionWidget);
         }
         return materialTypeSelectionWidget;
+    }
+
+    private SampleTypeSelectionWidget getSampleTypeSelectionWidget()
+    {
+        if (sampleTypeSelectionWidget == null)
+        {
+            sampleTypeSelectionWidget = new SampleTypeSelectionWidget(viewContext, ID, false, true, false, null,
+                    SampleTypeDisplayID.SAMPLE_QUERY);
+            sampleTypeSelectionWidget.addListener(Events.SelectionChange, new Listener<BaseEvent>()
+                {
+                    @Override
+                    public void handleEvent(BaseEvent be)
+                    {
+                        updatePropertyTypeRelatedFields();
+                    }
+                });
+        }
+        return sampleTypeSelectionWidget;
     }
 
     private final XmlField getXmlSchemaField()
