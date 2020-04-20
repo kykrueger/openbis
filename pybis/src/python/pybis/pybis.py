@@ -24,7 +24,7 @@ import json
 import re
 from urllib.parse import urlparse, urljoin, quote
 import zlib
-from collections import namedtuple
+from collections import namedtuple, defaultdict
 from texttable import Texttable
 from tabulate import tabulate
 
@@ -1938,6 +1938,7 @@ class Openbis:
         response = resp['objects']
         parse_jackson(response)
 
+
         default_attrs = ['identifier', 'permId', 'type',
                  'registrator', 'registrationDate', 'modifier', 'modificationDate']
         display_attrs = default_attrs + attrs
@@ -3180,11 +3181,12 @@ class Openbis:
         )
     get_object_types = get_sample_types # Alias
 
-    def get_sample_type(self, type, only_data=False):
+    def get_sample_type(self, type, only_data=False, with_vocabulary=False):
         return self.get_entity_type(
             entity     = 'sampleType',
             identifier = type,
             cls        = SampleType,
+            with_vocabulary = with_vocabulary,
             only_data  = only_data,
         )
     get_object_type = get_sample_type # Alias
@@ -3192,6 +3194,7 @@ class Openbis:
     def get_entity_types(
         self, entity, cls, type=None,
         start_with=None, count=None,
+        with_vocabulary=False
     ):
         method_name = get_method_for_entity(entity, 'search')
         if type is not None:
@@ -3239,9 +3242,16 @@ class Openbis:
             totalCount = resp.get('totalCount'),
         )
 
-    def get_entity_type(self, entity, identifier, cls, only_data=False):
+    def get_entity_type(self, entity, identifier, cls, only_data=False, with_vocabulary=False):
         method_name = get_method_for_entity(entity, 'get')
         fetch_options = get_fetchoption_for_entity(entity)
+        if with_vocabulary:
+            fetch_options["propertyAssignments"]["propertyType"]["vocabulary"] = {
+                "@type": "as.dto.vocabulary.fetchoptions.VocabularyFetchOptions",
+                "terms": {
+                    "@type": "as.dto.vocabulary.fetchoptions.VocabularyTermFetchOptions"
+                }
+            }
 
         if not isinstance(identifier, list):
             identifier = [identifier]
@@ -3464,7 +3474,6 @@ class Openbis:
             'permId', 'type', 'experiment', 'sample',
             'registrationDate', 'modificationDate',
             'location', 'status', 'presentInArchive', 'size',
-            'properties'
         ]
         display_attrs = default_attrs + attrs
 
@@ -3523,7 +3532,28 @@ class Openbis:
         if props is not None:
             if isinstance(props, str):
                 props = [props]
+
             for prop in props:
+                if prop == '*':
+                    # include all properties in dataFrame.
+                    # expand the dataFrame by adding new columns
+                    columns = []
+                    for i, dataSet in enumerate(response):
+                        for prop_name, val in dataSet.get('properties',{}).items():
+                            datasets.loc[i, prop_name.upper()] = val
+                            columns.append(prop_name.upper())
+
+                    display_attrs += set(columns)
+
+                else:
+                    for i, dataSet in enumerate(response):
+                        try:
+                            datasets.loc[i, prop.upper()] = dataSet.get('properties',{}).get(prop,'')
+                        except AttributeError:
+                            pass
+                    display_attrs.append(prop.upper())
+
+
                 if datasets.get('properties') is not None:
                     datasets[prop.upper()] = datasets['properties'].map(
                         lambda x: x.get(prop.upper(), '')
@@ -3608,6 +3638,69 @@ class Openbis:
                 props=props,
             )
 
+    @staticmethod
+    def decode_attribute(entity, attribute):
+        params = {}
+        attribute, *alias = re.split(r'\s+AS\s+', attribute, flags=re.IGNORECASE)
+        alias = alias[0] if alias else attribute
+
+        regex = re.compile(
+            r"""^                         # beginning of the string
+                (?P<requested_entity>\w+) # the entity itself
+                (\.(?P<attribute>\w+))?   # capture an optional .attribute
+                $                         # end of string
+        """, re.X)
+        match = re.search(regex, attribute)
+        params = match.groupdict()
+
+        if params['requested_entity'] == 'object':
+            params['entity'] = 'sample'
+        elif params['requested_entity'] == 'collection':
+            params['entity'] = 'experiment'
+        elif params['requested_entity'] in ['space', 'project']:
+            params['entity'] = params['requested_entity']
+        else: params['entity'] = params['requested_entity']
+
+        if not params['attribute']: params['attribute'] = 'code'
+        params['alias'] = alias
+
+        del(params['requested_entity'])
+        return params
+
+
+    @staticmethod
+    def decode_property(entity, property):
+        # match something like: property_name.term.label AS label_alias
+        regex = re.compile(
+            r"""^
+                (?P<alias_alternative>
+                (?P<property>[^\.]*  )
+                (?:
+                    \.
+                    (?P<subentity>term|pa) \.
+                    (?P<field>code|vocabularyCode|label|description|ordinal|dataType)
+                )?
+                )
+                (
+                \s+(?i)AS\s+
+                (?P<alias>\w+)
+                )?
+                \s*
+                $
+            """, re.X
+        )
+        match = re.search(regex, property)
+        if not match:
+            try:
+                params = decode_attribute(entity, property)
+                return params
+            except ValueError:
+                raise ValueError(f"unable to parse property: {property}")
+        params = match.groupdict()
+        if not params['alias']: params['alias'] = params['alias_alternative']
+
+        return params
+
 
     def _sample_list_for_response(
         self, response, attrs=None, props=None,
@@ -3620,6 +3713,18 @@ class Openbis:
                 if obj is None: return ''
                 return obj.get(attribute_to_extract,'')
             return return_attribute
+
+        sample_types = {}
+        def collect_sample_types(permId):
+            if not isinstance(permId, dict):
+                permId = str(permId)
+            else:
+                permId = permId['permId']
+
+            if permId in sample_types:
+                return permId
+            else:
+                st = self.get_sample_type(permId)
 
         parse_jackson(response)
 
@@ -3654,7 +3759,28 @@ class Openbis:
         if props is not None:
             if isinstance(props, str):
                 props = [props]
+
             for prop in props:
+                if prop == '*':
+                    # include all properties in dataFrame.
+                    # expand the dataFrame by adding new columns
+                    columns = []
+                    for i, sample in enumerate(response):
+                        for prop_name, val in sample.get('properties',{}).items():
+                            samples.loc[i, prop_name.upper()] = val
+                            columns.append(prop_name.upper())
+
+                    display_attrs += set(columns)
+
+                else:
+                    for i, sample in enumerate(response):
+                        try:
+                            samples.loc[i, prop.upper()] = sample.get('properties',{}).get(prop,'')
+                        except AttributeError:
+                            pass
+                    display_attrs.append(prop.upper())
+
+
                 if samples.get('properties') is not None:
                     samples[prop.upper()] = samples['properties'].map(
                         lambda x: x.get(prop.upper(), '')

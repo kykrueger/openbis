@@ -539,8 +539,10 @@ samples = o.get_samples(
     ],
     props=['$NAME', 'MATING_TYPE']    # show these properties in the result
 )
+
 samples.df                            # returns a Pandas DataFrame object
-samples.get_datasets(type='ANALYZED_DATA')
+
+samples = o.get_samples(props="*")    # retrieve all properties of all samples
 ```
 
 ### freezing samples
@@ -707,6 +709,8 @@ dataSets = o.get_dataSets(
 )
 
 df = dataSets.df                      # returns the Pandas dataFrame object
+
+dataSets = o.get_dataSets(props="*")  # retrieve all properties of all dataSets
 ```
 
 In some cases, you might want to retrieve precisely certain datasets. This can be achieved by
