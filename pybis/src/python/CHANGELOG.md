@@ -1,3 +1,7 @@
+## Changes with pybis-1.14.1
+
+- small bugfix
+
 ## Changes with pybis-1.14.0
 
 - use props="*" to get all properties of all samples or datasets
