@@ -62,6 +62,9 @@ public class ExperimentFetchOptions extends FetchOptions<Experiment> implements 
     private MaterialFetchOptions materialProperties;
 
     @JsonProperty
+    private SampleFetchOptions sampleProperties;
+
+    @JsonProperty
     private TagFetchOptions tags;
 
     @JsonProperty
@@ -230,6 +233,25 @@ public class ExperimentFetchOptions extends FetchOptions<Experiment> implements 
         return materialProperties != null;
     }
 
+    public SampleFetchOptions withSampleProperties()
+    {
+        if (sampleProperties == null)
+        {
+            sampleProperties = new SampleFetchOptions();
+        }
+        return sampleProperties;
+    }
+
+    public SampleFetchOptions withSamplePropertiesUsing(SampleFetchOptions fetchOptions)
+    {
+        return sampleProperties = fetchOptions;
+    }
+
+    public boolean hasSampleProperties()
+    {
+        return sampleProperties != null;
+    }
+
     // Method automatically generated with DtoGenerator
     public TagFetchOptions withTags()
     {
@@ -346,6 +368,7 @@ public class ExperimentFetchOptions extends FetchOptions<Experiment> implements 
         f.addFetchOption("History", history);
         f.addFetchOption("Properties", properties);
         f.addFetchOption("MaterialProperties", materialProperties);
+        f.addFetchOption("SampleProperties", sampleProperties);
         f.addFetchOption("Tags", tags);
         f.addFetchOption("Registrator", registrator);
         f.addFetchOption("Modifier", modifier);
