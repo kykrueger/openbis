@@ -3544,6 +3544,7 @@ class Openbis:
                             columns.append(prop_name.upper())
 
                     display_attrs += set(columns)
+                    continue
 
                 else:
                     for i, dataSet in enumerate(response):
@@ -3771,6 +3772,7 @@ class Openbis:
                             columns.append(prop_name.upper())
 
                     display_attrs += set(columns)
+                    continue
 
                 else:
                     for i, sample in enumerate(response):
