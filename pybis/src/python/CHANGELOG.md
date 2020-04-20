@@ -1,3 +1,7 @@
+## Changes with pybis-1.14.0
+
+- use props="*" to get all properties of all samples or datasets
+
 ## Changes with pybis-1.13.0
 
 - added symlink() method for datasets to automatically create symlinks
