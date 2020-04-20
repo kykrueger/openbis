@@ -4,6 +4,7 @@
 define([ "stjs" ], function(stjs) {
 	var ExperimentCreation = function() {
 		this.properties = {};
+		this.sampleProperties = {};
 	};
 	stjs.extend(ExperimentCreation, null, [], function(constructor, prototype) {
 		prototype['@type'] = 'as.dto.experiment.create.ExperimentCreation';
@@ -52,6 +53,12 @@ define([ "stjs" ], function(stjs) {
 		prototype.setProperties = function(properties) {
 			this.properties = properties;
 		};
+		prototype.setSampleProperty = function(propertyName, sampleId) {
+			this.sampleProperties[propertyName] = sampleId;
+		};
+		prototype.getSampleProperties = function() {
+			return this.sampleProperties;
+		};
 		prototype.getAttachments = function() {
 			return this.attachments;
 		};
@@ -72,6 +79,10 @@ define([ "stjs" ], function(stjs) {
 			arguments : [ "Object" ]
 		},
 		properties : {
+			name : "Map",
+			arguments : [ null, null ]
+		},
+		sampleProperties : {
 			name : "Map",
 			arguments : [ null, null ]
 		},

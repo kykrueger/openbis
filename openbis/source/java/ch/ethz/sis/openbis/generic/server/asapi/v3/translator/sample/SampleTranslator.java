@@ -150,7 +150,7 @@ public class SampleTranslator extends AbstractCachingTranslator<Long, Sample, Sa
             relations.put(ISampleSamplePropertyTranslator.class,
                     samplePropertyTranslator.translate(context, sampleIds, fetchOptions.withSampleProperties()));
         }
-        
+
         if (fetchOptions.hasExperiment())
         {
             relations.put(ISampleExperimentTranslator.class, experimentTranslator.translate(context, sampleIds, fetchOptions.withExperiment()));
@@ -262,7 +262,7 @@ public class SampleTranslator extends AbstractCachingTranslator<Long, Sample, Sa
             result.setSampleProperties(relations.get(ISampleSamplePropertyTranslator.class, sampleId));
             result.getFetchOptions().withSamplePropertiesUsing(fetchOptions.withSampleProperties());
         }
-        
+
         if (fetchOptions.hasExperiment())
         {
             result.setExperiment(relations.get(ISampleExperimentTranslator.class, sampleId));

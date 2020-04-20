@@ -262,6 +262,8 @@ define([ "require", "stjs", "as/dto/common/fetchoptions/FetchOptions", 'as/dto/s
 		space : "SpaceFetchOptions",
 		experiment : "ExperimentFetchOptions",
 		properties : "PropertyFetchOptions",
+		materialProperties : "MaterialFetchOptions",
+		sampleProperties : "SampleFetchOptions",
 		parents : "SampleFetchOptions",
 		children : "SampleFetchOptions",
 		container : "SampleFetchOptions",

@@ -176,7 +176,7 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 			if (this.getFetchOptions() && this.getFetchOptions().hasMaterialProperties()) {
 				return this.materialProperties;
 			} else {
-				throw new exceptions.NotFetchedException("Material properties has not been fetched.");
+				throw new exceptions.NotFetchedException("Material properties have not been fetched.");
 			}
 		};
 		prototype.setMaterialProperties = function(materialProperties) {
@@ -186,7 +186,7 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 			if (this.getFetchOptions() && this.getFetchOptions().hasSampleProperties()) {
 				return this.sampleProperties;
 			} else {
-				throw new exceptions.NotFetchedException("Sample properties has not been fetched.");
+				throw new exceptions.NotFetchedException("Sample properties have not been fetched.");
 			}
 		};
 		prototype.setSampleProperties = function(sampleProperties) {
@@ -312,6 +312,10 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		materialProperties : {
 			name : "Map",
 			arguments : [ null, "Material" ]
+		},
+		sampleProperties : {
+			name : "Map",
+			arguments : [ null, "Sample" ]
 		},
 		parents : {
 			name : "List",

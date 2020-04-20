@@ -80,6 +80,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.id.IDeletionId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.create.ExperimentTypeCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.HistoryEntry;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.Material;
@@ -1478,6 +1479,22 @@ public class AbstractTest extends SystemTestCase
         }
         creation.setPropertyAssignments(assignments);
         return v3api.createSampleTypes(sessionToken, Arrays.asList(creation)).get(0);
+    }
+
+    protected EntityTypePermId createAnExperimentType(String sessionToken, boolean mandatory, PropertyTypePermId... propertyTypes)
+    {
+        ExperimentTypeCreation creation = new ExperimentTypeCreation();
+        creation.setCode("EXPERIMENT-TYPE-" + System.currentTimeMillis());
+        List<PropertyAssignmentCreation> assignments = new ArrayList<>();
+        for (PropertyTypePermId propertyType : propertyTypes)
+        {
+            PropertyAssignmentCreation propertyAssignmentCreation = new PropertyAssignmentCreation();
+            propertyAssignmentCreation.setPropertyTypeId(propertyType);
+            propertyAssignmentCreation.setMandatory(mandatory);
+            assignments.add(propertyAssignmentCreation);
+        }
+        creation.setPropertyAssignments(assignments);
+        return v3api.createExperimentTypes(sessionToken, Arrays.asList(creation)).get(0);
     }
 
     protected static List<MethodWrapper> getFreezingMethods(Class<?> clazz)
