@@ -1,5 +1,5 @@
 import React from 'react'
-import logger from '../../../common/logger.js'
+import logger from '@src/js/common/logger.js'
 
 class MaterialType extends React.Component {
   render() {

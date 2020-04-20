@@ -3,13 +3,13 @@ import React from 'react'
 import { connect } from 'react-redux'
 import { withStyles } from '@material-ui/core/styles'
 import Link from '@material-ui/core/Link'
-import Grid from '../../common/grid/Grid.jsx'
-import * as ids from '../../../common/consts/ids.js'
-import * as pages from '../../../common/consts/pages.js'
-import * as objectTypes from '../../../common/consts/objectType.js'
-import * as actions from '../../../store/actions/actions.js'
-import { facade, dto } from '../../../services/openbis.js'
-import logger from '../../../common/logger.js'
+import Grid from '@src/js/components/common/grid/Grid.jsx'
+import ids from '@src/js/common/consts/ids.js'
+import pages from '@src/js/common/consts/pages.js'
+import objectTypes from '@src/js/common/consts/objectType.js'
+import actions from '@src/js/store/actions/actions.js'
+import openbis from '@src/js/services/openbis.js'
+import logger from '@src/js/common/logger.js'
 
 const styles = () => ({
   tableLink: {
@@ -75,38 +75,38 @@ class Search extends React.Component {
           }))
       })
       .catch(error => {
-        facade.catch(error)
+        openbis.catch(error)
       })
   }
 
   searchObjectTypes() {
-    let criteria = new dto.SampleTypeSearchCriteria()
-    let fo = new dto.SampleTypeFetchOptions()
-    return facade.searchSampleTypes(criteria, fo).then(result => {
+    let criteria = new openbis.SampleTypeSearchCriteria()
+    let fo = new openbis.SampleTypeFetchOptions()
+    return openbis.searchSampleTypes(criteria, fo).then(result => {
       return result.objects
     })
   }
 
   searchCollectionTypes() {
-    let criteria = new dto.ExperimentTypeSearchCriteria()
-    let fo = new dto.ExperimentTypeFetchOptions()
-    return facade.searchExperimentTypes(criteria, fo).then(result => {
+    let criteria = new openbis.ExperimentTypeSearchCriteria()
+    let fo = new openbis.ExperimentTypeFetchOptions()
+    return openbis.searchExperimentTypes(criteria, fo).then(result => {
       return result.objects
     })
   }
 
   searchDataSetTypes() {
-    let criteria = new dto.DataSetTypeSearchCriteria()
-    let fo = new dto.DataSetTypeFetchOptions()
-    return facade.searchDataSetTypes(criteria, fo).then(result => {
+    let criteria = new openbis.DataSetTypeSearchCriteria()
+    let fo = new openbis.DataSetTypeFetchOptions()
+    return openbis.searchDataSetTypes(criteria, fo).then(result => {
       return result.objects
     })
   }
 
   searchMaterialTypes() {
-    let criteria = new dto.MaterialTypeSearchCriteria()
-    let fo = new dto.MaterialTypeFetchOptions()
-    return facade.searchMaterialTypes(criteria, fo).then(result => {
+    let criteria = new openbis.MaterialTypeSearchCriteria()
+    let fo = new openbis.MaterialTypeFetchOptions()
+    return openbis.searchMaterialTypes(criteria, fo).then(result => {
       return result.objects
     })
   }
@@ -167,9 +167,6 @@ class Search extends React.Component {
 }
 
 export default _.flow(
-  connect(
-    null,
-    mapDispatchToProps
-  ),
+  connect(null, mapDispatchToProps),
   withStyles(styles)
 )(Search)

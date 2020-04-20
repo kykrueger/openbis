@@ -1,3 +1,10 @@
+## Changes with pybis-1.13.0
+
+- added symlink() method for datasets to automatically create symlinks
+- added `is_symlink()` and `is_physical()` methods for dataSets
+- new `o.download_prefix` attribute for `download()` and `symlink()`
+- `download_prefix` defaults to `data/openbis-hostname`
+
 ## Changes with pybis-1.12.4
 
 - fixed a bug which occured on some opeBIS instances when retrieving samples

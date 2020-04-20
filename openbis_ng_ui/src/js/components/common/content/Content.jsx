@@ -1,14 +1,14 @@
-import React from 'react'
 import _ from 'lodash'
+import React from 'react'
 import { connect } from 'react-redux'
 import { withStyles } from '@material-ui/core/styles'
-import logger from '../../../common/logger.js'
-import * as util from '../../../common/util.js'
-import * as selectors from '../../../store/selectors/selectors.js'
-import * as actions from '../../../store/actions/actions.js'
+import ErrorBoundary from '@src/js/components/common/error/ErrorBoundary.jsx'
+import selectors from '@src/js/store/selectors/selectors.js'
+import actions from '@src/js/store/actions/actions.js'
+import util from '@src/js/common/util.js'
+import logger from '@src/js/common/logger.js'
 
 import ContentTabs from './ContentTabs.jsx'
-import ErrorBoundary from '../error/ErrorBoundary.jsx'
 
 const styles = {
   container: {
@@ -31,23 +31,25 @@ const styles = {
 }
 
 function mapStateToProps() {
-  const getSelectedObject = selectors.createGetSelectedObject()
   return (state, ownProps) => {
     return {
-      openObjects: selectors.getOpenObjects(state, ownProps.page),
-      changedObjects: selectors.getChangedObjects(state, ownProps.page),
-      selectedObject: getSelectedObject(state, ownProps.page)
+      openTabs: selectors.getOpenTabs(state, ownProps.page),
+      selectedTab: selectors.getSelectedTab(state, ownProps.page)
     }
   }
 }
 
 function mapDispatchToProps(dispatch, ownProps) {
   return {
-    objectSelect: (type, id) => {
-      dispatch(actions.objectOpen(ownProps.page, type, id))
+    tabSelect: tab => {
+      dispatch(
+        actions.objectOpen(ownProps.page, tab.object.type, tab.object.id)
+      )
     },
-    objectClose: (type, id) => {
-      dispatch(actions.objectClose(ownProps.page, type, id))
+    tabClose: tab => {
+      dispatch(
+        actions.objectClose(ownProps.page, tab.object.type, tab.object.id)
+      )
     }
   }
 }
@@ -61,28 +63,25 @@ class Content extends React.Component {
     return (
       <div className={classes.container}>
         <ContentTabs
-          objects={this.props.openObjects}
-          changedObjects={this.props.changedObjects}
-          selectedObject={this.props.selectedObject}
-          objectSelect={this.props.objectSelect}
-          objectClose={this.props.objectClose}
+          tabs={this.props.openTabs}
+          selectedTab={this.props.selectedTab}
+          tabSelect={this.props.tabSelect}
+          tabClose={this.props.tabClose}
+          renderTab={this.props.renderTab}
         />
-        {this.props.openObjects.map(object => {
-          let ObjectComponent = this.props.objectTypeToComponent[object.type]
+        {this.props.openTabs.map(openTab => {
+          let ObjectComponent = this.props.renderComponent(openTab)
           if (ObjectComponent) {
-            let key = object.type + '/' + object.id
-            let visible = _.isEqual(object, this.props.selectedObject)
+            let visible = _.isEqual(openTab, this.props.selectedTab)
             return (
               <div
-                key={key}
+                key={openTab.id}
                 className={util.classNames(
                   classes.component,
                   visible ? classes.visible : classes.hidden
                 )}
               >
-                <ErrorBoundary>
-                  <ObjectComponent objectId={object.id} />
-                </ErrorBoundary>
+                <ErrorBoundary>{ObjectComponent}</ErrorBoundary>
               </div>
             )
           }
@@ -93,9 +92,6 @@ class Content extends React.Component {
 }
 
 export default _.flow(
-  connect(
-    mapStateToProps,
-    mapDispatchToProps
-  ),
+  connect(mapStateToProps, mapDispatchToProps),
   withStyles(styles)
 )(Content)

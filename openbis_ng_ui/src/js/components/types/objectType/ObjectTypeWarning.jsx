@@ -2,7 +2,7 @@ import React from 'react'
 import Typography from '@material-ui/core/Typography'
 import WarningIcon from '@material-ui/icons/Warning'
 import { withStyles } from '@material-ui/core/styles'
-import logger from '../../../common/logger.js'
+import logger from '@src/js/common/logger.js'
 
 const styles = theme => ({
   warning: {

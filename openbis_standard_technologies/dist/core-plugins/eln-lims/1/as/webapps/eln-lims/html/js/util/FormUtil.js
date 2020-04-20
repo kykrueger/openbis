@@ -927,7 +927,6 @@ var FormUtil = new function() {
 	}
 
 	this.prepareCkeditorData = function(value) {
-	    value = value.replace(/&quot;/g, "\'");
 	    value = value.replace(/(font-size:\d+\.*\d+)pt/g, "$1" + "px"); // https://ckeditor.com/docs/ckeditor5/latest/features/font.html#using-numerical-values
 	    return value;
 	}

@@ -1,6 +1,6 @@
 import { combineReducers } from 'redux'
-import * as actions from '../../actions/actions.js'
-import pages from './pages/pages.js'
+import actions from '@src/js/store/actions/actions.js'
+import pages from '@src/js/store/reducers/ui/pages/pages.js'
 
 export default combineReducers({
   loading,

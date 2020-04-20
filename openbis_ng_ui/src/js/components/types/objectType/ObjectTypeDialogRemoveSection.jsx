@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import React from 'react'
-import ConfirmationDialog from '../../common/dialog/ConfirmationDialog.jsx'
-import logger from '../../../common/logger.js'
+import ConfirmationDialog from '@src/js/components/common/dialog/ConfirmationDialog.jsx'
+import logger from '@src/js/common/logger.js'
 
 class ObjectTypeDialogRemoveSection extends React.Component {
   render() {

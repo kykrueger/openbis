@@ -42,7 +42,7 @@ dependencies {
 	// eln-lims Jython APIs dependencies
 	datastoreExecRuntime files("../openbis_standard_technologies/dist/core-plugins/eln-lims/1/dss/reporting-plugins/eln-lims-api/lib/zip4j_1.3.2.jar"),
 			files("../openbis_standard_technologies/dist/core-plugins/eln-lims/1/dss/reporting-plugins/eln-lims-api/lib/plasmapper.jar"),
-			files("../openbis_standard_technologies/dist/core-plugins/eln-lims/1/dss/reporting-plugins/eln-lims-api/lib/htmlcleaner-2.16.jar"),
+			files("../openbis_standard_technologies/dist/core-plugins/eln-lims/1/dss/reporting-plugins/eln-lims-api/lib/htmlcleaner-2.23.jar"),
 			files("../openbis_standard_technologies/dist/core-plugins/eln-lims/1/dss/reporting-plugins/exports-api/lib/docx4j-3.3.3.jar"),
 			files("../openbis_standard_technologies/dist/core-plugins/eln-lims/1/dss/reporting-plugins/exports-api/lib/ascii-table-1.1.0.jar"),
 			files("../openbis_standard_technologies/dist/core-plugins/eln-lims/1/dss/reporting-plugins/exports-api/lib/docxbuilder.jar"),

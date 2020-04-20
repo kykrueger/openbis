@@ -1,6 +1,6 @@
 import React from 'react'
-import ErrorDialog from '../dialog/ErrorDialog.jsx'
-import logger from '../../../common/logger.js'
+import ErrorDialog from '@src/js/components/common/dialog/ErrorDialog.jsx'
+import logger from '@src/js/common/logger.js'
 
 class Error extends React.Component {
   render() {

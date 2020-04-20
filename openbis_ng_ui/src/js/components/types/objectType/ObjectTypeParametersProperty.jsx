@@ -1,13 +1,14 @@
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
-import CheckboxField from '../../common/form/CheckboxField.jsx'
-import TextField from '../../common/form/TextField.jsx'
-import SelectField from '../../common/form/SelectField.jsx'
+import CheckboxField from '@src/js/components/common/form/CheckboxField.jsx'
+import TextField from '@src/js/components/common/form/TextField.jsx'
+import SelectField from '@src/js/components/common/form/SelectField.jsx'
+import openbis from '@src/js/services/openbis.js'
+import logger from '@src/js/common/logger.js'
+
 import ObjectTypeWarningUsage from './ObjectTypeWarningUsage.jsx'
 import ObjectTypeWarningLegacy from './ObjectTypeWarningLegacy.jsx'
 import ObjectTypeHeader from './ObjectTypeHeader.jsx'
-import { dto } from '../../../services/openbis.js'
-import logger from '../../../common/logger.js'
 
 const styles = theme => ({
   container: {
@@ -74,9 +75,9 @@ class ObjectTypeParametersProperty extends React.PureComponent {
     if (property) {
       const dataType = property.dataType
 
-      if (dataType === dto.DataType.CONTROLLEDVOCABULARY) {
+      if (dataType === openbis.DataType.CONTROLLEDVOCABULARY) {
         this.loadVocabularies()
-      } else if (dataType === dto.DataType.MATERIAL) {
+      } else if (dataType === openbis.DataType.MATERIAL) {
         this.loadMaterialTypes()
       }
 
@@ -85,8 +86,9 @@ class ObjectTypeParametersProperty extends React.PureComponent {
   }
 
   loadDynamicPlugins() {
-    const { facade } = this.props
-    return facade
+    const { controller } = this.props
+    return controller
+      .getFacade()
       .loadDynamicPlugins()
       .then(result => {
         this.setState(() => ({
@@ -94,13 +96,14 @@ class ObjectTypeParametersProperty extends React.PureComponent {
         }))
       })
       .catch(error => {
-        facade.catch(error)
+        controller.getFacade().catch(error)
       })
   }
 
   loadVocabularies() {
-    const { facade } = this.props
-    return facade
+    const { controller } = this.props
+    return controller
+      .getFacade()
       .loadVocabularies()
       .then(result => {
         this.setState(() => ({
@@ -108,13 +111,14 @@ class ObjectTypeParametersProperty extends React.PureComponent {
         }))
       })
       .catch(error => {
-        facade.catch(error)
+        controller.getFacade().catch(error)
       })
   }
 
   loadMaterialTypes() {
-    const { facade } = this.props
-    return facade
+    const { controller } = this.props
+    return controller
+      .getFacade()
       .loadMaterialTypes()
       .then(result => {
         this.setState(() => ({
@@ -122,7 +126,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
         }))
       })
       .catch(error => {
-        facade.catch(error)
+        controller.getFacade().catch(error)
       })
   }
 
@@ -282,7 +286,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
   renderDataType(property) {
     const { classes } = this.props
 
-    const options = dto.DataType.values.sort().map(dataType => {
+    const options = openbis.DataType.values.sort().map(dataType => {
       return {
         label: dataType,
         value: dataType
@@ -309,7 +313,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
   }
 
   renderVocabulary(property) {
-    if (property.dataType === dto.DataType.CONTROLLEDVOCABULARY) {
+    if (property.dataType === openbis.DataType.CONTROLLEDVOCABULARY) {
       const { classes } = this.props
       const { vocabularies = [] } = this.state
 
@@ -348,7 +352,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
   }
 
   renderMaterialType(property) {
-    if (property.dataType === dto.DataType.MATERIAL) {
+    if (property.dataType === openbis.DataType.MATERIAL) {
       const { classes } = this.props
       const { materialTypes = [] } = this.state
 
@@ -387,7 +391,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
   }
 
   renderSchema(property) {
-    if (property.dataType === dto.DataType.XML) {
+    if (property.dataType === openbis.DataType.XML) {
       const { classes } = this.props
       return (
         <div className={classes.field}>
@@ -411,7 +415,7 @@ class ObjectTypeParametersProperty extends React.PureComponent {
   }
 
   renderTransformation(property) {
-    if (property.dataType === dto.DataType.XML) {
+    if (property.dataType === openbis.DataType.XML) {
       const { classes } = this.props
       return (
         <div className={classes.field}>

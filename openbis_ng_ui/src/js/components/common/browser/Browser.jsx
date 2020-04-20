@@ -1,15 +1,17 @@
-import React from 'react'
 import _ from 'lodash'
-import Paper from '@material-ui/core/Paper'
-import { Resizable } from 're-resizable'
+import React from 'react'
 import { connect } from 'react-redux'
+import { Resizable } from 're-resizable'
 import { withStyles } from '@material-ui/core/styles'
-import logger from '../../../common/logger.js'
-import * as selectors from '../../../store/selectors/selectors.js'
-import * as actions from '../../../store/actions/actions.js'
+import Paper from '@material-ui/core/Paper'
+import FilterField from '@src/js/components/common/form/FilterField.jsx'
+import ComponentContext from '@src/js/components/common/ComponentContext.js'
+import selectors from '@src/js/store/selectors/selectors.js'
+import logger from '@src/js/common/logger.js'
 
-import FilterField from './../form/FilterField.jsx'
 import BrowserNodes from './BrowserNodes.jsx'
+import BrowserButtons from './BrowserButtons.jsx'
+import BrowserDialogRemoveNode from './BrowserDialogRemoveNode.jsx'
 
 const styles = {
   resizable: {
@@ -28,47 +30,59 @@ const styles = {
 }
 
 function mapStateToProps() {
-  const getBrowserNodes = selectors.createGetBrowserNodes()
   return (state, ownProps) => {
     return {
-      filter: selectors.getBrowserFilter(state, ownProps.page),
-      nodes: getBrowserNodes(state, ownProps.page)
-    }
-  }
-}
-
-function mapDispatchToProps(dispatch, ownProps) {
-  return {
-    init: () => {
-      dispatch(actions.browserInit(ownProps.page))
-    },
-    filterChange: filter => {
-      dispatch(actions.browserFilterChange(ownProps.page, filter))
-    },
-    nodeSelect: id => {
-      dispatch(actions.browserNodeSelect(ownProps.page, id))
-    },
-    nodeExpand: id => {
-      dispatch(actions.browserNodeExpand(ownProps.page, id))
-    },
-    nodeCollapse: id => {
-      dispatch(actions.browserNodeCollapse(ownProps.page, id))
+      selectedObject: selectors.getSelectedObject(
+        state,
+        ownProps.controller.getPage()
+      ),
+      lastObjectModifications: selectors.getLastObjectModifications(state)
     }
   }
 }
 
 class Browser extends React.PureComponent {
+  constructor(props) {
+    super(props)
+
+    this.state = {}
+
+    this.controller = props.controller
+    this.controller.init(new ComponentContext(this))
+  }
+
   componentDidMount() {
-    this.props.init()
+    this.controller.load()
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.selectedObject !== prevProps.selectedObject) {
+      this.controller.objectSelect(this.props.selectedObject)
+    }
+    if (
+      this.props.lastObjectModifications !== prevProps.lastObjectModifications
+    ) {
+      this.controller.refresh(this.props.lastObjectModifications)
+    }
   }
 
   render() {
     logger.log(logger.DEBUG, 'Browser.render')
 
-    const classes = this.props.classes
+    const { controller } = this
+
+    if (!controller.getLoaded()) {
+      return null
+    }
+
+    const { classes } = this.props
 
     return (
       <Resizable
+        defaultSize={{
+          width: 300,
+          height: 'auto'
+        }}
         enable={{
           right: true,
           left: false,
@@ -83,28 +97,31 @@ class Browser extends React.PureComponent {
       >
         <Paper square={true} elevation={3} classes={{ root: classes.paper }}>
           <FilterField
-            filter={this.props.filter}
-            filterChange={this.props.filterChange}
+            filter={controller.getFilter()}
+            filterChange={controller.filterChange}
           />
           <div className={classes.nodes}>
             <BrowserNodes
-              nodes={this.props.nodes}
-              nodeSelect={this.props.nodeSelect}
-              nodeExpand={this.props.nodeExpand}
-              nodeCollapse={this.props.nodeCollapse}
+              controller={controller}
+              nodes={controller.getNodes()}
               level={0}
             />
           </div>
+          <BrowserButtons
+            controller={controller}
+            addEnabled={controller.isAddNodeEnabled()}
+            removeEnabled={controller.isRemoveNodeEnabled()}
+          />
+          <BrowserDialogRemoveNode
+            open={controller.isRemoveNodeDialogOpen()}
+            node={controller.getSelectedNode()}
+            onConfirm={controller.nodeRemoveConfirm}
+            onCancel={controller.nodeRemoveCancel}
+          />
         </Paper>
       </Resizable>
     )
   }
 }
 
-export default _.flow(
-  connect(
-    mapStateToProps,
-    mapDispatchToProps
-  ),
-  withStyles(styles)
-)(Browser)
+export default _.flow(connect(mapStateToProps), withStyles(styles))(Browser)

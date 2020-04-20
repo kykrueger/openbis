@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import logger from '../../common/logger.js'
+import logger from '@src/js/common/logger.js'
 
 export default store => next => action => {
   if (logger.isLevelEnabled(logger.DEBUG)) {

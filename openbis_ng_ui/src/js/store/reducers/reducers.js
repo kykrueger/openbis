@@ -1,5 +1,6 @@
 import { combineReducers } from 'redux'
-import * as actions from '../actions/actions.js'
+import actions from '@src/js/store/actions/actions.js'
+import db from './db/db.js'
 import ui from './ui/ui.js'
 import session from './session/session.js'
 import route from './route/route.js'
@@ -12,6 +13,7 @@ export default function root(state = {}, action) {
   }
   return combineReducers({
     initialized,
+    db,
     ui,
     session,
     route

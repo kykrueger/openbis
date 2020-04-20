@@ -1,9 +1,10 @@
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
+import logger from '@src/js/common/logger.js'
+
 import ObjectTypeParametersType from './ObjectTypeParametersType.jsx'
 import ObjectTypeParametersProperty from './ObjectTypeParametersProperty.jsx'
 import ObjectTypeParametersSection from './ObjectTypeParametersSection.jsx'
-import logger from '../../../common/logger.js'
 
 const styles = () => ({})
 
@@ -16,7 +17,7 @@ class ObjectTypeParameters extends React.PureComponent {
     logger.log(logger.DEBUG, 'ObjectTypeParameters.render')
 
     const {
-      facade,
+      controller,
       type,
       sections,
       properties,
@@ -29,7 +30,7 @@ class ObjectTypeParameters extends React.PureComponent {
     return (
       <div>
         <ObjectTypeParametersType
-          facade={facade}
+          controller={controller}
           type={type}
           selection={selection}
           onChange={onChange}
@@ -44,7 +45,7 @@ class ObjectTypeParameters extends React.PureComponent {
           onBlur={onBlur}
         />
         <ObjectTypeParametersProperty
-          facade={facade}
+          controller={controller}
           type={type}
           properties={properties}
           selection={selection}

@@ -1,9 +1,9 @@
-import { dto, facade } from '../../../services/openbis.js'
+import openbis from '@src/js/services/openbis.js'
 
 export default class ObjectTypeFacade {
   loadType(typeId) {
-    const id = new dto.EntityTypePermId(typeId)
-    const fo = new dto.SampleTypeFetchOptions()
+    const id = new openbis.EntityTypePermId(typeId)
+    const fo = new openbis.SampleTypeFetchOptions()
     fo.withValidationPlugin()
     fo.withPropertyAssignments().withPlugin()
     fo.withPropertyAssignments()
@@ -16,40 +16,40 @@ export default class ObjectTypeFacade {
       .sortBy()
       .ordinal()
 
-    return facade.getSampleTypes([id], fo).then(map => {
+    return openbis.getSampleTypes([id], fo).then(map => {
       return map[typeId]
     })
   }
 
   loadUsages(typeId) {
     function createTypeUsedOperation(typeId) {
-      const criteria = new dto.SampleSearchCriteria()
+      const criteria = new openbis.SampleSearchCriteria()
       criteria
         .withType()
         .withCode()
         .thatEquals(typeId)
 
-      const fo = new dto.SampleFetchOptions()
+      const fo = new openbis.SampleFetchOptions()
       fo.count(0)
 
-      return new dto.SearchSamplesOperation(criteria, fo)
+      return new openbis.SearchSamplesOperation(criteria, fo)
     }
 
     function createPropertyUsedOperation(propertyTypeCode) {
-      const criteria = new dto.SampleSearchCriteria()
-      criteria.withProperty(propertyTypeCode).thatEquals('*')
+      const criteria = new openbis.SampleSearchCriteria()
+      criteria.withProperty(propertyTypeCode)
 
-      const fo = new dto.SampleFetchOptions()
+      const fo = new openbis.SampleFetchOptions()
       fo.count(0)
 
-      return new dto.SearchSamplesOperation(criteria, fo)
+      return new openbis.SearchSamplesOperation(criteria, fo)
     }
 
-    const id = new dto.EntityTypePermId(typeId)
-    const fo = new dto.SampleTypeFetchOptions()
+    const id = new openbis.EntityTypePermId(typeId)
+    const fo = new openbis.SampleTypeFetchOptions()
     fo.withPropertyAssignments().withPropertyType()
 
-    return facade.getSampleTypes([id], fo).then(map => {
+    return openbis.getSampleTypes([id], fo).then(map => {
       const type = map[typeId]
 
       if (type) {
@@ -62,10 +62,10 @@ export default class ObjectTypeFacade {
           )
         })
 
-        const options = new dto.SynchronousOperationExecutionOptions()
+        const options = new openbis.SynchronousOperationExecutionOptions()
         options.setExecuteInOrder(true)
 
-        return facade.executeOperations(operations, options).then(result => {
+        return openbis.executeOperations(operations, options).then(result => {
           const results = result.getResults()
           const map = { property: {} }
 
@@ -87,60 +87,60 @@ export default class ObjectTypeFacade {
   }
 
   loadValidationPlugins() {
-    let criteria = new dto.PluginSearchCriteria()
-    criteria.withPluginType().thatEquals(dto.PluginType.ENTITY_VALIDATION)
-    let fo = new dto.PluginFetchOptions()
-    return facade.searchPlugins(criteria, fo)
+    let criteria = new openbis.PluginSearchCriteria()
+    criteria.withPluginType().thatEquals(openbis.PluginType.ENTITY_VALIDATION)
+    let fo = new openbis.PluginFetchOptions()
+    return openbis.searchPlugins(criteria, fo)
   }
 
   loadDynamicPlugins() {
-    let criteria = new dto.PluginSearchCriteria()
-    criteria.withPluginType().thatEquals(dto.PluginType.DYNAMIC_PROPERTY)
-    let fo = new dto.PluginFetchOptions()
-    return facade.searchPlugins(criteria, fo)
+    let criteria = new openbis.PluginSearchCriteria()
+    criteria.withPluginType().thatEquals(openbis.PluginType.DYNAMIC_PROPERTY)
+    let fo = new openbis.PluginFetchOptions()
+    return openbis.searchPlugins(criteria, fo)
   }
 
   loadVocabularies() {
-    let criteria = new dto.VocabularySearchCriteria()
-    let fo = new dto.VocabularyFetchOptions()
-    return facade.searchVocabularies(criteria, fo)
+    let criteria = new openbis.VocabularySearchCriteria()
+    let fo = new openbis.VocabularyFetchOptions()
+    return openbis.searchVocabularies(criteria, fo)
   }
 
   loadVocabularyTerms(vocabulary) {
-    let criteria = new dto.VocabularyTermSearchCriteria()
-    let fo = new dto.VocabularyTermFetchOptions()
+    let criteria = new openbis.VocabularyTermSearchCriteria()
+    let fo = new openbis.VocabularyTermFetchOptions()
 
     criteria
       .withVocabulary()
       .withCode()
       .thatEquals(vocabulary)
 
-    return facade.searchVocabularyTerms(criteria, fo)
+    return openbis.searchVocabularyTerms(criteria, fo)
   }
 
   loadMaterialTypes() {
-    let criteria = new dto.MaterialTypeSearchCriteria()
-    let fo = new dto.MaterialTypeFetchOptions()
-    return facade.searchMaterialTypes(criteria, fo)
+    let criteria = new openbis.MaterialTypeSearchCriteria()
+    let fo = new openbis.MaterialTypeFetchOptions()
+    return openbis.searchMaterialTypes(criteria, fo)
   }
 
   loadMaterials(materialType) {
-    let criteria = new dto.MaterialSearchCriteria()
-    let fo = new dto.MaterialFetchOptions()
+    let criteria = new openbis.MaterialSearchCriteria()
+    let fo = new openbis.MaterialFetchOptions()
 
     criteria
       .withType()
       .withCode()
       .thatEquals(materialType)
 
-    return facade.searchMaterials(criteria, fo)
+    return openbis.searchMaterials(criteria, fo)
   }
 
   executeOperations(operations, options) {
-    return facade.executeOperations(operations, options)
+    return openbis.executeOperations(operations, options)
   }
 
   catch(error) {
-    return facade.catch(error)
+    return openbis.catch(error)
   }
 }

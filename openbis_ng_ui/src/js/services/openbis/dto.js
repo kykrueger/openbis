@@ -10,17 +10,25 @@ const CLASS_FULL_NAMES = [
   'as/dto/sample/fetchoptions/SampleFetchOptions',
   'as/dto/sample/fetchoptions/SampleTypeFetchOptions',
   'as/dto/sample/search/SearchSamplesOperation',
+  'as/dto/sample/create/SampleTypeCreation',
   'as/dto/sample/update/SampleTypeUpdate',
+  'as/dto/sample/create/CreateSampleTypesOperation',
   'as/dto/sample/update/UpdateSampleTypesOperation',
   'as/dto/sample/search/SampleSearchCriteria',
   'as/dto/sample/search/SampleTypeSearchCriteria',
   'as/dto/sample/fetchoptions/SampleTypeFetchOptions',
+  'as/dto/sample/delete/SampleTypeDeletionOptions',
   'as/dto/experiment/search/ExperimentTypeSearchCriteria',
   'as/dto/experiment/fetchoptions/ExperimentTypeFetchOptions',
+  'as/dto/experiment/delete/ExperimentTypeDeletionOptions',
   'as/dto/dataset/search/DataSetTypeSearchCriteria',
   'as/dto/dataset/fetchoptions/DataSetTypeFetchOptions',
+  'as/dto/dataset/delete/DataSetTypeDeletionOptions',
+  'as/dto/material/search/MaterialSearchCriteria',
   'as/dto/material/search/MaterialTypeSearchCriteria',
+  'as/dto/material/fetchoptions/MaterialFetchOptions',
   'as/dto/material/fetchoptions/MaterialTypeFetchOptions',
+  'as/dto/material/delete/MaterialTypeDeletionOptions',
   'as/dto/property/PropertyType',
   'as/dto/property/create/PropertyTypeCreation',
   'as/dto/property/create/CreatePropertyTypesOperation',
@@ -33,8 +41,6 @@ const CLASS_FULL_NAMES = [
   'as/dto/property/search/PropertyTypeSearchCriteria',
   'as/dto/property/fetchoptions/PropertyTypeFetchOptions',
   'as/dto/property/create/PropertyAssignmentCreation',
-  'as/dto/material/fetchoptions/MaterialFetchOptions',
-  'as/dto/material/search/MaterialSearchCriteria',
   'as/dto/vocabulary/id/VocabularyPermId',
   'as/dto/vocabulary/search/VocabularySearchCriteria',
   'as/dto/vocabulary/fetchoptions/VocabularyFetchOptions',
@@ -52,7 +58,7 @@ const CLASS_FULL_NAMES = [
 ]
 
 class Dto {
-  init() {
+  _init() {
     let _this = this
 
     let load = function(index) {
@@ -90,4 +96,4 @@ CLASS_FULL_NAMES.forEach(classFullName => {
   dto[className] = function() {}
 })
 
-export { dto }
+export default dto
