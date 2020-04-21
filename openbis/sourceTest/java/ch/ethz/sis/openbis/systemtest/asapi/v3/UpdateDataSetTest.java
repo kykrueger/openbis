@@ -1174,7 +1174,7 @@ public class UpdateDataSetTest extends AbstractDataSetTest
         DataSetCreation creation = physicalDataSetCreation();
         creation.setTypeId(dataSetType);
         creation.setExperimentId(new ExperimentIdentifier("/TEST-SPACE/TEST-PROJECT/EXP-SPACE-TEST"));
-        creation.setSampleProperty(propertyType.getPermId(), new SampleIdentifier("/CISD/CL1"));
+        creation.setSampleProperty(propertyType.getPermId(), new SampleIdentifier("/MP"));
         DataSetPermId dataSetPermId = v3api.createDataSets(adminSessionToken, Arrays.asList(creation)).get(0);
 
         String sessionToken = v3api.login(TEST_SPACE_USER, PASSWORD);

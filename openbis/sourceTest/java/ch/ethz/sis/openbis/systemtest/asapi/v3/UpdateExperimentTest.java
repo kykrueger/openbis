@@ -1079,7 +1079,7 @@ public class UpdateExperimentTest extends AbstractExperimentTest
         creation.setCode("EXPERIMENT_WITH_SAMPLE_PROPERTY");
         creation.setTypeId(experimentType);
         creation.setProjectId(new ProjectIdentifier("/TEST-SPACE/TEST-PROJECT"));
-        creation.setSampleProperty(propertyType.getPermId(), new SampleIdentifier("/CISD/CL1"));
+        creation.setSampleProperty(propertyType.getPermId(), new SampleIdentifier("/MP"));
         ExperimentPermId experimentPermId = v3api.createExperiments(adminSessionToken, Arrays.asList(creation)).get(0);
 
         String sessionToken = v3api.login(TEST_SPACE_USER, PASSWORD);
