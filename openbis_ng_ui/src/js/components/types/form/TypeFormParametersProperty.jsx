@@ -137,7 +137,7 @@ class TypeFormParametersProperty extends React.PureComponent {
       const { part } = this.props.selection.params
       if (part) {
         const reference = this.references[part]
-        if (reference) {
+        if (reference && reference.current) {
           reference.current.focus()
         }
       }
