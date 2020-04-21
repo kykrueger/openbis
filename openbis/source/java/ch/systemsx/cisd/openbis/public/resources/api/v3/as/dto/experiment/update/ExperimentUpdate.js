@@ -18,6 +18,7 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/
 		prototype.freezeForDataSets = null;
 		prototype.freezeForSamples = null;
 		prototype.properties = null;
+		prototype.sampleProperties = null;
 		prototype.projectId = null;
 		prototype.tagIds = null;
 		prototype.attachments = null;
