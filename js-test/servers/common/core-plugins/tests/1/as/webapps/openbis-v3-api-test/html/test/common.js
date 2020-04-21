@@ -37,6 +37,7 @@ define([ 'jquery', 'openbis', 'underscore', 'test/dtos' ], function($, defaultOp
 		this.RoleLevel = require('as/dto/roleassignment/RoleLevel');
 		this.DataType = require('as/dto/property/DataType');
 		this.EntityKind = require('as/dto/entitytype/EntityKind');
+		this.DataSetKind = require('as/dto/dataset/DataSetKind');
 		this.PluginKind = require('as/dto/plugin/PluginKind');
 		this.PluginType = require('as/dto/plugin/PluginType');
 		this.SemanticAnnotationCreation = dtos.SemanticAnnotationCreation;
@@ -1156,6 +1157,7 @@ define([ 'jquery', 'openbis', 'underscore', 'test/dtos' ], function($, defaultOp
 			fo.withSample();
 			fo.withProperties();
 			fo.withMaterialProperties();
+			fo.withSampleProperties();
 			fo.withParents();
 			fo.withChildren();
 			fo.withContainers();

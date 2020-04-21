@@ -435,6 +435,47 @@ define(
 					testCreate(c, fCreate, c.findDataSet, fCheck);
 				});
 
+				QUnit.test("createDataSet() with property of type SAMPLE", function(assert) {
+					var c = new common(assert, openbis);
+					var propertyTypeCode = c.generateId("PROPERTY_TYPE");
+					var dataSetTypeCode = c.generateId("DATA_SET_TYPE");
+					var code = c.generateId("DATA_SET");
+					
+					var fCreate = function(facade) {
+						var propertyTypeCreation = new c.PropertyTypeCreation();
+						propertyTypeCreation.setCode(propertyTypeCode);
+						propertyTypeCreation.setDescription("hello");
+						propertyTypeCreation.setDataType(c.DataType.SAMPLE);
+						propertyTypeCreation.setLabel("Test Property Type");
+						return facade.createPropertyTypes([ propertyTypeCreation ]).then(function(results) {
+							var assignmentCreation = new c.PropertyAssignmentCreation();
+							assignmentCreation.setPropertyTypeId(new c.PropertyTypePermId(propertyTypeCode));
+							var dataSetTypeCreation = new c.DataSetTypeCreation();
+							dataSetTypeCreation.setCode(dataSetTypeCode);
+							dataSetTypeCreation.setPropertyAssignments([ assignmentCreation ]);
+							return facade.createDataSetTypes([ dataSetTypeCreation ]).then(function(results) {
+								var creation = new c.DataSetCreation();
+								creation.setTypeId(new c.EntityTypePermId(dataSetTypeCode));
+								creation.setCode(code);
+								creation.setDataSetKind(c.DataSetKind.CONTAINER);
+								creation.setDataStoreId(new c.DataStorePermId("DSS1"));
+								creation.setExperimentId(new c.ExperimentIdentifier("/TEST/TEST-PROJECT/TEST-EXPERIMENT"));
+								creation.setSampleProperty(propertyTypeCode, new c.SamplePermId("20130412140147735-20"));
+								return facade.createDataSets([ creation ]);
+							});
+						});
+					}
+					
+					var fCheck = function(dataSet) {
+						c.assertEqual(dataSet.getCode(), code, "Data set code");
+						c.assertEqual(dataSet.getType().getCode(), dataSetTypeCode, "Type code");
+						c.assertEqual(dataSet.getProperties()[propertyTypeCode], "20130412140147735-20", "Sample property id");
+						c.assertEqual(dataSet.getSampleProperties()[propertyTypeCode].getIdentifier().getIdentifier(), "/PLATONIC/PLATE-1", "Sample property");
+					}
+					
+					testCreate(c, fCreate, c.findDataSet, fCheck);
+				});
+				
 				QUnit.test("createDataSetTypes()", function(assert) {
 					var c = new common(assert, openbis);
 					var code = c.generateId("DATA_SET_TYPE");
