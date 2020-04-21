@@ -45,6 +45,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifi
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.IExperimentId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.update.ExperimentUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.HistoryEntry;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.PropertyHistoryEntry;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.PersonPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.IProjectId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
@@ -58,7 +60,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchO
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.update.SampleUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.ITagId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagCode;
@@ -1146,9 +1147,15 @@ public class UpdateExperimentTest extends AbstractExperimentTest
         ExperimentFetchOptions fetchOptions = new ExperimentFetchOptions();
         fetchOptions.withProperties();
         fetchOptions.withSampleProperties();
+        fetchOptions.withHistory().withAuthor();
         Experiment experiment = v3api.getExperiments(sessionToken, Arrays.asList(experimentPermId), fetchOptions).get(experimentPermId);
         assertEquals(experiment.getProperties().toString(), "{" + propertyType.getPermId() + "=200811050924898-997}");
         assertEquals(experiment.getSampleProperties().toString(), "{" + propertyType.getPermId() + "=Sample 200811050924898-997}");
+        List<HistoryEntry> history = experiment.getHistory();
+        assertEquals(history.get(0).getAuthor().getUserId(), TEST_USER);
+        assertEquals(((PropertyHistoryEntry) history.get(0)).getPropertyName(), propertyType.getPermId());
+        assertEquals(((PropertyHistoryEntry) history.get(0)).getPropertyValue(), "200811050919915-8");
+        assertEquals(history.size(), 1);
     }
 
     @Test
@@ -1176,9 +1183,15 @@ public class UpdateExperimentTest extends AbstractExperimentTest
         ExperimentFetchOptions fetchOptions = new ExperimentFetchOptions();
         fetchOptions.withProperties();
         fetchOptions.withSampleProperties();
+        fetchOptions.withHistory().withAuthor();
         Experiment experiment = v3api.getExperiments(sessionToken, Arrays.asList(experimentPermId), fetchOptions).get(experimentPermId);
         assertEquals(experiment.getProperties().toString(), "{}");
         assertEquals(experiment.getSampleProperties().toString(), "{}");
+        List<HistoryEntry> history = experiment.getHistory();
+        assertEquals(history.get(0).getAuthor().getUserId(), TEST_USER);
+        assertEquals(((PropertyHistoryEntry) history.get(0)).getPropertyName(), propertyType.getPermId());
+        assertEquals(((PropertyHistoryEntry) history.get(0)).getPropertyValue(), "200811050919915-8");
+        assertEquals(history.size(), 1);
     }
 
     @Test
