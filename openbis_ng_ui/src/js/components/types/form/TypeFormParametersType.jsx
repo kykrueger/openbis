@@ -65,13 +65,15 @@ class TypeFormParametersType extends React.PureComponent {
   }
 
   loadValidationPlugins() {
+    const { objectType } = this.getType(this.props)
     const { controller } = this.props
+
     return controller
       .getFacade()
-      .loadValidationPlugins()
-      .then(result => {
+      .loadValidationPlugins(objectType)
+      .then(validationPlugins => {
         this.setState(() => ({
-          validationPlugins: result.objects
+          validationPlugins
         }))
       })
       .catch(error => {

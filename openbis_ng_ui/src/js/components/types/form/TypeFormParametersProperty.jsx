@@ -86,13 +86,14 @@ class TypeFormParametersProperty extends React.PureComponent {
   }
 
   loadDynamicPlugins() {
+    const { objectType } = this.getType()
     const { controller } = this.props
     return controller
       .getFacade()
-      .loadDynamicPlugins()
-      .then(result => {
+      .loadDynamicPlugins(objectType)
+      .then(dynamicPlugins => {
         this.setState(() => ({
-          dynamicPlugins: result.objects
+          dynamicPlugins
         }))
       })
       .catch(error => {
@@ -105,9 +106,9 @@ class TypeFormParametersProperty extends React.PureComponent {
     return controller
       .getFacade()
       .loadVocabularies()
-      .then(result => {
+      .then(vocabularies => {
         this.setState(() => ({
-          vocabularies: result.objects
+          vocabularies
         }))
       })
       .catch(error => {
@@ -120,9 +121,9 @@ class TypeFormParametersProperty extends React.PureComponent {
     return controller
       .getFacade()
       .loadMaterialTypes()
-      .then(result => {
+      .then(materialTypes => {
         this.setState(() => ({
-          materialTypes: result.objects
+          materialTypes
         }))
       })
       .catch(error => {

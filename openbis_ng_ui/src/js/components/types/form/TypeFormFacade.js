@@ -4,7 +4,7 @@ import TypeFormControllerStrategies from './TypeFormControllerStrategies.js'
 
 export default class TypeFormFacade {
   loadType(object) {
-    const strategy = this._getStrategy(object)
+    const strategy = this._getStrategy(object.type)
     const id = new openbis.EntityTypePermId(object.id)
     const fo = strategy.createTypeFetchOptions()
     fo.withValidationPlugin()
@@ -25,7 +25,7 @@ export default class TypeFormFacade {
   }
 
   loadUsages(object) {
-    const strategy = this._getStrategy(object)
+    const strategy = this._getStrategy(object.type)
 
     function createTypeUsedOperation(typeId) {
       const criteria = strategy.createEntitySearchCriteria()
@@ -91,24 +91,35 @@ export default class TypeFormFacade {
     })
   }
 
-  loadValidationPlugins() {
-    let criteria = new openbis.PluginSearchCriteria()
+  loadValidationPlugins(type) {
+    const criteria = new openbis.PluginSearchCriteria()
     criteria.withPluginType().thatEquals(openbis.PluginType.ENTITY_VALIDATION)
-    let fo = new openbis.PluginFetchOptions()
-    return openbis.searchPlugins(criteria, fo)
+    const fo = new openbis.PluginFetchOptions()
+    return this._loadPlugins(criteria, fo, type)
   }
 
-  loadDynamicPlugins() {
-    let criteria = new openbis.PluginSearchCriteria()
+  loadDynamicPlugins(type) {
+    const criteria = new openbis.PluginSearchCriteria()
     criteria.withPluginType().thatEquals(openbis.PluginType.DYNAMIC_PROPERTY)
-    let fo = new openbis.PluginFetchOptions()
-    return openbis.searchPlugins(criteria, fo)
+    const fo = new openbis.PluginFetchOptions()
+    return this._loadPlugins(criteria, fo, type)
+  }
+
+  _loadPlugins(criteria, fo, type) {
+    const strategy = this._getStrategy(type)
+    return openbis.searchPlugins(criteria, fo).then(results => {
+      return results.getObjects().filter(plugin => {
+        return plugin.getEntityKinds().includes(strategy.getEntityKind())
+      })
+    })
   }
 
   loadVocabularies() {
     let criteria = new openbis.VocabularySearchCriteria()
     let fo = new openbis.VocabularyFetchOptions()
-    return openbis.searchVocabularies(criteria, fo)
+    return openbis
+      .searchVocabularies(criteria, fo)
+      .then(result => result.objects)
   }
 
   loadVocabularyTerms(vocabulary) {
@@ -120,13 +131,17 @@ export default class TypeFormFacade {
       .withCode()
       .thatEquals(vocabulary)
 
-    return openbis.searchVocabularyTerms(criteria, fo)
+    return openbis
+      .searchVocabularyTerms(criteria, fo)
+      .then(result => result.objects)
   }
 
   loadMaterialTypes() {
     let criteria = new openbis.MaterialTypeSearchCriteria()
     let fo = new openbis.MaterialTypeFetchOptions()
-    return openbis.searchMaterialTypes(criteria, fo)
+    return openbis
+      .searchMaterialTypes(criteria, fo)
+      .then(result => result.objects)
   }
 
   loadMaterials(materialType) {
@@ -138,7 +153,7 @@ export default class TypeFormFacade {
       .withCode()
       .thatEquals(materialType)
 
-    return openbis.searchMaterials(criteria, fo)
+    return openbis.searchMaterials(criteria, fo).then(result => result.objects)
   }
 
   executeOperations(operations, options) {
@@ -149,17 +164,20 @@ export default class TypeFormFacade {
     return openbis.catch(error)
   }
 
-  _getStrategy(object) {
+  _getStrategy(type) {
     const strategies = new TypeFormControllerStrategies()
     strategies.setObjectTypeStrategy(new ObjectTypeStrategy())
     strategies.setCollectionTypeStrategy(new CollectionTypeStrategy())
     strategies.setDataSetTypeStrategy(new DataSetTypeStrategy())
     strategies.setMaterialTypeStrategy(new MaterialTypeStrategy())
-    return strategies.getStrategy(object.type)
+    return strategies.getStrategy(type)
   }
 }
 
 class ObjectTypeStrategy {
+  getEntityKind() {
+    return openbis.EntityKind.SAMPLE
+  }
   createTypeFetchOptions() {
     return new openbis.SampleTypeFetchOptions()
   }
@@ -178,6 +196,9 @@ class ObjectTypeStrategy {
 }
 
 class CollectionTypeStrategy {
+  getEntityKind() {
+    return openbis.EntityKind.EXPERIMENT
+  }
   createTypeFetchOptions() {
     return new openbis.ExperimentTypeFetchOptions()
   }
@@ -196,6 +217,9 @@ class CollectionTypeStrategy {
 }
 
 class DataSetTypeStrategy {
+  getEntityKind() {
+    return openbis.EntityKind.DATA_SET
+  }
   createTypeFetchOptions() {
     return new openbis.DataSetTypeFetchOptions()
   }
@@ -214,6 +238,9 @@ class DataSetTypeStrategy {
 }
 
 class MaterialTypeStrategy {
+  getEntityKind() {
+    return openbis.EntityKind.MATERIAL
+  }
   createTypeFetchOptions() {
     return new openbis.MaterialTypeFetchOptions()
   }

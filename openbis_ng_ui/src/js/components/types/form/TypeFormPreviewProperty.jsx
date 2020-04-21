@@ -102,9 +102,9 @@ class TypeFormPreviewProperty extends React.PureComponent {
       return controller
         .getFacade()
         .loadMaterials(property.materialType)
-        .then(result => {
+        .then(materials => {
           this.setState(() => ({
-            materials: result.objects
+            materials
           }))
         })
         .catch(error => {
@@ -124,9 +124,9 @@ class TypeFormPreviewProperty extends React.PureComponent {
       return controller
         .getFacade()
         .loadVocabularyTerms(property.vocabulary)
-        .then(result => {
+        .then(terms => {
           this.setState(() => ({
-            terms: result.objects
+            terms
           }))
         })
         .catch(error => {
