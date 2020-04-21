@@ -14,7 +14,71 @@ def process(context, parameters):
         result = doSpacesBelongToDisabledUsers(context, parameters);
     elif method == "trashStorageSamplesWithoutParents":
         result = trashStorageSamplesWithoutParents(context, parameters);
+    elif method == "isValidStoragePositionToInsert":
+        result = isValidStoragePositionToInsert(context, parameters);
     return result;
+
+def isValidStoragePositionToInsert(context, parameters):
+    from ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions import SampleFetchOptions
+    from ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search import SampleSearchCriteria
+    from ch.systemsx.cisd.common.exceptions import UserFailureException
+
+    sampleProperties = parameters.get("sampleProperties");
+    storageCode = sampleProperties.get("$STORAGE_POSITION.STORAGE_CODE");
+    storageRackRow = sampleProperties.get("$STORAGE_POSITION.STORAGE_RACK_ROW");
+    storageRackColumn = sampleProperties.get("$STORAGE_POSITION.STORAGE_RACK_COLUMN");
+    storageBoxName = sampleProperties.get("$STORAGE_POSITION.STORAGE_BOX_NAME");
+    storageBoxSize = sampleProperties.get("$STORAGE_POSITION.STORAGE_BOX_SIZE");
+    storageBoxPosition = sampleProperties.get("$STORAGE_POSITION.STORAGE_BOX_POSITION");
+    storageUser = sampleProperties.get("$STORAGE_POSITION.STORAGE_USER");
+
+    # 1. Obtain Storage to retrieve Storage Validation Level
+    if storageCode is None:
+        raise UserFailureException("Storage code missing");
+
+    sessionToken = context.applicationService.loginAsSystem();
+    searchCriteria = SampleSearchCriteria();
+    searchCriteria.withCode().thatEquals(storageCode);
+    searchCriteria.withType().withCode().thatEquals("STORAGE");
+
+    fetchOptions = SampleFetchOptions();
+    fetchOptions.withProperties();
+
+    storage = None;
+    storageValidationLevel = None;
+    sampleSearchResults = context.applicationService.searchSamples(sessionToken, searchCriteria, fetchOptions).getObjects();
+    if sampleSearchResults.size() == 1:
+        storage = sampleSearchResults.get(0);
+        storageValidationLevel = storage.getProperty("$STORAGE.STORAGE_VALIDATION_LEVEL");
+    else:
+        raise UserFailureException("Found: " + sampleSearchResults.size() + " storages for storage code: " + storageCode);
+
+    # 2. Check that the state of the sample is valid for the Storage Validation Level
+    if storageRackRow is None or storageRackColumn is None:
+        raise UserFailureException("Storage rack row or column missing");
+    elif storageBoxName is None and (storageValidationLevel == "BOX" or storageValidationLevel == "BOX_POSITION"):
+        raise UserFailureException("Storage box name missing");
+    elif storageBoxSize is None and (storageValidationLevel == "BOX" or storageValidationLevel == "BOX_POSITION"):
+        raise UserFailureException("Storage box size missing");
+    elif storageBoxPosition is None and storageValidationLevel == "BOX_POSITION":
+        raise UserFailureException("Storage box position missing");
+    else:
+        pass
+
+    # 3. IF $STORAGE.STORAGE_VALIDATION_LEVEL >= RACK
+    # 3.1 Check the rack exists, it should always be specified
+    storageRowNum = storage.getProperty("$STORAGE.ROW_NUM");
+    storageColNum = storage.getProperty("$STORAGE.COLUMN_NUM");
+
+    # 4. IF $STORAGE.STORAGE_VALIDATION_LEVEL >= BOX
+    # 4.1 If the given box name already exists -> Box exists
+    # 4.2 The number of total different box names should be below $STORAGE.BOX_NUM
+
+    # 5. IF $STORAGE.STORAGE_VALIDATION_LEVEL >= BOX_POSITION
+    # 5.1 If the given box position already exists with the same permId -> Is an update
+    # 5.2 If the given box name already exists, without the position -> Is new
+
+    return True
 
 def getServiceProperty(context, parameters):
     propertyKey = parameters.get("propertyKey")
