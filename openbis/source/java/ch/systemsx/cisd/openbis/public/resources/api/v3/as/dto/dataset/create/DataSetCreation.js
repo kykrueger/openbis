@@ -1,5 +1,7 @@
 define([ "stjs" ], function(stjs) {
 	var DataSetCreation = function() {
+		this.properties = {};
+		this.sampleProperties = {};
 	};
 	stjs.extend(DataSetCreation, null, [], function(constructor, prototype) {
 		prototype['@type'] = 'as.dto.dataset.create.DataSetCreation';
@@ -16,6 +18,7 @@ define([ "stjs" ], function(stjs) {
 		prototype.linkedData = null;
 		prototype.tagIds = null;
 		prototype.properties = null;
+		prototype.sampleProperties = null;
 		prototype.containerIds = null;
 		prototype.componentIds = null;
 		prototype.parentIds = null;
@@ -101,6 +104,12 @@ define([ "stjs" ], function(stjs) {
 		prototype.setProperties = function(properties) {
 			this.properties = properties;
 		};
+		prototype.setSampleProperty = function(propertyName, sampleId) {
+			this.sampleProperties[propertyName] = sampleId;
+		};
+		prototype.getSampleProperties = function() {
+			return this.sampleProperties;
+		};
 		prototype.getContainerIds = function() {
 			return this.containerIds;
 		};
@@ -150,6 +159,10 @@ define([ "stjs" ], function(stjs) {
 			arguments : [ "Object" ]
 		},
 		properties : {
+			name : "Map",
+			arguments : [ null, null ]
+		},
+		sampleProperties : {
 			name : "Map",
 			arguments : [ null, null ]
 		},

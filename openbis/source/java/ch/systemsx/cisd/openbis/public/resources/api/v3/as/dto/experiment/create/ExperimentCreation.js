@@ -14,6 +14,7 @@ define([ "stjs" ], function(stjs) {
 		prototype.code = null;
 		prototype.tagIds = null;
 		prototype.properties = null;
+		prototype.sampleProperties = null;
 		prototype.attachments = null;
 		prototype.creationId = null;
 

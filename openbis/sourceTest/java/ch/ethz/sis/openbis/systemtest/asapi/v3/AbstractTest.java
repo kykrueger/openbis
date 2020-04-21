@@ -37,6 +37,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -51,6 +52,7 @@ import org.testng.annotations.BeforeMethod;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.attachment.Attachment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.attachment.create.AttachmentCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.CreationId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.IObjectId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IAttachmentsHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ICodeHolder;
@@ -74,7 +76,15 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ISpaceHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ITagsHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IValidationPluginHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetKind;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetTypeCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.PhysicalDataCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.FileFormatTypePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.ProprietaryStorageFormatPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.RelativeLocationLocatorTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.DataStore;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.id.DataStorePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.Deletion;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.id.IDeletionId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
@@ -82,6 +92,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.create.ExperimentTypeCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.HistoryEntry;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.Material;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.MaterialPermId;
@@ -1438,9 +1449,10 @@ public class AbstractTest extends SystemTestCase
         }
         assertEquals(event.getReason(), freezingFlags.asJson());
         assertEquals(event.getRegistrator().getUserId(), user);
-        if (event.getRegistrationDate().getTime() < System.currentTimeMillis() - 2000)
+        Date now = new Date();
+        if (event.getRegistrationDate().getTime() < now.getTime() - 3000)
         {
-            fail("Event registration date " + event.getRegistrationDate() + " is more than 2 seconds in the past.");
+            fail("Event registration date " + event.getRegistrationDate() + " is more than 3 seconds in the past: " + now);
         }
     }
 
@@ -1495,6 +1507,44 @@ public class AbstractTest extends SystemTestCase
         }
         creation.setPropertyAssignments(assignments);
         return v3api.createExperimentTypes(sessionToken, Arrays.asList(creation)).get(0);
+    }
+
+    protected EntityTypePermId createADataSetType(String sessionToken, boolean mandatory, PropertyTypePermId... propertyTypes)
+    {
+        DataSetTypeCreation creation = new DataSetTypeCreation();
+        creation.setCode("DATA-SET-TYPE-" + System.currentTimeMillis());
+        List<PropertyAssignmentCreation> assignments = new ArrayList<>();
+        for (PropertyTypePermId propertyType : propertyTypes)
+        {
+            PropertyAssignmentCreation propertyAssignmentCreation = new PropertyAssignmentCreation();
+            propertyAssignmentCreation.setPropertyTypeId(propertyType);
+            propertyAssignmentCreation.setMandatory(mandatory);
+            assignments.add(propertyAssignmentCreation);
+        }
+        creation.setPropertyAssignments(assignments);
+        return v3api.createDataSetTypes(sessionToken, Arrays.asList(creation)).get(0);
+    }
+
+    protected DataSetCreation physicalDataSetCreation()
+    {
+        String code = UUID.randomUUID().toString();
+    
+        PhysicalDataCreation physicalCreation = new PhysicalDataCreation();
+        physicalCreation.setLocation("test/location/" + code);
+        physicalCreation.setFileFormatTypeId(new FileFormatTypePermId("TIFF"));
+        physicalCreation.setLocatorTypeId(new RelativeLocationLocatorTypePermId());
+        physicalCreation.setStorageFormatId(new ProprietaryStorageFormatPermId());
+    
+        DataSetCreation creation = new DataSetCreation();
+        creation.setCode(code);
+        creation.setDataSetKind(DataSetKind.PHYSICAL);
+        creation.setTypeId(new EntityTypePermId("UNKNOWN"));
+        creation.setExperimentId(new ExperimentIdentifier("/CISD/NEMO/EXP1"));
+        creation.setDataStoreId(new DataStorePermId("STANDARD"));
+        creation.setPhysicalData(physicalCreation);
+        creation.setCreationId(new CreationId(code));
+    
+        return creation;
     }
 
     protected static List<MethodWrapper> getFreezingMethods(Class<?> clazz)

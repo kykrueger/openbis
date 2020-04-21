@@ -55,6 +55,9 @@ public class DataSetTranslator extends AbstractCachingTranslator<Long, DataSet, 
     private IDataSetMaterialPropertyTranslator materialPropertyTranslator;
 
     @Autowired
+    private IDataSetSamplePropertyTranslator samplePropertyTranslator;
+
+    @Autowired
     private IDataSetPhysicalDataTranslator physicalDataTranslator;
 
     @Autowired
@@ -132,6 +135,12 @@ public class DataSetTranslator extends AbstractCachingTranslator<Long, DataSet, 
         {
             relations.put(IDataSetMaterialPropertyTranslator.class,
                     materialPropertyTranslator.translate(context, dataSetIds, fetchOptions.withMaterialProperties()));
+        }
+
+        if (fetchOptions.hasSampleProperties())
+        {
+            relations.put(IDataSetSamplePropertyTranslator.class,
+                    samplePropertyTranslator.translate(context, dataSetIds, fetchOptions.withSampleProperties()));
         }
 
         if (fetchOptions.hasPhysicalData())
@@ -243,6 +252,12 @@ public class DataSetTranslator extends AbstractCachingTranslator<Long, DataSet, 
         {
             result.setMaterialProperties(relations.get(IDataSetMaterialPropertyTranslator.class, dataSetId));
             result.getFetchOptions().withMaterialPropertiesUsing(fetchOptions.withMaterialProperties());
+        }
+
+        if (fetchOptions.hasSampleProperties())
+        {
+            result.setSampleProperties(relations.get(IDataSetSamplePropertyTranslator.class, dataSetId));
+            result.getFetchOptions().withSamplePropertiesUsing(fetchOptions.withSampleProperties());
         }
 
         if (fetchOptions.hasPhysicalData())
