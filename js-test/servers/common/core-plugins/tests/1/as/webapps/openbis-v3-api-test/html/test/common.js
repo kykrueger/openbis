@@ -1103,6 +1103,7 @@ define([ 'jquery', 'openbis', 'underscore', 'test/dtos' ], function($, defaultOp
 			fo.withHistory();
 			fo.withProperties();
 			fo.withMaterialProperties();
+			fo.withSampleProperties();
 			fo.withTags();
 			fo.withRegistrator();
 			fo.withModifier();

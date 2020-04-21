@@ -327,6 +327,55 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testUpdate(c, fCreate, fUpdate, c.findExperiment, null, fCheckError);
 		});
 
+		QUnit.test("updateExperiment() change property of type SAMPLE", function(assert) {
+			var c = new common(assert, openbis);
+			var propertyTypeCode = c.generateId("PROPERTY_TYPE");
+			var experimentTypeCode = c.generateId("EXPERIMENT_TYPE");
+			var code = c.generateId("EXPERIMENT");
+
+			var fCreate = function(facade) {
+				var propertyTypeCreation = new c.PropertyTypeCreation();
+				propertyTypeCreation.setCode(propertyTypeCode);
+				propertyTypeCreation.setDescription("hello");
+				propertyTypeCreation.setDataType(c.DataType.SAMPLE);
+				propertyTypeCreation.setLabel("Test Property Type");
+				return facade.createPropertyTypes([ propertyTypeCreation ]).then(function(results) {
+					var assignmentCreation = new c.PropertyAssignmentCreation();
+					assignmentCreation.setPropertyTypeId(new c.PropertyTypePermId(propertyTypeCode));
+					var experimentTypeCreation = new c.ExperimentTypeCreation();
+					experimentTypeCreation.setCode(experimentTypeCode);
+					experimentTypeCreation.setPropertyAssignments([ assignmentCreation ]);
+					return facade.createExperimentTypes([ experimentTypeCreation ]).then(function(results) {
+						var creation = new c.ExperimentCreation();
+						creation.setTypeId(new c.EntityTypePermId(experimentTypeCode));
+						creation.setCode(code);
+						creation.setProjectId(new c.ProjectIdentifier("/TEST/TEST-PROJECT"));
+						creation.setSampleProperty(propertyTypeCode, new c.SamplePermId("20130412140147735-20"));
+						return facade.createExperiments([ creation ]);
+					});
+				});
+			}
+
+			var fUpdate = function(facade, permId) {
+				var update = new c.ExperimentUpdate();
+				update.setExperimentId(permId);
+				update.setSampleProperty(propertyTypeCode, new c.SamplePermId("20130412140147736-21"));
+				return facade.updateExperiments([ update ]);
+			}
+
+			var fCheck = function(experiment) {
+				c.assertEqual(experiment.getCode(), code, "Experiment code");
+				c.assertEqual(experiment.getType().getCode(), experimentTypeCode, "Type code");
+				c.assertEqual(experiment.getProject().getCode(), "TEST-PROJECT", "Project code");
+				c.assertEqual(experiment.getProject().getSpace().getCode(), "TEST", "Space code");
+				c.assertEqual(experiment.getSampleProperties()[propertyTypeCode].getIdentifier().getIdentifier(), "/PLATONIC/PLATE-2", "Sample property");
+				c.assertEqual(experiment.getHistory()[0].getPropertyName(), propertyTypeCode, "Previous sample property name");
+				c.assertEqual(experiment.getHistory()[0].getPropertyValue(), "20130412140147735-20", "Previous sample property value");
+			}
+
+			testUpdate(c, fCreate, fUpdate, c.findExperiment, fCheck);
+		});
+		
 		QUnit.test("updateSampleTypes()", function(assert) {
 			var c = new common(assert, openbis);
 			var code = c.generateId("SAMPLE_TYPE");
