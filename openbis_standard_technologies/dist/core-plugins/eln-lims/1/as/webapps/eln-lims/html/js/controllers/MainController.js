@@ -1013,7 +1013,7 @@ function MainController(profile) {
 	}
 	
 	this._showBlancPage = function() {
-		var content = this._getBackwardsCompatibleMainContainer();
+		var content = this._getBackwardsCompatibleMainContainer("backwards-compatible-main-container-id");
 		content.append("Welcome to openBIS ELN-LIMS.");
 	}
 	
