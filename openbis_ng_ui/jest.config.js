@@ -7,7 +7,8 @@ module.exports = {
       'jest-junit',
       {
         suiteNameTemplate: '{filename}',
-        classNameTemplate: '{title}'
+        classNameTemplate: '{filename}',
+        titleTemplate: '{title}'
       }
     ]
   ],
