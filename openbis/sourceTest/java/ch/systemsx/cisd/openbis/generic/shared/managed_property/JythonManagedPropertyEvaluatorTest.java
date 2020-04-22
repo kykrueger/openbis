@@ -77,8 +77,7 @@ public class JythonManagedPropertyEvaluatorTest extends AssertJUnit
             fail("EvaluatorException expected");
         } catch (EvaluatorException ex)
         {
-            assertEquals("SyntaxError: (\"no viable alternative at input '='\", "
-                    + "('<string>', 1, 2, 'a =\\n'))", ex.getMessage());
+            assertTrue(ex.getMessage().startsWith("SyntaxError: (\"no viable alternative at input"));
         }
     }
 

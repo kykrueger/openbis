@@ -17,7 +17,7 @@
 package ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +34,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.id.ExternalDmsPermId
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.id.IExternalDmsId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.update.ExternalDmsUpdate;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.ServiceFinderUtils;
+import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.config.SyncConfig;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.util.Monitor;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
@@ -68,21 +69,22 @@ public class MasterDataSynchronizer
 
     final boolean dryRun;
 
-    final Map<TechId, List<VocabularyTerm>> vocabularyTermsToBeDeleted;
-
     final Map<TechId, String> vocabularyTechIdToCode = new HashMap<TechId, String>();
 
     private IApplicationServerApi v3api;
 
-    public MasterDataSynchronizer(String harvesterUser, String harvesterPassword, boolean dryRun, boolean verbose, Logger operationLog)
+    private SyncConfig config;
+
+    public MasterDataSynchronizer(SyncConfig config, Logger operationLog)
     {
+        this.config = config;
         String openBisServerUrl = ServiceProvider.getConfigProvider().getOpenBisServerUrl();
-        this.dryRun = dryRun;
-        this.synchronizerFacade = new SynchronizerFacade(openBisServerUrl, harvesterUser, harvesterPassword, dryRun, verbose, operationLog);
+        this.dryRun = config.isDryRun();
+        this.synchronizerFacade = new SynchronizerFacade(openBisServerUrl, config.getHarvesterUser(),
+                config.getHarvesterPass(), dryRun, config.isVerbose(), operationLog);
         this.commonServer = ServiceFinderUtils.getCommonServer(openBisServerUrl);
-        this.sessionToken = ServiceFinderUtils.login(commonServer, harvesterUser, harvesterPassword);
+        this.sessionToken = ServiceFinderUtils.login(commonServer, config.getHarvesterUser(), config.getHarvesterPass());
         v3api = ServiceProvider.getV3ApplicationService();
-        vocabularyTermsToBeDeleted = new HashMap<TechId, List<VocabularyTerm>>();
     }
 
     public void synchronizeMasterData(MasterData masterData, Monitor monitor)
@@ -113,16 +115,6 @@ public class MasterDataSynchronizer
         synchronizerFacade.printSummary();
     }
 
-    public void cleanupUnusedMasterData()
-    {
-        for (TechId vocabularyId : vocabularyTermsToBeDeleted.keySet())
-        {
-            synchronizerFacade.deleteVocabularyTerms(vocabularyId, vocabularyTechIdToCode.get(vocabularyId),
-                    vocabularyTermsToBeDeleted.get(vocabularyId),
-                    Collections.<ch.systemsx.cisd.openbis.generic.shared.basic.dto.VocabularyTermReplacement> emptyList());
-        }
-    }
-
     private void processDeferredMaterialTypePropertyAssignments(MultiKeyMap<String, List<NewETPTAssignment>> propertyAssignmentsToProcess)
     {
         List<? extends EntityType> existingEntityTypes = getExistingEntityTypes(EntityKind.MATERIAL);
@@ -151,10 +143,13 @@ public class MasterDataSynchronizer
             Script existingPluginOrNull = pluginMap.get(name);
             if (existingPluginOrNull != null)
             {
-                existingPluginOrNull.setName(incomingplugin.getName());
-                existingPluginOrNull.setScript(incomingplugin.getScript());
-                existingPluginOrNull.setDescription(incomingplugin.getDescription());
-                synchronizerFacade.updateValidationPlugin(existingPluginOrNull);
+                if (isNewer(incomingplugin.getModificationDate(), existingPluginOrNull.getModificationDate()))
+                {
+                    existingPluginOrNull.setName(incomingplugin.getName());
+                    existingPluginOrNull.setScript(incomingplugin.getScript());
+                    existingPluginOrNull.setDescription(incomingplugin.getDescription());
+                    synchronizerFacade.updateValidationPlugin(existingPluginOrNull);
+                }
             } else
             {
                 synchronizerFacade.registerValidationPlugin(incomingplugin);
@@ -162,12 +157,16 @@ public class MasterDataSynchronizer
         }
     }
 
+    private static boolean isNewer(Date dateOfIncoming, Date dateOfExisting)
+    {
+        return dateOfIncoming != null && dateOfIncoming.after(dateOfExisting);
+    }
+
     private void processExternalDataManagementSystems(Map<String, ExternalDms> externalDataManagementSystems)
     {
         List<ExternalDmsPermId> ids = externalDataManagementSystems.keySet().stream()
                 .map(ExternalDmsPermId::new).collect(Collectors.toList());
-        Map<IExternalDmsId, ExternalDms> existingDmss 
-            = v3api.getExternalDataManagementSystems(sessionToken,ids, new ExternalDmsFetchOptions());
+        Map<IExternalDmsId, ExternalDms> existingDmss = v3api.getExternalDataManagementSystems(sessionToken, ids, new ExternalDmsFetchOptions());
         List<ExternalDmsCreation> creations = new ArrayList<>();
         List<ExternalDmsUpdate> updates = new ArrayList<>();
         for (ExternalDms externalDms : externalDataManagementSystems.values())
@@ -238,13 +237,16 @@ public class MasterDataSynchronizer
             Vocabulary existingVocabulary = existingVocabularyMap.get(vocabCode);
             if (existingVocabulary != null)
             {
-                existingVocabulary.setCode(vocabCode);
-                existingVocabulary.setDescription(newVocabulary.getDescription());
-                existingVocabulary.setInternalNamespace(newVocabulary.isInternalNamespace());
-                existingVocabulary.setManagedInternally(newVocabulary.isManagedInternally());
-                existingVocabulary.setURLTemplate(newVocabulary.getURLTemplate());
-                existingVocabulary.setChosenFromList(newVocabulary.isChosenFromList());
-                synchronizerFacade.updateVocabulary(existingVocabulary);
+                if (isNewer(newVocabulary.getModificationDate(), existingVocabulary.getModificationDate()))
+                {
+                    existingVocabulary.setCode(vocabCode);
+                    existingVocabulary.setDescription(newVocabulary.getDescription());
+                    existingVocabulary.setInternalNamespace(newVocabulary.isInternalNamespace());
+                    existingVocabulary.setManagedInternally(newVocabulary.isManagedInternally());
+                    existingVocabulary.setURLTemplate(newVocabulary.getURLTemplate());
+                    existingVocabulary.setChosenFromList(newVocabulary.isChosenFromList());
+                    synchronizerFacade.updateVocabulary(existingVocabulary);
+                }
                 processVocabularyTerms(sessionToken, commonServer, newVocabulary, existingVocabulary);
             } else
             {
@@ -273,28 +275,16 @@ public class MasterDataSynchronizer
                 termsToBeAdded.add(incomingTerm);
             } else
             {
-                existingTerm.setLabel(incomingTerm.getLabel());
-                existingTerm.setDescription(incomingTerm.getDescription());
-                existingTerm.setOrdinal(incomingTerm.getOrdinal());
-                termsToBeUpdated.add(existingTerm);
+                if (isNewer(incomingTerm.getModificationDate(), existingTerm.getModificationDate()))
+                {
+                    existingTerm.setLabel(incomingTerm.getLabel());
+                    existingTerm.setDescription(incomingTerm.getDescription());
+                    existingTerm.setOrdinal(incomingTerm.getOrdinal());
+                    termsToBeUpdated.add(existingTerm);
+                }
             }
         }
 
-        List<VocabularyTerm> termsToBeDeleted = new ArrayList<VocabularyTerm>();
-        for (VocabularyTerm term : existingVocabulary.getTerms())
-        {
-            String termCode = term.getCode();
-            if (incomingTermMap.keySet().contains(termCode) == false)
-            {
-                termsToBeDeleted.add(term);
-            }
-        }
-
-        // defer deletions of vocabulary terms until after the entities referencing the terms are synced
-        if (termsToBeDeleted.isEmpty() == false)
-        {
-            vocabularyTermsToBeDeleted.put(new TechId(existingVocabulary.getId()), termsToBeDeleted);
-        }
         synchronizerFacade.addVocabularyTerms(existingVocabulary.getCode(), new TechId(existingVocabulary.getId()), termsToBeAdded);
         for (VocabularyTerm term : termsToBeUpdated)
         {
@@ -379,13 +369,16 @@ public class MasterDataSynchronizer
                 synchronizerFacade.assignPropertyType(newETPTAssignment);
             }
         }
-        // remove property assignments that are no longer valid
-        for (EntityTypePropertyType etpt : assignedPropertyTypes)
+        if (config.isPropertyUnassignmentAllowed())
         {
-            if (findInIncomingPropertyAssignments(etpt, incomingAssignmentsList) == false)
+            // remove property assignments that are no longer valid
+            for (EntityTypePropertyType etpt : assignedPropertyTypes)
             {
-                synchronizerFacade.unassignPropertyType(existingEntityType.getEntityKind(), etpt.getPropertyType().getCode(), etpt
-                        .getEntityType().getCode());
+                if (findInIncomingPropertyAssignments(etpt, incomingAssignmentsList) == false)
+                {
+                    synchronizerFacade.unassignPropertyType(existingEntityType.getEntityKind(), etpt.getPropertyType().getCode(), etpt
+                            .getEntityType().getCode());
+                }
             }
         }
     }
