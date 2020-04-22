@@ -1,3 +1,8 @@
+## Changes with pybis-1.14.2
+
+- properties can be provided with either upper or lowercase
+- bugfix of duplicate property columns
+
 ## Changes with pybis-1.14.1
 
 - small bugfix
