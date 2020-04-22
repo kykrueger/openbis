@@ -25,7 +25,7 @@ function LabNotebookView(labNotebookController, labNotebookView) {
 			
 		$form.append($formColumn);
 		
-		var $formTitle = $("<h2 id='lab-notebook-id' >").append("Lab Notebook");
+		var $formTitle = $("<h2>").append("Lab Notebook");
 		
 		//
 		// Toolbar
