@@ -1803,15 +1803,18 @@ class Openbis:
             "operator": "AND"
         }
 
-        options = self._get_fetchopts_for_attrs(attrs)
+        attrs_fetchoptions = self._get_fetchopts_for_attrs(attrs)
 
         # build the various fetch options
         fetchopts = fetch_option['sample']
         fetchopts['from'] = start_with
         fetchopts['count'] = count
 
-        for option in ['tags', 'properties', 'registrator', 'modifier']+options:
+        default_fetchopts = ['tags', 'registrator', 'modifier']
+        for option in default_fetchopts+attrs_fetchoptions:
             fetchopts[option] = fetch_option[option]
+        if props is not None:
+            fetchopts['properties'] = fetch_option['properties']
 
         request = {
             "method": "searchSamples",
@@ -2086,6 +2089,7 @@ class Openbis:
             if any([entity in attr for entity in ['space','project']]):
                 fetchopts['experiment'] = fetch_option['experiment']
                 fetchopts['experiment']['project'] = fetch_option['project']
+
         request = {
             "method": "searchDataSets",
             "params": [self.token,
@@ -3547,21 +3551,14 @@ class Openbis:
                     continue
 
                 else:
+                    # property name is provided
                     for i, dataSet in enumerate(response):
                         try:
-                            datasets.loc[i, prop.upper()] = dataSet.get('properties',{}).get(prop,'')
+                            datasets.loc[i, prop.upper()] = dataSet.get('properties',{}).get(prop,'') or dataSet.get('properties',{}).get(prop.upper(),'')
                         except AttributeError:
                             pass
                     display_attrs.append(prop.upper())
 
-
-                if datasets.get('properties') is not None:
-                    datasets[prop.upper()] = datasets['properties'].map(
-                        lambda x: x.get(prop.upper(), '')
-                    )
-                else:
-                    datasets[prop.upper()] = ''
-                display_attrs.append(prop.upper())
 
         return Things(
             openbis_obj = self,
@@ -3775,21 +3772,13 @@ class Openbis:
                     continue
 
                 else:
+                    # property name is provided
                     for i, sample in enumerate(response):
                         try:
-                            samples.loc[i, prop.upper()] = sample.get('properties',{}).get(prop,'')
+                            samples.loc[i, prop.upper()] = sample.get('properties',{}).get(prop,'') or sample.get('properties',{}).get(prop.upper(),'')
                         except AttributeError:
                             pass
                     display_attrs.append(prop.upper())
-
-
-                if samples.get('properties') is not None:
-                    samples[prop.upper()] = samples['properties'].map(
-                        lambda x: x.get(prop.upper(), '')
-                    )
-                else:
-                    samples[prop.upper()] = ''
-                display_attrs.append(prop.upper())
 
         return Things(
             openbis_obj = self,
