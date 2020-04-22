@@ -1,7 +1,16 @@
 /* eslint-disable-next-line no-undef */
 module.exports = {
   testURL: 'http://localhost/#/',
-  reporters: ['default', 'jest-junit'],
+  reporters: [
+    'default',
+    [
+      'jest-junit',
+      {
+        suiteNameTemplate: '{filename}',
+        classNameTemplate: '{title}'
+      }
+    ]
+  ],
   setupFiles: ['<rootDir>/srcTest/js/setupUnderscore.js'],
   setupFilesAfterEnv: ['<rootDir>/srcTest/js/setupEnzyme.js'],
   moduleDirectories: [
