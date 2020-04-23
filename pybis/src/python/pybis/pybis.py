@@ -2110,13 +2110,13 @@ class Openbis:
         )
 
 
-    def get_experiment(self, expId, withAttachments=False, only_data=False):
-        """ Returns an experiment object for a given identifier (expId).
+    def get_experiment(self, code, withAttachments=False, only_data=False):
+        """ Returns an experiment object for a given identifier (code).
         """
 
         fetchopts = fetch_option['experiment']
 
-        search_request = _type_for_id(expId, 'experiment')
+        search_request = _type_for_id(code, 'experiment')
         for option in ['tags', 'properties', 'attachments', 'project', 'samples', 'registrator', 'modifier']:
             fetchopts[option] = fetch_option[option]
 
@@ -2134,7 +2134,7 @@ class Openbis:
         }
         resp = self._post_request(self.as_v3, request)
         if len(resp) == 0:
-            raise ValueError("No such experiment: %s" % expId)
+            raise ValueError(f"No such experiment: {code}")
 
         parse_jackson(resp)
         for id in resp:
@@ -2143,7 +2143,7 @@ class Openbis:
             else:
                 return Experiment(
                     openbis_obj = self,
-                    type = self.get_experiment_type(resp[expId]["type"]["code"]),
+                    type = self.get_experiment_type(resp[code]["type"]["code"]),
                     data = resp[id]
                 )
     get_collection = get_experiment  # Alias
@@ -3636,6 +3636,7 @@ class Openbis:
                 response=list(resp.values()),
                 props=props,
             )
+
 
     @staticmethod
     def decode_attribute(entity, attribute):
