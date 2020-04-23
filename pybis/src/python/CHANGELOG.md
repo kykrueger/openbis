@@ -1,3 +1,7 @@
+## Changes with pybis-1.14.4
+
+- added new convenience methods: get_experiments, get_projects etc.
+
 ## Changes with pybis-1.14.3
 
 - small bugfix: prevent error
