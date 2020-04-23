@@ -12,7 +12,9 @@ $.extend(BBBHubTechnology.prototype, ELNLIMSPlugin.prototype, {
         loadJSResorce("./plugins/bbb-hub/BBBServerFacade.js");
         loadJSResorce("./plugins/bbb-hub/snakemake-table.js");
         loadJSResorce("./plugins/bbb-hub/snakemake-trigger.js");
-        this.configureFancyTree("LAB_NOTEBOOK", "Datasets");
+        this.setNewNameById("LAB_NOTEBOOK", "Datasets");
+        this.setNewNameById("lab-notebook-id", "Datasets");
+        this.setNewNameById("backwards-compatible-main-container-id", "Welcome to the BBBHub");
 	},
 
 	experimentFormTop : function($container, model) {
@@ -48,7 +50,7 @@ $.extend(BBBHubTechnology.prototype, ELNLIMSPlugin.prototype, {
         $content.append($("<iframe src=" + src + " width='99%' height='700px'></iframe>"));
     },
 
-    configureFancyTree : function(elementId, newName, timeout) {
+    setNewNameById : function(elementId, newName, timeout) {
         var DEFAULT_TIMEOUT_STEP = 100;
 
         return new Promise(function executor(resolve, reject) {
