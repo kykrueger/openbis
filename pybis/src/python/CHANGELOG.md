@@ -1,3 +1,7 @@
+## Changes with pybis-1.14.3
+
+- small bugfix: prevent error
+
 ## Changes with pybis-1.14.2
 
 - properties can be provided with either upper or lowercase
