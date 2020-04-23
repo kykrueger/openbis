@@ -49,7 +49,7 @@ $.extend(BBBHubTechnology.prototype, ELNLIMSPlugin.prototype, {
     },
 
     configureFancyTree : function(elementId, newName, timeout) {
-        var DEFAULT_TIMEOUT_STEP = 300;
+        var DEFAULT_TIMEOUT_STEP = 100;
 
         return new Promise(function executor(resolve, reject) {
             if($("#" + elementId).length <= 0) {
