@@ -34,6 +34,7 @@ import ch.systemsx.cisd.openbis.generic.server.business.bo.ISampleBO;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.common.GenericEntityPropertyRecord;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.materiallister.IMaterialLister;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.samplelister.ISampleLister;
+import ch.systemsx.cisd.openbis.generic.server.util.SamplePropertyAccessValidator;
 import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.CodeAndLabel;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IEntityPropertiesHolder;
@@ -194,7 +195,8 @@ public class PlateContentLoader
     {
         List<IEntityProperty> properties =
                 EntityPropertyTranslator.translate(plate.getProperties(), null, null,
-                        managedPropertyEvaluatorFactory);
+                        managedPropertyEvaluatorFactory,
+                        new SamplePropertyAccessValidator(session, businessObjectFactory.getDAOFactory()));
         return PlateDimensionParser.getPlateGeometry(properties);
     }
 
@@ -367,7 +369,8 @@ public class PlateContentLoader
         for (T dataset : datasets)
         {
             datasetReferences.add(ScreeningUtils.createDatasetReference(dataset,
-                    session.getBaseIndexURL(), managedPropertyEvaluatorFactory));
+                    session.getBaseIndexURL(), managedPropertyEvaluatorFactory,
+                    new SamplePropertyAccessValidator(session, businessObjectFactory.getDAOFactory())));
         }
         return datasetReferences;
     }
@@ -389,7 +392,8 @@ public class PlateContentLoader
     private Sample translate(SamplePE sample)
     {
         return SampleTranslator.translate(sample, session.getBaseIndexURL(), null,
-                managedPropertyEvaluatorFactory);
+                managedPropertyEvaluatorFactory,
+                new SamplePropertyAccessValidator(session, businessObjectFactory.getDAOFactory()));
     }
 
     private List<WellMetadata> loadWells(TechId plateId)

@@ -249,7 +249,7 @@ public class PhosphoNetXServer extends AbstractServer<IPhosphoNetXServer> implem
         String sequenceOrNull = detailsOrNull == null ? null : detailsOrNull.getSequence();
         IProteinRelatedSampleTable proteinRelatedSampleTable =
                 specificBOFactory.createProteinRelatedSampleTable(session);
-        proteinRelatedSampleTable.load(experimentID, proteinReferenceID, sequenceOrNull);
+        proteinRelatedSampleTable.load(session, experimentID, proteinReferenceID, sequenceOrNull);
         return proteinRelatedSampleTable.getSamples();
     }
 

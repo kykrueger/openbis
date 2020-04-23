@@ -45,6 +45,7 @@ import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDataDAO;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IEntityTypeDAO;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IExperimentDAO;
+import ch.systemsx.cisd.openbis.generic.server.util.SamplePropertyAccessValidator;
 import ch.systemsx.cisd.openbis.generic.shared.IOpenBisSessionManager;
 import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
@@ -207,7 +208,8 @@ public class ProteomicsDataServiceInternal extends AbstractServer<IProteomicsDat
         Map<Long, Set<Metaproject>> assignments =
                 MetaprojectTranslator.translateMetaprojectAssignments(assignmentPEs);
         return ExperimentTranslator.translate(experiments, "", assignments,
-                managedPropertyEvaluatorFactory);
+                managedPropertyEvaluatorFactory,
+                new SamplePropertyAccessValidator(session, getDAOFactory()));
     }
 
     @Override
@@ -225,7 +227,8 @@ public class ProteomicsDataServiceInternal extends AbstractServer<IProteomicsDat
                         session.tryGetPerson(), dataSetPEs, EntityKind.DATA_SET);
         return DataSetTranslator.translate(dataSetPEs, "", "",
                 MetaprojectTranslator.translateMetaprojectAssignments(assignmentPEs),
-                managedPropertyEvaluatorFactory);
+                managedPropertyEvaluatorFactory,
+                new SamplePropertyAccessValidator(session, getDAOFactory()));
     }
 
     @Override
@@ -255,7 +258,8 @@ public class ProteomicsDataServiceInternal extends AbstractServer<IProteomicsDat
             }
             Experiment translatedExperiment =
                     ExperimentTranslator.translate(experiment, "", null,
-                            managedPropertyEvaluatorFactory);
+                            managedPropertyEvaluatorFactory,
+                            new SamplePropertyAccessValidator(session, getDAOFactory()));
             if (validator.isValid(person, translatedExperiment))
             {
                 List<DataPE> dataSets = dataSetDAO.listDataSets(experiment);
@@ -278,7 +282,7 @@ public class ProteomicsDataServiceInternal extends AbstractServer<IProteomicsDat
                 parentSamples.add(parent);
             }
         }
-        experimentLoader.enrichWithExperiments(parentSamples);
+        experimentLoader.enrichWithExperiments(session, parentSamples);
         Map<Sample, List<AbstractExternalData>> dataSetsBySamples =
                 commonBoFactory.createDatasetLister(session).listAllDataSetsFor(samples);
         List<MsInjectionSample> result = new ArrayList<MsInjectionSample>();

@@ -26,6 +26,7 @@ import ch.systemsx.cisd.openbis.generic.server.business.bo.ISampleBO;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.datasetlister.IDatasetLister;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.materiallister.IMaterialLister;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.samplelister.ISampleLister;
+import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
 import ch.systemsx.cisd.openbis.generic.shared.dto.Session;
 import ch.systemsx.cisd.openbis.plugin.screening.server.logic.IExperimentMetadataLoader;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.imaging.IHCSFeatureVectorLoader;
@@ -71,5 +72,6 @@ public interface IScreeningBusinessObjectFactory
     public IDataBO createDataBO(Session session);
 
     public IDatasetLister createDatasetLister(Session session);
-
+    
+    public IDAOFactory getDAOFactory();
 }

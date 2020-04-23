@@ -23,10 +23,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import ch.systemsx.cisd.common.collection.IValidator;
 import ch.systemsx.cisd.hcs.Location;
 import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
 import ch.systemsx.cisd.openbis.generic.shared.ResourceNames;
 import ch.systemsx.cisd.openbis.generic.shared.WebClientConfigurationProvider;
+import ch.systemsx.cisd.openbis.generic.shared.basic.IIdentifierHolder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ContainerDataSet;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataStore;
@@ -89,14 +91,15 @@ public class ScreeningUtils
     }
 
     public static DatasetReference createDatasetReference(DataPE dataset, String baseIndexURL,
-            IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory)
+            IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory,
+            IValidator<IIdentifierHolder> samplePropertyAccessValidator)
     {
         DataStore dataStore = DataStoreTranslator.translate(dataset.getDataStore());
         String dataTypeCode = dataset.getDataSetType().getCode();
         String fileTypeCode = null;
         Experiment experiment =
                 ExperimentTranslator.translate(dataset.getExperiment(), baseIndexURL, null,
-                        managedPropertyEvaluatorFactory);
+                        managedPropertyEvaluatorFactory, samplePropertyAccessValidator);
         String analysisProcedureOrNull = EntityHelper.tryFindPropertyValue(dataset, ScreeningConstants.ANALYSIS_PROCEDURE);
 
         String labelText = EntityHelper.tryFindPropertyValue(dataset, getLabelTextPropertyName());

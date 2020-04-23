@@ -23,9 +23,11 @@ import java.util.List;
 import java.util.Map;
 
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
+import ch.systemsx.cisd.openbis.generic.server.util.SamplePropertyAccessValidator;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Experiment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Sample;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentPE;
+import ch.systemsx.cisd.openbis.generic.shared.dto.Session;
 import ch.systemsx.cisd.openbis.generic.shared.managed_property.IManagedPropertyEvaluatorFactory;
 import ch.systemsx.cisd.openbis.generic.shared.translator.ExperimentTranslator;
 import ch.systemsx.cisd.openbis.generic.shared.translator.ExperimentTranslator.LoadableFields;
@@ -46,7 +48,7 @@ public class ExperimentLoader
         this.managedPropertyEvaluatorFactory = managedPropertyEvaluatorFactory;
     }
 
-    public void enrichWithExperiments(Collection<Sample> samples)
+    public void enrichWithExperiments(Session session, Collection<Sample> samples)
     {
         Map<Long, List<Sample>> samplesByID = new LinkedHashMap<Long, List<Sample>>();
         for (Sample sample : samples)
@@ -70,7 +72,8 @@ public class ExperimentLoader
         {
             Experiment e =
                     ExperimentTranslator.translate(experiment, "", null,
-                            managedPropertyEvaluatorFactory, LoadableFields.PROPERTIES);
+                            managedPropertyEvaluatorFactory,
+                            new SamplePropertyAccessValidator(session, daoFactory), LoadableFields.PROPERTIES);
             List<Sample> list = samplesByID.get(experiment.getId());
             for (Sample sample : list)
             {

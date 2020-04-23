@@ -59,6 +59,7 @@ import ch.systemsx.cisd.openbis.generic.server.dataaccess.IVocabularyDAO;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.DAOFactory;
 import ch.systemsx.cisd.openbis.generic.server.plugin.IDataSetTypeSlaveServerPlugin;
 import ch.systemsx.cisd.openbis.generic.server.plugin.ISampleTypeSlaveServerPlugin;
+import ch.systemsx.cisd.openbis.generic.server.util.SamplePropertyAccessValidator;
 import ch.systemsx.cisd.openbis.generic.shared.ICommonServer;
 import ch.systemsx.cisd.openbis.generic.shared.IOpenBisSessionManager;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Sample;
@@ -272,7 +273,8 @@ public final class ScreeningServer extends AbstractServer<IScreeningServer> impl
         return SampleTranslator.translate(getSampleTypeSlaveServerPlugin(sample.getSampleType())
                 .getSampleInfo(session, sample), session.getBaseIndexURL(), MetaprojectTranslator
                         .translate(metaprojectPEs),
-                managedPropertyEvaluatorFactory);
+                managedPropertyEvaluatorFactory,
+                new SamplePropertyAccessValidator(session, businessObjectFactory.getDAOFactory()));
     }
 
     @Override

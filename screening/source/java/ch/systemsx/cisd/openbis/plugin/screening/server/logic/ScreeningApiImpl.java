@@ -39,6 +39,7 @@ import ch.systemsx.cisd.openbis.generic.server.business.bo.ISampleBO;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.samplelister.ISampleLister;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.ISampleTypeDAO;
+import ch.systemsx.cisd.openbis.generic.server.util.SamplePropertyAccessValidator;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.Translator;
 import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Experiment;
@@ -449,7 +450,8 @@ public class ScreeningApiImpl
             sampleBO.loadBySampleIdentifier(sampleIdentifier);
             sample =
                     SampleTranslator.translate(sampleBO.getSample(), "", null,
-                            managedPropertyEvaluatorFactory);
+                            managedPropertyEvaluatorFactory,
+                            new SamplePropertyAccessValidator(session, businessObjectFactory.getDAOFactory()));
         }
         return sample;
     }
@@ -482,7 +484,8 @@ public class ScreeningApiImpl
     private Sample translate(SamplePE sample)
     {
         return SampleTranslator.translate(sample, session.getBaseIndexURL(), null,
-                managedPropertyEvaluatorFactory);
+                managedPropertyEvaluatorFactory,
+                new SamplePropertyAccessValidator(session, businessObjectFactory.getDAOFactory()));
     }
 
     private static SampleIdentifier createSampleIdentifier(PlateIdentifier plate)
