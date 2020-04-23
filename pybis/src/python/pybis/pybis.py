@@ -2090,6 +2090,7 @@ class Openbis:
                 fetchopts['experiment'] = fetch_option['experiment']
                 fetchopts['experiment']['project'] = fetch_option['project']
 
+        
         request = {
             "method": "searchDataSets",
             "params": [self.token,
@@ -3555,9 +3556,9 @@ class Openbis:
                     for i, dataSet in enumerate(response):
                         try:
                             datasets.loc[i, prop.upper()] = dataSet.get('properties',{}).get(prop,'') or dataSet.get('properties',{}).get(prop.upper(),'')
+                            display_attrs.append(prop.upper())
                         except AttributeError:
                             pass
-                    display_attrs.append(prop.upper())
 
 
         return Things(
@@ -3776,9 +3777,9 @@ class Openbis:
                     for i, sample in enumerate(response):
                         try:
                             samples.loc[i, prop.upper()] = sample.get('properties',{}).get(prop,'') or sample.get('properties',{}).get(prop.upper(),'')
+                            display_attrs.append(prop.upper())
                         except AttributeError:
                             pass
-                    display_attrs.append(prop.upper())
 
         return Things(
             openbis_obj = self,
