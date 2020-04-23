@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import ch.systemsx.cisd.common.collection.IValidator;
+import ch.systemsx.cisd.openbis.generic.shared.basic.IIdentifierHolder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IEntityProperty;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
@@ -58,27 +60,30 @@ public final class MaterialTranslator
 
     public final static List<Material> translate(final List<MaterialPE> materials,
             Map<Long, Set<Metaproject>> metaprojects,
-            IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory)
+            IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory,
+            IValidator<IIdentifierHolder> samplePropertyAccessValidator)
     {
         final List<Material> result = new ArrayList<Material>();
         for (final MaterialPE material : materials)
         {
             result.add(MaterialTranslator.translate(material, metaprojects.get(material.getId()),
-                    managedPropertyEvaluatorFactory));
+                    managedPropertyEvaluatorFactory, samplePropertyAccessValidator));
         }
         return result;
     }
 
     public final static Material translate(final MaterialPE materialPE,
             Collection<Metaproject> metaprojects,
-            IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory)
+            IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory,
+            IValidator<IIdentifierHolder> samplePropertyAccessValidator)
     {
-        return translate(materialPE, true, metaprojects, managedPropertyEvaluatorFactory);
+        return translate(materialPE, true, metaprojects, managedPropertyEvaluatorFactory, samplePropertyAccessValidator);
     }
 
     public final static Material translate(final MaterialPE materialPE,
             final boolean withProperties, Collection<Metaproject> metaprojects,
-            IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory)
+            IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory,
+            IValidator<IIdentifierHolder> samplePropertyAccessValidator)
     {
         if (materialPE == null)
         {
@@ -95,7 +100,7 @@ public final class MaterialTranslator
         result.setRegistrationDate(materialPE.getRegistrationDate());
         if (withProperties)
         {
-            setProperties(materialPE, result, managedPropertyEvaluatorFactory);
+            setProperties(materialPE, result, managedPropertyEvaluatorFactory, samplePropertyAccessValidator);
         }
 
         if (metaprojects != null)
@@ -107,13 +112,14 @@ public final class MaterialTranslator
     }
 
     private static void setProperties(final MaterialPE materialPE, final Material result,
-            IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory)
+            IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory,
+            IValidator<IIdentifierHolder> samplePropertyAccessValidator)
     {
         if (materialPE.isPropertiesInitialized())
         {
             result.setProperties(EntityPropertyTranslator.translate(materialPE.getProperties(),
                     new HashMap<MaterialTypePE, MaterialType>(), new HashMap<PropertyTypePE, PropertyType>(), 
-                    managedPropertyEvaluatorFactory));
+                    managedPropertyEvaluatorFactory, samplePropertyAccessValidator));
         } else
         {
             result.setProperties(new ArrayList<IEntityProperty>());

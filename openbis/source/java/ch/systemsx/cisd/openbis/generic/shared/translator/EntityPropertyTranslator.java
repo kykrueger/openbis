@@ -21,13 +21,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import ch.systemsx.cisd.common.collection.IValidator;
+import ch.systemsx.cisd.openbis.generic.shared.basic.IIdentifierHolder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IEntityProperty;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EntityPropertyPE;
+import ch.systemsx.cisd.openbis.generic.shared.dto.EntityPropertyWithSampleDataTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PropertyTypePE;
+import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
 import ch.systemsx.cisd.openbis.generic.shared.managed_property.IManagedPropertyEvaluatorFactory;
 
 /**
@@ -43,17 +47,20 @@ public final class EntityPropertyTranslator
     }
 
     public final static IEntityProperty translate(final EntityPropertyPE propertyPE,
-            Map<MaterialTypePE, MaterialType> materialTypeCache, 
+            Map<MaterialTypePE, MaterialType> materialTypeCache,
             Map<PropertyTypePE, PropertyType> cacheOrNull,
-            IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory)
+            IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory,
+            IValidator<IIdentifierHolder> samplePropertyAccessValidator)
     {
-        return translate(propertyPE, materialTypeCache, cacheOrNull, false, managedPropertyEvaluatorFactory);
+        return translate(propertyPE, materialTypeCache, cacheOrNull, false, managedPropertyEvaluatorFactory,
+                samplePropertyAccessValidator);
     }
 
     public final static IEntityProperty translate(final EntityPropertyPE propertyPE,
-            Map<MaterialTypePE, MaterialType> materialTypeCache, 
+            Map<MaterialTypePE, MaterialType> materialTypeCache,
             Map<PropertyTypePE, PropertyType> cacheOrNull, boolean rawManagedProperties,
-            IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory)
+            IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory,
+            IValidator<IIdentifierHolder> samplePropertyAccessValidator)
     {
         final IEntityProperty basicProperty =
                 PropertyTranslatorUtils.createEntityProperty(propertyPE);
@@ -74,7 +81,17 @@ public final class EntityPropertyTranslator
             case MATERIAL:
                 basicProperty
                         .setMaterial(MaterialTranslator.translate(propertyPE.getMaterialValue(),
-                                false, null, managedPropertyEvaluatorFactory));
+                                false, null, managedPropertyEvaluatorFactory, samplePropertyAccessValidator));
+                break;
+            case SAMPLE:
+                if (propertyPE instanceof EntityPropertyWithSampleDataTypePE)
+                {
+                    SamplePE sampleProperty = ((EntityPropertyWithSampleDataTypePE) propertyPE).getSampleValue();
+                    if (samplePropertyAccessValidator.isValid(sampleProperty))
+                    {
+                        basicProperty.setValue(sampleProperty.getIdentifier());
+                    }
+                }
                 break;
             default:
                 basicProperty.setValue(propertyPE.tryGetUntypedValue());
@@ -97,9 +114,10 @@ public final class EntityPropertyTranslator
 
     public final static List<IEntityProperty> translateRaw(
             final Set<? extends EntityPropertyPE> list,
-            Map<MaterialTypePE, MaterialType> materialTypeCache, 
+            Map<MaterialTypePE, MaterialType> materialTypeCache,
             Map<PropertyTypePE, PropertyType> cacheOrNull,
-            IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory)
+            IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory,
+            IValidator<IIdentifierHolder> samplePropertyAccessValidator)
     {
         if (list == null)
         {
@@ -108,15 +126,17 @@ public final class EntityPropertyTranslator
         final List<IEntityProperty> result = new ArrayList<IEntityProperty>();
         for (final EntityPropertyPE property : list)
         {
-            result.add(translate(property, materialTypeCache, cacheOrNull, true, managedPropertyEvaluatorFactory));
+            result.add(translate(property, materialTypeCache, cacheOrNull, true, managedPropertyEvaluatorFactory,
+                    samplePropertyAccessValidator));
         }
         return result;
     }
 
     public final static List<IEntityProperty> translate(final Set<? extends EntityPropertyPE> list,
-            Map<MaterialTypePE, MaterialType> materialTypeCache, 
+            Map<MaterialTypePE, MaterialType> materialTypeCache,
             Map<PropertyTypePE, PropertyType> cacheOrNull,
-            IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory)
+            IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory,
+            IValidator<IIdentifierHolder> samplePropertyAccessValidator)
     {
         if (list == null)
         {
@@ -125,15 +145,17 @@ public final class EntityPropertyTranslator
         final List<IEntityProperty> result = new ArrayList<IEntityProperty>();
         for (final EntityPropertyPE property : list)
         {
-            result.add(translate(property, materialTypeCache, cacheOrNull, managedPropertyEvaluatorFactory));
+            result.add(translate(property, materialTypeCache, cacheOrNull, managedPropertyEvaluatorFactory,
+                    samplePropertyAccessValidator));
         }
         return result;
     }
 
     public final static IEntityProperty[] translate(final EntityPropertyPE[] list,
-            Map<MaterialTypePE, MaterialType> materialTypeCache, 
+            Map<MaterialTypePE, MaterialType> materialTypeCache,
             Map<PropertyTypePE, PropertyType> cacheOrNull,
-            IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory)
+            IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory,
+            IValidator<IIdentifierHolder> samplePropertyAccessValidator)
     {
         if (list == null)
         {
@@ -143,7 +165,8 @@ public final class EntityPropertyTranslator
         int idx = 0;
         for (final EntityPropertyPE property : list)
         {
-            result[idx++] = translate(property, materialTypeCache, cacheOrNull, managedPropertyEvaluatorFactory);
+            result[idx++] = translate(property, materialTypeCache, cacheOrNull, managedPropertyEvaluatorFactory,
+                    samplePropertyAccessValidator);
         }
         return result;
     }

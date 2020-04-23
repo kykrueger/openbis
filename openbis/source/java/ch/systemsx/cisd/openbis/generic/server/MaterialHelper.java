@@ -41,6 +41,7 @@ import ch.systemsx.cisd.openbis.generic.server.business.bo.IAbstractBussinessObj
 import ch.systemsx.cisd.openbis.generic.server.business.bo.IMaterialTable;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.materiallister.IMaterialLister;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
+import ch.systemsx.cisd.openbis.generic.server.util.SamplePropertyAccessValidator;
 import ch.systemsx.cisd.openbis.generic.shared.basic.MaterialCodeConverter;
 import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
@@ -199,7 +200,8 @@ public class MaterialHelper
         BatchOperationExecutor.executeInBatches(strategy);
 
         return MaterialTranslator.translate(registeredMaterials,
-                new HashMap<Long, Set<Metaproject>>(), managedPropertyEvaluatorFactory);
+                new HashMap<Long, Set<Metaproject>>(), managedPropertyEvaluatorFactory,
+                new SamplePropertyAccessValidator(session, daoFactory));
     }
 
     public List<Material> registerMaterials(String materialTypeCode,
@@ -252,7 +254,8 @@ public class MaterialHelper
         BatchOperationExecutor.executeInBatches(strategy);
 
         return MaterialTranslator.translate(registeredMaterials,
-                new HashMap<Long, Set<Metaproject>>(), managedPropertyEvaluatorFactory);
+                new HashMap<Long, Set<Metaproject>>(), managedPropertyEvaluatorFactory,
+                new SamplePropertyAccessValidator(session, daoFactory));
     }
 
     public int updateMaterials(String materialTypeCode, final List<NewMaterial> newMaterials,

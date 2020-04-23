@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import ch.systemsx.cisd.common.collection.IValidator;
+import ch.systemsx.cisd.openbis.generic.shared.basic.IIdentifierHolder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.PermlinkUtilities;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Experiment;
@@ -58,7 +60,8 @@ public final class ExperimentTranslator
 
     private static void setProperties(final ExperimentPE experiment, final Experiment result,
             final boolean rawManagedProperties,
-            IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory)
+            IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory,
+            IValidator<IIdentifierHolder> samplePropertyAccessValidator)
     {
         if (experiment.isPropertiesInitialized())
         {
@@ -68,12 +71,12 @@ public final class ExperimentTranslator
             {
                 result.setProperties(EntityPropertyTranslator.translateRaw(
                         experiment.getProperties(), materialTypeCache, cache,
-                        managedPropertyEvaluatorFactory));
+                        managedPropertyEvaluatorFactory, samplePropertyAccessValidator));
             } else
             {
                 result.setProperties(EntityPropertyTranslator.translate(experiment.getProperties(),
                         materialTypeCache, cache,
-                        managedPropertyEvaluatorFactory));
+                        managedPropertyEvaluatorFactory, samplePropertyAccessValidator));
             }
         } else
         {
@@ -109,15 +112,17 @@ public final class ExperimentTranslator
     public final static Experiment translate(final ExperimentPE experiment, String baseIndexURL,
             Collection<Metaproject> metaprojects,
             IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory,
+            IValidator<IIdentifierHolder> samplePropertyAccessValidator,
             final LoadableFields... withFields)
     {
         return translate(experiment, baseIndexURL, false, metaprojects,
-                managedPropertyEvaluatorFactory, withFields);
+                managedPropertyEvaluatorFactory, samplePropertyAccessValidator, withFields);
     }
 
     public final static Experiment translate(final ExperimentPE experiment, String baseIndexURL,
             final boolean rawManagedProperties, Collection<Metaproject> metaprojects,
             IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory,
+            IValidator<IIdentifierHolder> samplePropertyAccessValidator,
             final LoadableFields... withFields)
     {
         if (experiment == null)
@@ -146,7 +151,7 @@ public final class ExperimentTranslator
             {
                 case PROPERTIES:
                     setProperties(experiment, result, rawManagedProperties,
-                            managedPropertyEvaluatorFactory);
+                            managedPropertyEvaluatorFactory, samplePropertyAccessValidator);
                     break;
                 case ATTACHMENTS:
                     result.setAttachments(AttachmentTranslator.translate(
@@ -168,7 +173,8 @@ public final class ExperimentTranslator
     // NOTE: when translating list of experiments managed properties will contain raw value
     public final static List<Experiment> translate(final List<ExperimentPE> experiments,
             String baseIndexURL, Map<Long, Set<Metaproject>> metaprojects,
-            IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory)
+            IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory,
+            IValidator<IIdentifierHolder> samplePropertyAccessValidator)
     {
         final List<Experiment> result = new ArrayList<Experiment>(experiments.size());
         for (final ExperimentPE experiment : experiments)
@@ -176,7 +182,7 @@ public final class ExperimentTranslator
             HibernateUtils.initialize(experiment.getProperties());
             result.add(ExperimentTranslator.translate(experiment, baseIndexURL, true,
                     metaprojects.get(experiment.getId()), managedPropertyEvaluatorFactory,
-                    LoadableFields.PROPERTIES));
+                    samplePropertyAccessValidator, LoadableFields.PROPERTIES));
         }
         return result;
     }

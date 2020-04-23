@@ -84,6 +84,7 @@ public class TableCellUtil
             case TIMESTAMP:
             case CONTROLLEDVOCABULARY:
             case MATERIAL:
+            case SAMPLE:
             case HYPERLINK:
                 return true;
             case XML:
