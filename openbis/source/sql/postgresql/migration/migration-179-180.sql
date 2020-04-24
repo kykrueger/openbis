@@ -3,6 +3,15 @@
 -- Samples
 
 BEGIN;
+    CREATE FUNCTION samples_all_tsvector_document_trigger() RETURNS trigger AS $$
+    begin
+        new.tsvector_document :=
+                    (concat(new.perm_id, ':1'))::tsvector ||
+                    to_tsvector('pg_catalog.simple', coalesce(new.code,''));
+        return new;
+    end
+    $$ LANGUAGE plpgsql;
+
     ALTER TABLE samples_all
         ADD COLUMN tsvector_document TSVECTOR;
 
@@ -21,8 +30,8 @@ BEGIN;
         WHERE del_id IS NOT NULL;
 
     CREATE TRIGGER samples_all_tsvector_document BEFORE INSERT OR UPDATE
-        ON samples_all FOR EACH ROW EXECUTE PROCEDURE
-        tsvector_update_trigger(tsvector_document, 'pg_catalog.simple', perm_id, code);
+        ON samples_all FOR EACH ROW EXECUTE FUNCTION
+        samples_all_tsvector_document_trigger();
 
     UPDATE samples_all SET code = code;
 COMMIT;
@@ -37,6 +46,15 @@ COMMIT;
 -- Experiments
 
 BEGIN;
+    CREATE FUNCTION experiments_all_tsvector_document_trigger() RETURNS trigger AS $$
+    begin
+        new.tsvector_document :=
+                    (concat(new.perm_id, ':1'))::tsvector ||
+                    to_tsvector('pg_catalog.simple', coalesce(new.code,''));
+        return new;
+    end
+    $$ LANGUAGE plpgsql;
+
     ALTER TABLE experiments_all
         ADD COLUMN tsvector_document TSVECTOR;
 
@@ -53,8 +71,8 @@ BEGIN;
         WHERE del_id IS NOT NULL;
 
     CREATE TRIGGER experiments_all_tsvector_document BEFORE INSERT OR UPDATE
-        ON experiments_all FOR EACH ROW EXECUTE PROCEDURE
-        tsvector_update_trigger(tsvector_document, 'pg_catalog.simple', perm_id, code);
+        ON experiments_all FOR EACH ROW EXECUTE FUNCTION
+        experiments_all_tsvector_document_trigger();
 
     UPDATE experiments_all SET code = code;
 COMMIT;

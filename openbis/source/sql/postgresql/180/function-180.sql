@@ -3216,15 +3216,33 @@ CREATE TRIGGER TRASH_DATA_SET_FROM_COMPONENT_CHECK AFTER UPDATE ON DATA_SET_RELA
 
 -- end of triggers for freezing
 
+CREATE FUNCTION samples_all_tsvector_document_trigger() RETURNS trigger AS $$
+begin
+    new.tsvector_document :=
+                (concat(new.perm_id, ':1'))::tsvector ||
+                to_tsvector('pg_catalog.simple', coalesce(new.code,''));
+    return new;
+end
+$$ LANGUAGE plpgsql;
+
 DROP TRIGGER IF EXISTS samples_all_tsvector_document ON samples_all;
 CREATE TRIGGER samples_all_tsvector_document BEFORE INSERT OR UPDATE
-    ON samples_all FOR EACH ROW EXECUTE PROCEDURE
-    tsvector_update_trigger(tsvector_document, 'pg_catalog.simple', perm_id, code);
+    ON samples_all FOR EACH ROW EXECUTE FUNCTION
+    samples_all_tsvector_document_trigger();
+
+CREATE FUNCTION experiments_all_tsvector_document_trigger() RETURNS trigger AS $$
+begin
+    new.tsvector_document :=
+                (concat(new.perm_id, ':1'))::tsvector ||
+                to_tsvector('pg_catalog.simple', coalesce(new.code,''));
+    return new;
+end
+$$ LANGUAGE plpgsql;
 
 DROP TRIGGER IF EXISTS experiments_all_tsvector_document ON experiments_all;
 CREATE TRIGGER experiments_all_tsvector_document BEFORE INSERT OR UPDATE
-    ON experiments_all FOR EACH ROW EXECUTE PROCEDURE
-    tsvector_update_trigger(tsvector_document, 'pg_catalog.simple', perm_id, code);
+    ON experiments_all FOR EACH ROW EXECUTE FUNCTION
+    experiments_all_tsvector_document_trigger();
 
 DROP TRIGGER IF EXISTS data_all_tsvector_document ON data_all;
 CREATE TRIGGER data_all_tsvector_document BEFORE INSERT OR UPDATE
