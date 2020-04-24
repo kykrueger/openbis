@@ -14,11 +14,11 @@ def process(context, parameters):
         result = doSpacesBelongToDisabledUsers(context, parameters);
     elif method == "trashStorageSamplesWithoutParents":
         result = trashStorageSamplesWithoutParents(context, parameters);
-    elif method == "isValidStoragePositionToInsert":
-        result = isValidStoragePositionToInsert(context, parameters);
+    elif method == "isValidStoragePositionToInsertUpdate":
+        result = isValidStoragePositionToInsertUpdate(context, parameters);
     return result;
 
-def isValidStoragePositionToInsert(context, parameters):
+def isValidStoragePositionToInsertUpdate(context, parameters):
     from ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions import SampleFetchOptions
     from ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search import SampleSearchCriteria
     from ch.systemsx.cisd.common.exceptions import UserFailureException
@@ -66,13 +66,29 @@ def isValidStoragePositionToInsert(context, parameters):
         pass
 
     # 3. IF $STORAGE.STORAGE_VALIDATION_LEVEL >= RACK
-    # 3.1 Check the rack exists, it should always be specified
-    storageRowNum = storage.getProperty("$STORAGE.ROW_NUM");
-    storageColNum = storage.getProperty("$STORAGE.COLUMN_NUM");
+    # 3.1 Check the rack exists, it should always be specified as an integer, failing the conversion is a valid error
+    storageNumOfRowsAsInt = int(storage.getProperty("$STORAGE.ROW_NUM"));
+    storageNumOfColAsInt = int(storage.getProperty("$STORAGE.COLUMN_NUM"));
+    storageRackRowAsInt = int(storageRackRow)
+    storageRackColAsInt = int(storageRackColumn)
+    if storageRackRowAsInt > storageNumOfRowsAsInt or storageRackColAsInt > storageNumOfColAsInt:
+        raise UserFailureException("Out of range row or column for the rack");
 
     # 4. IF $STORAGE.STORAGE_VALIDATION_LEVEL >= BOX
-    # 4.1 If the given box name already exists -> Box exists
-    # 4.2 The number of total different box names should be below $STORAGE.BOX_NUM
+    if storageValidationLevel == "BOX" or storageValidationLevel == "BOX_POSITION":
+        # 4.1 The number of total different box names on the rack including the given one should be below $STORAGE.BOX_NUM
+        searchCriteriaStorage = SampleSearchCriteria();
+        searchCriteriaStorage.withType().withCode().thatEquals("STORAGE_POSITION");
+        searchCriteriaStorage.withProperty("$STORAGE_POSITION.STORAGE_CODE").thatEquals(storageCode);
+        # searchCriteriaStorage.withProperty("$STORAGE_POSITION.STORAGE_RACK_ROW").thatEquals(storageRackRow);
+        # searchCriteriaStorage.withProperty("$STORAGE_POSITION.STORAGE_RACK_COLUMN").thatEquals(storageRackColumn);
+        sampleSearchStorageResults = context.applicationService.searchSamples(sessionToken, searchCriteriaStorage, fetchOptions).getObjects();
+        storageRackBoxes = {storageBoxName};
+        for sample in sampleSearchStorageResults:
+            storageRackBoxes.add(sample.getProperty("$STORAGE_POSITION.STORAGE_BOX_NAME"));
+        storageBoxNum = int(storage.getProperty("$STORAGE.BOX_NUM"));
+        if len(storageRackBoxes) > storageBoxNum:
+            raise UserFailureException("Number of boxes in rack exceeded, use an existing box.");
 
     # 5. IF $STORAGE.STORAGE_VALIDATION_LEVEL >= BOX_POSITION
     # 5.1 If the given box position already exists with the same permId -> Is an update
