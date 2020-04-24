@@ -81,8 +81,8 @@ def isValidStoragePositionToInsertUpdate(context, parameters):
         searchCriteriaStorageRack = SampleSearchCriteria();
         searchCriteriaStorageRack.withType().withCode().thatEquals("STORAGE_POSITION");
         searchCriteriaStorageRack.withProperty("$STORAGE_POSITION.STORAGE_CODE").thatEquals(storageCode);
-        # searchCriteriaStorageRack.withProperty("$STORAGE_POSITION.STORAGE_RACK_ROW").thatEquals(storageRackRow);
-        # searchCriteriaStorageRack.withProperty("$STORAGE_POSITION.STORAGE_RACK_COLUMN").thatEquals(storageRackColumn);
+        searchCriteriaStorageRack.withNumberProperty("$STORAGE_POSITION.STORAGE_RACK_ROW").thatEquals(int(storageRackRow));
+        searchCriteriaStorageRack.withNumberProperty("$STORAGE_POSITION.STORAGE_RACK_COLUMN").thatEquals(int(storageRackColumn));
         searchCriteriaStorageRackResults = context.applicationService.searchSamples(sessionToken, searchCriteriaStorageRack, fetchOptions).getObjects();
         storageRackBoxes = {storageBoxName};
         for sample in searchCriteriaStorageRackResults:
@@ -92,15 +92,13 @@ def isValidStoragePositionToInsertUpdate(context, parameters):
             raise UserFailureException("Number of boxes in rack exceeded, use an existing box.");
 
     # 5. IF $STORAGE.STORAGE_VALIDATION_LEVEL >= BOX_POSITION
-    print "-----------> BOX_POSITION "
     if storageValidationLevel == "BOX_POSITION":
         for storageBoxSubPosition in storageBoxPosition.split(" "):
-            print "-----------> SUB BOX_POSITION " + storageBoxSubPosition
             searchCriteriaStorageBoxPosition = SampleSearchCriteria();
             searchCriteriaStorageBoxPosition.withType().withCode().thatEquals("STORAGE_POSITION");
             searchCriteriaStorageBoxPosition.withProperty("$STORAGE_POSITION.STORAGE_CODE").thatEquals(storageCode);
-            # searchCriteriaStorageBoxPosition.withProperty("$STORAGE_POSITION.STORAGE_RACK_ROW").thatEquals(storageRackRow);
-            # searchCriteriaStorageBoxPosition.withProperty("$STORAGE_POSITION.STORAGE_RACK_COLUMN").thatEquals(storageRackColumn);
+            searchCriteriaStorageBoxPosition.withNumberProperty("$STORAGE_POSITION.STORAGE_RACK_ROW").thatEquals(int(storageRackRow));
+            searchCriteriaStorageBoxPosition.withNumberProperty("$STORAGE_POSITION.STORAGE_RACK_COLUMN").thatEquals(int(storageRackColumn));
             searchCriteriaStorageBoxPosition.withProperty("$STORAGE_POSITION.STORAGE_BOX_NAME").thatEquals(storageBoxName);
             searchCriteriaStorageBoxPosition.withProperty("$STORAGE_POSITION.STORAGE_BOX_POSITION").thatContains(storageBoxSubPosition);
             searchCriteriaStorageBoxResults = context.applicationService.searchSamples(sessionToken, searchCriteriaStorageBoxPosition, fetchOptions).getObjects();
