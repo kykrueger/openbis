@@ -12,7 +12,7 @@ import logger from '@src/js/common/logger.js'
 const styles = theme => ({
   dialog: {
     position: 'relative',
-    zIndex: '20000 !important'
+    zIndex: '2000 !important'
   },
   actions: {
     margin: theme.spacing(1)

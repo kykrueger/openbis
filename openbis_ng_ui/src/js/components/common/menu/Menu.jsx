@@ -20,7 +20,7 @@ import logger from '@src/js/common/logger.js'
 const styles = theme => ({
   bar: {
     position: 'relative',
-    zIndex: 4000
+    zIndex: 400
   },
   tabs: {
     flexGrow: 1

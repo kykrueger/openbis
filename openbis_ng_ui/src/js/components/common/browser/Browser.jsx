@@ -15,7 +15,7 @@ import BrowserDialogRemoveNode from './BrowserDialogRemoveNode.jsx'
 
 const styles = {
   resizable: {
-    zIndex: 2000,
+    zIndex: 200,
     position: 'relative'
   },
   paper: {

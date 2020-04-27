@@ -1,12 +1,19 @@
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import TextField from '@material-ui/core/TextField'
+import MenuItem from '@material-ui/core/MenuItem'
 import logger from '@src/js/common/logger.js'
 
 import FormFieldContainer from './FormFieldContainer.jsx'
 import FormFieldLabel from './FormFieldLabel.jsx'
 
-const styles = () => ({})
+const styles = () => ({
+  option: {
+    '&:after': {
+      content: '"\\00a0"'
+    }
+  }
+})
 
 class SelectFormField extends React.PureComponent {
   render() {
@@ -27,7 +34,8 @@ class SelectFormField extends React.PureComponent {
       onClick,
       onChange,
       onFocus,
-      onBlur
+      onBlur,
+      classes
     } = this.props
 
     return (
@@ -56,17 +64,27 @@ class SelectFormField extends React.PureComponent {
           onFocus={onFocus}
           onBlur={onBlur}
           fullWidth={true}
-          SelectProps={{
-            native: true
-          }}
           InputLabelProps={{ shrink: !!value }}
+          SelectProps={{
+            MenuProps: {
+              getContentAnchorEl: null,
+              anchorOrigin: {
+                vertical: 'bottom',
+                horizontal: 'left'
+              }
+            }
+          }}
           variant='filled'
         >
           {options &&
             options.map(option => (
-              <option key={option.value || ''} value={option.value || ''}>
+              <MenuItem
+                key={option.value || ''}
+                value={option.value || ''}
+                classes={{ root: classes.option }}
+              >
                 {option.label || option.value || ''}
-              </option>
+              </MenuItem>
             ))}
         </TextField>
       </FormFieldContainer>

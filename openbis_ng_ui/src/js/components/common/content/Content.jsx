@@ -16,7 +16,7 @@ const styles = {
     flexDirection: 'column',
     flex: 1,
     width: '100px',
-    zIndex: 1000
+    zIndex: 100
   },
   component: {
     height: 0,
