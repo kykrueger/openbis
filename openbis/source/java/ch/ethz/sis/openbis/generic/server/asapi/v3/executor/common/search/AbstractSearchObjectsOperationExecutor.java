@@ -250,7 +250,7 @@ public abstract class AbstractSearchObjectsOperationExecutor<OBJECT, OBJECT_PE, 
 
         final List<OBJECT> finalResults = new ArrayList<>(sortedAndPagedResultV3DTOs.values());
         final List<OBJECT> sortedFinalResults = getSortedFinalResults(criteria, fetchOptions, finalResults);
-        final SearchResult<OBJECT> searchResult = new SearchResult<>(sortedFinalResults, sortedAndPagedResultV3DTOs.size());
+        final SearchResult<OBJECT> searchResult = new SearchResult<>(sortedFinalResults, allResultsIds.size());
 
         return getOperationResult(searchResult);
     }
