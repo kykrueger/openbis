@@ -37,6 +37,7 @@ export default class TypeFormControllerAddProperty {
     let newProperties = Array.from(properties)
     let newProperty = {
       id: 'property-' + propertiesCounter++,
+      scope: 'local',
       code: null,
       label: null,
       description: null,

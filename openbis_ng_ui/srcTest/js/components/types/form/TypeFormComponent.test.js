@@ -32,6 +32,7 @@ describe('TypeForm', () => {
     facade.loadValidationPlugins.mockReturnValueOnce(Promise.resolve([]))
     facade.loadMaterials.mockReturnValueOnce(Promise.resolve([]))
     facade.loadVocabularyTerms.mockReturnValueOnce(Promise.resolve([]))
+    facade.loadGlobalPropertyTypes.mockReturnValueOnce(Promise.resolve([]))
 
     const wrapper = mount(
       <Provider store={store}>
@@ -198,7 +199,17 @@ class TypeFormParametersForm {
   }
 
   getCode() {
-    return new TextFormField(this.wrapper.find('TextFormField[name="code"]'))
+    const textFieldWrapper = this.wrapper.find('TextFormField[name="code"]')
+    if (textFieldWrapper.exists()) {
+      return new TextFormField(textFieldWrapper)
+    }
+    const autocompleterFieldWrapper = this.wrapper.find(
+      'AutocompleterFormField[name="code"]'
+    )
+    if (autocompleterFieldWrapper.exists()) {
+      return new AutocompleterFormField(autocompleterFieldWrapper)
+    }
+    return null
   }
 
   getDescription() {
@@ -210,7 +221,7 @@ class TypeFormParametersForm {
   toJSON() {
     return {
       title: this.getTitle().exists() ? this.getTitle().text() : null,
-      code: this.getCode().toJSON(),
+      code: this.getCode() ? this.getCode().toJSON() : null,
       description: this.getDescription().toJSON()
     }
   }
@@ -296,6 +307,31 @@ class TypeFormPreviewProperty {
 }
 
 class TextFormField {
+  constructor(wrapper) {
+    this.wrapper = wrapper
+  }
+
+  getLabel() {
+    return this.wrapper.prop('label')
+  }
+
+  getValue() {
+    return this.wrapper.prop('value')
+  }
+
+  toJSON() {
+    if (this.wrapper.exists()) {
+      return {
+        label: this.getLabel(),
+        value: this.getValue()
+      }
+    } else {
+      return {}
+    }
+  }
+}
+
+class AutocompleterFormField {
   constructor(wrapper) {
     this.wrapper = wrapper
   }

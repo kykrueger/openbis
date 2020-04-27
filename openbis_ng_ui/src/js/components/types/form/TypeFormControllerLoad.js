@@ -29,6 +29,7 @@ export default class TypeFormControllerLoad {
           loadedType.propertyAssignments.forEach(loadedAssignment => {
             property = this._createProperty(
               'property-' + propertiesCounter++,
+              loadedType,
               loadedAssignment,
               loadedUsages
             )
@@ -117,11 +118,16 @@ export default class TypeFormControllerLoad {
     }
   }
 
-  _createProperty(id, loadedAssignment, loadedUsages) {
+  _createProperty(id, loadedType, loadedAssignment, loadedUsages) {
     const propertyType = loadedAssignment.propertyType
+
+    const code = _.get(propertyType, 'code', null)
+    const scope = code.startsWith(loadedType.code + '.') ? 'local' : 'global'
+
     return {
       id: id,
-      code: _.get(propertyType, 'code', null),
+      scope: scope,
+      code: code,
       label: _.get(propertyType, 'label', null),
       description: _.get(propertyType, 'description', null),
       dataType: _.get(propertyType, 'dataType', null),

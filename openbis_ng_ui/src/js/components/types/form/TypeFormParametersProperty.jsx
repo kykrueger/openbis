@@ -1,5 +1,6 @@
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
+import AutocompleterField from '@src/js/components/common/form/AutocompleterField.jsx'
 import CheckboxField from '@src/js/components/common/form/CheckboxField.jsx'
 import TextField from '@src/js/components/common/form/TextField.jsx'
 import SelectField from '@src/js/components/common/form/SelectField.jsx'
@@ -82,6 +83,7 @@ class TypeFormParametersProperty extends React.PureComponent {
       }
 
       this.loadDynamicPlugins()
+      this.loadGlobalPropertyTypes()
     }
   }
 
@@ -124,6 +126,21 @@ class TypeFormParametersProperty extends React.PureComponent {
       .then(materialTypes => {
         this.setState(() => ({
           materialTypes
+        }))
+      })
+      .catch(error => {
+        controller.getFacade().catch(error)
+      })
+  }
+
+  loadGlobalPropertyTypes() {
+    const { controller } = this.props
+    return controller
+      .getFacade()
+      .loadGlobalPropertyTypes()
+      .then(globalPropertyTypes => {
+        this.setState(() => ({
+          globalPropertyTypes
         }))
       })
       .catch(error => {
@@ -182,6 +199,7 @@ class TypeFormParametersProperty extends React.PureComponent {
         <TypeFormHeader className={classes.header}>Property</TypeFormHeader>
         {this.renderWarningLegacy(property)}
         {this.renderWarningUsage(property)}
+        {this.renderScope(property)}
         {this.renderCode(property)}
         {this.renderDataType(property)}
         {this.renderVocabulary(property)}
@@ -224,6 +242,33 @@ class TypeFormParametersProperty extends React.PureComponent {
     }
   }
 
+  renderScope(property) {
+    const { classes } = this.props
+
+    const options = [
+      { label: 'Local', value: 'local' },
+      { label: 'Global', value: 'global' }
+    ]
+
+    return (
+      <div className={classes.field}>
+        <SelectField
+          reference={this.references.scope}
+          label='Scope'
+          name='scope'
+          mandatory={true}
+          error={property.errors.scope}
+          disabled={!!property.original}
+          value={property.scope}
+          options={options}
+          onChange={this.handleChange}
+          onFocus={this.handleFocus}
+          onBlur={this.handleBlur}
+        />
+      </div>
+    )
+  }
+
   renderLabel(property) {
     const { classes } = this.props
     return (
@@ -246,22 +291,49 @@ class TypeFormParametersProperty extends React.PureComponent {
 
   renderCode(property) {
     const { classes } = this.props
-    return (
-      <div className={classes.field}>
-        <TextField
-          reference={this.references.code}
-          label='Code'
-          name='code'
-          mandatory={true}
-          error={property.errors.code}
-          disabled={!!property.original}
-          value={property.code}
-          onChange={this.handleChange}
-          onFocus={this.handleFocus}
-          onBlur={this.handleBlur}
-        />
-      </div>
-    )
+
+    if (property.scope === 'local') {
+      return (
+        <div className={classes.field}>
+          <TextField
+            reference={this.references.code}
+            label='Code'
+            name='code'
+            mandatory={true}
+            error={property.errors.code}
+            disabled={!!property.original}
+            value={property.code}
+            onChange={this.handleChange}
+            onFocus={this.handleFocus}
+            onBlur={this.handleBlur}
+          />
+        </div>
+      )
+    } else if (property.scope === 'global') {
+      const { globalPropertyTypes = [] } = this.state
+
+      const options = globalPropertyTypes.map(globalPropertyType => {
+        return globalPropertyType.code
+      })
+
+      return (
+        <div className={classes.field}>
+          <AutocompleterField
+            reference={this.references.code}
+            label='Code'
+            name='code'
+            options={options}
+            mandatory={true}
+            error={property.errors.code}
+            disabled={!!property.original}
+            value={property.code}
+            onChange={this.handleChange}
+            onFocus={this.handleFocus}
+            onBlur={this.handleBlur}
+          />
+        </div>
+      )
+    }
   }
 
   renderDescription(property) {

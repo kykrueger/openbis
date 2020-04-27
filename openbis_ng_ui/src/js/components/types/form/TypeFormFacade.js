@@ -9,15 +9,9 @@ export default class TypeFormFacade {
     const fo = strategy.createTypeFetchOptions()
     fo.withValidationPlugin()
     fo.withPropertyAssignments().withPlugin()
-    fo.withPropertyAssignments()
-      .withPropertyType()
-      .withMaterialType()
-    fo.withPropertyAssignments()
-      .withPropertyType()
-      .withVocabulary()
-    fo.withPropertyAssignments()
-      .sortBy()
-      .ordinal()
+    fo.withPropertyAssignments().withPropertyType().withMaterialType()
+    fo.withPropertyAssignments().withPropertyType().withVocabulary()
+    fo.withPropertyAssignments().sortBy().ordinal()
 
     return strategy.getTypes([id], fo).then(map => {
       return map[object.id]
@@ -29,10 +23,7 @@ export default class TypeFormFacade {
 
     function createTypeUsedOperation(typeId) {
       const criteria = strategy.createEntitySearchCriteria()
-      criteria
-        .withType()
-        .withCode()
-        .thatEquals(typeId)
+      criteria.withType().withCode().thatEquals(typeId)
 
       const fo = strategy.createEntityFetchOptions()
       fo.count(0)
@@ -91,6 +82,16 @@ export default class TypeFormFacade {
     })
   }
 
+  loadGlobalPropertyTypes() {
+    const criteria = new openbis.PropertyTypeSearchCriteria()
+    const fo = new openbis.PropertyTypeFetchOptions()
+    return openbis.searchPropertyTypes(criteria, fo).then(results => {
+      return results.getObjects().filter(propertyType => {
+        return !propertyType.getCode().includes('.')
+      })
+    })
+  }
+
   loadValidationPlugins(type) {
     const criteria = new openbis.PluginSearchCriteria()
     criteria.withPluginType().thatEquals(openbis.PluginType.ENTITY_VALIDATION)
@@ -126,10 +127,7 @@ export default class TypeFormFacade {
     let criteria = new openbis.VocabularyTermSearchCriteria()
     let fo = new openbis.VocabularyTermFetchOptions()
 
-    criteria
-      .withVocabulary()
-      .withCode()
-      .thatEquals(vocabulary)
+    criteria.withVocabulary().withCode().thatEquals(vocabulary)
 
     return openbis
       .searchVocabularyTerms(criteria, fo)
@@ -148,10 +146,7 @@ export default class TypeFormFacade {
     let criteria = new openbis.MaterialSearchCriteria()
     let fo = new openbis.MaterialFetchOptions()
 
-    criteria
-      .withType()
-      .withCode()
-      .thatEquals(materialType)
+    criteria.withType().withCode().thatEquals(materialType)
 
     return openbis.searchMaterials(criteria, fo).then(result => result.objects)
   }
