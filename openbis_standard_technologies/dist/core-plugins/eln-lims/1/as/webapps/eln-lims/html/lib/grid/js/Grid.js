@@ -58,6 +58,13 @@ $.extend(Grid.prototype, {
 				sortable : false,
 				render : function(data) {
 					var $checkbox = $("<input>", { type : 'checkbox' , class: "repeater-checkbox multi-selectable-checkbox"});
+
+					for(var idx = 0; idx < _this.selectedItems.length; idx++) {
+                        if(_this.selectedItems[idx].permId === data.$object.permId) {
+                    	    $checkbox.prop('checked', true);
+                        }
+                    }
+
 					$checkbox.change(function() {
 						var isChecked = $(this).is(":checked");
 						if(isChecked){ //add data to selectedItems
