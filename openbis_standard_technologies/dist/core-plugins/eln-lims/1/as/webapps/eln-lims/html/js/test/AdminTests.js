@@ -9,7 +9,7 @@ var AdminTests = new function() {
             testChain.then(() => TestUtil.login("admin", "a"))
                      .then(() => TestUtil.testPassed(1))
                      .then(() => resolve())
-                     .catch(() => reject(error));
+                     .catch((error) => reject(error));
         });
     }
 
@@ -50,7 +50,10 @@ var AdminTests = new function() {
                        "TRASHCAN",
                        "SETTINGS"];
 
-            Promise.resolve().then(() => TestUtil.verifyInventory(ids)).then(() => TestUtil.testPassed(2)).then(() => resolve());
+            Promise.resolve().then(() => TestUtil.verifyInventory(ids))
+                             .then(() => TestUtil.testPassed(2))
+                             .then(() => resolve())
+                             .catch((error) => reject(error));
         });
     }
 
@@ -76,7 +79,7 @@ var AdminTests = new function() {
                      .then(() => e.waitForId("edit-btn"))
                      .then(() => TestUtil.testPassed(3))
                      .then(() => resolve())
-                     .catch(() => reject(error));
+                     .catch((error) => reject(error));
         });
     }
 
@@ -97,7 +100,7 @@ var AdminTests = new function() {
                      .then(() => TestUtil.setCookies("suitename", "testId"))
                      .then(() => e.click("logoutBtn"))
                      .then(() => resolve())
-                     .catch(() => reject(error));
+                     .catch((error) => reject(error));
         });
     }
 
@@ -113,7 +116,7 @@ var AdminTests = new function() {
                      .then(() => e.change("passwordRepeatId", "pass", true))
                      .then(() => e.click("createUserBtn", true))
                      .then(() => resolve())
-                     .catch(() => reject(error));
+                     .catch((error) => reject(error));
         });
     }
 
@@ -130,7 +133,7 @@ var AdminTests = new function() {
                      .then(() => e.click("jNotifyDismiss", true))
                      .then(() => e.click("cancelBtn", true))
                      .then(() => resolve())
-                     .catch(() => reject(error));
+                     .catch((error) => reject(error));
         });
     }
 
@@ -179,7 +182,8 @@ var AdminTests = new function() {
                      .then(() => TestUtil.checkFileEquality("order_ORD1_p0.txt", baseURL + pathToResource, TestUtil.dateReplacer))
                      .then(() => TestUtil.returnRealSaveAs())
                      .then(() => TestUtil.testPassed(31))
-                     .then(() => resolve());
+                     .then(() => resolve())
+                     .catch((error) => reject(error));
         });
     }
 
@@ -223,7 +227,8 @@ var AdminTests = new function() {
                      .then(() => e.waitForId("currency-0"))
                      .then(() => e.equalTo("currency-0", "EUR", true, false))
                      .then(() => TestUtil.testPassed(32))
-                     .then(() => resolve());
+                     .then(() => resolve())
+                     .catch((error) => reject(error));
         });
     }
 
@@ -265,7 +270,8 @@ var AdminTests = new function() {
                      .then(() => e.verifyExistence("deleted--materials-bacteria-bac1-id", false))
                      .then(() => e.verifyExistence("deleted--stock_catalog-requests-req1-id", false))
                      .then(() => TestUtil.testPassed(33))
-                     .then(() => resolve());
+                     .then(() => resolve())
+                     .catch((error) => reject(error));
         });
     }
 
@@ -293,7 +299,8 @@ var AdminTests = new function() {
                      .then(() => e.waitForId("total-count-id"))
                      .then(() => e.equalTo("total-count-id", "5", true, false))
                      .then(() => TestUtil.testPassed(34))
-                     .then(() => resolve());
+                     .then(() => resolve())
+                     .catch((error) => reject(error));
         });
     }
 }
