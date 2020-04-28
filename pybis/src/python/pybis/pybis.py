@@ -1008,10 +1008,12 @@ class Openbis:
 
         return os.path.ismount(mountpoint)
 
-    def get_mountpoint(self):
+    def get_mountpoint(self, search_mountpoint=False):
         """Returns the path to the active mountpoint.
         Returns None if no mountpoint is found or if the mountpoint is not mounted anymore.
-        Experimental: Tries to figure out an existing mountpoint for a given hostname.
+
+        search_mountpoint=True:  Tries to figure out an existing mountpoint for a given hostname 
+                                 (experimental, does not work under Windows yet)
         """
 
         mountpoint = getattr(self, 'mountpoint', None)
@@ -1020,6 +1022,8 @@ class Openbis:
                 return mountpoint
             else:
                 return None
+        else:
+            if not search_mountpoint: return None
 
         # try to find out the mountpoint
         import subprocess

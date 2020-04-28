@@ -1,3 +1,7 @@
+## Changes with pybis-1.14.5
+
+- no automagic detection of mountpoint, because of Windows incompatibilities 
+
 ## Changes with pybis-1.14.4
 
 - added new convenience methods: get_experiments, get_projects etc.
