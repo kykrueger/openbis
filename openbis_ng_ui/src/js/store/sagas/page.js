@@ -1,59 +1,117 @@
 import _ from 'lodash'
-import { put, takeEvery, select } from './effects.js'
-import * as selectors from '../selectors/selectors.js'
-import * as actions from '../actions/actions.js'
-import routes from '../../common/consts/routes.js'
-
-const getSelectedObject = selectors.createGetSelectedObject()
+import { put, takeEvery, select } from '@src/js/store/sagas/effects.js'
+import selectors from '@src/js/store/selectors/selectors.js'
+import actions from '@src/js/store/actions/actions.js'
+import routes from '@src/js/common/consts/routes.js'
+import objectOperation from '@src/js/common/consts/objectOperation.js'
 
 export default function* pageSaga() {
+  yield takeEvery(actions.OBJECT_NEW, objectNew)
+  yield takeEvery(actions.OBJECT_CREATE, objectCreate)
   yield takeEvery(actions.OBJECT_OPEN, objectOpen)
+  yield takeEvery(actions.OBJECT_UPDATE, objectUpdate)
+  yield takeEvery(actions.OBJECT_DELETE, objectDelete)
   yield takeEvery(actions.OBJECT_CHANGE, objectChange)
   yield takeEvery(actions.OBJECT_CLOSE, objectClose)
   yield takeEvery(actions.ROUTE_CHANGE, routeChange)
 }
 
-function* objectOpen(action) {
-  let { page, type, id } = action.payload
-  let route = routes.format({ page, type, id })
+function* objectNew(action) {
+  const { page, type } = action.payload
+
+  let id = 1
+
+  const openObjects = yield select(selectors.getOpenObjects, page)
+  openObjects.forEach(openObject => {
+    if (openObject.type === type) {
+      id++
+    }
+  })
+
+  const route = routes.format({ page, type, id })
   yield put(actions.routeChange(route))
 }
 
-function* objectChange(action) {
-  let { page, type, id, changed } = action.payload
+function* objectCreate(action) {
+  const { page, oldType, oldId, newType, newId } = action.payload
 
-  if (changed) {
-    yield put(actions.addChangedObject(page, type, id))
-  } else {
-    yield put(actions.removeChangedObject(page, type, id))
+  const openTabs = yield select(selectors.getOpenTabs, page)
+  const oldTab = _.find(openTabs, { object: { type: oldType, id: oldId } })
+
+  if (oldTab) {
+    const newTab = { ...oldTab, object: { type: newType, id: newId } }
+    yield put(actions.replaceOpenTab(page, oldTab.id, newTab))
+
+    yield put(
+      actions.setLastObjectModification(
+        newType,
+        objectOperation.CREATE,
+        Date.now()
+      )
+    )
+
+    const route = routes.format({ page, type: newType, id: newId })
+    yield put(actions.routeReplace(route))
+  }
+}
+
+function* objectOpen(action) {
+  const { page, type, id } = action.payload
+  const route = routes.format({ page, type, id })
+  yield put(actions.routeChange(route))
+}
+
+function* objectUpdate(action) {
+  const { type } = action.payload
+  yield put(
+    actions.setLastObjectModification(type, objectOperation.UPDATE, Date.now())
+  )
+}
+
+function* objectDelete(action) {
+  const { page, type, id } = action.payload
+  yield put(actions.objectClose(page, type, id))
+  yield put(
+    actions.setLastObjectModification(type, objectOperation.DELETE, Date.now())
+  )
+}
+
+function* objectChange(action) {
+  const { page, type, id, changed } = action.payload
+
+  const openTabs = yield select(selectors.getOpenTabs, page)
+  const oldTab = _.find(openTabs, { object: { type, id } })
+
+  if (oldTab) {
+    const newTab = { ...oldTab, changed }
+    yield put(actions.replaceOpenTab(page, oldTab.id, newTab))
   }
 }
 
 function* objectClose(action) {
-  let { page, type, id } = action.payload
+  const { page, type, id } = action.payload
 
-  let selectedObject = yield select(getSelectedObject, page)
-  let openObjects = yield select(selectors.getOpenObjects, page)
+  const objectToClose = { type, id }
+  const openTabs = yield select(selectors.getOpenTabs, page)
+  let selectedObject = yield select(selectors.getSelectedObject, page)
 
-  if (
-    selectedObject &&
-    selectedObject.type === type &&
-    selectedObject.id === id
-  ) {
-    if (_.size(openObjects) === 1) {
+  if (selectedObject && _.isEqual(selectedObject, objectToClose)) {
+    if (_.size(openTabs) === 1) {
       selectedObject = null
     } else {
-      let selectedIndex = _.findIndex(openObjects, selectedObject)
+      let selectedIndex = _.findIndex(openTabs, { object: selectedObject })
       if (selectedIndex === 0) {
-        selectedObject = openObjects[selectedIndex + 1]
+        selectedObject = openTabs[selectedIndex + 1].object
       } else {
-        selectedObject = openObjects[selectedIndex - 1]
+        selectedObject = openTabs[selectedIndex - 1].object
       }
     }
   }
 
-  yield put(actions.removeOpenObject(page, type, id))
-  yield put(actions.removeChangedObject(page, type, id))
+  let tabToClose = _.find(openTabs, { object: objectToClose })
+  if (tabToClose) {
+    yield put(actions.removeOpenTab(page, tabToClose.id))
+  }
 
   if (selectedObject) {
     let route = routes.format({
@@ -69,14 +127,28 @@ function* objectClose(action) {
 }
 
 function* routeChange(action) {
-  let route = routes.parse(action.payload.route)
+  const route = routes.parse(action.payload.route)
 
   if (route.type && route.id) {
-    let openObjects = yield select(selectors.getOpenObjects, route.page)
-    let selectedObject = { type: route.type, id: route.id }
+    const object = { type: route.type, id: route.id }
+    const openTabs = yield select(selectors.getOpenTabs, route.page)
 
-    if (_.findIndex(openObjects, selectedObject) === -1) {
-      yield put(actions.addOpenObject(route.page, route.type, route.id))
+    if (openTabs) {
+      let found = false
+      let id = 1
+
+      openTabs.forEach(openTab => {
+        if (_.isMatch(openTab.object, object)) {
+          found = true
+        }
+        if (openTab.id >= id) {
+          id = openTab.id + 1
+        }
+      })
+
+      if (!found) {
+        yield put(actions.addOpenTab(route.page, { id, object }))
+      }
     }
   }
 

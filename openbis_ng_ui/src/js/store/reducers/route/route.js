@@ -1,4 +1,4 @@
-import * as actions from '../../actions/actions.js'
+import actions from '@src/js/store/actions/actions.js'
 
 export default function route(state = null, action) {
   switch (action.type) {

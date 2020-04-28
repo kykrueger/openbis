@@ -1,8 +1,8 @@
-export const API_REQUEST = 'API_REQUEST'
-export const API_SUCCESS = 'API_SUCCESS'
-export const API_ERROR = 'API_ERROR'
+const API_REQUEST = 'API_REQUEST'
+const API_SUCCESS = 'API_SUCCESS'
+const API_ERROR = 'API_ERROR'
 
-export const apiRequest = ({ method, params, meta }) => ({
+const apiRequest = ({ method, params, meta }) => ({
   type: API_REQUEST,
   payload: {
     method,
@@ -11,7 +11,7 @@ export const apiRequest = ({ method, params, meta }) => ({
   meta
 })
 
-export const apiSuccess = ({ result, meta }) => ({
+const apiSuccess = ({ result, meta }) => ({
   type: API_SUCCESS,
   payload: {
     result
@@ -19,10 +19,19 @@ export const apiSuccess = ({ result, meta }) => ({
   meta
 })
 
-export const apiError = ({ error, meta }) => ({
+const apiError = ({ error, meta }) => ({
   type: API_ERROR,
   payload: {
     error
   },
   meta
 })
+
+export default {
+  API_REQUEST,
+  API_SUCCESS,
+  API_ERROR,
+  apiRequest,
+  apiSuccess,
+  apiError
+}

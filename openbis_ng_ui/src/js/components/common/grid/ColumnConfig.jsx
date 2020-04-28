@@ -5,8 +5,9 @@ import { DragDropContext, Droppable } from 'react-beautiful-dnd'
 import IconButton from '@material-ui/core/IconButton'
 import SettingsIcon from '@material-ui/icons/Settings'
 import Popover from '@material-ui/core/Popover'
+import logger from '@src/js/common/logger.js'
+
 import ColumnConfigRow from './ColumnConfigRow.jsx'
-import logger from '../../../common/logger.js'
 
 const styles = () => ({
   container: {

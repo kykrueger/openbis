@@ -1,5 +1,5 @@
-import React from 'react'
 import _ from 'lodash'
+import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import ListItem from '@material-ui/core/ListItem'
 import ListItemIcon from '@material-ui/core/ListItemIcon'
@@ -7,8 +7,9 @@ import ListItemText from '@material-ui/core/ListItemText'
 import Collapse from '@material-ui/core/Collapse'
 import ChevronRightIcon from '@material-ui/icons/ChevronRight'
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
+import logger from '@src/js/common/logger.js'
+
 import BrowserNodes from './BrowserNodes.jsx'
-import logger from '../../../common/logger.js'
 
 const styles = {
   icon: {
@@ -17,18 +18,18 @@ const styles = {
   }
 }
 
-class BrowserNode extends React.Component {
+class BrowserNode extends React.PureComponent {
   render() {
     logger.log(logger.DEBUG, 'BrowserNode.render')
 
-    const { node, level } = this.props
+    const { controller, node, level } = this.props
 
     return (
       <div>
         <ListItem
           button
           selected={node.selected}
-          onClick={() => this.props.nodeSelect(node.id)}
+          onClick={() => controller.nodeSelect(node.id)}
           style={{ paddingLeft: level * 24 + 'px' }}
         >
           {this.renderIcon(node)}
@@ -37,10 +38,8 @@ class BrowserNode extends React.Component {
         {node.children && node.children.length > 0 && (
           <Collapse in={node.expanded} mountOnEnter={true} unmountOnExit={true}>
             <BrowserNodes
+              controller={controller}
               nodes={node.children}
-              nodeSelect={this.props.nodeSelect}
-              nodeCollapse={this.props.nodeCollapse}
-              nodeExpand={this.props.nodeExpand}
               level={level + 1}
             />
           </Collapse>
@@ -52,7 +51,7 @@ class BrowserNode extends React.Component {
   renderIcon(node) {
     logger.log(logger.DEBUG, 'BrowserNode.renderIcon')
 
-    const classes = this.props.classes
+    const { controller, classes } = this.props
 
     if (node.children && node.children.length > 0) {
       let icon = null
@@ -61,7 +60,7 @@ class BrowserNode extends React.Component {
           <ExpandMoreIcon
             onClick={e => {
               e.stopPropagation()
-              this.props.nodeCollapse(node.id)
+              controller.nodeCollapse(node.id)
             }}
           />
         )
@@ -70,7 +69,7 @@ class BrowserNode extends React.Component {
           <ChevronRightIcon
             onClick={e => {
               e.stopPropagation()
-              this.props.nodeExpand(node.id)
+              controller.nodeExpand(node.id)
             }}
           />
         )

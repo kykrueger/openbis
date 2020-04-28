@@ -11,7 +11,7 @@ var TestUtil = new function() {
                      .then(() => e.write("password", password))
                      .then(() => e.click("login-button"))
                      .then(() => resolve())
-                     .catch(() => reject(error));
+                     .catch((error) => reject(error));
         });
     }
 
@@ -63,7 +63,7 @@ var TestUtil = new function() {
 
             chain = Promise.resolve();
             for (let i = 0; i < ids.length; i++) {
-                chain = chain.then(() => e.waitForId(ids[i])).catch(error => { reject(error)});
+                chain = chain.then(() => e.waitForId(ids[i])).catch((error) => reject(error));
             }
             chain.then(() => resolve());
         });
@@ -159,7 +159,7 @@ var TestUtil = new function() {
                 } else {
                     throw "CKEditor #" + elementId + " should be equal " + data;
                 }
-            } catch(error) {
+            } catch (error) {
                 reject(error);
             }
         });

@@ -1,9 +1,10 @@
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import List from '@material-ui/core/List'
+import util from '@src/js/common/util.js'
+import logger from '@src/js/common/logger.js'
+
 import BrowserNode from './BrowserNode.jsx'
-import logger from '../../../common/logger.js'
-import * as util from '../../../common/util.js'
 
 const styles = () => ({
   container: {
@@ -15,11 +16,11 @@ const styles = () => ({
   }
 })
 
-class BrowserNodes extends React.Component {
+class BrowserNodes extends React.PureComponent {
   render() {
     logger.log(logger.DEBUG, 'BrowserNodes.render')
 
-    const classes = this.props.classes
+    const { controller, classes } = this.props
 
     return (
       <List
@@ -32,10 +33,8 @@ class BrowserNodes extends React.Component {
           return (
             <BrowserNode
               key={node.id}
+              controller={controller}
               node={node}
-              nodeSelect={this.props.nodeSelect}
-              nodeCollapse={this.props.nodeCollapse}
-              nodeExpand={this.props.nodeExpand}
               level={this.props.level}
             />
           )

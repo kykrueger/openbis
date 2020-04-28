@@ -1,14 +1,35 @@
-export const OBJECT_OPEN = 'OBJECT_OPEN'
-export const OBJECT_CHANGE = 'OBJECT_CHANGE'
-export const OBJECT_CLOSE = 'OBJECT_CLOSE'
+const OBJECT_NEW = 'OBJECT_NEW'
+const OBJECT_CREATE = 'OBJECT_CREATE'
+const OBJECT_OPEN = 'OBJECT_OPEN'
+const OBJECT_UPDATE = 'OBJECT_UPDATE'
+const OBJECT_DELETE = 'OBJECT_DELETE'
+const OBJECT_CHANGE = 'OBJECT_CHANGE'
+const OBJECT_CLOSE = 'OBJECT_CLOSE'
+const ADD_OPEN_TAB = 'ADD_OPEN_TAB'
+const REMOVE_OPEN_TAB = 'REMOVE_OPEN_TAB'
+const REPLACE_OPEN_TAB = 'REPLACE_OPEN_TAB'
+const SET_CURRENT_ROUTE = 'SET_CURRENT_ROUTE'
 
-export const ADD_OPEN_OBJECT = 'ADD_OPEN_OBJECT'
-export const REMOVE_OPEN_OBJECT = 'REMOVE_OPEN_OBJECT'
-export const ADD_CHANGED_OBJECT = 'ADD_CHANGED_OBJECT'
-export const REMOVE_CHANGED_OBJECT = 'REMOVE_CHANGED_OBJECT'
-export const SET_CURRENT_ROUTE = 'SET_CURRENT_ROUTE'
+const objectNew = (page, type) => ({
+  type: OBJECT_NEW,
+  payload: {
+    page,
+    type
+  }
+})
 
-export const objectOpen = (page, type, id) => ({
+const objectCreate = (page, oldType, oldId, newType, newId) => ({
+  type: OBJECT_CREATE,
+  payload: {
+    page,
+    oldType,
+    oldId,
+    newType,
+    newId
+  }
+})
+
+const objectOpen = (page, type, id) => ({
   type: OBJECT_OPEN,
   payload: {
     page,
@@ -17,7 +38,25 @@ export const objectOpen = (page, type, id) => ({
   }
 })
 
-export const objectChange = (page, type, id, changed) => ({
+const objectUpdate = (page, type, id) => ({
+  type: OBJECT_UPDATE,
+  payload: {
+    page,
+    type,
+    id
+  }
+})
+
+const objectDelete = (page, type, id) => ({
+  type: OBJECT_DELETE,
+  payload: {
+    page,
+    type,
+    id
+  }
+})
+
+const objectChange = (page, type, id, changed) => ({
   type: OBJECT_CHANGE,
   payload: {
     page,
@@ -27,7 +66,7 @@ export const objectChange = (page, type, id, changed) => ({
   }
 })
 
-export const objectClose = (page, type, id) => ({
+const objectClose = (page, type, id) => ({
   type: OBJECT_CLOSE,
   payload: {
     page,
@@ -36,46 +75,60 @@ export const objectClose = (page, type, id) => ({
   }
 })
 
-export const addOpenObject = (page, type, id) => ({
-  type: ADD_OPEN_OBJECT,
+const addOpenTab = (page, tab) => ({
+  type: ADD_OPEN_TAB,
   payload: {
     page,
-    type,
+    tab
+  }
+})
+
+const removeOpenTab = (page, id) => ({
+  type: REMOVE_OPEN_TAB,
+  payload: {
+    page,
     id
   }
 })
 
-export const removeOpenObject = (page, type, id) => ({
-  type: REMOVE_OPEN_OBJECT,
+const replaceOpenTab = (page, id, tab) => ({
+  type: REPLACE_OPEN_TAB,
   payload: {
     page,
-    type,
-    id
+    id,
+    tab
   }
 })
 
-export const addChangedObject = (page, type, id) => ({
-  type: ADD_CHANGED_OBJECT,
-  payload: {
-    page,
-    type,
-    id
-  }
-})
-
-export const removeChangedObject = (page, type, id) => ({
-  type: REMOVE_CHANGED_OBJECT,
-  payload: {
-    page,
-    type,
-    id
-  }
-})
-
-export const setCurrentRoute = (page, currentRoute) => ({
+const setCurrentRoute = (page, currentRoute) => ({
   type: SET_CURRENT_ROUTE,
   payload: {
     page,
     currentRoute
   }
 })
+
+export default {
+  OBJECT_NEW,
+  OBJECT_CREATE,
+  OBJECT_OPEN,
+  OBJECT_UPDATE,
+  OBJECT_DELETE,
+  OBJECT_CHANGE,
+  OBJECT_CLOSE,
+  ADD_OPEN_TAB,
+  REMOVE_OPEN_TAB,
+  REPLACE_OPEN_TAB,
+  SET_CURRENT_ROUTE,
+  objectNew,
+  objectCreate,
+  objectOpen,
+  objectUpdate,
+  objectDelete,
+  objectChange,
+  objectClose,
+  addOpenTab,
+  removeOpenTab,
+  replaceOpenTab,
+  setCurrentRoute
+}

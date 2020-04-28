@@ -727,17 +727,20 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 				if(this._sampleFormModel.mode === FormMode.VIEW) { //Show values without input boxes if the form is in view mode
 					if(Util.getEmptyIfNull(value) !== "") { //Don't show empty fields, whole empty sections will show the title
 						var customWidget = profile.customWidgetSettings[propertyType.code];
-						if (customWidget === 'Spreadsheet') {
-						    var $jexcelContainer = $("<div>");
-                            JExcelEditorManager.createField($jexcelContainer, this._sampleFormModel.mode, propertyType.code, this._sampleFormModel.sample);
-						    $controlGroup = FormUtil.getFieldForComponentWithLabel($jexcelContainer, propertyType.label);
-						} else if (customWidget === 'Word Processor') {
-						    var $component = FormUtil.getFieldForPropertyType(propertyType, value);
-						    $component = FormUtil.activateRichTextProperties($component, undefined, propertyType, value, true);
-						    $controlGroup = FormUtil.getFieldForComponentWithLabel($component, propertyType.label);
-						} else {
-						    $controlGroup = FormUtil.createPropertyField(propertyType, value);
-						}
+						var forceDisableRTF = profile.isForcedDisableRTF(propertyType);
+                        if(customWidget && !forceDisableRTF) {
+                            if (customWidget === 'Spreadsheet') {
+                                var $jexcelContainer = $("<div>");
+                                JExcelEditorManager.createField($jexcelContainer, this._sampleFormModel.mode, propertyType.code, this._sampleFormModel.sample);
+                                $controlGroup = FormUtil.getFieldForComponentWithLabel($jexcelContainer, propertyType.label);
+                            } else if (customWidget === 'Word Processor') {
+                                var $component = FormUtil.getFieldForPropertyType(propertyType, value);
+                                $component = FormUtil.activateRichTextProperties($component, undefined, propertyType, value, true);
+                                $controlGroup = FormUtil.getFieldForComponentWithLabel($component, propertyType.label);
+                            }
+                        } else {
+                            $controlGroup = FormUtil.createPropertyField(propertyType, value);
+                        }
 					} else {
 						continue;
 					}
@@ -783,7 +786,9 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 					}
 
 					var customWidget = profile.customWidgetSettings[propertyType.code];
-					if(customWidget) {
+					var forceDisableRTF = profile.isForcedDisableRTF(propertyType);
+
+					if(customWidget && !forceDisableRTF) {
 					    switch(customWidget) {
 					        case 'Word Processor':
 					            if(propertyType.dataType === "MULTILINE_VARCHAR") {

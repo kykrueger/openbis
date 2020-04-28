@@ -759,3 +759,10 @@ stjs.getField=function(obj, field){
 		return stjs.getFieldHandler(obj, field);
 	return obj[field];
 }
+
+if (typeof exports !== 'undefined') {
+	if (typeof module !== 'undefined' && module.exports) {
+		exports = module.exports = stjs
+	}
+	exports.stjs = stjs
+}

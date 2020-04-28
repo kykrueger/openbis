@@ -1,10 +1,10 @@
 import 'regenerator-runtime/runtime'
 import React from 'react'
 import ReactDOM from 'react-dom'
-import store from './store/store.js'
 import { Provider } from 'react-redux'
-import ErrorBoundary from './components/common/error/ErrorBoundary.jsx'
-import ThemeProvider from './components/common/theme/ThemeProvider.jsx'
+import store from '@src/js/store/store.js'
+import ErrorBoundary from '@src/js/components/common/error/ErrorBoundary.jsx'
+import ThemeProvider from '@src/js/components/common/theme/ThemeProvider.jsx'
 
 const render = () => {
   let App = require('./components/App.jsx').default

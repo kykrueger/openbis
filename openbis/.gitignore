@@ -14,3 +14,4 @@ sourceTest/lucene/
 .idea/
 *.iml
 *.eml
+SERVER_STARTED

@@ -1,29 +1,30 @@
-export const INIT = 'INIT'
-export const CLEAR = 'CLEAR'
-export const LOGIN = 'LOGIN'
-export const LOGOUT = 'LOGOUT'
-export const SEARCH = 'SEARCH'
-export const CURRENT_PAGE_CHANGE = 'CURRENT_PAGE_CHANGE'
-export const SEARCH_CHANGE = 'SEARCH_CHANGE'
-export const ERROR_CHANGE = 'ERROR_CHANGE'
-export const ROUTE_CHANGE = 'ROUTE_CHANGE'
+const INIT = 'INIT'
+const CLEAR = 'CLEAR'
+const LOGIN = 'LOGIN'
+const LOGOUT = 'LOGOUT'
+const SEARCH = 'SEARCH'
+const CURRENT_PAGE_CHANGE = 'CURRENT_PAGE_CHANGE'
+const SEARCH_CHANGE = 'SEARCH_CHANGE'
+const ERROR_CHANGE = 'ERROR_CHANGE'
+const ROUTE_CHANGE = 'ROUTE_CHANGE'
+const ROUTE_REPLACE = 'ROUTE_REPLACE'
+const SET_INITIALIZED = 'SET_INITIALIZED'
+const SET_LOADING = 'SET_LOADING'
+const SET_SEARCH = 'SET_SEARCH'
+const SET_SESSION = 'SET_SESSION'
+const SET_ERROR = 'SET_ERROR'
+const SET_ROUTE = 'SET_ROUTE'
+const SET_LAST_OBJECT_MODIFICATION = 'SET_LAST_OBJECT_MODIFICATION'
 
-export const SET_INITIALIZED = 'SET_INITIALIZED'
-export const SET_LOADING = 'SET_LOADING'
-export const SET_SEARCH = 'SET_SEARCH'
-export const SET_SESSION = 'SET_SESSION'
-export const SET_ERROR = 'SET_ERROR'
-export const SET_ROUTE = 'SET_ROUTE'
-
-export const init = () => ({
+const init = () => ({
   type: INIT
 })
 
-export const clear = () => ({
+const clear = () => ({
   type: CLEAR
 })
 
-export const login = (username, password) => ({
+const login = (username, password) => ({
   type: LOGIN,
   payload: {
     username,
@@ -31,11 +32,11 @@ export const login = (username, password) => ({
   }
 })
 
-export const logout = () => ({
+const logout = () => ({
   type: LOGOUT
 })
 
-export const search = (page, text) => ({
+const search = (page, text) => ({
   type: SEARCH,
   payload: {
     page,
@@ -43,72 +44,127 @@ export const search = (page, text) => ({
   }
 })
 
-export const currentPageChange = currentPage => ({
+const currentPageChange = currentPage => ({
   type: CURRENT_PAGE_CHANGE,
   payload: {
     currentPage
   }
 })
 
-export const searchChange = search => ({
+const searchChange = search => ({
   type: SEARCH_CHANGE,
   payload: {
     search
   }
 })
 
-export const errorChange = error => ({
+const errorChange = error => ({
   type: ERROR_CHANGE,
   payload: {
     error
   }
 })
 
-export const routeChange = route => ({
+const routeChange = (route, state) => ({
   type: ROUTE_CHANGE,
   payload: {
-    route
+    route,
+    state
   }
 })
 
-export const setInitialized = initialized => ({
+const routeReplace = (route, state) => ({
+  type: ROUTE_REPLACE,
+  payload: {
+    route,
+    state
+  }
+})
+
+const setInitialized = initialized => ({
   type: SET_INITIALIZED,
   payload: {
     initialized
   }
 })
 
-export const setLoading = loading => ({
+const setLoading = loading => ({
   type: SET_LOADING,
   payload: {
     loading
   }
 })
 
-export const setSearch = search => ({
+const setSearch = search => ({
   type: SET_SEARCH,
   payload: {
     search
   }
 })
 
-export const setSession = session => ({
+const setSession = session => ({
   type: SET_SESSION,
   payload: {
     session
   }
 })
 
-export const setError = error => ({
+const setError = error => ({
   type: SET_ERROR,
   payload: {
     error
   }
 })
 
-export const setRoute = route => ({
+const setRoute = route => ({
   type: SET_ROUTE,
   payload: {
     route
   }
 })
+
+const setLastObjectModification = (type, operation, timestamp) => ({
+  type: SET_LAST_OBJECT_MODIFICATION,
+  payload: {
+    type,
+    operation,
+    timestamp
+  }
+})
+
+export default {
+  INIT,
+  CLEAR,
+  LOGIN,
+  LOGOUT,
+  SEARCH,
+  CURRENT_PAGE_CHANGE,
+  SEARCH_CHANGE,
+  ERROR_CHANGE,
+  ROUTE_CHANGE,
+  ROUTE_REPLACE,
+  SET_INITIALIZED,
+  SET_LOADING,
+  SET_SEARCH,
+  SET_SESSION,
+  SET_ERROR,
+  SET_ROUTE,
+  SET_LAST_OBJECT_MODIFICATION,
+  init,
+  clear,
+  login,
+  logout,
+  search,
+  currentPageChange,
+  searchChange,
+  errorChange,
+  routeChange,
+  routeReplace,
+  setInitialized,
+  setLoading,
+  setSearch,
+  setSession,
+  setError,
+  setRoute,
+  setLastObjectModification
+}

@@ -73,7 +73,7 @@ public abstract class AbstractSQLExecutor implements ISQLExecutor
 
                 while (resultSet.next())
                 {
-                    final Map<String, Object> row = new HashMap<>();
+                    final Map<String, Object> row = new LinkedHashMap<>();
                     for (final String columnName : columnNames)
                     {
                         row.put(columnName, resultSet.getObject(columnName));

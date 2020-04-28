@@ -2,9 +2,10 @@ import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import TextField from '@material-ui/core/TextField'
 import InputAdornment from '@material-ui/core/InputAdornment'
+import logger from '@src/js/common/logger.js'
+
 import FormFieldContainer from './FormFieldContainer.jsx'
 import FormFieldLabel from './FormFieldLabel.jsx'
-import logger from '../../../common/logger.js'
 
 const styles = () => ({
   startAdornment: {
