@@ -53,7 +53,7 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.METAPROJEC
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.METAPROJECTS_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.METAPROJECT_ASSIGNMENTS_ALL_TABLE;
 
-public class CriteriaTranslator
+public class SearchCriteriaTranslator
 {
 
     public static final DateFormat DATE_FORMAT = new SimpleDateFormat(BasicConstant.DATE_WITHOUT_TIMEZONE_PATTERN);
@@ -64,7 +64,7 @@ public class CriteriaTranslator
 
     public static final String MAIN_TABLE_ALIAS = getAlias(new AtomicInteger(0));
 
-    private CriteriaTranslator()
+    private SearchCriteriaTranslator()
     {
         throw new UnsupportedOperationException();
     }

@@ -19,11 +19,13 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator;
 public class SQLLexemes
 {
 
-    public static final String UNNEST = "unnest";
+    public static final String UNNEST = "UNNEST";
 
-    public static final String COALESCE = "coalesce";
+    public static final String COALESCE = "COALESCE";
 
-    public static final String LOWER = "lower";
+    public static final String LOWER = "LOWER";
+
+    public static final String GREATEST = "GREATEST";
 
     public static final String TS_RANK = "ts_rank";
 

@@ -69,7 +69,7 @@ public class PostgresSearchDAO implements ISQLSearchDAO
                         ((AbstractFieldSearchCriteria) subcriterion).getFieldType().equals(SearchFieldType.PROPERTY));
         updateWithDataTypes(translationVo, containsProperties);
 
-        final SelectQuery selectQuery = CriteriaTranslator.translate(translationVo);
+        final SelectQuery selectQuery = SearchCriteriaTranslator.translate(translationVo);
         final List<Map<String, Object>> result = sqlExecutor.execute(selectQuery.getQuery(), selectQuery.getArgs());
         return result.stream().map(
                 stringLongMap -> (Long) stringLongMap.get(finalIdColumnName)

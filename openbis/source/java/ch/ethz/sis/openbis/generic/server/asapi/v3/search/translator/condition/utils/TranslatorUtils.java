@@ -16,7 +16,7 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils;
 
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator.*;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCriteriaTranslator.*;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.*;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.*;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.*;
@@ -34,7 +34,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.TimeZone;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.*;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.IAliasFactory;
 import ch.systemsx.cisd.openbis.generic.shared.basic.BasicConstant;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
@@ -205,7 +205,7 @@ public class TranslatorUtils
         final JoinInformation joinInformation1 = new JoinInformation();
         joinInformation1.setJoinType(joinType);
         joinInformation1.setMainTable(tableMapper.getEntitiesTable());
-        joinInformation1.setMainTableAlias(CriteriaTranslator.MAIN_TABLE_ALIAS);
+        joinInformation1.setMainTableAlias(SearchCriteriaTranslator.MAIN_TABLE_ALIAS);
         joinInformation1.setMainTableIdField(ID_COLUMN);
         joinInformation1.setSubTable(tableMapper.getValuesTable());
         joinInformation1.setSubTableAlias(valuesTableAlias);
@@ -272,7 +272,7 @@ public class TranslatorUtils
         final JoinInformation joinInformation = new JoinInformation();
         joinInformation.setJoinType(JoinType.INNER);
         joinInformation.setMainTable(tableMapper.getEntitiesTable());
-        joinInformation.setMainTableAlias(CriteriaTranslator.MAIN_TABLE_ALIAS);
+        joinInformation.setMainTableAlias(SearchCriteriaTranslator.MAIN_TABLE_ALIAS);
         joinInformation.setMainTableIdField(tableMapper.getEntitiesTableEntityTypeIdField());
         joinInformation.setSubTable(tableMapper.getEntityTypesTable());
         joinInformation.setSubTableAlias(aliasFactory.createAlias());
@@ -290,7 +290,7 @@ public class TranslatorUtils
         final JoinInformation joinInformation1 = new JoinInformation();
         joinInformation1.setJoinType(JoinType.INNER);
         joinInformation1.setMainTable(tableMapper.getEntitiesTable());
-        joinInformation1.setMainTableAlias(CriteriaTranslator.MAIN_TABLE_ALIAS);
+        joinInformation1.setMainTableAlias(SearchCriteriaTranslator.MAIN_TABLE_ALIAS);
         joinInformation1.setMainTableIdField(ID_COLUMN);
         joinInformation1.setSubTable(tableMapper.getRelationshipsTable());
         joinInformation1.setSubTableAlias(relationshipsTableAlias);

@@ -1,5 +1,18 @@
 -- Full text search
 
+-- Controlled Vocabularies
+
+BEGIN;
+    ALTER TABLE controlled_vocabulary_terms
+        ADD COLUMN tsvector_document TSVECTOR;
+
+    CREATE TRIGGER controlled_vocabulary_terms_tsvector_document BEFORE INSERT OR UPDATE
+        ON controlled_vocabulary_terms FOR EACH ROW EXECUTE PROCEDURE
+        tsvector_update_trigger(tsvector_document, 'pg_catalog.simple', code, label, description);
+
+    UPDATE controlled_vocabulary_terms SET code = code;
+COMMIT;
+
 -- Samples
 
 BEGIN;
@@ -41,6 +54,17 @@ BEGIN;
         ALTER COLUMN tsvector_document SET NOT NULL;
 
     CREATE INDEX samples_all_search_index ON samples_all USING gin(tsvector_document);
+COMMIT;
+
+BEGIN;
+    ALTER TABLE sample_properties
+        ADD COLUMN tsvector_document TSVECTOR;
+
+    CREATE TRIGGER sample_properties_tsvector_document BEFORE INSERT OR UPDATE
+        ON sample_properties FOR EACH ROW EXECUTE PROCEDURE
+        tsvector_update_trigger(tsvector_document, 'pg_catalog.simple', value);
+
+    UPDATE sample_properties SET value = value;
 COMMIT;
 
 -- Experiments
