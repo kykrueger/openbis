@@ -3558,11 +3558,9 @@ class Openbis:
                 else:
                     # property name is provided
                     for i, dataSet in enumerate(response):
-                        try:
-                            datasets.loc[i, prop.upper()] = dataSet.get('properties',{}).get(prop,'') or dataSet.get('properties',{}).get(prop.upper(),'')
-                            display_attrs.append(prop.upper())
-                        except AttributeError:
-                            pass
+                        val = dataSet.get('properties',{}).get(prop,'') or dataSet.get('properties',{}).get(prop.upper(),'')
+                        datasets.loc[i, prop.upper()] = val
+                    display_attrs.append(prop.upper())
 
 
         return Things(
@@ -3780,11 +3778,9 @@ class Openbis:
                 else:
                     # property name is provided
                     for i, sample in enumerate(response):
-                        try:
-                            samples.loc[i, prop.upper()] = sample.get('properties',{}).get(prop,'') or sample.get('properties',{}).get(prop.upper(),'')
-                            display_attrs.append(prop.upper())
-                        except AttributeError:
-                            pass
+                        val = sample.get('properties',{}).get(prop,'') or sample.get('properties',{}).get(prop.upper(),'')
+                        samples.loc[i, prop.upper()] = val
+                    display_attrs.append(prop.upper())
 
         return Things(
             openbis_obj = self,

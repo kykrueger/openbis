@@ -1,3 +1,7 @@
+## Changes with pybis-1.14.6
+
+- bugfix duplicate property-columns in get_samples() and get_datasets()
+
 ## Changes with pybis-1.14.5
 
 - no automagic detection of mountpoint, because of Windows incompatibilities 
