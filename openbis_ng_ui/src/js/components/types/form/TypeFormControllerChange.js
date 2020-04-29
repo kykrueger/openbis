@@ -1,5 +1,8 @@
+import _ from 'lodash'
+
 export default class TypeFormControllerChange {
   constructor(controller) {
+    this.controller = controller
     this.context = controller.context
   }
 
@@ -44,16 +47,41 @@ export default class TypeFormControllerChange {
     }))
   }
 
-  _handleChangeProperty(id, field, value) {
-    let { properties } = this.context.getState()
-    let newProperties = Array.from(properties)
+  _handleChangeProperty(id, field, newValue) {
+    const { properties } = this.context.getState()
+    const newProperties = Array.from(properties)
 
-    let index = properties.findIndex(property => property.id === id)
-    let property = properties[index]
+    const index = properties.findIndex(property => property.id === id)
+    const oldProperty = properties[index]
+
     let newProperty = {
-      ...property,
-      [field]: value
+      ...oldProperty,
+      [field]: newValue
     }
+
+    if (
+      newProperty.scope === 'global' &&
+      (field === 'code' || field === 'scope')
+    ) {
+      const { globalPropertyTypes } = this.controller.getDictionaries()
+      const globalPropertyType = globalPropertyTypes.find(
+        propertyType => propertyType.code === newProperty.code
+      )
+
+      if (globalPropertyType) {
+        newProperty = {
+          ...newProperty,
+          label: _.get(globalPropertyType, 'label', null),
+          description: _.get(globalPropertyType, 'description', null),
+          dataType: _.get(globalPropertyType, 'dataType', null),
+          vocabulary: _.get(globalPropertyType, 'vocabulary.code', null),
+          materialType: _.get(globalPropertyType, 'materialType.code', null),
+          schema: _.get(globalPropertyType, 'schema', null),
+          transformation: _.get(globalPropertyType, 'transformation', null)
+        }
+      }
+    }
+
     newProperties[index] = newProperty
 
     this.context.setState(state => ({

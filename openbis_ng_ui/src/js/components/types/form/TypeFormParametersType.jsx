@@ -43,7 +43,6 @@ class TypeFormParametersType extends React.PureComponent {
   }
 
   componentDidMount() {
-    this.load()
     this.focus()
   }
 
@@ -54,31 +53,6 @@ class TypeFormParametersType extends React.PureComponent {
     if (prevSelection !== selection) {
       this.focus()
     }
-  }
-
-  load() {
-    const type = this.getType(this.props)
-
-    if (type) {
-      this.loadValidationPlugins()
-    }
-  }
-
-  loadValidationPlugins() {
-    const { objectType } = this.getType(this.props)
-    const { controller } = this.props
-
-    return controller
-      .getFacade()
-      .loadValidationPlugins(objectType)
-      .then(validationPlugins => {
-        this.setState(() => ({
-          validationPlugins
-        }))
-      })
-      .catch(error => {
-        controller.getFacade().catch(error)
-      })
   }
 
   focus() {
@@ -189,8 +163,8 @@ class TypeFormParametersType extends React.PureComponent {
   }
 
   renderValidationPlugin(type) {
-    const { classes } = this.props
-    const { validationPlugins = [] } = this.state
+    const { classes, controller } = this.props
+    const { validationPlugins = [] } = controller.getDictionaries()
 
     let options = []
 

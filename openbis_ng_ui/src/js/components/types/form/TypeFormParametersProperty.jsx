@@ -47,105 +47,16 @@ class TypeFormParametersProperty extends React.PureComponent {
   }
 
   componentDidMount() {
-    this.load()
     this.focus()
   }
 
   componentDidUpdate(prevProps) {
-    const prevProperty = this.getProperty(prevProps)
-    const property = this.getProperty(this.props)
-
-    const prevDataType = prevProperty ? prevProperty.dataType : null
-    const dataType = property ? property.dataType : null
-
-    if (prevDataType !== dataType) {
-      this.load()
-    }
-
     const prevSelection = prevProps.selection
     const selection = this.props.selection
 
     if (prevSelection !== selection) {
       this.focus()
     }
-  }
-
-  load() {
-    const property = this.getProperty(this.props)
-
-    if (property) {
-      const dataType = property.dataType
-
-      if (dataType === openbis.DataType.CONTROLLEDVOCABULARY) {
-        this.loadVocabularies()
-      } else if (dataType === openbis.DataType.MATERIAL) {
-        this.loadMaterialTypes()
-      }
-
-      this.loadDynamicPlugins()
-      this.loadGlobalPropertyTypes()
-    }
-  }
-
-  loadDynamicPlugins() {
-    const { objectType } = this.getType()
-    const { controller } = this.props
-    return controller
-      .getFacade()
-      .loadDynamicPlugins(objectType)
-      .then(dynamicPlugins => {
-        this.setState(() => ({
-          dynamicPlugins
-        }))
-      })
-      .catch(error => {
-        controller.getFacade().catch(error)
-      })
-  }
-
-  loadVocabularies() {
-    const { controller } = this.props
-    return controller
-      .getFacade()
-      .loadVocabularies()
-      .then(vocabularies => {
-        this.setState(() => ({
-          vocabularies
-        }))
-      })
-      .catch(error => {
-        controller.getFacade().catch(error)
-      })
-  }
-
-  loadMaterialTypes() {
-    const { controller } = this.props
-    return controller
-      .getFacade()
-      .loadMaterialTypes()
-      .then(materialTypes => {
-        this.setState(() => ({
-          materialTypes
-        }))
-      })
-      .catch(error => {
-        controller.getFacade().catch(error)
-      })
-  }
-
-  loadGlobalPropertyTypes() {
-    const { controller } = this.props
-    return controller
-      .getFacade()
-      .loadGlobalPropertyTypes()
-      .then(globalPropertyTypes => {
-        this.setState(() => ({
-          globalPropertyTypes
-        }))
-      })
-      .catch(error => {
-        controller.getFacade().catch(error)
-      })
   }
 
   focus() {
@@ -290,7 +201,7 @@ class TypeFormParametersProperty extends React.PureComponent {
   }
 
   renderCode(property) {
-    const { classes } = this.props
+    const { classes, controller } = this.props
 
     if (property.scope === 'local') {
       return (
@@ -310,7 +221,7 @@ class TypeFormParametersProperty extends React.PureComponent {
         </div>
       )
     } else if (property.scope === 'global') {
-      const { globalPropertyTypes = [] } = this.state
+      const { globalPropertyTypes = [] } = controller.getDictionaries()
 
       const options = globalPropertyTypes.map(globalPropertyType => {
         return globalPropertyType.code
@@ -387,8 +298,8 @@ class TypeFormParametersProperty extends React.PureComponent {
 
   renderVocabulary(property) {
     if (property.dataType === openbis.DataType.CONTROLLEDVOCABULARY) {
-      const { classes } = this.props
-      const { vocabularies = [] } = this.state
+      const { classes, controller } = this.props
+      const { vocabularies = [] } = controller.getDictionaries()
 
       let options = []
 
@@ -426,8 +337,8 @@ class TypeFormParametersProperty extends React.PureComponent {
 
   renderMaterialType(property) {
     if (property.dataType === openbis.DataType.MATERIAL) {
-      const { classes } = this.props
-      const { materialTypes = [] } = this.state
+      const { classes, controller } = this.props
+      const { materialTypes = [] } = controller.getDictionaries()
 
       let options = []
 
@@ -512,8 +423,8 @@ class TypeFormParametersProperty extends React.PureComponent {
   }
 
   renderDynamicPlugin(property) {
-    const { classes } = this.props
-    const { dynamicPlugins = [] } = this.state
+    const { classes, controller } = this.props
+    const { dynamicPlugins = [] } = controller.getDictionaries()
 
     let options = []
 

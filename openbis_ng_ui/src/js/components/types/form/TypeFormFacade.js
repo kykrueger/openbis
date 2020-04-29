@@ -85,6 +85,8 @@ export default class TypeFormFacade {
   loadGlobalPropertyTypes() {
     const criteria = new openbis.PropertyTypeSearchCriteria()
     const fo = new openbis.PropertyTypeFetchOptions()
+    fo.withMaterialType()
+    fo.withVocabulary()
     return openbis.searchPropertyTypes(criteria, fo).then(results => {
       return results.getObjects().filter(propertyType => {
         return !propertyType.getCode().includes('.')

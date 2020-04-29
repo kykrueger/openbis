@@ -68,6 +68,11 @@ export default class TypeFormController {
     return new TypeFormControllerSave(this).execute()
   }
 
+  getDictionaries() {
+    const { dictionaries } = this.context.getState()
+    return dictionaries || {}
+  }
+
   getFacade() {
     return this.facade
   }
