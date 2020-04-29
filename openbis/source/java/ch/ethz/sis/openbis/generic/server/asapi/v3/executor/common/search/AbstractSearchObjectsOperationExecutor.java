@@ -242,40 +242,22 @@ public abstract class AbstractSearchObjectsOperationExecutor<OBJECT, OBJECT_PE, 
         final TranslationContext translationContext = new TranslationContext(context.getSession());
         final SortOptions<OBJECT> sortOptions = fetchOptions.getSortBy();
 
-        // There results from the manager should already be filtered.
         final Set<Long> allResultsIds = getSearchManager().searchForIDs(userId, authorisationInformation, criteria, sortOptions, null, ID_COLUMN);
-        final List<Long> sortedAndPagedResultIds = sortAndPage(allResultsIds, fetchOptions);
-        final List<OBJECT_PE> sortedAndPagedResultPEs = getSearchManager().translate(sortedAndPagedResultIds);
-        final Map<OBJECT_PE, OBJECT> sortedAndPagedResultV3DTOs = doTranslate(translationContext, sortedAndPagedResultPEs, fetchOptions);
+        final List<OBJECT_PE> allResultPEs = getSearchManager().translate(new ArrayList<>(allResultsIds));
+        // The results from the manager are filtered by rights after translation.
+        final Map<OBJECT_PE, OBJECT> allResultV3DTOs = doTranslate(translationContext, allResultPEs, fetchOptions);
 
-        final List<OBJECT> finalResults = new ArrayList<>(sortedAndPagedResultV3DTOs.values());
+        final List<OBJECT> finalResults = new ArrayList<>(allResultV3DTOs.values());
         final List<OBJECT> sortedFinalResults = getSortedFinalResults(criteria, fetchOptions, finalResults);
-        final SearchResult<OBJECT> searchResult = new SearchResult<>(sortedFinalResults, allResultsIds.size());
+        final SearchResult<OBJECT> searchResult = new SearchResult<>(sortedFinalResults, allResultV3DTOs.size());
 
         return getOperationResult(searchResult);
     }
 
     private List<OBJECT> getSortedFinalResults(final CRITERIA criteria, final FETCH_OPTIONS fetchOptions, final List<OBJECT> finalResults)
     {
-        // No paging is needed, the result should just be sorted.
-        final Integer from = fetchOptions.getFrom();
-        fetchOptions.from(null);
-        final Integer count = fetchOptions.getCount();
-        fetchOptions.count(null);
-        final List<OBJECT> sortedFinalResults = new SortAndPage().sortAndPage(finalResults, criteria, fetchOptions);
-        fetchOptions.from(from);
-        fetchOptions.count(count);
-        return sortedFinalResults;
-    }
-
-    private List<Long> sortAndPage(final Set<Long> ids, final FetchOptions fo)
-    {
-        //
         // Filter out sorts to ignore
-        //
-
-        SortOptions<OBJECT> sortOptions = fo.getSortBy();
-
+        final SortOptions<OBJECT> sortOptions = fetchOptions.getSortBy();
         if (sortOptions != null) {
             List<Sorting> sortingToRemove = new ArrayList<>();
             for (Sorting sorting:sortOptions.getSortings()) {
@@ -290,23 +272,9 @@ public abstract class AbstractSearchObjectsOperationExecutor<OBJECT, OBJECT_PE, 
                 sortOptions.getSortings().remove(sorting);
                 operationLog.warn("[SQL Query Engine - backwards compatibility warning - stop using this feature] SORTING ORDER IGNORED!: " + sorting.getField());
             }
-
-            if (sortOptions.getSortings().isEmpty()) {
-                sortOptions = null;
-            }
         }
 
-        //
-        //
-        //
-
-        final Set<Long> orderedIDs = (sortOptions != null) ? getSearchManager().sortIDs(ids, sortOptions) : ids;
-
-        final List<Long> toPage = new ArrayList<>(orderedIDs);
-        final Integer fromRecord = fo.getFrom();
-        final Integer recordsCount = fo.getCount();
-        final boolean hasPaging = fromRecord != null && recordsCount != null;
-        return hasPaging ? toPage.subList(fromRecord, Math.min(fromRecord + recordsCount, toPage.size())) : toPage;
+        return new SortAndPage().sortAndPage(finalResults, criteria, fetchOptions);
     }
 
 }
