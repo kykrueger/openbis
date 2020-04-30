@@ -2,59 +2,32 @@
 
 -- Controlled Vocabularies
 
-BEGIN;
-    ALTER TABLE controlled_vocabulary_terms
-        ADD COLUMN tsvector_document TSVECTOR;
+ALTER TABLE controlled_vocabulary_terms
+    ADD COLUMN tsvector_document TSVECTOR;
 
-    CREATE TRIGGER controlled_vocabulary_terms_tsvector_document BEFORE INSERT OR UPDATE
-        ON controlled_vocabulary_terms FOR EACH ROW EXECUTE PROCEDURE
-        tsvector_update_trigger(tsvector_document, 'pg_catalog.simple', code, label, description);
+CREATE TRIGGER controlled_vocabulary_terms_tsvector_document BEFORE INSERT OR UPDATE
+    ON controlled_vocabulary_terms FOR EACH ROW EXECUTE PROCEDURE
+    tsvector_update_trigger(tsvector_document, 'pg_catalog.simple', code, label, description);
 
-    UPDATE controlled_vocabulary_terms SET code = code;
-COMMIT;
+UPDATE controlled_vocabulary_terms SET code = code;
+
+CREATE INDEX controlled_vocabulary_terms_search_index ON controlled_vocabulary_terms USING gin(tsvector_document);
 
 -- Samples
 
-BEGIN;
-    CREATE FUNCTION samples_all_tsvector_document_trigger() RETURNS trigger AS $$
-    begin
-        new.tsvector_document :=
-                    (concat(new.perm_id, ':1'))::tsvector ||
-                    to_tsvector('pg_catalog.simple', coalesce(new.code,''));
-        return new;
-    end
-    $$ LANGUAGE plpgsql;
+ALTER TABLE sample_properties
+    ADD COLUMN tsvector_document TSVECTOR;
 
-    ALTER TABLE samples_all
-        ADD COLUMN tsvector_document TSVECTOR;
+CREATE TRIGGER sample_properties_tsvector_document BEFORE INSERT OR UPDATE
+    ON sample_properties FOR EACH ROW EXECUTE FUNCTION
+    tsvector_update_trigger(tsvector_document, 'pg_catalog.simple', value);
 
-    CREATE OR REPLACE VIEW samples AS
-        SELECT id, perm_id, code, proj_id, proj_frozen, expe_id, expe_frozen, saty_id, registration_timestamp,
-               modification_timestamp, pers_id_registerer, pers_id_modifier, del_id, orig_del, space_id, space_frozen,
-               samp_id_part_of, cont_frozen, version, frozen, frozen_for_comp, frozen_for_children, frozen_for_parents,
-               frozen_for_data, tsvector_document
-        FROM samples_all
-        WHERE del_id IS NULL;
+UPDATE samples_all SET value = value;
 
-    CREATE OR REPLACE VIEW samples_deleted AS
-        SELECT id, perm_id, code, expe_id, saty_id, registration_timestamp, modification_timestamp, pers_id_registerer, pers_id_modifier, del_id, orig_del, space_id, proj_id, samp_id_part_of, version,
-               tsvector_document
-        FROM samples_all
-        WHERE del_id IS NOT NULL;
+ALTER TABLE sample_properties
+    ALTER COLUMN tsvector_document SET NOT NULL;
 
-    CREATE TRIGGER samples_all_tsvector_document BEFORE INSERT OR UPDATE
-        ON samples_all FOR EACH ROW EXECUTE FUNCTION
-        samples_all_tsvector_document_trigger();
-
-    UPDATE samples_all SET code = code;
-COMMIT;
-
-BEGIN;
-    ALTER TABLE samples_all
-        ALTER COLUMN tsvector_document SET NOT NULL;
-
-    CREATE INDEX samples_all_search_index ON samples_all USING gin(tsvector_document);
-COMMIT;
+CREATE INDEX sample_properties_search_index ON sample_properties USING gin(tsvector_document);
 
 BEGIN;
     ALTER TABLE sample_properties
