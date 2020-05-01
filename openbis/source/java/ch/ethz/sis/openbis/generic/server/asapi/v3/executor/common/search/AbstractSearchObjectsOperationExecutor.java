@@ -60,7 +60,7 @@ public abstract class AbstractSearchObjectsOperationExecutor<OBJECT, OBJECT_PE, 
 
     protected abstract List<OBJECT_PE> doSearch(IOperationContext context, CRITERIA criteria, FETCH_OPTIONS fetchOptions);
 
-    protected abstract Map<OBJECT_PE, OBJECT> doTranslate(TranslationContext translationContext, List<OBJECT_PE> ids, FETCH_OPTIONS fetchOptions);
+    protected abstract Map<OBJECT_PE, OBJECT> doTranslate(TranslationContext translationContext, Collection<OBJECT_PE> ids, FETCH_OPTIONS fetchOptions);
 
     protected abstract SearchObjectsOperationResult<OBJECT> getOperationResult(SearchResult<OBJECT> searchResult);
 
@@ -242,22 +242,33 @@ public abstract class AbstractSearchObjectsOperationExecutor<OBJECT, OBJECT_PE, 
         final TranslationContext translationContext = new TranslationContext(context.getSession());
         final SortOptions<OBJECT> sortOptions = fetchOptions.getSortBy();
 
-        final Set<Long> allResultsIds = getSearchManager().searchForIDs(userId, authorisationInformation, criteria, sortOptions, null, ID_COLUMN);
-        final List<OBJECT_PE> allResultPEs = getSearchManager().translate(new ArrayList<>(allResultsIds));
+        final Collection<Long> allResultsIds = getSearchManager().searchForIDs(userId, authorisationInformation, criteria, sortOptions, null, ID_COLUMN);
+        final Collection<Long> sortedResultIds = sort(allResultsIds, sortOptions);
+        final Collection<OBJECT_PE> allResultPEs = getSearchManager().translate(sortedResultIds);
         // The results from the manager are filtered by rights after translation.
         final Map<OBJECT_PE, OBJECT> allResultV3DTOs = doTranslate(translationContext, allResultPEs, fetchOptions);
 
-        final List<OBJECT> finalResults = new ArrayList<>(allResultV3DTOs.values());
-        final List<OBJECT> sortedFinalResults = getSortedFinalResults(criteria, fetchOptions, finalResults);
-        final SearchResult<OBJECT> searchResult = new SearchResult<>(sortedFinalResults, allResultV3DTOs.size());
+        // Reordering of allResultV3DTOs is needed because translation messes up the order
+        final Collection<OBJECT> finalResults = allResultPEs.stream().map(allResultV3DTOs::get).filter(Objects::nonNull)
+                .collect(Collectors.toList());
+        final List<OBJECT> pagedFinalResults = page(criteria, fetchOptions, finalResults);
+        final SearchResult<OBJECT> searchResult = new SearchResult<>(pagedFinalResults, allResultV3DTOs.size());
 
         return getOperationResult(searchResult);
     }
 
-    private List<OBJECT> getSortedFinalResults(final CRITERIA criteria, final FETCH_OPTIONS fetchOptions, final List<OBJECT> finalResults)
+    private List<OBJECT> page(final CRITERIA criteria, final FETCH_OPTIONS fetchOptions, final Collection<OBJECT> finalResults)
+    {
+        final List<OBJECT> toPage = new ArrayList<>(finalResults);
+        final Integer fromRecord = fetchOptions.getFrom();
+        final Integer recordsCount = fetchOptions.getCount();
+        final boolean hasPaging = fromRecord != null && recordsCount != null;
+        return hasPaging ? toPage.subList(fromRecord, Math.min(fromRecord + recordsCount, toPage.size())) : toPage;
+    }
+
+    private Collection<Long> sort(final Collection<Long> ids, SortOptions<OBJECT> sortOptions)
     {
         // Filter out sorts to ignore
-        final SortOptions<OBJECT> sortOptions = fetchOptions.getSortBy();
         if (sortOptions != null) {
             List<Sorting> sortingToRemove = new ArrayList<>();
             for (Sorting sorting:sortOptions.getSortings()) {
@@ -272,9 +283,13 @@ public abstract class AbstractSearchObjectsOperationExecutor<OBJECT, OBJECT_PE, 
                 sortOptions.getSortings().remove(sorting);
                 operationLog.warn("[SQL Query Engine - backwards compatibility warning - stop using this feature] SORTING ORDER IGNORED!: " + sorting.getField());
             }
+
+            if (sortOptions.getSortings().isEmpty()) {
+                sortOptions = null;
+            }
         }
 
-        return new SortAndPage().sortAndPage(finalResults, criteria, fetchOptions);
+        return (sortOptions != null) ? getSearchManager().sortIDs(ids, sortOptions) : ids;
     }
 
 }

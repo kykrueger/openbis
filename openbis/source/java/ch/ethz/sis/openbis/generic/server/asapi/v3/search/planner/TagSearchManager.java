@@ -95,8 +95,8 @@ public class TagSearchManager extends AbstractSearchManager<TagSearchCriteria, T
     }
 
     @Override
-    public Set<Long> sortIDs(final Set<Long> filteredIDs, final SortOptions<Tag> sortOptions) {
-        return doSortIDs(filteredIDs, sortOptions, TableMapper.TAG);
+    public Collection<Long> sortIDs(final Collection<Long> ids, final SortOptions<Tag> sortOptions) {
+        return doSortIDs(ids, sortOptions, TableMapper.TAG);
     }
 
 }

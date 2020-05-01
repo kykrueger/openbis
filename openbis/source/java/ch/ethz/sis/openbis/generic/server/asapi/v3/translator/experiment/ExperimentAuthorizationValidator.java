@@ -16,10 +16,7 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.translator.experiment;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 import org.springframework.stereotype.Component;
 
@@ -42,7 +39,7 @@ public class ExperimentAuthorizationValidator extends AbstractAuthorizationValid
         AuthorizationDataProvider provider = new AuthorizationDataProvider(daoFactory);
         Set<ExperimentAccessPE> accessDatas =
                 provider.getExperimentCollectionAccessData(TechId.createList(new ArrayList<Long>(experimentIds)), false);
-        Set<Long> result = new HashSet<Long>();
+        Set<Long> result = new LinkedHashSet<>();
 
         for (ExperimentAccessPE accessData : accessDatas)
         {

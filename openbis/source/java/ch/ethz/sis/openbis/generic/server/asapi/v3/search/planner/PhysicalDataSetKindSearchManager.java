@@ -26,6 +26,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisation
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 
@@ -72,8 +73,8 @@ public class PhysicalDataSetKindSearchManager extends AbstractSearchManager<Phys
     }
 
     @Override
-    public Set<Long> sortIDs(final Set<Long> filteredIDs, final SortOptions<DataSetType> sortOptions) {
-        return doSortIDs(filteredIDs, sortOptions, EXTERNAL_DATA);
+    public Collection<Long> sortIDs(final Collection<Long> ids, final SortOptions<DataSetType> sortOptions) {
+        return doSortIDs(ids, sortOptions, EXTERNAL_DATA);
     }
 
     private Set<Long> doSearchForIDs(final Long userId, final AuthorisationInformation authorisationInformation, final String idsColumnName)

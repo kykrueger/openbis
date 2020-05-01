@@ -125,7 +125,7 @@ public class PostgresSearchDAO implements ISQLSearchDAO
     }
 
     @Override
-    public Set<Long> sortIDs(final TableMapper tableMapper, final Set<Long> filteredIDs, final SortOptions<?> sortOptions)
+    public Collection<Long> sortIDs(final TableMapper tableMapper, final Collection<Long> filteredIDs, final SortOptions<?> sortOptions)
     {
         final TranslationVo translationVo = new TranslationVo();
         translationVo.setTableMapper(tableMapper);

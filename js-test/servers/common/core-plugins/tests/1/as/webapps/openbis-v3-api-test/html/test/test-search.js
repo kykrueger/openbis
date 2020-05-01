@@ -77,6 +77,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 					
 					fetchOptions.sortBy()[fieldName](fieldParameters);
 					return fSearch(facade).then(function(results) {
+						debugger;
 						c.ok("Got results ASC");
 						if(disableSortCheck && codeOfFirstAsc) {
 							c.assertObjectsWithValues(results.getObjects(), "code", [ codeOfFirstAsc ]);
@@ -88,6 +89,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 						
 						fetchOptions.sortBy()[fieldName](fieldParameters).desc();
 						return fSearch(facade).then(function(results) {
+							debugger;
 							c.ok("Got results DESC");
 							if(disableSortCheck && codeOfFirstAsc) {
 								var lastObject = results.getObjects()[results.getObjects().length - 1];
@@ -100,6 +102,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 					});
 				});
 			}).fail(function(error) {
+				debugger;
 				c.fail(error.message);
 				c.finish();
 			});
@@ -1050,7 +1053,9 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			var fo = c.createDataSetFetchOptions();
 
 			testSearchWithPagingAndStringSorting(c, function(facade) {
-				return facade.searchDataSets(criteria, fo);
+				debugger;
+				const searchResult = facade.searchDataSets(criteria, fo);
+				return searchResult;
 			}, fo, "property", "$RESOLUTION");
 		});
 

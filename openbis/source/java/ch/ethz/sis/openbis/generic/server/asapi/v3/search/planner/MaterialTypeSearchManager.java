@@ -26,6 +26,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 
+import java.util.Collection;
 import java.util.Set;
 
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
@@ -57,8 +58,8 @@ public class MaterialTypeSearchManager extends AbstractSearchManager<MaterialTyp
     }
 
     @Override
-    public Set<Long> sortIDs(final Set<Long> filteredIDs, final SortOptions<MaterialType> sortOptions) {
-        return doSortIDs(filteredIDs, sortOptions, TableMapper.MATERIAL_TYPE);
+    public Collection<Long> sortIDs(final Collection<Long> ids, final SortOptions<MaterialType> sortOptions) {
+        return doSortIDs(ids, sortOptions, TableMapper.MATERIAL_TYPE);
     }
 
 }

@@ -29,6 +29,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -96,8 +97,8 @@ public class PropertyAssignmentSearchManager extends
     }
 
     @Override
-    public Set<Long> sortIDs(final Set<Long> filteredIDs, final SortOptions<PropertyAssignment> sortOptions) {
-        return doSortIDs(filteredIDs, sortOptions, TableMapper.SAMPLE_PROPERTY_ASSIGNMENT);
+    public Collection<Long> sortIDs(final Collection<Long> ids, final SortOptions<PropertyAssignment> sortOptions) {
+        return doSortIDs(ids, sortOptions, TableMapper.SAMPLE_PROPERTY_ASSIGNMENT);
     }
 
 }

@@ -26,6 +26,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 
+import java.util.Collection;
 import java.util.Set;
 
 /**
@@ -57,8 +58,8 @@ public class ProjectSearchManager extends AbstractSearchManager<ProjectSearchCri
     }
 
     @Override
-    public Set<Long> sortIDs(final Set<Long> filteredIDs, final SortOptions<Project> sortOptions) {
-        return doSortIDs(filteredIDs, sortOptions, TableMapper.PROJECT);
+    public Collection<Long> sortIDs(final Collection<Long> ids, final SortOptions<Project> sortOptions) {
+        return doSortIDs(ids, sortOptions, TableMapper.PROJECT);
     }
 
 }

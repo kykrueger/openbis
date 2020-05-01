@@ -186,11 +186,11 @@ public abstract class AbstractSearchManager<CRITERIA extends ISearchCriteria, OB
         return authProvider;
     }
 
-    public List<OBJECT_PE> translate(final List<Long> ids) {
+    public Collection<OBJECT_PE> translate(final Collection <Long> ids) {
         return idsTranslator.translate(ids);
     }
 
-    protected Set<Long> doSortIDs(final Set<Long> filteredIDs, final SortOptions<OBJECT> sortOptions, final TableMapper tableMapper)
+    protected Collection<Long> doSortIDs(final Collection<Long> filteredIDs, final SortOptions<OBJECT> sortOptions, final TableMapper tableMapper)
     {
         return getSearchDAO().sortIDs(tableMapper, filteredIDs, sortOptions);
     }

@@ -116,8 +116,8 @@ public class DataSetSearchManager extends AbstractCompositeEntitySearchManager<D
     }
 
     @Override
-    public Set<Long> sortIDs(final Set<Long> filteredIDs, final SortOptions<DataSet> sortOptions) {
-        return doSortIDs(filteredIDs, sortOptions, TableMapper.DATA_SET);
+    public Collection<Long> sortIDs(final Collection<Long> ids, final SortOptions<DataSet> sortOptions) {
+        return doSortIDs(ids, sortOptions, TableMapper.DATA_SET);
     }
 
 }
