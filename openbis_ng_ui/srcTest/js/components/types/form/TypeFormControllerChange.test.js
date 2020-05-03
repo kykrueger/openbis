@@ -39,7 +39,9 @@ describe('TypeFormController.handleChange', () => {
     await controller.load()
 
     expect(context.getState()).toMatchObject({
-      type: { description: null }
+      type: {
+        description: { value: null }
+      }
     })
 
     controller.handleChange('type', {
@@ -48,7 +50,9 @@ describe('TypeFormController.handleChange', () => {
     })
 
     expect(context.getState()).toMatchObject({
-      type: { description: 'TEST_DESCRIPTION' }
+      type: {
+        description: { value: 'TEST_DESCRIPTION' }
+      }
     })
   })
 
@@ -64,12 +68,12 @@ describe('TypeFormController.handleChange', () => {
       sections: [
         {
           id: 'section-0',
-          name: 'TEST_SECTION_1',
+          name: { value: 'TEST_SECTION_1' },
           properties: ['property-0']
         },
         {
           id: 'section-1',
-          name: 'TEST_SECTION_2',
+          name: { value: 'TEST_SECTION_2' },
           properties: ['property-1', 'property-2']
         }
       ]
@@ -85,12 +89,12 @@ describe('TypeFormController.handleChange', () => {
       sections: [
         {
           id: 'section-0',
-          name: 'TEST_SECTION_1',
+          name: { value: 'TEST_SECTION_1' },
           properties: ['property-0']
         },
         {
           id: 'section-1',
-          name: 'TEST_NAME',
+          name: { value: 'TEST_NAME' },
           properties: ['property-1', 'property-2']
         }
       ]
@@ -107,13 +111,19 @@ describe('TypeFormController.handleChange', () => {
 
     expect(context.getState()).toMatchObject({
       properties: [
-        { id: 'property-0', code: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode() },
+        {
+          id: 'property-0',
+          code: { value: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode() }
+        },
         {
           id: 'property-1',
-          code: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode(),
-          description: null
+          code: { value: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode() },
+          description: { value: null }
         },
-        { id: 'property-2', code: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode() }
+        {
+          id: 'property-2',
+          code: { value: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode() }
+        }
       ]
     })
 
@@ -125,13 +135,19 @@ describe('TypeFormController.handleChange', () => {
 
     expect(context.getState()).toMatchObject({
       properties: [
-        { id: 'property-0', code: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode() },
+        {
+          id: 'property-0',
+          code: { value: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode() }
+        },
         {
           id: 'property-1',
-          code: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode(),
-          description: 'TEST_DESCRIPTION'
+          code: { value: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode() },
+          description: { value: 'TEST_DESCRIPTION' }
         },
-        { id: 'property-2', code: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode() }
+        {
+          id: 'property-2',
+          code: { value: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode() }
+        }
       ]
     })
   })

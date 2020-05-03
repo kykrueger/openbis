@@ -170,7 +170,7 @@ class TypeFormParametersProperty extends React.PureComponent {
           mandatory={true}
           error={property.errors.scope}
           disabled={!!property.original}
-          value={property.scope}
+          value={property.scope.value}
           options={options}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
@@ -191,7 +191,7 @@ class TypeFormParametersProperty extends React.PureComponent {
           mandatory={true}
           error={property.errors.label}
           disabled={this.isLegacy(property)}
-          value={property.label}
+          value={property.label.value}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
           onBlur={this.handleBlur}
@@ -203,7 +203,7 @@ class TypeFormParametersProperty extends React.PureComponent {
   renderCode(property) {
     const { classes, controller } = this.props
 
-    if (property.scope === 'local') {
+    if (property.scope.value === 'local') {
       return (
         <div className={classes.field}>
           <TextField
@@ -213,14 +213,14 @@ class TypeFormParametersProperty extends React.PureComponent {
             mandatory={true}
             error={property.errors.code}
             disabled={!!property.original}
-            value={property.code}
+            value={property.code.value}
             onChange={this.handleChange}
             onFocus={this.handleFocus}
             onBlur={this.handleBlur}
           />
         </div>
       )
-    } else if (property.scope === 'global') {
+    } else if (property.scope.value === 'global') {
       const { globalPropertyTypes = [] } = controller.getDictionaries()
 
       const options = globalPropertyTypes.map(globalPropertyType => {
@@ -237,7 +237,7 @@ class TypeFormParametersProperty extends React.PureComponent {
             mandatory={true}
             error={property.errors.code}
             disabled={!!property.original}
-            value={property.code}
+            value={property.code.value}
             onChange={this.handleChange}
             onFocus={this.handleFocus}
             onBlur={this.handleBlur}
@@ -258,7 +258,7 @@ class TypeFormParametersProperty extends React.PureComponent {
           mandatory={true}
           error={property.errors.description}
           disabled={this.isLegacy(property)}
-          value={property.description}
+          value={property.description.value}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
           onBlur={this.handleBlur}
@@ -286,7 +286,7 @@ class TypeFormParametersProperty extends React.PureComponent {
           mandatory={true}
           error={property.errors.dataType}
           disabled={property.usages > 0 || this.isLegacy(property)}
-          value={property.dataType}
+          value={property.dataType.value}
           options={options}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
@@ -297,7 +297,7 @@ class TypeFormParametersProperty extends React.PureComponent {
   }
 
   renderVocabulary(property) {
-    if (property.dataType === openbis.DataType.CONTROLLEDVOCABULARY) {
+    if (property.dataType.value === openbis.DataType.CONTROLLEDVOCABULARY) {
       const { classes, controller } = this.props
       const { vocabularies = [] } = controller.getDictionaries()
 
@@ -322,7 +322,7 @@ class TypeFormParametersProperty extends React.PureComponent {
             mandatory={true}
             error={property.errors.vocabulary}
             disabled={property.usages > 0 || this.isLegacy(property)}
-            value={property.vocabulary}
+            value={property.vocabulary.value}
             options={options}
             onChange={this.handleChange}
             onFocus={this.handleFocus}
@@ -336,7 +336,7 @@ class TypeFormParametersProperty extends React.PureComponent {
   }
 
   renderMaterialType(property) {
-    if (property.dataType === openbis.DataType.MATERIAL) {
+    if (property.dataType.value === openbis.DataType.MATERIAL) {
       const { classes, controller } = this.props
       const { materialTypes = [] } = controller.getDictionaries()
 
@@ -361,7 +361,7 @@ class TypeFormParametersProperty extends React.PureComponent {
             mandatory={true}
             error={property.errors.materialType}
             disabled={property.usages > 0 || this.isLegacy(property)}
-            value={property.materialType}
+            value={property.materialType.value}
             options={options}
             onChange={this.handleChange}
             onFocus={this.handleFocus}
@@ -375,7 +375,7 @@ class TypeFormParametersProperty extends React.PureComponent {
   }
 
   renderSchema(property) {
-    if (property.dataType === openbis.DataType.XML) {
+    if (property.dataType.value === openbis.DataType.XML) {
       const { classes } = this.props
       return (
         <div className={classes.field}>
@@ -385,7 +385,7 @@ class TypeFormParametersProperty extends React.PureComponent {
             name='schema'
             error={property.errors.schema}
             disabled={this.isLegacy(property)}
-            value={property.schema}
+            value={property.schema.value}
             multiline={true}
             onChange={this.handleChange}
             onFocus={this.handleFocus}
@@ -399,7 +399,7 @@ class TypeFormParametersProperty extends React.PureComponent {
   }
 
   renderTransformation(property) {
-    if (property.dataType === openbis.DataType.XML) {
+    if (property.dataType.value === openbis.DataType.XML) {
       const { classes } = this.props
       return (
         <div className={classes.field}>
@@ -409,7 +409,7 @@ class TypeFormParametersProperty extends React.PureComponent {
             name='transformation'
             error={property.errors.transformation}
             disabled={this.isLegacy(property)}
-            value={property.transformation}
+            value={property.transformation.value}
             multiline={true}
             onChange={this.handleChange}
             onFocus={this.handleFocus}
@@ -446,7 +446,7 @@ class TypeFormParametersProperty extends React.PureComponent {
           name='plugin'
           error={property.errors.plugin}
           disabled={property.usages > 0}
-          value={property.plugin}
+          value={property.plugin.value}
           options={options}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
@@ -464,7 +464,7 @@ class TypeFormParametersProperty extends React.PureComponent {
           reference={this.references.mandatory}
           label='Mandatory'
           name='mandatory'
-          value={property.mandatory}
+          value={property.mandatory.value}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
           onBlur={this.handleBlur}
@@ -478,9 +478,9 @@ class TypeFormParametersProperty extends React.PureComponent {
 
     const typeIsUsed = type.usages > 0
     const propertyIsNew = !property.original
-    const propertyIsMandatory = property.mandatory
+    const propertyIsMandatory = property.mandatory.value
     const propertyWasMandatory = property.original
-      ? property.original.mandatory
+      ? property.original.mandatory.value
       : false
 
     if (
@@ -496,7 +496,7 @@ class TypeFormParametersProperty extends React.PureComponent {
             name='initialValueForExistingEntities'
             mandatory={true}
             error={property.errors.initialValueForExistingEntities}
-            value={property.initialValueForExistingEntities}
+            value={property.initialValueForExistingEntities.value}
             onChange={this.handleChange}
             onFocus={this.handleFocus}
             onBlur={this.handleBlur}
@@ -516,7 +516,7 @@ class TypeFormParametersProperty extends React.PureComponent {
           reference={this.references.showInEditView}
           label='Visible'
           name='showInEditView'
-          value={property.showInEditView}
+          value={property.showInEditView.value}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
           onBlur={this.handleBlur}
@@ -544,7 +544,8 @@ class TypeFormParametersProperty extends React.PureComponent {
 
   isLegacy(property) {
     return (
-      property.original && !property.code.startsWith(this.props.type.code + '.')
+      property.original &&
+      !property.code.value.startsWith(this.props.type.code.value + '.')
     )
   }
 }

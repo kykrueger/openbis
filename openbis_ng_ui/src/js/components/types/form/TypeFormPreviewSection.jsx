@@ -79,7 +79,7 @@ class TypeFormPreviewSection extends React.PureComponent {
             <Droppable droppableId={id} type='property'>
               {provided => (
                 <div>
-                  <TypeFormHeader>{name}</TypeFormHeader>
+                  <TypeFormHeader>{name.value}</TypeFormHeader>
                   <div
                     ref={provided.innerRef}
                     {...provided.droppableProps}

@@ -88,9 +88,9 @@ class TypeFormPreviewProperty extends React.PureComponent {
     let { property: prevProperty } = prevProps
     let { property } = this.props
 
-    if (property.materialType !== prevProperty.materialType) {
+    if (property.materialType.value !== prevProperty.materialType.value) {
       this.loadMaterials()
-    } else if (property.vocabulary !== prevProperty.vocabulary) {
+    } else if (property.vocabulary.value !== prevProperty.vocabulary.value) {
       this.loadVocabularyTerms()
     }
   }
@@ -98,10 +98,10 @@ class TypeFormPreviewProperty extends React.PureComponent {
   loadMaterials() {
     const { controller, property } = this.props
 
-    if (property.materialType) {
+    if (property.materialType.value) {
       return controller
         .getFacade()
-        .loadMaterials(property.materialType)
+        .loadMaterials(property.materialType.value)
         .then(materials => {
           this.setState(() => ({
             materials
@@ -120,10 +120,10 @@ class TypeFormPreviewProperty extends React.PureComponent {
   loadVocabularyTerms() {
     const { controller, property } = this.props
 
-    if (property.vocabulary) {
+    if (property.vocabulary.value) {
       return controller
         .getFacade()
-        .loadVocabularyTerms(property.vocabulary)
+        .loadVocabularyTerms(property.vocabulary.value)
         .then(terms => {
           this.setState(() => ({
             terms
@@ -197,7 +197,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
   }
 
   renderProperty() {
-    const { dataType } = this.props.property
+    const dataType = this.props.property.dataType.value
 
     if (
       dataType === openbis.DataType.VARCHAR ||
@@ -346,23 +346,23 @@ class TypeFormPreviewProperty extends React.PureComponent {
   }
 
   getCode() {
-    return this.props.property.code || EMPTY
+    return this.props.property.code.value || EMPTY
   }
 
   getLabel() {
-    return this.props.property.label || EMPTY
+    return this.props.property.label.value || EMPTY
   }
 
   getDescription() {
-    return this.props.property.description || EMPTY
+    return this.props.property.description.value || EMPTY
   }
 
   getDataType() {
-    return this.props.property.dataType
+    return this.props.property.dataType.value
   }
 
   getMandatory() {
-    return this.props.property.mandatory
+    return this.props.property.mandatory.value
   }
 
   getMultiline() {
@@ -428,7 +428,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
         partStyles.push(classes.partNotSelected)
       }
 
-      const partValue = property[part]
+      const partValue = property[part].value
 
       if (!partValue) {
         partStyles.push(classes.partEmpty)
@@ -440,7 +440,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
       }
     })
 
-    if (!property.showInEditView) {
+    if (!property.showInEditView.value) {
       styles = {
         ...styles,
         container: classes.hidden

@@ -82,7 +82,7 @@ class TypeFormParametersSection extends React.PureComponent {
             reference={this.reference}
             label='Name'
             name='name'
-            value={section.name || ''}
+            value={section.name.value || ''}
             onChange={this.handleChange}
             onBlur={this.handleBlur}
           />

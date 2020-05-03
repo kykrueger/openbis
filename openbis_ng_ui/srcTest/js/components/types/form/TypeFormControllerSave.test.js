@@ -85,10 +85,10 @@ describe('TypeFormController.handleSave', () => {
       properties: [
         {
           id: 'property-0',
-          code: null,
-          dataType: openbis.DataType.VARCHAR,
-          label: null,
-          description: null,
+          code: { value: null },
+          dataType: { value: openbis.DataType.VARCHAR },
+          label: { value: null },
+          description: { value: null },
           errors: {}
         }
       ]
@@ -112,10 +112,10 @@ describe('TypeFormController.handleSave', () => {
       properties: [
         {
           id: 'property-0',
-          code: null,
-          dataType: openbis.DataType.VARCHAR,
-          label: null,
-          description: null,
+          code: { value: null },
+          dataType: { value: openbis.DataType.VARCHAR },
+          label: { value: null },
+          description: { value: null },
           errors: {
             code: 'Code cannot be empty',
             description: 'Description cannot be empty',

@@ -24,7 +24,10 @@ export default class TypeFormControllerChange {
       ...state,
       type: {
         ...state.type,
-        [field]: value
+        [field]: {
+          ...state.type[field],
+          value
+        }
       }
     }))
   }
@@ -37,7 +40,10 @@ export default class TypeFormControllerChange {
     let section = sections[index]
     let newSection = {
       ...section,
-      [field]: value
+      [field]: {
+        ...section[field],
+        value
+      }
     }
     newSections[index] = newSection
 
@@ -56,7 +62,10 @@ export default class TypeFormControllerChange {
 
     let newProperty = {
       ...oldProperty,
-      [field]: newValue
+      [field]: {
+        ...oldProperty[field],
+        value: newValue
+      }
     }
 
     if (

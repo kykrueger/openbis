@@ -41,7 +41,7 @@ export default class TypeFormControllerLoadType {
           )
           properties.push(property)
 
-          if (!section || section.name !== loadedAssignment.section) {
+          if (!section || section.name.value !== loadedAssignment.section) {
             section = this._createSection(
               'section-' + sectionsCounter++,
               loadedAssignment
@@ -84,10 +84,18 @@ export default class TypeFormControllerLoadType {
   _createType(loadedType, loadedUsages) {
     const strategy = this._getStrategy()
     const type = {
-      code: _.get(loadedType, 'code', null),
-      objectType: this.object.type,
-      description: _.get(loadedType, 'description', null),
-      validationPlugin: _.get(loadedType, 'validationPlugin.name', null),
+      code: this._createField({
+        value: _.get(loadedType, 'code', null)
+      }),
+      objectType: this._createField({
+        value: this.object.type
+      }),
+      description: this._createField({
+        value: _.get(loadedType, 'description', null)
+      }),
+      validationPlugin: this._createField({
+        value: _.get(loadedType, 'validationPlugin.name', null)
+      }),
       errors: {},
       usages: (loadedUsages && loadedUsages.type) || 0
     }
@@ -98,7 +106,9 @@ export default class TypeFormControllerLoadType {
   _createSection(id, loadedAssignment) {
     return {
       id: id,
-      name: loadedAssignment.section,
+      name: this._createField({
+        value: loadedAssignment.section
+      }),
       properties: []
     }
   }
@@ -111,23 +121,46 @@ export default class TypeFormControllerLoadType {
 
     return {
       id: id,
-      scope: scope,
-      code: code,
-      label: _.get(propertyType, 'label', null),
-      description: _.get(propertyType, 'description', null),
-      dataType: _.get(propertyType, 'dataType', null),
-      plugin: _.get(loadedAssignment, 'plugin.name', null),
-      vocabulary: _.get(propertyType, 'vocabulary.code', null),
-      materialType: _.get(propertyType, 'materialType.code', null),
-      schema: _.get(propertyType, 'schema', null),
-      transformation: _.get(propertyType, 'transformation', null),
-      mandatory: _.get(loadedAssignment, 'mandatory', false),
-      showInEditView: _.get(loadedAssignment, 'showInEditView', false),
-      showRawValueInForms: _.get(
-        loadedAssignment,
-        'showRawValueInForms',
-        false
-      ),
+      scope: this._createField({
+        value: scope
+      }),
+      code: this._createField({
+        value: code
+      }),
+      label: this._createField({
+        value: _.get(propertyType, 'label', null)
+      }),
+      description: this._createField({
+        value: _.get(propertyType, 'description', null)
+      }),
+      dataType: this._createField({
+        value: _.get(propertyType, 'dataType', null)
+      }),
+      plugin: this._createField({
+        value: _.get(loadedAssignment, 'plugin.name', null)
+      }),
+      vocabulary: this._createField({
+        value: _.get(propertyType, 'vocabulary.code', null)
+      }),
+      materialType: this._createField({
+        value: _.get(propertyType, 'materialType.code', null)
+      }),
+      schema: this._createField({
+        value: _.get(propertyType, 'schema', null)
+      }),
+      transformation: this._createField({
+        value: _.get(propertyType, 'transformation', null)
+      }),
+      mandatory: this._createField({
+        value: _.get(loadedAssignment, 'mandatory', false)
+      }),
+      showInEditView: this._createField({
+        value: _.get(loadedAssignment, 'showInEditView', false)
+      }),
+      showRawValueInForms: this._createField({
+        value: _.get(loadedAssignment, 'showRawValueInForms', false)
+      }),
+      initialValueForExistingEntities: this._createField(),
       errors: {},
       usages:
         (loadedUsages &&
@@ -198,17 +231,30 @@ export default class TypeFormControllerLoadType {
     }
   }
 
+  _createField(params = {}) {
+    return {
+      value: null,
+      visible: true,
+      ediable: true,
+      ...params
+    }
+  }
+
   _getStrategy() {
     const strategies = new TypeFormControllerStrategies()
-    strategies.setObjectTypeStrategy(new ObjectTypeStrategy())
+    strategies.setObjectTypeStrategy(new ObjectTypeStrategy(this))
     strategies.setCollectionTypeStrategy(new CollectionTypeStrategy())
-    strategies.setDataSetTypeStrategy(new DataSetTypeStrategy())
+    strategies.setDataSetTypeStrategy(new DataSetTypeStrategy(this))
     strategies.setMaterialTypeStrategy(new MaterialTypeStrategy())
     return strategies.getStrategy(this.object.type)
   }
 }
 
 class ObjectTypeStrategy {
+  constructor(executor) {
+    this.executor = executor
+  }
+
   getNewObjectType() {
     return objectTypes.NEW_OBJECT_TYPE
   }
@@ -219,13 +265,27 @@ class ObjectTypeStrategy {
 
   setTypeAttributes(object, loadedType) {
     Object.assign(object, {
-      listable: _.get(loadedType, 'listable', false),
-      showContainer: _.get(loadedType, 'showContainer', false),
-      showParents: _.get(loadedType, 'showParents', false),
-      showParentMetadata: _.get(loadedType, 'showParentMetadata', false),
-      autoGeneratedCode: _.get(loadedType, 'autoGeneratedCode', false),
-      generatedCodePrefix: _.get(loadedType, 'generatedCodePrefix', null),
-      subcodeUnique: _.get(loadedType, 'subcodeUnique', false)
+      listable: this.executor._createField({
+        value: _.get(loadedType, 'listable', false)
+      }),
+      showContainer: this.executor._createField({
+        value: _.get(loadedType, 'showContainer', false)
+      }),
+      showParents: this.executor._createField({
+        value: _.get(loadedType, 'showParents', false)
+      }),
+      showParentMetadata: this.executor._createField({
+        value: _.get(loadedType, 'showParentMetadata', false)
+      }),
+      autoGeneratedCode: this.executor._createField({
+        value: _.get(loadedType, 'autoGeneratedCode', false)
+      }),
+      generatedCodePrefix: this.executor._createField({
+        value: _.get(loadedType, 'generatedCodePrefix', null)
+      }),
+      subcodeUnique: this.executor._createField({
+        value: _.get(loadedType, 'subcodeUnique', false)
+      })
     })
   }
 }
@@ -243,6 +303,10 @@ class CollectionTypeStrategy {
 }
 
 class DataSetTypeStrategy {
+  constructor(executor) {
+    this.executor = executor
+  }
+
   getNewObjectType() {
     return objectTypes.NEW_DATA_SET_TYPE
   }
@@ -253,9 +317,15 @@ class DataSetTypeStrategy {
 
   setTypeAttributes(object, loadedType) {
     Object.assign(object, {
-      mainDataSetPattern: _.get(loadedType, 'mainDataSetPattern', null),
-      mainDataSetPath: _.get(loadedType, 'mainDataSetPath', null),
-      disallowDeletion: _.get(loadedType, 'disallowDeletion', false)
+      mainDataSetPattern: this.executor._createField({
+        value: _.get(loadedType, 'mainDataSetPattern', null)
+      }),
+      mainDataSetPath: this.executor._createField({
+        value: _.get(loadedType, 'mainDataSetPath', null)
+      }),
+      disallowDeletion: this.executor._createField({
+        value: _.get(loadedType, 'disallowDeletion', false)
+      })
     })
   }
 }

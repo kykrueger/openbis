@@ -74,7 +74,7 @@ export default class TypeFormControllerValidate {
     const strategy = this._getStrategy()
     const errors = []
 
-    FormValidator.validateNotEmpty('Code', 'code', type.code, errors)
+    FormValidator.validateNotEmpty('Code', 'code', type.code.value, errors)
     strategy.validateTypeAttributes(type, errors)
 
     const errorsMap = errors.reduce((map, error) => {
@@ -111,42 +111,47 @@ export default class TypeFormControllerValidate {
   _validateProperty(type, property) {
     const errors = []
 
-    FormValidator.validateNotEmpty('Code', 'code', property.code, errors)
-    FormValidator.validateNotEmpty('Label', 'label', property.label, errors)
+    FormValidator.validateNotEmpty('Code', 'code', property.code.value, errors)
+    FormValidator.validateNotEmpty(
+      'Label',
+      'label',
+      property.label.value,
+      errors
+    )
     FormValidator.validateNotEmpty(
       'Description',
       'description',
-      property.description,
+      property.description.value,
       errors
     )
     FormValidator.validateNotEmpty(
       'Data Type',
       'dataType',
-      property.dataType,
+      property.dataType.value,
       errors
     )
 
-    if (property.dataType === openbis.DataType.CONTROLLEDVOCABULARY) {
+    if (property.dataType.value === openbis.DataType.CONTROLLEDVOCABULARY) {
       FormValidator.validateNotEmpty(
         'Vocabulary',
         'vocabulary',
-        property.vocabulary,
+        property.vocabulary.value,
         errors
       )
-    } else if (property.dataType === openbis.DataType.MATERIAL) {
+    } else if (property.dataType.value === openbis.DataType.MATERIAL) {
       FormValidator.validateNotEmpty(
         'Material Type',
         'materialType',
-        property.materialType,
+        property.materialType.value,
         errors
       )
     }
 
     const typeIsUsed = type.usages > 0
     const propertyIsNew = !property.original
-    const propertyIsMandatory = property.mandatory
+    const propertyIsMandatory = property.mandatory.value
     const propertyWasMandatory = property.original
-      ? property.original.mandatory
+      ? property.original.mandatory.value
       : false
 
     if (
@@ -157,7 +162,7 @@ export default class TypeFormControllerValidate {
       FormValidator.validateNotEmpty(
         'Initial Value',
         'initialValueForExistingEntities',
-        property.initialValueForExistingEntities,
+        property.initialValueForExistingEntities.value,
         errors
       )
     }
@@ -180,7 +185,7 @@ class ObjectTypeStrategy {
     FormValidator.validateNotEmpty(
       'Generated code prefix',
       'generatedCodePrefix',
-      type.generatedCodePrefix,
+      type.generatedCodePrefix.value,
       errors
     )
   }
