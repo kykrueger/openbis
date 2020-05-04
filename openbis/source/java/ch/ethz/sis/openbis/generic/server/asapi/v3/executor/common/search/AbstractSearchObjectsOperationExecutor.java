@@ -20,6 +20,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.*;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IParentChildrenHolder;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
@@ -249,17 +250,20 @@ public abstract class AbstractSearchObjectsOperationExecutor<OBJECT, OBJECT_PE, 
         final Map<OBJECT_PE, OBJECT> allResultV3DTOs = doTranslate(translationContext, allResultPEs, fetchOptions);
 
         // Reordering of allResultV3DTOs is needed because translation messes up the order
-        final Collection<OBJECT> finalResults = allResultPEs.stream().map(allResultV3DTOs::get).filter(Objects::nonNull)
+        final Collection<OBJECT> objectResults = allResultPEs.stream().map(allResultV3DTOs::get).filter(Objects::nonNull)
                 .collect(Collectors.toList());
-        final List<OBJECT> pagedFinalResults = page(criteria, fetchOptions, finalResults);
-        final SearchResult<OBJECT> searchResult = new SearchResult<>(pagedFinalResults, allResultV3DTOs.size());
+        final List<OBJECT> pagedFinalResults = page(criteria, fetchOptions, objectResults);
 
+        // Sorting and paging parents and children in a "conventional" way.
+        new SortAndPage().nest(pagedFinalResults, criteria, fetchOptions);
+
+        final SearchResult<OBJECT> searchResult = new SearchResult<>(pagedFinalResults, allResultV3DTOs.size());
         return getOperationResult(searchResult);
     }
 
-    private List<OBJECT> page(final CRITERIA criteria, final FETCH_OPTIONS fetchOptions, final Collection<OBJECT> finalResults)
+    private List<OBJECT> page(final CRITERIA criteria, final FETCH_OPTIONS fetchOptions, final Collection<OBJECT> results)
     {
-        final List<OBJECT> toPage = new ArrayList<>(finalResults);
+        final List<OBJECT> toPage = new ArrayList<>(results);
         final Integer fromRecord = fetchOptions.getFrom();
         final Integer recordsCount = fetchOptions.getCount();
         final boolean hasPaging = fromRecord != null && recordsCount != null;
@@ -279,7 +283,7 @@ public abstract class AbstractSearchObjectsOperationExecutor<OBJECT, OBJECT_PE, 
                 }
             }
 
-            for (Sorting sorting:sortingToRemove) {
+            for (Sorting sorting : sortingToRemove) {
                 sortOptions.getSortings().remove(sorting);
                 operationLog.warn("[SQL Query Engine - backwards compatibility warning - stop using this feature] SORTING ORDER IGNORED!: " + sorting.getField());
             }
