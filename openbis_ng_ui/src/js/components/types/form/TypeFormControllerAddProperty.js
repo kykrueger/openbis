@@ -62,8 +62,8 @@ export default class TypeFormControllerAddProperty {
       }),
       initialValueForExistingEntities: this._createField(),
       section: section.id,
-      errors: {},
-      usages: 0
+      usages: 0,
+      errors: 0
     }
     newProperties.push(newProperty)
 

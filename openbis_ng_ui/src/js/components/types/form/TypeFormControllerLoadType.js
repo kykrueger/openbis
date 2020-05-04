@@ -96,8 +96,8 @@ export default class TypeFormControllerLoadType {
       validationPlugin: this._createField({
         value: _.get(loadedType, 'validationPlugin.name', null)
       }),
-      errors: {},
-      usages: (loadedUsages && loadedUsages.type) || 0
+      usages: (loadedUsages && loadedUsages.type) || 0,
+      errors: 0
     }
     strategy.setTypeAttributes(type, loadedType, loadedUsages)
     return type
@@ -161,12 +161,12 @@ export default class TypeFormControllerLoadType {
         value: _.get(loadedAssignment, 'showRawValueInForms', false)
       }),
       initialValueForExistingEntities: this._createField(),
-      errors: {},
       usages:
         (loadedUsages &&
           loadedUsages.property &&
           loadedUsages.property[loadedAssignment.propertyType.code]) ||
-        0
+        0,
+      errors: 0
     }
   }
 

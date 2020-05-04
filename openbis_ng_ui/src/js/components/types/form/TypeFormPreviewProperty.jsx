@@ -399,11 +399,10 @@ class TypeFormPreviewProperty extends React.PureComponent {
   }
 
   getError() {
-    const errors = this.props.property.errors
-    if (_.isEmpty(errors)) {
-      return null
-    } else {
+    if (this.props.property.errors > 0) {
       return 'Property configuration is incorrect'
+    } else {
+      return null
     }
   }
 

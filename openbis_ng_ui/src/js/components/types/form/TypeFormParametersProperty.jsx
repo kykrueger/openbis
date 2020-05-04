@@ -168,7 +168,7 @@ class TypeFormParametersProperty extends React.PureComponent {
           label='Scope'
           name='scope'
           mandatory={true}
-          error={property.errors.scope}
+          error={property.scope.error}
           disabled={!!property.original}
           value={property.scope.value}
           options={options}
@@ -189,7 +189,7 @@ class TypeFormParametersProperty extends React.PureComponent {
           label='Label'
           name='label'
           mandatory={true}
-          error={property.errors.label}
+          error={property.label.error}
           disabled={this.isLegacy(property)}
           value={property.label.value}
           onChange={this.handleChange}
@@ -211,7 +211,7 @@ class TypeFormParametersProperty extends React.PureComponent {
             label='Code'
             name='code'
             mandatory={true}
-            error={property.errors.code}
+            error={property.code.error}
             disabled={!!property.original}
             value={property.code.value}
             onChange={this.handleChange}
@@ -235,7 +235,7 @@ class TypeFormParametersProperty extends React.PureComponent {
             name='code'
             options={options}
             mandatory={true}
-            error={property.errors.code}
+            error={property.code.error}
             disabled={!!property.original}
             value={property.code.value}
             onChange={this.handleChange}
@@ -256,7 +256,7 @@ class TypeFormParametersProperty extends React.PureComponent {
           label='Description'
           name='description'
           mandatory={true}
-          error={property.errors.description}
+          error={property.description.error}
           disabled={this.isLegacy(property)}
           value={property.description.value}
           onChange={this.handleChange}
@@ -284,7 +284,7 @@ class TypeFormParametersProperty extends React.PureComponent {
           label='Data Type'
           name='dataType'
           mandatory={true}
-          error={property.errors.dataType}
+          error={property.dataType.error}
           disabled={property.usages > 0 || this.isLegacy(property)}
           value={property.dataType.value}
           options={options}
@@ -320,7 +320,7 @@ class TypeFormParametersProperty extends React.PureComponent {
             label='Vocabulary'
             name='vocabulary'
             mandatory={true}
-            error={property.errors.vocabulary}
+            error={property.vocabulary.error}
             disabled={property.usages > 0 || this.isLegacy(property)}
             value={property.vocabulary.value}
             options={options}
@@ -359,7 +359,7 @@ class TypeFormParametersProperty extends React.PureComponent {
             label='Material Type'
             name='materialType'
             mandatory={true}
-            error={property.errors.materialType}
+            error={property.materialType.error}
             disabled={property.usages > 0 || this.isLegacy(property)}
             value={property.materialType.value}
             options={options}
@@ -383,7 +383,7 @@ class TypeFormParametersProperty extends React.PureComponent {
             reference={this.references.schema}
             label='XML Schema'
             name='schema'
-            error={property.errors.schema}
+            error={property.schema.error}
             disabled={this.isLegacy(property)}
             value={property.schema.value}
             multiline={true}
@@ -407,7 +407,7 @@ class TypeFormParametersProperty extends React.PureComponent {
             reference={this.references.transformation}
             label='XSLT Script'
             name='transformation'
-            error={property.errors.transformation}
+            error={property.transformation.error}
             disabled={this.isLegacy(property)}
             value={property.transformation.value}
             multiline={true}
@@ -444,7 +444,7 @@ class TypeFormParametersProperty extends React.PureComponent {
           reference={this.references.plugin}
           label='Dynamic Plugin'
           name='plugin'
-          error={property.errors.plugin}
+          error={property.plugin.error}
           disabled={property.usages > 0}
           value={property.plugin.value}
           options={options}
@@ -495,7 +495,7 @@ class TypeFormParametersProperty extends React.PureComponent {
             label='Initial Value'
             name='initialValueForExistingEntities'
             mandatory={true}
-            error={property.errors.initialValueForExistingEntities}
+            error={property.initialValueForExistingEntities.error}
             value={property.initialValueForExistingEntities.value}
             onChange={this.handleChange}
             onFocus={this.handleFocus}
