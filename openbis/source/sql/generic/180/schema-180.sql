@@ -964,10 +964,11 @@ CREATE INDEX SEMANTIC_ANNOTATIONS_SATY_ID_I ON SEMANTIC_ANNOTATIONS (SATY_ID);
 CREATE INDEX SEMANTIC_ANNOTATIONS_STPT_ID_I ON SEMANTIC_ANNOTATIONS (STPT_ID);
 CREATE INDEX SEMANTIC_ANNOTATIONS_PRTY_ID_I ON SEMANTIC_ANNOTATIONS (PRTY_ID);
 
-CREATE INDEX samples_all_search_index ON samples_all USING gin(tsvector_document);
-CREATE INDEX experiments_all_search_index ON experiments_all USING gin(tsvector_document);
-CREATE INDEX data_all_search_index ON data_all USING gin(tsvector_document);
-CREATE INDEX materials_search_index ON materials USING gin(tsvector_document);
+CREATE INDEX controlled_vocabulary_terms_search_index ON controlled_vocabulary_terms USING gin(tsvector_document);
+CREATE INDEX sample_properties_search_index ON sample_properties USING gin(tsvector_document);
+CREATE INDEX experiment_properties_search_index ON experiment_properties USING gin(tsvector_document);
+CREATE INDEX data_set_properties_search_index ON data_set_properties USING gin(tsvector_document);
+CREATE INDEX material_properties_search_index ON material_properties USING gin(tsvector_document);
 
 ALTER TABLE ROLE_ASSIGNMENTS ADD CONSTRAINT ROAS_AG_PERS_ARC_CK CHECK ((AG_ID_GRANTEE IS NOT NULL AND PERS_ID_GRANTEE IS NULL) OR (AG_ID_GRANTEE IS NULL AND PERS_ID_GRANTEE IS NOT NULL));
 ALTER TABLE ROLE_ASSIGNMENTS ADD CONSTRAINT ROAS_SPACE_PROJECT_CK CHECK (SPACE_ID IS NULL OR PROJECT_ID IS NULL);

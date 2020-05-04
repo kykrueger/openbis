@@ -3216,40 +3216,27 @@ CREATE TRIGGER TRASH_DATA_SET_FROM_COMPONENT_CHECK AFTER UPDATE ON DATA_SET_RELA
 
 -- end of triggers for freezing
 
-CREATE FUNCTION samples_all_tsvector_document_trigger() RETURNS trigger AS $$
-begin
-    new.tsvector_document :=
-                (concat(new.perm_id, ':1'))::tsvector ||
-                to_tsvector('pg_catalog.simple', coalesce(new.code,''));
-    return new;
-end
-$$ LANGUAGE plpgsql;
+DROP TRIGGER IF EXISTS controlled_vocabulary_terms_tsvector_document ON controlled_vocabulary_terms;
+CREATE TRIGGER controlled_vocabulary_terms_tsvector_document BEFORE INSERT OR UPDATE
+    ON controlled_vocabulary_terms FOR EACH ROW EXECUTE PROCEDURE
+    tsvector_update_trigger(tsvector_document, 'pg_catalog.simple', code, label, description);
 
-DROP TRIGGER IF EXISTS samples_all_tsvector_document ON samples_all;
-CREATE TRIGGER samples_all_tsvector_document BEFORE INSERT OR UPDATE
-    ON samples_all FOR EACH ROW EXECUTE FUNCTION
-    samples_all_tsvector_document_trigger();
+DROP TRIGGER IF EXISTS sample_properties_tsvector_document ON sample_properties;
+CREATE TRIGGER sample_properties_tsvector_document BEFORE INSERT OR UPDATE
+    ON sample_properties FOR EACH ROW EXECUTE FUNCTION
+    tsvector_update_trigger(tsvector_document, 'pg_catalog.simple', value);
 
-CREATE FUNCTION experiments_all_tsvector_document_trigger() RETURNS trigger AS $$
-begin
-    new.tsvector_document :=
-                (concat(new.perm_id, ':1'))::tsvector ||
-                to_tsvector('pg_catalog.simple', coalesce(new.code,''));
-    return new;
-end
-$$ LANGUAGE plpgsql;
+DROP TRIGGER IF EXISTS experiment_properties_tsvector_document ON experiment_properties;
+CREATE TRIGGER experiment_properties_tsvector_document BEFORE INSERT OR UPDATE
+    ON experiment_properties FOR EACH ROW EXECUTE FUNCTION
+    tsvector_update_trigger(tsvector_document, 'pg_catalog.simple', value);
 
-DROP TRIGGER IF EXISTS experiments_all_tsvector_document ON experiments_all;
-CREATE TRIGGER experiments_all_tsvector_document BEFORE INSERT OR UPDATE
-    ON experiments_all FOR EACH ROW EXECUTE FUNCTION
-    experiments_all_tsvector_document_trigger();
+DROP TRIGGER IF EXISTS data_set_properties_tsvector_document ON data_set_properties;
+CREATE TRIGGER data_set_properties_tsvector_document BEFORE INSERT OR UPDATE
+    ON data_set_properties FOR EACH ROW EXECUTE FUNCTION
+    tsvector_update_trigger(tsvector_document, 'pg_catalog.simple', value);
 
-DROP TRIGGER IF EXISTS data_all_tsvector_document ON data_all;
-CREATE TRIGGER data_all_tsvector_document BEFORE INSERT OR UPDATE
-    ON data_all FOR EACH ROW EXECUTE PROCEDURE
-    tsvector_update_trigger(tsvector_document, 'pg_catalog.simple', data_set_kind, code);
-
-DROP TRIGGER IF EXISTS materials_tsvector_document ON materials;
-CREATE TRIGGER materials_tsvector_document BEFORE INSERT OR UPDATE
-    ON materials FOR EACH ROW EXECUTE PROCEDURE
-    tsvector_update_trigger(tsvector_document, 'pg_catalog.simple', code);
+DROP TRIGGER IF EXISTS material_properties_tsvector_document ON material_properties;
+CREATE TRIGGER material_properties_tsvector_document BEFORE INSERT OR UPDATE
+    ON material_properties FOR EACH ROW EXECUTE FUNCTION
+    tsvector_update_trigger(tsvector_document, 'pg_catalog.simple', value);
