@@ -926,6 +926,7 @@ CREATE TABLE controlled_vocabulary_terms (
     description description_2000,
     ordinal ordinal_int NOT NULL,
     is_official boolean_char DEFAULT true NOT NULL,
+    tsvector_document tsvector,
     CONSTRAINT cvte_ck CHECK (((ordinal)::bigint > 0))
 );
 CREATE SEQUENCE core_plugin_id_seq
@@ -974,7 +975,6 @@ CREATE TABLE data_all (
     frozen_for_parents boolean_char DEFAULT false NOT NULL,
     frozen_for_comps boolean_char DEFAULT false NOT NULL,
     frozen_for_conts boolean_char DEFAULT false NOT NULL,
-    tsvector_document tsvector NOT NULL,
     CONSTRAINT data_ck CHECK (((expe_id IS NOT NULL) OR (samp_id IS NOT NULL)))
 );
 CREATE VIEW data AS
@@ -1003,8 +1003,7 @@ CREATE VIEW data AS
     data_all.frozen_for_children,
     data_all.frozen_for_parents,
     data_all.frozen_for_comps,
-    data_all.frozen_for_conts,
-    data_all.tsvector_document
+    data_all.frozen_for_conts
    FROM data_all
   WHERE (data_all.del_id IS NULL);
 CREATE VIEW data_deleted AS
@@ -1026,8 +1025,7 @@ CREATE VIEW data_deleted AS
     data_all.del_id,
     data_all.orig_del,
     data_all.version,
-    data_all.data_set_kind,
-    data_all.tsvector_document
+    data_all.data_set_kind
    FROM data_all
   WHERE (data_all.del_id IS NOT NULL);
 CREATE SEQUENCE data_id_seq
@@ -1172,6 +1170,7 @@ CREATE TABLE data_set_properties (
     modification_timestamp time_stamp DEFAULT now(),
     pers_id_author tech_id NOT NULL,
     dase_frozen boolean_char DEFAULT false NOT NULL,
+    tsvector_document tsvector NOT NULL,
     CONSTRAINT dspr_ck CHECK ((((value IS NOT NULL) AND (cvte_id IS NULL) AND (mate_prop_id IS NULL)) OR ((value IS NULL) AND (cvte_id IS NOT NULL) AND (mate_prop_id IS NULL)) OR ((value IS NULL) AND (cvte_id IS NULL) AND (mate_prop_id IS NOT NULL))))
 );
 CREATE SEQUENCE data_set_property_id_seq
@@ -1446,6 +1445,7 @@ CREATE TABLE experiment_properties (
     mate_prop_id tech_id,
     pers_id_author tech_id NOT NULL,
     expe_frozen boolean_char DEFAULT false NOT NULL,
+    tsvector_document tsvector NOT NULL,
     CONSTRAINT expr_ck CHECK ((((value IS NOT NULL) AND (cvte_id IS NULL) AND (mate_prop_id IS NULL)) OR ((value IS NULL) AND (cvte_id IS NOT NULL) AND (mate_prop_id IS NULL)) OR ((value IS NULL) AND (cvte_id IS NULL) AND (mate_prop_id IS NOT NULL))))
 );
 CREATE SEQUENCE experiment_property_id_seq
@@ -1504,8 +1504,7 @@ CREATE TABLE experiments_all (
     frozen boolean_char DEFAULT false NOT NULL,
     proj_frozen boolean_char DEFAULT false NOT NULL,
     frozen_for_samp boolean_char DEFAULT false NOT NULL,
-    frozen_for_data boolean_char DEFAULT false NOT NULL,
-    tsvector_document tsvector NOT NULL
+    frozen_for_data boolean_char DEFAULT false NOT NULL
 );
 CREATE VIEW experiments AS
  SELECT experiments_all.id,
@@ -1524,8 +1523,7 @@ CREATE VIEW experiments AS
     experiments_all.version,
     experiments_all.frozen,
     experiments_all.frozen_for_samp,
-    experiments_all.frozen_for_data,
-    experiments_all.tsvector_document
+    experiments_all.frozen_for_data
    FROM experiments_all
   WHERE (experiments_all.del_id IS NULL);
 CREATE VIEW experiments_deleted AS
@@ -1541,8 +1539,7 @@ CREATE VIEW experiments_deleted AS
     experiments_all.del_id,
     experiments_all.orig_del,
     experiments_all.is_public,
-    experiments_all.version,
-    experiments_all.tsvector_document
+    experiments_all.version
    FROM experiments_all
   WHERE (experiments_all.del_id IS NOT NULL);
 CREATE TABLE external_data (
@@ -1654,6 +1651,7 @@ CREATE TABLE material_properties (
     modification_timestamp time_stamp DEFAULT now(),
     mate_prop_id tech_id,
     pers_id_author tech_id NOT NULL,
+    tsvector_document tsvector NOT NULL,
     CONSTRAINT mapr_ck CHECK ((((value IS NOT NULL) AND (cvte_id IS NULL) AND (mate_prop_id IS NULL)) OR ((value IS NULL) AND (cvte_id IS NOT NULL) AND (mate_prop_id IS NULL)) OR ((value IS NULL) AND (cvte_id IS NULL) AND (mate_prop_id IS NOT NULL))))
 );
 CREATE TABLE material_properties_history (
@@ -1707,8 +1705,7 @@ CREATE TABLE materials (
     maty_id tech_id NOT NULL,
     pers_id_registerer tech_id NOT NULL,
     registration_timestamp time_stamp_dfl DEFAULT now() NOT NULL,
-    modification_timestamp time_stamp DEFAULT now(),
-    tsvector_document tsvector NOT NULL
+    modification_timestamp time_stamp DEFAULT now()
 );
 CREATE SEQUENCE metaproject_assignment_id_seq
     START WITH 1
@@ -2031,6 +2028,7 @@ CREATE TABLE sample_properties (
     pers_id_author tech_id NOT NULL,
     samp_frozen boolean_char DEFAULT false NOT NULL,
     samp_prop_id tech_id,
+    tsvector_document tsvector NOT NULL,
     CONSTRAINT sapr_ck CHECK ((((value IS NOT NULL) AND (cvte_id IS NULL) AND (mate_prop_id IS NULL) AND (samp_prop_id IS NULL)) OR ((value IS NULL) AND (cvte_id IS NOT NULL) AND (mate_prop_id IS NULL) AND (samp_prop_id IS NULL)) OR ((value IS NULL) AND (cvte_id IS NULL) AND (mate_prop_id IS NOT NULL) AND (samp_prop_id IS NULL)) OR ((value IS NULL) AND (cvte_id IS NULL) AND (mate_prop_id IS NULL) AND (samp_prop_id IS NOT NULL))))
 );
 CREATE SEQUENCE sample_property_id_seq
@@ -2138,8 +2136,7 @@ CREATE TABLE samples_all (
     frozen_for_comp boolean_char DEFAULT false NOT NULL,
     frozen_for_children boolean_char DEFAULT false NOT NULL,
     frozen_for_parents boolean_char DEFAULT false NOT NULL,
-    frozen_for_data boolean_char DEFAULT false NOT NULL,
-    tsvector_document tsvector NOT NULL
+    frozen_for_data boolean_char DEFAULT false NOT NULL
 );
 CREATE VIEW samples AS
  SELECT samples_all.id,
@@ -2165,8 +2162,7 @@ CREATE VIEW samples AS
     samples_all.frozen_for_comp,
     samples_all.frozen_for_children,
     samples_all.frozen_for_parents,
-    samples_all.frozen_for_data,
-    samples_all.tsvector_document
+    samples_all.frozen_for_data
    FROM samples_all
   WHERE (samples_all.del_id IS NULL);
 CREATE VIEW samples_deleted AS
@@ -2184,8 +2180,7 @@ CREATE VIEW samples_deleted AS
     samples_all.space_id,
     samples_all.proj_id,
     samples_all.samp_id_part_of,
-    samples_all.version,
-    samples_all.tsvector_document
+    samples_all.version
    FROM samples_all
   WHERE (samples_all.del_id IS NOT NULL);
 CREATE SEQUENCE script_id_seq
