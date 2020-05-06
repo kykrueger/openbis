@@ -28,6 +28,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -95,7 +96,7 @@ public class TagSearchManager extends AbstractSearchManager<TagSearchCriteria, T
     }
 
     @Override
-    public Collection<Long> sortIDs(final Collection<Long> ids, final SortOptions<Tag> sortOptions) {
+    public List<Long> sortIDs(final Collection<Long> ids, final SortOptions<Tag> sortOptions) {
         return doSortIDs(ids, sortOptions, TableMapper.TAG);
     }
 

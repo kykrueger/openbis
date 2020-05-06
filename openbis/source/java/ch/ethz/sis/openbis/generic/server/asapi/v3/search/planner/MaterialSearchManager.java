@@ -31,6 +31,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -89,7 +90,7 @@ public class MaterialSearchManager extends AbstractCompositeEntitySearchManager<
     }
 
     @Override
-    public Collection<Long> sortIDs(final Collection<Long> ids, final SortOptions<Material> sortOptions) {
+    public List<Long> sortIDs(final Collection<Long> ids, final SortOptions<Material> sortOptions) {
         return doSortIDs(ids, sortOptions, TableMapper.MATERIAL);
     }
 

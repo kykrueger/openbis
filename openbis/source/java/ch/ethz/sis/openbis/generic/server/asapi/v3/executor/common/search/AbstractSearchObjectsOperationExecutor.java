@@ -20,10 +20,12 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.*;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IParentChildrenHolder;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
+import ch.systemsx.cisd.openbis.generic.shared.authorization.AuthorizationConfig;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.RoleWithHierarchy;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
+import ch.systemsx.cisd.openbis.generic.shared.dto.RoleAssignmentPE;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -58,6 +60,9 @@ public abstract class AbstractSearchObjectsOperationExecutor<OBJECT, OBJECT_PE, 
 
     @Autowired
     protected ISearchCache<CRITERIA, FETCH_OPTIONS, OBJECT> cache;
+
+    @Autowired
+    private AuthorizationConfig authorizationConfig;
 
     protected abstract List<OBJECT_PE> doSearch(IOperationContext context, CRITERIA criteria, FETCH_OPTIONS fetchOptions);
 
@@ -231,47 +236,55 @@ public abstract class AbstractSearchObjectsOperationExecutor<OBJECT, OBJECT_PE, 
         }
 
         final PersonPE personPE = context.getSession().tryGetPerson();
-        final Set<Long> spaceIds = personPE.getAllPersonRoles().stream().filter((roleAssignmentPE) -> roleAssignmentPE.getSpace() != null)
-                .map((roleAssignmentPE) -> roleAssignmentPE.getSpace().getId()).collect(Collectors.toSet());
-        final Set<Long> projectIds = personPE.getAllPersonRoles().stream().filter((roleAssignmentPE) -> roleAssignmentPE.getProject() != null)
-                .map((roleAssignmentPE) -> roleAssignmentPE.getProject().getId()).collect(Collectors.toSet());
+        final Set<Long> spaceIds = new HashSet<>();
+        final Set<Long> projectIds = new HashSet<>();
+        boolean instanceRole = false;
+        final boolean projectLevelAuthorizationEnabled = authorizationConfig.isProjectLevelEnabled()
+                && authorizationConfig.isProjectLevelUser(personPE.getUserId());
+        for (final RoleAssignmentPE roleAssignmentPE : personPE.getAllPersonRoles())
+        {
+            if (roleAssignmentPE.getSpace() != null)
+            {
+                spaceIds.add(roleAssignmentPE.getSpace().getId());
+            }
+            if (roleAssignmentPE.getProject() != null && projectLevelAuthorizationEnabled)
+            {
+                projectIds.add(roleAssignmentPE.getProject().getId());
+            }
+            instanceRole = instanceRole || (roleAssignmentPE.getRoleLevel() == RoleWithHierarchy.RoleLevel.INSTANCE);
+        }
 
-        final AuthorisationInformation authorisationInformation = new AuthorisationInformation(!personPE.getRoleAssignments().isEmpty(),
-                spaceIds, projectIds);
+        final AuthorisationInformation authorisationInformation = new AuthorisationInformation(instanceRole, spaceIds, projectIds);
 
         final Long userId = personPE.getId();
         final TranslationContext translationContext = new TranslationContext(context.getSession());
-        final SortOptions<OBJECT> sortOptions = fetchOptions.getSortBy();
 
-        final Collection<Long> allResultsIds = getSearchManager().searchForIDs(userId, authorisationInformation, criteria, sortOptions, null, ID_COLUMN);
-        final Collection<Long> sortedResultIds = sort(allResultsIds, sortOptions);
-        final Collection<OBJECT_PE> allResultPEs = getSearchManager().translate(sortedResultIds);
-        // The results from the manager are filtered by rights after translation.
-        final Map<OBJECT_PE, OBJECT> allResultV3DTOs = doTranslate(translationContext, allResultPEs, fetchOptions);
+        final Set<Long> allResultsIds = getSearchManager().searchForIDs(userId, authorisationInformation, criteria, fetchOptions.getSortBy(), null,
+                ID_COLUMN);
+        final Collection<Long> pagedResultIds = sortAndPage(allResultsIds, fetchOptions);
+        
+        final Collection<OBJECT_PE> pagedResultPEs = getSearchManager().translate(pagedResultIds);
+        // TODO: doTranslate() should only filter nested objects of the results (parents, children, components...).
+        final Map<OBJECT_PE, OBJECT> pagedResultV3DTOs = doTranslate(translationContext, pagedResultPEs, fetchOptions);
 
-        // Reordering of allResultV3DTOs is needed because translation messes up the order
-        final Collection<OBJECT> objectResults = allResultPEs.stream().map(allResultV3DTOs::get).filter(Objects::nonNull)
+        assert pagedResultPEs.size() == pagedResultV3DTOs.size() : "The number of results after translation should not change. [pagedResultPEs.size()="
+                + pagedResultPEs.size() + ", pagedResultV3DTOs.size()=" + pagedResultV3DTOs.size() + "]";
+
+        // Reordering of pagedResultV3DTOs is needed because translation mixes the order
+        final List<OBJECT> objectResults = pagedResultPEs.stream().map(pagedResultV3DTOs::get).filter(Objects::nonNull)
                 .collect(Collectors.toList());
-        final List<OBJECT> pagedFinalResults = page(criteria, fetchOptions, objectResults);
 
         // Sorting and paging parents and children in a "conventional" way.
-        new SortAndPage().nest(pagedFinalResults, criteria, fetchOptions);
+        new SortAndPage().nest(objectResults, criteria, fetchOptions);
 
-        final SearchResult<OBJECT> searchResult = new SearchResult<>(pagedFinalResults, allResultV3DTOs.size());
+        final SearchResult<OBJECT> searchResult = new SearchResult<>(objectResults, allResultsIds.size());
         return getOperationResult(searchResult);
     }
 
-    private List<OBJECT> page(final CRITERIA criteria, final FETCH_OPTIONS fetchOptions, final Collection<OBJECT> results)
+    private Collection<Long> sortAndPage(final Set<Long> ids, final FETCH_OPTIONS fetchOptions)
     {
-        final List<OBJECT> toPage = new ArrayList<>(results);
-        final Integer fromRecord = fetchOptions.getFrom();
-        final Integer recordsCount = fetchOptions.getCount();
-        final boolean hasPaging = fromRecord != null && recordsCount != null;
-        return hasPaging ? toPage.subList(fromRecord, Math.min(fromRecord + recordsCount, toPage.size())) : toPage;
-    }
+        SortOptions<OBJECT> sortOptions = fetchOptions.getSortBy();
 
-    private Collection<Long> sort(final Collection<Long> ids, SortOptions<OBJECT> sortOptions)
-    {
         // Filter out sorts to ignore
         if (sortOptions != null) {
             List<Sorting> sortingToRemove = new ArrayList<>();
@@ -293,7 +306,11 @@ public abstract class AbstractSearchObjectsOperationExecutor<OBJECT, OBJECT_PE, 
             }
         }
 
-        return (sortOptions != null) ? getSearchManager().sortIDs(ids, sortOptions) : ids;
+        final List<Long> toPage = (sortOptions != null) ? getSearchManager().sortIDs(ids, sortOptions) : new ArrayList<>(ids);
+        final Integer fromRecord = fetchOptions.getFrom();
+        final Integer recordsCount = fetchOptions.getCount();
+        final boolean hasPaging = fromRecord != null && recordsCount != null;
+        return hasPaging ? toPage.subList(fromRecord, Math.min(fromRecord + recordsCount, toPage.size())) : toPage;
     }
 
 }

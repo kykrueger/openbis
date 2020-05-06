@@ -27,6 +27,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.LocatorType;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
@@ -60,7 +61,7 @@ public class LocatorTypeSearchManager extends AbstractSearchManager<LocatorTypeS
     }
 
     @Override
-    public Collection<Long> sortIDs(final Collection<Long> ids, final SortOptions<LocatorType> sortOptions) {
+    public List<Long> sortIDs(final Collection<Long> ids, final SortOptions<LocatorType> sortOptions) {
         return doSortIDs(ids, sortOptions, TableMapper.LOCATOR_TYPES);
     }
 

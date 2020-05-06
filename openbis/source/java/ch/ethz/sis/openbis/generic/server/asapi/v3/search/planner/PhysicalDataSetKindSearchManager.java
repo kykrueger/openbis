@@ -28,6 +28,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETransl
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper.DATA_SET;
@@ -73,7 +74,7 @@ public class PhysicalDataSetKindSearchManager extends AbstractSearchManager<Phys
     }
 
     @Override
-    public Collection<Long> sortIDs(final Collection<Long> ids, final SortOptions<DataSetType> sortOptions) {
+    public List<Long> sortIDs(final Collection<Long> ids, final SortOptions<DataSetType> sortOptions) {
         return doSortIDs(ids, sortOptions, EXTERNAL_DATA);
     }
 

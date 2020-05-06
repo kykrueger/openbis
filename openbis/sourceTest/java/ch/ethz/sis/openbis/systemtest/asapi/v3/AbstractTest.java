@@ -1092,7 +1092,7 @@ public class AbstractTest extends SystemTestCase
 
     protected static void assertDataSetCodesInOrder(Collection<DataSet> dataSets, String... expectedCodes)
     {
-        final List<String> codes = new LinkedList<String>();
+        final List<String> codes = new LinkedList<>();
 
         for (DataSet dataSet : dataSets)
         {

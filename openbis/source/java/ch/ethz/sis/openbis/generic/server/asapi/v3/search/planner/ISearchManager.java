@@ -17,6 +17,7 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
@@ -53,6 +54,6 @@ public interface ISearchManager<CRITERIA extends ISearchCriteria, OBJECT, OBJECT
      */
     Set<Long> filterIDsByUserRights(Long userId, final AuthorisationInformation authorisationInformation, Set<Long> ids);
 
-    Collection<Long> sortIDs(Collection<Long> ids, SortOptions<OBJECT> sortOptions);
+    List<Long> sortIDs(Collection<Long> ids, SortOptions<OBJECT> sortOptions);
 
 }

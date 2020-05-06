@@ -28,6 +28,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExternalDataManagementS
 import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -59,7 +60,7 @@ public class ExternalDmsSearchManager extends AbstractSearchManager<ExternalDmsS
     }
 
     @Override
-    public Collection<Long> sortIDs(final Collection<Long> ids, final SortOptions<ExternalDataManagementSystem> sortOptions) {
+    public List<Long> sortIDs(final Collection<Long> ids, final SortOptions<ExternalDataManagementSystem> sortOptions) {
         return doSortIDs(ids, sortOptions, TableMapper.EXTERNAL_DMS);
     }
 

@@ -31,6 +31,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PROPERTY_TYPE_COLUMN;
@@ -68,6 +69,7 @@ public class PropertyAssignmentSearchManager extends
         final Set<Long> mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId,
                 criteria, TableMapper.SAMPLE_PROPERTY_ASSIGNMENT, idsColumnName, authorisationInformation);
 
+        final Set<Long> finalResults;
         // Very special case when property assignments should be linked with semantic annotations both directly and via attribute types
         if (isSampleTypeWithSemanticAnnotationsCriteria(parentCriteria, criteria))
         {
@@ -80,13 +82,14 @@ public class PropertyAssignmentSearchManager extends
             final Set<Long> assignmentIDsWithoutAnnotations = assignmentsSearchDAO.findAssignmentsWithoutAnnotations(
                     propertyTypesIds, idsColumnName);
 
-            final Set<Long> finalResults = new HashSet<>(mainCriteriaIntermediateResults);
+            finalResults = new HashSet<>(mainCriteriaIntermediateResults);
             finalResults.addAll(assignmentIDsWithoutAnnotations);
-            return finalResults;
         } else
         {
-            return mainCriteriaIntermediateResults;
+            finalResults = mainCriteriaIntermediateResults;
         }
+
+        return filterIDsByUserRights(userId, authorisationInformation, finalResults);
     }
 
     private static boolean isSampleTypeWithSemanticAnnotationsCriteria(final AbstractCompositeSearchCriteria parentCriteria,
@@ -97,7 +100,7 @@ public class PropertyAssignmentSearchManager extends
     }
 
     @Override
-    public Collection<Long> sortIDs(final Collection<Long> ids, final SortOptions<PropertyAssignment> sortOptions) {
+    public List<Long> sortIDs(final Collection<Long> ids, final SortOptions<PropertyAssignment> sortOptions) {
         return doSortIDs(ids, sortOptions, TableMapper.SAMPLE_PROPERTY_ASSIGNMENT);
     }
 
