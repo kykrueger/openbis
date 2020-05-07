@@ -50,6 +50,7 @@ public class EntityWithPropertiesSortOptions<OBJECT extends ICodeHolder & IPermI
     @JsonIgnore
     public static final String PROPERTY = "PROPERTY";
 
+    @JsonIgnore
     private final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION, getClass());
 
     /**
