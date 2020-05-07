@@ -50,9 +50,6 @@ public class EntityWithPropertiesSortOptions<OBJECT extends ICodeHolder & IPermI
     @JsonIgnore
     public static final String PROPERTY = "PROPERTY";
 
-    @JsonIgnore
-    private final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION, getClass());
-
     /**
      *
      * @return
@@ -66,7 +63,6 @@ public class EntityWithPropertiesSortOptions<OBJECT extends ICodeHolder & IPermI
         parameters.put(SortParameter.FULL_MATCH_PROPERTY_BOOST,  "10000");
         parameters.put(SortParameter.FULL_MATCH_TYPE_BOOST, 	   "1000");
         parameters.put(SortParameter.PARTIAL_MATCH_PROPERTY_BOOST, "100");
-        operationLog.warn("Deprecation. Queries cannot specify score. Request to order by score or fetch the score is ignored.");
 		return getOrCreateSortingWithParameters(FETCHED_FIELDS_SCORE, parameters);
     }
     
