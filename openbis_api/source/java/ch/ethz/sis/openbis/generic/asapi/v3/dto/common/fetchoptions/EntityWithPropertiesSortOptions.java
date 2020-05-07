@@ -19,8 +19,6 @@ package ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions;
 import java.util.HashMap;
 import java.util.Map;
 
-import ch.systemsx.cisd.common.logging.LogCategory;
-import ch.systemsx.cisd.common.logging.LogFactory;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ICodeHolder;
@@ -29,7 +27,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IPermIdHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IPropertiesHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IRegistrationDateHolder;
 import ch.systemsx.cisd.base.annotation.JsonObject;
-import org.apache.log4j.Logger;
 
 /**
  * @author pkupczyk
