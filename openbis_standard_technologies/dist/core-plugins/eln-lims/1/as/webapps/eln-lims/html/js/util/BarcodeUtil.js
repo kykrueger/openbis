@@ -1,5 +1,5 @@
 var BarcodeUtil = new function() {
-    var MIN_BARCODE_LENGTH = 10;
+    var MIN_BARCODE_LENGTH = 20;
     var barcodeTimeout = false;
     var barcodeReader = "";
 
@@ -7,14 +7,12 @@ var BarcodeUtil = new function() {
         // Trigger search if needed
         // permID Format 23 char, 1 hyphen: 20170912112249208-38888
         // UUID Format 36 char, 4 hyphens: 123e4567-e89b-12d3-a456-426655440000
-        var rules = {};
 
         if(barcodeReader.length >= MIN_BARCODE_LENGTH) {
+            var rules = {};
             rules["UUIDv4-1"] = { type: "Property/Attribute", 	name: "PROP.$BARCODE", operator : "thatEqualsString", value: barcodeReader };
             rules["UUIDv4-2"] = { type: "Property/Attribute", 	name: "ATTR.PERM_ID",  operator : "thatEqualsString", value: barcodeReader };
-        }
 
-        if(rules) {
             var criteria = {};
             criteria.entityKind = "SAMPLE";
             criteria.logicalOperator = "OR";
