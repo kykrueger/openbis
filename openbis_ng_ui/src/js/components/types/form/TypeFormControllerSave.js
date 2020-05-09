@@ -201,12 +201,12 @@ export default class TypeFormControllerSave {
       this.type.original.properties.forEach(originalProperty => {
         const property = _.find(this.properties, ['id', originalProperty.id])
         if (!property) {
-          if (this._hasTypePrefix(originalProperty)) {
+          if (originalProperty.scope.value === 'local') {
             operations.push(
               this._deletePropertyAssignmentOperation(originalProperty)
             )
             operations.push(this._deletePropertyTypeOperation(originalProperty))
-          } else {
+          } else if (originalProperty.scope.value === 'global') {
             operations.push(
               this._deletePropertyAssignmentOperation(originalProperty)
             )
@@ -217,7 +217,7 @@ export default class TypeFormControllerSave {
 
     this.properties.forEach((property, index) => {
       if (property.original) {
-        if (this._hasTypePrefix(property)) {
+        if (property.scope.value === 'local') {
           if (this._isPropertyTypeUpdateNeeded(property)) {
             if (this._isPropertyTypeUpdatePossible(property)) {
               operations.push(this._updatePropertyTypeOperation(property))
@@ -228,7 +228,7 @@ export default class TypeFormControllerSave {
             }
           }
           assignments.push(this._propertyAssignmentCreation(property, index))
-        } else {
+        } else if (property.scope.value === 'global') {
           if (this._isPropertyTypeUpdateNeeded(property)) {
             const propertyWithPrefix = this._addTypePrefix(property)
             operations.push(this._deletePropertyAssignmentOperation(property))
@@ -243,11 +243,20 @@ export default class TypeFormControllerSave {
           }
         }
       } else {
-        const propertyWithPrefix = this._addTypePrefix(property)
-        operations.push(this._createPropertyTypeOperation(propertyWithPrefix))
-        assignments.push(
-          this._propertyAssignmentCreation(propertyWithPrefix, index)
-        )
+        if (property.scope.value === 'local') {
+          const propertyWithPrefix = this._addTypePrefix(property)
+          operations.push(this._createPropertyTypeOperation(propertyWithPrefix))
+          assignments.push(
+            this._propertyAssignmentCreation(propertyWithPrefix, index)
+          )
+        } else if (property.scope.value === 'global') {
+          if (property.scope.globalPropertyType) {
+            assignments.push(this._propertyAssignmentCreation(property, index))
+          } else {
+            operations.push(this._createPropertyTypeOperation(property))
+            assignments.push(this._propertyAssignmentCreation(property, index))
+          }
+        }
       }
     })
 
@@ -303,7 +312,7 @@ export default class TypeFormControllerSave {
       )
     }
     if (
-      property.dataType === openbis.DataType.MATERIAL &&
+      property.dataType.value === openbis.DataType.MATERIAL &&
       property.materialType.value
     ) {
       creation.setMaterialTypeId(

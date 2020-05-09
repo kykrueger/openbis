@@ -72,21 +72,36 @@ class TypeFormParametersSection extends React.PureComponent {
       return null
     }
 
-    let { classes } = this.props
+    const { classes } = this.props
 
     return (
       <div className={classes.container}>
         <TypeFormHeader className={classes.header}>Section</TypeFormHeader>
-        <div className={classes.field}>
-          <TextField
-            reference={this.reference}
-            label='Name'
-            name='name'
-            value={section.name.value || ''}
-            onChange={this.handleChange}
-            onBlur={this.handleBlur}
-          />
-        </div>
+        {this.renderName(section)}
+      </div>
+    )
+  }
+
+  renderName(section) {
+    const { visible, enabled, error, value } = { ...section.name }
+
+    if (!visible) {
+      return null
+    }
+
+    const { classes } = this.props
+    return (
+      <div className={classes.field}>
+        <TextField
+          reference={this.reference}
+          label='Name'
+          name='name'
+          error={error}
+          disabled={!enabled}
+          value={value}
+          onChange={this.handleChange}
+          onBlur={this.handleBlur}
+        />
       </div>
     )
   }

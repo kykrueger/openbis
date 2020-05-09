@@ -3,16 +3,16 @@ import logger from '@src/js/common/logger.js'
 
 import TypeFormWarning from './TypeFormWarning.jsx'
 
-class TypeFormWarningLegacy extends React.PureComponent {
+class TypeFormWarningGlobal extends React.PureComponent {
   render() {
-    logger.log(logger.DEBUG, 'TypeFormWarningLegacy.render')
+    logger.log(logger.DEBUG, 'TypeFormWarningGlobal.render')
 
     return (
       <TypeFormWarning>
-        This property is legacy (reusable among types).
+        This property is global (reusable among types).
       </TypeFormWarning>
     )
   }
 }
 
-export default TypeFormWarningLegacy
+export default TypeFormWarningGlobal

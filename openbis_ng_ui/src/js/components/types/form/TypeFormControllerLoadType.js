@@ -1,4 +1,5 @@
 import _ from 'lodash'
+import openbis from '@src/js/services/openbis.js'
 import objectTypes from '@src/js/common/consts/objectType.js'
 
 import TypeFormControllerStrategies from './TypeFormControllerStrategies.js'
@@ -85,7 +86,8 @@ export default class TypeFormControllerLoadType {
     const strategy = this._getStrategy()
     const type = {
       code: this._createField({
-        value: _.get(loadedType, 'code', null)
+        value: _.get(loadedType, 'code', null),
+        enabled: loadedType === null
       }),
       objectType: this._createField({
         value: this.object.type
@@ -117,39 +119,62 @@ export default class TypeFormControllerLoadType {
     const propertyType = loadedAssignment.propertyType
 
     const code = _.get(propertyType, 'code', null)
+    const dataType = _.get(propertyType, 'dataType', null)
     const scope = code.startsWith(loadedType.code + '.') ? 'local' : 'global'
+    const usages =
+      (loadedUsages &&
+        loadedUsages.property &&
+        loadedUsages.property[propertyType.code]) ||
+      0
+
+    const isLocal = scope === 'local'
+    const isUnused = usages === 0
 
     return {
       id: id,
       scope: this._createField({
-        value: scope
+        value: scope,
+        enabled: false
       }),
       code: this._createField({
-        value: code
+        value: code,
+        enabled: false
       }),
       label: this._createField({
-        value: _.get(propertyType, 'label', null)
+        value: _.get(propertyType, 'label', null),
+        enabled: isLocal
       }),
       description: this._createField({
-        value: _.get(propertyType, 'description', null)
+        value: _.get(propertyType, 'description', null),
+        enabled: isLocal
       }),
       dataType: this._createField({
-        value: _.get(propertyType, 'dataType', null)
+        value: dataType,
+        enabled: isLocal && isUnused
       }),
       plugin: this._createField({
-        value: _.get(loadedAssignment, 'plugin.name', null)
+        value: _.get(loadedAssignment, 'plugin.name', null),
+        enabled: isLocal && isUnused
       }),
       vocabulary: this._createField({
-        value: _.get(propertyType, 'vocabulary.code', null)
+        value: _.get(propertyType, 'vocabulary.code', null),
+        visible: dataType === openbis.DataType.CONTROLLEDVOCABULARY,
+        enabled: isLocal && isUnused
       }),
       materialType: this._createField({
-        value: _.get(propertyType, 'materialType.code', null)
+        value: _.get(propertyType, 'materialType.code', null),
+        visible: dataType === openbis.DataType.MATERIAL,
+        enabled: isLocal && isUnused
       }),
       schema: this._createField({
-        value: _.get(propertyType, 'schema', null)
+        value: _.get(propertyType, 'schema', null),
+        visible: dataType === openbis.DataType.XML,
+        enabled: isLocal
       }),
       transformation: this._createField({
-        value: _.get(propertyType, 'transformation', null)
+        value: _.get(propertyType, 'transformation', null),
+        visible: dataType === openbis.DataType.XML,
+        enabled: isLocal
       }),
       mandatory: this._createField({
         value: _.get(loadedAssignment, 'mandatory', false)
@@ -160,12 +185,10 @@ export default class TypeFormControllerLoadType {
       showRawValueInForms: this._createField({
         value: _.get(loadedAssignment, 'showRawValueInForms', false)
       }),
-      initialValueForExistingEntities: this._createField(),
-      usages:
-        (loadedUsages &&
-          loadedUsages.property &&
-          loadedUsages.property[loadedAssignment.propertyType.code]) ||
-        0,
+      initialValueForExistingEntities: this._createField({
+        visible: false
+      }),
+      usages: usages,
       errors: 0
     }
   }
@@ -235,7 +258,7 @@ export default class TypeFormControllerLoadType {
     return {
       value: null,
       visible: true,
-      ediable: true,
+      enabled: true,
       ...params
     }
   }

@@ -49,7 +49,7 @@ export default class TypeFormControllerAddSection {
     return {
       value: null,
       visible: true,
-      ediable: true,
+      enabled: true,
       ...params
     }
   }

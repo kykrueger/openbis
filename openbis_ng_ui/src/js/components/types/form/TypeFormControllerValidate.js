@@ -1,6 +1,5 @@
 import _ from 'lodash'
 import FormValidator from '@src/js/components/common/form/FormValidator.js'
-import openbis from '@src/js/services/openbis.js'
 
 import TypeFormControllerStrategies from './TypeFormControllerStrategies.js'
 
@@ -85,24 +84,13 @@ export default class TypeFormControllerValidate {
     this.validator.validateNotEmpty(property, 'description', 'Description')
     this.validator.validateNotEmpty(property, 'dataType', 'Data Type')
 
-    if (property.dataType.value === openbis.DataType.CONTROLLEDVOCABULARY) {
+    if (property.vocabulary.visible) {
       this.validator.validateNotEmpty(property, 'vocabulary', 'Vocabulary')
-    } else if (property.dataType.value === openbis.DataType.MATERIAL) {
+    }
+    if (property.materialType.visible) {
       this.validator.validateNotEmpty(property, 'materialType', 'Material Type')
     }
-
-    const typeIsUsed = type.usages > 0
-    const propertyIsNew = !property.original
-    const propertyIsMandatory = property.mandatory.value
-    const propertyWasMandatory = property.original
-      ? property.original.mandatory.value
-      : false
-
-    if (
-      typeIsUsed &&
-      propertyIsMandatory &&
-      (propertyIsNew || !propertyWasMandatory)
-    ) {
+    if (property.initialValueForExistingEntities.visible) {
       this.validator.validateNotEmpty(
         property,
         'initialValueForExistingEntities',

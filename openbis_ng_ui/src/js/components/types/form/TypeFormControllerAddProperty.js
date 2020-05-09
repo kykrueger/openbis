@@ -47,10 +47,18 @@ export default class TypeFormControllerAddProperty {
         value: 'VARCHAR'
       }),
       plugin: this._createField(),
-      vocabulary: this._createField(),
-      materialType: this._createField(),
-      schema: this._createField(),
-      transformation: this._createField(),
+      vocabulary: this._createField({
+        visible: false
+      }),
+      materialType: this._createField({
+        visible: false
+      }),
+      schema: this._createField({
+        visible: false
+      }),
+      transformation: this._createField({
+        visible: false
+      }),
       mandatory: this._createField({
         value: false
       }),
@@ -60,7 +68,9 @@ export default class TypeFormControllerAddProperty {
       showRawValueInForms: this._createField({
         value: false
       }),
-      initialValueForExistingEntities: this._createField(),
+      initialValueForExistingEntities: this._createField({
+        visible: false
+      }),
       section: section.id,
       usages: 0,
       errors: 0
@@ -96,7 +106,7 @@ export default class TypeFormControllerAddProperty {
     return {
       value: null,
       visible: true,
-      ediable: true,
+      enabled: true,
       ...params
     }
   }
