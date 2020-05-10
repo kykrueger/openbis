@@ -10,6 +10,16 @@ export default class TypeFormParametersFormWrapper extends TypeFormParametersCom
     return new TextFieldWrapper(this.wrapper.find('TextFormField[name="name"]'))
   }
 
+  change(fieldName, fieldValue) {
+    this.wrapper.instance().handleChange({
+      target: {
+        name: fieldName,
+        value: fieldValue
+      }
+    })
+    this.wrapper.update()
+  }
+
   toJSON() {
     return {
       ...super.toJSON(),

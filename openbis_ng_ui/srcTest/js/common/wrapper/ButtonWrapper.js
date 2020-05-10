@@ -1,19 +1,10 @@
-export default class FieldWrapper {
+export default class ButtonWrapper {
   constructor(wrapper) {
     this.wrapper = wrapper
   }
 
   getLabel() {
-    return this.wrapper.prop('label')
-  }
-
-  getValue() {
-    const value = this.wrapper.prop('value')
-    if (value === null || value === undefined || value === '') {
-      return null
-    } else {
-      return value
-    }
+    return this.wrapper.text()
   }
 
   getEnabled() {
@@ -21,11 +12,14 @@ export default class FieldWrapper {
     return disabled === undefined || disabled === null || disabled === false
   }
 
+  click() {
+    this.wrapper.simulate('click')
+  }
+
   toJSON() {
     if (this.wrapper.exists()) {
       return {
         label: this.getLabel(),
-        value: this.getValue(),
         enabled: this.getEnabled()
       }
     } else {

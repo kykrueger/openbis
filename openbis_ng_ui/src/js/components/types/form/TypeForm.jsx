@@ -70,9 +70,13 @@ class TypeForm extends React.PureComponent {
   render() {
     logger.log(logger.DEBUG, 'TypeForm.render')
 
-    const { loading, type } = this.state
+    const { loading, type, dictionaries } = this.state
 
-    return <Loading loading={loading}>{!!type && this.doRender()}</Loading>
+    return (
+      <Loading loading={loading}>
+        {!!type && !!dictionaries && this.doRender()}
+      </Loading>
+    )
   }
 
   doRender() {

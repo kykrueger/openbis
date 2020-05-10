@@ -17,9 +17,14 @@ export default class TypeFormPreviewSectionWrapper {
     return properties
   }
 
+  click() {
+    this.wrapper.simulate('click')
+  }
+
   toJSON() {
+    const name = this.getName().text().trim()
     return {
-      name: this.getName().text(),
+      name: name.length > 0 ? name : null,
       properties: this.getProperties().map(property => property.toJSON())
     }
   }

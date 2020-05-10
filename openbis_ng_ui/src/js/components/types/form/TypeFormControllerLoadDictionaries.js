@@ -20,7 +20,7 @@ export default class TypeFormControllerLoadDictionaries {
         materialTypes,
         globalPropertyTypes
       ]) => {
-        this.context.setState(() => ({
+        return this.context.setState(() => ({
           dictionaries: {
             validationPlugins,
             dynamicPlugins,

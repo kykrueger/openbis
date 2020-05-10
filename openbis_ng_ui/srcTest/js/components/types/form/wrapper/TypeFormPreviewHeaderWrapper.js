@@ -26,8 +26,9 @@ export default class TypeFormPreviewHeaderWrapper {
   }
 
   toJSON() {
+    const title = this.getTitle().text().trim()
     return {
-      title: this.getTitle().text(),
+      title: title.length > 0 ? title : null,
       code: this.getCode().toJSON(),
       parents: this.getParents().toJSON(),
       container: this.getContainer().toJSON()

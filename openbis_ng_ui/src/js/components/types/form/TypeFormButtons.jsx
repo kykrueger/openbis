@@ -38,6 +38,7 @@ class TypeFormButtons extends React.PureComponent {
     return (
       <div className={classes.container}>
         <Button
+          name='addSection'
           classes={{ root: classes.button }}
           variant='contained'
           color='secondary'
@@ -46,6 +47,7 @@ class TypeFormButtons extends React.PureComponent {
           Add Section
         </Button>
         <Button
+          name='addProperty'
           classes={{ root: classes.button }}
           variant='contained'
           color='secondary'
@@ -55,6 +57,7 @@ class TypeFormButtons extends React.PureComponent {
           Add Property
         </Button>
         <Button
+          name='remove'
           classes={{ root: classes.button }}
           variant='contained'
           color='secondary'
@@ -64,6 +67,7 @@ class TypeFormButtons extends React.PureComponent {
           Remove
         </Button>
         <Button
+          name='save'
           classes={{ root: classes.button }}
           variant='contained'
           color='primary'

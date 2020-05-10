@@ -40,18 +40,18 @@ describe('TypeFormController.handleChange', () => {
 
     expect(context.getState()).toMatchObject({
       type: {
-        description: { value: null }
+        description: { value: 'TEST_DESCRIPTION' }
       }
     })
 
     controller.handleChange('type', {
       field: 'description',
-      value: 'TEST_DESCRIPTION'
+      value: 'NEW_DESCRIPTION'
     })
 
     expect(context.getState()).toMatchObject({
       type: {
-        description: { value: 'TEST_DESCRIPTION' }
+        description: { value: 'NEW_DESCRIPTION' }
       }
     })
   })

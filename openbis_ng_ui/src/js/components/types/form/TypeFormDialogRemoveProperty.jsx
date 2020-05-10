@@ -25,8 +25,8 @@ class TypeFormDialogRemoveProperty extends React.Component {
 
     if (open) {
       const property = this.getProperty()
-      if (property.code) {
-        return `Do you want to remove "${property.code}" property? Some data will be lost!`
+      if (property.code.value) {
+        return `Do you want to remove "${property.code.value}" property? Some data will be lost!`
       } else {
         return 'Do you want to remove the property? Some data will be lost!'
       }

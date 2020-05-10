@@ -11,10 +11,22 @@ export default class TypeFormPreviewPropertyWrapper {
     return this.wrapper.find('span[data-part="label"]')
   }
 
+  getDataType() {
+    return this.wrapper.find('span[data-part="dataType"]')
+  }
+
+  click() {
+    this.wrapper.simulate('click')
+  }
+
   toJSON() {
+    const code = this.getCode().text().trim()
+    const label = this.getLabel().text().trim()
+    const dataType = this.getDataType().text().trim()
     return {
-      code: this.getCode().text(),
-      label: this.getLabel().text()
+      code: code.length > 0 ? code : null,
+      label: label.length > 0 ? label : null,
+      dataType: dataType.length > 0 ? dataType : null
     }
   }
 }

@@ -6,7 +6,7 @@ export default class ComponentContext {
     autoBind(this)
     this.props = {}
     this.state = {}
-    this.dispatch = jest.fn()
+    this.dispatchFn = jest.fn()
     this.facade = {}
   }
 
@@ -26,7 +26,7 @@ export default class ComponentContext {
     return this.state
   }
 
-  setState(newStateOrFunction, callback) {
+  setState(newStateOrFunction) {
     let changes
 
     if (_.isFunction(newStateOrFunction)) {
@@ -37,17 +37,15 @@ export default class ComponentContext {
 
     this.state = { ...this.state, ...changes }
 
-    if (callback) {
-      callback()
-    }
+    return Promise.resolve()
   }
 
   dispatch(action) {
-    this.dispatch(action)
+    this.dispatchFn(action)
   }
 
   getDispatch() {
-    return this.dispatch
+    return this.dispatchFn
   }
 
   expectAction(action) {
