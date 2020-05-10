@@ -4,6 +4,7 @@ import { mount } from 'enzyme'
 import { createStore } from '@src/js/store/store.js'
 import ThemeProvider from '@src/js/components/common/theme/ThemeProvider.jsx'
 import TypeForm from '@src/js/components/types/form/TypeForm.jsx'
+import TypeFormWrapper from '@srcTest/js/components/types/form/wrapper/TypeFormWrapper.js'
 import TypeFormController from '@src/js/components/types/form/TypeFormController.js'
 import TypeFormFacade from '@src/js/components/types/form/TypeFormFacade'
 import objectTypes from '@src/js/common/consts/objectType.js'
@@ -51,9 +52,9 @@ describe('TypeForm', () => {
     setTimeout(() => {
       wrapper.update()
 
-      const objectType = new TypeFormWrapper(wrapper)
+      const form = new TypeFormWrapper(wrapper)
 
-      expect(objectType.toJSON()).toMatchObject({
+      expect(form.toJSON()).toMatchObject({
         preview: {
           sections: [
             {
@@ -80,13 +81,13 @@ describe('TypeForm', () => {
         }
       })
 
-      objectType
+      form
         .getPreview()
         .getSections()[0]
         .getProperties()[0]
         .wrapper.simulate('click')
 
-      expect(objectType.toJSON()).toMatchObject({
+      expect(form.toJSON()).toMatchObject({
         preview: {
           sections: [
             {
@@ -117,241 +118,3 @@ describe('TypeForm', () => {
     })
   })
 })
-
-class TypeFormWrapper {
-  constructor(wrapper) {
-    this.wrapper = wrapper
-  }
-
-  getPreview() {
-    return new TypeFormPreview(this.wrapper.find('TypeFormPreview'))
-  }
-
-  getParameters() {
-    return new TypeFormParameters(this.wrapper.find('TypeFormParameters'))
-  }
-
-  toJSON() {
-    return {
-      preview: this.getPreview().toJSON(),
-      parameters: this.getParameters().toJSON()
-    }
-  }
-}
-
-class TypeFormPreview {
-  constructor(wrapper) {
-    this.wrapper = wrapper
-  }
-
-  getHeader() {
-    return new TypeFormPreviewHeader(this.wrapper.find('TypeFormPreviewHeader'))
-  }
-
-  getSections() {
-    const sections = []
-    this.wrapper.find('TypeFormPreviewSection').forEach(sectionWrapper => {
-      sections.push(new TypeFormPreviewSection(sectionWrapper))
-    })
-    return sections
-  }
-
-  toJSON() {
-    return {
-      header: this.getHeader().toJSON(),
-      sections: this.getSections().map(section => section.toJSON())
-    }
-  }
-}
-
-class TypeFormParameters {
-  constructor(wrapper) {
-    this.wrapper = wrapper
-  }
-
-  getType() {
-    return new TypeFormParametersForm(
-      this.wrapper.find('TypeFormParametersType')
-    )
-  }
-
-  getProperty() {
-    return new TypeFormParametersForm(
-      this.wrapper.find('TypeFormParametersProperty')
-    )
-  }
-
-  toJSON() {
-    return {
-      type: this.getType().toJSON(),
-      property: this.getProperty().toJSON()
-    }
-  }
-}
-
-class TypeFormParametersForm {
-  constructor(wrapper) {
-    this.wrapper = wrapper
-  }
-
-  getTitle() {
-    return this.wrapper.find('TypeFormHeader')
-  }
-
-  getCode() {
-    const textFieldWrapper = this.wrapper.find('TextFormField[name="code"]')
-    if (textFieldWrapper.exists()) {
-      return new TextFormField(textFieldWrapper)
-    }
-    const autocompleterFieldWrapper = this.wrapper.find(
-      'AutocompleterFormField[name="code"]'
-    )
-    if (autocompleterFieldWrapper.exists()) {
-      return new AutocompleterFormField(autocompleterFieldWrapper)
-    }
-    return null
-  }
-
-  getDescription() {
-    return new TextFormField(
-      this.wrapper.find('TextFormField[name="description"]')
-    )
-  }
-
-  toJSON() {
-    return {
-      title: this.getTitle().exists() ? this.getTitle().text() : null,
-      code: this.getCode() ? this.getCode().toJSON() : null,
-      description: this.getDescription().toJSON()
-    }
-  }
-}
-
-class TypeFormPreviewHeader {
-  constructor(wrapper) {
-    this.wrapper = wrapper
-  }
-
-  getTitle() {
-    return this.wrapper.find('TypeFormHeader')
-  }
-
-  getCode() {
-    return new TextFormField(this.wrapper.find('TextFormField[name="code"]'))
-  }
-
-  getParents() {
-    return new TextFormField(this.wrapper.find('TextFormField[name="parents"]'))
-  }
-
-  getContainer() {
-    return new TextFormField(
-      this.wrapper.find('TextFormField[name="container"]')
-    )
-  }
-
-  toJSON() {
-    return {
-      title: this.getTitle().text(),
-      code: this.getCode().toJSON(),
-      parents: this.getParents().toJSON(),
-      container: this.getContainer().toJSON()
-    }
-  }
-}
-
-class TypeFormPreviewSection {
-  constructor(wrapper) {
-    this.wrapper = wrapper
-  }
-
-  getName() {
-    return this.wrapper.find('TypeFormHeader')
-  }
-
-  getProperties() {
-    const properties = []
-    this.wrapper.find('TypeFormPreviewProperty').forEach(propertyWrapper => {
-      properties.push(new TypeFormPreviewProperty(propertyWrapper))
-    })
-    return properties
-  }
-
-  toJSON() {
-    return {
-      name: this.getName().text(),
-      properties: this.getProperties().map(property => property.toJSON())
-    }
-  }
-}
-
-class TypeFormPreviewProperty {
-  constructor(wrapper) {
-    this.wrapper = wrapper
-  }
-
-  getCode() {
-    return this.wrapper.find('span[data-part="code"]')
-  }
-
-  getLabel() {
-    return this.wrapper.find('span[data-part="label"]')
-  }
-
-  toJSON() {
-    return {
-      code: this.getCode().text(),
-      label: this.getLabel().text()
-    }
-  }
-}
-
-class TextFormField {
-  constructor(wrapper) {
-    this.wrapper = wrapper
-  }
-
-  getLabel() {
-    return this.wrapper.prop('label')
-  }
-
-  getValue() {
-    return this.wrapper.prop('value')
-  }
-
-  toJSON() {
-    if (this.wrapper.exists()) {
-      return {
-        label: this.getLabel(),
-        value: this.getValue()
-      }
-    } else {
-      return {}
-    }
-  }
-}
-
-class AutocompleterFormField {
-  constructor(wrapper) {
-    this.wrapper = wrapper
-  }
-
-  getLabel() {
-    return this.wrapper.prop('label')
-  }
-
-  getValue() {
-    return this.wrapper.prop('value')
-  }
-
-  toJSON() {
-    if (this.wrapper.exists()) {
-      return {
-        label: this.getLabel(),
-        value: this.getValue()
-      }
-    } else {
-      return {}
-    }
-  }
-}
