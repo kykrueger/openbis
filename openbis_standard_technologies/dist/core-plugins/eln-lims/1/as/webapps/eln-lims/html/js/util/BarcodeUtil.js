@@ -1,5 +1,5 @@
 var BarcodeUtil = new function() {
-    var MIN_BARCODE_LENGTH = 20;
+    var MIN_BARCODE_LENGTH = 15;
     var barcodeTimeout = false;
     var barcodeReader = "";
 
