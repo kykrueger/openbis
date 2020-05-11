@@ -15,16 +15,19 @@
  */
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions;
 
+import java.io.Serializable;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchOptionsToStringBuilder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.fetchoptions.MaterialTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.fetchoptions.PersonFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.fetchoptions.SemanticAnnotationFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.fetchoptions.VocabularyFetchOptions;
 import ch.systemsx.cisd.base.annotation.JsonObject;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import java.io.Serializable;
 
 /*
  * Class automatically generated with DtoGenerator
@@ -39,6 +42,9 @@ public class PropertyTypeFetchOptions extends FetchOptions<PropertyType> impleme
 
     @JsonProperty
     private MaterialTypeFetchOptions materialType;
+
+    @JsonProperty
+    private SampleTypeFetchOptions sampleType;
 
     @JsonProperty
     private SemanticAnnotationFetchOptions semanticAnnotations;
@@ -91,6 +97,25 @@ public class PropertyTypeFetchOptions extends FetchOptions<PropertyType> impleme
     public boolean hasMaterialType()
     {
         return materialType != null;
+    }
+
+    public SampleTypeFetchOptions withSampleType()
+    {
+        if (sampleType == null)
+        {
+            sampleType = new SampleTypeFetchOptions();
+        }
+        return sampleType;
+    }
+
+    public SampleTypeFetchOptions withSampleTypeUsing(SampleTypeFetchOptions fetchOptions)
+    {
+        return sampleType = fetchOptions;
+    }
+
+    public boolean hasSampleType()
+    {
+        return sampleType != null;
     }
 
     // Method automatically generated with DtoGenerator
@@ -154,12 +179,14 @@ public class PropertyTypeFetchOptions extends FetchOptions<PropertyType> impleme
     {
         return sort;
     }
+
     @Override
     protected FetchOptionsToStringBuilder getFetchOptionsStringBuilder()
     {
         FetchOptionsToStringBuilder f = new FetchOptionsToStringBuilder("PropertyType", this);
         f.addFetchOption("Vocabulary", vocabulary);
         f.addFetchOption("MaterialType", materialType);
+        f.addFetchOption("SampleType", sampleType);
         f.addFetchOption("SemanticAnnotations", semanticAnnotations);
         f.addFetchOption("Registrator", registrator);
         return f;

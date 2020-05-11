@@ -16,19 +16,28 @@
 
 package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
+import static org.testng.Assert.assertEquals;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 
 import org.testng.annotations.Test;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.delete.DataSetDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.IDataSetId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.id.IDeletionId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.delete.SampleDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.openbis.systemtest.authorization.ProjectAuthorizationUser;
-
 import junit.framework.Assert;
 
 /**
@@ -184,6 +193,67 @@ public class DeleteDataSetTest extends AbstractDeletionTest
 
         assertAccessLog(
                 "delete-data-sets  DATA_SET_IDS('[TEST-LOGGING-1, TEST-LOGGING-2]') DELETION_OPTIONS('DataSetDeletionOptions[reason=test-reason]')");
+    }
+
+    @Test
+    public void testDeleteSampleOfASampleProperty()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createASamplePropertyType(sessionToken, null);
+        EntityTypePermId dataSetType = createADataSetType(sessionToken, true, propertyType);
+        DataSetCreation creation = physicalDataSetCreation();
+        creation.setTypeId(dataSetType);
+        creation.setExperimentId(new ExperimentIdentifier("/TEST-SPACE/TEST-PROJECT/EXP-SPACE-TEST"));
+        SamplePermId propertySamplePermId = createCisdSample(createCisdExperiment());
+        creation.setSampleProperty(propertyType.getPermId(), propertySamplePermId);
+        DataSetPermId dataSetPermId = v3api.createDataSets(sessionToken, Arrays.asList(creation)).get(0);
+        SampleDeletionOptions deletionOptions = new SampleDeletionOptions();
+        deletionOptions.setReason("a test");
+
+        // When
+        IDeletionId deletionId = v3api.deleteSamples(sessionToken, Arrays.asList(propertySamplePermId), deletionOptions);
+
+        // Then
+        DataSetFetchOptions fetchOptions = new DataSetFetchOptions();
+        fetchOptions.withProperties();
+        fetchOptions.withSampleProperties();
+        DataSet dataSet = v3api.getDataSets(sessionToken, Arrays.asList(dataSetPermId), fetchOptions).get(dataSetPermId);
+        assertEquals(dataSet.getSampleProperties().toString(), "{}");
+        assertEquals(dataSet.getProperties().toString(), "{}");
+
+        v3api.confirmDeletions(sessionToken, Arrays.asList(deletionId));
+        dataSet = v3api.getDataSets(sessionToken, Arrays.asList(dataSetPermId), fetchOptions).get(dataSetPermId);
+        assertEquals(dataSet.getSampleProperties().toString(), "{}");
+        assertEquals(dataSet.getProperties().toString(), "{}");
+    }
+
+    @Test
+    public void testDeleteSampleWithSampleProperty()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createASamplePropertyType(sessionToken, null);
+        EntityTypePermId dataSetType = createADataSetType(sessionToken, true, propertyType);
+        DataSetCreation creation = physicalDataSetCreation();
+        creation.setTypeId(dataSetType);
+        creation.setExperimentId(new ExperimentIdentifier("/TEST-SPACE/TEST-PROJECT/EXP-SPACE-TEST"));
+        SamplePermId propertySamplePermId = createCisdSample(createCisdExperiment());
+        creation.setSampleProperty(propertyType.getPermId(), propertySamplePermId);
+        DataSetPermId dataSetPermId = v3api.createDataSets(sessionToken, Arrays.asList(creation)).get(0);
+        DataSetDeletionOptions deletionOptions = new DataSetDeletionOptions();
+        deletionOptions.setReason("a test");
+
+        // When
+        IDeletionId deletionId = v3api.deleteDataSets(sessionToken, Arrays.asList(dataSetPermId), deletionOptions);
+
+        // Then
+        DataSetFetchOptions fetchOptions = new DataSetFetchOptions();
+        fetchOptions.withProperties();
+        fetchOptions.withSampleProperties();
+        assertEquals(v3api.getDataSets(sessionToken, Arrays.asList(dataSetPermId), fetchOptions).toString(), "{}");
+        v3api.confirmDeletions(sessionToken, Arrays.asList(deletionId));
+        assertEquals(v3api.getDataSets(sessionToken, Arrays.asList(dataSetPermId), fetchOptions).toString(), "{}");
     }
 
     // waiting for better times

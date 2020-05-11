@@ -32,6 +32,7 @@ import ch.systemsx.cisd.openbis.generic.client.web.client.application.IViewConte
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.framework.CompositeDatabaseModificationObserver;
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.framework.DatabaseModificationAwareComponent;
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.framework.IDatabaseModificationObserver;
+import ch.systemsx.cisd.openbis.generic.client.web.client.application.framework.SampleTypeDisplayID;
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.model.DataTypeModel;
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.ui.AbstractRegistrationForm;
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.ui.field.CodeField;
@@ -40,6 +41,7 @@ import ch.systemsx.cisd.openbis.generic.client.web.client.application.ui.field.M
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.ui.field.VarcharField;
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.ui.field.XmlField;
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.ui.material.MaterialTypeSelectionWidget;
+import ch.systemsx.cisd.openbis.generic.client.web.client.application.ui.sample.SampleTypeSelectionWidget;
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.ui.vocabulary.VocabularySelectionWidget;
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.ui.widget.FieldUtil;
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.ui.widget.HtmlMessageElement;
@@ -48,6 +50,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyType;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Vocabulary;
 
 /**
@@ -71,6 +74,8 @@ public final class PropertyTypeRegistrationForm extends AbstractRegistrationForm
     private final VocabularySelectionWidget vocabularySelectionWidget;
 
     private final MaterialTypeSelectionWidget materialTypeSelectionWidget;
+
+    private final SampleTypeSelectionWidget sampleTypeSelectionWidget;
 
     private final XmlField xmlSchemaField;
 
@@ -98,11 +103,13 @@ public final class PropertyTypeRegistrationForm extends AbstractRegistrationForm
         this.dataTypeSelectionWidget = createDataTypeSelectionWidget();
         this.vocabularySelectionWidget = createVocabularySelectionWidget();
         this.materialTypeSelectionWidget = createMaterialTypeSelectionField();
+        this.sampleTypeSelectionWidget = createSampleTypeSelectionField();
         this.xmlSchemaField = createXmlSchemaField();
         this.xslTransformationsField = createXslTransformationsField();
 
         vocabularySelectionWidget.setVisible(false);
         materialTypeSelectionWidget.setVisible(false);
+        sampleTypeSelectionWidget.setVisible(false);
         xmlSchemaField.setVisible(false);
         xslTransformationsField.setVisible(false);
 
@@ -112,6 +119,7 @@ public final class PropertyTypeRegistrationForm extends AbstractRegistrationForm
         formPanel.add(dataTypeSelectionWidget);
         formPanel.add(vocabularySelectionWidget);
         formPanel.add(materialTypeSelectionWidget);
+        formPanel.add(sampleTypeSelectionWidget);
         formPanel.add(xmlSchemaField);
         formPanel.add(xslTransformationsField);
     }
@@ -122,6 +130,14 @@ public final class PropertyTypeRegistrationForm extends AbstractRegistrationForm
         MaterialTypeSelectionWidget chooser =
                 MaterialTypeSelectionWidget
                         .createWithAdditionalOption(viewContext, label, null, ID);
+        FieldUtil.markAsMandatory(chooser);
+        return chooser;
+    }
+
+    private SampleTypeSelectionWidget createSampleTypeSelectionField()
+    {
+        SampleTypeSelectionWidget chooser = new SampleTypeSelectionWidget(viewContext, ID, false, true, false, null,
+                SampleTypeDisplayID.SAMPLE_QUERY);
         FieldUtil.markAsMandatory(chooser);
         return chooser;
     }
@@ -202,6 +218,9 @@ public final class PropertyTypeRegistrationForm extends AbstractRegistrationForm
             case MATERIAL:
                 propertyType.setMaterialType(tryGetSelectedMaterialTypeProperty());
                 break;
+            case SAMPLE:
+                propertyType.setSampleType(tryGetSelectedSampleTypeProperty());
+                break;
             case CONTROLLEDVOCABULARY:
                 propertyType.setVocabulary(tryGetSelectedVocabulary());
                 break;
@@ -218,6 +237,11 @@ public final class PropertyTypeRegistrationForm extends AbstractRegistrationForm
     private MaterialType tryGetSelectedMaterialTypeProperty()
     {
         return materialTypeSelectionWidget.tryGetSelected();
+    }
+
+    private SampleType tryGetSelectedSampleTypeProperty()
+    {
+        return sampleTypeSelectionWidget.tryGetSelected();
     }
 
     private Vocabulary tryGetSelectedVocabulary()
@@ -276,6 +300,9 @@ public final class PropertyTypeRegistrationForm extends AbstractRegistrationForm
                     case MATERIAL:
                         showFields(materialTypeSelectionWidget);
                         break;
+                    case SAMPLE:
+                        showFields(sampleTypeSelectionWidget);
+                        break;
                     case XML:
                         showFields(xmlSchemaField, xslTransformationsField);
                         break;
@@ -294,7 +321,7 @@ public final class PropertyTypeRegistrationForm extends AbstractRegistrationForm
         private void hideDataTypeRelatedFields()
         {
             FieldUtil.setVisibility(false, vocabularySelectionWidget, materialTypeSelectionWidget,
-                    xmlSchemaField, xslTransformationsField);
+                    sampleTypeSelectionWidget, xmlSchemaField, xslTransformationsField);
         }
     }
 
@@ -323,6 +350,7 @@ public final class PropertyTypeRegistrationForm extends AbstractRegistrationForm
                 new CompositeDatabaseModificationObserver();
         observer.addObserver(vocabularySelectionWidget);
         observer.addObserver(materialTypeSelectionWidget);
+        observer.addObserver(sampleTypeSelectionWidget);
         return observer;
     }
 

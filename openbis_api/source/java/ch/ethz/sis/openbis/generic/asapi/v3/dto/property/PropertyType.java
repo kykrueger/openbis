@@ -15,6 +15,14 @@
  */
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.property;
 
+import java.io.Serializable;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ICodeHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IDescriptionHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IPermIdHolder;
@@ -23,19 +31,13 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IRegistratorHo
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ISemanticAnnotationsHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.MaterialType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.Person;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.SemanticAnnotation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.Vocabulary;
 import ch.ethz.sis.openbis.generic.asapi.v3.exceptions.NotFetchedException;
 import ch.systemsx.cisd.base.annotation.JsonObject;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import java.io.Serializable;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
 
 /*
  * Class automatically generated with DtoGenerator
@@ -76,6 +78,9 @@ public class PropertyType implements Serializable, ICodeHolder, IDescriptionHold
     @JsonProperty
     private MaterialType materialType;
 
+    @JsonProperty
+    private SampleType sampleType;
+    
     @JsonProperty
     private String schema;
 
@@ -239,6 +244,23 @@ public class PropertyType implements Serializable, ICodeHolder, IDescriptionHold
         this.materialType = materialType;
     }
 
+    @JsonIgnore
+    public SampleType getSampleType()
+    {
+        if (getFetchOptions() != null && getFetchOptions().hasSampleType())
+        {
+            return sampleType;
+        } else
+        {
+            throw new NotFetchedException("Sample type has not been fetched.");
+        }
+    }
+    
+    public void setSampleType(SampleType sampleType)
+    {
+        this.sampleType = sampleType;
+    }
+    
     // Method automatically generated with DtoGenerator
     @JsonIgnore
     public String getSchema()

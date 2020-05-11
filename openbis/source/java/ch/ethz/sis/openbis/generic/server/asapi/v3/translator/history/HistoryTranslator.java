@@ -171,6 +171,9 @@ public abstract class HistoryTranslator extends AbstractCachingTranslator<Long, 
         } else if (record.materialPropertyValue != null)
         {
             entry.setPropertyValue(record.materialPropertyValue);
+        } else if (record.samplePropertyValue != null)
+        {
+            entry.setPropertyValue(record.samplePropertyValue);
         } else
         {
             throw new IllegalArgumentException("Unexpected property history entry with all values null");

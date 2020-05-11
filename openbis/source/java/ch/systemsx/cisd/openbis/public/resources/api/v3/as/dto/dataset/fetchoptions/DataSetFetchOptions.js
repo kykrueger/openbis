@@ -5,7 +5,7 @@
 define([ "require", "stjs", "as/dto/common/fetchoptions/FetchOptions", "as/dto/tag/fetchoptions/TagFetchOptions", "as/dto/dataset/fetchoptions/DataSetTypeFetchOptions",
 		"as/dto/person/fetchoptions/PersonFetchOptions", "as/dto/experiment/fetchoptions/ExperimentFetchOptions", "as/dto/sample/fetchoptions/SampleFetchOptions",
 		"as/dto/property/fetchoptions/PropertyFetchOptions", "as/dto/dataset/fetchoptions/PhysicalDataFetchOptions", "as/dto/dataset/fetchoptions/LinkedDataFetchOptions",
-		"as/dto/history/fetchoptions/HistoryEntryFetchOptions", "as/dto/material/fetchoptions/MaterialFetchOptions", "as/dto/datastore/fetchoptions/DataStoreFetchOptions",
+		"as/dto/history/fetchoptions/HistoryEntryFetchOptions", "as/dto/material/fetchoptions/MaterialFetchOptions", "as/dto/sample/fetchoptions/SampleFetchOptions", "as/dto/datastore/fetchoptions/DataStoreFetchOptions",
 		"as/dto/dataset/fetchoptions/DataSetSortOptions" ], function(require, stjs, FetchOptions) {
 	var DataSetFetchOptions = function() {
 	};
@@ -28,6 +28,7 @@ define([ "require", "stjs", "as/dto/common/fetchoptions/FetchOptions", "as/dto/t
 		prototype.sample = null;
 		prototype.properties = null;
 		prototype.materialProperties = null;
+		prototype.sampleProperties = null;
 		prototype.sort = null;
 		prototype.withParents = function() {
 			if (this.parents == null) {
@@ -233,6 +234,19 @@ define([ "require", "stjs", "as/dto/common/fetchoptions/FetchOptions", "as/dto/t
 		prototype.hasMaterialProperties = function() {
 			return this.materialProperties != null;
 		};
+		prototype.withSampleProperties = function() {
+			if (this.sampleProperties == null) {
+				var SampleFetchOptions = require("as/dto/sample/fetchoptions/SampleFetchOptions");
+				this.sampleProperties = new SampleFetchOptions();
+			}
+			return this.sampleProperties;
+		};
+		prototype.withSamplePropertiesUsing = function(fetchOptions) {
+			return this.sampleProperties = fetchOptions;
+		};
+		prototype.hasSampleProperties = function() {
+			return this.sampleProperties != null;
+		};
 		prototype.sortBy = function() {
 			if (this.sort == null) {
 				var DataSetSortOptions = require("as/dto/dataset/fetchoptions/DataSetSortOptions");
@@ -259,6 +273,7 @@ define([ "require", "stjs", "as/dto/common/fetchoptions/FetchOptions", "as/dto/t
 		sample : "SampleFetchOptions",
 		properties : "PropertyFetchOptions",
 		materialProperties : "MaterialFetchOptions",
+		sampleProperties : "SampleFetchOptions",
 		sort : "DataSetSortOptions"
 	});
 	return DataSetFetchOptions;

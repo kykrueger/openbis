@@ -76,6 +76,8 @@ public final class PropertyTypeTranslator
         result.setVocabulary(VocabularyTranslator.translate(propertyType.getVocabulary()));
         result.setMaterialType(MaterialTypeTranslator.translate(propertyType.getMaterialType(),
                 false, materialTypeCache, cacheOrNull));
+        result.setSampleType(SampleTypeTranslator.translate(
+                propertyType.getSampleType(), materialTypeCache, cacheOrNull));
         result.setDescription(propertyType.getDescription());
         result.setSampleTypePropertyTypes(SampleTypePropertyTypeTranslator.translate(
                 propertyType.getSampleTypePropertyTypes(), result, materialTypeCache, cacheOrNull));

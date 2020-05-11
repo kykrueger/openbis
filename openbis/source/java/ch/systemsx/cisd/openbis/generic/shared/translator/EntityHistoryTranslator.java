@@ -21,6 +21,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import ch.systemsx.cisd.common.collection.IValidator;
+import ch.systemsx.cisd.openbis.generic.shared.basic.IIdentifierHolder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
@@ -70,7 +72,8 @@ public class EntityHistoryTranslator
     }
 
     public static List<EntityHistory> translate(List<AbstractEntityPropertyHistoryPE> history,
-            String baseIndexURL, IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory, IRelatedEntityFinder finder)
+            String baseIndexURL, IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory,
+            IValidator<IIdentifierHolder> samplePropertyAccessValidator, IRelatedEntityFinder finder)
     {
         List<EntityHistory> result = new ArrayList<EntityHistory>();
         HashMap<PropertyTypePE, PropertyType> cache = new HashMap<PropertyTypePE, PropertyType>();
@@ -78,7 +81,7 @@ public class EntityHistoryTranslator
         for (AbstractEntityPropertyHistoryPE entityPropertyHistory : history)
         {
             result.add(translate(entityPropertyHistory, materialTypesCache, cache, baseIndexURL,
-                    managedPropertyEvaluatorFactory, finder));
+                    managedPropertyEvaluatorFactory, samplePropertyAccessValidator, finder));
         }
         return result;
     }
@@ -86,7 +89,8 @@ public class EntityHistoryTranslator
     private static EntityHistory translate(AbstractEntityPropertyHistoryPE entityPropertyHistory,
             Map<MaterialTypePE, MaterialType> materialTypeCache,
             Map<PropertyTypePE, PropertyType> cache, String baseIndexURL,
-            IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory, IRelatedEntityFinder finder)
+            IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory,
+            IValidator<IIdentifierHolder> samplePropertyAccessValidator, IRelatedEntityFinder finder)
     {
         EntityHistory result = new EntityHistory();
         result.setAuthor(PersonTranslator.translate(entityPropertyHistory.getAuthor()));
@@ -120,7 +124,8 @@ public class EntityHistoryTranslator
                     throw new RuntimeException("Unknown related entity: " + entityHistory.getRelatedEntity().getClass());
                 }
 
-                relatedTranslator.translate(entityHistory, result, finder, managedPropertyEvaluatorFactory, baseIndexURL);
+                relatedTranslator.translate(entityHistory, result, finder, managedPropertyEvaluatorFactory,
+                        samplePropertyAccessValidator, baseIndexURL);
             }
         }
 
@@ -131,7 +136,8 @@ public class EntityHistoryTranslator
     {
 
         public void translate(AbstractEntityHistoryPE historyPE, EntityHistory history, IRelatedEntityFinder finder,
-                IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory, String baseIndexURL);
+                IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory,
+                IValidator<IIdentifierHolder> samplePropertyAccessValidator, String baseIndexURL);
 
     }
 
@@ -140,7 +146,8 @@ public class EntityHistoryTranslator
 
         @Override
         public void translate(AbstractEntityHistoryPE historyPE, EntityHistory history, IRelatedEntityFinder finder,
-                IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory, String baseIndexURL)
+                IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory,
+                IValidator<IIdentifierHolder> samplePropertyAccessValidator, String baseIndexURL)
         {
             RelatedSpace related = (RelatedSpace) historyPE.getRelatedEntity();
             SpacePE relatedPE = finder.findById(SpacePE.class, related.getEntityId());
@@ -163,7 +170,8 @@ public class EntityHistoryTranslator
 
         @Override
         public void translate(AbstractEntityHistoryPE historyPE, EntityHistory history, IRelatedEntityFinder finder,
-                IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory, String baseIndexURL)
+                IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory,
+                IValidator<IIdentifierHolder> samplePropertyAccessValidator, String baseIndexURL)
         {
             RelatedProject related = (RelatedProject) historyPE.getRelatedEntity();
             ProjectPE relatedPE = finder.findById(ProjectPE.class, related.getEntityId());
@@ -186,14 +194,16 @@ public class EntityHistoryTranslator
 
         @Override
         public void translate(AbstractEntityHistoryPE historyPE, EntityHistory history, IRelatedEntityFinder finder,
-                IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory, String baseIndexURL)
+                IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory,
+                IValidator<IIdentifierHolder> samplePropertyAccessValidator, String baseIndexURL)
         {
             RelatedExperiment related = (RelatedExperiment) historyPE.getRelatedEntity();
             ExperimentPE relatedPE = finder.findById(ExperimentPE.class, related.getEntityId());
 
             if (relatedPE != null)
             {
-                history.setRelatedEntity(ExperimentTranslator.translate(relatedPE, baseIndexURL, null, managedPropertyEvaluatorFactory));
+                history.setRelatedEntity(ExperimentTranslator.translate(relatedPE, baseIndexURL, null,
+                        managedPropertyEvaluatorFactory, samplePropertyAccessValidator));
             }
 
             if (historyPE.getRelationType() != null)
@@ -209,14 +219,16 @@ public class EntityHistoryTranslator
 
         @Override
         public void translate(AbstractEntityHistoryPE historyPE, EntityHistory history, IRelatedEntityFinder finder,
-                IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory, String baseIndexURL)
+                IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory,
+                IValidator<IIdentifierHolder> samplePropertyAccessValidator, String baseIndexURL)
         {
             RelatedSample related = (RelatedSample) historyPE.getRelatedEntity();
             SamplePE relatedPE = finder.findById(SamplePE.class, related.getEntityId());
 
             if (relatedPE != null)
             {
-                history.setRelatedEntity(SampleTranslator.translate(relatedPE, baseIndexURL, null, managedPropertyEvaluatorFactory));
+                history.setRelatedEntity(SampleTranslator.translate(relatedPE, baseIndexURL, null,
+                        managedPropertyEvaluatorFactory, samplePropertyAccessValidator));
             }
 
             if (historyPE.getRelationType() != null)
@@ -232,7 +244,8 @@ public class EntityHistoryTranslator
 
         @Override
         public void translate(AbstractEntityHistoryPE historyPE, EntityHistory history, IRelatedEntityFinder finder,
-                IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory, String baseIndexURL)
+                IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory,
+                IValidator<IIdentifierHolder> samplePropertyAccessValidator, String baseIndexURL)
         {
             RelatedDataSet related = (RelatedDataSet) historyPE.getRelatedEntity();
             DataPE relatedPE = finder.findById(DataPE.class, related.getEntityId());
@@ -240,8 +253,10 @@ public class EntityHistoryTranslator
             if (relatedPE != null)
             {
                 AbstractExternalData data = DataSetTranslator.translateBasicProperties(relatedPE);
-                data.setExperiment(ExperimentTranslator.translate(relatedPE.getExperiment(), baseIndexURL, null, managedPropertyEvaluatorFactory));
-                data.setSample(SampleTranslator.translate(relatedPE.tryGetSample(), baseIndexURL, null, managedPropertyEvaluatorFactory));
+                data.setExperiment(ExperimentTranslator.translate(relatedPE.getExperiment(), baseIndexURL, null,
+                        managedPropertyEvaluatorFactory, samplePropertyAccessValidator));
+                data.setSample(SampleTranslator.translate(relatedPE.tryGetSample(), baseIndexURL, null,
+                        managedPropertyEvaluatorFactory, samplePropertyAccessValidator));
                 history.setRelatedEntity(data);
             }
 
@@ -258,7 +273,8 @@ public class EntityHistoryTranslator
 
         @Override
         public void translate(AbstractEntityHistoryPE historyPE, EntityHistory history, IRelatedEntityFinder finder,
-                IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory, String baseIndexURL)
+                IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory,
+                IValidator<IIdentifierHolder> samplePropertyAccessValidator, String baseIndexURL)
         {
             RelatedExternalDms related = (RelatedExternalDms) historyPE.getRelatedEntity();
             ExternalDataManagementSystemPE relatedPE =

@@ -27,8 +27,10 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import ch.systemsx.cisd.common.collection.IKeyExtractor;
+import ch.systemsx.cisd.common.collection.IValidator;
 import ch.systemsx.cisd.common.collection.TableMap;
 import ch.systemsx.cisd.common.exceptions.ExceptionUtils;
+import ch.systemsx.cisd.openbis.generic.server.authorization.validator.SamplePropertyAccessValidator;
 import ch.systemsx.cisd.openbis.generic.server.business.IDataStoreServiceFactory;
 import ch.systemsx.cisd.openbis.generic.server.business.IRelationshipService;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.util.DataSetTypeWithoutExperimentChecker;
@@ -41,6 +43,7 @@ import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.ISearchDomainResultLoc
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchDomain;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchDomainSearchResult;
 import ch.systemsx.cisd.openbis.generic.shared.basic.IEntityInformationHolderWithIdentifier;
+import ch.systemsx.cisd.openbis.generic.shared.basic.IIdentifierHolder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Metaproject;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SearchDomainSearchResultWithFullEntity;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataPE;
@@ -186,11 +189,13 @@ public class SearchDomainSearcher extends AbstractBusinessObject implements ISea
     {
         Map<EntityLoader, TableMap<String, IEntityInformationHolderWithIdentifier>> result = new EnumMap<>(EntityLoader.class);
         Set<Entry<EntityLoader, List<String>>> entrySet = map.entrySet();
+        SamplePropertyAccessValidator samplePropertyAccessValidator = new SamplePropertyAccessValidator(session, getDaoFactory());
         for (Entry<EntityLoader, List<String>> entry : entrySet)
         {
             EntityLoader loader = entry.getKey();
             List<String> permIds = entry.getValue();
-            List<IEntityInformationHolderWithIdentifier> entities = loader.loadEntities(this, managedPropertyEvaluatorFactory, permIds);
+            List<IEntityInformationHolderWithIdentifier> entities =
+                    loader.loadEntities(this, managedPropertyEvaluatorFactory, samplePropertyAccessValidator, permIds);
             result.put(loader, new TableMap<String, IEntityInformationHolderWithIdentifier>(entities, PERM_ID_EXTRACTOR));
         }
         return result;
@@ -202,47 +207,54 @@ public class SearchDomainSearcher extends AbstractBusinessObject implements ISea
         {
             @Override
             public List<? extends IEntityInformationHolderWithIdentifier> doLoadEntities(IDAOFactory daoFactory,
-                    IManagedPropertyEvaluatorFactory evaluatorFactory, List<String> permIds)
+                    IManagedPropertyEvaluatorFactory evaluatorFactory,
+                    IValidator<IIdentifierHolder> samplePropertyAccessValidator, List<String> permIds)
             {
                 List<SamplePE> samples = daoFactory.getSampleDAO().listByPermID(permIds);
-                return SampleTranslator.translate(samples, "", EMPTY_METAPROJECTS, evaluatorFactory);
+                return SampleTranslator.translate(samples, "", EMPTY_METAPROJECTS, evaluatorFactory, samplePropertyAccessValidator);
             }
         },
         DATA_SET()
         {
             @Override
             public List<? extends IEntityInformationHolderWithIdentifier> doLoadEntities(IDAOFactory daoFactory,
-                    IManagedPropertyEvaluatorFactory evaluatorFactory, List<String> permIds)
+                    IManagedPropertyEvaluatorFactory evaluatorFactory,
+                    IValidator<IIdentifierHolder> samplePropertyAccessValidator, List<String> permIds)
             {
                 List<DataPE> dataSets = daoFactory.getDataDAO().listByCode(new HashSet<String>(permIds));
-                return DataSetTranslator.translate(dataSets, "", "", EMPTY_METAPROJECTS, evaluatorFactory);
+                return DataSetTranslator.translate(dataSets, "", "", EMPTY_METAPROJECTS, evaluatorFactory, samplePropertyAccessValidator);
             }
         },
         EXPERIMENT()
         {
             @Override
             public List<? extends IEntityInformationHolderWithIdentifier> doLoadEntities(IDAOFactory daoFactory,
-                    IManagedPropertyEvaluatorFactory evaluatorFactory, List<String> permIds)
+                    IManagedPropertyEvaluatorFactory evaluatorFactory,
+                    IValidator<IIdentifierHolder> samplePropertyAccessValidator, List<String> permIds)
             {
                 List<ExperimentPE> experiments = daoFactory.getExperimentDAO().listByPermID(permIds);
-                return ExperimentTranslator.translate(experiments, "", EMPTY_METAPROJECTS, evaluatorFactory);
+                return ExperimentTranslator.translate(experiments, "", EMPTY_METAPROJECTS, evaluatorFactory, samplePropertyAccessValidator);
             }
         },
         MATERIAL()
         {
             @Override
             public List<? extends IEntityInformationHolderWithIdentifier> doLoadEntities(IDAOFactory daoFactory,
-                    IManagedPropertyEvaluatorFactory evaluatorFactory, List<String> permIds)
+                    IManagedPropertyEvaluatorFactory evaluatorFactory,
+                    IValidator<IIdentifierHolder> samplePropertyAccessValidator, List<String> permIds)
             {
                 throw new UnsupportedOperationException();
             }
         };
 
         public List<IEntityInformationHolderWithIdentifier> loadEntities(IDAOFactory daoFactory,
-                IManagedPropertyEvaluatorFactory evaluatorFactory, List<String> permIds)
+                IManagedPropertyEvaluatorFactory evaluatorFactory,
+                IValidator<IIdentifierHolder> samplePropertyAccessValidator, List<String> permIds)
         {
             List<IEntityInformationHolderWithIdentifier> result = new ArrayList<>();
-            for (IEntityInformationHolderWithIdentifier entity : doLoadEntities(daoFactory, evaluatorFactory, permIds))
+            List<? extends IEntityInformationHolderWithIdentifier> entities =
+                    doLoadEntities(daoFactory, evaluatorFactory, samplePropertyAccessValidator, permIds);
+            for (IEntityInformationHolderWithIdentifier entity : entities)
             {
                 result.add(entity);
             }
@@ -250,7 +262,8 @@ public class SearchDomainSearcher extends AbstractBusinessObject implements ISea
         }
 
         public abstract List<? extends IEntityInformationHolderWithIdentifier> doLoadEntities(IDAOFactory daoFactory,
-                IManagedPropertyEvaluatorFactory evaluatorFactory, List<String> permIds);
+                IManagedPropertyEvaluatorFactory evaluatorFactory,
+                IValidator<IIdentifierHolder> samplePropertyAccessValidator, List<String> permIds);
     }
 
     private static final class Selector

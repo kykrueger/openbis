@@ -34,6 +34,7 @@ import org.apache.log4j.Logger;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
+import ch.systemsx.cisd.openbis.generic.server.authorization.validator.SamplePropertyAccessValidator;
 import ch.systemsx.cisd.openbis.generic.server.batch.BatchOperationExecutor;
 import ch.systemsx.cisd.openbis.generic.server.batch.IBatchOperation;
 import ch.systemsx.cisd.openbis.generic.server.business.IPropertiesBatchManager;
@@ -199,7 +200,8 @@ public class MaterialHelper
         BatchOperationExecutor.executeInBatches(strategy);
 
         return MaterialTranslator.translate(registeredMaterials,
-                new HashMap<Long, Set<Metaproject>>(), managedPropertyEvaluatorFactory);
+                new HashMap<Long, Set<Metaproject>>(), managedPropertyEvaluatorFactory,
+                new SamplePropertyAccessValidator(session, daoFactory));
     }
 
     public List<Material> registerMaterials(String materialTypeCode,
@@ -252,7 +254,8 @@ public class MaterialHelper
         BatchOperationExecutor.executeInBatches(strategy);
 
         return MaterialTranslator.translate(registeredMaterials,
-                new HashMap<Long, Set<Metaproject>>(), managedPropertyEvaluatorFactory);
+                new HashMap<Long, Set<Metaproject>>(), managedPropertyEvaluatorFactory,
+                new SamplePropertyAccessValidator(session, daoFactory));
     }
 
     public int updateMaterials(String materialTypeCode, final List<NewMaterial> newMaterials,

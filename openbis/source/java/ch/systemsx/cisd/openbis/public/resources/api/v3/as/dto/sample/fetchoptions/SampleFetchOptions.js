@@ -4,7 +4,7 @@
  */
 define([ "require", "stjs", "as/dto/common/fetchoptions/FetchOptions", 'as/dto/sample/fetchoptions/SampleTypeFetchOptions', 'as/dto/space/fetchoptions/SpaceFetchOptions',
 		'as/dto/project/fetchoptions/ProjectFetchOptions', 'as/dto/experiment/fetchoptions/ExperimentFetchOptions', 'as/dto/property/fetchoptions/PropertyFetchOptions', 'as/dto/tag/fetchoptions/TagFetchOptions',
-		'as/dto/person/fetchoptions/PersonFetchOptions', 'as/dto/attachment/fetchoptions/AttachmentFetchOptions', 'as/dto/material/fetchoptions/MaterialFetchOptions',
+		'as/dto/person/fetchoptions/PersonFetchOptions', 'as/dto/attachment/fetchoptions/AttachmentFetchOptions', 'as/dto/material/fetchoptions/MaterialFetchOptions', 'as/dto/sample/fetchoptions/SampleFetchOptions',
 		'as/dto/dataset/fetchoptions/DataSetFetchOptions', 'as/dto/history/fetchoptions/HistoryEntryFetchOptions', 'as/dto/sample/fetchoptions/SampleSortOptions' ], function(require, stjs, FetchOptions) {
 	var SampleFetchOptions = function() {
 	};
@@ -17,6 +17,7 @@ define([ "require", "stjs", "as/dto/common/fetchoptions/FetchOptions", 'as/dto/s
 		prototype.experiment = null;
 		prototype.properties = null;
 		prototype.materialProperties = null;
+		prototype.sampleProperties = null;
 		prototype.parents = null;
 		prototype.children = null;
 		prototype.container = null;
@@ -105,6 +106,19 @@ define([ "require", "stjs", "as/dto/common/fetchoptions/FetchOptions", 'as/dto/s
 		};
 		prototype.hasMaterialProperties = function() {
 			return this.materialProperties != null;
+		};
+		prototype.withSampleProperties = function() {
+			if (this.sampleProperties == null) {
+				var SampleFetchOptions = require("as/dto/sample/fetchoptions/SampleFetchOptions");
+				this.sampleProperties = new SampleFetchOptions();
+			}
+			return this.sampleProperties;
+		};
+		prototype.withSamplePropertiesUsing = function(fetchOptions) {
+			return this.sampleProperties = fetchOptions;
+		};
+		prototype.hasSampleProperties = function() {
+			return this.sampleProperties != null;
 		};
 		prototype.withParents = function() {
 			if (this.parents == null) {
@@ -248,6 +262,8 @@ define([ "require", "stjs", "as/dto/common/fetchoptions/FetchOptions", 'as/dto/s
 		space : "SpaceFetchOptions",
 		experiment : "ExperimentFetchOptions",
 		properties : "PropertyFetchOptions",
+		materialProperties : "MaterialFetchOptions",
+		sampleProperties : "SampleFetchOptions",
 		parents : "SampleFetchOptions",
 		children : "SampleFetchOptions",
 		container : "SampleFetchOptions",

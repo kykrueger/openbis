@@ -171,7 +171,7 @@ public class PhosphoNetXServerTest extends AbstractServerTestCase
                     details.setSequence(sequence);
                     will(returnValue(details));
 
-                    one(proteinRelatedSampleTable).load(experimentID, proteinReferenceID, sequence);
+                    one(proteinRelatedSampleTable).load(session, experimentID, proteinReferenceID, sequence);
                     one(proteinRelatedSampleTable).getSamples();
                     will(returnValue(result));
                 }

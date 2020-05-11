@@ -129,7 +129,7 @@ public class ProteinRelatedSampleTableTest extends AbstractBOTestCase
                 }
             });
 
-        table.load(experimentID, proteinReferenceID, "abcdefabcab");
+        table.load(session, experimentID, proteinReferenceID, "abcdefabcab");
 
         List<ProteinRelatedSample> samples = table.getSamples();
         assertEquals("1:s-1:S1:/s/S1:SAMPLE:my-type:[A: hello]:0.25::null:null:null",

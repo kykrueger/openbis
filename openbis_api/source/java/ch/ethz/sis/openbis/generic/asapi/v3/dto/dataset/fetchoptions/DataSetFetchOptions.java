@@ -67,6 +67,9 @@ public class DataSetFetchOptions extends FetchOptions<DataSet> implements Serial
     private MaterialFetchOptions materialProperties;
 
     @JsonProperty
+    private SampleFetchOptions sampleProperties;
+
+    @JsonProperty
     private DataSetFetchOptions parents;
 
     @JsonProperty
@@ -267,6 +270,25 @@ public class DataSetFetchOptions extends FetchOptions<DataSet> implements Serial
     public boolean hasMaterialProperties()
     {
         return materialProperties != null;
+    }
+
+    public SampleFetchOptions withSampleProperties()
+    {
+        if (sampleProperties == null)
+        {
+            sampleProperties = new SampleFetchOptions();
+        }
+        return sampleProperties;
+    }
+
+    public SampleFetchOptions withSamplePropertiesUsing(SampleFetchOptions fetchOptions)
+    {
+        return sampleProperties = fetchOptions;
+    }
+
+    public boolean hasSampleProperties()
+    {
+        return sampleProperties != null;
     }
 
     // Method automatically generated with DtoGenerator
@@ -474,6 +496,7 @@ public class DataSetFetchOptions extends FetchOptions<DataSet> implements Serial
         f.addFetchOption("Sample", sample);
         f.addFetchOption("Properties", properties);
         f.addFetchOption("MaterialProperties", materialProperties);
+        f.addFetchOption("SampleProperties", sampleProperties);
         f.addFetchOption("Parents", parents);
         f.addFetchOption("Children", children);
         f.addFetchOption("Containers", containers);

@@ -112,7 +112,7 @@ public class DataTypeUtils
         },
         STRING(DataTypeCode.VARCHAR, DataTypeCode.MULTILINE_VARCHAR, DataTypeCode.BOOLEAN,
                 DataTypeCode.XML, DataTypeCode.CONTROLLEDVOCABULARY, DataTypeCode.MATERIAL,
-                DataTypeCode.HYPERLINK)
+                DataTypeCode.HYPERLINK, DataTypeCode.SAMPLE)
         {
             @Override
             public ISerializableComparable doConversion(String value)

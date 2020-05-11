@@ -30,6 +30,8 @@ public class HistoryPropertyRecord extends HistoryRecord
 
     public String materialPropertyValue;
 
+    public String samplePropertyValue;
+
     public String vocabularyPropertyValue;
 
 }

@@ -34,6 +34,7 @@ import org.apache.commons.lang3.StringUtils;
 import ch.rinn.restrictions.Friend;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.server.authorization.AuthorizationDataProvider;
+import ch.systemsx.cisd.openbis.generic.server.authorization.validator.SamplePropertyAccessValidator;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.IDataBO;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.ISampleBO;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.samplelister.ISampleLister;
@@ -449,7 +450,8 @@ public class ScreeningApiImpl
             sampleBO.loadBySampleIdentifier(sampleIdentifier);
             sample =
                     SampleTranslator.translate(sampleBO.getSample(), "", null,
-                            managedPropertyEvaluatorFactory);
+                            managedPropertyEvaluatorFactory,
+                            new SamplePropertyAccessValidator(session, businessObjectFactory.getDAOFactory()));
         }
         return sample;
     }
@@ -482,7 +484,8 @@ public class ScreeningApiImpl
     private Sample translate(SamplePE sample)
     {
         return SampleTranslator.translate(sample, session.getBaseIndexURL(), null,
-                managedPropertyEvaluatorFactory);
+                managedPropertyEvaluatorFactory,
+                new SamplePropertyAccessValidator(session, businessObjectFactory.getDAOFactory()));
     }
 
     private static SampleIdentifier createSampleIdentifier(PlateIdentifier plate)
