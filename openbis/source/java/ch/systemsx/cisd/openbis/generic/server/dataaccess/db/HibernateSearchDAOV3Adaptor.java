@@ -9,13 +9,18 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInfo
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.*;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
+import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
+import ch.systemsx.cisd.openbis.generic.server.ComponentNames;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IHibernateSearchDAO;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchCriteria;
+import ch.systemsx.cisd.openbis.generic.shared.authorization.AuthorizationConfig;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.*;
+import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SearchableEntity;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.hibernate.Session;
+import org.hibernate.query.NativeQuery;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.support.JdbcAccessor;
 
@@ -55,7 +60,7 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
     @Override
     public void setProperties(Properties serviceProperties) {
         for (String propertyName:serviceProperties.stringPropertyNames()) {
-            operationLog.warn("Configuration property ignored: " + propertyName + " By: " + HibernateSearchDAOV3Adaptor.class.getSimpleName());
+            operationLog.warn("Configuration property ignored: " + propertyName);
         }
     }
 
@@ -65,6 +70,10 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
                                          final EntityKind entityKind,
                                          final List<IAssociationCriteria> associations)
     {
+        // Obtain PersonPE
+        DAOFactory daoFactory = (DAOFactory) CommonServiceProvider.getApplicationContext().getBean(ComponentNames.DAO_FACTORY);
+        PersonPE personPE = daoFactory.getPersonDAO().tryFindPersonByUserId(userId);
+
         // Obtain entity criteria
         AbstractEntitySearchCriteria mainV3Criteria = getCriteria(entityKind);
 
@@ -141,8 +150,8 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
         }
 
         // Obtain entity id results from search manager
-        Set<Long> results = getSearchManager(entityKind).searchForIDs(getUserId(userId),
-                getAuthorisationInformation(userId),
+        Set<Long> results = getSearchManager(entityKind).searchForIDs(personPE.getId(),
+                getAuthorisationInformation(personPE),
                 mainV3Criteria,
                 null,
                 null,
@@ -307,29 +316,56 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
         return criteria;
     }
 
-    @Autowired
     private MaterialSearchManager materialSearchManager;
-    @Autowired
+
+    private MaterialSearchManager getMaterialSearchManager() {
+        if (materialSearchManager == null) {
+            materialSearchManager = (MaterialSearchManager) CommonServiceProvider.getApplicationContext().getBean("material-search-manager");
+        }
+        return materialSearchManager;
+    }
+
     private ExperimentSearchManager experimentSearchManager;
-    @Autowired
+
+    private ExperimentSearchManager getExperimentSearchManager() {
+        if (experimentSearchManager == null) {
+            experimentSearchManager = (ExperimentSearchManager) CommonServiceProvider.getApplicationContext().getBean("experiment-search-manager");
+        }
+        return experimentSearchManager;
+    }
+
     private SampleSearchManager sampleSearchManager;
-    @Autowired
+
+    private SampleSearchManager getSampleSearchManager() {
+        if (sampleSearchManager == null) {
+            sampleSearchManager = (SampleSearchManager) CommonServiceProvider.getApplicationContext().getBean("sample-search-manager");
+        }
+        return sampleSearchManager;
+    }
+
     private DataSetSearchManager dataSetSearchManager;
+
+    private DataSetSearchManager getDataSetSearchManager() {
+        if (dataSetSearchManager == null) {
+            dataSetSearchManager = (DataSetSearchManager) CommonServiceProvider.getApplicationContext().getBean("data-set-search-manager");
+        }
+        return dataSetSearchManager;
+    }
 
     private ISearchManager getSearchManager(EntityKind entityKind) {
         ISearchManager manager = null;
         switch (entityKind) {
             case MATERIAL:
-                manager = materialSearchManager;
+                manager = getMaterialSearchManager();
                 break;
             case EXPERIMENT:
-                manager = experimentSearchManager;
+                manager = getExperimentSearchManager();
                 break;
             case SAMPLE:
-                manager = sampleSearchManager;
+                manager = getSampleSearchManager();
                 break;
             case DATA_SET:
-                manager = dataSetSearchManager;
+                manager = getDataSetSearchManager();
                 break;
         }
         return manager;
@@ -414,23 +450,32 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
         return true;
     }
 
-    //TODO - Not implemented
+
+    private static String IS_NUMBER = "SELECT COUNT(*) > 0 FROM property_types WHERE code = :code AND (daty_id = 3 OR daty_id = 4)";
+
     private boolean isNumberProperty(String propertyCode) {
-        return false;
+        DAOFactory daoFactory = (DAOFactory) CommonServiceProvider.getApplicationContext().getBean(ComponentNames.DAO_FACTORY);
+        Session currentSession = daoFactory.getSessionFactory().getCurrentSession();
+        NativeQuery nativeQuery = currentSession.createNativeQuery(IS_NUMBER);
+        nativeQuery.setParameter("code", propertyCode);
+        Boolean isNumber = (Boolean) nativeQuery.getSingleResult();
+        return isNumber;
     }
 
     //
     // Helper Methods - Authorisation
     //
+    private AuthorizationConfig authorizationConfig;
 
-    //TODO - Not implemented
-    private Long getUserId(String userId) {
-        return null;
+    private AuthorizationConfig getAuthorizationConfig() {
+        if (authorizationConfig == null) {
+            authorizationConfig = (AuthorizationConfig) CommonServiceProvider.getApplicationContext().getBean("authorization-config");
+        }
+        return authorizationConfig;
     }
 
-    //TODO - Not implemented
-    private AuthorisationInformation getAuthorisationInformation(String userId) {
-        return null;
+    private AuthorisationInformation getAuthorisationInformation(PersonPE personPE) {
+        return AuthorisationInformation.getInstance(personPE, getAuthorizationConfig());
     }
 
     //
