@@ -25,6 +25,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
     this._sideMenuWidgetModel = sideMenuWidgetModel;
     
     var toggleMenuSizeBig = false;
+    var MIN_LENGTH = 3;
     var DISPLAY_NAME_LENGTH_SHORT = 15;
     var DISPLAY_NAME_LENGTH_LONG = 300;
     var cutDisplayNameAtLength = DISPLAY_NAME_LENGTH_SHORT; // Fix for long names
@@ -43,6 +44,11 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
 
         var searchFunction = function() {
             var searchText = $("#search").val();
+            if(searchText.length < MIN_LENGTH) {
+                Util.showInfo("The minimum length for a global text search is " + MIN_LENGTH + " characters.", function() {}, true);
+                return false;
+            }
+
             var domainIndex = $("#search").attr("domain-index");
             var searchDomain = null;
             var searchDomainLabel = null;
@@ -96,14 +102,15 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
              var key = e.which;
              var onFocus = searchElement.is(":focus");
              var searchString = searchElement.val();
-             var MIN_LENGTH = 3;
              if(key == 13 && // the enter key code
                 onFocus && // ensure is focused
                 searchString.length >= MIN_LENGTH) // min search length of 3 characters
               {
                 searchFunction();
                 return false;
-              } else if(key == 13 && onFocus && searchString.length < MIN_LENGTH) {
+              } else if(key == 13 &&
+                        onFocus &&
+                        searchString.length < MIN_LENGTH) {
                 Util.showInfo("The minimum length for a global text search is " + MIN_LENGTH + " characters.", function() {}, true);
                 return false;
               }
