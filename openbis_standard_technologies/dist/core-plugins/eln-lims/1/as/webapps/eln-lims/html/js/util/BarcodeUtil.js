@@ -54,11 +54,15 @@ var BarcodeUtil = new function() {
     var barcodeReaderGlobalEventListener = barcodeReaderEventListener();
 
     this.enableAutomaticBarcodeReading = function() {
-        document.addEventListener('keyup', barcodeReaderGlobalEventListener);
+        if(profile.mainMenu.showBarcodes) {
+            document.addEventListener('keyup', barcodeReaderGlobalEventListener);
+        }
     }
 
     this.disableAutomaticBarcodeReading = function() {
-        document.removeEventListener('keyup', barcodeReaderGlobalEventListener);
+        if(profile.mainMenu.showBarcodes) {
+            document.removeEventListener('keyup', barcodeReaderGlobalEventListener);
+        }
     }
 
     this.preGenerateBarcodes = function(views) {
