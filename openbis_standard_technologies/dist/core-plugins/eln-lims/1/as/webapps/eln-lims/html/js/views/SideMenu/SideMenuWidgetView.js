@@ -94,11 +94,19 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
         var searchElement = $("<input>", {"id": "search", "type": "text", "class": "form-control search-query", "placeholder": "Global Search"});
         searchElement.keypress(function (e) {
              var key = e.which;
-             if(key == 13)  // the enter key code
+             var onFocus = searchElement.is(":focus");
+             var searchString = searchElement.val();
+             var MIN_LENGTH = 3;
+             if(key == 13 && // the enter key code
+                onFocus && // ensure is focused
+                searchString.length >= MIN_LENGTH) // min search length of 3 characters
               {
                 searchFunction();
-                return false;  
-              }
+                return false;
+              } else if(key == 13 && onFocus && searchString.length < MIN_LENGTH) {
+                Util.showInfo("The minimum length for a global text search is " + MIN_LENGTH + " characters.", function() {}, true);
+                return false;
+              }
         });
         searchElement.css({"display" : "inline", "width" : "30%"});
         searchElement.css({"padding-top" : "2px"});
