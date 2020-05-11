@@ -62,6 +62,10 @@ public class ImportSamplesTest extends AbstractImportTest {
 
     private static final String AUTO_GENERATED_SAMPLE_TYPE_LEVEL = "samples/with_auto_generated_code_sampletype_level.xls";
 
+    private static final String GENERAL_ELN_SETTINGS = "samples/general_eln_settings.xlsx";
+
+    private static final String GENERAL_ELN_SETTINGS_UPDATE = "samples/general_eln_settings_update.xlsx";
+
     private static String FILES_DIR;
 
     @BeforeClass
@@ -272,6 +276,24 @@ public class ImportSamplesTest extends AbstractImportTest {
         // THEN
         assertNotNull(sample);
         assertEquals(sample.getType().getCode(), "ANTIBODY");
+    }
+
+    @Test
+    @DirtiesContext
+    public void testSampleIsUpdateByXlsParser() throws IOException {
+        TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, GENERAL_ELN_SETTINGS)));
+        Sample sample = TestUtils.getSample(v3api, sessionToken, "GENERAL_ELN_SETTINGS", "ELN_SETTINGS");
+        assertNotNull(sample);
+        // properties are empty
+        assertEquals(sample.getProperties().size(), 0);
+
+        TestUtils.createFrom(v3api, sessionToken, UpdateMode.UPDATE_IF_EXISTS, Paths.get(FilenameUtils.concat(FILES_DIR, GENERAL_ELN_SETTINGS_UPDATE)));
+        sample = TestUtils.getSample(v3api, sessionToken, "GENERAL_ELN_SETTINGS", "ELN_SETTINGS");
+        assertNotNull(sample);
+        // properties have been updated
+        assertEquals(sample.getProperties().size(), 1);
+        assertEquals(sample.getProperties().containsKey("$ELN_SETTINGS"), true);
+        assertEquals(sample.getProperties().get("$ELN_SETTINGS"), "{}");
     }
 
     @Test(expectedExceptions = UserFailureException.class)
