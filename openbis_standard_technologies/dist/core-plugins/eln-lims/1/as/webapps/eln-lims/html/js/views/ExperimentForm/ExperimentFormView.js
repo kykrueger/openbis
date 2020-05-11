@@ -461,14 +461,17 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 				if(this._experimentFormModel.mode === FormMode.VIEW) { //Show values without input boxes if the form is in view mode
 		            if(Util.getEmptyIfNull(value) !== "") { //Don't show empty fields, whole empty sections will show the title
                         var customWidget = profile.customWidgetSettings[propertyType.code];
-                        if (customWidget === 'Spreadsheet') {
-                    	    var $jexcelContainer = $("<div>");
-                            JExcelEditorManager.createField($jexcelContainer, this._experimentFormModel.mode, propertyType.code, this._experimentFormModel.experiment);
-                            $controlGroup = FormUtil.getFieldForComponentWithLabel($jexcelContainer, propertyType.label);
-                        } else if (customWidget === 'Word Processor') {
-                            var $component = FormUtil.getFieldForPropertyType(propertyType, value);
-                            $component = FormUtil.activateRichTextProperties($component, undefined, propertyType, value, true);
-                            $controlGroup = FormUtil.getFieldForComponentWithLabel($component, propertyType.label);
+						var forceDisableRTF = profile.isForcedDisableRTF(propertyType);
+                        if(customWidget && !forceDisableRTF) {
+                            if (customWidget === 'Spreadsheet') {
+                                var $jexcelContainer = $("<div>");
+                                JExcelEditorManager.createField($jexcelContainer, this._experimentFormModel.mode, propertyType.code, this._experimentFormModel.experiment);
+                                $controlGroup = FormUtil.getFieldForComponentWithLabel($jexcelContainer, propertyType.label);
+                            } else if (customWidget === 'Word Processor') {
+                                var $component = FormUtil.getFieldForPropertyType(propertyType, value);
+                                $component = FormUtil.activateRichTextProperties($component, undefined, propertyType, value, true);
+                                $controlGroup = FormUtil.getFieldForComponentWithLabel($component, propertyType.label);
+                            }
                         } else {
                     	    $controlGroup = FormUtil.createPropertyField(propertyType, value);
                         }
@@ -521,7 +524,9 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 					}
 
 					var customWidget = profile.customWidgetSettings[propertyType.code];
-                    if(customWidget) {
+					var forceDisableRTF = profile.isForcedDisableRTF(propertyType);
+
+                    if(customWidget && !forceDisableRTF) {
                         switch(customWidget) {
                             case 'Word Processor':
                                 if(propertyType.dataType === "MULTILINE_VARCHAR") {

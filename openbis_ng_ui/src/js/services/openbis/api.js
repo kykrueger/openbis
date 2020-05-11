@@ -77,16 +77,36 @@ class Facade {
     return this.promise(this.v3.getSampleTypes(ids, fo))
   }
 
-  searchSamples(criteria, fo) {
-    return this.promise(this.v3.searchSamples(criteria, fo))
+  getExperimentTypes(ids, fo) {
+    return this.promise(this.v3.getExperimentTypes(ids, fo))
   }
 
-  searchSampleTypes(criteria, fo) {
-    return this.promise(this.v3.searchSampleTypes(criteria, fo))
+  getDataSetTypes(ids, fo) {
+    return this.promise(this.v3.getDataSetTypes(ids, fo))
+  }
+
+  getMaterialTypes(ids, fo) {
+    return this.promise(this.v3.getMaterialTypes(ids, fo))
   }
 
   updateSampleTypes(updates) {
     return this.promise(this.v3.updateSampleTypes(updates))
+  }
+
+  updateExperimentTypes(updates) {
+    return this.promise(this.v3.updateExperimentTypes(updates))
+  }
+
+  updateDataSetTypes(updates) {
+    return this.promise(this.v3.updateDataSetTypes(updates))
+  }
+
+  updateMaterialTypes(updates) {
+    return this.promise(this.v3.updateMaterialTypes(updates))
+  }
+
+  searchSampleTypes(criteria, fo) {
+    return this.promise(this.v3.searchSampleTypes(criteria, fo))
   }
 
   searchExperimentTypes(criteria, fo) {

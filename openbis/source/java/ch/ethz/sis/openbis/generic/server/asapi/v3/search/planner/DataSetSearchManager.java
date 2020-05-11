@@ -33,6 +33,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETransl
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -76,7 +77,7 @@ public class DataSetSearchManager extends AbstractCompositeEntitySearchManager<D
     @Override
     protected Set<Long> doFilterIDsByUserRights(final Set<Long> ids, final AuthorisationInformation authorisationInformation)
     {
-        return ids;
+        return getAuthProvider().getAuthorisedDatasets(ids, authorisationInformation);
     }
 
     private CodeSearchCriteria convertToCodeSearchCriterion(final PermIdSearchCriteria permIdSearchCriteria)
@@ -100,24 +101,23 @@ public class DataSetSearchManager extends AbstractCompositeEntitySearchManager<D
         final Collection<ISearchCriteria> mainCriteria = getOtherCriteriaThan(criteria, parentsSearchCriteriaClass, childrenSearchCriteriaClass, containerSearchCriteriaClass);
 
         // Replacing perm ID search criteria with code search criteria, because for datasets perm ID is equivalent to code
-        final Collection<ISearchCriteria> newCriteria = mainCriteria.stream().map(searchCriterion ->
-        {
-            if (searchCriterion instanceof PermIdSearchCriteria)
-            {
-                return convertToCodeSearchCriterion((PermIdSearchCriteria) searchCriterion);
-            } else
-            {
-                return searchCriterion;
-            }
-        }).collect(Collectors.toList());
+        final Collection<ISearchCriteria> newMainCriteria = mainCriteria.stream().map(searchCriterion ->
+                searchCriterion instanceof PermIdSearchCriteria
+                        ? convertToCodeSearchCriterion((PermIdSearchCriteria) searchCriterion) : searchCriterion).collect(Collectors.toList());
+        final Collection<ISearchCriteria> newParentsAndContainerCriteria = parentsAndContainerCriteria.stream().map(searchCriterion ->
+                searchCriterion instanceof PermIdSearchCriteria
+                        ? convertToCodeSearchCriterion((PermIdSearchCriteria) searchCriterion) : searchCriterion).collect(Collectors.toList());
+        final Collection<ISearchCriteria> newChildrenCriteria = childrenCriteria.stream().map(searchCriterion ->
+                searchCriterion instanceof PermIdSearchCriteria
+                        ? convertToCodeSearchCriterion((PermIdSearchCriteria) searchCriterion) : searchCriterion).collect(Collectors.toList());
 
-        return super.doSearchForIDs(userId, parentsAndContainerCriteria, childrenCriteria, newCriteria, criteria.getOperator(), idsColumnName,
-                TableMapper.DATA_SET, authorisationInformation);
+        return super.doSearchForIDs(userId, newParentsAndContainerCriteria, newChildrenCriteria, newMainCriteria, criteria.getOperator(),
+                idsColumnName, TableMapper.DATA_SET, authorisationInformation);
     }
 
     @Override
-    public Set<Long> sortIDs(final Set<Long> filteredIDs, final SortOptions<DataSet> sortOptions) {
-        return doSortIDs(filteredIDs, sortOptions, TableMapper.DATA_SET);
+    public List<Long> sortIDs(final Collection<Long> ids, final SortOptions<DataSet> sortOptions) {
+        return doSortIDs(ids, sortOptions, TableMapper.DATA_SET);
     }
 
 }

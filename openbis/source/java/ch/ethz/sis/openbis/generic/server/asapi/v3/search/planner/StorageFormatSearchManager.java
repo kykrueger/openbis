@@ -26,6 +26,8 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
@@ -61,8 +63,8 @@ public class StorageFormatSearchManager extends AbstractSearchManager<StorageFor
     }
 
     @Override
-    public Set<Long> sortIDs(final Set<Long> filteredIDs, final SortOptions<StorageFormat> sortOptions) {
-        return doSortIDs(filteredIDs, sortOptions, TableMapper.CONTROLLED_VOCABULARY_TERMS);
+    public List<Long> sortIDs(final Collection<Long> ids, final SortOptions<StorageFormat> sortOptions) {
+        return doSortIDs(ids, sortOptions, TableMapper.CONTROLLED_VOCABULARY_TERMS);
     }
 
 }

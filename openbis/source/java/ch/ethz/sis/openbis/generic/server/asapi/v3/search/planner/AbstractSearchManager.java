@@ -81,24 +81,17 @@ public abstract class AbstractSearchManager<CRITERIA extends ISearchCriteria, OB
     protected List<ISearchCriteria> getOtherCriteriaThan(final AbstractCompositeSearchCriteria searchCriteria,
             final Class<? extends ISearchCriteria>... classes)
     {
-        final List<ISearchCriteria> criteria = searchCriteria.getCriteria().stream().filter(
+        return searchCriteria.getCriteria().stream().filter(
                 criterion -> Arrays.stream(classes).noneMatch(clazz -> clazz.isInstance(criterion))).
                 collect(Collectors.toList());
-
-        return criteria;
     }
 
     protected List<ISearchCriteria> getCriteria(
             AbstractCompositeSearchCriteria compositeSearchCriteria, Class<? extends ISearchCriteria> clazz)
     {
-        if (clazz != null)
-        {
-            return compositeSearchCriteria.getCriteria().stream().filter(clazz::isInstance)
-                    .collect(Collectors.toList());
-        } else
-        {
-            return Collections.emptyList();
-        }
+        return (clazz != null)
+                ? compositeSearchCriteria.getCriteria().stream().filter(clazz::isInstance).collect(Collectors.toList())
+                : Collections.emptyList();
     }
 
     protected static <E> Set<E> mergeResults(final SearchOperator operator,
@@ -186,11 +179,11 @@ public abstract class AbstractSearchManager<CRITERIA extends ISearchCriteria, OB
         return authProvider;
     }
 
-    public List<OBJECT_PE> translate(final List<Long> ids) {
+    public Collection<OBJECT_PE> translate(final Collection <Long> ids) {
         return idsTranslator.translate(ids);
     }
 
-    protected Set<Long> doSortIDs(final Set<Long> filteredIDs, final SortOptions<OBJECT> sortOptions, final TableMapper tableMapper)
+    protected List<Long> doSortIDs(final Collection<Long> filteredIDs, final SortOptions<OBJECT> sortOptions, final TableMapper tableMapper)
     {
         return getSearchDAO().sortIDs(tableMapper, filteredIDs, sortOptions);
     }

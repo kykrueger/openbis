@@ -36,6 +36,7 @@ npm install --save "@ckeditor/ckeditor5-adapter-ckfinder@^18.0.0" \
 	'@ckeditor/ckeditor5-upload@^18.0.0' \
 	'@ckeditor/ckeditor5-remove-format@^18.0.0' \
 	'@ckeditor/ckeditor5-editor-decoupled@^18.0.0' \
+	'@ckeditor/ckeditor5-special-characters@^18.0.0' \
 	"eslint@^5.5.0" \
 	"eslint-config-ckeditor5@^2.0.0" \
 	"husky@^1.3.1" \
@@ -49,8 +50,7 @@ npm install --save "@ckeditor/ckeditor5-adapter-ckfinder@^18.0.0" \
 	"webpack@^4.39.1" \
 	"webpack-cli" \
 	"@ckeditor/ckeditor5-dev-utils@^12.0.5" \
-	"@ckeditor/ckeditor5-dev-webpack-plugin@^8.0.5" \
-	"@wiris/mathtype-ckeditor5@^7.19.0";
+	"@ckeditor/ckeditor5-dev-webpack-plugin@^8.0.5";
 
 
 yarn run build

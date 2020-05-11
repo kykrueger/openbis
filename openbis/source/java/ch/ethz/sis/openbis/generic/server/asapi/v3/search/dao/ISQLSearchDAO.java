@@ -16,6 +16,8 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
@@ -66,6 +68,6 @@ public interface ISQLSearchDAO
      * @param sortOptions contains fields to be sorted.
      * @return IDs of sorted entities.
      */
-    Set<Long> sortIDs(final TableMapper tableMapper, final Set<Long> filteredIDs, final SortOptions<?> sortOptions);
+    List<Long> sortIDs(final TableMapper tableMapper, final Collection<Long> filteredIDs, final SortOptions<?> sortOptions);
 
 }

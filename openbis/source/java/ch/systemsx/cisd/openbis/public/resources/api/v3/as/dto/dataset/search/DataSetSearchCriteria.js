@@ -1,7 +1,7 @@
 /**
  * @author pkupczyk
  */
-define([ "require", "stjs", "as/dto/common/search/AbstractEntitySearchCriteria", "as/dto/common/search/SearchOperator", "as/dto/dataset/search/DataSetSearchRelation", ,
+define([ "require", "stjs", "as/dto/common/search/AbstractEntitySearchCriteria", "as/dto/common/search/SearchOperator", "as/dto/dataset/search/DataSetSearchRelation",
 		"as/dto/experiment/search/ExperimentSearchCriteria", "as/dto/experiment/search/NoExperimentSearchCriteria", "as/dto/sample/search/SampleSearchCriteria",
 		"as/dto/sample/search/NoSampleSearchCriteria", "as/dto/dataset/search/DataSetTypeSearchCriteria", "as/dto/dataset/search/PhysicalDataSearchCriteria",
 		"as/dto/dataset/search/LinkedDataSearchCriteria" ], function(require, stjs, AbstractEntitySearchCriteria, SearchOperator, DataSetSearchRelation) {

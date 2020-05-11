@@ -1109,6 +1109,18 @@ public class AbstractTest extends SystemTestCase
         assertCollectionContainsOnly(actualSet, expectedCodes);
     }
 
+    protected static void assertDataSetCodesInOrder(Collection<DataSet> dataSets, String... expectedCodes)
+    {
+        final List<String> codes = new LinkedList<>();
+
+        for (DataSet dataSet : dataSets)
+        {
+            codes.add(dataSet.getCode());
+        }
+
+        assertEquals(codes, Arrays.asList(expectedCodes));
+    }
+
     protected static void assertDataStoreCodes(Collection<DataStore> dataStores, String... expectedCodes)
     {
         Set<String> actualSet = new HashSet<String>();

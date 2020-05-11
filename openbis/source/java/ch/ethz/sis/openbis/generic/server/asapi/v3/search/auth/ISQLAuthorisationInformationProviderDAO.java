@@ -59,6 +59,15 @@ public interface ISQLAuthorisationInformationProviderDAO
     Set<Long> getAuthorisedSpaces(Set<Long> requestedIDs, AuthorisationInformation authInfo);
 
     /**
+     * Filters dataset IDs based on the spaces or projects related to related samples or experiments.
+     *
+     * @param requestedIDs the IDs to be filtered
+     * @param authInfo value object that contains space IDs, which should be related to the resulting IDs.
+     * @return the subset of IDs which are related either to one of the specified projects or spaces.
+     */
+    Set<Long> getAuthorisedDatasets(Set<Long> requestedIDs, AuthorisationInformation authInfo);
+
+    /**
      * Filters tag IDs based on whether they belong to a user.
      *
      * @param requestedIDs IDs to be filtered

@@ -10,11 +10,8 @@ import ContentObjectTab from '@src/js/components/common/content/ContentObjectTab
 import ContentSearchTab from '@src/js/components/common/content/ContentSearchTab.jsx'
 
 import TypeBrowser from './browser/TypeBrowser.jsx'
-import ObjectType from './objectType/ObjectType.jsx'
-import CollectionType from './collectionType/CollectionType.jsx'
-import DataSetType from './dataSetType/DataSetType.jsx'
-import MaterialType from './materialType/MaterialType.jsx'
-import Search from './search/Search.jsx'
+import TypeSearch from './search/TypeSearch.jsx'
+import TypeForm from './form/TypeForm.jsx'
 
 const styles = () => ({
   container: {
@@ -43,19 +40,10 @@ class Types extends React.Component {
 
   renderComponent(tab) {
     const { object } = tab
-    if (
-      object.type === objectType.OBJECT_TYPE ||
-      object.type === objectType.NEW_OBJECT_TYPE
-    ) {
-      return <ObjectType object={object} />
-    } else if (object.type === objectType.COLLECTION_TYPE) {
-      return <CollectionType objectId={object.id} />
-    } else if (object.type === objectType.DATA_SET_TYPE) {
-      return <DataSetType objectId={object.id} />
-    } else if (object.type === objectType.MATERIAL_TYPE) {
-      return <MaterialType objectId={object.id} />
-    } else if (object.type === objectType.SEARCH) {
-      return <Search objectId={object.id} />
+    if (object.type === objectType.SEARCH) {
+      return <TypeSearch objectId={object.id} />
+    } else {
+      return <TypeForm object={object} />
     }
   }
 

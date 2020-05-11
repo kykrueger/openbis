@@ -26,7 +26,9 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisation
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
 
+import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper.CONTENT_COPIES;
@@ -72,8 +74,8 @@ public class LinkedDataSetKindSearchManager extends AbstractSearchManager<Linked
     }
 
     @Override
-    public Set<Long> sortIDs(final Set<Long> filteredIDs, final SortOptions<DataSetType> sortOptions) {
-        return doSortIDs(filteredIDs, sortOptions, CONTENT_COPIES);
+    public List<Long> sortIDs(final Collection<Long> ids, final SortOptions<DataSetType> sortOptions) {
+        return doSortIDs(ids, sortOptions, CONTENT_COPIES);
     }
 
     private Set<Long> doSearchForIDs(final Long userId, final AuthorisationInformation authorisationInformation, final String idsColumnName)

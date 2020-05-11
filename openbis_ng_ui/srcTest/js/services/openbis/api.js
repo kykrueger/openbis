@@ -2,28 +2,33 @@ import dto from './dto.js'
 
 const login = jest.fn()
 const logout = jest.fn()
-const getPropertyTypes = jest.fn()
+const deleteDataSetTypes = jest.fn()
+const deleteExperimentTypes = jest.fn()
+const deleteMaterialTypes = jest.fn()
+const deleteSampleTypes = jest.fn()
+const executeOperations = jest.fn()
+const getDataSetTypes = jest.fn()
+const getExperimentTypes = jest.fn()
+const getMaterialTypes = jest.fn()
 const getPersons = jest.fn()
-const updatePersons = jest.fn()
-const searchPropertyTypes = jest.fn()
-const searchPlugins = jest.fn()
+const getPropertyTypes = jest.fn()
+const getSampleTypes = jest.fn()
+const searchAuthorizationGroups = jest.fn()
+const searchDataSetTypes = jest.fn()
+const searchExperimentTypes = jest.fn()
+const searchMaterialTypes = jest.fn()
 const searchMaterials = jest.fn()
+const searchPersons = jest.fn()
+const searchPlugins = jest.fn()
+const searchPropertyTypes = jest.fn()
+const searchSampleTypes = jest.fn()
 const searchVocabularies = jest.fn()
 const searchVocabularyTerms = jest.fn()
-const searchPersons = jest.fn()
-const searchAuthorizationGroups = jest.fn()
-const getSampleTypes = jest.fn()
-const searchSamples = jest.fn()
-const searchSampleTypes = jest.fn()
+const updateDataSetTypes = jest.fn()
+const updateExperimentTypes = jest.fn()
+const updateMaterialTypes = jest.fn()
+const updatePersons = jest.fn()
 const updateSampleTypes = jest.fn()
-const searchExperimentTypes = jest.fn()
-const searchDataSetTypes = jest.fn()
-const searchMaterialTypes = jest.fn()
-const executeOperations = jest.fn()
-const deleteSampleTypes = jest.fn()
-const deleteExperimentTypes = jest.fn()
-const deleteDataSetTypes = jest.fn()
-const deleteMaterialTypes = jest.fn()
 
 const mockSearchGroups = groups => {
   const searchGroupsResult = new dto.SearchResult()
@@ -66,32 +71,37 @@ const mockSearchMaterialTypes = materialTypes => {
 export default {
   login,
   logout,
-  getPropertyTypes,
+  deleteDataSetTypes,
+  deleteExperimentTypes,
+  deleteMaterialTypes,
+  deleteSampleTypes,
+  executeOperations,
+  getDataSetTypes,
+  getExperimentTypes,
+  getMaterialTypes,
   getPersons,
-  updatePersons,
-  searchPropertyTypes,
-  searchPlugins,
+  getPropertyTypes,
+  getSampleTypes,
+  searchAuthorizationGroups,
+  searchDataSetTypes,
+  searchExperimentTypes,
+  searchMaterialTypes,
   searchMaterials,
+  searchPersons,
+  searchPlugins,
+  searchPropertyTypes,
+  searchSampleTypes,
   searchVocabularies,
   searchVocabularyTerms,
-  searchPersons,
-  searchAuthorizationGroups,
-  getSampleTypes,
-  searchSamples,
-  searchSampleTypes,
+  updateDataSetTypes,
+  updateExperimentTypes,
+  updateMaterialTypes,
+  updatePersons,
   updateSampleTypes,
-  searchExperimentTypes,
-  searchDataSetTypes,
-  searchMaterialTypes,
-  executeOperations,
-  deleteSampleTypes,
-  deleteExperimentTypes,
-  deleteDataSetTypes,
-  deleteMaterialTypes,
-  mockSearchGroups,
-  mockSearchPersons,
-  mockSearchSampleTypes,
-  mockSearchExperimentTypes,
   mockSearchDataSetTypes,
-  mockSearchMaterialTypes
+  mockSearchExperimentTypes,
+  mockSearchGroups,
+  mockSearchMaterialTypes,
+  mockSearchPersons,
+  mockSearchSampleTypes
 }

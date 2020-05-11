@@ -15,15 +15,20 @@
 package ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer;
 
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
 
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.ServiceFinderUtils;
+import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.util.SummaryUtils;
 import ch.systemsx.cisd.openbis.generic.shared.ICommonServer;
+import ch.systemsx.cisd.openbis.generic.shared.basic.CodeConverter;
 import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetType;
@@ -39,7 +44,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Script;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Vocabulary;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.VocabularyTerm;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.VocabularyTermReplacement;
 
 /**
  * @author Ganime Betul Akin
@@ -47,65 +51,54 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.VocabularyTermReplaceme
 
 public class SynchronizerFacade implements ISynchronizerFacade
 {
-    private static final String INFO_MESSAGE = "The following %s will be %s";
+    private final String sessionToken;
 
-    private static final Object separatorStr = "---------------------";
+    private final ICommonServer commonServer;
 
-    final String sessionToken;
+    private final Logger operationLog;
 
-    final ICommonServer commonServer;
+    private Map<String, String> fileformatTypesToUpdate = new TreeMap<String, String>();
 
-    final Logger operationLog;
+    private Set<String> fileformatTypesToAdd = new TreeSet<String>();
 
-    Map<String, String> fileformatTypesToUpdate = new HashMap<String, String>();
+    private Map<String, String> propertyTypesToUpdate = new TreeMap<String, String>();
 
-    Set<String> fileformatTypesToAdd = new HashSet<String>();
+    private Set<String> propertyTypesToAdd = new TreeSet<String>();
 
-    Set<NewETPTAssignment> propertyAssignmentsToUpdate = new HashSet<>();
+    private Map<String, String> validationPluginsToUpdate = new TreeMap<String, String>();
 
-    Set<NewETPTAssignment> propertyAssignmentsToAdd = new HashSet<>();
+    private Set<String> validationPluginsToAdd = new TreeSet<String>();
 
-    Map<String, String> propertyAssignmentsToBreak = new HashMap<String, String>();
+    private final boolean dryRun;
 
-    Map<String, String> propertyTypesToUpdate = new HashMap<String, String>();
+    private final boolean verbose;
 
-    Set<String> propertyTypesToAdd = new HashSet<String>();
+    private Set<String> vocabulariesToAdd = new TreeSet<String>();
 
-    Map<String, String> validationPluginsToUpdate = new HashMap<String, String>();
+    private Map<String, UpdateSummary> vocabulariesToUpdate = new TreeMap<String, UpdateSummary>();
 
-    Set<String> validationPluginsToAdd = new HashSet<String>();
+    // private Map<String, String> vocabularyTermsToUpdate = new TreeMap<String, String>();
 
-    final boolean dryRun;
-    
-    final boolean verbose;
+    // private Map<String, List<VocabularyTerm>> vocabularyTermsToAdd = new TreeMap<String, List<VocabularyTerm>>();
 
-    Set<String> vocabulariesToAdd = new HashSet<String>();
+    private Set<String> sampleTypesToAdd = new TreeSet<String>();
 
-    Map<String, String> vocabulariesToUpdate = new HashMap<String, String>();
+    private Set<String> experimentTypesToAdd = new TreeSet<String>();
 
-    Map<String, List<VocabularyTerm>> vocabularyTermsToDelete = new HashMap<String, List<VocabularyTerm>>();
+    private Set<String> dataSetTypesToAdd = new TreeSet<String>();
 
-    Map<String, String> vocabularyTermsToUpdate = new HashMap<String, String>();
+    private Set<String> materialTypesToAdd = new TreeSet<String>();
 
-    Map<String, List<VocabularyTerm>> vocabularyTermsToAdd = new HashMap<String, List<VocabularyTerm>>();
+    private Map<String, UpdateSummary> sampleTypesToUpdate = new TreeMap<>();
 
-    Set<String> sampleTypesToAdd = new HashSet<String>();
+    private Map<String, UpdateSummary> experimentTypesToUpdate = new TreeMap<>();
 
-    Set<String> experimentTypesToAdd = new HashSet<String>();
+    private Map<String, UpdateSummary> dataSetTypesToUpdate = new TreeMap<>();
 
-    Set<String> dataSetTypesToAdd = new HashSet<String>();
+    private Map<String, UpdateSummary> materialTypesToUpdate = new HashMap<>();
 
-    Set<String> materialTypesToAdd = new HashSet<String>();
-
-    Map<String, String> sampleTypesToUpdate = new HashMap<String, String>();
-
-    Map<String, String> experimentTypesToUpdate = new HashMap<String, String>();
-
-    Map<String, String> dataSetTypesToUpdate = new HashMap<String, String>();
-
-    Map<String, String> materialTypesToUpdate = new HashMap<String, String>();
-
-    public SynchronizerFacade(String openBisServerUrl, String harvesterUser, String harvesterPassword, boolean dryRun, boolean verbose, Logger operationLog)
+    public SynchronizerFacade(String openBisServerUrl, String harvesterUser, String harvesterPassword, boolean dryRun, boolean verbose,
+            Logger operationLog)
     {
         this.commonServer = ServiceFinderUtils.getCommonServer(openBisServerUrl);
         this.sessionToken = ServiceFinderUtils.login(commonServer, harvesterUser, harvesterPassword);
@@ -117,12 +110,8 @@ public class SynchronizerFacade implements ISynchronizerFacade
     @Override
     public void updateFileFormatType(AbstractType type)
     {
-        if (verbose == true)
-        {
-            String change = "Description :" + type.getDescription();
-            fileformatTypesToUpdate.put(type.getCode(), change);
-        } 
-        if(dryRun == false)
+        fileformatTypesToUpdate.put(type.getCode(), "Description: " + type.getDescription());
+        if (dryRun == false)
         {
             commonServer.updateFileFormatType(sessionToken, type);
         }
@@ -131,24 +120,20 @@ public class SynchronizerFacade implements ISynchronizerFacade
     @Override
     public void registerFileFormatType(FileFormatType type)
     {
-        if (verbose == true)
-        {
-            fileformatTypesToAdd.add(type.getCode());
-        }         
-        if(dryRun == false)
+        fileformatTypesToAdd.add(type.getCode());
+        if (dryRun == false)
         {
             commonServer.registerFileFormatType(sessionToken, type);
         }
     }
 
     @Override
-    public void updatePropertyTypeAssignment(NewETPTAssignment newETPTAssignment)
+    public void updatePropertyTypeAssignment(NewETPTAssignment newETPTAssignment, String diff)
     {
-        if (verbose == true)
-        {
-            propertyAssignmentsToUpdate.add(newETPTAssignment);
-        } 
-        if(dryRun == false)
+        Map<String, UpdateSummary> summaryMap = getEntityTypeSummaryMap(newETPTAssignment.getEntityKind());
+        getEntityTypeSummary(summaryMap, newETPTAssignment.getEntityTypeCode())
+                .update(newETPTAssignment.getPropertyTypeCode(), diff);
+        if (dryRun == false)
         {
             commonServer.updatePropertyTypeAssignment(sessionToken, newETPTAssignment);
         }
@@ -157,11 +142,10 @@ public class SynchronizerFacade implements ISynchronizerFacade
     @Override
     public void assignPropertyType(NewETPTAssignment newETPTAssignment)
     {
-        if (verbose == true)
-        {
-            propertyAssignmentsToAdd.add(newETPTAssignment);
-        }
-        if(dryRun == false)
+        Map<String, UpdateSummary> summaryMap = getEntityTypeSummaryMap(newETPTAssignment.getEntityKind());
+        getEntityTypeSummary(summaryMap, newETPTAssignment.getEntityTypeCode())
+                .add(newETPTAssignment.getPropertyTypeCode());
+        if (dryRun == false)
         {
             commonServer.assignPropertyType(sessionToken, newETPTAssignment);
         }
@@ -170,25 +154,35 @@ public class SynchronizerFacade implements ISynchronizerFacade
     @Override
     public void unassignPropertyType(EntityKind entityKind, String propertyTypeCode, String entityTypeCode)
     {
-        if (verbose == true)
-        {
-            propertyAssignmentsToBreak.put(entityTypeCode + "(" + entityKind.name() + ")", propertyTypeCode);
-        } 
-        if(dryRun == false)
+        getEntityTypeSummary(getEntityTypeSummaryMap(entityKind), entityTypeCode).remove(propertyTypeCode);
+        if (dryRun == false)
         {
             commonServer.unassignPropertyType(sessionToken, entityKind, propertyTypeCode, entityTypeCode);
         }
     }
 
-    @Override
-    public void updatePropertyType(PropertyType propertyType)
+    private Map<String, UpdateSummary> getEntityTypeSummaryMap(EntityKind entityKind)
     {
-        if (verbose == true)
+        switch (entityKind)
         {
-            String change = "Label :" + propertyType.getLabel() + " , description :" + propertyType.getDescription();
-            propertyTypesToUpdate.put(propertyType.getCode(), change);
-        } 
-        if(dryRun == false)
+            case SAMPLE:
+                return sampleTypesToUpdate;
+            case EXPERIMENT:
+                return experimentTypesToUpdate;
+            case DATA_SET:
+                return dataSetTypesToUpdate;
+            case MATERIAL:
+                return materialTypesToUpdate;
+            default:
+                throw new RuntimeException("Unknown entity kind: " + entityKind);
+        }
+    }
+
+    @Override
+    public void updatePropertyType(PropertyType propertyType, String diff)
+    {
+        propertyTypesToUpdate.put(propertyType.getCode(), diff);
+        if (dryRun == false)
         {
             commonServer.updatePropertyType(sessionToken, propertyType);
         }
@@ -197,25 +191,18 @@ public class SynchronizerFacade implements ISynchronizerFacade
     @Override
     public void registerPropertyType(PropertyType propertyType)
     {
-        if (verbose == true)
-        {
-            propertyTypesToAdd.add(propertyType.getCode());
-        }
-        if(dryRun == false)
+        propertyTypesToAdd.add(propertyType.getCode());
+        if (dryRun == false)
         {
             commonServer.registerPropertyType(sessionToken, propertyType);
         }
     }
 
     @Override
-    public void updateValidationPlugin(Script script)
+    public void updateValidationPlugin(Script script, String diff)
     {
-        if (verbose == true)
-        {
-            String change = "Description :" + script.getDescription(); //+ ", script :" + script.getScript();
-            validationPluginsToUpdate.put(script.getName(), change);
-        } 
-        if(dryRun == false)
+        validationPluginsToUpdate.put(script.getName(), diff);
+        if (dryRun == false)
         {
             commonServer.updateScript(sessionToken, script);
         }
@@ -224,11 +211,8 @@ public class SynchronizerFacade implements ISynchronizerFacade
     @Override
     public void registerValidationPlugin(Script script)
     {
-        if (verbose == true)
-        {
-            validationPluginsToAdd.add(script.getName());
-        } 
-        if(dryRun == false)
+        validationPluginsToAdd.add(script.getName());
+        if (dryRun == false)
         {
             commonServer.registerScript(sessionToken, script);
         }
@@ -237,38 +221,40 @@ public class SynchronizerFacade implements ISynchronizerFacade
     @Override
     public void registerVocabulary(NewVocabulary vocab)
     {
-        if (verbose == true)
-        {
-            vocabulariesToAdd.add(vocab.getCode());
-        } 
-        if(dryRun == false)
+        String vocabCode = CodeConverter.tryToBusinessLayer(vocab.getCode(), vocab.isInternalNamespace());
+        vocabulariesToAdd.add(vocabCode);
+        if (dryRun == false)
         {
             commonServer.registerVocabulary(sessionToken, vocab);
         }
     }
 
     @Override
-    public void updateVocabulary(Vocabulary vocab)
+    public void updateVocabulary(Vocabulary vocab, String diff)
     {
-        if (verbose == true)
-        {
-            String change = "Code : " + vocab.getCode() + ", description :" + vocab.getDescription();
-            vocabulariesToUpdate.put(vocab.getCode(), change);
-        } 
-        if(dryRun == false)
+        String vocabCode = CodeConverter.tryToBusinessLayer(vocab.getCode(), vocab.isInternalNamespace());
+        getVocabularySummary(vocabCode).update(diff);
+        if (dryRun == false)
         {
             commonServer.updateVocabulary(sessionToken, vocab);
         }
     }
 
     @Override
+    public void updateVocabularyTerm(String vocabularyCode, VocabularyTerm term, String diff)
+    {
+        getVocabularySummary(vocabularyCode).update(term.getCode(), diff);
+        if (dryRun == false)
+        {
+            commonServer.updateVocabularyTerm(sessionToken, term);
+        }
+    }
+
+    @Override
     public void registerSampleType(SampleType sampleType)
     {
-        if (verbose == true)
-        {
-            sampleTypesToAdd.add(sampleType.getCode());
-        } 
-        if(dryRun == false)
+        sampleTypesToAdd.add(sampleType.getCode());
+        if (dryRun == false)
         {
             commonServer.registerSampleType(sessionToken, sampleType);
         }
@@ -277,11 +263,8 @@ public class SynchronizerFacade implements ISynchronizerFacade
     @Override
     public void registerDataSetType(DataSetType dataSetType)
     {
-        if (verbose == true)
-        {
-            dataSetTypesToAdd.add(dataSetType.getCode());
-        } 
-        if(dryRun == false)
+        dataSetTypesToAdd.add(dataSetType.getCode());
+        if (dryRun == false)
         {
             commonServer.registerDataSetType(sessionToken, dataSetType);
         }
@@ -290,11 +273,8 @@ public class SynchronizerFacade implements ISynchronizerFacade
     @Override
     public void registerExperimentType(ExperimentType experimentType)
     {
-        if (verbose == true)
-        {
-            experimentTypesToAdd.add(experimentType.getCode());
-        } 
-        if(dryRun == false)
+        experimentTypesToAdd.add(experimentType.getCode());
+        if (dryRun == false)
         {
             commonServer.registerExperimentType(sessionToken, experimentType);
         }
@@ -303,96 +283,48 @@ public class SynchronizerFacade implements ISynchronizerFacade
     @Override
     public void registerMaterialType(MaterialType materialType)
     {
-        if (verbose == true)
-        {
-            materialTypesToAdd.add(materialType.getCode());
-        }
-        if(dryRun == false)
+        materialTypesToAdd.add(materialType.getCode());
+        if (dryRun == false)
         {
             commonServer.registerMaterialType(sessionToken, materialType);
         }
     }
 
     @Override
-    public void deleteVocabularyTerms(TechId vocabularyId, String vocabularyCode, List<VocabularyTerm> termsToBeDeleted,
-            List<VocabularyTermReplacement> termsToBeReplaced)
+    public void updateSampleType(EntityType entityType, String diff)
     {
-        if (verbose == true)
-        {
-            vocabularyTermsToDelete.put(vocabularyCode, termsToBeDeleted);
-        } 
-        if(dryRun == false)
-        {
-            commonServer.deleteVocabularyTerms(sessionToken, vocabularyId, termsToBeDeleted, termsToBeReplaced);
-        }
-    }
-
-    @Override
-    public void updateVocabularyTerm(VocabularyTerm term)
-    {
-        if (verbose == true)
-        {
-            String change = "Label :" + term.getLabel() + ", Ordinal :" + term.getOrdinal() +
-                    ", Description :" + term.getDescription();
-            vocabulariesToUpdate.put(term.getCode(), change);
-        }
-        if(dryRun == false)
-        {
-            commonServer.updateVocabularyTerm(sessionToken, term);
-        }
-    }
-
-    @Override
-    public void updateSampleType(EntityType entityType)
-    {
-        if (verbose == true)
-        {
-            String change = "Code" + entityType.getCode() + ", Description :" + entityType.getDescription();
-            sampleTypesToUpdate.put(entityType.getCode(), change);
-        }        
-        if(dryRun == false)
+        getEntityTypeSummary(sampleTypesToUpdate, entityType.getCode()).update(diff);
+        if (dryRun == false)
         {
             commonServer.updateSampleType(sessionToken, entityType);
         }
     }
 
     @Override
-    public void updateDataSetType(EntityType entityType)
+    public void updateDataSetType(EntityType entityType, String diff)
     {
-        if (verbose == true)
-        {
-            String change = "Code" + entityType.getCode() + ", Description :" + entityType.getDescription();
-            dataSetTypesToUpdate.put(entityType.getCode(), change);
-        } 
-        if(dryRun == false)
+        getEntityTypeSummary(dataSetTypesToUpdate, entityType.getCode()).update(diff);
+        if (dryRun == false)
         {
             commonServer.updateDataSetType(sessionToken, entityType);
         }
     }
 
     @Override
-    public void updateExperimentType(EntityType entityType)
+    public void updateExperimentType(EntityType entityType, String diff)
     {
-        if (verbose == true)
-        {
-            String change = "Code" + entityType.getCode() + ", Description :" + entityType.getDescription();
-            experimentTypesToUpdate.put(entityType.getCode(), change);
-        }
-        if(dryRun == false)
+        getEntityTypeSummary(experimentTypesToUpdate, entityType.getCode()).update(diff);
+        if (dryRun == false)
         {
             commonServer.updateExperimentType(sessionToken, entityType);
         }
     }
 
     @Override
-    public void updateMaterialType(EntityType entityType)
+    public void updateMaterialType(EntityType entityType, String diff)
     {
-        if (verbose == true)
-        {
-            String change = "Code" + entityType.getCode() + ", Description :" + entityType.getDescription();
-            materialTypesToUpdate.put(entityType.getCode(), change);
-        } 
-        if(dryRun == false)
+        getEntityTypeSummary(materialTypesToUpdate, entityType.getCode()).update(diff);
+        if (dryRun == false)
         {
             commonServer.updateMaterialType(sessionToken, entityType);
         }
@@ -401,11 +333,11 @@ public class SynchronizerFacade implements ISynchronizerFacade
     @Override
     public void addVocabularyTerms(String vocabularyCode, TechId techId, List<VocabularyTerm> termsToBeAdded)
     {
-        if (verbose == true)
+        for (VocabularyTerm vocabularyTerm : termsToBeAdded)
         {
-            vocabularyTermsToAdd.put(vocabularyCode, termsToBeAdded);
-        } 
-        if(dryRun == false)
+            getVocabularySummary(vocabularyCode).add(vocabularyTerm.getCode());
+        }
+        if (dryRun == false)
         {
             commonServer.addVocabularyTerms(sessionToken, techId, termsToBeAdded, null, true);
         }
@@ -414,100 +346,197 @@ public class SynchronizerFacade implements ISynchronizerFacade
     @Override
     public void printSummary()
     {
-        if (verbose == false) {
-            return;
+        if (verbose)
+        {
+            SummaryUtils.printAddedSummary(operationLog, fileformatTypesToAdd, "file format types");
+            printUpdatedSummary(fileformatTypesToUpdate, "file format types");
+
+            SummaryUtils.printAddedSummary(operationLog, validationPluginsToAdd, "validation plugins");
+            printUpdatedSummary(validationPluginsToUpdate, "validation plugins");
+
+            SummaryUtils.printAddedSummary(operationLog, vocabulariesToAdd, "vocabularies");
+            printUpdateSummary(vocabulariesToAdd, vocabulariesToUpdate, "vocabularies");
+
+            SummaryUtils.printAddedSummary(operationLog, propertyTypesToAdd, "property types");
+            printUpdatedSummary(propertyTypesToUpdate, "property types");
+
+            SummaryUtils.printAddedSummary(operationLog, experimentTypesToAdd, "experiment types");
+            printUpdateSummary(experimentTypesToAdd, experimentTypesToUpdate, "experiment types");
+            SummaryUtils.printAddedSummary(operationLog, sampleTypesToAdd, "sample types");
+            printUpdateSummary(sampleTypesToAdd, sampleTypesToUpdate, "sample types");
+            SummaryUtils.printAddedSummary(operationLog, dataSetTypesToAdd, "data set types");
+            printUpdateSummary(dataSetTypesToAdd, dataSetTypesToUpdate, "data set types");
+            SummaryUtils.printAddedSummary(operationLog, materialTypesToAdd, "material types");
+            printUpdateSummary(materialTypesToAdd, materialTypesToUpdate, "material types");
         }
-        printSummary(fileformatTypesToAdd, "file format types", "added");
-        printSummary(fileformatTypesToUpdate, "file format types", "updated");
-
-        printSummary(validationPluginsToAdd, "validation plugins", "added");
-        printSummary(validationPluginsToUpdate, "validation plugins", "updated");
-
-        printSummary(propertyTypesToAdd, "property types", " added");
-        printSummary(propertyTypesToUpdate, "property types", "updated");
-
-        printSummary(vocabulariesToAdd, "vocabularies", " added");
-        printSummary(vocabulariesToUpdate, "vocabularies", "updated");
-
-        printSummaryVocabularyTerm(vocabularyTermsToDelete, "vocabulary terms", "deleted");
-        printSummary(vocabularyTermsToUpdate, "vocabulary terms", "updated");
-        printSummary(vocabulariesToAdd, "vocabulary terms", "added");
-
-        printSummary(sampleTypesToAdd, "sample types", "added");
-        printSummary(experimentTypesToAdd, "experiment types", "added");
-        printSummary(dataSetTypesToAdd, "data set types", "added");
-        printSummary(materialTypesToAdd, "material types", "added");
-
-        printSummary(sampleTypesToUpdate, "sample types", "updated");
-        printSummary(experimentTypesToUpdate, "experiment types", "updated");
-        printSummary(dataSetTypesToUpdate, "data set types", "updated");
-        printSummary(materialTypesToUpdate, "material types", "updated");
-
-        printSummaryPropertyAssignments(propertyAssignmentsToAdd, "property assignments", "added");
-        printSummaryPropertyAssignments(propertyAssignmentsToUpdate, "property assignments", "updated");
-        printSummary(propertyAssignmentsToBreak, "property assignments", "removed");
+        SummaryUtils.printShortSummaryHeader(operationLog);
+        SummaryUtils.printShortAddedSummary(operationLog, fileformatTypesToAdd.size(), "file format types");
+        SummaryUtils.printShortUpdatedSummary(operationLog, fileformatTypesToUpdate.size(), "file format types");
+        SummaryUtils.printShortAddedSummary(operationLog, validationPluginsToAdd.size(), "validation plugins");
+        SummaryUtils.printShortUpdatedSummary(operationLog, validationPluginsToUpdate.size(), "validation plugins");
+        SummaryUtils.printShortAddedSummary(operationLog, vocabulariesToAdd.size(), "vocabularies");
+        printShortSummary(vocabulariesToAdd, vocabulariesToUpdate, "vocabularies", "terms");
+        SummaryUtils.printShortAddedSummary(operationLog, propertyTypesToAdd.size(), "property types");
+        SummaryUtils.printShortUpdatedSummary(operationLog, propertyTypesToUpdate.size(), "property types");
+        SummaryUtils.printShortAddedSummary(operationLog, experimentTypesToAdd.size(), "experiment types");
+        printShortSummary(experimentTypesToAdd, experimentTypesToUpdate, "experiment types", "property assignments");
+        SummaryUtils.printShortAddedSummary(operationLog, sampleTypesToAdd.size(), "sample types");
+        printShortSummary(sampleTypesToAdd, sampleTypesToUpdate, "sample types", "property assignments");
+        SummaryUtils.printShortAddedSummary(operationLog, dataSetTypesToAdd.size(), "data set types");
+        printShortSummary(dataSetTypesToAdd, dataSetTypesToUpdate, "data set types", "property assignments");
+        SummaryUtils.printShortAddedSummary(operationLog, materialTypesToAdd.size(), "material types");
+        printShortSummary(materialTypesToAdd, materialTypesToUpdate, "material types", "property assignments");
+        SummaryUtils.printShortSummaryFooter(operationLog);
     }
 
-    private void printSummary(Set<String> set, String type, String operation)
+    private void printShortSummary(Set<String> added, Map<String, UpdateSummary> updates, String type, String subType)
     {
-        if (set.isEmpty() == true)
-            return;
-        operationLog.info(separatorStr);
-        String message = String.format(INFO_MESSAGE, type, operation);
-        operationLog.info(message);
-        operationLog.info(separatorStr);
-        for (String str : set)
+        int numberOfUpdates = 0;
+        int numberOfAdds = 0;
+        int numberOfRemoves = 0;
+        int numberOfUpdatedItems = 0;
+        for (UpdateSummary updateSummary : updates.values())
         {
-            operationLog.info(str);
-        }
-    }
-
-    private void printSummary(Map<String, String> map, String type, String operation)
-    {
-        if (map.isEmpty() == true)
-            return;
-        operationLog.info(separatorStr);
-        String message = String.format(INFO_MESSAGE, type, operation);
-        operationLog.info(message);
-        operationLog.info(separatorStr);
-        for (String key : map.keySet())
-        {
-            operationLog.info(key + " - " + map.get(key));
-        }
-    }
-
-    private void printSummaryVocabularyTerm(Map<String, List<VocabularyTerm>> map, String type, String operation)
-    {
-        if (map.isEmpty() == true)
-            return;
-        operationLog.info(separatorStr);
-        String message = String.format(INFO_MESSAGE, type, operation);
-        operationLog.info(message);
-        operationLog.info(separatorStr);
-        for (String key : map.keySet())
-        {
-            String termStr = "";
-            List<VocabularyTerm> terms = map.get(key);
-            for (VocabularyTerm vocabularyTerm : terms)
+            if (added.contains(updateSummary.getItem()))
             {
-                termStr += vocabularyTerm.getCode();
-                termStr += ", ";
+                continue;
             }
-            operationLog.info(key + " - " + map.get(key) + ":" + termStr.substring(0, termStr.length() - 1));
+            numberOfUpdatedItems++;
+            numberOfUpdates += updateSummary.getNumberOfUpdates();
+            numberOfAdds += updateSummary.getNumberOfAdds();
+            numberOfRemoves += updateSummary.getNumberOfRemoves();
+        }
+        SummaryUtils.printShortUpdatedSummary(operationLog, numberOfUpdatedItems, type);
+        SummaryUtils.printShortAddedSummaryDetail(operationLog, numberOfAdds, subType);
+        SummaryUtils.printShortUpdatedSummaryDetail(operationLog, numberOfUpdates, subType);
+        SummaryUtils.printShortRemovedSummaryDetail(operationLog, numberOfRemoves, subType);
+    }
+
+    private void printUpdateSummary(Set<String> addedEntityTypes, Map<String, UpdateSummary> summaries, String itemType)
+    {
+        List<String> details = new LinkedList<>();
+        for (Entry<String, UpdateSummary> entry : summaries.entrySet())
+        {
+            String entityType = entry.getKey();
+            if (addedEntityTypes.contains(entityType))
+            {
+                continue;
+            }
+            UpdateSummary summary = entry.getValue();
+            String diff = summary.getDiff();
+            details.add(entityType + " " + (diff == null ? "no basic changes" : diff));
+            Map<String, String> assignmentChanges = summary.getChanges();
+            for (Entry<String, String> entry2 : assignmentChanges.entrySet())
+            {
+                details.add("    " + entry2.getKey() + ": " + entry2.getValue());
+            }
+        }
+        SummaryUtils.printUpdatedSummary(operationLog, details, itemType);
+    }
+
+    private void printUpdatedSummary(Map<String, String> map, String type)
+    {
+        List<String> details = new LinkedList<>();
+        for (String key : map.keySet())
+        {
+            details.add(key + " - " + map.get(key));
+        }
+        SummaryUtils.printUpdatedSummary(operationLog, details, type);
+    }
+
+    private UpdateSummary getEntityTypeSummary(Map<String, UpdateSummary> summariesByType, String entityTypeCode)
+    {
+        UpdateSummary summary = summariesByType.get(entityTypeCode);
+        if (summary == null)
+        {
+            summary = new UpdateSummary(entityTypeCode);
+            summariesByType.put(entityTypeCode, summary);
+        }
+        return summary;
+    }
+
+    private UpdateSummary getVocabularySummary(String vocabularyCode)
+    {
+        UpdateSummary vocabularySummary = vocabulariesToUpdate.get(vocabularyCode);
+        if (vocabularySummary == null)
+        {
+            vocabularySummary = new UpdateSummary(vocabularyCode);
+            vocabulariesToUpdate.put(vocabularyCode, vocabularySummary);
+        }
+        return vocabularySummary;
+    }
+
+    private static final class UpdateSummary
+    {
+        private final String item;
+        private String diff;
+
+        private Map<String, String> changes = new TreeMap<>();
+
+        private int numberOfUpdates;
+
+        private int numberOfAdds;
+
+        private int numberOfRemoves;
+
+
+        public UpdateSummary(String item)
+        {
+            this.item = item;
+        }
+
+        void update(String diff)
+        {
+            this.diff = diff;
+        }
+
+        void update(String item, String diff)
+        {
+            changes.put(item, diff);
+            numberOfUpdates++;
+        }
+
+        void add(String item)
+        {
+            changes.put(item, "ADDED");
+            numberOfAdds++;
+        }
+
+        void remove(String item)
+        {
+            changes.put(item, "REMOVED");
+            numberOfRemoves++;
+        }
+
+        public String getItem()
+        {
+            return item;
+        }
+
+        public String getDiff()
+        {
+            return diff;
+        }
+
+        public Map<String, String> getChanges()
+        {
+            return changes;
+        }
+
+        public int getNumberOfUpdates()
+        {
+            return numberOfUpdates;
+        }
+
+        public int getNumberOfAdds()
+        {
+            return numberOfAdds;
+        }
+
+        public int getNumberOfRemoves()
+        {
+            return numberOfRemoves;
         }
     }
 
-    private void printSummaryPropertyAssignments(Set<NewETPTAssignment> set, String type, String operation)
-    {
-        if (set.isEmpty() == true)
-            return;
-        operationLog.info(separatorStr);
-        String message = String.format(INFO_MESSAGE, type, operation);
-        operationLog.info(message);
-        operationLog.info(separatorStr);
-        for (NewETPTAssignment assignment : set)
-        {
-            operationLog.info(assignment.getEntityTypeCode() + "(" + assignment.getEntityKind().name() + ") : " + assignment.getPropertyTypeCode());
-        }
-    }
 }

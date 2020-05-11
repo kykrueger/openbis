@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
 import ch.rinn.restrictions.Private;
@@ -62,6 +63,8 @@ public class ShareFactory
 
     public static final String UNARCHIVING_SCRATCH_SHARE_PROP = "unarchiving-scratch-share";
 
+    public static final String UNARCHIVING_SCRATCH_SHARE_MAXIMUM_SIZE_IN_GB_PROP = "unarchiving-scratch-share-maximum-size-in-GB";
+
     public static final String EXPERIMENTS_PROP = "experiments";
 
     public static final String DATA_SET_TYPES_PROP = "data-set-types";
@@ -80,6 +83,8 @@ public class ShareFactory
 
     private Set<String> dataSetTypes = Collections.emptySet();
 
+    private long unarchivingScratchShareMaximumSize;
+
     Share createShare(final SharesHolder sharesHolder, File shareRoot,
             IFreeSpaceProvider freeSpaceProvider, ISimpleLogger log)
     {
@@ -89,6 +94,7 @@ public class ShareFactory
         share.setShufflePriority(shufflePriority);
         share.setWithdrawShare(withdrawShare);
         share.setUnarchivingScratchShare(unarchivingScratchShare);
+        share.setUnarchivingScratchShareMaximumSize(unarchivingScratchShareMaximumSize);
         share.setIgnoredForShuffling(ignoredForShuffling);
         share.setExperimentIdentifiers(experimentIdentifiers);
         share.setDataSetTypes(dataSetTypes);
@@ -145,6 +151,7 @@ public class ShareFactory
             withdrawShare = PropertyUtils.getBoolean(props, WITHDRAW_SHARE_PROP, false);
             ignoredForShuffling = PropertyUtils.getBoolean(props, IGNORED_FOR_SHUFFLING_PROP, false);
             unarchivingScratchShare = PropertyUtils.getBoolean(props, UNARCHIVING_SCRATCH_SHARE_PROP, false);
+            unarchivingScratchShareMaximumSize = getShareMaximumSize(props);
             experimentIdentifiers =
                     new HashSet<String>(Arrays.asList(PropertyParametersUtil.parseItemisedProperty(
                             props.getProperty(EXPERIMENTS_PROP, ""), EXPERIMENTS_PROP)));
@@ -153,6 +160,12 @@ public class ShareFactory
                             props.getProperty(DATA_SET_TYPES_PROP, ""), DATA_SET_TYPES_PROP)));
         }
 
+    }
+
+    private long getShareMaximumSize(Properties props)
+    {
+        int maxSize = PropertyUtils.getInt(props, UNARCHIVING_SCRATCH_SHARE_MAXIMUM_SIZE_IN_GB_PROP, 0);
+        return maxSize <= 0 ? Long.MAX_VALUE : FileUtils.ONE_GB * maxSize;
     }
 
     private Properties loadShareProperties(File propsFile, ISimpleLogger log)

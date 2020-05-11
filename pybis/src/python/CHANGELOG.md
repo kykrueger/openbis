@@ -1,3 +1,32 @@
+## Changes with pybis-1.14.6
+
+- bugfix duplicate property-columns in get_samples() and get_datasets()
+
+## Changes with pybis-1.14.5
+
+- no automagic detection of mountpoint, because of Windows incompatibilities 
+
+## Changes with pybis-1.14.4
+
+- added new convenience methods: get_experiments, get_projects etc.
+
+## Changes with pybis-1.14.3
+
+- small bugfix: prevent error
+
+## Changes with pybis-1.14.2
+
+- properties can be provided with either upper or lowercase
+- bugfix of duplicate property columns
+
+## Changes with pybis-1.14.1
+
+- small bugfix
+
+## Changes with pybis-1.14.0
+
+- use props="*" to get all properties of all samples or datasets
+
 ## Changes with pybis-1.13.0
 
 - added symlink() method for datasets to automatically create symlinks

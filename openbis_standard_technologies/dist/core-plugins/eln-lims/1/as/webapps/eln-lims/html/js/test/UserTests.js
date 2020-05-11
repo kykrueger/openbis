@@ -27,7 +27,8 @@ var UserTests = new function() {
 
             Promise.resolve().then(() => TestUtil.verifyInventory(ids))
                              .then(() => e.verifyExistence("USER_MANAGER", false))
-                             .then(() => resolve());
+                             .then(() => resolve())
+                             .catch((error) => reject(error));
         });
     }
 
@@ -40,7 +41,8 @@ var UserTests = new function() {
                              .then(() => UserTests.createBacteria("BAC3", "Curantimonas"))
                              .then(() => UserTests.createBacteria("BAC4", "Durantimonas"))
                              .then(() => TestUtil.testPassed(6))
-                             .then(() => resolve());
+                             .then(() => resolve())
+                             .catch((error) => reject(error));
         });
     }
 
@@ -81,7 +83,8 @@ var UserTests = new function() {
                      .then(() => e.waitForId("NAME"))
                      .then(() => e.equalTo("NAME", name, true, false))
                      .then(() => TestUtil.ckeditorTestData("BACTERIA.GENOTYPE", richText))
-                     .then(() => resolve());
+                     .then(() => resolve())
+                     .catch((error) => reject(error));
         });
     }
 
@@ -132,7 +135,8 @@ var UserTests = new function() {
                              .then(() => e.waitForId("bac2-column-id"))
                              .then(() => e.waitForId("bac4-column-id"))
                              .then(() => TestUtil.testPassed(7))
-                             .then(() => resolve());
+                             .then(() => resolve())
+                             .catch((error) => reject(error));
         });
     }
 
@@ -150,7 +154,8 @@ var UserTests = new function() {
                              .then(() => e.waitForId("bac3"))
                              .then(() => e.waitForId("bac4"))
                              .then(() => TestUtil.testPassed(8))
-                             .then(() => resolve());
+                             .then(() => resolve())
+                             .catch((error) => reject(error));
         });
     }
 
@@ -194,7 +199,8 @@ var UserTests = new function() {
                              .then(() => e.waitForId("parent-annotations-bac3"))
                              .then(() => e.equalTo("parent-annotations-bac3", parentAnnotations, true, false))
                              .then(() => TestUtil.testPassed(9))
-                             .then(() => resolve());
+                             .then(() => resolve())
+                             .catch((error) => reject(error));
         });
     }
 
@@ -238,7 +244,8 @@ var UserTests = new function() {
                              .then(() => e.waitForId("bac5"))
                              .then(() => e.waitForId("bac5_bac4"))
                              .then(() => TestUtil.testPassed(10))
-                             .then(() => resolve());
+                             .then(() => resolve())
+                             .catch((error) => reject(error));
         });
     }
 
@@ -265,7 +272,8 @@ var UserTests = new function() {
                              .then(() => e.waitForId("jNotifyDismiss"))
                              .then(() => e.click("jNotifyDismiss"))
                              .then(() => TestUtil.testPassed(11))
-                             .then(() => resolve());
+                             .then(() => resolve())
+                             .catch((error) => reject(error));
         });
     }
 
@@ -304,7 +312,8 @@ var UserTests = new function() {
                              .then(() => e.equalTo("bac5_bac4-column-id", "FF", true, false))
                              .then(() => TestUtil.returnRealSaveAs())
                              .then(() => TestUtil.testPassed(12))
-                             .then(() => resolve());
+                             .then(() => resolve())
+                             .catch((error) => reject(error));
         });
     }
 
@@ -324,7 +333,8 @@ var UserTests = new function() {
                              .then(() => e.waitForId("bac8-column-id"))
                              .then(() => e.waitForId("bac9-column-id"))
                              .then(() => TestUtil.testPassed(13))
-                             .then(() => resolve());
+                             .then(() => resolve())
+                             .catch((error) => reject(error));
         });
     }
 
@@ -344,7 +354,8 @@ var UserTests = new function() {
                              .then(() => e.waitForId("bac12-column-id"))
                              .then(() => e.waitForId("bac13-column-id"))
                              .then(() => TestUtil.testPassed(14))
-                             .then(() => resolve());
+                             .then(() => resolve())
+                             .catch((error) => reject(error));
         });
     }
 
@@ -370,7 +381,8 @@ var UserTests = new function() {
                      .then(() => TestUtil.setFile("name", file, "text"))
                      .then(() => e.waitForId("accept-type-file"))
                      .then(() => e.click("accept-type-file"))
-                     .then(() => resolve());
+                     .then(() => resolve())
+                     .catch((error) => reject(error));
         });
     }
 
@@ -406,7 +418,8 @@ var UserTests = new function() {
                              // check that new storage was created
                              .then(() => e.waitForId("testbox-c2-id"))
                              .then(() => TestUtil.testPassed(15))
-                             .then(() => resolve());
+                             .then(() => resolve())
+                             .catch((error) => reject(error));
         });
     }
 
@@ -429,7 +442,8 @@ var UserTests = new function() {
                              .then(() => e.click("save-changes-btn"))
                              .then(() => e.sleep(3000)) // wait for saving
                              .then(() => TestUtil.testPassed(16))
-                             .then(() => resolve());
+                             .then(() => resolve())
+                             .catch((error) => reject(error));
         });
     }
 
@@ -457,7 +471,8 @@ var UserTests = new function() {
                              .then(() => e.waitForId("testbox-a3-id"))
                              .then(() => e.equalTo("testbox-a3-id", "Test Box - A3", true, false))
                              .then(() => TestUtil.testPassed(17))
-                             .then(() => resolve());
+                             .then(() => resolve())
+                             .catch((error) => reject(error));
         });
     }
 
@@ -479,7 +494,8 @@ var UserTests = new function() {
                              .then(() => e.click("save-btn"))
                              .then(() => e.waitForId("edit-btn"))
                              .then(() => TestUtil.testPassed(18))
-                             .then(() => resolve());
+                             .then(() => resolve())
+                             .catch((error) => reject(error));
         });
     }
 
@@ -507,7 +523,8 @@ var UserTests = new function() {
                              .then(() => e.click("save-btn"))
                              .then(() => e.waitForId("edit-btn"))
                              .then(() => TestUtil.testPassed(19))
-                             .then(() => resolve());
+                             .then(() => resolve())
+                             .catch((error) => reject(error));
         });
     }
 
@@ -571,7 +588,8 @@ var UserTests = new function() {
                              .then(() => e.waitForId("save-btn"))
                              .then(() => e.click("save-btn"))
                              .then(() => TestUtil.testPassed(20))
-                             .then(() => resolve());
+                             .then(() => resolve())
+                             .catch((error) => reject(error));
         });
     }
 
@@ -636,7 +654,8 @@ var UserTests = new function() {
                              .then(() => e.waitForId("save-btn"))
                              .then(() => e.click("save-btn"))
                              .then(() => TestUtil.testPassed(21))
-                             .then(() => resolve());
+                             .then(() => resolve())
+                             .catch((error) => reject(error));
         });
     }
 
@@ -676,7 +695,8 @@ var UserTests = new function() {
                              .then(() => e.click("save-btn"))
                              .then(() => e.waitForId("dataset-edit-btn"))
                              .then(() => TestUtil.testPassed(23))
-                             .then(() => resolve());
+                             .then(() => resolve())
+                             .catch((error) => reject(error));
         });
     }
 
@@ -705,7 +725,8 @@ var UserTests = new function() {
                              .then(() => e.waitForId("project-samples"))
                              .then(() => e.waitForStyle("project-samples", "display", "", false))
                              .then(() => TestUtil.testPassed(25))
-                             .then(() => resolve());
+                             .then(() => resolve())
+                             .catch((error) => reject(error));
         });
     }
 
@@ -750,7 +771,8 @@ var UserTests = new function() {
                              .then(() => e.waitForId("bac5-id"))
                              .then(() => e.waitForId("bac5_bac4-id"))
                              .then(() => TestUtil.testPassed(26))
-                             .then(() => resolve());
+                             .then(() => resolve())
+                             .catch((error) => reject(error));
         });
     }
 
@@ -768,7 +790,8 @@ var UserTests = new function() {
                              //create German supplier
                              .then(() => UserTests.createSupplier("DE", "GERMAN", "companyde@email.com"))
                              .then(() => TestUtil.testPassed(27))
-                             .then(() => resolve());
+                             .then(() => resolve())
+                             .catch((error) => reject(error));
         });
     }
 
@@ -797,7 +820,8 @@ var UserTests = new function() {
                              .then(() => e.waitForId("save-btn"))
                              .then(() => e.click("save-btn"))
                              .then(() => e.waitForId("edit-btn")) // wait for saving
-                             .then(() => resolve());
+                             .then(() => resolve())
+                             .catch((error) => reject(error));
         });
     }
 
@@ -815,7 +839,8 @@ var UserTests = new function() {
                              //create German product form
                              .then(() => UserTests.createProductForm("DE", "EUR", "sup2-column-id"))
                              .then(() => TestUtil.testPassed(28))
-                             .then(() => resolve());
+                             .then(() => resolve())
+                             .catch((error) => reject(error));
         });
     }
 
@@ -850,7 +875,8 @@ var UserTests = new function() {
                              .then(() => e.waitForId("save-btn"))
                              .then(() => e.click("save-btn"))
                              .then(() => e.waitForId("edit-btn")) // wait for saving
-                             .then(() => resolve());
+                             .then(() => resolve())
+                             .catch((error) => reject(error));
         });
     }
 
@@ -902,7 +928,8 @@ var UserTests = new function() {
                               .then(() => e.click("save-btn"))
                               .then(() => e.waitForId("edit-btn")) // wait for saving
                               .then(() => TestUtil.testPassed(29))
-                              .then(() => resolve());
+                              .then(() => resolve())
+                              .catch((error) => reject(error));
          });
      }
 
@@ -922,7 +949,8 @@ var UserTests = new function() {
                               // There should be no + button
                               .then(() => e.verifyExistence("create-btn", false))
                               .then(() => TestUtil.testPassed(30))
-                              .then(() => resolve());
+                              .then(() => resolve())
+                              .catch((error) => reject(error));
          });
       }
 
@@ -932,7 +960,8 @@ var UserTests = new function() {
 
             Promise.resolve().then(() => TestUtil.setCookies("suitename", "finishTest"))
                              .then(() => e.click("logoutBtn"))
-                             .then(() => resolve());
+                             .then(() => resolve())
+                             .catch((error) => reject(error));
          });
      }
 }
