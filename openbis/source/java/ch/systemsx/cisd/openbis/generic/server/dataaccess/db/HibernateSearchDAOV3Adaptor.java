@@ -7,25 +7,63 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialSearchCr
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.*;
+import ch.systemsx.cisd.common.logging.LogCategory;
+import ch.systemsx.cisd.common.logging.LogFactory;
+import ch.systemsx.cisd.openbis.generic.server.dataaccess.IHibernateSearchDAO;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.*;
+import ch.systemsx.cisd.openbis.generic.shared.dto.SearchableEntity;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.support.JdbcAccessor;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /*
  * The goal of this class is to replace substitute HibernateSearchDAO
  * This should make possible to remove Hibernate Search without changing all the other business layers
  */
-public class HibernateSearchDAOV3Adaptor {
+public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
 
+    /**
+     * The <code>Logger</code> of this class.
+     * <p>
+     * This logger does not output any SQL statement. If you want to do so, you had better set an appropriate debugging level for class
+     * {@link JdbcAccessor}.
+     * </p>
+     */
+    private final static Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION,
+            HibernateSearchDAOV3Adaptor.class);
+
+    //
+    // IHibernateSearchDAO interface
+    //
+
+    @Override
+    public List<MatchingEntity> searchEntitiesByTerm(String userId, SearchableEntity searchableEntity, String searchTerm, HibernateSearchDataProvider dataProvider, boolean useWildcardSearchMode, int alreadyFoundEntities, int maxSize) throws DataAccessException {
+        throw new UnsupportedOperationException();
+    }
+
+
+    @Override
+    public int getResultSetSizeLimit() {
+        return Integer.MAX_VALUE;
+    }
+
+    @Override
+    public void setProperties(Properties serviceProperties) {
+        for (String propertyName:serviceProperties.stringPropertyNames()) {
+            operationLog.warn("Configuration property ignored: " + propertyName + " By: " + HibernateSearchDAOV3Adaptor.class.getSimpleName());
+        }
+    }
+
+    @Override
     public List<Long> searchForEntityIds(final String userId,
-                                                final DetailedSearchCriteria mainV1Criteria,
-                                                final EntityKind entityKind,
-                                                final List<IAssociationCriteria> associations)
+                                         final DetailedSearchCriteria mainV1Criteria,
+                                         final EntityKind entityKind,
+                                         final List<IAssociationCriteria> associations)
     {
         // Obtain entity criteria
         AbstractEntitySearchCriteria mainV3Criteria = getCriteria(entityKind);

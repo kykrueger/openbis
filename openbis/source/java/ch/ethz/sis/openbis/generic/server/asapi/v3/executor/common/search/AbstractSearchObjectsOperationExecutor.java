@@ -236,25 +236,8 @@ public abstract class AbstractSearchObjectsOperationExecutor<OBJECT, OBJECT_PE, 
         }
 
         final PersonPE personPE = context.getSession().tryGetPerson();
-        final Set<Long> spaceIds = new HashSet<>();
-        final Set<Long> projectIds = new HashSet<>();
-        boolean instanceRole = false;
-        final boolean projectLevelAuthorizationEnabled = authorizationConfig.isProjectLevelEnabled()
-                && authorizationConfig.isProjectLevelUser(personPE.getUserId());
-        for (final RoleAssignmentPE roleAssignmentPE : personPE.getAllPersonRoles())
-        {
-            if (roleAssignmentPE.getSpace() != null)
-            {
-                spaceIds.add(roleAssignmentPE.getSpace().getId());
-            }
-            if (roleAssignmentPE.getProject() != null && projectLevelAuthorizationEnabled)
-            {
-                projectIds.add(roleAssignmentPE.getProject().getId());
-            }
-            instanceRole = instanceRole || (roleAssignmentPE.getRoleLevel() == RoleWithHierarchy.RoleLevel.INSTANCE);
-        }
 
-        final AuthorisationInformation authorisationInformation = new AuthorisationInformation(instanceRole, spaceIds, projectIds);
+        final AuthorisationInformation authorisationInformation = AuthorisationInformation.getInstance(personPE, authorizationConfig);
 
         final Long userId = personPE.getId();
         final TranslationContext translationContext = new TranslationContext(context.getSession());
