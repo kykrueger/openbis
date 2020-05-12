@@ -51,7 +51,7 @@ public class TranslationVo
 
     private Map<String, String> dataTypeByPropertyName;
 
-    private Set<Long> ids;
+    private Collection<Long> ids;
 
     private SortOptions<?> sortOptions;
 
@@ -142,12 +142,12 @@ public class TranslationVo
         this.dataTypeByPropertyName = dataTypeByPropertyName;
     }
 
-    public Set<Long> getIds()
+    public Collection<Long> getIds()
     {
         return ids;
     }
 
-    public void setIds(final Set<Long> ids)
+    public void setIds(final Collection<Long> ids)
     {
         this.ids = ids;
     }

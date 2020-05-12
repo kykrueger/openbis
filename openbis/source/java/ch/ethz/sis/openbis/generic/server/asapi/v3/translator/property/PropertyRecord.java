@@ -34,4 +34,8 @@ public class PropertyRecord
 
     public String vocabularyPropertyValue;
 
+    public Long sample_id;
+
+    public String sample_perm_id;
+
 }

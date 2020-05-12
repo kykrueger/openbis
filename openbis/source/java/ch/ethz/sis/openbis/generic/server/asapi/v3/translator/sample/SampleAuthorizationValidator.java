@@ -16,10 +16,7 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.translator.sample;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 import org.springframework.stereotype.Component;
 
@@ -41,7 +38,7 @@ public class SampleAuthorizationValidator extends AbstractAuthorizationValidator
     {
         AuthorizationDataProvider provider = new AuthorizationDataProvider(daoFactory);
         Set<SampleAccessPE> accessDatas = provider.getSampleCollectionAccessDataByTechIds(TechId.createList(new ArrayList<Long>(sampleIds)), false);
-        Set<Long> result = new HashSet<Long>();
+        Set<Long> result = new LinkedHashSet<>();
 
         for (SampleAccessPE accessData : accessDatas)
         {

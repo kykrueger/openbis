@@ -22,7 +22,10 @@ import java.util.stream.Collectors;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.*;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
+import ch.systemsx.cisd.openbis.generic.shared.authorization.AuthorizationConfig;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.RoleWithHierarchy;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
+import ch.systemsx.cisd.openbis.generic.shared.dto.RoleAssignmentPE;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -58,9 +61,12 @@ public abstract class AbstractSearchObjectsOperationExecutor<OBJECT, OBJECT_PE, 
     @Autowired
     protected ISearchCache<CRITERIA, FETCH_OPTIONS, OBJECT> cache;
 
+    @Autowired
+    private AuthorizationConfig authorizationConfig;
+
     protected abstract List<OBJECT_PE> doSearch(IOperationContext context, CRITERIA criteria, FETCH_OPTIONS fetchOptions);
 
-    protected abstract Map<OBJECT_PE, OBJECT> doTranslate(TranslationContext translationContext, List<OBJECT_PE> ids, FETCH_OPTIONS fetchOptions);
+    protected abstract Map<OBJECT_PE, OBJECT> doTranslate(TranslationContext translationContext, Collection<OBJECT_PE> ids, FETCH_OPTIONS fetchOptions);
 
     protected abstract SearchObjectsOperationResult<OBJECT> getOperationResult(SearchResult<OBJECT> searchResult);
 
@@ -230,34 +236,39 @@ public abstract class AbstractSearchObjectsOperationExecutor<OBJECT, OBJECT_PE, 
         }
 
         final PersonPE personPE = context.getSession().tryGetPerson();
-        final Set<Long> spaceIds = personPE.getAllPersonRoles().stream().filter((roleAssignmentPE) -> roleAssignmentPE.getSpace() != null)
-                .map((roleAssignmentPE) -> roleAssignmentPE.getSpace().getId()).collect(Collectors.toSet());
-        final Set<Long> projectIds = personPE.getAllPersonRoles().stream().filter((roleAssignmentPE) -> roleAssignmentPE.getProject() != null)
-                .map((roleAssignmentPE) -> roleAssignmentPE.getProject().getId()).collect(Collectors.toSet());
 
-        final AuthorisationInformation authorisationInformation = new AuthorisationInformation(!personPE.getRoleAssignments().isEmpty(),
-                spaceIds, projectIds);
+        final AuthorisationInformation authorisationInformation = AuthorisationInformation.getInstance(personPE, authorizationConfig);
 
         final Long userId = personPE.getId();
         final TranslationContext translationContext = new TranslationContext(context.getSession());
-        final SortOptions<OBJECT> sortOptions = fetchOptions.getSortBy();
 
-        final Set<Long> allResultsIds = getSearchManager().searchForIDs(userId, authorisationInformation, criteria, sortOptions, null, ID_COLUMN);
-        final List<OBJECT_PE> allResultPEs = getSearchManager().translate(new ArrayList<>(allResultsIds));
-        // The results from the manager are filtered by rights after translation.
-        final Map<OBJECT_PE, OBJECT> allResultV3DTOs = doTranslate(translationContext, allResultPEs, fetchOptions);
+        final Set<Long> allResultsIds = getSearchManager().searchForIDs(userId, authorisationInformation, criteria, fetchOptions.getSortBy(), null,
+                ID_COLUMN);
+        final Collection<Long> pagedResultIds = sortAndPage(allResultsIds, fetchOptions);
+        
+        final Collection<OBJECT_PE> pagedResultPEs = getSearchManager().translate(pagedResultIds);
+        // TODO: doTranslate() should only filter nested objects of the results (parents, children, components...).
+        final Map<OBJECT_PE, OBJECT> pagedResultV3DTOs = doTranslate(translationContext, pagedResultPEs, fetchOptions);
 
-        final List<OBJECT> finalResults = new ArrayList<>(allResultV3DTOs.values());
-        final List<OBJECT> sortedFinalResults = getSortedFinalResults(criteria, fetchOptions, finalResults);
-        final SearchResult<OBJECT> searchResult = new SearchResult<>(sortedFinalResults, allResultV3DTOs.size());
+        assert pagedResultPEs.size() == pagedResultV3DTOs.size() : "The number of results after translation should not change. [pagedResultPEs.size()="
+                + pagedResultPEs.size() + ", pagedResultV3DTOs.size()=" + pagedResultV3DTOs.size() + "]";
 
+        // Reordering of pagedResultV3DTOs is needed because translation mixes the order
+        final List<OBJECT> objectResults = pagedResultPEs.stream().map(pagedResultV3DTOs::get).filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+        // Sorting and paging parents and children in a "conventional" way.
+        new SortAndPage().nest(objectResults, criteria, fetchOptions);
+
+        final SearchResult<OBJECT> searchResult = new SearchResult<>(objectResults, allResultsIds.size());
         return getOperationResult(searchResult);
     }
 
-    private List<OBJECT> getSortedFinalResults(final CRITERIA criteria, final FETCH_OPTIONS fetchOptions, final List<OBJECT> finalResults)
+    private Collection<Long> sortAndPage(final Set<Long> ids, final FETCH_OPTIONS fetchOptions)
     {
+        SortOptions<OBJECT> sortOptions = fetchOptions.getSortBy();
+
         // Filter out sorts to ignore
-        final SortOptions<OBJECT> sortOptions = fetchOptions.getSortBy();
         if (sortOptions != null) {
             List<Sorting> sortingToRemove = new ArrayList<>();
             for (Sorting sorting:sortOptions.getSortings()) {
@@ -268,13 +279,21 @@ public abstract class AbstractSearchObjectsOperationExecutor<OBJECT, OBJECT_PE, 
                 }
             }
 
-            for (Sorting sorting:sortingToRemove) {
+            for (Sorting sorting : sortingToRemove) {
                 sortOptions.getSortings().remove(sorting);
                 operationLog.warn("[SQL Query Engine - backwards compatibility warning - stop using this feature] SORTING ORDER IGNORED!: " + sorting.getField());
             }
+
+            if (sortOptions.getSortings().isEmpty()) {
+                sortOptions = null;
+            }
         }
 
-        return new SortAndPage().sortAndPage(finalResults, criteria, fetchOptions);
+        final List<Long> toPage = (sortOptions != null) ? getSearchManager().sortIDs(ids, sortOptions) : new ArrayList<>(ids);
+        final Integer fromRecord = fetchOptions.getFrom();
+        final Integer recordsCount = fetchOptions.getCount();
+        final boolean hasPaging = fromRecord != null && recordsCount != null;
+        return hasPaging ? toPage.subList(fromRecord, Math.min(fromRecord + recordsCount, toPage.size())) : toPage;
     }
 
 }

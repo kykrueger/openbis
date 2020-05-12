@@ -26,6 +26,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewETNewPTAssigments;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewETPTAssignment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewPTNewAssigment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyType;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Vocabulary;
 
 /**
@@ -113,6 +114,7 @@ public class PropertyTypeAssignmentGridAssignmentsHolder
         copy.setLabel(original.getLabel());
         copy.setManagedInternally(original.isManagedInternally());
         copy.setMaterialType(copy(original.getMaterialType()));
+        copy.setSampleType(copy(original.getSampleType()));
         copy.setSchema(original.getSchema());
         copy.setSimpleCode(original.getSimpleCode());
         copy.setTransformation(original.getTransformation());
@@ -140,6 +142,18 @@ public class PropertyTypeAssignmentGridAssignmentsHolder
         }
 
         MaterialType copy = new MaterialType();
+        copy.setCode(original.getCode());
+        return copy;
+    }
+
+    private SampleType copy(SampleType original)
+    {
+        if (original == null)
+        {
+            return null;
+        }
+
+        SampleType copy = new SampleType();
         copy.setCode(original.getCode());
         return copy;
     }

@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # encoding=utf8
+import glob
 import os
 import re
 import shutil
@@ -434,10 +435,10 @@ class TestCase(systemtest.testcase.TestCase):
         return openbis_harvester
 
     def _waitUntilSyncIsFinished(self, openbis_harvester):
-        monitor = util.LogMonitor("%s synchronization.log" % openbis_harvester.instanceName, "%s/synchronization.log" % openbis_harvester.installPath, timeOutInMinutes=30)
+        synclogfile = sorted(glob.glob("%s/synch*" % openbis_harvester.installPath))[-1]
+        monitor = util.LogMonitor("%s synchronization" % openbis_harvester.instanceName, synclogfile, timeOutInMinutes=30)
         monitor.addNotificationCondition(util.RegexCondition('OPERATION.EntitySynchronizer'))
-        monitor.waitUntilEvent(util.RegexCondition('OPERATION.EntitySynchronizer.DS1 - Saving the timestamp of sync start to file'),
-                               delay = 60)
+        monitor.waitUntilEvent(util.RegexCondition('Saving the timestamp of sync start to file'), delay = 60)
         time.sleep(60)
 
 

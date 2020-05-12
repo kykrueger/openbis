@@ -33,11 +33,13 @@ import org.testng.annotations.Test;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.attachment.Attachment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.attachment.create.AttachmentCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.CreationId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.IExperimentId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
@@ -54,7 +56,6 @@ import ch.ethz.sis.openbis.systemtest.asapi.v3.index.ReindexingState;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.common.test.AssertionUtil;
 import ch.systemsx.cisd.openbis.systemtest.authorization.ProjectAuthorizationUser;
-
 import junit.framework.Assert;
 
 /**
@@ -62,6 +63,8 @@ import junit.framework.Assert;
  */
 public class CreateSampleTest extends AbstractSampleTest
 {
+    private static final PropertyTypePermId PLATE_GEOMETRY = new PropertyTypePermId("$PLATE_GEOMETRY");
+
     @Test
     public void testCreateSampleUsingCreationIdAsSpaceId()
     {
@@ -1066,6 +1069,167 @@ public class CreateSampleTest extends AbstractSampleTest
     }
 
     @Test
+    public void testCreateWithUnknownPropertyOfTypeSample()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        SampleCreation sample = new SampleCreation();
+        sample.setCode("SAMPLE_WITH_SAMPLE_PROPERTY");
+        sample.setTypeId(new EntityTypePermId("MASTER_PLATE"));
+        sample.setSpaceId(new SpacePermId("CISD"));
+        sample.setProperty("$PLATE_GEOMETRY", "384_WELLS_16X24");
+        sample.setSampleProperty("PLATE", new SampleIdentifier("/CISD/CL1"));
+
+        // When
+        assertUserFailureException(Void -> v3api.createSamples(sessionToken, Arrays.asList(sample)),
+                // Then
+                "Not a property of data type SAMPLE: PLATE");
+    }
+
+    @Test
+    public void testCreateWithPropertyOfTypeSampleWithUnknownSample()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createASamplePropertyType(sessionToken, null);
+        EntityTypePermId sampleType = createASampleType(sessionToken, false, propertyType);
+
+        SampleCreation sample = new SampleCreation();
+        sample.setCode("SAMPLE_WITH_SAMPLE_PROPERTY");
+        sample.setTypeId(sampleType);
+        sample.setSpaceId(new SpacePermId("CISD"));
+        sample.setSampleProperty(propertyType.getPermId(), new SampleIdentifier("/CISD/UNKNOWN"));
+
+        // When
+        assertUserFailureException(Void -> v3api.createSamples(sessionToken, Arrays.asList(sample)),
+                // Then
+                "Unknown sample: /CISD/UNKNOWN");
+    }
+
+    @Test
+    public void testCreateWithMissingMandatoryPropertyOfTypeSample()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createASamplePropertyType(sessionToken, null);
+        EntityTypePermId sampleType = createASampleType(sessionToken, true, propertyType);
+
+        SampleCreation sample = new SampleCreation();
+        sample.setCode("SAMPLE_WITH_SAMPLE_PROPERTY");
+        sample.setTypeId(sampleType);
+        sample.setSpaceId(new SpacePermId("CISD"));
+
+        // When
+        assertUserFailureException(Void -> v3api.createSamples(sessionToken, Arrays.asList(sample)),
+                // Then
+                "Value of mandatory property '" + propertyType.getPermId() + "' not specified.");
+    }
+
+    @Test
+    public void testCreateWithPropertyOfTypeSampleWithSampleOfWrongType()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createASamplePropertyType(sessionToken,
+                new EntityTypePermId("WELL", EntityKind.SAMPLE));
+        EntityTypePermId sampleType = createASampleType(sessionToken, false, propertyType);
+
+        SampleCreation sample = new SampleCreation();
+        sample.setCode("SAMPLE_WITH_SAMPLE_PROPERTY");
+        sample.setTypeId(sampleType);
+        sample.setSpaceId(new SpacePermId("CISD"));
+        sample.setSampleProperty(propertyType.getPermId(), new SamplePermId("200811050919915-8"));
+
+        // When
+        assertUserFailureException(Void -> v3api.createSamples(sessionToken, Arrays.asList(sample)),
+                // Then
+                "Property " + propertyType.getPermId() + " is not a sample of type WELL but of type CONTROL_LAYOUT");
+    }
+
+    @Test
+    public void testCreateWithPropertyOfTypeSampleWithSampleNotAccessable()
+    {
+        // Given
+        String adminSessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createASamplePropertyType(adminSessionToken, null);
+        EntityTypePermId sampleType = createASampleType(adminSessionToken, true, propertyType);
+        v3api.logout(adminSessionToken);
+
+        String sessionToken = v3api.login(TEST_SPACE_USER, PASSWORD);
+        SampleCreation sample = new SampleCreation();
+        sample.setCode("SAMPLE_WITH_SAMPLE_PROPERTY");
+        sample.setTypeId(sampleType);
+        sample.setSpaceId(new SpacePermId("TEST-SPACE"));
+        sample.setSampleProperty(propertyType.getPermId(), new SampleIdentifier("/CISD/CL1"));
+
+        // When
+        assertUserFailureException(Void -> v3api.createSamples(sessionToken, Arrays.asList(sample)),
+                // Then
+                "Unknown sample: /CISD/CL1");
+    }
+
+    @Test
+    public void testCreateWithPropertyOfTypeSampleWithInvisibleSample()
+    {
+        // Given
+        String adminSessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createASamplePropertyType(adminSessionToken, null);
+        EntityTypePermId sampleType = createASampleType(adminSessionToken, true, propertyType, PLATE_GEOMETRY);
+        SampleCreation sampleCreation = new SampleCreation();
+        sampleCreation.setCode("SAMPLE_WITH_SAMPLE_PROPERTY");
+        sampleCreation.setTypeId(sampleType);
+        sampleCreation.setSpaceId(new SpacePermId("TEST-SPACE"));
+        sampleCreation.setProperty(PLATE_GEOMETRY.getPermId(), "384_WELLS_16X24");
+        sampleCreation.setSampleProperty(propertyType.getPermId(), new SampleIdentifier("/CISD/CL1"));
+        SamplePermId samplePermId = v3api.createSamples(adminSessionToken, Arrays.asList(sampleCreation)).get(0);
+        v3api.logout(adminSessionToken);
+
+        String sessionToken = v3api.login(TEST_SPACE_USER, PASSWORD);
+        SampleFetchOptions fetchOptions = new SampleFetchOptions();
+        fetchOptions.withProperties();
+        fetchOptions.withSampleProperties();
+
+        // When
+        Sample sample = v3api.getSamples(sessionToken, Arrays.asList(samplePermId), fetchOptions).get(samplePermId);
+
+        // Then
+        assertEquals(sample.getSampleProperties().toString(), "{}");
+        assertEquals(sample.getProperties().toString(), "{$PLATE_GEOMETRY=384_WELLS_16X24}");
+    }
+
+    @Test
+    public void testCreateWithPropertyOfTypeSample()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createASamplePropertyType(sessionToken, null);
+        EntityTypePermId sampleType = createASampleType(sessionToken, true, propertyType, PLATE_GEOMETRY);
+
+        SampleCreation sample = new SampleCreation();
+        sample.setCode("SAMPLE_WITH_SAMPLE_PROPERTY");
+        sample.setTypeId(sampleType);
+        sample.setSpaceId(new SpacePermId("CISD"));
+        sample.setProperty(PLATE_GEOMETRY.getPermId(), "384_WELLS_16X24");
+        sample.setSampleProperty(propertyType.getPermId(), new SampleIdentifier("/CISD/CL1"));
+
+        // When
+        List<SamplePermId> sampleIds = v3api.createSamples(sessionToken, Arrays.asList(sample));
+
+        // Then
+        assertEquals(sampleIds.size(), 1);
+        SampleFetchOptions fetchOptions = new SampleFetchOptions();
+        fetchOptions.withProperties();
+        fetchOptions.withSampleProperties();
+        Sample sample2 = v3api.getSamples(sessionToken, sampleIds, fetchOptions).get(sampleIds.get(0));
+        Sample sampleProperty = sample2.getSampleProperties().get(propertyType.getPermId());
+        assertEquals(sampleProperty.getIdentifier().getIdentifier(), "/CISD/CL1");
+        assertEquals(sample2.getSampleProperties().size(), 1);
+        assertEquals(sample2.getProperties().get(PLATE_GEOMETRY.getPermId()), "384_WELLS_16X24");
+        assertEquals(sample2.getProperties().get(propertyType.getPermId()), sampleProperty.getPermId().getPermId());
+        assertEquals(sample2.getProperties().size(), 2);
+    }
+
+    @Test
     public void testCreateWithMultipleSamples()
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
@@ -1244,7 +1408,7 @@ public class CreateSampleTest extends AbstractSampleTest
         creation2.setCode("LOG_TEST_2");
         creation2.setTypeId(new EntityTypePermId("CELL_PLATE"));
         creation2.setSpaceId(new SpacePermId("CISD"));
-        
+
         SampleCreation creation3 = new SampleCreation();
         creation3.setCode("LOG_TEST_3");
         creation3.setTypeId(new EntityTypePermId("CELL_PLATE"));

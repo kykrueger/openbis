@@ -16,7 +16,7 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate;
 
-import java.util.List;
+import java.util.Collection;
 
 /**
  * Translator that translates IDs to the same values.
@@ -25,8 +25,9 @@ public class IdentityTranslator implements IID2PETranslator<Long>
 {
 
     @Override
-    public List<Long> translate(final List<Long> ids)
+    public Collection<Long> translate(final Collection<Long> ids)
     {
         return ids;
     }
+
 }

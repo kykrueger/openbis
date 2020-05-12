@@ -27,8 +27,10 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.create.IObjectCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.CreationId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ICreationIdHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IPropertiesHolder;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ISamplePropertiesHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.IProjectId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.ITagId;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
@@ -36,7 +38,7 @@ import ch.systemsx.cisd.base.annotation.JsonObject;
  * @author pkupczyk
  */
 @JsonObject("as.dto.experiment.create.ExperimentCreation")
-public class ExperimentCreation implements ICreation, IObjectCreation, ICreationIdHolder, IPropertiesHolder
+public class ExperimentCreation implements ICreation, IObjectCreation, ICreationIdHolder, IPropertiesHolder, ISamplePropertiesHolder
 {
     private static final long serialVersionUID = 1L;
 
@@ -49,6 +51,8 @@ public class ExperimentCreation implements ICreation, IObjectCreation, ICreation
     private List<? extends ITagId> tagIds;
 
     private Map<String, String> properties = new HashMap<String, String>();
+
+    private Map<String, ISampleId> sampleProperties = new HashMap<String, ISampleId>();
 
     private List<AttachmentCreation> attachments;
 
@@ -116,6 +120,16 @@ public class ExperimentCreation implements ICreation, IObjectCreation, ICreation
     public Map<String, String> getProperties()
     {
         return properties;
+    }
+
+    public void setSampleProperty(String propertyName, ISampleId sampleId)
+    {
+        sampleProperties.put(propertyName, sampleId);
+    }
+
+    public Map<String, ISampleId> getSampleProperties()
+    {
+        return sampleProperties;
     }
 
     public List<AttachmentCreation> getAttachments()

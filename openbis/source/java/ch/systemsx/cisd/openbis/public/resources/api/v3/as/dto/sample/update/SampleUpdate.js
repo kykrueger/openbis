@@ -5,6 +5,7 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/
 		IdListUpdateValue, AttachmentListUpdateValue) {
 	var SampleUpdate = function() {
 		this.properties = {};
+		this.sampleProperties = {};
 		this.experimentId = new FieldUpdateValue();
 		this.projectId = new FieldUpdateValue();		
 		this.spaceId = new FieldUpdateValue();
@@ -25,6 +26,7 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/
 		prototype.freezeForParents = null;
 		prototype.freezeForDataSets = null;
 		prototype.properties = null;
+		prototype.sampleProperties = null;
 		prototype.experimentId = null;
 		prototype.projectId = null;
 		prototype.spaceId = null;
@@ -114,6 +116,12 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/
 		prototype.setProperties = function(properties) {
 			this.properties = properties;
 		};
+		prototype.setSampleProperty = function(propertyName, sampleId) {
+			this.sampleProperties[propertyName] = sampleId;
+		};
+		prototype.getSampleProperties = function() {
+			return this.sampleProperties;
+		};
 		prototype.getTagIds = function() {
 			return this.tagIds;
 		};
@@ -163,6 +171,10 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/
 			arguments : [ "ITagId" ]
 		},
 		properties : {
+			name : "Map",
+			arguments : [ null, null ]
+		},
+		sampleProperties : {
 			name : "Map",
 			arguments : [ null, null ]
 		},

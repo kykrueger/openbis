@@ -53,6 +53,8 @@ public class PropertyType extends Code<PropertyType> implements IPropertyTypeUpd
 
     private MaterialType materialType;
 
+    private SampleType sampleType;
+
     private String description;
 
     private List<SampleTypePropertyType> sampleTypePropertyTypes;
@@ -215,6 +217,16 @@ public class PropertyType extends Code<PropertyType> implements IPropertyTypeUpd
     public void setMaterialType(MaterialType materialType)
     {
         this.materialType = materialType;
+    }
+
+    public SampleType getSampleType()
+    {
+        return sampleType;
+    }
+
+    public void setSampleType(SampleType sampleType)
+    {
+        this.sampleType = sampleType;
     }
 
     @Override

@@ -38,6 +38,7 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		prototype.sample = null;
 		prototype.properties = null;
 		prototype.materialProperties = null;
+		prototype.sampleProperties = null;
 		prototype.dataProducer = null;
 		prototype.dataProductionDate = null;
 
@@ -305,6 +306,16 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		prototype.setMaterialProperties = function(materialProperties) {
 			this.materialProperties = materialProperties;
 		};
+		prototype.getSampleProperties = function() {
+			if (this.getFetchOptions() && this.getFetchOptions().hasSampleProperties()) {
+				return this.sampleProperties;
+			} else {
+				throw new exceptions.NotFetchedException("Sample properties have not been fetched.");
+			}
+		};
+		prototype.setSampleProperties = function(sampleProperties) {
+			this.sampleProperties = sampleProperties;
+		};
 		prototype.getDataProducer = function() {
 			return this.dataProducer;
 		};
@@ -362,6 +373,10 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		materialProperties : {
 			name : "Map",
 			arguments : [ null, "Material" ]
+		},
+		sampleProperties : {
+			name : "Map",
+			arguments : [ null, "Sample" ]
 		},
 		dataProductionDate : "Date"
 	});

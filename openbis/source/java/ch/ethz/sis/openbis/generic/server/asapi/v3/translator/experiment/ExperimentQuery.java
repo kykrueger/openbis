@@ -28,6 +28,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.history.HistoryPro
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.property.MaterialPropertyRecord;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.property.PropertyAssignmentRecord;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.property.PropertyRecord;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.property.SamplePropertyRecord;
 import ch.systemsx.cisd.common.db.mapper.LongSetMapper;
 
 /**
@@ -65,8 +66,12 @@ public interface ExperimentQuery extends ObjectQuery
     public List<ObjectRelationRecord> getDataSetIds(LongSet experimentIds);
 
     // PropertyQueryGenerator was used to generate this query
-    @Select(sql = "select p.expe_id as objectId, case pt.is_internal_namespace when FALSE then pt.code else '$' || pt.code end as propertyCode, p.value as propertyValue, m.code as materialPropertyValueCode, mt.code as materialPropertyValueTypeCode, cvt.code as vocabularyPropertyValue "
+    @Select(sql = "select p.expe_id as objectId, case pt.is_internal_namespace when FALSE then pt.code else '$' || pt.code end as propertyCode, "
+            + "p.value as propertyValue, m.code as materialPropertyValueCode, mt.code as materialPropertyValueTypeCode, "
+            + "s.perm_id as sample_perm_id, s.id as sample_id, "
+            + "cvt.code as vocabularyPropertyValue "
             + "from experiment_properties p "
+            + "left join samples s on p.samp_prop_id = s.id "
             + "left join materials m on p.mate_prop_id = m.id "
             + "left join controlled_vocabulary_terms cvt on p.cvte_id = cvt.id "
             + "left join material_types mt on m.maty_id = mt.id "
@@ -83,8 +88,15 @@ public interface ExperimentQuery extends ObjectQuery
             + "where p.mate_prop_id is not null and p.expe_id = any(?{1})", parameterBindings = { LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<MaterialPropertyRecord> getMaterialProperties(LongSet experimentIds);
 
+    @Select(sql = "select p.expe_id as objectId, case pt.is_internal_namespace when FALSE then pt.code else '$' || pt.code end as propertyCode, p.samp_prop_id as propertyValue "
+            + "from experiment_properties p "
+            + "join experiment_type_property_types etpt on p.etpt_id = etpt.id "
+            + "join property_types pt on etpt.prty_id = pt.id "
+            + "where p.samp_prop_id is not null and p.expe_id = any(?{1})", parameterBindings = { LongSetMapper.class }, fetchSize = FETCH_SIZE)
+    public List<SamplePropertyRecord> getSampleProperties(LongSet experimentIds);
+
     // PropertyQueryGenerator was used to generate this query
-    @Select(sql = "select ph.expe_id as objectId, ph.pers_id_author as authorId, case pt.is_internal_namespace when FALSE then pt.code else '$' || pt.code end as propertyCode, ph.value as propertyValue, ph.material as materialPropertyValue, ph.vocabulary_term as vocabularyPropertyValue, ph.valid_from_timestamp as validFrom, ph.valid_until_timestamp as validTo "
+    @Select(sql = "select ph.expe_id as objectId, ph.pers_id_author as authorId, case pt.is_internal_namespace when FALSE then pt.code else '$' || pt.code end as propertyCode, ph.value as propertyValue, ph.material as materialPropertyValue, ph.sample as samplePropertyValue, ph.vocabulary_term as vocabularyPropertyValue, ph.valid_from_timestamp as validFrom, ph.valid_until_timestamp as validTo "
             + "from experiment_properties_history ph "
             + "join experiment_type_property_types etpt on ph.etpt_id = etpt.id "
             + "join property_types pt on etpt.prty_id = pt.id "

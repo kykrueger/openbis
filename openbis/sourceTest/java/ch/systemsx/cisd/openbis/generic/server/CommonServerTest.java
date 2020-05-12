@@ -781,7 +781,7 @@ public final class CommonServerTest extends AbstractServerTestCase
         externalDataPE.setDataStore(dataStorePE);
         final AbstractExternalData externalData =
                 DataSetTranslator.translate(externalDataPE, BASE_INDEX_URL, null,
-                        new ManagedPropertyEvaluatorFactory(null, new TestJythonEvaluatorPool()));
+                        new ManagedPropertyEvaluatorFactory(null, new TestJythonEvaluatorPool()), null);
         prepareGetSession();
         final boolean showOnlyDirectlyConnected = true;
         context.checking(new Expectations()
@@ -821,7 +821,7 @@ public final class CommonServerTest extends AbstractServerTestCase
         externalDataPE.setDataStore(dataStorePE);
         final AbstractExternalData externalData =
                 DataSetTranslator.translate(externalDataPE, BASE_INDEX_URL, null,
-                        new ManagedPropertyEvaluatorFactory(null, new TestJythonEvaluatorPool()));
+                        new ManagedPropertyEvaluatorFactory(null, new TestJythonEvaluatorPool()), null);
         prepareGetSession();
         context.checking(new Expectations()
             {

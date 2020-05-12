@@ -43,23 +43,23 @@ public interface ISynchronizerFacade
 
     public void registerFileFormatType(FileFormatType type);
 
-    public void updatePropertyTypeAssignment(NewETPTAssignment newETPTAssignment);
+    public void updatePropertyTypeAssignment(NewETPTAssignment newETPTAssignment, String diff);
 
     public void assignPropertyType(NewETPTAssignment newETPTAssignment);
 
     public void unassignPropertyType(EntityKind entityKind, String propertyTypeCode, String entityTypeCode);
 
-    public void updatePropertyType(PropertyType propertyType);
+    public void updatePropertyType(PropertyType propertyType, String diff);
 
     public void registerPropertyType(PropertyType propertyType);
 
-    public void updateValidationPlugin(Script script);
+    public void updateValidationPlugin(Script script, String diff);
 
     public void registerValidationPlugin(Script script);
 
     public void registerVocabulary(NewVocabulary vocab);
 
-    public void updateVocabulary(Vocabulary vocab);
+    public void updateVocabulary(Vocabulary vocab, String diff);
 
     public void registerSampleType(SampleType sampleType);
 
@@ -69,7 +69,7 @@ public interface ISynchronizerFacade
 
     public void registerMaterialType(MaterialType materialType);
 
-    public void updateVocabularyTerm(VocabularyTerm term);
+    public void updateVocabularyTerm(String vocabularyCode, VocabularyTerm term, String diff);
 
     public void updateSampleType(EntityType incomingEntityType, String diff);
 

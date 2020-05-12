@@ -9,6 +9,8 @@ evaluationDependsOn(':datastore_server')
 
 apply from: '../gradle/javaproject.gradle'
 
+configurations.create('devRuntime')
+
 dependencies {
     compile project(':common'),
             project(':datastore_server'),
@@ -17,10 +19,16 @@ dependencies {
             'imagej:ij:1.43u',
             'bioformats:bioformats:5.9.2'
 
+    devRuntime project(path: ':openbis', configuration: 'devRuntime')
     testCompile project(path: ':datastore_server', configuration: 'tests')
 }
 
 sourceSets {
+    main {
+        resources {
+            srcDirs = ['source/java']
+        }
+    }
     test {
         resources {
             srcDirs = ['source/java']
@@ -44,6 +52,23 @@ task copyTestData(type: Copy, dependsOn: testClasses) {
     from "${project.projectDir}/sourceTest/java/ch/systemsx/cisd/openbis/dss/generic/server/graph"
     into "${project.buildDir}/classes/test/ch/systemsx/cisd/openbis/dss/generic/server/graph"
     include "*.properties"
+}
+
+task executeScreeningOpenBisDev(type: JavaExec) {
+    main = 'org.eclipse.jetty.runner.Runner'
+    classpath = sourceSets.main.runtimeClasspath + configurations.devRuntime
+    jvmArgs(['-Dpython.path=../libraries/jython/jython-lib', '-Dlog4j.configuration=../openbis/etc/log.xml',
+             '-Djavax.net.ssl.trustStore=../openbis/dist/server/openBIS.keystore',
+             '-Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.StrErrLog',
+             '-Dorg.mortbay.util.FileResource.checkAliases=false', '-Xmx2048M', '-XX:MaxPermSize=512m', '-ea'])
+    args(['--classes', '../commonbase/targets/gradle/classes/main',
+          '--classes', '../common/targets/gradle/classes/main',
+          '--classes', '../authentication/targets/gradle/classes/main',
+          '--classes', '../dbmigration/targets/gradle/classes/main',
+          '--classes', '../openbis-common/targets/gradle/classes/main',
+          '--classes', '../openbis_api/targets/gradle/classes/main',
+          '--classes', '../openbis/targets/gradle/classes/main',
+          '--classes', 'targets/gradle/classes/main', '--lib', 'targets/www/lib/', '--port', '8888', 'targets/www'])
 }
 
 task systemTestSuite(type: Test) {

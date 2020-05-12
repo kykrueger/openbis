@@ -31,6 +31,7 @@ import ch.systemsx.cisd.openbis.generic.server.business.bo.ISampleBO;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.datasetlister.IDatasetLister;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.materiallister.IMaterialLister;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.samplelister.ISampleLister;
+import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
 import ch.systemsx.cisd.openbis.generic.shared.dto.Session;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SampleIdentifier;
 import ch.systemsx.cisd.openbis.plugin.AbstractPluginBusinessObjectFactory;
@@ -210,5 +211,11 @@ public final class ScreeningBusinessObjectFactory extends AbstractPluginBusiness
     public IDatasetLister createDatasetLister(Session session)
     {
         return getCommonBusinessObjectFactory().createDatasetLister(session);
+    }
+
+    @Override
+    public IDAOFactory getDAOFactory()
+    {
+        return getDaoFactory();
     }
 }

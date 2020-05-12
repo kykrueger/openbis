@@ -119,6 +119,9 @@ public class Sample implements Serializable, IAttachmentsHolder, ICodeHolder, ID
     private Map<String, Material> materialProperties;
 
     @JsonProperty
+    private Map<String, Sample> sampleProperties;
+
+    @JsonProperty
     private List<Sample> parents;
 
     @JsonProperty
@@ -401,6 +404,23 @@ public class Sample implements Serializable, IAttachmentsHolder, ICodeHolder, ID
     public void setMaterialProperties(Map<String, Material> materialProperties)
     {
         this.materialProperties = materialProperties;
+    }
+
+    @JsonIgnore
+    public Map<String, Sample> getSampleProperties()
+    {
+        if (getFetchOptions() != null && getFetchOptions().hasSampleProperties())
+        {
+            return sampleProperties;
+        } else
+        {
+            throw new NotFetchedException("Sample Properties have not been fetched.");
+        }
+    }
+
+    public void setSampleProperties(Map<String, Sample> sampleProperties)
+    {
+        this.sampleProperties = sampleProperties;
     }
 
     // Method automatically generated with DtoGenerator

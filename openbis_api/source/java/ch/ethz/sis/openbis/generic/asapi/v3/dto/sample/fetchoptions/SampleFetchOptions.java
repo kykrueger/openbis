@@ -61,6 +61,9 @@ public class SampleFetchOptions extends FetchOptions<Sample> implements Serializ
     private MaterialFetchOptions materialProperties;
 
     @JsonProperty
+    private SampleFetchOptions sampleProperties;
+
+    @JsonProperty
     private SampleFetchOptions parents;
 
     @JsonProperty
@@ -223,6 +226,25 @@ public class SampleFetchOptions extends FetchOptions<Sample> implements Serializ
     public boolean hasMaterialProperties()
     {
         return materialProperties != null;
+    }
+
+    public SampleFetchOptions withSampleProperties()
+    {
+        if (sampleProperties == null)
+        {
+            sampleProperties = new SampleFetchOptions();
+        }
+        return sampleProperties;
+    }
+
+    public SampleFetchOptions withSamplePropertiesUsing(SampleFetchOptions fetchOptions)
+    {
+        return sampleProperties = fetchOptions;
+    }
+
+    public boolean hasSampleProperties()
+    {
+        return sampleProperties != null;
     }
 
     // Method automatically generated with DtoGenerator
@@ -462,6 +484,7 @@ public class SampleFetchOptions extends FetchOptions<Sample> implements Serializ
     {
         return sort;
     }
+
     @Override
     protected FetchOptionsToStringBuilder getFetchOptionsStringBuilder()
     {
@@ -472,6 +495,7 @@ public class SampleFetchOptions extends FetchOptions<Sample> implements Serializ
         f.addFetchOption("Experiment", experiment);
         f.addFetchOption("Properties", properties);
         f.addFetchOption("MaterialProperties", materialProperties);
+        f.addFetchOption("SampleProperties", sampleProperties);
         f.addFetchOption("Parents", parents);
         f.addFetchOption("Children", children);
         f.addFetchOption("Container", container);
