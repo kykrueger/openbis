@@ -1,3 +1,9 @@
+## Changes with pybis-1.14.7
+
+- bugfix: no longer any error in get_samples(), get_datasets() and get_experiments() when
+  properties are provided but no data was found
+
+
 ## Changes with pybis-1.14.6
 
 - bugfix duplicate property-columns in get_samples() and get_datasets()

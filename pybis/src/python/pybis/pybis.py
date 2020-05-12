@@ -1801,6 +1801,7 @@ class Openbis:
         if permId:
             sub_criteria.append(_common_search("as.dto.common.search.PermIdSearchCriteria", permId))
 
+
         criteria = {
             "criteria": sub_criteria,
             "@type": "as.dto.sample.search.SampleSearchCriteria",
@@ -1945,11 +1946,20 @@ class Openbis:
         response = resp['objects']
         parse_jackson(response)
 
-
         default_attrs = ['identifier', 'permId', 'type',
                  'registrator', 'registrationDate', 'modifier', 'modificationDate']
         display_attrs = default_attrs + attrs
+
+        if props is None:
+            props = []
+        else:
+            if isinstance(props, str):
+                props = [props]
+
         if len(response) == 0:
+            for prop in props:
+                if prop == '*': continue
+                display_attrs.append(prop)
             experiments = DataFrame(columns=display_attrs)
         else:
             experiments = DataFrame(response)
@@ -1974,16 +1984,26 @@ class Openbis:
             experiments['permId'] = experiments['permId'].map(extract_permid)
             experiments['type'] = experiments['type'].map(extract_code)
 
-        if props is not None:
             for prop in props:
-                if experiments.get('properties') is not None:
-                    experiments[prop.upper()] = experiments['properties'].map(
-                        lambda x: x.get(prop.upper(), '')
-                    )
-                else:
-                    experiments[prop.upper()] = ''
+                if prop == '*':
+                    # include all properties in dataFrame.
+                    # expand the dataFrame by adding new columns
+                    columns = []
+                    for i, experiment in enumerate(response):
+                        for prop_name, val in experiment.get('properties',{}).items():
+                            experiments.loc[i, prop_name.upper()] = val
+                            columns.append(prop_name.upper())
 
-                display_attrs.append(prop.upper())
+                    display_attrs += set(columns)
+                    continue
+
+                else:
+                    # property name is provided
+                    for i, experiment in enumerate(response):
+                        val = experiment.get('properties',{}).get(prop,'') or experiment.get('properties',{}).get(prop.upper(),'')
+                        experiments.loc[i, prop.upper()] = val
+                    display_attrs.append(prop.upper())
+
 
         return Things(
             openbis_obj = self,
@@ -3510,7 +3530,16 @@ class Openbis:
                     return ''
             return extract_attr
 
+        if props is None:
+            props = []
+        else:
+            if isinstance(props, str):
+                props = [props]
+
         if len(response) == 0:
+            for prop in props:
+                if prop == '*': continue
+                display_attrs.append(prop)
             datasets = DataFrame(columns=display_attrs)
         else:
             datasets = DataFrame(response)
@@ -3538,10 +3567,6 @@ class Openbis:
             datasets['presentInArchive'] = datasets['physicalData'].map(lambda x: x.get('presentInArchive') if x else '')
             datasets['location'] = datasets['physicalData'].map(lambda x: x.get('location') if x else '')
 
-        if props is not None:
-            if isinstance(props, str):
-                props = [props]
-
             for prop in props:
                 if prop == '*':
                     # include all properties in dataFrame.
@@ -3561,7 +3586,6 @@ class Openbis:
                         val = dataSet.get('properties',{}).get(prop,'') or dataSet.get('properties',{}).get(prop.upper(),'')
                         datasets.loc[i, prop.upper()] = val
                     display_attrs.append(prop.upper())
-
 
         return Things(
             openbis_obj = self,
@@ -3735,7 +3759,16 @@ class Openbis:
                  'registrator', 'registrationDate', 'modifier', 'modificationDate']
         display_attrs = default_attrs + attrs
 
+        if props is None:
+            props = []
+        else:
+            if isinstance(props, str):
+                props = [props]
+
         if len(response) == 0:
+            for prop in props:
+                if prop == '*': continue
+                display_attrs.append(prop)
             samples = DataFrame(columns=display_attrs)
         else:
             samples = DataFrame(response)
@@ -3757,10 +3790,6 @@ class Openbis:
             samples['identifier'] = samples['identifier'].map(extract_identifier)
             samples['permId'] = samples['permId'].map(extract_permid)
             samples['type'] = samples['type'].map(extract_nested_permid)
-
-        if props is not None:
-            if isinstance(props, str):
-                props = [props]
 
             for prop in props:
                 if prop == '*':
