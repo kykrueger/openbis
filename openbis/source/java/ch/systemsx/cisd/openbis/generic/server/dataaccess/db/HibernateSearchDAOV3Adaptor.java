@@ -42,13 +42,19 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
     private final static Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION,
             HibernateSearchDAOV3Adaptor.class);
 
+    private HibernateSearchDAO hibernateSearchDAO;
+
+    public HibernateSearchDAOV3Adaptor(HibernateSearchDAO hibernateSearchDAO) {
+        this.hibernateSearchDAO = hibernateSearchDAO;
+    }
+
     //
     // IHibernateSearchDAO interface
     //
 
     @Override
     public List<MatchingEntity> searchEntitiesByTerm(String userId, SearchableEntity searchableEntity, String searchTerm, HibernateSearchDataProvider dataProvider, boolean useWildcardSearchMode, int alreadyFoundEntities, int maxSize) throws DataAccessException {
-        throw new UnsupportedOperationException();
+        return this.hibernateSearchDAO.searchEntitiesByTerm(userId, searchableEntity, searchTerm, dataProvider, useWildcardSearchMode, alreadyFoundEntities, maxSize);
     }
 
 
