@@ -101,7 +101,7 @@ public class GlobalSearchManager implements IGlobalSearchManager
 
 //            if (searchResult.getScore() != null)
 //            {
-            matchingEntity.setScore((Float) fieldsMap.get(RANK_ALIAS));
+            matchingEntity.setScore((Double) fieldsMap.get(RANK_ALIAS));
 //            }
 
 //            final PropertyMatch match = new PropertyMatch();

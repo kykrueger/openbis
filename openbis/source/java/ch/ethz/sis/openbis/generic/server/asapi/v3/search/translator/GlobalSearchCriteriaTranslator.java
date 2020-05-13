@@ -138,16 +138,16 @@ public class GlobalSearchCriteriaTranslator
         sqlBuilder.append(IDENTIFIER_ALIAS).append(COMMA).append(SP);
 
         sqlBuilder.append(GREATEST).append(LP);
-        buildTsRank(sqlBuilder, MAIN_TABLE_ALIAS, value, args);
+        buildTsRank(sqlBuilder, PROPERTIES_TABLE_ALIAS, value, args);
         sqlBuilder.append(COMMA).append(SP);
         buildTsRank(sqlBuilder, CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS, value, args);
         sqlBuilder.append(COMMA).append(SP);
         sqlBuilder.append(CASE).append(SP).append(WHEN).append(SP);
         buildAttributesMatchCondition(sqlBuilder, criterion, tableMapper, args);
-        sqlBuilder.append(SP).append(THEN).append(SP).append(1).append(SP).append(ELSE).append(SP).append(0).append(SP).append(END);
+        sqlBuilder.append(SP).append(THEN).append(SP).append("1.0::float8").append(SP).append(ELSE).append(SP).append("0.0::float8").append(SP).append(END);
         sqlBuilder.append(RP).append(SP);
 
-        sqlBuilder.append(SP).append(RANK_ALIAS).append(COMMA).append(SP);
+        sqlBuilder.append(RANK_ALIAS).append(COMMA).append(SP);
 
         buildTsHeadline(sqlBuilder, value, args, PROPERTIES_TABLE_ALIAS + PERIOD + VALUE_COLUMN, VALUE_HEADLINE_ALIAS);
         sqlBuilder.append(COMMA).append(SP);
@@ -226,7 +226,7 @@ public class GlobalSearchCriteriaTranslator
 
         sqlBuilder.append(INNER_JOIN).append(SP).append(tableMapper.getValuesTable()).append(SP).append(PROPERTIES_TABLE_ALIAS).append(SP)
                 .append(ON).append(SP).append(MAIN_TABLE_ALIAS).append(PERIOD).append(ID_COLUMN).append(SP).append(EQ)
-                .append(SP).append(SPACE_TABLE_ALIAS).append(tableMapper.getValuesTableEntityIdField()).append(NL);
+                .append(SP).append(PROPERTIES_TABLE_ALIAS).append(SP).append(PERIOD).append(tableMapper.getValuesTableEntityIdField()).append(NL);
 
         sqlBuilder.append(LEFT_JOIN).append(SP).append(TableNames.CONTROLLED_VOCABULARY_TERM_TABLE).append(SP)
                 .append(CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS).append(SP).append(ON).append(SP).append(PROPERTIES_TABLE_ALIAS).append(PERIOD)
