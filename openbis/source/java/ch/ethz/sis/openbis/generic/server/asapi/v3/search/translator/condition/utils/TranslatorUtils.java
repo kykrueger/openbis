@@ -225,7 +225,8 @@ public class TranslatorUtils
         result.put(tableMapper.getAttributeTypesTable(), joinInformation3);
 
         final JoinInformation joinInformation4 = new JoinInformation();
-        joinInformation4.setJoinType(joinType);
+        // Workaroung for the issue with Postgres 12, where inner join causes problems.
+        joinInformation4.setJoinType(JoinType.LEFT);
         joinInformation4.setMainTable(tableMapper.getAttributeTypesTable());
         joinInformation4.setMainTableAlias(attributeTypesTableAlias);
         joinInformation4.setMainTableIdField(tableMapper.getAttributeTypesTableDataTypeIdField());
