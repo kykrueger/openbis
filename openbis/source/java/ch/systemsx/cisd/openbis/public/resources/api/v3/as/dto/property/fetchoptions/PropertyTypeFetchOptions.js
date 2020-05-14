@@ -1,4 +1,5 @@
-define([ "stjs", "as/dto/common/fetchoptions/FetchOptions", "as/dto/vocabulary/fetchoptions/VocabularyFetchOptions", "as/dto/material/fetchoptions/MaterialTypeFetchOptions",
+define([ "stjs", "as/dto/common/fetchoptions/FetchOptions", "as/dto/vocabulary/fetchoptions/VocabularyFetchOptions", "as/dto/material/fetchoptions/MaterialTypeFetchOptions", 
+		"as/dto/sample/fetchoptions/SampleTypeFetchOptions",
 		"as/dto/semanticannotation/fetchoptions/SemanticAnnotationFetchOptions", "as/dto/person/fetchoptions/PersonFetchOptions", "as/dto/property/fetchoptions/PropertyTypeSortOptions" ], function(
 		stjs, FetchOptions) {
 	var PropertyTypeFetchOptions = function() {
@@ -8,6 +9,7 @@ define([ "stjs", "as/dto/common/fetchoptions/FetchOptions", "as/dto/vocabulary/f
 		constructor.serialVersionUID = 1;
 		prototype.vocabulary = null;
 		prototype.materialType = null;
+		prototype.sampleType = null;
 		prototype.semanticAnnotations = null;
 		prototype.registrator = null;
 		prototype.sort = null;
@@ -36,6 +38,19 @@ define([ "stjs", "as/dto/common/fetchoptions/FetchOptions", "as/dto/vocabulary/f
 		};
 		prototype.hasMaterialType = function() {
 			return this.materialType != null;
+		};
+		prototype.withSampleType = function() {
+			if (this.sampleType == null) {
+				var SampleTypeFetchOptions = require("as/dto/sample/fetchoptions/SampleTypeFetchOptions");
+				this.sampleType = new SampleTypeFetchOptions();
+			}
+			return this.sampleType;
+		};
+		prototype.withSampleTypeUsing = function(fetchOptions) {
+			return this.sampleType = fetchOptions;
+		};
+		prototype.hasSampleType = function() {
+			return this.sampleType != null;
 		};
 		prototype.withSemanticAnnotations = function() {
 			if (this.semanticAnnotations == null) {
@@ -76,6 +91,7 @@ define([ "stjs", "as/dto/common/fetchoptions/FetchOptions", "as/dto/vocabulary/f
 	}, {
 		vocabulary : "VocabularyFetchOptions",
 		materialType : "MaterialTypeFetchOptions",
+		sampleType : "SampleTypeFetchOptions",
 		semanticAnnotations : "SemanticAnnotationFetchOptions",
 		registrator : "PersonFetchOptions",
 		sort : "PropertyTypeSortOptions"

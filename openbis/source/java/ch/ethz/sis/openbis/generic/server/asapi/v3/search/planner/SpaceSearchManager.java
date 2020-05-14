@@ -26,7 +26,9 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 
+import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -65,8 +67,8 @@ public class SpaceSearchManager extends AbstractSearchManager<SpaceSearchCriteri
     }
 
     @Override
-    public Set<Long> sortIDs(final Set<Long> filteredIDs, final SortOptions<Space> sortOptions) {
-        return doSortIDs(filteredIDs, sortOptions, TableMapper.SPACE);
+    public List<Long> sortIDs(final Collection<Long> ids, final SortOptions<Space> sortOptions) {
+        return doSortIDs(ids, sortOptions, TableMapper.SPACE);
     }
 
 }

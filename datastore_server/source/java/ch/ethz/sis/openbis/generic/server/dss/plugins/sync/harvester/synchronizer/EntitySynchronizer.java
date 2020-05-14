@@ -19,7 +19,6 @@ package ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchroniz
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -98,6 +97,7 @@ import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronize
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.util.DSPropertyUtils;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.util.Monitor;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.util.ServiceUtils;
+import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.util.SummaryUtils;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.util.V3Facade;
 import ch.systemsx.cisd.common.concurrent.ParallelizedExecutor;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
@@ -118,7 +118,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Experiment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.GenericEntityProperty;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IEntityProperty;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Identifier;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewAttachment;
@@ -127,7 +126,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewMaterial;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewMaterialWithType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewProject;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewSample;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewSpace;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PhysicalDataSet;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Project;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyType;
@@ -204,15 +202,15 @@ public class EntitySynchronizer
         Document doc = getResourceList();
         ResourceListParserData data = parseResourceList(doc);
 
-        processDeletions(data);
-        if (config.isMasterDataUpdate())
+        if (config.isDeletionAllowed())
         {
-            registerMasterData(data.getMasterData());
+            processDeletions(data);
         }
+        registerMasterData(data.getMasterData());
         MultiKeyMap<String, String> newEntities = registerEntities(data);
-        List<String> notSyncedAttachmentsHolders = registerAttachments(data, newEntities);
+        registerAttachments(data, newEntities);
         populateFileServiceRepository(data);
-        registerDataSets(data, notSyncedAttachmentsHolders);
+        registerDataSets(data);
 
         if (config.keepOriginalTimestampsAndUsers())
         {
@@ -229,16 +227,18 @@ public class EntitySynchronizer
     private void updateTimestampsAndUsers(ResourceListParserData data)
     {
         Monitor monitor = new Monitor("Update timestamps and users", operationLog);
+        SummaryUtils.printShortSummaryHeader(operationLog);
         createMissingUsers(data, monitor);
         DataSource dataSource = ServiceProvider.getDataSourceProvider().getDataSource("openbis-db");
         IHarvesterQuery query = QueryTool.getQuery(dataSource, IHarvesterQuery.class);
         Map<String, Long> userTechIdsByUserId = getUserTechIds(query);
-        updateMaterials(data.getMaterialsToProcess().values(), query, userTechIdsByUserId, monitor);
         updateSpaces(data.getRelevantSpacesToProcess(), query, userTechIdsByUserId, monitor);
         updateProjects(data.getProjectsToProcess().values(), query, userTechIdsByUserId, monitor);
         updateExperiments(data.getExperimentsToProcess().values(), query, userTechIdsByUserId, monitor);
         updateSamples(data.getSamplesToProcess().values(), query, userTechIdsByUserId, monitor);
         updateDataSets(data.getDataSetsToProcess().values(), query, userTechIdsByUserId, monitor);
+        updateMaterials(data.getMaterialsToProcess().values(), query, userTechIdsByUserId, monitor);
+        SummaryUtils.printShortSummaryFooter(operationLog);
     }
 
     private Map<String, Long> getUserTechIds(IHarvesterQuery query)
@@ -273,8 +273,8 @@ public class EntitySynchronizer
                 personCreations.add(personCreation);
             }
         }
-        monitor.log(personCreations.size() + " from " + users.size() + " users are new.");
-        if (personCreations.isEmpty() == false)
+        SummaryUtils.printShortAddedSummary(operationLog, personCreations.size(), "users");
+        if (personCreations.isEmpty() == false && config.isDryRun() == false)
         {
             v3Api.createPersons(service.getSessionToken(), personCreations);
         }
@@ -283,132 +283,150 @@ public class EntitySynchronizer
     private void updateMaterials(Collection<IncomingMaterial> materials, IHarvesterQuery query,
             Map<String, Long> userTechIdsByUserId, Monitor monitor)
     {
-        monitor.log("update " + materials.size() + " materials");
-        List<MaterialTypeRecord> listAllMaterialTypes = query.listAllMaterialTypes();
-        Map<String, Long> materialTypeIdsByCode = new HashMap<>();
-        for (MaterialTypeRecord materialTypeRecord : listAllMaterialTypes)
+        if (config.isDryRun() == false)
         {
-            materialTypeIdsByCode.put(materialTypeRecord.code, materialTypeRecord.id);
+            List<MaterialTypeRecord> listAllMaterialTypes = query.listAllMaterialTypes();
+            Map<String, Long> materialTypeIdsByCode = new HashMap<>();
+            for (MaterialTypeRecord materialTypeRecord : listAllMaterialTypes)
+            {
+                materialTypeIdsByCode.put(materialTypeRecord.code, materialTypeRecord.id);
+            }
+            List<RegistrationDTO> registrations = new ArrayList<>();
+            for (IncomingMaterial incomingMaterial : materials)
+            {
+                NewMaterialWithType material = incomingMaterial.getMaterial();
+                Long typeId = materialTypeIdsByCode.get(material.getType());
+                addRegistration(registrations, material.getCode(), typeId, incomingMaterial, userTechIdsByUserId);
+            }
+            query.updateMaterialRegistrations(registrations);
         }
-        List<RegistrationDTO> registrations = new ArrayList<>();
-        for (IncomingMaterial incomingMaterial : materials)
-        {
-            NewMaterialWithType material = incomingMaterial.getMaterial();
-            Long typeId = materialTypeIdsByCode.get(material.getType());
-            addRegistration(registrations, material.getCode(), typeId, incomingMaterial, userTechIdsByUserId);
-        }
-        query.updateMaterialRegistrations(registrations);
+        SummaryUtils.printShortUpdatedSummary(operationLog, materials.size(), "materials");
     }
 
     private void updateSpaces(Collection<IncomingSpace> spaces, IHarvesterQuery query,
             Map<String, Long> userTechIdsByUserId, Monitor monitor)
     {
-        monitor.log("update " + spaces.size() + " spaces");
-        List<RegistrationDTO> registrations = new ArrayList<>();
-        for (IncomingSpace incomingSpace : spaces)
+        if (config.isDryRun() == false)
         {
-            addRegistration(registrations, incomingSpace.getPermID(), incomingSpace, userTechIdsByUserId);
+            List<RegistrationDTO> registrations = new ArrayList<>();
+            for (IncomingSpace incomingSpace : spaces)
+            {
+                addRegistration(registrations, incomingSpace.getPermID(), incomingSpace, userTechIdsByUserId);
+            }
+            query.updateSpaceRegistrations(registrations);
         }
-        query.updateSpaceRegistrations(registrations);
+        SummaryUtils.printShortUpdatedSummary(operationLog, spaces.size(), "spaces");
     }
 
     private void updateProjects(Collection<IncomingProject> projects, IHarvesterQuery query,
             Map<String, Long> userTechIdsByUserId, Monitor monitor)
     {
-        monitor.log("update " + projects.size() + " projects");
-        List<RegistrationDTO> registrations = new ArrayList<>();
-        for (IncomingProject incomingProject : projects)
+        if (config.isDryRun() == false)
         {
-            addRegistration(registrations, incomingProject.getPermID(), incomingProject, userTechIdsByUserId);
+            List<RegistrationDTO> registrations = new ArrayList<>();
+            for (IncomingProject incomingProject : projects)
+            {
+                addRegistration(registrations, incomingProject.getPermID(), incomingProject, userTechIdsByUserId);
+            }
+            query.updateProjectRegistrations(registrations);
         }
-        query.updateProjectRegistrations(registrations);
+        SummaryUtils.printShortUpdatedSummary(operationLog, projects.size(), "projects");
     }
 
     private void updateExperiments(Collection<IncomingExperiment> experiments, IHarvesterQuery query,
             Map<String, Long> userTechIdsByUserId, Monitor monitor)
     {
-        monitor.log("update " + experiments.size() + " experiments");
-        List<RegistrationDTO> registrations = new ArrayList<>();
-        for (IncomingExperiment incomingExperiment : experiments)
+        if (config.isDryRun() == false)
         {
-            addRegistration(registrations, incomingExperiment.getPermID(), incomingExperiment, userTechIdsByUserId);
+            List<RegistrationDTO> registrations = new ArrayList<>();
+            for (IncomingExperiment incomingExperiment : experiments)
+            {
+                addRegistration(registrations, incomingExperiment.getPermID(), incomingExperiment, userTechIdsByUserId);
+            }
+            query.updateExperimentRegistrations(registrations);
         }
-        query.updateExperimentRegistrations(registrations);
+        SummaryUtils.printShortUpdatedSummary(operationLog, experiments.size(), "experiments");
     }
 
     private void updateSamples(Collection<IncomingSample> samples, IHarvesterQuery query,
             Map<String, Long> userTechIdsByUserId, Monitor monitor)
     {
-        monitor.log("update " + samples.size() + " samples");
-        BatchOperationExecutor.executeInBatches(new IBatchOperation<IncomingSample>()
-            {
-                @Override
-                public List<IncomingSample> getAllEntities()
+        if (config.isDryRun() == false)
+        {
+            BatchOperationExecutor.executeInBatches(new IBatchOperation<IncomingSample>()
                 {
-                    return new ArrayList<>(samples);
-                }
-
-                @Override
-                public void execute(List<IncomingSample> samples)
-                {
-                    List<RegistrationDTO> registrations = new ArrayList<>();
-                    for (IncomingSample incomingSamples : samples)
+                    @Override
+                    public List<IncomingSample> getAllEntities()
                     {
-                        addRegistration(registrations, incomingSamples.getPermID(), incomingSamples, userTechIdsByUserId);
+                        return new ArrayList<>(samples);
                     }
-                    query.updateSampleRegistrations(registrations);
-                }
 
-                @Override
-                public String getEntityName()
-                {
-                    return "sample";
-                }
+                    @Override
+                    public void execute(List<IncomingSample> samples)
+                    {
+                        List<RegistrationDTO> registrations = new ArrayList<>();
+                        for (IncomingSample incomingSamples : samples)
+                        {
+                            addRegistration(registrations, incomingSamples.getPermID(), incomingSamples, userTechIdsByUserId);
+                        }
+                        query.updateSampleRegistrations(registrations);
+                    }
 
-                @Override
-                public String getOperationName()
-                {
-                    return "update registration";
-                }
-            });
+                    @Override
+                    public String getEntityName()
+                    {
+                        return "sample";
+                    }
+
+                    @Override
+                    public String getOperationName()
+                    {
+                        return "update registration";
+                    }
+                });
+        }
+        SummaryUtils.printShortUpdatedSummary(operationLog, samples.size(), "samples");
     }
 
     private void updateDataSets(Collection<IncomingDataSet> dataSets, IHarvesterQuery query,
             Map<String, Long> userTechIdsByUserId, Monitor monitor)
     {
-        monitor.log("update " + dataSets.size() + " data sets");
-        BatchOperationExecutor.executeInBatches(new IBatchOperation<IncomingDataSet>()
-            {
-                @Override
-                public List<IncomingDataSet> getAllEntities()
+        if (config.isDryRun() == false)
+        {
+            BatchOperationExecutor.executeInBatches(new IBatchOperation<IncomingDataSet>()
                 {
-                    return new ArrayList<>(dataSets);
-                }
-
-                @Override
-                public void execute(List<IncomingDataSet> dataSets)
-                {
-                    List<RegistrationDTO> registrations = new ArrayList<>();
-                    for (IncomingDataSet incomingDataSet : dataSets)
+                    @Override
+                    public List<IncomingDataSet> getAllEntities()
                     {
-                        addRegistration(registrations, incomingDataSet.getFullDataSet().getMetadataCreation().getCode(),
-                                incomingDataSet, userTechIdsByUserId);
+                        return new ArrayList<>(dataSets);
                     }
-                    query.updateDataSetRegistrations(registrations);
-                }
 
-                @Override
-                public String getEntityName()
-                {
-                    return "data set";
-                }
+                    @Override
+                    public void execute(List<IncomingDataSet> dataSets)
+                    {
+                        List<RegistrationDTO> registrations = new ArrayList<>();
+                        for (IncomingDataSet incomingDataSet : dataSets)
+                        {
+                            addRegistration(registrations, incomingDataSet.getFullDataSet().getMetadataCreation().getCode(),
+                                    incomingDataSet, userTechIdsByUserId);
+                        }
+                        query.updateDataSetRegistrations(registrations);
+                    }
 
-                @Override
-                public String getOperationName()
-                {
-                    return "update registration";
-                }
-            });
+                    @Override
+                    public String getEntityName()
+                    {
+                        return "data set";
+                    }
+
+                    @Override
+                    public String getOperationName()
+                    {
+                        return "update registration";
+                    }
+                });
+        }
+        SummaryUtils.printShortUpdatedSummary(operationLog, dataSets.size(), "data sets");
     }
 
     private void addRegistration(List<RegistrationDTO> registrations, String permID, AbstractTimestampsAndUserHolder entity,
@@ -452,94 +470,111 @@ public class EntitySynchronizer
         Monitor monitor = new Monitor("Update frozen flags", operationLog);
         DataSource dataSource = ServiceProvider.getDataSourceProvider().getDataSource("openbis-db");
         IHarvesterQuery query = QueryTool.getQuery(dataSource, IHarvesterQuery.class);
+        SummaryUtils.printShortSummaryHeader(operationLog);
         updateSpaceFrozenFlags(data.getRelevantSpacesToProcess(), query, monitor);
         updateProjectFrozenFlags(data.getProjectsToProcess().values(), query, monitor);
         updateExperimentFrozenFlags(data.getExperimentsToProcess().values(), query, monitor);
         updateSampleFrozenFlags(data.getSamplesToProcess().values(), query, monitor);
         updateDataSetFrozenFlags(data.getDataSetsToProcess().values(), query, monitor);
+        SummaryUtils.printShortSummaryFooter(operationLog);
     }
 
     private void updateSpaceFrozenFlags(Collection<IncomingSpace> spaces, IHarvesterQuery query, Monitor monitor)
     {
-        monitor.log("Update frozen flags of " + spaces.size() + " spaces.");
-        query.updateSpaceFrozenFlags(spaces.stream().map(IncomingSpace::getFrozenFlags).collect(Collectors.toList()));
+        if (config.isDryRun() == false)
+        {
+            query.updateSpaceFrozenFlags(spaces.stream().map(IncomingSpace::getFrozenFlags).collect(Collectors.toList()));
+        }
+        SummaryUtils.printShortUpdatedSummary(operationLog, spaces.size(), "spaces");
     }
 
     private void updateProjectFrozenFlags(Collection<IncomingProject> projects, IHarvesterQuery query, Monitor monitor)
     {
-        monitor.log("Update frozen flags of " + projects.size() + " projects.");
-        query.updateProjectFrozenFlags(projects.stream().map(IncomingProject::getFrozenFlags).collect(Collectors.toList()));
+        if (config.isDryRun() == false)
+        {
+            query.updateProjectFrozenFlags(projects.stream().map(IncomingProject::getFrozenFlags).collect(Collectors.toList()));
+        }
+        SummaryUtils.printShortUpdatedSummary(operationLog, projects.size(), "projects");
     }
 
     private void updateExperimentFrozenFlags(Collection<IncomingExperiment> experiments, IHarvesterQuery query, Monitor monitor)
     {
-        monitor.log("Update frozen flags of " + experiments.size() + " experiments.");
-        query.updateExperimentFrozenFlags(experiments.stream().map(IncomingExperiment::getFrozenFlags).collect(Collectors.toList()));
+        if (config.isDryRun() == false)
+        {
+            query.updateExperimentFrozenFlags(experiments.stream().map(IncomingExperiment::getFrozenFlags).collect(Collectors.toList()));
+        }
+        SummaryUtils.printShortUpdatedSummary(operationLog, experiments.size(), "experiments");
     }
 
     private void updateSampleFrozenFlags(Collection<IncomingSample> samples, IHarvesterQuery query, Monitor monitor)
     {
-        monitor.log("Update frozen flags of " + samples.size() + " samples.");
-        BatchOperationExecutor.executeInBatches(new IBatchOperation<IncomingSample>()
-            {
-                @Override
-                public List<IncomingSample> getAllEntities()
+        if (config.isDryRun() == false)
+        {
+            BatchOperationExecutor.executeInBatches(new IBatchOperation<IncomingSample>()
                 {
-                    return new ArrayList<>(samples);
-                }
+                    @Override
+                    public List<IncomingSample> getAllEntities()
+                    {
+                        return new ArrayList<>(samples);
+                    }
 
-                @Override
-                public void execute(List<IncomingSample> samples)
-                {
-                    query.updateSampleFrozenFlags(samples.stream().map(IncomingSample::getFrozenFlags).collect(Collectors.toList()));
-                }
+                    @Override
+                    public void execute(List<IncomingSample> samples)
+                    {
+                        query.updateSampleFrozenFlags(samples.stream().map(IncomingSample::getFrozenFlags).collect(Collectors.toList()));
+                    }
 
-                @Override
-                public String getEntityName()
-                {
-                    return "sample";
-                }
+                    @Override
+                    public String getEntityName()
+                    {
+                        return "sample";
+                    }
 
-                @Override
-                public String getOperationName()
-                {
-                    return "update frozen flags";
-                }
-            });
+                    @Override
+                    public String getOperationName()
+                    {
+                        return "update frozen flags";
+                    }
+                });
+        }
+        SummaryUtils.printShortUpdatedSummary(operationLog, samples.size(), "samples");
     }
 
     private void updateDataSetFrozenFlags(Collection<IncomingDataSet> dataSets, IHarvesterQuery query, Monitor monitor)
     {
-        monitor.log("Update frozen flags of " + dataSets.size() + " data sets.");
-        BatchOperationExecutor.executeInBatches(new IBatchOperation<IncomingDataSet>()
-            {
-                @Override
-                public List<IncomingDataSet> getAllEntities()
+        if (config.isDryRun() == false)
+        {
+            BatchOperationExecutor.executeInBatches(new IBatchOperation<IncomingDataSet>()
                 {
-                    return new ArrayList<>(dataSets);
-                }
+                    @Override
+                    public List<IncomingDataSet> getAllEntities()
+                    {
+                        return new ArrayList<>(dataSets);
+                    }
 
-                @Override
-                public void execute(List<IncomingDataSet> dataSets)
-                {
-                    query.updateDataSetFrozenFlags(dataSets.stream().map(IncomingDataSet::getFrozenFlags).collect(Collectors.toList()));
-                }
+                    @Override
+                    public void execute(List<IncomingDataSet> dataSets)
+                    {
+                        query.updateDataSetFrozenFlags(dataSets.stream().map(IncomingDataSet::getFrozenFlags).collect(Collectors.toList()));
+                    }
 
-                @Override
-                public String getEntityName()
-                {
-                    return "data set";
-                }
+                    @Override
+                    public String getEntityName()
+                    {
+                        return "data set";
+                    }
 
-                @Override
-                public String getOperationName()
-                {
-                    return "update frozen flags";
-                }
-            });
+                    @Override
+                    public String getOperationName()
+                    {
+                        return "update frozen flags";
+                    }
+                });
+        }
+        SummaryUtils.printShortUpdatedSummary(operationLog, dataSets.size(), "dataSets");
     }
 
-    private void registerDataSets(ResourceListParserData data, List<String> notSyncedAttachmentsHolders) throws IOException
+    private void registerDataSets(ResourceListParserData data) throws IOException
     {
         Monitor monitor = new Monitor("Register data sets", operationLog);
         operationLog.info("Registering data sets...");
@@ -552,34 +587,36 @@ public class EntitySynchronizer
                 data.filterByDataSetKindAndLastModificationDate(DataSetKind.PHYSICAL, lastSyncTimestamp, dataSetsCodesToRetry,
                         blackListedDataSetCodes);
 
+        DataSetSynchronizationSummary summary = registerPhysicalDataSets(physicalDSMap);
         if (config.isVerbose())
         {
-            verboseLogPhysicalDataSetRegistrations(physicalDSMap);
+            Collections.sort(summary.createdDataSets);
+            printSummary(summary.createdDataSets, "PHYSICAL DATA SETS");
+            Collections.sort(summary.updatedDataSets);
+            SummaryUtils.printUpdatedSummary(operationLog, summary.updatedDataSets, "PHYSICAL DATA SETS");
         }
 
-        List<String> notRegisteredDataSetCodes = new ArrayList<>();
-        if (config.isDryRun() == false)
+        // backup the current not synched data set codes file, delete the original file
+        List<String> notRegisteredDataSetCodes = summary.notRegisteredDataSetCodes;
+        saveFailedEntitiesFile(summary.createdDataSets);
+        SummaryUtils.printShortSummaryHeader(operationLog);
+        SummaryUtils.printShortAddedSummary(operationLog, summary.createdDataSets.size(), "PHYSICAL DATA SETS");
+        if (notRegisteredDataSetCodes.isEmpty() == false)
         {
-            DataSetSynchronizationSummary dsRegistrationSummary = registerPhysicalDataSets(physicalDSMap);
-
-            // backup the current not synched data set codes file, delete the original file
-            saveFailedEntitiesFile(dsRegistrationSummary.notRegisteredDataSetCodes, notSyncedAttachmentsHolders);
-
-            notRegisteredDataSetCodes = dsRegistrationSummary.notRegisteredDataSetCodes;
-            operationLog.info("Data set synchronization summary:\n"
-                    + dsRegistrationSummary.addedDsCount + " data set(s) were added.\n"
-                    + dsRegistrationSummary.updatedDsCount + " data set(s) were updated.\n"
-                    + (notRegisteredDataSetCodes.isEmpty() ? ""
-                            : notRegisteredDataSetCodes.size()
-                                    + " data set(s) FAILED to register.\n")
-                    + blackListedDataSetCodes.size() + " data set(s)"
-                    + " were skipped because they were BLACK-LISTED.");
+            SummaryUtils.printShortSummary(operationLog, notRegisteredDataSetCodes.size(), "PHYSICAL DATA SETS",
+                    "FAILED to register.");
         }
+        SummaryUtils.printShortUpdatedSummary(operationLog, summary.updatedDataSets.size(), "PHYSICAL DATA SETS");
+        if (blackListedDataSetCodes.isEmpty() == false)
+        {
+            SummaryUtils.printShortSummary(operationLog, blackListedDataSetCodes.size(), "PHYSICAL DATA SETS",
+                    "were skipped because they were BLACK-LISTED.");
+
+        }
+        SummaryUtils.printShortSummaryFooter(operationLog);
 
         // link physical data sets registered above to container data sets
         // and set parent/child relationships
-        operationLog.info("\n");
-        operationLog.info("Start establishing data set hierarchies...");
         List<String> skippedDataSets = new ArrayList<String>();
         skippedDataSets.addAll(notRegisteredDataSetCodes);
         skippedDataSets.addAll(blackListedDataSetCodes);
@@ -598,11 +635,9 @@ public class EntitySynchronizer
         Collection<IncomingDataSet> values = linkDataSets.values();
         List<DataSetPermId> dataSetIds =
                 values.stream().map(ds -> new DataSetPermId(ds.getFullDataSet().getMetadataCreation().getCode())).collect(Collectors.toList());
-        System.err.println("new data sets:" + dataSetIds);
         DataSetFetchOptions fetchOptions = new DataSetFetchOptions();
         fetchOptions.withLinkedData();
         Map<IDataSetId, DataSet> existingDataSets = v3Api.getDataSets(service.getSessionToken(), dataSetIds, fetchOptions);
-        System.err.println("existing data sets:" + existingDataSets.keySet());
         List<DataSetUpdate> updates = new ArrayList<>();
         List<FullDataSetCreation> creations = new ArrayList<>();
         for (IncomingDataSet incomingDataSet : values)
@@ -626,6 +661,15 @@ public class EntitySynchronizer
         {
             v3DssApi.createDataSets(service.getSessionToken(), creations);
         }
+        if (config.isVerbose())
+        {
+            printSummary(creations, "LINK DATA SETS");
+            printLinkDataSetUpdatesSummary(updates);
+        }
+        SummaryUtils.printShortSummaryHeader(operationLog);
+        SummaryUtils.printShortAddedSummary(operationLog, creations.size(), "LINK DATA SETS");
+        SummaryUtils.printShortUpdatedSummary(operationLog, updates.size(), "LINK DATA SETS");
+        SummaryUtils.printShortSummaryFooter(operationLog);
     }
 
     private DataSetUpdate createLinkDataUpdate(Map<IDataSetId, DataSet> existingDataSets, DataSetCreation dataSet,
@@ -665,32 +709,21 @@ public class EntitySynchronizer
         return result;
     }
 
-    private List<String> registerAttachments(ResourceListParserData data, MultiKeyMap<String, String> newEntities)
+    private void registerAttachments(ResourceListParserData data, MultiKeyMap<String, String> newEntities)
     {
         Monitor monitor = new Monitor("Register attachments", operationLog);
         operationLog.info("Processing attachments...");
         List<IncomingEntity<?>> attachmentHoldersToProcess =
                 data.filterAttachmentHoldersByLastModificationDate(lastSyncTimestamp, attachmentHolderCodesToRetry);
         monitor.log(attachmentHoldersToProcess.size() + " to process");
-        if (config.isVerbose())
-        {
-            verboseLogProcessAttachments(attachmentHoldersToProcess, newEntities);
-        }
 
-        List<String> notSyncedAttachmentsHolders = new ArrayList<String>();
-        if (config.isDryRun() == false)
-        {
-            AttachmentSynchronizationSummary syncSummary = processAttachments(attachmentHoldersToProcess, monitor);
-            notSyncedAttachmentsHolders = syncSummary.notRegisteredAttachmentHolderCodes;
-            operationLog.info("Attachment synchronization summary:\n" + syncSummary.addedCount + " attachment(s) were added.\n"
-                    + syncSummary.updatedCount + " attachment(s) were updated.\n"
-                    + syncSummary.deletedCount + " attachment(s) were deleted.\n"
-                    + (notSyncedAttachmentsHolders.isEmpty() ? ""
-                            : "synchronization of attachments for "
-                                    + notSyncedAttachmentsHolders.size() + " entitities FAILED."));
-        }
+        AttachmentSynchronizationSummary syncSummary = processAttachments(attachmentHoldersToProcess, monitor);
+        SummaryUtils.printShortSummaryHeader(operationLog);
+        SummaryUtils.printShortAddedSummary(operationLog, syncSummary.addedCount.intValue(), "attachments");
+        SummaryUtils.printShortUpdatedSummary(operationLog, syncSummary.updatedCount.intValue(), "attachments");
+        SummaryUtils.printShortRemovedSummary(operationLog, syncSummary.deletedCount.intValue(), "attachments");
+        SummaryUtils.printShortSummaryFooter(operationLog);
         monitor.log();
-        return notSyncedAttachmentsHolders;
     }
 
     private void populateFileServiceRepository(ResourceListParserData data)
@@ -704,27 +737,42 @@ public class EntitySynchronizer
         {
             String path = entry.getKey();
             byte[] fileContent = entry.getValue();
-            File file = new File(fileRepo, path);
-            file.getParentFile().mkdirs();
-            FileUtilities.writeToFile(file, fileContent);
+            if (config.isDryRun() == false)
+            {
+                File file = new File(fileRepo, path);
+                file.getParentFile().mkdirs();
+                FileUtilities.writeToFile(file, fileContent);
+            }
+            if (config.isVerbose())
+            {
+                operationLog.info(String.format("%10d bytes, file: %s", fileContent.length, path));
+            }
             count++;
             totalSize += fileContent.length;
         }
-        monitor.log(count + " files (total size: " + FileUtilities.byteCountToDisplaySize(totalSize) + ") have been saved.");
+        SummaryUtils.printShortSummaryHeader(operationLog);
+        operationLog.info("| " + count + " files (total size: " + FileUtilities.byteCountToDisplaySize(totalSize) + ") have been saved.");
+        SummaryUtils.printShortSummaryFooter(operationLog);
+        monitor.log();
     }
 
     private MultiKeyMap<String, String> registerEntities(ResourceListParserData data)
     {
         Monitor monitor = new Monitor("Register entities", operationLog);
-        AtomicEntityOperationDetails entityOperationDetails = createEntityOperationDetails(data, monitor);
+        AtomicEntityOperationDetails details = createEntityOperationDetails(data, monitor);
 
         MultiKeyMap<String, String> newEntities = new MultiKeyMap<String, String>();
         if (config.isDryRun() == false)
         {
-            AtomicEntityOperationResult operationResult = service.performEntityOperations(entityOperationDetails);
-            newEntities = getNewEntities(entityOperationDetails);
+            AtomicEntityOperationResult operationResult = service.performEntityOperations(details);
+            newEntities = getNewEntities(details);
             operationLog.info("Entity operation result: " + operationResult);
         }
+        if (config.isVerbose() == true)
+        {
+            printSummary(details);
+        }
+        printShortSummary(details);
         monitor.log();
         return newEntities;
     }
@@ -740,12 +788,7 @@ public class EntitySynchronizer
         processSamples(data, builder, monitor);
         processMaterials(data, builder);
 
-        AtomicEntityOperationDetails entityOperationDetails = builder.getDetails();
-        if (config.isVerbose() == true)
-        {
-            verboseLogEntityOperations(entityOperationDetails);
-        }
-        return entityOperationDetails;
+        return builder.getDetails();
     }
 
     private void processSpaces(ResourceListParserData data, AtomicEntityOperationDetailsBuilder builder)
@@ -812,154 +855,96 @@ public class EntitySynchronizer
         return newEntities;
     }
 
-    private void verboseLogPhysicalDataSetRegistrations(Map<String, IncomingDataSet> physicalDSMap)
+    private void printShortSummary(AtomicEntityOperationDetails details)
     {
-        if (physicalDSMap.isEmpty() == false)
-        {
-            operationLog.info("-------The following physical data sets will be processed-------");
-            for (String dsCode : physicalDSMap.keySet())
-            {
-                operationLog.info(dsCode);
-            }
-        }
+        SummaryUtils.printShortSummaryHeader(operationLog);
+        SummaryUtils.printShortAddedSummary(operationLog, details.getSpaceRegistrations().size(), "SPACES");
+        SummaryUtils.printShortAddedSummary(operationLog, details.getProjectRegistrations().size(), "PROJECTS");
+        SummaryUtils.printShortUpdatedSummary(operationLog, details.getProjectUpdates().size(), "PROJECTS");
+        SummaryUtils.printShortAddedSummary(operationLog, details.getExperimentRegistrations().size(), "EXPERIMENTS");
+        SummaryUtils.printShortUpdatedSummary(operationLog, details.getExperimentUpdates().size(), "EXPERIMENTS");
+        SummaryUtils.printShortAddedSummary(operationLog, details.getSampleRegistrations().size(), "SAMPLES");
+        SummaryUtils.printShortUpdatedSummary(operationLog, details.getSampleUpdates().size(), "SAMPLE");
+        SummaryUtils.printShortAddedSummary(operationLog, details.getMaterialRegistrations().size(), "MATERIALS");
+        SummaryUtils.printShortUpdatedSummary(operationLog, details.getMaterialUpdates().size(), "MATERIALS");
+        SummaryUtils.printShortSummaryFooter(operationLog);
     }
 
-    private void verboseLogProcessAttachments(List<IncomingEntity<?>> attachmentHoldersToProcess, MultiKeyMap<String, String> newEntities)
+    private void printSummary(AtomicEntityOperationDetails details)
     {
-        if (attachmentHoldersToProcess.isEmpty() == false)
-        {
-            operationLog.info("-------Attachments for the following entities will be processed-------");
-            for (IncomingEntity<?> holder : attachmentHoldersToProcess)
-            {
-                // the following is done to not list holders in the log when they are just being created and have no attachments
-                // updated ones will logged because the attachments might have been deleted.
-                if (newEntities.containsKey(holder.getEntityKind().toString(), holder.getPermID()) == true)
-                {
-                    if (holder.hasAttachments() == false)
-                    {
-                        continue;
-                    }
-                }
-                operationLog.info(holder.getIdentifier());
-            }
-        }
+        printSummary(details.getSpaceRegistrations(), "SPACES");
+        printSummary(details.getProjectRegistrations(), "PROJECTS");
+        printProjectUpdatesSummary(details.getProjectUpdates());
+        printSummary(details.getExperimentRegistrations(), "EXPERIMENTS");
+        printExperimentUpdatesSummary(details.getExperimentUpdates());
+        printSummary(details.getSampleRegistrations(), "SAMPLES");
+        printSampleUpdatesSummary(details.getSampleUpdates());
+        printMaterialsSummary(details.getMaterialRegistrations());
+        printMaterialUpdatesSummary(details.getMaterialUpdates());
     }
 
-    private void verboseLogDataSetUpdateOperation(List<DataSetBatchUpdatesDTO> dataSetUpdates)
+    private void printSummary(List<?> items, String type)
     {
-        if (dataSetUpdates.isEmpty() == false)
-        {
-            operationLog.info("-------The relationship hirearchies for the following pdata sets will be established-------");
-            for (DataSetBatchUpdatesDTO dto : dataSetUpdates)
-            {
-                operationLog.info(dto.getDatasetCode());
-            }
-        }
+        List<String> identifiers = items.stream().map(Object::toString).collect(Collectors.toList());
+        Collections.sort(identifiers);
+        SummaryUtils.printAddedSummary(operationLog, identifiers, type);
     }
 
-    private void verboseLogEntityOperations(AtomicEntityOperationDetails details)
+    private void printProjectUpdatesSummary(List<ProjectUpdatesDTO> updates)
     {
-        List<NewSpace> spaceRegistrations = details.getSpaceRegistrations();
-        if (spaceRegistrations.size() > 0)
-        {
-            operationLog.info("-------The following spaces will be created------- ");
-            for (NewSpace newSpace : spaceRegistrations)
-            {
-                operationLog.info(newSpace.getCode());
-            }
-        }
-        verboseLogEntityRegistrations(details.getProjectRegistrations());
-        verboseLogEntityRegistrations(details.getExperimentRegistrations());
-        verboseLogEntityRegistrations(details.getSampleRegistrations());
-        verboseLogMaterialRegistration(details.getMaterialRegistrations());
-        verboseLogSampleUpdates(details.getSampleUpdates());
-        verboseLogExperimentUpdates(details.getExperimentUpdates());
-        verboseLogProjectUpdates(details.getProjectUpdates());
-        verboseLogMaterialUpdates(details.getMaterialUpdates());
+        List<String> identifiers = updates.stream().map(ProjectUpdatesDTO::getIdentifier).collect(Collectors.toList());
+        Collections.sort(identifiers);
+        SummaryUtils.printUpdatedSummary(operationLog, identifiers, "PROJECTS");
     }
 
-    private void verboseLogMaterialUpdates(List<MaterialUpdateDTO> materialUpdates)
+    private void printExperimentUpdatesSummary(List<ExperimentUpdatesDTO> updates)
+    {
+        List<String> identifiers = updates.stream().map(u -> u.getProjectIdentifier().asProjectIdentifierString()).collect(Collectors.toList());
+        Collections.sort(identifiers);
+        SummaryUtils.printUpdatedSummary(operationLog, identifiers, "EXPERIMENTS");
+    }
+
+    private void printSampleUpdatesSummary(List<SampleUpdatesDTO> updates)
+    {
+        List<String> identifiers = updates.stream().map(u -> u.getSampleIdentifier().toString()).collect(Collectors.toList());
+        Collections.sort(identifiers);
+        SummaryUtils.printUpdatedSummary(operationLog, identifiers, "SAMPLES");
+    }
+
+    private void printDataSetUpdatesSummary(List<DataSetBatchUpdatesDTO> updates)
+    {
+        List<String> identifiers = updates.stream().map(u -> u.getCode()).collect(Collectors.toList());
+        Collections.sort(identifiers);
+        SummaryUtils.printUpdatedSummary(operationLog, identifiers, "DATA SETS");
+    }
+
+    private void printLinkDataSetUpdatesSummary(List<DataSetUpdate> updates)
+    {
+        List<String> identifiers = updates.stream().map(u -> u.getDataSetId().toString()).collect(Collectors.toList());
+        Collections.sort(identifiers);
+        SummaryUtils.printUpdatedSummary(operationLog, identifiers, "LINK DATA SETS");
+    }
+
+    private void printMaterialsSummary(Map<String, List<NewMaterial>> materials)
+    {
+        List<String> details = new ArrayList<>();
+        for (Entry<String, List<NewMaterial>> entry : materials.entrySet())
+        {
+            String typeCode = entry.getKey();
+            for (NewMaterial material : entry.getValue())
+            {
+                details.add(MaterialIdentifier.print(material.getCode(), typeCode));
+            }
+        }
+        Collections.sort(details);
+        SummaryUtils.printAddedSummary(operationLog, details, "MATERIALS");
+    }
+
+    private void printMaterialUpdatesSummary(List<MaterialUpdateDTO> materialUpdates)
     {
         if (materialUpdates.isEmpty() == false)
         {
-            operationLog.info("-------" + materialUpdates.size() + " materials will be updated-------");
-        }
-    }
-
-    private void verboseLogMaterialRegistration(Map<String, List<NewMaterial>> materials)
-    {
-        if (materials.isEmpty() == false)
-        {
-            operationLog.info("-------The following materials will be registered-------");
-            for (String type : materials.keySet())
-            {
-                operationLog.info("-------Materials of type " + type + " -------");
-                List<NewMaterial> list = materials.get(type);
-                for (NewMaterial newMaterial : list)
-                {
-                    operationLog.info(newMaterial.getCode());
-                }
-            }
-        }
-    }
-
-    private void verboseLogSampleUpdates(List<SampleUpdatesDTO> sampleUpdates)
-    {
-        if (sampleUpdates.isEmpty() == false)
-        {
-            operationLog.info("-------The following samples will be updated-------");
-            for (SampleUpdatesDTO dto : sampleUpdates)
-            {
-                operationLog.info(dto.getSampleIdentifier());
-            }
-        }
-    }
-
-    private void verboseLogExperimentUpdates(List<ExperimentUpdatesDTO> experimentUpdates)
-    {
-        if (experimentUpdates.isEmpty() == false)
-        {
-            operationLog.info("-------The following experiments will be updated-------");
-            for (ExperimentUpdatesDTO dto : experimentUpdates)
-            {
-                operationLog.info(dto.getProjectIdentifier());
-            }
-        }
-    }
-
-    private void verboseLogProjectUpdates(List<ProjectUpdatesDTO> projectUpdates)
-    {
-        if (projectUpdates.isEmpty() == false)
-        {
-            operationLog.info("-------The following projects will be updated-------");
-            for (ProjectUpdatesDTO dto : projectUpdates)
-            {
-                operationLog.info(dto.getIdentifier());
-            }
-        }
-    }
-
-    private void verboseLogEntityRegistrations(List<? extends Identifier<?>> entityRegistrations)
-    {
-        if (entityRegistrations.isEmpty() == false)
-        {
-            Identifier<?> identifier = entityRegistrations.get(0);
-            SyncEntityKind entityKind = null;
-            if (identifier instanceof NewSample)
-            {
-                entityKind = SyncEntityKind.SAMPLE;
-            } else if (identifier instanceof NewExperiment)
-            {
-                entityKind = SyncEntityKind.EXPERIMENT;
-            } else if (identifier instanceof NewExperiment)
-            {
-                entityKind = SyncEntityKind.PROJECT;
-            }
-            operationLog.info("-------The following " + entityKind + "(s) will be created-------");
-            for (Identifier<?> entity : entityRegistrations)
-            {
-                operationLog.info(entity.getIdentifier());
-            }
+            SummaryUtils.printUpdatedSummary(operationLog, Arrays.asList(materialUpdates.size() + " materials"), "MATERIALS");
         }
     }
 
@@ -975,7 +960,7 @@ public class EntitySynchronizer
         String sessionTokenDataSource = v3apiDataSource.login(config.getUser(), config.getPassword());
         ParallelizedExecutor.process(attachmentHoldersChunks,
                 new AttachmentsSynchronizer(v3Api, service.getSessionToken(), v3apiDataSource, sessionTokenDataSource,
-                        lastSyncTimestamp, synchronizationSummary, monitor),
+                        lastSyncTimestamp, synchronizationSummary, config.isDryRun(), monitor),
                 preferences.getMachineLoad(), preferences.getMaxThreads(), "process attachments", preferences.getRetriesOnFail(),
                 preferences.isStopOnFailure());
 
@@ -1135,16 +1120,21 @@ public class EntitySynchronizer
             builder.dataSetUpdate(dsBatchUpdatesDTO);
         }
 
+        AtomicEntityOperationDetails details = builder.getDetails();
+        if (config.isDryRun() == false)
+        {
+            AtomicEntityOperationResult operationResult = service.performEntityOperations(details);
+            operationLog.info("entity operation result: " + operationResult);
+        }
         if (config.isVerbose())
         {
-            verboseLogDataSetUpdateOperation(builder.getDetails().getDataSetUpdates());
+            printSummary(details.getDataSetRegistrations(), "CONTAINER DATA SETS");
+            printDataSetUpdatesSummary(details.getDataSetUpdates());
         }
-        if (config.isDryRun())
-        {
-            return;
-        }
-        AtomicEntityOperationResult operationResult = service.performEntityOperations(builder.getDetails());
-        operationLog.info("entity operation result: " + operationResult);
+        SummaryUtils.printShortSummaryHeader(operationLog);
+        SummaryUtils.printShortAddedSummary(operationLog, details.getDataSetRegistrations().size(), "CONTAINER DATA SETS");
+        SummaryUtils.printShortUpdatedSummary(operationLog, details.getDataSetUpdates().size(), "DATA SETS");
+        SummaryUtils.printShortSummaryFooter(operationLog);
     }
 
     private boolean isParentModified(Map<String, Set<String>> dsToParents, NewExternalData dataSet)
@@ -1185,7 +1175,7 @@ public class EntitySynchronizer
         return dataSetSynchronizationSummary;
     }
 
-    private void saveFailedEntitiesFile(List<String> notRegisteredDataSetCodes, List<String> notSyncedAttachmentsHolders) throws IOException
+    private void saveFailedEntitiesFile(List<String> notRegisteredDataSetCodes) throws IOException
     {
         File notSyncedEntitiesFile = new File(config.getNotSyncedEntitiesFileName());
         if (notSyncedEntitiesFile.exists())
@@ -1198,11 +1188,6 @@ public class EntitySynchronizer
         {
             FileUtilities.appendToFile(notSyncedEntitiesFile, SyncEntityKind.DATA_SET + "-" + dsCode, true);
         }
-        // append the ids of holder entities for the failed attachment synchronizations
-        for (String holderCode : notSyncedAttachmentsHolders)
-        {
-            FileUtilities.appendToFile(notSyncedEntitiesFile, holderCode, true);
-        }
         // append the blacklisted codes to the end of the file
         for (String dsCode : blackListedDataSetCodes)
         {
@@ -1214,15 +1199,15 @@ public class EntitySynchronizer
     {
         File backupLastSyncTimeStampFile = new File(config.getNotSyncedEntitiesFileName() + ".bk");
         FileUtils.copyFile(notSyncedDataSetsFile, backupLastSyncTimeStampFile);
-        FileUtils.writeStringToFile(notSyncedDataSetsFile, "", Charset.defaultCharset());
+        FileUtilities.writeToFile(notSyncedDataSetsFile, "");
     }
 
     private void registerMasterData(MasterData masterData)
     {
         Monitor monitor = new Monitor("Register master data", operationLog);
         operationLog.info("Registering master data...");
-        MasterDataSynchronizer masterDataSyncronizer = new MasterDataSynchronizer(config, operationLog);
-        masterDataSyncronizer.synchronizeMasterData(masterData, monitor);
+        MasterDataSynchronizer masterDataSynchronizer = new MasterDataSynchronizer(config, operationLog);
+        masterDataSynchronizer.synchronizeMasterData(masterData, monitor);
         monitor.log();
     }
 
@@ -1456,8 +1441,7 @@ public class EntitySynchronizer
         }
     }
 
-    private void processExperiments(ResourceListParserData data,
-            AtomicEntityOperationDetailsBuilder builder)
+    private void processExperiments(ResourceListParserData data, AtomicEntityOperationDetailsBuilder builder)
     {
         // process experiments
         Map<String, IncomingExperiment> experimentsToProcess = data.getExperimentsToProcess();
@@ -1475,7 +1459,6 @@ public class EntitySynchronizer
                     // doing nothing because when the experiment with the perm id not found
                     // an exception will be thrown. Seems to be the same with entity kinds
                 }
-
                 if (experiment == null)
                 {
                     // ADD EXPERIMENT
@@ -1550,7 +1533,6 @@ public class EntitySynchronizer
                     // TODO doing nothing because when the project with the perm is not found
                     // an exception will be thrown. See bug report SSDM-4108
                 }
-
                 if (project == null)
                 {
                     // ADD PROJECT
@@ -1656,7 +1638,12 @@ public class EntitySynchronizer
             }
         }
 
-        // create sample update dtos for the samples that need to be updated
+        createSampleUpdates(builder, samplesToUpdate, sampleWithUpdatedParents);
+    }
+
+    private void createSampleUpdates(AtomicEntityOperationDetailsBuilder builder, Map<SampleIdentifier, NewSample> samplesToUpdate,
+            Set<String> sampleWithUpdatedParents)
+    {
         for (SampleIdentifier sampleIdentifier : samplesToUpdate.keySet())
         {
             NewSample incomingSmp = samplesToUpdate.get(sampleIdentifier);

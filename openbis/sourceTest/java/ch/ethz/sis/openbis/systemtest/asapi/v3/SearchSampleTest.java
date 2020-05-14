@@ -18,7 +18,6 @@ package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.CacheMode;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CodesSearchCriteria;
@@ -40,7 +39,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagCode;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagPermId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.ISQLExecutor;
 import ch.systemsx.cisd.common.test.AssertionUtil;
-import ch.systemsx.cisd.openbis.generic.shared.api.v1.IGeneralInformationService;
 import ch.systemsx.cisd.openbis.systemtest.authorization.ProjectAuthorizationUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
@@ -979,30 +977,6 @@ public class SearchSampleTest extends AbstractSampleTest
         v3api.logout(sessionToken);
     }
 
-    // TODO: get rid of SortOrder, it makes sense only for full text search.
-//    @Test
-//    public void testSearchWithSortingByCodeScore()
-//    {
-//        SampleSearchCriteria criteria = new SampleSearchCriteria();
-//        criteria.withOrOperator();
-//        criteria.withCode().thatContains("CP-TEST");
-//        criteria.withCode().thatContains("TEST-1");
-//
-//        String sessionToken = v3api.login(TEST_USER, PASSWORD);
-//
-//        SampleFetchOptions fo = new SampleFetchOptions();
-//
-//        fo.sortBy().fetchedFieldsScore().asc();
-//        List<Sample> samples1 = search(sessionToken, criteria, fo);
-//        assertTrue(samples1.get(0).getCode().equals("CP-TEST-1"));
-//
-//        fo.sortBy().fetchedFieldsScore().desc();
-//        List<Sample> samples2 = search(sessionToken, criteria, fo);
-//        assertTrue(samples2.get(samples1.size() - 1).getCode().equals("CP-TEST-1"));
-//
-//        v3api.logout(sessionToken);
-//    }
-
     @Test
     public void testSearchWithSortingByIdentifier()
     {
@@ -1258,16 +1232,19 @@ public class SearchSampleTest extends AbstractSampleTest
         fo.sortBy().code().asc();
 
         fo.from(0).count(1);
-        List<Sample> samples1 = search(sessionToken, criteria, fo);
-        assertSampleIdentifiersInOrder(samples1, "/CISD/CP-TEST-1");
+        final SearchResult<Sample> searchResult1 = v3api.searchSamples(sessionToken, criteria, fo);
+        assertEquals(searchResult1.getTotalCount(), 3);
+        assertSampleIdentifiersInOrder(searchResult1.getObjects(), "/CISD/CP-TEST-1");
 
         fo.from(1).count(1);
-        List<Sample> samples2 = search(sessionToken, criteria, fo);
-        assertSampleIdentifiersInOrder(samples2, "/CISD/CP-TEST-2");
+        final SearchResult<Sample> searchResult2 = v3api.searchSamples(sessionToken, criteria, fo);
+        assertEquals(searchResult2.getTotalCount(), 3);
+        assertSampleIdentifiersInOrder(searchResult2.getObjects(), "/CISD/CP-TEST-2");
 
         fo.from(2).count(1);
-        List<Sample> samples3 = search(sessionToken, criteria, fo);
-        assertSampleIdentifiersInOrder(samples3, "/CISD/CP-TEST-3");
+        final SearchResult<Sample> searchResult3 = v3api.searchSamples(sessionToken, criteria, fo);
+        assertEquals(searchResult3.getTotalCount(), 3);
+        assertSampleIdentifiersInOrder(searchResult3.getObjects(), "/CISD/CP-TEST-3");
 
         v3api.logout(sessionToken);
     }

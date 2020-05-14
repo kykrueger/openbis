@@ -16,7 +16,7 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate;
 
-import java.util.List;
+import java.util.Collection;
 
 /**
  * Translator from long IDs to {@link OBJECT_PE} type.
@@ -26,6 +26,6 @@ import java.util.List;
 public interface IID2PETranslator<OBJECT_PE>
 {
 
-    List<OBJECT_PE> translate(final List<Long> ids);
+    Collection <OBJECT_PE> translate(final Collection<Long> ids);
 
 }

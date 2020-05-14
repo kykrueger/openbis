@@ -273,11 +273,11 @@ public class UploadingCommandTest extends AssertJUnit
         createTestData(LOCATION1);
         ds2 = createTestData(LOCATION2);
         AbstractExternalData dataSet1 =
-                DataSetTranslator.translate(createDataSet("1"), "?", null, null,
+                DataSetTranslator.translate(createDataSet("1"), "?", null, null, null,
                         ExperimentTranslator.LoadableFields.PROPERTIES);
         System.out.println("ds1:" + dataSet1.getExperiment().getProperties());
         AbstractExternalData dataSet2 =
-                DataSetTranslator.translate(createDataSet("2"), "?", null, null,
+                DataSetTranslator.translate(createDataSet("2"), "?", null, null, null,
                         ExperimentTranslator.LoadableFields.PROPERTIES);
         dataSets = Arrays.<AbstractExternalData> asList(dataSet1, dataSet2);
         command =

@@ -41,7 +41,7 @@ import javax.activation.DataSource;
 import javax.mail.util.ByteArrayDataSource;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.DailyRollingFileAppender;
+import org.apache.log4j.FileAppender;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 
@@ -162,6 +162,7 @@ public class HarvesterMaintenanceTask<T extends DataSetInformation> implements I
                     logger.error("Sync failed: ", e);
                     sendErrorEmail(config, "Synchronization failed");
                 }
+                logger.removeAllAppenders();
             }
         } catch (Exception e)
         {
@@ -261,16 +262,12 @@ public class HarvesterMaintenanceTask<T extends DataSetInformation> implements I
         if (logger.getAppender(name) == null)
         {
             // configure the appender
-            DailyRollingFileAppender console = new DailyRollingFileAppender(); // create appender
-            console.setName(name);
-            String PATTERN = "%d %-5p [%t] %c - %m%n";
-            console.setLayout(new PatternLayout(PATTERN));
-            // console.setThreshold(Level.FATAL);
-            console.setAppend(true);// set to false to overwrite log at every start
-            console.setFile(config.getLogFilePath());
-            console.activateOptions();
-            // add appender to any Logger (here is root)
-            logger.addAppender(console);
+            FileAppender appender = new FileAppender(); // create appender
+            appender.setName(name);
+            appender.setLayout(new PatternLayout("%d %-5p %m%n"));
+            appender.setFile(config.getLogFilePath());
+            appender.activateOptions();
+            logger.addAppender(appender);
             logger.setAdditivity(false);
         }
         return logger;
@@ -379,7 +376,7 @@ public class HarvesterMaintenanceTask<T extends DataSetInformation> implements I
         if (config.getLogFilePath() != null)
         {
             // send the operation log as attachment
-            DataSource dataSource = createDataSource(config.getLogFilePath()); // /Users/gakin/Documents/sync.log
+            DataSource dataSource = createDataSource(config.getLogFilePath());
             for (EMailAddress recipient : config.getEmailAddresses())
             {
                 mailClient.sendEmailMessageWithAttachment(subject,

@@ -26,6 +26,8 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETransl
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileFormatType;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
@@ -59,8 +61,8 @@ public class FileFormatTypeSearchManager extends AbstractSearchManager<FileForma
     }
 
     @Override
-    public Set<Long> sortIDs(final Set<Long> filteredIDs, final SortOptions<FileFormatType> sortOptions) {
-        return doSortIDs(filteredIDs, sortOptions, TableMapper.FILE_FORMAT_TYPES);
+    public List<Long> sortIDs(final Collection<Long> ids, final SortOptions<FileFormatType> sortOptions) {
+        return doSortIDs(ids, sortOptions, TableMapper.FILE_FORMAT_TYPES);
     }
 
 }

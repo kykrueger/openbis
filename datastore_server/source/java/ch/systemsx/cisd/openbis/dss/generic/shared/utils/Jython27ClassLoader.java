@@ -53,6 +53,10 @@ import org.apache.log4j.Logger;
 public class Jython27ClassLoader extends ClassLoader
 {
     private static final Logger machineLog = LogFactory.getLogger(LogCategory.MACHINE, Jython27ClassLoader.class);
+    /*
+     * Potentially all JDK Packages should be loaded using the Standard Class Loader
+     * https://docs.oracle.com/en/java/javase/11/docs/api/allpackages-index.html
+     */
     private static final List<String> EXCLUDED_PACKAGES_STARTS = Arrays.asList("java", "jdk.", "sun.", "com.sun.");
     private final URLClassLoader jythonJarClassLoader;
     private final Map<String, Class<?>> cachedClasses = new HashMap<>();
@@ -172,7 +176,7 @@ public class Jython27ClassLoader extends ClassLoader
     
     private Class<?> tryLoadClass(ClassLoader classLoader, String name)
     {
-        machineLog.info("tryLoadClass - classLoader: " + classLoader + " name: " + name);
+//        machineLog.info("tryLoadClass - classLoader: " + classLoader + " name: " + name);
         synchronized (getClassLoadingLock(name))
         {
             InputStream stream = classLoader.getResourceAsStream(name.replace('.', '/') + ".class");

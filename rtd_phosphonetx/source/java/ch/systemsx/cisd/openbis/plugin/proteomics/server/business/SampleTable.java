@@ -21,9 +21,11 @@ import java.util.HashMap;
 import java.util.List;
 
 import net.lemnik.eodsql.DataSet;
-
+import ch.systemsx.cisd.common.collection.IValidator;
+import ch.systemsx.cisd.openbis.generic.server.authorization.validator.SamplePropertyAccessValidator;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.ISampleDAO;
+import ch.systemsx.cisd.openbis.generic.shared.basic.IIdentifierHolder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyType;
@@ -67,7 +69,7 @@ class SampleTable extends AbstractBusinessObject implements ISampleTable
     }
 
     @Override
-    public void loadSamplesWithAbundance(TechId experimentID, TechId proteinReferenceID)
+    public void loadSamplesWithAbundance(Session session, TechId experimentID, TechId proteinReferenceID)
     {
         samples = new ArrayList<SampleWithPropertiesAndAbundance>();
         IProteinQueryDAO proteinQueryDAO = getSpecificDAOFactory().getProteinQueryDAO(experimentID);
@@ -87,7 +89,8 @@ class SampleTable extends AbstractBusinessObject implements ISampleTable
                 String samplePermID = sampleAbundance.getSamplePermID();
                 long sampleID = sampleIDProvider.getSampleIDOrParentSampleID(samplePermID);
                 SamplePE samplePE = sampleDAO.getByTechId(new TechId(sampleID));
-                fillSampleData(sample, samplePE, managedPropertyEvaluatorFactory);
+                fillSampleData(sample, samplePE, managedPropertyEvaluatorFactory,
+                        new SamplePropertyAccessValidator(session, daoFactory));
                 samples.add(sample);
             }
         } finally
@@ -98,7 +101,8 @@ class SampleTable extends AbstractBusinessObject implements ISampleTable
 
     private final static void fillSampleData(final SampleWithPropertiesAndAbundance result,
             final SamplePE samplePE,
-            IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory)
+            IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory,
+            IValidator<IIdentifierHolder> samplePropertyAccessValidator)
     {
         result.setId(HibernateUtils.getId(samplePE));
         result.setPermId(samplePE.getPermId());
@@ -108,6 +112,6 @@ class SampleTable extends AbstractBusinessObject implements ISampleTable
                 new HashMap<MaterialTypePE, MaterialType>(), new HashMap<PropertyTypePE, PropertyType>()));
         result.setProperties(EntityPropertyTranslator.translate(samplePE.getProperties(),
                 new HashMap<MaterialTypePE, MaterialType>(), new HashMap<PropertyTypePE, PropertyType>(), 
-                managedPropertyEvaluatorFactory));
+                managedPropertyEvaluatorFactory, samplePropertyAccessValidator));
     }
 }

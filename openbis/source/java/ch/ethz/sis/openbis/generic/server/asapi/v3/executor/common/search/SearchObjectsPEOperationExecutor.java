@@ -17,6 +17,7 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -54,7 +55,7 @@ public abstract class SearchObjectsPEOperationExecutor<OBJECT, OBJECT_PE extends
     }
 
     @Override
-    protected final Map<Long, OBJECT> doTranslate(TranslationContext translationContext, List<Long> ids, FETCH_OPTIONS fetchOptions)
+    protected final Map<Long, OBJECT> doTranslate(TranslationContext translationContext, Collection<Long> ids, FETCH_OPTIONS fetchOptions)
     {
         return getTranslator().translate(translationContext, ids, fetchOptions);
     }

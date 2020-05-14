@@ -1023,21 +1023,6 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			}, fo);
 		});
 
-		QUnit.test("searchDataSets() with paging and sorting by score", function(assert) {
-			var c = new common(assert, openbis);
-
-			var criteria = new c.DataSetSearchCriteria();
-			criteria.withOrOperator();
-			criteria.withCode().thatContains("20130412142");
-			criteria.withCode().thatContains("942295-198");
-
-			var fo = c.createDataSetFetchOptions();
-
-			testSearchWithPagingAndSorting(c, function(facade) {
-				return facade.searchDataSets(criteria, fo);
-			}, fo, "fetchedFieldsScore", null, true, "20130412142942295-198");
-		});
-
 		QUnit.test("searchDataSets() with sorting by property", function(assert) {
 			var c = new common(assert, openbis);
 

@@ -219,10 +219,12 @@ public class SyncConfig
     private Boolean dryRun = false;
 
     private Boolean verbose = false;
-    
-    private boolean masterDataUpdate;
-    
+
+    private boolean masterDataUpdateAllowed;
+
     private boolean propertyUnassignmentAllowed;
+
+    private boolean deletionAllowed;
 
     private boolean keepOriginalTimestampsAndUsers;
 
@@ -348,14 +350,14 @@ public class SyncConfig
         this.verbose = verbose;
     }
 
-    public boolean isMasterDataUpdate()
+    public boolean isMasterDataUpdateAllowed()
     {
-        return masterDataUpdate;
+        return masterDataUpdateAllowed;
     }
 
-    public void setMasterDataUpdate(boolean masterDataUpdate)
+    public void setMasterDataUpdateAllowed(boolean masterDataUpdate)
     {
-        this.masterDataUpdate = masterDataUpdate;
+        this.masterDataUpdateAllowed = masterDataUpdate;
     }
 
     public boolean isPropertyUnassignmentAllowed()
@@ -366,6 +368,16 @@ public class SyncConfig
     public void setPropertyUnassignmentAllowed(boolean propertyUnassignmentAllowed)
     {
         this.propertyUnassignmentAllowed = propertyUnassignmentAllowed;
+    }
+
+    public boolean isDeletionAllowed()
+    {
+        return deletionAllowed;
+    }
+
+    public void setDeletionAllowed(boolean deletionAllowed)
+    {
+        this.deletionAllowed = deletionAllowed;
     }
 
     public boolean keepOriginalTimestampsAndUsers()

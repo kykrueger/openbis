@@ -47,6 +47,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityTypePropertyType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyType;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.TypedTableModel;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Vocabulary;
 import ch.systemsx.cisd.openbis.generic.shared.util.TypedTableModelBuilder;
@@ -173,6 +174,9 @@ public class PropertyTypeProvider extends AbstractCommonTableModelProvider<Prope
                 {
                     return "Material of Type: " + materialTypeCode;
                 }
+            case SAMPLE:
+                String sampleTypeCode = tryGetSampleTypeCode(entity);
+                return sampleTypeCode == null ? "Sample of Any Type" : "Sample of Type: " + sampleTypeCode;
             case REAL:
                 return "Float Number";
             case TIMESTAMP:
@@ -194,6 +198,12 @@ public class PropertyTypeProvider extends AbstractCommonTableModelProvider<Prope
     {
         MaterialType materialType = entity.getMaterialType();
         return materialType != null ? materialType.getCode() : null;
+    }
+    
+    private static String tryGetSampleTypeCode(PropertyType entity)
+    {
+        SampleType sampleType = entity.getSampleType();
+        return sampleType != null ? sampleType.getCode() : null;
     }
 
     private Map<String, List<SemanticAnnotation>> createAnnotationsMap(Collection<PropertyType> propertyTypes)

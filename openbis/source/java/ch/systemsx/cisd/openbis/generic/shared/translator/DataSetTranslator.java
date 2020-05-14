@@ -27,8 +27,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import ch.systemsx.cisd.common.collection.IValidator;
 import ch.systemsx.cisd.openbis.common.types.BooleanOrUnknown;
 import ch.systemsx.cisd.openbis.generic.shared.basic.IEntityInformationHolder;
+import ch.systemsx.cisd.openbis.generic.shared.basic.IIdentifierHolder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.PermlinkUtilities;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ContainerDataSet;
@@ -156,14 +158,15 @@ public class DataSetTranslator
     public static List<AbstractExternalData> translate(List<? extends DataPE> list,
             String defaultDataStoreBaseURL, String baseIndexURL,
             Map<Long, Set<Metaproject>> metaprojects,
-            IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory)
+            IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory,
+            IValidator<IIdentifierHolder> samplePropertyAccessValidator)
     {
         ArrayList<AbstractExternalData> result = new ArrayList<AbstractExternalData>(list.size());
         for (DataPE dataPE : list)
         {
             AbstractExternalData data =
                     translate(dataPE, baseIndexURL, true, metaprojects.get(dataPE.getId()),
-                            managedPropertyEvaluatorFactory,
+                            managedPropertyEvaluatorFactory, samplePropertyAccessValidator,
                             ExperimentTranslator.LoadableFields.PROPERTIES);
             result.add(data);
         }
@@ -220,15 +223,17 @@ public class DataSetTranslator
     public static AbstractExternalData translate(DataPE dataPE, String baseIndexURL,
             Collection<Metaproject> metaprojects,
             IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory,
+            IValidator<IIdentifierHolder> samplePropertyAccessValidator,
             final LoadableFields... withExperimentFields)
     {
         return translate(dataPE, baseIndexURL, true, metaprojects, managedPropertyEvaluatorFactory,
-                withExperimentFields);
+                samplePropertyAccessValidator, withExperimentFields);
     }
 
     public static AbstractExternalData translate(DataPE dataPE, String baseIndexURL,
             boolean withDetails, Collection<Metaproject> metaprojects,
             IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory,
+            IValidator<IIdentifierHolder> samplePropertyAccessValidator,
             final LoadableFields... withExperimentFields)
     {
         AbstractExternalData externalData = null;
@@ -236,7 +241,7 @@ public class DataSetTranslator
         {
             externalData =
                     translateContainerDataSetProperties(dataPE, baseIndexURL, withDetails,
-                            managedPropertyEvaluatorFactory);
+                            managedPropertyEvaluatorFactory, samplePropertyAccessValidator);
         } else if (dataPE.isLinkData())
         {
             externalData = translateLinkDataSetProperties(dataPE);
@@ -252,14 +257,14 @@ public class DataSetTranslator
         SamplePE sampleOrNull = dataPE.tryGetSample();
         ExperimentPE experiment = dataPE.getExperiment();
         Experiment translatedExperiment = experiment == null ? null : ExperimentTranslator.translate(experiment, baseIndexURL, null,
-                managedPropertyEvaluatorFactory, withExperimentFields);
+                managedPropertyEvaluatorFactory, samplePropertyAccessValidator, withExperimentFields);
         externalData.setId(HibernateUtils.getId(dataPE));
         externalData.setCode(dataPE.getCode());
         externalData.setDataProducerCode(dataPE.getDataProducerCode());
         externalData.setDataSetType(DataSetTypeTranslator.translate(dataPE.getDataSetType(),
                 new HashMap<MaterialTypePE, MaterialType>(), new HashMap<PropertyTypePE, PropertyType>()));
         externalData.setDerived(dataPE.isDerived());
-        addContainers(externalData, dataPE, baseIndexURL, managedPropertyEvaluatorFactory);
+        addContainers(externalData, dataPE, baseIndexURL, managedPropertyEvaluatorFactory, samplePropertyAccessValidator);
         final Collection<AbstractExternalData> parents = new HashSet<AbstractExternalData>();
         externalData.setParents(parents);
         for (DataPE parentPE : dataPE.getParents())
@@ -274,11 +279,11 @@ public class DataSetTranslator
         externalData.setModifier(PersonTranslator.translate(dataPE.getModifier()));
         externalData.setRegistrationDate(dataPE.getRegistrationDate());
         externalData.setSample(sampleOrNull == null ? null : fillSample(new Sample(), sampleOrNull,
-                translatedExperiment, withDetails, managedPropertyEvaluatorFactory));
+                translatedExperiment, withDetails, managedPropertyEvaluatorFactory, samplePropertyAccessValidator));
         externalData.setDataStore(DataStoreTranslator.translate(dataPE.getDataStore()));
         externalData.setPermlink(PermlinkUtilities.createPermlinkURL(baseIndexURL,
                 EntityKind.DATA_SET, externalData.getIdentifier()));
-        setProperties(dataPE, externalData, managedPropertyEvaluatorFactory);
+        setProperties(dataPE, externalData, managedPropertyEvaluatorFactory, samplePropertyAccessValidator);
         externalData.setExperiment(translatedExperiment);
 
         if (dataPE.isContainer() == false)
@@ -295,34 +300,37 @@ public class DataSetTranslator
     }
 
     private static void addContainers(AbstractExternalData externalData, DataPE dataPE, String baseIndexURL,
-            IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory)
+            IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory,
+            IValidator<IIdentifierHolder> samplePropertyAccessValidator)
     {
         List<DataSetRelationshipPE> containerComponentRelationships =
                 RelationshipUtils.getContainerComponentRelationships(dataPE.getParentRelationships());
         for (DataSetRelationshipPE relationship : containerComponentRelationships)
         {
             ContainerDataSet container = tryToTranslateContainer(relationship.getParentDataSet(), baseIndexURL,
-                    managedPropertyEvaluatorFactory);
+                    managedPropertyEvaluatorFactory, samplePropertyAccessValidator);
             externalData.addContainer(container, relationship.getOrdinal());
         }
     }
 
     private static ContainerDataSet tryToTranslateContainer(DataPE containerOrNull,
-            String baseIndexURL, IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory)
+            String baseIndexURL, IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory,
+            IValidator<IIdentifierHolder> samplePropertyAccessValidator)
     {
         return containerOrNull != null ? (ContainerDataSet) translate(containerOrNull,
-                baseIndexURL, false, null, managedPropertyEvaluatorFactory) : null;
+                baseIndexURL, false, null, managedPropertyEvaluatorFactory, samplePropertyAccessValidator) : null;
     }
 
     private static AbstractExternalData translateContainerDataSetProperties(DataPE dataPE,
             String baseIndexURL, boolean withComponents,
-            IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory)
+            IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory,
+            IValidator<IIdentifierHolder> samplePropertyAccessValidator)
     {
         ContainerDataSet containerDataSet = new ContainerDataSet();
         if (withComponents)
         {
             setContainedDataSets(dataPE, containerDataSet, baseIndexURL,
-                    managedPropertyEvaluatorFactory);
+                    managedPropertyEvaluatorFactory, samplePropertyAccessValidator);
         }
         return containerDataSet;
     }
@@ -398,14 +406,15 @@ public class DataSetTranslator
     }
 
     private static void setProperties(DataPE dataPE, AbstractExternalData externalData,
-            IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory)
+            IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory,
+            IValidator<IIdentifierHolder> samplePropertyAccessValidator)
     {
         if (HibernateUtils.isInitialized(dataPE.getProperties()))
         {
             externalData.setDataSetProperties(EntityPropertyTranslator.translate(
                     dataPE.getProperties(), new HashMap<MaterialTypePE, MaterialType>(),
                     new HashMap<PropertyTypePE, PropertyType>(),
-                    managedPropertyEvaluatorFactory));
+                    managedPropertyEvaluatorFactory, samplePropertyAccessValidator));
         } else
         {
             externalData.setDataSetProperties(new ArrayList<IEntityProperty>());
@@ -414,7 +423,8 @@ public class DataSetTranslator
 
     private static Sample fillSample(Sample sample, SamplePE samplePE, Experiment experiment,
             boolean loadSampleProperties,
-            IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory)
+            IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory,
+            IValidator<IIdentifierHolder> samplePropertyAccessValidator)
     {
         sample.setId(HibernateUtils.getId(samplePE));
         sample.setPermId(samplePE.getPermId());
@@ -431,7 +441,7 @@ public class DataSetTranslator
         {
             sample.setProperties(EntityPropertyTranslator.translate(samplePE.getProperties(),
                     new HashMap<MaterialTypePE, MaterialType>(), new HashMap<PropertyTypePE, PropertyType>(),
-                    managedPropertyEvaluatorFactory));
+                    managedPropertyEvaluatorFactory, samplePropertyAccessValidator));
         }
         return sample;
     }
@@ -450,7 +460,8 @@ public class DataSetTranslator
     }
 
     private static void setContainedDataSets(DataPE dataPE, ContainerDataSet containerDataSet,
-            String baseIndexURL, IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory)
+            String baseIndexURL, IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory,
+            IValidator<IIdentifierHolder> samplePropertyAccessValidator)
     {
         List<AbstractExternalData> containedDataSets = new ArrayList<AbstractExternalData>();
         if (HibernateUtils.isInitialized(dataPE.getContainedDataSets()))
@@ -458,7 +469,7 @@ public class DataSetTranslator
             for (DataPE childPE : dataPE.getContainedDataSets())
             {
                 containedDataSets.add(translate(childPE, baseIndexURL, null,
-                        managedPropertyEvaluatorFactory));
+                        managedPropertyEvaluatorFactory, samplePropertyAccessValidator));
             }
         }
         containerDataSet.setContainedDataSets(containedDataSets);

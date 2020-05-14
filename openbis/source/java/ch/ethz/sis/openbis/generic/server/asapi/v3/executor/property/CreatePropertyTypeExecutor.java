@@ -70,6 +70,9 @@ public class CreatePropertyTypeExecutor
     private ISetPropertyTypeMaterialTypeExecutor setPropertyTypeMaterialTypeExecutor;
 
     @Autowired
+    private ISetPropertyTypeSampleTypeExecutor setPropertyTypeSampleTypeExecutor;
+    
+    @Autowired
     private IPropertyTypeAuthorizationExecutor authorizationExecutor;
 
     @Override
@@ -123,6 +126,14 @@ public class CreatePropertyTypeExecutor
         {
             throw new UserFailureException("Vocabulary id has been specified but data type is " + dataType + ".");
         }
+        validateMaterialType(creation, dataType);
+        validateSampleType(creation, dataType);
+        validateSchemaAndDataType(dataType.name(), creation.getSchema());
+        validateTransformationAndDataType(dataType.name(), creation.getTransformation());
+    }
+
+    private void validateMaterialType(PropertyTypeCreation creation, DataType dataType)
+    {
         IEntityTypeId materialTypeId = creation.getMaterialTypeId();
         if (materialTypeId != null)
         {
@@ -140,8 +151,27 @@ public class CreatePropertyTypeExecutor
                 }
             }
         }
-        validateSchemaAndDataType(dataType.name(), creation.getSchema());
-        validateTransformationAndDataType(dataType.name(), creation.getTransformation());
+    }
+
+    private void validateSampleType(PropertyTypeCreation creation, DataType dataType)
+    {
+        IEntityTypeId sampleTypeId = creation.getSampleTypeId();
+        if (sampleTypeId != null)
+        {
+            if (dataType != DataType.SAMPLE)
+            {
+                throw new UserFailureException("Sample type id has been specified but data type is " + dataType + ".");
+            }
+            if (sampleTypeId instanceof EntityTypePermId)
+            {
+                EntityTypePermId permId = (EntityTypePermId) sampleTypeId;
+                if (permId.getEntityKind() != EntityKind.SAMPLE)
+                {
+                    throw new UserFailureException("Specified entity type id (" + sampleTypeId + ") is not a "
+                            + EntityKind.SAMPLE + " type.");
+                }
+            }
+        }
     }
 
     @Override
@@ -196,6 +226,7 @@ public class CreatePropertyTypeExecutor
     {
         setPropertyTypeVocabularyExecutor.set(context, batch);
         setPropertyTypeMaterialTypeExecutor.set(context, batch);
+        setPropertyTypeSampleTypeExecutor.set(context, batch);
     }
 
     @Override

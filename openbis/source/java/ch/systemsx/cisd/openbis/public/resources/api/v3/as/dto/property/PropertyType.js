@@ -14,6 +14,7 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		prototype.dataType = null;
 		prototype.vocabulary = null;
 		prototype.materialType = null;
+		prototype.sampleType = null;
 		prototype.schema = null;
 		prototype.transformation = null;
 		prototype.semanticAnnotations = null;
@@ -89,6 +90,16 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		prototype.setMaterialType = function(materialType) {
 			this.materialType = materialType;
 		};
+		prototype.getSampleType = function() {
+			if (this.getFetchOptions() && this.getFetchOptions().hasSampleType()) {
+				return this.sampleType;
+			} else {
+				throw new exceptions.NotFetchedException("Sample type has not been fetched.");
+			}
+		};
+		prototype.setSampleType = function(sampleType) {
+			this.sampleType = sampleType;
+		};
 		prototype.getSchema = function() {
 			return this.schema;
 		};
@@ -139,6 +150,7 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		dataType : "DataType",
 		vocabulary : "Vocabulary",
 		materialType : "MaterialType",
+		sampleType : "SampleType",
 		registrator : "Person",
 		registrationDate : "Date"
 	});

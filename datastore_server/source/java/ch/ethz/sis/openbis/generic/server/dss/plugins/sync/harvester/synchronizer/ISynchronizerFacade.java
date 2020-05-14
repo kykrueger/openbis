@@ -32,7 +32,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Script;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Vocabulary;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.VocabularyTerm;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.VocabularyTermReplacement;
 
 /**
  * @author Ganime Betul Akin
@@ -44,23 +43,23 @@ public interface ISynchronizerFacade
 
     public void registerFileFormatType(FileFormatType type);
 
-    public void updatePropertyTypeAssignment(NewETPTAssignment newETPTAssignment);
+    public void updatePropertyTypeAssignment(NewETPTAssignment newETPTAssignment, String diff);
 
     public void assignPropertyType(NewETPTAssignment newETPTAssignment);
 
     public void unassignPropertyType(EntityKind entityKind, String propertyTypeCode, String entityTypeCode);
 
-    public void updatePropertyType(PropertyType propertyType);
+    public void updatePropertyType(PropertyType propertyType, String diff);
 
     public void registerPropertyType(PropertyType propertyType);
 
-    public void updateValidationPlugin(Script script);
+    public void updateValidationPlugin(Script script, String diff);
 
     public void registerValidationPlugin(Script script);
 
     public void registerVocabulary(NewVocabulary vocab);
 
-    public void updateVocabulary(Vocabulary vocab);
+    public void updateVocabulary(Vocabulary vocab, String diff);
 
     public void registerSampleType(SampleType sampleType);
 
@@ -70,20 +69,17 @@ public interface ISynchronizerFacade
 
     public void registerMaterialType(MaterialType materialType);
 
-    public void updateVocabularyTerm(VocabularyTerm term);
+    public void updateVocabularyTerm(String vocabularyCode, VocabularyTerm term, String diff);
 
-    public void updateSampleType(EntityType incomingEntityType);
+    public void updateSampleType(EntityType incomingEntityType, String diff);
 
-    public void updateDataSetType(EntityType incomingEntityType);
+    public void updateDataSetType(EntityType incomingEntityType, String diff);
 
-    public void updateExperimentType(EntityType incomingEntityType);
+    public void updateExperimentType(EntityType incomingEntityType, String diff);
 
-    public void updateMaterialType(EntityType incomingEntityType);
+    public void updateMaterialType(EntityType incomingEntityType, String diff);
 
     public void addVocabularyTerms(String code, TechId techId, List<VocabularyTerm> termsToBeAdded);
-
-    public void deleteVocabularyTerms(TechId vocabularyId, String code, List<VocabularyTerm> list,
-            List<VocabularyTermReplacement> emptyList);
 
     public void printSummary();
 }

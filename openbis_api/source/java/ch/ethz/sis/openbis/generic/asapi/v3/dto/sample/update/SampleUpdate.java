@@ -26,6 +26,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.attachment.update.AttachmentListUpdateValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IPropertiesHolder;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ISamplePropertiesHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.FieldUpdateValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IObjectUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IUpdate;
@@ -42,7 +43,7 @@ import ch.systemsx.cisd.base.annotation.JsonObject;
  * @author pkupczyk
  */
 @JsonObject("as.dto.sample.update.SampleUpdate")
-public class SampleUpdate implements IUpdate, IPropertiesHolder, IObjectUpdate<ISampleId>
+public class SampleUpdate implements IUpdate, IPropertiesHolder, ISamplePropertiesHolder, IObjectUpdate<ISampleId>
 {
     private static final long serialVersionUID = 1L;
 
@@ -78,6 +79,9 @@ public class SampleUpdate implements IUpdate, IPropertiesHolder, IObjectUpdate<I
 
     @JsonProperty
     private Map<String, String> properties = new HashMap<String, String>();
+
+    @JsonProperty
+    private Map<String, ISampleId> sampleProperties = new HashMap<String, ISampleId>();
 
     @JsonProperty
     private FieldUpdateValue<ISampleId> containerId = new FieldUpdateValue<ISampleId>();
@@ -245,6 +249,19 @@ public class SampleUpdate implements IUpdate, IPropertiesHolder, IObjectUpdate<I
     public Map<String, String> getProperties()
     {
         return properties;
+    }
+
+    @JsonIgnore
+    public void setSampleProperty(String propertyName, ISampleId sampleId)
+    {
+        sampleProperties.put(propertyName, sampleId);
+    }
+
+    @Override
+    @JsonIgnore
+    public Map<String, ISampleId> getSampleProperties()
+    {
+        return sampleProperties;
     }
 
     @JsonIgnore

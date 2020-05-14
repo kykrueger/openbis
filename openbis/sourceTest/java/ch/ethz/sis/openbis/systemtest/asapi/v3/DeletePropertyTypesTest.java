@@ -26,7 +26,6 @@ import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyType;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.create.PropertyTypeCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.delete.PropertyTypeDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.IPropertyTypeId;
@@ -43,7 +42,7 @@ public class DeletePropertyTypesTest extends AbstractTest
     {
         // Given
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
-        PropertyTypePermId id = createAPropertyType(sessionToken);
+        PropertyTypePermId id = createAPropertyType(sessionToken, DataType.VARCHAR);
         PropertyTypeDeletionOptions deletionOptions = new PropertyTypeDeletionOptions();
         deletionOptions.setReason("testing property type deletion");
 
@@ -86,7 +85,7 @@ public class DeletePropertyTypesTest extends AbstractTest
     {
         // Given
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
-        PropertyTypePermId id = createAPropertyType(sessionToken);
+        PropertyTypePermId id = createAPropertyType(sessionToken, DataType.VARCHAR);
         PropertyTypeDeletionOptions deletionOptions = new PropertyTypeDeletionOptions();
 
         // When
@@ -99,7 +98,7 @@ public class DeletePropertyTypesTest extends AbstractTest
     public void testDeleteWithUserCausingAuthorizationFailure(final String user)
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
-        PropertyTypePermId id = createAPropertyType(sessionToken);
+        PropertyTypePermId id = createAPropertyType(sessionToken, DataType.VARCHAR);
         v3api.logout(sessionToken);
         assertUnauthorizedObjectAccessException(new IDelegatedAction()
             {
@@ -133,16 +132,6 @@ public class DeletePropertyTypesTest extends AbstractTest
     {
         return createTestUsersProvider(TEST_GROUP_ADMIN, TEST_GROUP_OBSERVER, TEST_GROUP_POWERUSER,
                 TEST_INSTANCE_OBSERVER, TEST_OBSERVER_CISD, TEST_POWER_USER_CISD, TEST_SPACE_USER);
-    }
-
-    private PropertyTypePermId createAPropertyType(String sessionToken)
-    {
-        PropertyTypeCreation creation = new PropertyTypeCreation();
-        creation.setCode("TYPE-" + System.currentTimeMillis());
-        creation.setDataType(DataType.VARCHAR);
-        creation.setLabel("label");
-        creation.setDescription("description");
-        return v3api.createPropertyTypes(sessionToken, Arrays.asList(creation)).get(0);
     }
 
 }
