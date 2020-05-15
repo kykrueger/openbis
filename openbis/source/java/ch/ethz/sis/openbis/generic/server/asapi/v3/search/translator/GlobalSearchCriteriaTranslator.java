@@ -99,12 +99,19 @@ public class GlobalSearchCriteriaTranslator
 
     private static void translateCriterion(final StringBuilder sqlBuilder, final TranslationVo vo, final GlobalSearchTextCriteria criterion)
     {
-        buildSelect(sqlBuilder, vo, criterion);
-        buildFrom(sqlBuilder, vo, criterion);
-        buildWhere(sqlBuilder, vo, criterion);
+        buildSelect(sqlBuilder, vo, criterion, true);
+        buildFrom(sqlBuilder, vo, criterion, true);
+        buildWhere(sqlBuilder, vo, criterion, true);
+
+        sqlBuilder.append(UNION).append(NL);
+
+        buildSelect(sqlBuilder, vo, criterion, false);
+        buildFrom(sqlBuilder, vo, criterion, false);
+        buildWhere(sqlBuilder, vo, criterion, false);
     }
 
-    private static void buildSelect(final StringBuilder sqlBuilder, final TranslationVo vo, final GlobalSearchTextCriteria criterion)
+    private static void buildSelect(final StringBuilder sqlBuilder, final TranslationVo vo, final GlobalSearchTextCriteria criterion,
+            final boolean forAttributes)
     {
         final TableMapper tableMapper = vo.getTableMapper();
         final Object value = criterion.getFieldValue().getValue();
@@ -143,26 +150,48 @@ public class GlobalSearchCriteriaTranslator
                 (tableMapper == TableMapper.SAMPLE) ? MAIN_TABLE_ALIAS : null);
         sqlBuilder.append(IDENTIFIER_ALIAS).append(COMMA).append(NL);
 
-        sqlBuilder.append(GREATEST).append(LP);
-        buildTsRank(sqlBuilder, PROPERTIES_TABLE_ALIAS, CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS, value, args);
-        sqlBuilder.append(COMMA).append(SP);
-        sqlBuilder.append(CASE).append(SP).append(WHEN).append(SP);
-        buildAttributesMatchCondition(sqlBuilder, criterion, tableMapper, args);
-        sqlBuilder.append(SP).append(THEN).append(SP).append("1.0::float8").append(SP).append(ELSE).append(SP).append("0.0::float8").append(SP).append(END);
-        sqlBuilder.append(RP).append(SP);
+        if (forAttributes)
+        {
+            sqlBuilder.append(1).append(DOUBLE_COLON).append(FLOAT_4).append(SP).append(RANK_ALIAS).append(COMMA).append(NL);
 
-        sqlBuilder.append(RANK_ALIAS).append(COMMA).append(NL);
+            buildAttributesMatchSelection(sqlBuilder, criterion, vo.getTableMapper(), args);
+            sqlBuilder.append(COMMA).append(NL);
 
-        buildAttributesMatchSelection(sqlBuilder, criterion, vo.getTableMapper(), args);
-        sqlBuilder.append(COMMA).append(NL);
+            sqlBuilder.append(NULL).append(SP).append(VALUE_HEADLINE_ALIAS).append(COMMA).append(SP);
+            sqlBuilder.append(NULL).append(SP).append(CODE_HEADLINE_ALIAS).append(COMMA).append(SP);
+            sqlBuilder.append(NULL).append(SP).append(LABEL_HEADLINE_ALIAS).append(COMMA).append(SP);
+            sqlBuilder.append(NULL).append(SP).append(DESCRIPTION_HEADLINE_ALIAS);
+        } else
+        {
+            buildTsRank(sqlBuilder, PROPERTIES_TABLE_ALIAS, CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS, value, args);
+            sqlBuilder.append(RANK_ALIAS).append(COMMA).append(NL);
 
-        buildTsHeadline(sqlBuilder, value, args, PROPERTIES_TABLE_ALIAS + PERIOD + VALUE_COLUMN, VALUE_HEADLINE_ALIAS);
-        sqlBuilder.append(COMMA).append(SP);
-        buildTsHeadline(sqlBuilder, value, args, CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS + PERIOD + CODE_COLUMN, CODE_HEADLINE_ALIAS);
-        sqlBuilder.append(COMMA).append(SP);
-        buildTsHeadline(sqlBuilder, value, args, CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS + PERIOD + LABEL_COLUMN, LABEL_HEADLINE_ALIAS);
-        sqlBuilder.append(COMMA).append(SP);
-        buildTsHeadline(sqlBuilder, value, args, CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS + PERIOD + DESCRIPTION_COLUMN, DESCRIPTION_HEADLINE_ALIAS);
+            sqlBuilder.append(NULL).append(SP).append(CODE_MATCH_ALIAS).append(COMMA).append(NL);
+            switch (tableMapper)
+            {
+                case SAMPLE:
+                    // Falls through
+                case EXPERIMENT:
+                {
+                    sqlBuilder.append(NULL).append(SP).append(PERM_ID_MATCH_ALIAS).append(COMMA).append(NL);
+                    break;
+                }
+                case DATA_SET:
+                {
+                    sqlBuilder.append(NULL).append(SP).append(DATA_SET_KIND_MATCH_ALIAS).append(COMMA).append(NL);
+                    break;
+                }
+            }
+
+            buildTsHeadline(sqlBuilder, value, args, PROPERTIES_TABLE_ALIAS + PERIOD + VALUE_COLUMN, VALUE_HEADLINE_ALIAS);
+            sqlBuilder.append(COMMA).append(SP);
+            buildTsHeadline(sqlBuilder, value, args, CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS + PERIOD + CODE_COLUMN, CODE_HEADLINE_ALIAS);
+            sqlBuilder.append(COMMA).append(SP);
+            buildTsHeadline(sqlBuilder, value, args, CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS + PERIOD + LABEL_COLUMN, LABEL_HEADLINE_ALIAS);
+            sqlBuilder.append(COMMA).append(SP);
+            buildTsHeadline(sqlBuilder, value, args, CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS + PERIOD + DESCRIPTION_COLUMN,
+                    DESCRIPTION_HEADLINE_ALIAS);
+        }
 
         sqlBuilder.append(NL);
     }
@@ -264,7 +293,8 @@ public class GlobalSearchCriteriaTranslator
         sqlBuilder.append(RP);
     }
 
-    private static void buildFrom(final StringBuilder sqlBuilder, final TranslationVo vo, final GlobalSearchTextCriteria criterion)
+    private static void buildFrom(final StringBuilder sqlBuilder, final TranslationVo vo, final GlobalSearchTextCriteria criterion,
+            final boolean forAttributes)
     {
         final TableMapper tableMapper = vo.getTableMapper();
 
@@ -273,21 +303,24 @@ public class GlobalSearchCriteriaTranslator
         final String projectsTableName = TableMapper.PROJECT.getEntitiesTable();
         final String experimentsTableName = TableMapper.EXPERIMENT.getEntitiesTable();
 
+        sqlBuilder.append(FROM).append(SP).append(entitiesTable).append(SP).append(MAIN_TABLE_ALIAS).append(NL);
+
+        if (!forAttributes)
+        {
+            sqlBuilder.append(LEFT_JOIN).append(SP).append(tableMapper.getValuesTable()).append(SP).append(PROPERTIES_TABLE_ALIAS).append(SP)
+                    .append(ON).append(SP).append(MAIN_TABLE_ALIAS).append(PERIOD).append(ID_COLUMN).append(SP).append(EQ)
+                    .append(SP).append(PROPERTIES_TABLE_ALIAS).append(PERIOD).append(tableMapper.getValuesTableEntityIdField()).append(NL);
+
+            sqlBuilder.append(LEFT_JOIN).append(SP).append(TableNames.CONTROLLED_VOCABULARY_TERM_TABLE).append(SP)
+                    .append(CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS).append(SP).append(ON).append(SP).append(PROPERTIES_TABLE_ALIAS).append(PERIOD)
+                    .append(VOCABULARY_TERM_COLUMN).append(SP).append(EQ).append(SP).append(CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS).append(PERIOD)
+                    .append(ID_COLUMN).append(NL);
+        }
+
         final boolean hasSpaces = entitiesTable.equals(samplesTableName) || entitiesTable.equals(projectsTableName);
         final boolean hasProjects = entitiesTable.equals(samplesTableName) || entitiesTable.equals(experimentsTableName);
         final String spacesTableAlias = hasSpaces ? SPACE_TABLE_ALIAS : null;
         final String projectsTableAlias = hasProjects ? PROJECT_TABLE_ALIAS : null;
-
-        sqlBuilder.append(FROM).append(SP).append(entitiesTable).append(SP).append(MAIN_TABLE_ALIAS).append(NL);
-
-        sqlBuilder.append(LEFT_JOIN).append(SP).append(tableMapper.getValuesTable()).append(SP).append(PROPERTIES_TABLE_ALIAS).append(SP)
-                .append(ON).append(SP).append(MAIN_TABLE_ALIAS).append(PERIOD).append(ID_COLUMN).append(SP).append(EQ)
-                .append(SP).append(PROPERTIES_TABLE_ALIAS).append(SP).append(PERIOD).append(tableMapper.getValuesTableEntityIdField()).append(NL);
-
-        sqlBuilder.append(LEFT_JOIN).append(SP).append(TableNames.CONTROLLED_VOCABULARY_TERM_TABLE).append(SP)
-                .append(CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS).append(SP).append(ON).append(SP).append(PROPERTIES_TABLE_ALIAS).append(PERIOD)
-                .append(VOCABULARY_TERM_COLUMN).append(SP).append(EQ).append(SP).append(CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS).append(PERIOD)
-                .append(ID_COLUMN).append(NL);
 
         if (hasProjects)
         {
@@ -304,24 +337,28 @@ public class GlobalSearchCriteriaTranslator
         }
     }
 
-    private static void buildWhere(final StringBuilder sqlBuilder, final TranslationVo vo, final GlobalSearchTextCriteria criterion)
+    private static void buildWhere(final StringBuilder sqlBuilder, final TranslationVo vo, final GlobalSearchTextCriteria criterion,
+            final boolean forAttributes)
     {
         final Object value = criterion.getFieldValue().getValue();
         final List<Object> args = vo.getArgs();
 
         sqlBuilder.append(WHERE).append(SP);
-        buildAttributesMatchCondition(sqlBuilder, criterion, vo.getTableMapper(), args);
-
-        buildTsVectorMatch(sqlBuilder, PROPERTIES_TABLE_ALIAS, CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS, value, args);
+        if (forAttributes)
+        {
+            buildAttributesMatchCondition(sqlBuilder, criterion, vo.getTableMapper(), args);
+        } else
+        {
+            buildTsVectorMatch(sqlBuilder, value, args);
+        }
         sqlBuilder.append(NL);
     }
 
-    private static void buildTsVectorMatch(final StringBuilder sqlBuilder, final String alias1, final String alias2, final Object value, final List<Object> args)
+    private static void buildTsVectorMatch(final StringBuilder sqlBuilder, final Object value, final List<Object> args)
     {
-        sqlBuilder.append(SP).append(OR).append(SP);
-        sqlBuilder.append(alias1).append(PERIOD).append(TS_VECTOR_COLUMN).append(SP)
-                .append(BARS).append(SP).append(alias2).append(PERIOD).append(TS_VECTOR_COLUMN).append(SP)
-                .append(DOUBLE_AT).append(SP);
+        sqlBuilder.append(GlobalSearchCriteriaTranslator.PROPERTIES_TABLE_ALIAS).append(PERIOD).append(TS_VECTOR_COLUMN).append(SP).append(BARS)
+                .append(SP).append(GlobalSearchCriteriaTranslator.CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS).append(PERIOD).append(TS_VECTOR_COLUMN)
+                .append(SP).append(DOUBLE_AT).append(SP);
         buildTsQueryPart(sqlBuilder, value, args);
     }
 

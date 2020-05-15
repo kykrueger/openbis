@@ -109,7 +109,7 @@ public class GlobalSearchManager implements IGlobalSearchManager
 //            SearchDomainSearchResult searchResult = searchDomain.getSearchResult();
 //            matchingEntity.setSearchDomain(searchResult.getSearchDomain().getLabel());
 
-            matchingEntity.setScore((Double) fieldsMap.get(RANK_ALIAS));
+            matchingEntity.setScore((Float) fieldsMap.get(RANK_ALIAS));
 
             final List<PropertyMatch> matches = new ArrayList<>();
 
