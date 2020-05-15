@@ -68,31 +68,16 @@ public class GlobalSearchCriteriaTranslator
             throw new IllegalArgumentException("Null criteria provided.");
         }
 
-        final StringBuilder sqlBuilder = new StringBuilder();
-
+        final StringBuilder sqlBuilder = new StringBuilder(LP);
         final Spliterator<ISearchCriteria> spliterator = vo.getCriteria().stream().spliterator();
         if (spliterator.tryAdvance((criterion) -> translateCriterion(sqlBuilder, vo, (GlobalSearchTextCriteria) criterion)))
         {
             StreamSupport.stream(spliterator, false).forEach((criterion) -> {
-                sqlBuilder.append(NL);
-                switch (vo.getOperator())
-                {
-                    case AND:
-                    {
-                        sqlBuilder.append(INTERSECT);
-                        break;
-                    }
-                    case OR:
-                    {
-                        sqlBuilder.append(UNION);
-                        break;
-                    }
-                }
-                sqlBuilder.append(NL);
-
+                sqlBuilder.append(RP).append(NL).append(UNION).append(NL).append(LP).append(NL);
                 translateCriterion(sqlBuilder, vo, (GlobalSearchTextCriteria) criterion);
             });
         }
+        sqlBuilder.append(RP);
 
         return new SelectQuery(sqlBuilder.toString(), vo.getArgs());
     }
