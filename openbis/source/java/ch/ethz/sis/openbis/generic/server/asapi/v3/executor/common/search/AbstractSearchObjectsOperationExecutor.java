@@ -254,7 +254,7 @@ public abstract class AbstractSearchObjectsOperationExecutor<OBJECT, OBJECT_PE, 
                 + pagedResultPEs.size() + ", pagedResultV3DTOs.size()=" + pagedResultV3DTOs.size() + "]";
 
         // Reordering of pagedResultV3DTOs is needed because translation mixes the order
-        final List<OBJECT> objectResults = pagedResultPEs.stream().map(pagedResultV3DTOs::get).filter(Objects::nonNull)
+        final List<OBJECT> objectResults = pagedResultPEs.stream().map(pagedResultV3DTOs::get)
                 .collect(Collectors.toList());
 
         // Sorting and paging parents and children in a "conventional" way.
