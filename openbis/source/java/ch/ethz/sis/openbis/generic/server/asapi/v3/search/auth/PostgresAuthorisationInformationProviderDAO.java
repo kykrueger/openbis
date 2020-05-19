@@ -101,7 +101,7 @@ public class PostgresAuthorisationInformationProviderDAO implements ISQLAuthoris
         final String p = "p";
         final String query = SELECT + SP + s + PERIOD + ID_COLUMN + NL +
                 FROM + SP + TableMapper.SPACE.getEntitiesTable() + SP + s + NL +
-                INNER_JOIN + SP + TableMapper.PROJECT.getEntitiesTable() + SP + p + SP +
+                LEFT_JOIN + SP + TableMapper.PROJECT.getEntitiesTable() + SP + p + SP +
                 ON + SP + p + PERIOD + SPACE_COLUMN + SP + EQ + SP + s + PERIOD + ID_COLUMN + NL +
                 WHERE + SP + s + PERIOD + ID_COLUMN + SP + IN + SP + LP + SELECT + SP + UNNEST + LP + QU + RP + RP + SP + AND +
                 SP + LP + s + PERIOD + ID_COLUMN + SP + IN + SP + LP + SELECT + SP + UNNEST + LP + QU + RP + RP + SP + OR +
