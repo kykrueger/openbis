@@ -614,7 +614,7 @@ public class SimpleImageDataSetRegistrator
         dataset.setFileFormatCode(simpleImageConfig.getFileFormatType());
         dataset.setMeasured(simpleImageConfig.isMeasuredData());
 
-        dataset.setSample(simpleImageConfig.getPlateSpace(), simpleImageConfig.getPlateCode());
+        dataset.setSample(simpleImageConfig.getPlateSpace(), simpleImageConfig.getProjectCode(), simpleImageConfig.getPlateCode());
         dataset.setIncomingDirectory(incoming);
 
         ImageDataSetStructure imageStruct = createImageDataSetStructure(incoming, dataset);
