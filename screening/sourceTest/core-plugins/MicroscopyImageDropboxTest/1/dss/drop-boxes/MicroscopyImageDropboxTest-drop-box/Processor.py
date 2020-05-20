@@ -94,7 +94,7 @@ class Processor:
         singleDatasetConfig = MicroscopySingleDatasetConfig(bioFormatsProcessor)
         dataset = self._transaction.createNewImageDataSet(singleDatasetConfig, java.io.File(fileName))
         self._transaction.moveFile(fileName, dataset)
-        sample = self._transaction.createNewSampleWithGeneratedCode("TEST", "MICROSCOPY_SAMPLE")
+        sample = self._transaction.createNewProjectSampleWithGeneratedCode("/TEST/TEST-PROJECT", "MICROSCOPY_SAMPLE")
         sample.setExperiment(openBISExperiment)
         dataset.setSample(sample)
     
