@@ -142,7 +142,10 @@ describe('TypeForm', () => {
       if (used) {
         facade.loadUsages.mockReturnValue(
           Promise.resolve({
-            property: {
+            propertyLocal: {
+              [propertyType.getCode()]: 1
+            },
+            propertyGlobal: {
               [propertyType.getCode()]: 1
             }
           })
@@ -224,7 +227,10 @@ describe('TypeForm', () => {
       if (used) {
         facade.loadUsages.mockReturnValue(
           Promise.resolve({
-            property: {
+            propertyLocal: {
+              [propertyType.getCode()]: 1
+            },
+            propertyGlobal: {
               [propertyType.getCode()]: 1
             }
           })
@@ -255,22 +261,20 @@ describe('TypeForm', () => {
             dataType: {
               label: 'Data Type',
               value: propertyType.getDataType(),
-              enabled: false
+              enabled: !used
             },
             label: {
               label: 'Label',
-              value: propertyType.getLabel(),
-              enabled: false
+              value: propertyType.getLabel()
             },
             description: {
               label: 'Description',
-              value: propertyType.getDescription(),
-              enabled: false
+              value: propertyType.getDescription()
             },
             plugin: {
               label: 'Dynamic Plugin',
               value: plugin.getName(),
-              enabled: false
+              enabled: !used
             }
           }
         }

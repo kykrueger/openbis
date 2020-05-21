@@ -104,8 +104,11 @@ describe('TypeFormController.handleRemove', () => {
     )
     facade.loadUsages.mockReturnValue(
       Promise.resolve({
-        property: {
+        propertyLocal: {
           [fixture.TEST_PROPERTY_TYPE_1_DTO.getCode()]: 1
+        },
+        propertyGlobal: {
+          [fixture.TEST_PROPERTY_TYPE_1_DTO.getCode()]: 10
         }
       })
     )
@@ -124,7 +127,8 @@ describe('TypeFormController.handleRemove', () => {
         {
           id: 'property-0',
           code: { value: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode() },
-          usages: 1
+          usagesLocal: 1,
+          usagesGlobal: 10
         },
         {
           id: 'property-1',
@@ -163,7 +167,8 @@ describe('TypeFormController.handleRemove', () => {
         {
           id: 'property-0',
           code: { value: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode() },
-          usages: 1
+          usagesLocal: 1,
+          usagesGlobal: 10
         },
         {
           id: 'property-1',
@@ -219,8 +224,11 @@ describe('TypeFormController.handleRemove', () => {
     )
     facade.loadUsages.mockReturnValue(
       Promise.resolve({
-        property: {
+        propertyLocal: {
           [fixture.TEST_PROPERTY_TYPE_1_DTO.getCode()]: 1
+        },
+        propertyGlobal: {
+          [fixture.TEST_PROPERTY_TYPE_1_DTO.getCode()]: 10
         }
       })
     )
@@ -239,7 +247,8 @@ describe('TypeFormController.handleRemove', () => {
         {
           id: 'property-0',
           code: { value: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode() },
-          usages: 1
+          usagesLocal: 1,
+          usagesGlobal: 10
         },
         {
           id: 'property-1',
@@ -278,7 +287,8 @@ describe('TypeFormController.handleRemove', () => {
         {
           id: 'property-0',
           code: { value: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode() },
-          usages: 1
+          usagesLocal: 1,
+          usagesGlobal: 10
         },
         {
           id: 'property-1',
@@ -317,7 +327,8 @@ describe('TypeFormController.handleRemove', () => {
         {
           id: 'property-0',
           code: { value: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode() },
-          usages: 1
+          usagesLocal: 1,
+          usagesGlobal: 10
         },
         {
           id: 'property-1',
@@ -422,8 +433,11 @@ describe('TypeFormController.handleRemove', () => {
     )
     facade.loadUsages.mockReturnValue(
       Promise.resolve({
-        property: {
+        propertyLocal: {
           [fixture.TEST_PROPERTY_TYPE_2_DTO.getCode()]: 1
+        },
+        propertyGlobal: {
+          [fixture.TEST_PROPERTY_TYPE_2_DTO.getCode()]: 10
         }
       })
     )
@@ -446,7 +460,8 @@ describe('TypeFormController.handleRemove', () => {
         {
           id: 'property-1',
           code: { value: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode() },
-          usages: 1
+          usagesLocal: 1,
+          usagesGlobal: 10
         },
         {
           id: 'property-2',
@@ -485,7 +500,8 @@ describe('TypeFormController.handleRemove', () => {
         {
           id: 'property-1',
           code: { value: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode() },
-          usages: 1
+          usagesLocal: 1,
+          usagesGlobal: 10
         },
         {
           id: 'property-2',
@@ -542,8 +558,11 @@ describe('TypeFormController.handleRemove', () => {
     )
     facade.loadUsages.mockReturnValue(
       Promise.resolve({
-        property: {
+        propertyLocal: {
           [fixture.TEST_PROPERTY_TYPE_2_DTO.getCode()]: 1
+        },
+        propertyGlobal: {
+          [fixture.TEST_PROPERTY_TYPE_2_DTO.getCode()]: 10
         }
       })
     )
@@ -566,7 +585,8 @@ describe('TypeFormController.handleRemove', () => {
         {
           id: 'property-1',
           code: { value: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode() },
-          usages: 1
+          usagesLocal: 1,
+          usagesGlobal: 10
         },
         {
           id: 'property-2',
@@ -605,7 +625,8 @@ describe('TypeFormController.handleRemove', () => {
         {
           id: 'property-1',
           code: { value: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode() },
-          usages: 1
+          usagesLocal: 1,
+          usagesGlobal: 10
         },
         {
           id: 'property-2',
@@ -644,7 +665,8 @@ describe('TypeFormController.handleRemove', () => {
         {
           id: 'property-1',
           code: { value: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode() },
-          usages: 1
+          usagesLocal: 1,
+          usagesGlobal: 10
         },
         {
           id: 'property-2',

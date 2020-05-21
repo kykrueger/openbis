@@ -49,9 +49,11 @@ const CLASS_FULL_NAMES = [
   'as/dto/property/create/PropertyTypeCreation',
   'as/dto/property/delete/DeletePropertyTypesOperation',
   'as/dto/property/delete/PropertyTypeDeletionOptions',
+  'as/dto/property/fetchoptions/PropertyAssignmentFetchOptions',
   'as/dto/property/fetchoptions/PropertyTypeFetchOptions',
   'as/dto/property/id/PropertyAssignmentPermId',
   'as/dto/property/id/PropertyTypePermId',
+  'as/dto/property/search/PropertyAssignmentSearchCriteria',
   'as/dto/property/search/PropertyTypeSearchCriteria',
   'as/dto/property/update/PropertyTypeUpdate',
   'as/dto/property/update/UpdatePropertyTypesOperation',
@@ -80,7 +82,7 @@ class Dto {
   _init() {
     let _this = this
 
-    let load = function(index) {
+    let load = function (index) {
       return new Promise((resolve, reject) => {
         if (index < CLASS_FULL_NAMES.length) {
           let classFullName = CLASS_FULL_NAMES[index]
@@ -112,7 +114,7 @@ const dto = new Dto()
 
 CLASS_FULL_NAMES.forEach(classFullName => {
   let className = classFullName.substring(classFullName.lastIndexOf('/') + 1)
-  dto[className] = function() {}
+  dto[className] = function () {}
 })
 
 export default dto

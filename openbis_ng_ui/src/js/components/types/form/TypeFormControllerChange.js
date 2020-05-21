@@ -1,6 +1,8 @@
 import _ from 'lodash'
 import openbis from '@src/js/services/openbis.js'
 
+import TypeFormUtil from './TypeFormUtil.js'
+
 export default class TypeFormControllerChange {
   constructor(controller) {
     this.controller = controller
@@ -82,6 +84,8 @@ export default class TypeFormControllerChange {
   }
 
   _handleChangePropertyScope(oldProperty, newProperty) {
+    const { type, assignments, usages } = this.context.getState()
+
     const oldScope = oldProperty.scope.value
     const newScope = newProperty.scope.value
 
@@ -133,40 +137,50 @@ export default class TypeFormControllerChange {
         }
       }
 
+      const propertyCode =
+        newScope === 'local'
+          ? TypeFormUtil.addTypePrefix(type.code.value, newProperty.code.value)
+          : newProperty.code.value
+
+      const propertyAssignments =
+        (assignments && assignments[propertyCode]) || 0
+
+      const propertyUsagesLocal =
+        (usages &&
+          usages.propertyLocal &&
+          usages.propertyLocal[propertyCode]) ||
+        0
+      const propertyUsagesGlobal =
+        (usages &&
+          usages.propertyGlobal &&
+          usages.propertyGlobal[propertyCode]) ||
+        0
+
       newProperty = {
         ...newProperty,
         scope: {
           ...newProperty.scope,
           globalPropertyType: globalPropertyType
         },
-        label: {
-          ...newProperty.label,
-          enabled: !globalPropertyType
-        },
-        description: {
-          ...newProperty.description,
-          enabled: !globalPropertyType
-        },
         dataType: {
           ...newProperty.dataType,
-          enabled: !globalPropertyType
+          enabled: propertyUsagesGlobal === 0
         },
         vocabulary: {
           ...newProperty.vocabulary,
-          enabled: !globalPropertyType
+          enabled: propertyUsagesGlobal === 0
         },
         materialType: {
           ...newProperty.materialType,
-          enabled: !globalPropertyType
+          enabled: propertyUsagesGlobal === 0
         },
-        schema: {
-          ...newProperty.schema,
-          enabled: !globalPropertyType
+        plugin: {
+          ...newProperty.plugin,
+          enabled: propertyUsagesGlobal === 0
         },
-        transformation: {
-          ...newProperty.transformation,
-          enabled: !globalPropertyType
-        }
+        assignments: propertyAssignments,
+        usagesLocal: propertyUsagesLocal,
+        usagesGlobal: propertyUsagesGlobal
       }
     }
     return newProperty

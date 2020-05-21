@@ -5,6 +5,7 @@ import objectTypes from '@src/js/common/consts/objectType.js'
 import openbis from '@src/js/services/openbis.js'
 
 import TypeFormControllerStrategies from './TypeFormControllerStrategies.js'
+import TypeFormUtil from './TypeFormUtil.js'
 
 export default class TypeFormControllerSave {
   constructor(controller) {
@@ -135,28 +136,16 @@ export default class TypeFormControllerSave {
     return results
   }
 
-  _getTypePrefix() {
-    return this.type.code.value + '.'
-  }
-
-  _hasTypePrefix(property) {
-    return (
-      property.code.value &&
-      property.code.value.startsWith(this._getTypePrefix())
-    )
-  }
-
   _addTypePrefix(property) {
-    if (property.code.value && !this._hasTypePrefix(property)) {
-      return {
-        ...property,
-        code: {
-          ...property.code,
-          value: this._getTypePrefix() + property.code.value
-        }
+    return {
+      ...property,
+      code: {
+        ...property.code,
+        value: TypeFormUtil.addTypePrefix(
+          this.type.code.value,
+          property.code.value
+        )
       }
-    } else {
-      return property
     }
   }
 
@@ -201,15 +190,11 @@ export default class TypeFormControllerSave {
       this.type.original.properties.forEach(originalProperty => {
         const property = _.find(this.properties, ['id', originalProperty.id])
         if (!property) {
-          if (originalProperty.scope.value === 'local') {
-            operations.push(
-              this._deletePropertyAssignmentOperation(originalProperty)
-            )
+          operations.push(
+            this._deletePropertyAssignmentOperation(originalProperty)
+          )
+          if (originalProperty.assignments === 1) {
             operations.push(this._deletePropertyTypeOperation(originalProperty))
-          } else if (originalProperty.scope.value === 'global') {
-            operations.push(
-              this._deletePropertyAssignmentOperation(originalProperty)
-            )
           }
         }
       })
@@ -217,31 +202,16 @@ export default class TypeFormControllerSave {
 
     this.properties.forEach((property, index) => {
       if (property.original) {
-        if (property.scope.value === 'local') {
-          if (this._isPropertyTypeUpdateNeeded(property)) {
-            if (this._isPropertyTypeUpdatePossible(property)) {
-              operations.push(this._updatePropertyTypeOperation(property))
-            } else {
-              operations.push(this._deletePropertyAssignmentOperation(property))
-              operations.push(this._deletePropertyTypeOperation(property))
-              operations.push(this._createPropertyTypeOperation(property))
-            }
-          }
-          assignments.push(this._propertyAssignmentCreation(property, index))
-        } else if (property.scope.value === 'global') {
-          if (this._isPropertyTypeUpdateNeeded(property)) {
-            const propertyWithPrefix = this._addTypePrefix(property)
-            operations.push(this._deletePropertyAssignmentOperation(property))
-            operations.push(
-              this._createPropertyTypeOperation(propertyWithPrefix)
-            )
-            assignments.push(
-              this._propertyAssignmentCreation(propertyWithPrefix, index)
-            )
+        if (this._isPropertyTypeUpdateNeeded(property)) {
+          if (this._isPropertyTypeUpdatePossible(property)) {
+            operations.push(this._updatePropertyTypeOperation(property))
           } else {
-            assignments.push(this._propertyAssignmentCreation(property, index))
+            operations.push(this._deletePropertyAssignmentOperation(property))
+            operations.push(this._deletePropertyTypeOperation(property))
+            operations.push(this._createPropertyTypeOperation(property))
           }
         }
+        assignments.push(this._propertyAssignmentCreation(property, index))
       } else {
         if (property.scope.value === 'local') {
           const propertyWithPrefix = this._addTypePrefix(property)
@@ -289,7 +259,7 @@ export default class TypeFormControllerSave {
     update.getPropertyAssignments().remove([assignmentId])
     update
       .getPropertyAssignments()
-      .setForceRemovingAssignments(property.usages > 0)
+      .setForceRemovingAssignments(property.usagesLocal > 0)
 
     return strategy.createTypeUpdateOperation([update])
   }

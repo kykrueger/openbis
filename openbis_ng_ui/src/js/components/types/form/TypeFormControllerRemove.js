@@ -119,6 +119,6 @@ export default class TypeFormControllerRemove {
   }
 
   _isPropertyUsed(property) {
-    return _.isFinite(property.usages) && property.usages !== 0
+    return _.isFinite(property.usagesLocal) && property.usagesLocal !== 0
   }
 }

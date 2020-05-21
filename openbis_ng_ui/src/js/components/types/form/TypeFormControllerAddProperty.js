@@ -72,7 +72,9 @@ export default class TypeFormControllerAddProperty {
         visible: false
       }),
       section: section.id,
-      usages: 0,
+      assignments: 0,
+      usagesLocal: 0,
+      usagesGlobal: 0,
       errors: 0
     }
     newProperties.push(newProperty)

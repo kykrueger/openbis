@@ -7,8 +7,7 @@ import SelectField from '@src/js/components/common/form/SelectField.jsx'
 import openbis from '@src/js/services/openbis.js'
 import logger from '@src/js/common/logger.js'
 
-import TypeFormWarningUsage from './TypeFormWarningUsage.jsx'
-import TypeFormWarningGlobal from './TypeFormWarningGlobal.jsx'
+import TypeFormMessage from './TypeFormMessage.jsx'
 import TypeFormHeader from './TypeFormHeader.jsx'
 
 const styles = theme => ({
@@ -108,8 +107,8 @@ class TypeFormParametersProperty extends React.PureComponent {
     return (
       <div className={classes.container}>
         <TypeFormHeader className={classes.header}>Property</TypeFormHeader>
-        {this.renderWarningGlobal(property)}
-        {this.renderWarningUsage(property)}
+        {this.renderMessageGlobal(property)}
+        {this.renderMessageUsage(property)}
         {this.renderScope(property)}
         {this.renderCode(property)}
         {this.renderDataType(property)}
@@ -127,12 +126,15 @@ class TypeFormParametersProperty extends React.PureComponent {
     )
   }
 
-  renderWarningGlobal(property) {
+  renderMessageGlobal(property) {
     if (property.scope.value === 'global') {
       const { classes } = this.props
       return (
         <div className={classes.field}>
-          <TypeFormWarningGlobal />
+          <TypeFormMessage type='warning'>
+            This property is global. Changes will also influence other types
+            where this property is used.
+          </TypeFormMessage>
         </div>
       )
     } else {
@@ -140,17 +142,32 @@ class TypeFormParametersProperty extends React.PureComponent {
     }
   }
 
-  renderWarningUsage(property) {
-    if (property.usages > 0) {
-      const { classes } = this.props
-      return (
-        <div className={classes.field}>
-          <TypeFormWarningUsage subject='property' usages={property.usages} />
-        </div>
-      )
-    } else {
-      return null
+  renderMessageUsage(property) {
+    const { classes } = this.props
+
+    function entities(number) {
+      return number === 0 || number > 1
+        ? `${number} entities`
+        : `${number} entity`
     }
+
+    function message(property) {
+      if (property.usagesLocal === 0 && property.usagesGlobal === 0) {
+        return `This property is not yet used by any entities.`
+      } else {
+        return `This property is already used by ${entities(
+          property.usagesGlobal
+        )} (${entities(property.usagesLocal)} of this type and ${entities(
+          property.usagesGlobal - property.usagesLocal
+        )} of other types).`
+      }
+    }
+
+    return (
+      <div className={classes.field}>
+        <TypeFormMessage type='info'>{message(property)}</TypeFormMessage>
+      </div>
+    )
   }
 
   renderScope(property) {

@@ -15,7 +15,7 @@ class TypeFormDialogRemoveSection extends React.Component {
         onConfirm={onConfirm}
         onCancel={onCancel}
         title={this.getTitle()}
-        content='This section contains properties which are already used by some entities. Removing the section and the contained property definitions is going to remove the existing property values as well - data will be lost! Are you sure you want to proceed?'
+        content='This section contains properties which are already used by some entities of this type. Removing the section and the contained property assignments is going to remove the existing property values as well - data will be lost! Are you sure you want to proceed?'
       />
     )
   }

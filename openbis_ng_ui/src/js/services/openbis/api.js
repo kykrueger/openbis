@@ -73,6 +73,10 @@ class Facade {
     return this.promise(this.v3.searchAuthorizationGroups(criteria, fo))
   }
 
+  searchPropertyAssignments(criteria, fo) {
+    return this.promise(this.v3.searchPropertyAssignments(criteria, fo))
+  }
+
   getSampleTypes(ids, fo) {
     return this.promise(this.v3.getSampleTypes(ids, fo))
   }
