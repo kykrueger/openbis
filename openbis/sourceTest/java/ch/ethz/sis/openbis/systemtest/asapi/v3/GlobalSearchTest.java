@@ -504,30 +504,36 @@ public class GlobalSearchTest extends AbstractTest
 
         GlobalSearchCriteria criteria = new GlobalSearchCriteria();
         criteria.withText().thatContainsExactly("20110509092359990-11");
-        criteria.withText().thatContainsExactly("result-18");
+        criteria.withText().thatContainsExactly("LINK");
 
         SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
-        assertEquals(result.getObjects().size(), 2);
+        assertEquals(result.getObjects().size(), 5);
 
         GlobalSearchObject object1 = result.getObjects().get(0);
         GlobalSearchObject object2 = result.getObjects().get(1);
+        GlobalSearchObject object3 = result.getObjects().get(2);
+        GlobalSearchObject object4 = result.getObjects().get(3);
+        GlobalSearchObject object5 = result.getObjects().get(4);
 
         assertDataSet(object1, "20110509092359990-11", object1.getMatch(), DataSetKind.PHYSICAL);
-        AssertionUtil.assertContains("Location: contained/20110509092359990-11", object1.getMatch());
         AssertionUtil.assertContains("Perm ID: 20110509092359990-11", object1.getMatch());
         assertEquals(object1.getDataSet().getCode(), "20110509092359990-11");
-        assertEquals(object1.getScore(), 210.0);
+        assertEquals(object1.getScore(), 1.0);
         assertExperimentNotFetched(object1);
         assertSampleNotFetched(object1);
         assertMaterialNotFetched(object1);
 
-        assertDataSet(object2, "20081105092259000-18", object2.getMatch(), DataSetKind.PHYSICAL);
-        AssertionUtil.assertContains("Location: xml/result-18", object2.getMatch());
-        assertEquals(object2.getDataSet().getCode(), "20081105092259000-18");
-        assertEquals(object2.getScore(), 10.0);
+        assertDataSet(object2, "20120628092259000-23", object2.getMatch(), DataSetKind.LINK);
+        AssertionUtil.assertContains("DataSet kind: LINK", object2.getMatch());
+        assertEquals(object2.getDataSet().getCode(), "20120628092259000-23");
+        assertEquals(object2.getScore(), 1.0);
         assertExperimentNotFetched(object2);
         assertSampleNotFetched(object2);
         assertMaterialNotFetched(object2);
+
+        assertDataSet(object3, "20120628092259000-24", object3.getMatch(), DataSetKind.LINK);
+        assertDataSet(object4, "20120628092259000-25", object4.getMatch(), DataSetKind.LINK);
+        assertDataSet(object5, "20120628092259000-41", object5.getMatch(), DataSetKind.LINK);
     }
 
     @Test

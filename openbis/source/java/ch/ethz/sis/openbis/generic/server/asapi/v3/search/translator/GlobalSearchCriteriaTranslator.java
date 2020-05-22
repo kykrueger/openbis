@@ -262,7 +262,7 @@ public class GlobalSearchCriteriaTranslator
                 sqlBuilder.append(CASE).append(SP).append(WHEN).append(SP);
                 sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(DATA_SET_KIND_COLUMN);
                 TranslatorUtils.appendStringComparatorOp(criterion.getFieldValue(), sqlBuilder, args);
-                sqlBuilder.append(SP).append(THEN).append(SP).append(MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN);
+                sqlBuilder.append(SP).append(THEN).append(SP).append(MAIN_TABLE_ALIAS).append(PERIOD).append(DATA_SET_KIND_COLUMN);
                 sqlBuilder.append(SP).append(ELSE).append(SP).append(NULL).append(SP).append(END);
                 sqlBuilder.append(SP).append(DATA_SET_KIND_MATCH_ALIAS);
                 break;

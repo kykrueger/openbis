@@ -3,7 +3,6 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.GlobalSearchObject;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchObjectKind;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
@@ -24,7 +23,9 @@ public class GlobalSearchManager implements IGlobalSearchManager
 {
 
     private static final String PERM_ID_PROPERTY_NAME = "Perm ID";
-    
+
+    private static final String DATA_SET_KIND_PROPERTY_NAME = "DataSet kind";
+
     private static final String IDENTIFIER_PROPERTY_NAME = "Identifier";
 
     private static final String CODE_PROPERTY_NAME = "Code";
@@ -95,7 +96,8 @@ public class GlobalSearchManager implements IGlobalSearchManager
     @Override
     public List<MatchingEntity> map(final List<Map<String, Object>> records)
     {
-        final List<MatchingEntity> result = records.stream().map((fieldsMap) -> {
+        final List<MatchingEntity> result = records.stream().map((fieldsMap) ->
+        {
             final MatchingEntity matchingEntity = new MatchingEntity();
             matchingEntity.setCode((String) fieldsMap.get(CODE_COLUMN));
             final EntityKind entityKind = EntityKind.valueOf((String) fieldsMap.get(OBJECT_KIND_ALIAS));
@@ -105,58 +107,47 @@ public class GlobalSearchManager implements IGlobalSearchManager
             matchingEntity.setPermId((String) fieldsMap.get(PERM_ID_COLUMN));
 
             matchingEntity.setIdentifier((String) fieldsMap.get(IDENTIFIER_ALIAS));
-            
+
 //            SearchDomainSearchResult searchResult = searchDomain.getSearchResult();
 //            matchingEntity.setSearchDomain(searchResult.getSearchDomain().getLabel());
 
             matchingEntity.setScore((Float) fieldsMap.get(RANK_ALIAS));
 
             final List<PropertyMatch> matches = new ArrayList<>();
-
-            final Object codeMatch = fieldsMap.get(CODE_MATCH_ALIAS);
-            if (codeMatch != null) {
-                final String codeMatchString = (String) codeMatch;
-                final PropertyMatch match = new PropertyMatch();
-                match.setValue(codeMatchString);
-
-                switch (entityKind)
-                {
-                    case EXPERIMENT:
-                        // Falls through.
-                    case SAMPLE:
-                    {
-                        match.setCode(CODE_PROPERTY_NAME);
-                        break;
-                    }
-                    case MATERIAL:
-                        // Falls through.
-                    case DATA_SET:
-                    {
-                        match.setCode(PERM_ID_PROPERTY_NAME);
-                        break;
-                    }
-                }
-
-                final Span span = new Span();
-                span.setStart(0);
-                span.setEnd(codeMatchString.length());
-                match.setSpans(Collections.singletonList(span));
-                matches.add(match);
-            }
+            mapMatch(fieldsMap, matches, CODE_MATCH_ALIAS,
+                    (entityKind == EntityKind.MATERIAL || entityKind == EntityKind.DATA_SET) ? PERM_ID_PROPERTY_NAME : CODE_PROPERTY_NAME);
+            mapMatch(fieldsMap, matches, DATA_SET_KIND_MATCH_ALIAS, DATA_SET_KIND_PROPERTY_NAME);
 
             matchingEntity.setMatches(matches);
-
             return matchingEntity;
-        }).collect(Collectors.toList());
-        result.sort(new SimpleComparator<MatchingEntity, Double>()
+        }).sorted(new SimpleComparator<MatchingEntity, Double>()
         {
             @Override
             public Double evaluate(MatchingEntity item)
             {
                 return -item.getScore();
             }
-        });
+        }).collect(Collectors.toList());
         return result;
+    }
+
+    private void mapMatch(final Map<String, Object> fieldsMap, final List<PropertyMatch> matches,
+            final String matchAlias, final String code)
+    {
+        final Object fieldMatch = fieldsMap.get(matchAlias);
+        if (fieldMatch != null)
+        {
+            final String codeMatchString = (String) fieldMatch;
+            final PropertyMatch propertyMatch = new PropertyMatch();
+            propertyMatch.setCode(code);
+            propertyMatch.setValue(codeMatchString);
+
+            final Span span = new Span();
+            span.setStart(0);
+            span.setEnd(codeMatchString.length());
+            propertyMatch.setSpans(Collections.singletonList(span));
+            matches.add(propertyMatch);
+        }
     }
 
 }
