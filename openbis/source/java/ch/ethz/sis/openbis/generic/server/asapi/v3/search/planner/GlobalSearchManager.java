@@ -117,6 +117,7 @@ public class GlobalSearchManager implements IGlobalSearchManager
             mapMatch(fieldsMap, matches, CODE_MATCH_ALIAS,
                     (entityKind == EntityKind.MATERIAL || entityKind == EntityKind.DATA_SET) ? PERM_ID_PROPERTY_NAME : CODE_PROPERTY_NAME);
             mapMatch(fieldsMap, matches, DATA_SET_KIND_MATCH_ALIAS, DATA_SET_KIND_PROPERTY_NAME);
+            mapMatch(fieldsMap, matches, PERM_ID_MATCH_ALIAS, PERM_ID_PROPERTY_NAME);
 
             matchingEntity.setMatches(matches);
             return matchingEntity;

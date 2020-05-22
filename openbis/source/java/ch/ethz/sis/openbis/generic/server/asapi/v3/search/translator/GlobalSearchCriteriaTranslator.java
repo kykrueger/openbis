@@ -102,13 +102,8 @@ public class GlobalSearchCriteriaTranslator
         final Object value = criterion.getFieldValue().getValue();
         final List<Object> args = vo.getArgs();
 
-        final String entitiesTable = tableMapper.getEntitiesTable();
-        final String samplesTableName = TableMapper.SAMPLE.getEntitiesTable();
-        final String projectsTableName = TableMapper.PROJECT.getEntitiesTable();
-        final String experimentsTableName = TableMapper.EXPERIMENT.getEntitiesTable();
-
-        final boolean hasSpaces = entitiesTable.equals(samplesTableName) || entitiesTable.equals(projectsTableName);
-        final boolean hasProjects = entitiesTable.equals(samplesTableName) || entitiesTable.equals(experimentsTableName);
+        final boolean hasSpaces = hasSpaces(tableMapper);
+        final boolean hasProjects = hasProjects(tableMapper);
 
         sqlBuilder.append(SELECT).append(SP).append(MAIN_TABLE_ALIAS).append(PERIOD).append(ID_COLUMN).append(COMMA).append(SP);
 
@@ -131,7 +126,8 @@ public class GlobalSearchCriteriaTranslator
         sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(COMMA).append(SP)
                 .append(SQ).append(tableMapper.getEntityKind()).append(SQ).append(SP).append(OBJECT_KIND_ALIAS).append(COMMA).append(SP);
 
-        buildFullIdentifierConcatenationString(sqlBuilder, hasSpaces ? SPACE_TABLE_ALIAS : null, hasProjects ? PROJECT_TABLE_ALIAS : null,
+        buildFullIdentifierConcatenationString(sqlBuilder, hasSpaces || hasProjects ? SPACE_TABLE_ALIAS : null,
+                hasProjects ? PROJECT_TABLE_ALIAS : null,
                 (tableMapper == TableMapper.SAMPLE) ? MAIN_TABLE_ALIAS : null);
         sqlBuilder.append(IDENTIFIER_ALIAS).append(COMMA).append(NL);
 
@@ -250,7 +246,7 @@ public class GlobalSearchCriteriaTranslator
                 sqlBuilder.append(CASE).append(SP).append(WHEN).append(SP);
                 sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(PERM_ID_COLUMN);
                 TranslatorUtils.appendStringComparatorOp(criterion.getFieldValue(), sqlBuilder, args);
-                sqlBuilder.append(SP).append(THEN).append(SP).append(MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN);
+                sqlBuilder.append(SP).append(THEN).append(SP).append(MAIN_TABLE_ALIAS).append(PERIOD).append(PERM_ID_COLUMN);
                 sqlBuilder.append(SP).append(ELSE).append(SP).append(NULL).append(SP).append(END);
                 sqlBuilder.append(SP).append(PERM_ID_MATCH_ALIAS);
                 break;
@@ -284,9 +280,7 @@ public class GlobalSearchCriteriaTranslator
         final TableMapper tableMapper = vo.getTableMapper();
 
         final String entitiesTable = tableMapper.getEntitiesTable();
-        final String samplesTableName = TableMapper.SAMPLE.getEntitiesTable();
         final String projectsTableName = TableMapper.PROJECT.getEntitiesTable();
-        final String experimentsTableName = TableMapper.EXPERIMENT.getEntitiesTable();
 
         sqlBuilder.append(FROM).append(SP).append(entitiesTable).append(SP).append(MAIN_TABLE_ALIAS).append(NL);
 
@@ -302,24 +296,40 @@ public class GlobalSearchCriteriaTranslator
                     .append(ID_COLUMN).append(NL);
         }
 
-        final boolean hasSpaces = entitiesTable.equals(samplesTableName) || entitiesTable.equals(projectsTableName);
-        final boolean hasProjects = entitiesTable.equals(samplesTableName) || entitiesTable.equals(experimentsTableName);
-        final String spacesTableAlias = hasSpaces ? SPACE_TABLE_ALIAS : null;
-        final String projectsTableAlias = hasProjects ? PROJECT_TABLE_ALIAS : null;
+        final boolean hasSpaces = hasSpaces(tableMapper);
+        final boolean hasProjects = hasProjects(tableMapper);
 
         if (hasProjects)
         {
-            sqlBuilder.append(LEFT_JOIN).append(SP).append(projectsTableName).append(SP).append(projectsTableAlias).append(SP)
+            sqlBuilder.append(LEFT_JOIN).append(SP).append(projectsTableName).append(SP).append(PROJECT_TABLE_ALIAS).append(SP)
                     .append(ON).append(SP).append(MAIN_TABLE_ALIAS).append(PERIOD).append(PROJECT_COLUMN).append(SP).append(EQ).append(SP)
-                    .append(projectsTableAlias).append(PERIOD).append(ID_COLUMN).append(NL);
+                    .append(PROJECT_TABLE_ALIAS).append(PERIOD).append(ID_COLUMN).append(NL);
+            if (!hasSpaces)
+            {
+                sqlBuilder.append(LEFT_JOIN).append(SP).append(TableMapper.SPACE.getEntitiesTable()).append(SP).append(SPACE_TABLE_ALIAS).append(SP)
+                        .append(ON).append(SP).append(PROJECT_TABLE_ALIAS).append(PERIOD).append(SPACE_COLUMN).append(SP).append(EQ).append(SP)
+                        .append(SPACE_TABLE_ALIAS).append(PERIOD).append(ID_COLUMN).append(NL);
+            }
         }
 
         if (hasSpaces)
         {
-            sqlBuilder.append(LEFT_JOIN).append(SP).append(TableMapper.SPACE.getEntitiesTable()).append(SP).append(spacesTableAlias).append(SP)
+            sqlBuilder.append(LEFT_JOIN).append(SP).append(TableMapper.SPACE.getEntitiesTable()).append(SP).append(SPACE_TABLE_ALIAS).append(SP)
                     .append(ON).append(SP).append(MAIN_TABLE_ALIAS).append(PERIOD).append(SPACE_COLUMN).append(SP).append(EQ).append(SP)
-                    .append(spacesTableAlias).append(PERIOD).append(ID_COLUMN).append(NL);
+                    .append(SPACE_TABLE_ALIAS).append(PERIOD).append(ID_COLUMN).append(NL);
         }
+    }
+
+    private static boolean hasProjects(final TableMapper tableMapper)
+    {
+        final String entitiesTable = tableMapper.getEntitiesTable();
+        return TableMapper.SAMPLE.getEntitiesTable().equals(entitiesTable) || TableMapper.EXPERIMENT.getEntitiesTable().equals(entitiesTable);
+    }
+
+    private static boolean hasSpaces(final TableMapper tableMapper)
+    {
+        final String entitiesTable = tableMapper.getEntitiesTable();
+        return TableMapper.SAMPLE.getEntitiesTable().equals(entitiesTable) || TableMapper.PROJECT.getEntitiesTable().equals(entitiesTable);
     }
 
     private static void buildWhere(final StringBuilder sqlBuilder, final TranslationVo vo, final GlobalSearchTextCriteria criterion,
