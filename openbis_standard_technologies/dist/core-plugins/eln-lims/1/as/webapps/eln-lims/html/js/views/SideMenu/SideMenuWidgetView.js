@@ -745,7 +745,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
                         
                         if(samplesToShow.length > 50) {
                             var toExecute = function() {
-                                Util.blockUIConfirm("Do you want to show " + samplesWithoutELNParents.length + " " + ELNDictionary.Samples + " on the tree?",
+                                Util.blockUIConfirm("Do you want to show " + samplesToShow.length + " " + ELNDictionary.Samples + " on the tree?",
                                         getOkResultsFunction(dfd, samplesToShow),
                                         getCancelResultsFunction(dfd));
                             };
