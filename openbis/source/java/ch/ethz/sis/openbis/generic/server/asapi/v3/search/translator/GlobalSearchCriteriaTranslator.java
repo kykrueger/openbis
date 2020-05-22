@@ -268,8 +268,12 @@ public class GlobalSearchCriteriaTranslator
 
     private static void buildTsRank(final StringBuilder sqlBuilder, final String alias1, final String alias2, final Object value, final List<Object> args)
     {
-        sqlBuilder.append(TS_RANK).append(LP).append(alias1).append(PERIOD).append(TSVECTOR_DOCUMENT)
-                .append(SP).append(BARS).append(SP).append(alias2).append(PERIOD).append(TSVECTOR_DOCUMENT).append(COMMA).append(SP);
+        sqlBuilder.append(TS_RANK).append(LP).append(COALESCE).append(LP)
+                .append(alias1).append(PERIOD).append(TSVECTOR_DOCUMENT).append(COMMA).append(SP).append(SQ).append(SQ).append(RP)
+                .append(SP).append(BARS).append(SP)
+                .append(COALESCE).append(LP).append(alias2).append(PERIOD).append(TSVECTOR_DOCUMENT).append(COMMA).append(SP).append(SQ).append(SQ)
+                .append(RP)
+                .append(COMMA).append(SP);
         buildTsQueryPart(sqlBuilder, value, args);
         sqlBuilder.append(RP);
     }
@@ -351,8 +355,11 @@ public class GlobalSearchCriteriaTranslator
 
     private static void buildTsVectorMatch(final StringBuilder sqlBuilder, final Object value, final List<Object> args)
     {
-        sqlBuilder.append(GlobalSearchCriteriaTranslator.PROPERTIES_TABLE_ALIAS).append(PERIOD).append(TS_VECTOR_COLUMN).append(SP).append(BARS)
-                .append(SP).append(GlobalSearchCriteriaTranslator.CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS).append(PERIOD).append(TS_VECTOR_COLUMN)
+        sqlBuilder.append(COALESCE).append(LP).append(GlobalSearchCriteriaTranslator.PROPERTIES_TABLE_ALIAS).append(PERIOD).append(TS_VECTOR_COLUMN)
+                .append(COMMA).append(SP).append(SQ).append(SQ).append(RP)
+                .append(SP).append(BARS).append(SP)
+                .append(COALESCE).append(LP).append(GlobalSearchCriteriaTranslator.CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS).append(PERIOD)
+                .append(TS_VECTOR_COLUMN).append(COMMA).append(SP).append(SQ).append(SQ).append(RP)
                 .append(SP).append(DOUBLE_AT).append(SP);
         buildTsQueryPart(sqlBuilder, value, args);
     }

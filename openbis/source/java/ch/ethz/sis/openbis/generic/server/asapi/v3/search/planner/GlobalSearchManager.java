@@ -8,10 +8,8 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisation
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.systemsx.cisd.common.collection.SimpleComparator;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MatchingEntity;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyMatch;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Span;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.*;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -33,6 +31,18 @@ public class GlobalSearchManager implements IGlobalSearchManager
     protected final ISQLAuthorisationInformationProviderDAO authProvider;
 
     private final ISQLSearchDAO searchDAO;
+
+//    @Autowired
+//    private SampleTypeSearchManager sampleTypeSearchManager;
+//
+//    @Autowired
+//    private ExperimentTypeSearchManager experimentTypeSearchManager;
+//
+//    @Autowired
+//    private DataSetTypeSearchManager dataSetTypeSearchManager;
+//
+//    @Autowired
+//    private MaterialTypeSearchManager materialTypeSearchManager;
 
     public GlobalSearchManager(final ISQLAuthorisationInformationProviderDAO authProvider, final ISQLSearchDAO searchDAO)
     {
@@ -102,9 +112,11 @@ public class GlobalSearchManager implements IGlobalSearchManager
             matchingEntity.setCode((String) fieldsMap.get(CODE_COLUMN));
             final EntityKind entityKind = EntityKind.valueOf((String) fieldsMap.get(OBJECT_KIND_ALIAS));
             matchingEntity.setEntityKind(entityKind);
-//            matchingEntity.setEntityType();
             matchingEntity.setId((Long) fieldsMap.get(ID_COLUMN));
             matchingEntity.setPermId((String) fieldsMap.get(PERM_ID_COLUMN));
+
+            // TODO: how to set entity type correctly?
+//            matchingEntity.setEntityType();
 
             matchingEntity.setIdentifier((String) fieldsMap.get(IDENTIFIER_ALIAS));
 
