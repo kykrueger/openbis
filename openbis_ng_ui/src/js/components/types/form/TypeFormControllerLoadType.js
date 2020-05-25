@@ -1,0 +1,366 @@
+import _ from 'lodash'
+import openbis from '@src/js/services/openbis.js'
+import objectTypes from '@src/js/common/consts/objectType.js'
+
+import TypeFormControllerStrategies from './TypeFormControllerStrategies.js'
+
+export default class TypeFormControllerLoadType {
+  constructor(controller) {
+    this.context = controller.context
+    this.facade = controller.facade
+    this.object = controller.object
+  }
+
+  async execute() {
+    const strategy = this._getStrategy()
+
+    let promise = null
+    if (strategy.getNewObjectType() === this.object.type) {
+      promise = Promise.resolve([null, null])
+    } else if (strategy.getExistingObjectType() === this.object.type) {
+      promise = Promise.all([
+        this.facade.loadType(this.object),
+        this.facade.loadUsages(this.object)
+      ])
+    }
+
+    return promise.then(([loadedType, loadedUsages]) => {
+      const sections = []
+      const properties = []
+      let section = null
+      let property = null
+      let sectionsCounter = 0
+      let propertiesCounter = 0
+
+      if (loadedType && loadedType.propertyAssignments) {
+        loadedType.propertyAssignments.forEach(loadedAssignment => {
+          property = this._createProperty(
+            'property-' + propertiesCounter++,
+            loadedType,
+            loadedAssignment,
+            loadedUsages
+          )
+          properties.push(property)
+
+          if (!section || section.name.value !== loadedAssignment.section) {
+            section = this._createSection(
+              'section-' + sectionsCounter++,
+              loadedAssignment
+            )
+            sections.push(section)
+          }
+
+          section.properties.push(property.id)
+          property.section = section.id
+          property.original = {
+            ...property
+          }
+        })
+      }
+
+      const type = this._createType(loadedType, loadedUsages)
+
+      if (loadedType) {
+        type.original = {
+          ...type,
+          properties
+        }
+      }
+
+      const selection = this._createSelection(sections)
+
+      return this.context.setState(() => ({
+        type,
+        properties,
+        propertiesCounter,
+        sections,
+        sectionsCounter,
+        selection: selection,
+        removeSectionDialogOpen: false,
+        removePropertyDialogOpen: false
+      }))
+    })
+  }
+
+  _createType(loadedType, loadedUsages) {
+    const strategy = this._getStrategy()
+    const type = {
+      code: this._createField({
+        value: _.get(loadedType, 'code', null),
+        enabled: loadedType === null
+      }),
+      objectType: this._createField({
+        value: this.object.type
+      }),
+      description: this._createField({
+        value: _.get(loadedType, 'description', null)
+      }),
+      validationPlugin: this._createField({
+        value: _.get(loadedType, 'validationPlugin.name', null)
+      }),
+      usages: (loadedUsages && loadedUsages.type) || 0,
+      errors: 0
+    }
+    strategy.setTypeAttributes(type, loadedType, loadedUsages)
+    return type
+  }
+
+  _createSection(id, loadedAssignment) {
+    return {
+      id: id,
+      name: this._createField({
+        value: loadedAssignment.section
+      }),
+      properties: []
+    }
+  }
+
+  _createProperty(id, loadedType, loadedAssignment, loadedUsages) {
+    const propertyType = loadedAssignment.propertyType
+
+    const code = _.get(propertyType, 'code', null)
+    const dataType = _.get(propertyType, 'dataType', null)
+    const scope = code.startsWith(loadedType.code + '.') ? 'local' : 'global'
+    const usages =
+      (loadedUsages &&
+        loadedUsages.property &&
+        loadedUsages.property[propertyType.code]) ||
+      0
+
+    const isLocal = scope === 'local'
+    const isUnused = usages === 0
+
+    return {
+      id: id,
+      scope: this._createField({
+        value: scope,
+        enabled: false
+      }),
+      code: this._createField({
+        value: code,
+        enabled: false
+      }),
+      label: this._createField({
+        value: _.get(propertyType, 'label', null),
+        enabled: isLocal
+      }),
+      description: this._createField({
+        value: _.get(propertyType, 'description', null),
+        enabled: isLocal
+      }),
+      dataType: this._createField({
+        value: dataType,
+        enabled: isLocal && isUnused
+      }),
+      plugin: this._createField({
+        value: _.get(loadedAssignment, 'plugin.name', null),
+        enabled: isLocal && isUnused
+      }),
+      vocabulary: this._createField({
+        value: _.get(propertyType, 'vocabulary.code', null),
+        visible: dataType === openbis.DataType.CONTROLLEDVOCABULARY,
+        enabled: isLocal && isUnused
+      }),
+      materialType: this._createField({
+        value: _.get(propertyType, 'materialType.code', null),
+        visible: dataType === openbis.DataType.MATERIAL,
+        enabled: isLocal && isUnused
+      }),
+      schema: this._createField({
+        value: _.get(propertyType, 'schema', null),
+        visible: dataType === openbis.DataType.XML,
+        enabled: isLocal
+      }),
+      transformation: this._createField({
+        value: _.get(propertyType, 'transformation', null),
+        visible: dataType === openbis.DataType.XML,
+        enabled: isLocal
+      }),
+      mandatory: this._createField({
+        value: _.get(loadedAssignment, 'mandatory', false)
+      }),
+      showInEditView: this._createField({
+        value: _.get(loadedAssignment, 'showInEditView', false)
+      }),
+      showRawValueInForms: this._createField({
+        value: _.get(loadedAssignment, 'showRawValueInForms', false)
+      }),
+      initialValueForExistingEntities: this._createField({
+        visible: false
+      }),
+      usages: usages,
+      errors: 0
+    }
+  }
+
+  _createSelection(newSections) {
+    const {
+      selection: oldSelection,
+      sections: oldSections
+    } = this.context.getState()
+
+    if (!oldSelection) {
+      return null
+    } else if (oldSelection.type === 'section') {
+      let sectionIndex = -1
+
+      oldSections.forEach((oldSection, i) => {
+        if (oldSection.id === oldSelection.params.id) {
+          sectionIndex = i
+        }
+      })
+
+      if (sectionIndex >= 0 && sectionIndex < newSections.length) {
+        const newSection = newSections[sectionIndex]
+        return {
+          type: 'section',
+          params: {
+            id: newSection.id,
+            part: oldSelection.params.part
+          }
+        }
+      }
+    } else if (oldSelection.type === 'property') {
+      let sectionIndex = -1
+      let propertyIndex = -1
+
+      oldSections.forEach((oldSection, i) => {
+        oldSection.properties.forEach((oldProperty, j) => {
+          if (oldProperty === oldSelection.params.id) {
+            sectionIndex = i
+            propertyIndex = j
+          }
+        })
+      })
+
+      if (sectionIndex >= 0 && sectionIndex < newSections.length) {
+        const newSection = newSections[sectionIndex]
+        if (
+          propertyIndex >= 0 &&
+          propertyIndex < newSection.properties.length
+        ) {
+          const newProperty = newSection.properties[propertyIndex]
+          return {
+            type: 'property',
+            params: {
+              id: newProperty,
+              part: oldSelection.params.part
+            }
+          }
+        }
+      }
+    } else {
+      return null
+    }
+  }
+
+  _createField(params = {}) {
+    return {
+      value: null,
+      visible: true,
+      enabled: true,
+      ...params
+    }
+  }
+
+  _getStrategy() {
+    const strategies = new TypeFormControllerStrategies()
+    strategies.setObjectTypeStrategy(new ObjectTypeStrategy(this))
+    strategies.setCollectionTypeStrategy(new CollectionTypeStrategy())
+    strategies.setDataSetTypeStrategy(new DataSetTypeStrategy(this))
+    strategies.setMaterialTypeStrategy(new MaterialTypeStrategy())
+    return strategies.getStrategy(this.object.type)
+  }
+}
+
+class ObjectTypeStrategy {
+  constructor(executor) {
+    this.executor = executor
+  }
+
+  getNewObjectType() {
+    return objectTypes.NEW_OBJECT_TYPE
+  }
+
+  getExistingObjectType() {
+    return objectTypes.OBJECT_TYPE
+  }
+
+  setTypeAttributes(object, loadedType) {
+    Object.assign(object, {
+      listable: this.executor._createField({
+        value: _.get(loadedType, 'listable', false)
+      }),
+      showContainer: this.executor._createField({
+        value: _.get(loadedType, 'showContainer', false)
+      }),
+      showParents: this.executor._createField({
+        value: _.get(loadedType, 'showParents', false)
+      }),
+      showParentMetadata: this.executor._createField({
+        value: _.get(loadedType, 'showParentMetadata', false)
+      }),
+      autoGeneratedCode: this.executor._createField({
+        value: _.get(loadedType, 'autoGeneratedCode', false)
+      }),
+      generatedCodePrefix: this.executor._createField({
+        value: _.get(loadedType, 'generatedCodePrefix', null)
+      }),
+      subcodeUnique: this.executor._createField({
+        value: _.get(loadedType, 'subcodeUnique', false)
+      })
+    })
+  }
+}
+
+class CollectionTypeStrategy {
+  getNewObjectType() {
+    return objectTypes.NEW_COLLECTION_TYPE
+  }
+
+  getExistingObjectType() {
+    return objectTypes.COLLECTION_TYPE
+  }
+
+  setTypeAttributes() {}
+}
+
+class DataSetTypeStrategy {
+  constructor(executor) {
+    this.executor = executor
+  }
+
+  getNewObjectType() {
+    return objectTypes.NEW_DATA_SET_TYPE
+  }
+
+  getExistingObjectType() {
+    return objectTypes.DATA_SET_TYPE
+  }
+
+  setTypeAttributes(object, loadedType) {
+    Object.assign(object, {
+      mainDataSetPattern: this.executor._createField({
+        value: _.get(loadedType, 'mainDataSetPattern', null)
+      }),
+      mainDataSetPath: this.executor._createField({
+        value: _.get(loadedType, 'mainDataSetPath', null)
+      }),
+      disallowDeletion: this.executor._createField({
+        value: _.get(loadedType, 'disallowDeletion', false)
+      })
+    })
+  }
+}
+
+class MaterialTypeStrategy {
+  getNewObjectType() {
+    return objectTypes.NEW_MATERIAL_TYPE
+  }
+
+  getExistingObjectType() {
+    return objectTypes.MATERIAL_TYPE
+  }
+
+  setTypeAttributes() {}
+}

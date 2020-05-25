@@ -25,6 +25,8 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PEMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
@@ -58,8 +60,8 @@ public class EntityTypeSearchManager extends AbstractLocalSearchManager<EntityTy
     }
 
     @Override
-    public Set<Long> sortIDs(final Set<Long> filteredIDs, final SortOptions<Void> sortOptions) {
-        return doSortIDs(filteredIDs, sortOptions, TableMapper.DATA_SET_TYPE);
+    public List<Long> sortIDs(final Collection<Long> ids, final SortOptions<Void> sortOptions) {
+        return doSortIDs(ids, sortOptions, TableMapper.DATA_SET_TYPE);
     }
 
 }

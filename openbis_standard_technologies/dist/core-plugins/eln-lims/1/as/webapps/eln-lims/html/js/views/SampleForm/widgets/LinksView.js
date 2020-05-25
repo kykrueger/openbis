@@ -153,7 +153,7 @@ function LinksView(linksController, linksModel) {
 			postFix = "ANNOTATIONS_ALL" + linksModel.title;
 		}
 		
-		var dataGrid = SampleDataGridUtil.getSampleDataGrid(containerCode, samplesOnGrid, null, linksView.getCustomOperationsForGrid(), allCustomAnnotations, postFix, linksModel.isDisabled, false, false, false, 40);
+		var dataGrid = SampleDataGridUtil.getSampleDataGrid(containerCode, samplesOnGrid, null, linksView.getCustomOperationsForGrid(), allCustomAnnotations, postFix, linksModel.isDisabled, false, false, false, 100);
 		dataGrid.init($dataGridContainer);
 		linksModel.writeState(sample, null, null, false);
 		dataGrids.push(dataGrid);

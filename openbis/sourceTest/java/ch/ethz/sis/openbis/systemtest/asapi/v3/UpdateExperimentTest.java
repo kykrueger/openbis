@@ -45,9 +45,12 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifi
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.IExperimentId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.update.ExperimentUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.HistoryEntry;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.PropertyHistoryEntry;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.PersonPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.IProjectId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.Role;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.create.RoleAssignmentCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
@@ -55,6 +58,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.delete.SampleDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.ITagId;
@@ -994,6 +998,227 @@ public class UpdateExperimentTest extends AbstractExperimentTest
                 "update-experiments  EXPERIMENT_UPDATES('[ExperimentUpdate[experimentId=/TEST-SPACE/TEST-PROJECT/EXP-SPACE-TEST], ExperimentUpdate[experimentId=200811050940555-1032]]')");
     }
 
+    @Test
+    public void testUpdateWithUnknownPropertyOfTypeSample()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        ExperimentCreation creation = new ExperimentCreation();
+        creation.setCode("EXPERIMENT_WITH_SAMPLE_PROPERTY");
+        creation.setTypeId(new EntityTypePermId("DELETION_TEST"));
+        creation.setProjectId(new ProjectIdentifier("/TEST-SPACE/TEST-PROJECT"));
+        ExperimentPermId experimentPermId = v3api.createExperiments(sessionToken, Arrays.asList(creation)).get(0);
+
+        ExperimentUpdate update = new ExperimentUpdate();
+        update.setExperimentId(experimentPermId);
+        update.setSampleProperty("PLATE", new SamplePermId("200811050924898-997"));
+
+        // When
+        assertUserFailureException(Void -> v3api.updateExperiments(sessionToken, Arrays.asList(update)),
+                // Then
+                "Not a property of data type SAMPLE: PLATE");
+    }
+
+    @Test
+    public void testUpdateWithPropertyOfTypeSampleWithUnknownSample()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createASamplePropertyType(sessionToken, null);
+        EntityTypePermId experimentType = createAnExperimentType(sessionToken, false, propertyType);
+        ExperimentCreation creation = new ExperimentCreation();
+        creation.setCode("EXPERIMENT_WITH_SAMPLE_PROPERTY");
+        creation.setTypeId(experimentType);
+        creation.setProjectId(new ProjectIdentifier("/TEST-SPACE/TEST-PROJECT"));
+        creation.setSampleProperty(propertyType.getPermId(), new SampleIdentifier("/CISD/CL1"));
+        ExperimentPermId experimentPermId = v3api.createExperiments(sessionToken, Arrays.asList(creation)).get(0);
+
+        ExperimentUpdate update = new ExperimentUpdate();
+        update.setExperimentId(experimentPermId);
+        update.setSampleProperty(propertyType.getPermId(), new SampleIdentifier("/CISD/UNKNOWN"));
+
+        // When
+        assertUserFailureException(Void -> v3api.updateExperiments(sessionToken, Arrays.asList(update)),
+                // Then
+                "Unknown sample: /CISD/UNKNOWN");
+    }
+
+    @Test
+    public void testUpdateWithPropertyOfTypeSampleWithSampleOfWrongType()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createASamplePropertyType(sessionToken,
+                new EntityTypePermId("WELL", EntityKind.SAMPLE));
+        EntityTypePermId experimentType = createAnExperimentType(sessionToken, false, propertyType);
+        ExperimentCreation creation = new ExperimentCreation();
+        creation.setCode("EXPERIMENT_WITH_SAMPLE_PROPERTY");
+        creation.setTypeId(experimentType);
+        creation.setProjectId(new ProjectIdentifier("/TEST-SPACE/TEST-PROJECT"));
+        creation.setSampleProperty(propertyType.getPermId(), new SamplePermId("200811050917877-438"));
+        ExperimentPermId experimentPermId = v3api.createExperiments(sessionToken, Arrays.asList(creation)).get(0);
+
+        ExperimentUpdate update = new ExperimentUpdate();
+        update.setExperimentId(experimentPermId);
+        update.setSampleProperty(propertyType.getPermId(), new SamplePermId("200811050919915-8"));
+
+        // When
+        assertUserFailureException(Void -> v3api.updateExperiments(sessionToken, Arrays.asList(update)),
+                // Then
+                "Property " + propertyType.getPermId() + " is not a sample of type WELL but of type CONTROL_LAYOUT");
+    }
+
+    @Test
+    public void testUpdateWithPropertyOfTypeSampleWithSampleNotAccessable()
+    {
+        // Given
+        String adminSessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createASamplePropertyType(adminSessionToken, null);
+        EntityTypePermId experimentType = createAnExperimentType(adminSessionToken, false, propertyType);
+        ExperimentCreation creation = new ExperimentCreation();
+        creation.setCode("EXPERIMENT_WITH_SAMPLE_PROPERTY");
+        creation.setTypeId(experimentType);
+        creation.setProjectId(new ProjectIdentifier("/TEST-SPACE/TEST-PROJECT"));
+        creation.setSampleProperty(propertyType.getPermId(), new SampleIdentifier("/MP"));
+        ExperimentPermId experimentPermId = v3api.createExperiments(adminSessionToken, Arrays.asList(creation)).get(0);
+
+        String sessionToken = v3api.login(TEST_SPACE_USER, PASSWORD);
+        ExperimentUpdate update = new ExperimentUpdate();
+        update.setExperimentId(experimentPermId);
+        update.setSampleProperty(propertyType.getPermId(), new SampleIdentifier("/CISD/CL1"));
+
+        // When
+        assertUserFailureException(Void -> v3api.updateExperiments(sessionToken, Arrays.asList(update)),
+                // Then
+                "Unknown sample: /CISD/CL1");
+    }
+
+    @Test
+    public void testUpdateAddSampleProperty()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createASamplePropertyType(sessionToken, null);
+        EntityTypePermId experimentType = createAnExperimentType(sessionToken, false, propertyType);
+        ExperimentCreation creation = new ExperimentCreation();
+        creation.setCode("EXPERIMENT_WITH_SAMPLE_PROPERTY");
+        creation.setTypeId(experimentType);
+        creation.setProjectId(new ProjectIdentifier("/TEST-SPACE/TEST-PROJECT"));
+        ExperimentPermId experimentPermId = v3api.createExperiments(sessionToken, Arrays.asList(creation)).get(0);
+
+        ExperimentUpdate update = new ExperimentUpdate();
+        update.setExperimentId(experimentPermId);
+        update.setSampleProperty(propertyType.getPermId(), new SamplePermId("200811050924898-997"));
+
+        // When
+        v3api.updateExperiments(sessionToken, Arrays.asList(update));
+
+        // Then
+        ExperimentFetchOptions fetchOptions = new ExperimentFetchOptions();
+        fetchOptions.withProperties();
+        fetchOptions.withSampleProperties();
+        Experiment experiment = v3api.getExperiments(sessionToken, Arrays.asList(experimentPermId), fetchOptions).get(experimentPermId);
+        assertEquals(experiment.getProperties().toString(), "{" + propertyType.getPermId() + "=200811050924898-997}");
+        assertEquals(experiment.getSampleProperties().toString(), "{" + propertyType.getPermId() + "=Sample 200811050924898-997}");
+    }
+
+    @Test
+    public void testUpdateChangeSampleProperty()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createASamplePropertyType(sessionToken, null);
+        EntityTypePermId experimentType = createAnExperimentType(sessionToken, false, propertyType);
+        ExperimentCreation creation = new ExperimentCreation();
+        creation.setCode("EXPERIMENT_WITH_SAMPLE_PROPERTY");
+        creation.setTypeId(experimentType);
+        creation.setProjectId(new ProjectIdentifier("/TEST-SPACE/TEST-PROJECT"));
+        creation.setSampleProperty(propertyType.getPermId(), new SamplePermId("200811050919915-8"));
+        ExperimentPermId experimentPermId = v3api.createExperiments(sessionToken, Arrays.asList(creation)).get(0);
+
+        ExperimentUpdate update = new ExperimentUpdate();
+        update.setExperimentId(experimentPermId);
+        update.setSampleProperty(propertyType.getPermId(), new SamplePermId("200811050924898-997"));
+
+        // When
+        v3api.updateExperiments(sessionToken, Arrays.asList(update));
+
+        // Then
+        ExperimentFetchOptions fetchOptions = new ExperimentFetchOptions();
+        fetchOptions.withProperties();
+        fetchOptions.withSampleProperties();
+        fetchOptions.withHistory().withAuthor();
+        Experiment experiment = v3api.getExperiments(sessionToken, Arrays.asList(experimentPermId), fetchOptions).get(experimentPermId);
+        assertEquals(experiment.getProperties().toString(), "{" + propertyType.getPermId() + "=200811050924898-997}");
+        assertEquals(experiment.getSampleProperties().toString(), "{" + propertyType.getPermId() + "=Sample 200811050924898-997}");
+        List<HistoryEntry> history = experiment.getHistory();
+        assertEquals(history.get(0).getAuthor().getUserId(), TEST_USER);
+        assertEquals(((PropertyHistoryEntry) history.get(0)).getPropertyName(), propertyType.getPermId());
+        assertEquals(((PropertyHistoryEntry) history.get(0)).getPropertyValue(), "200811050919915-8");
+        assertEquals(history.size(), 1);
+    }
+
+    @Test
+    public void testUpdateRemoveSampleProperty()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createASamplePropertyType(sessionToken, null);
+        EntityTypePermId experimentType = createAnExperimentType(sessionToken, false, propertyType);
+        ExperimentCreation creation = new ExperimentCreation();
+        creation.setCode("EXPERIMENT_WITH_SAMPLE_PROPERTY");
+        creation.setTypeId(experimentType);
+        creation.setProjectId(new ProjectIdentifier("/TEST-SPACE/TEST-PROJECT"));
+        creation.setSampleProperty(propertyType.getPermId(), new SamplePermId("200811050919915-8"));
+        ExperimentPermId experimentPermId = v3api.createExperiments(sessionToken, Arrays.asList(creation)).get(0);
+
+        ExperimentUpdate update = new ExperimentUpdate();
+        update.setExperimentId(experimentPermId);
+        update.setSampleProperty(propertyType.getPermId(), null);
+
+        // When
+        v3api.updateExperiments(sessionToken, Arrays.asList(update));
+
+        // Then
+        ExperimentFetchOptions fetchOptions = new ExperimentFetchOptions();
+        fetchOptions.withProperties();
+        fetchOptions.withSampleProperties();
+        fetchOptions.withHistory().withAuthor();
+        Experiment experiment = v3api.getExperiments(sessionToken, Arrays.asList(experimentPermId), fetchOptions).get(experimentPermId);
+        assertEquals(experiment.getProperties().toString(), "{}");
+        assertEquals(experiment.getSampleProperties().toString(), "{}");
+        List<HistoryEntry> history = experiment.getHistory();
+        assertEquals(history.get(0).getAuthor().getUserId(), TEST_USER);
+        assertEquals(((PropertyHistoryEntry) history.get(0)).getPropertyName(), propertyType.getPermId());
+        assertEquals(((PropertyHistoryEntry) history.get(0)).getPropertyValue(), "200811050919915-8");
+        assertEquals(history.size(), 1);
+    }
+
+    @Test
+    public void testUpdateRemoveMandatorySampleProperty()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createASamplePropertyType(sessionToken, null);
+        EntityTypePermId experimentType = createAnExperimentType(sessionToken, true, propertyType);
+        ExperimentCreation creation = new ExperimentCreation();
+        creation.setCode("EXPERIMENT_WITH_SAMPLE_PROPERTY");
+        creation.setTypeId(experimentType);
+        creation.setProjectId(new ProjectIdentifier("/TEST-SPACE/TEST-PROJECT"));
+        creation.setSampleProperty(propertyType.getPermId(), new SamplePermId("200811050919915-8"));
+        ExperimentPermId experimentPermId = v3api.createExperiments(sessionToken, Arrays.asList(creation)).get(0);
+
+        ExperimentUpdate update = new ExperimentUpdate();
+        update.setExperimentId(experimentPermId);
+        update.setSampleProperty(propertyType.getPermId(), null);
+
+        // When
+        assertUserFailureException(Void -> v3api.updateExperiments(sessionToken, Arrays.asList(update)),
+                "Property " + propertyType + " of entity type " + experimentType.getPermId()
+                        + " can not be deleted because it is mandatory.");
+    }
+
+    @Test
     private ExperimentPermId createExperimentWithoutAttachments()
     {
         final String sessionToken = v3api.login(TEST_USER, PASSWORD);

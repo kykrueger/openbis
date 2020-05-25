@@ -1,19 +1,18 @@
 import _ from 'lodash'
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
-
 import Dialog from '@material-ui/core/Dialog'
 import DialogActions from '@material-ui/core/DialogActions'
 import DialogContent from '@material-ui/core/DialogContent'
 import DialogContentText from '@material-ui/core/DialogContentText'
 import DialogTitle from '@material-ui/core/DialogTitle'
 import Slide from '@material-ui/core/Slide'
-import logger from '../../../common/logger.js'
+import logger from '@src/js/common/logger.js'
 
 const styles = theme => ({
   dialog: {
     position: 'relative',
-    zIndex: '20000 !important'
+    zIndex: '2000 !important'
   },
   actions: {
     margin: theme.spacing(1)

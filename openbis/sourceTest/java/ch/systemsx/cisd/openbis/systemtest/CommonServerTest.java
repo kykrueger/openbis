@@ -66,6 +66,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetUpdateResult;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataStore;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataStoreServiceKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataType;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DatastoreServiceDescription;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DeletionType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchCriteria;
@@ -2436,7 +2437,7 @@ public class CommonServerTest extends SystemTestCase
         if (user.isInstanceUserOrSpaceUserOrEnabledProjectUser())
         {
             List<DataType> types = commonServer.listDataTypes(session.getSessionToken());
-            assertEquals(types.size(), 10);
+            assertEquals(types.size(), DataTypeCode.values().length);
         } else
         {
             try

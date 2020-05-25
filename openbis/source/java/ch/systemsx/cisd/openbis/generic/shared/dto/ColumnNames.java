@@ -284,7 +284,11 @@ public final class ColumnNames
 
     public static final String MATERIAL_PROP_COLUMN = "mate_prop_id";
 
+    public static final String SAMPLE_PROP_COLUMN = "samp_prop_id";
+
     public static final String PROPERTY_MATERIAL_TYPE_COLUMN = "maty_prop_id";
+
+    public static final String PROPERTY_SAMPLE_TYPE_COLUMN = "saty_prop_id";
 
     public static final String PERM_ID_COLUMN = "perm_id";
 

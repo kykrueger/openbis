@@ -153,7 +153,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.delete.SampleTypeDeletion
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleTypeSearchCriteria;
@@ -301,6 +300,7 @@ public class ApplicationServerApiPostgresWrapper implements IApplicationServerAp
 
     @Override
     public List<SamplePermId> createSamples(String s, List<SampleCreation> list) {
+        long start = System.currentTimeMillis();
         Set<String> spaceCodes = list.stream().map(sc -> ((SpacePermId) sc.getSpaceId()).getPermId()).collect(Collectors.toSet());
         Map<String, Long> spaceIdsByCode = SQLQueries.getSpaceIds(connection, spaceCodes);
 
@@ -362,8 +362,31 @@ public class ApplicationServerApiPostgresWrapper implements IApplicationServerAp
             }
         }
 
-        int inserts = SQLQueries.insertSamples(connection, sampleInsertArgs);
-        int propertyInserts = SQLQueries.insertSamplesProperties(connection, samplePropertiesInsertArgs);
+        try {
+            connection.setAutoCommit(false);
+
+            long end = System.currentTimeMillis();
+            System.out.println("ApplicationServerApiPostgresWrapper.createSamples Preparation Took: " + (end-start)/1000 + " sec");
+            int inserts = SQLQueries.insertSamples(connection, sampleInsertArgs);
+            long end2 = System.currentTimeMillis();
+            System.out.println("ApplicationServerApiPostgresWrapper.createSamples inserts Took: " + (end2-end)/1000 + " sec");
+            int propertyInserts = SQLQueries.insertSamplesProperties(connection, samplePropertiesInsertArgs);
+            long end3 = System.currentTimeMillis();
+            System.out.println("ApplicationServerApiPostgresWrapper.createSamples property inserts Took: " + (end3-end2)/1000 + " sec");
+            System.out.println("ApplicationServerApiPostgresWrapper.createSamples Total: " + (end3-start)/1000 + " sec");
+            System.out.println("ApplicationServerApiPostgresWrapper.createSamples Total: " + list.size()/((end3-start)/1000) + " samples/sec");
+
+            connection.commit();
+        } catch (Exception ex) {
+            try {
+                connection.rollback();
+            } catch (Exception ex2) {}
+        } finally {
+            try {
+                connection.setAutoCommit(true);
+            } catch (Exception ex3) {}
+        }
+
         return permIds;
     }
 

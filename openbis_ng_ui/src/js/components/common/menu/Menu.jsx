@@ -12,15 +12,15 @@ import LogoutIcon from '@material-ui/icons/PowerSettingsNew'
 import { fade } from '@material-ui/core/styles/colorManipulator'
 import { connect } from 'react-redux'
 import { withStyles } from '@material-ui/core/styles'
-import logger from '../../../common/logger.js'
-import * as actions from '../../../store/actions/actions.js'
-import * as selectors from '../../../store/selectors/selectors.js'
-import * as pages from '../../../common/consts/pages.js'
+import actions from '@src/js/store/actions/actions.js'
+import selectors from '@src/js/store/selectors/selectors.js'
+import pages from '@src/js/common/consts/pages.js'
+import logger from '@src/js/common/logger.js'
 
 const styles = theme => ({
   bar: {
     position: 'relative',
-    zIndex: 4000
+    zIndex: 400
   },
   tabs: {
     flexGrow: 1

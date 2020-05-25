@@ -108,7 +108,7 @@ public class EntityTypePropertyTypeBrowserProvider extends EntityTypePropertyTyp
             builder.column(DESCRIPTION).addString(propertyType.getDescription());
             builder.column(MODIFICATION_DATE).addDate(propertyType.getModificationDate());
             builder.column(IS_MANDATORY).addString(SimpleYesNoRenderer.render(etpt.isMandatory()));
-            builder.column(DATA_TYPE).addString(renderDataType(propertyType));
+            builder.column(DATA_TYPE).addString(PropertyTypeProvider.renderDataType(propertyType));
             builder.column(IS_DYNAMIC).addString(SimpleYesNoRenderer.render(etpt.isDynamic()));
             builder.column(IS_MANAGED).addString(SimpleYesNoRenderer.render(etpt.isManaged()));
             builder.column(IS_SHOWN_IN_EDITOR_VIEW).addString(SimpleYesNoRenderer.render(etpt.isShownInEditView()));

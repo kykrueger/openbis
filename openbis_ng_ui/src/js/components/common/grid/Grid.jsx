@@ -8,13 +8,15 @@ import TableCell from '@material-ui/core/TableCell'
 import TableHead from '@material-ui/core/TableHead'
 import TableRow from '@material-ui/core/TableRow'
 import TableSortLabel from '@material-ui/core/TableSortLabel'
-import FilterField from '../../common/form/FilterField.jsx'
-import ColumnConfig from '../../common/grid/ColumnConfig.jsx'
-import PageConfig from '../../common/grid/PageConfig.jsx'
-import * as ids from '../../../common/consts/ids.js'
-import * as selectors from '../../../store/selectors/selectors.js'
-import { facade, dto } from '../../../services/openbis.js'
-import logger from '../../../common/logger.js'
+
+import FilterField from '@src/js/components/common/form/FilterField.jsx'
+import selectors from '@src/js/store/selectors/selectors.js'
+import openbis from '@src/js/services/openbis.js'
+import ids from '@src/js/common/consts/ids.js'
+import logger from '@src/js/common/logger.js'
+
+import ColumnConfig from './ColumnConfig.jsx'
+import PageConfig from './PageConfig.jsx'
 
 const styles = theme => ({
   container: {
@@ -139,11 +141,11 @@ class Grid extends React.Component {
   }
 
   loadSettings() {
-    let id = new dto.PersonPermId(this.props.session.userName)
-    let fo = new dto.PersonFetchOptions()
+    let id = new openbis.PersonPermId(this.props.session.userName)
+    let fo = new openbis.PersonFetchOptions()
     fo.withWebAppSettings(ids.WEB_APP_ID).withAllSettings()
 
-    return facade.getPersons([id], fo).then(map => {
+    return openbis.getPersons([id], fo).then(map => {
       let person = map[id]
       let webAppSettings = person.webAppSettings[ids.WEB_APP_ID]
       if (webAppSettings && webAppSettings.settings) {
@@ -191,15 +193,15 @@ class Grid extends React.Component {
       columns
     }
 
-    let gridSettings = new dto.WebAppSettingCreation()
+    let gridSettings = new openbis.WebAppSettingCreation()
     gridSettings.setName(this.props.id)
     gridSettings.setValue(JSON.stringify(settings))
 
-    let update = new dto.PersonUpdate()
-    update.setUserId(new dto.PersonPermId(this.props.session.userName))
+    let update = new openbis.PersonUpdate()
+    update.setUserId(new openbis.PersonPermId(this.props.session.userName))
     update.getWebAppSettings(ids.WEB_APP_ID).add(gridSettings)
 
-    facade.updatePersons([update])
+    openbis.updatePersons([update])
   }
 
   handleFilterChange(column, filter) {
@@ -471,10 +473,4 @@ class Grid extends React.Component {
   }
 }
 
-export default _.flow(
-  connect(
-    mapStateToProps,
-    null
-  ),
-  withStyles(styles)
-)(Grid)
+export default _.flow(connect(mapStateToProps, null), withStyles(styles))(Grid)

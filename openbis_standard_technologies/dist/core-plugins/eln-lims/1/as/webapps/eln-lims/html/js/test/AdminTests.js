@@ -6,10 +6,10 @@ var AdminTests = new function() {
 
             testChain = Promise.resolve();
 
-            testChain.then(() => TestUtil.login("admin", "a"))
+            testChain.then(() => TestUtil.login("admin", "admin"))
                      .then(() => TestUtil.testPassed(1))
                      .then(() => resolve())
-                     .catch(() => reject(error));
+                     .catch((error) => reject(error));
         });
     }
 
@@ -50,7 +50,10 @@ var AdminTests = new function() {
                        "TRASHCAN",
                        "SETTINGS"];
 
-            Promise.resolve().then(() => TestUtil.verifyInventory(ids)).then(() => TestUtil.testPassed(2)).then(() => resolve());
+            Promise.resolve().then(() => TestUtil.verifyInventory(ids))
+                             .then(() => TestUtil.testPassed(2))
+                             .then(() => resolve())
+                             .catch((error) => reject(error));
         });
     }
 
@@ -76,7 +79,7 @@ var AdminTests = new function() {
                      .then(() => e.waitForId("edit-btn"))
                      .then(() => TestUtil.testPassed(3))
                      .then(() => resolve())
-                     .catch(() => reject(error));
+                     .catch((error) => reject(error));
         });
     }
 
@@ -89,48 +92,20 @@ var AdminTests = new function() {
                      .then(() => e.click("USER_MANAGER"))
                      .then(() => e.waitForId("createUser"))
                      .then(() => e.click("createUser"))
+                     // fill user name
                      .then(() => e.waitForId("userId"))
                      .then(() => e.change("userId", "testId"))
+                     // fill password
+                     .then(() => e.waitForId("passwordId", true, 2000))
+                     .then(() => e.change("passwordId", "pass", true))
+                     .then(() => e.change("passwordRepeatId", "pass", true))
+                     // create user
                      .then(() => e.click("createUserBtn"))
-                     .then(() => AdminTests.createPassword())
-                     .then(() => AdminTests.userExist())
+                     .then(() => e.waitForId("jSuccess"))
                      .then(() => TestUtil.setCookies("suitename", "testId"))
                      .then(() => e.click("logoutBtn"))
                      .then(() => resolve())
-                     .catch(() => reject(error));
-        });
-    }
-
-    // Sometimes it ask for password. Try to fill it.
-    this.createPassword = function() {
-        return new Promise(function executor(resolve, reject) {
-            var e = EventUtil;
-
-            testChain = Promise.resolve();
-
-            testChain.then(() => e.waitForId("passwordId", true, 2000))
-                     .then(() => e.change("passwordId", "pass", true))
-                     .then(() => e.change("passwordRepeatId", "pass", true))
-                     .then(() => e.click("createUserBtn", true))
-                     .then(() => resolve())
-                     .catch(() => reject(error));
-        });
-    }
-
-    // If the user already exists, we will see an error.
-    // This is not a problem for the script, and we can continue.
-    this.userExist = function() {
-        return new Promise(function executor(resolve, reject) {
-            var e = EventUtil;
-
-            testChain = Promise.resolve();
-
-            testChain.then(() => e.waitForId("jError", true, 2000))
-                     .then(() => e.waitForId("jNotifyDismiss", true, 2000))
-                     .then(() => e.click("jNotifyDismiss", true))
-                     .then(() => e.click("cancelBtn", true))
-                     .then(() => resolve())
-                     .catch(() => reject(error));
+                     .catch((error) => reject(error));
         });
     }
 
@@ -179,7 +154,8 @@ var AdminTests = new function() {
                      .then(() => TestUtil.checkFileEquality("order_ORD1_p0.txt", baseURL + pathToResource, TestUtil.dateReplacer))
                      .then(() => TestUtil.returnRealSaveAs())
                      .then(() => TestUtil.testPassed(31))
-                     .then(() => resolve());
+                     .then(() => resolve())
+                     .catch((error) => reject(error));
         });
     }
 
@@ -223,7 +199,8 @@ var AdminTests = new function() {
                      .then(() => e.waitForId("currency-0"))
                      .then(() => e.equalTo("currency-0", "EUR", true, false))
                      .then(() => TestUtil.testPassed(32))
-                     .then(() => resolve());
+                     .then(() => resolve())
+                     .catch((error) => reject(error));
         });
     }
 
@@ -265,7 +242,8 @@ var AdminTests = new function() {
                      .then(() => e.verifyExistence("deleted--materials-bacteria-bac1-id", false))
                      .then(() => e.verifyExistence("deleted--stock_catalog-requests-req1-id", false))
                      .then(() => TestUtil.testPassed(33))
-                     .then(() => resolve());
+                     .then(() => resolve())
+                     .catch((error) => reject(error));
         });
     }
 
@@ -293,7 +271,8 @@ var AdminTests = new function() {
                      .then(() => e.waitForId("total-count-id"))
                      .then(() => e.equalTo("total-count-id", "5", true, false))
                      .then(() => TestUtil.testPassed(34))
-                     .then(() => resolve());
+                     .then(() => resolve())
+                     .catch((error) => reject(error));
         });
     }
 }

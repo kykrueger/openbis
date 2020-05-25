@@ -1,11 +1,14 @@
 var TestProtocol = new function () {
 
-    this.startAdminTests = function() {
+    this.startAdminTests = function(withLogin) {
         testChain = Promise.resolve();
-                 //1. Login
-        testChain.then(() => AdminTests.login())
+
+        if (withLogin) {
+            //1. Login
+            testChain.then(() => AdminTests.login())
+        }
                  //2. Inventory Space and Sample Types
-                 .then(() => AdminTests.inventorySpace())
+        testChain.then(() => AdminTests.inventorySpace())
                  //3. Settings Form - Enable Sample Types to Show in Drop-downs
                  .then(() => AdminTests.enableBacteriaToShowInDropDowns())
                  //4. Microscopy and Flow Cytometry plugin

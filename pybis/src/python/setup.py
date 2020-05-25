@@ -10,7 +10,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name='PyBIS',
-    version= '1.13.0',
+    version= '1.14.7',
     author='Swen Vermeul • ID SIS • ETH Zürich',
     author_email='swen@ethz.ch',
     description='openBIS connection and interaction, optimized for using with Jupyter',

@@ -44,7 +44,7 @@ public class ExperimentLoaderTest extends AbstractLoaderTestCase
                 new ExperimentLoader(daoFactory, new ManagedPropertyEvaluatorFactory(null, new TestJythonEvaluatorPool()));
         List<Sample> samples = loadSamples(980L, 981L, 986L);
 
-        loader.enrichWithExperiments(samples);
+        loader.enrichWithExperiments(session(), samples);
 
         StringBuilder builder = new StringBuilder();
         for (Sample sample : samples)
@@ -70,7 +70,7 @@ public class ExperimentLoaderTest extends AbstractLoaderTestCase
         for (Long id : ids)
         {
             list.add(SampleTranslator.translate(sampleDAO.tryGetByTechId(new TechId(id)), "", null,
-                    new ManagedPropertyEvaluatorFactory(null, new TestJythonEvaluatorPool())));
+                    new ManagedPropertyEvaluatorFactory(null, new TestJythonEvaluatorPool()), null));
 
         }
         return list;

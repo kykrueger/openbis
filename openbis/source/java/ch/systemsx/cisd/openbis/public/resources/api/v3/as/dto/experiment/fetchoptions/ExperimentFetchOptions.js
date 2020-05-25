@@ -5,7 +5,7 @@
 define([ "require", "stjs", "as/dto/common/fetchoptions/FetchOptions", 'as/dto/experiment/fetchoptions/ExperimentTypeFetchOptions', 'as/dto/project/fetchoptions/ProjectFetchOptions',
 		'as/dto/property/fetchoptions/PropertyFetchOptions', 'as/dto/tag/fetchoptions/TagFetchOptions', 'as/dto/person/fetchoptions/PersonFetchOptions', 'as/dto/attachment/fetchoptions/AttachmentFetchOptions',
 		'as/dto/dataset/fetchoptions/DataSetFetchOptions', 'as/dto/sample/fetchoptions/SampleFetchOptions', 'as/dto/history/fetchoptions/HistoryEntryFetchOptions',
-		'as/dto/material/fetchoptions/MaterialFetchOptions', 'as/dto/experiment/fetchoptions/ExperimentSortOptions' ], function(require, stjs, FetchOptions) {
+		'as/dto/material/fetchoptions/MaterialFetchOptions', 'as/dto/sample/fetchoptions/SampleFetchOptions', 'as/dto/experiment/fetchoptions/ExperimentSortOptions' ], function(require, stjs, FetchOptions) {
 	var ExperimentFetchOptions = function() {
 	};
 	stjs.extend(ExperimentFetchOptions, FetchOptions, [ FetchOptions ], function(constructor, prototype) {
@@ -18,6 +18,7 @@ define([ "require", "stjs", "as/dto/common/fetchoptions/FetchOptions", 'as/dto/e
 		prototype.history = null;
 		prototype.properties = null;
 		prototype.materialProperties = null;
+		prototype.sampleProperties = null;
 		prototype.tags = null;
 		prototype.registrator = null;
 		prototype.modifier = null;
@@ -114,6 +115,19 @@ define([ "require", "stjs", "as/dto/common/fetchoptions/FetchOptions", 'as/dto/e
 		prototype.hasMaterialProperties = function() {
 			return this.materialProperties != null;
 		};
+		prototype.withSampleProperties = function() {
+			if (this.sampleProperties == null) {
+				var SampleFetchOptions = require("as/dto/sample/fetchoptions/SampleFetchOptions");
+				this.sampleProperties = new SampleFetchOptions();
+			}
+			return this.sampleProperties;
+		};
+		prototype.withSamplePropertiesUsing = function(fetchOptions) {
+			return this.sampleProperties = fetchOptions;
+		};
+		prototype.hasSampleProperties = function() {
+			return this.sampleProperties != null;
+		};
 		prototype.withTags = function() {
 			if (this.tags == null) {
 				var TagFetchOptions = require("as/dto/tag/fetchoptions/TagFetchOptions");
@@ -184,6 +198,7 @@ define([ "require", "stjs", "as/dto/common/fetchoptions/FetchOptions", 'as/dto/e
 		history : "HistoryEntryFetchOptions",
 		properties : "PropertyFetchOptions",
 		materialProperties : "MaterialFetchOptions",
+		sampleProperties : "SampleFetchOptions",
 		tags : "TagFetchOptions",
 		registrator : "PersonFetchOptions",
 		modifier : "PersonFetchOptions",

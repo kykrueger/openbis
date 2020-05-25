@@ -46,6 +46,7 @@ import ch.systemsx.cisd.openbis.generic.server.authorization.annotation.Capabili
 import ch.systemsx.cisd.openbis.generic.server.authorization.annotation.RolesAllowed;
 import ch.systemsx.cisd.openbis.generic.server.authorization.predicate.AbstractTechIdPredicate.ExperimentTechIdPredicate;
 import ch.systemsx.cisd.openbis.generic.server.authorization.predicate.AbstractTechIdPredicate.ProjectTechIdPredicate;
+import ch.systemsx.cisd.openbis.generic.server.authorization.validator.SamplePropertyAccessValidator;
 import ch.systemsx.cisd.openbis.generic.server.authorization.predicate.DataSetTechIdPredicate;
 import ch.systemsx.cisd.openbis.generic.server.authorization.predicate.DataSetUpdatesPredicate;
 import ch.systemsx.cisd.openbis.generic.server.authorization.predicate.ExperimentUpdatesPredicate;
@@ -224,7 +225,8 @@ public final class GenericServer extends AbstractServer<IGenericServerInternal> 
         return SampleTranslator.translate(getSampleTypeSlaveServerPlugin(sample.getSampleType())
                 .getSampleInfo(session, sample), session.getBaseIndexURL(), MetaprojectTranslator
                         .translate(metaprojectPEs),
-                managedPropertyEvaluatorFactory);
+                managedPropertyEvaluatorFactory,
+                new SamplePropertyAccessValidator(session, getDAOFactory()));
     }
 
     @Override
@@ -272,6 +274,7 @@ public final class GenericServer extends AbstractServer<IGenericServerInternal> 
         }
         return ExperimentTranslator.translate(experiment, session.getBaseIndexURL(),
                 MetaprojectTranslator.translate(metaprojectPEs), managedPropertyEvaluatorFactory,
+                new SamplePropertyAccessValidator(session, getDAOFactory()),
                 ExperimentTranslator.LoadableFields.PROPERTIES,
                 ExperimentTranslator.LoadableFields.ATTACHMENTS);
     }
@@ -289,6 +292,7 @@ public final class GenericServer extends AbstractServer<IGenericServerInternal> 
                         session.tryGetPerson(), experiment);
         return ExperimentTranslator.translate(experiment, session.getBaseIndexURL(),
                 MetaprojectTranslator.translate(metaprojectPEs), managedPropertyEvaluatorFactory,
+                new SamplePropertyAccessValidator(session, getDAOFactory()),
                 ExperimentTranslator.LoadableFields.PROPERTIES,
                 ExperimentTranslator.LoadableFields.ATTACHMENTS);
     }
@@ -696,7 +700,9 @@ public final class GenericServer extends AbstractServer<IGenericServerInternal> 
         }
 
         return ExperimentTranslator
-                .translate(experiment, session.getBaseIndexURL(), new HashSet<Metaproject>(), managedPropertyEvaluatorFactory);
+                .translate(experiment, session.getBaseIndexURL(), new HashSet<Metaproject>(),
+                        managedPropertyEvaluatorFactory,
+                        new SamplePropertyAccessValidator(session, getDAOFactory()));
 
     }
 

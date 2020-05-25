@@ -26,6 +26,8 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PEMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -58,8 +60,8 @@ public class ExperimentTypeSearchManager extends AbstractLocalSearchManager<Expe
     }
 
     @Override
-    public Set<Long> sortIDs(final Set<Long> filteredIDs, final SortOptions<ExperimentType> sortOptions) {
-        return doSortIDs(filteredIDs, sortOptions, TableMapper.EXPERIMENT_TYPE);
+    public List<Long> sortIDs(final Collection<Long> ids, final SortOptions<ExperimentType> sortOptions) {
+        return doSortIDs(ids, sortOptions, TableMapper.EXPERIMENT_TYPE);
     }
 
 }

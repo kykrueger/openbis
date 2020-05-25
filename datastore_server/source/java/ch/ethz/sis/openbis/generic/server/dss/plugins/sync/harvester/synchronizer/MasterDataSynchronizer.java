@@ -17,13 +17,19 @@
 package ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.map.MultiKeyMap;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.Diff;
+import org.apache.commons.lang3.builder.DiffBuilder;
+import org.apache.commons.lang3.builder.DiffResult;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.log4j.Logger;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
@@ -34,11 +40,13 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.id.ExternalDmsPermId
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.id.IExternalDmsId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.update.ExternalDmsUpdate;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.ServiceFinderUtils;
+import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.config.SyncConfig;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.util.Monitor;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
 import ch.systemsx.cisd.openbis.generic.shared.ICommonServer;
 import ch.systemsx.cisd.openbis.generic.shared.basic.CodeConverter;
+import ch.systemsx.cisd.openbis.generic.shared.basic.ICodeHolder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind;
@@ -52,6 +60,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewVocabulary;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Script;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ScriptType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Vocabulary;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.VocabularyTerm;
 
@@ -68,21 +77,22 @@ public class MasterDataSynchronizer
 
     final boolean dryRun;
 
-    final Map<TechId, List<VocabularyTerm>> vocabularyTermsToBeDeleted;
-
     final Map<TechId, String> vocabularyTechIdToCode = new HashMap<TechId, String>();
 
     private IApplicationServerApi v3api;
 
-    public MasterDataSynchronizer(String harvesterUser, String harvesterPassword, boolean dryRun, boolean verbose, Logger operationLog)
+    private SyncConfig config;
+
+    public MasterDataSynchronizer(SyncConfig config, Logger operationLog)
     {
+        this.config = config;
         String openBisServerUrl = ServiceProvider.getConfigProvider().getOpenBisServerUrl();
-        this.dryRun = dryRun;
-        this.synchronizerFacade = new SynchronizerFacade(openBisServerUrl, harvesterUser, harvesterPassword, dryRun, verbose, operationLog);
+        this.dryRun = config.isDryRun();
+        this.synchronizerFacade = new SynchronizerFacade(openBisServerUrl, config.getHarvesterUser(),
+                config.getHarvesterPass(), dryRun, config.isVerbose(), operationLog);
         this.commonServer = ServiceFinderUtils.getCommonServer(openBisServerUrl);
-        this.sessionToken = ServiceFinderUtils.login(commonServer, harvesterUser, harvesterPassword);
+        this.sessionToken = ServiceFinderUtils.login(commonServer, config.getHarvesterUser(), config.getHarvesterPass());
         v3api = ServiceProvider.getV3ApplicationService();
-        vocabularyTermsToBeDeleted = new HashMap<TechId, List<VocabularyTerm>>();
     }
 
     public void synchronizeMasterData(MasterData masterData, Monitor monitor)
@@ -113,16 +123,6 @@ public class MasterDataSynchronizer
         synchronizerFacade.printSummary();
     }
 
-    public void cleanupUnusedMasterData()
-    {
-        for (TechId vocabularyId : vocabularyTermsToBeDeleted.keySet())
-        {
-            synchronizerFacade.deleteVocabularyTerms(vocabularyId, vocabularyTechIdToCode.get(vocabularyId),
-                    vocabularyTermsToBeDeleted.get(vocabularyId),
-                    Collections.<ch.systemsx.cisd.openbis.generic.shared.basic.dto.VocabularyTermReplacement> emptyList());
-        }
-    }
-
     private void processDeferredMaterialTypePropertyAssignments(MultiKeyMap<String, List<NewETPTAssignment>> propertyAssignmentsToProcess)
     {
         List<? extends EntityType> existingEntityTypes = getExistingEntityTypes(EntityKind.MATERIAL);
@@ -151,10 +151,13 @@ public class MasterDataSynchronizer
             Script existingPluginOrNull = pluginMap.get(name);
             if (existingPluginOrNull != null)
             {
-                existingPluginOrNull.setName(incomingplugin.getName());
-                existingPluginOrNull.setScript(incomingplugin.getScript());
-                existingPluginOrNull.setDescription(incomingplugin.getDescription());
-                synchronizerFacade.updateValidationPlugin(existingPluginOrNull);
+                String diff = calculateDiff(existingPluginOrNull, incomingplugin);
+                if (StringUtils.isNotBlank(diff) && config.isMasterDataUpdateAllowed())
+                {
+                    incomingplugin.setModificationDate(existingPluginOrNull.getModificationDate());
+                    incomingplugin.setId(existingPluginOrNull.getId());
+                    synchronizerFacade.updateValidationPlugin(incomingplugin, diff);
+                }
             } else
             {
                 synchronizerFacade.registerValidationPlugin(incomingplugin);
@@ -162,12 +165,27 @@ public class MasterDataSynchronizer
         }
     }
 
+    private String calculateDiff(Script existingPlugin, Script incomingPlugin)
+    {
+        DiffBuilder diffBuilder = new DiffBuilder(existingPlugin, incomingPlugin, ToStringStyle.SHORT_PREFIX_STYLE, false)
+                .append("description", existingPlugin.getDescription(), incomingPlugin.getDescription());
+        String existingScript = existingPlugin.getScript();
+        String incomingScript = incomingPlugin.getScript();
+        int indexOfDifference = StringUtils.indexOfDifference(existingScript, incomingScript);
+        if (indexOfDifference >= 0)
+        {
+            String existingSnippet = StringUtils.left(existingScript.substring(indexOfDifference), 20);
+            String incommingSnippet = StringUtils.left(incomingScript.substring(indexOfDifference), 20);
+            diffBuilder.append("script", existingSnippet, incommingSnippet);
+        }
+        return render(diffBuilder.build(), existingPlugin, incomingPlugin);
+    }
+
     private void processExternalDataManagementSystems(Map<String, ExternalDms> externalDataManagementSystems)
     {
         List<ExternalDmsPermId> ids = externalDataManagementSystems.keySet().stream()
                 .map(ExternalDmsPermId::new).collect(Collectors.toList());
-        Map<IExternalDmsId, ExternalDms> existingDmss 
-            = v3api.getExternalDataManagementSystems(sessionToken,ids, new ExternalDmsFetchOptions());
+        Map<IExternalDmsId, ExternalDms> existingDmss = v3api.getExternalDataManagementSystems(sessionToken, ids, new ExternalDmsFetchOptions());
         List<ExternalDmsCreation> creations = new ArrayList<>();
         List<ExternalDmsUpdate> updates = new ArrayList<>();
         for (ExternalDms externalDms : externalDataManagementSystems.values())
@@ -214,8 +232,11 @@ public class MasterDataSynchronizer
             FileFormatType existingTypeOrNull = typeMap.get(typeCode);
             if (existingTypeOrNull != null)
             {
-                existingTypeOrNull.setDescription(incomingType.getDescription());
-                synchronizerFacade.updateFileFormatType(existingTypeOrNull);
+                if (StringUtils.equals(existingTypeOrNull.getDescription(), incomingType.getDescription()) == false)
+                {
+                    existingTypeOrNull.setDescription(incomingType.getDescription());
+                    synchronizerFacade.updateFileFormatType(existingTypeOrNull);
+                }
             } else
             {
                 synchronizerFacade.registerFileFormatType(incomingType);
@@ -238,13 +259,13 @@ public class MasterDataSynchronizer
             Vocabulary existingVocabulary = existingVocabularyMap.get(vocabCode);
             if (existingVocabulary != null)
             {
-                existingVocabulary.setCode(vocabCode);
-                existingVocabulary.setDescription(newVocabulary.getDescription());
-                existingVocabulary.setInternalNamespace(newVocabulary.isInternalNamespace());
-                existingVocabulary.setManagedInternally(newVocabulary.isManagedInternally());
-                existingVocabulary.setURLTemplate(newVocabulary.getURLTemplate());
-                existingVocabulary.setChosenFromList(newVocabulary.isChosenFromList());
-                synchronizerFacade.updateVocabulary(existingVocabulary);
+                String diff = calculateDiff(existingVocabulary, newVocabulary);
+                if (StringUtils.isNotBlank(diff) && config.isMasterDataUpdateAllowed())
+                {
+                    newVocabulary.setModificationDate(existingVocabulary.getModificationDate());
+                    newVocabulary.setId(existingVocabulary.getId());
+                    synchronizerFacade.updateVocabulary(newVocabulary, diff);
+                }
                 processVocabularyTerms(sessionToken, commonServer, newVocabulary, existingVocabulary);
             } else
             {
@@ -253,65 +274,61 @@ public class MasterDataSynchronizer
         }
     }
 
+    private String calculateDiff(Vocabulary existingVocabulary, NewVocabulary newVocabulary)
+    {
+        DiffBuilder diffBuilder = new DiffBuilder(existingVocabulary, newVocabulary, ToStringStyle.SHORT_PREFIX_STYLE, false)
+                .append("description", existingVocabulary.getDescription(), newVocabulary.getDescription())
+                .append("urlTemplate", existingVocabulary.getURLTemplate(), newVocabulary.getURLTemplate())
+                .append("managedInternally", existingVocabulary.isManagedInternally(), newVocabulary.isManagedInternally())
+                .append("internalNamespace", existingVocabulary.isInternalNamespace(), newVocabulary.isInternalNamespace())
+                .append("chosenFromList", existingVocabulary.isChosenFromList(), newVocabulary.isChosenFromList());
+        DiffResult diffResult = diffBuilder.build();
+        return render(diffResult, existingVocabulary, newVocabulary);
+    }
+
     private void processVocabularyTerms(String sessionToken, ICommonServer commonServer, NewVocabulary newVocabulary, Vocabulary existingVocabulary)
     {
-        List<VocabularyTerm> incomingTerms = newVocabulary.getTerms();
-        Map<String, VocabularyTerm> incomingTermMap = new HashMap<String, VocabularyTerm>();
-        for (VocabularyTerm term : incomingTerms)
-        {
-            incomingTermMap.put(term.getCode(), term);
-        }
-
+        Map<String, VocabularyTerm> existingTerms = getTermsByCode(existingVocabulary);
         List<VocabularyTerm> termsToBeAdded = new ArrayList<VocabularyTerm>();
-        List<VocabularyTerm> termsToBeUpdated = new ArrayList<VocabularyTerm>();
-        for (VocabularyTerm incomingTerm : incomingTerms)
+        for (VocabularyTerm incomingTerm : newVocabulary.getTerms())
         {
-            String termCode = incomingTerm.getCode();
-            VocabularyTerm existingTerm = findTermInVocabulary(existingVocabulary, termCode);
+            VocabularyTerm existingTerm = existingTerms.get(incomingTerm.getCode());
             if (existingTerm == null)
             {
                 termsToBeAdded.add(incomingTerm);
             } else
             {
-                existingTerm.setLabel(incomingTerm.getLabel());
-                existingTerm.setDescription(incomingTerm.getDescription());
-                existingTerm.setOrdinal(incomingTerm.getOrdinal());
-                termsToBeUpdated.add(existingTerm);
+                String diff = calculateDiff(existingTerm, incomingTerm);
+                if (StringUtils.isNotBlank(diff) && config.isMasterDataUpdateAllowed())
+                {
+                    incomingTerm.setModificationDate(existingTerm.getModificationDate());
+                    incomingTerm.setId(existingTerm.getId());
+                    synchronizerFacade.updateVocabularyTerm(existingVocabulary.getCode(), incomingTerm, diff);
+                }
             }
         }
 
-        List<VocabularyTerm> termsToBeDeleted = new ArrayList<VocabularyTerm>();
-        for (VocabularyTerm term : existingVocabulary.getTerms())
-        {
-            String termCode = term.getCode();
-            if (incomingTermMap.keySet().contains(termCode) == false)
-            {
-                termsToBeDeleted.add(term);
-            }
-        }
-
-        // defer deletions of vocabulary terms until after the entities referencing the terms are synced
-        if (termsToBeDeleted.isEmpty() == false)
-        {
-            vocabularyTermsToBeDeleted.put(new TechId(existingVocabulary.getId()), termsToBeDeleted);
-        }
         synchronizerFacade.addVocabularyTerms(existingVocabulary.getCode(), new TechId(existingVocabulary.getId()), termsToBeAdded);
-        for (VocabularyTerm term : termsToBeUpdated)
-        {
-            synchronizerFacade.updateVocabularyTerm(term);
-        }
     }
 
-    private VocabularyTerm findTermInVocabulary(Vocabulary existingVocabulary, String termCode)
+    private String calculateDiff(VocabularyTerm existingTerm, VocabularyTerm incomingTerm)
     {
-        for (VocabularyTerm term : existingVocabulary.getTerms())
+        DiffBuilder diffBuilder = new DiffBuilder(existingTerm, incomingTerm, ToStringStyle.SHORT_PREFIX_STYLE, false)
+                .append("label", existingTerm.getLabel(), incomingTerm.getLabel())
+                .append("description", existingTerm.getDescription(), incomingTerm.getDescription())
+                .append("url", existingTerm.getUrl(), incomingTerm.getUrl());
+        DiffResult diffResult = diffBuilder.build();
+        return render(diffResult, existingTerm, incomingTerm);
+    }
+
+    private Map<String, VocabularyTerm> getTermsByCode(Vocabulary vocabulary)
+    {
+        Map<String, VocabularyTerm> result = new TreeMap<>();
+        for (VocabularyTerm vocabularyTerm : vocabulary.getTerms())
         {
-            if (term.getCode().equals(termCode))
-            {
-                return term;
-            }
+            result.put(vocabularyTerm.getCode(), vocabularyTerm);
         }
-        return null;
+        return result;
     }
 
     private void processEntityTypes(Map<String, ? extends EntityType> entityTypesToProcess,
@@ -335,10 +352,12 @@ public class MasterDataSynchronizer
             List<NewETPTAssignment> list = propertyAssignmentsToProcess.get(entityKind.name(), entityTypeCode);
             if (existingEntityType != null)
             {
-                updateEntityType(entityKind, incomingEntityType);
-                // existingEntityType.setCode(incomingEntityType.getCode());
-                // existingEntityType.setDescription(incomingEntityType.getDescription());
-                // existingEntityType.setValidationScript(incomingEntityType.getValidationScript());
+                String diff = calculateDiff(entityKind, existingEntityType, incomingEntityType);
+                if (StringUtils.isNotBlank(diff) && config.isMasterDataUpdateAllowed())
+                {
+                    incomingEntityType.setModificationDate(existingEntityType.getModificationDate());
+                    updateEntityType(entityKind, incomingEntityType, diff);
+                }
                 if (list != null && entityKind != EntityKind.MATERIAL) // defer material property assignments until after property types are processed
                 {
                     processPropertyAssignments(existingEntityType, list);
@@ -370,24 +389,54 @@ public class MasterDataSynchronizer
         List<? extends EntityTypePropertyType> assignedPropertyTypes = existingEntityType.getAssignedPropertyTypes();
         for (NewETPTAssignment newETPTAssignment : incomingAssignmentsList)
         {
-            boolean found = findInExistingPropertyAssignments(newETPTAssignment, assignedPropertyTypes);
-            if (found)
+            EntityTypePropertyType foundType = findInExistingPropertyAssignments(newETPTAssignment, assignedPropertyTypes);
+            if (foundType != null)
             {
-                synchronizerFacade.updatePropertyTypeAssignment(newETPTAssignment);
+                String diff = calculateDiff(foundType, newETPTAssignment);
+                if (StringUtils.isNotBlank(diff) && config.isMasterDataUpdateAllowed())
+                {
+                    newETPTAssignment.setModificationDate(foundType.getModificationDate());
+                    synchronizerFacade.updatePropertyTypeAssignment(newETPTAssignment, diff);
+                }
             } else
             {
                 synchronizerFacade.assignPropertyType(newETPTAssignment);
             }
         }
-        // remove property assignments that are no longer valid
-        for (EntityTypePropertyType etpt : assignedPropertyTypes)
+        if (config.isPropertyUnassignmentAllowed())
         {
-            if (findInIncomingPropertyAssignments(etpt, incomingAssignmentsList) == false)
+            // remove property assignments that are no longer valid
+            for (EntityTypePropertyType etpt : assignedPropertyTypes)
             {
-                synchronizerFacade.unassignPropertyType(existingEntityType.getEntityKind(), etpt.getPropertyType().getCode(), etpt
-                        .getEntityType().getCode());
+                if (findInIncomingPropertyAssignments(etpt, incomingAssignmentsList) == false)
+                {
+                    synchronizerFacade.unassignPropertyType(existingEntityType.getEntityKind(), etpt.getPropertyType().getCode(), etpt
+                            .getEntityType().getCode());
+                }
             }
         }
+    }
+
+    @SuppressWarnings("rawtypes")
+    private String calculateDiff(EntityTypePropertyType existingAssignment, NewETPTAssignment incomingAssignment)
+    {
+        DiffBuilder diffBuilder = new DiffBuilder(existingAssignment, incomingAssignment, ToStringStyle.SHORT_PREFIX_STYLE, false)
+                .append("mandatory", existingAssignment.isMandatory(), incomingAssignment.isMandatory())
+                .append("section", existingAssignment.getSection(), incomingAssignment.getSection())
+                // ch.systemsx.cisd.openbis.generic.server.business.bo.EntityTypePropertyTypeBO.createAssignment() increases
+                // the provided ordinal by one. Thus, we have to subtract 1 in order to get the same ordinal.
+                .append("ordinal", new Long(existingAssignment.getOrdinal() - 1), incomingAssignment.getOrdinal())
+                .append("showInEdit", existingAssignment.isShownInEditView(),
+                        incomingAssignment.isDynamic() ? false : incomingAssignment.isShownInEditView())
+                .append("plugin", getPluginName(existingAssignment.getScript()), incomingAssignment.getScriptName());
+        Script plugin = existingAssignment.getScript();
+        ScriptType existingPluginType = plugin == null ? null : plugin.getScriptType();
+        ScriptType incomingPluginType = incomingAssignment.isDynamic() ? ScriptType.DYNAMIC_PROPERTY
+                : (incomingAssignment.isManaged() ? ScriptType.MANAGED_PROPERTY : null);
+        diffBuilder.append("pluginType", existingPluginType, incomingPluginType);
+        DiffResult diffResult = diffBuilder.build();
+        return render(diffResult, existingAssignment, incomingAssignment);
+
     }
 
     @SuppressWarnings("rawtypes")
@@ -404,17 +453,17 @@ public class MasterDataSynchronizer
     }
 
     @SuppressWarnings("rawtypes")
-    private boolean findInExistingPropertyAssignments(NewETPTAssignment incomingETPTAssignment,
+    private EntityTypePropertyType findInExistingPropertyAssignments(NewETPTAssignment incomingETPTAssignment,
             List<? extends EntityTypePropertyType> assignedPropertyTypes)
     {
         for (EntityTypePropertyType entityTypePropertyType : assignedPropertyTypes)
         {
             if (entityTypePropertyType.getPropertyType().getCode().equals(incomingETPTAssignment.getPropertyTypeCode()))
             {
-                return true;
+                return entityTypePropertyType;
             }
         }
-        return false;
+        return null;
     }
 
     private void registerEntityType(EntityKind entityKind, EntityType incomingEntityType)
@@ -438,25 +487,103 @@ public class MasterDataSynchronizer
         }
     }
 
-    private void updateEntityType(EntityKind entityKind, EntityType incomingEntityType)
+    private void updateEntityType(EntityKind entityKind, EntityType incomingEntityType, String diff)
     {
         switch (entityKind)
         {
             case SAMPLE:
-                synchronizerFacade.updateSampleType(incomingEntityType);
+                synchronizerFacade.updateSampleType(incomingEntityType, diff);
                 break;
             case DATA_SET:
-                synchronizerFacade.updateDataSetType(incomingEntityType);
+                synchronizerFacade.updateDataSetType(incomingEntityType, diff);
                 break;
             case EXPERIMENT:
-                synchronizerFacade.updateExperimentType(incomingEntityType);
+                synchronizerFacade.updateExperimentType(incomingEntityType, diff);
                 break;
             case MATERIAL:
-                synchronizerFacade.updateMaterialType(incomingEntityType);
+                synchronizerFacade.updateMaterialType(incomingEntityType, diff);
                 break;
             default:
                 throw new UserFailureException("update not implemented for entity kind: " + entityKind.name());
         }
+    }
+
+    private String calculateDiff(EntityKind entityKind, EntityType existingEntityType, EntityType incomingEntityType)
+    {
+        DiffBuilder diffBuilder = new DiffBuilder(existingEntityType, incomingEntityType, ToStringStyle.SHORT_PREFIX_STYLE, false)
+                .append("description", existingEntityType.getDescription(), incomingEntityType.getDescription())
+                .append("validationPlugin", getPluginName(existingEntityType), getPluginName(incomingEntityType));
+        switch (entityKind)
+        {
+            case SAMPLE:
+                appendToDiffBuilder(diffBuilder, (SampleType) existingEntityType, (SampleType) incomingEntityType);
+                break;
+            case DATA_SET:
+                appendToDiffBuilder(diffBuilder, (DataSetType) existingEntityType, (DataSetType) incomingEntityType);
+                break;
+            case EXPERIMENT:
+                appendToDiffBuilder(diffBuilder, (ExperimentType) existingEntityType, (ExperimentType) incomingEntityType);
+                break;
+            case MATERIAL:
+                appendToDiffBuilder(diffBuilder, (MaterialType) existingEntityType, (MaterialType) incomingEntityType);
+                break;
+            default:
+                throw new UserFailureException("update not implemented for entity kind: " + entityKind.name());
+        }
+        DiffResult diffResult = diffBuilder.build();
+        return render(diffResult, existingEntityType, incomingEntityType);
+    }
+
+    private String getPluginName(EntityType entityType)
+    {
+        return getPluginName(entityType.getValidationScript());
+    }
+
+    private String getPluginName(Script plugin)
+    {
+        return plugin == null ? null : plugin.getName();
+    }
+
+    private static String render(DiffResult diffResult, Object existing, Object incoming)
+    {
+        List<Diff<?>> diffs = diffResult.getDiffs();
+        if (diffs.isEmpty())
+        {
+            return "";
+        }
+        ToStringBuilder builderExisting = new ToStringBuilder(existing, diffResult.getToStringStyle());
+        ToStringBuilder builderIncoming = new ToStringBuilder(incoming, diffResult.getToStringStyle());
+        for (Diff<?> diff : diffs)
+        {
+            builderExisting.append(diff.getFieldName(), diff.getLeft());
+            builderIncoming.append(diff.getFieldName(), diff.getRight());
+        }
+        return "incoming " + builderIncoming.build() + " differs from existing " + builderExisting.build();
+    }
+
+    private void appendToDiffBuilder(DiffBuilder diffBuilder, SampleType existingType, SampleType incomingType)
+    {
+        diffBuilder.append("generatedCodePrefix", existingType.getGeneratedCodePrefix(), incomingType.getGeneratedCodePrefix())
+                .append("listable", existingType.isListable(), incomingType.isListable())
+                .append("showContainer", existingType.isShowContainer(), incomingType.isShowContainer())
+                .append("showParents", existingType.isShowParents(), incomingType.isShowParents())
+                .append("showParentMetadata", existingType.isShowParentMetadata(), incomingType.isShowParentMetadata())
+                .append("subcodeUnique", existingType.isSubcodeUnique(), incomingType.isSubcodeUnique())
+                .append("autoGeneratedCode", existingType.isAutoGeneratedCode(), incomingType.isAutoGeneratedCode());
+    }
+
+    private void appendToDiffBuilder(DiffBuilder diffBuilder, DataSetType existingType, DataSetType incomingType)
+    {
+        diffBuilder.append("mainDataSetPattern", existingType.getMainDataSetPattern(), incomingType.getMainDataSetPattern())
+                .append("mainDataSetPath", existingType.getMainDataSetPath(), incomingType.getMainDataSetPath());
+    }
+
+    private void appendToDiffBuilder(DiffBuilder diffBuilder, ExperimentType existingType, ExperimentType incomingType)
+    {
+    }
+
+    private void appendToDiffBuilder(DiffBuilder diffBuilder, MaterialType existingType, MaterialType incomingType)
+    {
     }
 
     private List<? extends EntityType> getExistingEntityTypes(EntityKind entityKind)
@@ -489,16 +616,56 @@ public class MasterDataSynchronizer
         {
             PropertyType incomingPropertyType = propertyTypesToProcess.get(propTypeCode);
             String propertyTypeCode = incomingPropertyType.getCode();
-            PropertyType propertyTypeOrNull = propertyTypeMap.get(propertyTypeCode);
-            if (propertyTypeOrNull != null)
+            PropertyType existingPropertyType = propertyTypeMap.get(propertyTypeCode);
+            if (existingPropertyType != null)
             {
-                propertyTypeOrNull.setLabel(incomingPropertyType.getLabel());
-                propertyTypeOrNull.setDescription(incomingPropertyType.getDescription());
-                synchronizerFacade.updatePropertyType(propertyTypeOrNull);
+                String diff = calculateDiff(existingPropertyType, incomingPropertyType);
+                if (StringUtils.isNotBlank(diff) && config.isMasterDataUpdateAllowed())
+                {
+                    incomingPropertyType.setModificationDate(existingPropertyType.getModificationDate());
+                    incomingPropertyType.setId(existingPropertyType.getId());
+                    synchronizerFacade.updatePropertyType(incomingPropertyType, diff);
+                }
             } else
             {
                 synchronizerFacade.registerPropertyType(incomingPropertyType);
             }
         }
     }
+
+    private String calculateDiff(PropertyType existingPropertyType, PropertyType incomingPropertyType)
+    {
+        DiffBuilder diffBuilder = new DiffBuilder(existingPropertyType, incomingPropertyType, ToStringStyle.SHORT_PREFIX_STYLE, false)
+                .append("label", existingPropertyType.getLabel(), incomingPropertyType.getLabel())
+                .append("dataType", existingPropertyType.getDataType().getCode(), incomingPropertyType.getDataType().getCode())
+                .append("description", existingPropertyType.getDescription(), incomingPropertyType.getDescription())
+                .append("internalNamespace", existingPropertyType.isInternalNamespace(), incomingPropertyType.isInternalNamespace())
+                .append("managedInternally", existingPropertyType.isManagedInternally(), incomingPropertyType.isManagedInternally())
+                .append("vocabulary", getCode(existingPropertyType.getVocabulary()),
+                        getCode(incomingPropertyType.getVocabulary()))
+                .append("material", getCode(existingPropertyType.getMaterialType()),
+                        getCode(incomingPropertyType.getMaterialType()));
+        DiffResult diffResult = diffBuilder.build();
+        return render(diffResult, existingPropertyType, incomingPropertyType);
+    }
+
+    private String getCode(Vocabulary vocabulary)
+    {
+        if (vocabulary == null)
+        {
+            return null;
+        }
+        String code = vocabulary.getCode();
+        if (vocabulary.isInternalNamespace() && code.startsWith("$") == false)
+        {
+            code = "$" + code;
+        }
+        return code;
+    }
+
+    private String getCode(ICodeHolder codeHolder)
+    {
+        return codeHolder == null ? null : codeHolder.getCode();
+    }
+
 }

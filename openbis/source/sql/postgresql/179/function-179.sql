@@ -998,6 +998,7 @@ CREATE OR REPLACE RULE experiment_properties_update AS
     WHERE (OLD.VALUE IS NOT NULL AND decode(replace(substring(OLD.value from 1 for 1), '\', '\\'), 'escape') != E'\\xefbfbd' AND OLD.VALUE != NEW.VALUE) 
         OR (OLD.CVTE_ID IS NOT NULL AND OLD.CVTE_ID != NEW.CVTE_ID) 
         OR (OLD.MATE_PROP_ID IS NOT NULL AND OLD.MATE_PROP_ID != NEW.MATE_PROP_ID)
+        OR (OLD.SAMP_PROP_ID IS NOT NULL AND OLD.SAMP_PROP_ID != NEW.SAMP_PROP_ID)
     DO ALSO 
        INSERT INTO experiment_properties_history (
          ID, 
@@ -1006,6 +1007,7 @@ CREATE OR REPLACE RULE experiment_properties_update AS
          VALUE, 
          VOCABULARY_TERM,
          MATERIAL, 
+         SAMPLE, 
          PERS_ID_AUTHOR,
          VALID_FROM_TIMESTAMP,
          VALID_UNTIL_TIMESTAMP 
@@ -1016,6 +1018,7 @@ CREATE OR REPLACE RULE experiment_properties_update AS
          OLD.VALUE, 
          (select (t.code || ' [' || v.code || ']') from controlled_vocabulary_terms as t join controlled_vocabularies as v on t.covo_id = v.id where t.id = OLD.CVTE_ID),
          (select (m.code || ' [' || mt.code || ']') from materials as m join material_types as mt on m.maty_id = mt.id where m.id = OLD.MATE_PROP_ID),
+         (select perm_id from samples_all where id = OLD.SAMP_PROP_ID),
          OLD.PERS_ID_AUTHOR,
          OLD.MODIFICATION_TIMESTAMP,
          NEW.MODIFICATION_TIMESTAMP
@@ -1026,6 +1029,7 @@ CREATE OR REPLACE RULE experiment_properties_delete AS
     WHERE (OLD.VALUE IS NOT NULL AND decode(replace(substring(OLD.value from 1 for 1), '\', '\\'), 'escape') != E'\\xefbfbd')
         OR OLD.CVTE_ID IS NOT NULL 
         OR OLD.MATE_PROP_ID IS NOT NULL
+        OR OLD.SAMP_PROP_ID IS NOT NULL
     DO ALSO 
        INSERT INTO experiment_properties_history (
          ID, 
@@ -1034,6 +1038,7 @@ CREATE OR REPLACE RULE experiment_properties_delete AS
          VALUE, 
          VOCABULARY_TERM,
          MATERIAL, 
+         SAMPLE, 
          PERS_ID_AUTHOR,
          VALID_FROM_TIMESTAMP,
          VALID_UNTIL_TIMESTAMP 
@@ -1044,6 +1049,7 @@ CREATE OR REPLACE RULE experiment_properties_delete AS
          OLD.VALUE, 
          (select (t.code || ' [' || v.code || ']') from controlled_vocabulary_terms as t join controlled_vocabularies as v on t.covo_id = v.id where t.id = OLD.CVTE_ID),
          (select (m.code || ' [' || mt.code || ']') from materials as m join material_types as mt on m.maty_id = mt.id where m.id = OLD.MATE_PROP_ID),
+         (select perm_id from samples_all where id = OLD.SAMP_PROP_ID),
          OLD.PERS_ID_AUTHOR,
          OLD.MODIFICATION_TIMESTAMP,
          current_timestamp
@@ -1122,6 +1128,7 @@ CREATE OR REPLACE RULE data_set_properties_update AS
     WHERE (OLD.VALUE IS NOT NULL AND decode(replace(substring(OLD.value from 1 for 1), '\', '\\'), 'escape') != E'\\xefbfbd' AND OLD.VALUE != NEW.VALUE) 
         OR (OLD.CVTE_ID IS NOT NULL AND OLD.CVTE_ID != NEW.CVTE_ID) 
         OR (OLD.MATE_PROP_ID IS NOT NULL AND OLD.MATE_PROP_ID != NEW.MATE_PROP_ID)
+        OR (OLD.SAMP_PROP_ID IS NOT NULL AND OLD.SAMP_PROP_ID != NEW.SAMP_PROP_ID)
     DO ALSO
        INSERT INTO data_set_properties_history (
          ID, 
@@ -1130,6 +1137,7 @@ CREATE OR REPLACE RULE data_set_properties_update AS
          VALUE, 
          VOCABULARY_TERM,
          MATERIAL, 
+         SAMPLE, 
          PERS_ID_AUTHOR,
          VALID_FROM_TIMESTAMP,
          VALID_UNTIL_TIMESTAMP 
@@ -1140,6 +1148,7 @@ CREATE OR REPLACE RULE data_set_properties_update AS
          OLD.VALUE, 
          (select (t.code || ' [' || v.code || ']') from controlled_vocabulary_terms as t join controlled_vocabularies as v on t.covo_id = v.id where t.id = OLD.CVTE_ID),
          (select (m.code || ' [' || mt.code || ']') from materials as m join material_types as mt on m.maty_id = mt.id where m.id = OLD.MATE_PROP_ID),
+         (select perm_id from samples_all where id = OLD.SAMP_PROP_ID),
          OLD.PERS_ID_AUTHOR,
          OLD.MODIFICATION_TIMESTAMP,
          NEW.MODIFICATION_TIMESTAMP
@@ -1149,7 +1158,8 @@ CREATE OR REPLACE RULE data_set_properties_delete AS
     ON DELETE TO data_set_properties 
     WHERE ((OLD.VALUE IS NOT NULL AND decode(replace(substring(OLD.value from 1 for 1), '\', '\\'), 'escape') != E'\\xefbfbd')
         OR OLD.CVTE_ID IS NOT NULL 
-        OR OLD.MATE_PROP_ID IS NOT NULL)
+        OR OLD.MATE_PROP_ID IS NOT NULL
+        OR OLD.SAMP_PROP_ID IS NOT NULL)
 	   AND (SELECT DEL_ID FROM DATA_ALL WHERE ID = OLD.DS_ID) IS NULL
     DO ALSO
        INSERT INTO data_set_properties_history (
@@ -1159,6 +1169,7 @@ CREATE OR REPLACE RULE data_set_properties_delete AS
          VALUE, 
          VOCABULARY_TERM,
          MATERIAL, 
+         SAMPLE, 
          PERS_ID_AUTHOR,
          VALID_FROM_TIMESTAMP,
          VALID_UNTIL_TIMESTAMP 
@@ -1169,6 +1180,7 @@ CREATE OR REPLACE RULE data_set_properties_delete AS
          OLD.VALUE, 
          (select (t.code || ' [' || v.code || ']') from controlled_vocabulary_terms as t join controlled_vocabularies as v on t.covo_id = v.id where t.id = OLD.CVTE_ID),
          (select (m.code || ' [' || mt.code || ']') from materials as m join material_types as mt on m.maty_id = mt.id where m.id = OLD.MATE_PROP_ID),
+         (select perm_id from samples_all where id = OLD.SAMP_PROP_ID),
          OLD.PERS_ID_AUTHOR,
          OLD.MODIFICATION_TIMESTAMP,
          current_timestamp

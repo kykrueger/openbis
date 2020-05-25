@@ -171,6 +171,7 @@ var sources = [
 	'as/dto/common/update/ListUpdateValue',
 	
 	'as/dto/dataset/DataSet',
+	'as/dto/dataset/DataSetKind',
 	'as/dto/dataset/DataSetType',
 	'as/dto/dataset/archive/DataSetArchiveOptions',
 	'as/dto/dataset/archive/ArchiveDataSetsOperation',

@@ -62,10 +62,9 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.hibernate.JsonMapUserType;
  * @author Izabela Adamczyk
  */
 @Entity
-@Table(name = TableNames.PROPERTY_TYPES_TABLE, uniqueConstraints =
-{ @UniqueConstraint(columnNames =
-{ ColumnNames.CODE_COLUMN, ColumnNames.IS_INTERNAL_NAMESPACE }) })
-@TypeDefs( {@TypeDef( name= "JsonMap", typeClass = JsonMapUserType.class)})
+@Table(name = TableNames.PROPERTY_TYPES_TABLE, uniqueConstraints = {
+        @UniqueConstraint(columnNames = { ColumnNames.CODE_COLUMN, ColumnNames.IS_INTERNAL_NAMESPACE }) })
+@TypeDefs({ @TypeDef(name = "JsonMap", typeClass = JsonMapUserType.class) })
 public final class PropertyTypePE extends HibernateAbstractRegistrationHolder implements
         Comparable<PropertyTypePE>, IIdAndCodeHolder, IIdentityHolder
 {
@@ -80,10 +79,10 @@ public final class PropertyTypePE extends HibernateAbstractRegistrationHolder im
     private String description;
 
     private String label;
-    
+
     private Map<String, String> metaData;
 
-    /** can be null. Is always null when {@link #materialType} is not null. */
+    /** can be null. Is always null when {@link #materialType} or {@link #sampleType} is not null. */
     private VocabularyPE vocabulary;
 
     /**
@@ -92,6 +91,12 @@ public final class PropertyTypePE extends HibernateAbstractRegistrationHolder im
      * value.
      */
     private MaterialTypePE materialType;
+
+    /**
+     * If this field is set, then it specifies the type of the samples, which are values of this property type.<br>
+     * Note that this field can be null and the data type can be still SAMPLE, it means that, that sample of any type can be a valid property value.
+     */
+    private SampleTypePE sampleType;
 
     private boolean internalNamespace;
 
@@ -132,7 +137,7 @@ public final class PropertyTypePE extends HibernateAbstractRegistrationHolder im
 
     public void setVocabulary(final VocabularyPE vocabulary)
     {
-        assert materialType == null || vocabulary == null : "Property cannot be of controled vocabulary and material type at the same moment";
+        assertOnlyOneNotNull(vocabulary, materialType, sampleType);
         this.vocabulary = vocabulary;
     }
 
@@ -145,8 +150,28 @@ public final class PropertyTypePE extends HibernateAbstractRegistrationHolder im
 
     public void setMaterialType(MaterialTypePE materialType)
     {
-        assert materialType == null || vocabulary == null : "Property cannot be of controled vocabulary and material type at the same moment";
+        assertOnlyOneNotNull(vocabulary, materialType, sampleType);
         this.materialType = materialType;
+    }
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = ColumnNames.PROPERTY_SAMPLE_TYPE_COLUMN, updatable = false)
+    public SampleTypePE getSampleType()
+    {
+        return sampleType;
+    }
+
+    public void setSampleType(SampleTypePE sampleType)
+    {
+        assertOnlyOneNotNull(vocabulary, materialType, sampleType);
+        this.sampleType = sampleType;
+    }
+
+    private void assertOnlyOneNotNull(VocabularyPE vocabulary, MaterialTypePE materialType, SampleTypePE sampleType)
+    {
+        assert materialType == null || vocabulary == null : "Property cannot be of controlled vocabulary and material type at the same time";
+        assert vocabulary == null || sampleType == null : "Property cannot be of controlled vocabulary and sample type at the same time";
+        assert sampleType == null || materialType == null : "Property cannot be of sample type and material type at the same time";
     }
 
     /**

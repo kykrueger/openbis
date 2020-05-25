@@ -38,6 +38,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 
 import ch.rinn.restrictions.Private;
 import ch.systemsx.cisd.common.collection.CollectionUtils;
+import ch.systemsx.cisd.common.collection.IValidator;
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.common.logging.LogCategory;
@@ -60,6 +61,7 @@ import ch.systemsx.cisd.openbis.generic.server.dataaccess.event.DeleteDataSetEve
 import ch.systemsx.cisd.openbis.generic.shared.Constants;
 import ch.systemsx.cisd.openbis.generic.shared.IDataStoreService;
 import ch.systemsx.cisd.openbis.generic.shared.basic.BasicConstant;
+import ch.systemsx.cisd.openbis.generic.shared.basic.IIdentifierHolder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.TableModelAppender;
 import ch.systemsx.cisd.openbis.generic.shared.basic.TableModelAppender.TableModelWithDifferentColumnCountException;
 import ch.systemsx.cisd.openbis.generic.shared.basic.TableModelAppender.TableModelWithDifferentColumnIdsException;
@@ -488,7 +490,14 @@ public final class DataSetTable extends AbstractDataSetBusinessObject implements
         String sessionToken = dataStore.getSessionToken();
         List<AbstractExternalData> cleanDataSets =
                 DataSetTranslator.translate(list, "?", "?", new HashMap<Long, Set<Metaproject>>(),
-                        managedPropertyEvaluatorFactory);
+                        managedPropertyEvaluatorFactory, new IValidator<IIdentifierHolder>()
+                            {
+                                @Override
+                                public boolean isValid(IIdentifierHolder object)
+                                {
+                                    return false;
+                                }
+                            });
         service.uploadDataSetsToCIFEX(sessionToken, cleanDataSets, context);
     }
 
@@ -782,15 +791,43 @@ public final class DataSetTable extends AbstractDataSetBusinessObject implements
     {
         Map<DataStorePE, List<ExternalDataPE>> datasetsByStore = groupExternalDataByDataStores();
         Map<DataStoreWithService, List<ExternalDataPE>> datasetsWithService =
-                enrichWithService(datasetsByStore);
+                removeDataStoresWhereArchivingIsCurrentlyNotPossible(enrichWithService(datasetsByStore));
 
         DataSetArchivingStatus pendingStatus =
                 (removeFromDataStore) ? DataSetArchivingStatus.ARCHIVE_PENDING
                         : DataSetArchivingStatus.BACKUP_PENDING;
         int result =
-                filterByStatusAndUpdate(datasetsByStore, DataSetArchivingStatus.AVAILABLE,
+                filterByStatusAndUpdate(remap(datasetsWithService), DataSetArchivingStatus.AVAILABLE,
                         pendingStatus);
+        
         performArchiving(datasetsWithService, removeFromDataStore, options);
+        return result;
+    }
+    
+    private Map<DataStorePE, List<ExternalDataPE>> remap(Map<DataStoreWithService, List<ExternalDataPE>> datasetsWithService)
+    {
+        Map<DataStorePE, List<ExternalDataPE>> result = new HashMap<>();
+        for (Entry<DataStoreWithService, List<ExternalDataPE>> entry : datasetsWithService.entrySet())
+        {
+            result.put(entry.getKey().dataStore, entry.getValue());
+        }
+        return result;
+    }
+
+    private Map<DataStoreWithService, List<ExternalDataPE>> removeDataStoresWhereArchivingIsCurrentlyNotPossible(Map<DataStoreWithService, List<ExternalDataPE>> datasetsWithService)
+    {
+        Map<DataStoreWithService, List<ExternalDataPE>> result = new HashMap<>();
+        for (Entry<DataStoreWithService, List<ExternalDataPE>> entry : datasetsWithService.entrySet())
+        {
+            DataStoreWithService storeWithService = entry.getKey();
+            if (storeWithService.service.isArchivingPossible(storeWithService.dataStore.getSessionToken()))
+            {
+                result.put(storeWithService, entry.getValue());
+            } else
+            {
+                operationLog.warn("Archiving is currently not possible on Data Store " + storeWithService.dataStore.getCode());
+            }
+        }
         return result;
     }
 

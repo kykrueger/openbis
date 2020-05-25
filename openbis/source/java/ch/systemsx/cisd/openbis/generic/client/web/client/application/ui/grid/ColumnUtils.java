@@ -179,6 +179,9 @@ public class ColumnUtils
                                 }
                             });
                 break;
+            case SAMPLE:
+                editor = new StringEscapingCellEditor(new VarcharField("", false));
+                break;
             default:
                 throw new UserFailureException("Edition of properties of type '" + dataType
                         + "' is not supported.");

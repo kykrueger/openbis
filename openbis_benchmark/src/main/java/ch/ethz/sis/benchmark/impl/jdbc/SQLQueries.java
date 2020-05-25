@@ -93,59 +93,83 @@ public class SQLQueries {
         return (Long) personId.get("id");
     }
 
-    /*
-     * samples_all table has several CONSTRAINTS that get executed on INSERT that chain more inserts that ara impossible due to a missing FK
-     * Because of that, all this contraints are actually doing nothing more than forcing the system to first insert the row and then do an update
-     *
-     * Example:
-     * INSERT INTO samples_all(id, perm_id, code, proj_id, expe_id, saty_id, registration_timestamp, modification_timestamp, pers_id_registerer, pers_id_modifier, space_id) VALUES(nextval('sample_id_seq'), 'fd4e9cec-ed92-455a-accd-8ff41ed83c6b', 'SAMPLE_lcd_nascar_adams', 17, 17, 2, NOW(), NOW(), 2, 2, 14) was aborted: ERROR: insert or update on table "experiment_relationships_history" violates foreign key constraint "exrelh_samp_fk"
-     *  Detail: Key (samp_id)=(6) is not present in table "samples_all".  Call getNextException to see other errors in the batch.
-     */
+//    /*
+//     * samples_all table has several CONSTRAINTS that get executed on INSERT that chain more inserts that ara impossible due to a missing FK
+//     * Because of that, all this contraints are actually doing nothing more than forcing the system to first insert the row and then do an update
+//     *
+//     * Example:
+//     * INSERT INTO samples_all(id, perm_id, code, proj_id, expe_id, saty_id, registration_timestamp, modification_timestamp, pers_id_registerer, pers_id_modifier, space_id) VALUES(nextval('sample_id_seq'), 'fd4e9cec-ed92-455a-accd-8ff41ed83c6b', 'SAMPLE_lcd_nascar_adams', 17, 17, 2, NOW(), NOW(), 2, 2, 14) was aborted: ERROR: insert or update on table "experiment_relationships_history" violates foreign key constraint "exrelh_samp_fk"
+//     *  Detail: Key (samp_id)=(6) is not present in table "samples_all".  Call getNextException to see other errors in the batch.
+//     */
+//
+//    private static final String SAMPLE_INITIAL_INSERT = "INSERT INTO samples_all(id, perm_id, code, saty_id, registration_timestamp, modification_timestamp, pers_id_registerer, pers_id_modifier) VALUES(?, ?, ?, ?, NOW(), NOW(), ?, ?)";
+//
+//    private static final String SAMPLE_UPDATE_INSERT = "UPDATE samples_all SET proj_id = ?, expe_id = ?, space_id = ? WHERE id = ?";
+//
+//    // private static final String SAMPLE_INSERT = "INSERT INTO samples_all(id, perm_id, code, proj_id, expe_id, saty_id, registration_timestamp, modification_timestamp, pers_id_registerer, pers_id_modifier, space_id) VALUES(?, ?, ?, ?, ?, ?, NOW(), NOW(), ?, ?, ?)";
+//
+//    public static int insertSamplesOLD(Connection connection, List<List<Object>> samplesInsertArgs) {
+//        List<List<Object>> SAMPLE_INITIAL_INSERT_ARGS = new ArrayList<>();
+//        List<List<Object>> SAMPLE_UPDATE_INSERT_ARGS = new ArrayList<>();
+//
+//        // perm_id, code, proj_id, expe_id, saty_id, pers_id_registerer, pers_id_modifier, space_id
+//        for (List<Object> sampleInsertArgs:samplesInsertArgs) {
+//            // perm_id, code, saty_id, pers_id_registerer, pers_id_modifier
+//            List<Object> SAMPLE_INITIAL_INSERT_ARG = new ArrayList<>();
+//            SAMPLE_INITIAL_INSERT_ARG.add(sampleInsertArgs.get(0));
+//            SAMPLE_INITIAL_INSERT_ARG.add(sampleInsertArgs.get(1));
+//            SAMPLE_INITIAL_INSERT_ARG.add(sampleInsertArgs.get(2));
+//            SAMPLE_INITIAL_INSERT_ARG.add(sampleInsertArgs.get(5));
+//            SAMPLE_INITIAL_INSERT_ARG.add(sampleInsertArgs.get(6));
+//            SAMPLE_INITIAL_INSERT_ARG.add(sampleInsertArgs.get(7));
+//            SAMPLE_INITIAL_INSERT_ARGS.add(SAMPLE_INITIAL_INSERT_ARG);
+//
+//            // proj_id = ?, expe_id, = ?, space_id = ? WHERE permId = ?
+//            List<Object> SAMPLE_UPDATE_INSERT_ARG = new ArrayList<>();
+//            SAMPLE_UPDATE_INSERT_ARG.add(sampleInsertArgs.get(3));
+//            SAMPLE_UPDATE_INSERT_ARG.add(sampleInsertArgs.get(4));
+//            SAMPLE_UPDATE_INSERT_ARG.add(sampleInsertArgs.get(8));
+//            SAMPLE_UPDATE_INSERT_ARG.add(sampleInsertArgs.get(0));
+//            SAMPLE_UPDATE_INSERT_ARGS.add(SAMPLE_UPDATE_INSERT_ARG);
+//        }
+//        try {
+//            connection.setAutoCommit(false);
+//            SQLExecutor.executeUpdate(connection, SAMPLE_INITIAL_INSERT, SAMPLE_INITIAL_INSERT_ARGS);
+//            SQLExecutor.executeUpdate(connection, SAMPLE_UPDATE_INSERT, SAMPLE_UPDATE_INSERT_ARGS);
+//            connection.commit();
+//        } catch (Exception ex) {
+//            try {
+//                connection.rollback();
+//            } catch (Exception ex2) {}
+//        } finally {
+//            try {
+//                connection.setAutoCommit(true);
+//            } catch (Exception ex3) {}
+//        }
+//
+//        return samplesInsertArgs.size();
+//    }
 
-    private static final String SAMPLE_INITIAL_INSERT = "INSERT INTO samples_all(id, perm_id, code, saty_id, registration_timestamp, modification_timestamp, pers_id_registerer, pers_id_modifier) VALUES(?, ?, ?, ?, NOW(), NOW(), ?, ?)";
+    private static final String SAMPLE_INSERT_HIBERNATE = "insert into samples (code, samp_id_part_of, cont_frozen, del_id, expe_frozen, expe_id, frozen, frozen_for_children, frozen_for_comp, frozen_for_data, frozen_for_parents, modification_timestamp, pers_id_modifier, orig_del, perm_id, proj_id, proj_frozen, pers_id_registerer, saty_id, space_id, space_frozen, version, id) values (?, NULL, FALSE, NULL, FALSE, ?, FALSE, FALSE, FALSE, FALSE, FALSE, NOW(), ?, NULL, ?, ?, FALSE, ?, ?, ?, FALSE, 1, ?)";
 
-    private static final String SAMPLE_UPDATE_INSERT = "UPDATE samples_all SET proj_id = ?, expe_id = ?, space_id = ? WHERE id = ?";
-
-    // private static final String SAMPLE_INSERT = "INSERT INTO samples_all(id, perm_id, code, proj_id, expe_id, saty_id, registration_timestamp, modification_timestamp, pers_id_registerer, pers_id_modifier, space_id) VALUES(?, ?, ?, ?, ?, ?, NOW(), NOW(), ?, ?, ?)";
+    // code, expe_id, pers_id_modifier, perm_id, proj_id, pers_id_registerer, saty_id, space_id, version, id
 
     public static int insertSamples(Connection connection, List<List<Object>> samplesInsertArgs) {
-        List<List<Object>> SAMPLE_INITIAL_INSERT_ARGS = new ArrayList<>();
-        List<List<Object>> SAMPLE_UPDATE_INSERT_ARGS = new ArrayList<>();
-
-        // perm_id, code, proj_id, expe_id, saty_id, pers_id_registerer, pers_id_modifier, space_id
+        List<List<Object>> SAMPLE_HIBERNATE_INSERT_ARGS = new ArrayList<>();
         for (List<Object> sampleInsertArgs:samplesInsertArgs) {
-            // perm_id, code, saty_id, pers_id_registerer, pers_id_modifier
-            List<Object> SAMPLE_INITIAL_INSERT_ARG = new ArrayList<>();
-            SAMPLE_INITIAL_INSERT_ARG.add(sampleInsertArgs.get(0));
-            SAMPLE_INITIAL_INSERT_ARG.add(sampleInsertArgs.get(1));
-            SAMPLE_INITIAL_INSERT_ARG.add(sampleInsertArgs.get(2));
-            SAMPLE_INITIAL_INSERT_ARG.add(sampleInsertArgs.get(5));
-            SAMPLE_INITIAL_INSERT_ARG.add(sampleInsertArgs.get(6));
-            SAMPLE_INITIAL_INSERT_ARG.add(sampleInsertArgs.get(7));
-            SAMPLE_INITIAL_INSERT_ARGS.add(SAMPLE_INITIAL_INSERT_ARG);
-
-            // proj_id = ?, expe_id, = ?, space_id = ? WHERE permId = ?
-            List<Object> SAMPLE_UPDATE_INSERT_ARG = new ArrayList<>();
-            SAMPLE_UPDATE_INSERT_ARG.add(sampleInsertArgs.get(3));
-            SAMPLE_UPDATE_INSERT_ARG.add(sampleInsertArgs.get(4));
-            SAMPLE_UPDATE_INSERT_ARG.add(sampleInsertArgs.get(8));
-            SAMPLE_UPDATE_INSERT_ARG.add(sampleInsertArgs.get(0));
-            SAMPLE_UPDATE_INSERT_ARGS.add(SAMPLE_UPDATE_INSERT_ARG);
+            List<Object> SAMPLE_HIBERNATE_INSERT_ARG = new ArrayList<>();
+            SAMPLE_HIBERNATE_INSERT_ARG.add(sampleInsertArgs.get(2));
+            SAMPLE_HIBERNATE_INSERT_ARG.add(sampleInsertArgs.get(4));
+            SAMPLE_HIBERNATE_INSERT_ARG.add(sampleInsertArgs.get(6));
+            SAMPLE_HIBERNATE_INSERT_ARG.add(sampleInsertArgs.get(1));
+            SAMPLE_HIBERNATE_INSERT_ARG.add(sampleInsertArgs.get(3));
+            SAMPLE_HIBERNATE_INSERT_ARG.add(sampleInsertArgs.get(6));
+            SAMPLE_HIBERNATE_INSERT_ARG.add(sampleInsertArgs.get(5));
+            SAMPLE_HIBERNATE_INSERT_ARG.add(sampleInsertArgs.get(8));
+            SAMPLE_HIBERNATE_INSERT_ARG.add(sampleInsertArgs.get(0));
+            SAMPLE_HIBERNATE_INSERT_ARGS.add(SAMPLE_HIBERNATE_INSERT_ARG);
         }
-        try {
-            connection.setAutoCommit(false);
-            SQLExecutor.executeUpdate(connection, SAMPLE_INITIAL_INSERT, SAMPLE_INITIAL_INSERT_ARGS);
-            SQLExecutor.executeUpdate(connection, SAMPLE_UPDATE_INSERT, SAMPLE_UPDATE_INSERT_ARGS);
-            connection.commit();
-        } catch (Exception ex) {
-            try {
-                connection.rollback();
-            } catch (Exception ex2) {}
-        } finally {
-            try {
-            connection.setAutoCommit(true);
-            } catch (Exception ex3) {}
-        }
+        SQLExecutor.executeUpdate(connection, SAMPLE_INSERT_HIBERNATE, SAMPLE_HIBERNATE_INSERT_ARGS);
 
         return samplesInsertArgs.size();
     }
@@ -188,19 +212,7 @@ public class SQLQueries {
     private static final String SAMPLE_PROPERTIES_INSERT = "INSERT INTO sample_properties(id, samp_id, stpt_id, value, registration_timestamp, modification_timestamp, pers_id_registerer, pers_id_author) VALUES(nextval('sample_property_id_seq'), ?, ?, ?, NOW(), NOW(), ?, ?)";
 
     public static int insertSamplesProperties(Connection connection, List<List<Object>> samplesPropertiesArgs) {
-        try {
-            connection.setAutoCommit(false);
-            SQLExecutor.executeUpdate(connection, SAMPLE_PROPERTIES_INSERT, samplesPropertiesArgs);
-            connection.commit();
-        } catch (Exception ex) {
-            try {
-                connection.rollback();
-            } catch (Exception ex2) {}
-        } finally {
-            try {
-                connection.setAutoCommit(true);
-            } catch (Exception ex3) {}
-        }
+        SQLExecutor.executeUpdate(connection, SAMPLE_PROPERTIES_INSERT, samplesPropertiesArgs);
         return samplesPropertiesArgs.size();
     }
 

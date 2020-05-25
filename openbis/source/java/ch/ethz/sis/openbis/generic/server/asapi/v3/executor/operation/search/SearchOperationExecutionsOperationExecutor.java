@@ -16,6 +16,7 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.operation.search;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -64,7 +65,7 @@ public class SearchOperationExecutionsOperationExecutor extends
 
     @Override
     protected Map<OperationExecution, OperationExecution> doTranslate(TranslationContext translationContext,
-            List<OperationExecution> objects, OperationExecutionFetchOptions fetchOptions)
+            Collection<OperationExecution> objects, OperationExecutionFetchOptions fetchOptions)
     {
         return new NopTranslator<OperationExecution, OperationExecutionFetchOptions>().translate(translationContext, objects, fetchOptions);
     }

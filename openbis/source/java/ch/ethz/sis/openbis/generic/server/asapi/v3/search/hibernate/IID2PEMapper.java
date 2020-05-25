@@ -16,7 +16,7 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate;
 
-import java.util.List;
+import java.util.Collection;
 
 /**
  * Mapper from {@link ID} to {@link OBJECT_PE} type.
@@ -27,6 +27,6 @@ import java.util.List;
 public interface IID2PEMapper<ID, OBJECT_PE>
 {
 
-    List<OBJECT_PE> map(final List<ID> ids);
+    Collection <OBJECT_PE> map(final Collection<ID> ids);
 
 }

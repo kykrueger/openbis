@@ -1,13 +1,49 @@
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import TextField from '@material-ui/core/TextField'
+import MenuItem from '@material-ui/core/MenuItem'
+import logger from '@src/js/common/logger.js'
+
 import FormFieldContainer from './FormFieldContainer.jsx'
 import FormFieldLabel from './FormFieldLabel.jsx'
-import logger from '../../../common/logger.js'
 
-const styles = () => ({})
+const styles = () => ({
+  option: {
+    '&:after': {
+      content: '"\\00a0"'
+    }
+  }
+})
 
 class SelectFormField extends React.PureComponent {
+  constructor(props) {
+    super(props)
+    this.inputReference = React.createRef()
+    this.handleFocus = this.handleFocus.bind(this)
+    this.handleBlur = this.handleBlur.bind(this)
+  }
+
+  handleFocus(event) {
+    this.handleEvent(event, this.props.onFocus)
+  }
+
+  handleBlur(event) {
+    this.handleEvent(event, this.props.onBlur)
+  }
+
+  handleEvent(event, handler) {
+    if (handler) {
+      const newEvent = {
+        ...event,
+        target: {
+          name: this.props.name,
+          value: this.props.value
+        }
+      }
+      handler(newEvent)
+    }
+  }
+
   render() {
     logger.log(logger.DEBUG, 'SelectFormField.render')
 
@@ -23,11 +59,12 @@ class SelectFormField extends React.PureComponent {
       options,
       metadata,
       styles,
-      onClick,
       onChange,
-      onFocus,
-      onBlur
+      onClick,
+      classes
     } = this.props
+
+    this.fixReference(reference)
 
     return (
       <FormFieldContainer
@@ -39,7 +76,7 @@ class SelectFormField extends React.PureComponent {
       >
         <TextField
           select
-          inputRef={reference}
+          inputRef={this.inputReference}
           label={
             <FormFieldLabel
               label={label}
@@ -52,24 +89,48 @@ class SelectFormField extends React.PureComponent {
           error={!!error}
           disabled={disabled}
           onChange={onChange}
-          onFocus={onFocus}
-          onBlur={onBlur}
+          onFocus={this.handleFocus}
+          onBlur={this.handleBlur}
           fullWidth={true}
-          SelectProps={{
-            native: true
-          }}
           InputLabelProps={{ shrink: !!value }}
+          SelectProps={{
+            MenuProps: {
+              getContentAnchorEl: null,
+              anchorOrigin: {
+                vertical: 'bottom',
+                horizontal: 'left'
+              }
+            }
+          }}
           variant='filled'
         >
           {options &&
             options.map(option => (
-              <option key={option.value || ''} value={option.value || ''}>
+              <MenuItem
+                key={option.value || ''}
+                value={option.value || ''}
+                classes={{ root: classes.option }}
+              >
                 {option.label || option.value || ''}
-              </option>
+              </MenuItem>
             ))}
         </TextField>
       </FormFieldContainer>
     )
+  }
+
+  fixReference(reference) {
+    if (reference) {
+      reference.current = {
+        focus: () => {
+          if (this.inputReference.current && this.inputReference.current.node) {
+            const input = this.inputReference.current.node
+            const div = input.previousSibling
+            div.focus()
+          }
+        }
+      }
+    }
   }
 }
 

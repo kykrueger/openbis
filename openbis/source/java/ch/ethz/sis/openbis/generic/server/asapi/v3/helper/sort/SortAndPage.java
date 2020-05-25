@@ -126,7 +126,7 @@ public class SortAndPage {
         }
     }
 
-    private void nest(Collection objects, ISearchCriteria c, FetchOptions fo)
+    public void nest(Collection objects, ISearchCriteria c, FetchOptions fo)
     {
         if (objects == null || objects.isEmpty())
         {

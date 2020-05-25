@@ -29,16 +29,19 @@ import org.testng.annotations.Test;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.id.IDeletionId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.create.ExperimentCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.delete.ExperimentDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.delete.SampleDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.ethz.sis.openbis.systemtest.asapi.v3.index.RemoveFromIndexState;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentPE;
 import ch.systemsx.cisd.openbis.systemtest.authorization.ProjectAuthorizationUser;
-
 import junit.framework.Assert;
 
 /**
@@ -248,6 +251,69 @@ public class DeleteExperimentTest extends AbstractDeletionTest
 
         assertAccessLog(
                 "delete-experiments  EXPERIMENT_IDS('[TEST-LOGGING-1, TEST-LOGGING-2]') DELETION_OPTIONS('ExperimentDeletionOptions[reason=test-reason]')");
+    }
+
+    @Test
+    public void testDeleteSampleOfASampleProperty()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createASamplePropertyType(sessionToken, null);
+        EntityTypePermId experimentType = createAnExperimentType(sessionToken, true, propertyType);
+        ExperimentCreation creation = new ExperimentCreation();
+        creation.setCode("EXPERIMENT_WITH_SAMPLE_PROPERTY");
+        creation.setTypeId(experimentType);
+        creation.setProjectId(new ProjectIdentifier("/TEST-SPACE/TEST-PROJECT"));
+        SamplePermId propertySamplePermId = createCisdSample(createCisdExperiment());
+        creation.setSampleProperty(propertyType.getPermId(), propertySamplePermId);
+        ExperimentPermId experimentPermId = v3api.createExperiments(sessionToken, Arrays.asList(creation)).get(0);
+        SampleDeletionOptions deletionOptions = new SampleDeletionOptions();
+        deletionOptions.setReason("a test");
+
+        // When
+        IDeletionId deletionId = v3api.deleteSamples(sessionToken, Arrays.asList(propertySamplePermId), deletionOptions);
+
+        // Then
+        ExperimentFetchOptions fetchOptions = new ExperimentFetchOptions();
+        fetchOptions.withProperties();
+        fetchOptions.withSampleProperties();
+        Experiment experiment = v3api.getExperiments(sessionToken, Arrays.asList(experimentPermId), fetchOptions).get(experimentPermId);
+        assertEquals(experiment.getSampleProperties().toString(), "{}");
+        assertEquals(experiment.getProperties().toString(), "{}");
+
+        v3api.confirmDeletions(sessionToken, Arrays.asList(deletionId));
+        experiment = v3api.getExperiments(sessionToken, Arrays.asList(experimentPermId), fetchOptions).get(experimentPermId);
+        assertEquals(experiment.getSampleProperties().toString(), "{}");
+        assertEquals(experiment.getProperties().toString(), "{}");
+    }
+
+    @Test
+    public void testDeleteSampleWithSampleProperty()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createASamplePropertyType(sessionToken, null);
+        EntityTypePermId experimentType = createAnExperimentType(sessionToken, true, propertyType);
+        ExperimentCreation creation = new ExperimentCreation();
+        creation.setCode("EXPERIMENT_WITH_SAMPLE_PROPERTY");
+        creation.setTypeId(experimentType);
+        creation.setProjectId(new ProjectIdentifier("/TEST-SPACE/TEST-PROJECT"));
+        SamplePermId propertySamplePermId = createCisdSample(createCisdExperiment());
+        creation.setSampleProperty(propertyType.getPermId(), propertySamplePermId);
+        ExperimentPermId experimentPermId = v3api.createExperiments(sessionToken, Arrays.asList(creation)).get(0);
+        ExperimentDeletionOptions deletionOptions = new ExperimentDeletionOptions();
+        deletionOptions.setReason("a test");
+
+        // When
+        IDeletionId deletionId = v3api.deleteExperiments(sessionToken, Arrays.asList(experimentPermId), deletionOptions);
+
+        // Then
+        ExperimentFetchOptions fetchOptions = new ExperimentFetchOptions();
+        fetchOptions.withProperties();
+        fetchOptions.withSampleProperties();
+        assertEquals(v3api.getExperiments(sessionToken, Arrays.asList(experimentPermId), fetchOptions).toString(), "{}");
+        v3api.confirmDeletions(sessionToken, Arrays.asList(deletionId));
+        assertEquals(v3api.getExperiments(sessionToken, Arrays.asList(experimentPermId), fetchOptions).toString(), "{}");
     }
 
 }

@@ -1,7 +1,7 @@
-export const ERROR = { name: 'ERROR', importance: 4 }
-export const INFO = { name: 'INFO', importance: 3 }
-export const DEBUG = { name: 'DEBUG', importance: 2 }
-export const TRACE = { name: 'TRACE', importance: 1 }
+const ERROR = { name: 'ERROR', importance: 4 }
+const INFO = { name: 'INFO', importance: 3 }
+const DEBUG = { name: 'DEBUG', importance: 2 }
+const TRACE = { name: 'TRACE', importance: 1 }
 
 let currentLevel = INFO
 

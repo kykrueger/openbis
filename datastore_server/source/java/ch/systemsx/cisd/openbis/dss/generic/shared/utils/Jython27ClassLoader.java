@@ -28,10 +28,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import ch.systemsx.cisd.common.logging.LogCategory;
+import ch.systemsx.cisd.common.logging.LogFactory;
 import org.apache.commons.io.IOUtils;
 
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.common.exceptions.EnvironmentFailureException;
+import org.apache.log4j.Logger;
 
 /**
  * Special class loader for classes based on jython 2.7. The jython JAR file has to be provided in the
@@ -49,7 +52,12 @@ import ch.systemsx.cisd.common.exceptions.EnvironmentFailureException;
  */
 public class Jython27ClassLoader extends ClassLoader
 {
-    private static final List<String> EXCLUDED_PACKAGES_STARTS = Arrays.asList("java", "sun.", "com.sun.");
+    private static final Logger machineLog = LogFactory.getLogger(LogCategory.MACHINE, Jython27ClassLoader.class);
+    /*
+     * Potentially all JDK Packages should be loaded using the Standard Class Loader
+     * https://docs.oracle.com/en/java/javase/11/docs/api/allpackages-index.html
+     */
+    private static final List<String> EXCLUDED_PACKAGES_STARTS = Arrays.asList("java", "jdk.", "sun.", "com.sun.");
     private final URLClassLoader jythonJarClassLoader;
     private final Map<String, Class<?>> cachedClasses = new HashMap<>();
 
@@ -168,6 +176,7 @@ public class Jython27ClassLoader extends ClassLoader
     
     private Class<?> tryLoadClass(ClassLoader classLoader, String name)
     {
+//        machineLog.info("tryLoadClass - classLoader: " + classLoader + " name: " + name);
         synchronized (getClassLoadingLock(name))
         {
             InputStream stream = classLoader.getResourceAsStream(name.replace('.', '/') + ".class");

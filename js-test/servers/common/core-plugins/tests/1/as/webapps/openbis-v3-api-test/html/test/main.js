@@ -1,16 +1,16 @@
 define([ 
-         'test/test-login', 
-         'test/test-jsVSjava', 
-         'test/test-create', 'test/test-update', 'test/test-search', 
+         'test/test-login',
+         'test/test-jsVSjava',
+         'test/test-create', 'test/test-update', 'test/test-search',
 
-         'test/test-freezing', 
-         'test/test-get', 
-         'test/test-delete', 
+         'test/test-freezing',
+         'test/test-get',
+         'test/test-delete',
          'test/test-execute',
          'test/test-json',
 
 //         'test/test-dto', 
-         'test/test-dto-roundtrip', 
+         'test/test-dto-roundtrip',
          'test/test-custom-services',
          'test/test-dss-services',
          'test/test-archive-unarchive'

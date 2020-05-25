@@ -20,11 +20,16 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyFetchOptions;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.AbstractCachingTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.TranslationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.common.ObjectHolder;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.sample.ISampleAuthorizationValidator;
 
 /**
  * @author pkupczyk
@@ -32,6 +37,8 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.common.ObjectHolde
 public abstract class PropertyTranslator extends AbstractCachingTranslator<Long, ObjectHolder<Map<String, String>>, PropertyFetchOptions>
         implements IPropertyTranslator
 {
+    @Autowired
+    private ISampleAuthorizationValidator sampleAuthorizationValidator;
 
     @Override
     protected ObjectHolder<Map<String, String>> createObject(TranslationContext context, Long objectId, PropertyFetchOptions fetchOptions)
@@ -43,8 +50,10 @@ public abstract class PropertyTranslator extends AbstractCachingTranslator<Long,
     protected Object getObjectsRelations(TranslationContext context, Collection<Long> objectIds, PropertyFetchOptions fetchOptions)
     {
         List<PropertyRecord> records = loadProperties(objectIds);
-        Map<Long, Map<String, String>> properties = new HashMap<Long, Map<String, String>>();
+        Set<Long> visibaleSamples = sampleAuthorizationValidator.validate(context.getSession().tryGetPerson(),
+                records.stream().filter(r -> r.sample_id != null).map(r -> r.sample_id).collect(Collectors.toSet()));
 
+        Map<Long, Map<String, String>> properties = new HashMap<Long, Map<String, String>>();
         for (PropertyRecord record : records)
         {
             Map<String, String> objectProperties = properties.get(record.objectId);
@@ -65,9 +74,15 @@ public abstract class PropertyTranslator extends AbstractCachingTranslator<Long,
             } else if (record.vocabularyPropertyValue != null)
             {
                 objectProperties.put(record.propertyCode, record.vocabularyPropertyValue);
+            } else if (record.sample_perm_id != null)
+            {
+                if (visibaleSamples.contains(record.sample_id))
+                {
+                    objectProperties.put(record.propertyCode, record.sample_perm_id);
+                }
             } else
             {
-                throw new IllegalArgumentException("Unsupported property kind");
+                // SAMPLE property with deleted sample. Thus, nothing is put to objectProperties
             }
         }
 

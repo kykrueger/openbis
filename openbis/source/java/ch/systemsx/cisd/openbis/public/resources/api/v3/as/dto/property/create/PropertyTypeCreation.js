@@ -12,6 +12,7 @@ define([ "stjs" ], function(stjs) {
 		prototype.dataType = null;
 		prototype.vocabularyId = null;
 		prototype.materialTypeId = null;
+		prototype.sampleTypeId = null;
 		prototype.schema = null;
 		prototype.transformation = null;
 		prototype.metaData = null;
@@ -64,6 +65,12 @@ define([ "stjs" ], function(stjs) {
 		prototype.setMaterialTypeId = function(materialTypeId) {
 			this.materialTypeId = materialTypeId;
 		};
+		prototype.getSampleTypeId = function() {
+			return this.sampleTypeId;
+		};
+		prototype.setSampleTypeId = function(sampleTypeId) {
+			this.sampleTypeId = sampleTypeId;
+		};
 		prototype.getSchema = function() {
 			return this.schema;
 		};
@@ -85,7 +92,8 @@ define([ "stjs" ], function(stjs) {
 	}, {
 		dataType : "DataType",
 		vocabularyId : "IVocabularyId",
-		materialTypeId : "IEntityTypeId"
+		materialTypeId : "IEntityTypeId",
+		sampleTypeId : "IEntityTypeId"
 	});
 	return PropertyTypeCreation;
 })

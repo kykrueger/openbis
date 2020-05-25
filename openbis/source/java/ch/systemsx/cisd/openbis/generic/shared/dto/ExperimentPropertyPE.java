@@ -44,7 +44,7 @@ import ch.systemsx.cisd.openbis.generic.shared.IServer;
 @Table(name = TableNames.EXPERIMENT_PROPERTIES_TABLE, uniqueConstraints = @UniqueConstraint(columnNames = { ColumnNames.EXPERIMENT_COLUMN,
         ColumnNames.EXPERIMENT_TYPE_PROPERTY_TYPE_COLUMN }))
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class ExperimentPropertyPE extends EntityPropertyPE
+public class ExperimentPropertyPE extends EntityPropertyWithSampleDataTypePE
 {
     private static final long serialVersionUID = IServer.VERSION;
 

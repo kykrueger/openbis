@@ -4,7 +4,7 @@ import { Draggable } from 'react-beautiful-dnd'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
 import Checkbox from '@material-ui/core/Checkbox'
 import DragHandleIcon from '@material-ui/icons/DragHandle'
-import logger from '../../../common/logger.js'
+import logger from '@src/js/common/logger.js'
 
 const styles = () => ({
   row: {

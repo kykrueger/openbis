@@ -50,6 +50,8 @@ public class SQLExecutor
             final Connection connection,
             final String sqlUpdate,
             final List<List<Object>> parametersBatch) {
+        logger.info("QUERY: " + sqlUpdate);
+
         int results = 0;
         try (final PreparedStatement preparedStatement = connection.prepareStatement(sqlUpdate))
         {
@@ -65,13 +67,13 @@ public class SQLExecutor
         {
             throw new RuntimeException(ex);
         }
+        logger.info("RESULTS COUNT: " + results);
         return results;
     }
 
     public static List<Map<String, Object>> executeQuery(final Connection connection, final String sqlQuery, final List<Object> parameters) {
 
         logger.info("QUERY: " + sqlQuery);
-        logger.info("PARAM: " + Arrays.deepToString(parameters.toArray()));
 
         final List<Map<String, Object>> results = new ArrayList<>();
         try (final PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery))

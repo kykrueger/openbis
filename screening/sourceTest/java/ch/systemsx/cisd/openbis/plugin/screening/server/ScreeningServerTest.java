@@ -106,6 +106,7 @@ public class ScreeningServerTest extends AbstractServerTestCase
         context.checking(new Expectations()
             {
                 {
+                    one(screeningBOFactory).getDAOFactory();
                     one(screeningBOFactory).createSampleBO(session);
                     will(returnValue(sampleBO));
 
@@ -134,6 +135,7 @@ public class ScreeningServerTest extends AbstractServerTestCase
         context.checking(new Expectations()
             {
                 {
+                    one(screeningBOFactory).getDAOFactory();
                     one(screeningBOFactory).createSampleBO(session);
                     will(returnValue(sampleBO));
 

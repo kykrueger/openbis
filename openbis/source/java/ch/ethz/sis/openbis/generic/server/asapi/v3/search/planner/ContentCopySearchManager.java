@@ -27,6 +27,8 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PEMapper
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -58,8 +60,8 @@ public class ContentCopySearchManager extends AbstractLocalSearchManager<Content
     }
 
     @Override
-    public Set<Long> sortIDs(final Set<Long> filteredIDs, final SortOptions<ContentCopy> sortOptions) {
-        return doSortIDs(filteredIDs, sortOptions, TableMapper.CONTENT_COPIES);
+    public List<Long> sortIDs(final Collection<Long> ids, final SortOptions<ContentCopy> sortOptions) {
+        return doSortIDs(ids, sortOptions, TableMapper.CONTENT_COPIES);
     }
 
 }

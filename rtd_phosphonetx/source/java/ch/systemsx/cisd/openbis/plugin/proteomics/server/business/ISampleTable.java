@@ -19,6 +19,7 @@ package ch.systemsx.cisd.openbis.plugin.proteomics.server.business;
 import java.util.List;
 
 import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
+import ch.systemsx.cisd.openbis.generic.shared.dto.Session;
 import ch.systemsx.cisd.openbis.plugin.proteomics.shared.basic.dto.SampleWithPropertiesAndAbundance;
 
 /**
@@ -27,7 +28,7 @@ import ch.systemsx.cisd.openbis.plugin.proteomics.shared.basic.dto.SampleWithPro
 public interface ISampleTable
 {
 
-    public void loadSamplesWithAbundance(TechId experimentID, TechId proteinReferenceID);
+    public void loadSamplesWithAbundance(Session session, TechId experimentID, TechId proteinReferenceID);
 
     public List<SampleWithPropertiesAndAbundance> getSamples();
 

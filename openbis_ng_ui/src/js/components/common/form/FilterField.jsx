@@ -5,7 +5,7 @@ import TextField from '@material-ui/core/TextField'
 import IconButton from '@material-ui/core/IconButton'
 import FilterIcon from '@material-ui/icons/FilterList'
 import CloseIcon from '@material-ui/icons/Close'
-import logger from '../../../common/logger.js'
+import logger from '@src/js/common/logger.js'
 
 const styles = () => ({
   field: {

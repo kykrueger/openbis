@@ -16,8 +16,12 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.Role;
+import ch.systemsx.cisd.openbis.generic.shared.authorization.AuthorizationConfig;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.RoleWithHierarchy;
+import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
+import ch.systemsx.cisd.openbis.generic.shared.dto.RoleAssignmentPE;
 
+import java.util.HashSet;
 import java.util.Set;
 
 public class AuthorisationInformation
@@ -85,4 +89,26 @@ public class AuthorisationInformation
         return result;
     }
 
+    public static AuthorisationInformation getInstance(final PersonPE personPE,
+                                                       final AuthorizationConfig authorizationConfig) {
+        final Set<Long> spaceIds = new HashSet<>();
+        final Set<Long> projectIds = new HashSet<>();
+        boolean instanceRole = false;
+        final boolean projectLevelAuthorizationEnabled = authorizationConfig.isProjectLevelEnabled()
+                && authorizationConfig.isProjectLevelUser(personPE.getUserId());
+        for (final RoleAssignmentPE roleAssignmentPE : personPE.getAllPersonRoles())
+        {
+            if (roleAssignmentPE.getSpace() != null)
+            {
+                spaceIds.add(roleAssignmentPE.getSpace().getId());
+            }
+            if (roleAssignmentPE.getProject() != null && projectLevelAuthorizationEnabled)
+            {
+                projectIds.add(roleAssignmentPE.getProject().getId());
+            }
+            instanceRole = instanceRole || (roleAssignmentPE.getRoleLevel() == RoleWithHierarchy.RoleLevel.INSTANCE);
+        }
+
+        return new AuthorisationInformation(instanceRole, spaceIds, projectIds);
+    }
 }

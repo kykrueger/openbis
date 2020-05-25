@@ -220,6 +220,12 @@ public class SyncConfig
 
     private Boolean verbose = false;
 
+    private boolean masterDataUpdateAllowed;
+
+    private boolean propertyUnassignmentAllowed;
+
+    private boolean deletionAllowed;
+
     private boolean keepOriginalTimestampsAndUsers;
 
     private boolean keepOriginalFrozenFlags;
@@ -342,6 +348,36 @@ public class SyncConfig
     public void setVerbose(Boolean verbose)
     {
         this.verbose = verbose;
+    }
+
+    public boolean isMasterDataUpdateAllowed()
+    {
+        return masterDataUpdateAllowed;
+    }
+
+    public void setMasterDataUpdateAllowed(boolean masterDataUpdate)
+    {
+        this.masterDataUpdateAllowed = masterDataUpdate;
+    }
+
+    public boolean isPropertyUnassignmentAllowed()
+    {
+        return propertyUnassignmentAllowed;
+    }
+
+    public void setPropertyUnassignmentAllowed(boolean propertyUnassignmentAllowed)
+    {
+        this.propertyUnassignmentAllowed = propertyUnassignmentAllowed;
+    }
+
+    public boolean isDeletionAllowed()
+    {
+        return deletionAllowed;
+    }
+
+    public void setDeletionAllowed(boolean deletionAllowed)
+    {
+        this.deletionAllowed = deletionAllowed;
     }
 
     public boolean keepOriginalTimestampsAndUsers()

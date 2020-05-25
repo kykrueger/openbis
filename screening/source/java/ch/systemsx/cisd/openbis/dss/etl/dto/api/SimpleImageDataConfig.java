@@ -79,8 +79,7 @@ abstract public class SimpleImageDataConfig
     {
 
         ImageMetadata imageMetadata = extractImageMetadata(imagePath);
-        return (imageMetadata != null) ? new ImageMetadata[]
-        { imageMetadata } : new ImageMetadata[0];
+        return (imageMetadata != null) ? new ImageMetadata[] { imageMetadata } : new ImageMetadata[0];
     }
 
     // --- methods which can be overridden -----------------
@@ -195,10 +194,11 @@ abstract public class SimpleImageDataConfig
 
     private String spaceCode;
 
+    private String projectCode;
+
     private boolean isMeasured = false;
 
-    private String[] recognizedImageExtensions = new String[]
-    { "tiff", "tif", "png", "gif", "jpg", "jpeg", "c01" };
+    private String[] recognizedImageExtensions = new String[] { "tiff", "tif", "png", "gif", "jpg", "jpeg", "c01" };
 
     private List<IThumbnailsConfiguration> imagePyramid = new ArrayList<IThumbnailsConfiguration>();
 
@@ -273,6 +273,11 @@ abstract public class SimpleImageDataConfig
     public String getPlateSpace()
     {
         return spaceCode;
+    }
+
+    public String getProjectCode()
+    {
+        return projectCode;
     }
 
     public String getPlateCode()
@@ -365,7 +370,12 @@ abstract public class SimpleImageDataConfig
      */
     public void setPlate(String spaceCode, String plateCode)
     {
-        this.spaceCode = spaceCode;
+        String[] splitted = spaceCode.split("/");
+        this.spaceCode = splitted[0];
+        if (splitted.length == 2)
+        {
+            this.projectCode = splitted[1];
+        }
         this.plateCode = plateCode;
     }
 

@@ -22,6 +22,7 @@ import java.util.EnumSet;
 import java.util.List;
 
 import ch.systemsx.cisd.openbis.generic.server.authorization.AuthorizationServiceUtils;
+import ch.systemsx.cisd.openbis.generic.server.authorization.validator.SamplePropertyAccessValidator;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Experiment;
@@ -91,7 +92,8 @@ public class MetaprojectAssignmentsHelper
                 {
                     experiments.add(ExperimentTranslator.translate(
                             metaprojectAssignmentPE.getExperiment(), baseIndexURL, null,
-                            managedPropertyEvaluatorFactory, LoadableFields.PROPERTIES));
+                            managedPropertyEvaluatorFactory,
+                            new SamplePropertyAccessValidator(session, daoFactory), LoadableFields.PROPERTIES));
                 } else
                 {
                     experiments.add(ExperimentTranslator.translateWithoutRevealingData(
@@ -108,7 +110,8 @@ public class MetaprojectAssignmentsHelper
                 if (authorizationUtils.canAccessSample(metaprojectAssignmentPE.getSample()))
                 {
                     samples.add(SampleTranslator.translate(metaprojectAssignmentPE.getSample(),
-                            baseIndexURL, null, managedPropertyEvaluatorFactory));
+                            baseIndexURL, null, managedPropertyEvaluatorFactory,
+                            new SamplePropertyAccessValidator(session, daoFactory)));
                 } else
                 {
                     samples.add(SampleTranslator
@@ -125,7 +128,8 @@ public class MetaprojectAssignmentsHelper
                 if (authorizationUtils.canAccessDataSet(metaprojectAssignmentPE.getDataSet()))
                 {
                     dataSets.add(DataSetTranslator.translate(metaprojectAssignmentPE.getDataSet(),
-                            baseIndexURL, null, managedPropertyEvaluatorFactory));
+                            baseIndexURL, null, managedPropertyEvaluatorFactory,
+                            new SamplePropertyAccessValidator(session, daoFactory)));
                 } else
                 {
                     dataSets.add(DataSetTranslator
@@ -140,7 +144,8 @@ public class MetaprojectAssignmentsHelper
                     metaproject.getId(), EntityKind.MATERIAL))
             {
                 materials.add(MaterialTranslator.translate(metaprojectAssignmentPE.getMaterial(),
-                        null, managedPropertyEvaluatorFactory));
+                        null, managedPropertyEvaluatorFactory,
+                        new SamplePropertyAccessValidator(session, daoFactory)));
             }
         }
 

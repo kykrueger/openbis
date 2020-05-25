@@ -1,5 +1,6 @@
 /* eslint-disable */
 const HtmlWebpackPlugin = require('html-webpack-plugin')
+const path = require('path')
 
 module.exports = {
   entry: './src/js/index.js',
@@ -31,6 +32,14 @@ module.exports = {
         }
       }
     ]
+  },
+
+  resolve: {
+    alias: {
+      '@src': path.resolve(__dirname, 'src/'),
+      '@srcTest': path.resolve(__dirname, 'srcTest/'),
+      '@srcV3': path.resolve(__dirname, 'srcV3/')
+    }
   },
 
   plugins: [

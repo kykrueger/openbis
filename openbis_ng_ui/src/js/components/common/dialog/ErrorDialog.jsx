@@ -1,9 +1,10 @@
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import Button from '@material-ui/core/Button'
-import Dialog from '../../common/dialog/Dialog.jsx'
-import logger from '../../../common/logger.js'
-import profile from '../../../profile.js'
+import profile from '@src/js/profile.js'
+import logger from '@src/js/common/logger.js'
+
+import Dialog from './Dialog.jsx'
 
 const styles = theme => ({
   button: {
