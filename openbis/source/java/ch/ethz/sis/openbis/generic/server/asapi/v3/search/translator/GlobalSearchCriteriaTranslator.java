@@ -13,6 +13,7 @@ import java.util.stream.StreamSupport;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCriteriaTranslator.MAIN_TABLE_ALIAS;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.*;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils.buildFullIdentifierConcatenationString;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils.buildTypeCodeIdentifierConcatenationString;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.*;
 
 public class GlobalSearchCriteriaTranslator
@@ -29,6 +30,8 @@ public class GlobalSearchCriteriaTranslator
 
     public static final String DATA_SET_KIND_MATCH_ALIAS = "data_set_kind_match";
 
+    public static final String ENTITY_TYPES_CODE_ALIAS = "enty_code";
+
     private static final String REG_CONFIG = "simple";
 
     private static final String SEARCH_STRING_ALIAS = "search_string";
@@ -42,6 +45,8 @@ public class GlobalSearchCriteriaTranslator
     private static final String DESCRIPTION_HEADLINE_ALIAS = "label_headline";
 
     private static final String PROPERTIES_TABLE_ALIAS = "prop";
+
+    private static final String ENTITY_TYPES_TABLE_ALIAS = "enty";
 
     private static final String CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS = "cvte";
 
@@ -84,12 +89,14 @@ public class GlobalSearchCriteriaTranslator
 
     private static void translateCriterion(final StringBuilder sqlBuilder, final TranslationVo vo, final GlobalSearchTextCriteria criterion)
     {
+        // Fields
         buildSelect(sqlBuilder, vo, criterion, true);
         buildFrom(sqlBuilder, vo, criterion, true);
         buildWhere(sqlBuilder, vo, criterion, true);
 
         sqlBuilder.append(UNION).append(NL);
 
+        // Properties
         buildSelect(sqlBuilder, vo, criterion, false);
         buildFrom(sqlBuilder, vo, criterion, false);
         buildWhere(sqlBuilder, vo, criterion, false);
@@ -121,14 +128,26 @@ public class GlobalSearchCriteriaTranslator
                 sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(DATA_SET_KIND_COLUMN).append(COMMA).append(SP);
                 break;
             }
+            case MATERIAL:
+            {
+                sqlBuilder.append(ENTITY_TYPES_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(SP).append(ENTITY_TYPES_CODE_ALIAS)
+                        .append(COMMA).append(SP);
+                break;
+            }
         }
 
         sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(COMMA).append(SP)
                 .append(SQ).append(tableMapper.getEntityKind()).append(SQ).append(SP).append(OBJECT_KIND_ALIAS).append(COMMA).append(SP);
 
-        buildFullIdentifierConcatenationString(sqlBuilder, hasSpaces || hasProjects ? SPACE_TABLE_ALIAS : null,
-                hasProjects ? PROJECT_TABLE_ALIAS : null,
-                (tableMapper == TableMapper.SAMPLE) ? MAIN_TABLE_ALIAS : null);
+        if (tableMapper == TableMapper.MATERIAL)
+        {
+            buildTypeCodeIdentifierConcatenationString(sqlBuilder, ENTITY_TYPES_TABLE_ALIAS);
+        } else
+        {
+            buildFullIdentifierConcatenationString(sqlBuilder, hasSpaces || hasProjects ? SPACE_TABLE_ALIAS : null,
+                    hasProjects ? PROJECT_TABLE_ALIAS : null,
+                    (tableMapper == TableMapper.SAMPLE) ? MAIN_TABLE_ALIAS : null);
+        }
         sqlBuilder.append(IDENTIFIER_ALIAS).append(COMMA).append(NL);
 
         if (forAttributes)
@@ -321,6 +340,13 @@ public class GlobalSearchCriteriaTranslator
             sqlBuilder.append(LEFT_JOIN).append(SP).append(TableMapper.SPACE.getEntitiesTable()).append(SP).append(SPACE_TABLE_ALIAS).append(SP)
                     .append(ON).append(SP).append(MAIN_TABLE_ALIAS).append(PERIOD).append(SPACE_COLUMN).append(SP).append(EQ).append(SP)
                     .append(SPACE_TABLE_ALIAS).append(PERIOD).append(ID_COLUMN).append(NL);
+        }
+
+        if (tableMapper == TableMapper.MATERIAL)
+        {
+            sqlBuilder.append(INNER_JOIN).append(SP).append(tableMapper.getEntityTypesTable()).append(SP).append(ENTITY_TYPES_TABLE_ALIAS)
+                    .append(SP).append(ON).append(SP).append(MAIN_TABLE_ALIAS).append(PERIOD).append(tableMapper.getEntitiesTableEntityTypeIdField())
+                    .append(SP).append(EQ).append(SP).append(ENTITY_TYPES_TABLE_ALIAS).append(PERIOD).append(ID_COLUMN).append(NL);
         }
     }
 

@@ -547,7 +547,22 @@ public class TranslatorUtils
     }
 
     /**
-     * Appends one of the the following texts to sqlBuilder depending on the value of {@code samplesTableAlias}. If it is {@code null} the second
+     * Appends the following test to {@code sqlBuilder}.
+     * <pre>
+     *     t0.code || '(' || [entityTypesTableAlias].code || ')'
+     * </pre>
+     * @param sqlBuilder query builder.
+     * @param entityTypesTableAlias alias of the entity type table.
+     */
+    public static void buildTypeCodeIdentifierConcatenationString(final StringBuilder sqlBuilder, final String entityTypesTableAlias)
+    {
+        sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(SP).append(BARS).append(SP)
+                .append(SQ).append(" (").append(SQ).append(SP).append(BARS).append(SP).append(entityTypesTableAlias).append(PERIOD)
+                .append(CODE_COLUMN).append(SP).append(BARS).append(SP).append(SQ).append(")").append(SQ);
+    }
+
+    /**
+     * Appends one of the the following texts to {@code sqlBuilder} depending on the value of {@code samplesTableAlias}. If it is {@code null} the second
      * version will be appended.
      *
      * <pre>
@@ -556,7 +571,6 @@ public class TranslatorUtils
      * <pre>
      *     '/' || coalesce([spacesTableAlias].code || '/', '') || coalesce([projectsTableAlias].code || '/', '') || t0.code
      * </pre>
-     *
      * @param sqlBuilder query builder.
      * @param spacesTableAlias alias of the spaces table.
      * @param projectsTableAlias alias of the projects table.
@@ -591,7 +605,6 @@ public class TranslatorUtils
      * <pre>
      *     coalesce([alias].code || '[separator]', '') ||
      * </pre>
-     *
      * @param sqlBuilder query builder.
      * @param alias alias of the table.
      * @param separator string to be appender at the end in the first parameter.

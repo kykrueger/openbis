@@ -115,8 +115,11 @@ public class GlobalSearchManager implements IGlobalSearchManager
             matchingEntity.setId((Long) fieldsMap.get(ID_COLUMN));
             matchingEntity.setPermId((String) fieldsMap.get(PERM_ID_COLUMN));
 
-            // TODO: how to set entity type correctly?
-//            matchingEntity.setEntityType();
+            final String entityTypesCode = (String) fieldsMap.get(ENTITY_TYPES_CODE_ALIAS);
+            if (entityTypesCode != null)
+            {
+                matchingEntity.setEntityType(new BasicEntityType(entityTypesCode));
+            }
 
             matchingEntity.setIdentifier((String) fieldsMap.get(IDENTIFIER_ALIAS));
 
@@ -126,10 +129,31 @@ public class GlobalSearchManager implements IGlobalSearchManager
             matchingEntity.setScore((Float) fieldsMap.get(RANK_ALIAS));
 
             final List<PropertyMatch> matches = new ArrayList<>();
-            mapMatch(fieldsMap, matches, CODE_MATCH_ALIAS,
-                    (entityKind == EntityKind.MATERIAL || entityKind == EntityKind.DATA_SET) ? PERM_ID_PROPERTY_NAME : CODE_PROPERTY_NAME);
-            mapMatch(fieldsMap, matches, DATA_SET_KIND_MATCH_ALIAS, DATA_SET_KIND_PROPERTY_NAME);
-            mapMatch(fieldsMap, matches, PERM_ID_MATCH_ALIAS, PERM_ID_PROPERTY_NAME);
+
+            switch (entityKind)
+            {
+                case MATERIAL:
+                {
+                    mapMatch(fieldsMap, matches, IDENTIFIER_ALIAS, IDENTIFIER_PROPERTY_NAME);
+                    break;
+                }
+                
+                case EXPERIMENT:
+                    // Falls through.
+                case SAMPLE:
+                {
+                    mapMatch(fieldsMap, matches, CODE_MATCH_ALIAS, CODE_PROPERTY_NAME);
+                    mapMatch(fieldsMap, matches, PERM_ID_MATCH_ALIAS, PERM_ID_PROPERTY_NAME);
+                    break;
+                }
+                case DATA_SET:
+                {
+                    mapMatch(fieldsMap, matches, DATA_SET_KIND_MATCH_ALIAS, DATA_SET_KIND_PROPERTY_NAME);
+                    mapMatch(fieldsMap, matches, CODE_MATCH_ALIAS, PERM_ID_PROPERTY_NAME);
+                    mapMatch(fieldsMap, matches, PERM_ID_MATCH_ALIAS, PERM_ID_PROPERTY_NAME);
+                    break;
+                }
+            }
 
             matchingEntity.setMatches(matches);
             return matchingEntity;
