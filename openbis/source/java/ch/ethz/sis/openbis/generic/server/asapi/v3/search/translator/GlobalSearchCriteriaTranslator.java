@@ -233,6 +233,13 @@ public class GlobalSearchCriteriaTranslator
                 TranslatorUtils.appendStringComparatorOp(criterion.getFieldValue(), sqlBuilder, args);
                 break;
             }
+            case MATERIAL:
+            {
+                sqlBuilder.append(SP).append(OR).append(SP);
+                buildTypeCodeIdentifierConcatenationString(sqlBuilder, ENTITY_TYPES_TABLE_ALIAS);
+                TranslatorUtils.appendStringComparatorOp(criterion.getFieldValue(), sqlBuilder, args);
+                break;
+            }
         }
     }
 
