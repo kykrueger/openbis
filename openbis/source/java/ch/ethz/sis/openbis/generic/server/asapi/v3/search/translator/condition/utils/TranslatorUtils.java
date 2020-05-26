@@ -103,10 +103,14 @@ public class TranslatorUtils
         {
             sqlBuilder.append(ILIKE).append(SP).append(QU);
             args.add(PERCENT + toPSQLWildcards(finalValue));
-        } else if (valueClass == StringContainsValue.class || valueClass == StringContainsExactlyValue.class)
+        } else if (valueClass == StringContainsValue.class)
         {
             sqlBuilder.append(ILIKE).append(SP).append(QU);
             args.add(PERCENT + toPSQLWildcards(finalValue) + PERCENT);
+        } else if (valueClass == StringContainsExactlyValue.class)
+        {
+            sqlBuilder.append(ILIKE).append(SP).append(QU);
+            args.add(PERCENT + finalValue + PERCENT);
         } else if (valueClass == AnyStringValue.class)
         {
             sqlBuilder.append(IS_NOT_NULL);
