@@ -507,13 +507,15 @@ public class GlobalSearchTest extends AbstractTest
         criteria.withText().thatContainsExactly("LINK");
 
         SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
-        assertEquals(result.getObjects().size(), 5);
+        assertEquals(result.getTotalCount(), 5);
 
-        GlobalSearchObject object1 = result.getObjects().get(0);
-        GlobalSearchObject object2 = result.getObjects().get(1);
-        GlobalSearchObject object3 = result.getObjects().get(2);
-        GlobalSearchObject object4 = result.getObjects().get(3);
-        GlobalSearchObject object5 = result.getObjects().get(4);
+        final List<GlobalSearchObject> resultObjects = result.getObjects();
+        final GlobalSearchObject object1 = resultObjects.stream().filter(
+                globalSearchObject -> globalSearchObject.getDataSet().getCode().equals("20110509092359990-11"))
+                .findAny().orElse(null);
+        final GlobalSearchObject object2 = resultObjects.stream().filter(
+                globalSearchObject -> globalSearchObject.getDataSet().getCode().equals("20120628092259000-23"))
+                .findAny().orElse(null);
 
         assertDataSet(object1, "20110509092359990-11", object1.getMatch(), DataSetKind.PHYSICAL);
         AssertionUtil.assertContains("Perm ID: 20110509092359990-11", object1.getMatch());
@@ -530,10 +532,6 @@ public class GlobalSearchTest extends AbstractTest
         assertExperimentNotFetched(object2);
         assertSampleNotFetched(object2);
         assertMaterialNotFetched(object2);
-
-        assertDataSet(object3, "20120628092259000-24", object3.getMatch(), DataSetKind.LINK);
-        assertDataSet(object4, "20120628092259000-25", object4.getMatch(), DataSetKind.LINK);
-        assertDataSet(object5, "20120628092259000-41", object5.getMatch(), DataSetKind.LINK);
     }
 
     @Test
