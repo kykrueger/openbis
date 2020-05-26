@@ -919,7 +919,7 @@ var FormUtil = new function() {
 
             // Move offset
             if(currentImageEndOffset !== -1) {
-                buffer = buffer + value.substring(offset, currentImageStartOffset - 1);
+                buffer = buffer + value.substring(offset, currentImageStartOffset);
                 if(styleTag !== null) {
                     buffer = buffer + "<figure class=\"image image_resized\"" + styleTag + ">";
                 }
