@@ -140,11 +140,12 @@ public abstract class AbstractLocalSearchManager<CRITERIA extends ISearchCriteri
         return smallestSet;
     }
 
-    public List<OBJECT_PE> map(final List<Long> ids) {
+    public Collection<OBJECT_PE> map(final Collection<Long> ids)
+    {
         return idsTranslator.map(ids);
     }
 
-    protected Set<Long> doSortIDs(final Set<Long> filteredIDs, final SortOptions<OBJECT> sortOptions, final TableMapper tableMapper)
+    protected List<Long> doSortIDs(final Collection<Long> filteredIDs, final SortOptions<OBJECT> sortOptions, final TableMapper tableMapper)
     {
         return getSearchDAO().sortIDs(tableMapper, filteredIDs, sortOptions);
     }

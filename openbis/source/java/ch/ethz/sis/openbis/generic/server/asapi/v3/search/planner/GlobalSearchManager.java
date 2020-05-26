@@ -104,7 +104,7 @@ public class GlobalSearchManager implements IGlobalSearchManager
     }
 
     @Override
-    public List<MatchingEntity> map(final List<Map<String, Object>> records)
+    public Collection<MatchingEntity> map(final Collection<Map<String, Object>> records)
     {
         final List<MatchingEntity> result = records.stream().map((fieldsMap) ->
         {

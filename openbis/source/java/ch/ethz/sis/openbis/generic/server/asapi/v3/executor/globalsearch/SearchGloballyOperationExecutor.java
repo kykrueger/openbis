@@ -29,6 +29,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.SearchGloballyOper
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.ISearchObjectExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.SearchObjectsOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sort.SortAndPage;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.GlobalSearchManager;
@@ -107,15 +108,20 @@ public class SearchGloballyOperationExecutor
         allResultMaps.addAll(materialResultMaps);
 
         final List<Map<String, Object>> sortedAndPagedResultMaps = sortAndPage(allResultMaps, fetchOptions);
-        final List<MatchingEntity> sortedAndPagedResultPEs = globalSearchManager.map(sortedAndPagedResultMaps);
-        final Map<MatchingEntity, GlobalSearchObject> sortedAndPagedResultV3DTOs = doTranslate(translationContext, sortedAndPagedResultPEs, fetchOptions);
+        final Collection<MatchingEntity> pagedMatchingEntities = globalSearchManager.map(sortedAndPagedResultMaps);
+        final Map<MatchingEntity, GlobalSearchObject> pagedResultV3DTOs = doTranslate(translationContext, pagedMatchingEntities, fetchOptions);
 
-        final List<GlobalSearchObject> finalResults = new ArrayList<>(sortedAndPagedResultV3DTOs.values());
-        final List<GlobalSearchObject> sortedFinalResults = getSortedFinalResults(criteria, fetchOptions, finalResults);
-        final SearchResult<GlobalSearchObject> searchResult = new SearchResult<>(sortedFinalResults, allResultMaps.size());
+        assert pagedMatchingEntities.size() == pagedResultV3DTOs.size() : "The number of results after translation should not change. " +
+                "[pagedResultPEs.size()=" + pagedMatchingEntities.size() + ", pagedResultV3DTOs.size()=" + pagedResultV3DTOs.size() + "]";
 
-        final SearchObjectsOperationResult<GlobalSearchObject> results = getOperationResult(searchResult);
-        return results;
+        final List<GlobalSearchObject> objectResults = new ArrayList<>(pagedResultV3DTOs.values());
+//        final List<GlobalSearchObject> sortedFinalResults = getSortedFinalResults(criteria, fetchOptions, objectResults);
+
+        // Sorting and paging parents and children in a "conventional" way.
+        new SortAndPage().nest(objectResults, criteria, fetchOptions);
+
+        final SearchResult<GlobalSearchObject> searchResult = new SearchResult<>(objectResults, allResultMaps.size());
+        return getOperationResult(searchResult);
     }
 
     protected List<Map<String, Object>> sortAndPage(final Set<Map<String, Object>> results, final FetchOptions<GlobalSearchObject> fo)

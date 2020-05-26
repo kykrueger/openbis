@@ -151,10 +151,6 @@ public abstract class AbstractSearchManager<OBJECT>
         return authProvider;
     }
 
-    public Collection<OBJECT_PE> translate(final Collection <Long> ids) {
-        return idsTranslator.translate(ids);
-    }
-
     protected List<Long> doSortIDs(final Collection<Long> filteredIDs, final SortOptions<OBJECT> sortOptions, final TableMapper tableMapper)
     {
         return getSearchDAO().sortIDs(tableMapper, filteredIDs, sortOptions);

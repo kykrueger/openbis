@@ -16,6 +16,8 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
@@ -41,6 +43,16 @@ public interface ILocalSearchManager<CRITERIA extends ISearchCriteria, OBJECT, O
     Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation, final CRITERIA criteria,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName);
 
-    Set<Long> sortIDs(Set<Long> filteredIDs, SortOptions<OBJECT> sortOptions);
+    /**
+     * Filters IDs of certain
+     *
+     * @param userId
+     * @param authorisationInformation
+     * @param ids
+     * @return
+     */
+    Set<Long> filterIDsByUserRights(Long userId, final AuthorisationInformation authorisationInformation, Set<Long> ids);
+
+    List<Long> sortIDs(Collection<Long> ids, SortOptions<OBJECT> sortOptions);
 
 }

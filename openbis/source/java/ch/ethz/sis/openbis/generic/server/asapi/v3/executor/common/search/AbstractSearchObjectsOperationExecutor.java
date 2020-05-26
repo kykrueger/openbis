@@ -242,16 +242,14 @@ public abstract class AbstractSearchObjectsOperationExecutor<OBJECT, OBJECT_PE, 
         final Long userId = personPE.getId();
         final TranslationContext translationContext = new TranslationContext(context.getSession());
 
-        final Set<Long> allResultsIds = getSearchManager().searchForIDs(userId, authorisationInformation, criteria, fetchOptions.getSortBy(), null,
-                ID_COLUMN);
+        final Set<Long> allResultsIds = getSearchManager().searchForIDs(userId, authorisationInformation, criteria, null, ID_COLUMN);
         final Collection<Long> pagedResultIds = sortAndPage(allResultsIds, fetchOptions);
-
-        final Collection<OBJECT_PE> pagedResultPEs = getSearchManager().translate(pagedResultIds);
+        final Collection<OBJECT_PE> pagedResultPEs = getSearchManager().map(pagedResultIds);
         // TODO: doTranslate() should only filter nested objects of the results (parents, children, components...).
         final Map<OBJECT_PE, OBJECT> pagedResultV3DTOs = doTranslate(translationContext, pagedResultPEs, fetchOptions);
 
-        assert pagedResultPEs.size() == pagedResultV3DTOs.size() : "The number of results after translation should not change. [pagedResultPEs.size()="
-                + pagedResultPEs.size() + ", pagedResultV3DTOs.size()=" + pagedResultV3DTOs.size() + "]";
+        assert pagedResultPEs.size() == pagedResultV3DTOs.size() : "The number of results after translation should not change. " +
+                "[pagedResultPEs.size()=" + pagedResultPEs.size() + ", pagedResultV3DTOs.size()=" + pagedResultV3DTOs.size() + "]";
 
         // Reordering of pagedResultV3DTOs is needed because translation mixes the order
         final List<OBJECT> objectResults = pagedResultPEs.stream().map(pagedResultV3DTOs::get)
@@ -264,9 +262,10 @@ public abstract class AbstractSearchObjectsOperationExecutor<OBJECT, OBJECT_PE, 
         return getOperationResult(searchResult);
     }
 
-    private Collection<Long> sortAndPage(final Set<Long> ids, final FETCH_OPTIONS fo)
+    private Collection<Long> sortAndPage(final Set<Long> ids, final FETCH_OPTIONS fetchOptions)
     {
-        //
+        SortOptions<OBJECT> sortOptions = fetchOptions.getSortBy();
+
         // Filter out sorts to ignore
         if (sortOptions != null) {
             List<Sorting> sortingToRemove = new ArrayList<>();
