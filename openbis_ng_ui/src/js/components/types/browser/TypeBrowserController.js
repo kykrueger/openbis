@@ -135,9 +135,13 @@ export default class TypeBrowserController extends BrowserController {
       )
     }
 
-    return promise.then(() => {
-      this.context.dispatch(actions.objectDelete(this.getPage(), type, id))
-    })
+    return promise
+      .then(() => {
+        this.context.dispatch(actions.objectDelete(this.getPage(), type, id))
+      })
+      .catch(error => {
+        this.context.dispatch(actions.errorChange(error))
+      })
   }
 
   doGetObservedModifications() {

@@ -1,6 +1,8 @@
 import React from 'react'
 import Grid from '@src/js/components/common/grid/Grid.jsx'
 import ids from '@src/js/common/consts/ids.js'
+import store from '@src/js/store/store.js'
+import actions from '@src/js/store/actions/actions.js'
 import openbis from '@src/js/services/openbis.js'
 import logger from '@src/js/common/logger.js'
 
@@ -44,7 +46,7 @@ class UserSearch extends React.Component {
         }))
       })
       .catch(error => {
-        openbis.catch(error)
+        store.dispatch(actions.errorChange(error))
       })
   }
 

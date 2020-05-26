@@ -1,3 +1,4 @@
+import actions from '@src/js/store/actions/actions.js'
 import TypeFormControllerLoadType from './TypeFormControllerLoadType.js'
 import TypeFormControllerLoadDictionaries from './TypeFormControllerLoadDictionaries.js'
 
@@ -24,7 +25,7 @@ export default class TypeFormControllerLoad {
 
     return Promise.all([typePromise, dictionariesPromise])
       .catch(error => {
-        this.facade.catch(error)
+        this.context.dispatch(actions.errorChange(error))
       })
       .finally(() => {
         this.context.setState({

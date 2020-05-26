@@ -1,6 +1,4 @@
 import autoBind from 'auto-bind'
-import store from '@src/js/store/store.js'
-import actions from '@src/js/store/actions/actions.js'
 import dto from './dto.js'
 
 class Facade {
@@ -162,10 +160,6 @@ class Facade {
         }
       )
     })
-  }
-
-  catch(error) {
-    store.dispatch(actions.errorChange(error))
   }
 }
 

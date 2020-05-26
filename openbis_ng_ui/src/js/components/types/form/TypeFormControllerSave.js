@@ -58,7 +58,7 @@ export default class TypeFormControllerSave {
         this.context.setState({
           loading: false
         })
-        this.facade.catch(error)
+        this.context.dispatch(actions.errorChange(error))
       })
   }
 

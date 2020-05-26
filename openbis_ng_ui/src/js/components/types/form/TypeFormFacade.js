@@ -141,10 +141,6 @@ export default class TypeFormFacade {
     return openbis.executeOperations(operations, options)
   }
 
-  catch(error) {
-    return openbis.catch(error)
-  }
-
   _loadPlugins(criteria, fo, type) {
     const strategy = this._getStrategy(type)
     return openbis.searchPlugins(criteria, fo).then(results => {

@@ -73,6 +73,10 @@ export default class TypeFormController {
     return dictionaries || {}
   }
 
+  getContext() {
+    return this.context
+  }
+
   getFacade() {
     return this.facade
   }
