@@ -294,6 +294,7 @@ CREATE INDEX dspr_ds_fk_i ON data_set_properties USING btree (ds_id);
 CREATE INDEX dspr_dstpt_fk_i ON data_set_properties USING btree (dstpt_id);
 CREATE INDEX dspr_mapr_fk_i ON data_set_properties USING btree (mate_prop_id);
 CREATE INDEX dspr_pers_fk_i ON data_set_properties USING btree (pers_id_registerer);
+CREATE INDEX dspr_sapr_fk_i ON data_set_properties USING btree (samp_prop_id);
 CREATE INDEX dsprh_etpt_fk_i ON data_set_properties_history USING btree (dstpt_id);
 CREATE INDEX dsprh_expe_fk_i ON data_set_properties_history USING btree (ds_id);
 CREATE INDEX dsprh_vuts_fk_i ON data_set_properties_history USING btree (valid_until_timestamp);
@@ -330,6 +331,7 @@ CREATE INDEX expr_etpt_fk_i ON experiment_properties USING btree (etpt_id);
 CREATE INDEX expr_expe_fk_i ON experiment_properties USING btree (expe_id);
 CREATE INDEX expr_mapr_fk_i ON experiment_properties USING btree (mate_prop_id);
 CREATE INDEX expr_pers_fk_i ON experiment_properties USING btree (pers_id_registerer);
+CREATE INDEX expr_sapr_fk_i ON experiment_properties USING btree (samp_prop_id);
 CREATE INDEX exprh_etpt_fk_i ON experiment_properties_history USING btree (etpt_id);
 CREATE INDEX exprh_expe_fk_i ON experiment_properties_history USING btree (expe_id);
 CREATE INDEX exprh_vuts_fk_i ON experiment_properties_history USING btree (valid_until_timestamp);
@@ -523,26 +525,30 @@ CREATE RULE data_relationship_update AS
 );
 CREATE RULE data_set_properties_delete AS
     ON DELETE TO data_set_properties
-   WHERE ((((old.value IS NOT NULL) AND (decode(replace("substring"((old.value)::text, 1, 1), '\'::text, '\\'::text), 'escape'::text) <> '\xefbfbd'::bytea)) OR (old.cvte_id IS NOT NULL) OR (old.mate_prop_id IS NOT NULL)) AND (( SELECT data_all.del_id
+   WHERE ((((old.value IS NOT NULL) AND (decode(replace("substring"((old.value)::text, 1, 1), '\'::text, '\\'::text), 'escape'::text) <> '\xefbfbd'::bytea)) OR (old.cvte_id IS NOT NULL) OR (old.mate_prop_id IS NOT NULL) OR (old.samp_prop_id IS NOT NULL)) AND (( SELECT data_all.del_id
            FROM data_all
-          WHERE ((data_all.id)::bigint = (old.ds_id)::bigint)) IS NULL)) DO  INSERT INTO data_set_properties_history (id, ds_id, dstpt_id, value, vocabulary_term, material, pers_id_author, valid_from_timestamp, valid_until_timestamp)
+          WHERE ((data_all.id)::bigint = (old.ds_id)::bigint)) IS NULL)) DO  INSERT INTO data_set_properties_history (id, ds_id, dstpt_id, value, vocabulary_term, material, sample, pers_id_author, valid_from_timestamp, valid_until_timestamp)
   VALUES (nextval('data_set_property_id_seq'::regclass), old.ds_id, old.dstpt_id, old.value, ( SELECT ((((t.code)::text || ' ['::text) || (v.code)::text) || ']'::text)
            FROM (controlled_vocabulary_terms t
              JOIN controlled_vocabularies v ON (((t.covo_id)::bigint = (v.id)::bigint)))
           WHERE ((t.id)::bigint = (old.cvte_id)::bigint)), ( SELECT ((((m.code)::text || ' ['::text) || (mt.code)::text) || ']'::text)
            FROM (materials m
              JOIN material_types mt ON (((m.maty_id)::bigint = (mt.id)::bigint)))
-          WHERE ((m.id)::bigint = (old.mate_prop_id)::bigint)), old.pers_id_author, old.modification_timestamp, now());
+          WHERE ((m.id)::bigint = (old.mate_prop_id)::bigint)), ( SELECT samples_all.perm_id
+           FROM samples_all
+          WHERE ((samples_all.id)::bigint = (old.samp_prop_id)::bigint)), old.pers_id_author, old.modification_timestamp, CURRENT_TIMESTAMP);
 CREATE RULE data_set_properties_update AS
     ON UPDATE TO data_set_properties
-   WHERE (((old.value IS NOT NULL) AND (decode(replace("substring"((old.value)::text, 1, 1), '\'::text, '\\'::text), 'escape'::text) <> '\xefbfbd'::bytea) AND ((old.value)::text <> (new.value)::text)) OR ((old.cvte_id IS NOT NULL) AND ((old.cvte_id)::bigint <> (new.cvte_id)::bigint)) OR ((old.mate_prop_id IS NOT NULL) AND ((old.mate_prop_id)::bigint <> (new.mate_prop_id)::bigint))) DO  INSERT INTO data_set_properties_history (id, ds_id, dstpt_id, value, vocabulary_term, material, pers_id_author, valid_from_timestamp, valid_until_timestamp)
+   WHERE (((old.value IS NOT NULL) AND (decode(replace("substring"((old.value)::text, 1, 1), '\'::text, '\\'::text), 'escape'::text) <> '\xefbfbd'::bytea) AND ((old.value)::text <> (new.value)::text)) OR ((old.cvte_id IS NOT NULL) AND ((old.cvte_id)::bigint <> (new.cvte_id)::bigint)) OR ((old.mate_prop_id IS NOT NULL) AND ((old.mate_prop_id)::bigint <> (new.mate_prop_id)::bigint)) OR ((old.samp_prop_id IS NOT NULL) AND ((old.samp_prop_id)::bigint <> (new.samp_prop_id)::bigint))) DO  INSERT INTO data_set_properties_history (id, ds_id, dstpt_id, value, vocabulary_term, material, sample, pers_id_author, valid_from_timestamp, valid_until_timestamp)
   VALUES (nextval('data_set_property_id_seq'::regclass), old.ds_id, old.dstpt_id, old.value, ( SELECT ((((t.code)::text || ' ['::text) || (v.code)::text) || ']'::text)
            FROM (controlled_vocabulary_terms t
              JOIN controlled_vocabularies v ON (((t.covo_id)::bigint = (v.id)::bigint)))
           WHERE ((t.id)::bigint = (old.cvte_id)::bigint)), ( SELECT ((((m.code)::text || ' ['::text) || (mt.code)::text) || ']'::text)
            FROM (materials m
              JOIN material_types mt ON (((m.maty_id)::bigint = (mt.id)::bigint)))
-          WHERE ((m.id)::bigint = (old.mate_prop_id)::bigint)), old.pers_id_author, old.modification_timestamp, new.modification_timestamp);
+          WHERE ((m.id)::bigint = (old.mate_prop_id)::bigint)), ( SELECT samples_all.perm_id
+           FROM samples_all
+          WHERE ((samples_all.id)::bigint = (old.samp_prop_id)::bigint)), old.pers_id_author, old.modification_timestamp, new.modification_timestamp);
 CREATE RULE data_set_relationships_delete AS
     ON DELETE TO data_set_relationships DO INSTEAD  DELETE FROM data_set_relationships_all
   WHERE (((data_set_relationships_all.data_id_parent)::bigint = (old.data_id_parent)::bigint) AND ((data_set_relationships_all.data_id_child)::bigint = (old.data_id_child)::bigint) AND ((data_set_relationships_all.relationship_id)::bigint = (old.relationship_id)::bigint));
@@ -682,24 +688,28 @@ CREATE RULE experiment_project_update AS
 );
 CREATE RULE experiment_properties_delete AS
     ON DELETE TO experiment_properties
-   WHERE (((old.value IS NOT NULL) AND (decode(replace("substring"((old.value)::text, 1, 1), '\'::text, '\\'::text), 'escape'::text) <> '\xefbfbd'::bytea)) OR (old.cvte_id IS NOT NULL) OR (old.mate_prop_id IS NOT NULL)) DO  INSERT INTO experiment_properties_history (id, expe_id, etpt_id, value, vocabulary_term, material, pers_id_author, valid_from_timestamp, valid_until_timestamp)
+   WHERE (((old.value IS NOT NULL) AND (decode(replace("substring"((old.value)::text, 1, 1), '\'::text, '\\'::text), 'escape'::text) <> '\xefbfbd'::bytea)) OR (old.cvte_id IS NOT NULL) OR (old.mate_prop_id IS NOT NULL) OR (old.samp_prop_id IS NOT NULL)) DO  INSERT INTO experiment_properties_history (id, expe_id, etpt_id, value, vocabulary_term, material, sample, pers_id_author, valid_from_timestamp, valid_until_timestamp)
   VALUES (nextval('experiment_property_id_seq'::regclass), old.expe_id, old.etpt_id, old.value, ( SELECT ((((t.code)::text || ' ['::text) || (v.code)::text) || ']'::text)
            FROM (controlled_vocabulary_terms t
              JOIN controlled_vocabularies v ON (((t.covo_id)::bigint = (v.id)::bigint)))
           WHERE ((t.id)::bigint = (old.cvte_id)::bigint)), ( SELECT ((((m.code)::text || ' ['::text) || (mt.code)::text) || ']'::text)
            FROM (materials m
              JOIN material_types mt ON (((m.maty_id)::bigint = (mt.id)::bigint)))
-          WHERE ((m.id)::bigint = (old.mate_prop_id)::bigint)), old.pers_id_author, old.modification_timestamp, now());
+          WHERE ((m.id)::bigint = (old.mate_prop_id)::bigint)), ( SELECT samples_all.perm_id
+           FROM samples_all
+          WHERE ((samples_all.id)::bigint = (old.samp_prop_id)::bigint)), old.pers_id_author, old.modification_timestamp, CURRENT_TIMESTAMP);
 CREATE RULE experiment_properties_update AS
     ON UPDATE TO experiment_properties
-   WHERE (((old.value IS NOT NULL) AND (decode(replace("substring"((old.value)::text, 1, 1), '\'::text, '\\'::text), 'escape'::text) <> '\xefbfbd'::bytea) AND ((old.value)::text <> (new.value)::text)) OR ((old.cvte_id IS NOT NULL) AND ((old.cvte_id)::bigint <> (new.cvte_id)::bigint)) OR ((old.mate_prop_id IS NOT NULL) AND ((old.mate_prop_id)::bigint <> (new.mate_prop_id)::bigint))) DO  INSERT INTO experiment_properties_history (id, expe_id, etpt_id, value, vocabulary_term, material, pers_id_author, valid_from_timestamp, valid_until_timestamp)
+   WHERE (((old.value IS NOT NULL) AND (decode(replace("substring"((old.value)::text, 1, 1), '\'::text, '\\'::text), 'escape'::text) <> '\xefbfbd'::bytea) AND ((old.value)::text <> (new.value)::text)) OR ((old.cvte_id IS NOT NULL) AND ((old.cvte_id)::bigint <> (new.cvte_id)::bigint)) OR ((old.mate_prop_id IS NOT NULL) AND ((old.mate_prop_id)::bigint <> (new.mate_prop_id)::bigint)) OR ((old.samp_prop_id IS NOT NULL) AND ((old.samp_prop_id)::bigint <> (new.samp_prop_id)::bigint))) DO  INSERT INTO experiment_properties_history (id, expe_id, etpt_id, value, vocabulary_term, material, sample, pers_id_author, valid_from_timestamp, valid_until_timestamp)
   VALUES (nextval('experiment_property_id_seq'::regclass), old.expe_id, old.etpt_id, old.value, ( SELECT ((((t.code)::text || ' ['::text) || (v.code)::text) || ']'::text)
            FROM (controlled_vocabulary_terms t
              JOIN controlled_vocabularies v ON (((t.covo_id)::bigint = (v.id)::bigint)))
           WHERE ((t.id)::bigint = (old.cvte_id)::bigint)), ( SELECT ((((m.code)::text || ' ['::text) || (mt.code)::text) || ']'::text)
            FROM (materials m
              JOIN material_types mt ON (((m.maty_id)::bigint = (mt.id)::bigint)))
-          WHERE ((m.id)::bigint = (old.mate_prop_id)::bigint)), old.pers_id_author, old.modification_timestamp, new.modification_timestamp);
+          WHERE ((m.id)::bigint = (old.mate_prop_id)::bigint)), ( SELECT samples_all.perm_id
+           FROM samples_all
+          WHERE ((samples_all.id)::bigint = (old.samp_prop_id)::bigint)), old.pers_id_author, old.modification_timestamp, new.modification_timestamp);
 CREATE RULE experiment_update AS
     ON UPDATE TO experiments DO INSTEAD  UPDATE experiments_all SET code = new.code, frozen = new.frozen, frozen_for_samp = new.frozen_for_samp, frozen_for_data = new.frozen_for_data, del_id = new.del_id, orig_del = new.orig_del, exty_id = new.exty_id, is_public = new.is_public, modification_timestamp = new.modification_timestamp, perm_id = new.perm_id, pers_id_registerer = new.pers_id_registerer, pers_id_modifier = new.pers_id_modifier, proj_id = new.proj_id, proj_frozen = new.proj_frozen, registration_timestamp = new.registration_timestamp, version = new.version
   WHERE ((experiments_all.id)::bigint = (new.id)::bigint);
