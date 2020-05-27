@@ -36,7 +36,15 @@ public class GlobalSearchCriteriaTranslator
 
     public static final String ENTITY_TYPES_CODE_ALIAS = "enty_code";
 
-    public static final String PROPERTY_LABEL_ALIAS = "property_label";
+    public static final String PROPERTY_TYPE_LABEL_ALIAS = "property_type_label";
+
+    private static final String CV_CODE_ALIAS = "cv_code";
+
+    private static final String CV_LABEL_ALIAS = "property_label";
+
+    private static final String CV_DESCRIPTION_ALIAS = "cv_description";
+
+    public static final String PROPERTY_VALUE_ALIAS = "cv_value";
 
     public static final String VALUE_HEADLINE_ALIAS = "value_headline";
 
@@ -181,11 +189,15 @@ public class GlobalSearchCriteriaTranslator
             buildAttributesMatchSelection(sqlBuilder, criterion, vo.getTableMapper(), args);
             sqlBuilder.append(COMMA).append(NL);
 
-            sqlBuilder.append(NULL).append(SP).append(PROPERTY_LABEL_ALIAS).append(COMMA).append(NL);
+            sqlBuilder.append(NULL).append(SP).append(PROPERTY_TYPE_LABEL_ALIAS).append(COMMA).append(NL);
 
-            sqlBuilder.append(NULL).append(SP).append(VALUE_HEADLINE_ALIAS).append(COMMA).append(SP);
-            sqlBuilder.append(NULL).append(SP).append(CODE_HEADLINE_ALIAS).append(COMMA).append(SP);
-            sqlBuilder.append(NULL).append(SP).append(LABEL_HEADLINE_ALIAS).append(COMMA).append(SP);
+            sqlBuilder.append(NULL).append(SP).append(PROPERTY_VALUE_ALIAS).append(COMMA).append(NL);
+            sqlBuilder.append(NULL).append(SP).append(CV_CODE_ALIAS).append(COMMA).append(NL);
+            sqlBuilder.append(NULL).append(SP).append(CV_LABEL_ALIAS).append(COMMA).append(NL);
+            sqlBuilder.append(NULL).append(SP).append(CV_DESCRIPTION_ALIAS).append(COMMA).append(NL);
+            sqlBuilder.append(NULL).append(SP).append(VALUE_HEADLINE_ALIAS).append(COMMA).append(NL);
+            sqlBuilder.append(NULL).append(SP).append(CODE_HEADLINE_ALIAS).append(COMMA).append(NL);
+            sqlBuilder.append(NULL).append(SP).append(LABEL_HEADLINE_ALIAS).append(COMMA).append(NL);
             sqlBuilder.append(NULL).append(SP).append(DESCRIPTION_HEADLINE_ALIAS);
         } else
         {
@@ -210,7 +222,16 @@ public class GlobalSearchCriteriaTranslator
             }
 
             sqlBuilder.append(ATTRIBUTE_TYPES_TABLE_ALIAS).append(PERIOD).append(LABEL_COLUMN).append(SP)
-                    .append(PROPERTY_LABEL_ALIAS).append(COMMA).append(NL);
+                    .append(PROPERTY_TYPE_LABEL_ALIAS).append(COMMA).append(NL);
+
+            sqlBuilder.append(PROPERTIES_TABLE_ALIAS).append(PERIOD).append(VALUE_COLUMN).append(SP)
+                    .append(PROPERTY_VALUE_ALIAS).append(COMMA).append(NL);
+            sqlBuilder.append(CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(SP)
+                    .append(CV_CODE_ALIAS).append(COMMA).append(NL);
+            sqlBuilder.append(CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS).append(PERIOD).append(LABEL_COLUMN).append(SP)
+                    .append(CV_LABEL_ALIAS).append(COMMA).append(NL);
+            sqlBuilder.append(CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS).append(PERIOD).append(DESCRIPTION_COLUMN)
+                    .append(SP).append(CV_DESCRIPTION_ALIAS).append(COMMA).append(NL);
 
             buildTsHeadline(sqlBuilder, value, args, PROPERTIES_TABLE_ALIAS + PERIOD + VALUE_COLUMN, VALUE_HEADLINE_ALIAS);
             sqlBuilder.append(COMMA).append(SP);

@@ -131,8 +131,8 @@ public class GlobalSearchManager implements IGlobalSearchManager
 
             final List<PropertyMatch> matches = new ArrayList<>();
 
-            mapMatch(fieldsMap, matches, VALUE_HEADLINE_ALIAS,
-                    PROPERTY_NAME + " '" + fieldsMap.get(PROPERTY_LABEL_ALIAS) + "'");
+            mapMatch(fieldsMap, matches, PROPERTY_VALUE_ALIAS,
+                    PROPERTY_NAME + " '" + fieldsMap.get(PROPERTY_TYPE_LABEL_ALIAS) + "'");
 
             switch (entityKind)
             {
