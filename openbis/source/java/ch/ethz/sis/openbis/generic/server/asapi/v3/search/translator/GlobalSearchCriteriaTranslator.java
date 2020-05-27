@@ -2,9 +2,13 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchTextCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchWildCardsCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils;
+import ch.systemsx.cisd.common.logging.LogCategory;
+import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.openbis.generic.shared.dto.TableNames;
+import org.apache.log4j.Logger;
 
 import java.util.List;
 import java.util.Spliterator;
@@ -32,17 +36,19 @@ public class GlobalSearchCriteriaTranslator
 
     public static final String ENTITY_TYPES_CODE_ALIAS = "enty_code";
 
+    public static final String PROPERTY_LABEL_ALIAS = "property_label";
+
+    public static final String VALUE_HEADLINE_ALIAS = "value_headline";
+
     private static final String REG_CONFIG = "simple";
 
     private static final String SEARCH_STRING_ALIAS = "search_string";
-
-    private static final String VALUE_HEADLINE_ALIAS = "value_headline";
 
     private static final String CODE_HEADLINE_ALIAS = "code_headline";
 
     private static final String LABEL_HEADLINE_ALIAS = "label_headline";
 
-    private static final String DESCRIPTION_HEADLINE_ALIAS = "label_headline";
+    private static final String DESCRIPTION_HEADLINE_ALIAS = "description_headline";
 
     private static final String PROPERTIES_TABLE_ALIAS = "prop";
 
@@ -54,12 +60,20 @@ public class GlobalSearchCriteriaTranslator
 
     private static final String PROJECT_TABLE_ALIAS = "proj";
 
+    private static final String CONTAINER_TABLE_ALIAS = "cont";
+
+    private static final String ENTITY_TYPES_ATTRIBUTE_TYPES_TABLE_ALIAS = "etpt";
+
+    private static final String ATTRIBUTE_TYPES_TABLE_ALIAS = "prty";
+
 //    private static final String START_SEL = "<{(";
 //
 //    private static final String STOP_SEL = ")}>";
 
 //    private static final String TS_HEADLINE_OPTIONS = "HighlightAll=TRUE, StartSel=" + START_SEL
 //            +", StopSel=" + STOP_SEL;
+
+    private static final Logger LOG = LogFactory.getLogger(LogCategory.OPERATION, GlobalSearchCriteriaTranslator.class);
 
     private GlobalSearchCriteriaTranslator()
     {
@@ -73,11 +87,19 @@ public class GlobalSearchCriteriaTranslator
             throw new IllegalArgumentException("Null criteria provided.");
         }
 
+        final boolean withWildcards = vo.getCriteria().stream().anyMatch((criterion) -> criterion instanceof GlobalSearchWildCardsCriteria);
+        if (withWildcards)
+        {
+            LOG.warn("Full text search with wildcards is not supported.");
+        }
+
         final StringBuilder sqlBuilder = new StringBuilder(LP);
-        final Spliterator<ISearchCriteria> spliterator = vo.getCriteria().stream().spliterator();
+        final Spliterator<ISearchCriteria> spliterator = vo.getCriteria().stream()
+                .filter((criterion) -> !(criterion instanceof GlobalSearchWildCardsCriteria)).spliterator();
         if (spliterator.tryAdvance((criterion) -> translateCriterion(sqlBuilder, vo, (GlobalSearchTextCriteria) criterion)))
         {
-            StreamSupport.stream(spliterator, false).forEach((criterion) -> {
+            StreamSupport.stream(spliterator, false).forEach((criterion) ->
+            {
                 sqlBuilder.append(RP).append(NL).append(UNION).append(NL).append(LP).append(NL);
                 translateCriterion(sqlBuilder, vo, (GlobalSearchTextCriteria) criterion);
             });
@@ -103,7 +125,7 @@ public class GlobalSearchCriteriaTranslator
     }
 
     private static void buildSelect(final StringBuilder sqlBuilder, final TranslationVo vo, final GlobalSearchTextCriteria criterion,
-            final boolean forAttributes)
+            final boolean forProperties)
     {
         final TableMapper tableMapper = vo.getTableMapper();
         final Object value = criterion.getFieldValue().getValue();
@@ -139,6 +161,7 @@ public class GlobalSearchCriteriaTranslator
         sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(COMMA).append(SP)
                 .append(SQ).append(tableMapper.getEntityKind()).append(SQ).append(SP).append(OBJECT_KIND_ALIAS).append(COMMA).append(SP);
 
+        sqlBuilder.append(UPPER).append(LP);
         if (tableMapper == TableMapper.MATERIAL)
         {
             buildTypeCodeIdentifierConcatenationString(sqlBuilder, ENTITY_TYPES_TABLE_ALIAS);
@@ -146,16 +169,19 @@ public class GlobalSearchCriteriaTranslator
         {
             buildFullIdentifierConcatenationString(sqlBuilder, hasSpaces || hasProjects ? SPACE_TABLE_ALIAS : null,
                     hasProjects ? PROJECT_TABLE_ALIAS : null,
-                    (tableMapper == TableMapper.SAMPLE) ? MAIN_TABLE_ALIAS : null);
+                    (tableMapper == TableMapper.SAMPLE) ? CONTAINER_TABLE_ALIAS : null);
         }
-        sqlBuilder.append(IDENTIFIER_ALIAS).append(COMMA).append(NL);
+        sqlBuilder.append(RP).append(IDENTIFIER_ALIAS).append(COMMA).append(NL);
 
-        if (forAttributes)
+        if (forProperties)
         {
-            sqlBuilder.append(1).append(DOUBLE_COLON).append(FLOAT_4).append(SP).append(RANK_ALIAS).append(COMMA).append(NL);
+            sqlBuilder.append(1).append(DOUBLE_COLON).append(FLOAT_4).append(SP).append(RANK_ALIAS).append(COMMA)
+                    .append(NL);
 
             buildAttributesMatchSelection(sqlBuilder, criterion, vo.getTableMapper(), args);
             sqlBuilder.append(COMMA).append(NL);
+
+            sqlBuilder.append(NULL).append(SP).append(PROPERTY_LABEL_ALIAS).append(COMMA).append(NL);
 
             sqlBuilder.append(NULL).append(SP).append(VALUE_HEADLINE_ALIAS).append(COMMA).append(SP);
             sqlBuilder.append(NULL).append(SP).append(CODE_HEADLINE_ALIAS).append(COMMA).append(SP);
@@ -182,6 +208,9 @@ public class GlobalSearchCriteriaTranslator
                     break;
                 }
             }
+
+            sqlBuilder.append(ATTRIBUTE_TYPES_TABLE_ALIAS).append(PERIOD).append(LABEL_COLUMN).append(SP)
+                    .append(PROPERTY_LABEL_ALIAS).append(COMMA).append(NL);
 
             buildTsHeadline(sqlBuilder, value, args, PROPERTIES_TABLE_ALIAS + PERIOD + VALUE_COLUMN, VALUE_HEADLINE_ALIAS);
             sqlBuilder.append(COMMA).append(SP);
@@ -316,9 +345,19 @@ public class GlobalSearchCriteriaTranslator
 
         if (!forAttributes)
         {
-            sqlBuilder.append(LEFT_JOIN).append(SP).append(tableMapper.getValuesTable()).append(SP).append(PROPERTIES_TABLE_ALIAS).append(SP)
+            sqlBuilder.append(INNER_JOIN).append(SP).append(tableMapper.getValuesTable()).append(SP).append(PROPERTIES_TABLE_ALIAS).append(SP)
                     .append(ON).append(SP).append(MAIN_TABLE_ALIAS).append(PERIOD).append(ID_COLUMN).append(SP).append(EQ)
                     .append(SP).append(PROPERTIES_TABLE_ALIAS).append(PERIOD).append(tableMapper.getValuesTableEntityIdField()).append(NL);
+
+            sqlBuilder.append(INNER_JOIN).append(SP).append(tableMapper.getEntityTypesAttributeTypesTable()).append(SP)
+                    .append(ENTITY_TYPES_ATTRIBUTE_TYPES_TABLE_ALIAS).append(SP).append(ON).append(SP)
+                    .append(PROPERTIES_TABLE_ALIAS).append(PERIOD).append(tableMapper.getValuesTableEntityTypeAttributeTypeIdField()).append(SP)
+                    .append(EQ).append(SP).append(ENTITY_TYPES_ATTRIBUTE_TYPES_TABLE_ALIAS).append(PERIOD).append(ID_COLUMN).append(NL);
+            sqlBuilder.append(INNER_JOIN).append(SP).append(tableMapper.getAttributeTypesTable()).append(SP)
+                    .append(ATTRIBUTE_TYPES_TABLE_ALIAS).append(SP).append(ON).append(SP)
+                    .append(ENTITY_TYPES_ATTRIBUTE_TYPES_TABLE_ALIAS).append(PERIOD)
+                    .append(tableMapper.getEntityTypesAttributeTypesTableAttributeTypeIdField()).append(SP).append(EQ).append(SP)
+                    .append(ATTRIBUTE_TYPES_TABLE_ALIAS).append(PERIOD).append(ID_COLUMN).append(NL);
 
             sqlBuilder.append(LEFT_JOIN).append(SP).append(TableNames.CONTROLLED_VOCABULARY_TERM_TABLE).append(SP)
                     .append(CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS).append(SP).append(ON).append(SP).append(PROPERTIES_TABLE_ALIAS).append(PERIOD)
@@ -349,12 +388,25 @@ public class GlobalSearchCriteriaTranslator
                     .append(SPACE_TABLE_ALIAS).append(PERIOD).append(ID_COLUMN).append(NL);
         }
 
-        if (tableMapper == TableMapper.MATERIAL)
+        switch (tableMapper)
         {
-            sqlBuilder.append(INNER_JOIN).append(SP).append(tableMapper.getEntityTypesTable()).append(SP).append(ENTITY_TYPES_TABLE_ALIAS)
-                    .append(SP).append(ON).append(SP).append(MAIN_TABLE_ALIAS).append(PERIOD).append(tableMapper.getEntitiesTableEntityTypeIdField())
-                    .append(SP).append(EQ).append(SP).append(ENTITY_TYPES_TABLE_ALIAS).append(PERIOD).append(ID_COLUMN).append(NL);
+            case MATERIAL:
+            {
+                sqlBuilder.append(INNER_JOIN).append(SP).append(tableMapper.getEntityTypesTable()).append(SP).append(ENTITY_TYPES_TABLE_ALIAS)
+                        .append(SP).append(ON).append(SP).append(MAIN_TABLE_ALIAS).append(PERIOD)
+                        .append(tableMapper.getEntitiesTableEntityTypeIdField())
+                        .append(SP).append(EQ).append(SP).append(ENTITY_TYPES_TABLE_ALIAS).append(PERIOD).append(ID_COLUMN).append(NL);
+                break;
+            }
+            case SAMPLE:
+            {
+                sqlBuilder.append(LEFT_JOIN).append(SP).append(TableMapper.SAMPLE.getEntitiesTable()).append(SP).append(CONTAINER_TABLE_ALIAS)
+                        .append(SP).append(ON).append(SP).append(MAIN_TABLE_ALIAS).append(PERIOD).append(PART_OF_SAMPLE_COLUMN)
+                        .append(SP).append(EQ).append(SP).append(CONTAINER_TABLE_ALIAS).append(PERIOD).append(ID_COLUMN).append(NL);
+                break;
+            }
         }
+
     }
 
     private static boolean hasProjects(final TableMapper tableMapper)

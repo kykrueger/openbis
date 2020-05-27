@@ -9,7 +9,6 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.systemsx.cisd.common.collection.SimpleComparator;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.*;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -20,13 +19,15 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.*;
 public class GlobalSearchManager implements IGlobalSearchManager
 {
 
-    private static final String PERM_ID_PROPERTY_NAME = "Perm ID";
+    private static final String PERM_ID_FIELD_NAME = "Perm ID";
 
-    private static final String DATA_SET_KIND_PROPERTY_NAME = "DataSet kind";
+    private static final String DATA_SET_KIND_FIELD_NAME = "DataSet kind";
 
-    private static final String IDENTIFIER_PROPERTY_NAME = "Identifier";
+    private static final String IDENTIFIER_FIELD_NAME = "Identifier";
 
-    private static final String CODE_PROPERTY_NAME = "Code";
+    private static final String CODE_FIELD_NAME = "Code";
+
+    private static final String PROPERTY_NAME = "Property";
 
     protected final ISQLAuthorisationInformationProviderDAO authProvider;
 
@@ -130,11 +131,14 @@ public class GlobalSearchManager implements IGlobalSearchManager
 
             final List<PropertyMatch> matches = new ArrayList<>();
 
+            mapMatch(fieldsMap, matches, VALUE_HEADLINE_ALIAS,
+                    PROPERTY_NAME + " '" + fieldsMap.get(PROPERTY_LABEL_ALIAS) + "'");
+
             switch (entityKind)
             {
                 case MATERIAL:
                 {
-                    mapMatch(fieldsMap, matches, IDENTIFIER_ALIAS, IDENTIFIER_PROPERTY_NAME);
+                    mapMatch(fieldsMap, matches, IDENTIFIER_ALIAS, IDENTIFIER_FIELD_NAME);
                     break;
                 }
                 
@@ -142,15 +146,15 @@ public class GlobalSearchManager implements IGlobalSearchManager
                     // Falls through.
                 case SAMPLE:
                 {
-                    mapMatch(fieldsMap, matches, CODE_MATCH_ALIAS, CODE_PROPERTY_NAME);
-                    mapMatch(fieldsMap, matches, PERM_ID_MATCH_ALIAS, PERM_ID_PROPERTY_NAME);
+                    mapMatch(fieldsMap, matches, CODE_MATCH_ALIAS, CODE_FIELD_NAME);
+                    mapMatch(fieldsMap, matches, PERM_ID_MATCH_ALIAS, PERM_ID_FIELD_NAME);
                     break;
                 }
                 case DATA_SET:
                 {
-                    mapMatch(fieldsMap, matches, DATA_SET_KIND_MATCH_ALIAS, DATA_SET_KIND_PROPERTY_NAME);
-                    mapMatch(fieldsMap, matches, CODE_MATCH_ALIAS, PERM_ID_PROPERTY_NAME);
-                    mapMatch(fieldsMap, matches, PERM_ID_MATCH_ALIAS, PERM_ID_PROPERTY_NAME);
+                    mapMatch(fieldsMap, matches, DATA_SET_KIND_MATCH_ALIAS, DATA_SET_KIND_FIELD_NAME);
+                    mapMatch(fieldsMap, matches, CODE_MATCH_ALIAS, PERM_ID_FIELD_NAME);
+                    mapMatch(fieldsMap, matches, PERM_ID_MATCH_ALIAS, PERM_ID_FIELD_NAME);
                     break;
                 }
             }

@@ -192,13 +192,7 @@ public class SearchCriteriaTranslator
                         ids = localSearchManager.searchForIDs(vo.getUserId(), authorisationInformation, criterion, parentCriterion,
                                 CriteriaMapper.getParentChildCriteriaToChildSelectIdMap().getOrDefault(
                                         Arrays.asList(parentCriterion.getClass(), criterion.getClass()), ID_COLUMN));
-                    } else /*if (subqueryManager instanceof IGlobalSearchManager)
-                    {
-                        final IGlobalSearchManager globalSearchManager = (IGlobalSearchManager) subqueryManager;
-                        ids = globalSearchManager.searchForIDs(vo.getUserId(), (GlobalSearchCriteria) criterion, ID_COLUMN,
-                                CriteriaMapper.getParentChildCriteriaToChildSelectIdMap().getOrDefault(
-                                        parentCriterion.getClass().toString() + criterion.getClass().toString()));
-                    } else*/ {
+                    } else {
                         throw new IllegalArgumentException("Only local search subqueries are supported.");
                     }
 
