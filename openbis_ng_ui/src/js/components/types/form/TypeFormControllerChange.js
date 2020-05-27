@@ -103,35 +103,59 @@ export default class TypeFormControllerChange {
         )
 
         if (globalPropertyType) {
+          globalPropertyType = {
+            label: {
+              value: _.get(globalPropertyType, 'label', null)
+            },
+            description: {
+              value: _.get(globalPropertyType, 'description', null)
+            },
+            dataType: {
+              value: _.get(globalPropertyType, 'dataType', null)
+            },
+            vocabulary: {
+              value: _.get(globalPropertyType, 'vocabulary.code', null)
+            },
+            materialType: {
+              value: _.get(globalPropertyType, 'materialType.code', null)
+            },
+            schema: {
+              value: _.get(globalPropertyType, 'schema', null)
+            },
+            transformation: {
+              value: _.get(globalPropertyType, 'transformation', null)
+            }
+          }
+
           newProperty = {
             ...newProperty,
             label: {
               ...newProperty.label,
-              value: _.get(globalPropertyType, 'label', null)
+              value: globalPropertyType.label.value
             },
             description: {
               ...newProperty.description,
-              value: _.get(globalPropertyType, 'description', null)
+              value: globalPropertyType.description.value
             },
             dataType: {
               ...newProperty.dataType,
-              value: _.get(globalPropertyType, 'dataType', null)
+              value: globalPropertyType.dataType.value
             },
             vocabulary: {
               ...newProperty.vocabulary,
-              value: _.get(globalPropertyType, 'vocabulary.code', null)
+              value: globalPropertyType.vocabulary.value
             },
             materialType: {
               ...newProperty.materialType,
-              value: _.get(globalPropertyType, 'materialType.code', null)
+              value: globalPropertyType.materialType.value
             },
             schema: {
               ...newProperty.schema,
-              value: _.get(globalPropertyType, 'schema', null)
+              value: globalPropertyType.schema.value
             },
             transformation: {
               ...newProperty.transformation,
-              value: _.get(globalPropertyType, 'transformation', null)
+              value: globalPropertyType.transformation.value
             }
           }
         }

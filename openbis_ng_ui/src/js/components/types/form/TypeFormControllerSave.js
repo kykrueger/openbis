@@ -149,33 +149,29 @@ export default class TypeFormControllerSave {
     }
   }
 
-  _hasPropertyChanged(property, path) {
-    const originalValue = property.original
-      ? _.get(property.original, path)
-      : null
+  _hasPropertyChanged(property, original, path) {
+    const originalValue = original ? _.get(original, path) : null
     const currentValue = _.get(property, path)
     return originalValue.value !== currentValue.value
   }
 
-  _isPropertyTypeUpdateNeeded(property) {
+  _isPropertyTypeUpdateNeeded(property, original) {
     return (
-      this._hasPropertyChanged(property, 'dataType') ||
-      this._hasPropertyChanged(property, 'vocabulary') ||
-      this._hasPropertyChanged(property, 'materialType') ||
-      this._hasPropertyChanged(property, 'plugin') ||
-      this._hasPropertyChanged(property, 'label') ||
-      this._hasPropertyChanged(property, 'description') ||
-      this._hasPropertyChanged(property, 'schema') ||
-      this._hasPropertyChanged(property, 'transformation')
+      this._hasPropertyChanged(property, original, 'dataType') ||
+      this._hasPropertyChanged(property, original, 'vocabulary') ||
+      this._hasPropertyChanged(property, original, 'materialType') ||
+      this._hasPropertyChanged(property, original, 'label') ||
+      this._hasPropertyChanged(property, original, 'description') ||
+      this._hasPropertyChanged(property, original, 'schema') ||
+      this._hasPropertyChanged(property, original, 'transformation')
     )
   }
 
-  _isPropertyTypeUpdatePossible(property) {
+  _isPropertyTypeUpdatePossible(property, original) {
     if (
-      this._hasPropertyChanged(property, 'dataType') ||
-      this._hasPropertyChanged(property, 'vocabulary') ||
-      this._hasPropertyChanged(property, 'materialType') ||
-      this._hasPropertyChanged(property, 'plugin')
+      this._hasPropertyChanged(property, original, 'dataType') ||
+      this._hasPropertyChanged(property, original, 'vocabulary') ||
+      this._hasPropertyChanged(property, original, 'materialType')
     ) {
       return false
     }
@@ -201,9 +197,11 @@ export default class TypeFormControllerSave {
     }
 
     this.properties.forEach((property, index) => {
-      if (property.original) {
-        if (this._isPropertyTypeUpdateNeeded(property)) {
-          if (this._isPropertyTypeUpdatePossible(property)) {
+      const original = property.scope.globalPropertyType || property.original
+
+      if (original) {
+        if (this._isPropertyTypeUpdateNeeded(property, original)) {
+          if (this._isPropertyTypeUpdatePossible(property, original)) {
             operations.push(this._updatePropertyTypeOperation(property))
           } else {
             operations.push(this._deletePropertyAssignmentOperation(property))
@@ -214,19 +212,10 @@ export default class TypeFormControllerSave {
         assignments.push(this._propertyAssignmentCreation(property, index))
       } else {
         if (property.scope.value === 'local') {
-          const propertyWithPrefix = this._addTypePrefix(property)
-          operations.push(this._createPropertyTypeOperation(propertyWithPrefix))
-          assignments.push(
-            this._propertyAssignmentCreation(propertyWithPrefix, index)
-          )
-        } else if (property.scope.value === 'global') {
-          if (property.scope.globalPropertyType) {
-            assignments.push(this._propertyAssignmentCreation(property, index))
-          } else {
-            operations.push(this._createPropertyTypeOperation(property))
-            assignments.push(this._propertyAssignmentCreation(property, index))
-          }
+          property = this._addTypePrefix(property)
         }
+        operations.push(this._createPropertyTypeOperation(property))
+        assignments.push(this._propertyAssignmentCreation(property, index))
       }
     })
 
