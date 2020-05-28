@@ -22,6 +22,10 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.*;
 
 public class GlobalSearchCriteriaTranslator
 {
+    public static final String START_SEL = "<b>";
+
+    public static final String STOP_SEL = "</b>";
+
     public static final String RANK_ALIAS = "rank";
 
     public static final String IDENTIFIER_ALIAS = "identifier";
@@ -81,10 +85,6 @@ public class GlobalSearchCriteriaTranslator
     private static final String ENTITY_TYPES_ATTRIBUTE_TYPES_TABLE_ALIAS = "etpt";
 
     private static final String ATTRIBUTE_TYPES_TABLE_ALIAS = "prty";
-
-    private static final String START_SEL = "<b>";
-
-    private static final String STOP_SEL = "</b>";
 
 //    private static final String TS_HEADLINE_OPTIONS = "HighlightAll=TRUE, StartSel=" + START_SEL
 //            +", StopSel=" + STOP_SEL;

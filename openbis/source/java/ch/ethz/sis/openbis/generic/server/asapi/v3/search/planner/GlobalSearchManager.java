@@ -107,7 +107,7 @@ public class GlobalSearchManager implements IGlobalSearchManager
     @Override
     public Collection<MatchingEntity> map(final Collection<Map<String, Object>> records)
     {
-        final List<MatchingEntity> result = records.stream().map((fieldsMap) ->
+        return records.stream().map((fieldsMap) ->
         {
             final MatchingEntity matchingEntity = new MatchingEntity();
             matchingEntity.setCode((String) fieldsMap.get(CODE_COLUMN));
@@ -131,23 +131,7 @@ public class GlobalSearchManager implements IGlobalSearchManager
 
             final List<PropertyMatch> matches = new ArrayList<>();
 
-            final String codeMatchString = (String) fieldsMap.get(PROPERTY_VALUE_ALIAS);
-            if (codeMatchString != null)
-            {
-                final PropertyMatch propertyMatch = new PropertyMatch();
-                propertyMatch.setCode(PROPERTY_NAME + " '" + fieldsMap.get(PROPERTY_TYPE_LABEL_ALIAS) + "'");
-                propertyMatch.setValue(codeMatchString);
-
-//                final String valueHeadline = (String) fieldsMap.get(VALUE_HEADLINE_ALIAS);
-                final String headline = coalesceMap(fieldsMap, VALUE_HEADLINE_ALIAS, LABEL_HEADLINE_ALIAS,
-                        CODE_HEADLINE_ALIAS, DESCRIPTION_HEADLINE_ALIAS);
-
-                final Span span = new Span();
-                span.setStart(0);
-                span.setEnd(codeMatchString.length());
-                propertyMatch.setSpans(Collections.singletonList(span));
-                matches.add(propertyMatch);
-            }
+            mapPropertyMatches(fieldsMap, matches);
 
             switch (entityKind)
             {
@@ -156,7 +140,7 @@ public class GlobalSearchManager implements IGlobalSearchManager
                     mapMatch(fieldsMap, matches, IDENTIFIER_ALIAS, IDENTIFIER_FIELD_NAME);
                     break;
                 }
-                
+
                 case EXPERIMENT:
                     // Falls through.
                 case SAMPLE:
@@ -184,7 +168,39 @@ public class GlobalSearchManager implements IGlobalSearchManager
                 return -item.getScore();
             }
         }).collect(Collectors.toList());
-        return result;
+    }
+
+    private void mapPropertyMatches(final Map<String, Object> fieldsMap, final List<PropertyMatch> matches)
+    {
+        final String codeMatchString = (String) fieldsMap.get(PROPERTY_VALUE_ALIAS);
+        if (codeMatchString != null)
+        {
+            final PropertyMatch propertyMatch = new PropertyMatch();
+            propertyMatch.setCode(PROPERTY_NAME + " '" + fieldsMap.get(PROPERTY_TYPE_LABEL_ALIAS) + "'");
+            propertyMatch.setValue(codeMatchString);
+
+            final String headline = coalesceMap(fieldsMap, VALUE_HEADLINE_ALIAS, LABEL_HEADLINE_ALIAS,
+                    CODE_HEADLINE_ALIAS, DESCRIPTION_HEADLINE_ALIAS);
+
+            final List<Span> spans = new ArrayList<>();
+            final int startSelLength = START_SEL.length();
+            final int stopSelLength = STOP_SEL.length();
+            int cursorIndex = headline.indexOf(START_SEL);
+            while (cursorIndex >= 0)
+            {
+                final int matchStartIndex = cursorIndex + startSelLength;
+                final int matchEndIndex = headline.indexOf(STOP_SEL, matchStartIndex);
+                final Span span = new Span();
+                span.setStart(matchStartIndex);
+                span.setEnd(matchEndIndex);
+                spans.add(span);
+
+                cursorIndex = headline.indexOf(START_SEL, matchEndIndex + stopSelLength);
+            }
+
+            propertyMatch.setSpans(spans);
+            matches.add(propertyMatch);
+        }
     }
 
     /**

@@ -773,11 +773,19 @@ public class GlobalSearchTest extends AbstractTest
     {
         List<GlobalSearchObject> objects = result.getObjects();
         assertEquals(objects.size(), 3);
-        Iterator<GlobalSearchObject> iter = objects.iterator();
+        final GlobalSearchObject obj1 = objects.stream().filter(
+                (obj) -> obj.getObjectPermId().toString().equals("200902091219327-1025"))
+                .limit(1).findFirst().orElse(null);
+        final GlobalSearchObject obj2 = objects.stream().filter(
+                (obj) -> obj.getObjectPermId().toString().equals("200902091250077-1026"))
+                .limit(1).findFirst().orElse(null);
+        final GlobalSearchObject obj3 = objects.stream().filter(
+                (obj) -> obj.getObjectPermId().toString().equals("200902091225616-1027"))
+                .limit(1).findFirst().orElse(null);
 
-        assertSample(iter.next(), "200902091219327-1025", "/CISD/CP-TEST-1", "Property 'Comment': very advanced stuff");
-        assertSample(iter.next(), "200902091250077-1026", "/CISD/CP-TEST-2", "Property 'Comment': extremely simple stuff");
-        assertSample(iter.next(), "200902091225616-1027", "/CISD/CP-TEST-3", "Property 'Comment': stuff like others");
+        assertSample(obj1, "200902091219327-1025", "/CISD/CP-TEST-1", "Property 'Comment': very advanced stuff");
+        assertSample(obj2, "200902091250077-1026", "/CISD/CP-TEST-2", "Property 'Comment': extremely simple stuff");
+        assertSample(obj3, "200902091225616-1027", "/CISD/CP-TEST-3", "Property 'Comment': stuff like others");
     }
 
     private void assertSimpleStuff(SearchResult<GlobalSearchObject> result)
