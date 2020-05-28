@@ -269,7 +269,6 @@ CREATE INDEX atta_expe_fk_i ON attachments USING btree (expe_id);
 CREATE INDEX atta_pers_fk_i ON attachments USING btree (pers_id_registerer);
 CREATE INDEX atta_proj_fk_i ON attachments USING btree (proj_id);
 CREATE INDEX atta_samp_fk_i ON attachments USING btree (samp_id);
-CREATE INDEX controlled_vocabulary_terms_search_index ON controlled_vocabulary_terms USING gin (tsvector_document);
 CREATE INDEX covo_pers_fk_i ON controlled_vocabularies USING btree (pers_id_registerer);
 CREATE INDEX cvte_covo_fk_i ON controlled_vocabulary_terms USING btree (covo_id);
 CREATE INDEX cvte_pers_fk_i ON controlled_vocabulary_terms USING btree (pers_id_registerer);
@@ -951,7 +950,6 @@ CREATE CONSTRAINT TRIGGER check_deletion_consistency_on_sample_deletion AFTER UP
 CREATE TRIGGER content_copies_location_type_check BEFORE INSERT OR UPDATE ON content_copies FOR EACH ROW EXECUTE PROCEDURE content_copies_location_type_check();
 CREATE TRIGGER content_copies_uniqueness_check BEFORE INSERT OR UPDATE ON content_copies FOR EACH ROW EXECUTE PROCEDURE content_copies_uniqueness_check();
 CREATE TRIGGER controlled_vocabulary_check BEFORE INSERT OR UPDATE ON property_types FOR EACH ROW EXECUTE PROCEDURE controlled_vocabulary_check();
-CREATE TRIGGER controlled_vocabulary_terms_tsvector_document BEFORE INSERT OR UPDATE ON controlled_vocabulary_terms FOR EACH ROW EXECUTE PROCEDURE tsvector_update_trigger('tsvector_document', 'pg_catalog.simple', 'code', 'label', 'description');
 CREATE TRIGGER data_exp_or_sample_link_check BEFORE INSERT OR UPDATE ON data_all FOR EACH ROW EXECUTE PROCEDURE data_exp_or_sample_link_check();
 CREATE TRIGGER data_set_experiment_relationship_frozen_check_on_update BEFORE UPDATE ON data_all FOR EACH ROW WHEN (((((new.expe_id)::bigint <> (old.expe_id)::bigint) OR ((new.expe_id IS NOT NULL) AND (old.expe_id IS NULL)) OR ((new.expe_id IS NULL) AND (old.expe_id IS NOT NULL))) AND (new.expe_frozen OR old.expe_frozen))) EXECUTE PROCEDURE raise_exception_frozen_experiment_relationship('data set');
 CREATE TRIGGER data_set_frozen_check_on_change_property BEFORE UPDATE ON data_set_properties FOR EACH ROW WHEN ((old.dase_frozen AND new.dase_frozen)) EXECUTE PROCEDURE raise_exception_frozen_data_set('PROPERTY');
@@ -959,7 +957,7 @@ CREATE TRIGGER data_set_frozen_check_on_delete BEFORE DELETE ON data_all FOR EAC
 CREATE TRIGGER data_set_frozen_check_on_delete_property BEFORE DELETE ON data_set_properties FOR EACH ROW WHEN (old.dase_frozen) EXECUTE PROCEDURE raise_exception_frozen_data_set('PROPERTY');
 CREATE TRIGGER data_set_frozen_check_on_insert_property BEFORE INSERT ON data_set_properties FOR EACH ROW WHEN (new.dase_frozen) EXECUTE PROCEDURE raise_exception_frozen_data_set('PROPERTY');
 CREATE TRIGGER data_set_frozen_check_on_trash BEFORE UPDATE ON data_all FOR EACH ROW WHEN (((new.del_id IS NOT NULL) AND (old.del_id IS NULL) AND old.frozen)) EXECUTE PROCEDURE raise_exception_frozen_entity_by_code('TRASH', 'data set');
-CREATE TRIGGER data_set_properties_tsvector_document BEFORE INSERT OR UPDATE ON data_set_properties FOR EACH ROW EXECUTE PROCEDURE tsvector_update_trigger('tsvector_document', 'pg_catalog.simple', 'value');
+CREATE TRIGGER data_set_properties_tsvector_document BEFORE INSERT OR UPDATE ON data_set_properties FOR EACH ROW EXECUTE PROCEDURE properties_tsvector_document_trigger();
 CREATE TRIGGER data_set_property_with_material_data_type_check BEFORE INSERT OR UPDATE ON data_set_properties FOR EACH ROW EXECUTE PROCEDURE data_set_property_with_material_data_type_check();
 CREATE TRIGGER data_set_relationship_frozen_check_on_delete BEFORE DELETE ON data_set_relationships_all FOR EACH ROW WHEN ((old.parent_frozen OR old.child_frozen OR old.cont_frozen OR old.comp_frozen)) EXECUTE PROCEDURE raise_exception_frozen_data_set_relationship();
 CREATE TRIGGER data_set_relationship_frozen_check_on_insert BEFORE INSERT ON data_set_relationships_all FOR EACH ROW WHEN ((new.parent_frozen OR new.child_frozen OR new.cont_frozen OR new.comp_frozen)) EXECUTE PROCEDURE raise_exception_frozen_data_set_relationship();
@@ -982,10 +980,10 @@ CREATE TRIGGER experiment_frozen_check_on_insert_property BEFORE INSERT ON exper
 CREATE TRIGGER experiment_frozen_check_on_trash BEFORE UPDATE ON experiments_all FOR EACH ROW WHEN (((new.del_id IS NOT NULL) AND (old.del_id IS NULL) AND old.frozen)) EXECUTE PROCEDURE raise_exception_frozen_entity_by_code('TRASH', 'experiment');
 CREATE TRIGGER experiment_frozen_check_on_update_attachment BEFORE UPDATE ON attachments FOR EACH ROW WHEN ((old.expe_frozen AND new.expe_frozen)) EXECUTE PROCEDURE raise_exception_frozen_experiment('ATTACHMENT');
 CREATE TRIGGER experiment_project_relationship_frozen_check BEFORE UPDATE ON experiments_all FOR EACH ROW WHEN ((((new.proj_id)::bigint <> (old.proj_id)::bigint) AND (new.proj_frozen OR old.proj_frozen))) EXECUTE PROCEDURE raise_exception_frozen_project_relationship('experiment');
-CREATE TRIGGER experiment_properties_tsvector_document BEFORE INSERT OR UPDATE ON experiment_properties FOR EACH ROW EXECUTE PROCEDURE tsvector_update_trigger('tsvector_document', 'pg_catalog.simple', 'value');
+CREATE TRIGGER experiment_properties_tsvector_document BEFORE INSERT OR UPDATE ON experiment_properties FOR EACH ROW EXECUTE PROCEDURE properties_tsvector_document_trigger();
 CREATE TRIGGER experiment_property_with_material_data_type_check BEFORE INSERT OR UPDATE ON experiment_properties FOR EACH ROW EXECUTE PROCEDURE experiment_property_with_material_data_type_check();
 CREATE TRIGGER external_data_storage_format_check BEFORE INSERT OR UPDATE ON external_data FOR EACH ROW EXECUTE PROCEDURE external_data_storage_format_check();
-CREATE TRIGGER material_properties_tsvector_document BEFORE INSERT OR UPDATE ON material_properties FOR EACH ROW EXECUTE PROCEDURE tsvector_update_trigger('tsvector_document', 'pg_catalog.simple', 'value');
+CREATE TRIGGER material_properties_tsvector_document BEFORE INSERT OR UPDATE ON material_properties FOR EACH ROW EXECUTE PROCEDURE properties_tsvector_document_trigger();
 CREATE TRIGGER material_property_with_material_data_type_check BEFORE INSERT OR UPDATE ON material_properties FOR EACH ROW EXECUTE PROCEDURE material_property_with_material_data_type_check();
 CREATE TRIGGER melt_data_set_for BEFORE UPDATE ON data_all FOR EACH ROW WHEN (((new.frozen_for_children OR new.frozen_for_parents OR new.frozen_for_comps OR new.frozen_for_conts) AND (NOT new.frozen))) EXECUTE PROCEDURE melt_data_set_for();
 CREATE TRIGGER melt_experiment_for BEFORE UPDATE ON experiments_all FOR EACH ROW WHEN (((new.frozen_for_samp OR new.frozen_for_data) AND (NOT new.frozen))) EXECUTE PROCEDURE melt_experiment_for();
@@ -1013,7 +1011,7 @@ CREATE TRIGGER sample_frozen_check_on_set_container BEFORE UPDATE ON samples_all
 CREATE TRIGGER sample_frozen_check_on_trash BEFORE UPDATE ON samples_all FOR EACH ROW WHEN (((new.del_id IS NOT NULL) AND (old.del_id IS NULL) AND old.frozen)) EXECUTE PROCEDURE raise_exception_frozen_entity_by_code('TRASH', 'sample');
 CREATE TRIGGER sample_frozen_check_on_update_attachment BEFORE UPDATE ON attachments FOR EACH ROW WHEN ((old.samp_frozen AND new.samp_frozen)) EXECUTE PROCEDURE raise_exception_frozen_sample('ATTACHMENT');
 CREATE TRIGGER sample_project_relationship_frozen_check BEFORE UPDATE ON samples_all FOR EACH ROW WHEN (((((new.proj_id)::bigint <> (old.proj_id)::bigint) OR ((new.proj_id IS NOT NULL) AND (old.proj_id IS NULL)) OR ((new.proj_id IS NULL) AND (old.proj_id IS NOT NULL))) AND (new.proj_frozen OR old.proj_frozen))) EXECUTE PROCEDURE raise_exception_frozen_project_relationship('sample');
-CREATE TRIGGER sample_properties_tsvector_document BEFORE INSERT OR UPDATE ON sample_properties FOR EACH ROW EXECUTE PROCEDURE tsvector_update_trigger('tsvector_document', 'pg_catalog.simple', 'value');
+CREATE TRIGGER sample_properties_tsvector_document BEFORE INSERT OR UPDATE ON sample_properties FOR EACH ROW EXECUTE PROCEDURE properties_tsvector_document_trigger();
 CREATE TRIGGER sample_property_with_material_data_type_check BEFORE INSERT OR UPDATE ON sample_properties FOR EACH ROW EXECUTE PROCEDURE sample_property_with_material_data_type_check();
 CREATE TRIGGER sample_relationship_frozen_check_on_delete BEFORE DELETE ON sample_relationships_all FOR EACH ROW WHEN ((old.parent_frozen OR old.child_frozen)) EXECUTE PROCEDURE raise_exception_frozen_sample_relationship();
 CREATE TRIGGER sample_relationship_frozen_check_on_insert BEFORE INSERT ON sample_relationships_all FOR EACH ROW WHEN ((new.parent_frozen OR new.child_frozen)) EXECUTE PROCEDURE raise_exception_frozen_sample_relationship();

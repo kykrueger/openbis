@@ -471,6 +471,22 @@ BEGIN
 	RETURN NEW;
 END;
 $$;
+CREATE FUNCTION properties_tsvector_document_trigger() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+DECLARE cvt RECORD;
+BEGIN
+    IF NEW.cvte_id IS NOT NULL THEN
+        SELECT code, label INTO STRICT cvt FROM controlled_vocabulary_terms WHERE id = NEW.cvte_id;
+        NEW.tsvector_document := to_tsvector('pg_catalog.simple', cvt.code) ||
+                to_tsvector('pg_catalog.simple', coalesce(cvt.label, ''));
+    ELSE
+        NEW.tsvector_document := to_tsvector('pg_catalog.simple', coalesce(NEW.value, ''));
+        RETURN NEW;
+    END IF;
+    RETURN NEW;
+END
+$$;
 CREATE FUNCTION raise_delete_from_data_set_exception() RETURNS trigger
     LANGUAGE plpgsql
     AS $$

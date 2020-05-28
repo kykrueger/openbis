@@ -1,17 +1,17 @@
-1	96_WELLS_8X12	2008-11-05 09:18:00.622+01	1	1	\N	\N	1	t	'8x12':3 '96':1 'wells':2
-2	384_WELLS_16X24	2008-11-05 09:18:00.622+01	1	1	\N	\N	2	t	'16x24':3 '384':1 'wells':2
-3	1536_WELLS_32X48	2008-11-05 09:18:00.622+01	1	1	\N	\N	3	t	'1536':1 '32x48':3 'wells':2
-4	PROPRIETARY	2008-11-05 09:18:00.622+01	2	1	proprietary label	proprietary description	1	t	'description':5 'label':3 'proprietary':1,2,4
-5	BDS_DIRECTORY	2008-11-05 09:18:00.622+01	2	1	\N	\N	2	t	'bds':1 'directory':2
-6	RAT	2008-11-05 09:18:30.327+01	3	2	\N	the rat	1	t	'rat':1,3 'the':2
-7	DOG	2008-11-05 09:18:30.327+01	3	2	\N	doggy	2	t	'dog':1 'doggy':2
-8	HUMAN	2008-11-05 09:18:30.327+01	3	2	\N	a human	3	t	'a':2 'human':1,3
-9	GORILLA	2008-11-05 09:18:30.327+01	3	2	\N	a gorilla is a gorilla	4	t	'a':2,5 'gorilla':1,3,6 'is':4
-10	FLY	2008-11-05 09:18:30.327+01	3	2	\N	a fly flies	5	t	'a':2 'flies':4 'fly':1,3
-11	MALE	2008-11-05 09:18:30.421+01	4	2	\N	\N	1	t	'male':1
-12	FEMALE	2008-11-05 09:18:30.421+01	4	2	\N	\N	2	t	'female':1
-13	MAN	2008-11-05 09:18:30.983+01	5	2	\N	\N	1	t	'man':1
-14	WOMAN	2008-11-05 09:18:30.983+01	5	2	\N	\N	2	t	'woman':1
-15	CHILD	2008-11-05 09:18:31.061+01	5	2	\N	\N	3	t	'child':1
-16	TEST_TERM_A	2008-11-05 09:18:31.061+01	6	2	\N	\N	1	t	'a':3 'term':2 'test':1
-17	TEST_TERM_B	2008-11-05 09:18:31.061+01	6	2	\N	\N	2	t	'b':3 'term':2 'test':1
+1	96_WELLS_8X12	2008-11-05 09:18:00.622+01	1	1	\N	\N	1	t	\N
+2	384_WELLS_16X24	2008-11-05 09:18:00.622+01	1	1	\N	\N	2	t	\N
+3	1536_WELLS_32X48	2008-11-05 09:18:00.622+01	1	1	\N	\N	3	t	\N
+4	PROPRIETARY	2008-11-05 09:18:00.622+01	2	1	proprietary label	proprietary description	1	t	\N
+5	BDS_DIRECTORY	2008-11-05 09:18:00.622+01	2	1	\N	\N	2	t	\N
+6	RAT	2008-11-05 09:18:30.327+01	3	2	\N	the rat	1	t	\N
+7	DOG	2008-11-05 09:18:30.327+01	3	2	\N	doggy	2	t	\N
+8	HUMAN	2008-11-05 09:18:30.327+01	3	2	\N	a human	3	t	\N
+9	GORILLA	2008-11-05 09:18:30.327+01	3	2	\N	a gorilla is a gorilla	4	t	\N
+10	FLY	2008-11-05 09:18:30.327+01	3	2	\N	a fly flies	5	t	\N
+11	MALE	2008-11-05 09:18:30.421+01	4	2	\N	\N	1	t	\N
+12	FEMALE	2008-11-05 09:18:30.421+01	4	2	\N	\N	2	t	\N
+13	MAN	2008-11-05 09:18:30.983+01	5	2	\N	\N	1	t	\N
+14	WOMAN	2008-11-05 09:18:30.983+01	5	2	\N	\N	2	t	\N
+15	CHILD	2008-11-05 09:18:31.061+01	5	2	\N	\N	3	t	\N
+16	TEST_TERM_A	2008-11-05 09:18:31.061+01	6	2	\N	\N	1	t	\N
+17	TEST_TERM_B	2008-11-05 09:18:31.061+01	6	2	\N	\N	2	t	\N

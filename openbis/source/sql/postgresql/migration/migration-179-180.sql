@@ -5,13 +5,20 @@
 ALTER TABLE controlled_vocabulary_terms
     ADD COLUMN tsvector_document TSVECTOR;
 
-CREATE TRIGGER controlled_vocabulary_terms_tsvector_document BEFORE INSERT OR UPDATE
-    ON controlled_vocabulary_terms FOR EACH ROW EXECUTE PROCEDURE
-    tsvector_update_trigger(tsvector_document, 'pg_catalog.simple', code, label, description);
-
-UPDATE controlled_vocabulary_terms SET code = code;
-
-CREATE INDEX controlled_vocabulary_terms_search_index ON controlled_vocabulary_terms USING gin(tsvector_document);
+CREATE FUNCTION properties_tsvector_document_trigger() RETURNS trigger AS $$
+DECLARE cvt RECORD;
+BEGIN
+    IF NEW.cvte_id IS NOT NULL THEN
+        SELECT code, label INTO STRICT cvt FROM controlled_vocabulary_terms WHERE id = NEW.cvte_id;
+        NEW.tsvector_document := to_tsvector('pg_catalog.simple', cvt.code) ||
+                to_tsvector('pg_catalog.simple', coalesce(cvt.label, ''));
+    ELSE
+        NEW.tsvector_document := to_tsvector('pg_catalog.simple', coalesce(NEW.value, ''));
+        RETURN NEW;
+    END IF;
+    RETURN NEW;
+END
+$$ LANGUAGE plpgsql;
 
 -- Samples
 
@@ -20,7 +27,7 @@ ALTER TABLE sample_properties
 
 CREATE TRIGGER sample_properties_tsvector_document BEFORE INSERT OR UPDATE
     ON sample_properties FOR EACH ROW EXECUTE FUNCTION
-    tsvector_update_trigger(tsvector_document, 'pg_catalog.simple', value);
+    properties_tsvector_document_trigger();
 
 UPDATE sample_properties SET value = value;
 
@@ -36,7 +43,7 @@ ALTER TABLE experiment_properties
 
 CREATE TRIGGER experiment_properties_tsvector_document BEFORE INSERT OR UPDATE
     ON experiment_properties FOR EACH ROW EXECUTE FUNCTION
-    tsvector_update_trigger(tsvector_document, 'pg_catalog.simple', value);
+    properties_tsvector_document_trigger();
 
 UPDATE experiment_properties SET value = value;
 
@@ -52,7 +59,7 @@ ALTER TABLE data_set_properties
 
 CREATE TRIGGER data_set_properties_tsvector_document BEFORE INSERT OR UPDATE
     ON data_set_properties FOR EACH ROW EXECUTE FUNCTION
-    tsvector_update_trigger(tsvector_document, 'pg_catalog.simple', value);
+    properties_tsvector_document_trigger();
 
 UPDATE data_set_properties SET value = value;
 
@@ -67,7 +74,7 @@ ALTER TABLE material_properties ADD COLUMN tsvector_document TSVECTOR;
 
 CREATE TRIGGER material_properties_tsvector_document BEFORE INSERT OR UPDATE
     ON material_properties FOR EACH ROW EXECUTE FUNCTION
-    tsvector_update_trigger(tsvector_document, 'pg_catalog.simple', value);
+    properties_tsvector_document_trigger();
 
 UPDATE material_properties SET value = value;
 

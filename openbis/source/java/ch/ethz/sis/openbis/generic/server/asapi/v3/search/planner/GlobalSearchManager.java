@@ -131,8 +131,23 @@ public class GlobalSearchManager implements IGlobalSearchManager
 
             final List<PropertyMatch> matches = new ArrayList<>();
 
-            mapMatch(fieldsMap, matches, PROPERTY_VALUE_ALIAS,
-                    PROPERTY_NAME + " '" + fieldsMap.get(PROPERTY_TYPE_LABEL_ALIAS) + "'");
+            final String codeMatchString = (String) fieldsMap.get(PROPERTY_VALUE_ALIAS);
+            if (codeMatchString != null)
+            {
+                final PropertyMatch propertyMatch = new PropertyMatch();
+                propertyMatch.setCode(PROPERTY_NAME + " '" + fieldsMap.get(PROPERTY_TYPE_LABEL_ALIAS) + "'");
+                propertyMatch.setValue(codeMatchString);
+
+//                final String valueHeadline = (String) fieldsMap.get(VALUE_HEADLINE_ALIAS);
+                final String headline = coalesceMap(fieldsMap, VALUE_HEADLINE_ALIAS, LABEL_HEADLINE_ALIAS,
+                        CODE_HEADLINE_ALIAS, DESCRIPTION_HEADLINE_ALIAS);
+
+                final Span span = new Span();
+                span.setStart(0);
+                span.setEnd(codeMatchString.length());
+                propertyMatch.setSpans(Collections.singletonList(span));
+                matches.add(propertyMatch);
+            }
 
             switch (entityKind)
             {
@@ -170,6 +185,17 @@ public class GlobalSearchManager implements IGlobalSearchManager
             }
         }).collect(Collectors.toList());
         return result;
+    }
+
+    /**
+     * Returns first not null value.
+     * @param keys keys in the order how the values should be checked.
+     * @return the first not null value from map casted to string.
+     */
+    private String coalesceMap(final Map<?, ?> map, final String... keys)
+    {
+        return (String) Arrays.stream(keys).map(map::get)
+                .filter(Objects::nonNull).findFirst().orElse(null);
     }
 
     private void mapMatch(final Map<String, Object> fieldsMap, final List<PropertyMatch> matches,
