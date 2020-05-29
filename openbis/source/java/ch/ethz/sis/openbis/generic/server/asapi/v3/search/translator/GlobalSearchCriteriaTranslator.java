@@ -66,7 +66,7 @@ public class GlobalSearchCriteriaTranslator
     
     public static final String DESCRIPTION_MATCH_RANK_ALIAS = "description_match_rank";
 
-    private static final String REG_CONFIG = "simple";
+    private static final String REG_CONFIG = "english";
 
     private static final String SEARCH_STRING_ALIAS = "search_string";
 
@@ -503,7 +503,7 @@ public class GlobalSearchCriteriaTranslator
     private static void buildTsVectorMatch(final StringBuilder sqlBuilder, final Object value, final List<Object> args)
     {
         sqlBuilder.append(GlobalSearchCriteriaTranslator.PROPERTIES_TABLE_ALIAS)
-                .append(PERIOD).append(TS_VECTOR_COLUMN)
+                .append(PERIOD).append(TS_VECTOR_COLUMN).append(SP)
                 .append(DOUBLE_AT).append(SP);
         buildTsQueryPart(sqlBuilder, value, args);
     }
