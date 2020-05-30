@@ -109,6 +109,7 @@ class TypeFormParametersProperty extends React.PureComponent {
         <TypeFormHeader className={classes.header}>Property</TypeFormHeader>
         {this.renderMessageGlobal(property)}
         {this.renderMessageUsage(property)}
+        {this.renderMessageAssignments(property)}
         {this.renderScope(property)}
         {this.renderCode(property)}
         {this.renderDataType(property)}
@@ -152,22 +153,49 @@ class TypeFormParametersProperty extends React.PureComponent {
     }
 
     function message(property) {
-      if (property.usagesLocal === 0 && property.usagesGlobal === 0) {
-        return `This property is not yet used by any entities.`
-      } else {
-        return `This property is already used by ${entities(
-          property.usagesGlobal
-        )} (${entities(property.usagesLocal)} of this type and ${entities(
-          property.usagesGlobal - property.usagesLocal
-        )} of other types).`
-      }
+      return `This property is already used by ${entities(
+        property.usagesGlobal
+      )} (${entities(property.usagesLocal)} of this type and ${entities(
+        property.usagesGlobal - property.usagesLocal
+      )} of other types).`
     }
 
-    return (
-      <div className={classes.field}>
-        <TypeFormMessage type='info'>{message(property)}</TypeFormMessage>
-      </div>
-    )
+    if (property.usagesLocal !== 0 || property.usagesGlobal !== 0) {
+      return (
+        <div className={classes.field}>
+          <TypeFormMessage type='info'>{message(property)}</TypeFormMessage>
+        </div>
+      )
+    } else {
+      return null
+    }
+  }
+
+  renderMessageAssignments(property) {
+    const { classes } = this.props
+
+    function types(number) {
+      return number === 0 || number > 1 ? `${number} types` : `${number} type`
+    }
+
+    function message(property) {
+      return `This property is already assigned to ${types(
+        property.assignments
+      )}.`
+    }
+
+    if (
+      (property.original && property.assignments > 1) ||
+      (!property.original && property.assignments > 0)
+    ) {
+      return (
+        <div className={classes.field}>
+          <TypeFormMessage type='info'>{message(property)}</TypeFormMessage>
+        </div>
+      )
+    } else {
+      return null
+    }
   }
 
   renderScope(property) {

@@ -128,18 +128,18 @@ class TypeFormParametersType extends React.PureComponent {
     }
 
     function message(type) {
-      if (type.usages === 0) {
-        return `This type is not yet used by any entities.`
-      } else {
-        return `This type is already used by ${entities(type.usages)}.`
-      }
+      return `This type is already used by ${entities(type.usages)}.`
     }
 
-    return (
-      <div className={classes.field}>
-        <TypeFormMessage type='info'>{message(type)}</TypeFormMessage>
-      </div>
-    )
+    if (type.usages !== 0) {
+      return (
+        <div className={classes.field}>
+          <TypeFormMessage type='info'>{message(type)}</TypeFormMessage>
+        </div>
+      )
+    } else {
+      return null
+    }
   }
 
   renderCode(type) {

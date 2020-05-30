@@ -180,6 +180,10 @@ export default class TypeFormControllerChange {
           usages.propertyGlobal[propertyCode]) ||
         0
 
+      const enabled = newProperty.original
+        ? propertyUsagesGlobal === 0 && propertyAssignments === 1
+        : propertyUsagesGlobal === 0 && propertyAssignments === 0
+
       newProperty = {
         ...newProperty,
         scope: {
@@ -188,19 +192,19 @@ export default class TypeFormControllerChange {
         },
         dataType: {
           ...newProperty.dataType,
-          enabled: propertyUsagesGlobal === 0
+          enabled
         },
         vocabulary: {
           ...newProperty.vocabulary,
-          enabled: propertyUsagesGlobal === 0
+          enabled
         },
         materialType: {
           ...newProperty.materialType,
-          enabled: propertyUsagesGlobal === 0
+          enabled
         },
         plugin: {
           ...newProperty.plugin,
-          enabled: propertyUsagesGlobal === 0
+          enabled
         },
         assignments: propertyAssignments,
         usagesLocal: propertyUsagesLocal,

@@ -79,6 +79,7 @@ export default class TypeFormControllerLoadType {
         sectionsCounter,
         selection: selection,
         usages: loadedUsages,
+        assignments: loadedAssignments,
         removeSectionDialogOpen: false,
         removePropertyDialogOpen: false
       }))
@@ -145,6 +146,8 @@ export default class TypeFormControllerLoadType {
         loadedUsages.propertyGlobal[propertyType.code]) ||
       0
 
+    const enabled = usagesGlobal === 0 && assignments === 1
+
     return {
       id: id,
       scope: this._createField({
@@ -163,21 +166,21 @@ export default class TypeFormControllerLoadType {
       }),
       dataType: this._createField({
         value: dataType,
-        enabled: usagesGlobal === 0
+        enabled
       }),
       plugin: this._createField({
         value: _.get(loadedAssignment, 'plugin.name', null),
-        enabled: usagesGlobal === 0
+        enabled
       }),
       vocabulary: this._createField({
         value: _.get(propertyType, 'vocabulary.code', null),
         visible: dataType === openbis.DataType.CONTROLLEDVOCABULARY,
-        enabled: usagesGlobal === 0
+        enabled
       }),
       materialType: this._createField({
         value: _.get(propertyType, 'materialType.code', null),
         visible: dataType === openbis.DataType.MATERIAL,
-        enabled: usagesGlobal === 0
+        enabled
       }),
       schema: this._createField({
         value: _.get(propertyType, 'schema', null),
