@@ -78,9 +78,9 @@ class TypeFormPreviewProperty extends React.PureComponent {
   componentDidMount() {
     const { dataType } = this.props.property
 
-    if (dataType === openbis.DataType.MATERIAL) {
+    if (dataType.value === openbis.DataType.MATERIAL) {
       this.loadMaterials()
-    } else if (dataType === openbis.DataType.CONTROLLEDVOCABULARY) {
+    } else if (dataType.value === openbis.DataType.CONTROLLEDVOCABULARY) {
       this.loadVocabularyTerms()
     }
   }
