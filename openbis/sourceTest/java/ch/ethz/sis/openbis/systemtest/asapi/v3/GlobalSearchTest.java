@@ -21,6 +21,7 @@ import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -773,15 +774,9 @@ public class GlobalSearchTest extends AbstractTest
     {
         List<GlobalSearchObject> objects = result.getObjects();
         assertEquals(objects.size(), 3);
-        final GlobalSearchObject obj1 = objects.stream().filter(
-                (obj) -> obj.getObjectPermId().toString().equals("200902091219327-1025"))
-                .limit(1).findFirst().orElse(null);
-        final GlobalSearchObject obj2 = objects.stream().filter(
-                (obj) -> obj.getObjectPermId().toString().equals("200902091250077-1026"))
-                .limit(1).findFirst().orElse(null);
-        final GlobalSearchObject obj3 = objects.stream().filter(
-                (obj) -> obj.getObjectPermId().toString().equals("200902091225616-1027"))
-                .limit(1).findFirst().orElse(null);
+        final GlobalSearchObject obj1 = findObjectByPermId(objects, "200902091219327-1025");
+        final GlobalSearchObject obj2 = findObjectByPermId(objects, "200902091250077-1026");
+        final GlobalSearchObject obj3 = findObjectByPermId(objects, "200902091225616-1027");
 
         assertSample(obj1, "200902091219327-1025", "/CISD/CP-TEST-1", "Property 'Comment': very advanced stuff");
         assertSample(obj2, "200902091250077-1026", "/CISD/CP-TEST-2", "Property 'Comment': extremely simple stuff");
@@ -801,16 +796,44 @@ public class GlobalSearchTest extends AbstractTest
     {
         List<GlobalSearchObject> objects = result.getObjects();
         assertEquals(objects.size(), 8);
-        Iterator<GlobalSearchObject> iter = objects.iterator();
 
-        assertSample(iter.next(), "200902091250077-1026", "/CISD/CP-TEST-2", "Property 'Comment': extremely simple stuff");
-        assertExperiment(iter.next(), "201108050937246-1031", "/CISD/DEFAULT/EXP-Y", "Property 'Description': A simple experiment");
-        assertExperiment(iter.next(), "200811050951882-1028", "/CISD/NEMO/EXP1", "Property 'Description': A simple experiment");
-        assertExperiment(iter.next(), "200811050952663-1029", "/CISD/NEMO/EXP10", "Property 'Description': A simple experiment");
-        assertExperiment(iter.next(), "200811050952663-1030", "/CISD/NEMO/EXP11", "Property 'Description': A simple experiment");
-        assertSample(iter.next(), "200902091219327-1025", "/CISD/CP-TEST-1", "Property 'Comment': very advanced stuff");
-        assertSample(iter.next(), "200902091225616-1027", "/CISD/CP-TEST-3", "Property 'Comment': stuff like others");
-        assertMaterial(iter.next(), "HSV1", "VIRUS", "Property 'Description': Herpes Simplex Virus 1");
+        // Even though we have 8 results, one of them has two matches. Therefore, we need just 7 search objects.
+        final GlobalSearchObject[] searchObjects = new GlobalSearchObject[] {
+                findObjectByPermId(objects, "200902091219327-1025"),
+                findObjectByPermId(objects, "200902091250077-1026"),
+                findObjectByPermId(objects, "200902091225616-1027"),
+                findObjectByPermId(objects, "201108050937246-1031"),
+                findObjectByPermId(objects, "200811050951882-1028"),
+                findObjectByPermId(objects, "200811050952663-1029"),
+                findObjectByPermId(objects, "200811050952663-1030"),
+        };
+
+        assertSample(searchObjects[0], "200902091219327-1025", "/CISD/CP-TEST-1",
+                "Property 'Comment': very advanced stuff");
+        assertSample(searchObjects[1], "200902091250077-1026", "/CISD/CP-TEST-2",
+                "Property 'Comment': extremely simple stuff");
+        assertSample(searchObjects[2], "200902091225616-1027", "/CISD/CP-TEST-3",
+                "Property 'Comment': stuff like others");
+        assertExperiment(searchObjects[3], "201108050937246-1031", "/CISD/DEFAULT/EXP-Y",
+                "Property 'Description': A simple experiment");
+        assertExperiment(searchObjects[4], "200811050951882-1028", "/CISD/NEMO/EXP1",
+                "Property 'Description': A simple experiment");
+        assertExperiment(searchObjects[5], "200811050952663-1029", "/CISD/NEMO/EXP10",
+                "Property 'Description': A simple experiment");
+        assertExperiment(searchObjects[6], "200811050952663-1030", "/CISD/NEMO/EXP11",
+                "Property 'Description': A simple experiment");
+    }
+
+    /**
+     * Searches for an object with specified perm ID.
+     * @param objects collection of objects to search in.
+     * @param permId perm ID to search by.
+     * @return the first found object with the perm ID or {@code null} if none is found.
+     */
+    private GlobalSearchObject findObjectByPermId(final Collection<GlobalSearchObject> objects, final String permId)
+    {
+        return objects.stream().filter((obj) -> obj.getObjectPermId().toString().equals(permId)).limit(1).findFirst()
+                .orElse(null);
     }
 
     private void assertExperiment(GlobalSearchObject object, String permId, String identifier, String match)

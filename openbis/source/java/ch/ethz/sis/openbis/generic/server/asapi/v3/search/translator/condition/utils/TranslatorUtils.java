@@ -597,7 +597,8 @@ public class TranslatorUtils
             appendCoalesce(sqlBuilder, samplesTableAlias, colon);
         }
 
-        sqlBuilder.append(SP).append(LOWER).append(LP).append(MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(RP).append(SP);
+        sqlBuilder.append(SP).append(LOWER).append(LP).append(MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN)
+                .append(RP);
     }
 
     /**

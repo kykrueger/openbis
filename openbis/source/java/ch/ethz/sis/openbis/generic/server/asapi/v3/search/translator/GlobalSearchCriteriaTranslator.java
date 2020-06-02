@@ -187,7 +187,7 @@ public class GlobalSearchCriteriaTranslator
                     hasProjects ? PROJECT_TABLE_ALIAS : null,
                     (tableMapper == TableMapper.SAMPLE) ? CONTAINER_TABLE_ALIAS : null);
         }
-        sqlBuilder.append(RP).append(IDENTIFIER_ALIAS).append(COMMA).append(NL);
+        sqlBuilder.append(RP).append(SP).append(IDENTIFIER_ALIAS).append(COMMA).append(NL);
 
         if (forProperties)
         {
