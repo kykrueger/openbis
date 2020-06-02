@@ -230,11 +230,22 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		// PREVIEW IMAGE
 		//
 		if(this._experimentFormModel.mode !== FormMode.CREATE) {
+
+            var maxWidth = Math.floor(LayoutManager.getExpectedContentWidth() / 3);
+            var maxHeight = Math.floor(LayoutManager.getExpectedContentHeight() / 3);
+
+            var previewStyle = null;
+            if (maxHeight < maxWidth) {
+                previewStyle = "max-height:" + maxHeight + "px; display:none;";
+            } else {
+                previewStyle = "max-width:" + maxWidth + "px; display:none;";
+            }
+
 			var $previewImage = $("<img>", { 'data-preview-loaded' : 'false',
 											 'class' : 'zoomableImage',
 											 'id' : 'preview-image',
 											 'src' : './img/image_loading.gif',
-											 'style' : 'max-height:300px; display:none;'
+											 'style' : previewStyle
 											});
 			$previewImage.click(function() {
 				Util.showImage($("#preview-image").attr("src"));
