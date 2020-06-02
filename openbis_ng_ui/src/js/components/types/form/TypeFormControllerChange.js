@@ -181,7 +181,7 @@ export default class TypeFormControllerChange {
         0
 
       const enabled = newProperty.original
-        ? propertyUsagesGlobal === 0 && propertyAssignments === 1
+        ? propertyUsagesGlobal === 0 && propertyAssignments <= 1
         : propertyUsagesGlobal === 0 && propertyAssignments === 0
 
       newProperty = {

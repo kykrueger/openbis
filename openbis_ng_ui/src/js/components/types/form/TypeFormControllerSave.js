@@ -25,7 +25,8 @@ export default class TypeFormControllerSave {
       validate: true
     })
 
-    if (!this.controller.validate(true)) {
+    const valid = await this.controller.validate(true)
+    if (!valid) {
       return
     }
 

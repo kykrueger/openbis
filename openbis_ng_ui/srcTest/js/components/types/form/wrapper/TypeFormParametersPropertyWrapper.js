@@ -2,10 +2,19 @@ import TextFieldWrapper from '@srcTest/js/common/wrapper/TextFieldWrapper.js'
 import SelectFieldWrapper from '@srcTest/js/common/wrapper/SelectFieldWrapper.js'
 import AutocompleterFieldWrapper from '@srcTest/js/common/wrapper/AutocompleterFieldWrapper.js'
 import TypeFormParametersCommonWrapper from './TypeFormParametersCommonWrapper.js'
+import TypeFormMessageWrapper from './TypeFormMessageWrapper.js'
 
 export default class TypeFormParametersFormWrapper extends TypeFormParametersCommonWrapper {
   constructor(wrapper) {
     super(wrapper)
+  }
+
+  getMessages() {
+    const messages = []
+    this.wrapper.find('TypeFormMessage').forEach(message => {
+      messages.push(new TypeFormMessageWrapper(message))
+    })
+    return messages
   }
 
   getScope() {
@@ -89,6 +98,7 @@ export default class TypeFormParametersFormWrapper extends TypeFormParametersCom
   toJSON() {
     return {
       ...super.toJSON(),
+      messages: this.getMessages().map(message => message.toJSON()),
       scope: this.getScope().toJSON(),
       code: this.getCode() ? this.getCode().toJSON() : null,
       dataType: this.getDataType().toJSON(),

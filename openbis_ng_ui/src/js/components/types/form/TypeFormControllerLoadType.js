@@ -146,7 +146,7 @@ export default class TypeFormControllerLoadType {
         loadedUsages.propertyGlobal[propertyType.code]) ||
       0
 
-    const enabled = usagesGlobal === 0 && assignments === 1
+    const enabled = usagesGlobal === 0 && assignments <= 1
 
     return {
       id: id,
