@@ -10,12 +10,12 @@ var ExperimentDataGridUtil = new function() {
 
 		if($.inArray("$NAME", propertyCodes) !== -1) {
 			columns.push({
-				label : 'Name/Code',
+				label : 'Name',
 				property : '$NAME',
 				isExportable: true,
-				sortable : false,
+				sortable : true,
 				render : function(data) {
-					return FormUtil.getFormLink(Util.getNameOrCode(data), "Experiment", data.identifier);
+					return FormUtil.getFormLink(data[profile.propertyReplacingCode], "Experiment", data.identifier);
 				}
 			});
 		}
