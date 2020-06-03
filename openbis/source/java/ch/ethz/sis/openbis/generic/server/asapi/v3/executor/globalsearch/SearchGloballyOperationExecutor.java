@@ -23,9 +23,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchObjectsOpera
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.GlobalSearchObject;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearchObjectFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.SearchGloballyOperation;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.SearchGloballyOperationResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.*;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.ISearchObjectExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.SearchObjectsOperationExecutor;
@@ -44,6 +42,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author pkupczyk
@@ -85,27 +84,49 @@ public class SearchGloballyOperationExecutor
         }
 
         final PersonPE personPE = context.getSession().tryGetPerson();
-        final Set<Long> spaceIds = personPE.getAllPersonRoles().stream().filter((roleAssignmentPE) -> roleAssignmentPE.getSpace() != null)
+        final Set<Long> spaceIds = personPE.getAllPersonRoles().stream().filter(
+                (roleAssignmentPE) -> roleAssignmentPE.getSpace() != null)
                 .map((roleAssignmentPE) -> roleAssignmentPE.getSpace().getId()).collect(Collectors.toSet());
-        final Set<Long> projectIds = personPE.getAllPersonRoles().stream().filter((roleAssignmentPE) -> roleAssignmentPE.getProject() != null)
+        final Set<Long> projectIds = personPE.getAllPersonRoles().stream().filter(
+                (roleAssignmentPE) -> roleAssignmentPE.getProject() != null)
                 .map((roleAssignmentPE) -> roleAssignmentPE.getProject().getId()).collect(Collectors.toSet());
-        final AuthorisationInformation authorisationInformation = new AuthorisationInformation(!personPE.getRoleAssignments().isEmpty(),
-                spaceIds, projectIds);
+        final AuthorisationInformation authorisationInformation = new AuthorisationInformation(
+                !personPE.getRoleAssignments().isEmpty(), spaceIds, projectIds);
 
         final Long userId = context.getSession().tryGetPerson().getId();
         final TranslationContext translationContext = new TranslationContext(context.getSession());
 
-        // There results from the manager should already be filtered.
-        final Set<Map<String, Object>> sampleResultMaps = globalSearchManager.searchForIDs(userId, authorisationInformation, criteria, null, TableMapper.SAMPLE);
-        final Set<Map<String, Object>> experimentResultMaps = globalSearchManager.searchForIDs(userId, authorisationInformation, criteria, null,
-                TableMapper.EXPERIMENT);
-        final Set<Map<String, Object>> dataSetResultMaps = globalSearchManager.searchForIDs(userId, authorisationInformation, criteria, null, TableMapper.DATA_SET);
-        final Set<Map<String, Object>> materialResultMaps = globalSearchManager.searchForIDs(userId, authorisationInformation, criteria, null, TableMapper.MATERIAL);
+        final Set<GlobalSearchObjectKind> objectKinds = getObjectKinds(criteria);
+        final Set<Map<String, Object>> allResultMaps = new HashSet<>();
 
-        final Set<Map<String, Object>> allResultMaps = new HashSet<>(sampleResultMaps);
-        allResultMaps.addAll(experimentResultMaps);
-        allResultMaps.addAll(dataSetResultMaps);
-        allResultMaps.addAll(materialResultMaps);
+        // There results from the manager should already be filtered.
+        if (objectKinds.contains(GlobalSearchObjectKind.SAMPLE))
+        {
+            final Set<Map<String, Object>> sampleResultMaps = globalSearchManager.searchForIDs(userId,
+                    authorisationInformation, criteria, null, TableMapper.SAMPLE);
+            allResultMaps.addAll(sampleResultMaps);
+        }
+
+        if (objectKinds.contains(GlobalSearchObjectKind.EXPERIMENT))
+        {
+            final Set<Map<String, Object>> experimentResultMaps = globalSearchManager.searchForIDs(userId,
+                    authorisationInformation, criteria, null, TableMapper.EXPERIMENT);
+            allResultMaps.addAll(experimentResultMaps);
+        }
+
+        if (objectKinds.contains(GlobalSearchObjectKind.DATA_SET))
+        {
+            final Set<Map<String, Object>> dataSetResultMaps = globalSearchManager.searchForIDs(userId,
+                    authorisationInformation, criteria, null, TableMapper.DATA_SET);
+            allResultMaps.addAll(dataSetResultMaps);
+        }
+
+        if (objectKinds.contains(GlobalSearchObjectKind.MATERIAL))
+        {
+            final Set<Map<String, Object>> materialResultMaps = globalSearchManager.searchForIDs(userId,
+                    authorisationInformation, criteria, null, TableMapper.MATERIAL);
+            allResultMaps.addAll(materialResultMaps);
+        }
 
         final List<Map<String, Object>> sortedAndPagedResultMaps = sortAndPage(allResultMaps, fetchOptions);
         final Collection<MatchingEntity> pagedMatchingEntities = globalSearchManager.map(sortedAndPagedResultMaps);
@@ -122,6 +143,37 @@ public class SearchGloballyOperationExecutor
 
         final SearchResult<GlobalSearchObject> searchResult = new SearchResult<>(objectResults, allResultMaps.size());
         return getOperationResult(searchResult);
+    }
+
+    private static Set<GlobalSearchObjectKind> getObjectKinds(final GlobalSearchCriteria globalSearchCriteria)
+    {
+        final Stream<GlobalSearchObjectKindCriteria> objectKindCriteriaStream = globalSearchCriteria.getCriteria()
+                .stream().filter((criterion) -> criterion instanceof GlobalSearchObjectKindCriteria)
+                .map((criterion) -> (GlobalSearchObjectKindCriteria) criterion);
+        final Set<GlobalSearchObjectKind> objectKinds;
+        switch (globalSearchCriteria.getOperator())
+        {
+            case OR:
+            {
+                objectKinds = EnumSet.noneOf(GlobalSearchObjectKind.class);
+                objectKindCriteriaStream.forEach(
+                        (objectKindCriterion) -> objectKinds.addAll(objectKindCriterion.getObjectKinds()));
+                break;
+            }
+            case AND:
+            {
+                objectKinds = EnumSet.allOf(GlobalSearchObjectKind.class);
+                objectKindCriteriaStream.forEach(
+                        (objectKindCriterion) -> objectKinds.retainAll(objectKindCriterion.getObjectKinds()));
+                break;
+            }
+            default:
+            {
+                throw new RuntimeException();
+            }
+        }
+
+        return objectKinds.isEmpty() ? EnumSet.allOf(GlobalSearchObjectKind.class) : objectKinds;
     }
 
     protected List<Map<String, Object>> sortAndPage(final Set<Map<String, Object>> results, final FetchOptions<GlobalSearchObject> fo)

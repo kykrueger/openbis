@@ -1,6 +1,7 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchObjectKindCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchTextCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchWildCardsCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
@@ -14,8 +15,8 @@ import java.util.List;
 import java.util.Spliterator;
 import java.util.stream.StreamSupport;
 
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCriteriaTranslator.MAIN_TABLE_ALIAS;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.*;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCriteriaTranslator.MAIN_TABLE_ALIAS;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils.buildFullIdentifierConcatenationString;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils.buildTypeCodeIdentifierConcatenationString;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.*;
@@ -111,13 +112,15 @@ public class GlobalSearchCriteriaTranslator
 
         final StringBuilder sqlBuilder = new StringBuilder(LP);
         final Spliterator<ISearchCriteria> spliterator = vo.getCriteria().stream()
-                .filter((criterion) -> !(criterion instanceof GlobalSearchWildCardsCriteria)).spliterator();
-        if (spliterator.tryAdvance((criterion) -> translateCriterion(sqlBuilder, vo, (GlobalSearchTextCriteria) criterion)))
+                .filter((criterion) -> !(criterion instanceof GlobalSearchWildCardsCriteria)
+                        && !(criterion instanceof GlobalSearchObjectKindCriteria)).spliterator();
+
+        if (spliterator.tryAdvance((criterion) -> translateCriterion(sqlBuilder, vo, criterion)))
         {
             StreamSupport.stream(spliterator, false).forEach((criterion) ->
             {
                 sqlBuilder.append(RP).append(NL).append(UNION).append(NL).append(LP).append(NL);
-                translateCriterion(sqlBuilder, vo, (GlobalSearchTextCriteria) criterion);
+                translateCriterion(sqlBuilder, vo, criterion);
             });
         }
         sqlBuilder.append(RP);
@@ -125,19 +128,25 @@ public class GlobalSearchCriteriaTranslator
         return new SelectQuery(sqlBuilder.toString(), vo.getArgs());
     }
 
-    private static void translateCriterion(final StringBuilder sqlBuilder, final TranslationVo vo, final GlobalSearchTextCriteria criterion)
+    private static void translateCriterion(final StringBuilder sqlBuilder, final TranslationVo vo,
+            final ISearchCriteria criterion)
     {
-        // Fields
-        buildSelect(sqlBuilder, vo, criterion, true);
-        buildFrom(sqlBuilder, vo, criterion, true);
-        buildWhere(sqlBuilder, vo, criterion, true);
+        if (criterion instanceof GlobalSearchTextCriteria)
+        {
+            final GlobalSearchTextCriteria globalSearchTextCriterion = (GlobalSearchTextCriteria) criterion;
+            
+            // Fields
+            buildSelect(sqlBuilder, vo, globalSearchTextCriterion, true);
+            buildFrom(sqlBuilder, vo, globalSearchTextCriterion, true);
+            buildWhere(sqlBuilder, vo, globalSearchTextCriterion, true);
 
-        sqlBuilder.append(UNION).append(NL);
+            sqlBuilder.append(UNION).append(NL);
 
-        // Properties
-        buildSelect(sqlBuilder, vo, criterion, false);
-        buildFrom(sqlBuilder, vo, criterion, false);
-        buildWhere(sqlBuilder, vo, criterion, false);
+            // Properties
+            buildSelect(sqlBuilder, vo, globalSearchTextCriterion, false);
+            buildFrom(sqlBuilder, vo, globalSearchTextCriterion, false);
+            buildWhere(sqlBuilder, vo, globalSearchTextCriterion, false);
+        }
     }
 
     private static void buildSelect(final StringBuilder sqlBuilder, final TranslationVo vo, final GlobalSearchTextCriteria criterion,
@@ -215,7 +224,7 @@ public class GlobalSearchCriteriaTranslator
         } else
         {
             buildTsRank(sqlBuilder, value, args);
-            sqlBuilder.append(RANK_ALIAS).append(COMMA).append(NL);
+            sqlBuilder.append(SP).append(RANK_ALIAS).append(COMMA).append(NL);
 
             sqlBuilder.append(NULL).append(SP).append(CODE_MATCH_ALIAS).append(COMMA).append(NL);
             switch (tableMapper)
@@ -308,7 +317,6 @@ public class GlobalSearchCriteriaTranslator
         switch (tableMapper)
         {
             case SAMPLE:
-                // Falls through
             case EXPERIMENT:
             {
                 sqlBuilder.append(SP).append(OR).append(SP).append(MAIN_TABLE_ALIAS).append(PERIOD).append(PERM_ID_COLUMN);
@@ -352,7 +360,6 @@ public class GlobalSearchCriteriaTranslator
         switch (tableMapper)
         {
             case SAMPLE:
-                // Falls through
             case EXPERIMENT:
             {
                 sqlBuilder.append(COMMA).append(NL);
