@@ -14,7 +14,9 @@ const styles = theme => ({
     display: 'flex',
     padding: `${theme.spacing(2)}px ${theme.spacing(4)}px`
   },
-  form: {},
+  form: {
+    width: '100%'
+  },
   droppable: {
     display: 'flex',
     flexDirection: 'column',
