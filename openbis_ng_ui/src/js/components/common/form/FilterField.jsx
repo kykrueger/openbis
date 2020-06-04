@@ -12,7 +12,7 @@ const styles = () => ({
     width: '100%'
   },
   input: {
-    height: '35px'
+    height: '36px'
   },
   adornment: {
     margin: '8px'
