@@ -1,6 +1,7 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchObjectKindCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchTextCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchWildCardsCriteria;
@@ -115,11 +116,12 @@ public class GlobalSearchCriteriaTranslator
                 .filter((criterion) -> !(criterion instanceof GlobalSearchWildCardsCriteria)
                         && !(criterion instanceof GlobalSearchObjectKindCriteria)).spliterator();
 
+        final String queryCombinationOperator = (vo.getOperator() == SearchOperator.AND) ? UNION : INTERSECT;
         if (spliterator.tryAdvance((criterion) -> translateCriterion(sqlBuilder, vo, criterion)))
         {
             StreamSupport.stream(spliterator, false).forEach((criterion) ->
             {
-                sqlBuilder.append(RP).append(NL).append(UNION).append(NL).append(LP).append(NL);
+                sqlBuilder.append(RP).append(NL).append(queryCombinationOperator).append(NL).append(LP).append(NL);
                 translateCriterion(sqlBuilder, vo, criterion);
             });
         }

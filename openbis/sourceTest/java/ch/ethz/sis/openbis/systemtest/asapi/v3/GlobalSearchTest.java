@@ -221,17 +221,6 @@ public class GlobalSearchTest extends AbstractTest
     }
 
     @Test
-    public void testSearchWithContainsAndWildCardsEnabled()
-    {
-        GlobalSearchCriteria criteria = new GlobalSearchCriteria();
-        criteria.withText().thatContains("stuf*");
-        criteria.withWildCards();
-
-        SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, new GlobalSearchObjectFetchOptions());
-        assertStuff(result);
-    }
-
-    @Test
     public void testSearchWithContainsAndWildCardsDisabled()
     {
         GlobalSearchCriteria criteria = new GlobalSearchCriteria();
@@ -239,17 +228,6 @@ public class GlobalSearchTest extends AbstractTest
 
         SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, new GlobalSearchObjectFetchOptions());
         assertEquals(result.getObjects().size(), 0);
-    }
-
-    @Test
-    public void testSearchWithContainsExactlyAndWildCardsEnabled()
-    {
-        GlobalSearchCriteria criteria = new GlobalSearchCriteria();
-        criteria.withText().thatContainsExactly("simple stuf*");
-        criteria.withWildCards();
-
-        SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, new GlobalSearchObjectFetchOptions());
-        assertSimpleStuff(result);
     }
 
     @Test
