@@ -84,7 +84,7 @@ public class TranslatorUtils
             final List<Object> args)
     {
         sqlBuilder.append(SP);
-        if (valueClass == StringEqualToValue.class  || valueClass == StringContainsExactlyValue.class)
+        if (valueClass == StringEqualToValue.class)
         {
             if (!containsWildcards(finalValue))
             {
@@ -103,7 +103,7 @@ public class TranslatorUtils
         {
             sqlBuilder.append(ILIKE).append(SP).append(QU);
             args.add(PERCENT + toPSQLWildcards(finalValue));
-        } else if (valueClass == StringContainsValue.class)
+        } else if (valueClass == StringContainsValue.class || valueClass == StringContainsExactlyValue.class)
         {
             sqlBuilder.append(ILIKE).append(SP).append(QU);
             args.add(PERCENT + toPSQLWildcards(finalValue) + PERCENT);
