@@ -100,7 +100,7 @@ class Menu extends React.Component {
 
     return (
       <AppBar position='static' classes={{ root: classes.bar }}>
-        <Toolbar>
+        <Toolbar variant='dense'>
           <Tabs
             value={this.props.currentPage}
             onChange={this.props.currentPageChange}
