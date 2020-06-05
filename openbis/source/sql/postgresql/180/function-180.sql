@@ -3233,25 +3233,111 @@ BEGIN
 END
 $$ LANGUAGE plpgsql;
 
+CREATE FUNCTION samples_all_tsvector_document_trigger() RETURNS trigger AS $$
+DECLARE proj_code VARCHAR;
+        space_code VARCHAR;
+        container_code VARCHAR;
+        identifier VARCHAR := '/';
+BEGIN
+    IF NEW.space_id IS NOT NULL THEN
+        SELECT code INTO STRICT space_code FROM spaces WHERE id = NEW.space_id;
+        identifier := identifier || space_code || '/';
+    END IF;
+
+    IF NEW.proj_id IS NOT NULL THEN
+        IF NEW.space_id IS NOT NULL THEN
+            SELECT code INTO STRICT proj_code FROM projects WHERE id = NEW.proj_id;
+        ELSE
+            SELECT p.code, s.code INTO STRICT proj_code, space_code FROM projects p
+                                                                             INNER JOIN spaces s ON p.space_id = s.id WHERE id = NEW.proj_id;
+            identifier := identifier || space_code || '/';
+        END IF;
+
+        identifier := identifier || proj_code || '/';
+    END IF;
+
+    identifier := identifier || NEW.code;
+
+    IF NEW.samp_id_part_of IS NOT NULL THEN
+        SELECT code INTO STRICT container_code FROM samples_all WHERE id = NEW.samp_id_part_of;
+        identifier := identifier || '\:' || container_code;
+    END IF;
+
+    NEW.tsvector_document := (NEW.perm_id || ':1')::tsvector || (NEW.code || ':1')::tsvector
+        || (identifier || ':1')::tsvector;
+    RETURN NEW;
+END
+$$ LANGUAGE plpgsql;
+
+CREATE FUNCTION experiments_all_tsvector_document_trigger() RETURNS trigger AS $$
+DECLARE proj_code VARCHAR;
+        space_code VARCHAR;
+BEGIN
+    SELECT p.code, s.code INTO STRICT proj_code, space_code FROM projects p
+                                                                     INNER JOIN spaces s ON p.space_id = s.id WHERE p.id = NEW.proj_id;
+    NEW.tsvector_document := (NEW.perm_id || ':1')::tsvector || (NEW.code || ':1')::tsvector
+        || ('/' || space_code || '/' || proj_code || '/' || NEW.code || ':1')::tsvector;
+    RETURN NEW;
+END
+$$ LANGUAGE plpgsql;
+
+CREATE FUNCTION data_all_tsvector_document_trigger() RETURNS trigger AS $$
+BEGIN
+    NEW.tsvector_document := (NEW.data_set_kind || ':1')::tsvector || (NEW.code || ':1')::tsvector
+        || ('/' || NEW.code || ':1')::tsvector;
+    RETURN NEW;
+END
+$$ LANGUAGE plpgsql;
+
+CREATE FUNCTION materials_tsvector_document_trigger() RETURNS trigger AS $$
+DECLARE material_type_code VARCHAR;
+BEGIN
+    SELECT code INTO STRICT material_type_code FROM material_types WHERE id = NEW.maty_id;
+    NEW.tsvector_document := (NEW.code || ':1')::tsvector
+        || (NEW.code || ' (' || material_type_code || '):1')::tsvector;
+    RETURN NEW;
+END
+$$ LANGUAGE plpgsql;
+
 DROP TRIGGER IF EXISTS controlled_vocabulary_terms_tsvector_document ON controlled_vocabulary_terms;
 CREATE TRIGGER controlled_vocabulary_terms_tsvector_document BEFORE INSERT OR UPDATE
     ON controlled_vocabulary_terms FOR EACH ROW EXECUTE PROCEDURE
     properties_tsvector_document_trigger();
+
+DROP TRIGGER IF EXISTS samples_all_tsvector_document ON samples_all;
+CREATE TRIGGER samples_all_tsvector_document BEFORE INSERT OR UPDATE
+    ON samples_all FOR EACH ROW EXECUTE FUNCTION
+    samples_all_tsvector_document_trigger();
 
 DROP TRIGGER IF EXISTS sample_properties_tsvector_document ON sample_properties;
 CREATE TRIGGER sample_properties_tsvector_document BEFORE INSERT OR UPDATE
     ON sample_properties FOR EACH ROW EXECUTE FUNCTION
     properties_tsvector_document_trigger();
 
+DROP TRIGGER IF EXISTS experiments_all_tsvector_document ON experiments_all;
+CREATE TRIGGER experiments_all_tsvector_document BEFORE INSERT OR UPDATE
+    ON experiments_all FOR EACH ROW EXECUTE FUNCTION
+    experiments_all_tsvector_document_trigger();
+
 DROP TRIGGER IF EXISTS experiment_properties_tsvector_document ON experiment_properties;
 CREATE TRIGGER experiment_properties_tsvector_document BEFORE INSERT OR UPDATE
     ON experiment_properties FOR EACH ROW EXECUTE FUNCTION
     properties_tsvector_document_trigger();
 
+DROP TRIGGER IF EXISTS data_all_tsvector_document ON data_all;
+CREATE TRIGGER data_all_tsvector_document BEFORE INSERT OR UPDATE
+    ON data_all FOR EACH ROW EXECUTE FUNCTION
+    data_all_tsvector_document_trigger();
+
 DROP TRIGGER IF EXISTS data_set_properties_tsvector_document ON data_set_properties;
 CREATE TRIGGER data_set_properties_tsvector_document BEFORE INSERT OR UPDATE
     ON data_set_properties FOR EACH ROW EXECUTE FUNCTION
     properties_tsvector_document_trigger();
+
+DROP TRIGGER IF EXISTS materials_tsvector_document ON materials;
+CREATE TRIGGER materials_tsvector_document BEFORE INSERT OR UPDATE
+    ON materials FOR EACH ROW EXECUTE PROCEDURE
+    materials_tsvector_document_trigger();
 
 DROP TRIGGER IF EXISTS material_properties_tsvector_document ON material_properties;
 CREATE TRIGGER material_properties_tsvector_document BEFORE INSERT OR UPDATE

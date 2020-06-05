@@ -33,18 +33,6 @@ public class GlobalSearchManager implements IGlobalSearchManager
 
     private final ISQLSearchDAO searchDAO;
 
-//    @Autowired
-//    private SampleTypeSearchManager sampleTypeSearchManager;
-//
-//    @Autowired
-//    private ExperimentTypeSearchManager experimentTypeSearchManager;
-//
-//    @Autowired
-//    private DataSetTypeSearchManager dataSetTypeSearchManager;
-//
-//    @Autowired
-//    private MaterialTypeSearchManager materialTypeSearchManager;
-
     public GlobalSearchManager(final ISQLAuthorisationInformationProviderDAO authProvider, final ISQLSearchDAO searchDAO)
     {
         this.searchDAO = searchDAO;
@@ -92,9 +80,11 @@ public class GlobalSearchManager implements IGlobalSearchManager
             return result;
         } else
         {
-            final Set<Long> allIds = result.stream().map(fieldMap -> (Long) fieldMap.get(ID_COLUMN)).collect(Collectors.toSet());
+            final Set<Long> allIds = result.stream().map(fieldMap -> (Long) fieldMap.get(ID_COLUMN))
+                    .collect(Collectors.toSet());
             final Set<Long> filteredIds = doFilterIDsByUserRights(allIds, authorisationInformation);
-            return result.stream().filter(fieldMap -> filteredIds.contains((Long) fieldMap.get(ID_COLUMN))).collect(Collectors.toSet());
+            return result.stream().filter(fieldMap -> filteredIds.contains((Long) fieldMap.get(ID_COLUMN)))
+                    .collect(Collectors.toSet());
         }
     }
 

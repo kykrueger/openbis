@@ -233,6 +233,15 @@ BEGIN
    RETURN NEW;
 END;
 $$;
+CREATE FUNCTION data_all_tsvector_document_trigger() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    NEW.tsvector_document := (NEW.data_set_kind || ':1')::tsvector || (NEW.code || ':1')::tsvector
+        || ('/' || NEW.code || ':1')::tsvector;
+    RETURN NEW;
+END
+$$;
 CREATE FUNCTION data_exp_or_sample_link_check() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -333,6 +342,19 @@ BEGIN
    RETURN NEW;
 END;
 $$;
+CREATE FUNCTION experiments_all_tsvector_document_trigger() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+DECLARE proj_code VARCHAR;
+        space_code VARCHAR;
+BEGIN
+    SELECT p.code, s.code INTO STRICT proj_code, space_code FROM projects p
+        INNER JOIN spaces s ON p.space_id = s.id WHERE p.id = NEW.proj_id;
+    NEW.tsvector_document := (NEW.perm_id || ':1')::tsvector || (NEW.code || ':1')::tsvector
+                || ('/' || space_code || '/' || proj_code || '/' || NEW.code || ':1')::tsvector;
+    RETURN NEW;
+END
+$$;
 CREATE FUNCTION external_data_storage_format_check() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -377,6 +399,17 @@ BEGIN
    end if;
    RETURN NEW;
 END;
+$$;
+CREATE FUNCTION materials_tsvector_document_trigger() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+DECLARE material_type_code VARCHAR;
+BEGIN
+    SELECT code INTO STRICT material_type_code FROM material_types WHERE id = NEW.maty_id;
+    NEW.tsvector_document := (NEW.code || ':1')::tsvector
+        || (NEW.code || ' (' || material_type_code || '):1')::tsvector;
+    RETURN NEW;
+END
 $$;
 CREATE FUNCTION melt_data_set_for() RETURNS trigger
     LANGUAGE plpgsql
@@ -836,6 +869,38 @@ BEGIN
     RETURN NEW;
 END;
 $$;
+CREATE FUNCTION samples_all_tsvector_document_trigger() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+DECLARE proj_code VARCHAR;
+    space_code VARCHAR;
+    container_code VARCHAR;
+    identifier VARCHAR := '/';
+BEGIN
+    IF NEW.space_id IS NOT NULL THEN
+        SELECT code INTO STRICT space_code FROM spaces WHERE id = NEW.space_id;
+        identifier := identifier || space_code || '/';
+    END IF;
+    IF NEW.proj_id IS NOT NULL THEN
+        IF NEW.space_id IS NOT NULL THEN
+            SELECT code INTO STRICT proj_code FROM projects WHERE id = NEW.proj_id;
+        ELSE
+            SELECT p.code, s.code INTO STRICT proj_code, space_code FROM projects p
+                INNER JOIN spaces s ON p.space_id = s.id WHERE id = NEW.proj_id;
+            identifier := identifier || space_code || '/';
+        END IF;
+        identifier := identifier || proj_code || '/';
+    END IF;
+    identifier := identifier || NEW.code;
+    IF NEW.samp_id_part_of IS NOT NULL THEN
+        SELECT code INTO STRICT container_code FROM samples_all WHERE id = NEW.samp_id_part_of;
+        identifier := identifier || '\:' || container_code;
+    END IF;
+    NEW.tsvector_document := (NEW.perm_id || ':1')::tsvector || (NEW.code || ':1')::tsvector
+                || (identifier || ':1')::tsvector;
+    RETURN NEW;
+END
+$$;
 CREATE SEQUENCE attachment_content_id_seq
     START WITH 1
     INCREMENT BY 1
@@ -991,6 +1056,7 @@ CREATE TABLE data_all (
     frozen_for_parents boolean_char DEFAULT false NOT NULL,
     frozen_for_comps boolean_char DEFAULT false NOT NULL,
     frozen_for_conts boolean_char DEFAULT false NOT NULL,
+    tsvector_document tsvector,
     CONSTRAINT data_ck CHECK (((expe_id IS NOT NULL) OR (samp_id IS NOT NULL)))
 );
 CREATE VIEW data AS
@@ -1019,7 +1085,8 @@ CREATE VIEW data AS
     data_all.frozen_for_children,
     data_all.frozen_for_parents,
     data_all.frozen_for_comps,
-    data_all.frozen_for_conts
+    data_all.frozen_for_conts,
+    data_all.tsvector_document
    FROM data_all
   WHERE (data_all.del_id IS NULL);
 CREATE VIEW data_deleted AS
@@ -1041,7 +1108,8 @@ CREATE VIEW data_deleted AS
     data_all.del_id,
     data_all.orig_del,
     data_all.version,
-    data_all.data_set_kind
+    data_all.data_set_kind,
+    data_all.tsvector_document
    FROM data_all
   WHERE (data_all.del_id IS NOT NULL);
 CREATE SEQUENCE data_id_seq
@@ -1529,7 +1597,8 @@ CREATE TABLE experiments_all (
     frozen boolean_char DEFAULT false NOT NULL,
     proj_frozen boolean_char DEFAULT false NOT NULL,
     frozen_for_samp boolean_char DEFAULT false NOT NULL,
-    frozen_for_data boolean_char DEFAULT false NOT NULL
+    frozen_for_data boolean_char DEFAULT false NOT NULL,
+    tsvector_document tsvector
 );
 CREATE VIEW experiments AS
  SELECT experiments_all.id,
@@ -1548,7 +1617,8 @@ CREATE VIEW experiments AS
     experiments_all.version,
     experiments_all.frozen,
     experiments_all.frozen_for_samp,
-    experiments_all.frozen_for_data
+    experiments_all.frozen_for_data,
+    experiments_all.tsvector_document
    FROM experiments_all
   WHERE (experiments_all.del_id IS NULL);
 CREATE VIEW experiments_deleted AS
@@ -1564,7 +1634,8 @@ CREATE VIEW experiments_deleted AS
     experiments_all.del_id,
     experiments_all.orig_del,
     experiments_all.is_public,
-    experiments_all.version
+    experiments_all.version,
+    experiments_all.tsvector_document
    FROM experiments_all
   WHERE (experiments_all.del_id IS NOT NULL);
 CREATE TABLE external_data (
@@ -1730,7 +1801,8 @@ CREATE TABLE materials (
     maty_id tech_id NOT NULL,
     pers_id_registerer tech_id NOT NULL,
     registration_timestamp time_stamp_dfl DEFAULT now() NOT NULL,
-    modification_timestamp time_stamp DEFAULT now()
+    modification_timestamp time_stamp DEFAULT now(),
+    tsvector_document tsvector
 );
 CREATE SEQUENCE metaproject_assignment_id_seq
     START WITH 1
@@ -2161,7 +2233,8 @@ CREATE TABLE samples_all (
     frozen_for_comp boolean_char DEFAULT false NOT NULL,
     frozen_for_children boolean_char DEFAULT false NOT NULL,
     frozen_for_parents boolean_char DEFAULT false NOT NULL,
-    frozen_for_data boolean_char DEFAULT false NOT NULL
+    frozen_for_data boolean_char DEFAULT false NOT NULL,
+    tsvector_document tsvector
 );
 CREATE VIEW samples AS
  SELECT samples_all.id,
@@ -2187,7 +2260,8 @@ CREATE VIEW samples AS
     samples_all.frozen_for_comp,
     samples_all.frozen_for_children,
     samples_all.frozen_for_parents,
-    samples_all.frozen_for_data
+    samples_all.frozen_for_data,
+    samples_all.tsvector_document
    FROM samples_all
   WHERE (samples_all.del_id IS NULL);
 CREATE VIEW samples_deleted AS
@@ -2205,7 +2279,8 @@ CREATE VIEW samples_deleted AS
     samples_all.space_id,
     samples_all.proj_id,
     samples_all.samp_id_part_of,
-    samples_all.version
+    samples_all.version,
+    samples_all.tsvector_document
    FROM samples_all
   WHERE (samples_all.del_id IS NOT NULL);
 CREATE SEQUENCE script_id_seq
