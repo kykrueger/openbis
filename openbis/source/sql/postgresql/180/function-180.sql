@@ -3294,7 +3294,7 @@ DECLARE material_type_code VARCHAR;
 BEGIN
     SELECT code INTO STRICT material_type_code FROM material_types WHERE id = NEW.maty_id;
     NEW.tsvector_document := (NEW.code || ':1')::tsvector
-        || (NEW.code || ' (' || material_type_code || '):1')::tsvector;
+        || (NEW.code || '\ (' || material_type_code || '):1')::tsvector;
     RETURN NEW;
 END
 $$ LANGUAGE plpgsql;

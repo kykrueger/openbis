@@ -5,7 +5,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchObject
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchTextCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchWildCardsCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.openbis.generic.shared.dto.TableNames;
@@ -304,42 +303,14 @@ public class GlobalSearchCriteriaTranslator
      * Appends condition for the attributes that they may match.
      * @param sqlBuilder {@link StringBuilder string builder} containing SQL to be operated on.
      * @param criterion the full text search criterion.
-     * @param tableMapper the table mapper.
      * @param args query arguments.
      */
-    private static void buildAttributesMatchCondition(final StringBuilder sqlBuilder, final GlobalSearchTextCriteria criterion,
-            final TableMapper tableMapper, final List<Object> args)
+    private static void buildAttributesMatchCondition(final StringBuilder sqlBuilder,
+            final GlobalSearchTextCriteria criterion, final List<Object> args)
     {
-        sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN);
-        sqlBuilder.append(SP).append(EQ).append(SP).append(QU);
-        args.add(criterion.getFieldValue().getValue());
-
-        switch (tableMapper)
-        {
-            case SAMPLE:
-            case EXPERIMENT:
-            {
-                sqlBuilder.append(SP).append(OR).append(SP).append(MAIN_TABLE_ALIAS).append(PERIOD).append(PERM_ID_COLUMN);
-                sqlBuilder.append(SP).append(EQ).append(SP).append(QU);
-                args.add(criterion.getFieldValue().getValue());
-                break;
-            }
-            case DATA_SET:
-            {
-                sqlBuilder.append(SP).append(OR).append(SP).append(MAIN_TABLE_ALIAS).append(PERIOD).append(DATA_SET_KIND_COLUMN);
-                sqlBuilder.append(SP).append(EQ).append(SP).append(QU);
-                args.add(criterion.getFieldValue().getValue());
-                break;
-            }
-            case MATERIAL:
-            {
-                sqlBuilder.append(SP).append(OR).append(SP);
-                buildTypeCodeIdentifierConcatenationString(sqlBuilder, ENTITY_TYPES_TABLE_ALIAS);
-                sqlBuilder.append(SP).append(EQ).append(SP).append(QU);
-                args.add(criterion.getFieldValue().getValue());
-                break;
-            }
-        }
+        sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(TS_VECTOR_COLUMN).append(SP).append(DOUBLE_AT)
+                .append(SP).append(QU).append(DOUBLE_COLON).append(TSQUERY);
+        args.add(toTsQueryText(criterion.getFieldValue()));
     }
 
     /**
@@ -504,7 +475,7 @@ public class GlobalSearchCriteriaTranslator
         sqlBuilder.append(WHERE).append(SP);
         if (forAttributes)
         {
-            buildAttributesMatchCondition(sqlBuilder, criterion, vo.getTableMapper(), args);
+            buildAttributesMatchCondition(sqlBuilder, criterion, args);
         } else
         {
             buildTsVectorMatch(sqlBuilder, criterion.getFieldValue(), args);

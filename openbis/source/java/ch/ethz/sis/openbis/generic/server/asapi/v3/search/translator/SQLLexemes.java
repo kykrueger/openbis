@@ -39,6 +39,8 @@ public class SQLLexemes
 
     public static final String TS_HEADLINE = "ts_headline";
 
+    public static final String TSQUERY = "tsquery";
+
     public static final String PLAINTO_TSQUERY = "plainto_tsquery";
 
     public static final String NUMERIC = "numeric";
@@ -164,6 +166,8 @@ public class SQLLexemes
     public static final String DQ = "\"";
 
     public static final String DOUBLE_AT = "@@";
+
+    public static final String DOUBLE_DOLLAR = "$$";
 
     public static final String TILDA = "~";
 
