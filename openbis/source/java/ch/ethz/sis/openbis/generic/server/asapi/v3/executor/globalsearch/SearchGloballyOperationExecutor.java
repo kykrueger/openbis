@@ -35,6 +35,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ILocalSearchMa
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.ITranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.TranslationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.globalsearch.IGlobalSearchObjectTranslator;
+import ch.systemsx.cisd.openbis.generic.shared.authorization.AuthorizationConfig;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MatchingEntity;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,6 +66,9 @@ public class SearchGloballyOperationExecutor
     @Autowired
     private GlobalSearchManager globalSearchManager;
 
+    @Autowired
+    private AuthorizationConfig authorizationConfig;
+
     @Override
     protected SearchObjectsOperationResult<GlobalSearchObject> doExecute(IOperationContext context,
             SearchObjectsOperation<GlobalSearchCriteria, GlobalSearchObjectFetchOptions> operation)
@@ -84,14 +88,8 @@ public class SearchGloballyOperationExecutor
         }
 
         final PersonPE personPE = context.getSession().tryGetPerson();
-        final Set<Long> spaceIds = personPE.getAllPersonRoles().stream().filter(
-                (roleAssignmentPE) -> roleAssignmentPE.getSpace() != null)
-                .map((roleAssignmentPE) -> roleAssignmentPE.getSpace().getId()).collect(Collectors.toSet());
-        final Set<Long> projectIds = personPE.getAllPersonRoles().stream().filter(
-                (roleAssignmentPE) -> roleAssignmentPE.getProject() != null)
-                .map((roleAssignmentPE) -> roleAssignmentPE.getProject().getId()).collect(Collectors.toSet());
-        final AuthorisationInformation authorisationInformation = new AuthorisationInformation(
-                !personPE.getRoleAssignments().isEmpty(), spaceIds, projectIds);
+        final AuthorisationInformation authorisationInformation = AuthorisationInformation.getInstance(personPE,
+                authorizationConfig);
 
         final Long userId = context.getSession().tryGetPerson().getId();
         final TranslationContext translationContext = new TranslationContext(context.getSession());

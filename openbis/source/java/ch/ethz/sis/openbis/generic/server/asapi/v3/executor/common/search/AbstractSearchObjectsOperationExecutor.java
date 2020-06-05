@@ -236,13 +236,14 @@ public abstract class AbstractSearchObjectsOperationExecutor<OBJECT, OBJECT_PE, 
         }
 
         final PersonPE personPE = context.getSession().tryGetPerson();
-
-        final AuthorisationInformation authorisationInformation = AuthorisationInformation.getInstance(personPE, authorizationConfig);
+        final AuthorisationInformation authorisationInformation = AuthorisationInformation.getInstance(personPE,
+                authorizationConfig);
 
         final Long userId = personPE.getId();
         final TranslationContext translationContext = new TranslationContext(context.getSession());
 
-        final Set<Long> allResultsIds = getSearchManager().searchForIDs(userId, authorisationInformation, criteria, null, ID_COLUMN);
+        final Set<Long> allResultsIds = getSearchManager().searchForIDs(userId, authorisationInformation, criteria,
+                null, ID_COLUMN);
         final Collection<Long> pagedResultIds = sortAndPage(allResultsIds, fetchOptions);
         final Collection<OBJECT_PE> pagedResultPEs = getSearchManager().map(pagedResultIds);
         // TODO: doTranslate() should only filter nested objects of the results (parents, children, components...).
