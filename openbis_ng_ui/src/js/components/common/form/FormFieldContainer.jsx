@@ -31,7 +31,7 @@ class FormFieldContainer extends React.PureComponent {
     const { onClick, styles = {} } = this.props
 
     return (
-      <FormControl fullWidth={true}>
+      <FormControl fullWidth={true} margin='none'>
         <div onClick={onClick} className={styles.container}>
           {this.renderMetadata()}
           {this.renderControl()}

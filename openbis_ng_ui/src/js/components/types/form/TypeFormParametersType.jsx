@@ -13,10 +13,10 @@ const styles = theme => ({
     padding: theme.spacing(2)
   },
   header: {
-    paddingBottom: theme.spacing(2)
+    paddingBottom: theme.spacing(1)
   },
   field: {
-    paddingBottom: theme.spacing(2)
+    paddingBottom: theme.spacing(1)
   }
 })
 

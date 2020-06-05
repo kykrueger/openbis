@@ -105,6 +105,7 @@ class AutocompleterFormField extends React.PureComponent {
               fullWidth={true}
               autoComplete='off'
               variant='filled'
+              margin='dense'
             />
           )}
         />

@@ -7,13 +7,19 @@ import logger from '@src/js/common/logger.js'
 import FormFieldContainer from './FormFieldContainer.jsx'
 import FormFieldLabel from './FormFieldLabel.jsx'
 
-const styles = () => ({
+const styles = theme => ({
   container: {
     display: 'flex',
     alignItems: 'center'
   },
   label: {
     cursor: 'pointer'
+  },
+  checkbox: {
+    paddingTop: 0,
+    paddingBottom: 0,
+    paddingLeft: 0,
+    paddingRight: theme.spacing(1)
   }
 })
 
@@ -91,6 +97,7 @@ class CheckboxFormField extends React.PureComponent {
             disabled={disabled}
             onChange={this.handleChange}
             onFocus={this.handleFocus}
+            classes={{ root: classes.checkbox }}
           />
           <Typography
             component='label'

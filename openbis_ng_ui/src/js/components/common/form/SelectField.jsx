@@ -8,6 +8,9 @@ import FormFieldContainer from './FormFieldContainer.jsx'
 import FormFieldLabel from './FormFieldLabel.jsx'
 
 const styles = () => ({
+  textField: {
+    margin: 0
+  },
   option: {
     '&:after': {
       content: '"\\00a0"'
@@ -103,6 +106,10 @@ class SelectFormField extends React.PureComponent {
             }
           }}
           variant='filled'
+          margin='dense'
+          classes={{
+            root: classes.textField
+          }}
         >
           {options &&
             options.map(option => (

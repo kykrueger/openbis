@@ -59,6 +59,7 @@ class FilterField extends React.Component {
             input: classes.input
           }
         }}
+        margin='none'
       />
     )
   }

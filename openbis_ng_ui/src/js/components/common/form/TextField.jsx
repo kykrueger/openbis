@@ -13,6 +13,9 @@ const styles = () => ({
   },
   endAdornment: {
     marginLeft: 0
+  },
+  textField: {
+    margin: 0
   }
 })
 
@@ -89,6 +92,10 @@ class TextFormField extends React.PureComponent {
           fullWidth={true}
           autoComplete='off'
           variant='filled'
+          margin='dense'
+          classes={{
+            root: classes.textField
+          }}
         />
       </FormFieldContainer>
     )
