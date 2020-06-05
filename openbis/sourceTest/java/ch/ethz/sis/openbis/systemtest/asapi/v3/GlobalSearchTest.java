@@ -91,7 +91,7 @@ public class GlobalSearchTest extends AbstractTest
 
         SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, new GlobalSearchObjectFetchOptions());
 
-        assertSimpleOrStuff(result);
+        assertSimpleOrStuff(result, 7);
     }
 
     @Test
@@ -103,11 +103,11 @@ public class GlobalSearchTest extends AbstractTest
 
         SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, new GlobalSearchObjectFetchOptions());
 
-        assertSimpleOrStuff(result);
+        assertSimpleOrStuff(result, 8);
     }
 
     @Test
-    public void testSearchWithMultipleContainsMultpleWords()
+    public void testSearchWithMultipleContainsMultipleWords()
     {
         GlobalSearchCriteria criteria = new GlobalSearchCriteria();
         criteria.withText().thatContains("simple stuff");
@@ -115,7 +115,7 @@ public class GlobalSearchTest extends AbstractTest
 
         SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, new GlobalSearchObjectFetchOptions());
 
-        assertSimpleOrStuff(result);
+        assertSimpleOrStuff(result, 7);
     }
 
     @Test
@@ -149,7 +149,7 @@ public class GlobalSearchTest extends AbstractTest
 
         SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, new GlobalSearchObjectFetchOptions());
 
-        assertSimpleOrStuff(result);
+        assertSimpleOrStuff(result, 8);
     }
 
     @Test
@@ -770,10 +770,10 @@ public class GlobalSearchTest extends AbstractTest
         assertSample(iter.next(), "200902091250077-1026", "/CISD/CP-TEST-2", "Property 'Comment': extremely simple stuff");
     }
 
-    private void assertSimpleOrStuff(SearchResult<GlobalSearchObject> result)
+    private void assertSimpleOrStuff(final SearchResult<GlobalSearchObject> result, final int expectedResultsCount)
     {
-        List<GlobalSearchObject> objects = result.getObjects();
-        assertEquals(objects.size(), 8);
+        final List<GlobalSearchObject> objects = result.getObjects();
+        assertEquals(objects.size(), expectedResultsCount);
 
         // Even though we have 8 results, one of them has two matches. Therefore, we need just 7 search objects.
         final GlobalSearchObject[] searchObjects = new GlobalSearchObject[] {

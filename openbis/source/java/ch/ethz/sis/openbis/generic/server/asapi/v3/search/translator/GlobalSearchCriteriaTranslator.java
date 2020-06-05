@@ -115,12 +115,11 @@ public class GlobalSearchCriteriaTranslator
                 .filter((criterion) -> !(criterion instanceof GlobalSearchWildCardsCriteria)
                         && !(criterion instanceof GlobalSearchObjectKindCriteria)).spliterator();
 
-        final String queryCombinationOperator = (vo.getOperator() == SearchOperator.AND) ? UNION : INTERSECT;
         if (spliterator.tryAdvance((criterion) -> translateCriterion(sqlBuilder, vo, criterion)))
         {
             StreamSupport.stream(spliterator, false).forEach((criterion) ->
             {
-                sqlBuilder.append(RP).append(NL).append(queryCombinationOperator).append(NL).append(LP).append(NL);
+                sqlBuilder.append(RP).append(NL).append(UNION).append(NL).append(LP).append(NL);
                 translateCriterion(sqlBuilder, vo, criterion);
             });
         }

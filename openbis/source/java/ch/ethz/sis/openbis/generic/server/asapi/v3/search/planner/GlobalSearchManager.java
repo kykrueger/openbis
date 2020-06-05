@@ -142,7 +142,6 @@ public class GlobalSearchManager implements IGlobalSearchManager
                 }
 
                 case EXPERIMENT:
-                    // Falls through.
                 case SAMPLE:
                 {
                     mapMatch(fieldsMap, matches, CODE_MATCH_ALIAS, CODE_FIELD_NAME);
