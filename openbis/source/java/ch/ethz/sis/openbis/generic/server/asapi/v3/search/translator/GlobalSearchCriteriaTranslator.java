@@ -150,7 +150,7 @@ public class GlobalSearchCriteriaTranslator
     }
 
     private static void buildSelect(final StringBuilder sqlBuilder, final TranslationVo vo, final GlobalSearchTextCriteria criterion,
-            final boolean forProperties)
+            final boolean forAttributes)
     {
         final TableMapper tableMapper = vo.getTableMapper();
         final AbstractStringValue stringValue = criterion.getFieldValue();
@@ -198,7 +198,7 @@ public class GlobalSearchCriteriaTranslator
         }
         sqlBuilder.append(RP).append(SP).append(IDENTIFIER_ALIAS).append(COMMA).append(NL);
 
-        if (forProperties)
+        if (forAttributes)
         {
             sqlBuilder.append(1).append(DOUBLE_COLON).append(FLOAT_4).append(SP).append(RANK_ALIAS).append(COMMA)
                     .append(NL);
@@ -311,7 +311,8 @@ public class GlobalSearchCriteriaTranslator
             final TableMapper tableMapper, final List<Object> args)
     {
         sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN);
-        TranslatorUtils.appendStringComparatorOp(criterion.getFieldValue(), sqlBuilder, args);
+        sqlBuilder.append(SP).append(EQ).append(SP).append(QU);
+        args.add(criterion.getFieldValue().getValue());
 
         switch (tableMapper)
         {
@@ -319,20 +320,23 @@ public class GlobalSearchCriteriaTranslator
             case EXPERIMENT:
             {
                 sqlBuilder.append(SP).append(OR).append(SP).append(MAIN_TABLE_ALIAS).append(PERIOD).append(PERM_ID_COLUMN);
-                TranslatorUtils.appendStringComparatorOp(criterion.getFieldValue(), sqlBuilder, args);
+                sqlBuilder.append(SP).append(EQ).append(SP).append(QU);
+                args.add(criterion.getFieldValue().getValue());
                 break;
             }
             case DATA_SET:
             {
                 sqlBuilder.append(SP).append(OR).append(SP).append(MAIN_TABLE_ALIAS).append(PERIOD).append(DATA_SET_KIND_COLUMN);
-                TranslatorUtils.appendStringComparatorOp(criterion.getFieldValue(), sqlBuilder, args);
+                sqlBuilder.append(SP).append(EQ).append(SP).append(QU);
+                args.add(criterion.getFieldValue().getValue());
                 break;
             }
             case MATERIAL:
             {
                 sqlBuilder.append(SP).append(OR).append(SP);
                 buildTypeCodeIdentifierConcatenationString(sqlBuilder, ENTITY_TYPES_TABLE_ALIAS);
-                TranslatorUtils.appendStringComparatorOp(criterion.getFieldValue(), sqlBuilder, args);
+                sqlBuilder.append(SP).append(EQ).append(SP).append(QU);
+                args.add(criterion.getFieldValue().getValue());
                 break;
             }
         }
@@ -351,10 +355,11 @@ public class GlobalSearchCriteriaTranslator
     {
         sqlBuilder.append(CASE).append(SP).append(WHEN).append(SP);
         sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN);
-        TranslatorUtils.appendStringComparatorOp(criterion.getFieldValue(), sqlBuilder, args);
+        sqlBuilder.append(SP).append(EQ).append(SP).append(QU);
         sqlBuilder.append(SP).append(THEN).append(SP).append(MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN);
         sqlBuilder.append(SP).append(ELSE).append(SP).append(NULL).append(SP).append(END);
         sqlBuilder.append(SP).append(CODE_MATCH_ALIAS);
+        args.add(criterion.getFieldValue().getValue());
 
         switch (tableMapper)
         {
@@ -365,10 +370,11 @@ public class GlobalSearchCriteriaTranslator
 
                 sqlBuilder.append(CASE).append(SP).append(WHEN).append(SP);
                 sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(PERM_ID_COLUMN);
-                TranslatorUtils.appendStringComparatorOp(criterion.getFieldValue(), sqlBuilder, args);
+                sqlBuilder.append(SP).append(EQ).append(SP).append(QU);
                 sqlBuilder.append(SP).append(THEN).append(SP).append(MAIN_TABLE_ALIAS).append(PERIOD).append(PERM_ID_COLUMN);
                 sqlBuilder.append(SP).append(ELSE).append(SP).append(NULL).append(SP).append(END);
                 sqlBuilder.append(SP).append(PERM_ID_MATCH_ALIAS);
+                args.add(criterion.getFieldValue().getValue());
                 break;
             }
             case DATA_SET:
@@ -377,10 +383,11 @@ public class GlobalSearchCriteriaTranslator
 
                 sqlBuilder.append(CASE).append(SP).append(WHEN).append(SP);
                 sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(DATA_SET_KIND_COLUMN);
-                TranslatorUtils.appendStringComparatorOp(criterion.getFieldValue(), sqlBuilder, args);
+                sqlBuilder.append(SP).append(EQ).append(SP).append(QU);
                 sqlBuilder.append(SP).append(THEN).append(SP).append(MAIN_TABLE_ALIAS).append(PERIOD).append(DATA_SET_KIND_COLUMN);
                 sqlBuilder.append(SP).append(ELSE).append(SP).append(NULL).append(SP).append(END);
                 sqlBuilder.append(SP).append(DATA_SET_KIND_MATCH_ALIAS);
+                args.add(criterion.getFieldValue().getValue());
                 break;
             }
         }
