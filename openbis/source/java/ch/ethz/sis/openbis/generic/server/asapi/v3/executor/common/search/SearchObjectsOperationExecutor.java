@@ -45,10 +45,10 @@ public abstract class SearchObjectsOperationExecutor<OBJECT, OBJECT_PE, CRITERIA
     }
 
     @Override
-    protected final Map<OBJECT_PE, OBJECT> doTranslate(final TranslationContext translationContext, final Collection<OBJECT_PE> ids,
+    protected final Map<OBJECT_PE, OBJECT> doTranslate(final TranslationContext translationContext, final Collection<OBJECT_PE> objectPes,
             final FETCH_OPTIONS fetchOptions)
     {
-        return getTranslator().translate(translationContext, ids, fetchOptions);
+        return getTranslator().translate(translationContext, objectPes, fetchOptions);
     }
 
     @Override

@@ -143,36 +143,21 @@ public class GlobalSearchManager implements IGlobalSearchManager
 
 //            SearchDomainSearchResult searchResult = searchDomain.getSearchResult();
 //            matchingEntity.setSearchDomain(searchResult.getSearchDomain().getLabel());
+//            matchingEntity.setRegistrator();
+
+            if (entityKind == EntityKind.EXPERIMENT || entityKind == EntityKind.DATA_SET)
+            {
+                final Space space = new Space();
+                space.setCode((String) fieldsMap.get(SPACE_CODE_ALIAS));
+                matchingEntity.setSpace(space);
+            }
 
             matchingEntity.setScore((Float) fieldsMap.get(RANK_ALIAS));
 
             final List<PropertyMatch> matches = new ArrayList<>();
 
             mapPropertyMatches(fieldsMap, matches);
-
-            switch (entityKind)
-            {
-                case MATERIAL:
-                {
-                    mapMatch(fieldsMap, matches, IDENTIFIER_ALIAS, IDENTIFIER_FIELD_NAME);
-                    break;
-                }
-
-                case EXPERIMENT:
-                case SAMPLE:
-                {
-                    mapMatch(fieldsMap, matches, CODE_MATCH_ALIAS, CODE_FIELD_NAME);
-                    mapMatch(fieldsMap, matches, PERM_ID_MATCH_ALIAS, PERM_ID_FIELD_NAME);
-                    break;
-                }
-                case DATA_SET:
-                {
-                    mapMatch(fieldsMap, matches, DATA_SET_KIND_MATCH_ALIAS, DATA_SET_KIND_FIELD_NAME);
-                    mapMatch(fieldsMap, matches, CODE_MATCH_ALIAS, PERM_ID_FIELD_NAME);
-                    mapMatch(fieldsMap, matches, PERM_ID_MATCH_ALIAS, PERM_ID_FIELD_NAME);
-                    break;
-                }
-            }
+            mapAttributeMatches(fieldsMap, entityKind, matches);
 
             matchingEntity.setMatches(matches);
             return matchingEntity;
@@ -184,6 +169,33 @@ public class GlobalSearchManager implements IGlobalSearchManager
                 return -item.getScore();
             }
         }).collect(Collectors.toList());
+    }
+
+    private void mapAttributeMatches(final Map<String, Object> fieldsMap, final EntityKind entityKind, final List<PropertyMatch> matches)
+    {
+        switch (entityKind)
+        {
+            case MATERIAL:
+            {
+                mapAttributeMatch(fieldsMap, matches, IDENTIFIER_ALIAS, IDENTIFIER_FIELD_NAME);
+                break;
+            }
+
+            case EXPERIMENT:
+            case SAMPLE:
+            {
+                mapAttributeMatch(fieldsMap, matches, CODE_MATCH_ALIAS, CODE_FIELD_NAME);
+                mapAttributeMatch(fieldsMap, matches, PERM_ID_MATCH_ALIAS, PERM_ID_FIELD_NAME);
+                break;
+            }
+            case DATA_SET:
+            {
+                mapAttributeMatch(fieldsMap, matches, DATA_SET_KIND_MATCH_ALIAS, DATA_SET_KIND_FIELD_NAME);
+                mapAttributeMatch(fieldsMap, matches, CODE_MATCH_ALIAS, PERM_ID_FIELD_NAME);
+                mapAttributeMatch(fieldsMap, matches, PERM_ID_MATCH_ALIAS, PERM_ID_FIELD_NAME);
+                break;
+            }
+        }
     }
 
     private void mapPropertyMatches(final Map<String, Object> fieldsMap, final List<PropertyMatch> matches)
@@ -230,7 +242,7 @@ public class GlobalSearchManager implements IGlobalSearchManager
                 .filter(Objects::nonNull).findFirst().orElse(null);
     }
 
-    private void mapMatch(final Map<String, Object> fieldsMap, final List<PropertyMatch> matches,
+    private void mapAttributeMatch(final Map<String, Object> fieldsMap, final List<PropertyMatch> matches,
             final String matchAlias, final String code)
     {
         final Object fieldMatch = fieldsMap.get(matchAlias);

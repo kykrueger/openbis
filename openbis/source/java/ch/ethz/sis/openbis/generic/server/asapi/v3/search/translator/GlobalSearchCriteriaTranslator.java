@@ -32,6 +32,8 @@ public class GlobalSearchCriteriaTranslator
 
     public static final String OBJECT_KIND_ALIAS = "object_kind";
 
+    public static final String SPACE_CODE_ALIAS = "space_code";
+
     public static final String CODE_MATCH_ALIAS = "code_match";
 
     public static final String PERM_ID_MATCH_ALIAS = "perm_id_match";
@@ -196,6 +198,15 @@ public class GlobalSearchCriteriaTranslator
                     (tableMapper == TableMapper.SAMPLE) ? CONTAINER_TABLE_ALIAS : null);
         }
         sqlBuilder.append(RP).append(SP).append(IDENTIFIER_ALIAS).append(COMMA).append(NL);
+
+        if (hasSpaces || hasProjects)
+        {
+            sqlBuilder.append(SPACE_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN);
+        } else
+        {
+            sqlBuilder.append(NULL);
+        }
+        sqlBuilder.append(SP).append(SPACE_CODE_ALIAS).append(COMMA).append(NL);
 
         if (forAttributes)
         {
