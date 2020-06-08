@@ -5,14 +5,14 @@ import logger from '@src/js/common/logger.js'
 
 const styles = theme => ({
   container: {
-    padding: theme.spacing(2),
+    padding: `${theme.spacing(1)}px ${theme.spacing(2)}px`,
     display: 'flex',
     borderWidth: '1px 0px 0px 0px',
     borderColor: theme.palette.background.secondary,
     borderStyle: 'solid'
   },
   button: {
-    marginRight: theme.spacing(2),
+    marginRight: theme.spacing(1),
     whiteSpace: 'nowrap'
   }
 })
