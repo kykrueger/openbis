@@ -15,7 +15,7 @@ const EMPTY = 'empty'
 const styles = theme => ({
   draggable: {
     width: '100%',
-    padding: theme.spacing(2),
+    padding: theme.spacing(1),
     boxSizing: 'border-box',
     borderWidth: '2px',
     borderStyle: 'solid',

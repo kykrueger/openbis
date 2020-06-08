@@ -10,13 +10,13 @@ import TypeFormHeader from './TypeFormHeader.jsx'
 const styles = theme => ({
   draggable: {
     width: '100%',
-    marginBottom: theme.spacing(2),
+    marginBottom: theme.spacing(1),
     '&:hover $droppable': {
       borderColor: theme.palette.background.secondary
     }
   },
   droppable: {
-    padding: theme.spacing(2),
+    padding: theme.spacing(1),
     borderWidth: '2px',
     borderStyle: 'dashed',
     borderColor: theme.palette.background.primary,

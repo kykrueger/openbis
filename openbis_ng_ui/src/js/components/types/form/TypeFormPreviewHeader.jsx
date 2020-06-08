@@ -8,7 +8,7 @@ import TypeFormHeader from './TypeFormHeader.jsx'
 
 const styles = theme => ({
   field: {
-    marginBottom: theme.spacing(2)
+    marginBottom: theme.spacing(1)
   }
 })
 
@@ -50,7 +50,7 @@ class TypeFormPreviewHeader extends React.PureComponent {
     const { classes } = this.props
     return (
       <div className={classes.field}>
-        <TypeFormHeader>Form Preview</TypeFormHeader>
+        <TypeFormHeader>Preview</TypeFormHeader>
       </div>
     )
   }
