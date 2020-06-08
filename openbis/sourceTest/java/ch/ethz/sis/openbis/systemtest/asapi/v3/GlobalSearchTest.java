@@ -16,14 +16,10 @@
 
 package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertNull;
-import static org.testng.Assert.assertTrue;
-
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Function;
 
 import org.testng.annotations.Test;
 
@@ -42,6 +38,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.common.test.AssertionUtil;
 import ch.systemsx.cisd.openbis.systemtest.authorization.ProjectAuthorizationUser;
+
+import static org.testng.Assert.*;
 
 /**
  * @author pkupczyk
@@ -252,8 +250,7 @@ public class GlobalSearchTest extends AbstractTest
         SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
         List<GlobalSearchObject> objects = result.getObjects();
 
-        assertEquals(objects.get(0).getScore(), 1.0);
-        assertEquals(objects.get(objects.size() - 1).getScore(), 20.0);
+        assertSorted(objects, GlobalSearchObject::getScore, true);
     }
 
     @Test
@@ -268,8 +265,7 @@ public class GlobalSearchTest extends AbstractTest
         SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
         List<GlobalSearchObject> objects = result.getObjects();
 
-        assertEquals(objects.get(0).getScore(), 20.0);
-        assertEquals(objects.get(objects.size() - 1).getScore(), 1.0);
+        assertSorted(objects, GlobalSearchObject::getScore, false);
     }
 
     @Test
@@ -284,8 +280,7 @@ public class GlobalSearchTest extends AbstractTest
         SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
         List<GlobalSearchObject> objects = result.getObjects();
 
-        assertEquals(objects.get(0).getObjectKind(), GlobalSearchObjectKind.EXPERIMENT);
-        assertEquals(objects.get(objects.size() - 1).getObjectKind(), GlobalSearchObjectKind.MATERIAL);
+        assertSorted(objects, GlobalSearchObject::getObjectKind, true);
     }
 
     @Test
@@ -300,8 +295,7 @@ public class GlobalSearchTest extends AbstractTest
         SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
         List<GlobalSearchObject> objects = result.getObjects();
 
-        assertEquals(objects.get(0).getObjectKind(), GlobalSearchObjectKind.MATERIAL);
-        assertEquals(objects.get(objects.size() - 1).getObjectKind(), GlobalSearchObjectKind.EXPERIMENT);
+        assertSorted(objects, GlobalSearchObject::getObjectKind, false);
     }
 
     @Test
@@ -316,8 +310,7 @@ public class GlobalSearchTest extends AbstractTest
         SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
         List<GlobalSearchObject> objects = result.getObjects();
 
-        assertEquals(objects.get(0).getObjectPermId().toString(), "200811050951882-1028");
-        assertEquals(objects.get(objects.size() - 1).getObjectPermId().toString(), "HSV1 (VIRUS)");
+        assertSorted(objects, globalSearchObject -> globalSearchObject.getObjectPermId().toString(), true);
     }
 
     @Test
@@ -332,8 +325,7 @@ public class GlobalSearchTest extends AbstractTest
         SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
         List<GlobalSearchObject> objects = result.getObjects();
 
-        assertEquals(objects.get(0).getObjectPermId().toString(), "HSV1 (VIRUS)");
-        assertEquals(objects.get(objects.size() - 1).getObjectPermId().toString(), "200811050951882-1028");
+        assertSorted(objects, globalSearchObject -> globalSearchObject.getObjectPermId().toString(), false);
     }
 
     @Test
@@ -348,8 +340,7 @@ public class GlobalSearchTest extends AbstractTest
         SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
         List<GlobalSearchObject> objects = result.getObjects();
 
-        assertEquals(objects.get(0).getObjectIdentifier().toString(), "/CISD/CP-TEST-1");
-        assertEquals(objects.get(objects.size() - 1).getObjectIdentifier().toString(), "HSV1 (VIRUS)");
+        assertSorted(objects, globalSearchObject -> globalSearchObject.getObjectIdentifier().toString(), true);
     }
 
     @Test
@@ -364,8 +355,21 @@ public class GlobalSearchTest extends AbstractTest
         SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
         List<GlobalSearchObject> objects = result.getObjects();
 
-        assertEquals(objects.get(0).getObjectIdentifier().toString(), "HSV1 (VIRUS)");
-        assertEquals(objects.get(objects.size() - 1).getObjectIdentifier().toString(), "/CISD/CP-TEST-1");
+        assertSorted(objects, globalSearchObject -> globalSearchObject.getObjectIdentifier().toString(), false);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void assertSorted(final List<GlobalSearchObject> globalSearchObjects,
+            final Function<GlobalSearchObject, Comparable<?>> valueRetriever, final boolean ascending)
+    {
+        for (int index = 1, size = globalSearchObjects.size(); index < size; index++)
+        {
+            final Comparable<Object> value1 = (Comparable<Object>) valueRetriever.apply(globalSearchObjects.get(index - 1));
+            final Object value2 = valueRetriever.apply(globalSearchObjects.get(index));
+            final int comparison = value1.compareTo(value2);
+            assertFalse(ascending && comparison > 0 || !ascending && comparison < 0,
+                    "Ordering is incorrect. [index=" + index + "value1=" + value1 + ", value2=" + value2 + "]");
+        }
     }
 
     @Test

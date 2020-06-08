@@ -1,6 +1,8 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOrder;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.Sorting;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.GlobalSearchObject;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
@@ -13,6 +15,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearchObjectSortOptions.*;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.GlobalSearchCriteriaTranslator.*;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.*;
 
@@ -28,6 +31,16 @@ public class GlobalSearchManager implements IGlobalSearchManager
     private static final String CODE_FIELD_NAME = "Code";
 
     private static final String PROPERTY_NAME = "Property";
+
+    private static final Map<String, String> SORTING_NAME_TO_RESULT_KEY_MAP = new HashMap<>();
+
+    static
+    {
+        SORTING_NAME_TO_RESULT_KEY_MAP.put(SCORE, RANK_ALIAS);
+        SORTING_NAME_TO_RESULT_KEY_MAP.put(OBJECT_KIND, OBJECT_KIND_ALIAS);
+        SORTING_NAME_TO_RESULT_KEY_MAP.put(OBJECT_PERM_ID, PERM_ID_COLUMN);
+        SORTING_NAME_TO_RESULT_KEY_MAP.put(OBJECT_IDENTIFIER, IDENTIFIER_ALIAS);
+    }
 
     protected final ISQLAuthorisationInformationProviderDAO authProvider;
 
@@ -54,11 +67,40 @@ public class GlobalSearchManager implements IGlobalSearchManager
         return filterResultsByUserRights(authorisationInformation, resultBeforeFiltering, tableMapper);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public Set<Map<String, Object>> sortIDs(final Set<Map<String, Object>> filteredIDs, final SortOptions<GlobalSearchObject> sortOptions)
+    public List<Map<String, Object>> sortRecords(final Set<Map<String, Object>> records,
+            final SortOptions<GlobalSearchObject> sortOptions)
     {
-        // TODO: implement sorting.
-        return filteredIDs;
+        final ArrayList<Map<String, Object>> result = new ArrayList<>(records);
+        final List<Sorting> sortingList = sortOptions.getSortings();
+        result.sort((o1, o2) ->
+        {
+            for (final Sorting sorting : sortingList)
+            {
+                final String resultKey = SORTING_NAME_TO_RESULT_KEY_MAP.get(sorting.getField());
+                final Comparable<Object> v1 = (Comparable<Object>) o1.get(resultKey);
+                final Object v2 = o2.get(resultKey);
+
+                if (v1 != null && v2 != null && !v1.equals(v2))
+                {
+                    return sorting.getOrder().isAsc() ? v1.compareTo(v2) : -v1.compareTo(v2);
+                } else if (v1 == null && v2 != null)
+                {
+                    return sortOrderToInt(sorting.getOrder());
+                } else if (v1 != null && v2 == null)
+                {
+                    return -sortOrderToInt(sorting.getOrder());
+                }
+            }
+            return 0;
+        });
+        return result;
+    }
+
+    private static int sortOrderToInt(final SortOrder sortOrder)
+    {
+        return sortOrder.isAsc() ? 1 : -1;
     }
 
     /**
@@ -161,13 +203,6 @@ public class GlobalSearchManager implements IGlobalSearchManager
 
             matchingEntity.setMatches(matches);
             return matchingEntity;
-        }).sorted(new SimpleComparator<MatchingEntity, Double>()
-        {
-            @Override
-            public Double evaluate(MatchingEntity item)
-            {
-                return -item.getScore();
-            }
         }).collect(Collectors.toList());
     }
 

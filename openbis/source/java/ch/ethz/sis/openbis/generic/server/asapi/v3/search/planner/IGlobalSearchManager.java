@@ -24,6 +24,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PEMapper
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MatchingEntity;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -44,6 +45,7 @@ public interface IGlobalSearchManager extends IID2PEMapper<Map<String, Object>, 
     Set<Map<String, Object>> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation,
             final GlobalSearchCriteria criteria, final String idsColumnName, final TableMapper tableMapper);
 
-    Set<Map<String, Object>> sortIDs(Set<Map<String, Object>> filteredIDs, SortOptions<GlobalSearchObject> sortOptions);
+    List<Map<String, Object>> sortRecords(Set<Map<String, Object>> records,
+            SortOptions<GlobalSearchObject> sortOptions);
 
 }

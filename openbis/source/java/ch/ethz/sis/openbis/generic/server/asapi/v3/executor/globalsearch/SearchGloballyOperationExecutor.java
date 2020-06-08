@@ -133,8 +133,9 @@ public class SearchGloballyOperationExecutor
         assert pagedMatchingEntities.size() == pagedResultV3DTOs.size() : "The number of results after translation should not change. " +
                 "[pagedResultPEs.size()=" + pagedMatchingEntities.size() + ", pagedResultV3DTOs.size()=" + pagedResultV3DTOs.size() + "]";
 
-        final List<GlobalSearchObject> objectResults = new ArrayList<>(pagedResultV3DTOs.values());
-//        final List<GlobalSearchObject> sortedFinalResults = getSortedFinalResults(criteria, fetchOptions, objectResults);
+        // Reordering of pagedResultV3DTOs is needed because translation mixes the order
+        final List<GlobalSearchObject> objectResults = pagedMatchingEntities.stream().map(pagedResultV3DTOs::get)
+                .collect(Collectors.toList());
 
         // Sorting and paging parents and children in a "conventional" way.
         new SortAndPage().nest(objectResults, criteria, fetchOptions);
@@ -177,13 +178,14 @@ public class SearchGloballyOperationExecutor
     protected List<Map<String, Object>> sortAndPage(final Set<Map<String, Object>> results, final FetchOptions<GlobalSearchObject> fo)
     {
         final SortOptions<GlobalSearchObject> sortOptions = fo.getSortBy();
-        final Set<Map<String, Object>> orderedIDs = (sortOptions != null) ? globalSearchManager.sortIDs(results, sortOptions) : results;
+        final List<Map<String, Object>> orderedIDs = (sortOptions != null)
+                ? globalSearchManager.sortRecords(results, sortOptions)
+                : new ArrayList<>(results);
 
-        final List<Map<String, Object>> toPage = new ArrayList<>(orderedIDs);
         final Integer fromRecord = fo.getFrom();
         final Integer recordsCount = fo.getCount();
         final boolean hasPaging = fromRecord != null && recordsCount != null;
-        return hasPaging ? toPage.subList(fromRecord, Math.min(fromRecord + recordsCount, toPage.size())) : toPage;
+        return hasPaging ? orderedIDs.subList(fromRecord, Math.min(fromRecord + recordsCount, orderedIDs.size())) : orderedIDs;
     }
 
     @Override
