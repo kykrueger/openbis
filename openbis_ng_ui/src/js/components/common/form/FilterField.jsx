@@ -12,10 +12,13 @@ const styles = () => ({
     width: '100%'
   },
   input: {
-    height: '36px'
+    height: '24px'
   },
   adornment: {
     margin: '8px'
+  },
+  adornmentButton: {
+    padding: '4px'
   },
   adornmentSpacer: {
     width: '64px'
@@ -89,7 +92,10 @@ class FilterField extends React.Component {
             root: classes.adornment
           }}
         >
-          <IconButton onMouseDown={this.handleFilterClear}>
+          <IconButton
+            onMouseDown={this.handleFilterClear}
+            classes={{ root: classes.adornmentButton }}
+          >
             <CloseIcon />
           </IconButton>
         </InputAdornment>

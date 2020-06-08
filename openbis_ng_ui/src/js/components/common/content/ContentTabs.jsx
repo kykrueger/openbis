@@ -10,10 +10,12 @@ const styles = theme => ({
   tabsRoot: {
     borderBottomStyle: 'solid',
     borderBottomWidth: '1px',
-    borderBottomColor: theme.palette.background.secondary
+    borderBottomColor: theme.palette.background.secondary,
+    minHeight: '36px'
   },
   tabRoot: {
-    textTransform: 'none'
+    textTransform: 'none',
+    minHeight: '36px'
   },
   iconRoot: {
     marginLeft: '6px'
