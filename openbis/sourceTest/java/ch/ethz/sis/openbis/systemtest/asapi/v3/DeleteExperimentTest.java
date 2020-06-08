@@ -265,7 +265,7 @@ public class DeleteExperimentTest extends AbstractDeletionTest
         creation.setTypeId(experimentType);
         creation.setProjectId(new ProjectIdentifier("/TEST-SPACE/TEST-PROJECT"));
         SamplePermId propertySamplePermId = createCisdSample(createCisdExperiment());
-        creation.setSampleProperty(propertyType.getPermId(), propertySamplePermId);
+        creation.setProperty(propertyType.getPermId(), propertySamplePermId.getPermId());
         ExperimentPermId experimentPermId = v3api.createExperiments(sessionToken, Arrays.asList(creation)).get(0);
         SampleDeletionOptions deletionOptions = new SampleDeletionOptions();
         deletionOptions.setReason("a test");
@@ -299,7 +299,7 @@ public class DeleteExperimentTest extends AbstractDeletionTest
         creation.setTypeId(experimentType);
         creation.setProjectId(new ProjectIdentifier("/TEST-SPACE/TEST-PROJECT"));
         SamplePermId propertySamplePermId = createCisdSample(createCisdExperiment());
-        creation.setSampleProperty(propertyType.getPermId(), propertySamplePermId);
+        creation.setProperty(propertyType.getPermId(), propertySamplePermId.getPermId());
         ExperimentPermId experimentPermId = v3api.createExperiments(sessionToken, Arrays.asList(creation)).get(0);
         ExperimentDeletionOptions deletionOptions = new ExperimentDeletionOptions();
         deletionOptions.setReason("a test");

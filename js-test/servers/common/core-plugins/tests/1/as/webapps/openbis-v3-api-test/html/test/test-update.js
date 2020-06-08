@@ -350,7 +350,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 						creation.setTypeId(new c.EntityTypePermId(experimentTypeCode));
 						creation.setCode(code);
 						creation.setProjectId(new c.ProjectIdentifier("/TEST/TEST-PROJECT"));
-						creation.setSampleProperty(propertyTypeCode, new c.SamplePermId("20130412140147735-20"));
+						creation.setProperty(propertyTypeCode, "20130412140147735-20");
 						return facade.createExperiments([ creation ]);
 					});
 				});
@@ -359,7 +359,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			var fUpdate = function(facade, permId) {
 				var update = new c.ExperimentUpdate();
 				update.setExperimentId(permId);
-				update.setSampleProperty(propertyTypeCode, new c.SamplePermId("20130412140147736-21"));
+				update.setProperty(propertyTypeCode, "20130412140147736-21");
 				return facade.updateExperiments([ update ]);
 			}
 
@@ -509,7 +509,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 						creation.setTypeId(new c.EntityTypePermId(sampleTypeCode));
 						creation.setCode(code);
 						creation.setSpaceId(new c.SpacePermId("TEST"));
-						creation.setSampleProperty(propertyTypeCode, new c.SamplePermId("20130412140147735-20"));
+						creation.setProperty(propertyTypeCode, "20130412140147735-20");
 						return facade.createSamples([ creation ]);
 					});
 				});
@@ -518,7 +518,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			var fUpdate = function(facade, permId) {
 				var update = new c.SampleUpdate();
 				update.setSampleId(permId);
-				update.setSampleProperty(propertyTypeCode, new c.SamplePermId("20130412140147736-21"));
+				update.setProperty(propertyTypeCode, "20130412140147736-21");
 				return facade.updateSamples([ update ]);
 			}
 
@@ -557,7 +557,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 						creation.setTypeId(new c.EntityTypePermId(sampleTypeCode));
 						creation.setCode(code);
 						creation.setSpaceId(new c.SpacePermId("TEST"));
-						creation.setSampleProperty(propertyTypeCode, new c.SamplePermId("20130412140147735-20"));
+						creation.setProperty(propertyTypeCode, "20130412140147735-20");
 						return facade.createSamples([ creation ]);
 					});
 				});
@@ -566,7 +566,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			var fUpdate = function(facade, permId) {
 				var update = new c.SampleUpdate();
 				update.setSampleId(permId);
-				update.setSampleProperty(propertyTypeCode, null);
+				update.setProperty(propertyTypeCode, null);
 				return facade.updateSamples([ update ]);
 			}
 			
@@ -708,7 +708,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 						creation.setDataSetKind(c.DataSetKind.CONTAINER);
 						creation.setDataStoreId(new c.DataStorePermId("DSS1"));
 						creation.setExperimentId(new c.ExperimentIdentifier("/TEST/TEST-PROJECT/TEST-EXPERIMENT"));
-						creation.setSampleProperty(propertyTypeCode, new c.SamplePermId("20130412140147735-20"));
+						creation.setProperty(propertyTypeCode, "20130412140147735-20");
 						return facade.createDataSets([ creation ]);
 					});
 				});
@@ -717,7 +717,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			var fUpdate = function(facade, permId) {
 				var update = new c.DataSetUpdate();
 				update.setDataSetId(permId);
-				update.setSampleProperty(propertyTypeCode, new c.SamplePermId("20130412140147736-21"));
+				update.setProperty(propertyTypeCode, "20130412140147736-21");
 				return facade.updateDataSets([ update ]);
 			}
 

@@ -52,7 +52,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.PersonPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.Role;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.create.RoleAssignmentCreation;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.Tag;
@@ -1111,12 +1110,12 @@ public class UpdateDataSetTest extends AbstractDataSetTest
 
         DataSetUpdate update = new DataSetUpdate();
         update.setDataSetId(dataSetPermId);
-        update.setSampleProperty("PLATE", new SamplePermId("200811050924898-997"));
+        update.setProperty("PLATE", "200811050924898-997");
 
         // When
         assertUserFailureException(Void -> v3api.updateDataSets(sessionToken, Arrays.asList(update)),
                 // Then
-                "Not a property of data type SAMPLE: PLATE");
+                "Property type with code 'PLATE' does not exist");
     }
 
     @Test
@@ -1128,12 +1127,12 @@ public class UpdateDataSetTest extends AbstractDataSetTest
         EntityTypePermId dataSetType = createADataSetType(sessionToken, false, propertyType);
         DataSetCreation creation = physicalDataSetCreation();
         creation.setTypeId(dataSetType);
-        creation.setSampleProperty(propertyType.getPermId(), new SampleIdentifier("/CISD/CL1"));
+        creation.setProperty(propertyType.getPermId(), "/CISD/CL1");
         DataSetPermId dataSetPermId = v3api.createDataSets(sessionToken, Arrays.asList(creation)).get(0);
 
         DataSetUpdate update = new DataSetUpdate();
         update.setDataSetId(dataSetPermId);
-        update.setSampleProperty(propertyType.getPermId(), new SampleIdentifier("/CISD/UNKNOWN"));
+        update.setProperty(propertyType.getPermId(), "/CISD/UNKNOWN");
 
         // When
         assertUserFailureException(Void -> v3api.updateDataSets(sessionToken, Arrays.asList(update)),
@@ -1151,12 +1150,12 @@ public class UpdateDataSetTest extends AbstractDataSetTest
         EntityTypePermId dataSetType = createADataSetType(sessionToken, false, propertyType);
         DataSetCreation creation = physicalDataSetCreation();
         creation.setTypeId(dataSetType);
-        creation.setSampleProperty(propertyType.getPermId(), new SamplePermId("200811050917877-438"));
+        creation.setProperty(propertyType.getPermId(), "200811050917877-438");
         DataSetPermId dataSetPermId = v3api.createDataSets(sessionToken, Arrays.asList(creation)).get(0);
 
         DataSetUpdate update = new DataSetUpdate();
         update.setDataSetId(dataSetPermId);
-        update.setSampleProperty(propertyType.getPermId(), new SamplePermId("200811050919915-8"));
+        update.setProperty(propertyType.getPermId(), "200811050919915-8");
 
         // When
         assertUserFailureException(Void -> v3api.updateDataSets(sessionToken, Arrays.asList(update)),
@@ -1174,13 +1173,13 @@ public class UpdateDataSetTest extends AbstractDataSetTest
         DataSetCreation creation = physicalDataSetCreation();
         creation.setTypeId(dataSetType);
         creation.setExperimentId(new ExperimentIdentifier("/TEST-SPACE/TEST-PROJECT/EXP-SPACE-TEST"));
-        creation.setSampleProperty(propertyType.getPermId(), new SampleIdentifier("/MP"));
+        creation.setProperty(propertyType.getPermId(), "/MP");
         DataSetPermId dataSetPermId = v3api.createDataSets(adminSessionToken, Arrays.asList(creation)).get(0);
 
         String sessionToken = v3api.login(TEST_SPACE_USER, PASSWORD);
         DataSetUpdate update = new DataSetUpdate();
         update.setDataSetId(dataSetPermId);
-        update.setSampleProperty(propertyType.getPermId(), new SampleIdentifier("/CISD/CL1"));
+        update.setProperty(propertyType.getPermId(), "/CISD/CL1");
 
         // When
         assertUserFailureException(Void -> v3api.updateDataSets(sessionToken, Arrays.asList(update)),
@@ -1202,7 +1201,7 @@ public class UpdateDataSetTest extends AbstractDataSetTest
 
         DataSetUpdate update = new DataSetUpdate();
         update.setDataSetId(dataSetPermId);
-        update.setSampleProperty(propertyType.getPermId(), new SamplePermId("200811050924898-997"));
+        update.setProperty(propertyType.getPermId(), "200811050924898-997");
 
         // When
         v3api.updateDataSets(sessionToken, Arrays.asList(update));
@@ -1226,12 +1225,12 @@ public class UpdateDataSetTest extends AbstractDataSetTest
         DataSetCreation creation = physicalDataSetCreation();
         creation.setTypeId(dataSetType);
         creation.setExperimentId(new ExperimentIdentifier("/TEST-SPACE/TEST-PROJECT/EXP-SPACE-TEST"));
-        creation.setSampleProperty(propertyType.getPermId(), new SamplePermId("200811050919915-8"));
+        creation.setProperty(propertyType.getPermId(), "200811050919915-8");
         DataSetPermId dataSetPermId = v3api.createDataSets(sessionToken, Arrays.asList(creation)).get(0);
 
         DataSetUpdate update = new DataSetUpdate();
         update.setDataSetId(dataSetPermId);
-        update.setSampleProperty(propertyType.getPermId(), new SamplePermId("200811050924898-997"));
+        update.setProperty(propertyType.getPermId(), "200811050924898-997");
 
         // When
         v3api.updateDataSets(sessionToken, Arrays.asList(update));
@@ -1261,12 +1260,12 @@ public class UpdateDataSetTest extends AbstractDataSetTest
         DataSetCreation creation = physicalDataSetCreation();
         creation.setTypeId(dataSetType);
         creation.setExperimentId(new ExperimentIdentifier("/TEST-SPACE/TEST-PROJECT/EXP-SPACE-TEST"));
-        creation.setSampleProperty(propertyType.getPermId(), new SamplePermId("200811050919915-8"));
+        creation.setProperty(propertyType.getPermId(), "200811050919915-8");
         DataSetPermId dataSetPermId = v3api.createDataSets(sessionToken, Arrays.asList(creation)).get(0);
 
         DataSetUpdate update = new DataSetUpdate();
         update.setDataSetId(dataSetPermId);
-        update.setSampleProperty(propertyType.getPermId(), null);
+        update.setProperty(propertyType.getPermId(), null);
 
         // When
         v3api.updateDataSets(sessionToken, Arrays.asList(update));
@@ -1296,12 +1295,12 @@ public class UpdateDataSetTest extends AbstractDataSetTest
         DataSetCreation creation = physicalDataSetCreation();
         creation.setTypeId(dataSetType);
         creation.setExperimentId(new ExperimentIdentifier("/TEST-SPACE/TEST-PROJECT/EXP-SPACE-TEST"));
-        creation.setSampleProperty(propertyType.getPermId(), new SamplePermId("200811050919915-8"));
+        creation.setProperty(propertyType.getPermId(), "200811050919915-8");
         DataSetPermId dataSetPermId = v3api.createDataSets(sessionToken, Arrays.asList(creation)).get(0);
 
         DataSetUpdate update = new DataSetUpdate();
         update.setDataSetId(dataSetPermId);
-        update.setSampleProperty(propertyType.getPermId(), null);
+        update.setProperty(propertyType.getPermId(), null);
 
         // When
         assertUserFailureException(Void -> v3api.updateDataSets(sessionToken, Arrays.asList(update)),
