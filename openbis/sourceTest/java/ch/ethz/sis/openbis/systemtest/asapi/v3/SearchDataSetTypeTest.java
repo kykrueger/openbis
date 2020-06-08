@@ -252,9 +252,7 @@ public class SearchDataSetTypeTest extends AbstractTest
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
         DataSetTypeSearchCriteria searchCriteria = new DataSetTypeSearchCriteria();
-//        searchCriteria.withAndOperator();
         searchCriteria.withCode().thatStartsWith("D");
-//        searchCriteria.withPropertyAssignments().withIds();
         DataSetTypeFetchOptions fetchOptions = new DataSetTypeFetchOptions();
         fetchOptions.withPropertyAssignments().sortBy().code().desc();
 
@@ -269,27 +267,6 @@ public class SearchDataSetTypeTest extends AbstractTest
         assertOrder(propertyAssignments, "ORGANISM", "DESCRIPTION", "BACTERIUM");
         v3api.logout(sessionToken);
     }
-
-//    @Test
-//    public void testSearchWithPropertyAssignmentAndCode()
-//    {
-//        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
-//        final DataSetTypeSearchCriteria searchCriteria = new DataSetTypeSearchCriteria();
-//        searchCriteria.withAndOperator();
-//        searchCriteria.withCode().thatStartsWith("D");
-//        searchCriteria.withPropertyAssignments().withIds().thatIn(Arrays.asList(
-//                new PropertyAssignmentPermId(new EntityTypePermId("BACTERIUM", EntityKind.DATA_SET), new PropertyTypePermId("COMMENT")),
-//                new PropertyAssignmentPermId(new EntityTypePermId("ORGANISM", EntityKind.DATA_SET), new PropertyTypePermId("COMMENT"))));
-//        final DataSetTypeFetchOptions fetchOptions = new DataSetTypeFetchOptions();
-//        fetchOptions.withPropertyAssignments().sortBy().code().desc();
-//
-//        final SearchResult<DataSetType> searchResult = v3api.searchDataSetTypes(sessionToken, searchCriteria, fetchOptions);
-//
-//        final List<DataSetType> types = searchResult.getObjects();
-//        final List<PropertyAssignment> propertyAssignments = types.get(0).getPropertyAssignments();
-//        assertOrder(propertyAssignments, "ORGANISM", "DESCRIPTION", "BACTERIUM");
-//        v3api.logout(sessionToken);
-//    }
 
     @Test
     public void testSearchWithValidationPlugin()

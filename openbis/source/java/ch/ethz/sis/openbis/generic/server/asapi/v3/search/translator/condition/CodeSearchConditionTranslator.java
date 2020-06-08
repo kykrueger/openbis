@@ -118,9 +118,7 @@ public class CodeSearchConditionTranslator implements IConditionTranslator<Strin
             }
 
             case PROPERTY:
-                // Fall through.
             case ANY_PROPERTY:
-                // Fall through.
             case ANY_FIELD:
             {
                 throw new IllegalArgumentException();
