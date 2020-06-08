@@ -206,7 +206,7 @@ public class DeleteDataSetTest extends AbstractDeletionTest
         creation.setTypeId(dataSetType);
         creation.setExperimentId(new ExperimentIdentifier("/TEST-SPACE/TEST-PROJECT/EXP-SPACE-TEST"));
         SamplePermId propertySamplePermId = createCisdSample(createCisdExperiment());
-        creation.setSampleProperty(propertyType.getPermId(), propertySamplePermId);
+        creation.setProperty(propertyType.getPermId(), propertySamplePermId.getPermId());
         DataSetPermId dataSetPermId = v3api.createDataSets(sessionToken, Arrays.asList(creation)).get(0);
         SampleDeletionOptions deletionOptions = new SampleDeletionOptions();
         deletionOptions.setReason("a test");
@@ -239,7 +239,7 @@ public class DeleteDataSetTest extends AbstractDeletionTest
         creation.setTypeId(dataSetType);
         creation.setExperimentId(new ExperimentIdentifier("/TEST-SPACE/TEST-PROJECT/EXP-SPACE-TEST"));
         SamplePermId propertySamplePermId = createCisdSample(createCisdExperiment());
-        creation.setSampleProperty(propertyType.getPermId(), propertySamplePermId);
+        creation.setProperty(propertyType.getPermId(), propertySamplePermId.getPermId());
         DataSetPermId dataSetPermId = v3api.createDataSets(sessionToken, Arrays.asList(creation)).get(0);
         DataSetDeletionOptions deletionOptions = new DataSetDeletionOptions();
         deletionOptions.setReason("a test");

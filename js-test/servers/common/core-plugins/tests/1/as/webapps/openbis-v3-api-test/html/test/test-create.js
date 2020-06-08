@@ -174,7 +174,7 @@ define(
 								creation.setTypeId(new c.EntityTypePermId(experimentTypeCode));
 								creation.setCode(code);
 								creation.setProjectId(new c.ProjectIdentifier("/TEST/TEST-PROJECT"));
-								creation.setSampleProperty(propertyTypeCode, new c.SamplePermId("20130412140147735-20"));
+								creation.setProperty(propertyTypeCode, "20130412140147735-20");
 								return facade.createExperiments([ creation ]);
 							});
 						});
@@ -284,7 +284,7 @@ define(
 								creation.setTypeId(new c.EntityTypePermId(sampleTypeCode));
 								creation.setCode(code);
 								creation.setSpaceId(new c.SpacePermId("TEST"));
-								creation.setSampleProperty(propertyTypeCode, new c.SamplePermId("20130412140147735-20"));
+								creation.setProperty(propertyTypeCode, "20130412140147735-20");
 								return facade.createSamples([ creation ]);
 							});
 						});
@@ -460,7 +460,7 @@ define(
 								creation.setDataSetKind(c.DataSetKind.CONTAINER);
 								creation.setDataStoreId(new c.DataStorePermId("DSS1"));
 								creation.setExperimentId(new c.ExperimentIdentifier("/TEST/TEST-PROJECT/TEST-EXPERIMENT"));
-								creation.setSampleProperty(propertyTypeCode, new c.SamplePermId("20130412140147735-20"));
+								creation.setProperty(propertyTypeCode, "20130412140147735-20");
 								return facade.createDataSets([ creation ]);
 							});
 						});

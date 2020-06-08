@@ -8,7 +8,6 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/
 		this.physicalData = new FieldUpdateValue();
 		this.linkedData = new FieldUpdateValue();
 		this.properties = {};
-		this.sampleProperties = {};
 		this.tagIds = new IdListUpdateValue();
 		this.containerIds = new IdListUpdateValue();
 		this.componentIds = new IdListUpdateValue();
@@ -29,7 +28,6 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/
 		prototype.physicalData = null;
 		prototype.linkedData = null;
 		prototype.properties = null;
-		prototype.sampleProperties = null;
 		prototype.tagIds = null;
 		prototype.containerIds = null;
 		prototype.componentIds = null;
@@ -115,12 +113,6 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/
 		prototype.setProperties = function(properties) {
 			this.properties = properties;
 		};
-		prototype.setSampleProperty = function(propertyName, sampleId) {
-			this.sampleProperties[propertyName] = sampleId;
-		};
-		prototype.getSampleProperties = function() {
-			return this.sampleProperties;
-		};
 		prototype.getTagIds = function() {
 			return this.tagIds;
 		};
@@ -170,10 +162,6 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/
 			arguments : [ "LinkedDataUpdate" ]
 		},
 		properties : {
-			name : "Map",
-			arguments : [ null, null ]
-		},
-		sampleProperties : {
 			name : "Map",
 			arguments : [ null, null ]
 		},

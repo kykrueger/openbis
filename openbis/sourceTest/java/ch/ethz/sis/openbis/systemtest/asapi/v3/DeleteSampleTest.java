@@ -240,7 +240,7 @@ public class DeleteSampleTest extends AbstractDeletionTest
         sampleCreation.setTypeId(sampleType);
         sampleCreation.setSpaceId(new SpacePermId("TEST-SPACE"));
         SamplePermId propertySamplePermId = createCisdSample(createCisdExperiment());
-        sampleCreation.setSampleProperty(propertyType.getPermId(), propertySamplePermId);
+        sampleCreation.setProperty(propertyType.getPermId(), propertySamplePermId.getPermId());
         SamplePermId samplePermId = v3api.createSamples(sessionToken, Arrays.asList(sampleCreation)).get(0);
         SampleDeletionOptions deletionOptions = new SampleDeletionOptions();
         deletionOptions.setReason("a test");
@@ -274,7 +274,7 @@ public class DeleteSampleTest extends AbstractDeletionTest
         sampleCreation.setTypeId(sampleType);
         sampleCreation.setSpaceId(new SpacePermId("TEST-SPACE"));
         SamplePermId propertySamplePermId = createCisdSample(createCisdExperiment());
-        sampleCreation.setSampleProperty(propertyType.getPermId(), propertySamplePermId);
+        sampleCreation.setProperty(propertyType.getPermId(), propertySamplePermId.getPermId());
         SamplePermId samplePermId = v3api.createSamples(sessionToken, Arrays.asList(sampleCreation)).get(0);
         SampleDeletionOptions deletionOptions = new SampleDeletionOptions();
         deletionOptions.setReason("a test");
