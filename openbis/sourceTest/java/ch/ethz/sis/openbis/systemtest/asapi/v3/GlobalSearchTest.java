@@ -435,7 +435,7 @@ public class GlobalSearchTest extends AbstractTest
         SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
         List<GlobalSearchObject> objects = result.getObjects();
 
-        assertEquals(result.getTotalCount(), 8);
+        assertEquals(result.getTotalCount(), 7);
         assertEquals(objects.size(), 2);
 
         assertExperiment(objects.get(0), "201108050937246-1031", "/CISD/DEFAULT/EXP-Y", "Property 'Description': A simple experiment");
