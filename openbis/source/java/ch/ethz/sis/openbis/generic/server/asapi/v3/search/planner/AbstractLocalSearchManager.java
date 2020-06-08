@@ -51,11 +51,9 @@ public abstract class AbstractLocalSearchManager<CRITERIA extends ISearchCriteri
     protected List<ISearchCriteria> getOtherCriteriaThan(final AbstractCompositeSearchCriteria searchCriteria,
             final Class<? extends ISearchCriteria>... classes)
     {
-        final List<ISearchCriteria> criteria = searchCriteria.getCriteria().stream().filter(
+        return searchCriteria.getCriteria().stream().filter(
                 criterion -> Arrays.stream(classes).noneMatch(clazz -> clazz.isInstance(criterion))).
                 collect(Collectors.toList());
-
-        return criteria;
     }
 
     protected List<ISearchCriteria> getCriteria(
@@ -86,11 +84,17 @@ public abstract class AbstractLocalSearchManager<CRITERIA extends ISearchCriteri
         switch (operator)
         {
             case AND:
+            {
                 return intersection(intermediateResults);
+            }
             case OR:
+            {
                 return union(intermediateResults);
+            }
             default:
+            {
                 throw new IllegalArgumentException("Unexpected value for search operator: " + operator);
+            }
         }
     }
 
@@ -116,28 +120,6 @@ public abstract class AbstractLocalSearchManager<CRITERIA extends ISearchCriteri
                     }
                     return set1;
                 });
-    }
-
-    /**
-     * Find the smallest set.
-     *
-     * @param candidates collection of sets to search in.
-     * @param <E> types of parameters of the sets.
-     * @return the set with the smallest number of items.
-     */
-    protected static <E> Set<E> getSmallestSet(final Collection<Set<E>> candidates)
-    {
-        final Set<E> smallestSet = candidates.stream().min((o1, o2) ->
-                {
-                    if (o1 == null)
-                    {
-                        return (o2 == null) ? 0 : 1;
-                    } else
-                    {
-                        return (o2 == null) ? -1 : o1.size() - o2.size();
-                    }
-                }).orElse(null);
-        return smallestSet;
     }
 
     public Collection<OBJECT_PE> map(final Collection<Long> ids)

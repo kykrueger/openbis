@@ -45,10 +45,11 @@ public class PropertyAssignmentSearchManager extends
         AbstractLocalSearchManager<PropertyAssignmentSearchCriteria, PropertyAssignment, Long>
 {
 
-    private IPropertyAssignmentSearchDAO assignmentsSearchDAO;
+    private final IPropertyAssignmentSearchDAO assignmentsSearchDAO;
 
-    public PropertyAssignmentSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
-            final IID2PEMapper idsMapper, final IPropertyAssignmentSearchDAO assignmentsSearchDAO)
+    public PropertyAssignmentSearchManager(final ISQLSearchDAO searchDAO,
+            final ISQLAuthorisationInformationProviderDAO authProvider,
+            final IID2PEMapper<Long, Long> idsMapper, final IPropertyAssignmentSearchDAO assignmentsSearchDAO)
     {
         super(searchDAO, authProvider, idsMapper);
         this.assignmentsSearchDAO = assignmentsSearchDAO;

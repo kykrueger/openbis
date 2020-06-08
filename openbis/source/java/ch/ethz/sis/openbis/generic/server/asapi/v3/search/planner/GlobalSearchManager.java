@@ -183,10 +183,6 @@ public class GlobalSearchManager implements IGlobalSearchManager
 
             matchingEntity.setIdentifier((String) fieldsMap.get(IDENTIFIER_ALIAS));
 
-//            SearchDomainSearchResult searchResult = searchDomain.getSearchResult();
-//            matchingEntity.setSearchDomain(searchResult.getSearchDomain().getLabel());
-//            matchingEntity.setRegistrator();
-
             if (entityKind == EntityKind.EXPERIMENT || entityKind == EntityKind.DATA_SET)
             {
                 final Space space = new Space();
@@ -271,7 +267,7 @@ public class GlobalSearchManager implements IGlobalSearchManager
      * @param keys keys in the order how the values should be checked.
      * @return the first not null value from map casted to string.
      */
-    private String coalesceMap(final Map<?, ?> map, final String... keys)
+    private String coalesceMap(final Map<String, ?> map, final String... keys)
     {
         return (String) Arrays.stream(keys).map(map::get)
                 .filter(Objects::nonNull).findFirst().orElse(null);

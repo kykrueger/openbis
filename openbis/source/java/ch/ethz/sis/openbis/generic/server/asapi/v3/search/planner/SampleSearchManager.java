@@ -41,7 +41,7 @@ public class SampleSearchManager extends AbstractCompositeEntitySearchManager<Sa
 {
 
     public SampleSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
-            final IID2PEMapper idsMapper)
+            final IID2PEMapper<Long, Long> idsMapper)
     {
         super(searchDAO, authProvider, idsMapper);
     }

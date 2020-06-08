@@ -158,16 +158,14 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
         return mergeResults(operator, relatedIds);
     }
 
-    /*
-     * These methods require a simple SQL query to the database
-     */
+    // These methods require a simple SQL query to the database
 
     /**
      * Queries the DB to return all entity IDs.
      *
      * @return set of IDs of all entities.
      * @param userId requesting user ID.
-     * @param authorisationInformation
+     * @param authorisationInformation user authorisation information.
      * @param idsColumnName the name of the column, whose values to be returned.
      * @param tableMapper the table mapper to be used during translation.
      */
