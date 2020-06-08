@@ -21,6 +21,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.IObjectId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearchObjectSortOptions;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
@@ -356,6 +358,55 @@ public class GlobalSearchTest extends AbstractTest
         List<GlobalSearchObject> objects = result.getObjects();
 
         assertSorted(objects, globalSearchObject -> globalSearchObject.getObjectIdentifier().toString(), false);
+    }
+
+    @Test
+    public void testSearchWithSortingByMultipleFields()
+    {
+        GlobalSearchCriteria criteria = new GlobalSearchCriteria();
+        criteria.withText().thatContains("simple stuff");
+
+        GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
+        final GlobalSearchObjectSortOptions sortOptions = fo.sortBy();
+        sortOptions.score().asc();
+        sortOptions.objectKind().desc();
+        sortOptions.objectPermId().asc();
+
+        SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
+        List<GlobalSearchObject> objects = result.getObjects();
+
+        for (int index = 1, size = objects.size(); index < size; index++)
+        {
+            final GlobalSearchObject o1 = objects.get(index - 1);
+            final GlobalSearchObject o2 = objects.get(index);
+            final double value1 = o1.getScore();
+            final double value2 = o2.getScore();
+            final boolean scoresEqual = Math.abs(value1 - value2) < 0.0000001;
+            if (scoresEqual)
+            {
+                final GlobalSearchObjectKind objectKind1 = o1.getObjectKind();
+                final GlobalSearchObjectKind objectKind2 = o2.getObjectKind();
+
+                if (objectKind1.equals(objectKind2))
+                {
+                    final IObjectId permId1 = o1.getObjectPermId();
+                    final IObjectId permId2 = o2.getObjectPermId();
+
+                    assertFalse(permId1.toString().compareTo(permId2.toString()) > 0,
+                            "Subsubordering is incorrect. [index=" + index + "permId1=" + permId1 +
+                                    ", permId2=" + permId2 + "]");
+                } else
+                {
+                    assertFalse(objectKind1.compareTo(objectKind2) < 0,
+                            "Subordering is incorrect. [index=" + index + "objectKind1=" + objectKind1 +
+                                    ", objectKind2=" + objectKind2 + "]");
+                }
+            } else
+            {
+                assertFalse(value1 > value2,
+                        "Ordering is incorrect. [index=" + index + "value1=" + value1 + ", value2=" + value2 + "]");
+            }
+        }
     }
 
     @SuppressWarnings("unchecked")
