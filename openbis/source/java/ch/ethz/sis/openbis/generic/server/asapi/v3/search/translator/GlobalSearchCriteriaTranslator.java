@@ -515,7 +515,7 @@ public class GlobalSearchCriteriaTranslator
     {
         return (StringContainsExactlyValue.class.isAssignableFrom(stringValue.getClass()))
                 ? '\'' + stringValue.getValue() + '\''
-                : stringValue.getValue().replaceAll("['\"&|:!]", "").replaceAll("\\s+", " | ");
+                : stringValue.getValue().replaceAll("['&|:!()<>]", " ").trim().replaceAll("\\s+", " | ");
     }
 
 }
