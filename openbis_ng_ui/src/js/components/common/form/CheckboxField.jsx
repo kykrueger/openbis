@@ -7,7 +7,7 @@ import logger from '@src/js/common/logger.js'
 import FormFieldContainer from './FormFieldContainer.jsx'
 import FormFieldLabel from './FormFieldLabel.jsx'
 
-const styles = theme => ({
+const styles = () => ({
   container: {
     display: 'flex',
     alignItems: 'center'
@@ -16,10 +16,8 @@ const styles = theme => ({
     cursor: 'pointer'
   },
   checkbox: {
-    paddingTop: 0,
-    paddingBottom: 0,
-    paddingLeft: 0,
-    paddingRight: theme.spacing(1)
+    padding: '2px',
+    marginRight: '4px'
   }
 })
 
