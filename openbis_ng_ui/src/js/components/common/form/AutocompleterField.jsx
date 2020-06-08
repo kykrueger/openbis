@@ -10,6 +10,15 @@ import FormFieldLabel from './FormFieldLabel.jsx'
 const styles = () => ({
   paper: {
     margin: 0
+  },
+  textField: {
+    margin: 0
+  },
+  input: {
+    fontSize: '0.875rem'
+  },
+  option: {
+    fontSize: '0.875rem'
   }
 })
 
@@ -88,12 +97,20 @@ class AutocompleterFormField extends React.PureComponent {
           onFocus={this.handleFocus}
           onBlur={this.handleBlur}
           classes={{
-            paper: classes.paper
+            paper: classes.paper,
+            option: classes.option
           }}
           renderInput={params => (
             <TextField
               {...params}
               inputRef={this.getReference()}
+              InputProps={{
+                ...params.InputProps,
+                classes: {
+                  ...params.InputProps.classes,
+                  input: classes.input
+                }
+              }}
               label={
                 <FormFieldLabel
                   label={label}
@@ -106,6 +123,9 @@ class AutocompleterFormField extends React.PureComponent {
               autoComplete='off'
               variant='filled'
               margin='dense'
+              classes={{
+                root: classes.textField
+              }}
             />
           )}
         />

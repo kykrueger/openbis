@@ -16,6 +16,9 @@ const styles = () => ({
   },
   textField: {
     margin: 0
+  },
+  input: {
+    fontSize: '0.875rem'
   }
 })
 
@@ -79,7 +82,10 @@ class TextFormField extends React.PureComponent {
               >
                 {endAdornment}
               </InputAdornment>
-            ) : null
+            ) : null,
+            classes: {
+              input: classes.input
+            }
           }}
           name={name}
           value={value || ''}

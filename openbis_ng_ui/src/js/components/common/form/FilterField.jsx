@@ -12,7 +12,8 @@ const styles = () => ({
     width: '100%'
   },
   input: {
-    height: '24px'
+    height: '24px',
+    fontSize: '0.875rem'
   },
   adornment: {
     margin: '8px'

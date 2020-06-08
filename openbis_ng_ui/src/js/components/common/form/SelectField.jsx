@@ -11,10 +11,14 @@ const styles = () => ({
   textField: {
     margin: 0
   },
+  select: {
+    fontSize: '0.875rem'
+  },
   option: {
     '&:after': {
       content: '"\\00a0"'
-    }
+    },
+    fontSize: '0.875rem'
   }
 })
 
@@ -103,6 +107,9 @@ class SelectFormField extends React.PureComponent {
                 vertical: 'bottom',
                 horizontal: 'left'
               }
+            },
+            classes: {
+              root: classes.select
             }
           }}
           variant='filled'

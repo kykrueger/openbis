@@ -12,9 +12,15 @@ import logger from '@src/js/common/logger.js'
 import BrowserNodes from './BrowserNodes.jsx'
 
 const styles = {
+  item: {
+    padding: '4px 0px'
+  },
   icon: {
     margin: '0px 8px',
     minWidth: '24px'
+  },
+  text: {
+    fontSize: '0.875rem'
   }
 }
 
@@ -22,7 +28,7 @@ class BrowserNode extends React.PureComponent {
   render() {
     logger.log(logger.DEBUG, 'BrowserNode.render')
 
-    const { controller, node, level } = this.props
+    const { controller, node, level, classes } = this.props
 
     return (
       <div>
@@ -31,6 +37,9 @@ class BrowserNode extends React.PureComponent {
           selected={node.selected}
           onClick={() => controller.nodeSelect(node.id)}
           style={{ paddingLeft: level * 24 + 'px' }}
+          classes={{
+            root: classes.item
+          }}
         >
           {this.renderIcon(node)}
           {this.renderText(node)}
@@ -99,7 +108,16 @@ class BrowserNode extends React.PureComponent {
   renderText(node) {
     logger.log(logger.DEBUG, 'BrowserNode.renderText "' + node.text + '"')
 
-    return <ListItemText primary={node.text} />
+    const { classes } = this.props
+
+    return (
+      <ListItemText
+        primary={node.text}
+        classes={{
+          primary: classes.text
+        }}
+      />
+    )
   }
 }
 
