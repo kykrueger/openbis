@@ -379,11 +379,6 @@ public class GlobalSearchCriteriaTranslator
         sqlBuilder.append(TS_RANK).append(LP).append(COALESCE).append(LP)
                 .append(GlobalSearchCriteriaTranslator.PROPERTIES_TABLE_ALIAS).append(PERIOD).append(TSVECTOR_DOCUMENT)
                 .append(COMMA).append(SP).append(SQ).append(SQ).append(RP)
-                .append(SP).append(BARS).append(SP)
-                .append(COALESCE).append(LP)
-                .append(GlobalSearchCriteriaTranslator.CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS).append(PERIOD)
-                .append(TSVECTOR_DOCUMENT).append(COMMA).append(SP).append(SQ).append(SQ)
-                .append(RP)
                 .append(COMMA).append(SP);
         buildTsQueryPart(sqlBuilder, stringValue, args);
         sqlBuilder.append(RP);
