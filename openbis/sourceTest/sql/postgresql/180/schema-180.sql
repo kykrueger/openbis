@@ -1007,7 +1007,6 @@ CREATE TABLE controlled_vocabulary_terms (
     description description_2000,
     ordinal ordinal_int NOT NULL,
     is_official boolean_char DEFAULT true NOT NULL,
-    tsvector_document tsvector,
     CONSTRAINT cvte_ck CHECK (((ordinal)::bigint > 0))
 );
 CREATE SEQUENCE core_plugin_id_seq
@@ -1056,7 +1055,7 @@ CREATE TABLE data_all (
     frozen_for_parents boolean_char DEFAULT false NOT NULL,
     frozen_for_comps boolean_char DEFAULT false NOT NULL,
     frozen_for_conts boolean_char DEFAULT false NOT NULL,
-    tsvector_document tsvector,
+    tsvector_document tsvector NOT NULL,
     CONSTRAINT data_ck CHECK (((expe_id IS NOT NULL) OR (samp_id IS NOT NULL)))
 );
 CREATE VIEW data AS
@@ -1598,7 +1597,7 @@ CREATE TABLE experiments_all (
     proj_frozen boolean_char DEFAULT false NOT NULL,
     frozen_for_samp boolean_char DEFAULT false NOT NULL,
     frozen_for_data boolean_char DEFAULT false NOT NULL,
-    tsvector_document tsvector
+    tsvector_document tsvector NOT NULL
 );
 CREATE VIEW experiments AS
  SELECT experiments_all.id,
@@ -1802,7 +1801,7 @@ CREATE TABLE materials (
     pers_id_registerer tech_id NOT NULL,
     registration_timestamp time_stamp_dfl DEFAULT now() NOT NULL,
     modification_timestamp time_stamp DEFAULT now(),
-    tsvector_document tsvector
+    tsvector_document tsvector NOT NULL
 );
 CREATE SEQUENCE metaproject_assignment_id_seq
     START WITH 1
@@ -2234,7 +2233,7 @@ CREATE TABLE samples_all (
     frozen_for_children boolean_char DEFAULT false NOT NULL,
     frozen_for_parents boolean_char DEFAULT false NOT NULL,
     frozen_for_data boolean_char DEFAULT false NOT NULL,
-    tsvector_document tsvector
+    tsvector_document tsvector NOT NULL
 );
 CREATE VIEW samples AS
  SELECT samples_all.id,
