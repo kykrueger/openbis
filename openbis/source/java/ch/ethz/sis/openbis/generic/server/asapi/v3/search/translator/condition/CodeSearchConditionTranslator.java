@@ -23,7 +23,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractStringValu
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringFieldSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sample.SampleIdentifierParts;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.FullEntityIdentifier;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils;
@@ -86,7 +86,7 @@ public class CodeSearchConditionTranslator implements IConditionTranslator<Strin
 
                     if (spaceCode != null)
                     {
-                        sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(OWNER_COLUMN).append(SP).append(EQ).append(SP).
+                        sqlBuilder.append(SearchCriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(OWNER_COLUMN).append(SP).append(EQ).append(SP).
                                 append(LP);
                         sqlBuilder.append(SELECT).append(SP).append(ID_COLUMN).append(SP).
                                 append(FROM).append(SP).append(PERSONS_TABLE).append(SP).
@@ -98,7 +98,7 @@ public class CodeSearchConditionTranslator implements IConditionTranslator<Strin
 
                     if (containerCode != null)
                     {
-                        sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(PART_OF_SAMPLE_COLUMN).append(SP).
+                        sqlBuilder.append(SearchCriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(PART_OF_SAMPLE_COLUMN).append(SP).
                                 append(EQ).append(SP).append(LP).
                                 append(SELECT).append(SP).append(ID_COLUMN).append(SP).append(FROM).append(SP).
                                 append(tableMapper.getEntitiesTable()).append(SP).
@@ -108,19 +108,17 @@ public class CodeSearchConditionTranslator implements IConditionTranslator<Strin
                         sqlBuilder.append(RP).append(SP).append(AND).append(SP);
                     }
 
-                    sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(columnName).append(SP);
+                    sqlBuilder.append(SearchCriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(columnName).append(SP);
                     TranslatorUtils.appendStringComparatorOp(value.getClass(), entityCode, sqlBuilder, args);
                 } else
                 {
-                    sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(columnName).append(SP).append(IS_NOT_NULL);
+                    sqlBuilder.append(SearchCriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(columnName).append(SP).append(IS_NOT_NULL);
                 }
                 break;
             }
 
             case PROPERTY:
-                // Fall through.
             case ANY_PROPERTY:
-                // Fall through.
             case ANY_FIELD:
             {
                 throw new IllegalArgumentException();

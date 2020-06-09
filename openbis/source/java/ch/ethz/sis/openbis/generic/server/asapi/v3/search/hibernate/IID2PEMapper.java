@@ -19,15 +19,14 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate;
 import java.util.Collection;
 
 /**
- * Translator that translates IDs to the same values.
+ * Mapper from {@link ID} to {@link OBJECT_PE} type.
+ *
+ * @param <ID> the type to map from.
+ * @param <OBJECT_PE> the type to map to.
  */
-public class IdentityTranslator implements IID2PETranslator<Long>
+public interface IID2PEMapper<ID, OBJECT_PE>
 {
 
-    @Override
-    public Collection<Long> translate(final Collection<Long> ids)
-    {
-        return ids;
-    }
+    Collection <OBJECT_PE> map(final Collection<ID> ids);
 
 }

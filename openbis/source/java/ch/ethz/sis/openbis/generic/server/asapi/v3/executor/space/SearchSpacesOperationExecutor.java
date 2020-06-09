@@ -22,6 +22,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.search.ProjectSearchCrit
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SpaceSearchManager;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ILocalSearchManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -81,7 +82,7 @@ public class SearchSpacesOperationExecutor extends SearchObjectsPEOperationExecu
     }
 
     @Override
-    protected ISearchManager<SpaceSearchCriteria, Space, Long> getSearchManager() {
+    protected ILocalSearchManager<SpaceSearchCriteria, Space, Long> getSearchManager() {
         return spaceSearchManager;
     }
 

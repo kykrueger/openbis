@@ -18,7 +18,7 @@ def create_experiment(tr):
     return exp
 
 def create_plate(tr, experiment, plateCode, gene):
-    plateId = "/TEST/" + plateCode
+    plateId = "/TEST/TEST-PROJECT/" + plateCode
     plate = tr.createNewSample(plateId, 'PLATE')
     plate.setPropertyValue(PLATE_GEOMETRY_PROPERTY_CODE, PLATE_GEOMETRY)
     plate.setExperiment(experiment)

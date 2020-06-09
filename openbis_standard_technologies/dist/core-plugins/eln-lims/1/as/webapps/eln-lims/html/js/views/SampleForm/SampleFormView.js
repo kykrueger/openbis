@@ -616,11 +616,22 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		// PREVIEW IMAGE
 		//
 		if(this._sampleFormModel.mode !== FormMode.CREATE) {
+
+            var maxWidth = Math.floor(LayoutManager.getExpectedContentWidth() / 3);
+            var maxHeight = Math.floor(LayoutManager.getExpectedContentHeight() / 3);
+
+            var previewStyle = null;
+            if (maxHeight < maxWidth) {
+                previewStyle = "max-height:" + maxHeight + "px; display:none;";
+            } else {
+                previewStyle = "max-width:" + maxWidth + "px; display:none;";
+            }
+
 			var $previewImage = $("<img>", { 'data-preview-loaded' : 'false',
 											 'class' : 'zoomableImage',
 											 'id' : 'preview-image',
 											 'src' : './img/image_loading.gif',
-											 'style' : 'max-width:300px; display:none;'
+											 'style' : previewStyle
 											});
 			$previewImage.click(function() {
 				Util.showImage($("#preview-image").attr("src"));
@@ -795,6 +806,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 					                $component = FormUtil.activateRichTextProperties($component, changeEvent(propertyType), propertyType, value, false);
 					            } else {
 					                alert("Word Processor only works with MULTILINE_VARCHAR data type, " + propertyType.code + " is " + propertyType.dataType + ".");
+					                $component.change(changeEvent(propertyType));
 					            }
 					            break;
 					        case 'Spreadsheet':
@@ -804,6 +816,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
                                     $component = $jexcelContainer;
 					            } else {
 					                alert("Spreadsheet only works with XML data type, " + propertyType.code + " is " + propertyType.dataType + ".");
+					                $component.change(changeEvent(propertyType));
 					            }
 					            break;
 					    }

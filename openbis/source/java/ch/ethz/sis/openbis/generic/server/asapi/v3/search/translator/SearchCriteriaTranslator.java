@@ -32,6 +32,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.search.TagSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.CriteriaMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ILocalSearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.IConditionTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinInformation;
@@ -52,7 +53,7 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.METAPROJEC
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.METAPROJECTS_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.METAPROJECT_ASSIGNMENTS_ALL_TABLE;
 
-public class CriteriaTranslator
+public class SearchCriteriaTranslator
 {
 
     public static final DateFormat DATE_FORMAT = new SimpleDateFormat(BasicConstant.DATE_WITHOUT_TIMEZONE_PATTERN);
@@ -62,6 +63,11 @@ public class CriteriaTranslator
     public static final DateFormat DATE_WITH_SHORT_TIME_FORMAT = new SimpleDateFormat(BasicConstant.DATE_WITH_SHORT_TIME_PATTERN);
 
     public static final String MAIN_TABLE_ALIAS = getAlias(new AtomicInteger(0));
+
+    private SearchCriteriaTranslator()
+    {
+        throw new UnsupportedOperationException();
+    }
 
     public static SelectQuery translate(final TranslationVo vo)
     {
@@ -158,7 +164,7 @@ public class CriteriaTranslator
             final StringBuilder sqlBuilder, ISearchCriteria criterion)
     {
         final TableMapper tableMapper = vo.getTableMapper();
-        final ISearchManager<ISearchCriteria, ?, ?> subqueryManager = (criterion instanceof EntityTypeSearchCriteria)
+        final ISearchManager subqueryManager = (criterion instanceof EntityTypeSearchCriteria)
                 ? CriteriaMapper.getEntityKindToManagerMap().get(tableMapper.getEntityKind())
                 : CriteriaMapper.getCriteriaToManagerMap().get(criterion.getClass());
         final AbstractCompositeSearchCriteria parentCriterion = vo.getParentCriterion();
@@ -178,9 +184,19 @@ public class CriteriaTranslator
 
                 if (tableMapper != null && column != null)
                 {
-                    final Set<Long> ids = subqueryManager.searchForIDs(vo.getUserId(), authorisationInformation, criterion, null, parentCriterion,
-                            CriteriaMapper.getParentChildCriteriaToChildSelectIdMap().getOrDefault(
-                                    Arrays.asList(parentCriterion.getClass(), criterion.getClass()), ID_COLUMN));
+                    final Set<Long> ids;
+                    if (subqueryManager instanceof ILocalSearchManager<?, ?, ?>)
+                    {
+                        final ILocalSearchManager<ISearchCriteria, ?, ?> localSearchManager =
+                                (ILocalSearchManager<ISearchCriteria, ?, ?>) subqueryManager;
+                        ids = localSearchManager.searchForIDs(vo.getUserId(), authorisationInformation, criterion, parentCriterion,
+                                CriteriaMapper.getParentChildCriteriaToChildSelectIdMap().getOrDefault(
+                                        Arrays.asList(parentCriterion.getClass(), criterion.getClass()), ID_COLUMN));
+                    } else {
+                        throw new IllegalArgumentException("Only local search subqueries are supported.");
+                    }
+
+
                     appendInStatement(sqlBuilder, criterion, column, tableMapper);
                     vo.getArgs().add(ids.toArray(new Long[0]));
                 } else

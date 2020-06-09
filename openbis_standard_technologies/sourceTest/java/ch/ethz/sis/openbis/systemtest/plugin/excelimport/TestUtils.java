@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.create.VocabularyCreation;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -338,6 +339,20 @@ public class TestUtils {
         scriptsMap.put("dynamic/dynamic.py", dynamicScriptString);
 
         return scriptsMap;
+    }
+
+    static VocabularyPermId createVocabulary(IApplicationServerInternalApi v3api, String sessionToken, String code, String description) {
+        List<VocabularyCreation> newVocabularies = new ArrayList<>();
+        VocabularyCreation creation = new VocabularyCreation();
+        creation.setCode(code);
+        creation.setDescription(description);
+        newVocabularies.add(creation);
+        List<VocabularyPermId> vocabularies = v3api.createVocabularies(sessionToken, newVocabularies);
+        if (vocabularies.size() > 0) {
+            return vocabularies.get(0);
+        } else {
+            return null;
+        }
     }
 
     static String extractSamplePermIdFromResults(String result) {

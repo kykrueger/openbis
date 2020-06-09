@@ -26,7 +26,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.attachment.update.AttachmentListUpdateValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IPropertiesHolder;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ISamplePropertiesHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.FieldUpdateValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IObjectUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IUpdate;
@@ -34,7 +33,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IdListUpdateValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.ListUpdateValue.ListUpdateAction;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.IExperimentId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.IProjectId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.ITagId;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
@@ -42,7 +40,7 @@ import ch.systemsx.cisd.base.annotation.JsonObject;
  * @author pkupczyk
  */
 @JsonObject("as.dto.experiment.update.ExperimentUpdate")
-public class ExperimentUpdate implements IUpdate, IObjectUpdate<IExperimentId>, IPropertiesHolder, ISamplePropertiesHolder
+public class ExperimentUpdate implements IUpdate, IObjectUpdate<IExperimentId>, IPropertiesHolder
 {
 
     private static final long serialVersionUID = 1L;
@@ -61,9 +59,6 @@ public class ExperimentUpdate implements IUpdate, IObjectUpdate<IExperimentId>, 
 
     @JsonProperty
     private Map<String, String> properties = new HashMap<String, String>();
-
-    @JsonProperty
-    private Map<String, ISampleId> sampleProperties = new HashMap<String, ISampleId>();
 
     @JsonProperty
     private FieldUpdateValue<IProjectId> projectId = new FieldUpdateValue<IProjectId>();
@@ -154,19 +149,6 @@ public class ExperimentUpdate implements IUpdate, IObjectUpdate<IExperimentId>, 
     public Map<String, String> getProperties()
     {
         return properties;
-    }
-
-    @JsonIgnore
-    public void setSampleProperty(String propertyName, ISampleId sampleId)
-    {
-        sampleProperties.put(propertyName, sampleId);
-    }
-
-    @Override
-    @JsonIgnore
-    public Map<String, ISampleId> getSampleProperties()
-    {
-        return sampleProperties;
     }
 
     @JsonIgnore

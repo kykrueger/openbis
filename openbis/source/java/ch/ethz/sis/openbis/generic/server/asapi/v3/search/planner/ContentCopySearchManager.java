@@ -23,7 +23,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.ContentCopySearch
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PEMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
 
@@ -36,13 +36,13 @@ import java.util.Set;
  *
  * @author Viktor Kovtun
  */
-public class ContentCopySearchManager extends AbstractSearchManager<ContentCopySearchCriteria, ContentCopy, Long>
+public class ContentCopySearchManager extends AbstractLocalSearchManager<ContentCopySearchCriteria, ContentCopy, Long>
 {
 
     public ContentCopySearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
-            final IID2PETranslator<Long> idsTranslator)
+            final IID2PEMapper<Long, Long> idsMapper)
     {
-        super(searchDAO, authProvider, idsTranslator);
+        super(searchDAO, authProvider, idsMapper);
     }
 
     @Override
@@ -53,7 +53,7 @@ public class ContentCopySearchManager extends AbstractSearchManager<ContentCopyS
 
     @Override
     public Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation,
-            final ContentCopySearchCriteria criteria, final SortOptions<ContentCopy> sortOptions,
+            final ContentCopySearchCriteria criteria,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
         return super.searchForIDs(userId, authorisationInformation, criteria, ColumnNames.ID_COLUMN, TableMapper.CONTENT_COPIES);

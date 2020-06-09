@@ -1,8 +1,8 @@
-function Grid(columnsFirst, columnsLast, columnsDynamicFunc, getDataList, showAllColumns, tableSettings, onChangeState, isMultiselectable, maxHeight, heightPercentage, scrollbarWidth, title) {
-	this.init(columnsFirst, columnsLast, columnsDynamicFunc, getDataList, showAllColumns, tableSettings, onChangeState, isMultiselectable, maxHeight, heightPercentage, scrollbarWidth, title);
+function Grid(columnsFirst, columnsLast, columnsDynamicFunc, getDataList, showAllColumns, tableSettings, onChangeState, isMultiselectable, forceFullContentHeight, heightPercentage, scrollbarWidth, title) {
+	this.init(columnsFirst, columnsLast, columnsDynamicFunc, getDataList, showAllColumns, tableSettings, onChangeState, isMultiselectable, forceFullContentHeight, heightPercentage, scrollbarWidth, title);
 }
 $.extend(Grid.prototype, {
-	init : function(columnsFirst, columnsLast, columnsDynamicFunc, getDataList, showAllColumns, tableSettings, onChangeState, isMultiselectable, maxHeight, heightPercentage, scrollbarWidth, title) {
+	init : function(columnsFirst, columnsLast, columnsDynamicFunc, getDataList, showAllColumns, tableSettings, onChangeState, isMultiselectable, forceFullContentHeight, heightPercentage, scrollbarWidth, title) {
 		this.columnsFirst = columnsFirst;
 		this.columnsDynamicFunc = columnsDynamicFunc;
 		this.columnsDynamic = [];
@@ -31,6 +31,7 @@ $.extend(Grid.prototype, {
 			this.addMultiSelect(columnsFirst);
 		}
 		this.lastUsedColumns = [];
+		this.forceFullContentHeight = forceFullContentHeight;
 		if(heightPercentage) {
 			this.maxHeight = ($(window).height() - LayoutManager.secondColumnHeader.outerHeight()) * (heightPercentage/100) - 30;
 		}
@@ -177,7 +178,7 @@ $.extend(Grid.prototype, {
 			e.stopPropagation();
 		});
 		
-		var defaultNumColumns = 3; //Including last always
+		var defaultNumColumns = 4; //Including last always
 		
 		var currentColumns = this.getAllColumns();
 		
@@ -814,9 +815,13 @@ $.extend(Grid.prototype, {
 		var viewport = $panel.find(".repeater-canvas")[0];
 		var scrollbarHeight = viewport.scrollWidth > viewport.offsetWidth ? thisGrid.scrollbarWidth : 0;
 		var totalHeight = headerHeight + listHeight + footerHeight + scrollbarHeight;
-		totalHeight = Math.min(totalHeight, thisGrid.maxHeight);
-		if (thisGrid.viewOptions.staticHeight < totalHeight) {
-			thisGrid.viewOptions.staticHeight = totalHeight;
+		if(thisGrid.forceFullContentHeight) {
+		    thisGrid.viewOptions.staticHeight = totalHeight;
+		} else {
+		    totalHeight = Math.min(totalHeight, thisGrid.maxHeight);
+            if (thisGrid.viewOptions.staticHeight < totalHeight) {
+                thisGrid.viewOptions.staticHeight = totalHeight;
+            }
 		}
 
 	},

@@ -22,7 +22,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PEMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
 
@@ -34,11 +34,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends AbstractCompositeSearchCriteria,
-        OBJECT, OBJECT_PE> extends AbstractSearchManager<CRITERIA, OBJECT, OBJECT_PE>
+        OBJECT, OBJECT_PE> extends AbstractLocalSearchManager<CRITERIA, OBJECT, OBJECT_PE>
 {
 
     public AbstractCompositeEntitySearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
-            final IID2PETranslator<OBJECT_PE> idsTranslator)
+            final IID2PEMapper<Long, OBJECT_PE> idsTranslator)
     {
         super(searchDAO, authProvider, idsTranslator);
     }
@@ -158,16 +158,14 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
         return mergeResults(operator, relatedIds);
     }
 
-    /*
-     * These methods require a simple SQL query to the database
-     */
+    // These methods require a simple SQL query to the database
 
     /**
      * Queries the DB to return all entity IDs.
      *
      * @return set of IDs of all entities.
      * @param userId requesting user ID.
-     * @param authorisationInformation
+     * @param authorisationInformation user authorisation information.
      * @param idsColumnName the name of the column, whose values to be returned.
      * @param tableMapper the table mapper to be used during translation.
      */

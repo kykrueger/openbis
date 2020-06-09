@@ -57,9 +57,10 @@ public class BasicDataSetInformation extends DataSetInformation
      * {@link ch.systemsx.cisd.etlserver.registrator.api.v1.IDataSetUpdatable#setSample(ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v1.ISampleImmutable)}
      * on the object returned by {@link ch.systemsx.cisd.etlserver.registrator.api.v1.IDataSetRegistrationTransaction#createNewDataSet()}.
      */
-    public void setSample(String sampleSpaceCode, String sampleCode)
+    public void setSample(String sampleSpaceCode, String sampleProjectCode, String sampleCode)
     {
         super.setSpaceCode(sampleSpaceCode);
+        super.setProjectCode(sampleProjectCode);
         super.setSampleCode(sampleCode);
     }
 

@@ -81,7 +81,7 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
         PersonPE personPE = daoFactory.getPersonDAO().tryFindPersonByUserId(userId);
 
         // Obtain entity criteria
-        AbstractEntitySearchCriteria mainV3Criteria = getCriteria(entityKind);
+        AbstractEntitySearchCriteria<?> mainV3Criteria = getCriteria(entityKind);
 
         // Entity Criteria translation
         for (DetailedSearchCriterion mainV1Criterion:mainV1Criteria.getCriteria()) {
@@ -93,20 +93,20 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
             DetailedSearchCriteria subV1Criteria = subV1CriteriaPointer.getCriteria();
 
             for (DetailedSearchCriterion subV1Criterion:subV1Criteria.getCriteria()) {
-                AbstractEntitySearchCriteria subV3Criteria = null;
+                AbstractEntitySearchCriteria<?> subV3Criteria = null;
 
                 switch (subV1CriteriaPointer.getTargetEntityKind()) {
                     case SAMPLE:
-                            if (mainV3Criteria instanceof DataSetSearchCriteria) {
-                                subV3Criteria = ((DataSetSearchCriteria) mainV3Criteria).withSample();
-                            }
+                        if (mainV3Criteria instanceof DataSetSearchCriteria) {
+                            subV3Criteria = ((DataSetSearchCriteria) mainV3Criteria).withSample();
+                        }
                         break;
                     case EXPERIMENT:
-                            if (mainV3Criteria instanceof SampleSearchCriteria) {
-                                subV3Criteria = ((SampleSearchCriteria) mainV3Criteria).withExperiment();
-                            } else if(mainV3Criteria instanceof DataSetSearchCriteria) {
-                                subV3Criteria = ((DataSetSearchCriteria) mainV3Criteria).withExperiment();
-                            }
+                        if (mainV3Criteria instanceof SampleSearchCriteria) {
+                            subV3Criteria = ((SampleSearchCriteria) mainV3Criteria).withExperiment();
+                        } else if(mainV3Criteria instanceof DataSetSearchCriteria) {
+                            subV3Criteria = ((DataSetSearchCriteria) mainV3Criteria).withExperiment();
+                        }
                         break;
                     case DATA_SET:
                         // Seems unsupported on V3 Criteria
@@ -160,13 +160,12 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
                 getAuthorisationInformation(personPE),
                 mainV3Criteria,
                 null,
-                null,
                 ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN);
 
         return new ArrayList<>(results);
     }
 
-    private void adapt(AbstractEntitySearchCriteria v3Criteria,
+    private void adapt(AbstractEntitySearchCriteria<?> v3Criteria,
                        DetailedSearchCriteria v1Criteria,
                        DetailedSearchCriterion v1Criterion) {
 
@@ -358,8 +357,9 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
         return dataSetSearchManager;
     }
 
-    private ISearchManager getSearchManager(EntityKind entityKind) {
-        ISearchManager manager = null;
+    @SuppressWarnings("unchecked")
+    private ILocalSearchManager<AbstractEntitySearchCriteria<?>, ?, Long> getSearchManager(EntityKind entityKind) {
+        ILocalSearchManager<? extends AbstractEntitySearchCriteria<?>, ?, Long> manager = null;
         switch (entityKind) {
             case MATERIAL:
                 manager = getMaterialSearchManager();
@@ -374,10 +374,10 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
                 manager = getDataSetSearchManager();
                 break;
         }
-        return manager;
+        return (ILocalSearchManager<AbstractEntitySearchCriteria<?>, ?, Long>) manager;
     }
 
-    private StringFieldSearchCriteria withTypeCode(AbstractEntitySearchCriteria entitySearchCriteria) {
+    private StringFieldSearchCriteria withTypeCode(AbstractEntitySearchCriteria<?> entitySearchCriteria) {
         if (entitySearchCriteria instanceof SampleSearchCriteria) {
             return ((SampleSearchCriteria)entitySearchCriteria).withType().withCode();
         } else if (entitySearchCriteria instanceof ExperimentSearchCriteria) {
@@ -391,7 +391,7 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
         }
     }
 
-    private StringFieldSearchCriteria withSpaceCode(AbstractEntitySearchCriteria entitySearchCriteria) {
+    private StringFieldSearchCriteria withSpaceCode(AbstractEntitySearchCriteria<?> entitySearchCriteria) {
         if (entitySearchCriteria instanceof SampleSearchCriteria) {
             return ((SampleSearchCriteria)entitySearchCriteria).withProject().withSpace().withCode();
         } else if (entitySearchCriteria instanceof ExperimentSearchCriteria) {
@@ -401,7 +401,7 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
         }
     }
 
-    private StringFieldSearchCriteria withProjectCode(AbstractEntitySearchCriteria entitySearchCriteria) {
+    private StringFieldSearchCriteria withProjectCode(AbstractEntitySearchCriteria<?> entitySearchCriteria) {
         if (entitySearchCriteria instanceof ExperimentSearchCriteria) {
             return ((ExperimentSearchCriteria)entitySearchCriteria).withProject().withCode();
         } else {
@@ -409,7 +409,7 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
         }
     }
 
-    private StringFieldSearchCriteria withProjectPermId(AbstractEntitySearchCriteria entitySearchCriteria) {
+    private StringFieldSearchCriteria withProjectPermId(AbstractEntitySearchCriteria<?> entitySearchCriteria) {
         if (entitySearchCriteria instanceof ExperimentSearchCriteria) {
             return ((ExperimentSearchCriteria)entitySearchCriteria).withProject().withPermId();
         } else {

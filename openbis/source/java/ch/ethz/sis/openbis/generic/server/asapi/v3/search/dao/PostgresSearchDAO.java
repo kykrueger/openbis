@@ -18,14 +18,12 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.*;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.CriteriaMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.ISQLExecutor;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.OrderTranslator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SelectQuery;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.TranslationVo;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.*;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -71,11 +69,35 @@ public class PostgresSearchDAO implements ISQLSearchDAO
                         ((AbstractFieldSearchCriteria) subcriterion).getFieldType().equals(SearchFieldType.PROPERTY));
         updateWithDataTypes(translationVo, containsProperties);
 
-        final SelectQuery selectQuery = CriteriaTranslator.translate(translationVo);
+        final SelectQuery selectQuery = SearchCriteriaTranslator.translate(translationVo);
         final List<Map<String, Object>> result = sqlExecutor.execute(selectQuery.getQuery(), selectQuery.getArgs());
         return result.stream().map(
                 stringLongMap -> (Long) stringLongMap.get(finalIdColumnName)
         ).collect(Collectors.toSet());
+    }
+
+    @Override
+    public Set<Map<String, Object>> queryDBWithNonRecursiveCriteria(final Long userId, final GlobalSearchCriteria criterion,
+            final TableMapper tableMapper, final String idsColumnName, final AuthorisationInformation authorisationInformation)
+    {
+        final Collection<ISearchCriteria> criteria = criterion.getCriteria();
+        final SearchOperator operator = criterion.getOperator();
+
+        final String finalIdColumnName = (idsColumnName == null) ? ID_COLUMN : idsColumnName;
+
+        final TranslationVo translationVo = new TranslationVo();
+        translationVo.setUserId(userId);
+        translationVo.setTableMapper(tableMapper);
+        translationVo.setParentCriterion(criterion);
+        translationVo.setCriteria(criteria);
+        translationVo.setOperator(operator);
+        translationVo.setIdColumnName(finalIdColumnName);
+        translationVo.setAuthorisationInformation(authorisationInformation);
+
+        final SelectQuery selectQuery = GlobalSearchCriteriaTranslator.translate(translationVo);
+        final List<Map<String, Object>> result = sqlExecutor.execute(selectQuery.getQuery(), selectQuery.getArgs());
+
+        return new LinkedHashSet<>(result);
     }
 
     @Override

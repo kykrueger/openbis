@@ -16,7 +16,7 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils;
 
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator.*;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCriteriaTranslator.*;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.*;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.*;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.*;
@@ -34,7 +34,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.TimeZone;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.*;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.IAliasFactory;
 import ch.systemsx.cisd.openbis.generic.shared.basic.BasicConstant;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
@@ -103,7 +103,7 @@ public class TranslatorUtils
         {
             sqlBuilder.append(ILIKE).append(SP).append(QU);
             args.add(PERCENT + toPSQLWildcards(finalValue));
-        } else if (valueClass == StringContainsValue.class)
+        } else if (valueClass == StringContainsValue.class || valueClass == StringContainsExactlyValue.class)
         {
             sqlBuilder.append(ILIKE).append(SP).append(QU);
             args.add(PERCENT + toPSQLWildcards(finalValue) + PERCENT);
@@ -146,17 +146,25 @@ public class TranslatorUtils
                 case PERCENT:
                     // Fall through.
                 case BACKSLASH:
+                {
                     sb.append(BACKSLASH).append(ch);
                     break;
+                }
                 case ASTERISK:
+                {
                     sb.append(PERCENT);
                     break;
+                }
                 case QU:
+                {
                     sb.append(UNDERSCORE);
                     break;
+                }
                 default:
+                {
                     sb.append(ch);
                     break;
+                }
             }
         });
         return sb.toString();
@@ -197,7 +205,7 @@ public class TranslatorUtils
         final JoinInformation joinInformation1 = new JoinInformation();
         joinInformation1.setJoinType(joinType);
         joinInformation1.setMainTable(tableMapper.getEntitiesTable());
-        joinInformation1.setMainTableAlias(CriteriaTranslator.MAIN_TABLE_ALIAS);
+        joinInformation1.setMainTableAlias(SearchCriteriaTranslator.MAIN_TABLE_ALIAS);
         joinInformation1.setMainTableIdField(ID_COLUMN);
         joinInformation1.setSubTable(tableMapper.getValuesTable());
         joinInformation1.setSubTableAlias(valuesTableAlias);
@@ -265,7 +273,7 @@ public class TranslatorUtils
         final JoinInformation joinInformation = new JoinInformation();
         joinInformation.setJoinType(JoinType.INNER);
         joinInformation.setMainTable(tableMapper.getEntitiesTable());
-        joinInformation.setMainTableAlias(CriteriaTranslator.MAIN_TABLE_ALIAS);
+        joinInformation.setMainTableAlias(SearchCriteriaTranslator.MAIN_TABLE_ALIAS);
         joinInformation.setMainTableIdField(tableMapper.getEntitiesTableEntityTypeIdField());
         joinInformation.setSubTable(tableMapper.getEntityTypesTable());
         joinInformation.setSubTableAlias(aliasFactory.createAlias());
@@ -283,7 +291,7 @@ public class TranslatorUtils
         final JoinInformation joinInformation1 = new JoinInformation();
         joinInformation1.setJoinType(JoinType.INNER);
         joinInformation1.setMainTable(tableMapper.getEntitiesTable());
-        joinInformation1.setMainTableAlias(CriteriaTranslator.MAIN_TABLE_ALIAS);
+        joinInformation1.setMainTableAlias(SearchCriteriaTranslator.MAIN_TABLE_ALIAS);
         joinInformation1.setMainTableIdField(ID_COLUMN);
         joinInformation1.setSubTable(tableMapper.getRelationshipsTable());
         joinInformation1.setSubTableAlias(relationshipsTableAlias);
@@ -540,7 +548,22 @@ public class TranslatorUtils
     }
 
     /**
-     * Appends one of the the following texts to sqlBuilder depending on the value of {@code samplesTableAlias}. If it is {@code null} the second
+     * Appends the following test to {@code sqlBuilder}.
+     * <pre>
+     *     t0.code || '(' || [entityTypesTableAlias].code || ')'
+     * </pre>
+     * @param sqlBuilder query builder.
+     * @param entityTypesTableAlias alias of the entity type table.
+     */
+    public static void buildTypeCodeIdentifierConcatenationString(final StringBuilder sqlBuilder, final String entityTypesTableAlias)
+    {
+        sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(SP).append(BARS).append(SP)
+                .append(SQ).append(" (").append(SQ).append(SP).append(BARS).append(SP).append(entityTypesTableAlias).append(PERIOD)
+                .append(CODE_COLUMN).append(SP).append(BARS).append(SP).append(SQ).append(")").append(SQ);
+    }
+
+    /**
+     * Appends one of the the following texts to {@code sqlBuilder} depending on the value of {@code samplesTableAlias}. If it is {@code null} the second
      * version will be appended.
      *
      * <pre>
@@ -549,7 +572,6 @@ public class TranslatorUtils
      * <pre>
      *     '/' || coalesce([spacesTableAlias].code || '/', '') || coalesce([projectsTableAlias].code || '/', '') || t0.code
      * </pre>
-     *
      * @param sqlBuilder query builder.
      * @param spacesTableAlias alias of the spaces table.
      * @param projectsTableAlias alias of the projects table.
@@ -575,7 +597,8 @@ public class TranslatorUtils
             appendCoalesce(sqlBuilder, samplesTableAlias, colon);
         }
 
-        sqlBuilder.append(SP).append(LOWER).append(LP).append(MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(RP).append(SP);
+        sqlBuilder.append(SP).append(LOWER).append(LP).append(MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN)
+                .append(RP);
     }
 
     /**
@@ -584,7 +607,6 @@ public class TranslatorUtils
      * <pre>
      *     coalesce([alias].code || '[separator]', '') ||
      * </pre>
-     *
      * @param sqlBuilder query builder.
      * @param alias alias of the table.
      * @param separator string to be appender at the end in the first parameter.

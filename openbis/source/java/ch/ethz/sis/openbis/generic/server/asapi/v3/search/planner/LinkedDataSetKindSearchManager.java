@@ -24,7 +24,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.LinkedDataSearchC
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PEMapper;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -40,13 +40,13 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.DATA_ID_CO
  *
  * @author Viktor Kovtun
  */
-public class LinkedDataSetKindSearchManager extends AbstractSearchManager<LinkedDataSearchCriteria, DataSetType, Long>
+public class LinkedDataSetKindSearchManager extends AbstractLocalSearchManager<LinkedDataSearchCriteria, DataSetType, Long>
 {
 
     public LinkedDataSetKindSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
-            final IID2PETranslator<Long> idsTranslator)
+            final IID2PEMapper<Long, Long> idsMapper)
     {
-        super(searchDAO, authProvider, idsTranslator);
+        super(searchDAO, authProvider, idsMapper);
     }
 
     @Override
@@ -57,7 +57,7 @@ public class LinkedDataSetKindSearchManager extends AbstractSearchManager<Linked
 
     @Override
     public Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation,
-            final LinkedDataSearchCriteria criteria, final SortOptions<DataSetType> sortOptions,
+            final LinkedDataSearchCriteria criteria,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
         final SearchOperator searchOperator = criteria.getOperator();

@@ -889,7 +889,62 @@ var FormUtil = new function() {
 		return $component;
 	}
 
+    this.ckEditor4to5ImageStyleMigration = function(value) {
+        var buffer = "";
+        var offset = 0;
+
+        while(offset < value.length) {
+            currentImageStartOffset = -1;
+            currentImageEndOffset = -1;
+            styleTag = null;
+
+            currentImageStartOffset = value.indexOf("<img", offset);
+            if(currentImageStartOffset !== -1) {
+                currentImageEndOffset = value.indexOf(">", currentImageStartOffset);
+            }
+
+            if(currentImageStartOffset !== -1 && currentImageEndOffset !== -1) {
+                currentStyleStartOffset = null;
+                currentStyleEndOffset = null;
+
+                currentStyleStartOffset = value.indexOf("style=\"", currentImageStartOffset);
+                if(currentStyleStartOffset !== -1) {
+                    currentStyleEndOffset = value.indexOf("\"", currentStyleStartOffset + "style=\"".length);
+                }
+
+                if(currentStyleStartOffset !== -1 && currentStyleEndOffset !== -1) {
+                    styleTag = value.substring(currentStyleStartOffset, currentStyleEndOffset + "\"".length);
+                }
+            }
+
+            // Move offset
+            if(currentImageEndOffset !== -1) {
+                buffer = buffer + value.substring(offset, currentImageStartOffset);
+                if(styleTag !== null) {
+                    buffer = buffer + "<figure class=\"image image_resized\"" + styleTag + ">";
+                }
+                buffer = buffer + value.substring(currentImageStartOffset, currentImageEndOffset + ">".length);
+                if(styleTag !== null) {
+                    buffer = buffer + "</figure>";
+                }
+                offset = currentImageEndOffset + ">".length;
+            } else {
+                buffer = buffer + value.substring(offset, value.length);
+                offset = value.length;
+            }
+        }
+
+        return buffer;
+    }
+
     this.createCkeditor = function($component, componentOnChange, value, isReadOnly, toolbarContainer) {
+        // CKEditor 4 to 5 Image style Migration
+        if( value &&
+            value.indexOf("<img")  !== -1 &&
+            value.indexOf("<figure") === -1) {
+            value = this.ckEditor4to5ImageStyleMigration(value);
+        }
+
 	    var Builder = null;
 	    if(toolbarContainer) {
             Builder = CKEDITOR.DecoupledEditor;

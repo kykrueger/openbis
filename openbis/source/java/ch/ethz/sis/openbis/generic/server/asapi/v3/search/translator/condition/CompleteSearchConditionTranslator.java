@@ -19,7 +19,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.Complete;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.CompleteSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinInformation;
 import ch.systemsx.cisd.openbis.common.types.BooleanOrUnknown;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
@@ -58,7 +58,7 @@ public class CompleteSearchConditionTranslator implements IConditionTranslator<C
         if (criterion.getFieldType() == ATTRIBUTE)
         {
             final Complete value = criterion.getFieldValue();
-            sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(ColumnNames.IS_COMPLETE_COLUMN).append(SP).append(EQ).append(SP).append(QU);
+            sqlBuilder.append(SearchCriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(ColumnNames.IS_COMPLETE_COLUMN).append(SP).append(EQ).append(SP).append(QU);
             args.add(CHARACTER_BY_COMPLETE.get(value));
         } else
         {

@@ -16,12 +16,14 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search;
 
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
+
 import java.util.*;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ILocalSearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.ITranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.TranslationContext;
 
@@ -43,13 +45,14 @@ public abstract class SearchObjectsOperationExecutor<OBJECT, OBJECT_PE, CRITERIA
     }
 
     @Override
-    protected final Map<OBJECT_PE, OBJECT> doTranslate(TranslationContext translationContext, Collection<OBJECT_PE> ids, FETCH_OPTIONS fetchOptions)
+    protected final Map<OBJECT_PE, OBJECT> doTranslate(final TranslationContext translationContext, final Collection<OBJECT_PE> objectPes,
+            final FETCH_OPTIONS fetchOptions)
     {
-        return getTranslator().translate(translationContext, ids, fetchOptions);
+        return getTranslator().translate(translationContext, objectPes, fetchOptions);
     }
 
     @Override
-    protected ISearchManager<CRITERIA, OBJECT, OBJECT_PE> getSearchManager() {
+    protected ILocalSearchManager<CRITERIA, OBJECT, OBJECT_PE> getSearchManager() {
         throw new RuntimeException("This method is not implemented yet.");
     }
 
