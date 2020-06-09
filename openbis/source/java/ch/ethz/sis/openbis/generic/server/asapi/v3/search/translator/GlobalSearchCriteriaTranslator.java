@@ -70,8 +70,6 @@ public class GlobalSearchCriteriaTranslator
 
     private static final String REG_CONFIG = "english";
 
-    private static final String SEARCH_STRING_ALIAS = "search_string";
-
     private static final String PROPERTIES_TABLE_ALIAS = "prop";
 
     private static final String ENTITY_TYPES_TABLE_ALIAS = "enty";
