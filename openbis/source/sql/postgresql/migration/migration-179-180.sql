@@ -1,5 +1,27 @@
 -- Full text search
 
+CREATE FUNCTION escape_tsvector_string(value VARCHAR) RETURNS VARCHAR AS $$
+BEGIN
+    RETURN REPLACE(
+            REPLACE(
+                    REPLACE(
+                            REPLACE(
+                                    REPLACE(
+                                            REPLACE(
+                                                    REPLACE(
+                                                            REPLACE(
+                                                                    REPLACE(value, '<', '\<'),
+                                                                    '!', '\!'),
+                                                            '*', '\*'),
+                                                    '&', '\&'),
+                                            '|', '\|'),
+                                    ')', '\)'),
+                            '(', '\('),
+                    ':', '\:'),
+            ' ', '\ ');
+END
+$$ LANGUAGE plpgsql;
+
 -- Controlled Vocabularies
 
 CREATE FUNCTION properties_tsvector_document_trigger() RETURNS trigger AS $$
@@ -46,11 +68,12 @@ BEGIN
 
     IF NEW.samp_id_part_of IS NOT NULL THEN
         SELECT code INTO STRICT container_code FROM samples_all WHERE id = NEW.samp_id_part_of;
-        identifier := identifier || '\:' || container_code;
+        identifier := identifier || ':' || container_code;
     END IF;
 
-    NEW.tsvector_document := (NEW.perm_id || ':1')::tsvector || (NEW.code || ':1')::tsvector
-                || (identifier || ':1')::tsvector;
+    NEW.tsvector_document := (escape_tsvector_string(NEW.perm_id) || ':1')::tsvector ||
+            (escape_tsvector_string(NEW.code) || ':1')::tsvector ||
+            (escape_tsvector_string(identifier) || ':1')::tsvector;
     RETURN NEW;
 END
 $$ LANGUAGE plpgsql;
@@ -105,8 +128,9 @@ DECLARE proj_code VARCHAR;
 BEGIN
     SELECT p.code, s.code INTO STRICT proj_code, space_code FROM projects p
         INNER JOIN spaces s ON p.space_id = s.id WHERE p.id = NEW.proj_id;
-    NEW.tsvector_document := (NEW.perm_id || ':1')::tsvector || (NEW.code || ':1')::tsvector
-                || ('/' || space_code || '/' || proj_code || '/' || NEW.code || ':1')::tsvector;
+    NEW.tsvector_document := (escape_tsvector_string(NEW.perm_id) || ':1')::tsvector ||
+            (escape_tsvector_string(NEW.code) || ':1')::tsvector ||
+            (escape_tsvector_string('/' || space_code || '/' || proj_code || '/' || NEW.code) || ':1')::tsvector;
     RETURN NEW;
 END
 $$ LANGUAGE plpgsql;
@@ -155,8 +179,9 @@ CREATE INDEX experiment_properties_search_index ON experiment_properties USING g
 
 CREATE FUNCTION data_all_tsvector_document_trigger() RETURNS trigger AS $$
 BEGIN
-    NEW.tsvector_document := (NEW.data_set_kind || ':1')::tsvector || (NEW.code || ':1')::tsvector
-        || ('/' || NEW.code || ':1')::tsvector;
+    NEW.tsvector_document := (escape_tsvector_string(NEW.data_set_kind) || ':1')::tsvector ||
+        (escape_tsvector_string(NEW.code) || ':1')::tsvector ||
+        ('/' || escape_tsvector_string(NEW.code) || ':1')::tsvector;
     RETURN NEW;
 END
 $$ LANGUAGE plpgsql;
@@ -210,8 +235,8 @@ CREATE FUNCTION materials_tsvector_document_trigger() RETURNS trigger AS $$
 DECLARE material_type_code VARCHAR;
 BEGIN
     SELECT code INTO STRICT material_type_code FROM material_types WHERE id = NEW.maty_id;
-    NEW.tsvector_document := (NEW.code || ':1')::tsvector
-        || (NEW.code || '\ (' || material_type_code || '):1')::tsvector;
+    NEW.tsvector_document := (escape_tsvector_string(NEW.code) || ':1')::tsvector ||
+            (escape_tsvector_string(NEW.code || ' (' || material_type_code || ')') || ':1')::tsvector;
     RETURN NEW;
 END
 $$ LANGUAGE plpgsql;
