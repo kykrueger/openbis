@@ -2,9 +2,6 @@
 
 -- Controlled Vocabularies
 
-ALTER TABLE controlled_vocabulary_terms
-    ADD COLUMN tsvector_document TSVECTOR;
-
 CREATE FUNCTION properties_tsvector_document_trigger() RETURNS trigger AS $$
 DECLARE cvt RECORD;
 BEGIN
@@ -75,11 +72,16 @@ CREATE OR REPLACE VIEW samples_deleted AS
     FROM samples_all
     WHERE del_id IS NOT NULL;
 
-CREATE TRIGGER samples_all_tsvector_document BEFORE INSERT OR UPDATE
-    ON samples_all FOR EACH ROW EXECUTE FUNCTION
-    samples_all_tsvector_document_trigger();
+BEGIN;
+    CREATE TRIGGER samples_all_tsvector_document BEFORE INSERT OR UPDATE
+        ON samples_all FOR EACH ROW EXECUTE FUNCTION
+        samples_all_tsvector_document_trigger();
 
-UPDATE samples_all SET code = code;
+    UPDATE samples_all SET code = code;
+COMMIT;
+
+ALTER TABLE samples_all
+    ALTER COLUMN tsvector_document SET NOT NULL;
 
 ALTER TABLE sample_properties
     ADD COLUMN tsvector_document TSVECTOR;
@@ -124,11 +126,16 @@ CREATE OR REPLACE VIEW experiments_deleted AS
     FROM experiments_all
     WHERE del_id IS NOT NULL;
 
-CREATE TRIGGER experiments_all_tsvector_document BEFORE INSERT OR UPDATE
-    ON experiments_all FOR EACH ROW EXECUTE FUNCTION
-    experiments_all_tsvector_document_trigger();
+BEGIN;
+    CREATE TRIGGER experiments_all_tsvector_document BEFORE INSERT OR UPDATE
+        ON experiments_all FOR EACH ROW EXECUTE FUNCTION
+        experiments_all_tsvector_document_trigger();
 
-UPDATE experiments_all SET code = code;
+    UPDATE experiments_all SET code = code;
+COMMIT;
+
+ALTER TABLE experiments_all
+    ALTER COLUMN tsvector_document SET NOT NULL;
 
 ALTER TABLE experiment_properties
     ADD COLUMN tsvector_document TSVECTOR;
@@ -172,11 +179,16 @@ CREATE OR REPLACE VIEW data_deleted AS
     FROM data_all
     WHERE del_id IS NOT NULL;
 
-CREATE TRIGGER data_all_tsvector_document BEFORE INSERT OR UPDATE
-    ON data_all FOR EACH ROW EXECUTE FUNCTION
-    data_all_tsvector_document_trigger();
+BEGIN;
+    CREATE TRIGGER data_all_tsvector_document BEFORE INSERT OR UPDATE
+        ON data_all FOR EACH ROW EXECUTE FUNCTION
+        data_all_tsvector_document_trigger();
 
-UPDATE data_all SET code = code;
+    UPDATE data_all SET code = code;
+COMMIT;
+
+ALTER TABLE data_all
+    ALTER COLUMN tsvector_document SET NOT NULL;
 
 ALTER TABLE data_set_properties
     ADD COLUMN tsvector_document TSVECTOR;
@@ -206,11 +218,16 @@ $$ LANGUAGE plpgsql;
 
 ALTER TABLE materials ADD COLUMN tsvector_document TSVECTOR;
 
-CREATE TRIGGER materials_tsvector_document BEFORE INSERT OR UPDATE
-    ON materials FOR EACH ROW EXECUTE PROCEDURE
-    materials_tsvector_document_trigger();
+BEGIN;
+    CREATE TRIGGER materials_tsvector_document BEFORE INSERT OR UPDATE
+        ON materials FOR EACH ROW EXECUTE PROCEDURE
+        materials_tsvector_document_trigger();
 
-UPDATE materials SET code = code;
+    UPDATE materials SET code = code;
+COMMIT;
+
+ALTER TABLE materials
+    ALTER COLUMN tsvector_document SET NOT NULL;
 
 ALTER TABLE material_properties ADD COLUMN tsvector_document TSVECTOR;
 
