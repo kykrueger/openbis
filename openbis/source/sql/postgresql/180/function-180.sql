@@ -3313,32 +3313,32 @@ $$ LANGUAGE plpgsql;
 
 DROP TRIGGER IF EXISTS samples_all_tsvector_document ON samples_all;
 CREATE TRIGGER samples_all_tsvector_document BEFORE INSERT OR UPDATE
-    ON samples_all FOR EACH ROW EXECUTE FUNCTION
+    ON samples_all FOR EACH ROW EXECUTE PROCEDURE
     samples_all_tsvector_document_trigger();
 
 DROP TRIGGER IF EXISTS sample_properties_tsvector_document ON sample_properties;
 CREATE TRIGGER sample_properties_tsvector_document BEFORE INSERT OR UPDATE
-    ON sample_properties FOR EACH ROW EXECUTE FUNCTION
+    ON sample_properties FOR EACH ROW EXECUTE PROCEDURE
     properties_tsvector_document_trigger();
 
 DROP TRIGGER IF EXISTS experiments_all_tsvector_document ON experiments_all;
 CREATE TRIGGER experiments_all_tsvector_document BEFORE INSERT OR UPDATE
-    ON experiments_all FOR EACH ROW EXECUTE FUNCTION
+    ON experiments_all FOR EACH ROW EXECUTE PROCEDURE
     experiments_all_tsvector_document_trigger();
 
 DROP TRIGGER IF EXISTS experiment_properties_tsvector_document ON experiment_properties;
 CREATE TRIGGER experiment_properties_tsvector_document BEFORE INSERT OR UPDATE
-    ON experiment_properties FOR EACH ROW EXECUTE FUNCTION
+    ON experiment_properties FOR EACH ROW EXECUTE PROCEDURE
     properties_tsvector_document_trigger();
 
 DROP TRIGGER IF EXISTS data_all_tsvector_document ON data_all;
 CREATE TRIGGER data_all_tsvector_document BEFORE INSERT OR UPDATE
-    ON data_all FOR EACH ROW EXECUTE FUNCTION
+    ON data_all FOR EACH ROW EXECUTE PROCEDURE
     data_all_tsvector_document_trigger();
 
 DROP TRIGGER IF EXISTS data_set_properties_tsvector_document ON data_set_properties;
 CREATE TRIGGER data_set_properties_tsvector_document BEFORE INSERT OR UPDATE
-    ON data_set_properties FOR EACH ROW EXECUTE FUNCTION
+    ON data_set_properties FOR EACH ROW EXECUTE PROCEDURE
     properties_tsvector_document_trigger();
 
 DROP TRIGGER IF EXISTS materials_tsvector_document ON materials;
@@ -3348,7 +3348,7 @@ CREATE TRIGGER materials_tsvector_document BEFORE INSERT OR UPDATE
 
 DROP TRIGGER IF EXISTS material_properties_tsvector_document ON material_properties;
 CREATE TRIGGER material_properties_tsvector_document BEFORE INSERT OR UPDATE
-    ON material_properties FOR EACH ROW EXECUTE FUNCTION
+    ON material_properties FOR EACH ROW EXECUTE PROCEDURE
     properties_tsvector_document_trigger();
 
 -- end of triggers for dull text search

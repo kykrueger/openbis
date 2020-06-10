@@ -74,7 +74,7 @@ CREATE OR REPLACE VIEW samples_deleted AS
 
 BEGIN;
     CREATE TRIGGER samples_all_tsvector_document BEFORE INSERT OR UPDATE
-        ON samples_all FOR EACH ROW EXECUTE FUNCTION
+        ON samples_all FOR EACH ROW EXECUTE PROCEDURE
         samples_all_tsvector_document_trigger();
 
     UPDATE samples_all SET code = code;
@@ -87,7 +87,7 @@ ALTER TABLE sample_properties
     ADD COLUMN tsvector_document TSVECTOR;
 
 CREATE TRIGGER sample_properties_tsvector_document BEFORE INSERT OR UPDATE
-    ON sample_properties FOR EACH ROW EXECUTE FUNCTION
+    ON sample_properties FOR EACH ROW EXECUTE PROCEDURE
     properties_tsvector_document_trigger();
 
 UPDATE sample_properties SET value = value;
@@ -128,7 +128,7 @@ CREATE OR REPLACE VIEW experiments_deleted AS
 
 BEGIN;
     CREATE TRIGGER experiments_all_tsvector_document BEFORE INSERT OR UPDATE
-        ON experiments_all FOR EACH ROW EXECUTE FUNCTION
+        ON experiments_all FOR EACH ROW EXECUTE PROCEDURE
         experiments_all_tsvector_document_trigger();
 
     UPDATE experiments_all SET code = code;
@@ -141,7 +141,7 @@ ALTER TABLE experiment_properties
     ADD COLUMN tsvector_document TSVECTOR;
 
 CREATE TRIGGER experiment_properties_tsvector_document BEFORE INSERT OR UPDATE
-    ON experiment_properties FOR EACH ROW EXECUTE FUNCTION
+    ON experiment_properties FOR EACH ROW EXECUTE PROCEDURE
     properties_tsvector_document_trigger();
 
 UPDATE experiment_properties SET value = value;
@@ -181,7 +181,7 @@ CREATE OR REPLACE VIEW data_deleted AS
 
 BEGIN;
     CREATE TRIGGER data_all_tsvector_document BEFORE INSERT OR UPDATE
-        ON data_all FOR EACH ROW EXECUTE FUNCTION
+        ON data_all FOR EACH ROW EXECUTE PROCEDURE
         data_all_tsvector_document_trigger();
 
     UPDATE data_all SET code = code;
@@ -194,7 +194,7 @@ ALTER TABLE data_set_properties
     ADD COLUMN tsvector_document TSVECTOR;
 
 CREATE TRIGGER data_set_properties_tsvector_document BEFORE INSERT OR UPDATE
-    ON data_set_properties FOR EACH ROW EXECUTE FUNCTION
+    ON data_set_properties FOR EACH ROW EXECUTE PROCEDURE
     properties_tsvector_document_trigger();
 
 UPDATE data_set_properties SET value = value;
@@ -232,7 +232,7 @@ ALTER TABLE materials
 ALTER TABLE material_properties ADD COLUMN tsvector_document TSVECTOR;
 
 CREATE TRIGGER material_properties_tsvector_document BEFORE INSERT OR UPDATE
-    ON material_properties FOR EACH ROW EXECUTE FUNCTION
+    ON material_properties FOR EACH ROW EXECUTE PROCEDURE
     properties_tsvector_document_trigger();
 
 UPDATE material_properties SET value = value;
