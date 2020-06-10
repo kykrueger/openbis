@@ -1524,7 +1524,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testSearch(c, fSearch, fCheck);
 		});
 
-		// TODO : withMatches feature missing to fix this test
+		// TODO : withMatch feature missing to fix this test
 		QUnit.test("searchGlobally() withText thatContains", function(assert) {
 			var c = new common(assert, openbis);
 
@@ -1624,7 +1624,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testSearch(c, fSearch, fCheck);
 		});
 
-        // TODO : withMatches feature missing to fix this test
+        // TODO : withMatch feature missing to fix this test
 		QUnit.test("searchGlobally() withObjectKind thatIn", function(assert) {
 			var c = new common(assert, openbis);
 
