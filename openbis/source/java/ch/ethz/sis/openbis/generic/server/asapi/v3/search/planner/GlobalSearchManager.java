@@ -241,25 +241,38 @@ public class GlobalSearchManager implements IGlobalSearchManager
             final String headline = coalesceMap(fieldsMap, VALUE_HEADLINE_ALIAS, LABEL_HEADLINE_ALIAS,
                     CODE_HEADLINE_ALIAS, DESCRIPTION_HEADLINE_ALIAS);
 
-            final List<Span> spans = new ArrayList<>();
-            final int startSelLength = START_SEL.length();
-            final int stopSelLength = STOP_SEL.length();
-            int cursorIndex = headline.indexOf(START_SEL);
-            while (cursorIndex >= 0)
-            {
-                final int matchStartIndex = cursorIndex + startSelLength;
-                final int matchEndIndex = headline.indexOf(STOP_SEL, matchStartIndex);
-                final Span span = new Span();
-                span.setStart(matchStartIndex);
-                span.setEnd(matchEndIndex);
-                spans.add(span);
-
-                cursorIndex = headline.indexOf(START_SEL, matchEndIndex + stopSelLength);
-            }
-
-            propertyMatch.setSpans(spans);
+            computeSpans(propertyMatch, headline);
             matches.add(propertyMatch);
         }
+    }
+
+    /**
+     * Computes matching text spans for given property match.
+     * @param propertyMatch property match to which the spans should be added.
+     * @param headline headline string which contains markers of start and stop of matches.
+     */
+    private void computeSpans(final PropertyMatch propertyMatch, final String headline)
+    {
+        final List<Span> spans = new ArrayList<>();
+        final int startSelLength = START_SEL.length();
+        final int stopSelLength = STOP_SEL.length();
+        final int combinedSelLength = startSelLength + stopSelLength;
+        int cursorIndex = headline.indexOf(START_SEL);
+        int matchesCount = 0;
+        while (cursorIndex >= 0)
+        {
+            final int matchStartIndex = cursorIndex;
+            final int matchEndIndex = headline.indexOf(STOP_SEL, matchStartIndex + startSelLength);
+            final Span span = new Span();
+            span.setStart(matchStartIndex - matchesCount * combinedSelLength);
+            span.setEnd(matchEndIndex - startSelLength - matchesCount * combinedSelLength);
+            spans.add(span);
+
+            cursorIndex = headline.indexOf(START_SEL, matchEndIndex + stopSelLength);
+            matchesCount++;
+        }
+
+        propertyMatch.setSpans(spans);
     }
 
     /**

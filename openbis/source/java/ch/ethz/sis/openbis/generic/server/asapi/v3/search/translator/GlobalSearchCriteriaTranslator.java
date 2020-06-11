@@ -22,9 +22,9 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.*;
 
 public class GlobalSearchCriteriaTranslator
 {
-    public static final String START_SEL = "<b>";
+    public static final String START_SEL = "<b>"; //"<SEL--";
 
-    public static final String STOP_SEL = "</b>";
+    public static final String STOP_SEL = "</b>"; //"--SEL>";
 
     public static final String RANK_ALIAS = "rank";
 
