@@ -11,7 +11,7 @@ const styles = theme => ({
   metadataDefault: {
     flex: '0 0 auto',
     margin: 0,
-    marginBottom: theme.spacing(1),
+    marginBottom: theme.spacing(1) / 2,
     color: theme.palette.grey.main
   },
   controlDefault: {

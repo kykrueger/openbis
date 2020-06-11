@@ -45,9 +45,9 @@ class TypeFormMessage extends React.PureComponent {
 
   renderIcon(type) {
     if (type === 'info') {
-      return <InfoIcon />
+      return <InfoIcon fontSize='small' />
     } else if (type === 'warning') {
-      return <WarningIcon />
+      return <WarningIcon fontSize='small' />
     } else {
       return null
     }

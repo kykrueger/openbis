@@ -1,11 +1,10 @@
 import _ from 'lodash'
 import React from 'react'
+import Typography from '@material-ui/core/Typography'
 import { Draggable, Droppable } from 'react-beautiful-dnd'
 import { withStyles } from '@material-ui/core/styles'
 import logger from '@src/js/common/logger.js'
 import util from '@src/js/common/util.js'
-
-import TypeFormHeader from './TypeFormHeader.jsx'
 
 const styles = theme => ({
   draggable: {
@@ -79,7 +78,7 @@ class TypeFormPreviewSection extends React.PureComponent {
             <Droppable droppableId={id} type='property'>
               {provided => (
                 <div>
-                  <TypeFormHeader>{name.value}</TypeFormHeader>
+                  <Typography variant='body2'>{name.value}</Typography>
                   <div
                     ref={provided.innerRef}
                     {...provided.droppableProps}
