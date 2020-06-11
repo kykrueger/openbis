@@ -1,9 +1,17 @@
 package ch.systemsx.cisd.openbis.generic.server.dataaccess.db;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.*;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.ArchivingStatus;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.Complete;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.AbstractDataSetSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.CompleteSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.StatusSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.ExternalDmsAddressType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.search.ExternalDmsTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.AbstractSampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.*;
@@ -12,7 +20,6 @@ import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
 import ch.systemsx.cisd.openbis.generic.server.ComponentNames;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IHibernateSearchDAO;
-import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.authorization.AuthorizationConfig;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.*;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
@@ -22,28 +29,21 @@ import org.apache.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.query.NativeQuery;
 import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.support.JdbcAccessor;
 
 import java.util.*;
 
 /*
- * The goal of this class is to replace substitute HibernateSearchDAO
+ * The goal of this class is to replace HibernateSearchDAO
  * This should make possible to remove Hibernate Search without changing all the other business layers
  */
 public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
 
-    /**
-     * The <code>Logger</code> of this class.
-     * <p>
-     * This logger does not output any SQL statement. If you want to do so, you had better set an appropriate debugging level for class
-     * {@link JdbcAccessor}.
-     * </p>
-     */
     private final static Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION,
             HibernateSearchDAOV3Adaptor.class);
 
     private HibernateSearchDAO hibernateSearchDAO;
 
+    // TODO : Remove HibernateSearchDAO when Full Text Search "searchEntitiesByTerm" is also implemented
     public HibernateSearchDAOV3Adaptor(HibernateSearchDAO hibernateSearchDAO) {
         this.hibernateSearchDAO = hibernateSearchDAO;
     }
@@ -74,14 +74,30 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
     public List<Long> searchForEntityIds(final String userId,
                                          final DetailedSearchCriteria mainV1Criteria,
                                          final EntityKind entityKind,
-                                         final List<IAssociationCriteria> associations)
+                                         final List<IAssociationCriteria> v1Associations)
     {
+        operationLog.info("TO ADAPT: " + entityKind + " [" + mainV1Criteria + "] " + v1Associations);
+
         // Obtain PersonPE
         DAOFactory daoFactory = (DAOFactory) CommonServiceProvider.getApplicationContext().getBean(ComponentNames.DAO_FACTORY);
         PersonPE personPE = daoFactory.getPersonDAO().tryFindPersonByUserId(userId);
 
+        if(personPE == null) {
+            throwIllegalArgumentException("userId: '" + userId + "' not found on database.");
+        }
+
         // Obtain entity criteria
-        AbstractEntitySearchCriteria<?> mainV3Criteria = getCriteria(entityKind);
+        AbstractEntitySearchCriteria mainV3Criteria = getCriteria(entityKind);
+
+        // Set the operator
+        switch (mainV1Criteria.getConnection()) {
+            case MATCH_ALL:
+                mainV3Criteria.withAndOperator();
+                break;
+            case MATCH_ANY:
+                mainV3Criteria.withOrOperator();
+                break;
+        }
 
         // Entity Criteria translation
         for (DetailedSearchCriterion mainV1Criterion:mainV1Criteria.getCriteria()) {
@@ -93,25 +109,23 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
             DetailedSearchCriteria subV1Criteria = subV1CriteriaPointer.getCriteria();
 
             for (DetailedSearchCriterion subV1Criterion:subV1Criteria.getCriteria()) {
-                AbstractEntitySearchCriteria<?> subV3Criteria = null;
+                AbstractEntitySearchCriteria subV3Criteria = null;
 
                 switch (subV1CriteriaPointer.getTargetEntityKind()) {
                     case SAMPLE:
-                        if (mainV3Criteria instanceof DataSetSearchCriteria) {
-                            subV3Criteria = ((DataSetSearchCriteria) mainV3Criteria).withSample();
+                        if (mainV3Criteria instanceof AbstractDataSetSearchCriteria) {
+                            subV3Criteria = ((AbstractDataSetSearchCriteria) mainV3Criteria).withSample();
                         }
                         break;
                     case EXPERIMENT:
-                        if (mainV3Criteria instanceof SampleSearchCriteria) {
-                            subV3Criteria = ((SampleSearchCriteria) mainV3Criteria).withExperiment();
-                        } else if(mainV3Criteria instanceof DataSetSearchCriteria) {
-                            subV3Criteria = ((DataSetSearchCriteria) mainV3Criteria).withExperiment();
+                        if (mainV3Criteria instanceof AbstractSampleSearchCriteria) {
+                            subV3Criteria = ((AbstractSampleSearchCriteria) mainV3Criteria).withExperiment();
+                        } else if(mainV3Criteria instanceof AbstractDataSetSearchCriteria) {
+                            subV3Criteria = ((AbstractDataSetSearchCriteria) mainV3Criteria).withExperiment();
                         }
                         break;
                     case DATA_SET:
-                        // Seems unsupported on V3 Criteria
-                        // Samples and Experiments don't have withDataSet
-                        // Data Sets don't have withContained
+                        // TODO: V3 doesn't support withDataSet in Samples and Experiments
                         break;
                     case DATA_SET_PARENT: // For Data Sets
                         if (mainV3Criteria instanceof DataSetSearchCriteria) {
@@ -144,16 +158,147 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
                         }
                         break;
                     case MATERIAL:
-                        // Seems unsupported on V3 Criteria
+                        // TODO: V3 doesn't support withMaterial criteria
                         break;
                 }
 
                 if (subV3Criteria == null) {
                     throwUnsupportedOperationException("TargetEntityKind: " + subV1CriteriaPointer.getTargetEntityKind() + " For V3: " + mainV3Criteria.getClass().getName());
                 }
+
+                // Set the operator
+                switch (subV1Criteria.getConnection()) {
+                    case MATCH_ALL:
+                        subV3Criteria.withAndOperator();
+                        break;
+                    case MATCH_ANY:
+                        subV3Criteria.withOrOperator();
+                        break;
+                }
+
                 adapt(subV3Criteria, subV1Criteria, subV1Criterion);
             }
         }
+
+        // Associations (Rules that indicate that something needs to be connected to)
+        // They have 3 possible rules depending on the 3 classes
+        // Null, Not Null, or Tech Id
+        if (v1Associations != null) {
+            for(IAssociationCriteria association:v1Associations) {
+                AbstractEntitySearchCriteria subAssV3Criteria = null;
+
+                switch (association.getEntityKind()) {
+                    case SAMPLE:
+                        if (mainV3Criteria instanceof AbstractDataSetSearchCriteria) {
+                            if (association instanceof DetailedSearchNotNullAssociationCriteria) {
+                                subAssV3Criteria = ((AbstractDataSetSearchCriteria) mainV3Criteria).withSample();
+                            } else if (association instanceof  DetailedSearchNullAssociationCriteria) {
+                                subAssV3Criteria = ((AbstractDataSetSearchCriteria) mainV3Criteria).withoutSample();
+                            } else { // This is DetailedSearchAssociationCriteria Tech ids
+                                // TODO: V3 doesn't support tech ids
+                            }
+                        }
+                        break;
+                    case EXPERIMENT:
+                        if (mainV3Criteria instanceof AbstractSampleSearchCriteria) {
+                            if (association instanceof DetailedSearchNotNullAssociationCriteria) {
+                                subAssV3Criteria = ((AbstractSampleSearchCriteria) mainV3Criteria).withExperiment();
+                            } else if (association instanceof  DetailedSearchNullAssociationCriteria) {
+                                subAssV3Criteria = ((AbstractSampleSearchCriteria) mainV3Criteria).withoutExperiment();
+                            } else { // This is DetailedSearchAssociationCriteria Tech ids
+                                // TODO: V3 doesn't support tech ids
+                            }
+                        } else if(mainV3Criteria instanceof AbstractDataSetSearchCriteria) {
+                            if (association instanceof DetailedSearchNotNullAssociationCriteria) {
+                                subAssV3Criteria = ((AbstractDataSetSearchCriteria) mainV3Criteria).withExperiment();
+                            } else if (association instanceof  DetailedSearchNullAssociationCriteria) {
+                                subAssV3Criteria = ((AbstractDataSetSearchCriteria) mainV3Criteria).withoutExperiment();
+                            } else { // This is DetailedSearchAssociationCriteria Tech ids
+                                // TODO: V3 doesn't support tech ids
+                            }
+                        }
+                        break;
+                    case DATA_SET:
+                        // TODO: V3 doesn't support withDataSet in Samples and Experiments
+                        break;
+                    case DATA_SET_PARENT:
+                        if (mainV3Criteria instanceof DataSetSearchCriteria) {
+                            if (association instanceof DetailedSearchNotNullAssociationCriteria) {
+                                subAssV3Criteria = ((DataSetSearchCriteria) mainV3Criteria).withParents();
+                            } else if (association instanceof  DetailedSearchNullAssociationCriteria) {
+                                // TODO: V3 doesn't support withoutParents
+                            } else { // This is DetailedSearchAssociationCriteria Tech ids
+                                // TODO: V3 doesn't support tech ids
+                            }
+                        }
+                        break;
+                    case DATA_SET_CHILD:
+                        if (mainV3Criteria instanceof DataSetSearchCriteria) {
+                            if (association instanceof DetailedSearchNotNullAssociationCriteria) {
+                                subAssV3Criteria = ((DataSetSearchCriteria) mainV3Criteria).withChildren();
+                            } else if (association instanceof  DetailedSearchNullAssociationCriteria) {
+                                // TODO: V3 doesn't support withoutChildren
+                            } else { // This is DetailedSearchAssociationCriteria Tech ids
+                                // TODO: V3 doesn't support tech ids
+                            }
+                        }
+                        break;
+                    case DATA_SET_CONTAINER:
+                        if (mainV3Criteria instanceof DataSetSearchCriteria) {
+                            if (association instanceof DetailedSearchNotNullAssociationCriteria) {
+                                subAssV3Criteria = ((DataSetSearchCriteria) mainV3Criteria).withContainer();
+                            } else if (association instanceof  DetailedSearchNullAssociationCriteria) {
+                                // TODO: V3 doesn't support withoutContainer
+                            } else { // This is DetailedSearchAssociationCriteria Tech ids
+                                // TODO: V3 doesn't support tech ids
+                            }
+                        }
+                        break;
+                    case SAMPLE_CONTAINER:
+                        if (mainV3Criteria instanceof SampleSearchCriteria) {
+                            if (association instanceof DetailedSearchNotNullAssociationCriteria) {
+                                subAssV3Criteria = ((SampleSearchCriteria) mainV3Criteria).withContainer();
+                            } else if (association instanceof  DetailedSearchNullAssociationCriteria) {
+                                subAssV3Criteria = ((SampleSearchCriteria) mainV3Criteria).withoutContainer();
+                            } else { // This is DetailedSearchAssociationCriteria Tech ids
+                                // TODO: V3 doesn't support tech ids
+                            }
+                        }
+                        break;
+                    case SAMPLE_CHILD:
+                        if (mainV3Criteria instanceof SampleSearchCriteria) {
+                            if (association instanceof DetailedSearchNotNullAssociationCriteria) {
+                                subAssV3Criteria = ((SampleSearchCriteria) mainV3Criteria).withChildren();
+                            } else if (association instanceof  DetailedSearchNullAssociationCriteria) {
+                                // TODO: V3 doesn't support withoutChildren
+                            } else { // This is DetailedSearchAssociationCriteria Tech ids
+                                // TODO: V3 doesn't support tech ids
+                            }
+                        }
+                        break;
+                    case SAMPLE_PARENT:
+                        if (mainV3Criteria instanceof SampleSearchCriteria) {
+                            if (association instanceof DetailedSearchNotNullAssociationCriteria) {
+                                subAssV3Criteria = ((SampleSearchCriteria) mainV3Criteria).withParents();
+                            } else if (association instanceof  DetailedSearchNullAssociationCriteria) {
+                                // TODO: V3 doesn't support withoutParents
+                            } else { // This is DetailedSearchAssociationCriteria Tech ids
+                                // TODO: V3 doesn't support tech ids
+                            }
+                        }
+                        break;
+                    case MATERIAL:
+                        // TODO: V3 doesn't support withMaterial criteria
+                        break;
+                }
+
+                if (subAssV3Criteria == null) {
+                    throwUnsupportedOperationException("TargetEntityKind: " + association.getEntityKind() + "with Search Pattern " + association.getSearchPatterns() + " For V3: " + mainV3Criteria.getClass().getName());
+                }
+            }
+        }
+
+        operationLog.info("ADAPTED: " + mainV3Criteria);
 
         // Obtain entity id results from search manager
         Set<Long> results = getSearchManager(entityKind).searchForIDs(personPE.getId(),
@@ -165,11 +310,10 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
         return new ArrayList<>(results);
     }
 
-    private void adapt(AbstractEntitySearchCriteria<?> v3Criteria,
+    private void adapt(AbstractEntitySearchCriteria v3Criteria,
                        DetailedSearchCriteria v1Criteria,
                        DetailedSearchCriterion v1Criterion) {
-
-        // Feature not supported on V3
+        // TODO: V3 doesn't support negated
         if(v1Criterion.isNegated()) {
             throwUnsupportedOperationException("negated");
         }
@@ -189,6 +333,8 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
                     }
                     if (isNumberProperty(v1Criterion.getField().getPropertyCode())) {
                         criterionV3Criteria = v3Criteria.withNumberProperty(v1Criterion.getField().getPropertyCode());
+                    } else if(isDateProperty(v1Criterion.getField().getPropertyCode())) {
+                        criterionV3Criteria = v3Criteria.withDateProperty(v1Criterion.getField().getPropertyCode());
                     } else {
                         criterionV3Criteria = v3Criteria.withProperty(v1Criterion.getField().getPropertyCode());
                     }
@@ -197,63 +343,24 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
                     if (v1Criterion.getField().getAttributeCode() == null) {
                         throw throwIllegalArgumentException("ATTRIBUTE AttributeCode null");
                     }
-                    SearchCriteria.MatchClauseAttribute attributeCode = SearchCriteria.MatchClauseAttribute.valueOf(v1Criterion.getField().getAttributeCode());
-                    switch (attributeCode) {
-                        // common
 
-                        case CODE:
-                            criterionV3Criteria = v3Criteria.withCode();
-                            break;
-                        case TYPE:
-                            criterionV3Criteria = withTypeCode(v3Criteria);
-                            break;
-                        case PERM_ID:
-                            criterionV3Criteria = v3Criteria.withPermId();
-                            break;
-                        case METAPROJECT:
-                            criterionV3Criteria = v3Criteria.withTag().withCode();
-                            break;
-                        case REGISTRATOR_USER_ID:
-                            criterionV3Criteria = v3Criteria.withRegistrator().withUserId();
-                            break;
-                        case REGISTRATOR_FIRST_NAME:
-                            criterionV3Criteria = v3Criteria.withRegistrator().withFirstName();
-                            break;
-                        case REGISTRATOR_LAST_NAME:
-                            criterionV3Criteria = v3Criteria.withRegistrator().withLastName();
-                            break;
-                        case REGISTRATOR_EMAIL:
-                            criterionV3Criteria = v3Criteria.withRegistrator().withEmail();
-                            break;
-                        case MODIFIER_USER_ID:
-                            criterionV3Criteria = v3Criteria.withModifier().withUserId();
-                            break;
-                        case MODIFIER_FIRST_NAME:
-                            criterionV3Criteria = v3Criteria.withModifier().withFirstName();
-                            break;
-                        case MODIFIER_LAST_NAME:
-                            criterionV3Criteria = v3Criteria.withModifier().withLastName();
-                            break;
-                        case MODIFIER_EMAIL:
-                            criterionV3Criteria = v3Criteria.withModifier().withEmail();
-                            break;
+                    EntityKind entityKind = getEntityKind(v3Criteria);
 
-                        // for sample or experiment
-
-                        case SPACE:
-                            criterionV3Criteria = withSpaceCode(v3Criteria);
+                    switch (entityKind) {
+                        case MATERIAL:
+                            criterionV3Criteria = withAttribute((MaterialSearchCriteria) v3Criteria, v1Criterion.getField().getAttributeCode());
                             break;
-
-                        // for experiment
-
-                        case PROJECT:
-                            criterionV3Criteria = withProjectCode(v3Criteria);
+                        case EXPERIMENT:
+                            criterionV3Criteria = withAttribute((ExperimentSearchCriteria) v3Criteria, v1Criterion.getField().getAttributeCode());
                             break;
-                        case PROJECT_PERM_ID:
-                            criterionV3Criteria = withProjectPermId(v3Criteria);
+                        case SAMPLE:
+                            criterionV3Criteria = withAttribute((AbstractSampleSearchCriteria) v3Criteria, v1Criterion.getField().getAttributeCode());
                             break;
-
+                        case DATA_SET:
+                            criterionV3Criteria = withAttribute((AbstractDataSetSearchCriteria) v3Criteria, v1Criterion.getField().getAttributeCode());
+                            break;
                     }
+
                     break;
                 case REGISTRATOR:
                     break;
@@ -263,16 +370,15 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
 
             if (criterionV3Criteria instanceof StringFieldSearchCriteria) {
                 StringFieldSearchCriteria stringFieldSearchCriteria = (StringFieldSearchCriteria) criterionV3Criteria;
-                if (comparisonOperator == CompareType.EQUALS) {
-                    // TODO: The V3 doesn't differentiate with or without wildcards, instead if a * or ? is found, they are used as wildcards
+                if (    comparisonOperator == null ||
+                        comparisonOperator == CompareType.EQUALS) {
                     if (v1Criteria.isUseWildcardSearchMode()) {
-                        stringFieldSearchCriteria.thatContains(value);
-                    } else {
-                        // Old Lucene behaviour was always word match, real equals should be even more restrictive/correct
-                        stringFieldSearchCriteria.thatEquals(value);
+                        // TODO: V3 doesn't support with or without wildcards, instead if a * or ? is found, they are used as wildcards
                     }
+                    // Old Lucene behaviour was always word match, real equals should be even more restrictive/correct
+                    stringFieldSearchCriteria.thatEquals(value);
                 } else {
-                    throw throwIllegalArgumentException("non EQUALS compare type for StringFieldSearchCriteria");
+                    throw throwIllegalArgumentException(comparisonOperator + " compare type for StringFieldSearchCriteria");
                 }
             } else if(criterionV3Criteria instanceof NumberPropertySearchCriteria) {
                 NumberFieldSearchCriteria numberFieldSearchCriteria = (NumberFieldSearchCriteria) criterionV3Criteria;
@@ -294,13 +400,418 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
                         numberFieldSearchCriteria.thatIsGreaterThan(number);
                         break;
                 }
+            } else if(criterionV3Criteria instanceof BooleanFieldSearchCriteria) {
+                BooleanFieldSearchCriteria booleanFieldSearchCriteria = (BooleanFieldSearchCriteria) criterionV3Criteria;
+                booleanFieldSearchCriteria.thatEquals(Boolean.parseBoolean(value));
+            } else if(criterionV3Criteria instanceof DateFieldSearchCriteria) {
+                DateFieldSearchCriteria dateFieldSearchCriteria = (DateFieldSearchCriteria) criterionV3Criteria;
+                switch (comparisonOperator) {
+                    case LESS_THAN:
+                        throwIllegalArgumentException("Date operator LESS_THAN");
+                        break;
+                    case LESS_THAN_OR_EQUAL:
+                        dateFieldSearchCriteria.thatIsEarlierThanOrEqualTo(value);
+                        break;
+                    case EQUALS:
+                        dateFieldSearchCriteria.thatEquals(value);
+                        break;
+                    case MORE_THAN_OR_EQUAL:
+                        dateFieldSearchCriteria.thatIsLaterThanOrEqualTo(value);
+                        break;
+                    case MORE_THAN:
+                        throwIllegalArgumentException("Date operator MORE_THAN");
+                        break;
+                }
+            }
+            // Enums
+            else if(criterionV3Criteria instanceof CompleteSearchCriteria) {
+                CompleteSearchCriteria enumFieldSearchCriteria = (CompleteSearchCriteria) criterionV3Criteria;
+                enumFieldSearchCriteria.thatEquals(Complete.valueOf(value));
+            } else if(criterionV3Criteria instanceof StatusSearchCriteria) {
+                StatusSearchCriteria enumFieldSearchCriteria = (StatusSearchCriteria) criterionV3Criteria;
+                enumFieldSearchCriteria.thatEquals(ArchivingStatus.valueOf(value));
+            } else if(criterionV3Criteria instanceof ExternalDmsTypeSearchCriteria) {
+                ExternalDmsTypeSearchCriteria enumFieldSearchCriteria = (ExternalDmsTypeSearchCriteria) criterionV3Criteria;
+                enumFieldSearchCriteria.thatEquals(ExternalDmsAddressType.valueOf(value));
+            }
+            // Default
+            else {
+                throwUnsupportedOperationException("TargetV3Criteria: " + v3Criteria.getClass().getSimpleName() + " For V1 Criterion: " + v1Criterion);
             }
         }
     }
 
     //
+    // Helper Methods - withAttribute conversions
+    //
+
+    private ISearchCriteria withAttribute(AbstractDataSetSearchCriteria v3Criteria, String attributeCode) {
+        ISearchCriteria criterionV3Criteria = null;
+        switch (DataSetAttributeSearchFieldKind.valueOf(attributeCode)) {
+            case CODE:
+                criterionV3Criteria = v3Criteria.withCode();
+                break;
+            case DATA_SET_TYPE:
+                criterionV3Criteria = v3Criteria.withType().withCode();
+                break;
+            case METAPROJECT:
+                criterionV3Criteria = v3Criteria.withTag().withCode();
+                break;
+            case REGISTRATION_DATE:
+                criterionV3Criteria = v3Criteria.withRegistrationDate();
+                break;
+            case MODIFICATION_DATE:
+                criterionV3Criteria = v3Criteria.withModificationDate();
+                break;
+            case REGISTRATION_DATE_FROM:
+                // For this to work, the search Criteria should set CompareType.MORE_THAN_OR_EQUAL, this was found at SearchFieldDateCriterionFactory
+                criterionV3Criteria = v3Criteria.withRegistrationDate();
+                break;
+            case MODIFICATION_DATE_FROM:
+                // For this to work, the search Criteria should set CompareType.MORE_THAN_OR_EQUAL, this was found at SearchFieldDateCriterionFactory
+                criterionV3Criteria = v3Criteria.withModificationDate();
+                break;
+            case REGISTRATION_DATE_UNTIL:
+                // For this to work, the search Criteria should set CompareType.LESS_THAN_OR_EQUAL, this was found at SearchFieldDateCriterionFactory
+                criterionV3Criteria = v3Criteria.withRegistrationDate();
+                break;
+            case MODIFICATION_DATE_UNTIL:
+                // For this to work, the search Criteria should set CompareType.LESS_THAN_OR_EQUAL, this was found at SearchFieldDateCriterionFactory
+                criterionV3Criteria = v3Criteria.withModificationDate();
+                break;
+            case REGISTRATOR_USER_ID:
+                criterionV3Criteria = v3Criteria.withRegistrator().withUserId();
+                break;
+            case REGISTRATOR_FIRST_NAME:
+                criterionV3Criteria = v3Criteria.withRegistrator().withFirstName();
+                break;
+            case REGISTRATOR_LAST_NAME:
+                criterionV3Criteria = v3Criteria.withRegistrator().withLastName();
+                break;
+            case REGISTRATOR_EMAIL:
+                criterionV3Criteria = v3Criteria.withRegistrator().withEmail();
+                break;
+            case MODIFIER_USER_ID:
+                criterionV3Criteria = v3Criteria.withModifier().withUserId();
+                break;
+            case MODIFIER_FIRST_NAME:
+                criterionV3Criteria = v3Criteria.withModifier().withFirstName();
+                break;
+            case MODIFIER_LAST_NAME:
+                criterionV3Criteria = v3Criteria.withModifier().withLastName();
+                break;
+            case MODIFIER_EMAIL:
+                criterionV3Criteria = v3Criteria.withModifier().withEmail();
+                break;
+            case LOCATOR_TYPE:
+                criterionV3Criteria = v3Criteria.withPhysicalData().withLocatorType().withCode();
+                break;
+            case LOCATION:
+                criterionV3Criteria = v3Criteria.withPhysicalData().withLocation();
+                break;
+            case SHARE_ID:
+                criterionV3Criteria = v3Criteria.withPhysicalData().withShareId();
+                break;
+            case SIZE:
+                criterionV3Criteria = v3Criteria.withPhysicalData().withSize();
+                break;
+            case STORAGE_FORMAT:
+                criterionV3Criteria = v3Criteria.withPhysicalData().withStorageFormat().withCode();
+                break;
+            case FILE_TYPE:
+                criterionV3Criteria = v3Criteria.withPhysicalData().withFileFormatType().withCode();
+                break;
+            case COMPLETE:
+                criterionV3Criteria = v3Criteria.withPhysicalData().withComplete(); // Enum
+                break;
+            case STATUS:
+                criterionV3Criteria = v3Criteria.withPhysicalData().withStatus(); // Enum
+                break;
+            case ARCHIVING_REQUESTED:
+                criterionV3Criteria = v3Criteria.withPhysicalData().withArchivingRequested();
+                break;
+            case PRESENT_IN_ARCHIVE:
+                criterionV3Criteria = v3Criteria.withPhysicalData().withPresentInArchive();
+                break;
+            case STORAGE_CONFIRMATION:
+                criterionV3Criteria = v3Criteria.withPhysicalData().withStorageConfirmation();
+                break;
+            case SPEED_HINT:
+                criterionV3Criteria = v3Criteria.withPhysicalData().withSpeedHint();
+                break;
+            case EXTERNAL_DMS_CODE:
+                criterionV3Criteria = v3Criteria.withLinkedData().withExternalDms().withCode();
+                break;
+            case EXTERNAL_DMS_LABEL:
+                criterionV3Criteria = v3Criteria.withLinkedData().withExternalDms().withLabel();
+                break;
+            case EXTERNAL_DMS_ADDRESS:
+                criterionV3Criteria = v3Criteria.withLinkedData().withExternalDms().withAddress();
+                break;
+            case EXTERNAL_DMS_TYPE:
+                criterionV3Criteria = v3Criteria.withLinkedData().withExternalDms().withType(); // Enum
+                break;
+            case EXTERNAL_CODE:
+                criterionV3Criteria = v3Criteria.withLinkedData().withExternalCode();
+                break;
+            case PATH:
+                criterionV3Criteria = v3Criteria.withLinkedData().withCopy().withPath();
+                break;
+            case COMMIT_HASH:
+                criterionV3Criteria = v3Criteria.withLinkedData().withCopy().withGitCommitHash();
+                break;
+            case COMMIT_REPOSITORY_ID:
+                criterionV3Criteria = v3Criteria.withLinkedData().withCopy().withGitRepositoryId();
+                break;
+        }
+        return criterionV3Criteria;
+    }
+
+    private ISearchCriteria withAttribute(AbstractSampleSearchCriteria v3Criteria, String attributeCode) {
+        ISearchCriteria criterionV3Criteria = null;
+        switch (SampleAttributeSearchFieldKind.valueOf(attributeCode)) {
+            case CODE:
+                criterionV3Criteria = v3Criteria.withCode();
+                break;
+            case SAMPLE_TYPE:
+                criterionV3Criteria = v3Criteria.withType().withCode();
+                break;
+            case PERM_ID:
+                criterionV3Criteria = v3Criteria.withPermId();
+                break;
+            case IDENTIFIER:
+                criterionV3Criteria = v3Criteria.withIdentifier();
+                break;
+            case SPACE:
+                criterionV3Criteria = v3Criteria.withSpace().withCode();
+                break;
+            case PROJECT:
+                criterionV3Criteria = v3Criteria.withProject().withCode();
+                break;
+            case PROJECT_PERM_ID:
+                criterionV3Criteria = v3Criteria.withProject().withPermId();
+                break;
+            case PROJECT_SPACE:
+                criterionV3Criteria = v3Criteria.withProject().withSpace().withCode();
+                break;
+            case METAPROJECT:
+                criterionV3Criteria = v3Criteria.withTag().withCode();
+                break;
+            case REGISTRATION_DATE:
+                criterionV3Criteria = v3Criteria.withRegistrationDate();
+                break;
+            case MODIFICATION_DATE:
+                criterionV3Criteria = v3Criteria.withModificationDate();
+                break;
+            case REGISTRATION_DATE_FROM:
+                // For this to work, the search Criteria should set CompareType.MORE_THAN_OR_EQUAL, this was found at SearchFieldDateCriterionFactory
+                criterionV3Criteria = v3Criteria.withRegistrationDate();
+                break;
+            case MODIFICATION_DATE_FROM:
+                // For this to work, the search Criteria should set CompareType.MORE_THAN_OR_EQUAL, this was found at SearchFieldDateCriterionFactory
+                criterionV3Criteria = v3Criteria.withModificationDate();
+                break;
+            case REGISTRATION_DATE_UNTIL:
+                // For this to work, the search Criteria should set CompareType.LESS_THAN_OR_EQUAL, this was found at SearchFieldDateCriterionFactory
+                criterionV3Criteria = v3Criteria.withRegistrationDate();
+                break;
+            case MODIFICATION_DATE_UNTIL:
+                // For this to work, the search Criteria should set CompareType.LESS_THAN_OR_EQUAL, this was found at SearchFieldDateCriterionFactory
+                criterionV3Criteria = v3Criteria.withModificationDate();
+                break;
+            case REGISTRATOR_USER_ID:
+                criterionV3Criteria = v3Criteria.withRegistrator().withUserId();
+                break;
+            case REGISTRATOR_FIRST_NAME:
+                criterionV3Criteria = v3Criteria.withRegistrator().withFirstName();
+                break;
+            case REGISTRATOR_LAST_NAME:
+                criterionV3Criteria = v3Criteria.withRegistrator().withLastName();
+                break;
+            case REGISTRATOR_EMAIL:
+                criterionV3Criteria = v3Criteria.withRegistrator().withEmail();
+                break;
+            case MODIFIER_USER_ID:
+                criterionV3Criteria = v3Criteria.withModifier().withUserId();
+                break;
+            case MODIFIER_FIRST_NAME:
+                criterionV3Criteria = v3Criteria.withModifier().withFirstName();
+                break;
+            case MODIFIER_LAST_NAME:
+                criterionV3Criteria = v3Criteria.withModifier().withLastName();
+                break;
+            case MODIFIER_EMAIL:
+                criterionV3Criteria = v3Criteria.withModifier().withEmail();
+                break;
+        }
+        return criterionV3Criteria;
+    }
+
+    private ISearchCriteria withAttribute(ExperimentSearchCriteria v3Criteria, String attributeCode) {
+        ISearchCriteria criterionV3Criteria = null;
+        switch (ExperimentAttributeSearchFieldKind.valueOf(attributeCode)) {
+            case CODE:
+                criterionV3Criteria = v3Criteria.withCode();
+                break;
+            case EXPERIMENT_TYPE:
+                criterionV3Criteria = v3Criteria.withType().withCode();
+                break;
+            case PERM_ID:
+                criterionV3Criteria = v3Criteria.withPermId();
+                break;
+            case IDENTIFIER:
+                criterionV3Criteria = v3Criteria.withIdentifier();
+                break;
+            case PROJECT:
+                criterionV3Criteria = v3Criteria.withProject().withCode();
+                break;
+            case PROJECT_PERM_ID:
+                criterionV3Criteria = v3Criteria.withProject().withPermId();
+                break;
+            case PROJECT_SPACE:
+                criterionV3Criteria = v3Criteria.withProject().withSpace().withCode();
+                break;
+            case METAPROJECT:
+                criterionV3Criteria = v3Criteria.withTag().withCode();
+                break;
+            case REGISTRATION_DATE:
+                criterionV3Criteria = v3Criteria.withRegistrationDate();
+                break;
+            case MODIFICATION_DATE:
+                criterionV3Criteria = v3Criteria.withModificationDate();
+                break;
+            case REGISTRATION_DATE_FROM:
+                // For this to work, the search Criteria should set CompareType.MORE_THAN_OR_EQUAL, this was found at SearchFieldDateCriterionFactory
+                criterionV3Criteria = v3Criteria.withRegistrationDate();
+                break;
+            case MODIFICATION_DATE_FROM:
+                // For this to work, the search Criteria should set CompareType.MORE_THAN_OR_EQUAL, this was found at SearchFieldDateCriterionFactory
+                criterionV3Criteria = v3Criteria.withModificationDate();
+                break;
+            case REGISTRATION_DATE_UNTIL:
+                // For this to work, the search Criteria should set CompareType.LESS_THAN_OR_EQUAL, this was found at SearchFieldDateCriterionFactory
+                criterionV3Criteria = v3Criteria.withRegistrationDate();
+                break;
+            case MODIFICATION_DATE_UNTIL:
+                // For this to work, the search Criteria should set CompareType.LESS_THAN_OR_EQUAL, this was found at SearchFieldDateCriterionFactory
+                criterionV3Criteria = v3Criteria.withModificationDate();
+                break;
+            case REGISTRATOR_USER_ID:
+                criterionV3Criteria = v3Criteria.withRegistrator().withUserId();
+                break;
+            case REGISTRATOR_FIRST_NAME:
+                criterionV3Criteria = v3Criteria.withRegistrator().withFirstName();
+                break;
+            case REGISTRATOR_LAST_NAME:
+                criterionV3Criteria = v3Criteria.withRegistrator().withLastName();
+                break;
+            case REGISTRATOR_EMAIL:
+                criterionV3Criteria = v3Criteria.withRegistrator().withEmail();
+                break;
+            case MODIFIER_USER_ID:
+                criterionV3Criteria = v3Criteria.withModifier().withUserId();
+                break;
+            case MODIFIER_FIRST_NAME:
+                criterionV3Criteria = v3Criteria.withModifier().withFirstName();
+                break;
+            case MODIFIER_LAST_NAME:
+                criterionV3Criteria = v3Criteria.withModifier().withLastName();
+                break;
+            case MODIFIER_EMAIL:
+                criterionV3Criteria = v3Criteria.withModifier().withEmail();
+                break;
+        }
+        return criterionV3Criteria;
+    }
+
+    private ISearchCriteria withAttribute(MaterialSearchCriteria v3Criteria, String attributeCode) {
+        ISearchCriteria criterionV3Criteria = null;
+        switch (MaterialAttributeSearchFieldKind.valueOf(attributeCode)) {
+            case ID:
+                // Not supported
+                break;
+            case CODE:
+                criterionV3Criteria = v3Criteria.withCode();
+                break;
+            case PERM_ID:
+                criterionV3Criteria = v3Criteria.withPermId();
+                break;
+            case MATERIAL_TYPE:
+                criterionV3Criteria = v3Criteria.withType().withCode();
+                break;
+            case METAPROJECT:
+                criterionV3Criteria = v3Criteria.withTag().withCode();
+                break;
+            case REGISTRATION_DATE:
+                criterionV3Criteria = v3Criteria.withRegistrationDate();
+                break;
+            case MODIFICATION_DATE:
+                criterionV3Criteria = v3Criteria.withModificationDate();
+                break;
+            case REGISTRATION_DATE_FROM:
+                // For this to work, the search Criteria should set CompareType.MORE_THAN_OR_EQUAL, this was found at SearchFieldDateCriterionFactory
+                criterionV3Criteria = v3Criteria.withRegistrationDate();
+                break;
+            case MODIFICATION_DATE_FROM:
+                // For this to work, the search Criteria should set CompareType.MORE_THAN_OR_EQUAL, this was found at SearchFieldDateCriterionFactory
+                criterionV3Criteria = v3Criteria.withModificationDate();
+                break;
+            case REGISTRATION_DATE_UNTIL:
+                // For this to work, the search Criteria should set CompareType.LESS_THAN_OR_EQUAL, this was found at SearchFieldDateCriterionFactory
+                criterionV3Criteria = v3Criteria.withRegistrationDate();
+                break;
+            case MODIFICATION_DATE_UNTIL:
+                // For this to work, the search Criteria should set CompareType.LESS_THAN_OR_EQUAL, this was found at SearchFieldDateCriterionFactory
+                criterionV3Criteria = v3Criteria.withModificationDate();
+                break;
+            case REGISTRATOR_USER_ID:
+                criterionV3Criteria = v3Criteria.withRegistrator().withUserId();
+                break;
+            case REGISTRATOR_FIRST_NAME:
+                criterionV3Criteria = v3Criteria.withRegistrator().withFirstName();
+                break;
+            case REGISTRATOR_LAST_NAME:
+                criterionV3Criteria = v3Criteria.withRegistrator().withLastName();
+                break;
+            case REGISTRATOR_EMAIL:
+                criterionV3Criteria = v3Criteria.withRegistrator().withEmail();
+                break;
+            case MODIFIER_USER_ID:
+                criterionV3Criteria = v3Criteria.withModifier().withUserId();
+                break;
+            case MODIFIER_FIRST_NAME:
+                criterionV3Criteria = v3Criteria.withModifier().withFirstName();
+                break;
+            case MODIFIER_LAST_NAME:
+                criterionV3Criteria = v3Criteria.withModifier().withLastName();
+                break;
+            case MODIFIER_EMAIL:
+                criterionV3Criteria = v3Criteria.withModifier().withEmail();
+                break;
+        }
+        return criterionV3Criteria;
+    }
+
+    //
     // Helper Methods - Criteria build
     //
+
+    private EntityKind getEntityKind(AbstractEntitySearchCriteria criteria) {
+        EntityKind entityKind = null;
+        if (criteria instanceof MaterialSearchCriteria) {
+            entityKind = EntityKind.MATERIAL;
+        }
+        if (criteria instanceof ExperimentSearchCriteria) {
+            entityKind = EntityKind.EXPERIMENT;
+        }
+        if (criteria instanceof AbstractSampleSearchCriteria) {
+            entityKind = EntityKind.SAMPLE;
+        }
+        if (criteria instanceof AbstractDataSetSearchCriteria) {
+            entityKind = EntityKind.DATA_SET;
+        }
+        return entityKind;
+    }
 
     private AbstractEntitySearchCriteria getCriteria(EntityKind entityKind) {
         AbstractEntitySearchCriteria criteria = null;
@@ -377,48 +888,8 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
         return (ILocalSearchManager<AbstractEntitySearchCriteria<?>, ?, Long>) manager;
     }
 
-    private StringFieldSearchCriteria withTypeCode(AbstractEntitySearchCriteria<?> entitySearchCriteria) {
-        if (entitySearchCriteria instanceof SampleSearchCriteria) {
-            return ((SampleSearchCriteria)entitySearchCriteria).withType().withCode();
-        } else if (entitySearchCriteria instanceof ExperimentSearchCriteria) {
-            return ((ExperimentSearchCriteria)entitySearchCriteria).withType().withCode();
-        } else if (entitySearchCriteria instanceof DataSetSearchCriteria) {
-            return ((DataSetSearchCriteria)entitySearchCriteria).withType().withCode();
-        } else if (entitySearchCriteria instanceof MaterialSearchCriteria) {
-            return ((MaterialSearchCriteria)entitySearchCriteria).withType().withCode();
-        } else {
-            throw throwIllegalArgumentException("withType Unreachable statement");
-        }
-    }
-
-    private StringFieldSearchCriteria withSpaceCode(AbstractEntitySearchCriteria<?> entitySearchCriteria) {
-        if (entitySearchCriteria instanceof SampleSearchCriteria) {
-            return ((SampleSearchCriteria)entitySearchCriteria).withProject().withSpace().withCode();
-        } else if (entitySearchCriteria instanceof ExperimentSearchCriteria) {
-            return ((ExperimentSearchCriteria)entitySearchCriteria).withProject().withSpace().withCode();
-        } else {
-            throw throwIllegalArgumentException("withSpace Unreachable statement");
-        }
-    }
-
-    private StringFieldSearchCriteria withProjectCode(AbstractEntitySearchCriteria<?> entitySearchCriteria) {
-        if (entitySearchCriteria instanceof ExperimentSearchCriteria) {
-            return ((ExperimentSearchCriteria)entitySearchCriteria).withProject().withCode();
-        } else {
-            throw throwIllegalArgumentException("withProjectCode Unreachable statement");
-        }
-    }
-
-    private StringFieldSearchCriteria withProjectPermId(AbstractEntitySearchCriteria<?> entitySearchCriteria) {
-        if (entitySearchCriteria instanceof ExperimentSearchCriteria) {
-            return ((ExperimentSearchCriteria)entitySearchCriteria).withProject().withPermId();
-        } else {
-            throw throwIllegalArgumentException("withProjectPermId Unreachable statement");
-        }
-    }
-
     //
-    // Helper Methods - Numbers
+    // Helper Methods - Property Types
     //
 
     private Number getNumber(String number) {
@@ -457,7 +928,7 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
     }
 
 
-    private static String IS_NUMBER = "SELECT COUNT(*) > 0 FROM property_types WHERE code = :code AND (daty_id = 3 OR daty_id = 4)";
+    private static String IS_NUMBER = "SELECT COUNT(*) > 0 FROM property_types WHERE code = :code AND (daty_id = (SELECT id FROM data_types WHERE code = 'INTEGER') OR daty_id = (SELECT id FROM data_types WHERE code = 'REAL'))";
 
     private boolean isNumberProperty(String propertyCode) {
         DAOFactory daoFactory = (DAOFactory) CommonServiceProvider.getApplicationContext().getBean(ComponentNames.DAO_FACTORY);
@@ -468,9 +939,21 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
         return isNumber;
     }
 
+    private static String IS_DATE = "SELECT COUNT(*) > 0 FROM property_types WHERE code = :code AND (daty_id = (SELECT id FROM data_types WHERE code = 'TIMESTAMP'))";
+
+    private boolean isDateProperty(String propertyCode) {
+        DAOFactory daoFactory = (DAOFactory) CommonServiceProvider.getApplicationContext().getBean(ComponentNames.DAO_FACTORY);
+        Session currentSession = daoFactory.getSessionFactory().getCurrentSession();
+        NativeQuery nativeQuery = currentSession.createNativeQuery(IS_DATE);
+        nativeQuery.setParameter("code", propertyCode);
+        Boolean isDate = (Boolean) nativeQuery.getSingleResult();
+        return isDate;
+    }
+
     //
     // Helper Methods - Authorisation
     //
+
     private AuthorizationConfig authorizationConfig;
 
     private AuthorizationConfig getAuthorizationConfig() {
