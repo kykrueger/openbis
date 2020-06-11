@@ -10,10 +10,13 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.StatusSearchCrite
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.ExternalDmsAddressType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.search.ExternalDmsTypeSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchObjectKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.AbstractSampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.*;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
@@ -54,9 +57,129 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
 
     @Override
     public List<MatchingEntity> searchEntitiesByTerm(String userId, SearchableEntity searchableEntity, String searchTerm, HibernateSearchDataProvider dataProvider, boolean useWildcardSearchMode, int alreadyFoundEntities, int maxSize) throws DataAccessException {
-        return this.hibernateSearchDAO.searchEntitiesByTerm(userId, searchableEntity, searchTerm, dataProvider, useWildcardSearchMode, alreadyFoundEntities, maxSize);
+        operationLog.info("TO ADAPT [FULL TEXT SEARCH] : " + searchableEntity + " [" + searchTerm + "] Wildcards: [" + useWildcardSearchMode + "]");
+
+        if(searchTerm == null) {
+            throw new AssertionError("searchTerm == null");
+        }
+        if(searchableEntity == null) {
+            throw new AssertionError("searchableEntity == null");
+        }
+        if(useWildcardSearchMode) {
+            throwUnsupportedOperationException("useWildcardSearchMode not supported");
+        }
+        if(maxSize != Integer.MAX_VALUE) {
+            throwIllegalArgumentException("maxSize != Integer.MAX_VALUE");
+        }
+
+        // alreadyFoundEntities is a ignored parameter
+
+        // Obtain PersonPE
+        DAOFactory daoFactory = (DAOFactory) CommonServiceProvider.getApplicationContext().getBean(ComponentNames.DAO_FACTORY);
+        PersonPE personPE = daoFactory.getPersonDAO().tryFindPersonByUserId(userId);
+
+        if(personPE == null) {
+            throwIllegalArgumentException("userId: '" + userId + "' not found on database.");
+        }
+
+        // Obtain global criteria
+
+        GlobalSearchCriteria globalSearchCriteria = getCriteria(searchableEntity);
+        globalSearchCriteria.withText().thatContains(searchTerm);
+
+        operationLog.info("ADAPTED [FULL TEXT SEARCH] : " + searchableEntity + " [" + searchTerm + "] " + useWildcardSearchMode);
+
+        // Obtain entity id results from search manager
+
+        Set<Map<String, Object>> newResults = getGlobalSearchManager().searchForIDs(personPE.getId(),
+                getAuthorisationInformation(personPE),
+                globalSearchCriteria,
+                ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN,
+                getTableMapper(searchableEntity));
+
+        // Adapt V3 to V1 Results
+
+        // TODO: This adaption is incomplete
+        List<MatchingEntity> newResultsAsMatchingEntity = new ArrayList<>();
+        for (Map<String, Object> newResult:newResults) {
+            MatchingEntity matchingEntity = new MatchingEntity();
+            matchingEntity.setId((Long) newResult.get("id"));
+            matchingEntity.setIdentifier((String) newResult.get("identifier"));
+            matchingEntity.setCode((String) newResult.get("code"));
+            matchingEntity.setScore((Float) newResult.get("rank"));
+            List<PropertyMatch> matches = new ArrayList<>();
+            if ((Float) newResult.get("value_match_rank") > 0) {
+                PropertyMatch propertyMatch = new PropertyMatch();
+                propertyMatch.setCode((String) newResult.get("property_type_label"));
+                propertyMatch.setValue((String) newResult.get("value_headline"));
+                matches.add(propertyMatch);
+            }
+            if ((Float) newResult.get("code_match_rank") > 0) {
+
+            }
+            if ((Float) newResult.get("label_match_rank") > 0) {
+
+            }
+            if ((Float) newResult.get("description_match_rank") > 0) {
+
+            }
+            matchingEntity.setMatches(matches);
+            matchingEntity.setEntityKind(ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind.valueOf((String) newResult.get("object_kind")));
+            newResultsAsMatchingEntity.add(matchingEntity);
+        }
+
+        // TODO: Remove when finish, old search to compare when debugging
+        List<MatchingEntity> oldResults = this.hibernateSearchDAO.searchEntitiesByTerm(userId, searchableEntity, searchTerm, dataProvider, useWildcardSearchMode, alreadyFoundEntities, maxSize);
+
+        return newResultsAsMatchingEntity;
     }
 
+    private GlobalSearchManager globalSearchManager;
+
+    private IGlobalSearchManager getGlobalSearchManager() {
+        if (globalSearchManager == null) {
+            globalSearchManager = (GlobalSearchManager) CommonServiceProvider.getApplicationContext().getBean("global-search-manager");
+        }
+        return globalSearchManager;
+    }
+
+    private GlobalSearchCriteria getCriteria(SearchableEntity entityKind) {
+        GlobalSearchCriteria globalSearchCriteria = new GlobalSearchCriteria();
+        switch (entityKind) {
+            case MATERIAL:
+                globalSearchCriteria.withObjectKind().thatIn(GlobalSearchObjectKind.MATERIAL);
+                break;
+            case EXPERIMENT:
+                globalSearchCriteria.withObjectKind().thatIn(GlobalSearchObjectKind.EXPERIMENT);
+                break;
+            case SAMPLE:
+                globalSearchCriteria.withObjectKind().thatIn(GlobalSearchObjectKind.SAMPLE);
+                break;
+            case DATA_SET:
+                globalSearchCriteria.withObjectKind().thatIn(GlobalSearchObjectKind.DATA_SET);
+                break;
+        }
+        return globalSearchCriteria;
+    }
+
+    private TableMapper getTableMapper(SearchableEntity entityKind) {
+        TableMapper tableMapper = null;
+        switch (entityKind) {
+            case MATERIAL:
+                tableMapper = TableMapper.MATERIAL;
+                break;
+            case EXPERIMENT:
+                tableMapper = TableMapper.EXPERIMENT;
+                break;
+            case SAMPLE:
+                tableMapper = TableMapper.SAMPLE;
+                break;
+            case DATA_SET:
+                tableMapper = TableMapper.DATA_SET;
+                break;
+        }
+        return tableMapper;
+    }
 
     @Override
     public int getResultSetSizeLimit() {
@@ -76,7 +199,7 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
                                          final EntityKind entityKind,
                                          final List<IAssociationCriteria> v1Associations)
     {
-        operationLog.info("TO ADAPT: " + entityKind + " [" + mainV1Criteria + "] " + v1Associations);
+        operationLog.info("TO ADAPT [QUERY] : " + entityKind + " [" + mainV1Criteria + "] " + v1Associations);
 
         // Obtain PersonPE
         DAOFactory daoFactory = (DAOFactory) CommonServiceProvider.getApplicationContext().getBean(ComponentNames.DAO_FACTORY);
@@ -343,7 +466,7 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
             }
         }
 
-        operationLog.info("ADAPTED: " + mainV3Criteria);
+        operationLog.info("ADAPTED [QUERY] : " + mainV3Criteria);
 
         // Obtain entity id results from search manager
         Set<Long> results = getSearchManager(entityKind).searchForIDs(personPE.getId(),
@@ -374,7 +497,7 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
                     break;
                 case PROPERTY:
                     if (v1Criterion.getField().getPropertyCode() == null) {
-                        throw throwIllegalArgumentException("PROPERTY PropertyCode null");
+                        throwIllegalArgumentException("PROPERTY PropertyCode null");
                     }
                     if (isNumberProperty(v1Criterion.getField().getPropertyCode())) {
                         criterionV3Criteria = v3Criteria.withNumberProperty(v1Criterion.getField().getPropertyCode());
@@ -386,7 +509,7 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
                     break;
                 case ATTRIBUTE:
                     if (v1Criterion.getField().getAttributeCode() == null) {
-                        throw throwIllegalArgumentException("ATTRIBUTE AttributeCode null");
+                        throwIllegalArgumentException("ATTRIBUTE AttributeCode null");
                     }
 
                     EntityKind entityKind = getEntityKind(v3Criteria);
@@ -423,7 +546,7 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
                     // Old Lucene behaviour was always word match, real equals should be even more restrictive/correct
                     stringFieldSearchCriteria.thatEquals(value);
                 } else {
-                    throw throwIllegalArgumentException(comparisonOperator + " compare type for StringFieldSearchCriteria");
+                    throwIllegalArgumentException(comparisonOperator + " compare type for StringFieldSearchCriteria");
                 }
             } else if(criterionV3Criteria instanceof NumberPropertySearchCriteria) {
                 NumberFieldSearchCriteria numberFieldSearchCriteria = (NumberFieldSearchCriteria) criterionV3Criteria;
@@ -1049,12 +1172,12 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
     // Helper Methods - Errors
     //
 
-    private RuntimeException throwUnsupportedOperationException(String feature) throws RuntimeException {
-        return new RuntimeException(new UnsupportedOperationException("HibernateSearchDAOV3Replacement - Feature not supported: " + feature));
+    private void throwUnsupportedOperationException(String feature) throws RuntimeException {
+        throw new RuntimeException(new UnsupportedOperationException("HibernateSearchDAOV3Replacement - Feature not supported: " + feature));
     }
 
-    private RuntimeException throwIllegalArgumentException(String feature) throws RuntimeException {
-        return new IllegalArgumentException("HibernateSearchDAOV3Replacement - Illegal argument: " + feature);
+    private void throwIllegalArgumentException(String feature) throws RuntimeException {
+        throw new IllegalArgumentException("HibernateSearchDAOV3Replacement - Illegal argument: " + feature);
     }
 
 }
