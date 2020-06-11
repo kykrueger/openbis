@@ -88,6 +88,7 @@ class ContentTabs extends React.Component {
         classes={{
           root: this.props.classes.iconRoot
         }}
+        fontSize='small'
       />
     )
   }

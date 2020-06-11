@@ -78,7 +78,7 @@ class FilterField extends React.Component {
           root: classes.adornment
         }}
       >
-        <FilterIcon />
+        <FilterIcon fontSize='small' />
       </InputAdornment>
     )
   }
@@ -98,7 +98,7 @@ class FilterField extends React.Component {
             onMouseDown={this.handleFilterClear}
             classes={{ root: classes.adornmentButton }}
           >
-            <CloseIcon />
+            <CloseIcon fontSize='small' />
           </IconButton>
         </InputAdornment>
       )
