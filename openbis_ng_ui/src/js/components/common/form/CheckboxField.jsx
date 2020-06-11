@@ -96,6 +96,7 @@ class CheckboxFormField extends React.PureComponent {
             onChange={this.handleChange}
             onFocus={this.handleFocus}
             classes={{ root: classes.checkbox }}
+            size='small'
           />
           <Typography
             component='label'

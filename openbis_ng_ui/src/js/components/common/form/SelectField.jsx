@@ -68,7 +68,8 @@ class SelectFormField extends React.PureComponent {
       styles,
       onChange,
       onClick,
-      classes
+      classes,
+      variant
     } = this.props
 
     this.fixReference(reference)
@@ -85,11 +86,13 @@ class SelectFormField extends React.PureComponent {
           select
           inputRef={this.inputReference}
           label={
-            <FormFieldLabel
-              label={label}
-              mandatory={mandatory}
-              styles={styles}
-            />
+            label ? (
+              <FormFieldLabel
+                label={label}
+                mandatory={mandatory}
+                styles={styles}
+              />
+            ) : null
           }
           name={name}
           value={value || ''}
@@ -112,7 +115,7 @@ class SelectFormField extends React.PureComponent {
               root: classes.select
             }
           }}
-          variant='filled'
+          variant={variant ? variant : 'filled'}
           margin='dense'
           classes={{
             root: classes.textField

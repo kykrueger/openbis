@@ -9,14 +9,15 @@ import logger from '@src/js/common/logger.js'
 
 import ColumnConfigRow from './ColumnConfigRow.jsx'
 
-const styles = () => ({
+const styles = theme => ({
   container: {
     display: 'flex',
     alignItems: 'center'
   },
   columns: {
     listStyle: 'none',
-    padding: '10px 20px',
+    padding: `${theme.spacing(1)}px ${theme.spacing(2)}px`,
+    paddingBottom: 0,
     margin: 0
   }
 })
@@ -60,7 +61,7 @@ class ColumnConfig extends React.Component {
     return (
       <div className={classes.container}>
         <IconButton onClick={this.handleOpen}>
-          <SettingsIcon />
+          <SettingsIcon fontSize='small' />
         </IconButton>
         <Popover
           open={Boolean(el)}
