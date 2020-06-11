@@ -135,7 +135,7 @@ CREATE VIEW data AS
       WHERE del_id IS NULL;
 
 CREATE VIEW data_deleted AS
-     SELECT id, code, dsty_id, dast_id, expe_id, data_producer_code, production_timestamp, samp_id, registration_timestamp, access_timestamp, pers_id_registerer, pers_id_modifier, is_valid, modification_timestamp, is_derived, del_id, orig_del, version, data_set_kind, tsvector_document
+     SELECT id, code, dsty_id, dast_id, expe_id, data_producer_code, production_timestamp, samp_id, registration_timestamp, access_timestamp, pers_id_registerer, pers_id_modifier, is_valid, modification_timestamp, is_derived, del_id, orig_del, version, data_set_kind
        FROM data_all 
       WHERE del_id IS NOT NULL;
 
@@ -146,7 +146,7 @@ CREATE VIEW experiments AS
       WHERE del_id IS NULL;
 
 CREATE VIEW experiments_deleted AS
-     SELECT id, perm_id, code, exty_id, pers_id_registerer, pers_id_modifier, registration_timestamp, modification_timestamp, proj_id, del_id, orig_del, is_public, version, tsvector_document
+     SELECT id, perm_id, code, exty_id, pers_id_registerer, pers_id_modifier, registration_timestamp, modification_timestamp, proj_id, del_id, orig_del, is_public, version
        FROM experiments_all 
       WHERE del_id IS NOT NULL;
 
@@ -158,7 +158,7 @@ CREATE VIEW samples AS
       WHERE del_id IS NULL;
 
 CREATE VIEW samples_deleted AS
-     SELECT id, perm_id, code, expe_id, saty_id, registration_timestamp, modification_timestamp, pers_id_registerer, pers_id_modifier, del_id, orig_del, space_id, proj_id, samp_id_part_of, version, tsvector_document
+     SELECT id, perm_id, code, expe_id, saty_id, registration_timestamp, modification_timestamp, pers_id_registerer, pers_id_modifier, del_id, orig_del, space_id, proj_id, samp_id_part_of, version
        FROM samples_all 
       WHERE del_id IS NOT NULL;
 

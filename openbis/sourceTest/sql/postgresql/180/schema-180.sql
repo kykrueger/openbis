@@ -1133,8 +1133,7 @@ CREATE VIEW data_deleted AS
     data_all.del_id,
     data_all.orig_del,
     data_all.version,
-    data_all.data_set_kind,
-    data_all.tsvector_document
+    data_all.data_set_kind
    FROM data_all
   WHERE (data_all.del_id IS NOT NULL);
 CREATE SEQUENCE data_id_seq
@@ -1659,8 +1658,7 @@ CREATE VIEW experiments_deleted AS
     experiments_all.del_id,
     experiments_all.orig_del,
     experiments_all.is_public,
-    experiments_all.version,
-    experiments_all.tsvector_document
+    experiments_all.version
    FROM experiments_all
   WHERE (experiments_all.del_id IS NOT NULL);
 CREATE TABLE external_data (
@@ -2304,8 +2302,7 @@ CREATE VIEW samples_deleted AS
     samples_all.space_id,
     samples_all.proj_id,
     samples_all.samp_id_part_of,
-    samples_all.version,
-    samples_all.tsvector_document
+    samples_all.version
    FROM samples_all
   WHERE (samples_all.del_id IS NOT NULL);
 CREATE SEQUENCE script_id_seq
