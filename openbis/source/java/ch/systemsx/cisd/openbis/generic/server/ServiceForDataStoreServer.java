@@ -3008,7 +3008,7 @@ public class ServiceForDataStoreServer extends AbstractCommonServer<IServiceForD
                             SearchCriteriaToDetailedSearchCriteriaTranslator.convert(getDAOFactory(), SearchableEntityKind.EXPERIMENT,
                                     searchCriteria);
                     SearchHelper searchHelper = new SearchHelper(session, businessObjectFactory, getDAOFactory());
-                    List<ExperimentPE> experiments = searchHelper.searchForExperiments(sessionToken, detailedSearchCriteria);
+                    List<ExperimentPE> experiments = searchHelper.searchForExperiments(session.getUserName(), detailedSearchCriteria);
                     return translateExperimentsWithMetaprojectAssignments(session, experiments);
                 }
             });
