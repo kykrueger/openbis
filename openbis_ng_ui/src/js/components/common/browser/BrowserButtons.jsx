@@ -1,6 +1,6 @@
 import React from 'react'
-import Button from '@material-ui/core/Button'
 import { withStyles } from '@material-ui/core/styles'
+import Button from '@src/js/components/common/form/Button.jsx'
 import logger from '@src/js/common/logger.js'
 
 const styles = theme => ({
@@ -26,23 +26,17 @@ class BrowserButtons extends React.Component {
     return (
       <div className={classes.container}>
         <Button
+          label='Add'
           classes={{ root: classes.button }}
-          variant='contained'
-          color='secondary'
           onClick={controller.nodeAdd}
           disabled={!addEnabled}
-        >
-          Add
-        </Button>
+        />
         <Button
+          label='Remove'
           classes={{ root: classes.button }}
-          variant='contained'
-          color='secondary'
           onClick={controller.nodeRemove}
           disabled={!removeEnabled}
-        >
-          Remove
-        </Button>
+        />
       </div>
     )
   }
