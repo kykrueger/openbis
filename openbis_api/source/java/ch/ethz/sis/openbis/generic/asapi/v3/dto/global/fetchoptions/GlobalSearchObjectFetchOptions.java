@@ -21,6 +21,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetc
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.GlobalSearchObject;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.fetchoptions.MaterialFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -48,6 +49,9 @@ public class GlobalSearchObjectFetchOptions extends FetchOptions<GlobalSearchObj
 
     @JsonProperty
     private GlobalSearchObjectSortOptions sort;
+
+    @JsonProperty
+    private MatchFetchOptions match;
 
     // Method automatically generated with DtoGenerator
     public ExperimentFetchOptions withExperiment()
@@ -137,6 +141,20 @@ public class GlobalSearchObjectFetchOptions extends FetchOptions<GlobalSearchObj
         return material != null;
     }
 
+    public MatchFetchOptions withMatch()
+    {
+        if (match == null)
+        {
+            match = new MatchFetchOptions();
+        }
+        return match;
+    }
+
+    public boolean hasMatch()
+    {
+        return match != null;
+    }
+
     // Method automatically generated with DtoGenerator
     @Override
     public GlobalSearchObjectSortOptions sortBy()
@@ -154,6 +172,7 @@ public class GlobalSearchObjectFetchOptions extends FetchOptions<GlobalSearchObj
     {
         return sort;
     }
+
     @Override
     protected FetchOptionsToStringBuilder getFetchOptionsStringBuilder()
     {
