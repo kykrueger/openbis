@@ -22,9 +22,9 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.*;
 
 public class GlobalSearchCriteriaTranslator
 {
-    public static final String START_SEL = "<b>"; //"<SEL--";
+    public static final String START_SEL = "<SEL--";
 
-    public static final String STOP_SEL = "</b>"; //"--SEL>";
+    public static final String STOP_SEL = "--SEL>";
 
     public static final String RANK_ALIAS = "rank";
 
@@ -86,8 +86,8 @@ public class GlobalSearchCriteriaTranslator
 
     private static final String ATTRIBUTE_TYPES_TABLE_ALIAS = "prty";
 
-//    private static final String TS_HEADLINE_OPTIONS = "HighlightAll=TRUE, StartSel=" + START_SEL
-//            +", StopSel=" + STOP_SEL;
+    private static final String TS_HEADLINE_OPTIONS = "HighlightAll=TRUE, StartSel=" + START_SEL
+            +", StopSel=" + STOP_SEL;
 
     private static final Logger LOG = LogFactory.getLogger(LogCategory.OPERATION, GlobalSearchCriteriaTranslator.class);
 
@@ -305,6 +305,7 @@ public class GlobalSearchCriteriaTranslator
     {
         sqlBuilder.append(TS_HEADLINE).append(LP).append(field).append(COMMA).append(SP);
         buildTsQueryPart(sqlBuilder, stringValue, args);
+        sqlBuilder.append(COMMA).append(SP).append(SQ).append(TS_HEADLINE_OPTIONS).append(SQ);
         sqlBuilder.append(RP).append(SP).append(alias);
     }
 
