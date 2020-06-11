@@ -196,6 +196,11 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
                                 subAssV3Criteria = ((AbstractDataSetSearchCriteria) mainV3Criteria).withoutSample();
                             } else { // This is DetailedSearchAssociationCriteria Tech ids
                                 // TODO: V3 doesn't support tech ids
+//                                Collection<Long> ids = ((DetailedSearchAssociationCriteria) association).getIds();
+//                                List<String> permIds = getPermIds(EntityKind.SAMPLE, ids);
+//                                for (String permId:permIds) {
+//                                    ((AbstractDataSetSearchCriteria) mainV3Criteria).withSample().withPermId().thatEquals(permId);
+//                                }
                             }
                         }
                         break;
@@ -207,6 +212,11 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
                                 subAssV3Criteria = ((AbstractSampleSearchCriteria) mainV3Criteria).withoutExperiment();
                             } else { // This is DetailedSearchAssociationCriteria Tech ids
                                 // TODO: V3 doesn't support tech ids
+//                                Collection<Long> ids = ((DetailedSearchAssociationCriteria) association).getIds();
+//                                List<String> permIds = getPermIds(EntityKind.EXPERIMENT, ids);
+//                                for (String permId:permIds) {
+//                                    ((AbstractSampleSearchCriteria) mainV3Criteria).withExperiment().withPermId().thatEquals(permId);
+//                                }
                             }
                         } else if(mainV3Criteria instanceof AbstractDataSetSearchCriteria) {
                             if (association instanceof DetailedSearchNotNullAssociationCriteria) {
@@ -215,6 +225,11 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
                                 subAssV3Criteria = ((AbstractDataSetSearchCriteria) mainV3Criteria).withoutExperiment();
                             } else { // This is DetailedSearchAssociationCriteria Tech ids
                                 // TODO: V3 doesn't support tech ids
+//                                Collection<Long> ids = ((DetailedSearchAssociationCriteria) association).getIds();
+//                                List<String> permIds = getPermIds(EntityKind.EXPERIMENT, ids);
+//                                for (String permId:permIds) {
+//                                    ((AbstractDataSetSearchCriteria) mainV3Criteria).withExperiment().withPermId().thatEquals(permId);
+//                                }
                             }
                         }
                         break;
@@ -229,6 +244,11 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
                                 // TODO: V3 doesn't support withoutParents
                             } else { // This is DetailedSearchAssociationCriteria Tech ids
                                 // TODO: V3 doesn't support tech ids
+//                                Collection<Long> ids = ((DetailedSearchAssociationCriteria) association).getIds();
+//                                List<String> permIds = getPermIds(EntityKind.DATA_SET, ids);
+//                                for (String permId:permIds) {
+//                                    ((DataSetSearchCriteria) mainV3Criteria).withParents().withPermId().thatEquals(permId);
+//                                }
                             }
                         }
                         break;
@@ -240,6 +260,11 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
                                 // TODO: V3 doesn't support withoutChildren
                             } else { // This is DetailedSearchAssociationCriteria Tech ids
                                 // TODO: V3 doesn't support tech ids
+//                                Collection<Long> ids = ((DetailedSearchAssociationCriteria) association).getIds();
+//                                List<String> permIds = getPermIds(EntityKind.DATA_SET, ids);
+//                                for (String permId:permIds) {
+//                                    ((DataSetSearchCriteria) mainV3Criteria).withChildren().withPermId().thatEquals(permId);
+//                                }
                             }
                         }
                         break;
@@ -251,6 +276,11 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
                                 // TODO: V3 doesn't support withoutContainer
                             } else { // This is DetailedSearchAssociationCriteria Tech ids
                                 // TODO: V3 doesn't support tech ids
+//                                Collection<Long> ids = ((DetailedSearchAssociationCriteria) association).getIds();
+//                                List<String> permIds = getPermIds(EntityKind.DATA_SET, ids);
+//                                for (String permId:permIds) {
+//                                    ((DataSetSearchCriteria) mainV3Criteria).withContainer().withPermId().thatEquals(permId);
+//                                }
                             }
                         }
                         break;
@@ -262,6 +292,11 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
                                 subAssV3Criteria = ((SampleSearchCriteria) mainV3Criteria).withoutContainer();
                             } else { // This is DetailedSearchAssociationCriteria Tech ids
                                 // TODO: V3 doesn't support tech ids
+//                                Collection<Long> ids = ((DetailedSearchAssociationCriteria) association).getIds();
+//                                List<String> permIds = getPermIds(EntityKind.SAMPLE, ids);
+//                                for (String permId:permIds) {
+//                                    ((SampleSearchCriteria) mainV3Criteria).withContainer().withPermId().thatEquals(permId);
+//                                }
                             }
                         }
                         break;
@@ -273,6 +308,11 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
                                 // TODO: V3 doesn't support withoutChildren
                             } else { // This is DetailedSearchAssociationCriteria Tech ids
                                 // TODO: V3 doesn't support tech ids
+//                                Collection<Long> ids = ((DetailedSearchAssociationCriteria) association).getIds();
+//                                List<String> permIds = getPermIds(EntityKind.SAMPLE, ids);
+//                                for (String permId:permIds) {
+//                                    ((SampleSearchCriteria) mainV3Criteria).withChildren().withPermId().thatEquals(permId);
+//                                }
                             }
                         }
                         break;
@@ -284,6 +324,11 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
                                 // TODO: V3 doesn't support withoutParents
                             } else { // This is DetailedSearchAssociationCriteria Tech ids
                                 // TODO: V3 doesn't support tech ids
+//                                Collection<Long> ids = ((DetailedSearchAssociationCriteria) association).getIds();
+//                                List<String> permIds = getPermIds(EntityKind.SAMPLE, ids);
+//                                for (String permId:permIds) {
+//                                    ((SampleSearchCriteria) mainV3Criteria).withParents().withPermId().thatEquals(permId);
+//                                }
                             }
                         }
                         break;
@@ -949,6 +994,39 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
         Boolean isDate = (Boolean) nativeQuery.getSingleResult();
         return isDate;
     }
+
+    //
+    // Helper Methods - Tech Id to Perm Id
+    //
+
+//    private static String GET_SAMPLE_PERM_IDS = "SELECT perm_id FROM samples WHERE id IN (:ids)";
+//    private static String GET_EXPERIMENT_PERM_IDS = "SELECT perm_id FROM experiments WHERE id IN (:ids)";
+//    private static String GET_DATASETS_PERM_IDS = "SELECT code as perm_id FROM data WHERE id IN (:ids)";
+//
+//    private List<String> getPermIds(EntityKind entityKind, Collection<Long> ids) {
+//        DAOFactory daoFactory = (DAOFactory) CommonServiceProvider.getApplicationContext().getBean(ComponentNames.DAO_FACTORY);
+//        Session currentSession = daoFactory.getSessionFactory().getCurrentSession();
+//        NativeQuery nativeQuery = null;
+//
+//        switch (entityKind) {
+//            case MATERIAL:
+//                throwUnsupportedOperationException("getPermIds for " + entityKind + "not implemented");
+//                break;
+//            case EXPERIMENT:
+//                nativeQuery = currentSession.createNativeQuery(GET_EXPERIMENT_PERM_IDS);
+//                break;
+//            case SAMPLE:
+//                nativeQuery = currentSession.createNativeQuery(GET_SAMPLE_PERM_IDS);
+//                break;
+//            case DATA_SET:
+//                nativeQuery = currentSession.createNativeQuery(GET_DATASETS_PERM_IDS);
+//                break;
+//        }
+//
+//        nativeQuery.setParameterList("ids", ids);
+//        List<String> permIds = nativeQuery.getResultList();
+//        return permIds;
+//    }
 
     //
     // Helper Methods - Authorisation
