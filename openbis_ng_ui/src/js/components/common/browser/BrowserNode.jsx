@@ -16,7 +16,8 @@ const styles = {
     padding: '4px 0px'
   },
   icon: {
-    margin: '0px 8px',
+    marginLeft: '8px',
+    marginRight: '6px',
     minWidth: '24px'
   },
   text: {

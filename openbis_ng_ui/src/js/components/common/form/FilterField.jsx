@@ -16,7 +16,8 @@ const styles = () => ({
     fontSize: '0.875rem'
   },
   adornment: {
-    margin: '8px'
+    margin: '8px',
+    marginLeft: '10px'
   },
   adornmentButton: {
     padding: '4px'
