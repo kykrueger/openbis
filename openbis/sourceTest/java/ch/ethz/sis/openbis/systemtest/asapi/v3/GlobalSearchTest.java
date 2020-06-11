@@ -430,7 +430,8 @@ public class GlobalSearchTest extends AbstractTest
         criteria.withText().thatContains("simple stuff");
 
         GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
-        fo.from(1).count(2);
+        fo.sortBy().objectIdentifier().asc();
+        fo.from(3).count(2);
 
         SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
         List<GlobalSearchObject> objects = result.getObjects();
