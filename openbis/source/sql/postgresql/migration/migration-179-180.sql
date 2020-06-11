@@ -89,12 +89,6 @@ CREATE OR REPLACE VIEW samples AS
     FROM samples_all
     WHERE del_id IS NULL;
 
-CREATE OR REPLACE VIEW samples_deleted AS
-    SELECT id, perm_id, code, expe_id, saty_id, registration_timestamp, modification_timestamp, pers_id_registerer, pers_id_modifier, del_id, orig_del, space_id, proj_id, samp_id_part_of, version,
-           tsvector_document
-    FROM samples_all
-    WHERE del_id IS NOT NULL;
-
 BEGIN;
     CREATE TRIGGER samples_all_tsvector_document BEFORE INSERT OR UPDATE
         ON samples_all FOR EACH ROW EXECUTE PROCEDURE
@@ -144,12 +138,6 @@ CREATE OR REPLACE VIEW experiments AS
     FROM experiments_all
     WHERE del_id IS NULL;
 
-CREATE OR REPLACE VIEW experiments_deleted AS
-    SELECT id, perm_id, code, exty_id, pers_id_registerer, pers_id_modifier, registration_timestamp, modification_timestamp, proj_id, del_id,
-           orig_del, is_public, version, tsvector_document
-    FROM experiments_all
-    WHERE del_id IS NOT NULL;
-
 BEGIN;
     CREATE TRIGGER experiments_all_tsvector_document BEFORE INSERT OR UPDATE
         ON experiments_all FOR EACH ROW EXECUTE PROCEDURE
@@ -196,13 +184,6 @@ CREATE OR REPLACE VIEW data AS
            frozen, frozen_for_children, frozen_for_parents, frozen_for_comps, frozen_for_conts, tsvector_document
     FROM data_all
     WHERE del_id IS NULL;
-
-CREATE OR REPLACE VIEW data_deleted AS
-    SELECT id, code, dsty_id, dast_id, expe_id, data_producer_code, production_timestamp, samp_id,
-           registration_timestamp, access_timestamp, pers_id_registerer, pers_id_modifier, is_valid,
-           modification_timestamp, is_derived, del_id, orig_del, version, data_set_kind, tsvector_document
-    FROM data_all
-    WHERE del_id IS NOT NULL;
 
 BEGIN;
     CREATE TRIGGER data_all_tsvector_document BEFORE INSERT OR UPDATE
