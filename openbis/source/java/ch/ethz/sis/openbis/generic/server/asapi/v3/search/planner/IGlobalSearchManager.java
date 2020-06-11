@@ -18,6 +18,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.GlobalSearchObject;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearchObjectFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PEMapper;
@@ -40,10 +41,11 @@ public interface IGlobalSearchManager extends IID2PEMapper<Map<String, Object>, 
      * @param idsColumnName name of the column to select the ID's by; usually the
      * {@link ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN}.
      * @param tableMapper the table mapper that points to the table to run global search on.
+     * @param fetchOptions
      * @return set of IDs of found entities.
      */
     Set<Map<String, Object>> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation,
-            final GlobalSearchCriteria criteria, final String idsColumnName, final TableMapper tableMapper);
+            final GlobalSearchCriteria criteria, final String idsColumnName, final TableMapper tableMapper, final GlobalSearchObjectFetchOptions fetchOptions);
 
     List<Map<String, Object>> sortRecords(Set<Map<String, Object>> records,
             SortOptions<GlobalSearchObject> sortOptions);

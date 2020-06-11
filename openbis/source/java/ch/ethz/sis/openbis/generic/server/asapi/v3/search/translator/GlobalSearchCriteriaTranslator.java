@@ -220,6 +220,7 @@ public class GlobalSearchCriteriaTranslator
             sqlBuilder.append(NULL).append(SP).append(CV_CODE_ALIAS).append(COMMA).append(NL);
             sqlBuilder.append(NULL).append(SP).append(CV_LABEL_ALIAS).append(COMMA).append(NL);
             sqlBuilder.append(NULL).append(SP).append(CV_DESCRIPTION_ALIAS).append(COMMA).append(NL);
+
             sqlBuilder.append(NULL).append(SP).append(VALUE_HEADLINE_ALIAS).append(COMMA).append(NL);
             sqlBuilder.append(NULL).append(SP).append(CODE_HEADLINE_ALIAS).append(COMMA).append(NL);
             sqlBuilder.append(NULL).append(SP).append(LABEL_HEADLINE_ALIAS).append(COMMA).append(NL);
@@ -262,15 +263,22 @@ public class GlobalSearchCriteriaTranslator
             sqlBuilder.append(CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS).append(PERIOD).append(DESCRIPTION_COLUMN)
                     .append(SP).append(CV_DESCRIPTION_ALIAS).append(COMMA).append(NL);
 
-            buildTsHeadline(sqlBuilder, stringValue, args, PROPERTIES_TABLE_ALIAS + PERIOD + VALUE_COLUMN, VALUE_HEADLINE_ALIAS);
-            sqlBuilder.append(COMMA).append(SP);
-            buildTsHeadline(sqlBuilder, stringValue, args, CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS + PERIOD + CODE_COLUMN, CODE_HEADLINE_ALIAS);
-            sqlBuilder.append(COMMA).append(SP);
-            buildTsHeadline(sqlBuilder, stringValue, args, CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS + PERIOD + LABEL_COLUMN, LABEL_HEADLINE_ALIAS);
-            sqlBuilder.append(COMMA).append(SP);
-            buildTsHeadline(sqlBuilder, stringValue, args, CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS + PERIOD + DESCRIPTION_COLUMN,
-                    DESCRIPTION_HEADLINE_ALIAS);
-            sqlBuilder.append(COMMA).append(SP);
+            final boolean useHeadline = vo.getGlobalSearchObjectFetchOptions().hasMatch();
+            buildTsHeadline(sqlBuilder, stringValue, args, PROPERTIES_TABLE_ALIAS + PERIOD + VALUE_COLUMN,
+                    VALUE_HEADLINE_ALIAS, useHeadline);
+            sqlBuilder.append(COMMA).append(NL);
+            buildTsHeadline(sqlBuilder, stringValue, args,
+                    CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS + PERIOD + CODE_COLUMN, CODE_HEADLINE_ALIAS,
+                    useHeadline);
+            sqlBuilder.append(COMMA).append(NL);
+            buildTsHeadline(sqlBuilder, stringValue, args,
+                    CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS + PERIOD + LABEL_COLUMN, LABEL_HEADLINE_ALIAS,
+                    useHeadline);
+            sqlBuilder.append(COMMA).append(NL);
+            buildTsHeadline(sqlBuilder, stringValue, args,
+                    CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS + PERIOD + DESCRIPTION_COLUMN, DESCRIPTION_HEADLINE_ALIAS,
+                    useHeadline);
+            sqlBuilder.append(COMMA).append(NL);
 
             buildHeadlineTsRank(sqlBuilder, stringValue, args, PROPERTIES_TABLE_ALIAS + PERIOD + VALUE_COLUMN,
                     VALUE_MATCH_RANK_ALIAS);
@@ -301,12 +309,19 @@ public class GlobalSearchCriteriaTranslator
     }
 
     private static void buildTsHeadline(final StringBuilder sqlBuilder, final AbstractStringValue stringValue,
-            final List<Object> args, final String field, final String alias)
+            final List<Object> args, final String field, final String alias, final boolean useHeadline)
     {
-        sqlBuilder.append(TS_HEADLINE).append(LP).append(field).append(COMMA).append(SP);
-        buildTsQueryPart(sqlBuilder, stringValue, args);
-        sqlBuilder.append(COMMA).append(SP).append(SQ).append(TS_HEADLINE_OPTIONS).append(SQ);
-        sqlBuilder.append(RP).append(SP).append(alias);
+        if (useHeadline)
+        {
+            sqlBuilder.append(TS_HEADLINE).append(LP).append(field).append(COMMA).append(SP);
+            buildTsQueryPart(sqlBuilder, stringValue, args);
+            sqlBuilder.append(COMMA).append(SP).append(SQ).append(TS_HEADLINE_OPTIONS).append(SQ);
+            sqlBuilder.append(RP);
+        } else
+        {
+            sqlBuilder.append(NULL);
+        }
+        sqlBuilder.append(SP).append(alias);
     }
 
     /**

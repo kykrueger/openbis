@@ -4,12 +4,12 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOrder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.Sorting;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.GlobalSearchObject;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearchObjectFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
-import ch.systemsx.cisd.common.collection.SimpleComparator;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.*;
 
 import java.util.*;
@@ -54,10 +54,10 @@ public class GlobalSearchManager implements IGlobalSearchManager
 
     @Override
     public Set<Map<String, Object>> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation, final GlobalSearchCriteria criteria,
-            final String idsColumnName, final TableMapper tableMapper)
+            final String idsColumnName, final TableMapper tableMapper, final GlobalSearchObjectFetchOptions fetchOptions)
     {
         final Set<Map<String, Object>> mainCriteriaIntermediateResults = searchDAO.queryDBWithNonRecursiveCriteria(userId,
-                criteria, tableMapper, idsColumnName, authorisationInformation);
+                criteria, tableMapper, idsColumnName, authorisationInformation, fetchOptions);
 
         // If we have results, we use them
         // If we don't have results and criteria are not empty, there are no results.
@@ -242,7 +242,11 @@ public class GlobalSearchManager implements IGlobalSearchManager
             final String headline = coalesceMap(fieldsMap, VALUE_HEADLINE_ALIAS, LABEL_HEADLINE_ALIAS,
                     CODE_HEADLINE_ALIAS, DESCRIPTION_HEADLINE_ALIAS);
 
-            computeSpans(propertyMatch, headline);
+            if (headline != null)
+            {
+                computeSpans(propertyMatch, headline);
+            }
+
             matches.add(propertyMatch);
         }
     }

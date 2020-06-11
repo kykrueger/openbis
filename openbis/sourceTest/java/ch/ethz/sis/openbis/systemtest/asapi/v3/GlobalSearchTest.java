@@ -75,10 +75,11 @@ public class GlobalSearchTest extends AbstractTest
     @Test
     public void testSearchWithOneContainsOneWord()
     {
-        GlobalSearchCriteria criteria = new GlobalSearchCriteria();
+        final GlobalSearchCriteria criteria = new GlobalSearchCriteria();
         criteria.withText().thatContains("stuff");
 
-        SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, new GlobalSearchObjectFetchOptions());
+        final SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria,
+                new GlobalSearchObjectFetchOptions());
 
         assertStuff(result);
     }
@@ -86,10 +87,11 @@ public class GlobalSearchTest extends AbstractTest
     @Test
     public void testSearchWithOneContainsMultipleWords()
     {
-        GlobalSearchCriteria criteria = new GlobalSearchCriteria();
+        final GlobalSearchCriteria criteria = new GlobalSearchCriteria();
         criteria.withText().thatContains("simple stuff");
 
-        SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, new GlobalSearchObjectFetchOptions());
+        final SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria,
+                new GlobalSearchObjectFetchOptions());
 
         assertSimpleOrStuff(result, 7);
     }
@@ -97,23 +99,25 @@ public class GlobalSearchTest extends AbstractTest
     @Test
     public void testSearchWithMultipleContainsOneWord()
     {
-        GlobalSearchCriteria criteria = new GlobalSearchCriteria();
+        final GlobalSearchCriteria criteria = new GlobalSearchCriteria();
         criteria.withText().thatContains("simple");
         criteria.withText().thatContains("stuff");
 
-        SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, new GlobalSearchObjectFetchOptions());
+        final SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria,
+                new GlobalSearchObjectFetchOptions());
 
-        assertSimpleOrStuff(result, 8);
+        assertSimpleOrStuff(result, 7);
     }
 
     @Test
     public void testSearchWithMultipleContainsMultipleWords()
     {
-        GlobalSearchCriteria criteria = new GlobalSearchCriteria();
+        final GlobalSearchCriteria criteria = new GlobalSearchCriteria();
         criteria.withText().thatContains("simple stuff");
         criteria.withText().thatContains("stuff simple");
 
-        SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, new GlobalSearchObjectFetchOptions());
+        final SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria,
+                new GlobalSearchObjectFetchOptions());
 
         assertSimpleOrStuff(result, 7);
     }
@@ -121,10 +125,11 @@ public class GlobalSearchTest extends AbstractTest
     @Test
     public void testSearchWithOneContainsExactlyOneWord()
     {
-        GlobalSearchCriteria criteria = new GlobalSearchCriteria();
+        final GlobalSearchCriteria criteria = new GlobalSearchCriteria();
         criteria.withText().thatContainsExactly("stuff");
 
-        SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, new GlobalSearchObjectFetchOptions());
+        final SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria,
+                new GlobalSearchObjectFetchOptions());
 
         assertStuff(result);
     }
@@ -132,10 +137,11 @@ public class GlobalSearchTest extends AbstractTest
     @Test
     public void testSearchWithOneContainsExactlyMultipleWords()
     {
-        GlobalSearchCriteria criteria = new GlobalSearchCriteria();
+        final GlobalSearchCriteria criteria = new GlobalSearchCriteria();
         criteria.withText().thatContainsExactly("simple stuff");
 
-        SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, new GlobalSearchObjectFetchOptions());
+        final SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria,
+                new GlobalSearchObjectFetchOptions());
 
         assertSimpleStuff(result);
     }
@@ -143,23 +149,25 @@ public class GlobalSearchTest extends AbstractTest
     @Test
     public void testSearchWithMultipleContainsExactlyOneWord()
     {
-        GlobalSearchCriteria criteria = new GlobalSearchCriteria();
+        final GlobalSearchCriteria criteria = new GlobalSearchCriteria();
         criteria.withText().thatContainsExactly("simple");
         criteria.withText().thatContainsExactly("stuff");
 
-        SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, new GlobalSearchObjectFetchOptions());
+        final SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria,
+                new GlobalSearchObjectFetchOptions());
 
-        assertSimpleOrStuff(result, 8);
+        assertSimpleOrStuff(result, 7);
     }
 
     @Test
     public void testSearchWithMultipleContainsExactlyMultipleWords()
     {
-        GlobalSearchCriteria criteria = new GlobalSearchCriteria();
+        final GlobalSearchCriteria criteria = new GlobalSearchCriteria();
         criteria.withText().thatContainsExactly("simple stuff");
         criteria.withText().thatContainsExactly("simple stuff");
 
-        SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, new GlobalSearchObjectFetchOptions());
+        final SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria,
+                new GlobalSearchObjectFetchOptions());
 
         assertSimpleStuff(result);
     }
@@ -333,14 +341,14 @@ public class GlobalSearchTest extends AbstractTest
     @Test
     public void testSearchWithSortingByObjectIdentifierAsc()
     {
-        GlobalSearchCriteria criteria = new GlobalSearchCriteria();
+        final GlobalSearchCriteria criteria = new GlobalSearchCriteria();
         criteria.withText().thatContains("simple stuff");
 
-        GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
+        final GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
         fo.sortBy().objectIdentifier();
 
-        SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
-        List<GlobalSearchObject> objects = result.getObjects();
+        final SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
+        final List<GlobalSearchObject> objects = result.getObjects();
 
         assertSorted(objects, globalSearchObject -> globalSearchObject.getObjectIdentifier().toString(), true);
     }
@@ -348,14 +356,14 @@ public class GlobalSearchTest extends AbstractTest
     @Test
     public void testSearchWithSortingByObjectIdentifierDesc()
     {
-        GlobalSearchCriteria criteria = new GlobalSearchCriteria();
+        final GlobalSearchCriteria criteria = new GlobalSearchCriteria();
         criteria.withText().thatContains("simple stuff");
 
-        GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
+        final GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
         fo.sortBy().objectIdentifier().desc();
 
-        SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
-        List<GlobalSearchObject> objects = result.getObjects();
+        final SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
+        final List<GlobalSearchObject> objects = result.getObjects();
 
         assertSorted(objects, globalSearchObject -> globalSearchObject.getObjectIdentifier().toString(), false);
     }
@@ -363,17 +371,17 @@ public class GlobalSearchTest extends AbstractTest
     @Test
     public void testSearchWithSortingByMultipleFields()
     {
-        GlobalSearchCriteria criteria = new GlobalSearchCriteria();
+        final GlobalSearchCriteria criteria = new GlobalSearchCriteria();
         criteria.withText().thatContains("simple stuff");
 
-        GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
+        final GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
         final GlobalSearchObjectSortOptions sortOptions = fo.sortBy();
         sortOptions.score().asc();
         sortOptions.objectKind().desc();
         sortOptions.objectPermId().asc();
 
-        SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
-        List<GlobalSearchObject> objects = result.getObjects();
+        final SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
+        final List<GlobalSearchObject> objects = result.getObjects();
 
         for (int index = 1, size = objects.size(); index < size; index++)
         {
@@ -426,15 +434,15 @@ public class GlobalSearchTest extends AbstractTest
     @Test
     public void testSearchWithPaging()
     {
-        GlobalSearchCriteria criteria = new GlobalSearchCriteria();
+        final GlobalSearchCriteria criteria = new GlobalSearchCriteria();
         criteria.withText().thatContains("simple stuff");
 
-        GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
+        final GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
         fo.sortBy().objectIdentifier().asc();
         fo.from(3).count(2);
 
-        SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
-        List<GlobalSearchObject> objects = result.getObjects();
+        final SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
+        final List<GlobalSearchObject> objects = result.getObjects();
 
         assertEquals(result.getTotalCount(), 7);
         assertEquals(objects.size(), 2);
