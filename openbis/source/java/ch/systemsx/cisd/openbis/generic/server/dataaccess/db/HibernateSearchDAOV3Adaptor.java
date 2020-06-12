@@ -13,6 +13,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.search.ExternalDmsTy
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchObjectKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.PersonSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.AbstractSampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
@@ -231,74 +232,74 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
         for (DetailedSearchSubCriteria subV1CriteriaPointer:mainV1Criteria.getSubCriterias()) {
             DetailedSearchCriteria subV1Criteria = subV1CriteriaPointer.getCriteria();
 
-            for (DetailedSearchCriterion subV1Criterion:subV1Criteria.getCriteria()) {
-                AbstractEntitySearchCriteria subV3Criteria = null;
+            AbstractEntitySearchCriteria subV3Criteria = null;
 
-                switch (subV1CriteriaPointer.getTargetEntityKind()) {
-                    case SAMPLE:
-                        if (mainV3Criteria instanceof AbstractDataSetSearchCriteria) {
-                            subV3Criteria = ((AbstractDataSetSearchCriteria) mainV3Criteria).withSample();
-                        }
-                        break;
-                    case EXPERIMENT:
-                        if (mainV3Criteria instanceof AbstractSampleSearchCriteria) {
-                            subV3Criteria = ((AbstractSampleSearchCriteria) mainV3Criteria).withExperiment();
-                        } else if(mainV3Criteria instanceof AbstractDataSetSearchCriteria) {
-                            subV3Criteria = ((AbstractDataSetSearchCriteria) mainV3Criteria).withExperiment();
-                        }
-                        break;
-                    case DATA_SET:
-                        // TODO: V3 doesn't support withDataSet in Samples and Experiments
-                        break;
-                    case DATA_SET_PARENT: // For Data Sets
-                        if (mainV3Criteria instanceof DataSetSearchCriteria) {
-                            subV3Criteria = ((DataSetSearchCriteria) mainV3Criteria).withParents();
-                        }
-                        break;
-                    case DATA_SET_CHILD: // For Data Sets
-                        if (mainV3Criteria instanceof DataSetSearchCriteria) {
-                            subV3Criteria = ((DataSetSearchCriteria) mainV3Criteria).withChildren();
-                        }
-                        break;
-                    case DATA_SET_CONTAINER: // For Data Sets
-                        if (mainV3Criteria instanceof DataSetSearchCriteria) {
-                            subV3Criteria = ((DataSetSearchCriteria) mainV3Criteria).withContainer();
-                        }
-                        break;
-                    case SAMPLE_CONTAINER: // For Samples
-                        if (mainV3Criteria instanceof SampleSearchCriteria) {
-                            subV3Criteria = ((SampleSearchCriteria) mainV3Criteria).withContainer();
-                        }
-                        break;
-                    case SAMPLE_CHILD: // For Samples
-                        if (mainV3Criteria instanceof SampleSearchCriteria) {
-                            subV3Criteria = ((SampleSearchCriteria) mainV3Criteria).withChildren();
-                        }
-                        break;
-                    case SAMPLE_PARENT: // For Samples
-                        if (mainV3Criteria instanceof SampleSearchCriteria) {
-                            subV3Criteria = ((SampleSearchCriteria) mainV3Criteria).withParents();
-                        }
-                        break;
-                    case MATERIAL:
-                        // TODO: V3 doesn't support withMaterial criteria
-                        break;
-                }
+            switch (subV1CriteriaPointer.getTargetEntityKind()) {
+                case SAMPLE:
+                    if (mainV3Criteria instanceof AbstractDataSetSearchCriteria) {
+                        subV3Criteria = ((AbstractDataSetSearchCriteria) mainV3Criteria).withSample();
+                    }
+                    break;
+                case EXPERIMENT:
+                    if (mainV3Criteria instanceof AbstractSampleSearchCriteria) {
+                        subV3Criteria = ((AbstractSampleSearchCriteria) mainV3Criteria).withExperiment();
+                    } else if (mainV3Criteria instanceof AbstractDataSetSearchCriteria) {
+                        subV3Criteria = ((AbstractDataSetSearchCriteria) mainV3Criteria).withExperiment();
+                    }
+                    break;
+                case DATA_SET:
+                    // TODO: V3 doesn't support withDataSet in Samples and Experiments
+                    break;
+                case DATA_SET_PARENT: // For Data Sets
+                    if (mainV3Criteria instanceof DataSetSearchCriteria) {
+                        subV3Criteria = ((DataSetSearchCriteria) mainV3Criteria).withParents();
+                    }
+                    break;
+                case DATA_SET_CHILD: // For Data Sets
+                    if (mainV3Criteria instanceof DataSetSearchCriteria) {
+                        subV3Criteria = ((DataSetSearchCriteria) mainV3Criteria).withChildren();
+                    }
+                    break;
+                case DATA_SET_CONTAINER: // For Data Sets
+                    if (mainV3Criteria instanceof DataSetSearchCriteria) {
+                        subV3Criteria = ((DataSetSearchCriteria) mainV3Criteria).withContainer();
+                    }
+                    break;
+                case SAMPLE_CONTAINER: // For Samples
+                    if (mainV3Criteria instanceof SampleSearchCriteria) {
+                        subV3Criteria = ((SampleSearchCriteria) mainV3Criteria).withContainer();
+                    }
+                    break;
+                case SAMPLE_CHILD: // For Samples
+                    if (mainV3Criteria instanceof SampleSearchCriteria) {
+                        subV3Criteria = ((SampleSearchCriteria) mainV3Criteria).withChildren();
+                    }
+                    break;
+                case SAMPLE_PARENT: // For Samples
+                    if (mainV3Criteria instanceof SampleSearchCriteria) {
+                        subV3Criteria = ((SampleSearchCriteria) mainV3Criteria).withParents();
+                    }
+                    break;
+                case MATERIAL:
+                    // TODO: V3 doesn't support withMaterial criteria
+                    break;
+            }
 
-                if (subV3Criteria == null) {
-                    throwUnsupportedOperationException("TargetEntityKind: " + subV1CriteriaPointer.getTargetEntityKind() + " For V3: " + mainV3Criteria.getClass().getName());
-                }
+            if (subV3Criteria == null) {
+                throwUnsupportedOperationException("TargetEntityKind: " + subV1CriteriaPointer.getTargetEntityKind() + " For V3: " + mainV3Criteria.getClass().getName());
+            }
 
-                // Set the operator
-                switch (subV1Criteria.getConnection()) {
-                    case MATCH_ALL:
-                        subV3Criteria.withAndOperator();
-                        break;
-                    case MATCH_ANY:
-                        subV3Criteria.withOrOperator();
-                        break;
-                }
+            // Set the operator
+            switch (subV1Criteria.getConnection()) {
+                case MATCH_ALL:
+                    subV3Criteria.withAndOperator();
+                    break;
+                case MATCH_ANY:
+                    subV3Criteria.withOrOperator();
+                    break;
+            }
 
+            for (DetailedSearchCriterion subV1Criterion : subV1Criteria.getCriteria()) {
                 adapt(subV3Criteria, subV1Criteria, subV1Criterion);
             }
         }
@@ -306,165 +307,169 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
         // Associations (Rules that indicate that something needs to be connected to)
         // They have 3 possible rules depending on the 3 classes
         // Null, Not Null, or Tech Id
-        if (v1Associations != null) {
-            for(IAssociationCriteria association:v1Associations) {
-                AbstractEntitySearchCriteria subAssV3Criteria = null;
+        // V1 Handled sub criteria in managers and associations where used to make the link
+        // If sub criteria are handled naturally on the query, like they are implemented now, these are not necessary.
 
-                switch (association.getEntityKind()) {
-                    case SAMPLE:
-                        if (mainV3Criteria instanceof AbstractDataSetSearchCriteria) {
-                            if (association instanceof DetailedSearchNotNullAssociationCriteria) {
-                                subAssV3Criteria = ((AbstractDataSetSearchCriteria) mainV3Criteria).withSample();
-                            } else if (association instanceof  DetailedSearchNullAssociationCriteria) {
-                                subAssV3Criteria = ((AbstractDataSetSearchCriteria) mainV3Criteria).withoutSample();
-                            } else { // This is DetailedSearchAssociationCriteria Tech ids
-                                // TODO: V3 doesn't support tech ids
-//                                Collection<Long> ids = ((DetailedSearchAssociationCriteria) association).getIds();
-//                                List<String> permIds = getPermIds(EntityKind.SAMPLE, ids);
-//                                for (String permId:permIds) {
-//                                    ((AbstractDataSetSearchCriteria) mainV3Criteria).withSample().withPermId().thatEquals(permId);
-//                                }
-                            }
-                        }
-                        break;
-                    case EXPERIMENT:
-                        if (mainV3Criteria instanceof AbstractSampleSearchCriteria) {
-                            if (association instanceof DetailedSearchNotNullAssociationCriteria) {
-                                subAssV3Criteria = ((AbstractSampleSearchCriteria) mainV3Criteria).withExperiment();
-                            } else if (association instanceof  DetailedSearchNullAssociationCriteria) {
-                                subAssV3Criteria = ((AbstractSampleSearchCriteria) mainV3Criteria).withoutExperiment();
-                            } else { // This is DetailedSearchAssociationCriteria Tech ids
-                                // TODO: V3 doesn't support tech ids
-//                                Collection<Long> ids = ((DetailedSearchAssociationCriteria) association).getIds();
-//                                List<String> permIds = getPermIds(EntityKind.EXPERIMENT, ids);
-//                                for (String permId:permIds) {
-//                                    ((AbstractSampleSearchCriteria) mainV3Criteria).withExperiment().withPermId().thatEquals(permId);
-//                                }
-                            }
-                        } else if(mainV3Criteria instanceof AbstractDataSetSearchCriteria) {
-                            if (association instanceof DetailedSearchNotNullAssociationCriteria) {
-                                subAssV3Criteria = ((AbstractDataSetSearchCriteria) mainV3Criteria).withExperiment();
-                            } else if (association instanceof  DetailedSearchNullAssociationCriteria) {
-                                subAssV3Criteria = ((AbstractDataSetSearchCriteria) mainV3Criteria).withoutExperiment();
-                            } else { // This is DetailedSearchAssociationCriteria Tech ids
-                                // TODO: V3 doesn't support tech ids
-//                                Collection<Long> ids = ((DetailedSearchAssociationCriteria) association).getIds();
-//                                List<String> permIds = getPermIds(EntityKind.EXPERIMENT, ids);
-//                                for (String permId:permIds) {
-//                                    ((AbstractDataSetSearchCriteria) mainV3Criteria).withExperiment().withPermId().thatEquals(permId);
-//                                }
-                            }
-                        }
-                        break;
-                    case DATA_SET:
-                        // TODO: V3 doesn't support withDataSet in Samples and Experiments
-                        break;
-                    case DATA_SET_PARENT:
-                        if (mainV3Criteria instanceof DataSetSearchCriteria) {
-                            if (association instanceof DetailedSearchNotNullAssociationCriteria) {
-                                subAssV3Criteria = ((DataSetSearchCriteria) mainV3Criteria).withParents();
-                            } else if (association instanceof  DetailedSearchNullAssociationCriteria) {
-                                // TODO: V3 doesn't support withoutParents
-                            } else { // This is DetailedSearchAssociationCriteria Tech ids
-                                // TODO: V3 doesn't support tech ids
-//                                Collection<Long> ids = ((DetailedSearchAssociationCriteria) association).getIds();
-//                                List<String> permIds = getPermIds(EntityKind.DATA_SET, ids);
-//                                for (String permId:permIds) {
-//                                    ((DataSetSearchCriteria) mainV3Criteria).withParents().withPermId().thatEquals(permId);
-//                                }
-                            }
-                        }
-                        break;
-                    case DATA_SET_CHILD:
-                        if (mainV3Criteria instanceof DataSetSearchCriteria) {
-                            if (association instanceof DetailedSearchNotNullAssociationCriteria) {
-                                subAssV3Criteria = ((DataSetSearchCriteria) mainV3Criteria).withChildren();
-                            } else if (association instanceof  DetailedSearchNullAssociationCriteria) {
-                                // TODO: V3 doesn't support withoutChildren
-                            } else { // This is DetailedSearchAssociationCriteria Tech ids
-                                // TODO: V3 doesn't support tech ids
-//                                Collection<Long> ids = ((DetailedSearchAssociationCriteria) association).getIds();
-//                                List<String> permIds = getPermIds(EntityKind.DATA_SET, ids);
-//                                for (String permId:permIds) {
-//                                    ((DataSetSearchCriteria) mainV3Criteria).withChildren().withPermId().thatEquals(permId);
-//                                }
-                            }
-                        }
-                        break;
-                    case DATA_SET_CONTAINER:
-                        if (mainV3Criteria instanceof DataSetSearchCriteria) {
-                            if (association instanceof DetailedSearchNotNullAssociationCriteria) {
-                                subAssV3Criteria = ((DataSetSearchCriteria) mainV3Criteria).withContainer();
-                            } else if (association instanceof  DetailedSearchNullAssociationCriteria) {
-                                // TODO: V3 doesn't support withoutContainer
-                            } else { // This is DetailedSearchAssociationCriteria Tech ids
-                                // TODO: V3 doesn't support tech ids
-//                                Collection<Long> ids = ((DetailedSearchAssociationCriteria) association).getIds();
-//                                List<String> permIds = getPermIds(EntityKind.DATA_SET, ids);
-//                                for (String permId:permIds) {
-//                                    ((DataSetSearchCriteria) mainV3Criteria).withContainer().withPermId().thatEquals(permId);
-//                                }
-                            }
-                        }
-                        break;
-                    case SAMPLE_CONTAINER:
-                        if (mainV3Criteria instanceof SampleSearchCriteria) {
-                            if (association instanceof DetailedSearchNotNullAssociationCriteria) {
-                                subAssV3Criteria = ((SampleSearchCriteria) mainV3Criteria).withContainer();
-                            } else if (association instanceof  DetailedSearchNullAssociationCriteria) {
-                                subAssV3Criteria = ((SampleSearchCriteria) mainV3Criteria).withoutContainer();
-                            } else { // This is DetailedSearchAssociationCriteria Tech ids
-                                // TODO: V3 doesn't support tech ids
-//                                Collection<Long> ids = ((DetailedSearchAssociationCriteria) association).getIds();
-//                                List<String> permIds = getPermIds(EntityKind.SAMPLE, ids);
-//                                for (String permId:permIds) {
-//                                    ((SampleSearchCriteria) mainV3Criteria).withContainer().withPermId().thatEquals(permId);
-//                                }
-                            }
-                        }
-                        break;
-                    case SAMPLE_CHILD:
-                        if (mainV3Criteria instanceof SampleSearchCriteria) {
-                            if (association instanceof DetailedSearchNotNullAssociationCriteria) {
-                                subAssV3Criteria = ((SampleSearchCriteria) mainV3Criteria).withChildren();
-                            } else if (association instanceof  DetailedSearchNullAssociationCriteria) {
-                                // TODO: V3 doesn't support withoutChildren
-                            } else { // This is DetailedSearchAssociationCriteria Tech ids
-                                // TODO: V3 doesn't support tech ids
-//                                Collection<Long> ids = ((DetailedSearchAssociationCriteria) association).getIds();
-//                                List<String> permIds = getPermIds(EntityKind.SAMPLE, ids);
-//                                for (String permId:permIds) {
-//                                    ((SampleSearchCriteria) mainV3Criteria).withChildren().withPermId().thatEquals(permId);
-//                                }
-                            }
-                        }
-                        break;
-                    case SAMPLE_PARENT:
-                        if (mainV3Criteria instanceof SampleSearchCriteria) {
-                            if (association instanceof DetailedSearchNotNullAssociationCriteria) {
-                                subAssV3Criteria = ((SampleSearchCriteria) mainV3Criteria).withParents();
-                            } else if (association instanceof  DetailedSearchNullAssociationCriteria) {
-                                // TODO: V3 doesn't support withoutParents
-                            } else { // This is DetailedSearchAssociationCriteria Tech ids
-                                // TODO: V3 doesn't support tech ids
-//                                Collection<Long> ids = ((DetailedSearchAssociationCriteria) association).getIds();
-//                                List<String> permIds = getPermIds(EntityKind.SAMPLE, ids);
-//                                for (String permId:permIds) {
-//                                    ((SampleSearchCriteria) mainV3Criteria).withParents().withPermId().thatEquals(permId);
-//                                }
-                            }
-                        }
-                        break;
-                    case MATERIAL:
-                        // TODO: V3 doesn't support withMaterial criteria
-                        break;
-                }
-
-                if (subAssV3Criteria == null) {
-                    throwUnsupportedOperationException("TargetEntityKind: " + association.getEntityKind() + "with Search Pattern " + association.getSearchPatterns() + " For V3: " + mainV3Criteria.getClass().getName());
-                }
-            }
-        }
+//        boolean handleAsociations = false;
+//        if (v1Associations != null && handleAsociations) {
+//            for(IAssociationCriteria association:v1Associations) {
+//                AbstractEntitySearchCriteria subAssV3Criteria = null;
+//
+//                switch (association.getEntityKind()) {
+//                    case SAMPLE:
+//                        if (mainV3Criteria instanceof AbstractDataSetSearchCriteria) {
+//                            if (association instanceof DetailedSearchNotNullAssociationCriteria) {
+//                                subAssV3Criteria = ((AbstractDataSetSearchCriteria) mainV3Criteria).withSample();
+//                            } else if (association instanceof  DetailedSearchNullAssociationCriteria) {
+//                                subAssV3Criteria = ((AbstractDataSetSearchCriteria) mainV3Criteria).withoutSample();
+//                            } else { // This is DetailedSearchAssociationCriteria Tech ids
+//                                // TODO: V3 doesn't support tech ids
+////                                Collection<Long> ids = ((DetailedSearchAssociationCriteria) association).getIds();
+////                                List<String> permIds = getPermIds(EntityKind.SAMPLE, ids);
+////                                for (String permId:permIds) {
+////                                    ((AbstractDataSetSearchCriteria) mainV3Criteria).withSample().withPermId().thatEquals(permId);
+////                                }
+//                            }
+//                        }
+//                        break;
+//                    case EXPERIMENT:
+//                        if (mainV3Criteria instanceof AbstractSampleSearchCriteria) {
+//                            if (association instanceof DetailedSearchNotNullAssociationCriteria) {
+//                                subAssV3Criteria = ((AbstractSampleSearchCriteria) mainV3Criteria).withExperiment();
+//                            } else if (association instanceof  DetailedSearchNullAssociationCriteria) {
+//                                subAssV3Criteria = ((AbstractSampleSearchCriteria) mainV3Criteria).withoutExperiment();
+//                            } else { // This is DetailedSearchAssociationCriteria Tech ids
+//                                // TODO: V3 doesn't support tech ids
+////                                Collection<Long> ids = ((DetailedSearchAssociationCriteria) association).getIds();
+////                                List<String> permIds = getPermIds(EntityKind.EXPERIMENT, ids);
+////                                for (String permId:permIds) {
+////                                    ((AbstractSampleSearchCriteria) mainV3Criteria).withExperiment().withPermId().thatEquals(permId);
+////                                }
+//                            }
+//                        } else if(mainV3Criteria instanceof AbstractDataSetSearchCriteria) {
+//                            if (association instanceof DetailedSearchNotNullAssociationCriteria) {
+//                                subAssV3Criteria = ((AbstractDataSetSearchCriteria) mainV3Criteria).withExperiment();
+//                            } else if (association instanceof  DetailedSearchNullAssociationCriteria) {
+//                                subAssV3Criteria = ((AbstractDataSetSearchCriteria) mainV3Criteria).withoutExperiment();
+//                            } else { // This is DetailedSearchAssociationCriteria Tech ids
+//                                // TODO: V3 doesn't support tech ids
+////                                Collection<Long> ids = ((DetailedSearchAssociationCriteria) association).getIds();
+////                                List<String> permIds = getPermIds(EntityKind.EXPERIMENT, ids);
+////                                for (String permId:permIds) {
+////                                    ((AbstractDataSetSearchCriteria) mainV3Criteria).withExperiment().withPermId().thatEquals(permId);
+////                                }
+//                            }
+//                        }
+//                        break;
+//                    case DATA_SET:
+//                        // TODO: V3 doesn't support withDataSet in Samples and Experiments
+//                        break;
+//                    case DATA_SET_PARENT:
+//                        if (mainV3Criteria instanceof DataSetSearchCriteria) {
+//                            if (association instanceof DetailedSearchNotNullAssociationCriteria) {
+//                                subAssV3Criteria = ((DataSetSearchCriteria) mainV3Criteria).withParents();
+//                            } else if (association instanceof  DetailedSearchNullAssociationCriteria) {
+//                                // TODO: V3 doesn't support withoutParents
+//                            } else { // This is DetailedSearchAssociationCriteria Tech ids
+//                                // TODO: V3 doesn't support tech ids
+////                                Collection<Long> ids = ((DetailedSearchAssociationCriteria) association).getIds();
+////                                List<String> permIds = getPermIds(EntityKind.DATA_SET, ids);
+////                                for (String permId:permIds) {
+////                                    ((DataSetSearchCriteria) mainV3Criteria).withParents().withPermId().thatEquals(permId);
+////                                }
+//                            }
+//                        }
+//                        break;
+//                    case DATA_SET_CHILD:
+//                        if (mainV3Criteria instanceof DataSetSearchCriteria) {
+//                            if (association instanceof DetailedSearchNotNullAssociationCriteria) {
+//                                subAssV3Criteria = ((DataSetSearchCriteria) mainV3Criteria).withChildren();
+//                            } else if (association instanceof  DetailedSearchNullAssociationCriteria) {
+//                                // TODO: V3 doesn't support withoutChildren
+//                            } else { // This is DetailedSearchAssociationCriteria Tech ids
+//                                // TODO: V3 doesn't support tech ids
+////                                Collection<Long> ids = ((DetailedSearchAssociationCriteria) association).getIds();
+////                                List<String> permIds = getPermIds(EntityKind.DATA_SET, ids);
+////                                for (String permId:permIds) {
+////                                    ((DataSetSearchCriteria) mainV3Criteria).withChildren().withPermId().thatEquals(permId);
+////                                }
+//                            }
+//                        }
+//                        break;
+//                    case DATA_SET_CONTAINER:
+//                        if (mainV3Criteria instanceof DataSetSearchCriteria) {
+//                            if (association instanceof DetailedSearchNotNullAssociationCriteria) {
+//                                subAssV3Criteria = ((DataSetSearchCriteria) mainV3Criteria).withContainer();
+//                            } else if (association instanceof  DetailedSearchNullAssociationCriteria) {
+//                                // TODO: V3 doesn't support withoutContainer
+//                            } else { // This is DetailedSearchAssociationCriteria Tech ids
+//                                // TODO: V3 doesn't support tech ids
+////                                Collection<Long> ids = ((DetailedSearchAssociationCriteria) association).getIds();
+////                                List<String> permIds = getPermIds(EntityKind.DATA_SET, ids);
+////                                for (String permId:permIds) {
+////                                    ((DataSetSearchCriteria) mainV3Criteria).withContainer().withPermId().thatEquals(permId);
+////                                }
+//                            }
+//                        }
+//                        break;
+//                    case SAMPLE_CONTAINER:
+//                        if (mainV3Criteria instanceof SampleSearchCriteria) {
+//                            if (association instanceof DetailedSearchNotNullAssociationCriteria) {
+//                                subAssV3Criteria = ((SampleSearchCriteria) mainV3Criteria).withContainer();
+//                            } else if (association instanceof  DetailedSearchNullAssociationCriteria) {
+//                                subAssV3Criteria = ((SampleSearchCriteria) mainV3Criteria).withoutContainer();
+//                            } else { // This is DetailedSearchAssociationCriteria Tech ids
+//                                // TODO: V3 doesn't support tech ids
+////                                Collection<Long> ids = ((DetailedSearchAssociationCriteria) association).getIds();
+////                                List<String> permIds = getPermIds(EntityKind.SAMPLE, ids);
+////                                for (String permId:permIds) {
+////                                    ((SampleSearchCriteria) mainV3Criteria).withContainer().withPermId().thatEquals(permId);
+////                                }
+//                            }
+//                        }
+//                        break;
+//                    case SAMPLE_CHILD:
+//                        if (mainV3Criteria instanceof SampleSearchCriteria) {
+//                            if (association instanceof DetailedSearchNotNullAssociationCriteria) {
+//                                subAssV3Criteria = ((SampleSearchCriteria) mainV3Criteria).withChildren();
+//                            } else if (association instanceof  DetailedSearchNullAssociationCriteria) {
+//                                // TODO: V3 doesn't support withoutChildren
+//                            } else { // This is DetailedSearchAssociationCriteria Tech ids
+//                                // TODO: V3 doesn't support tech ids
+////                                Collection<Long> ids = ((DetailedSearchAssociationCriteria) association).getIds();
+////                                List<String> permIds = getPermIds(EntityKind.SAMPLE, ids);
+////                                for (String permId:permIds) {
+////                                    ((SampleSearchCriteria) mainV3Criteria).withChildren().withPermId().thatEquals(permId);
+////                                }
+//                            }
+//                        }
+//                        break;
+//                    case SAMPLE_PARENT:
+//                        if (mainV3Criteria instanceof SampleSearchCriteria) {
+//                            if (association instanceof DetailedSearchNotNullAssociationCriteria) {
+//                                subAssV3Criteria = ((SampleSearchCriteria) mainV3Criteria).withParents();
+//                            } else if (association instanceof  DetailedSearchNullAssociationCriteria) {
+//                                // TODO: V3 doesn't support withoutParents
+//                            } else { // This is DetailedSearchAssociationCriteria Tech ids
+//                                // TODO: V3 doesn't support tech ids
+////                                Collection<Long> ids = ((DetailedSearchAssociationCriteria) association).getIds();
+////                                List<String> permIds = getPermIds(EntityKind.SAMPLE, ids);
+////                                for (String permId:permIds) {
+////                                    ((SampleSearchCriteria) mainV3Criteria).withParents().withPermId().thatEquals(permId);
+////                                }
+//                            }
+//                        }
+//                        break;
+//                    case MATERIAL:
+//                        // TODO: V3 doesn't support withMaterial criteria
+//                        break;
+//                }
+//
+//                if (subAssV3Criteria == null) {
+//                    throwUnsupportedOperationException("TargetEntityKind: " + association.getEntityKind() + "with Search Pattern " + association.getSearchPatterns() + " For V3: " + mainV3Criteria.getClass().getName());
+//                }
+//            }
+//        }
 
         operationLog.info("ADAPTED [QUERY] : " + mainV3Criteria);
 
@@ -531,6 +536,7 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
 
                     break;
                 case REGISTRATOR:
+                    criterionV3Criteria = v3Criteria.withRegistrator();
                     break;
             }
 
@@ -572,6 +578,10 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
                 BooleanFieldSearchCriteria booleanFieldSearchCriteria = (BooleanFieldSearchCriteria) criterionV3Criteria;
                 booleanFieldSearchCriteria.thatEquals(Boolean.parseBoolean(value));
             } else if(criterionV3Criteria instanceof DateFieldSearchCriteria) {
+                String timezone = v1Criterion.getTimeZone();
+                if (timezone != null) {
+                    // TODO Convert provided date timezone to the standard one
+                }
                 DateFieldSearchCriteria dateFieldSearchCriteria = (DateFieldSearchCriteria) criterionV3Criteria;
                 switch (comparisonOperator) {
                     case LESS_THAN:
@@ -590,9 +600,12 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
                         throwIllegalArgumentException("Date operator MORE_THAN");
                         break;
                 }
-            }
+            // Person
+            } else if(criterionV3Criteria instanceof PersonSearchCriteria) {
+                PersonSearchCriteria personFieldSearchCriteria = (PersonSearchCriteria) criterionV3Criteria;
+                personFieldSearchCriteria.withUserId().thatEquals(value);
             // Enums
-            else if(criterionV3Criteria instanceof CompleteSearchCriteria) {
+            } else if(criterionV3Criteria instanceof CompleteSearchCriteria) {
                 CompleteSearchCriteria enumFieldSearchCriteria = (CompleteSearchCriteria) criterionV3Criteria;
                 enumFieldSearchCriteria.thatEquals(Complete.valueOf(value));
             } else if(criterionV3Criteria instanceof StatusSearchCriteria) {
