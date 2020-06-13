@@ -1,5 +1,6 @@
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
+import Container from '@src/js/components/common/form/Container.jsx'
 import AutocompleterField from '@src/js/components/common/form/AutocompleterField.jsx'
 import CheckboxField from '@src/js/components/common/form/CheckboxField.jsx'
 import TextField from '@src/js/components/common/form/TextField.jsx'
@@ -11,9 +12,6 @@ import TypeFormMessage from './TypeFormMessage.jsx'
 import TypeFormHeader from './TypeFormHeader.jsx'
 
 const styles = theme => ({
-  container: {
-    padding: `${theme.spacing(1)}px ${theme.spacing(2)}px`
-  },
   header: {
     paddingBottom: theme.spacing(1)
   },
@@ -105,7 +103,7 @@ class TypeFormParametersProperty extends React.PureComponent {
     const { classes } = this.props
 
     return (
-      <div className={classes.container}>
+      <Container>
         <TypeFormHeader className={classes.header}>Property</TypeFormHeader>
         {this.renderMessageGlobal(property)}
         {this.renderMessageUsage(property)}
@@ -123,7 +121,7 @@ class TypeFormParametersProperty extends React.PureComponent {
         {this.renderVisible(property)}
         {this.renderMandatory(property)}
         {this.renderInitialValue(property)}
-      </div>
+      </Container>
     )
   }
 

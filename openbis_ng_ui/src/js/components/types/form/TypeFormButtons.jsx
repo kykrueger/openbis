@@ -1,11 +1,11 @@
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
+import Container from '@src/js/components/common/form/Container.jsx'
 import Button from '@src/js/components/common/form/Button.jsx'
 import logger from '@src/js/common/logger.js'
 
 const styles = theme => ({
   container: {
-    padding: `${theme.spacing(1)}px ${theme.spacing(2)}px`,
     display: 'flex'
   },
   button: {
@@ -35,7 +35,7 @@ class TypeFormButtons extends React.PureComponent {
     } = this.props
 
     return (
-      <div className={classes.container}>
+      <Container className={classes.container}>
         <Button
           name='addSection'
           label='Add Section'
@@ -63,7 +63,7 @@ class TypeFormButtons extends React.PureComponent {
           classes={{ root: classes.button }}
           onClick={onSave}
         />
-      </div>
+      </Container>
     )
   }
 }

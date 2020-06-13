@@ -1,14 +1,12 @@
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
+import Container from '@src/js/components/common/form/Container.jsx'
 import TextField from '@src/js/components/common/form/TextField.jsx'
 import logger from '@src/js/common/logger.js'
 
 import TypeFormHeader from './TypeFormHeader.jsx'
 
 const styles = theme => ({
-  container: {
-    padding: `${theme.spacing(1)}px ${theme.spacing(2)}px`
-  },
   header: {
     paddingBottom: theme.spacing(1)
   },
@@ -75,10 +73,10 @@ class TypeFormParametersSection extends React.PureComponent {
     const { classes } = this.props
 
     return (
-      <div className={classes.container}>
+      <Container>
         <TypeFormHeader className={classes.header}>Section</TypeFormHeader>
         {this.renderName(section)}
-      </div>
+      </Container>
     )
   }
 
