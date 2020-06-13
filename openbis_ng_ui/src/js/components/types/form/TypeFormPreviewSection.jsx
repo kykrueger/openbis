@@ -78,7 +78,9 @@ class TypeFormPreviewSection extends React.PureComponent {
             <Droppable droppableId={id} type='property'>
               {provided => (
                 <div>
-                  <Typography variant='body2'>{name.value}</Typography>
+                  <Typography variant='body2' data-part='name'>
+                    {name.value}
+                  </Typography>
                   <div
                     ref={provided.innerRef}
                     {...provided.droppableProps}
