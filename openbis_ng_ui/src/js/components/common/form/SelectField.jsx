@@ -7,18 +7,18 @@ import logger from '@src/js/common/logger.js'
 import FormFieldContainer from './FormFieldContainer.jsx'
 import FormFieldLabel from './FormFieldLabel.jsx'
 
-const styles = () => ({
+const styles = theme => ({
   textField: {
     margin: 0
   },
   select: {
-    fontSize: '0.875rem'
+    ...theme.typography.body2
   },
   option: {
     '&:after': {
       content: '"\\00a0"'
     },
-    fontSize: '0.875rem'
+    ...theme.typography.body2
   }
 })
 

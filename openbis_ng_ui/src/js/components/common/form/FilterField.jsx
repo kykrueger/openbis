@@ -7,13 +7,13 @@ import FilterIcon from '@material-ui/icons/FilterList'
 import CloseIcon from '@material-ui/icons/Close'
 import logger from '@src/js/common/logger.js'
 
-const styles = () => ({
+const styles = theme => ({
   field: {
     width: '100%'
   },
   input: {
-    height: '24px',
-    fontSize: '0.875rem'
+    ...theme.typography.body2,
+    height: '24px'
   },
   adornment: {
     margin: '8px',

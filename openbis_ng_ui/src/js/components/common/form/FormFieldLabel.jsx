@@ -4,8 +4,8 @@ import logger from '@src/js/common/logger.js'
 
 const styles = theme => ({
   labelDefault: {
-    marginRight: theme.spacing(1),
-    fontSize: '0.875rem'
+    ...theme.typography.body2,
+    marginRight: theme.spacing(1)
   },
   mandatoryDefault: {
     fontWeight: 'bold',

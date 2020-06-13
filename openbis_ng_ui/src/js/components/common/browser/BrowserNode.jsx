@@ -11,7 +11,7 @@ import logger from '@src/js/common/logger.js'
 
 import BrowserNodes from './BrowserNodes.jsx'
 
-const styles = {
+const styles = theme => ({
   item: {
     padding: '4px 0px'
   },
@@ -21,9 +21,9 @@ const styles = {
     minWidth: '24px'
   },
   text: {
-    fontSize: '0.875rem'
+    ...theme.typography.body2
   }
-}
+})
 
 class BrowserNode extends React.PureComponent {
   render() {

@@ -7,7 +7,7 @@ import logger from '@src/js/common/logger.js'
 import FormFieldContainer from './FormFieldContainer.jsx'
 import FormFieldLabel from './FormFieldLabel.jsx'
 
-const styles = () => ({
+const styles = theme => ({
   paper: {
     margin: 0
   },
@@ -15,10 +15,10 @@ const styles = () => ({
     margin: 0
   },
   input: {
-    fontSize: '0.875rem'
+    ...theme.typography.body2
   },
   option: {
-    fontSize: '0.875rem'
+    ...theme.typography.body2
   }
 })
 
