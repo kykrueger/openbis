@@ -12,13 +12,13 @@ const styles = theme => ({
     margin: 0
   },
   select: {
-    ...theme.typography.body2
+    fontSize: theme.typography.body2.fontSize
   },
   option: {
     '&:after': {
       content: '"\\00a0"'
     },
-    ...theme.typography.body2
+    fontSize: theme.typography.body2.fontSize
   }
 })
 

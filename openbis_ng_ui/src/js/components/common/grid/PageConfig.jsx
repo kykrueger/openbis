@@ -21,7 +21,7 @@ const styles = theme => ({
     marginRight: 0
   },
   pageSizeLabel: {
-    ...theme.typography.body2,
+    fontSize: theme.typography.body2.fontSize,
     marginRight: '12px',
     whiteSpace: 'nowrap',
     lineHeight: '46px'

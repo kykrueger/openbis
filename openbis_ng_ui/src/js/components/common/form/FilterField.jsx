@@ -12,7 +12,7 @@ const styles = theme => ({
     width: '100%'
   },
   input: {
-    ...theme.typography.body2,
+    fontSize: theme.typography.body2.fontSize,
     height: '24px'
   },
   adornment: {

@@ -18,7 +18,7 @@ const styles = theme => ({
     margin: 0
   },
   input: {
-    ...theme.typography.body2
+    fontSize: theme.typography.body2.fontSize
   }
 })
 

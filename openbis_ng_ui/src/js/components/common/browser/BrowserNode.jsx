@@ -21,7 +21,7 @@ const styles = theme => ({
     minWidth: '24px'
   },
   text: {
-    ...theme.typography.body2
+    fontSize: theme.typography.body2.fontSize
   }
 })
 
