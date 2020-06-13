@@ -237,8 +237,9 @@ CREATE FUNCTION data_all_tsvector_document_trigger() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
 BEGIN
-    NEW.tsvector_document := (NEW.data_set_kind || ':1')::tsvector || (NEW.code || ':1')::tsvector
-        || ('/' || NEW.code || ':1')::tsvector;
+    NEW.tsvector_document := (escape_tsvector_string(NEW.data_set_kind) || ':1')::tsvector ||
+        (escape_tsvector_string(NEW.code) || ':1')::tsvector ||
+        ('/' || escape_tsvector_string(NEW.code) || ':1')::tsvector;
     RETURN NEW;
 END
 $$;
@@ -315,6 +316,29 @@ BEGIN
   RETURN NEW;
 END;
 $$;
+CREATE FUNCTION escape_tsvector_string(value character varying) RETURNS character varying
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    RETURN REPLACE(
+            REPLACE(
+                    REPLACE(
+                            REPLACE(
+                                    REPLACE(
+                                            REPLACE(
+                                                    REPLACE(
+                                                            REPLACE(
+                                                                    REPLACE(value, '<', '\<'),
+                                                                    '!', '\!'),
+                                                            '*', '\*'),
+                                                    '&', '\&'),
+                                            '|', '\|'),
+                                    ')', '\)'),
+                            '(', '\('),
+                    ':', '\:'),
+            ' ', '\ ');
+END
+$$;
 CREATE FUNCTION experiment_property_with_material_data_type_check() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -350,8 +374,9 @@ DECLARE proj_code VARCHAR;
 BEGIN
     SELECT p.code, s.code INTO STRICT proj_code, space_code FROM projects p
         INNER JOIN spaces s ON p.space_id = s.id WHERE p.id = NEW.proj_id;
-    NEW.tsvector_document := (NEW.perm_id || ':1')::tsvector || (NEW.code || ':1')::tsvector
-                || ('/' || space_code || '/' || proj_code || '/' || NEW.code || ':1')::tsvector;
+    NEW.tsvector_document := (escape_tsvector_string(NEW.perm_id) || ':1')::tsvector ||
+            (escape_tsvector_string(NEW.code) || ':1')::tsvector ||
+            (escape_tsvector_string('/' || space_code || '/' || proj_code || '/' || NEW.code) || ':1')::tsvector;
     RETURN NEW;
 END
 $$;
@@ -406,8 +431,8 @@ CREATE FUNCTION materials_tsvector_document_trigger() RETURNS trigger
 DECLARE material_type_code VARCHAR;
 BEGIN
     SELECT code INTO STRICT material_type_code FROM material_types WHERE id = NEW.maty_id;
-    NEW.tsvector_document := (NEW.code || ':1')::tsvector
-        || (NEW.code || '\ (' || material_type_code || '):1')::tsvector;
+    NEW.tsvector_document := (escape_tsvector_string(NEW.code) || ':1')::tsvector ||
+            (escape_tsvector_string(NEW.code || ' (' || material_type_code || ')') || ':1')::tsvector;
     RETURN NEW;
 END
 $$;
@@ -894,10 +919,11 @@ BEGIN
     identifier := identifier || NEW.code;
     IF NEW.samp_id_part_of IS NOT NULL THEN
         SELECT code INTO STRICT container_code FROM samples_all WHERE id = NEW.samp_id_part_of;
-        identifier := identifier || '\:' || container_code;
+        identifier := identifier || ':' || container_code;
     END IF;
-    NEW.tsvector_document := (NEW.perm_id || ':1')::tsvector || (NEW.code || ':1')::tsvector
-                || (identifier || ':1')::tsvector;
+    NEW.tsvector_document := (escape_tsvector_string(NEW.perm_id) || ':1')::tsvector ||
+            (escape_tsvector_string(NEW.code) || ':1')::tsvector ||
+            (escape_tsvector_string(identifier) || ':1')::tsvector;
     RETURN NEW;
 END
 $$;
@@ -1007,7 +1033,6 @@ CREATE TABLE controlled_vocabulary_terms (
     description description_2000,
     ordinal ordinal_int NOT NULL,
     is_official boolean_char DEFAULT true NOT NULL,
-    tsvector_document tsvector,
     CONSTRAINT cvte_ck CHECK (((ordinal)::bigint > 0))
 );
 CREATE SEQUENCE core_plugin_id_seq
@@ -1056,7 +1081,7 @@ CREATE TABLE data_all (
     frozen_for_parents boolean_char DEFAULT false NOT NULL,
     frozen_for_comps boolean_char DEFAULT false NOT NULL,
     frozen_for_conts boolean_char DEFAULT false NOT NULL,
-    tsvector_document tsvector,
+    tsvector_document tsvector NOT NULL,
     CONSTRAINT data_ck CHECK (((expe_id IS NOT NULL) OR (samp_id IS NOT NULL)))
 );
 CREATE VIEW data AS
@@ -1108,8 +1133,7 @@ CREATE VIEW data_deleted AS
     data_all.del_id,
     data_all.orig_del,
     data_all.version,
-    data_all.data_set_kind,
-    data_all.tsvector_document
+    data_all.data_set_kind
    FROM data_all
   WHERE (data_all.del_id IS NOT NULL);
 CREATE SEQUENCE data_id_seq
@@ -1598,7 +1622,7 @@ CREATE TABLE experiments_all (
     proj_frozen boolean_char DEFAULT false NOT NULL,
     frozen_for_samp boolean_char DEFAULT false NOT NULL,
     frozen_for_data boolean_char DEFAULT false NOT NULL,
-    tsvector_document tsvector
+    tsvector_document tsvector NOT NULL
 );
 CREATE VIEW experiments AS
  SELECT experiments_all.id,
@@ -1634,8 +1658,7 @@ CREATE VIEW experiments_deleted AS
     experiments_all.del_id,
     experiments_all.orig_del,
     experiments_all.is_public,
-    experiments_all.version,
-    experiments_all.tsvector_document
+    experiments_all.version
    FROM experiments_all
   WHERE (experiments_all.del_id IS NOT NULL);
 CREATE TABLE external_data (
@@ -1802,7 +1825,7 @@ CREATE TABLE materials (
     pers_id_registerer tech_id NOT NULL,
     registration_timestamp time_stamp_dfl DEFAULT now() NOT NULL,
     modification_timestamp time_stamp DEFAULT now(),
-    tsvector_document tsvector
+    tsvector_document tsvector NOT NULL
 );
 CREATE SEQUENCE metaproject_assignment_id_seq
     START WITH 1
@@ -2234,7 +2257,7 @@ CREATE TABLE samples_all (
     frozen_for_children boolean_char DEFAULT false NOT NULL,
     frozen_for_parents boolean_char DEFAULT false NOT NULL,
     frozen_for_data boolean_char DEFAULT false NOT NULL,
-    tsvector_document tsvector
+    tsvector_document tsvector NOT NULL
 );
 CREATE VIEW samples AS
  SELECT samples_all.id,
@@ -2279,8 +2302,7 @@ CREATE VIEW samples_deleted AS
     samples_all.space_id,
     samples_all.proj_id,
     samples_all.samp_id_part_of,
-    samples_all.version,
-    samples_all.tsvector_document
+    samples_all.version
    FROM samples_all
   WHERE (samples_all.del_id IS NOT NULL);
 CREATE SEQUENCE script_id_seq

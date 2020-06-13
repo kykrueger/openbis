@@ -998,7 +998,8 @@ CREATE OR REPLACE RULE experiment_properties_update AS
     WHERE (OLD.VALUE IS NOT NULL AND decode(replace(substring(OLD.value from 1 for 1), '\', '\\'), 'escape') != E'\\xefbfbd' AND OLD.VALUE != NEW.VALUE) 
         OR (OLD.CVTE_ID IS NOT NULL AND OLD.CVTE_ID != NEW.CVTE_ID) 
         OR (OLD.MATE_PROP_ID IS NOT NULL AND OLD.MATE_PROP_ID != NEW.MATE_PROP_ID)
-    DO ALSO 
+        OR (OLD.SAMP_PROP_ID IS NOT NULL AND OLD.SAMP_PROP_ID != NEW.SAMP_PROP_ID)
+    DO ALSO
        INSERT INTO experiment_properties_history (
          ID, 
          EXPE_ID,
@@ -1006,6 +1007,7 @@ CREATE OR REPLACE RULE experiment_properties_update AS
          VALUE, 
          VOCABULARY_TERM,
          MATERIAL,
+         SAMPLE,
          PERS_ID_AUTHOR,
          VALID_FROM_TIMESTAMP,
          VALID_UNTIL_TIMESTAMP 
@@ -1016,6 +1018,7 @@ CREATE OR REPLACE RULE experiment_properties_update AS
          OLD.VALUE, 
          (select (t.code || ' [' || v.code || ']') from controlled_vocabulary_terms as t join controlled_vocabularies as v on t.covo_id = v.id where t.id = OLD.CVTE_ID),
          (select (m.code || ' [' || mt.code || ']') from materials as m join material_types as mt on m.maty_id = mt.id where m.id = OLD.MATE_PROP_ID),
+         (select perm_id from samples_all where id = OLD.SAMP_PROP_ID),
          OLD.PERS_ID_AUTHOR,
          OLD.MODIFICATION_TIMESTAMP,
          NEW.MODIFICATION_TIMESTAMP
@@ -1026,7 +1029,8 @@ CREATE OR REPLACE RULE experiment_properties_delete AS
     WHERE (OLD.VALUE IS NOT NULL AND decode(replace(substring(OLD.value from 1 for 1), '\', '\\'), 'escape') != E'\\xefbfbd')
         OR OLD.CVTE_ID IS NOT NULL 
         OR OLD.MATE_PROP_ID IS NOT NULL
-    DO ALSO 
+        OR OLD.SAMP_PROP_ID IS NOT NULL
+    DO ALSO
        INSERT INTO experiment_properties_history (
          ID, 
          EXPE_ID,
@@ -1034,6 +1038,7 @@ CREATE OR REPLACE RULE experiment_properties_delete AS
          VALUE, 
          VOCABULARY_TERM,
          MATERIAL,
+         SAMPLE,
          PERS_ID_AUTHOR,
          VALID_FROM_TIMESTAMP,
          VALID_UNTIL_TIMESTAMP 
@@ -1044,6 +1049,7 @@ CREATE OR REPLACE RULE experiment_properties_delete AS
          OLD.VALUE, 
          (select (t.code || ' [' || v.code || ']') from controlled_vocabulary_terms as t join controlled_vocabularies as v on t.covo_id = v.id where t.id = OLD.CVTE_ID),
          (select (m.code || ' [' || mt.code || ']') from materials as m join material_types as mt on m.maty_id = mt.id where m.id = OLD.MATE_PROP_ID),
+         (select perm_id from samples_all where id = OLD.SAMP_PROP_ID),
          OLD.PERS_ID_AUTHOR,
          OLD.MODIFICATION_TIMESTAMP,
          current_timestamp
@@ -1122,6 +1128,7 @@ CREATE OR REPLACE RULE data_set_properties_update AS
     WHERE (OLD.VALUE IS NOT NULL AND decode(replace(substring(OLD.value from 1 for 1), '\', '\\'), 'escape') != E'\\xefbfbd' AND OLD.VALUE != NEW.VALUE) 
         OR (OLD.CVTE_ID IS NOT NULL AND OLD.CVTE_ID != NEW.CVTE_ID) 
         OR (OLD.MATE_PROP_ID IS NOT NULL AND OLD.MATE_PROP_ID != NEW.MATE_PROP_ID)
+        OR (OLD.SAMP_PROP_ID IS NOT NULL AND OLD.SAMP_PROP_ID != NEW.SAMP_PROP_ID)
     DO ALSO
        INSERT INTO data_set_properties_history (
          ID, 
@@ -1130,6 +1137,7 @@ CREATE OR REPLACE RULE data_set_properties_update AS
          VALUE, 
          VOCABULARY_TERM,
          MATERIAL,
+         SAMPLE,
          PERS_ID_AUTHOR,
          VALID_FROM_TIMESTAMP,
          VALID_UNTIL_TIMESTAMP 
@@ -1140,6 +1148,7 @@ CREATE OR REPLACE RULE data_set_properties_update AS
          OLD.VALUE, 
          (select (t.code || ' [' || v.code || ']') from controlled_vocabulary_terms as t join controlled_vocabularies as v on t.covo_id = v.id where t.id = OLD.CVTE_ID),
          (select (m.code || ' [' || mt.code || ']') from materials as m join material_types as mt on m.maty_id = mt.id where m.id = OLD.MATE_PROP_ID),
+         (select perm_id from samples_all where id = OLD.SAMP_PROP_ID),
          OLD.PERS_ID_AUTHOR,
          OLD.MODIFICATION_TIMESTAMP,
          NEW.MODIFICATION_TIMESTAMP
@@ -1149,7 +1158,8 @@ CREATE OR REPLACE RULE data_set_properties_delete AS
     ON DELETE TO data_set_properties 
     WHERE ((OLD.VALUE IS NOT NULL AND decode(replace(substring(OLD.value from 1 for 1), '\', '\\'), 'escape') != E'\\xefbfbd')
         OR OLD.CVTE_ID IS NOT NULL 
-        OR OLD.MATE_PROP_ID IS NOT NULL)
+        OR OLD.MATE_PROP_ID IS NOT NULL
+        OR OLD.SAMP_PROP_ID IS NOT NULL)
 	   AND (SELECT DEL_ID FROM DATA_ALL WHERE ID = OLD.DS_ID) IS NULL
     DO ALSO
        INSERT INTO data_set_properties_history (
@@ -1159,6 +1169,7 @@ CREATE OR REPLACE RULE data_set_properties_delete AS
          VALUE, 
          VOCABULARY_TERM,
          MATERIAL,
+         SAMPLE,
          PERS_ID_AUTHOR,
          VALID_FROM_TIMESTAMP,
          VALID_UNTIL_TIMESTAMP 
@@ -1169,6 +1180,7 @@ CREATE OR REPLACE RULE data_set_properties_delete AS
          OLD.VALUE, 
          (select (t.code || ' [' || v.code || ']') from controlled_vocabulary_terms as t join controlled_vocabularies as v on t.covo_id = v.id where t.id = OLD.CVTE_ID),
          (select (m.code || ' [' || mt.code || ']') from materials as m join material_types as mt on m.maty_id = mt.id where m.id = OLD.MATE_PROP_ID),
+         (select perm_id from samples_all where id = OLD.SAMP_PROP_ID),
          OLD.PERS_ID_AUTHOR,
          OLD.MODIFICATION_TIMESTAMP,
          current_timestamp
@@ -3218,6 +3230,28 @@ CREATE TRIGGER TRASH_DATA_SET_FROM_COMPONENT_CHECK AFTER UPDATE ON DATA_SET_RELA
 
 -- start of triggers for full text search
 
+CREATE FUNCTION escape_tsvector_string(value VARCHAR) RETURNS VARCHAR AS $$
+BEGIN
+    RETURN REPLACE(
+            REPLACE(
+                    REPLACE(
+                            REPLACE(
+                                    REPLACE(
+                                            REPLACE(
+                                                    REPLACE(
+                                                            REPLACE(
+                                                                    REPLACE(value, '<', '\<'),
+                                                                    '!', '\!'),
+                                                            '*', '\*'),
+                                                    '&', '\&'),
+                                            '|', '\|'),
+                                    ')', '\)'),
+                            '(', '\('),
+                    ':', '\:'),
+            ' ', '\ ');
+END
+$$ LANGUAGE plpgsql;
+
 CREATE FUNCTION properties_tsvector_document_trigger() RETURNS trigger AS $$
 DECLARE cvt RECORD;
 BEGIN
@@ -3260,11 +3294,12 @@ BEGIN
 
     IF NEW.samp_id_part_of IS NOT NULL THEN
         SELECT code INTO STRICT container_code FROM samples_all WHERE id = NEW.samp_id_part_of;
-        identifier := identifier || '\:' || container_code;
+        identifier := identifier || ':' || container_code;
     END IF;
 
-    NEW.tsvector_document := (NEW.perm_id || ':1')::tsvector || (NEW.code || ':1')::tsvector
-        || (identifier || ':1')::tsvector;
+    NEW.tsvector_document := (escape_tsvector_string(NEW.perm_id) || ':1')::tsvector ||
+            (escape_tsvector_string(NEW.code) || ':1')::tsvector ||
+            (escape_tsvector_string(identifier) || ':1')::tsvector;
     RETURN NEW;
 END
 $$ LANGUAGE plpgsql;
@@ -3275,16 +3310,18 @@ DECLARE proj_code VARCHAR;
 BEGIN
     SELECT p.code, s.code INTO STRICT proj_code, space_code FROM projects p
                                                                      INNER JOIN spaces s ON p.space_id = s.id WHERE p.id = NEW.proj_id;
-    NEW.tsvector_document := (NEW.perm_id || ':1')::tsvector || (NEW.code || ':1')::tsvector
-        || ('/' || space_code || '/' || proj_code || '/' || NEW.code || ':1')::tsvector;
+    NEW.tsvector_document := (escape_tsvector_string(NEW.perm_id) || ':1')::tsvector ||
+            (escape_tsvector_string(NEW.code) || ':1')::tsvector ||
+            (escape_tsvector_string('/' || space_code || '/' || proj_code || '/' || NEW.code) || ':1')::tsvector;
     RETURN NEW;
 END
 $$ LANGUAGE plpgsql;
 
 CREATE FUNCTION data_all_tsvector_document_trigger() RETURNS trigger AS $$
 BEGIN
-    NEW.tsvector_document := (NEW.data_set_kind || ':1')::tsvector || (NEW.code || ':1')::tsvector
-        || ('/' || NEW.code || ':1')::tsvector;
+    NEW.tsvector_document := (escape_tsvector_string(NEW.data_set_kind) || ':1')::tsvector ||
+            (escape_tsvector_string(NEW.code) || ':1')::tsvector ||
+            ('/' || escape_tsvector_string(NEW.code) || ':1')::tsvector;
     RETURN NEW;
 END
 $$ LANGUAGE plpgsql;
@@ -3293,45 +3330,40 @@ CREATE FUNCTION materials_tsvector_document_trigger() RETURNS trigger AS $$
 DECLARE material_type_code VARCHAR;
 BEGIN
     SELECT code INTO STRICT material_type_code FROM material_types WHERE id = NEW.maty_id;
-    NEW.tsvector_document := (NEW.code || ':1')::tsvector
-        || (NEW.code || '\ (' || material_type_code || '):1')::tsvector;
+    NEW.tsvector_document := (escape_tsvector_string(NEW.code) || ':1')::tsvector ||
+            (escape_tsvector_string(NEW.code || ' (' || material_type_code || ')') || ':1')::tsvector;
     RETURN NEW;
 END
 $$ LANGUAGE plpgsql;
 
-DROP TRIGGER IF EXISTS controlled_vocabulary_terms_tsvector_document ON controlled_vocabulary_terms;
-CREATE TRIGGER controlled_vocabulary_terms_tsvector_document BEFORE INSERT OR UPDATE
-    ON controlled_vocabulary_terms FOR EACH ROW EXECUTE PROCEDURE
-    properties_tsvector_document_trigger();
-
 DROP TRIGGER IF EXISTS samples_all_tsvector_document ON samples_all;
 CREATE TRIGGER samples_all_tsvector_document BEFORE INSERT OR UPDATE
-    ON samples_all FOR EACH ROW EXECUTE FUNCTION
+    ON samples_all FOR EACH ROW EXECUTE PROCEDURE
     samples_all_tsvector_document_trigger();
 
 DROP TRIGGER IF EXISTS sample_properties_tsvector_document ON sample_properties;
 CREATE TRIGGER sample_properties_tsvector_document BEFORE INSERT OR UPDATE
-    ON sample_properties FOR EACH ROW EXECUTE FUNCTION
+    ON sample_properties FOR EACH ROW EXECUTE PROCEDURE
     properties_tsvector_document_trigger();
 
 DROP TRIGGER IF EXISTS experiments_all_tsvector_document ON experiments_all;
 CREATE TRIGGER experiments_all_tsvector_document BEFORE INSERT OR UPDATE
-    ON experiments_all FOR EACH ROW EXECUTE FUNCTION
+    ON experiments_all FOR EACH ROW EXECUTE PROCEDURE
     experiments_all_tsvector_document_trigger();
 
 DROP TRIGGER IF EXISTS experiment_properties_tsvector_document ON experiment_properties;
 CREATE TRIGGER experiment_properties_tsvector_document BEFORE INSERT OR UPDATE
-    ON experiment_properties FOR EACH ROW EXECUTE FUNCTION
+    ON experiment_properties FOR EACH ROW EXECUTE PROCEDURE
     properties_tsvector_document_trigger();
 
 DROP TRIGGER IF EXISTS data_all_tsvector_document ON data_all;
 CREATE TRIGGER data_all_tsvector_document BEFORE INSERT OR UPDATE
-    ON data_all FOR EACH ROW EXECUTE FUNCTION
+    ON data_all FOR EACH ROW EXECUTE PROCEDURE
     data_all_tsvector_document_trigger();
 
 DROP TRIGGER IF EXISTS data_set_properties_tsvector_document ON data_set_properties;
 CREATE TRIGGER data_set_properties_tsvector_document BEFORE INSERT OR UPDATE
-    ON data_set_properties FOR EACH ROW EXECUTE FUNCTION
+    ON data_set_properties FOR EACH ROW EXECUTE PROCEDURE
     properties_tsvector_document_trigger();
 
 DROP TRIGGER IF EXISTS materials_tsvector_document ON materials;
@@ -3341,7 +3373,7 @@ CREATE TRIGGER materials_tsvector_document BEFORE INSERT OR UPDATE
 
 DROP TRIGGER IF EXISTS material_properties_tsvector_document ON material_properties;
 CREATE TRIGGER material_properties_tsvector_document BEFORE INSERT OR UPDATE
-    ON material_properties FOR EACH ROW EXECUTE FUNCTION
+    ON material_properties FOR EACH ROW EXECUTE PROCEDURE
     properties_tsvector_document_trigger();
 
 -- end of triggers for dull text search

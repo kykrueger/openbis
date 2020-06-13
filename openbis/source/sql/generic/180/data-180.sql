@@ -437,7 +437,8 @@ perm_id,
 code,
 proj_id,
 exty_id,
-pers_id_registerer)
+pers_id_registerer,
+tsvector_document)
 values
 (
 currval('EXPERIMENT_ID_SEQ'),
@@ -445,7 +446,9 @@ to_char(now(), 'YYYYMMDDHH24MISSMS')||'-'||currval('EXPERIMENT_ID_SEQ'),
 'DEFAULT',
 (select id from projects where code = 'DEFAULT'),
 (select id from experiment_types where code = 'UNKNOWN'),
-(select id from persons where user_id ='system')
+(select id from persons where user_id ='system'),
+(to_char(now(), 'YYYYMMDDHH24MISSMS')||'-'||currval('EXPERIMENT_ID_SEQ') || ':1')::tsvector ||
+  'DEFAULT:1'::tsvector || '/DEFAULT/DEFAULT/DEFAULT:1'::tsvector
 );
 
 ---------------------------------------------------------------------
@@ -460,7 +463,8 @@ code,
 expe_id,
 space_id,
 saty_id,
-pers_id_registerer)
+pers_id_registerer,
+tsvector_document)
 values
 (
 currval('SAMPLE_ID_SEQ'),
@@ -469,6 +473,8 @@ to_char(now(), 'YYYYMMDDHH24MISSMS')||'-'||currval('SAMPLE_ID_SEQ'),
 (select id from experiments where code = 'DEFAULT'),
 (select id from spaces where code = 'DEFAULT'),
 (select id from sample_types where code = 'UNKNOWN'),
-(select id from persons where user_id ='system')
+(select id from persons where user_id ='system'),
+(to_char(now(), 'YYYYMMDDHH24MISSMS')||'-'||currval('SAMPLE_ID_SEQ') || ':1')::tsvector ||
+  'DEFAULT:1'::tsvector || '/DEFAULT/DEFAULT:1'::tsvector
 );
 

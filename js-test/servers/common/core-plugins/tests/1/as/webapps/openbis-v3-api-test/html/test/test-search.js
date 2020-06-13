@@ -1523,7 +1523,8 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			
 			testSearch(c, fSearch, fCheck);
 		});
-		
+
+		// TODO : withMatch feature missing to fix this test
 		QUnit.test("searchGlobally() withText thatContains", function(assert) {
 			var c = new common(assert, openbis);
 
@@ -1535,53 +1536,62 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 
 			var fCheck = function(facade, objects) {
 				c.assertEqual(objects.length, 4);
-
-				var objectDataSet = objects[0];
-				c.assertEqual(objectDataSet.getObjectKind(), "DATA_SET", "ObjectKind");
-				c.assertEqual(objectDataSet.getObjectPermId().getPermId(), "20130417094936021-428", "ObjectPermId");
-				c.assertEqual(objectDataSet.getObjectIdentifier().getPermId(), "20130417094936021-428", "ObjectIdentifier");
-				c.assertContains(objectDataSet.getMatch(), "Perm ID: 20130417094936021-428", "Match");
-				c.assertContains(objectDataSet.getMatch(), "Location: 1FD3FF61-1576-4908-AE3D-296E60B4CE06/67/85/36/20130417094936021-428", "Match");
-				c.assertNotNull(objectDataSet.getScore(), "Score");
-				c.assertNull(objectDataSet.getExperiment(), "Experiment");
-				c.assertNull(objectDataSet.getSample(), "Sample");
-				c.assertEqual(objectDataSet.getDataSet().getCode(), "20130417094936021-428", "DataSet");
-				c.assertNull(objectDataSet.getMaterial(), "Material");
-
-				var objectExperiment = objects[1];
-				c.assertEqual(objectExperiment.getObjectKind(), "EXPERIMENT", "ObjectKind");
-				c.assertEqual(objectExperiment.getObjectPermId().getPermId(), "20130412150049446-204", "ObjectPermId");
-				c.assertEqual(objectExperiment.getObjectIdentifier().getIdentifier(), "/TEST/TEST-PROJECT/TEST-EXPERIMENT", "ObjectIdentifier");
-				c.assertEqual(objectExperiment.getMatch(), "Perm ID: 20130412150049446-204", "Match");
-				c.assertNotNull(objectExperiment.getScore(), "Score");
-				c.assertEqual(objectExperiment.getExperiment().getCode(), "TEST-EXPERIMENT", "Experiment");
-				c.assertNull(objectExperiment.getSample(), "Sample");
-				c.assertNull(objectExperiment.getDataSet(), "DataSet");
-				c.assertNull(objectExperiment.getMaterial(), "Material");
-
-				var objectSample = objects[2];
-				c.assertEqual(objectSample.getObjectKind(), "SAMPLE", "ObjectKind");
-				c.assertEqual(objectSample.getObjectPermId().getPermId(), "20130412140147735-20", "ObjectPermId");
-				c.assertEqual(objectSample.getObjectIdentifier().getIdentifier(), "/PLATONIC/PLATE-1", "ObjectIdentifier");
-				c.assertEqual(objectSample.getMatch(), "Perm ID: 20130412140147735-20", "Match");
-				c.assertNotNull(objectSample.getScore(), "Score");
-				c.assertNull(objectSample.getExperiment(), "Experiment");
-				c.assertEqual(objectSample.getSample().getCode(), "PLATE-1", "Sample");
-				c.assertNull(objectSample.getDataSet(), "DataSet");
-				c.assertNull(objectSample.getMaterial(), "Material");
-
-				var objectMaterial = objects[3];
-				c.assertEqual(objectMaterial.getObjectKind(), "MATERIAL", "ObjectKind");
-				c.assertEqual(objectMaterial.getObjectPermId().getCode(), "H2O", "ObjectPermId 1");
-				c.assertEqual(objectMaterial.getObjectPermId().getTypeCode(), "COMPOUND", "ObjectPermId 2");
-				c.assertEqual(objectMaterial.getObjectIdentifier().getCode(), "H2O", "ObjectIdentifier 1");
-				c.assertEqual(objectMaterial.getObjectIdentifier().getTypeCode(), "COMPOUND", "ObjectIdentifier 2");
-				c.assertEqual(objectMaterial.getMatch(), "Identifier: H2O (COMPOUND)", "Match");
-				c.assertNotNull(objectMaterial.getScore(), "Score");
-				c.assertNull(objectMaterial.getExperiment(), "Experiment");
-				c.assertNull(objectMaterial.getSample(), "Sample");
-				c.assertNull(objectMaterial.getDataSet(), "DataSet");
-				c.assertEqual(objectMaterial.getMaterial().getCode(), "H2O", "Material");
+                for(var oIdx = 0; oIdx < objects.length; oIdx++) {
+                    var result = objects[oIdx];
+                    switch(result.getObjectKind()) {
+                        case "DATA_SET":
+                            var objectDataSet = result;
+                            c.assertEqual(objectDataSet.getObjectKind(), "DATA_SET", "ObjectKind");
+                            c.assertEqual(objectDataSet.getObjectPermId().getPermId(), "20130417094936021-428", "ObjectPermId");
+                            c.assertEqual(objectDataSet.getObjectIdentifier().getPermId(), "20130417094936021-428", "ObjectIdentifier");
+                            c.assertContains(objectDataSet.getMatch(), "Perm ID: 20130417094936021-428", "Match");
+                            c.assertContains(objectDataSet.getMatch(), "Location: 1FD3FF61-1576-4908-AE3D-296E60B4CE06/67/85/36/20130417094936021-428", "Match");
+                            c.assertNotNull(objectDataSet.getScore(), "Score");
+                            c.assertNull(objectDataSet.getExperiment(), "Experiment");
+                            c.assertNull(objectDataSet.getSample(), "Sample");
+                            c.assertEqual(objectDataSet.getDataSet().getCode(), "20130417094936021-428", "DataSet");
+                            c.assertNull(objectDataSet.getMaterial(), "Material");
+                        break;
+                        case "EXPERIMENT":
+                            var objectExperiment = result;
+                            c.assertEqual(objectExperiment.getObjectKind(), "EXPERIMENT", "ObjectKind");
+                            c.assertEqual(objectExperiment.getObjectPermId().getPermId(), "20130412150049446-204", "ObjectPermId");
+                            c.assertEqual(objectExperiment.getObjectIdentifier().getIdentifier(), "/TEST/TEST-PROJECT/TEST-EXPERIMENT", "ObjectIdentifier");
+                            c.assertEqual(objectExperiment.getMatch(), "Perm ID: 20130412150049446-204", "Match");
+                            c.assertNotNull(objectExperiment.getScore(), "Score");
+                            c.assertEqual(objectExperiment.getExperiment().getCode(), "TEST-EXPERIMENT", "Experiment");
+                            c.assertNull(objectExperiment.getSample(), "Sample");
+                            c.assertNull(objectExperiment.getDataSet(), "DataSet");
+                            c.assertNull(objectExperiment.getMaterial(), "Material");
+                        break;
+                        case "SAMPLE":
+                            var objectSample = result;
+                            c.assertEqual(objectSample.getObjectKind(), "SAMPLE", "ObjectKind");
+                            c.assertEqual(objectSample.getObjectPermId().getPermId(), "20130412140147735-20", "ObjectPermId");
+                            c.assertEqual(objectSample.getObjectIdentifier().getIdentifier(), "/PLATONIC/PLATE-1", "ObjectIdentifier");
+                            c.assertEqual(objectSample.getMatch(), "Perm ID: 20130412140147735-20", "Match");
+                            c.assertNotNull(objectSample.getScore(), "Score");
+                            c.assertNull(objectSample.getExperiment(), "Experiment");
+                            c.assertEqual(objectSample.getSample().getCode(), "PLATE-1", "Sample");
+                            c.assertNull(objectSample.getDataSet(), "DataSet");
+                            c.assertNull(objectSample.getMaterial(), "Material");
+                        break;
+                        case "MATERIAL":
+                            var objectMaterial = result;
+                            c.assertEqual(objectMaterial.getObjectKind(), "MATERIAL", "ObjectKind");
+                            c.assertEqual(objectMaterial.getObjectPermId().getCode(), "H2O", "ObjectPermId 1");
+                            c.assertEqual(objectMaterial.getObjectPermId().getTypeCode(), "COMPOUND", "ObjectPermId 2");
+                            c.assertEqual(objectMaterial.getObjectIdentifier().getCode(), "H2O", "ObjectIdentifier 1");
+                            c.assertEqual(objectMaterial.getObjectIdentifier().getTypeCode(), "COMPOUND", "ObjectIdentifier 2");
+                            c.assertEqual(objectMaterial.getMatch(), "Identifier: H2O (COMPOUND)", "Match");
+                            c.assertNotNull(objectMaterial.getScore(), "Score");
+                            c.assertNull(objectMaterial.getExperiment(), "Experiment");
+                            c.assertNull(objectMaterial.getSample(), "Sample");
+                            c.assertNull(objectMaterial.getDataSet(), "DataSet");
+                            c.assertEqual(objectMaterial.getMaterial().getCode(), "H2O", "Material");
+                        break;
+				    }
+				}
 			}
 
 			testSearch(c, fSearch, fCheck);
@@ -1614,6 +1624,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testSearch(c, fSearch, fCheck);
 		});
 
+        // TODO : withMatch feature missing to fix this test
 		QUnit.test("searchGlobally() withObjectKind thatIn", function(assert) {
 			var c = new common(assert, openbis);
 
@@ -1636,34 +1647,6 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				c.assertEqual(object0.getExperiment().getCode(), "TEST-EXPERIMENT", "Experiment");
 				c.assertNull(object0.getSample(), "Sample");
 				c.assertNull(object0.getDataSet(), "DataSet");
-				c.assertNull(object0.getMaterial(), "Material");
-			}
-
-			testSearch(c, fSearch, fCheck);
-		});
-
-		QUnit.test("searchGlobally() withWildCards", function(assert) {
-			var c = new common(assert, openbis);
-
-			var fSearch = function(facade) {
-				var criteria = new c.GlobalSearchCriteria();
-				criteria.withText().thatContains("256x25*");
-				criteria.withWildCards();
-				return facade.searchGlobally(criteria, c.createGlobalSearchObjectFetchOptions());
-			}
-
-			var fCheck = function(facade, objects) {
-				c.assertEqual(objects.length, 1);
-
-				var object0 = objects[0];
-				c.assertEqual(object0.getObjectKind(), "DATA_SET", "ObjectKind");
-				c.assertEqual(object0.getObjectPermId().getPermId(), "20130412142942295-198", "ObjectPermId");
-				c.assertEqual(object0.getObjectIdentifier().getPermId(), "20130412142942295-198", "ObjectIdentifier");
-				c.assertEqual(object0.getMatch(), "Property 'Resolution': 256x256", "Match");
-				c.assertNotNull(object0.getScore(), "Score");
-				c.assertEqual(object0.getDataSet().getCode(), "20130412142942295-198", "DataSet");
-				c.assertNull(object0.getExperiment(), "Experiment");
-				c.assertNull(object0.getSample(), "Sample");
 				c.assertNull(object0.getMaterial(), "Material");
 			}
 

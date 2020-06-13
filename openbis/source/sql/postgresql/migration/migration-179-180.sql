@@ -1,9 +1,28 @@
 -- Full text search
 
--- Controlled Vocabularies
+CREATE FUNCTION escape_tsvector_string(value VARCHAR) RETURNS VARCHAR AS $$
+BEGIN
+    RETURN REPLACE(
+            REPLACE(
+                    REPLACE(
+                            REPLACE(
+                                    REPLACE(
+                                            REPLACE(
+                                                    REPLACE(
+                                                            REPLACE(
+                                                                    REPLACE(value, '<', '\<'),
+                                                                    '!', '\!'),
+                                                            '*', '\*'),
+                                                    '&', '\&'),
+                                            '|', '\|'),
+                                    ')', '\)'),
+                            '(', '\('),
+                    ':', '\:'),
+            ' ', '\ ');
+END
+$$ LANGUAGE plpgsql;
 
-ALTER TABLE controlled_vocabulary_terms
-    ADD COLUMN tsvector_document TSVECTOR;
+-- Controlled Vocabularies
 
 CREATE FUNCTION properties_tsvector_document_trigger() RETURNS trigger AS $$
 DECLARE cvt RECORD;
@@ -49,11 +68,12 @@ BEGIN
 
     IF NEW.samp_id_part_of IS NOT NULL THEN
         SELECT code INTO STRICT container_code FROM samples_all WHERE id = NEW.samp_id_part_of;
-        identifier := identifier || '\:' || container_code;
+        identifier := identifier || ':' || container_code;
     END IF;
 
-    NEW.tsvector_document := (NEW.perm_id || ':1')::tsvector || (NEW.code || ':1')::tsvector
-                || (identifier || ':1')::tsvector;
+    NEW.tsvector_document := (escape_tsvector_string(NEW.perm_id) || ':1')::tsvector ||
+            (escape_tsvector_string(NEW.code) || ':1')::tsvector ||
+            (escape_tsvector_string(identifier) || ':1')::tsvector;
     RETURN NEW;
 END
 $$ LANGUAGE plpgsql;
@@ -69,23 +89,22 @@ CREATE OR REPLACE VIEW samples AS
     FROM samples_all
     WHERE del_id IS NULL;
 
-CREATE OR REPLACE VIEW samples_deleted AS
-    SELECT id, perm_id, code, expe_id, saty_id, registration_timestamp, modification_timestamp, pers_id_registerer, pers_id_modifier, del_id, orig_del, space_id, proj_id, samp_id_part_of, version,
-           tsvector_document
-    FROM samples_all
-    WHERE del_id IS NOT NULL;
+BEGIN;
+    CREATE TRIGGER samples_all_tsvector_document BEFORE INSERT OR UPDATE
+        ON samples_all FOR EACH ROW EXECUTE PROCEDURE
+        samples_all_tsvector_document_trigger();
 
-CREATE TRIGGER samples_all_tsvector_document BEFORE INSERT OR UPDATE
-    ON samples_all FOR EACH ROW EXECUTE FUNCTION
-    samples_all_tsvector_document_trigger();
+    UPDATE samples_all SET code = code;
+COMMIT;
 
-UPDATE samples_all SET code = code;
+ALTER TABLE samples_all
+    ALTER COLUMN tsvector_document SET NOT NULL;
 
 ALTER TABLE sample_properties
     ADD COLUMN tsvector_document TSVECTOR;
 
 CREATE TRIGGER sample_properties_tsvector_document BEFORE INSERT OR UPDATE
-    ON sample_properties FOR EACH ROW EXECUTE FUNCTION
+    ON sample_properties FOR EACH ROW EXECUTE PROCEDURE
     properties_tsvector_document_trigger();
 
 UPDATE sample_properties SET value = value;
@@ -103,8 +122,9 @@ DECLARE proj_code VARCHAR;
 BEGIN
     SELECT p.code, s.code INTO STRICT proj_code, space_code FROM projects p
         INNER JOIN spaces s ON p.space_id = s.id WHERE p.id = NEW.proj_id;
-    NEW.tsvector_document := (NEW.perm_id || ':1')::tsvector || (NEW.code || ':1')::tsvector
-                || ('/' || space_code || '/' || proj_code || '/' || NEW.code || ':1')::tsvector;
+    NEW.tsvector_document := (escape_tsvector_string(NEW.perm_id) || ':1')::tsvector ||
+            (escape_tsvector_string(NEW.code) || ':1')::tsvector ||
+            (escape_tsvector_string('/' || space_code || '/' || proj_code || '/' || NEW.code) || ':1')::tsvector;
     RETURN NEW;
 END
 $$ LANGUAGE plpgsql;
@@ -118,23 +138,22 @@ CREATE OR REPLACE VIEW experiments AS
     FROM experiments_all
     WHERE del_id IS NULL;
 
-CREATE OR REPLACE VIEW experiments_deleted AS
-    SELECT id, perm_id, code, exty_id, pers_id_registerer, pers_id_modifier, registration_timestamp, modification_timestamp, proj_id, del_id,
-           orig_del, is_public, version, tsvector_document
-    FROM experiments_all
-    WHERE del_id IS NOT NULL;
+BEGIN;
+    CREATE TRIGGER experiments_all_tsvector_document BEFORE INSERT OR UPDATE
+        ON experiments_all FOR EACH ROW EXECUTE PROCEDURE
+        experiments_all_tsvector_document_trigger();
 
-CREATE TRIGGER experiments_all_tsvector_document BEFORE INSERT OR UPDATE
-    ON experiments_all FOR EACH ROW EXECUTE FUNCTION
-    experiments_all_tsvector_document_trigger();
+    UPDATE experiments_all SET code = code;
+COMMIT;
 
-UPDATE experiments_all SET code = code;
+ALTER TABLE experiments_all
+    ALTER COLUMN tsvector_document SET NOT NULL;
 
 ALTER TABLE experiment_properties
     ADD COLUMN tsvector_document TSVECTOR;
 
 CREATE TRIGGER experiment_properties_tsvector_document BEFORE INSERT OR UPDATE
-    ON experiment_properties FOR EACH ROW EXECUTE FUNCTION
+    ON experiment_properties FOR EACH ROW EXECUTE PROCEDURE
     properties_tsvector_document_trigger();
 
 UPDATE experiment_properties SET value = value;
@@ -148,8 +167,9 @@ CREATE INDEX experiment_properties_search_index ON experiment_properties USING g
 
 CREATE FUNCTION data_all_tsvector_document_trigger() RETURNS trigger AS $$
 BEGIN
-    NEW.tsvector_document := (NEW.data_set_kind || ':1')::tsvector || (NEW.code || ':1')::tsvector
-        || ('/' || NEW.code || ':1')::tsvector;
+    NEW.tsvector_document := (escape_tsvector_string(NEW.data_set_kind) || ':1')::tsvector ||
+        (escape_tsvector_string(NEW.code) || ':1')::tsvector ||
+        ('/' || escape_tsvector_string(NEW.code) || ':1')::tsvector;
     RETURN NEW;
 END
 $$ LANGUAGE plpgsql;
@@ -165,24 +185,22 @@ CREATE OR REPLACE VIEW data AS
     FROM data_all
     WHERE del_id IS NULL;
 
-CREATE OR REPLACE VIEW data_deleted AS
-    SELECT id, code, dsty_id, dast_id, expe_id, data_producer_code, production_timestamp, samp_id,
-           registration_timestamp, access_timestamp, pers_id_registerer, pers_id_modifier, is_valid,
-           modification_timestamp, is_derived, del_id, orig_del, version, data_set_kind, tsvector_document
-    FROM data_all
-    WHERE del_id IS NOT NULL;
+BEGIN;
+    CREATE TRIGGER data_all_tsvector_document BEFORE INSERT OR UPDATE
+        ON data_all FOR EACH ROW EXECUTE PROCEDURE
+        data_all_tsvector_document_trigger();
 
-CREATE TRIGGER data_all_tsvector_document BEFORE INSERT OR UPDATE
-    ON data_all FOR EACH ROW EXECUTE FUNCTION
-    data_all_tsvector_document_trigger();
+    UPDATE data_all SET code = code;
+COMMIT;
 
-UPDATE data_all SET code = code;
+ALTER TABLE data_all
+    ALTER COLUMN tsvector_document SET NOT NULL;
 
 ALTER TABLE data_set_properties
     ADD COLUMN tsvector_document TSVECTOR;
 
 CREATE TRIGGER data_set_properties_tsvector_document BEFORE INSERT OR UPDATE
-    ON data_set_properties FOR EACH ROW EXECUTE FUNCTION
+    ON data_set_properties FOR EACH ROW EXECUTE PROCEDURE
     properties_tsvector_document_trigger();
 
 UPDATE data_set_properties SET value = value;
@@ -198,24 +216,29 @@ CREATE FUNCTION materials_tsvector_document_trigger() RETURNS trigger AS $$
 DECLARE material_type_code VARCHAR;
 BEGIN
     SELECT code INTO STRICT material_type_code FROM material_types WHERE id = NEW.maty_id;
-    NEW.tsvector_document := (NEW.code || ':1')::tsvector
-        || (NEW.code || '\ (' || material_type_code || '):1')::tsvector;
+    NEW.tsvector_document := (escape_tsvector_string(NEW.code) || ':1')::tsvector ||
+            (escape_tsvector_string(NEW.code || ' (' || material_type_code || ')') || ':1')::tsvector;
     RETURN NEW;
 END
 $$ LANGUAGE plpgsql;
 
 ALTER TABLE materials ADD COLUMN tsvector_document TSVECTOR;
 
-CREATE TRIGGER materials_tsvector_document BEFORE INSERT OR UPDATE
-    ON materials FOR EACH ROW EXECUTE PROCEDURE
-    materials_tsvector_document_trigger();
+BEGIN;
+    CREATE TRIGGER materials_tsvector_document BEFORE INSERT OR UPDATE
+        ON materials FOR EACH ROW EXECUTE PROCEDURE
+        materials_tsvector_document_trigger();
 
-UPDATE materials SET code = code;
+    UPDATE materials SET code = code;
+COMMIT;
+
+ALTER TABLE materials
+    ALTER COLUMN tsvector_document SET NOT NULL;
 
 ALTER TABLE material_properties ADD COLUMN tsvector_document TSVECTOR;
 
 CREATE TRIGGER material_properties_tsvector_document BEFORE INSERT OR UPDATE
-    ON material_properties FOR EACH ROW EXECUTE FUNCTION
+    ON material_properties FOR EACH ROW EXECUTE PROCEDURE
     properties_tsvector_document_trigger();
 
 UPDATE material_properties SET value = value;
