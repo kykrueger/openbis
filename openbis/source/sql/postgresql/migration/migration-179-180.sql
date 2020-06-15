@@ -64,11 +64,11 @@ BEGIN
         identifier := identifier || proj_code || '/';
     END IF;
 
-    identifier := identifier || NEW.code;
-
     IF NEW.samp_id_part_of IS NOT NULL THEN
         SELECT code INTO STRICT container_code FROM samples_all WHERE id = NEW.samp_id_part_of;
-        identifier := identifier || ':' || container_code;
+        identifier := identifier || container_code || ':' || NEW.code;
+    ELSE
+        identifier := identifier || NEW.code;
     END IF;
 
     NEW.sample_identifier := identifier;
