@@ -64,13 +64,14 @@ BEGIN
         identifier := identifier || proj_code || '/';
     END IF;
 
-    identifier := identifier || NEW.code;
-
     IF NEW.samp_id_part_of IS NOT NULL THEN
         SELECT code INTO STRICT container_code FROM samples_all WHERE id = NEW.samp_id_part_of;
-        identifier := identifier || ':' || container_code;
+        identifier := identifier || container_code || ':' || NEW.code;
+    ELSE
+        identifier := identifier || NEW.code;
     END IF;
 
+    NEW.sample_identifier := identifier;
     NEW.tsvector_document := (escape_tsvector_string(NEW.perm_id) || ':1')::tsvector ||
             (escape_tsvector_string(NEW.code) || ':1')::tsvector ||
             (escape_tsvector_string(identifier) || ':1')::tsvector;
@@ -78,14 +79,20 @@ BEGIN
 END
 $$ LANGUAGE plpgsql;
 
-ALTER TABLE samples_all
-    ADD COLUMN tsvector_document TSVECTOR;
+
+CREATE DOMAIN SAMPLE_IDENTIFIER AS VARCHAR(404); -- /CODE/CODE/CODE:CODE
+
+ALTER TABLE samples_all ADD COLUMN sample_identifier sample_identifier;
+ALTER TABLE samples_all ADD COLUMN tsvector_document TSVECTOR;
+ALTER TABLE samples_all ADD CONSTRAINT samp_identifier_uk UNIQUE (sample_identifier);
+
+CREATE INDEX SAMP_IDENTIFIER_I ON SAMPLES_ALL (SAMPLE_IDENTIFIER);
 
 CREATE OR REPLACE VIEW samples AS
     SELECT id, perm_id, code, proj_id, proj_frozen, expe_id, expe_frozen, saty_id, registration_timestamp,
            modification_timestamp, pers_id_registerer, pers_id_modifier, del_id, orig_del, space_id, space_frozen,
            samp_id_part_of, cont_frozen, version, frozen, frozen_for_comp, frozen_for_children, frozen_for_parents,
-           frozen_for_data, tsvector_document
+           frozen_for_data, tsvector_document, sample_identifier
     FROM samples_all
     WHERE del_id IS NULL;
 

@@ -96,7 +96,7 @@ public abstract class AbstractEntitySearchCriteria<ID extends IObjectId> extends
         return with(new AnyFieldSearchCriteria());
     }
 
-    public abstract AbstractEntitySearchCriteria withOrOperator();
+    public abstract AbstractEntitySearchCriteria<ID> withOrOperator();
 
-    public abstract AbstractEntitySearchCriteria withAndOperator();
+    public abstract AbstractEntitySearchCriteria<ID> withAndOperator();
 }
