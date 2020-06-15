@@ -1,5 +1,6 @@
 define([ "require", "stjs", "as/dto/common/fetchoptions/FetchOptions", "as/dto/experiment/fetchoptions/ExperimentFetchOptions", "as/dto/sample/fetchoptions/SampleFetchOptions",
-		"as/dto/dataset/fetchoptions/DataSetFetchOptions", "as/dto/material/fetchoptions/MaterialFetchOptions", "as/dto/global/fetchoptions/GlobalSearchObjectSortOptions" ], function(require, stjs,
+		"as/dto/dataset/fetchoptions/DataSetFetchOptions", "as/dto/material/fetchoptions/MaterialFetchOptions", "as/dto/global/fetchoptions/GlobalSearchObjectSortOptions",
+		"as/dto/global/fetchoptions/MatchFetchOptions" ], function(require, stjs,
 		FetchOptions) {
 	var GlobalSearchObjectFetchOptions = function() {
 	};
@@ -11,6 +12,7 @@ define([ "require", "stjs", "as/dto/common/fetchoptions/FetchOptions", "as/dto/e
 		prototype.dataSet = null;
 		prototype.material = null;
 		prototype.sort = null;
+		prototype.match = null;
 
 		prototype.withExperiment = function() {
 			if (this.experiment == null) {
@@ -78,6 +80,13 @@ define([ "require", "stjs", "as/dto/common/fetchoptions/FetchOptions", "as/dto/e
 		prototype.getSortBy = function() {
 			return this.sort;
 		};
+		prototype.withMatch = function() {
+			if (this.match === null) {
+				var MatchFetchOptions = require("as/dto/global/fetchoptions/MatchFetchOptions");
+				this.match = new MatchFetchOptions();
+			}
+			return this.match;
+		}
 	}, {
 		experiment : "ExperimentFetchOptions",
 		sample : "SampleFetchOptions",

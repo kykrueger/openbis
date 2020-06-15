@@ -1531,6 +1531,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			var fSearch = function(facade) {
 				var criteria = new c.GlobalSearchCriteria();
 				criteria.withText().thatContains("20130412150049446-204 20130412140147735-20 20130417094936021-428 H2O");
+				criteria.withMatch();
 				return facade.searchGlobally(criteria, c.createGlobalSearchObjectFetchOptions());
 			}
 
@@ -1554,6 +1555,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
                         break;
                         case "EXPERIMENT":
                             var objectExperiment = result;
+                            debugger;
                             c.assertEqual(objectExperiment.getObjectKind(), "EXPERIMENT", "ObjectKind");
                             c.assertEqual(objectExperiment.getObjectPermId().getPermId(), "20130412150049446-204", "ObjectPermId");
                             c.assertEqual(objectExperiment.getObjectIdentifier().getIdentifier(), "/TEST/TEST-PROJECT/TEST-EXPERIMENT", "ObjectIdentifier");
@@ -1632,6 +1634,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				var criteria = new c.GlobalSearchCriteria();
 				criteria.withText().thatContains("20130412150049446-204 20130412140147735-20 20130417094936021-428 H2O");
 				criteria.withObjectKind().thatIn([ "EXPERIMENT" ]);
+				criteria.withMatch();
 				return facade.searchGlobally(criteria, c.createGlobalSearchObjectFetchOptions());
 			}
 
