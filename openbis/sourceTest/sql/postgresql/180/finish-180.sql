@@ -211,6 +211,8 @@ ALTER TABLE ONLY role_assignments
 ALTER TABLE ONLY samples_all
     ADD CONSTRAINT samp_code_unique_check_uk UNIQUE (code_unique_check);
 ALTER TABLE ONLY samples_all
+    ADD CONSTRAINT samp_identifier_uk UNIQUE (sample_identifier);
+ALTER TABLE ONLY samples_all
     ADD CONSTRAINT samp_idfrz_c_uk UNIQUE (id, frozen_for_comp);
 ALTER TABLE ONLY samples_all
     ADD CONSTRAINT samp_idfrz_ch_uk UNIQUE (id, frozen_for_children);
@@ -395,6 +397,7 @@ CREATE INDEX roas_space_fk_i ON role_assignments USING btree (space_id);
 CREATE INDEX samp_code_i ON samples_all USING btree (code);
 CREATE INDEX samp_del_fk_i ON samples_all USING btree (del_id);
 CREATE INDEX samp_expe_fk_i ON samples_all USING btree (expe_id);
+CREATE INDEX samp_identifier_i ON samples_all USING btree (sample_identifier);
 CREATE INDEX samp_idfrz_c_pk_i ON samples_all USING btree (id, frozen_for_comp);
 CREATE INDEX samp_idfrz_ch_pk_i ON samples_all USING btree (id, frozen_for_children);
 CREATE INDEX samp_idfrz_d_pk_i ON samples_all USING btree (id, frozen_for_data);

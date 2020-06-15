@@ -1,4 +1,9 @@
-CREATE DOMAIN archiving_status AS character varying(100)
+SET statement_timeout = 0;
+SET standard_conforming_strings = on;
+SET check_function_bodies = false;
+SET client_min_messages = warning;
+SET row_security = off;
+SET search_path = public, pg_catalog;CREATE DOMAIN archiving_status AS character varying(100)
 	CONSTRAINT archiving_status_check CHECK (((VALUE)::text = ANY (ARRAY[('LOCKED'::character varying)::text, ('AVAILABLE'::character varying)::text, ('ARCHIVED'::character varying)::text, ('ARCHIVE_PENDING'::character varying)::text, ('UNARCHIVE_PENDING'::character varying)::text, ('BACKUP_PENDING'::character varying)::text])));
 CREATE DOMAIN authorization_role AS character varying(40)
 	CONSTRAINT authorization_role_check CHECK (((VALUE)::text = ANY (ARRAY[('ADMIN'::character varying)::text, ('POWER_USER'::character varying)::text, ('USER'::character varying)::text, ('OBSERVER'::character varying)::text, ('ETL_SERVER'::character varying)::text])));
@@ -39,6 +44,7 @@ CREATE DOMAIN plugin_type AS character varying(40)
 CREATE DOMAIN query_type AS character varying(40)
 	CONSTRAINT query_type_check CHECK (((VALUE)::text = ANY (ARRAY[('GENERIC'::character varying)::text, ('EXPERIMENT'::character varying)::text, ('SAMPLE'::character varying)::text, ('DATA_SET'::character varying)::text, ('MATERIAL'::character varying)::text])));
 CREATE DOMAIN real_value AS real;
+CREATE DOMAIN sample_identifier AS character varying(404);
 CREATE DOMAIN script_type AS character varying(40)
 	CONSTRAINT script_type_check CHECK (((VALUE)::text = ANY (ARRAY[('DYNAMIC_PROPERTY'::character varying)::text, ('MANAGED_PROPERTY'::character varying)::text, ('ENTITY_VALIDATION'::character varying)::text])));
 CREATE DOMAIN tech_id AS bigint;
@@ -921,6 +927,7 @@ BEGIN
         SELECT code INTO STRICT container_code FROM samples_all WHERE id = NEW.samp_id_part_of;
         identifier := identifier || ':' || container_code;
     END IF;
+    NEW.sample_identifier := identifier;
     NEW.tsvector_document := (escape_tsvector_string(NEW.perm_id) || ':1')::tsvector ||
             (escape_tsvector_string(NEW.code) || ':1')::tsvector ||
             (escape_tsvector_string(identifier) || ':1')::tsvector;
@@ -2257,6 +2264,7 @@ CREATE TABLE samples_all (
     frozen_for_children boolean_char DEFAULT false NOT NULL,
     frozen_for_parents boolean_char DEFAULT false NOT NULL,
     frozen_for_data boolean_char DEFAULT false NOT NULL,
+    sample_identifier sample_identifier,
     tsvector_document tsvector NOT NULL
 );
 CREATE VIEW samples AS
@@ -2284,7 +2292,8 @@ CREATE VIEW samples AS
     samples_all.frozen_for_children,
     samples_all.frozen_for_parents,
     samples_all.frozen_for_data,
-    samples_all.tsvector_document
+    samples_all.tsvector_document,
+    samples_all.sample_identifier
    FROM samples_all
   WHERE (samples_all.del_id IS NULL);
 CREATE VIEW samples_deleted AS

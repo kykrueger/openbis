@@ -3297,6 +3297,7 @@ BEGIN
         identifier := identifier || ':' || container_code;
     END IF;
 
+    NEW.sample_identifier := identifier;
     NEW.tsvector_document := (escape_tsvector_string(NEW.perm_id) || ':1')::tsvector ||
             (escape_tsvector_string(NEW.code) || ':1')::tsvector ||
             (escape_tsvector_string(identifier) || ':1')::tsvector;
@@ -3340,7 +3341,6 @@ DROP TRIGGER IF EXISTS samples_all_tsvector_document ON samples_all;
 CREATE TRIGGER samples_all_tsvector_document BEFORE INSERT OR UPDATE
     ON samples_all FOR EACH ROW EXECUTE PROCEDURE
     samples_all_tsvector_document_trigger();
-
 DROP TRIGGER IF EXISTS sample_properties_tsvector_document ON sample_properties;
 CREATE TRIGGER sample_properties_tsvector_document BEFORE INSERT OR UPDATE
     ON sample_properties FOR EACH ROW EXECUTE PROCEDURE
