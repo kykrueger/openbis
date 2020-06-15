@@ -99,11 +99,13 @@ public abstract class AbstractSampleSearchCriteria<T extends AbstractSampleSearc
         return with(new SampleTypeSearchCriteria());
     }
 
+    @SuppressWarnings("unchecked")
     public T withOrOperator()
     {
         return (T) withOperator(SearchOperator.OR);
     }
 
+    @SuppressWarnings("unchecked")
     public T withAndOperator()
     {
         return (T) withOperator(SearchOperator.AND);
