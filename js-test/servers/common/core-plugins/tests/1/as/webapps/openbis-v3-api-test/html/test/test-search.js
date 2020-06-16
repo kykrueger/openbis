@@ -1555,7 +1555,6 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
                         break;
                         case "EXPERIMENT":
                             var objectExperiment = result;
-                            debugger;
                             c.assertEqual(objectExperiment.getObjectKind(), "EXPERIMENT", "ObjectKind");
                             c.assertEqual(objectExperiment.getObjectPermId().getPermId(), "20130412150049446-204", "ObjectPermId");
                             c.assertEqual(objectExperiment.getObjectIdentifier().getIdentifier(), "/TEST/TEST-PROJECT/TEST-EXPERIMENT", "ObjectIdentifier");
