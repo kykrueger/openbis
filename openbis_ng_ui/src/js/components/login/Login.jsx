@@ -1,12 +1,14 @@
+import _ from 'lodash'
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import { connect } from 'react-redux'
 import flow from 'lodash/flow'
 
 import Card from '@material-ui/core/Card'
-import CardContent from '@material-ui/core/CardContent'
 import Typography from '@material-ui/core/Typography'
 
+import FormValidator from '@src/js/components/common/form/FormValidator.js'
+import Container from '@src/js/components/common/form/Container.jsx'
 import TextField from '@src/js/components/common/form/TextField.jsx'
 import Button from '@src/js/components/common/form/Button.jsx'
 
@@ -19,9 +21,6 @@ const styles = theme => ({
     marginBottom: '10em',
     width: '30em',
     margin: '0 auto'
-  },
-  content: {
-    padding: `${theme.spacing(2)}px !important`
   },
   header: {
     marginBottom: theme.spacing(1)
@@ -50,70 +49,163 @@ function mapDispatchToProps(dispatch) {
 }
 
 class WithLogin extends React.Component {
-  state = {}
+  constructor(props) {
+    super(props)
+    this.state = {
+      user: {
+        value: null,
+        error: null
+      },
+      password: {
+        value: null,
+        error: null
+      },
+      selection: 'user',
+      validate: false
+    }
+    this.references = {
+      user: React.createRef(),
+      password: React.createRef()
+    }
 
-  handleChange = name => event => {
-    this.setState({
-      [name]: event.target.value
-    })
+    this.handleKeyPress = this.handleKeyPress.bind(this)
+    this.handleChange = this.handleChange.bind(this)
+    this.handleBlur = this.handleBlur.bind(this)
+    this.handleLogin = this.handleLogin.bind(this)
   }
 
-  keyPress(e) {
-    if (e.key === 'Enter') {
-      this.login()
+  componentDidMount() {
+    if (this.state.selection) {
+      this.focus()
     }
   }
 
-  login = () => {
-    this.props.login(this.state.user, this.state.password)
+  componentDidUpdate(prevProps, prevState) {
+    if (this.state.selection !== prevState.selection) {
+      this.focus()
+    }
+  }
+
+  focus() {
+    const reference = this.references[this.state.selection]
+    if (reference) {
+      reference.current.focus()
+    }
+  }
+
+  validate(autofocus) {
+    if (!this.state.validate) {
+      return true
+    }
+
+    const newState = { ...this.state }
+
+    const validator = new FormValidator()
+    validator.validateNotEmpty(newState, 'user', 'User')
+    validator.validateNotEmpty(newState, 'password', 'Password')
+
+    let selection = null
+
+    if (autofocus && !_.isEmpty(validator.getErrors())) {
+      selection = new String(validator.getErrors()[0].name)
+    }
+
+    this.setState({
+      ...newState,
+      selection
+    })
+
+    return _.isEmpty(validator.getErrors())
+  }
+
+  handleKeyPress(event) {
+    if (event.key === 'Enter') {
+      this.handleLogin()
+    }
+  }
+
+  handleChange(event) {
+    this.setState({
+      [event.target.name]: {
+        ...this.state[event.target.name],
+        value: event.target.value
+      }
+    })
+  }
+
+  handleBlur() {
+    this.validate()
+  }
+
+  handleLogin() {
+    if (this.props.disabled) {
+      return
+    }
+
+    this.setState(
+      {
+        validate: true
+      },
+      () => {
+        if (this.validate(true)) {
+          this.props.login(this.state.user.value, this.state.password.value)
+        }
+      }
+    )
   }
 
   render() {
     logger.log(logger.DEBUG, 'Login.render')
 
-    const classes = this.props.classes
+    const { classes } = this.props
 
     return (
       <div>
         <div className={classes.container}>
           <form>
             <Card classes={{ root: classes.card }}>
-              <CardContent classes={{ root: classes.content }}>
+              <Container square={true}>
                 <Typography variant='h6' classes={{ root: classes.header }}>
                   Login
                 </Typography>
                 <div className={classes.field}>
                   <TextField
+                    reference={this.references.user}
                     id='standard-name'
+                    name='user'
                     label='User'
+                    value={this.state.user.value}
+                    error={this.state.user.error}
+                    mandatory={true}
                     autoComplete='username'
-                    value={this.state.user}
-                    onKeyPress={e => {
-                      this.keyPress(e)
-                    }}
-                    onChange={this.handleChange('user')}
+                    onKeyPress={this.handleKeyPress}
+                    onChange={this.handleChange}
+                    onBlur={this.handleBlur}
                   />
                 </div>
                 <div className={classes.field}>
                   <TextField
+                    reference={this.references.password}
                     id='standard-password-input'
+                    name='password'
                     label='Password'
                     type='password'
-                    value={this.state.password}
+                    value={this.state.password.value}
+                    error={this.state.password.error}
+                    mandatory={true}
                     autoComplete='current-password'
-                    onKeyPress={e => {
-                      this.keyPress(e)
-                    }}
-                    onChange={this.handleChange('password')}
+                    onKeyPress={this.handleKeyPress}
+                    onChange={this.handleChange}
+                    onBlur={this.handleBlur}
                   />
                 </div>
                 <Button
                   label='Login'
                   type='final'
                   styles={{ root: classes.button }}
-                  onClick={this.login}
+                  onClick={this.handleLogin}
                 />
-              </CardContent>
+              </Container>
             </Card>
           </form>
         </div>
