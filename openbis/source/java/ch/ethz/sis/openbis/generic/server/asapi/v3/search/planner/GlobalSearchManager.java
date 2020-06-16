@@ -164,7 +164,7 @@ public class GlobalSearchManager implements IGlobalSearchManager
     }
 
     @Override
-    public Collection<MatchingEntity> map(final Collection<Map<String, Object>> records)
+    public Collection<MatchingEntity> map(final Collection<Map<String, Object>> records, final boolean withMatches)
     {
         return records.stream().map((fieldsMap) ->
         {
@@ -194,8 +194,11 @@ public class GlobalSearchManager implements IGlobalSearchManager
 
             final List<PropertyMatch> matches = new ArrayList<>();
 
-            mapPropertyMatches(fieldsMap, matches);
-            mapAttributeMatches(fieldsMap, entityKind, matches);
+            if (withMatches)
+            {
+                mapPropertyMatches(fieldsMap, matches);
+                mapAttributeMatches(fieldsMap, entityKind, matches);
+            }
 
             matchingEntity.setMatches(matches);
             return matchingEntity;

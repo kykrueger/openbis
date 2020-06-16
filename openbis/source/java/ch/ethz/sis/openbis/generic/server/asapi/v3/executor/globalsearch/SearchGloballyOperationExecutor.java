@@ -127,7 +127,8 @@ public class SearchGloballyOperationExecutor
         }
 
         final List<Map<String, Object>> sortedAndPagedResultMaps = sortAndPage(allResultMaps, fetchOptions);
-        final Collection<MatchingEntity> pagedMatchingEntities = globalSearchManager.map(sortedAndPagedResultMaps);
+        final Collection<MatchingEntity> pagedMatchingEntities = globalSearchManager.map(sortedAndPagedResultMaps,
+                fetchOptions.hasMatch());
         // TODO: doTranslate() should only filter nested objects of the results (parents, children, components...).
         final Map<MatchingEntity, GlobalSearchObject> pagedResultV3DTOs = doTranslate(translationContext, pagedMatchingEntities, fetchOptions);
 

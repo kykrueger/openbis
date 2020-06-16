@@ -21,15 +21,15 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.GlobalSearchObject;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearchObjectFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PEMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MatchingEntity;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public interface IGlobalSearchManager extends IID2PEMapper<Map<String, Object>, MatchingEntity>, ISearchManager
+public interface IGlobalSearchManager extends ISearchManager
 {
 
     /**
@@ -49,5 +49,7 @@ public interface IGlobalSearchManager extends IID2PEMapper<Map<String, Object>, 
 
     List<Map<String, Object>> sortRecords(Set<Map<String, Object>> records,
             SortOptions<GlobalSearchObject> sortOptions);
+
+    Collection<MatchingEntity> map(final Collection<Map<String, Object>> ids, boolean withMatches);
 
 }
