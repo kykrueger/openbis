@@ -27,13 +27,13 @@ class BrowserButtons extends React.Component {
       <Container className={classes.container}>
         <Button
           label='Add'
-          classes={{ root: classes.button }}
+          styles={{ root: classes.button }}
           onClick={controller.nodeAdd}
           disabled={!addEnabled}
         />
         <Button
           label='Remove'
-          classes={{ root: classes.button }}
+          styles={{ root: classes.button }}
           onClick={controller.nodeRemove}
           disabled={!removeEnabled}
         />

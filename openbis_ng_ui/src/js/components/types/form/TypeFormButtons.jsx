@@ -39,28 +39,28 @@ class TypeFormButtons extends React.PureComponent {
         <Button
           name='addSection'
           label='Add Section'
-          classes={{ root: classes.button }}
+          styles={{ root: classes.button }}
           onClick={onAddSection}
         />
         <Button
           name='addProperty'
           label='Add Property'
-          classes={{ root: classes.button }}
+          styles={{ root: classes.button }}
           disabled={!this.isSectionOrPropertySelected()}
           onClick={onAddProperty}
         />
         <Button
           name='remove'
           label='Remove'
-          classes={{ root: classes.button }}
+          styles={{ root: classes.button }}
           disabled={!this.isSectionOrPropertySelected()}
           onClick={onRemove}
         />
         <Button
           name='save'
           label='Save'
-          final={true}
-          classes={{ root: classes.button }}
+          type='final'
+          styles={{ root: classes.button }}
           onClick={onSave}
         />
       </Container>

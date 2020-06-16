@@ -3,11 +3,11 @@ import { withStyles } from '@material-ui/core/styles'
 import { connect } from 'react-redux'
 import flow from 'lodash/flow'
 
-import Button from '@material-ui/core/Button'
 import Card from '@material-ui/core/Card'
 import CardContent from '@material-ui/core/CardContent'
 import TextField from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
+import Button from '@src/js/components/common/form/Button.jsx'
 
 import actions from '@src/js/store/actions/actions.js'
 import logger from '@src/js/common/logger.js'
@@ -98,13 +98,11 @@ class WithLogin extends React.Component {
                   onChange={this.handleChange('password')}
                 />
                 <Button
+                  label='Login'
+                  type='final'
+                  styles={{ root: classes.button }}
                   onClick={this.login}
-                  color='primary'
-                  className={classes.button}
-                  variant='contained'
-                >
-                  Login
-                </Button>
+                />
               </CardContent>
             </Card>
           </form>
