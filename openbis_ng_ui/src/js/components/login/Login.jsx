@@ -5,32 +5,39 @@ import flow from 'lodash/flow'
 
 import Card from '@material-ui/core/Card'
 import CardContent from '@material-ui/core/CardContent'
-import TextField from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
+
+import TextField from '@src/js/components/common/form/TextField.jsx'
 import Button from '@src/js/components/common/form/Button.jsx'
 
 import actions from '@src/js/store/actions/actions.js'
 import logger from '@src/js/common/logger.js'
 
-const styles = {
+const styles = theme => ({
   card: {
     marginTop: '10%',
     marginBottom: '10em',
     width: '30em',
     margin: '0 auto'
   },
-  textField: {
-    width: '100%'
+  content: {
+    padding: `${theme.spacing(2)}px !important`
+  },
+  header: {
+    marginBottom: theme.spacing(1)
+  },
+  field: {
+    marginBottom: theme.spacing(1)
   },
   button: {
-    marginTop: '1em'
+    marginTop: theme.spacing(1)
   },
   container: {
     width: '100%',
     height: '100%',
     overflow: 'auto'
   }
-}
+})
 
 function mapStateToProps() {
   return {}
@@ -70,33 +77,36 @@ class WithLogin extends React.Component {
       <div>
         <div className={classes.container}>
           <form>
-            <Card className={classes.card}>
-              <CardContent>
-                <Typography variant='h6'>Login</Typography>
-                <TextField
-                  id='standard-name'
-                  label='User'
-                  className={classes.textField}
-                  margin='normal'
-                  autoComplete='username'
-                  autoFocus={true}
-                  onKeyPress={e => {
-                    this.keyPress(e)
-                  }}
-                  onChange={this.handleChange('user')}
-                />
-                <TextField
-                  id='standard-password-input'
-                  label='Password'
-                  className={classes.textField}
-                  type='password'
-                  autoComplete='current-password'
-                  margin='normal'
-                  onKeyPress={e => {
-                    this.keyPress(e)
-                  }}
-                  onChange={this.handleChange('password')}
-                />
+            <Card classes={{ root: classes.card }}>
+              <CardContent classes={{ root: classes.content }}>
+                <Typography variant='h6' classes={{ root: classes.header }}>
+                  Login
+                </Typography>
+                <div className={classes.field}>
+                  <TextField
+                    id='standard-name'
+                    label='User'
+                    autoComplete='username'
+                    value={this.state.user}
+                    onKeyPress={e => {
+                      this.keyPress(e)
+                    }}
+                    onChange={this.handleChange('user')}
+                  />
+                </div>
+                <div className={classes.field}>
+                  <TextField
+                    id='standard-password-input'
+                    label='Password'
+                    type='password'
+                    value={this.state.password}
+                    autoComplete='current-password'
+                    onKeyPress={e => {
+                      this.keyPress(e)
+                    }}
+                    onChange={this.handleChange('password')}
+                  />
+                </div>
                 <Button
                   label='Login'
                   type='final'

@@ -28,6 +28,7 @@ class TextFormField extends React.PureComponent {
 
     const {
       reference,
+      id,
       type,
       name,
       label,
@@ -35,6 +36,7 @@ class TextFormField extends React.PureComponent {
       value,
       mandatory,
       disabled,
+      autoComplete = 'off',
       error,
       multiline,
       metadata,
@@ -43,6 +45,7 @@ class TextFormField extends React.PureComponent {
       styles,
       classes,
       onClick,
+      onKeyPress,
       onChange,
       onFocus,
       onBlur
@@ -58,6 +61,7 @@ class TextFormField extends React.PureComponent {
       >
         <TextField
           inputRef={reference}
+          id={id}
           type={type}
           label={
             <FormFieldLabel
@@ -92,11 +96,12 @@ class TextFormField extends React.PureComponent {
           error={!!error}
           disabled={disabled}
           multiline={multiline}
+          onKeyPress={onKeyPress}
           onChange={onChange}
           onFocus={onFocus}
           onBlur={onBlur}
           fullWidth={true}
-          autoComplete='off'
+          autoComplete={autoComplete}
           variant='filled'
           margin='dense'
           classes={{
