@@ -821,6 +821,85 @@ public class GlobalSearchTest extends AbstractTest
                 "search-globally  SEARCH_CRITERIA:\n'GLOBAL_SEARCH\n    any field contains exactly '200902091219327-1025'\n'\nFETCH_OPTIONS:\n'GlobalSearchObject\n    with Sample\n    with DataSet\n'");
     }
 
+    @Test
+    public void testTextThatContainsPermIdsAndCode()
+    {
+        final GlobalSearchCriteria c = new GlobalSearchCriteria();
+        c.withText().thatContains("200902091239077-1033 20110509092359990-11 200811050919915-8 VIRUS1");
+
+        final GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
+        fo.withDataSet();
+        fo.withExperiment();
+        fo.withSample();
+        fo.withMaterial();
+        fo.withMatch();
+
+        final List<GlobalSearchObject> results = search(TEST_USER, c, fo).getObjects();
+        assertEquals(results.size(), 4);
+
+        results.forEach(result ->
+        {
+            switch (result.getObjectKind())
+            {
+                case DATA_SET:
+                {
+                    assertEquals(result.getObjectPermId().toString(), "20110509092359990-11");
+                    assertEquals(result.getObjectIdentifier().toString(), "20110509092359990-11");
+                    assertTrue(result.getMatch().contains("Perm ID: 20110509092359990-11"));
+                    assertTrue(result.getMatch().contains("Location: contained/20110509092359990-11"));
+                    assertTrue(result.getScore() > 0);
+                    assertNull(result.getExperiment());
+                    assertNull(result.getSample());
+                    assertEquals(result.getDataSet().getCode(), "20110509092359990-11");
+                    assertNull(result.getMaterial());
+                    break;
+                }
+                case EXPERIMENT:
+                {
+                    assertEquals(result.getObjectPermId().toString(), "200902091239077-1033");
+                    assertEquals(result.getObjectIdentifier().toString(), "/CISD/NEMO/EXP-TEST-1");
+                    assertEquals(result.getMatch(), "Perm ID: 200902091239077-1033");
+                    assertTrue(result.getScore() > 0);
+                    assertEquals(result.getExperiment().getCode(), "EXP-TEST-1");
+                    assertNull(result.getSample());
+                    assertNull(result.getDataSet());
+                    assertNull(result.getMaterial());
+                    break;
+                }
+                case SAMPLE:
+                {
+                    assertEquals(result.getObjectPermId().toString(), "200811050919915-8");
+                    assertEquals(result.getObjectIdentifier().toString(), "/CISD/CL1");
+                    assertEquals(result.getMatch(), "Perm ID: 200811050919915-8");
+                    assertTrue(result.getScore() > 0);
+                    assertNull(result.getExperiment());
+                    assertEquals(result.getSample().getCode(), "CL1");
+                    assertNull(result.getDataSet());
+                    assertNull(result.getMaterial());
+                    break;
+                }
+                case MATERIAL:
+                {
+                    final MaterialPermId materialPermId = (MaterialPermId) result.getObjectPermId();
+                    final MaterialPermId materialObjectIdentifier = (MaterialPermId) result.getObjectIdentifier();
+                    assertEquals(materialPermId.toString(), "VIRUS1 (VIRUS)");
+                    assertEquals(materialPermId.getCode(), "VIRUS1");
+                    assertEquals(materialPermId.getTypeCode(), "VIRUS");
+                    assertEquals(materialObjectIdentifier.toString(), "VIRUS1 (VIRUS)");
+                    assertEquals(materialObjectIdentifier.getCode(), "VIRUS1");
+                    assertEquals(materialObjectIdentifier.getTypeCode(), "VIRUS");
+                    assertEquals(result.getMatch(), "Identifier: VIRUS1 (VIRUS)");
+                    assertTrue(result.getScore() > 0);
+                    assertNull(result.getExperiment());
+                    assertNull(result.getSample());
+                    assertNull(result.getDataSet());
+                    assertEquals(result.getMaterial().getCode(), "VIRUS1");
+                    break;
+                }
+            }
+        });
+    }
+
     private SearchResult<GlobalSearchObject> search(String user, GlobalSearchCriteria criteria, GlobalSearchObjectFetchOptions fetchOptions)
     {
         String sessionToken = v3api.login(user, PASSWORD);

@@ -86,12 +86,19 @@ define([ "require", "stjs", "as/dto/common/fetchoptions/FetchOptions", "as/dto/e
 				this.match = new MatchFetchOptions();
 			}
 			return this.match;
-		}
+		};
+		prototype.hasMatch = function() {
+			return this.match !== null;
+		};
+		prototype.withMatchUsing = function(fetchOptions) {
+			return this.match = fetchOptions;
+		};
 	}, {
 		experiment : "ExperimentFetchOptions",
 		sample : "SampleFetchOptions",
 		dataSet : "DataSetFetchOptions",
 		material : "MaterialFetchOptions",
+		match : "MatchFetchOptions",
 		sort : "GlobalSearchObjectSortOptions"
 	});
 	return GlobalSearchObjectFetchOptions;

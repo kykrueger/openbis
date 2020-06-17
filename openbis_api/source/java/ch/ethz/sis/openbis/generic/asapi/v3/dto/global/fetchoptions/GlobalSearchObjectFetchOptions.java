@@ -155,6 +155,11 @@ public class GlobalSearchObjectFetchOptions extends FetchOptions<GlobalSearchObj
         return match != null;
     }
 
+    public MatchFetchOptions withMatchUsing(final MatchFetchOptions fetchOptions)
+    {
+        return match = fetchOptions;
+    }
+
     // Method automatically generated with DtoGenerator
     @Override
     public GlobalSearchObjectSortOptions sortBy()

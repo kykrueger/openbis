@@ -1531,8 +1531,9 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			var fSearch = function(facade) {
 				var criteria = new c.GlobalSearchCriteria();
 				criteria.withText().thatContains("20130412150049446-204 20130412140147735-20 20130417094936021-428 H2O");
-				criteria.withMatch();
-				return facade.searchGlobally(criteria, c.createGlobalSearchObjectFetchOptions());
+				var fo = c.createGlobalSearchObjectFetchOptions();
+				fo.withMatch();
+				return facade.searchGlobally(criteria, fo);
 			}
 
 			var fCheck = function(facade, objects) {
@@ -1553,7 +1554,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
                             c.assertEqual(objectDataSet.getDataSet().getCode(), "20130417094936021-428", "DataSet");
                             c.assertNull(objectDataSet.getMaterial(), "Material");
                         break;
-                        case "EXPERIMENT":
+						case "EXPERIMENT":
                             var objectExperiment = result;
                             c.assertEqual(objectExperiment.getObjectKind(), "EXPERIMENT", "ObjectKind");
                             c.assertEqual(objectExperiment.getObjectPermId().getPermId(), "20130412150049446-204", "ObjectPermId");
@@ -1604,7 +1605,9 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			var fSearch = function(facade) {
 				var criteria = new c.GlobalSearchCriteria();
 				criteria.withText().thatContainsExactly("407 description");
-				return facade.searchGlobally(criteria, c.createGlobalSearchObjectFetchOptions());
+				var fo = c.createGlobalSearchObjectFetchOptions();
+				fo.withMatch();
+				return facade.searchGlobally(criteria, fo);
 			}
 
 			var fCheck = function(facade, objects) {
@@ -1633,8 +1636,9 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				var criteria = new c.GlobalSearchCriteria();
 				criteria.withText().thatContains("20130412150049446-204 20130412140147735-20 20130417094936021-428 H2O");
 				criteria.withObjectKind().thatIn([ "EXPERIMENT" ]);
-				criteria.withMatch();
-				return facade.searchGlobally(criteria, c.createGlobalSearchObjectFetchOptions());
+				var fo = c.createGlobalSearchObjectFetchOptions();
+				fo.withMatch();
+				return facade.searchGlobally(criteria, fo);
 			}
 
 			var fCheck = function(facade, objects) {
