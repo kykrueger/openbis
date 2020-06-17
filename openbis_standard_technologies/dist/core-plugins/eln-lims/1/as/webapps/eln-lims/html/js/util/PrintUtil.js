@@ -163,6 +163,12 @@ var PrintUtil = new function() {
 					propertyContent = Util.getEmptyIfNull(propertyContent);
 					propertyContent = FormUtil.sanitizeRichHTMLText(propertyContent);
 					propertyContent = Util.replaceURLWithHTMLLinks(propertyContent);
+
+					if(propertyType.dataType === "MULTILINE_VARCHAR") {
+                        var imageWithoutDomain = "<img src=\"/openbis/openbis/";
+                        var imageWithDomain = "<img src=\"" + window.location.origin + "/openbis/openbis/openbis/";
+					    propertyContent = propertyContent.split(imageWithoutDomain).join(imageWithDomain);
+					}
 				}
 				
 				var isSingleColumn = false;
