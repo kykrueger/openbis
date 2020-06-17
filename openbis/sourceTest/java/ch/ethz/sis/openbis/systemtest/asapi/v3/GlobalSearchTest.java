@@ -846,7 +846,7 @@ public class GlobalSearchTest extends AbstractTest
                     assertEquals(result.getObjectPermId().toString(), "20110509092359990-11");
                     assertEquals(result.getObjectIdentifier().toString(), "20110509092359990-11");
                     assertTrue(result.getMatch().contains("Perm ID: 20110509092359990-11"));
-                    assertTrue(result.getMatch().contains("Location: contained/20110509092359990-11"));
+//                    assertTrue(result.getMatch().contains("Location: contained/20110509092359990-11"));
                     assertTrue(result.getScore() > 0);
                     assertNull(result.getExperiment());
                     assertNull(result.getSample());

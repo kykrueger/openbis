@@ -349,13 +349,17 @@ public class GlobalSearchCriteriaTranslator
     private static void buildAttributesMatchSelection(final StringBuilder sqlBuilder, final GlobalSearchTextCriteria criterion,
             final TableMapper tableMapper, final List<Object> args)
     {
+        final String[] criterionValues = criterion.getFieldValue().getValue().trim().split("\\s+");
+
         sqlBuilder.append(CASE).append(SP).append(WHEN).append(SP);
         sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN);
-        sqlBuilder.append(SP).append(EQ).append(SP).append(QU);
+        sqlBuilder.append(SP).append(IN).append(SP).append(LP)
+                .append(SELECT).append(SP).append(UNNEST).append(LP).append(QU).append(RP)
+                .append(RP);
         sqlBuilder.append(SP).append(THEN).append(SP).append(MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN);
         sqlBuilder.append(SP).append(ELSE).append(SP).append(NULL).append(SP).append(END);
         sqlBuilder.append(SP).append(CODE_MATCH_ALIAS);
-        args.add(criterion.getFieldValue().getValue());
+        args.add(criterionValues);
 
         switch (tableMapper)
         {
@@ -366,11 +370,14 @@ public class GlobalSearchCriteriaTranslator
 
                 sqlBuilder.append(CASE).append(SP).append(WHEN).append(SP);
                 sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(PERM_ID_COLUMN);
-                sqlBuilder.append(SP).append(EQ).append(SP).append(QU);
+                sqlBuilder.append(SP).append(IN).append(SP).append(LP)
+                        .append(SELECT).append(SP).append(UNNEST).append(LP).append(QU).append(RP)
+                        .append(RP);
                 sqlBuilder.append(SP).append(THEN).append(SP).append(MAIN_TABLE_ALIAS).append(PERIOD).append(PERM_ID_COLUMN);
                 sqlBuilder.append(SP).append(ELSE).append(SP).append(NULL).append(SP).append(END);
                 sqlBuilder.append(SP).append(PERM_ID_MATCH_ALIAS);
-                args.add(criterion.getFieldValue().getValue());
+
+                args.add(criterionValues);
                 break;
             }
             case DATA_SET:
@@ -379,11 +386,13 @@ public class GlobalSearchCriteriaTranslator
 
                 sqlBuilder.append(CASE).append(SP).append(WHEN).append(SP);
                 sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(DATA_SET_KIND_COLUMN);
-                sqlBuilder.append(SP).append(EQ).append(SP).append(QU);
+                sqlBuilder.append(SP).append(IN).append(SP).append(LP)
+                        .append(SELECT).append(SP).append(UNNEST).append(LP).append(QU).append(RP)
+                        .append(RP);
                 sqlBuilder.append(SP).append(THEN).append(SP).append(MAIN_TABLE_ALIAS).append(PERIOD).append(DATA_SET_KIND_COLUMN);
                 sqlBuilder.append(SP).append(ELSE).append(SP).append(NULL).append(SP).append(END);
                 sqlBuilder.append(SP).append(DATA_SET_KIND_MATCH_ALIAS);
-                args.add(criterion.getFieldValue().getValue());
+                args.add(criterionValues);
                 break;
             }
         }
