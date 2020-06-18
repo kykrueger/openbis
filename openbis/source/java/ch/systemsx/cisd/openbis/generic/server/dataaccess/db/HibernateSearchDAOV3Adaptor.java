@@ -10,6 +10,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.StatusSearchCrite
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.ExternalDmsAddressType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.search.ExternalDmsTypeSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearchObjectFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchObjectKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialSearchCriteria;
@@ -105,12 +106,15 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
 
         // Obtain entity id results from search manager
 
+        GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
+        fo.withDataSet();
+
         Set<Map<String, Object>> newResults = getGlobalSearchManager().searchForIDs(personPE.getId(),
                 getAuthorisationInformation(personPE),
                 globalSearchCriteria,
                 ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN,
-                getTableMapper(searchableEntity));
-        Collection<MatchingEntity> matchingEntities = getGlobalSearchManager().map(newResults);
+                getTableMapper(searchableEntity), fo);
+        Collection<MatchingEntity> matchingEntities = getGlobalSearchManager().map(newResults, true);
 
 //        // Adapt V3 to V1 Results
 //
