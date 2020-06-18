@@ -55,7 +55,9 @@ public class GlobalSearchTest extends AbstractTest
         GlobalSearchCriteria criteria = new GlobalSearchCriteria();
         criteria.withText().thatContainsExactly("200902091219327-1025");
 
-        SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, new GlobalSearchObjectFetchOptions());
+        final GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
+        fo.withMatch();
+        SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
         assertEquals(result.getObjects().size(), 1);
 
         GlobalSearchObject object = result.getObjects().get(0);
@@ -75,10 +77,12 @@ public class GlobalSearchTest extends AbstractTest
     @Test
     public void testSearchWithOneContainsOneWord()
     {
-        GlobalSearchCriteria criteria = new GlobalSearchCriteria();
+        final GlobalSearchCriteria criteria = new GlobalSearchCriteria();
         criteria.withText().thatContains("stuff");
 
-        SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, new GlobalSearchObjectFetchOptions());
+        final GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
+        fo.withMatch();
+        final SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
 
         assertStuff(result);
     }
@@ -86,10 +90,12 @@ public class GlobalSearchTest extends AbstractTest
     @Test
     public void testSearchWithOneContainsMultipleWords()
     {
-        GlobalSearchCriteria criteria = new GlobalSearchCriteria();
+        final GlobalSearchCriteria criteria = new GlobalSearchCriteria();
         criteria.withText().thatContains("simple stuff");
 
-        SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, new GlobalSearchObjectFetchOptions());
+        final GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
+        fo.withMatch();
+        final SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
 
         assertSimpleOrStuff(result, 7);
     }
@@ -97,11 +103,13 @@ public class GlobalSearchTest extends AbstractTest
     @Test
     public void testSearchWithMultipleContainsOneWord()
     {
-        GlobalSearchCriteria criteria = new GlobalSearchCriteria();
+        final GlobalSearchCriteria criteria = new GlobalSearchCriteria();
         criteria.withText().thatContains("simple");
         criteria.withText().thatContains("stuff");
 
-        SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, new GlobalSearchObjectFetchOptions());
+        final GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
+        fo.withMatch();
+        final SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
 
         assertSimpleOrStuff(result, 8);
     }
@@ -109,11 +117,13 @@ public class GlobalSearchTest extends AbstractTest
     @Test
     public void testSearchWithMultipleContainsMultipleWords()
     {
-        GlobalSearchCriteria criteria = new GlobalSearchCriteria();
+        final GlobalSearchCriteria criteria = new GlobalSearchCriteria();
         criteria.withText().thatContains("simple stuff");
         criteria.withText().thatContains("stuff simple");
 
-        SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, new GlobalSearchObjectFetchOptions());
+        final GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
+        fo.withMatch();
+        final SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
 
         assertSimpleOrStuff(result, 7);
     }
@@ -121,10 +131,12 @@ public class GlobalSearchTest extends AbstractTest
     @Test
     public void testSearchWithOneContainsExactlyOneWord()
     {
-        GlobalSearchCriteria criteria = new GlobalSearchCriteria();
+        final GlobalSearchCriteria criteria = new GlobalSearchCriteria();
         criteria.withText().thatContainsExactly("stuff");
 
-        SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, new GlobalSearchObjectFetchOptions());
+        final GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
+        fo.withMatch();
+        final SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
 
         assertStuff(result);
     }
@@ -132,10 +144,12 @@ public class GlobalSearchTest extends AbstractTest
     @Test
     public void testSearchWithOneContainsExactlyMultipleWords()
     {
-        GlobalSearchCriteria criteria = new GlobalSearchCriteria();
+        final GlobalSearchCriteria criteria = new GlobalSearchCriteria();
         criteria.withText().thatContainsExactly("simple stuff");
 
-        SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, new GlobalSearchObjectFetchOptions());
+        final GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
+        fo.withMatch();
+        final SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
 
         assertSimpleStuff(result);
     }
@@ -143,11 +157,13 @@ public class GlobalSearchTest extends AbstractTest
     @Test
     public void testSearchWithMultipleContainsExactlyOneWord()
     {
-        GlobalSearchCriteria criteria = new GlobalSearchCriteria();
+        final GlobalSearchCriteria criteria = new GlobalSearchCriteria();
         criteria.withText().thatContainsExactly("simple");
         criteria.withText().thatContainsExactly("stuff");
 
-        SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, new GlobalSearchObjectFetchOptions());
+        final GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
+        fo.withMatch();
+        final SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
 
         assertSimpleOrStuff(result, 8);
     }
@@ -155,11 +171,13 @@ public class GlobalSearchTest extends AbstractTest
     @Test
     public void testSearchWithMultipleContainsExactlyMultipleWords()
     {
-        GlobalSearchCriteria criteria = new GlobalSearchCriteria();
+        final GlobalSearchCriteria criteria = new GlobalSearchCriteria();
         criteria.withText().thatContainsExactly("simple stuff");
         criteria.withText().thatContainsExactly("simple stuff");
 
-        SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, new GlobalSearchObjectFetchOptions());
+        final GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
+        fo.withMatch();
+        final SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
 
         assertSimpleStuff(result);
     }
@@ -333,14 +351,14 @@ public class GlobalSearchTest extends AbstractTest
     @Test
     public void testSearchWithSortingByObjectIdentifierAsc()
     {
-        GlobalSearchCriteria criteria = new GlobalSearchCriteria();
+        final GlobalSearchCriteria criteria = new GlobalSearchCriteria();
         criteria.withText().thatContains("simple stuff");
 
-        GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
+        final GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
         fo.sortBy().objectIdentifier();
 
-        SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
-        List<GlobalSearchObject> objects = result.getObjects();
+        final SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
+        final List<GlobalSearchObject> objects = result.getObjects();
 
         assertSorted(objects, globalSearchObject -> globalSearchObject.getObjectIdentifier().toString(), true);
     }
@@ -348,14 +366,14 @@ public class GlobalSearchTest extends AbstractTest
     @Test
     public void testSearchWithSortingByObjectIdentifierDesc()
     {
-        GlobalSearchCriteria criteria = new GlobalSearchCriteria();
+        final GlobalSearchCriteria criteria = new GlobalSearchCriteria();
         criteria.withText().thatContains("simple stuff");
 
-        GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
+        final GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
         fo.sortBy().objectIdentifier().desc();
 
-        SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
-        List<GlobalSearchObject> objects = result.getObjects();
+        final SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
+        final List<GlobalSearchObject> objects = result.getObjects();
 
         assertSorted(objects, globalSearchObject -> globalSearchObject.getObjectIdentifier().toString(), false);
     }
@@ -363,17 +381,17 @@ public class GlobalSearchTest extends AbstractTest
     @Test
     public void testSearchWithSortingByMultipleFields()
     {
-        GlobalSearchCriteria criteria = new GlobalSearchCriteria();
+        final GlobalSearchCriteria criteria = new GlobalSearchCriteria();
         criteria.withText().thatContains("simple stuff");
 
-        GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
+        final GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
         final GlobalSearchObjectSortOptions sortOptions = fo.sortBy();
         sortOptions.score().asc();
         sortOptions.objectKind().desc();
         sortOptions.objectPermId().asc();
 
-        SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
-        List<GlobalSearchObject> objects = result.getObjects();
+        final SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
+        final List<GlobalSearchObject> objects = result.getObjects();
 
         for (int index = 1, size = objects.size(); index < size; index++)
         {
@@ -426,14 +444,16 @@ public class GlobalSearchTest extends AbstractTest
     @Test
     public void testSearchWithPaging()
     {
-        GlobalSearchCriteria criteria = new GlobalSearchCriteria();
+        final GlobalSearchCriteria criteria = new GlobalSearchCriteria();
         criteria.withText().thatContains("simple stuff");
 
-        GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
-        fo.from(1).count(2);
+        final GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
+        fo.sortBy().objectIdentifier().asc();
+        fo.from(3).count(2);
+        fo.withMatch();
 
-        SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
-        List<GlobalSearchObject> objects = result.getObjects();
+        final SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
+        final List<GlobalSearchObject> objects = result.getObjects();
 
         assertEquals(result.getTotalCount(), 7);
         assertEquals(objects.size(), 2);
@@ -446,6 +466,7 @@ public class GlobalSearchTest extends AbstractTest
     public void testSearchWithExperimentPermIdAndNothingFetched()
     {
         GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
+        fo.withMatch();
 
         GlobalSearchObject object = searchAndAssertOne(TEST_USER, "200811050951882-1028", fo);
 
@@ -461,6 +482,7 @@ public class GlobalSearchTest extends AbstractTest
     {
         GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
         fo.withExperiment();
+        fo.withMatch();
 
         GlobalSearchObject object = searchAndAssertOne(TEST_USER, "200811050951882-1028", fo);
 
@@ -476,6 +498,7 @@ public class GlobalSearchTest extends AbstractTest
     {
         GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
         fo.withSample();
+        fo.withMatch();
 
         GlobalSearchObject object = searchAndAssertOne(TEST_USER, "200811050951882-1028", fo);
 
@@ -490,6 +513,7 @@ public class GlobalSearchTest extends AbstractTest
     public void testSearchWithSamplePermIdAndNothingFetched()
     {
         GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
+        fo.withMatch();
 
         GlobalSearchObject object = searchAndAssertOne(TEST_USER, "200902091219327-1025", fo);
 
@@ -505,6 +529,7 @@ public class GlobalSearchTest extends AbstractTest
     {
         GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
         fo.withSample();
+        fo.withMatch();
 
         GlobalSearchObject object = searchAndAssertOne(TEST_USER, "200902091219327-1025", fo);
 
@@ -520,6 +545,7 @@ public class GlobalSearchTest extends AbstractTest
     {
         GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
         fo.withExperiment();
+        fo.withMatch();
 
         GlobalSearchObject object = searchAndAssertOne(TEST_USER, "200902091219327-1025", fo);
 
@@ -531,10 +557,26 @@ public class GlobalSearchTest extends AbstractTest
     }
 
     @Test
+    public void testSearchWithSamplePermIdAndNonSampleFetchedWithNoMatches()
+    {
+        GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
+        fo.withExperiment();
+
+        GlobalSearchObject object = searchAndAssertOne(TEST_USER, "200902091219327-1025", fo);
+
+        assertSample(object, "200902091219327-1025", "/CISD/CP-TEST-1", "");
+        assertNull(object.getExperiment());
+        assertSampleNotFetched(object);
+        assertDataSetNotFetched(object);
+        assertMaterialNotFetched(object);
+    }
+
+    @Test
     public void testSearchWithDataSetPermIdAndLocation()
     {
         GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
         fo.withDataSet();
+        fo.withMatch();
 
         GlobalSearchCriteria criteria = new GlobalSearchCriteria();
         criteria.withText().thatContainsExactly("20110509092359990-11");
@@ -572,6 +614,7 @@ public class GlobalSearchTest extends AbstractTest
     public void testSearchWithDataSetPermIdAndNothingFetched()
     {
         GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
+        fo.withMatch();
 
         GlobalSearchObject object = searchAndAssertOne(TEST_USER, "20081105092159111-1", fo);
 
@@ -587,6 +630,7 @@ public class GlobalSearchTest extends AbstractTest
     {
         GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
         fo.withDataSet();
+        fo.withMatch();
 
         GlobalSearchObject object = searchAndAssertOne(TEST_USER, "20081105092159111-1", fo);
 
@@ -603,6 +647,7 @@ public class GlobalSearchTest extends AbstractTest
         // given
         GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
         fo.withDataSet();
+        fo.withMatch();
 
         // when
         GlobalSearchObject object = searchAndAssertOne(TEST_USER, "20120628092259000-23", fo);
@@ -616,6 +661,7 @@ public class GlobalSearchTest extends AbstractTest
     {
         GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
         fo.withExperiment();
+        fo.withMatch();
 
         GlobalSearchObject object = searchAndAssertOne(TEST_USER, "20081105092159111-1", fo);
 
@@ -630,6 +676,7 @@ public class GlobalSearchTest extends AbstractTest
     public void testSearchWithMaterialPermIdAndNothingFetched()
     {
         GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
+        fo.withMatch();
 
         GlobalSearchObject object = searchAndAssertOne(TEST_USER, "HSV1 (VIRUS)", fo);
 
@@ -645,6 +692,7 @@ public class GlobalSearchTest extends AbstractTest
     {
         GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
         fo.withMaterial();
+        fo.withMatch();
 
         GlobalSearchObject object = searchAndAssertOne(TEST_USER, "HSV1 (VIRUS)", fo);
 
@@ -660,6 +708,7 @@ public class GlobalSearchTest extends AbstractTest
     {
         GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
         fo.withExperiment();
+        fo.withMatch();
 
         GlobalSearchObject object = searchAndAssertOne(TEST_USER, "HSV1 (VIRUS)", fo);
 
@@ -674,6 +723,7 @@ public class GlobalSearchTest extends AbstractTest
     public void testSearchWithMaterialCodeAndNothingFetched()
     {
         GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
+        fo.withMatch();
 
         GlobalSearchObject object = searchAndAssertOne(TEST_USER, "HSV1", fo);
 
@@ -689,6 +739,7 @@ public class GlobalSearchTest extends AbstractTest
     {
         GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
         fo.withMaterial();
+        fo.withMatch();
 
         GlobalSearchObject object = searchAndAssertOne(TEST_USER, "HSV1", fo);
 
@@ -704,6 +755,7 @@ public class GlobalSearchTest extends AbstractTest
     {
         GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
         fo.withExperiment();
+        fo.withMatch();
 
         GlobalSearchObject object = searchAndAssertOne(TEST_USER, "HSV1", fo);
 
@@ -769,6 +821,84 @@ public class GlobalSearchTest extends AbstractTest
                 "search-globally  SEARCH_CRITERIA:\n'GLOBAL_SEARCH\n    any field contains exactly '200902091219327-1025'\n'\nFETCH_OPTIONS:\n'GlobalSearchObject\n    with Sample\n    with DataSet\n'");
     }
 
+    @Test
+    public void testTextThatContainsPermIdsAndCode()
+    {
+        final GlobalSearchCriteria c = new GlobalSearchCriteria();
+        c.withText().thatContains("200902091239077-1033 20110509092359990-11 200811050919915-8 VIRUS1");
+
+        final GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
+        fo.withDataSet();
+        fo.withExperiment();
+        fo.withSample();
+        fo.withMaterial();
+        fo.withMatch();
+
+        final List<GlobalSearchObject> results = search(TEST_USER, c, fo).getObjects();
+        assertEquals(results.size(), 4);
+
+        results.forEach(result ->
+        {
+            switch (result.getObjectKind())
+            {
+                case DATA_SET:
+                {
+                    assertEquals(result.getObjectPermId().toString(), "20110509092359990-11");
+                    assertEquals(result.getObjectIdentifier().toString(), "20110509092359990-11");
+                    assertTrue(result.getMatch().contains("Perm ID: 20110509092359990-11"));
+                    assertTrue(result.getScore() > 0);
+                    assertNull(result.getExperiment());
+                    assertNull(result.getSample());
+                    assertEquals(result.getDataSet().getCode(), "20110509092359990-11");
+                    assertNull(result.getMaterial());
+                    break;
+                }
+                case EXPERIMENT:
+                {
+                    assertEquals(result.getObjectPermId().toString(), "200902091239077-1033");
+                    assertEquals(result.getObjectIdentifier().toString(), "/CISD/NEMO/EXP-TEST-1");
+                    assertEquals(result.getMatch(), "Perm ID: 200902091239077-1033");
+                    assertTrue(result.getScore() > 0);
+                    assertEquals(result.getExperiment().getCode(), "EXP-TEST-1");
+                    assertNull(result.getSample());
+                    assertNull(result.getDataSet());
+                    assertNull(result.getMaterial());
+                    break;
+                }
+                case SAMPLE:
+                {
+                    assertEquals(result.getObjectPermId().toString(), "200811050919915-8");
+                    assertEquals(result.getObjectIdentifier().toString(), "/CISD/CL1");
+                    assertEquals(result.getMatch(), "Perm ID: 200811050919915-8");
+                    assertTrue(result.getScore() > 0);
+                    assertNull(result.getExperiment());
+                    assertEquals(result.getSample().getCode(), "CL1");
+                    assertNull(result.getDataSet());
+                    assertNull(result.getMaterial());
+                    break;
+                }
+                case MATERIAL:
+                {
+                    final MaterialPermId materialPermId = (MaterialPermId) result.getObjectPermId();
+                    final MaterialPermId materialObjectIdentifier = (MaterialPermId) result.getObjectIdentifier();
+                    assertEquals(materialPermId.toString(), "VIRUS1 (VIRUS)");
+                    assertEquals(materialPermId.getCode(), "VIRUS1");
+                    assertEquals(materialPermId.getTypeCode(), "VIRUS");
+                    assertEquals(materialObjectIdentifier.toString(), "VIRUS1 (VIRUS)");
+                    assertEquals(materialObjectIdentifier.getCode(), "VIRUS1");
+                    assertEquals(materialObjectIdentifier.getTypeCode(), "VIRUS");
+                    assertEquals(result.getMatch(), "Identifier: VIRUS1 (VIRUS)");
+                    assertTrue(result.getScore() > 0);
+                    assertNull(result.getExperiment());
+                    assertNull(result.getSample());
+                    assertNull(result.getDataSet());
+                    assertEquals(result.getMaterial().getCode(), "VIRUS1");
+                    break;
+                }
+            }
+        });
+    }
+
     private SearchResult<GlobalSearchObject> search(String user, GlobalSearchCriteria criteria, GlobalSearchObjectFetchOptions fetchOptions)
     {
         String sessionToken = v3api.login(user, PASSWORD);
@@ -796,6 +926,7 @@ public class GlobalSearchTest extends AbstractTest
 
         GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
         fo.withDataSet();
+        fo.withMatch();
 
         SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
         assertTrue(result.getObjects().size() <= 1);
