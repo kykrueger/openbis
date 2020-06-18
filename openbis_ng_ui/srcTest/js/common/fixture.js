@@ -31,14 +31,23 @@ TEST_PLUGIN_DTO.setName('TEST_PLUGIN')
 
 const TEST_PROPERTY_TYPE_1_DTO = new openbis.PropertyType()
 TEST_PROPERTY_TYPE_1_DTO.setCode('TEST_PROPERTY_TYPE_1')
+TEST_PROPERTY_TYPE_1_DTO.setPermId(
+  new openbis.PropertyTypePermId(TEST_PROPERTY_TYPE_1_DTO.getCode())
+)
 TEST_PROPERTY_TYPE_1_DTO.setDataType(openbis.DataType.VARCHAR)
 
 const TEST_PROPERTY_TYPE_2_DTO = new openbis.PropertyType()
 TEST_PROPERTY_TYPE_2_DTO.setCode('TEST_PROPERTY_TYPE_2')
+TEST_PROPERTY_TYPE_2_DTO.setPermId(
+  new openbis.PropertyTypePermId(TEST_PROPERTY_TYPE_2_DTO.getCode())
+)
 TEST_PROPERTY_TYPE_2_DTO.setDataType(openbis.DataType.VARCHAR)
 
 const TEST_PROPERTY_TYPE_3_DTO = new openbis.PropertyType()
 TEST_PROPERTY_TYPE_3_DTO.setCode('TEST_PROPERTY_TYPE_3')
+TEST_PROPERTY_TYPE_3_DTO.setPermId(
+  new openbis.PropertyTypePermId(TEST_PROPERTY_TYPE_3_DTO.getCode())
+)
 TEST_PROPERTY_TYPE_3_DTO.setDataType(openbis.DataType.VARCHAR)
 
 const TEST_PROPERTY_ASSIGNMENT_1 = new openbis.PropertyAssignment()
