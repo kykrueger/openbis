@@ -29,6 +29,7 @@ export default class TypeFormControllerLoad {
       })
       .finally(() => {
         this.context.setState({
+          loaded: true,
           loading: false
         })
       })

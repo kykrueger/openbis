@@ -69,9 +69,13 @@ export default class TypeFormFacade {
     return strategy.getTypes([id], fo).then(map => {
       const type = map[object.id]
 
-      return type.getPropertyAssignments().map(assignment => {
-        return assignment.getPropertyType()
-      })
+      if (type) {
+        return type.getPropertyAssignments().map(assignment => {
+          return assignment.getPropertyType()
+        })
+      } else {
+        return []
+      }
     })
   }
 

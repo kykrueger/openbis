@@ -14,76 +14,79 @@ export default class TypeFormControllerLoadType {
   async execute() {
     const strategy = this._getStrategy()
 
-    let promise = null
     if (strategy.getNewObjectType() === this.object.type) {
-      promise = Promise.resolve([null, null, null])
+      return this._init(null, null, null)
     } else if (strategy.getExistingObjectType() === this.object.type) {
-      promise = Promise.all([
+      return Promise.all([
         this.facade.loadType(this.object),
         this.facade.loadUsages(this.object),
         this.facade.loadAssignments(this.object)
-      ])
+      ]).then(([loadedType, loadedUsages, loadedAssignments]) => {
+        if (loadedType) {
+          return this._init(loadedType, loadedUsages, loadedAssignments)
+        }
+      })
+    }
+  }
+
+  async _init(loadedType, loadedUsages, loadedAssignments) {
+    const sections = []
+    const properties = []
+    let section = null
+    let property = null
+    let sectionsCounter = 0
+    let propertiesCounter = 0
+
+    if (loadedType && loadedType.propertyAssignments) {
+      loadedType.propertyAssignments.forEach(loadedAssignment => {
+        property = this._createProperty(
+          'property-' + propertiesCounter++,
+          loadedType,
+          loadedAssignment,
+          loadedUsages,
+          loadedAssignments
+        )
+        properties.push(property)
+
+        if (!section || section.name.value !== loadedAssignment.section) {
+          section = this._createSection(
+            'section-' + sectionsCounter++,
+            loadedAssignment
+          )
+          sections.push(section)
+        }
+
+        section.properties.push(property.id)
+        property.section = section.id
+        property.original = {
+          ...property
+        }
+      })
     }
 
-    return promise.then(([loadedType, loadedUsages, loadedAssignments]) => {
-      const sections = []
-      const properties = []
-      let section = null
-      let property = null
-      let sectionsCounter = 0
-      let propertiesCounter = 0
+    const type = this._createType(loadedType, loadedUsages)
 
-      if (loadedType && loadedType.propertyAssignments) {
-        loadedType.propertyAssignments.forEach(loadedAssignment => {
-          property = this._createProperty(
-            'property-' + propertiesCounter++,
-            loadedType,
-            loadedAssignment,
-            loadedUsages,
-            loadedAssignments
-          )
-          properties.push(property)
-
-          if (!section || section.name.value !== loadedAssignment.section) {
-            section = this._createSection(
-              'section-' + sectionsCounter++,
-              loadedAssignment
-            )
-            sections.push(section)
-          }
-
-          section.properties.push(property.id)
-          property.section = section.id
-          property.original = {
-            ...property
-          }
-        })
+    if (loadedType) {
+      type.original = {
+        ...type,
+        properties
       }
+    }
 
-      const type = this._createType(loadedType, loadedUsages)
+    const selection = this._createSelection(sections)
 
-      if (loadedType) {
-        type.original = {
-          ...type,
-          properties
-        }
-      }
-
-      const selection = this._createSelection(sections)
-
-      return this.context.setState(() => ({
-        type,
-        properties,
-        propertiesCounter,
-        sections,
-        sectionsCounter,
-        selection: selection,
-        usages: loadedUsages,
-        assignments: loadedAssignments,
-        removeSectionDialogOpen: false,
-        removePropertyDialogOpen: false
-      }))
-    })
+    return this.context.setState(() => ({
+      type,
+      properties,
+      propertiesCounter,
+      sections,
+      sectionsCounter,
+      selection: selection,
+      usages: loadedUsages,
+      assignments: loadedAssignments,
+      removeSectionDialogOpen: false,
+      removePropertyDialogOpen: false
+    }))
   }
 
   _createType(loadedType, loadedUsages) {

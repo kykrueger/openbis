@@ -4,6 +4,7 @@ import { connect } from 'react-redux'
 import { withStyles } from '@material-ui/core/styles'
 import { Resizable } from 're-resizable'
 import ComponentContext from '@src/js/components/common/ComponentContext.js'
+import Container from '@src/js/components/common/form/Container.jsx'
 import Loading from '@src/js/components/common/loading/Loading.jsx'
 import logger from '@src/js/common/logger.js'
 
@@ -12,6 +13,7 @@ import TypeFormFacade from './TypeFormFacade.js'
 import TypeFormButtons from './TypeFormButtons.jsx'
 import TypeFormParameters from './TypeFormParameters.jsx'
 import TypeFormPreview from './TypeFormPreview.jsx'
+import TypeFormMessage from './TypeFormMessage.jsx'
 import TypeFormDialogRemoveSection from './TypeFormDialogRemoveSection.jsx'
 import TypeFormDialogRemoveProperty from './TypeFormDialogRemoveProperty.jsx'
 
@@ -70,16 +72,22 @@ class TypeForm extends React.PureComponent {
   render() {
     logger.log(logger.DEBUG, 'TypeForm.render')
 
-    const { loading, type, dictionaries } = this.state
+    const { loaded, loading } = this.state
 
-    return (
-      <Loading loading={loading}>
-        {!!type && !!dictionaries && this.doRender()}
-      </Loading>
-    )
+    return <Loading loading={loading}>{loaded && this.doRender()}</Loading>
   }
 
   doRender() {
+    const { type } = this.state
+
+    if (type) {
+      return this.doRenderExisting()
+    } else {
+      return this.doRenderNonExistent()
+    }
+  }
+
+  doRenderExisting() {
     let { controller } = this
 
     let {
@@ -161,6 +169,14 @@ class TypeForm extends React.PureComponent {
           />
         </div>
       </div>
+    )
+  }
+
+  doRenderNonExistent() {
+    return (
+      <Container>
+        <TypeFormMessage type='info'>Object does not exist.</TypeFormMessage>
+      </Container>
     )
   }
 }
