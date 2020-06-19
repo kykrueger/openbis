@@ -13,6 +13,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.*;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearchObjectSortOptions.*;
@@ -61,8 +62,8 @@ public class GlobalSearchManager implements IGlobalSearchManager
 
         // If we have results, we use them
         // If we don't have results and criteria are not empty, there are no results.
-        final Set<Map<String, Object>> resultBeforeFiltering =
-                containsValues(mainCriteriaIntermediateResults) ? mainCriteriaIntermediateResults : Collections.emptySet();
+        final Set<Map<String, Object>> resultBeforeFiltering = containsValues(mainCriteriaIntermediateResults)
+                ? mainCriteriaIntermediateResults : Collections.emptySet();
 
         return filterResultsByUserRights(authorisationInformation, resultBeforeFiltering, tableMapper);
     }
@@ -202,7 +203,37 @@ public class GlobalSearchManager implements IGlobalSearchManager
 
             matchingEntity.setMatches(matches);
             return matchingEntity;
-        }).collect(Collectors.toList());
+        }).collect(Collectors.toMap(MatchingEntity::getId, Function.identity(),
+            (existingMatchingEntity, newMatchingEntity) ->
+            {
+                existingMatchingEntity.setScore(existingMatchingEntity.getScore() + newMatchingEntity.getScore());
+                if (withMatches)
+                {
+                    final Collection<PropertyMatch> existingMatches = existingMatchingEntity.getMatches();
+                    final Collection<PropertyMatch> newMatches = newMatchingEntity.getMatches();
+                    final Collection<PropertyMatch> mergedMatches = mergeMatches(existingMatches, newMatches);
+                    existingMatchingEntity.setMatches(new ArrayList<>(mergedMatches));
+                }
+                return existingMatchingEntity;
+            },
+            LinkedHashMap::new
+        )).values();
+    }
+
+    private Collection<PropertyMatch> mergeMatches(final Collection<PropertyMatch> existingMatches,
+            final Collection<PropertyMatch> newMatches)
+    {
+        final List<PropertyMatch> combinedMatches = new ArrayList<>(existingMatches);
+        combinedMatches.addAll(newMatches);
+        return combinedMatches.stream().collect(Collectors.toMap(
+                (propertyMatch) -> Arrays.asList(propertyMatch.getCode(), propertyMatch.getValue()),
+                Function.identity(),
+                (existingPropertyMatch, newPropertyMatch) -> {
+                    existingPropertyMatch.getSpans().addAll(newPropertyMatch.getSpans());
+                    return existingPropertyMatch;
+                },
+                HashMap::new
+                )).values();
     }
 
     private void mapAttributeMatches(final Map<String, Object> fieldsMap, final EntityKind entityKind, final List<PropertyMatch> matches)

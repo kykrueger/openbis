@@ -97,7 +97,7 @@ public class GlobalSearchTest extends AbstractTest
         fo.withMatch();
         final SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
 
-        assertSimpleOrStuff(result, 7);
+        assertSimpleOrStuff(result);
     }
 
     @Test
@@ -111,7 +111,7 @@ public class GlobalSearchTest extends AbstractTest
         fo.withMatch();
         final SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
 
-        assertSimpleOrStuff(result, 8);
+        assertSimpleOrStuff(result);
     }
 
     @Test
@@ -125,7 +125,7 @@ public class GlobalSearchTest extends AbstractTest
         fo.withMatch();
         final SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
 
-        assertSimpleOrStuff(result, 7);
+        assertSimpleOrStuff(result);
     }
 
     @Test
@@ -165,7 +165,7 @@ public class GlobalSearchTest extends AbstractTest
         fo.withMatch();
         final SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
 
-        assertSimpleOrStuff(result, 8);
+        assertSimpleOrStuff(result);
     }
 
     @Test
@@ -975,10 +975,10 @@ public class GlobalSearchTest extends AbstractTest
         assertSample(iter.next(), "200902091250077-1026", "/CISD/CP-TEST-2", "Property 'Comment': extremely simple stuff");
     }
 
-    private void assertSimpleOrStuff(final SearchResult<GlobalSearchObject> result, final int expectedResultsCount)
+    private void assertSimpleOrStuff(final SearchResult<GlobalSearchObject> result)
     {
         final List<GlobalSearchObject> objects = result.getObjects();
-        assertEquals(objects.size(), expectedResultsCount);
+        assertEquals(objects.size(), 7);
 
         // Even though we have 8 results, one of them has two matches. Therefore, we need just 7 search objects.
         final GlobalSearchObject[] searchObjects = new GlobalSearchObject[] {
