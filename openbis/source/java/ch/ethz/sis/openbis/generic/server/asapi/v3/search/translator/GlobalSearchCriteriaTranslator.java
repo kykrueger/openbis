@@ -282,13 +282,13 @@ public class GlobalSearchCriteriaTranslator
 
             buildHeadlineTsRank(sqlBuilder, stringValue, args, PROPERTIES_TABLE_ALIAS + PERIOD + VALUE_COLUMN,
                     VALUE_MATCH_RANK_ALIAS);
-            sqlBuilder.append(COMMA).append(SP);
+            sqlBuilder.append(COMMA).append(NL);
             buildHeadlineTsRank(sqlBuilder, stringValue, args, CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS + PERIOD + CODE_COLUMN,
                     VALUE_MATCH_RANK_ALIAS);
-            sqlBuilder.append(COMMA).append(SP);
+            sqlBuilder.append(COMMA).append(NL);
             buildHeadlineTsRank(sqlBuilder, stringValue, args,
                     CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS + PERIOD + LABEL_COLUMN, VALUE_MATCH_RANK_ALIAS);
-            sqlBuilder.append(COMMA).append(SP);
+            sqlBuilder.append(COMMA).append(NL);
             buildHeadlineTsRank(sqlBuilder, stringValue, args,
                     CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS + PERIOD + DESCRIPTION_COLUMN, VALUE_MATCH_RANK_ALIAS);
         }

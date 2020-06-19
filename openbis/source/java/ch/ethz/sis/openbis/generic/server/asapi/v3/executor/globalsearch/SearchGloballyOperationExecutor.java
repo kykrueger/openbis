@@ -126,9 +126,11 @@ public class SearchGloballyOperationExecutor
             allResultMaps.addAll(materialResultMaps);
         }
 
-        final List<Map<String, Object>> sortedAndPagedResultMaps = sortAndPage(allResultMaps, fetchOptions);
-        final Collection<MatchingEntity> pagedMatchingEntities = globalSearchManager.map(sortedAndPagedResultMaps,
+        final List<Map<String, Object>> sortedResultMaps = sort(allResultMaps, fetchOptions.getSortBy());
+
+        final Collection<MatchingEntity> matchingEntities = globalSearchManager.map(sortedResultMaps,
                 fetchOptions.hasMatch());
+        final List<MatchingEntity> pagedMatchingEntities = page(new ArrayList<>(matchingEntities), fetchOptions);
         // TODO: doTranslate() should only filter nested objects of the results (parents, children, components...).
         final Map<MatchingEntity, GlobalSearchObject> pagedResultV3DTOs = doTranslate(translationContext, pagedMatchingEntities, fetchOptions);
 
@@ -177,17 +179,20 @@ public class SearchGloballyOperationExecutor
         return objectKinds.isEmpty() ? EnumSet.allOf(GlobalSearchObjectKind.class) : objectKinds;
     }
 
-    protected List<Map<String, Object>> sortAndPage(final Set<Map<String, Object>> results, final FetchOptions<GlobalSearchObject> fo)
+    protected List<Map<String, Object>> sort(final Set<Map<String, Object>> results,
+            final SortOptions<GlobalSearchObject> sortOptions)
     {
-        final SortOptions<GlobalSearchObject> sortOptions = fo.getSortBy();
-        final List<Map<String, Object>> orderedIDs = (sortOptions != null)
+        return (sortOptions != null)
                 ? globalSearchManager.sortRecords(results, sortOptions)
                 : new ArrayList<>(results);
+    }
 
+    protected List<MatchingEntity> page(final List<MatchingEntity> results, final FetchOptions<GlobalSearchObject> fo)
+    {
         final Integer fromRecord = fo.getFrom();
         final Integer recordsCount = fo.getCount();
         final boolean hasPaging = fromRecord != null && recordsCount != null;
-        return hasPaging ? orderedIDs.subList(fromRecord, Math.min(fromRecord + recordsCount, orderedIDs.size())) : orderedIDs;
+        return hasPaging ? results.subList(fromRecord, Math.min(fromRecord + recordsCount, results.size())) : results;
     }
 
     @Override
