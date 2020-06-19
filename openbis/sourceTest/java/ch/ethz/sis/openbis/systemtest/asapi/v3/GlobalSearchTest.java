@@ -910,12 +910,28 @@ public class GlobalSearchTest extends AbstractTest
         fo.withMatch();
 
         final List<GlobalSearchObject> results = search(TEST_USER, c, fo).getObjects();
-//        assertEquals(results.size(), 5);
+        assertEquals(results.size(), 5);
 
-        assertEquals(results.get(0).getObjectKind(), GlobalSearchObjectKind.EXPERIMENT);
-        assertTrue(results.get(0).getMatch().contains("Property 'Description': A simple experiment"));
-        assertTrue(results.get(0).getMatch().contains("Property 'Gender': MALE"));
-        assertTrue(results.get(0).getScore() > 0);
+        assertTrue(results.get(0).getScore() > results.get(4).getScore());
+
+        for (int i = 0; i < 3; i++)
+        {
+            final GlobalSearchObject globalSearchObject = results.get(i);
+            assertEquals(globalSearchObject.getObjectKind(), GlobalSearchObjectKind.EXPERIMENT);
+            assertTrue(globalSearchObject.getMatch().contains("Property 'Description': A simple experiment"));
+            assertTrue(globalSearchObject.getMatch().contains("Property 'Gender': MALE"));
+            assertTrue(globalSearchObject.getScore() > 0);
+        }
+
+        for (int i = 3; i < 5; i++)
+        {
+            final GlobalSearchObject globalSearchObject = results.get(i);
+            assertTrue(globalSearchObject.getObjectKind() == GlobalSearchObjectKind.EXPERIMENT ||
+                    globalSearchObject.getObjectKind() == GlobalSearchObjectKind.SAMPLE);
+            assertTrue(globalSearchObject.getMatch().contains("Property 'Description': A simple experiment") ||
+                    globalSearchObject.getMatch().contains("Property 'Comment': extremely simple stuff"));
+            assertTrue(globalSearchObject.getScore() > 0);
+        }
     }
 
     private SearchResult<GlobalSearchObject> search(String user, GlobalSearchCriteria criteria, GlobalSearchObjectFetchOptions fetchOptions)
