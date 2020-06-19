@@ -68,20 +68,19 @@ public class GlobalSearchManager implements IGlobalSearchManager
         return filterResultsByUserRights(authorisationInformation, resultBeforeFiltering, tableMapper);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
-    public List<Map<String, Object>> sortRecords(final Set<Map<String, Object>> records,
+    public List<MatchingEntity> sortRecords(final Collection<MatchingEntity> records,
             final SortOptions<GlobalSearchObject> sortOptions)
     {
-        final ArrayList<Map<String, Object>> result = new ArrayList<>(records);
+        final ArrayList<MatchingEntity> result = new ArrayList<>(records);
         final List<Sorting> sortingList = sortOptions.getSortings();
         result.sort((o1, o2) ->
         {
             for (final Sorting sorting : sortingList)
             {
-                final String resultKey = SORTING_NAME_TO_RESULT_KEY_MAP.get(sorting.getField());
-                final Comparable<Object> v1 = (Comparable<Object>) o1.get(resultKey);
-                final Object v2 = o2.get(resultKey);
+                final Comparable<Comparable> v1 = getPropertyByKey(o1, sorting.getField());
+                final Comparable<Comparable> v2 = getPropertyByKey(o2, sorting.getField());
 
                 if (v1 != null && v2 != null && !v1.equals(v2))
                 {
@@ -97,6 +96,39 @@ public class GlobalSearchManager implements IGlobalSearchManager
             return 0;
         });
         return result;
+    }
+
+    @SuppressWarnings({"unchecked", "UnnecessaryBoxing"})
+    private <T extends Comparable<T>> Comparable<T> getPropertyByKey(final MatchingEntity matchingEntity,
+            final String field)
+    {
+        switch (field)
+        {
+            case SCORE:
+            {
+                return (Comparable<T>) Double.valueOf(matchingEntity.getScore());
+            }
+
+            case OBJECT_KIND:
+            {
+                return (Comparable<T>) matchingEntity.getEntityKind();
+            }
+
+            case OBJECT_PERM_ID:
+            {
+                return (Comparable<T>) matchingEntity.getPermId();
+            }
+
+            case OBJECT_IDENTIFIER:
+            {
+                return (Comparable<T>) matchingEntity.getIdentifier();
+            }
+
+            default:
+            {
+                throw new IllegalArgumentException(String.format("Unknown field %s", field));
+            }
+        }
     }
 
     private static int sortOrderToInt(final SortOrder sortOrder)
