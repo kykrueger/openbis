@@ -235,23 +235,41 @@ public class GlobalSearchManager implements IGlobalSearchManager
 
     private void mapPropertyMatches(final Map<String, Object> fieldsMap, final List<PropertyMatch> matches)
     {
-        final String codeMatchString = (String) fieldsMap.get(PROPERTY_VALUE_ALIAS);
-        if (codeMatchString != null)
+        final String propertyValueMatch = (String) fieldsMap.get(PROPERTY_VALUE_ALIAS);
+        if (propertyValueMatch != null)
         {
-            final PropertyMatch propertyMatch = new PropertyMatch();
-            propertyMatch.setCode(PROPERTY_NAME + " '" + fieldsMap.get(PROPERTY_TYPE_LABEL_ALIAS) + "'");
-            propertyMatch.setValue(codeMatchString);
-
-            final String headline = coalesceMap(fieldsMap, VALUE_HEADLINE_ALIAS, LABEL_HEADLINE_ALIAS,
-                    CODE_HEADLINE_ALIAS, DESCRIPTION_HEADLINE_ALIAS);
-
-            if (headline != null)
-            {
-                computeSpans(propertyMatch, headline);
-            }
-
-            matches.add(propertyMatch);
+            addPropertyMatch(propertyValueMatch, fieldsMap, matches);
         }
+
+        final String cvLabelMatch = (String) fieldsMap.get(CV_LABEL_ALIAS);
+        if (cvLabelMatch != null)
+        {
+            addPropertyMatch(cvLabelMatch, fieldsMap, matches);
+        }
+
+        final String cvCodeMatch = (String) fieldsMap.get(CV_CODE_ALIAS);
+        if (cvCodeMatch != null)
+        {
+            addPropertyMatch(cvCodeMatch, fieldsMap, matches);
+        }
+    }
+
+    private void addPropertyMatch(final String codeMatchString, final Map<String, Object> fieldsMap,
+            final List<PropertyMatch> matches)
+    {
+        final PropertyMatch propertyMatch = new PropertyMatch();
+        propertyMatch.setCode(PROPERTY_NAME + " '" + fieldsMap.get(PROPERTY_TYPE_LABEL_ALIAS) + "'");
+        propertyMatch.setValue(codeMatchString);
+
+        final String headline = coalesceMap(fieldsMap, VALUE_HEADLINE_ALIAS, LABEL_HEADLINE_ALIAS,
+                CODE_HEADLINE_ALIAS, DESCRIPTION_HEADLINE_ALIAS);
+
+        if (headline != null)
+        {
+            computeSpans(propertyMatch, headline);
+        }
+
+        matches.add(propertyMatch);
     }
 
     /**
