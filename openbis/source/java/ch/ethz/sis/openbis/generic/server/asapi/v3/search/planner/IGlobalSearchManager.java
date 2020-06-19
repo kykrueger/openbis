@@ -47,7 +47,7 @@ public interface IGlobalSearchManager extends ISearchManager
     Set<Map<String, Object>> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation,
             final GlobalSearchCriteria criteria, final String idsColumnName, final TableMapper tableMapper, final GlobalSearchObjectFetchOptions fetchOptions);
 
-    List<Map<String, Object>> sortRecords(Set<Map<String, Object>> records,
+    List<MatchingEntity> sortRecords(Collection<MatchingEntity> records,
             SortOptions<GlobalSearchObject> sortOptions);
 
     Collection<MatchingEntity> map(final Collection<Map<String, Object>> ids, boolean withMatches);
