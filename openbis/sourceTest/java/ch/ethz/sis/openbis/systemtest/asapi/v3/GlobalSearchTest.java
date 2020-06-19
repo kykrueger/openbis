@@ -442,7 +442,7 @@ public class GlobalSearchTest extends AbstractTest
     }
 
     @Test
-    public void testSearchWithPaging()
+    public void testSearchWithPagingSameProperty()
     {
         final GlobalSearchCriteria criteria = new GlobalSearchCriteria();
         criteria.withText().thatContains("simple stuff");
@@ -460,6 +460,32 @@ public class GlobalSearchTest extends AbstractTest
 
         assertExperiment(objects.get(0), "201108050937246-1031", "/CISD/DEFAULT/EXP-Y", "Property 'Description': A simple experiment");
         assertExperiment(objects.get(1), "200811050951882-1028", "/CISD/NEMO/EXP1", "Property 'Description': A simple experiment");
+    }
+
+    @Test
+    public void testSearchWithPagingDifferentProperties()
+    {
+        final GlobalSearchCriteria criteria = new GlobalSearchCriteria();
+        criteria.withText().thatContains("simple male");
+
+        final GlobalSearchObjectFetchOptions fo1 = new GlobalSearchObjectFetchOptions();
+        fo1.from(1).count(2);
+        fo1.withExperiment();
+        fo1.withMatch();
+
+        final SearchResult<GlobalSearchObject> searchResult = search(TEST_USER, criteria, fo1);
+        final List<GlobalSearchObject> results = searchResult.getObjects();
+        assertEquals(searchResult.getTotalCount(), 5);
+        assertEquals(results.size(), 2);
+
+        for (int i = 0; i < 2; i++)
+        {
+            final GlobalSearchObject globalSearchObject = results.get(i);
+            assertEquals(globalSearchObject.getObjectKind(), GlobalSearchObjectKind.EXPERIMENT);
+            assertTrue(globalSearchObject.getMatch().contains("Property 'Description': A simple experiment"));
+            assertTrue(globalSearchObject.getMatch().contains("Property 'Gender': MALE"));
+            assertTrue(globalSearchObject.getScore() > 0);
+        }
     }
 
     @Test

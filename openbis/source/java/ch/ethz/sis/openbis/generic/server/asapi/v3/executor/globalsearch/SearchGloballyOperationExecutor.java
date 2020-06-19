@@ -143,7 +143,8 @@ public class SearchGloballyOperationExecutor
         // Sorting and paging parents and children in a "conventional" way.
         new SortAndPage().nest(objectResults, criteria, fetchOptions);
 
-        final SearchResult<GlobalSearchObject> searchResult = new SearchResult<>(objectResults, allResultMaps.size());
+        final SearchResult<GlobalSearchObject> searchResult =
+                new SearchResult<>(objectResults, matchingEntities.size());
         return getOperationResult(searchResult);
     }
 
