@@ -44,13 +44,13 @@ public class GlobalSearchCriteriaTranslator
 
     public static final String PROPERTY_TYPE_LABEL_ALIAS = "property_type_label";
 
-    private static final String CV_CODE_ALIAS = "cv_code";
+    public static final String CV_CODE_ALIAS = "cv_code";
 
-    private static final String CV_LABEL_ALIAS = "property_label";
+    public static final String CV_LABEL_ALIAS = "cv_label";
 
-    private static final String CV_DESCRIPTION_ALIAS = "cv_description";
+    public static final String CV_DESCRIPTION_ALIAS = "cv_description";
 
-    public static final String PROPERTY_VALUE_ALIAS = "cv_value";
+    public static final String PROPERTY_VALUE_ALIAS = "property_value";
 
     public static final String VALUE_HEADLINE_ALIAS = "value_headline";
 

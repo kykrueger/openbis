@@ -899,6 +899,25 @@ public class GlobalSearchTest extends AbstractTest
         });
     }
 
+    @Test
+    public void testRanking()
+    {
+        final GlobalSearchCriteria c = new GlobalSearchCriteria();
+        c.withText().thatContains("simple male");
+
+        final GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
+        fo.withExperiment();
+        fo.withMatch();
+
+        final List<GlobalSearchObject> results = search(TEST_USER, c, fo).getObjects();
+//        assertEquals(results.size(), 5);
+
+        assertEquals(results.get(0).getObjectKind(), GlobalSearchObjectKind.EXPERIMENT);
+        assertTrue(results.get(0).getMatch().contains("Property 'Description': A simple experiment"));
+        assertTrue(results.get(0).getMatch().contains("Property 'Gender': MALE"));
+        assertTrue(results.get(0).getScore() > 0);
+    }
+
     private SearchResult<GlobalSearchObject> search(String user, GlobalSearchCriteria criteria, GlobalSearchObjectFetchOptions fetchOptions)
     {
         String sessionToken = v3api.login(user, PASSWORD);
