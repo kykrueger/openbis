@@ -1,6 +1,8 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.*;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractStringValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringContainsExactlyValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchObjectKindCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchTextCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchWildCardsCriteria;
@@ -20,6 +22,7 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Sear
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils.buildFullIdentifierConcatenationString;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils.buildTypeCodeIdentifierConcatenationString;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.*;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.DATA_TYPES_TABLE;
 
 public class GlobalSearchCriteriaTranslator
 {
@@ -86,6 +89,8 @@ public class GlobalSearchCriteriaTranslator
     private static final String ENTITY_TYPES_ATTRIBUTE_TYPES_TABLE_ALIAS = "etpt";
 
     private static final String ATTRIBUTE_TYPES_TABLE_ALIAS = "prty";
+
+    private static final String DATA_TYPES_TABLE_ALIAS = "daty";
 
     private static final String TS_HEADLINE_OPTIONS = "HighlightAll=TRUE, StartSel=" + START_SEL
             +", StopSel=" + STOP_SEL;
@@ -247,15 +252,7 @@ public class GlobalSearchCriteriaTranslator
             sqlBuilder.append(0.0f).append(DOUBLE_COLON).append(FLOAT_4).append(SP).append(DESCRIPTION_MATCH_RANK_ALIAS);
         } else
         {
-            sqlBuilder.append(CASE).append(SP).append(WHEN).append(SP)
-                    .append(CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(SP)
-                    .append(EQ).append(SP).append(QU);
-            args.add(stringValue.getValue());
-            sqlBuilder.append(SP).append(THEN).append(SP).append(ID_PROPERTY_RANK).append(DOUBLE_COLON)
-                    .append(FLOAT_4).append(SP);
-            sqlBuilder.append(ELSE).append(SP);
-            buildTsRank(sqlBuilder, stringValue, args);
-            sqlBuilder.append(SP).append(END).append(SP).append(RANK_ALIAS).append(COMMA).append(NL);
+            buildPropertyMatchRank(sqlBuilder, stringValue, args);
 
             sqlBuilder.append(NULL).append(SP).append(CODE_MATCH_ALIAS).append(COMMA).append(NL);
             switch (tableMapper)
@@ -317,6 +314,32 @@ public class GlobalSearchCriteriaTranslator
         }
 
         sqlBuilder.append(NL);
+    }
+
+    /**
+     * Builds the rank calculation part of the property matching query part.
+     * @param sqlBuilder {@link StringBuilder string builder} containing SQL to be operated on.
+     * @param stringValue string value to search by.
+     * @param args query arguments.
+     */
+    private static void buildPropertyMatchRank(final StringBuilder sqlBuilder, final AbstractStringValue stringValue,
+            final List<Object> args)
+    {
+        sqlBuilder.append(CASE).append(SP).append(WHEN).append(SP)
+                .append(CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(SP)
+                .append(EQ).append(SP).append(QU)
+                .append(SP).append(OR).append(SP)
+                .append(DATA_TYPES_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(SP).append(IN).append(SP)
+                .append(LP)
+                        .append(SELECT).append(SP).append(UNNEST).append(LP).append(QU).append(RP)
+                .append(RP);
+        args.add(stringValue.getValue());
+        args.add(new String[] { MATERIAL.name(), SAMPLE.name() });
+        sqlBuilder.append(SP).append(THEN).append(SP).append(ID_PROPERTY_RANK).append(DOUBLE_COLON)
+                .append(FLOAT_4).append(SP);
+        sqlBuilder.append(ELSE).append(SP);
+        buildTsRank(sqlBuilder, stringValue, args);
+        sqlBuilder.append(SP).append(END).append(SP).append(RANK_ALIAS).append(COMMA).append(NL);
     }
 
     private static void buildHeadlineTsRank(final StringBuilder sqlBuilder, final AbstractStringValue stringValue, final List<Object> args,
@@ -458,6 +481,10 @@ public class GlobalSearchCriteriaTranslator
                     .append(ENTITY_TYPES_ATTRIBUTE_TYPES_TABLE_ALIAS).append(PERIOD)
                     .append(tableMapper.getEntityTypesAttributeTypesTableAttributeTypeIdField()).append(SP).append(EQ).append(SP)
                     .append(ATTRIBUTE_TYPES_TABLE_ALIAS).append(PERIOD).append(ID_COLUMN).append(NL);
+            sqlBuilder.append(INNER_JOIN).append(SP).append(DATA_TYPES_TABLE).append(SP).append(DATA_TYPES_TABLE_ALIAS)
+                    .append(SP).append(ON).append(SP).append(ATTRIBUTE_TYPES_TABLE_ALIAS).append(PERIOD)
+                    .append(DATA_TYPE_COLUMN).append(SP).append(EQ).append(SP)
+                    .append(DATA_TYPES_TABLE_ALIAS).append(PERIOD).append(ID_COLUMN).append(NL);
 
             sqlBuilder.append(LEFT_JOIN).append(SP).append(TableNames.CONTROLLED_VOCABULARY_TERM_TABLE).append(SP)
                     .append(CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS).append(SP).append(ON).append(SP).append(PROPERTIES_TABLE_ALIAS).append(PERIOD)
