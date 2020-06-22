@@ -26,13 +26,13 @@ dependencies {
 			'javax:servlet-api:3.1.0',
 			'google:gwt-user:2.4',
 			'reveregroup:gwt-image-loader:1.1.4',
-			'springframework:spring-orm:5.0.1.RELEASE',
+			'springframework:spring-orm:5.0.17.RELEASE',
 			'cisd:cisd-hotdeploy:13.01.0',
 			'apache:poi-ooxml:3.17',
 			'hibernate:hibernate-validator:4.3.2.Final',
 			'unimi:fastutil:5.1.5',
 			'apache:commons-collections4:4.1',
-			'springframework:spring-context-support:5.0.1.RELEASE',
+			'springframework:spring-context-support:5.0.17.RELEASE',
 			'ehcache:ehcache:2.10.0',
 			'jline:jline:0.9.94',
 			'javax.annotation:javax.annotation-api:1.3.2',
@@ -48,7 +48,7 @@ dependencies {
 	testCompile project(path: ':common', configuration: 'tests'),
 			project(path: ':dbmigration', configuration: 'tests'),
 			project(path: ':openbis_api', configuration: 'tests'),
-			'springframework:spring-test:5.0.1.RELEASE'
+			'springframework:spring-test:5.0.17.RELEASE'
 
 	testRuntime project(path: ':common', configuration: 'tests'),
 			project(path: ':dbmigration', configuration: 'tests'),
