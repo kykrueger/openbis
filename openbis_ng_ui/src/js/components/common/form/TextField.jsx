@@ -6,6 +6,7 @@ import logger from '@src/js/common/logger.js'
 
 import FormFieldContainer from './FormFieldContainer.jsx'
 import FormFieldLabel from './FormFieldLabel.jsx'
+import FormFieldView from './FormFieldView.jsx'
 
 const styles = theme => ({
   startAdornment: {
@@ -26,6 +27,23 @@ class TextFormField extends React.PureComponent {
   render() {
     logger.log(logger.DEBUG, 'TextFormField.render')
 
+    const { mode = 'edit' } = this.props
+
+    if (mode === 'view') {
+      return this.renderView()
+    } else if (mode === 'edit') {
+      return this.renderEdit()
+    } else {
+      throw 'Unsupported mode: ' + mode
+    }
+  }
+
+  renderView() {
+    const { label, value } = this.props
+    return <FormFieldView label={label} value={value} />
+  }
+
+  renderEdit() {
     const {
       reference,
       id,

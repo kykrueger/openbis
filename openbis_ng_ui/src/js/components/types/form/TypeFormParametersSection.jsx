@@ -38,7 +38,7 @@ class TypeFormParametersSection extends React.PureComponent {
 
   focus() {
     const section = this.getSection(this.props)
-    if (section) {
+    if (section && this.reference && this.reference.current) {
       this.reference.current.focus()
     }
   }
@@ -87,7 +87,7 @@ class TypeFormParametersSection extends React.PureComponent {
       return null
     }
 
-    const { classes } = this.props
+    const { mode, classes } = this.props
     return (
       <div className={classes.field}>
         <TextField
@@ -97,6 +97,7 @@ class TypeFormParametersSection extends React.PureComponent {
           error={error}
           disabled={!enabled}
           value={value}
+          mode={mode}
           onChange={this.handleChange}
           onBlur={this.handleBlur}
         />

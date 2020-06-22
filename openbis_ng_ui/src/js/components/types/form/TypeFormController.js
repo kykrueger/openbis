@@ -1,6 +1,8 @@
 import autoBind from 'auto-bind'
 import TypeFormControllerLoad from './TypeFormControllerLoad.js'
 import TypeFormControllerValidate from './TypeFormControllerValidate.js'
+import TypeFormControllerEdit from './TypeFormControllerEdit.js'
+import TypeFormControllerCancel from './TypeFormControllerCancel.js'
 import TypeFormControllerSave from './TypeFormControllerSave.js'
 import TypeFormControllerRemove from './TypeFormControllerRemove.js'
 import TypeFormControllerAddSection from './TypeFormControllerAddSection.js'
@@ -62,6 +64,14 @@ export default class TypeFormController {
 
   handleRemoveCancel() {
     new TypeFormControllerRemove(this).executeCancel()
+  }
+
+  handleEdit() {
+    return new TypeFormControllerEdit(this).execute()
+  }
+
+  handleCancel() {
+    return new TypeFormControllerCancel(this).execute()
   }
 
   handleSave() {

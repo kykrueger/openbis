@@ -11,6 +11,7 @@ export default class TypeFormControllerLoad {
 
   async execute() {
     await this.context.setState({
+      mode: 'view',
       loading: true,
       validate: false
     })

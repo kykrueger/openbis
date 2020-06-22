@@ -104,7 +104,7 @@ class TypeFormPreview extends React.PureComponent {
   }
 
   renderSection(section, index) {
-    const { properties, selection, onSelectionChange } = this.props
+    const { mode, properties, selection, onSelectionChange } = this.props
 
     const sectionProperties = section.properties.map(id =>
       _.find(properties, ['id', id])
@@ -116,6 +116,7 @@ class TypeFormPreview extends React.PureComponent {
         section={section}
         index={index}
         selection={selection}
+        mode={mode}
         onSelectionChange={onSelectionChange}
       >
         {this.renderProperties(sectionProperties, 0)}
@@ -124,7 +125,7 @@ class TypeFormPreview extends React.PureComponent {
   }
 
   renderProperties(properties, index) {
-    const { controller, selection, onSelectionChange } = this.props
+    const { mode, controller, selection, onSelectionChange } = this.props
 
     return properties.map((property, offset) => {
       return (
@@ -134,6 +135,7 @@ class TypeFormPreview extends React.PureComponent {
           property={property}
           index={index + offset}
           selection={selection}
+          mode={mode}
           onSelectionChange={onSelectionChange}
         />
       )

@@ -15,6 +15,7 @@ const EMPTY = 'empty'
 const styles = theme => ({
   draggable: {
     width: '100%',
+    cursor: 'pointer',
     padding: theme.spacing(1),
     boxSizing: 'border-box',
     borderWidth: '2px',
@@ -170,7 +171,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
   render() {
     logger.log(logger.DEBUG, 'TypeFormPreviewProperty.render')
 
-    let { property, selection, index, classes } = this.props
+    let { mode, property, selection, index, classes } = this.props
 
     const selected =
       selection &&
@@ -178,7 +179,11 @@ class TypeFormPreviewProperty extends React.PureComponent {
       selection.params.id === property.id
 
     return (
-      <Draggable draggableId={property.id} index={index}>
+      <Draggable
+        draggableId={property.id}
+        index={index}
+        isDragDisabled={mode !== 'edit'}
+      >
         {provided => (
           <div
             ref={provided.innerRef}

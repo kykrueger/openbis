@@ -9,6 +9,7 @@ import util from '@src/js/common/util.js'
 const styles = theme => ({
   draggable: {
     width: '100%',
+    cursor: 'pointer',
     marginBottom: theme.spacing(1),
     '&:hover $droppable': {
       borderColor: theme.palette.background.secondary
@@ -53,7 +54,7 @@ class TypeFormPreviewSection extends React.PureComponent {
   render() {
     logger.log(logger.DEBUG, 'TypeFormPreviewSection.render')
 
-    let { section, index, children, selection, classes } = this.props
+    let { mode, section, index, children, selection, classes } = this.props
     let { id, name } = section
 
     const selected =
@@ -62,7 +63,11 @@ class TypeFormPreviewSection extends React.PureComponent {
       selection.params.id === section.id
 
     return (
-      <Draggable draggableId={id} index={index}>
+      <Draggable
+        draggableId={id}
+        index={index}
+        isDragDisabled={mode !== 'edit'}
+      >
         {provided => (
           <div
             ref={provided.innerRef}

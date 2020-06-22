@@ -26,12 +26,40 @@ class TypeFormButtons extends React.PureComponent {
   render() {
     logger.log(logger.DEBUG, 'TypeFormButtons.render')
 
+    const { mode } = this.props
+
+    if (mode === 'view') {
+      return this.renderView()
+    } else if (mode === 'edit') {
+      return this.renderEdit()
+    } else {
+      throw 'Unsupported mode: ' + mode
+    }
+  }
+
+  renderView() {
+    const { classes, onEdit } = this.props
+
+    return (
+      <Container className={classes.container}>
+        <Button
+          name='edit'
+          label='Edit'
+          styles={{ root: classes.button }}
+          onClick={onEdit}
+        />
+      </Container>
+    )
+  }
+
+  renderEdit() {
     const {
       classes,
       onAddSection,
       onAddProperty,
       onRemove,
-      onSave
+      onSave,
+      onCancel
     } = this.props
 
     return (
@@ -62,6 +90,12 @@ class TypeFormButtons extends React.PureComponent {
           type='final'
           styles={{ root: classes.button }}
           onClick={onSave}
+        />
+        <Button
+          name='cancel'
+          label='Cancel'
+          styles={{ root: classes.button }}
+          onClick={onCancel}
         />
       </Container>
     )
