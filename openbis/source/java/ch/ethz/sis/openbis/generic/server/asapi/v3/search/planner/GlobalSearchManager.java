@@ -33,16 +33,6 @@ public class GlobalSearchManager implements IGlobalSearchManager
 
     private static final String PROPERTY_NAME = "Property";
 
-    private static final Map<String, String> SORTING_NAME_TO_RESULT_KEY_MAP = new HashMap<>();
-
-    static
-    {
-        SORTING_NAME_TO_RESULT_KEY_MAP.put(SCORE, RANK_ALIAS);
-        SORTING_NAME_TO_RESULT_KEY_MAP.put(OBJECT_KIND, OBJECT_KIND_ALIAS);
-        SORTING_NAME_TO_RESULT_KEY_MAP.put(OBJECT_PERM_ID, PERM_ID_COLUMN);
-        SORTING_NAME_TO_RESULT_KEY_MAP.put(OBJECT_IDENTIFIER, IDENTIFIER_ALIAS);
-    }
-
     protected final ISQLAuthorisationInformationProviderDAO authProvider;
 
     private final ISQLSearchDAO searchDAO;
