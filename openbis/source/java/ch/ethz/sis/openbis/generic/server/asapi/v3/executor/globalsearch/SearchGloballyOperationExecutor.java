@@ -18,11 +18,14 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.globalsearch;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOrder;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.Sorting;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchObjectsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchObjectsOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.GlobalSearchObject;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearchObjectFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearchObjectSortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.*;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.ISearchObjectExecutor;
@@ -44,6 +47,8 @@ import org.springframework.stereotype.Component;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearchObjectSortOptions.SCORE;
 
 /**
  * @author pkupczyk
@@ -181,10 +186,20 @@ public class SearchGloballyOperationExecutor
 
     protected List<MatchingEntity> sortAndPage(final Collection<MatchingEntity> results, final FetchOptions<GlobalSearchObject> fo)
     {
-        final SortOptions<GlobalSearchObject> sortOptions = fo.getSortBy();
-        final List<MatchingEntity> sortedResults = (sortOptions != null)
-                ? globalSearchManager.sortRecords(results, sortOptions)
-                : new ArrayList<>(results);
+        final SortOptions<GlobalSearchObject> sortOptions;
+        if (fo.getSortBy() != null)
+        {
+            sortOptions = fo.getSortBy();
+        } else
+        {
+            final GlobalSearchObjectSortOptions defaultSortOptions = new GlobalSearchObjectSortOptions();
+            final SortOrder sortOrder = new SortOrder();
+            sortOrder.desc();
+            defaultSortOptions.getSortings().add(new Sorting(SCORE, sortOrder));
+            sortOptions = defaultSortOptions;
+        }
+
+        final List<MatchingEntity> sortedResults = globalSearchManager.sortRecords(results, sortOptions);
 
         final Integer fromRecord = fo.getFrom();
         final Integer recordsCount = fo.getCount();
