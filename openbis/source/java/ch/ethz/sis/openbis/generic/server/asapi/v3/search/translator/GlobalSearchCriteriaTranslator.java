@@ -532,7 +532,7 @@ public class GlobalSearchCriteriaTranslator
     private static String toTsQueryText(final AbstractStringValue stringValue)
     {
         return (StringContainsExactlyValue.class.isAssignableFrom(stringValue.getClass()))
-                ? '\'' + stringValue.getValue() + '\''
+                ? '\'' + stringValue.getValue().replaceAll("'", "''") + '\''
                 : stringValue.getValue().replaceAll("['&|:!()<>]", " ").trim().replaceAll("\\s+", " | ");
     }
 
