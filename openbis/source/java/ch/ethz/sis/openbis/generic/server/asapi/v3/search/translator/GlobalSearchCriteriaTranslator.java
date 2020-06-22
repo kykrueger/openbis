@@ -238,10 +238,13 @@ public class GlobalSearchCriteriaTranslator
             sqlBuilder.append(NULL).append(SP).append(LABEL_HEADLINE_ALIAS).append(COMMA).append(NL);
             sqlBuilder.append(NULL).append(SP).append(DESCRIPTION_HEADLINE_ALIAS).append(COMMA).append(NL);
 
-            sqlBuilder.append(0).append(SP).append(VALUE_MATCH_RANK_ALIAS).append(COMMA).append(NL);
-            sqlBuilder.append(0).append(SP).append(CODE_MATCH_RANK_ALIAS).append(COMMA).append(NL);
-            sqlBuilder.append(0).append(SP).append(LABEL_MATCH_RANK_ALIAS).append(COMMA).append(NL);
-            sqlBuilder.append(0).append(SP).append(DESCRIPTION_MATCH_RANK_ALIAS);
+            sqlBuilder.append(0.0f).append(DOUBLE_COLON).append(FLOAT_4).append(SP).append(VALUE_MATCH_RANK_ALIAS)
+                    .append(COMMA).append(NL);
+            sqlBuilder.append(0.0f).append(DOUBLE_COLON).append(FLOAT_4).append(SP).append(CODE_MATCH_RANK_ALIAS)
+                    .append(COMMA).append(NL);
+            sqlBuilder.append(0.0f).append(DOUBLE_COLON).append(FLOAT_4).append(SP).append(LABEL_MATCH_RANK_ALIAS)
+                    .append(COMMA).append(NL);
+            sqlBuilder.append(0.0f).append(DOUBLE_COLON).append(FLOAT_4).append(SP).append(DESCRIPTION_MATCH_RANK_ALIAS);
         } else
         {
             sqlBuilder.append(CASE).append(SP).append(WHEN).append(SP)
@@ -323,7 +326,8 @@ public class GlobalSearchCriteriaTranslator
                 .append(TO_TSVECTOR).append(LP).append(SQ).append(REG_CONFIG).append(SQ).append(COMMA).append(SP)
                 .append(field).append(RP).append(COMMA).append(SP)
                 .append(TO_TSQUERY).append(LP).append(SQ).append(REG_CONFIG).append(SQ).append(COMMA).append(SP)
-                .append(QU).append(RP).append(RP).append(COMMA).append(SP).append(0).append(RP)
+                .append(QU).append(RP).append(RP).append(COMMA).append(SP)
+                .append(0.0f).append(DOUBLE_COLON).append(FLOAT_4).append(RP)
                 .append(SP).append(alias);
         args.add(toTsQueryText(stringValue));
     }
