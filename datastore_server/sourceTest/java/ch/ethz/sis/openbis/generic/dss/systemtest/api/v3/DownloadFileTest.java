@@ -32,6 +32,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.IDataSetId;
+import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.DataSetFile;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.download.DataSetFileDownload;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.download.DataSetFileDownloadOptions;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.download.DataSetFileDownloadReader;
@@ -361,7 +362,7 @@ public class DownloadFileTest extends AbstractFileTest
     }
 
     @Test
-    public void testDownloadWithFileLengths() throws Exception
+    public void testDownloadWithFileLengthsAndCRC32Checksum() throws Exception
     {
         IDataSetFileId file1 = new DataSetFilePermId(new DataSetPermId(dataSetCode), getPath("file1.txt"));
         IDataSetFileId file2 = new DataSetFilePermId(new DataSetPermId(dataSetCode), getPath("file2.txt"));
@@ -376,7 +377,9 @@ public class DownloadFileTest extends AbstractFileTest
         DataSetFileDownload download2 = reader.read();
 
         assertEquals(getContent(download1.getDataSetFile().getPath()).length(), download1.getDataSetFile().getFileLength());
+        assertEquals(1940359475, download1.getDataSetFile().getChecksumCRC32());
         assertEquals(getContent(download2.getDataSetFile().getPath()).length(), download2.getDataSetFile().getFileLength());
+        assertEquals(2140459533, download2.getDataSetFile().getChecksumCRC32());
     }
 
     @Test
@@ -408,7 +411,12 @@ public class DownloadFileTest extends AbstractFileTest
 
             while ((download = reader.read()) != null)
             {
-                contentMap.put(download.getDataSetFile().getPath(), IOUtils.toString(download.getInputStream()));
+                DataSetFile dataSetFile = download.getDataSetFile();
+                if (dataSetFile.isDirectory() == false)
+                {
+                    System.err.println(dataSetFile.getPath()+"; crc32:"+dataSetFile.getChecksumCRC32());
+                }
+                contentMap.put(dataSetFile.getPath(), IOUtils.toString(download.getInputStream()));
             }
 
             return contentMap;
