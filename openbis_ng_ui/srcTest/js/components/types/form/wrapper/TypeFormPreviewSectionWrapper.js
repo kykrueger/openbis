@@ -6,7 +6,7 @@ export default class TypeFormPreviewSectionWrapper {
   }
 
   getName() {
-    return this.wrapper.find('TypeFormHeader')
+    return this.wrapper.find('p[data-part="name"]')
   }
 
   getProperties() {

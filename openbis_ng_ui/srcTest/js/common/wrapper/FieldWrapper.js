@@ -1,24 +1,20 @@
-export default class FieldWrapper {
-  constructor(wrapper) {
-    this.wrapper = wrapper
-  }
+import BaseWrapper from './BaseWrapper.js'
 
+export default class FieldWrapper extends BaseWrapper {
   getLabel() {
     return this.wrapper.prop('label')
   }
 
   getValue() {
-    const value = this.wrapper.prop('value')
-    if (value === null || value === undefined || value === '') {
-      return null
-    } else {
-      return value
-    }
+    return this.getStringValue(this.wrapper.prop('value'))
   }
 
   getEnabled() {
-    const disabled = this.wrapper.prop('disabled')
-    return disabled === undefined || disabled === null || disabled === false
+    return this.getBooleanValue(this.wrapper.prop('disabled'))
+  }
+
+  getError() {
+    return this.getStringValue(this.wrapper.prop('error'))
   }
 
   toJSON() {
@@ -26,7 +22,8 @@ export default class FieldWrapper {
       return {
         label: this.getLabel(),
         value: this.getValue(),
-        enabled: this.getEnabled()
+        enabled: this.getEnabled(),
+        error: this.getError()
       }
     } else {
       return null

@@ -11,7 +11,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyType;
 
 public class AbstractSampleTest extends AbstractTest
 {
-
     protected static SampleCreation masterPlateCreation(String spaceCode, String code)
     {
         SampleCreation creation = new SampleCreation();
@@ -47,5 +46,4 @@ public class AbstractSampleTest extends AbstractTest
 
         commonServer.registerAndAssignPropertyType(sessionToken, propertyType, assignment);
     }
-
 }

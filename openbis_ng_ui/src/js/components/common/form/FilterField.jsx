@@ -12,10 +12,15 @@ const styles = () => ({
     width: '100%'
   },
   input: {
-    height: '35px'
+    height: '24px',
+    fontSize: '0.875rem'
   },
   adornment: {
-    margin: '8px'
+    margin: '8px',
+    marginLeft: '10px'
+  },
+  adornmentButton: {
+    padding: '4px'
   },
   adornmentSpacer: {
     width: '64px'
@@ -59,6 +64,7 @@ class FilterField extends React.Component {
             input: classes.input
           }
         }}
+        margin='none'
       />
     )
   }
@@ -72,7 +78,7 @@ class FilterField extends React.Component {
           root: classes.adornment
         }}
       >
-        <FilterIcon />
+        <FilterIcon fontSize='small' />
       </InputAdornment>
     )
   }
@@ -88,8 +94,11 @@ class FilterField extends React.Component {
             root: classes.adornment
           }}
         >
-          <IconButton onMouseDown={this.handleFilterClear}>
-            <CloseIcon />
+          <IconButton
+            onMouseDown={this.handleFilterClear}
+            classes={{ root: classes.adornmentButton }}
+          >
+            <CloseIcon fontSize='small' />
           </IconButton>
         </InputAdornment>
       )

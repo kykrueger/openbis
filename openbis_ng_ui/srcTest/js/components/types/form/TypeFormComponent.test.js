@@ -32,766 +32,836 @@ beforeEach(() => {
   facade.loadGlobalPropertyTypes.mockReturnValue(Promise.resolve([]))
 })
 
-describe('TypeForm', () => {
-  test('load new', async () => {
-    const form = await mountForm({
-      type: objectTypes.NEW_OBJECT_TYPE
-    })
+describe('TypeFormComponent', () => {
+  test('load new', testLoadNew)
+  test('load existing', testLoadExisting)
+  test('select property local unused', testSelectPropertyLocalUnused)
+  test('select property local used', testSelectPropertyLocalUsed)
+  test('select property global unused', testSelectPropertyGlobalUnused)
+  test('select property global used', testSelectPropertyGlobalUsed)
+  test('select section', testSelectSection)
+  test('add section', testAddSection)
+  test('add property', testAddProperty)
+  test('change type', testChangeType)
+  test('change property', testChangeProperty)
+  test('change section', testChangeSection)
+  test('remove property', testRemoveProperty)
+  test('remove section', testRemoveSection)
+  test('validate type', testValidateType)
+  test('validate property', testValidateProperty)
+  test('validate type and property', testValidateTypeAndProperty)
+})
 
-    expect(form.toJSON()).toMatchObject({
-      preview: {
-        sections: []
-      },
-      parameters: {
-        type: {
-          title: 'Type',
-          code: {
-            label: 'Code',
-            value: null,
-            enabled: true
-          },
-          description: {
-            label: 'Description',
-            value: null,
-            enabled: true
-          },
-          validationPlugin: {
-            label: 'Validation Plugin',
-            value: null,
-            enabled: true
-          }
-        }
-      }
-    })
+async function testLoadNew() {
+  const form = await mountForm({
+    type: objectTypes.NEW_OBJECT_TYPE
   })
 
-  test('load existing', async () => {
-    facade.loadType.mockReturnValue(
-      Promise.resolve(fixture.TEST_SAMPLE_TYPE_DTO)
-    )
-    facade.loadValidationPlugins.mockReturnValue(
-      Promise.resolve([fixture.TEST_SAMPLE_TYPE_DTO.validationPlugin])
-    )
-
-    const form = await mountForm({
-      id: fixture.TEST_SAMPLE_TYPE_DTO.getCode(),
-      type: objectTypes.OBJECT_TYPE
-    })
-
-    expect(form.toJSON()).toMatchObject({
-      preview: {
-        sections: [
-          {
-            name: 'TEST_SECTION_1',
-            properties: [{ code: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode() }]
-          },
-          {
-            name: 'TEST_SECTION_2',
-            properties: [
-              { code: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode() },
-              { code: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode() }
-            ]
-          }
-        ]
-      },
-      parameters: {
-        type: {
-          title: 'Type',
-          code: {
-            label: 'Code',
-            value: fixture.TEST_SAMPLE_TYPE_DTO.getCode(),
-            enabled: false
-          },
-          description: {
-            label: 'Description',
-            value: fixture.TEST_SAMPLE_TYPE_DTO.getDescription(),
-            enabled: true
-          },
-          validationPlugin: {
-            label: 'Validation Plugin',
-            value: fixture.TEST_SAMPLE_TYPE_DTO.validationPlugin.name,
-            enabled: true
-          }
+  await form.expectJSON({
+    preview: {
+      sections: []
+    },
+    parameters: {
+      type: {
+        title: 'Type',
+        code: {
+          label: 'Code',
+          value: null,
+          enabled: true
+        },
+        description: {
+          label: 'Description',
+          value: null,
+          enabled: true
+        },
+        validationPlugin: {
+          label: 'Validation Plugin',
+          value: null,
+          enabled: true
         }
       }
-    })
-  })
-
-  test('select property (local)', async () => {
-    const testLocal = async used => {
-      const plugin = new openbis.Plugin()
-      plugin.setName('TEST_PLUGIN')
-
-      const propertyType = new openbis.PropertyType()
-      propertyType.setCode('TEST_TYPE.LOCAL_PROPERTY')
-      propertyType.setLabel('Test Label')
-      propertyType.setDescription('Test Description')
-      propertyType.setDataType(openbis.DataType.VARCHAR)
-
-      const propertyAssignment = new openbis.PropertyAssignment()
-      propertyAssignment.setPropertyType(propertyType)
-      propertyAssignment.setPlugin(plugin)
-
-      const type = new openbis.SampleType()
-      type.setCode('TEST_TYPE')
-      type.setPropertyAssignments([propertyAssignment])
-
-      facade.loadType.mockReturnValue(Promise.resolve(type))
-      facade.loadDynamicPlugins.mockReturnValue(Promise.resolve([plugin]))
-
-      if (used) {
-        facade.loadUsages.mockReturnValue(
-          Promise.resolve({
-            property: {
-              [propertyType.getCode()]: 1
-            }
-          })
-        )
-      }
-
-      const form = await mountForm({
-        id: type.getCode(),
-        type: objectTypes.OBJECT_TYPE
-      })
-
-      form.getPreview().getSections()[0].getProperties()[0].click()
-
-      expect(form.toJSON()).toMatchObject({
-        parameters: {
-          property: {
-            title: 'Property',
-            scope: {
-              label: 'Scope',
-              value: 'local',
-              enabled: false
-            },
-            code: {
-              label: 'Code',
-              value: propertyType.getCode(),
-              enabled: false
-            },
-            dataType: {
-              label: 'Data Type',
-              value: propertyType.getDataType(),
-              enabled: !used
-            },
-            label: {
-              label: 'Label',
-              value: propertyType.getLabel(),
-              enabled: true
-            },
-            description: {
-              label: 'Description',
-              value: propertyType.getDescription(),
-              enabled: true
-            },
-            plugin: {
-              label: 'Dynamic Plugin',
-              value: plugin.getName(),
-              enabled: !used
-            }
-          }
-        }
-      })
     }
+  })
+}
 
-    await testLocal(false)
-    await testLocal(true)
+async function testLoadExisting() {
+  facade.loadType.mockReturnValue(Promise.resolve(fixture.TEST_SAMPLE_TYPE_DTO))
+  facade.loadValidationPlugins.mockReturnValue(
+    Promise.resolve([fixture.TEST_SAMPLE_TYPE_DTO.validationPlugin])
+  )
+
+  const form = await mountForm({
+    id: fixture.TEST_SAMPLE_TYPE_DTO.getCode(),
+    type: objectTypes.OBJECT_TYPE
   })
 
-  test('select property (global)', async () => {
-    const testGlobal = async used => {
-      const plugin = new openbis.Plugin()
-      plugin.setName('TEST_PLUGIN')
-
-      const propertyType = new openbis.PropertyType()
-      propertyType.setCode('GLOBAL_PROPERTY')
-      propertyType.setLabel('Test Label')
-      propertyType.setDescription('Test Description')
-      propertyType.setDataType(openbis.DataType.VARCHAR)
-
-      const propertyAssignment = new openbis.PropertyAssignment()
-      propertyAssignment.setPropertyType(propertyType)
-      propertyAssignment.setPlugin(plugin)
-
-      const type = new openbis.SampleType()
-      type.setCode('TEST_TYPE')
-      type.setPropertyAssignments([propertyAssignment])
-
-      facade.loadType.mockReturnValue(Promise.resolve(type))
-      facade.loadDynamicPlugins.mockReturnValue(Promise.resolve([plugin]))
-
-      if (used) {
-        facade.loadUsages.mockReturnValue(
-          Promise.resolve({
-            property: {
-              [propertyType.getCode()]: 1
-            }
-          })
-        )
-      }
-
-      const form = await mountForm({
-        id: type.getCode(),
-        type: objectTypes.OBJECT_TYPE
-      })
-
-      form.getPreview().getSections()[0].getProperties()[0].click()
-
-      expect(form.toJSON()).toMatchObject({
-        parameters: {
-          property: {
-            title: 'Property',
-            scope: {
-              label: 'Scope',
-              value: 'global',
-              enabled: false
-            },
-            code: {
-              label: 'Code',
-              value: propertyType.getCode(),
-              enabled: false
-            },
-            dataType: {
-              label: 'Data Type',
-              value: propertyType.getDataType(),
-              enabled: false
-            },
-            label: {
-              label: 'Label',
-              value: propertyType.getLabel(),
-              enabled: false
-            },
-            description: {
-              label: 'Description',
-              value: propertyType.getDescription(),
-              enabled: false
-            },
-            plugin: {
-              label: 'Dynamic Plugin',
-              value: plugin.getName(),
-              enabled: false
-            }
-          }
+  await form.expectJSON({
+    preview: {
+      sections: [
+        {
+          name: 'TEST_SECTION_1',
+          properties: [{ code: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode() }]
+        },
+        {
+          name: 'TEST_SECTION_2',
+          properties: [
+            { code: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode() },
+            { code: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode() }
+          ]
         }
-      })
+      ]
+    },
+    parameters: {
+      type: {
+        title: 'Type',
+        code: {
+          label: 'Code',
+          value: fixture.TEST_SAMPLE_TYPE_DTO.getCode(),
+          enabled: false
+        },
+        description: {
+          label: 'Description',
+          value: fixture.TEST_SAMPLE_TYPE_DTO.getDescription(),
+          enabled: true
+        },
+        validationPlugin: {
+          label: 'Validation Plugin',
+          value: fixture.TEST_SAMPLE_TYPE_DTO.validationPlugin.name,
+          enabled: true
+        }
+      }
     }
-
-    await testGlobal(false)
-    await testGlobal(true)
   })
+}
 
-  test('select section', async () => {
-    const propertyType = new openbis.PropertyType()
-    propertyType.setCode('TEST_PROPERTY')
-    propertyType.setDataType(openbis.DataType.VARCHAR)
+async function testSelectPropertyLocalUnused() {
+  await doTestSelectProperty('local', false)
+}
 
-    const propertyAssignment = new openbis.PropertyAssignment()
-    propertyAssignment.setPropertyType(propertyType)
-    propertyAssignment.setSection('TEST_SECTION')
+async function testSelectPropertyLocalUsed() {
+  await doTestSelectProperty('local', true)
+}
 
-    const type = new openbis.SampleType()
-    type.setCode('TEST_TYPE')
-    type.setPropertyAssignments([propertyAssignment])
+async function testSelectPropertyGlobalUnused() {
+  await doTestSelectProperty('global', false)
+}
 
-    facade.loadType.mockReturnValue(Promise.resolve(type))
+async function testSelectPropertyGlobalUsed() {
+  await doTestSelectProperty('global', true)
+}
 
-    const form = await mountForm({
-      id: type.getCode(),
-      type: objectTypes.OBJECT_TYPE
-    })
+async function doTestSelectProperty(scope, used) {
+  const plugin = new openbis.Plugin()
+  plugin.setName('TEST_PLUGIN')
 
-    form.getPreview().getSections()[0].click()
+  const propertyType = new openbis.PropertyType()
+  propertyType.setCode(
+    scope === 'global' ? 'GLOBAL_PROPERTY' : 'TEST_TYPE.LOCAL_PROPERTY'
+  )
+  propertyType.setLabel('Test Label')
+  propertyType.setDescription('Test Description')
+  propertyType.setDataType(openbis.DataType.VARCHAR)
 
-    expect(form.toJSON()).toMatchObject({
-      parameters: {
-        section: {
-          title: 'Section',
-          name: {
-            label: 'Name',
-            value: propertyAssignment.getSection(),
-            enabled: true
-          }
-        }
-      }
-    })
-  })
+  const propertyAssignment = new openbis.PropertyAssignment()
+  propertyAssignment.setPropertyType(propertyType)
+  propertyAssignment.setPlugin(plugin)
 
-  test('add section', async () => {
-    const form = await mountForm({
-      type: objectTypes.NEW_OBJECT_TYPE
-    })
+  const type = new openbis.SampleType()
+  type.setCode('TEST_TYPE')
+  type.setPropertyAssignments([propertyAssignment])
 
-    expect(form.toJSON()).toMatchObject({
-      preview: {
-        sections: []
-      },
-      buttons: {
-        addSection: {
-          enabled: true
-        },
-        addProperty: {
-          enabled: false
-        },
-        remove: {
-          enabled: false
-        },
-        save: {
-          enabled: true
-        }
-      }
-    })
+  facade.loadType.mockReturnValue(Promise.resolve(type))
+  facade.loadDynamicPlugins.mockReturnValue(Promise.resolve([plugin]))
 
-    form.getButtons().getAddSection().click()
+  const messages = []
 
-    expect(form.toJSON()).toMatchObject({
-      preview: {
-        sections: [
-          {
-            name: null
-          }
-        ]
-      },
-      parameters: {
-        section: {
-          title: 'Section',
-          name: {
-            label: 'Name',
-            value: null,
-            enabled: true
-          }
-        }
-      },
-      buttons: {
-        addSection: {
-          enabled: true
-        },
-        addProperty: {
-          enabled: true
-        },
-        remove: {
-          enabled: true
-        },
-        save: {
-          enabled: true
-        }
-      }
-    })
-  })
-
-  test('add property', async () => {
-    const form = await mountForm({
-      type: objectTypes.NEW_OBJECT_TYPE
-    })
-
-    expect(form.toJSON()).toMatchObject({
-      preview: {
-        sections: []
-      },
-      buttons: {
-        addSection: {
-          enabled: true
-        },
-        addProperty: {
-          enabled: false
-        },
-        remove: {
-          enabled: false
-        },
-        save: {
-          enabled: true
-        }
-      }
-    })
-
-    form.getButtons().getAddSection().click()
-    form.getButtons().getAddProperty().click()
-
-    expect(form.toJSON()).toMatchObject({
-      preview: {
-        sections: [
-          {
-            name: null,
-            properties: [{ code: 'empty', label: 'empty', dataType: 'VARCHAR' }]
-          }
-        ]
-      },
-      parameters: {
-        property: {
-          title: 'Property',
-          scope: {
-            label: 'Scope',
-            value: 'local',
-            enabled: true
-          },
-          code: {
-            label: 'Code',
-            value: null,
-            enabled: true
-          },
-          dataType: {
-            label: 'Data Type',
-            value: 'VARCHAR',
-            enabled: true
-          },
-          label: {
-            label: 'Label',
-            value: null,
-            enabled: true
-          },
-          description: {
-            label: 'Description',
-            value: null,
-            enabled: true
-          },
-          plugin: {
-            label: 'Dynamic Plugin',
-            value: null,
-            enabled: true
-          }
-        }
-      },
-      buttons: {
-        addSection: {
-          enabled: true
-        },
-        addProperty: {
-          enabled: true
-        },
-        remove: {
-          enabled: true
-        },
-        save: {
-          enabled: true
-        }
-      }
-    })
-  })
-
-  test('change type', async () => {
-    const form = await mountForm({
-      type: objectTypes.NEW_OBJECT_TYPE
-    })
-
-    expect(form.toJSON()).toMatchObject({
-      preview: {
-        header: {
-          code: {
-            label: 'Code',
-            value: null,
-            enabled: true
-          }
-        }
-      },
-      parameters: {
-        type: {
-          title: 'Type',
-          autoGeneratedCode: {
-            label: 'Generate Codes',
-            value: false,
-            enabled: true
-          },
-          generatedCodePrefix: {
-            label: 'Generated code prefix',
-            value: null,
-            enabled: true
-          }
-        }
-      }
-    })
-
-    form.getParameters().getType().change('autoGeneratedCode', true)
-    form.getParameters().getType().change('generatedCodePrefix', 'TEST_PREFIX_')
-
-    expect(form.toJSON()).toMatchObject({
-      preview: {
-        header: {
-          code: {
-            label: 'Code',
-            value: 'TEST_PREFIX_',
-            enabled: false
-          }
-        }
-      },
-      parameters: {
-        type: {
-          title: 'Type',
-          autoGeneratedCode: {
-            label: 'Generate Codes',
-            value: true,
-            enabled: true
-          },
-          generatedCodePrefix: {
-            label: 'Generated code prefix',
-            value: 'TEST_PREFIX_',
-            enabled: true
-          }
-        }
-      }
-    })
-  })
-
-  test('change property', async () => {
-    const form = await mountForm({
-      type: objectTypes.NEW_OBJECT_TYPE
-    })
-
-    form.getButtons().getAddSection().click()
-    form.getButtons().getAddProperty().click()
-
-    expect(form.toJSON()).toMatchObject({
-      preview: {
-        sections: [
-          {
-            name: null,
-            properties: [{ dataType: 'VARCHAR' }]
-          }
-        ]
-      },
-      parameters: {
-        property: {
-          title: 'Property',
-          dataType: {
-            label: 'Data Type',
-            value: 'VARCHAR',
-            enabled: true
-          },
-          vocabulary: null,
-          materialType: null,
-          schema: null,
-          transformation: null
-        }
-      }
-    })
-
-    form
-      .getParameters()
-      .getProperty()
-      .change('dataType', 'CONTROLLEDVOCABULARY')
-
-    expect(form.toJSON()).toMatchObject({
-      preview: {
-        sections: [
-          {
-            name: null,
-            properties: [{ dataType: 'CONTROLLEDVOCABULARY' }]
-          }
-        ]
-      },
-      parameters: {
-        property: {
-          title: 'Property',
-          dataType: {
-            label: 'Data Type',
-            value: 'CONTROLLEDVOCABULARY',
-            enabled: true
-          },
-          vocabulary: {
-            label: 'Vocabulary',
-            value: null,
-            enabled: true
-          },
-          materialType: null,
-          schema: null,
-          transformation: null
-        }
-      }
-    })
-
-    form.getParameters().getProperty().change('dataType', 'MATERIAL')
-
-    expect(form.toJSON()).toMatchObject({
-      preview: {
-        sections: [
-          {
-            name: null,
-            properties: [{ dataType: 'MATERIAL' }]
-          }
-        ]
-      },
-      parameters: {
-        property: {
-          title: 'Property',
-          dataType: {
-            label: 'Data Type',
-            value: 'MATERIAL',
-            enabled: true
-          },
-          vocabulary: null,
-          materialType: {
-            label: 'Material Type',
-            value: null,
-            enabled: true
-          },
-          schema: null,
-          transformation: null
-        }
-      }
-    })
-
-    form.getParameters().getProperty().change('dataType', 'XML')
-
-    expect(form.toJSON()).toMatchObject({
-      preview: {
-        sections: [
-          {
-            name: null,
-            properties: [{ dataType: 'XML' }]
-          }
-        ]
-      },
-      parameters: {
-        property: {
-          title: 'Property',
-          dataType: {
-            label: 'Data Type',
-            value: 'XML',
-            enabled: true
-          },
-          vocabulary: null,
-          materialType: null,
-          schema: {
-            label: 'XML Schema',
-            value: null,
-            enabled: true
-          },
-          transformation: {
-            label: 'XSLT Script',
-            value: null,
-            enabled: true
-          }
-        }
-      }
-    })
-  })
-
-  test('change section', async () => {
-    const form = await mountForm({
-      type: objectTypes.NEW_OBJECT_TYPE
-    })
-
-    form.getButtons().getAddSection().click()
-
-    expect(form.toJSON()).toMatchObject({
-      preview: {
-        sections: [
-          {
-            name: null
-          }
-        ]
-      },
-      parameters: {
-        section: {
-          title: 'Section',
-          name: {
-            label: 'Name',
-            value: null,
-            enabled: true
-          }
-        }
-      }
-    })
-
-    form.getParameters().getSection().change('name', 'Test Name')
-
-    expect(form.toJSON()).toMatchObject({
-      preview: {
-        sections: [
-          {
-            name: 'Test Name'
-          }
-        ]
-      },
-      parameters: {
-        section: {
-          title: 'Section',
-          name: {
-            label: 'Name',
-            value: 'Test Name',
-            enabled: true
-          }
-        }
-      }
-    })
-  })
-
-  test('remove property', async () => {
-    const form = await mountForm({
-      type: objectTypes.NEW_OBJECT_TYPE
-    })
-
-    form.getButtons().getAddSection().click()
-    form.getButtons().getAddProperty().click()
-
-    expect(form.toJSON()).toMatchObject({
-      preview: {
-        sections: [
-          {
-            name: null,
-            properties: [{ code: 'empty' }]
-          }
-        ]
-      }
-    })
-
-    form.getButtons().getRemove().click()
-
-    expect(form.toJSON()).toMatchObject({
-      preview: {
-        sections: [
-          {
-            name: null,
-            properties: []
-          }
-        ]
-      }
-    })
-  })
-
-  test('remove section', async () => {
-    const form = await mountForm({
-      type: objectTypes.NEW_OBJECT_TYPE
-    })
-
-    form.getButtons().getAddSection().click()
-
-    expect(form.toJSON()).toMatchObject({
-      preview: {
-        sections: [
-          {
-            name: null,
-            properties: []
-          }
-        ]
-      }
-    })
-
-    form.getButtons().getRemove().click()
-
-    expect(form.toJSON()).toMatchObject({
-      preview: {
-        sections: []
-      }
-    })
-  })
-
-  async function mountForm(object) {
-    const wrapper = mount(
-      <Provider store={store}>
-        <ThemeProvider>
-          <TypeForm object={object} controller={controller} />
-        </ThemeProvider>
-      </Provider>
-    )
-
-    return new Promise(resolve => {
-      setTimeout(() => {
-        wrapper.update()
-
-        const form = new TypeFormWrapper(wrapper)
-
-        resolve(form)
-      })
+  if (scope === 'global') {
+    messages.push({
+      text:
+        'This property is global. Changes will also influence other types where this property is used.',
+      type: 'warning'
     })
   }
-})
+
+  if (used) {
+    facade.loadUsages.mockReturnValue(
+      Promise.resolve({
+        propertyLocal: {
+          [propertyType.getCode()]: 1
+        },
+        propertyGlobal: {
+          [propertyType.getCode()]: 3
+        }
+      })
+    )
+    messages.push({
+      text:
+        'This property is already used by 3 entities (1 entity of this type and 2 entities of other types).',
+      type: 'info'
+    })
+
+    facade.loadAssignments.mockReturnValue(
+      Promise.resolve({
+        [propertyType.getCode()]: 2
+      })
+    )
+    messages.push({
+      text: 'This property is already assigned to 2 types.',
+      type: 'info'
+    })
+  }
+
+  const form = await mountForm({
+    id: type.getCode(),
+    type: objectTypes.OBJECT_TYPE
+  })
+
+  form.getPreview().getSections()[0].getProperties()[0].click()
+
+  await form.expectJSON({
+    parameters: {
+      property: {
+        title: 'Property',
+        messages,
+        scope: {
+          label: 'Scope',
+          value: scope,
+          enabled: false
+        },
+        code: {
+          label: 'Code',
+          value: propertyType.getCode(),
+          enabled: false
+        },
+        dataType: {
+          label: 'Data Type',
+          value: propertyType.getDataType(),
+          enabled: !used
+        },
+        label: {
+          label: 'Label',
+          value: propertyType.getLabel(),
+          enabled: true
+        },
+        description: {
+          label: 'Description',
+          value: propertyType.getDescription(),
+          enabled: true
+        },
+        plugin: {
+          label: 'Dynamic Plugin',
+          value: plugin.getName(),
+          enabled: !used
+        }
+      }
+    }
+  })
+}
+
+async function testSelectSection() {
+  const propertyType = new openbis.PropertyType()
+  propertyType.setCode('TEST_PROPERTY')
+  propertyType.setDataType(openbis.DataType.VARCHAR)
+
+  const propertyAssignment = new openbis.PropertyAssignment()
+  propertyAssignment.setPropertyType(propertyType)
+  propertyAssignment.setSection('TEST_SECTION')
+
+  const type = new openbis.SampleType()
+  type.setCode('TEST_TYPE')
+  type.setPropertyAssignments([propertyAssignment])
+
+  facade.loadType.mockReturnValue(Promise.resolve(type))
+
+  const form = await mountForm({
+    id: type.getCode(),
+    type: objectTypes.OBJECT_TYPE
+  })
+
+  form.getPreview().getSections()[0].click()
+
+  await form.expectJSON({
+    parameters: {
+      section: {
+        title: 'Section',
+        name: {
+          label: 'Name',
+          value: propertyAssignment.getSection(),
+          enabled: true
+        }
+      }
+    }
+  })
+}
+
+async function testAddSection() {
+  const form = await mountForm({
+    type: objectTypes.NEW_OBJECT_TYPE
+  })
+
+  await form.expectJSON({
+    preview: {
+      sections: []
+    },
+    buttons: {
+      addSection: {
+        enabled: true
+      },
+      addProperty: {
+        enabled: false
+      },
+      remove: {
+        enabled: false
+      },
+      save: {
+        enabled: true
+      }
+    }
+  })
+
+  form.getButtons().getAddSection().click()
+
+  await form.expectJSON({
+    preview: {
+      sections: [
+        {
+          name: null
+        }
+      ]
+    },
+    parameters: {
+      section: {
+        title: 'Section',
+        name: {
+          label: 'Name',
+          value: null,
+          enabled: true
+        }
+      }
+    },
+    buttons: {
+      addSection: {
+        enabled: true
+      },
+      addProperty: {
+        enabled: true
+      },
+      remove: {
+        enabled: true
+      },
+      save: {
+        enabled: true
+      }
+    }
+  })
+}
+
+async function testAddProperty() {
+  const form = await mountForm({
+    type: objectTypes.NEW_OBJECT_TYPE
+  })
+
+  await form.expectJSON({
+    preview: {
+      sections: []
+    },
+    buttons: {
+      addSection: {
+        enabled: true
+      },
+      addProperty: {
+        enabled: false
+      },
+      remove: {
+        enabled: false
+      },
+      save: {
+        enabled: true
+      }
+    }
+  })
+
+  form.getButtons().getAddSection().click()
+  form.getButtons().getAddProperty().click()
+
+  await form.expectJSON({
+    preview: {
+      sections: [
+        {
+          name: null,
+          properties: [{ code: 'empty', label: 'empty', dataType: 'VARCHAR' }]
+        }
+      ]
+    },
+    parameters: {
+      property: {
+        title: 'Property',
+        scope: {
+          label: 'Scope',
+          value: 'local',
+          enabled: true
+        },
+        code: {
+          label: 'Code',
+          value: null,
+          enabled: true
+        },
+        dataType: {
+          label: 'Data Type',
+          value: 'VARCHAR',
+          enabled: true
+        },
+        label: {
+          label: 'Label',
+          value: null,
+          enabled: true
+        },
+        description: {
+          label: 'Description',
+          value: null,
+          enabled: true
+        },
+        plugin: {
+          label: 'Dynamic Plugin',
+          value: null,
+          enabled: true
+        }
+      }
+    },
+    buttons: {
+      addSection: {
+        enabled: true
+      },
+      addProperty: {
+        enabled: true
+      },
+      remove: {
+        enabled: true
+      },
+      save: {
+        enabled: true
+      }
+    }
+  })
+}
+
+async function testChangeType() {
+  const form = await mountForm({
+    type: objectTypes.NEW_OBJECT_TYPE
+  })
+
+  await form.expectJSON({
+    preview: {
+      header: {
+        code: {
+          label: 'Code',
+          value: null,
+          enabled: true
+        }
+      }
+    },
+    parameters: {
+      type: {
+        title: 'Type',
+        autoGeneratedCode: {
+          label: 'Generate Codes',
+          value: false,
+          enabled: true
+        },
+        generatedCodePrefix: {
+          label: 'Generated code prefix',
+          value: null,
+          enabled: true
+        }
+      }
+    }
+  })
+
+  form.getParameters().getType().change('autoGeneratedCode', true)
+  form.getParameters().getType().change('generatedCodePrefix', 'TEST_PREFIX_')
+
+  await form.expectJSON({
+    preview: {
+      header: {
+        code: {
+          label: 'Code',
+          value: 'TEST_PREFIX_',
+          enabled: false
+        }
+      }
+    },
+    parameters: {
+      type: {
+        title: 'Type',
+        autoGeneratedCode: {
+          label: 'Generate Codes',
+          value: true,
+          enabled: true
+        },
+        generatedCodePrefix: {
+          label: 'Generated code prefix',
+          value: 'TEST_PREFIX_',
+          enabled: true
+        }
+      }
+    }
+  })
+}
+
+async function testChangeProperty() {
+  const form = await mountForm({
+    type: objectTypes.NEW_OBJECT_TYPE
+  })
+
+  form.getButtons().getAddSection().click()
+  form.getButtons().getAddProperty().click()
+
+  await form.expectJSON({
+    preview: {
+      sections: [
+        {
+          name: null,
+          properties: [{ dataType: 'VARCHAR' }]
+        }
+      ]
+    },
+    parameters: {
+      property: {
+        title: 'Property',
+        dataType: {
+          label: 'Data Type',
+          value: 'VARCHAR',
+          enabled: true
+        },
+        vocabulary: null,
+        materialType: null,
+        schema: null,
+        transformation: null
+      }
+    }
+  })
+
+  form.getParameters().getProperty().change('dataType', 'CONTROLLEDVOCABULARY')
+
+  await form.expectJSON({
+    preview: {
+      sections: [
+        {
+          name: null,
+          properties: [{ dataType: 'CONTROLLEDVOCABULARY' }]
+        }
+      ]
+    },
+    parameters: {
+      property: {
+        title: 'Property',
+        dataType: {
+          label: 'Data Type',
+          value: 'CONTROLLEDVOCABULARY',
+          enabled: true
+        },
+        vocabulary: {
+          label: 'Vocabulary',
+          value: null,
+          enabled: true
+        },
+        materialType: null,
+        schema: null,
+        transformation: null
+      }
+    }
+  })
+
+  form.getParameters().getProperty().change('dataType', 'MATERIAL')
+
+  await form.expectJSON({
+    preview: {
+      sections: [
+        {
+          name: null,
+          properties: [{ dataType: 'MATERIAL' }]
+        }
+      ]
+    },
+    parameters: {
+      property: {
+        title: 'Property',
+        dataType: {
+          label: 'Data Type',
+          value: 'MATERIAL',
+          enabled: true
+        },
+        vocabulary: null,
+        materialType: {
+          label: 'Material Type',
+          value: null,
+          enabled: true
+        },
+        schema: null,
+        transformation: null
+      }
+    }
+  })
+
+  form.getParameters().getProperty().change('dataType', 'XML')
+
+  await form.expectJSON({
+    preview: {
+      sections: [
+        {
+          name: null,
+          properties: [{ dataType: 'XML' }]
+        }
+      ]
+    },
+    parameters: {
+      property: {
+        title: 'Property',
+        dataType: {
+          label: 'Data Type',
+          value: 'XML',
+          enabled: true
+        },
+        vocabulary: null,
+        materialType: null,
+        schema: {
+          label: 'XML Schema',
+          value: null,
+          enabled: true
+        },
+        transformation: {
+          label: 'XSLT Script',
+          value: null,
+          enabled: true
+        }
+      }
+    }
+  })
+}
+
+async function testChangeSection() {
+  const form = await mountForm({
+    type: objectTypes.NEW_OBJECT_TYPE
+  })
+
+  form.getButtons().getAddSection().click()
+
+  await form.expectJSON({
+    preview: {
+      sections: [
+        {
+          name: null
+        }
+      ]
+    },
+    parameters: {
+      section: {
+        title: 'Section',
+        name: {
+          label: 'Name',
+          value: null,
+          enabled: true
+        }
+      }
+    }
+  })
+
+  form.getParameters().getSection().change('name', 'Test Name')
+
+  await form.expectJSON({
+    preview: {
+      sections: [
+        {
+          name: 'Test Name'
+        }
+      ]
+    },
+    parameters: {
+      section: {
+        title: 'Section',
+        name: {
+          label: 'Name',
+          value: 'Test Name',
+          enabled: true
+        }
+      }
+    }
+  })
+}
+
+async function testRemoveProperty() {
+  const form = await mountForm({
+    type: objectTypes.NEW_OBJECT_TYPE
+  })
+
+  form.getButtons().getAddSection().click()
+  form.getButtons().getAddProperty().click()
+
+  await form.expectJSON({
+    preview: {
+      sections: [
+        {
+          name: null,
+          properties: [{ code: 'empty' }]
+        }
+      ]
+    }
+  })
+
+  form.getButtons().getRemove().click()
+
+  await form.expectJSON({
+    preview: {
+      sections: [
+        {
+          name: null,
+          properties: []
+        }
+      ]
+    }
+  })
+}
+
+async function testRemoveSection() {
+  const form = await mountForm({
+    type: objectTypes.NEW_OBJECT_TYPE
+  })
+
+  form.getButtons().getAddSection().click()
+
+  await form.expectJSON({
+    preview: {
+      sections: [
+        {
+          name: null,
+          properties: []
+        }
+      ]
+    }
+  })
+
+  form.getButtons().getRemove().click()
+
+  await form.expectJSON({
+    preview: {
+      sections: []
+    }
+  })
+}
+
+async function testValidateType() {
+  const form = await mountForm({
+    type: objectTypes.NEW_OBJECT_TYPE
+  })
+
+  form.getButtons().getSave().click()
+
+  await form.expectJSON({
+    parameters: {
+      type: {
+        title: 'Type',
+        code: {
+          error: 'Code cannot be empty'
+        },
+        description: {
+          error: null
+        },
+        validationPlugin: {
+          error: null
+        },
+        generatedCodePrefix: {
+          error: 'Generated code prefix cannot be empty'
+        }
+      }
+    }
+  })
+}
+
+async function testValidateProperty() {
+  const form = await mountForm({
+    type: objectTypes.NEW_OBJECT_TYPE
+  })
+
+  form.getParameters().getType().change('code', 'TEST_CODE')
+  form.getParameters().getType().change('generatedCodePrefix', 'TEST_PREFIX_')
+
+  form.getButtons().getAddSection().click()
+  form.getButtons().getAddProperty().click()
+  form.getButtons().getSave().click()
+
+  await form.expectJSON({
+    parameters: {
+      property: {
+        title: 'Property',
+        scope: {
+          error: null
+        },
+        code: {
+          error: 'Code cannot be empty'
+        },
+        dataType: {
+          error: null
+        },
+        label: {
+          error: 'Label cannot be empty'
+        },
+        description: {
+          error: 'Description cannot be empty'
+        },
+        plugin: {
+          error: null
+        }
+      }
+    }
+  })
+}
+
+async function testValidateTypeAndProperty() {
+  const form = await mountForm({
+    type: objectTypes.NEW_OBJECT_TYPE
+  })
+
+  form.getButtons().getAddSection().click()
+  form.getButtons().getAddProperty().click()
+  form.getButtons().getSave().click()
+
+  await form.expectJSON({
+    parameters: {
+      type: {
+        title: 'Type',
+        code: {
+          error: 'Code cannot be empty'
+        },
+        description: {
+          error: null
+        },
+        validationPlugin: {
+          error: null
+        },
+        generatedCodePrefix: {
+          error: 'Generated code prefix cannot be empty'
+        }
+      }
+    }
+  })
+}
+
+async function mountForm(object) {
+  const wrapper = mount(
+    <Provider store={store}>
+      <ThemeProvider>
+        <TypeForm object={object} controller={controller} />
+      </ThemeProvider>
+    </Provider>
+  )
+
+  return new Promise(resolve => {
+    setTimeout(() => {
+      wrapper.update()
+
+      const form = new TypeFormWrapper(wrapper)
+
+      resolve(form)
+    })
+  })
+}

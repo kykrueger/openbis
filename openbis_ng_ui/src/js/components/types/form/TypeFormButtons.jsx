@@ -1,16 +1,15 @@
 import React from 'react'
-import Button from '@material-ui/core/Button'
 import { withStyles } from '@material-ui/core/styles'
+import Button from '@src/js/components/common/form/Button.jsx'
 import logger from '@src/js/common/logger.js'
 
 const styles = theme => ({
   container: {
-    padding: theme.spacing(2),
-    paddingLeft: theme.spacing(4),
+    padding: `${theme.spacing(1)}px ${theme.spacing(2)}px`,
     display: 'flex'
   },
   button: {
-    marginRight: theme.spacing(2),
+    marginRight: theme.spacing(1),
     whiteSpace: 'nowrap'
   }
 })
@@ -39,42 +38,31 @@ class TypeFormButtons extends React.PureComponent {
       <div className={classes.container}>
         <Button
           name='addSection'
+          label='Add Section'
           classes={{ root: classes.button }}
-          variant='contained'
-          color='secondary'
           onClick={onAddSection}
-        >
-          Add Section
-        </Button>
+        />
         <Button
           name='addProperty'
+          label='Add Property'
           classes={{ root: classes.button }}
-          variant='contained'
-          color='secondary'
           disabled={!this.isSectionOrPropertySelected()}
           onClick={onAddProperty}
-        >
-          Add Property
-        </Button>
+        />
         <Button
           name='remove'
+          label='Remove'
           classes={{ root: classes.button }}
-          variant='contained'
-          color='secondary'
           disabled={!this.isSectionOrPropertySelected()}
           onClick={onRemove}
-        >
-          Remove
-        </Button>
+        />
         <Button
           name='save'
+          label='Save'
+          final={true}
           classes={{ root: classes.button }}
-          variant='contained'
-          color='primary'
           onClick={onSave}
-        >
-          Save
-        </Button>
+        />
       </div>
     )
   }

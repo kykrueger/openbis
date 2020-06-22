@@ -5,18 +5,18 @@ import TextField from '@src/js/components/common/form/TextField.jsx'
 import SelectField from '@src/js/components/common/form/SelectField.jsx'
 import logger from '@src/js/common/logger.js'
 
-import TypeFormWarningUsage from './TypeFormWarningUsage.jsx'
+import TypeFormMessage from './TypeFormMessage.jsx'
 import TypeFormHeader from './TypeFormHeader.jsx'
 
 const styles = theme => ({
   container: {
-    padding: theme.spacing(2)
+    padding: `${theme.spacing(1)}px ${theme.spacing(2)}px`
   },
   header: {
-    paddingBottom: theme.spacing(2)
+    paddingBottom: theme.spacing(1)
   },
   field: {
-    paddingBottom: theme.spacing(2)
+    paddingBottom: theme.spacing(1)
   }
 })
 
@@ -100,7 +100,7 @@ class TypeFormParametersType extends React.PureComponent {
     return (
       <div className={classes.container}>
         <TypeFormHeader className={classes.header}>Type</TypeFormHeader>
-        {this.renderWarning(type)}
+        {this.renderMessageUsage(type)}
         {this.renderCode(type)}
         {this.renderDescription(type)}
         {this.renderValidationPlugin(type)}
@@ -118,12 +118,23 @@ class TypeFormParametersType extends React.PureComponent {
     )
   }
 
-  renderWarning(type) {
-    if (type.usages > 0) {
-      const { classes } = this.props
+  renderMessageUsage(type) {
+    const { classes } = this.props
+
+    function entities(number) {
+      return number === 0 || number > 1
+        ? `${number} entities`
+        : `${number} entity`
+    }
+
+    function message(type) {
+      return `This type is already used by ${entities(type.usages)}.`
+    }
+
+    if (type.usages !== 0) {
       return (
         <div className={classes.field}>
-          <TypeFormWarningUsage subject='type' usages={type.usages} />
+          <TypeFormMessage type='info'>{message(type)}</TypeFormMessage>
         </div>
       )
     } else {

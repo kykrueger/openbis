@@ -16,15 +16,16 @@ export default class TypeFormControllerLoadType {
 
     let promise = null
     if (strategy.getNewObjectType() === this.object.type) {
-      promise = Promise.resolve([null, null])
+      promise = Promise.resolve([null, null, null])
     } else if (strategy.getExistingObjectType() === this.object.type) {
       promise = Promise.all([
         this.facade.loadType(this.object),
-        this.facade.loadUsages(this.object)
+        this.facade.loadUsages(this.object),
+        this.facade.loadAssignments(this.object)
       ])
     }
 
-    return promise.then(([loadedType, loadedUsages]) => {
+    return promise.then(([loadedType, loadedUsages, loadedAssignments]) => {
       const sections = []
       const properties = []
       let section = null
@@ -38,7 +39,8 @@ export default class TypeFormControllerLoadType {
             'property-' + propertiesCounter++,
             loadedType,
             loadedAssignment,
-            loadedUsages
+            loadedUsages,
+            loadedAssignments
           )
           properties.push(property)
 
@@ -76,6 +78,8 @@ export default class TypeFormControllerLoadType {
         sections,
         sectionsCounter,
         selection: selection,
+        usages: loadedUsages,
+        assignments: loadedAssignments,
         removeSectionDialogOpen: false,
         removePropertyDialogOpen: false
       }))
@@ -115,20 +119,34 @@ export default class TypeFormControllerLoadType {
     }
   }
 
-  _createProperty(id, loadedType, loadedAssignment, loadedUsages) {
+  _createProperty(
+    id,
+    loadedType,
+    loadedAssignment,
+    loadedUsages,
+    loadedAssignments
+  ) {
     const propertyType = loadedAssignment.propertyType
 
     const code = _.get(propertyType, 'code', null)
     const dataType = _.get(propertyType, 'dataType', null)
     const scope = code.startsWith(loadedType.code + '.') ? 'local' : 'global'
-    const usages =
+
+    const assignments =
+      (loadedAssignments && loadedAssignments[propertyType.code]) || 0
+
+    const usagesLocal =
       (loadedUsages &&
-        loadedUsages.property &&
-        loadedUsages.property[propertyType.code]) ||
+        loadedUsages.propertyLocal &&
+        loadedUsages.propertyLocal[propertyType.code]) ||
+      0
+    const usagesGlobal =
+      (loadedUsages &&
+        loadedUsages.propertyGlobal &&
+        loadedUsages.propertyGlobal[propertyType.code]) ||
       0
 
-    const isLocal = scope === 'local'
-    const isUnused = usages === 0
+    const enabled = usagesGlobal === 0 && assignments <= 1
 
     return {
       id: id,
@@ -141,40 +159,36 @@ export default class TypeFormControllerLoadType {
         enabled: false
       }),
       label: this._createField({
-        value: _.get(propertyType, 'label', null),
-        enabled: isLocal
+        value: _.get(propertyType, 'label', null)
       }),
       description: this._createField({
-        value: _.get(propertyType, 'description', null),
-        enabled: isLocal
+        value: _.get(propertyType, 'description', null)
       }),
       dataType: this._createField({
         value: dataType,
-        enabled: isLocal && isUnused
+        enabled
       }),
       plugin: this._createField({
         value: _.get(loadedAssignment, 'plugin.name', null),
-        enabled: isLocal && isUnused
+        enabled
       }),
       vocabulary: this._createField({
         value: _.get(propertyType, 'vocabulary.code', null),
         visible: dataType === openbis.DataType.CONTROLLEDVOCABULARY,
-        enabled: isLocal && isUnused
+        enabled
       }),
       materialType: this._createField({
         value: _.get(propertyType, 'materialType.code', null),
         visible: dataType === openbis.DataType.MATERIAL,
-        enabled: isLocal && isUnused
+        enabled
       }),
       schema: this._createField({
         value: _.get(propertyType, 'schema', null),
-        visible: dataType === openbis.DataType.XML,
-        enabled: isLocal
+        visible: dataType === openbis.DataType.XML
       }),
       transformation: this._createField({
         value: _.get(propertyType, 'transformation', null),
-        visible: dataType === openbis.DataType.XML,
-        enabled: isLocal
+        visible: dataType === openbis.DataType.XML
       }),
       mandatory: this._createField({
         value: _.get(loadedAssignment, 'mandatory', false)
@@ -188,7 +202,9 @@ export default class TypeFormControllerLoadType {
       initialValueForExistingEntities: this._createField({
         visible: false
       }),
-      usages: usages,
+      assignments,
+      usagesLocal,
+      usagesGlobal,
       errors: 0
     }
   }

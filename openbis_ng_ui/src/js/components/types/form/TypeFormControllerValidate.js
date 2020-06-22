@@ -11,7 +11,7 @@ export default class TypeFormControllerValidate {
     this.validator = new FormValidator()
   }
 
-  execute(autofocus) {
+  async execute(autofocus) {
     const { validate, type, properties } = this.context.getState()
 
     if (!validate) {
@@ -52,13 +52,13 @@ export default class TypeFormControllerValidate {
       }
 
       if (selection) {
-        this.context.setState({
+        await this.context.setState({
           selection
         })
       }
     }
 
-    this.context.setState({
+    await this.context.setState({
       type: newType,
       properties: newProperties
     })

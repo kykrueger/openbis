@@ -235,6 +235,7 @@ public class UpdateSampleTest extends AbstractSampleTest
 
         Sample sample = samples.get(0);
         assertEquals(sample.getIdentifier().getIdentifier(), "/TEST-SPACE/SAMPLE");
+        assertSampleIdentifier(sample, "/TEST-SPACE/SAMPLE");
     }
 
     @Test

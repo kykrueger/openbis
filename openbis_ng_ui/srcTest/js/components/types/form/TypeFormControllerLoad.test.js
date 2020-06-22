@@ -95,9 +95,13 @@ describe('TypeFormController.load', () => {
     facade.loadUsages.mockReturnValue(
       Promise.resolve({
         type: 10,
-        property: {
+        propertyLocal: {
           [TEST_PROPERTY_TYPE_1_DTO.getCode()]: 1,
           [TEST_PROPERTY_TYPE_2_DTO.getCode()]: 2
+        },
+        propertyGlobal: {
+          [TEST_PROPERTY_TYPE_1_DTO.getCode()]: 10,
+          [TEST_PROPERTY_TYPE_2_DTO.getCode()]: 20
         }
       })
     )
@@ -139,7 +143,8 @@ describe('TypeFormController.load', () => {
           mandatory: { value: true },
           showInEditView: { value: true },
           showRawValueInForms: { value: true },
-          usages: 1,
+          usagesLocal: 1,
+          usagesGlobal: 10,
           section: 'section-0'
         },
         {
@@ -152,7 +157,8 @@ describe('TypeFormController.load', () => {
           mandatory: { value: true },
           showInEditView: { value: false },
           showRawValueInForms: { value: true },
-          usages: 2,
+          usagesLocal: 2,
+          usagesGlobal: 20,
           section: 'section-1'
         },
         {
@@ -165,7 +171,8 @@ describe('TypeFormController.load', () => {
           mandatory: { value: false },
           showInEditView: { value: true },
           showRawValueInForms: { value: false },
-          usages: 0,
+          usagesLocal: 0,
+          usagesGlobal: 0,
           section: 'section-1'
         }
       ],

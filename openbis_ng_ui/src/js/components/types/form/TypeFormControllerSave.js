@@ -5,6 +5,7 @@ import objectTypes from '@src/js/common/consts/objectType.js'
 import openbis from '@src/js/services/openbis.js'
 
 import TypeFormControllerStrategies from './TypeFormControllerStrategies.js'
+import TypeFormUtil from './TypeFormUtil.js'
 
 export default class TypeFormControllerSave {
   constructor(controller) {
@@ -24,7 +25,8 @@ export default class TypeFormControllerSave {
       validate: true
     })
 
-    if (!this.controller.validate(true)) {
+    const valid = await this.controller.validate(true)
+    if (!valid) {
       return
     }
 
@@ -57,7 +59,7 @@ export default class TypeFormControllerSave {
         this.context.setState({
           loading: false
         })
-        this.facade.catch(error)
+        this.context.dispatch(actions.errorChange(error))
       })
   }
 
@@ -135,58 +137,42 @@ export default class TypeFormControllerSave {
     return results
   }
 
-  _getTypePrefix() {
-    return this.type.code.value + '.'
-  }
-
-  _hasTypePrefix(property) {
-    return (
-      property.code.value &&
-      property.code.value.startsWith(this._getTypePrefix())
-    )
-  }
-
   _addTypePrefix(property) {
-    if (property.code.value && !this._hasTypePrefix(property)) {
-      return {
-        ...property,
-        code: {
-          ...property.code,
-          value: this._getTypePrefix() + property.code.value
-        }
+    return {
+      ...property,
+      code: {
+        ...property.code,
+        value: TypeFormUtil.addTypePrefix(
+          this.type.code.value,
+          property.code.value
+        )
       }
-    } else {
-      return property
     }
   }
 
-  _hasPropertyChanged(property, path) {
-    const originalValue = property.original
-      ? _.get(property.original, path)
-      : null
+  _hasPropertyChanged(property, original, path) {
+    const originalValue = original ? _.get(original, path) : null
     const currentValue = _.get(property, path)
     return originalValue.value !== currentValue.value
   }
 
-  _isPropertyTypeUpdateNeeded(property) {
+  _isPropertyTypeUpdateNeeded(property, original) {
     return (
-      this._hasPropertyChanged(property, 'dataType') ||
-      this._hasPropertyChanged(property, 'vocabulary') ||
-      this._hasPropertyChanged(property, 'materialType') ||
-      this._hasPropertyChanged(property, 'plugin') ||
-      this._hasPropertyChanged(property, 'label') ||
-      this._hasPropertyChanged(property, 'description') ||
-      this._hasPropertyChanged(property, 'schema') ||
-      this._hasPropertyChanged(property, 'transformation')
+      this._hasPropertyChanged(property, original, 'dataType') ||
+      this._hasPropertyChanged(property, original, 'vocabulary') ||
+      this._hasPropertyChanged(property, original, 'materialType') ||
+      this._hasPropertyChanged(property, original, 'label') ||
+      this._hasPropertyChanged(property, original, 'description') ||
+      this._hasPropertyChanged(property, original, 'schema') ||
+      this._hasPropertyChanged(property, original, 'transformation')
     )
   }
 
-  _isPropertyTypeUpdatePossible(property) {
+  _isPropertyTypeUpdatePossible(property, original) {
     if (
-      this._hasPropertyChanged(property, 'dataType') ||
-      this._hasPropertyChanged(property, 'vocabulary') ||
-      this._hasPropertyChanged(property, 'materialType') ||
-      this._hasPropertyChanged(property, 'plugin')
+      this._hasPropertyChanged(property, original, 'dataType') ||
+      this._hasPropertyChanged(property, original, 'vocabulary') ||
+      this._hasPropertyChanged(property, original, 'materialType')
     ) {
       return false
     }
@@ -201,62 +187,36 @@ export default class TypeFormControllerSave {
       this.type.original.properties.forEach(originalProperty => {
         const property = _.find(this.properties, ['id', originalProperty.id])
         if (!property) {
-          if (originalProperty.scope.value === 'local') {
-            operations.push(
-              this._deletePropertyAssignmentOperation(originalProperty)
-            )
+          operations.push(
+            this._deletePropertyAssignmentOperation(originalProperty)
+          )
+          if (originalProperty.assignments === 1) {
             operations.push(this._deletePropertyTypeOperation(originalProperty))
-          } else if (originalProperty.scope.value === 'global') {
-            operations.push(
-              this._deletePropertyAssignmentOperation(originalProperty)
-            )
           }
         }
       })
     }
 
     this.properties.forEach((property, index) => {
-      if (property.original) {
-        if (property.scope.value === 'local') {
-          if (this._isPropertyTypeUpdateNeeded(property)) {
-            if (this._isPropertyTypeUpdatePossible(property)) {
-              operations.push(this._updatePropertyTypeOperation(property))
-            } else {
-              operations.push(this._deletePropertyAssignmentOperation(property))
-              operations.push(this._deletePropertyTypeOperation(property))
-              operations.push(this._createPropertyTypeOperation(property))
-            }
-          }
-          assignments.push(this._propertyAssignmentCreation(property, index))
-        } else if (property.scope.value === 'global') {
-          if (this._isPropertyTypeUpdateNeeded(property)) {
-            const propertyWithPrefix = this._addTypePrefix(property)
-            operations.push(this._deletePropertyAssignmentOperation(property))
-            operations.push(
-              this._createPropertyTypeOperation(propertyWithPrefix)
-            )
-            assignments.push(
-              this._propertyAssignmentCreation(propertyWithPrefix, index)
-            )
+      const original = property.scope.globalPropertyType || property.original
+
+      if (original) {
+        if (this._isPropertyTypeUpdateNeeded(property, original)) {
+          if (this._isPropertyTypeUpdatePossible(property, original)) {
+            operations.push(this._updatePropertyTypeOperation(property))
           } else {
-            assignments.push(this._propertyAssignmentCreation(property, index))
+            operations.push(this._deletePropertyAssignmentOperation(property))
+            operations.push(this._deletePropertyTypeOperation(property))
+            operations.push(this._createPropertyTypeOperation(property))
           }
         }
+        assignments.push(this._propertyAssignmentCreation(property, index))
       } else {
         if (property.scope.value === 'local') {
-          const propertyWithPrefix = this._addTypePrefix(property)
-          operations.push(this._createPropertyTypeOperation(propertyWithPrefix))
-          assignments.push(
-            this._propertyAssignmentCreation(propertyWithPrefix, index)
-          )
-        } else if (property.scope.value === 'global') {
-          if (property.scope.globalPropertyType) {
-            assignments.push(this._propertyAssignmentCreation(property, index))
-          } else {
-            operations.push(this._createPropertyTypeOperation(property))
-            assignments.push(this._propertyAssignmentCreation(property, index))
-          }
+          property = this._addTypePrefix(property)
         }
+        operations.push(this._createPropertyTypeOperation(property))
+        assignments.push(this._propertyAssignmentCreation(property, index))
       }
     })
 
@@ -289,7 +249,7 @@ export default class TypeFormControllerSave {
     update.getPropertyAssignments().remove([assignmentId])
     update
       .getPropertyAssignments()
-      .setForceRemovingAssignments(property.usages > 0)
+      .setForceRemovingAssignments(property.usagesLocal > 0)
 
     return strategy.createTypeUpdateOperation([update])
   }

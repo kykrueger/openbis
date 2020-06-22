@@ -3269,9 +3269,9 @@ $$ LANGUAGE plpgsql;
 
 CREATE FUNCTION samples_all_tsvector_document_trigger() RETURNS trigger AS $$
 DECLARE proj_code VARCHAR;
-        space_code VARCHAR;
-        container_code VARCHAR;
-        identifier VARCHAR := '/';
+    space_code VARCHAR;
+    container_code VARCHAR;
+    identifier VARCHAR := '/';
 BEGIN
     IF NEW.space_id IS NOT NULL THEN
         SELECT code INTO STRICT space_code FROM spaces WHERE id = NEW.space_id;
@@ -3283,20 +3283,21 @@ BEGIN
             SELECT code INTO STRICT proj_code FROM projects WHERE id = NEW.proj_id;
         ELSE
             SELECT p.code, s.code INTO STRICT proj_code, space_code FROM projects p
-                                                                             INNER JOIN spaces s ON p.space_id = s.id WHERE id = NEW.proj_id;
+                INNER JOIN spaces s ON p.space_id = s.id WHERE id = NEW.proj_id;
             identifier := identifier || space_code || '/';
         END IF;
 
         identifier := identifier || proj_code || '/';
     END IF;
 
-    identifier := identifier || NEW.code;
-
     IF NEW.samp_id_part_of IS NOT NULL THEN
         SELECT code INTO STRICT container_code FROM samples_all WHERE id = NEW.samp_id_part_of;
-        identifier := identifier || ':' || container_code;
+        identifier := identifier || container_code || ':' || NEW.code;
+    ELSE
+        identifier := identifier || NEW.code;
     END IF;
 
+    NEW.sample_identifier := identifier;
     NEW.tsvector_document := (escape_tsvector_string(NEW.perm_id) || ':1')::tsvector ||
             (escape_tsvector_string(NEW.code) || ':1')::tsvector ||
             (escape_tsvector_string(identifier) || ':1')::tsvector;
@@ -3340,7 +3341,6 @@ DROP TRIGGER IF EXISTS samples_all_tsvector_document ON samples_all;
 CREATE TRIGGER samples_all_tsvector_document BEFORE INSERT OR UPDATE
     ON samples_all FOR EACH ROW EXECUTE PROCEDURE
     samples_all_tsvector_document_trigger();
-
 DROP TRIGGER IF EXISTS sample_properties_tsvector_document ON sample_properties;
 CREATE TRIGGER sample_properties_tsvector_document BEFORE INSERT OR UPDATE
     ON sample_properties FOR EACH ROW EXECUTE PROCEDURE

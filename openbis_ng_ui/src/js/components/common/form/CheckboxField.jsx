@@ -14,6 +14,10 @@ const styles = () => ({
   },
   label: {
     cursor: 'pointer'
+  },
+  checkbox: {
+    padding: '2px',
+    marginRight: '4px'
   }
 })
 
@@ -91,6 +95,8 @@ class CheckboxFormField extends React.PureComponent {
             disabled={disabled}
             onChange={this.handleChange}
             onFocus={this.handleFocus}
+            classes={{ root: classes.checkbox }}
+            size='small'
           />
           <Typography
             component='label'

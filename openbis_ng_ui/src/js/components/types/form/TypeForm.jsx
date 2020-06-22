@@ -19,13 +19,13 @@ const styles = theme => ({
   container: {
     height: '100%',
     display: 'flex',
-    flexDirection: 'row'
+    flexDirection: 'column'
   },
   content: {
     display: 'flex',
-    flexDirection: 'column',
-    height: '100%',
-    flex: '1 1 auto'
+    flexDirection: 'row',
+    flex: '1 1 auto',
+    overflow: 'auto'
   },
   preview: {
     height: '100%',
@@ -41,7 +41,7 @@ const styles = theme => ({
     borderStyle: 'solid'
   },
   parameters: {
-    backgroundColor: theme.palette.action.selected,
+    borderLeft: `1px solid ${theme.palette.background.secondary}`,
     height: '100%',
     overflow: 'auto',
     flex: '0 0 auto'
@@ -107,59 +107,59 @@ class TypeForm extends React.PureComponent {
               onSelectionChange={controller.handleSelectionChange}
             />
           </div>
-          <div className={classes.buttons}>
-            <TypeFormButtons
-              onAddSection={controller.handleAddSection}
-              onAddProperty={controller.handleAddProperty}
-              onRemove={controller.handleRemove}
-              onSave={controller.handleSave}
-              selection={selection}
-            />
-            <TypeFormDialogRemoveSection
-              open={removeSectionDialogOpen}
-              selection={selection}
-              sections={sections}
-              onConfirm={controller.handleRemoveConfirm}
-              onCancel={controller.handleRemoveCancel}
-            />
-            <TypeFormDialogRemoveProperty
-              open={removePropertyDialogOpen}
-              selection={selection}
-              properties={properties}
-              onConfirm={controller.handleRemoveConfirm}
-              onCancel={controller.handleRemoveCancel}
-            />
-          </div>
+          <Resizable
+            defaultSize={{
+              width: 400,
+              height: 'auto'
+            }}
+            enable={{
+              left: true,
+              top: false,
+              right: false,
+              bottom: false,
+              topRight: false,
+              bottomRight: false,
+              bottomLeft: false,
+              topLeft: false
+            }}
+          >
+            <div className={classes.parameters}>
+              <TypeFormParameters
+                controller={controller}
+                type={type}
+                properties={properties}
+                sections={sections}
+                selection={selection}
+                onChange={controller.handleChange}
+                onSelectionChange={controller.handleSelectionChange}
+                onBlur={controller.handleBlur}
+              />
+            </div>
+          </Resizable>
         </div>
-        <Resizable
-          defaultSize={{
-            width: 400,
-            height: 'auto'
-          }}
-          enable={{
-            left: true,
-            top: false,
-            right: false,
-            bottom: false,
-            topRight: false,
-            bottomRight: false,
-            bottomLeft: false,
-            topLeft: false
-          }}
-        >
-          <div className={classes.parameters}>
-            <TypeFormParameters
-              controller={controller}
-              type={type}
-              properties={properties}
-              sections={sections}
-              selection={selection}
-              onChange={controller.handleChange}
-              onSelectionChange={controller.handleSelectionChange}
-              onBlur={controller.handleBlur}
-            />
-          </div>
-        </Resizable>
+        <div className={classes.buttons}>
+          <TypeFormButtons
+            onAddSection={controller.handleAddSection}
+            onAddProperty={controller.handleAddProperty}
+            onRemove={controller.handleRemove}
+            onSave={controller.handleSave}
+            selection={selection}
+          />
+          <TypeFormDialogRemoveSection
+            open={removeSectionDialogOpen}
+            selection={selection}
+            sections={sections}
+            onConfirm={controller.handleRemoveConfirm}
+            onCancel={controller.handleRemoveCancel}
+          />
+          <TypeFormDialogRemoveProperty
+            open={removePropertyDialogOpen}
+            selection={selection}
+            properties={properties}
+            onConfirm={controller.handleRemoveConfirm}
+            onCancel={controller.handleRemoveCancel}
+          />
+        </div>
       </div>
     )
   }

@@ -541,7 +541,7 @@ public class GenericServerDatabaseTest extends AbstractDAOTest
     {
         SessionContextDTO sessionDTO = server.tryAuthenticate(user.getUserId(), PASSWORD);
 
-        NewSample newSample = createNewSample("/TEST-SPACE/EV-TEST", "/TEST-SPACE/TEST-PROJECT/EXP-SPACE-TEST");
+        NewSample newSample = createNewSample("/TEST-SPACE/EV-TEST2", "/TEST-SPACE/TEST-PROJECT/EXP-SPACE-TEST");
         NewSamplesWithTypes newSamples = new NewSamplesWithTypes(newSample.getSampleType(), Arrays.asList(newSample));
 
         if (user.isInstanceUser())

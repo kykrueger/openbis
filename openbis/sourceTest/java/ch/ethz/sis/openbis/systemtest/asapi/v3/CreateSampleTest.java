@@ -399,6 +399,7 @@ public class CreateSampleTest extends AbstractSampleTest
         assertEquals(sample.getCode(), "SAMPLE_WITH_EXPERIMENT");
         assertEquals(sample.getSpace().getCode(), "CISD");
         assertEquals(sample.getExperiment().getCode(), "EXP1");
+        assertSampleIdentifier(sample, "/CISD/SAMPLE_WITH_EXPERIMENT");
     }
 
     @Test
@@ -420,6 +421,7 @@ public class CreateSampleTest extends AbstractSampleTest
 
         assertEquals(sample.getCode(), "SHARED_SAMPLE_TEST");
         assertNull(sample.getSpace());
+        assertSampleIdentifier(sample, "/SHARED_SAMPLE_TEST");
     }
 
     @Test
@@ -1317,6 +1319,7 @@ public class CreateSampleTest extends AbstractSampleTest
         assertEquals(sampleWithSpace1.getType().getCode(), "CELL_PLATE");
         assertEquals(sampleWithSpace1.getSpace().getPermId().getPermId(), "CISD");
         assertEquals(sampleWithSpace1.getIdentifier().getIdentifier(), "/CISD/MP002-1:SAMPLE_WITH_SPACE1");
+        assertSampleIdentifier(sampleWithSpace1, "/CISD/MP002-1:SAMPLE_WITH_SPACE1");
         assertEquals(sampleWithSpace1.getRegistrator().getUserId(), TEST_USER);
         assertEquals(sampleWithSpace1.getContainer().getCode(), "MP002-1");
         List<Attachment> attachments = sampleWithSpace1.getAttachments();

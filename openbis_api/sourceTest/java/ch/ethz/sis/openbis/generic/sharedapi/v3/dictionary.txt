@@ -2349,4 +2349,7 @@ has Sample Properties
 set Sample Properties
 with Sample Properties
 with Sample Properties Using
-
+MatchFetchOptions
+hasMatch
+withMatch
+withMatchUsing

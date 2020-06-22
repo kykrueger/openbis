@@ -1,15 +1,12 @@
-export default class ButtonWrapper {
-  constructor(wrapper) {
-    this.wrapper = wrapper
-  }
+import BaseWrapper from './BaseWrapper.js'
 
+export default class ButtonWrapper extends BaseWrapper {
   getLabel() {
-    return this.wrapper.text()
+    return this.getStringValue(this.wrapper.text())
   }
 
   getEnabled() {
-    const disabled = this.wrapper.prop('disabled')
-    return disabled === undefined || disabled === null || disabled === false
+    return this.getBooleanValue(this.wrapper.prop('disabled'))
   }
 
   click() {

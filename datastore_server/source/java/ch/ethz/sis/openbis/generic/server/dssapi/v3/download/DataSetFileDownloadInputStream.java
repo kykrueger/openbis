@@ -79,6 +79,11 @@ public class DataSetFileDownloadInputStream extends ConcatenatedContentInputStre
         if (content.isDirectory() == false)
         {
             dto.setFileLength(content.getFileLength());
+            if (content.isChecksumCRC32Precalculated())
+            {
+                dto.setChecksumCRC32(content.getChecksumCRC32());
+            }
+            dto.setChecksum(content.getChecksum());
         }
         dto.setDataSetPermId(new DataSetPermId(dataSetCode));
         return dto;

@@ -48,7 +48,9 @@ import PluginSearchCriteria from 'as/dto/plugin/search/PluginSearchCriteria'
 import PluginType from 'as/dto/plugin/PluginType'
 import PropertyAssignment from 'as/dto/property/PropertyAssignment'
 import PropertyAssignmentCreation from 'as/dto/property/create/PropertyAssignmentCreation'
+import PropertyAssignmentFetchOptions from 'as/dto/property/fetchoptions/PropertyAssignmentFetchOptions'
 import PropertyAssignmentPermId from 'as/dto/property/id/PropertyAssignmentPermId'
+import PropertyAssignmentSearchCriteria from 'as/dto/property/search/PropertyAssignmentSearchCriteria'
 import PropertyType from 'as/dto/property/PropertyType'
 import PropertyTypeCreation from 'as/dto/property/create/PropertyTypeCreation'
 import PropertyTypeDeletionOptions from 'as/dto/property/delete/PropertyTypeDeletionOptions'
@@ -134,7 +136,9 @@ const dto = {
   PluginType,
   PropertyAssignment,
   PropertyAssignmentCreation,
+  PropertyAssignmentFetchOptions,
   PropertyAssignmentPermId,
+  PropertyAssignmentSearchCriteria,
   PropertyType,
   PropertyTypeCreation,
   PropertyTypeDeletionOptions,

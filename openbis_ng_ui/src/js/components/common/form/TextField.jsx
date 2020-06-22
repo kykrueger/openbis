@@ -13,6 +13,12 @@ const styles = () => ({
   },
   endAdornment: {
     marginLeft: 0
+  },
+  textField: {
+    margin: 0
+  },
+  input: {
+    fontSize: '0.875rem'
   }
 })
 
@@ -76,7 +82,10 @@ class TextFormField extends React.PureComponent {
               >
                 {endAdornment}
               </InputAdornment>
-            ) : null
+            ) : null,
+            classes: {
+              input: classes.input
+            }
           }}
           name={name}
           value={value || ''}
@@ -89,6 +98,10 @@ class TextFormField extends React.PureComponent {
           fullWidth={true}
           autoComplete='off'
           variant='filled'
+          margin='dense'
+          classes={{
+            root: classes.textField
+          }}
         />
       </FormFieldContainer>
     )

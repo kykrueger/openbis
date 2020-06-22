@@ -8,10 +8,17 @@ import FormFieldContainer from './FormFieldContainer.jsx'
 import FormFieldLabel from './FormFieldLabel.jsx'
 
 const styles = () => ({
+  textField: {
+    margin: 0
+  },
+  select: {
+    fontSize: '0.875rem'
+  },
   option: {
     '&:after': {
       content: '"\\00a0"'
-    }
+    },
+    fontSize: '0.875rem'
   }
 })
 
@@ -61,7 +68,8 @@ class SelectFormField extends React.PureComponent {
       styles,
       onChange,
       onClick,
-      classes
+      classes,
+      variant
     } = this.props
 
     this.fixReference(reference)
@@ -78,11 +86,13 @@ class SelectFormField extends React.PureComponent {
           select
           inputRef={this.inputReference}
           label={
-            <FormFieldLabel
-              label={label}
-              mandatory={mandatory}
-              styles={styles}
-            />
+            label ? (
+              <FormFieldLabel
+                label={label}
+                mandatory={mandatory}
+                styles={styles}
+              />
+            ) : null
           }
           name={name}
           value={value || ''}
@@ -100,9 +110,16 @@ class SelectFormField extends React.PureComponent {
                 vertical: 'bottom',
                 horizontal: 'left'
               }
+            },
+            classes: {
+              root: classes.select
             }
           }}
-          variant='filled'
+          variant={variant ? variant : 'filled'}
+          margin='dense'
+          classes={{
+            root: classes.textField
+          }}
         >
           {options &&
             options.map(option => (

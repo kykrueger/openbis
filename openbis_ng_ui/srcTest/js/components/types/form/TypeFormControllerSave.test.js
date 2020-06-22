@@ -125,13 +125,96 @@ describe('TypeFormController.handleSave', () => {
     })
   })
 
-  test('add property', async () => {
+  test('add local property', async () => {
+    await testAddProperty('local')
+  })
+
+  test('add global property', async () => {
+    await testAddProperty('global')
+  })
+
+  test('update local property assignment', async () => {
+    await testUpdatePropertyAssignment(
+      SAMPLE_TYPE_WITH_LOCAL_PROPERTY,
+      LOCAL_PROPERTY_TYPE
+    )
+  })
+
+  test('update global property assignment', async () => {
+    await testUpdatePropertyAssignment(
+      SAMPLE_TYPE_WITH_GLOBAL_PROPERTY,
+      GLOBAL_PROPERTY_TYPE
+    )
+  })
+
+  test('update local property type if possible', async () => {
+    await testUpdatePropertyTypeIfPossible(
+      SAMPLE_TYPE_WITH_LOCAL_PROPERTY,
+      LOCAL_PROPERTY_TYPE,
+      LOCAL_PROPERTY_ASSIGNMENT
+    )
+  })
+
+  test('update global property type if possible', async () => {
+    await testUpdatePropertyTypeIfPossible(
+      SAMPLE_TYPE_WITH_GLOBAL_PROPERTY,
+      GLOBAL_PROPERTY_TYPE,
+      GLOBAL_PROPERTY_ASSIGNMENT
+    )
+  })
+
+  test('update local property type if not possible', async () => {
+    await testUpdatePropertyTypeIfNotPossible(
+      SAMPLE_TYPE_WITH_LOCAL_PROPERTY,
+      LOCAL_PROPERTY_TYPE,
+      LOCAL_PROPERTY_ASSIGNMENT
+    )
+  })
+
+  test('update global property type if not possible', async () => {
+    await testUpdatePropertyTypeIfNotPossible(
+      SAMPLE_TYPE_WITH_GLOBAL_PROPERTY,
+      GLOBAL_PROPERTY_TYPE,
+      GLOBAL_PROPERTY_ASSIGNMENT
+    )
+  })
+
+  test('delete local property', async () => {
+    await testDeleteProperty(
+      SAMPLE_TYPE_WITH_LOCAL_PROPERTY,
+      LOCAL_PROPERTY_TYPE
+    )
+  })
+
+  test('delete global property', async () => {
+    await testDeleteProperty(
+      SAMPLE_TYPE_WITH_GLOBAL_PROPERTY,
+      GLOBAL_PROPERTY_TYPE
+    )
+  })
+
+  test('delete local property last assignment', async () => {
+    await testDeletePropertyLastAssignment(
+      SAMPLE_TYPE_WITH_LOCAL_PROPERTY,
+      LOCAL_PROPERTY_TYPE
+    )
+  })
+
+  test('delete global property last assignment', async () => {
+    await testDeletePropertyLastAssignment(
+      SAMPLE_TYPE_WITH_GLOBAL_PROPERTY,
+      GLOBAL_PROPERTY_TYPE
+    )
+  })
+
+  async function testAddProperty(scope) {
     const SAMPLE_TYPE = new openbis.SampleType()
     SAMPLE_TYPE.setCode('TEST_TYPE')
     SAMPLE_TYPE.setGeneratedCodePrefix('TEST_PREFIX')
 
     facade.loadType.mockReturnValue(Promise.resolve(SAMPLE_TYPE))
     facade.loadUsages.mockReturnValue(Promise.resolve({}))
+    facade.loadGlobalPropertyTypes.mockReturnValue(Promise.resolve([]))
     facade.executeOperations.mockReturnValue(Promise.resolve({}))
 
     await controller.load()
@@ -153,27 +236,33 @@ describe('TypeFormController.handleSave', () => {
       field: 'description',
       value: 'NEW_DESCRIPTION'
     })
+    controller.handleChange('property', {
+      id: 'property-0',
+      field: 'scope',
+      value: scope
+    })
 
     await controller.handleSave()
 
+    const propertyTypeCode =
+      scope === 'local' ? 'TEST_TYPE.NEW_CODE' : 'NEW_CODE'
+
     expectExecuteOperations([
       createPropertyTypeOperation(
-        'TEST_TYPE.NEW_CODE',
+        propertyTypeCode,
         openbis.DataType.VARCHAR,
         'NEW_LABEL'
       ),
       setPropertyAssignmentOperation(
         SAMPLE_TYPE.getCode(),
-        'TEST_TYPE.NEW_CODE',
+        propertyTypeCode,
         false
       )
     ])
-  })
+  }
 
-  test('update local property assignment', async () => {
-    facade.loadType.mockReturnValue(
-      Promise.resolve(SAMPLE_TYPE_WITH_LOCAL_PROPERTY)
-    )
+  async function testUpdatePropertyAssignment(type, propertyType) {
+    facade.loadType.mockReturnValue(Promise.resolve(type))
     facade.loadUsages.mockReturnValue(Promise.resolve({}))
     facade.executeOperations.mockReturnValue(Promise.resolve({}))
 
@@ -189,17 +278,19 @@ describe('TypeFormController.handleSave', () => {
 
     expectExecuteOperations([
       setPropertyAssignmentOperation(
-        SAMPLE_TYPE_WITH_LOCAL_PROPERTY.getCode(),
-        LOCAL_PROPERTY_TYPE.getCode(),
+        type.getCode(),
+        propertyType.getCode(),
         true
       )
     ])
-  })
+  }
 
-  test('update local property type if possible', async () => {
-    facade.loadType.mockReturnValue(
-      Promise.resolve(SAMPLE_TYPE_WITH_LOCAL_PROPERTY)
-    )
+  async function testUpdatePropertyTypeIfPossible(
+    type,
+    propertyType,
+    propertyAssignment
+  ) {
+    facade.loadType.mockReturnValue(Promise.resolve(type))
     facade.loadUsages.mockReturnValue(Promise.resolve({}))
     facade.executeOperations.mockReturnValue(Promise.resolve({}))
 
@@ -214,22 +305,21 @@ describe('TypeFormController.handleSave', () => {
     await controller.handleSave()
 
     expectExecuteOperations([
-      updatePropertyTypeOperation(
-        LOCAL_PROPERTY_TYPE.getCode(),
-        'Updated label'
-      ),
+      updatePropertyTypeOperation(propertyType.getCode(), 'Updated label'),
       setPropertyAssignmentOperation(
-        SAMPLE_TYPE_WITH_LOCAL_PROPERTY.getCode(),
-        LOCAL_PROPERTY_TYPE.getCode(),
-        LOCAL_PROPERTY_ASSIGNMENT.isMandatory()
+        type.getCode(),
+        propertyType.getCode(),
+        propertyAssignment.isMandatory()
       )
     ])
-  })
+  }
 
-  test('update local property type if not possible', async () => {
-    facade.loadType.mockReturnValue(
-      Promise.resolve(SAMPLE_TYPE_WITH_LOCAL_PROPERTY)
-    )
+  async function testUpdatePropertyTypeIfNotPossible(
+    type,
+    propertyType,
+    propertyAssignment
+  ) {
+    facade.loadType.mockReturnValue(Promise.resolve(type))
     facade.loadUsages.mockReturnValue(Promise.resolve({}))
     facade.executeOperations.mockReturnValue(Promise.resolve({}))
 
@@ -245,95 +335,26 @@ describe('TypeFormController.handleSave', () => {
 
     expectExecuteOperations([
       deletePropertyAssignmentOperation(
-        SAMPLE_TYPE_WITH_LOCAL_PROPERTY.getCode(),
-        LOCAL_PROPERTY_TYPE.getCode(),
+        type.getCode(),
+        propertyType.getCode(),
         false
       ),
-      deletePropertyTypeOperation(LOCAL_PROPERTY_TYPE.getCode()),
+      deletePropertyTypeOperation(propertyType.getCode()),
       createPropertyTypeOperation(
-        LOCAL_PROPERTY_TYPE.getCode(),
+        propertyType.getCode(),
         openbis.DataType.BOOLEAN,
-        LOCAL_PROPERTY_TYPE.getLabel()
+        propertyType.getLabel()
       ),
       setPropertyAssignmentOperation(
-        SAMPLE_TYPE_WITH_LOCAL_PROPERTY.getCode(),
-        LOCAL_PROPERTY_TYPE.getCode(),
-        LOCAL_PROPERTY_ASSIGNMENT.isMandatory()
+        type.getCode(),
+        propertyType.getCode(),
+        propertyAssignment.isMandatory()
       )
     ])
-  })
+  }
 
-  test('update global property assignment', async () => {
-    facade.loadType.mockReturnValue(
-      Promise.resolve(SAMPLE_TYPE_WITH_GLOBAL_PROPERTY)
-    )
-    facade.loadUsages.mockReturnValue(Promise.resolve({}))
-    facade.executeOperations.mockReturnValue(Promise.resolve({}))
-
-    await controller.load()
-
-    controller.handleChange('property', {
-      id: 'property-0',
-      field: 'mandatory',
-      value: true
-    })
-
-    await controller.handleSave()
-
-    expectExecuteOperations([
-      setPropertyAssignmentOperation(
-        SAMPLE_TYPE_WITH_GLOBAL_PROPERTY.getCode(),
-        GLOBAL_PROPERTY_TYPE.getCode(),
-        true
-      )
-    ])
-  })
-
-  test('update global property type', async () => {
-    facade.loadType.mockReturnValue(
-      Promise.resolve(SAMPLE_TYPE_WITH_GLOBAL_PROPERTY)
-    )
-    facade.loadUsages.mockReturnValue(Promise.resolve({}))
-    facade.executeOperations.mockReturnValue(Promise.resolve({}))
-
-    await controller.load()
-
-    controller.handleChange('property', {
-      id: 'property-0',
-      field: 'label',
-      value: 'Updated label'
-    })
-
-    await controller.handleSave()
-
-    const newPropertyTypeCode =
-      SAMPLE_TYPE_WITH_GLOBAL_PROPERTY.getCode() +
-      '.' +
-      GLOBAL_PROPERTY_TYPE.getCode()
-
-    expectExecuteOperations([
-      deletePropertyAssignmentOperation(
-        SAMPLE_TYPE_WITH_GLOBAL_PROPERTY.getCode(),
-        GLOBAL_PROPERTY_TYPE.getCode(),
-        false
-      ),
-      createPropertyTypeOperation(
-        newPropertyTypeCode,
-        GLOBAL_PROPERTY_TYPE.getDataType(),
-        'Updated label'
-      ),
-      setPropertyAssignmentOperation(
-        SAMPLE_TYPE_WITH_GLOBAL_PROPERTY.getCode(),
-        newPropertyTypeCode,
-        GLOBAL_PROPERTY_ASSIGNMENT.isMandatory()
-      )
-    ])
-  })
-
-  test('delete local property', async () => {
-    facade.loadType.mockReturnValue(
-      Promise.resolve(SAMPLE_TYPE_WITH_LOCAL_PROPERTY)
-    )
+  async function testDeleteProperty(type, propertyType) {
+    facade.loadType.mockReturnValue(Promise.resolve(type))
     facade.loadUsages.mockReturnValue(Promise.resolve({}))
     facade.executeOperations.mockReturnValue(Promise.resolve({}))
 
@@ -346,20 +367,22 @@ describe('TypeFormController.handleSave', () => {
 
     expectExecuteOperations([
       deletePropertyAssignmentOperation(
-        SAMPLE_TYPE_WITH_LOCAL_PROPERTY.getCode(),
-        LOCAL_PROPERTY_TYPE.getCode(),
+        type.getCode(),
+        propertyType.getCode(),
         false
       ),
-      deletePropertyTypeOperation(LOCAL_PROPERTY_TYPE.getCode()),
-      setPropertyAssignmentOperation(SAMPLE_TYPE_WITH_LOCAL_PROPERTY.getCode())
+      setPropertyAssignmentOperation(type.getCode())
     ])
-  })
+  }
 
-  test('delete global property', async () => {
-    facade.loadType.mockReturnValue(
-      Promise.resolve(SAMPLE_TYPE_WITH_GLOBAL_PROPERTY)
-    )
+  async function testDeletePropertyLastAssignment(type, propertyType) {
+    facade.loadType.mockReturnValue(Promise.resolve(type))
     facade.loadUsages.mockReturnValue(Promise.resolve({}))
+    facade.loadAssignments.mockReturnValue(
+      Promise.resolve({
+        [propertyType.getCode()]: 1
+      })
+    )
     facade.executeOperations.mockReturnValue(Promise.resolve({}))
 
     await controller.load()
@@ -371,13 +394,14 @@ describe('TypeFormController.handleSave', () => {
 
     expectExecuteOperations([
       deletePropertyAssignmentOperation(
-        SAMPLE_TYPE_WITH_GLOBAL_PROPERTY.getCode(),
-        GLOBAL_PROPERTY_TYPE.getCode(),
+        type.getCode(),
+        propertyType.getCode(),
         false
       ),
-      setPropertyAssignmentOperation(SAMPLE_TYPE_WITH_GLOBAL_PROPERTY.getCode())
+      deletePropertyTypeOperation(propertyType.getCode()),
+      setPropertyAssignmentOperation(type.getCode())
     ])
-  })
+  }
 
   function createPropertyTypeOperation(
     propertyTypeCode,
@@ -386,6 +410,7 @@ describe('TypeFormController.handleSave', () => {
   ) {
     const creation = new openbis.PropertyTypeCreation()
     creation.setCode(propertyTypeCode)
+    creation.setDataType(propertyDataType)
     creation.setLabel(propertyTypeLabel)
     return new openbis.CreatePropertyTypesOperation([creation])
   }

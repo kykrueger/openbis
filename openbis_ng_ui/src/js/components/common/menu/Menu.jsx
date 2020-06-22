@@ -18,9 +18,13 @@ import pages from '@src/js/common/consts/pages.js'
 import logger from '@src/js/common/logger.js'
 
 const styles = theme => ({
-  bar: {
+  appBar: {
     position: 'relative',
     zIndex: 400
+  },
+  toolBar: {
+    paddingLeft: theme.spacing(2),
+    paddingRight: theme.spacing(2)
   },
   tabs: {
     flexGrow: 1
@@ -34,12 +38,13 @@ const styles = theme => ({
     borderRadius: theme.shape.borderRadius,
     paddingLeft: theme.spacing(1),
     paddingRight: theme.spacing(1),
-    marginRight: theme.spacing(2),
+    marginRight: theme.spacing(1),
     transition: theme.transitions.create('width'),
     width: '200px',
     '&:focus-within': {
       width: '300px'
-    }
+    },
+    fontSize: '14px'
   },
   searchIcon: {
     paddingLeft: theme.spacing(1) / 2,
@@ -99,8 +104,8 @@ class Menu extends React.Component {
     const { classes, searchText } = this.props
 
     return (
-      <AppBar position='static' classes={{ root: classes.bar }}>
-        <Toolbar>
+      <AppBar position='static' classes={{ root: classes.appBar }}>
+        <Toolbar variant='dense' classes={{ root: classes.toolBar }}>
           <Tabs
             value={this.props.currentPage}
             onChange={this.props.currentPageChange}
@@ -128,8 +133,9 @@ class Menu extends React.Component {
             variant='contained'
             color='primary'
             onClick={this.props.logout}
+            size='small'
           >
-            <LogoutIcon />
+            <LogoutIcon fontSize='small' />
           </Button>
         </Toolbar>
       </AppBar>
@@ -140,7 +146,7 @@ class Menu extends React.Component {
     const { classes } = this.props
     return (
       <InputAdornment>
-        <SearchIcon classes={{ root: classes.searchIcon }} />
+        <SearchIcon classes={{ root: classes.searchIcon }} fontSize='small' />
       </InputAdornment>
     )
   }
@@ -153,6 +159,7 @@ class Menu extends React.Component {
           <CloseIcon
             classes={{ root: classes.searchClear }}
             onMouseDown={this.handleSearchClear}
+            fontSize='small'
           />
         </InputAdornment>
       )

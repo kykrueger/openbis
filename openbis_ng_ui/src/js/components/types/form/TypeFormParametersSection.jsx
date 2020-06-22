@@ -7,13 +7,13 @@ import TypeFormHeader from './TypeFormHeader.jsx'
 
 const styles = theme => ({
   container: {
-    padding: theme.spacing(2)
+    padding: `${theme.spacing(1)}px ${theme.spacing(2)}px`
   },
   header: {
-    paddingBottom: theme.spacing(2)
+    paddingBottom: theme.spacing(1)
   },
   field: {
-    paddingBottom: theme.spacing(2)
+    paddingBottom: theme.spacing(1)
   }
 })
 

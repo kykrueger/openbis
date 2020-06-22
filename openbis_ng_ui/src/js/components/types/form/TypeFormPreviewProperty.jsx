@@ -6,6 +6,7 @@ import CheckboxField from '@src/js/components/common/form/CheckboxField.jsx'
 import TextField from '@src/js/components/common/form/TextField.jsx'
 import SelectField from '@src/js/components/common/form/SelectField.jsx'
 import openbis from '@src/js/services/openbis.js'
+import actions from '@src/js/store/actions/actions.js'
 import logger from '@src/js/common/logger.js'
 import util from '@src/js/common/util.js'
 
@@ -14,7 +15,7 @@ const EMPTY = 'empty'
 const styles = theme => ({
   draggable: {
     width: '100%',
-    padding: theme.spacing(2),
+    padding: theme.spacing(1),
     boxSizing: 'border-box',
     borderWidth: '2px',
     borderStyle: 'solid',
@@ -77,9 +78,9 @@ class TypeFormPreviewProperty extends React.PureComponent {
   componentDidMount() {
     const { dataType } = this.props.property
 
-    if (dataType === openbis.DataType.MATERIAL) {
+    if (dataType.value === openbis.DataType.MATERIAL) {
       this.loadMaterials()
-    } else if (dataType === openbis.DataType.CONTROLLEDVOCABULARY) {
+    } else if (dataType.value === openbis.DataType.CONTROLLEDVOCABULARY) {
       this.loadVocabularyTerms()
     }
   }
@@ -108,7 +109,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
           }))
         })
         .catch(error => {
-          controller.getFacade().catch(error)
+          controller.getContext().dispatch(actions.errorChange(error))
         })
     } else {
       this.setState(() => ({
@@ -130,7 +131,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
           }))
         })
         .catch(error => {
-          controller.getFacade().catch(error)
+          controller.getContext().dispatch(actions.errorChange(error))
         })
     } else {
       this.setState(() => ({

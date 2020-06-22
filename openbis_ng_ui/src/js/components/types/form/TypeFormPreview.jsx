@@ -12,9 +12,11 @@ const styles = theme => ({
   container: {
     flex: '1 1 auto',
     display: 'flex',
-    padding: `${theme.spacing(2)}px ${theme.spacing(4)}px`
+    padding: `${theme.spacing(1)}px ${theme.spacing(2)}px`
   },
-  form: {},
+  form: {
+    width: '100%'
+  },
   droppable: {
     display: 'flex',
     flexDirection: 'column',

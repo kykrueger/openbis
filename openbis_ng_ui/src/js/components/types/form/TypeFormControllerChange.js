@@ -1,6 +1,8 @@
 import _ from 'lodash'
 import openbis from '@src/js/services/openbis.js'
 
+import TypeFormUtil from './TypeFormUtil.js'
+
 export default class TypeFormControllerChange {
   constructor(controller) {
     this.controller = controller
@@ -82,6 +84,8 @@ export default class TypeFormControllerChange {
   }
 
   _handleChangePropertyScope(oldProperty, newProperty) {
+    const { type, assignments, usages } = this.context.getState()
+
     const oldScope = oldProperty.scope.value
     const newScope = newProperty.scope.value
 
@@ -99,39 +103,86 @@ export default class TypeFormControllerChange {
         )
 
         if (globalPropertyType) {
+          globalPropertyType = {
+            label: {
+              value: _.get(globalPropertyType, 'label', null)
+            },
+            description: {
+              value: _.get(globalPropertyType, 'description', null)
+            },
+            dataType: {
+              value: _.get(globalPropertyType, 'dataType', null)
+            },
+            vocabulary: {
+              value: _.get(globalPropertyType, 'vocabulary.code', null)
+            },
+            materialType: {
+              value: _.get(globalPropertyType, 'materialType.code', null)
+            },
+            schema: {
+              value: _.get(globalPropertyType, 'schema', null)
+            },
+            transformation: {
+              value: _.get(globalPropertyType, 'transformation', null)
+            }
+          }
+
           newProperty = {
             ...newProperty,
             label: {
               ...newProperty.label,
-              value: _.get(globalPropertyType, 'label', null)
+              value: globalPropertyType.label.value
             },
             description: {
               ...newProperty.description,
-              value: _.get(globalPropertyType, 'description', null)
+              value: globalPropertyType.description.value
             },
             dataType: {
               ...newProperty.dataType,
-              value: _.get(globalPropertyType, 'dataType', null)
+              value: globalPropertyType.dataType.value
             },
             vocabulary: {
               ...newProperty.vocabulary,
-              value: _.get(globalPropertyType, 'vocabulary.code', null)
+              value: globalPropertyType.vocabulary.value
             },
             materialType: {
               ...newProperty.materialType,
-              value: _.get(globalPropertyType, 'materialType.code', null)
+              value: globalPropertyType.materialType.value
             },
             schema: {
               ...newProperty.schema,
-              value: _.get(globalPropertyType, 'schema', null)
+              value: globalPropertyType.schema.value
             },
             transformation: {
               ...newProperty.transformation,
-              value: _.get(globalPropertyType, 'transformation', null)
+              value: globalPropertyType.transformation.value
             }
           }
         }
       }
+
+      const propertyCode =
+        newScope === 'local'
+          ? TypeFormUtil.addTypePrefix(type.code.value, newProperty.code.value)
+          : newProperty.code.value
+
+      const propertyAssignments =
+        (assignments && assignments[propertyCode]) || 0
+
+      const propertyUsagesLocal =
+        (usages &&
+          usages.propertyLocal &&
+          usages.propertyLocal[propertyCode]) ||
+        0
+      const propertyUsagesGlobal =
+        (usages &&
+          usages.propertyGlobal &&
+          usages.propertyGlobal[propertyCode]) ||
+        0
+
+      const enabled = newProperty.original
+        ? propertyUsagesGlobal === 0 && propertyAssignments <= 1
+        : propertyUsagesGlobal === 0 && propertyAssignments === 0
 
       newProperty = {
         ...newProperty,
@@ -139,34 +190,25 @@ export default class TypeFormControllerChange {
           ...newProperty.scope,
           globalPropertyType: globalPropertyType
         },
-        label: {
-          ...newProperty.label,
-          enabled: !globalPropertyType
-        },
-        description: {
-          ...newProperty.description,
-          enabled: !globalPropertyType
-        },
         dataType: {
           ...newProperty.dataType,
-          enabled: !globalPropertyType
+          enabled
         },
         vocabulary: {
           ...newProperty.vocabulary,
-          enabled: !globalPropertyType
+          enabled
         },
         materialType: {
           ...newProperty.materialType,
-          enabled: !globalPropertyType
+          enabled
         },
-        schema: {
-          ...newProperty.schema,
-          enabled: !globalPropertyType
+        plugin: {
+          ...newProperty.plugin,
+          enabled
         },
-        transformation: {
-          ...newProperty.transformation,
-          enabled: !globalPropertyType
-        }
+        assignments: propertyAssignments,
+        usagesLocal: propertyUsagesLocal,
+        usagesGlobal: propertyUsagesGlobal
       }
     }
     return newProperty

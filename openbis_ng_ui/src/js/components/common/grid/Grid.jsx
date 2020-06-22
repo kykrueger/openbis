@@ -64,6 +64,9 @@ const styles = theme => ({
   },
   tableLink: {
     fontSize: 'inherit'
+  },
+  tableCell: {
+    padding: `${theme.spacing(1)}px ${theme.spacing(2)}px`
   }
 })
 
@@ -305,10 +308,7 @@ class Grid extends React.Component {
     function matches(value, filter) {
       if (filter) {
         return value
-          ? value
-              .trim()
-              .toUpperCase()
-              .includes(filter.trim().toUpperCase())
+          ? value.trim().toUpperCase().includes(filter.trim().toUpperCase())
           : false
       } else {
         return true
@@ -394,7 +394,7 @@ class Grid extends React.Component {
                 )
               })}
               <TableRow classes={{ root: classes.tableSpacer }}>
-                <TableCell></TableCell>
+                <TableCell classes={{ root: classes.tableCell }}></TableCell>
               </TableRow>
             </TableBody>
           </Table>
@@ -418,12 +418,13 @@ class Grid extends React.Component {
   }
 
   renderHeaderCell(column) {
+    const { classes } = this.props
     const { sort, sortDirection } = this.state
 
     if (column.visible) {
       if (column.sort) {
         return (
-          <TableCell key={column.field}>
+          <TableCell key={column.field} classes={{ root: classes.tableCell }}>
             <TableSortLabel
               active={sort === column.field}
               direction={sortDirection}
@@ -434,7 +435,11 @@ class Grid extends React.Component {
           </TableCell>
         )
       } else {
-        return <TableCell key={column.field}>{column.label}</TableCell>
+        return (
+          <TableCell key={column.field} classes={{ root: classes.tableCell }}>
+            {column.label}
+          </TableCell>
+        )
       }
     } else {
       return null
@@ -442,6 +447,7 @@ class Grid extends React.Component {
   }
 
   renderFilterCell(column) {
+    const { classes } = this.props
     const { filters } = this.state
 
     if (column.visible) {
@@ -450,7 +456,7 @@ class Grid extends React.Component {
         this.handleFilterChange(column.field, filter)
       }
       return (
-        <TableCell key={column.field}>
+        <TableCell key={column.field} classes={{ root: classes.tableCell }}>
           <FilterField filter={filter} filterChange={filterChange} />
         </TableCell>
       )
@@ -460,10 +466,12 @@ class Grid extends React.Component {
   }
 
   renderRowCell(column, row) {
+    const { classes } = this.props
+
     if (column.visible) {
       let rendered = column.render(row)
       return (
-        <TableCell key={column.field}>
+        <TableCell key={column.field} classes={{ root: classes.tableCell }}>
           {rendered ? rendered : <span>&nbsp;</span>}
         </TableCell>
       )
