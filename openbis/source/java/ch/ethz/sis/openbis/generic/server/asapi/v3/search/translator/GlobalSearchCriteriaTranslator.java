@@ -12,6 +12,7 @@ import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.openbis.generic.shared.dto.TableNames;
 import org.apache.log4j.Logger;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Spliterator;
 import java.util.stream.StreamSupport;
@@ -223,12 +224,17 @@ public class GlobalSearchCriteriaTranslator
 
         if (forAttributes)
         {
-            final float attributesRank = (tableMapper == SAMPLE || tableMapper == EXPERIMENT)
-                    ? ID_RANK : ATTRIBUTE_RANK;
-            sqlBuilder.append(attributesRank).append(DOUBLE_COLON).append(FLOAT_4).append(SP).append(RANK_ALIAS)
-                    .append(COMMA).append(NL);
+            final String[] criterionValues = criterion.getFieldValue().getValue().trim().split("\\s+");
+            final String thenValue = ID_RANK + DOUBLE_COLON + FLOAT_4;
+            final String elseValue = ATTRIBUTE_RANK + DOUBLE_COLON + FLOAT_4;
+            final String[] matchingColumns = (tableMapper == SAMPLE || tableMapper == EXPERIMENT)
+                    ? new String[] { MAIN_TABLE_ALIAS + PERIOD + CODE_COLUMN,
+                            MAIN_TABLE_ALIAS + PERIOD + PERM_ID_COLUMN }
+                    : new String[] { MAIN_TABLE_ALIAS + PERIOD + CODE_COLUMN };
+            buildCaseWhenIn(sqlBuilder, args, criterionValues, matchingColumns, thenValue, elseValue);
+            sqlBuilder.append(SP).append(RANK_ALIAS).append(COMMA).append(NL);
 
-            buildAttributesMatchSelection(sqlBuilder, criterion, vo.getTableMapper(), args);
+            buildAttributesMatchSelection(sqlBuilder, criterionValues, vo.getTableMapper(), args);
             sqlBuilder.append(COMMA).append(NL);
 
             sqlBuilder.append(NULL).append(SP).append(PROPERTY_TYPE_LABEL_ALIAS).append(COMMA).append(NL);
@@ -389,24 +395,16 @@ public class GlobalSearchCriteriaTranslator
      * Appends selection text for the attributes that they may match.
      *
      * @param sqlBuilder {@link StringBuilder string builder} containing SQL to be operated on.
-     * @param criterion the full text search criterion.
+     * @param criterionValues full text search values to be put to the full text search matching function.
      * @param tableMapper the table mapper.
      * @param args query arguments.
      */
-    private static void buildAttributesMatchSelection(final StringBuilder sqlBuilder, final GlobalSearchTextCriteria criterion,
+    private static void buildAttributesMatchSelection(final StringBuilder sqlBuilder, final String[] criterionValues,
             final TableMapper tableMapper, final List<Object> args)
     {
-        final String[] criterionValues = criterion.getFieldValue().getValue().trim().split("\\s+");
-
-        sqlBuilder.append(CASE).append(SP).append(WHEN).append(SP);
-        sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN);
-        sqlBuilder.append(SP).append(IN).append(SP).append(LP)
-                .append(SELECT).append(SP).append(UNNEST).append(LP).append(QU).append(RP)
-                .append(RP);
-        sqlBuilder.append(SP).append(THEN).append(SP).append(MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN);
-        sqlBuilder.append(SP).append(ELSE).append(SP).append(NULL).append(SP).append(END);
+        final String thenValue = MAIN_TABLE_ALIAS + PERIOD + CODE_COLUMN;
+        buildCaseWhenIn(sqlBuilder, args, criterionValues, new String[]{thenValue}, thenValue, NULL);
         sqlBuilder.append(SP).append(CODE_MATCH_ALIAS);
-        args.add(criterionValues);
 
         switch (tableMapper)
         {
@@ -443,6 +441,66 @@ public class GlobalSearchCriteriaTranslator
                 break;
             }
         }
+    }
+
+    /**
+     * Builds the following part of the query.
+     * <pre>
+     *     CASE WHEN
+     *     matchingColumns[0] IN (SELECT UNNEST(?))
+     *     OR
+     *     ...
+     *     OR
+     *     matchingColumns[n] IN (SELECT UNNEST(?))
+     *     THEN thenValue ELSE elseValue END
+     * </pre>
+     * @param sqlBuilder {@link StringBuilder string builder} containing SQL to be operated on.
+     * @param args query arguments.
+     * @param criterionValues full text search values to be put to the full text search matching function.
+     * @param matchingColumns array of columns at least one of which should be equal to one of {@code criterionValues}.
+     * @param thenValue resulting value for the true case.
+     * @param elseValue resulting value for the false case.
+     */
+    private static void buildCaseWhenIn(final StringBuilder sqlBuilder, final List<Object> args,
+            final String[] criterionValues, final String[] matchingColumns, final String thenValue,
+            final String elseValue)
+    {
+        sqlBuilder.append(CASE).append(SP).append(WHEN).append(SP);
+
+        final Spliterator<String> spliterator = Arrays.stream(matchingColumns).spliterator();
+
+        if (spliterator.tryAdvance(matchingColumn -> appendMatchingColumnCondition(sqlBuilder, matchingColumn, args,
+                criterionValues)))
+        {
+            spliterator.forEachRemaining(matchingColumn ->
+            {
+                sqlBuilder.append(SP).append(OR).append(SP);
+                appendMatchingColumnCondition(sqlBuilder, matchingColumn, args, criterionValues);
+            });
+        }
+
+        sqlBuilder.append(SP).append(THEN).append(SP).append(thenValue);
+        sqlBuilder.append(SP).append(ELSE).append(SP).append(elseValue).append(SP).append(END);
+    }
+
+    /**
+     * Builds the following part of the query and adds the corresponding array of values to the query arguments list.
+     * <pre>
+     *     matchingColumns[0] IN (SELECT UNNEST(?))
+     * </pre>
+     * @param sqlBuilder {@link StringBuilder string builder} containing SQL to be operated on.
+     * @param matchingColumn column which should be equal to one of values in the query parameter ('?').
+     * @param args query arguments.
+     * @param criterionValues full text search values to be put to the full text search matching function.
+     */
+    private static void appendMatchingColumnCondition(final StringBuilder sqlBuilder,
+            final String matchingColumn, final List<Object> args, final String[] criterionValues)
+    {
+        sqlBuilder.append(matchingColumn);
+        sqlBuilder.append(SP).append(IN).append(SP).append(LP)
+                .append(SELECT).append(SP).append(UNNEST).append(LP).append(QU).append(RP)
+                .append(RP);
+        args.add(criterionValues);
     }
 
     private static void buildTsRank(final StringBuilder sqlBuilder, final AbstractStringValue stringValue,
