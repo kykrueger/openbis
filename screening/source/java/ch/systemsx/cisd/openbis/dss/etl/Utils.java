@@ -18,6 +18,8 @@ package ch.systemsx.cisd.openbis.dss.etl;
 
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 
@@ -25,8 +27,20 @@ import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchicalContentNode;
 import ch.systemsx.cisd.openbis.dss.etl.dto.ImageLibraryInfo;
+import ch.systemsx.cisd.openbis.dss.etl.dto.api.Channel;
+import ch.systemsx.cisd.openbis.dss.etl.dto.api.ChannelColorRGB;
+import ch.systemsx.cisd.openbis.dss.etl.dto.api.ImageFileInfo;
+import ch.systemsx.cisd.openbis.dss.etl.dto.api.ImageStorageConfiguraton;
+import ch.systemsx.cisd.openbis.dss.etl.dto.api.impl.ImageDataSetStructure;
+import ch.systemsx.cisd.openbis.dss.etl.dto.api.transformations.ImageTransformation;
 import ch.systemsx.cisd.openbis.dss.generic.shared.dto.Size;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.ImageUtil;
+import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.Geometry;
+import ch.systemsx.cisd.openbis.plugin.screening.shared.imaging.dataaccess.IImagingReadonlyQueryDAO;
+import ch.systemsx.cisd.openbis.plugin.screening.shared.imaging.dataaccess.ImgAcquiredImageEnrichedDTO;
+import ch.systemsx.cisd.openbis.plugin.screening.shared.imaging.dataaccess.ImgChannelDTO;
+import ch.systemsx.cisd.openbis.plugin.screening.shared.imaging.dataaccess.ImgImageDatasetDTO;
+import ch.systemsx.cisd.openbis.plugin.screening.shared.imaging.dataaccess.ImgImageTransformationDTO;
 
 /**
  * Collection of helper functions.
@@ -96,5 +110,104 @@ public class Utils
         }
         return ImageUtil.loadUnchangedImageColorDepth(contentNode, imageIdOrNull,
                 imageLibraryNameOrNull, imageLibraryReaderNameOrNull);
+    }
+
+    public static ImageDataSetStructure getImageDataSetStructure(IImagingReadonlyQueryDAO query, String containerCode)
+    {
+        List<ImageFileInfo> images = new ArrayList<>();
+        List<Channel> channels = new ArrayList<>();
+        Geometry geometry = gatherImageFileInfos(query, containerCode, images, channels);
+        ImageDataSetStructure imageStruct = new ImageDataSetStructure();
+        imageStruct.setImages(images);
+        imageStruct.setChannels(channels);
+        imageStruct.setTileGeometry(geometry.getNumberOfRows(), geometry.getNumberOfColumns());
+        ImageStorageConfiguraton imageStorageConfiguraton = new ImageStorageConfiguraton();
+        ImageLibraryInfo imageLibrary = tryGetImageLibrary(query.tryGetImageDatasetByPermId(containerCode), false);
+        imageStorageConfiguraton.setImageLibrary(imageLibrary);
+        imageStruct.setImageStorageConfiguraton(imageStorageConfiguraton);
+        return imageStruct;
+    }
+
+    public static Geometry gatherImageFileInfos(IImagingReadonlyQueryDAO query, String permId,
+            List<ImageFileInfo> images, List<Channel> channels)
+    {
+        ImgImageDatasetDTO container = query.tryGetImageDatasetByPermId(permId);
+        if (container == null)
+        {
+            return null;
+        }
+
+        List<ImgAcquiredImageEnrichedDTO> acquiredImages =
+                query.listAllEnrichedAcquiredImagesForDataSet(container.getId());
+        for (ImgAcquiredImageEnrichedDTO acquiredImage : acquiredImages)
+        {
+            images.add(createImageFileInfo(container, acquiredImage));
+        }
+
+        List<ImgChannelDTO> channelDTOs = query.getChannelsByDatasetId(container.getId());
+        for (ImgChannelDTO channelDTO : channelDTOs)
+        {
+            channels.add(createChannel(query, channelDTO));
+        }
+
+        return Geometry.createFromRowColDimensions(container.getFieldNumberOfRows(),
+                container.getFieldNumberOfColumns());
+    }
+
+    private static ImageFileInfo createImageFileInfo(ImgImageDatasetDTO container,
+            ImgAcquiredImageEnrichedDTO acquiredImage)
+    {
+        ImageFileInfo img =
+                new ImageFileInfo(acquiredImage.getChannelCode(), acquiredImage.getTileRow(),
+                        acquiredImage.getTileColumn(), acquiredImage.getImageFilePath());
+        img.setTimepoint(acquiredImage.getT());
+        img.setDepth(acquiredImage.getZ());
+        img.setSeriesNumber(acquiredImage.getSeriesNumber());
+
+        if (acquiredImage.getSpotRow() != null && acquiredImage.getSpotColumn() != null)
+        {
+            img.setWell(acquiredImage.getSpotRow(), acquiredImage.getSpotColumn());
+        }
+        img.setUniqueImageIdentifier(acquiredImage.getImageIdOrNull());
+        img.setContainerDataSetCode(container.getPermId());
+
+        return img;
+    }
+
+    private static Channel createChannel(IImagingReadonlyQueryDAO query, ImgChannelDTO channelDTO)
+    {
+        Channel channel =
+                new Channel(channelDTO.getCode(), channelDTO.getLabel(), new ChannelColorRGB(
+                        channelDTO.getRedColorComponent(), channelDTO.getGreenColorComponent(),
+                        channelDTO.getBlueColorComponent()));
+        channel.setDescription(channelDTO.getDescription());
+        channel.setWavelength(channelDTO.getWavelength());
+
+        List<ImgImageTransformationDTO> transformationDTOs =
+                query.listImageTransformations(channelDTO.getId());
+        ImageTransformation[] transformations = new ImageTransformation[transformationDTOs.size()];
+        int counter = 0;
+        for (ImgImageTransformationDTO transformationDTO : transformationDTOs)
+        {
+            ImageTransformation transformation =
+                    new ImageTransformation(transformationDTO.getCode(),
+                            transformationDTO.getLabel(), transformationDTO.getDescription(),
+                            transformationDTO.getImageTransformerFactory());
+            transformations[counter++] = transformation;
+        }
+        channel.setAvailableTransformations(transformations);
+
+        return channel;
+    }
+
+    public static ImageLibraryInfo tryGetImageLibrary(ImgImageDatasetDTO dataset, boolean isThumbnail)
+    {
+        if (isThumbnail)
+        {
+            // we do not use special libraries for thumbnails, they are always in the PNG format
+            return null;
+        }
+        String imageLibraryName = dataset.getImageLibraryName();
+        return imageLibraryName == null ? null : new ImageLibraryInfo(imageLibraryName, dataset.getImageReaderName());
     }
 }
