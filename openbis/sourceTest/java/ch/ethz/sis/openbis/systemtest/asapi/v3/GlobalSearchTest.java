@@ -622,7 +622,7 @@ public class GlobalSearchTest extends AbstractTest
         assertDataSet(object1, "20110509092359990-11", object1.getMatch(), DataSetKind.PHYSICAL);
         AssertionUtil.assertContains("Perm ID: 20110509092359990-11", object1.getMatch());
         assertEquals(object1.getDataSet().getCode(), "20110509092359990-11");
-        assertEquals(object1.getScore(), 0.1, 0.0000001);
+        assertEquals(object1.getScore(), 10.0, 0.0000001);
         assertExperimentNotFetched(object1);
         assertSampleNotFetched(object1);
         assertMaterialNotFetched(object1);
@@ -630,7 +630,7 @@ public class GlobalSearchTest extends AbstractTest
         assertDataSet(object2, "20120628092259000-23", object2.getMatch(), DataSetKind.LINK);
         AssertionUtil.assertContains("DataSet kind: LINK", object2.getMatch());
         assertEquals(object2.getDataSet().getCode(), "20120628092259000-23");
-        assertEquals(object1.getScore(), 0.1, 0.0000001);
+        assertEquals(object1.getScore(), 10.0, 0.0000001);
         assertExperimentNotFetched(object2);
         assertSampleNotFetched(object2);
         assertMaterialNotFetched(object2);
