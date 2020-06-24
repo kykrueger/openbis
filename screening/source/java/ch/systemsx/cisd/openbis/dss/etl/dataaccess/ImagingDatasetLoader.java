@@ -33,6 +33,7 @@ import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchical
 import ch.systemsx.cisd.openbis.dss.etl.AbsoluteImageReference;
 import ch.systemsx.cisd.openbis.dss.etl.IImagingDatasetLoader;
 import ch.systemsx.cisd.openbis.dss.etl.PrefixedImage;
+import ch.systemsx.cisd.openbis.dss.etl.Utils;
 import ch.systemsx.cisd.openbis.dss.etl.dto.ImageLibraryInfo;
 import ch.systemsx.cisd.openbis.dss.etl.dto.ImageTransfomationFactories;
 import ch.systemsx.cisd.openbis.dss.etl.dto.api.ChannelColorRGB;
@@ -174,7 +175,7 @@ public class ImagingDatasetLoader extends HCSDatasetLoader implements IImagingDa
         ColorComponent colorComponent = image.getColorComponent();
         ImageTransfomationFactories imageTransfomationFactories =
                 createImageTransfomationFactories(image, channel);
-        ImageLibraryInfo imageLibrary = tryGetImageLibrary(dataset, useNativeImageLibrary);
+        ImageLibraryInfo imageLibrary = Utils.tryGetImageLibrary(dataset, useNativeImageLibrary);
         return new AbsoluteImageReference(contentNode, path, image.getImageID(), colorComponent,
                 imageSize, getColor(channel), imageTransfomationFactories, imageLibrary,
                 image.tryGetSingleChannelTransformationCode(), channel.getCode());
@@ -709,24 +710,6 @@ public class ImagingDatasetLoader extends HCSDatasetLoader implements IImagingDa
 
         return createAbsoluteImageReference(thumbnailDTO, channel,
                 RequestedImageSize.createOriginal(), true);
-    }
-
-    private static ImageLibraryInfo tryGetImageLibrary(ImgImageDatasetDTO dataset,
-            boolean isThumbnail)
-    {
-        if (isThumbnail)
-        {
-            // we do not use special libraries for thumbnails, they are always in the PNG format
-            return null;
-        }
-        String imageLibraryName = dataset.getImageLibraryName();
-        if (imageLibraryName != null)
-        {
-            return new ImageLibraryInfo(imageLibraryName, dataset.getImageReaderName());
-        } else
-        {
-            return null;
-        }
     }
 
 }

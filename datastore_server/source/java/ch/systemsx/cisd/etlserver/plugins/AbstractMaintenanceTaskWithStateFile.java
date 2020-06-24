@@ -23,8 +23,11 @@ import java.util.Date;
 import java.util.Properties;
 
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
+import ch.systemsx.cisd.common.exceptions.EnvironmentFailureException;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.common.maintenance.IMaintenanceTask;
+import ch.systemsx.cisd.common.utilities.ICredentials;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
 
 /**
  * 
@@ -82,5 +85,28 @@ public abstract class AbstractMaintenanceTaskWithStateFile implements IMaintenan
     protected String extractTimeStamp(String timeStampAndCode)
     {
         return timeStampAndCode.split("\\[")[0].trim();
+    }
+
+    protected Date getLastRegistrationDate(Date originalStartingTime)
+    {
+        if (stateFile.exists())
+        {
+            String timestampAndCode = FileUtilities.loadToString(stateFile);
+            String timestamp = extractTimeStamp(timestampAndCode);
+            try
+            {
+                return parseTimeStamp(timestamp);
+            } catch (ParseException ex)
+            {
+                throw new EnvironmentFailureException("Invalid time stamp in file. File: " 
+                        + stateFile.getAbsolutePath() + ", timestamp: " + timestamp);
+            }
+        }
+        return originalStartingTime;
+    }
+
+    protected ICredentials getEtlServerCredentials()
+    {
+        return (ICredentials) ServiceProvider.getApplicationContext().getBean("reauthenticateInterceptor");
     }
 }

@@ -362,7 +362,7 @@ public class DownloadFileTest extends AbstractFileTest
     }
 
     @Test
-    public void testDownloadWithFileLengthsAndCRC32Checksum() throws Exception
+    public void testDownloadWithFileLengthsAndChecksum() throws Exception
     {
         IDataSetFileId file1 = new DataSetFilePermId(new DataSetPermId(dataSetCode), getPath("file1.txt"));
         IDataSetFileId file2 = new DataSetFilePermId(new DataSetPermId(dataSetCode), getPath("file2.txt"));
@@ -378,8 +378,12 @@ public class DownloadFileTest extends AbstractFileTest
 
         assertEquals(getContent(download1.getDataSetFile().getPath()).length(), download1.getDataSetFile().getFileLength());
         assertEquals(1940359475, download1.getDataSetFile().getChecksumCRC32());
+        assertEquals("SHA1", download1.getDataSetFile().getChecksumType());
+        assertEquals("522a98b1b45d596ac30fc01aae98350b1d967404", download1.getDataSetFile().getChecksum());
         assertEquals(getContent(download2.getDataSetFile().getPath()).length(), download2.getDataSetFile().getFileLength());
         assertEquals(2140459533, download2.getDataSetFile().getChecksumCRC32());
+        assertEquals("SHA1", download2.getDataSetFile().getChecksumType());
+        assertEquals("948256a1074656ef54655d53004c622bc77d95f1", download2.getDataSetFile().getChecksum());
     }
 
     @Test

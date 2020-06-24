@@ -37,7 +37,7 @@ dependencies {
 			'javax.xml.bind:jaxb-api:2.3.0',
 			'org.glassfish.main.javaee-api:javax.jws:3.1.2.2'
 
-	runtime 'bioformats:bioformats:6.5.0'
+	runtime 'bioformats:bioformats:5.9.2'
 
 	// eln-lims Jython APIs dependencies
 	datastoreExecRuntime files("../openbis_standard_technologies/dist/core-plugins/eln-lims/1/dss/reporting-plugins/eln-lims-api/lib/zip4j_1.3.2.jar"),
