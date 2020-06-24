@@ -605,6 +605,19 @@ public class SearchSampleTest extends AbstractSampleTest
     }
 
     @Test
+    public void testSearchWithParent()
+    {
+        final SampleSearchCriteria criteria = new SampleSearchCriteria();
+        criteria.withParents();
+        testSearch(TEST_USER, criteria, "/CISD/3VCP8", "/CISD/RP1-B1X", "/CISD/CP1-B1", "/CISD/3VCP6",
+                "/CISD/CP1-A2", "/CISD/DP1-A", "/CISD/3VCP7", "/DP", "/CISD/CP2-A1", "/CISD/3V-126",
+                "/CISD/RP1-A2X", "/CISD/CP1-A1", "/CISD/DP2-A", "/CISD/3V-125", "/CISD/3VCP5", "/CISD/DP1-B",
+                "/CISD/RP2-A1X", "/CISD/RP1-A2X", "/CISD/3VCP6", "/CISD/3VCP7", "/CISD/3VCP5", "/CISD/DP1-A",
+                "/CISD/3VCP8", "/CISD/MP1-MIXED", "/CISD/RP2-A1X", "/CISD/CP2-A1", "/CISD/CP1-A1", "/CISD/RP1-B1X",
+                "/CISD/CP-TEST-1", "/CISD/3VCP6", "/CISD/CL-3V:A02", "/TEST-SPACE/EV-INVALID");
+    }
+
+    @Test
     public void testSearchWithParentWithIdSetToIdentifier()
     {
         SampleSearchCriteria criteria = new SampleSearchCriteria();
