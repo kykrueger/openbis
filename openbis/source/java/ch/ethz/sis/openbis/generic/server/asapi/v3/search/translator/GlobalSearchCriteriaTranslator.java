@@ -224,7 +224,7 @@ public class GlobalSearchCriteriaTranslator
 
         if (forAttributes)
         {
-            final String[] criterionValues = criterion.getFieldValue().getValue().trim().split("\\s+");
+            final String[] criterionValues = criterion.getFieldValue().getValue().toLowerCase().trim().split("\\s+");
             final String thenValue = ID_RANK + DOUBLE_COLON + FLOAT_4;
             final String elseValue = ATTRIBUTE_RANK + DOUBLE_COLON + FLOAT_4;
             final String[] matchingColumns = (tableMapper == SAMPLE || tableMapper == EXPERIMENT)
@@ -339,7 +339,7 @@ public class GlobalSearchCriteriaTranslator
                 .append(LP)
                         .append(SELECT).append(SP).append(UNNEST).append(LP).append(QU).append(RP)
                 .append(RP);
-        args.add(stringValue.getValue());
+        args.add(stringValue.getValue().toLowerCase());
         args.add(new String[] { MATERIAL.name(), SAMPLE.name() });
         sqlBuilder.append(SP).append(THEN).append(SP).append(ID_PROPERTY_RANK).append(DOUBLE_COLON)
                 .append(FLOAT_4).append(SP);
@@ -413,8 +413,8 @@ public class GlobalSearchCriteriaTranslator
             {
                 sqlBuilder.append(COMMA).append(NL);
 
-                sqlBuilder.append(CASE).append(SP).append(WHEN).append(SP);
-                sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(PERM_ID_COLUMN);
+                sqlBuilder.append(CASE).append(SP).append(WHEN).append(SP).append(LOWER).append(LP);
+                sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(PERM_ID_COLUMN).append(RP);
                 sqlBuilder.append(SP).append(IN).append(SP).append(LP)
                         .append(SELECT).append(SP).append(UNNEST).append(LP).append(QU).append(RP)
                         .append(RP);
@@ -429,8 +429,8 @@ public class GlobalSearchCriteriaTranslator
             {
                 sqlBuilder.append(COMMA).append(NL);
 
-                sqlBuilder.append(CASE).append(SP).append(WHEN).append(SP);
-                sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(DATA_SET_KIND_COLUMN);
+                sqlBuilder.append(CASE).append(SP).append(WHEN).append(SP).append(LOWER).append(LP);
+                sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(DATA_SET_KIND_COLUMN).append(RP);
                 sqlBuilder.append(SP).append(IN).append(SP).append(LP)
                         .append(SELECT).append(SP).append(UNNEST).append(LP).append(QU).append(RP)
                         .append(RP);
@@ -646,8 +646,8 @@ public class GlobalSearchCriteriaTranslator
     private static String toTsQueryText(final AbstractStringValue stringValue)
     {
         return (StringContainsExactlyValue.class.isAssignableFrom(stringValue.getClass()))
-                ? '\'' + stringValue.getValue().replaceAll("'", "''") + '\''
-                : stringValue.getValue().replaceAll("['&|:!()<>]", " ").trim().replaceAll("\\s+", " | ");
+                ? '\'' + stringValue.getValue().toLowerCase().replaceAll("'", "''") + '\''
+                : stringValue.getValue().toLowerCase().replaceAll("['&|:!()<>]", " ").trim().replaceAll("\\s+", " | ");
     }
 
 }
