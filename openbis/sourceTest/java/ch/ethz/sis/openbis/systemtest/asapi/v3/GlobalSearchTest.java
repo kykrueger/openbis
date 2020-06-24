@@ -185,7 +185,7 @@ public class GlobalSearchTest extends AbstractTest
     @Test
     public void testSearchWithObjectKindsSpecified()
     {
-        GlobalSearchObject object = null;
+        GlobalSearchObject object;
 
         // experiment
         object = searchAndAssertOneOrNone(TEST_USER, "200811050951882-1028", GlobalSearchObjectKind.EXPERIMENT);

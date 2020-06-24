@@ -1,9 +1,3 @@
-SET statement_timeout = 0;
-SET standard_conforming_strings = on;
-SET check_function_bodies = false;
-SET client_min_messages = warning;
-SET row_security = off;
-SET search_path = public, pg_catalog;
 CREATE DOMAIN archiving_status AS character varying(100)
 	CONSTRAINT archiving_status_check CHECK (((VALUE)::text = ANY (ARRAY[('LOCKED'::character varying)::text, ('AVAILABLE'::character varying)::text, ('ARCHIVED'::character varying)::text, ('ARCHIVE_PENDING'::character varying)::text, ('UNARCHIVE_PENDING'::character varying)::text, ('BACKUP_PENDING'::character varying)::text])));
 CREATE DOMAIN authorization_role AS character varying(40)
@@ -335,7 +329,7 @@ BEGIN
                                             REPLACE(
                                                     REPLACE(
                                                             REPLACE(
-                                                                    REPLACE(value, '<', '\<'),
+                                                                    REPLACE(LOWER(value), '<', '\<'),
                                                                     '!', '\!'),
                                                             '*', '\*'),
                                                     '&', '\&'),
@@ -543,10 +537,10 @@ DECLARE cvt RECORD;
 BEGIN
     IF NEW.cvte_id IS NOT NULL THEN
         SELECT code, label INTO STRICT cvt FROM controlled_vocabulary_terms WHERE id = NEW.cvte_id;
-        NEW.tsvector_document := to_tsvector('english', cvt.code) ||
-                to_tsvector('english', coalesce(cvt.label, ''));
+        NEW.tsvector_document := to_tsvector('english', LOWER(cvt.code)) ||
+                to_tsvector('english', coalesce(LOWER(cvt.label), ''));
     ELSE
-        NEW.tsvector_document := to_tsvector('english', coalesce(NEW.value, ''));
+        NEW.tsvector_document := to_tsvector('english', coalesce(LOWER(NEW.value), ''));
         RETURN NEW;
     END IF;
     RETURN NEW;
