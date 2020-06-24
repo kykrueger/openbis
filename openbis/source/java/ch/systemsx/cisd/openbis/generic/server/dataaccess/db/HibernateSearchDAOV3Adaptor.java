@@ -139,7 +139,7 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
         // TODO: Remove when finish, old search to compare when debugging
         //List<MatchingEntity> oldResults = this.hibernateSearchDAO.searchEntitiesByTerm(userId, searchableEntity, searchTerm, dataProvider, useWildcardSearchMode, alreadyFoundEntities, maxSize);
 
-        return (List<MatchingEntity>) matchingEntities;
+        return new ArrayList<>(matchingEntities);
     }
 
 //    private List<PropertyMatch> getPropertyMatches(Map<String, Object> newResult) {
