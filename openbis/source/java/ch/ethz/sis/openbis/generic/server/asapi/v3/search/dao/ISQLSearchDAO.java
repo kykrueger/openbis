@@ -25,6 +25,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearchObjectFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchCriteria;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.relationship.IGetRelationshipIdExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 
@@ -65,18 +66,22 @@ public interface ISQLSearchDAO
      *
      * @param tableMapper type of the entities to search for.
      * @param parentIdSet set of parent IDs to find the corresponding child IDs for.
+     * @param relationshipType
      * @return a set of IDs od child entities of the parents specified by IDs.
      */
-    Set<Long> findChildIDs(final TableMapper tableMapper, final Set<Long> parentIdSet);
+    Set<Long> findChildIDs(final TableMapper tableMapper, final Set<Long> parentIdSet,
+            final IGetRelationshipIdExecutor.RelationshipType relationshipType);
 
     /**
      * Finds parent IDs which correspond to child IDs.
      *
      * @param tableMapper type of the entities to search for.
      * @param childIdSet set of child IDs to find the corresponding parent IDs for.
+     * @param relationshipType type of relationship.
      * @return a set of IDs od parent entities of the children specified by IDs.
      */
-    Set<Long> findParentIDs(final TableMapper tableMapper, final Set<Long> childIdSet);
+    Set<Long> findParentIDs(final TableMapper tableMapper, final Set<Long> childIdSet,
+            final IGetRelationshipIdExecutor.RelationshipType relationshipType);
 
     /**
      * Sorts IDs by certain fields.

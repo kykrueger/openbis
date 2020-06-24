@@ -22,7 +22,7 @@ import ch.systemsx.cisd.base.annotation.JsonObject;
  * @author pkupczyk
  */
 @JsonObject("as.dto.dataset.search.DataSetSearchRelation")
-enum DataSetSearchRelation
+public enum DataSetSearchRelation
 {
 
     DATASET, PARENTS, CHILDREN, CONTAINER

@@ -111,7 +111,7 @@ public class SearchDataSetTest extends AbstractDataSetTest
     }
 
     @Test
-    public void testSearchWithModicationDateIsLaterThan()
+    public void testSearchWithModificationDateIsLaterThan()
     {
         DataSetSearchCriteria criteria = new DataSetSearchCriteria();
         criteria.withModificationDate().thatIsLaterThanOrEqualTo("2011-05-01");

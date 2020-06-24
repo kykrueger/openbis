@@ -247,13 +247,7 @@ public class AssertionUtil
      */
     public static <T> void assertCollectionContainsOnly(Collection<T> objects, T... items)
     {
-        Set<T> objectsSet = new HashSet<T>(objects);
-        Set<T> itemsSet = new HashSet<T>(Arrays.asList(items));
-        
-        if (false == objectsSet.equals(itemsSet))
-        {
-            fail("expected that collection: <" + objects + "> contains only: <" + itemsSet + ">");
-        }
+        assertEquals(new HashSet<T>(Arrays.asList(items)), new HashSet<T>(objects));
     }
 
     public static void assertCollectionSize(Collection<?> objects, int size)

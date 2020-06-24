@@ -609,12 +609,20 @@ public class SearchSampleTest extends AbstractSampleTest
     {
         final SampleSearchCriteria criteria = new SampleSearchCriteria();
         criteria.withParents();
-        testSearch(TEST_USER, criteria, "/CISD/3VCP8", "/CISD/RP1-B1X", "/CISD/CP1-B1", "/CISD/3VCP6",
-                "/CISD/CP1-A2", "/CISD/DP1-A", "/CISD/3VCP7", "/DP", "/CISD/CP2-A1", "/CISD/3V-126",
-                "/CISD/RP1-A2X", "/CISD/CP1-A1", "/CISD/DP2-A", "/CISD/3V-125", "/CISD/3VCP5", "/CISD/DP1-B",
-                "/CISD/RP2-A1X", "/CISD/RP1-A2X", "/CISD/3VCP6", "/CISD/3VCP7", "/CISD/3VCP5", "/CISD/DP1-A",
-                "/CISD/3VCP8", "/CISD/MP1-MIXED", "/CISD/RP2-A1X", "/CISD/CP2-A1", "/CISD/CP1-A1", "/CISD/RP1-B1X",
-                "/CISD/CP-TEST-1", "/CISD/3VCP6", "/CISD/CL-3V:A02", "/TEST-SPACE/EV-INVALID");
+        testSearch(TEST_USER, criteria, "/CISD/3V-125", "/CISD/3V-126", "/CISD/3VCP5", "/CISD/3VCP6",
+                "/CISD/3VCP7", "/CISD/3VCP8", "/CISD/CL-3V:A02", "/CISD/CP-TEST-1", "/CISD/CP1-A1",
+                "/CISD/CP1-A2", "/CISD/CP1-B1", "/CISD/CP2-A1", "/CISD/DP1-A", "/CISD/DP1-B", "/CISD/DP2-A",
+                "/CISD/RP1-A2X", "/CISD/RP1-B1X", "/CISD/RP2-A1X", "/DP", "/TEST-SPACE/EV-INVALID");
+    }
+
+    @Test
+    public void testSearchWithChildren()
+    {
+        final SampleSearchCriteria criteria = new SampleSearchCriteria();
+        criteria.withChildren();
+        testSearch(TEST_USER, criteria, "/CISD/3V-125", "/CISD/CL-3V:A02", "/CISD/CL1:A03", "/CISD/CP-TEST-2",
+                "/CISD/CP1-A2", "/CISD/CP1-B1", "/CISD/CP2-A1", "/CISD/DP1-A", "/CISD/DP1-B", "/CISD/DP2-A",
+                "/CISD/MP002-1", "/CISD/MP1-MIXED", "/CISD/MP2-NO-CL", "/MP", "/TEST-SPACE/EV-PARENT");
     }
 
     @Test
