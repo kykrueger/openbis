@@ -155,6 +155,16 @@ public class SearchDataSetTest extends AbstractDataSetTest
     }
 
     @Test
+    public void testSearchWithParent()
+    {
+        final DataSetSearchCriteria criteria = new DataSetSearchCriteria();
+        criteria.withParents();
+        testSearch(TEST_USER, criteria, "20081105092259000-18", "20081105092259000-20", "20081105092259000-21",
+                "20081105092259000-8", "20081105092259000-9", "20081105092259900-0", "20081105092259900-1",
+                "20081105092359990-2", "VALIDATIONS_IMPOS-27");
+    }
+
+    @Test
     public void testSearchWithParentWithCode()
     {
         DataSetSearchCriteria criteria = new DataSetSearchCriteria();
