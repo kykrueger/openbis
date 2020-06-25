@@ -8,8 +8,23 @@ const styles = theme => ({
   container: {
     display: 'flex'
   },
+  leftContainer: {
+    flexGrow: 1,
+    display: 'flex',
+    justifyContent: 'flex-start',
+    '& $button': {
+      marginRight: theme.spacing(1)
+    }
+  },
+  rightContainer: {
+    flexGrow: 1,
+    display: 'flex',
+    justifyContent: 'flex-end',
+    '& $button': {
+      marginLeft: theme.spacing(1)
+    }
+  },
   button: {
-    marginRight: theme.spacing(1),
     whiteSpace: 'nowrap'
   }
 })
@@ -42,12 +57,14 @@ class TypeFormButtons extends React.PureComponent {
 
     return (
       <Container className={classes.container}>
-        <Button
-          name='edit'
-          label='Edit'
-          styles={{ root: classes.button }}
-          onClick={onEdit}
-        />
+        <div className={classes.rightContainer}>
+          <Button
+            name='edit'
+            label='Edit'
+            styles={{ root: classes.button }}
+            onClick={onEdit}
+          />
+        </div>
       </Container>
     )
   }
@@ -64,39 +81,43 @@ class TypeFormButtons extends React.PureComponent {
 
     return (
       <Container className={classes.container}>
-        <Button
-          name='addSection'
-          label='Add Section'
-          styles={{ root: classes.button }}
-          onClick={onAddSection}
-        />
-        <Button
-          name='addProperty'
-          label='Add Property'
-          styles={{ root: classes.button }}
-          disabled={!this.isSectionOrPropertySelected()}
-          onClick={onAddProperty}
-        />
-        <Button
-          name='remove'
-          label='Remove'
-          styles={{ root: classes.button }}
-          disabled={!this.isSectionOrPropertySelected()}
-          onClick={onRemove}
-        />
-        <Button
-          name='save'
-          label='Save'
-          type='final'
-          styles={{ root: classes.button }}
-          onClick={onSave}
-        />
-        <Button
-          name='cancel'
-          label='Cancel'
-          styles={{ root: classes.button }}
-          onClick={onCancel}
-        />
+        <div className={classes.leftContainer}>
+          <Button
+            name='addSection'
+            label='Add Section'
+            styles={{ root: classes.button }}
+            onClick={onAddSection}
+          />
+          <Button
+            name='addProperty'
+            label='Add Property'
+            styles={{ root: classes.button }}
+            disabled={!this.isSectionOrPropertySelected()}
+            onClick={onAddProperty}
+          />
+          <Button
+            name='remove'
+            label='Remove'
+            styles={{ root: classes.button }}
+            disabled={!this.isSectionOrPropertySelected()}
+            onClick={onRemove}
+          />
+        </div>
+        <div className={classes.rightContainer}>
+          <Button
+            name='save'
+            label='Save'
+            type='final'
+            styles={{ root: classes.button }}
+            onClick={onSave}
+          />
+          <Button
+            name='cancel'
+            label='Cancel'
+            styles={{ root: classes.button }}
+            onClick={onCancel}
+          />
+        </div>
       </Container>
     )
   }
