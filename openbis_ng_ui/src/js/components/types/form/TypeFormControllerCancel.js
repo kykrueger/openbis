@@ -5,9 +5,11 @@ export default class TypeFormControllerEdit {
   }
 
   execute() {
-    this.context.setState(state => ({
-      ...state,
-      mode: 'view'
-    }))
+    return this.controller.load().then(() => {
+      return this.context.setState(state => ({
+        ...state,
+        mode: 'view'
+      }))
+    })
   }
 }
