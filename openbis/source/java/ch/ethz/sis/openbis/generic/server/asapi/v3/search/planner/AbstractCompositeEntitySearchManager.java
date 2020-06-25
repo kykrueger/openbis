@@ -224,7 +224,7 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
      * @param idsColumnName the name of the column, whose values to be returned.
      * @param tableMapper the table mapper to be used during translation.
      */
-    private Set<Long> getAllIds(final Long userId, final AuthorisationInformation authorisationInformation, final String idsColumnName,
+    protected Set<Long> getAllIds(final Long userId, final AuthorisationInformation authorisationInformation, final String idsColumnName,
             final TableMapper tableMapper)
     {
         final CRITERIA criteria = createEmptyCriteria();

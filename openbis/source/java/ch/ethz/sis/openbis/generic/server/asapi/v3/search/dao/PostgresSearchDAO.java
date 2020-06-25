@@ -73,9 +73,8 @@ public class PostgresSearchDAO implements ISQLSearchDAO
 
         final SelectQuery selectQuery = SearchCriteriaTranslator.translate(translationVo);
         final List<Map<String, Object>> result = sqlExecutor.execute(selectQuery.getQuery(), selectQuery.getArgs());
-        return result.stream().map(
-                stringLongMap -> (Long) stringLongMap.get(finalIdColumnName)
-        ).collect(Collectors.toSet());
+        return result.stream().map(stringLongMap -> (Long) stringLongMap.get(finalIdColumnName))
+                .collect(Collectors.toSet());
     }
 
     @Override
