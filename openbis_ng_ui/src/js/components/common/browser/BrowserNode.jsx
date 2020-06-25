@@ -13,15 +13,16 @@ import BrowserNodes from './BrowserNodes.jsx'
 
 const styles = theme => ({
   item: {
-    padding: '4px 0px'
+    paddingTop: theme.spacing(1),
+    paddingBottom: theme.spacing(1)
   },
   icon: {
-    marginLeft: '8px',
-    marginRight: '6px',
+    margin: '-2px 4px -2px 8px',
     minWidth: '24px'
   },
   text: {
-    fontSize: theme.typography.body2.fontSize
+    fontSize: theme.typography.body2.fontSize,
+    lineHeight: theme.typography.body2.fontSize
   }
 })
 

@@ -11,11 +11,11 @@ const styles = theme => ({
     borderBottomStyle: 'solid',
     borderBottomWidth: '1px',
     borderBottomColor: theme.palette.background.secondary,
-    minHeight: '36px'
+    minHeight: '38px'
   },
   tabRoot: {
     textTransform: 'none',
-    minHeight: '36px'
+    minHeight: '38px'
   },
   iconRoot: {
     marginLeft: '6px'

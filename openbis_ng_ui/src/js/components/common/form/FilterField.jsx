@@ -13,7 +13,7 @@ const styles = theme => ({
   },
   input: {
     fontSize: theme.typography.body2.fontSize,
-    height: '24px'
+    height: '26px'
   },
   adornment: {
     margin: '8px',
