@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.List;
 
 import ch.systemsx.cisd.etlserver.registrator.api.v2.IDataSet;
+import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchicalContent;
 import ch.systemsx.cisd.openbis.dss.etl.IImageProvider;
 import ch.systemsx.cisd.openbis.dss.etl.dto.api.IImageGenerationAlgorithm;
 import ch.systemsx.cisd.openbis.generic.shared.IServer;
@@ -32,5 +33,10 @@ public class EmptyImageCreationAlgorithm implements IImageGenerationAlgorithm, S
     public String getImageFileName(int index)
     {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void setContent(IHierarchicalContent content)
+    {
     }
 }

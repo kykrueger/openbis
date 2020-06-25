@@ -52,7 +52,7 @@ public class JythonBasedProcessingPlugin implements IProcessingPluginTask
 
     transient IHierarchicalContentProvider hierarchicalContentProvider;
 
-    protected static String getScriptPathProperty(Properties properties)
+    public static String getScriptPathProperty(Properties properties)
     {
         return PropertyUtils.getMandatoryProperty(properties, SCRIPT_PATH);
     }
