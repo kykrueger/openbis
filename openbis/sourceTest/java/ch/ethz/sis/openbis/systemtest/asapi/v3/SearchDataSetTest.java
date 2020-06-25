@@ -122,6 +122,16 @@ public class SearchDataSetTest extends AbstractDataSetTest
     @Test
     public void testSearchWithContainer()
     {
+        final DataSetSearchCriteria criteria = new DataSetSearchCriteria();
+        criteria.withContainer();
+        testSearch(TEST_USER, criteria, "CONTAINER_1", "CONTAINER_2", "20110509092359990-11", "20110509092359990-12",
+                "VALIDATIONS_IMPOS-27", "COMPONENT_1A", "COMPONENT_2A", "COMPONENT_1B", "COMPONENT_3A", "COMPONENT_3AB",
+                "COMPONENT_3AX");
+    }
+
+    @Test
+    public void testSearchWithContainerWithPermId()
+    {
         DataSetSearchCriteria criteria = new DataSetSearchCriteria();
         criteria.withContainer().withPermId().thatEquals("20110509092359990-10");
         testSearch(TEST_USER, criteria, "20110509092359990-11", "20110509092359990-12");
@@ -145,7 +155,7 @@ public class SearchDataSetTest extends AbstractDataSetTest
     }
 
     @Test
-    public void testSearchWithParent()
+    public void testSearchWithParentWithCode()
     {
         DataSetSearchCriteria criteria = new DataSetSearchCriteria();
         criteria.withParents().withCode().thatEquals("20081105092159111-1");
