@@ -24,12 +24,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.regex.Pattern;
+
+import org.apache.log4j.Logger;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetSearchCriteria;
 import ch.systemsx.cisd.common.jython.evaluator.IJythonEvaluator;
+import ch.systemsx.cisd.common.logging.LogCategory;
+import ch.systemsx.cisd.common.logging.LogFactory;
+import ch.systemsx.cisd.common.properties.PropertyUtils;
 import ch.systemsx.cisd.common.utilities.ICredentials;
 import ch.systemsx.cisd.etlserver.DefaultStorageProcessor;
 import ch.systemsx.cisd.etlserver.plugins.AbstractMaintenanceTaskWithStateFile;
@@ -40,6 +47,7 @@ import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchical
 import ch.systemsx.cisd.openbis.dss.etl.dto.api.IImageGenerationAlgorithm;
 import ch.systemsx.cisd.openbis.dss.etl.dto.api.SimpleImageContainerDataConfig;
 import ch.systemsx.cisd.openbis.dss.etl.dto.api.SimpleImageDataConfig;
+import ch.systemsx.cisd.openbis.dss.etl.dto.api.ThumbnailsStorageFormat;
 import ch.systemsx.cisd.openbis.dss.etl.dto.api.impl.ImageDataSetInformation;
 import ch.systemsx.cisd.openbis.dss.etl.dto.api.impl.ImageDataSetStructure;
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.jython.JythonBasedProcessingPlugin;
@@ -60,19 +68,44 @@ import ch.systemsx.cisd.openbis.plugin.screening.shared.imaging.dataaccess.IImag
 public class MicroscopyThumbnailsCreationTask extends AbstractMaintenanceTaskWithStateFile
 {
 
-    private String dataSetContainerType;
+    private static final String DATA_SET_CONTAINER_TYPE_KEY = "data-set-container-type";
 
-    private String dataSetThumbnailType;
+    private static final String DATA_SET_CONTAINER_TYPE_DEFAULT = "MICROSCOPY_IMG_CONTAINER";
+
+    private static final String DATA_SET_THUMBNAIL_TYPE_REGEX_KEY = "data-set-thumbnail-type-regex";
+
+    private static final String DATA_SET_THUMBNAIL_TYPE_REGEX_DEFAULT = "MICROSCOPY_IMG_THUMBNAIL";
+
+    private static final String MAIN_DATA_SET_TYPE_REGEX_KEY = "main-data-set-type-regex";
+
+    private static final String MAIN_DATA_SET_TYPE_REGEX_DEFAULT = "MICROSCOPY_IMG";
+
+    private static final String MAX_NUMBER_OF_DATA_SETS_KEY = "max-number-of-data-sets";
+
+    private static final int MAX_NUMBER_OF_DATA_SETS_DEFAULT = 1000;
+
+    protected static final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION,
+            MicroscopyThumbnailsCreationTask.class);
 
     private Properties properties;
+
+    private String dataSetContainerType;
+
+    private Pattern dataSetThumbnailTypePattern;
+
+    private Pattern mainDataSetTypePattern;
+
+    private int maxCount;
 
     @Override
     public void setUp(String pluginName, Properties properties)
     {
         this.properties = properties;
         defineStateFile(properties, getDirectoryProvider().getStoreRoot());
-        dataSetContainerType = properties.getProperty("data-set-container-type", "MICROSCOPY_IMG_CONTAINER");
-        dataSetThumbnailType = properties.getProperty("data-set-thumbnail-type", "MICROSCOPY_IMG_THUMBNAIL");
+        dataSetContainerType = properties.getProperty(DATA_SET_CONTAINER_TYPE_KEY, DATA_SET_CONTAINER_TYPE_DEFAULT);
+        dataSetThumbnailTypePattern = PropertyUtils.getPattern(properties, DATA_SET_THUMBNAIL_TYPE_REGEX_KEY, DATA_SET_THUMBNAIL_TYPE_REGEX_DEFAULT);
+        mainDataSetTypePattern = PropertyUtils.getPattern(properties, MAIN_DATA_SET_TYPE_REGEX_KEY, MAIN_DATA_SET_TYPE_REGEX_DEFAULT);
+        maxCount = PropertyUtils.getInt(properties, MAX_NUMBER_OF_DATA_SETS_KEY, MAX_NUMBER_OF_DATA_SETS_DEFAULT);
     }
 
     @Override
@@ -81,24 +114,36 @@ public class MicroscopyThumbnailsCreationTask extends AbstractMaintenanceTaskWit
         String sessionToken = login();
         DataSetSearchCriteria searchCriteria = new DataSetSearchCriteria();
         searchCriteria.withType().withCode().thatEquals(dataSetContainerType);
-        searchCriteria.withRegistrationDate().thatIsLaterThanOrEqualTo(getLastRegistrationDate(new Date(0)));
+        Date lastRegistrationDate = getLastRegistrationDate(new Date(0));
+        operationLog.info("Search for data sets of type " + dataSetContainerType + " which are younger than "
+                + renderTimeStamp(lastRegistrationDate));
+        searchCriteria.withRegistrationDate().thatIsLaterThanOrEqualTo(lastRegistrationDate);
         DataSetFetchOptions fetchOptions = new DataSetFetchOptions();
         fetchOptions.withComponents().withType();
         fetchOptions.withComponents().withExperiment();
         fetchOptions.withComponents().withSample();
         fetchOptions.sortBy().registrationDate();
-        List<DataSet> containerDataSets = getService().searchDataSets(sessionToken, searchCriteria, fetchOptions).getObjects();
+        if (maxCount > 0)
+        {
+            fetchOptions.count(maxCount);
+        }
+        SearchResult<DataSet> searchResult = getService().searchDataSets(sessionToken, searchCriteria, fetchOptions);
+        List<DataSet> containerDataSets = searchResult.getObjects();
+        int totalCount = searchResult.getTotalCount();
+        operationLog.info(totalCount + " found."
+                + (maxCount > 0 && totalCount > maxCount ? " Handle the first " + maxCount : ""));
         for (DataSet containerDataSet : containerDataSets)
         {
             if (hasNoThumbnails(containerDataSet) && containerDataSet.getComponents().isEmpty() == false)
             {
-                cerateThumbnailDataSet(sessionToken, containerDataSet);
+                operationLog.info("Generate thumbnails for data set " + containerDataSet.getCode());
+                createThumbnailDataSet(sessionToken, containerDataSet);
             }
             updateTimeStampFile(renderTimeStampAndCode(containerDataSet.getRegistrationDate(), containerDataSet.getCode()));
         }
     }
 
-    private void cerateThumbnailDataSet(String sessionToken, DataSet containerDataSet)
+    private void createThumbnailDataSet(String sessionToken, DataSet containerDataSet)
     {
         String containerCode = containerDataSet.getCode();
         IImagingReadonlyQueryDAO imageDb = getImageDb();
@@ -134,7 +179,7 @@ public class MicroscopyThumbnailsCreationTask extends AbstractMaintenanceTaskWit
     {
         String containerCode = containerDataSet.getCode();
         IDataSetUpdatable container = transaction.getDataSetForUpdate(containerCode);
-        DataSet mainDataSet = containerDataSet.getComponents().get(0);
+        DataSet mainDataSet = getMainDataSet(containerDataSet);
         IImageGenerationAlgorithm imageGenerationAlgorithm = config.getImageGenerationAlgorithm();
         if (imageGenerationAlgorithm != null)
         {
@@ -144,8 +189,11 @@ public class MicroscopyThumbnailsCreationTask extends AbstractMaintenanceTaskWit
             imageGenerationAlgorithm.setContent(content);
             ImageDataSetInformation imageDataSetInformation = new ImageDataSetInformation();
             imageDataSetInformation.setImageDataSetStructure(imageDataSetStructure);
+            long t0 = System.currentTimeMillis();
             List<BufferedImage> images = imageGenerationAlgorithm.generateImages(imageDataSetInformation,
                     thumbnailDatasets, imageProvider);
+            operationLog.info(images.size() + " thumbnails have been created for data set " + containerCode
+                    + " in " + (System.currentTimeMillis() - t0) + " msec.");
             IDataSet dataSet = Utils.createDataSetAndImageFiles(transaction, imageGenerationAlgorithm, images);
             List<String> components = new ArrayList<>(container.getContainedDataSetCodes());
             components.add(dataSet.getDataSetCode());
@@ -153,6 +201,12 @@ public class MicroscopyThumbnailsCreationTask extends AbstractMaintenanceTaskWit
             ISearchService searchService = transaction.getSearchService();
             dataSet.setExperiment(searchService.getExperimentByPermId(mainDataSet.getExperiment().getPermId().getPermId()));
             dataSet.setSample(searchService.getSampleByPermId(mainDataSet.getSample().getPermId().getPermId()));
+        }
+
+        List<ThumbnailsStorageFormat> thumbnailFormats = config.getImageStorageConfiguration().getThumbnailsStorageFormat();
+        for (ThumbnailsStorageFormat thumbnailFormat : thumbnailFormats)
+        {
+            // to be implemented when needed
         }
     }
 
@@ -163,7 +217,8 @@ public class MicroscopyThumbnailsCreationTask extends AbstractMaintenanceTaskWit
         return ingestionServiceProperties;
     }
 
-    private ScreeningPluginScriptRunnerFactory createScriptRunner(ImageDataSetStructure imageDataSetStructure, SimpleImageContainerDataConfig config)
+    private ScreeningPluginScriptRunnerFactory createScriptRunner(ImageDataSetStructure imageDataSetStructure, 
+            SimpleImageContainerDataConfig config)
     {
         ScreeningPluginScriptRunnerFactory scriptRunnerFactory = new ScreeningPluginScriptRunnerFactory(
                 JythonBasedProcessingPlugin.getScriptPathProperty(properties))
@@ -172,7 +227,8 @@ public class MicroscopyThumbnailsCreationTask extends AbstractMaintenanceTaskWit
                 private static final long serialVersionUID = 1L;
 
                 @Override
-                protected IJythonEvaluator createEvaluator(String scriptString, String[] jythonPath, DataSetProcessingContext context)
+                protected IJythonEvaluator createEvaluator(String scriptString, String[] jythonPath, 
+                        DataSetProcessingContext context)
                 {
                     IJythonEvaluator evaluator = super.createEvaluator(scriptString, jythonPath, context);
                     evaluator.set("image_data_set_structure", imageDataSetStructure);
@@ -185,15 +241,24 @@ public class MicroscopyThumbnailsCreationTask extends AbstractMaintenanceTaskWit
 
     private boolean hasNoThumbnails(DataSet containerDataSet)
     {
-        List<DataSet> components = containerDataSet.getComponents();
-        for (DataSet component : components)
+        return getFirstMatchingComponentOrNull(containerDataSet, dataSetThumbnailTypePattern) == null;
+    }
+
+    private DataSet getMainDataSet(DataSet containerDataSet)
+    {
+        return getFirstMatchingComponentOrNull(containerDataSet, mainDataSetTypePattern);
+    }
+
+    private DataSet getFirstMatchingComponentOrNull(DataSet containerDataSet, Pattern pattern)
+    {
+        for (DataSet component : containerDataSet.getComponents())
         {
-            if (dataSetThumbnailType.equals(component.getType().getCode()))
+            if (pattern.matcher(component.getType().getCode()).matches())
             {
-                return false;
+                return component;
             }
         }
-        return true;
+        return null;
     }
 
     private String login()
