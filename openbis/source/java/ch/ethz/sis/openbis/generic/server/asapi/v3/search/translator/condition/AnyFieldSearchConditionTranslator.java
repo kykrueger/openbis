@@ -102,6 +102,8 @@ public class AnyFieldSearchConditionTranslator implements IConditionTranslator<A
                 final String separator = SP + OR + SP;
                 final int separatorLength = separator.length();
 
+                sqlBuilder.append(LP);
+
                 AnyPropertySearchConditionTranslator.doTranslate(criterion, tableMapper, args, sqlBuilder, aliases);
                 sqlBuilder.append(separator);
 
@@ -173,7 +175,7 @@ public class AnyFieldSearchConditionTranslator implements IConditionTranslator<A
                     sqlBuilder.append(FALSE);
                 }
 
-                sqlBuilder.append(NL);
+                sqlBuilder.append(RP).append(NL);
 
                 break;
             }

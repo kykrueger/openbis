@@ -883,7 +883,7 @@ public class GeneralInformationServiceTest extends SystemTestCase
     public void testSearchForSamplesByAnyFieldWithSubCriteria()
     {
         SearchCriteria searchCriteria = new SearchCriteria();
-        searchCriteria.addMatchClause(MatchClause.createAnyFieldMatch("stuff"));
+        searchCriteria.addMatchClause(MatchClause.createAnyFieldMatch("*stuff*"));
 
         List<Sample> samples =
                 generalInformationService.searchForSamples(sessionToken, searchCriteria);
