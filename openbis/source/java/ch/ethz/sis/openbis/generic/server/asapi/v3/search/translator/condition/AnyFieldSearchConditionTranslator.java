@@ -59,7 +59,7 @@ public class AnyFieldSearchConditionTranslator implements IConditionTranslator<A
         if (tableMapper.hasRegistrator())
         {
             final JoinInformation registratorJoinInformation = new JoinInformation();
-            registratorJoinInformation.setJoinType(JoinType.INNER);
+            registratorJoinInformation.setJoinType(JoinType.LEFT);
             registratorJoinInformation.setMainTable(tableMapper.getEntitiesTable());
             registratorJoinInformation.setMainTableAlias(MAIN_TABLE_ALIAS);
             registratorJoinInformation.setMainTableIdField(PERSON_REGISTERER_COLUMN);
@@ -138,14 +138,25 @@ public class AnyFieldSearchConditionTranslator implements IConditionTranslator<A
                             {
                                 if (includeColumn)
                                 {
-                                    stringBuilder.append(separator).append(alias).append(PERIOD).append(fieldName).append(EQ).append(QU).
-                                            append(DOUBLE_COLON).append(fieldSQLType.toString());
+                                    stringBuilder.append(separator).append(alias).append(PERIOD).append(fieldName)
+                                            .append(SP);
+                                    if (fieldSQLType == TIMESTAMP_WITH_TZ)
+                                    {
+                                        stringBuilder.append(DOUBLE_COLON).append(PSQLTypes.DATE.toString()).
+                                                append(SP).append(EQ).append(SP).append(QU).append(DOUBLE_COLON).
+                                                append(PSQLTypes.DATE.toString());
+                                    } else
+                                    {
+                                        stringBuilder.append(EQ).append(SP).append(QU).append(DOUBLE_COLON).
+                                                append(fieldSQLType.toString());
+                                    }
                                     args.add(stringValue);
                                 }
                             } else
                             {
                                 stringBuilder.append(separator);
-                                TranslatorUtils.translateStringComparison(alias, fieldName, value, VARCHAR, stringBuilder, args);
+                                TranslatorUtils.translateStringComparison(alias, fieldName, value, VARCHAR,
+                                        stringBuilder, args);
                             }
                         },
                         StringBuilder::append

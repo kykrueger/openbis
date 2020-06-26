@@ -361,7 +361,6 @@ public enum TableMapper
     {
         final Map<String, PSQLTypes> fields = SAMPLE_TYPE.fieldToSQLTypeMap;
         fields.put(CODE_COLUMN, PSQLTypes.VARCHAR);
-        fields.put(GENERATED_CODE_PREFIX, PSQLTypes.VARCHAR);
         fields.put(MODIFICATION_TIMESTAMP_COLUMN, PSQLTypes.TIMESTAMP_WITH_TZ);
     }
 

@@ -1004,6 +1004,25 @@ public class SearchSampleTest extends AbstractSampleTest
     }
 
     @Test
+    public void testSearchWithAnyFieldMatchingRegistrationDate()
+    {
+        final SampleSearchCriteria criteria = new SampleSearchCriteria();
+        criteria.withAnyField().thatEquals("2009-02-09");
+        testSearch(TEST_USER, criteria, 15);
+    }
+
+    @Test
+    public void testSearchWithAnyFieldMatchingModificationDate()
+    {
+        final Long count = (Long) sqlExecutor.execute("SELECT count(*) FROM samples WHERE modification_timestamp::DATE = ?::DATE",
+                Arrays.asList("2009-08-18")).get(0).get("count");
+
+        final SampleSearchCriteria criteria = new SampleSearchCriteria();
+        criteria.withAnyField().thatEquals("2009-08-18");
+        testSearch(TEST_USER, criteria, Math.toIntExact(count));
+    }
+
+    @Test
     public void testSearchWithAnyFieldMatchingRegistratorsUserId()
     {
         final SampleSearchCriteria criteria = new SampleSearchCriteria();
