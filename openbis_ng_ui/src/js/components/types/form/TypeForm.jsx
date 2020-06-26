@@ -97,6 +97,7 @@ class TypeForm extends React.PureComponent {
       selection,
       removePropertyDialogOpen,
       removeSectionDialogOpen,
+      changed,
       mode
     } = this.state
 
@@ -157,6 +158,7 @@ class TypeForm extends React.PureComponent {
             onSave={controller.handleSave}
             onCancel={controller.handleCancel}
             selection={selection}
+            changed={changed}
             mode={mode}
           />
           <TypeFormDialogRemoveSection

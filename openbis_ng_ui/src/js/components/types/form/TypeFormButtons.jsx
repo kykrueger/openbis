@@ -4,6 +4,8 @@ import Container from '@src/js/components/common/form/Container.jsx'
 import Button from '@src/js/components/common/form/Button.jsx'
 import logger from '@src/js/common/logger.js'
 
+import TypeFormMessage from './TypeFormMessage.jsx'
+
 const styles = theme => ({
   container: {
     display: 'flex'
@@ -76,7 +78,8 @@ class TypeFormButtons extends React.PureComponent {
       onAddProperty,
       onRemove,
       onSave,
-      onCancel
+      onCancel,
+      changed
     } = this.props
 
     return (
@@ -104,6 +107,11 @@ class TypeFormButtons extends React.PureComponent {
           />
         </div>
         <div className={classes.rightContainer}>
+          {changed && (
+            <TypeFormMessage type='warning'>
+              You have unsaved changes.
+            </TypeFormMessage>
+          )}
           <Button
             name='save'
             label='Save'

@@ -100,7 +100,8 @@ export default class TypeFormControllerAddProperty {
       sections: newSections,
       properties: newProperties,
       propertiesCounter,
-      selection: newSelection
+      selection: newSelection,
+      changed: true
     }))
   }
 

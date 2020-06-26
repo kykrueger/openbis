@@ -31,7 +31,8 @@ export default class TypeFormControllerChange {
           ...state.type[field],
           value
         }
-      }
+      },
+      changed: true
     }))
   }
 
@@ -52,7 +53,8 @@ export default class TypeFormControllerChange {
 
     this.context.setState(state => ({
       ...state,
-      sections: newSections
+      sections: newSections,
+      changed: true
     }))
   }
 
@@ -79,7 +81,8 @@ export default class TypeFormControllerChange {
 
     this.context.setState(state => ({
       ...state,
-      properties: newProperties
+      properties: newProperties,
+      changed: true
     }))
   }
 

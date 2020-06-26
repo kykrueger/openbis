@@ -41,7 +41,8 @@ export default class TypeFormControllerAddSection {
       ...state,
       sections: newSections,
       sectionsCounter,
-      selection: newSelection
+      selection: newSelection,
+      changed: true
     }))
   }
 

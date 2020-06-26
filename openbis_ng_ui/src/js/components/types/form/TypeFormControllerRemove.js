@@ -57,7 +57,8 @@ export default class TypeFormControllerRemove {
       ...state,
       sections: newSections,
       properties: newProperties,
-      selection: null
+      selection: null,
+      changed: true
     }))
   }
 
@@ -100,7 +101,8 @@ export default class TypeFormControllerRemove {
       ...state,
       sections: newSections,
       properties: newProperties,
-      selection: null
+      selection: null,
+      changed: true
     }))
   }
 

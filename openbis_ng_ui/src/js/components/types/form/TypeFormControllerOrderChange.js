@@ -27,7 +27,8 @@ export default class TypeFormControllerOrderChange {
     newSections.splice(toIndex, 0, section)
     this.context.setState(state => ({
       ...state,
-      sections: newSections
+      sections: newSections,
+      changed: true
     }))
   }
 
@@ -49,7 +50,8 @@ export default class TypeFormControllerOrderChange {
 
       this.context.setState(state => ({
         ...state,
-        sections: newSections
+        sections: newSections,
+        changed: true
       }))
     } else {
       let { sections } = this.context.getState()
@@ -89,7 +91,8 @@ export default class TypeFormControllerOrderChange {
       this.context.setState(state => ({
         ...state,
         sections: newSections,
-        properties: newProperties
+        properties: newProperties,
+        changed: true
       }))
     }
   }
