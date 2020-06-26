@@ -9,6 +9,7 @@ const styles = theme => ({
     overflow: 'hidden'
   },
   metadataDefault: {
+    fontSize: theme.typography.label.fontSize,
     flex: '0 0 auto',
     margin: 0,
     marginBottom: theme.spacing(1) / 2,
@@ -17,8 +18,11 @@ const styles = theme => ({
   controlDefault: {
     flex: '0 0'
   },
-  descriptionDefault: {},
+  descriptionDefault: {
+    fontSize: theme.typography.label.fontSize
+  },
   errorDefault: {
+    fontSize: theme.typography.label.fontSize,
     color: theme.palette.error.main
   }
 })

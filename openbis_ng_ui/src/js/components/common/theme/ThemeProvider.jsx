@@ -7,7 +7,7 @@ const theme = createMuiTheme({
   typography: {
     useNextVariants: true,
     label: {
-      fontSize: '0.7em',
+      fontSize: '0.7rem',
       color: '#0000008a'
     }
   },
