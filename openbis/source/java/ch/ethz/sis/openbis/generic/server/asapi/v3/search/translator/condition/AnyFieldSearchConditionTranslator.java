@@ -16,11 +16,6 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractStringValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AnyFieldSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringEqualToValue;
@@ -34,27 +29,25 @@ import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
 import ch.systemsx.cisd.openbis.generic.shared.util.SimplePropertyValidator;
 
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes.BOOLEAN;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes.FLOAT4;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes.FLOAT8;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes.INT2;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes.INT4;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes.INT8;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes.TIMESTAMP_WITH_TZ;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes.VARCHAR;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.DOUBLE_COLON;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.EQ;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.FALSE;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.NL;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.OR;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.PERIOD;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.QU;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SP;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes.*;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.*;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCriteriaTranslator.MAIN_TABLE_ALIAS;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.*;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.PERSONS_TABLE;
 
 public class AnyFieldSearchConditionTranslator implements IConditionTranslator<AnyFieldSearchCriteria>
 {
 
     private static final String UNIQUE_PREFIX = AnyFieldSearchConditionTranslator.class.getName();
+
+    private static final String REGISTRATOR_JOIN_INFORMATION_KEY = "registrator";
+
+    private static final String MODIFIER_JOIN_INFORMATION_KEY = "modifier";
 
     @Override
     public Map<String, JoinInformation> getJoinInformationMap(final AnyFieldSearchCriteria criterion, final TableMapper tableMapper,
@@ -62,6 +55,33 @@ public class AnyFieldSearchConditionTranslator implements IConditionTranslator<A
     {
         final Map<String, JoinInformation> result = TranslatorUtils.getPropertyJoinInformationMap(tableMapper, aliasFactory, JoinType.LEFT);
         TranslatorUtils.appendIdentifierJoinInformationMap(result, tableMapper, aliasFactory, UNIQUE_PREFIX);
+
+        if (tableMapper.hasRegistrator())
+        {
+            final JoinInformation registratorJoinInformation = new JoinInformation();
+            registratorJoinInformation.setJoinType(JoinType.INNER);
+            registratorJoinInformation.setMainTable(tableMapper.getEntitiesTable());
+            registratorJoinInformation.setMainTableAlias(MAIN_TABLE_ALIAS);
+            registratorJoinInformation.setMainTableIdField(PERSON_REGISTERER_COLUMN);
+            registratorJoinInformation.setSubTable(PERSONS_TABLE);
+            registratorJoinInformation.setSubTableAlias(aliasFactory.createAlias());
+            registratorJoinInformation.setSubTableIdField(ID_COLUMN);
+            result.put(REGISTRATOR_JOIN_INFORMATION_KEY, registratorJoinInformation);
+        }
+
+        if (tableMapper.hasModifier())
+        {
+            final JoinInformation registratorJoinInformation = new JoinInformation();
+            registratorJoinInformation.setJoinType(JoinType.LEFT);
+            registratorJoinInformation.setMainTable(tableMapper.getEntitiesTable());
+            registratorJoinInformation.setMainTableAlias(MAIN_TABLE_ALIAS);
+            registratorJoinInformation.setMainTableIdField(PERSON_MODIFIER_COLUMN);
+            registratorJoinInformation.setSubTable(PERSONS_TABLE);
+            registratorJoinInformation.setSubTableAlias(aliasFactory.createAlias());
+            registratorJoinInformation.setSubTableIdField(ID_COLUMN);
+            result.put(MODIFIER_JOIN_INFORMATION_KEY, registratorJoinInformation);
+        }
+
         return result;
     }
 
@@ -87,6 +107,24 @@ public class AnyFieldSearchConditionTranslator implements IConditionTranslator<A
 
                 IdentifierSearchConditionTranslator.doTranslate(criterion, tableMapper, args, sqlBuilder, aliases, UNIQUE_PREFIX);
                 sqlBuilder.append(separator);
+
+                if (tableMapper.hasRegistrator())
+                {
+                    sqlBuilder.append(aliases.get(REGISTRATOR_JOIN_INFORMATION_KEY).getSubTableAlias()).append(PERIOD)
+                            .append(USER_COLUMN).append(SP);
+                    TranslatorUtils.appendStringComparatorOp(value.getClass(),
+                            TranslatorUtils.stripQuotationMarks(value.getValue()), sqlBuilder, args);
+                    sqlBuilder.append(separator);
+                }
+
+                if (tableMapper.hasModifier())
+                {
+                    sqlBuilder.append(aliases.get(MODIFIER_JOIN_INFORMATION_KEY).getSubTableAlias()).append(PERIOD)
+                            .append(USER_COLUMN).append(SP);
+                    TranslatorUtils.appendStringComparatorOp(value.getClass(),
+                            TranslatorUtils.stripQuotationMarks(value.getValue()), sqlBuilder, args);
+                    sqlBuilder.append(separator);
+                }
 
                 final StringBuilder resultSqlBuilder = tableMapper.getFieldToSQLTypeMap().entrySet().stream().collect(
                         StringBuilder::new,

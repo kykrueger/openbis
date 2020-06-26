@@ -1004,6 +1004,22 @@ public class SearchSampleTest extends AbstractSampleTest
     }
 
     @Test
+    public void testSearchWithAnyFieldMatchingRegistratorsUserId()
+    {
+        final SampleSearchCriteria criteria = new SampleSearchCriteria();
+        criteria.withAnyField().thatEquals("etlserver");
+        testSearch(TEST_USER, criteria, "/CISD/RP1-A2X", "/CISD/RP1-B1X", "/CISD/RP2-A1X");
+    }
+
+    @Test
+    public void testSearchWithAnyFieldMatchingModifiersUserId()
+    {
+        final SampleSearchCriteria criteria = new SampleSearchCriteria();
+        criteria.withAnyField().thatEquals("test_role");
+        testSearch(TEST_USER, criteria, "/CISD/CL1", "/CISD/CP-TEST-1", "/TEST-SPACE/FV-TEST");
+    }
+
+    @Test
     public void testSearchWithAnyFieldMatchingAttribute()
     {
         SampleSearchCriteria criteria = new SampleSearchCriteria();

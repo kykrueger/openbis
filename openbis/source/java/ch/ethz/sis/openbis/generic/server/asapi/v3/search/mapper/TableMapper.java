@@ -36,60 +36,75 @@ public enum TableMapper
 {
 
     SAMPLE(SAMPLES_VIEW, SAMPLE_TYPE_COLUMN, PROPERTY_TYPES_TABLE, DATA_TYPE_COLUMN, SAMPLE_TYPES_TABLE,
-            SAMPLE_TYPE_PROPERTY_TYPE_TABLE, SAMPLE_TYPE_COLUMN, PROPERTY_TYPE_COLUMN, SAMPLE_PROPERTIES_TABLE, SAMPLE_COLUMN,
-            SAMPLE_TYPE_PROPERTY_TYPE_COLUMN, SAMPLE_RELATIONSHIPS_VIEW, PARENT_SAMPLE_COLUMN, CHILD_SAMPLE_COLUMN, DATA_VIEW,
-            SAMPLE_COLUMN, SAMPLE_COLUMN, EntityKind.SAMPLE),
+            SAMPLE_TYPE_PROPERTY_TYPE_TABLE, SAMPLE_TYPE_COLUMN, PROPERTY_TYPE_COLUMN, SAMPLE_PROPERTIES_TABLE,
+            SAMPLE_COLUMN, SAMPLE_TYPE_PROPERTY_TYPE_COLUMN, SAMPLE_RELATIONSHIPS_VIEW, PARENT_SAMPLE_COLUMN,
+            CHILD_SAMPLE_COLUMN, DATA_VIEW, SAMPLE_COLUMN, SAMPLE_COLUMN, EntityKind.SAMPLE, true, true),
 
     SAMPLE_TYPE(SAMPLE_TYPES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null,
-            null, null, null, null, EntityKind.SAMPLE),
+            null, null, null, null, EntityKind.SAMPLE, false, false),
 
     EXPERIMENT(EXPERIMENTS_VIEW, EXPERIMENT_TYPE_COLUMN, PROPERTY_TYPES_TABLE, DATA_TYPE_COLUMN, EXPERIMENT_TYPES_TABLE,
-            EXPERIMENT_TYPE_PROPERTY_TYPE_TABLE, EXPERIMENT_TYPE_COLUMN, PROPERTY_TYPE_COLUMN, EXPERIMENT_PROPERTIES_TABLE, EXPERIMENT_COLUMN,
-            EXPERIMENT_TYPE_PROPERTY_TYPE_COLUMN, null, null, null, DATA_VIEW, EXPERIMENT_COLUMN, EXPERIMENT_COLUMN, EntityKind.EXPERIMENT),
+            EXPERIMENT_TYPE_PROPERTY_TYPE_TABLE, EXPERIMENT_TYPE_COLUMN, PROPERTY_TYPE_COLUMN,
+            EXPERIMENT_PROPERTIES_TABLE, EXPERIMENT_COLUMN, EXPERIMENT_TYPE_PROPERTY_TYPE_COLUMN, null, null, null,
+            DATA_VIEW, EXPERIMENT_COLUMN, EXPERIMENT_COLUMN, EntityKind.EXPERIMENT, true, true),
 
-    EXPERIMENT_TYPE(EXPERIMENT_TYPES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
-            EntityKind.EXPERIMENT),
+    EXPERIMENT_TYPE(EXPERIMENT_TYPES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null,
+            null, null, null, null, EntityKind.EXPERIMENT, false, false),
 
-    DATA_SET(DATA_VIEW, DATA_SET_TYPE_COLUMN, PROPERTY_TYPES_TABLE, DATA_TYPE_COLUMN, DATA_SET_TYPES_TABLE, DATA_SET_TYPE_PROPERTY_TYPE_TABLE,
-            DATA_SET_TYPE_COLUMN, PROPERTY_TYPE_COLUMN, DATA_SET_PROPERTIES_TABLE, DATA_SET_COLUMN, DATA_SET_TYPE_PROPERTY_TYPE_COLUMN,
-            DATA_SET_RELATIONSHIPS_VIEW, DATA_PARENT_COLUMN, DATA_CHILD_COLUMN, DATA_VIEW, ID_COLUMN, DATA_ID_COLUMN, EntityKind.DATA_SET),
+    DATA_SET(DATA_VIEW, DATA_SET_TYPE_COLUMN, PROPERTY_TYPES_TABLE, DATA_TYPE_COLUMN, DATA_SET_TYPES_TABLE,
+            DATA_SET_TYPE_PROPERTY_TYPE_TABLE, DATA_SET_TYPE_COLUMN, PROPERTY_TYPE_COLUMN, DATA_SET_PROPERTIES_TABLE,
+            DATA_SET_COLUMN, DATA_SET_TYPE_PROPERTY_TYPE_COLUMN, DATA_SET_RELATIONSHIPS_VIEW, DATA_PARENT_COLUMN,
+            DATA_CHILD_COLUMN, DATA_VIEW, ID_COLUMN, DATA_ID_COLUMN, EntityKind.DATA_SET, true, true),
 
-    DATA_SET_TYPE(DATA_SET_TYPES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
-            EntityKind.DATA_SET),
+    DATA_SET_TYPE(DATA_SET_TYPES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null,
+            null, null, null, EntityKind.DATA_SET, false, false),
 
     MATERIAL(MATERIALS_TABLE, MATERIAL_TYPE_COLUMN, PROPERTY_TYPES_TABLE, DATA_TYPE_COLUMN, MATERIAL_TYPES_TABLE,
-            MATERIAL_TYPE_PROPERTY_TYPE_TABLE, MATERIAL_TYPE_COLUMN, PROPERTY_TYPE_COLUMN, MATERIAL_PROPERTIES_TABLE, MATERIAL_COLUMN,
-            MATERIAL_TYPE_PROPERTY_TYPE_COLUMN, null, null, null, DATA_VIEW, MATERIAL_COLUMN, MATERIAL_COLUMN, EntityKind.MATERIAL),
+            MATERIAL_TYPE_PROPERTY_TYPE_TABLE, MATERIAL_TYPE_COLUMN, PROPERTY_TYPE_COLUMN, MATERIAL_PROPERTIES_TABLE,
+            MATERIAL_COLUMN, MATERIAL_TYPE_PROPERTY_TYPE_COLUMN, null, null, null, DATA_VIEW, MATERIAL_COLUMN,
+            MATERIAL_COLUMN, EntityKind.MATERIAL, true, false),
 
-    MATERIAL_TYPE(MATERIAL_TYPES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
-            EntityKind.MATERIAL),
+    MATERIAL_TYPE(MATERIAL_TYPES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null,
+            null, null, null, EntityKind.MATERIAL, false, false),
 
-    PERSON(PERSONS_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
+    PERSON(PERSONS_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+            null, null, true, false),
 
-    PROJECT(PROJECTS_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
+    PROJECT(PROJECTS_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+            null, null, true, true),
 
-    SPACE(SPACES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
+    SPACE(SPACES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+            null, true, false),
 
-    TAG(METAPROJECTS_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
+    TAG(METAPROJECTS_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+            null, null, false, false),
 
-    SEMANTIC_ANNOTATION(SEMANTIC_ANNOTATIONS_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
+    SEMANTIC_ANNOTATION(SEMANTIC_ANNOTATIONS_TABLE, null, null, null, null, null, null, null, null, null, null, null,
+            null, null, null, null, null, null, false, false),
 
-    PROPERTY_TYPE(PROPERTY_TYPES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
+    PROPERTY_TYPE(PROPERTY_TYPES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null,
+            null, null, null, null, true, false),
 
-    SAMPLE_PROPERTY_ASSIGNMENT(SAMPLE_TYPE_PROPERTY_TYPE_TABLE, null, null, null, null, null, SAMPLE_TYPE_COLUMN, null, null, null, null, null, null, null, null,
-            null, null, EntityKind.SAMPLE),
+    SAMPLE_PROPERTY_ASSIGNMENT(SAMPLE_TYPE_PROPERTY_TYPE_TABLE, null, null, null, null, null, SAMPLE_TYPE_COLUMN, null,
+            null, null, null, null, null, null, null, null, null, EntityKind.SAMPLE, true, false),
 
-    CONTENT_COPIES(CONTENT_COPIES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
+    CONTENT_COPIES(CONTENT_COPIES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null,
+            null, null, null, null, true, false),
 
-    EXTERNAL_DATA(EXTERNAL_DATA_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
+    EXTERNAL_DATA(EXTERNAL_DATA_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null,
+            null, null, null, null, false, false),
 
-    EXTERNAL_DMS(EXTERNAL_DATA_MANAGEMENT_SYSTEMS_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
+    EXTERNAL_DMS(EXTERNAL_DATA_MANAGEMENT_SYSTEMS_TABLE, null, null, null, null, null, null, null, null, null, null,
+            null, null, null, null, null, null, null, false, false),
 
-    FILE_FORMAT_TYPES(FILE_FORMAT_TYPES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
+    FILE_FORMAT_TYPES(FILE_FORMAT_TYPES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null,
+            null, null, null, null, null, false, false),
 
-    LOCATOR_TYPES(LOCATOR_TYPES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
+    LOCATOR_TYPES(LOCATOR_TYPES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null,
+            null, null, null, null, false, false),
 
-    CONTROLLED_VOCABULARY_TERMS(CONTROLLED_VOCABULARY_TERM_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+    CONTROLLED_VOCABULARY_TERMS(CONTROLLED_VOCABULARY_TERM_TABLE, null, null, null, null, null, null, null, null, null,
+            null, null, null, null, null, null, null, null, true, false);
 
     static
     {
@@ -189,12 +204,18 @@ public enum TableMapper
 
     private Map<PSQLTypes, Set<String>> sqlTypeToFieldsMap = new HashMap<>();
 
+    private final boolean withRegistrator;
+
+    private final boolean withModifier;
+
     TableMapper(final String entitiesTable, final String entitiesTableEntityTypeIdField, final String attributeTypesTable,
             final String attributeTypesTableDataTypeIdField, final String entityTypesTable, final String entityTypesAttributeTypesTable,
             final String entityTypesAttributeTypesTableEntityTypeIdField, final String entityTypesAttributeTypesTableAttributeTypeIdField,
             final String valuesTable, final String valuesTableEntityIdField, final String valuesTableEntityTypeAttributeTypeIdField,
             final String relationshipsTable, final String relationshipsTableParentIdField, final String relationshipsTableChildIdField,
-            final String dataTable, final String dataTableEntityIdField, final String metaprojectAssignmentsEntityIdField, final EntityKind entityKind)
+            final String dataTable, final String dataTableEntityIdField,
+            final String metaprojectAssignmentsEntityIdField, final EntityKind entityKind, final boolean withRegistrator,
+            final boolean withModifier)
     {
         this.entitiesTable = entitiesTable;
         this.entitiesTableEntityTypeIdField = entitiesTableEntityTypeIdField;
@@ -214,6 +235,8 @@ public enum TableMapper
         this.dataTableEntityIdField = dataTableEntityIdField;
         this.metaprojectAssignmentsEntityIdField = metaprojectAssignmentsEntityIdField;
         this.entityKind = entityKind;
+        this.withRegistrator = withRegistrator;
+        this.withModifier = withModifier;
     }
 
     public static TableMapper toEntityMapper(final EntityKind entityKind, final boolean isEntityType)
@@ -314,6 +337,16 @@ public enum TableMapper
 
     public EntityKind getEntityKind() {
         return entityKind;
+    }
+
+    public boolean hasRegistrator()
+    {
+        return withRegistrator;
+    }
+
+    public boolean hasModifier()
+    {
+        return withModifier;
     }
 
     private static void initSampleFieldToSQLTypeMap()
