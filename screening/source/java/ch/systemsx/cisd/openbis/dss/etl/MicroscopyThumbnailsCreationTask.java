@@ -33,6 +33,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.systemsx.cisd.common.jython.evaluator.IJythonEvaluator;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
@@ -132,15 +134,18 @@ public class MicroscopyThumbnailsCreationTask extends AbstractMaintenanceTaskWit
         int totalCount = searchResult.getTotalCount();
         operationLog.info(totalCount + " found."
                 + (maxCount > 0 && totalCount > maxCount ? " Handle the first " + maxCount : ""));
+        int numberOfCreatedThumbnailDataSets = 0;
         for (DataSet containerDataSet : containerDataSets)
         {
             if (hasNoThumbnails(containerDataSet) && containerDataSet.getComponents().isEmpty() == false)
             {
                 operationLog.info("Generate thumbnails for data set " + containerDataSet.getCode());
                 createThumbnailDataSet(sessionToken, containerDataSet);
+                numberOfCreatedThumbnailDataSets++;
             }
             updateTimeStampFile(renderTimeStampAndCode(containerDataSet.getRegistrationDate(), containerDataSet.getCode()));
         }
+        operationLog.info(numberOfCreatedThumbnailDataSets + " thumbnail data sets have been created.");
     }
 
     private void createThumbnailDataSet(String sessionToken, DataSet containerDataSet)
@@ -199,8 +204,16 @@ public class MicroscopyThumbnailsCreationTask extends AbstractMaintenanceTaskWit
             components.add(dataSet.getDataSetCode());
             container.setContainedDataSetCodes(components);
             ISearchService searchService = transaction.getSearchService();
-            dataSet.setExperiment(searchService.getExperimentByPermId(mainDataSet.getExperiment().getPermId().getPermId()));
-            dataSet.setSample(searchService.getSampleByPermId(mainDataSet.getSample().getPermId().getPermId()));
+            Experiment experiment = mainDataSet.getExperiment();
+            if (experiment != null)
+            {
+                dataSet.setExperiment(searchService.getExperimentByPermId(experiment.getPermId().getPermId()));
+            }
+            Sample sample = mainDataSet.getSample();
+            if (sample != null)
+            {
+                dataSet.setSample(searchService.getSampleByPermId(sample.getPermId().getPermId()));
+            }
         }
 
         List<ThumbnailsStorageFormat> thumbnailFormats = config.getImageStorageConfiguration().getThumbnailsStorageFormat();
