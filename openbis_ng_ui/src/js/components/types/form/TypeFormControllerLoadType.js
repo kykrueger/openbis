@@ -1,6 +1,7 @@
 import _ from 'lodash'
 import openbis from '@src/js/services/openbis.js'
 import objectTypes from '@src/js/common/consts/objectType.js'
+import util from '@src/js/common/util.js'
 
 import TypeFormControllerStrategies from './TypeFormControllerStrategies.js'
 
@@ -48,7 +49,10 @@ export default class TypeFormControllerLoadType {
         )
         properties.push(property)
 
-        if (!section || section.name.value !== loadedAssignment.section) {
+        if (
+          !section ||
+          section.name.value !== util.trim(loadedAssignment.section)
+        ) {
           section = this._createSection(
             'section-' + sectionsCounter++,
             loadedAssignment
@@ -116,7 +120,7 @@ export default class TypeFormControllerLoadType {
     return {
       id: id,
       name: this._createField({
-        value: loadedAssignment.section
+        value: util.trim(loadedAssignment.section)
       }),
       properties: []
     }
