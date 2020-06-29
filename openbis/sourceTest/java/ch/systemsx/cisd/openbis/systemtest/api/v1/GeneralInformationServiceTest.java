@@ -1579,18 +1579,19 @@ public class GeneralInformationServiceTest extends SystemTestCase
                 "[DataSet[20110509092359990-11,/CISD/DEFAULT/EXP-REUSE,<null>,HCS_IMAGE,{COMMENT=non-virtual comment}], DataSet[20110509092359990-12,/CISD/DEFAULT/EXP-REUSE,<null>,HCS_IMAGE,{COMMENT=non-virtual comment}]]",
                 dataSets.toString());
     }
-
-    @Test
-    public void testSearchForDataSetsByAnyFieldMatchingAttribute()
-    {
-        SearchCriteria searchCriteria = new SearchCriteria();
-        searchCriteria.addMatchClause(MatchClause.createAnyFieldMatch("TEST_METAPROJECTS"));
-        List<DataSet> dataSets =
-                generalInformationService.searchForDataSets(sessionToken, searchCriteria);
-        assertEquals(
-                "[DataSet[20120619092259000-22,/TEST-SPACE/TEST-PROJECT/EXP-SPACE-TEST,<null>,HCS_IMAGE,{COMMENT=co comment}]]",
-                dataSets.toString());
-    }
+    
+//    TODO: searching by  tags is not supported yet because they are private information for the users who made a tag.
+//    @Test
+//    public void testSearchForDataSetsByAnyFieldMatchingAttribute()
+//    {
+//        SearchCriteria searchCriteria = new SearchCriteria();
+//        searchCriteria.addMatchClause(MatchClause.createAnyFieldMatch("TEST_METAPROJECTS"));
+//        List<DataSet> dataSets =
+//                generalInformationService.searchForDataSets(sessionToken, searchCriteria);
+//        assertEquals(
+//                "[DataSet[20120619092259000-22,/TEST-SPACE/TEST-PROJECT/EXP-SPACE-TEST,<null>,HCS_IMAGE,{COMMENT=co comment}]]",
+//                dataSets.toString());
+//    }
 
     @Test
     public void testSearchForDataSetsByAnyProperty()
