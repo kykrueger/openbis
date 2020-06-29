@@ -75,7 +75,7 @@ class TypeFormPreviewSection extends React.PureComponent {
             {...provided.dragHandleProps}
             className={util.classNames(
               classes.draggable,
-              name ? classes.named : null,
+              name.value ? classes.named : null,
               selected ? classes.selected : null
             )}
             onClick={this.handleClick}
