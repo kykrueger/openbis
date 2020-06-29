@@ -15,6 +15,11 @@ const styles = theme => ({
     fontSize: theme.typography.body2.fontSize,
     height: '26px'
   },
+  underline: {
+    '&:before': {
+      borderBottomColor: theme.palette.border.primary
+    }
+  },
   adornment: {
     margin: '8px',
     marginLeft: '10px'
@@ -61,7 +66,8 @@ class FilterField extends React.Component {
           startAdornment: this.renderFilterIcon(),
           endAdornment: this.renderFilterClearIcon(),
           classes: {
-            input: classes.input
+            input: classes.input,
+            underline: classes.underline
           }
         }}
         margin='none'

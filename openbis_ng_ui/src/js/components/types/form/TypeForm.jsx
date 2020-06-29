@@ -39,11 +39,11 @@ const styles = theme => ({
   buttons: {
     flex: '0 0 auto',
     borderWidth: '1px 0px 0px 0px',
-    borderColor: theme.palette.background.secondary,
+    borderColor: theme.palette.border.primary,
     borderStyle: 'solid'
   },
   parameters: {
-    borderLeft: `1px solid ${theme.palette.background.secondary}`,
+    borderLeft: `1px solid ${theme.palette.border.primary}`,
     height: '100%',
     overflow: 'auto',
     flex: '0 0 auto'

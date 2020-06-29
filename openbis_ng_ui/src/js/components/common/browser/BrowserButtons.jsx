@@ -8,7 +8,7 @@ const styles = theme => ({
   container: {
     display: 'flex',
     borderWidth: '1px 0px 0px 0px',
-    borderColor: theme.palette.background.secondary,
+    borderColor: theme.palette.border.primary,
     borderStyle: 'solid'
   },
   button: {

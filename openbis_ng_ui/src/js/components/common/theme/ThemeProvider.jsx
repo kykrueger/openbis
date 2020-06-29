@@ -12,9 +12,6 @@ const theme = createMuiTheme({
     }
   },
   palette: {
-    grey: {
-      main: '#757575'
-    },
     primary: {
       main: indigo[700]
     },
@@ -29,7 +26,11 @@ const theme = createMuiTheme({
     },
     background: {
       primary: '#ebebeb',
-      secondary: '#dbdbdb'
+      secondary: '#f5f5f5'
+    },
+    border: {
+      primary: '#dbdbdb',
+      secondary: '#ebebeb'
     }
   }
 })

@@ -30,7 +30,7 @@ const styles = theme => ({
     justifyContent: 'flex-end',
     borderTopWidth: '1px',
     borderTopStyle: 'solid',
-    borderTopColor: theme.palette.background.secondary
+    borderTopColor: theme.palette.border.secondary
   },
   tableContainer: {
     flexGrow: 1,
@@ -47,13 +47,7 @@ const styles = theme => ({
       top: 0,
       zIndex: 10,
       fontWeight: 'bold',
-      backgroundColor: theme.palette.background.primary,
-      borderRightStyle: 'solid',
-      borderRightWidth: '1px',
-      borderRightColor: theme.palette.background.secondary
-    },
-    '& th:last-of-type': {
-      borderRightWidth: 0
+      backgroundColor: theme.palette.background.primary
     }
   },
   tableSpacer: {
@@ -66,7 +60,8 @@ const styles = theme => ({
     fontSize: 'inherit'
   },
   tableCell: {
-    padding: `${theme.spacing(1)}px ${theme.spacing(2)}px`
+    padding: `${theme.spacing(1)}px ${theme.spacing(2)}px`,
+    borderColor: theme.palette.border.secondary
   }
 })
 

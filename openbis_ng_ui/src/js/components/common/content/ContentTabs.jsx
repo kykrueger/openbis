@@ -10,7 +10,7 @@ const styles = theme => ({
   tabsRoot: {
     borderBottomStyle: 'solid',
     borderBottomWidth: '1px',
-    borderBottomColor: theme.palette.background.secondary,
+    borderBottomColor: theme.palette.border.primary,
     minHeight: '38px'
   },
   tabRoot: {

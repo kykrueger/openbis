@@ -21,7 +21,7 @@ const styles = theme => ({
     height: '100%',
     display: 'flex',
     flexDirection: 'column',
-    borderRight: `1px solid ${theme.palette.background.secondary}`
+    borderRight: `1px solid ${theme.palette.border.primary}`
   },
   nodes: {
     height: '100%',

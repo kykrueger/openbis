@@ -9,9 +9,9 @@ const styles = theme => ({
   },
   value: {
     paddingBottom: theme.spacing(1) / 2,
-    borderBottomStyle: 'dotted',
     borderBottomWidth: '1px',
-    borderBottomColor: theme.typography.label.color,
+    borderBottomStyle: 'solid',
+    borderBottomColor: theme.palette.border.secondary,
     '&:after': {
       content: '"\\00a0"'
     }
