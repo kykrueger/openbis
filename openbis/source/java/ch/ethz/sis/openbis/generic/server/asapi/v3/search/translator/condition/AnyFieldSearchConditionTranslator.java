@@ -136,12 +136,11 @@ public class AnyFieldSearchConditionTranslator implements IConditionTranslator<A
                             final PSQLTypes fieldSQLType = fieldToSQLTypesEntry.getValue();
                             final boolean includeColumn = compatiblePSQLTypesForValue.contains(fieldSQLType);
 
-                            if (equalsToComparison)
+                            if (equalsToComparison || fieldSQLType == TIMESTAMP_WITH_TZ)
                             {
                                 if (includeColumn)
                                 {
-                                    stringBuilder.append(separator).append(alias).append(PERIOD).append(fieldName)
-                                            .append(SP);
+                                    stringBuilder.append(separator).append(alias).append(PERIOD).append(fieldName);
                                     if (fieldSQLType == TIMESTAMP_WITH_TZ)
                                     {
                                         stringBuilder.append(DOUBLE_COLON).append(PSQLTypes.DATE.toString()).
@@ -149,7 +148,7 @@ public class AnyFieldSearchConditionTranslator implements IConditionTranslator<A
                                                 append(PSQLTypes.DATE.toString());
                                     } else
                                     {
-                                        stringBuilder.append(EQ).append(SP).append(QU).append(DOUBLE_COLON).
+                                        stringBuilder.append(SP).append(EQ).append(SP).append(QU).append(DOUBLE_COLON).
                                                 append(fieldSQLType.toString());
                                     }
                                     args.add(stringValue);

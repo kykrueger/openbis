@@ -1006,9 +1006,21 @@ public class SearchSampleTest extends AbstractSampleTest
     @Test
     public void testSearchWithAnyFieldMatchingRegistrationDate()
     {
-        final SampleSearchCriteria criteria = new SampleSearchCriteria();
-        criteria.withAnyField().thatEquals("2009-02-09");
-        testSearch(TEST_USER, criteria, 15);
+        final SampleSearchCriteria equalsCriteria = new SampleSearchCriteria();
+        equalsCriteria.withAnyField().thatEquals("2009-02-09");
+        testSearch(TEST_USER, equalsCriteria, 15);
+
+        final SampleSearchCriteria startsWithCriteria = new SampleSearchCriteria();
+        startsWithCriteria.withAnyField().thatStartsWith("2009-02-09");
+        testSearch(TEST_USER, startsWithCriteria, 15);
+
+        final SampleSearchCriteria endsWithCriteria = new SampleSearchCriteria();
+        endsWithCriteria.withAnyField().thatEndsWith("2009-02-09");
+        testSearch(TEST_USER, endsWithCriteria, 15);
+
+        final SampleSearchCriteria containsCriteria = new SampleSearchCriteria();
+        containsCriteria.withAnyField().thatContains("2009-02-09");
+        testSearch(TEST_USER, containsCriteria, 15);
     }
 
     @Test
