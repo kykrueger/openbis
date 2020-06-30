@@ -222,11 +222,14 @@ public class AssertionUtil
     /**
      * Assert given collection contains given item
      */
-    public static <T> void assertCollectionDoesntContain(Collection<T> objects, T item)
+    public static <T> void assertCollectionDoesntContain(Collection<T> objects, T... items)
     {
-        if (objects.contains(item))
+        for (final T item : items)
         {
-            fail("expected that collection: <" + objects + "> does not contain: <" + item + ">");
+            if (objects.contains(item))
+            {
+                fail("expected that collection: <" + objects + "> does not contain: <" + item + ">");
+            }
         }
     }
 
@@ -247,13 +250,7 @@ public class AssertionUtil
      */
     public static <T> void assertCollectionContainsOnly(Collection<T> objects, T... items)
     {
-        Set<T> objectsSet = new HashSet<T>(objects);
-        Set<T> itemsSet = new HashSet<T>(Arrays.asList(items));
-        
-        if (false == objectsSet.equals(itemsSet))
-        {
-            fail("expected that collection: <" + objects + "> contains only: <" + itemsSet + ">");
-        }
+        assertEquals(new HashSet<T>(Arrays.asList(items)), new HashSet<T>(objects));
     }
 
     public static void assertCollectionSize(Collection<?> objects, int size)
