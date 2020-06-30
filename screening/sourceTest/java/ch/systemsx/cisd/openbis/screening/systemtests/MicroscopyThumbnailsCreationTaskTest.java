@@ -107,7 +107,8 @@ public class MicroscopyThumbnailsCreationTaskTest extends MicroscopyImageDropbox
                 assertEquals("Data set " + i, "[, thumbnail.png]", paths.toString());
                 List<Long> sizes = files.stream().map(DataSetFile::getFileLength).collect(Collectors.toList());
                 Collections.sort(sizes);
-                assertEquals("Size of thumbnail " + i + " was " + sizes.get(1), true,
+                assertEquals("Size of thumbnail " + i + " is of unexpected size " + sizes.get(1)
+                        + ". Expected sizes are " + expectedThumbnailSizes, true,
                         expectedThumbnailSizes.remove(sizes.get(1)));
             }
         }
