@@ -16,6 +16,7 @@
 
 package ch.systemsx.cisd.openbis.screening.systemtests;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -68,37 +69,50 @@ public class MicroscopyThumbnailsCreationTaskTest extends MicroscopyImageDropbox
     @Test
     public void test()
     {
-        AbstractExternalData dataSet = getRegisteredContainerDataSet();
-        DataSetFetchOptions fetchOptions = new DataSetFetchOptions();
-        fetchOptions.withComponents().withExperiment();
-        fetchOptions.withComponents().withSample();
-        fetchOptions.withComponents().withType();
-        DataSetPermId dataSetPermId = new DataSetPermId(dataSet.getCode());
-        DataSet containerDataSet = v3api.getDataSets(sessionToken, Arrays.asList(dataSetPermId), fetchOptions).get(dataSetPermId);
-        List<DataSet> components = containerDataSet.getComponents();
-        Collections.sort(components, CODE_COMPARATOR);
-        
-        DataSet mainDataSet = components.get(0);
-        assertEquals("MICROSCOPY_IMG", mainDataSet.getType().getCode());
-        DataSet thumbnailDataSet = components.get(1);
-        assertEquals("MICROSCOPY_IMG_THUMBNAIL", thumbnailDataSet.getType().getCode());
-        assertEquals(mainDataSet.getExperiment().getIdentifier().getIdentifier(), 
-                thumbnailDataSet.getExperiment().getIdentifier().getIdentifier());
-        assertEquals(mainDataSet.getSample().getIdentifier().getIdentifier(), 
-                thumbnailDataSet.getSample().getIdentifier().getIdentifier());
-        assertEquals(2, components.size());
-        
-        IDataStoreServerApi dssApi = ServiceProvider.getDssServiceInternalV3();
-        DataSetFileSearchCriteria searchCriteria = new DataSetFileSearchCriteria();
-        searchCriteria.withDataSet().withCode().thatEquals(thumbnailDataSet.getCode());
-        DataSetFileFetchOptions fileFetchOptions = new DataSetFileFetchOptions();
-        List<DataSetFile> files = dssApi.searchFiles(sessionToken, searchCriteria, fileFetchOptions).getObjects();
-        List<String> paths = files.stream().map(DataSetFile::getPath).collect(Collectors.toList());
-        Collections.sort(paths);
-        assertEquals("[, thumbnail.png]", paths.toString());
-        List<Long> sizes = files.stream().map(DataSetFile::getFileLength).collect(Collectors.toList());
-        Collections.sort(sizes);
-        assertEquals("[0, 44094]", sizes.toString());
+        List<Long> expectedThumbnailSizes = new ArrayList<>(Arrays.asList(44094L, 45114L, 42913L, 45599L, 43491L));
+        List<AbstractExternalData> dataSets = getRegisteredContainerDataSets(getClass());
+        int actualNumberOfThumbnailDataSets = 0;
+        for (int i = 0; i < dataSets.size(); i++)
+        {
+            AbstractExternalData dataSet = dataSets.get(i);
+            DataSetFetchOptions fetchOptions = new DataSetFetchOptions();
+            fetchOptions.withComponents().withExperiment();
+            fetchOptions.withComponents().withSample();
+            fetchOptions.withComponents().withType();
+            DataSetPermId dataSetPermId = new DataSetPermId(dataSet.getCode());
+            DataSet containerDataSet = v3api.getDataSets(sessionToken, Arrays.asList(dataSetPermId), fetchOptions).get(dataSetPermId);
+            List<DataSet> components = containerDataSet.getComponents();
+            Collections.sort(components, CODE_COMPARATOR);
+
+            DataSet mainDataSet = components.get(0);
+            assertEquals("Data set " + i, "MICROSCOPY_IMG", mainDataSet.getType().getCode());
+            assertEquals("Data set " + i, components.size() > 1 ? 2 : 1, components.size());
+            if (components.size() > 1)
+            {
+                actualNumberOfThumbnailDataSets++;
+                DataSet thumbnailDataSet = components.get(1);
+                assertEquals("Data set " + i, "MICROSCOPY_IMG_THUMBNAIL", thumbnailDataSet.getType().getCode());
+                assertEquals("Data set " + i, mainDataSet.getExperiment().getIdentifier().getIdentifier(),
+                        thumbnailDataSet.getExperiment().getIdentifier().getIdentifier());
+                assertEquals("Data set " + i, mainDataSet.getSample().getIdentifier().getIdentifier(),
+                        thumbnailDataSet.getSample().getIdentifier().getIdentifier());
+
+                IDataStoreServerApi dssApi = ServiceProvider.getDssServiceInternalV3();
+                DataSetFileSearchCriteria searchCriteria = new DataSetFileSearchCriteria();
+                searchCriteria.withDataSet().withCode().thatEquals(thumbnailDataSet.getCode());
+                DataSetFileFetchOptions fileFetchOptions = new DataSetFileFetchOptions();
+                List<DataSetFile> files = dssApi.searchFiles(sessionToken, searchCriteria, fileFetchOptions).getObjects();
+                List<String> paths = files.stream().map(DataSetFile::getPath).collect(Collectors.toList());
+                Collections.sort(paths);
+                assertEquals("Data set " + i, "[, thumbnail.png]", paths.toString());
+                List<Long> sizes = files.stream().map(DataSetFile::getFileLength).collect(Collectors.toList());
+                Collections.sort(sizes);
+                assertEquals("Size of thumbnail " + i + " was " + sizes.get(1), true,
+                        expectedThumbnailSizes.remove(sizes.get(1)));
+            }
+        }
+        assertEquals(9, dataSets.size());
+        assertEquals(5, actualNumberOfThumbnailDataSets);
     }
 
 }

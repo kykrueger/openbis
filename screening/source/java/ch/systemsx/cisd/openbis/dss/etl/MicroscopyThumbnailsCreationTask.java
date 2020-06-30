@@ -117,23 +117,30 @@ public class MicroscopyThumbnailsCreationTask extends AbstractMaintenanceTaskWit
         DataSetSearchCriteria searchCriteria = new DataSetSearchCriteria();
         searchCriteria.withType().withCode().thatEquals(dataSetContainerType);
         Date lastRegistrationDate = getLastRegistrationDate(new Date(0));
+        String lastCode = getLastCode();
         operationLog.info("Search for data sets of type " + dataSetContainerType + " which are younger than "
-                + renderTimeStamp(lastRegistrationDate));
+                + renderTimeStamp(lastRegistrationDate) + (lastCode != null ? " and code after " + lastCode : ""));
         searchCriteria.withRegistrationDate().thatIsLaterThanOrEqualTo(lastRegistrationDate);
+        if (lastCode != null)
+        {
+//            searchCriteria.withCode().thatsIsGreaterOrEqualTo(lastCode);
+        }
         DataSetFetchOptions fetchOptions = new DataSetFetchOptions();
         fetchOptions.withComponents().withType();
         fetchOptions.withComponents().withExperiment();
         fetchOptions.withComponents().withSample();
         fetchOptions.sortBy().registrationDate();
+        fetchOptions.sortBy().code();
         if (maxCount > 0)
         {
+            fetchOptions.from(0);
             fetchOptions.count(maxCount);
         }
         SearchResult<DataSet> searchResult = getService().searchDataSets(sessionToken, searchCriteria, fetchOptions);
         List<DataSet> containerDataSets = searchResult.getObjects();
         int totalCount = searchResult.getTotalCount();
         operationLog.info(totalCount + " found."
-                + (maxCount > 0 && totalCount > maxCount ? " Handle the first " + maxCount : ""));
+                + (totalCount > containerDataSets.size() ? " Handle the first " + containerDataSets.size() : ""));
         int numberOfCreatedThumbnailDataSets = 0;
         for (DataSet containerDataSet : containerDataSets)
         {

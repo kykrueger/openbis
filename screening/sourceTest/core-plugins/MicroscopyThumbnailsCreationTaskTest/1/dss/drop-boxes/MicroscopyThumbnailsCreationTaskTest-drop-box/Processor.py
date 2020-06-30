@@ -89,15 +89,20 @@ class Processor:
         # Extract and store metadata
         bioFormatsProcessor.extractMetadata()
 
-        # Log the number of series found
-        num_series = bioFormatsProcessor.getNumSeries()
-        singleDatasetConfig = MicroscopySingleDatasetConfig(bioFormatsProcessor)
-        dataset = self._transaction.createNewImageDataSet(singleDatasetConfig, java.io.File(fileName))
-        self._transaction.moveFile(fileName, dataset)
         sample = self._transaction.createNewProjectSampleWithGeneratedCode("/TEST/TEST-PROJECT", "MICROSCOPY_SAMPLE")
         sample.setExperiment(openBISExperiment)
-        dataset.establishSampleLinkForContainedDataSets()
-        dataset.setSample(sample)
+        image_data_set = None
+        num_series = bioFormatsProcessor.getNumSeries()
+        for i in range(num_series):
+            singleDatasetConfig = MicroscopySingleDatasetConfig(bioFormatsProcessor, i)
+            if image_data_set is None:
+                dataset = self._transaction.createNewImageDataSet(singleDatasetConfig, java.io.File(fileName))
+                image_data_set = dataset
+                self._transaction.moveFile(fileName, dataset)
+            else:
+                dataset = self._transaction.createNewImageDataSetFromDataSet(singleDatasetConfig, image_data_set)
+            dataset.establishSampleLinkForContainedDataSets()
+            dataset.setSample(sample)
 
     def register(self, tree, propertiesFile):
         """Register the Experiment using the parsed properties file.
