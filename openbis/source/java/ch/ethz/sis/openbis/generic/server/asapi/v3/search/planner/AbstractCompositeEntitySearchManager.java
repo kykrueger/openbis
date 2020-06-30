@@ -204,9 +204,10 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
     private Set<Long> findFinalRelationshipIds(final Long userId, final AuthorisationInformation authorisationInformation, final SearchOperator operator,
             final Collection<ISearchCriteria> relatedEntitiesCriteria, final TableMapper tableMapper)
     {
-        final List<Set<Long>> relatedIds = relatedEntitiesCriteria.stream().flatMap(entitySearchCriteria -> {
-            final Set<Long> foundParentIds = doSearchForIDs(userId, authorisationInformation, (CRITERIA) entitySearchCriteria, operator, ColumnNames.ID_COLUMN,
-                    tableMapper);
+        final List<Set<Long>> relatedIds = relatedEntitiesCriteria.stream().flatMap(entitySearchCriteria ->
+        {
+            final Set<Long> foundParentIds = doSearchForIDs(userId, authorisationInformation,
+                    (CRITERIA) entitySearchCriteria, operator, ColumnNames.ID_COLUMN, tableMapper);
             return foundParentIds.isEmpty() ? Stream.empty() : Stream.of(foundParentIds);
         }).collect(Collectors.toList());
 

@@ -113,8 +113,10 @@ public class PostgresSearchDAO implements ISQLSearchDAO
         final String sql = SELECT + SP + DISTINCT + SP + child + PERIOD + ID_COLUMN + NL +
                 FROM + SP + tableMapper.getRelationshipsTable() + SP + rel + NL +
                 INNER_JOIN + SP + tableMapper.getEntitiesTable() + SP + child + SP +
-                ON + SP + rel + PERIOD + tableMapper.getRelationshipsTableChildIdField() + SP + EQ + SP + child + PERIOD + ID_COLUMN + NL +
-                WHERE + SP + tableMapper.getRelationshipsTableParentIdField() + SP + IN + SP + LP + SELECT + SP + UNNEST + LP + QU + RP + RP +
+                ON + SP + rel + PERIOD + tableMapper.getRelationshipsTableChildIdField() + SP + EQ + SP + child +
+                        PERIOD + ID_COLUMN + NL +
+                WHERE + SP + tableMapper.getRelationshipsTableParentIdField() + SP + IN + SP + LP +
+                SELECT + SP + UNNEST + LP + QU + RP + RP + SP +
                 AND + SP + RELATIONSHIP_COLUMN + SP + EQ + SP + LP +
                     SELECT + SP + ID_COLUMN + SP +
                     FROM + SP + RELATIONSHIP_TYPES_TABLE + SP +
@@ -140,7 +142,8 @@ public class PostgresSearchDAO implements ISQLSearchDAO
                 FROM + SP + tableMapper.getRelationshipsTable() + SP + rel + NL +
                 INNER_JOIN + SP + tableMapper.getEntitiesTable() + SP + parent + SP +
                 ON + SP + rel + PERIOD + tableMapper.getRelationshipsTableParentIdField() + SP + EQ + SP + parent + PERIOD + ID_COLUMN + NL +
-                WHERE + SP + tableMapper.getRelationshipsTableChildIdField() + SP + IN + SP + LP + SELECT + SP + UNNEST + LP + QU + RP + RP + SP +
+                WHERE + SP + tableMapper.getRelationshipsTableChildIdField() + SP + IN + SP + LP +
+                SELECT + SP + UNNEST + LP + QU + RP + RP + SP +
                 AND + SP + RELATIONSHIP_COLUMN + SP + EQ + SP + LP +
                     SELECT + SP + ID_COLUMN + SP +
                     FROM + SP + RELATIONSHIP_TYPES_TABLE + SP +

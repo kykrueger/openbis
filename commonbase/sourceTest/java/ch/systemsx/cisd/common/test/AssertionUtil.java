@@ -222,11 +222,14 @@ public class AssertionUtil
     /**
      * Assert given collection contains given item
      */
-    public static <T> void assertCollectionDoesntContain(Collection<T> objects, T item)
+    public static <T> void assertCollectionDoesntContain(Collection<T> objects, T... items)
     {
-        if (objects.contains(item))
+        for (final T item : items)
         {
-            fail("expected that collection: <" + objects + "> does not contain: <" + item + ">");
+            if (objects.contains(item))
+            {
+                fail("expected that collection: <" + objects + "> does not contain: <" + item + ">");
+            }
         }
     }
 

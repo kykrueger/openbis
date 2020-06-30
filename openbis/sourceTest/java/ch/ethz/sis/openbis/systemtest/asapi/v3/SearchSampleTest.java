@@ -18,6 +18,7 @@ package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.CacheMode;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CodesSearchCriteria;
@@ -43,6 +44,7 @@ import ch.systemsx.cisd.openbis.systemtest.authorization.ProjectAuthorizationUse
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
+import static ch.systemsx.cisd.common.test.AssertionUtil.*;
 import static org.testng.Assert.*;
 
 /**
@@ -734,10 +736,20 @@ public class SearchSampleTest extends AbstractSampleTest
     {
         final SampleSearchCriteria criteria = new SampleSearchCriteria();
         criteria.withParents();
-        testSearch(TEST_USER, criteria, "/CISD/3V-125", "/CISD/3V-126", "/CISD/3VCP5", "/CISD/3VCP6",
+
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        final List<Sample> samples = search(sessionToken, criteria, new SampleFetchOptions());
+        final Set<String> actualSet = samples.stream().
+                map(sample -> sample.getIdentifier().getIdentifier()).
+                collect(Collectors.toSet());
+
+        assertCollectionContainsAtLeast(actualSet, "/CISD/3V-125", "/CISD/3V-126", "/CISD/3VCP5", "/CISD/3VCP6",
                 "/CISD/3VCP7", "/CISD/3VCP8", "/CISD/CL-3V:A02", "/CISD/CP-TEST-1", "/CISD/CP1-A1",
                 "/CISD/CP1-A2", "/CISD/CP1-B1", "/CISD/CP2-A1", "/CISD/DP1-A", "/CISD/DP1-B", "/CISD/DP2-A",
                 "/CISD/RP1-A2X", "/CISD/RP1-B1X", "/CISD/RP2-A1X", "/DP", "/TEST-SPACE/EV-INVALID");
+        assertCollectionDoesntContain(actualSet, "/CISD/MP1-MIXED");
+
+        v3api.logout(sessionToken);
     }
 
     @Test
@@ -745,9 +757,19 @@ public class SearchSampleTest extends AbstractSampleTest
     {
         final SampleSearchCriteria criteria = new SampleSearchCriteria();
         criteria.withChildren();
-        testSearch(TEST_USER, criteria, "/CISD/3V-125", "/CISD/CL-3V:A02", "/CISD/CL1:A03", "/CISD/CP-TEST-2",
-                "/CISD/CP1-A2", "/CISD/CP1-B1", "/CISD/CP2-A1", "/CISD/DP1-A", "/CISD/DP1-B", "/CISD/DP2-A",
-                "/CISD/MP002-1", "/CISD/MP1-MIXED", "/CISD/MP2-NO-CL", "/MP", "/TEST-SPACE/EV-PARENT");
+
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        final List<Sample> samples = search(sessionToken, criteria, new SampleFetchOptions());
+        final Set<String> actualSet = samples.stream().
+                map(sample -> sample.getIdentifier().getIdentifier()).
+                collect(Collectors.toSet());
+
+        assertCollectionContainsAtLeast(actualSet, "/CISD/3V-125", "/CISD/CL-3V:A02", "/CISD/CL1:A03",
+                "/CISD/CP-TEST-2", "/CISD/CP1-A2", "/CISD/CP1-B1", "/CISD/CP2-A1", "/CISD/DP1-A", "/CISD/DP1-B",
+                "/CISD/DP2-A", "/CISD/MP002-1", "/CISD/MP1-MIXED", "/CISD/MP2-NO-CL", "/MP", "/TEST-SPACE/EV-PARENT");
+        assertCollectionDoesntContain(actualSet, "/CISD/B1B3", "/CISD/C1", "/CISD/C2", "/CISD/C3", "/CISD/CL-3V");
+
+        v3api.logout(sessionToken);
     }
 
     @Test
