@@ -1002,9 +1002,34 @@ public class SearchSampleTest extends AbstractSampleTest
         criteria.withAnyField().thatEquals("\"very advanced stuff\"");
         testSearch(TEST_USER, criteria, "/CISD/CP-TEST-1");
     }
+    
+    @Test
+    public void testSearchWithAnyFieldMatchingRegistrationDateWithVariousFormats()
+    {
+        final SampleSearchCriteria shortFormatCriteria = new SampleSearchCriteria();
+        shortFormatCriteria.withAnyField().thatEquals("2009-02-09");
+        testSearch(TEST_USER, shortFormatCriteria, "/CISD/CP-TEST-1", "/CISD/DYNA-TEST-1", "/TEST-SPACE/FV-TEST",
+                "/TEST-SPACE/EV-TEST", "/TEST-SPACE/EV-INVALID", "/TEST-SPACE/EV-NOT_INVALID", "/TEST-SPACE/EV-PARENT",
+                "/TEST-SPACE/EV-PARENT-NORMAL", "/TEST-SPACE/SAMPLE-TO-DELETE", "/CISD/CP-TEST-2",
+                "/CISD/PLATE_WELLSEARCH", "/CISD/PLATE_WELLSEARCH:WELL-A01", "/CISD/PLATE_WELLSEARCH:WELL-A02",
+                "/TEST-SPACE/CP-TEST-4", "/CISD/CP-TEST-3");
+
+        final SampleSearchCriteria mediumFormatCriteria = new SampleSearchCriteria();
+        mediumFormatCriteria.withAnyField().thatEquals("2009-02-09 12:09");
+        testSearch(TEST_USER, mediumFormatCriteria, "/CISD/CP-TEST-1", "/CISD/DYNA-TEST-1", "/TEST-SPACE/FV-TEST",
+                "/TEST-SPACE/EV-TEST", "/TEST-SPACE/EV-INVALID", "/TEST-SPACE/EV-NOT_INVALID", "/TEST-SPACE/EV-PARENT",
+                "/TEST-SPACE/EV-PARENT-NORMAL", "/TEST-SPACE/SAMPLE-TO-DELETE", "/CISD/CP-TEST-2",
+                "/CISD/PLATE_WELLSEARCH", "/CISD/PLATE_WELLSEARCH:WELL-A01", "/CISD/PLATE_WELLSEARCH:WELL-A02",
+                "/TEST-SPACE/CP-TEST-4");
+
+        final SampleSearchCriteria longFormatCriteria = new SampleSearchCriteria();
+        longFormatCriteria.withAnyField().thatEquals("2009-02-09 12:09:50");
+        testSearch(TEST_USER, longFormatCriteria, "/CISD/CP-TEST-2", "/CISD/PLATE_WELLSEARCH",
+                "/CISD/PLATE_WELLSEARCH:WELL-A01", "/CISD/PLATE_WELLSEARCH:WELL-A02", "/TEST-SPACE/CP-TEST-4");
+    }
 
     @Test
-    public void testSearchWithAnyFieldMatchingRegistrationDate()
+    public void testSearchWithAnyFieldMatchingRegistrationDateWithVariousCriteriaKinds()
     {
         final SampleSearchCriteria equalsCriteria = new SampleSearchCriteria();
         equalsCriteria.withAnyField().thatEquals("2009-02-09");
@@ -1021,25 +1046,6 @@ public class SearchSampleTest extends AbstractSampleTest
         final SampleSearchCriteria containsCriteria = new SampleSearchCriteria();
         containsCriteria.withAnyField().thatContains("2009-02-09");
         testSearch(TEST_USER, containsCriteria, 15);
-    }
-
-    @Test
-    public void testSearchWithAnyFieldMatchingModificationDate()
-    {
-        final Long count = (Long) sqlExecutor.execute("SELECT count(*) FROM samples WHERE modification_timestamp::DATE = ?::DATE",
-                Arrays.asList("2009-08-18")).get(0).get("count");
-
-        final SampleSearchCriteria criteria = new SampleSearchCriteria();
-        criteria.withAnyField().thatEquals("2009-08-18");
-        testSearch(TEST_USER, criteria, Math.toIntExact(count));
-    }
-
-    @Test
-    public void testSearchWithAnyFieldMatchingRegistratorsUserId()
-    {
-        final SampleSearchCriteria criteria = new SampleSearchCriteria();
-        criteria.withAnyField().thatEquals("etlserver");
-        testSearch(TEST_USER, criteria, "/CISD/RP1-A2X", "/CISD/RP1-B1X", "/CISD/RP2-A1X");
     }
 
     @Test

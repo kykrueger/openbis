@@ -358,7 +358,6 @@ public enum TableMapper
         fields.put(CODE_COLUMN, PSQLTypes.VARCHAR);
         fields.put(PERM_ID_COLUMN, PSQLTypes.VARCHAR);
         fields.put(REGISTRATION_TIMESTAMP_COLUMN, PSQLTypes.TIMESTAMP_WITH_TZ);
-        fields.put(MODIFICATION_TIMESTAMP_COLUMN, PSQLTypes.TIMESTAMP_WITH_TZ);
     }
 
     private static void initSampleTypeFieldToSQLTypeMap()
@@ -374,7 +373,6 @@ public enum TableMapper
         fields.put(CODE_COLUMN, PSQLTypes.VARCHAR);
         fields.put(PERM_ID_COLUMN, PSQLTypes.VARCHAR);
         fields.put(REGISTRATION_TIMESTAMP_COLUMN, PSQLTypes.TIMESTAMP_WITH_TZ);
-        fields.put(MODIFICATION_TIMESTAMP_COLUMN, PSQLTypes.TIMESTAMP_WITH_TZ);
     }
 
     private static void initExperimentTypeFieldToSQLTypeMap()
@@ -395,7 +393,7 @@ public enum TableMapper
     {
         final Map<PSQLTypes, Set<String>> map = SAMPLE.sqlTypeToFieldsMap;
         map.put(PSQLTypes.VARCHAR, new HashSet<>(Arrays.asList(CODE_COLUMN, PERM_ID_COLUMN)));
-        map.put(PSQLTypes.TIMESTAMP_WITH_TZ, new HashSet<>(Arrays.asList(REGISTRATION_TIMESTAMP_COLUMN, MODIFICATION_TIMESTAMP_COLUMN)));
+        map.put(PSQLTypes.TIMESTAMP_WITH_TZ, new HashSet<>(Arrays.asList(REGISTRATION_TIMESTAMP_COLUMN)));
     }
 
     private static void initSampleTypeSQLTypeToFieldsMap()
@@ -430,15 +428,13 @@ public enum TableMapper
         final Map<String, PSQLTypes> fields = PROJECT.fieldToSQLTypeMap;
         fields.put(CODE_COLUMN, PSQLTypes.VARCHAR);
         fields.put(REGISTRATION_TIMESTAMP_COLUMN, PSQLTypes.TIMESTAMP_WITH_TZ);
-        fields.put(MODIFICATION_TIMESTAMP_COLUMN, PSQLTypes.TIMESTAMP_WITH_TZ);
     }
 
     private static void initProjectSQLTypeToFieldsMap()
     {
         final Map<PSQLTypes, Set<String>> map = PROJECT.sqlTypeToFieldsMap;
         map.put(PSQLTypes.VARCHAR, new HashSet<>(Arrays.asList(CODE_COLUMN, DESCRIPTION_COLUMN)));
-        map.put(PSQLTypes.TIMESTAMP_WITH_TZ, new HashSet<>(Arrays.asList(REGISTRATION_TIMESTAMP_COLUMN,
-                MODIFICATION_TIMESTAMP_COLUMN)));
+        map.put(PSQLTypes.TIMESTAMP_WITH_TZ, new HashSet<>(Arrays.asList(REGISTRATION_TIMESTAMP_COLUMN)));
     }
 
     private static void initSpaceFieldToSQLTypeMap()
@@ -461,15 +457,13 @@ public enum TableMapper
         final Map<String, PSQLTypes> fields = DATA_SET.fieldToSQLTypeMap;
         fields.put(CODE_COLUMN, PSQLTypes.VARCHAR);
         fields.put(REGISTRATION_TIMESTAMP_COLUMN, PSQLTypes.TIMESTAMP_WITH_TZ);
-        fields.put(MODIFICATION_TIMESTAMP_COLUMN, PSQLTypes.TIMESTAMP_WITH_TZ);
     }
 
     private static void initDataSetSQLTypeToFieldsMap()
     {
         final Map<PSQLTypes, Set<String>> map = DATA_SET.sqlTypeToFieldsMap;
         map.put(PSQLTypes.VARCHAR, new HashSet<>(Arrays.asList(CODE_COLUMN)));
-        map.put(PSQLTypes.TIMESTAMP_WITH_TZ, new HashSet<>(Arrays.asList(REGISTRATION_TIMESTAMP_COLUMN,
-                MODIFICATION_TIMESTAMP_COLUMN)));
+        map.put(PSQLTypes.TIMESTAMP_WITH_TZ, new HashSet<>(Arrays.asList(REGISTRATION_TIMESTAMP_COLUMN)));
     }
 
     private static void initMaterialsFieldToSQLTypeMap()
@@ -477,15 +471,13 @@ public enum TableMapper
         final Map<String, PSQLTypes> fields = MATERIAL.fieldToSQLTypeMap;
         fields.put(CODE_COLUMN, PSQLTypes.VARCHAR);
         fields.put(REGISTRATION_TIMESTAMP_COLUMN, PSQLTypes.TIMESTAMP_WITH_TZ);
-        fields.put(MODIFICATION_TIMESTAMP_COLUMN, PSQLTypes.TIMESTAMP_WITH_TZ);
     }
 
     private static void initMaterialsSQLTypeToFieldsMap()
     {
         final Map<PSQLTypes, Set<String>> map = MATERIAL.sqlTypeToFieldsMap;
         map.put(PSQLTypes.VARCHAR, new HashSet<>(Arrays.asList(CODE_COLUMN)));
-        map.put(PSQLTypes.TIMESTAMP_WITH_TZ, new HashSet<>(Arrays.asList(REGISTRATION_TIMESTAMP_COLUMN,
-                MODIFICATION_TIMESTAMP_COLUMN)));
+        map.put(PSQLTypes.TIMESTAMP_WITH_TZ, new HashSet<>(Arrays.asList(REGISTRATION_TIMESTAMP_COLUMN)));
     }
 
     private static void initDataSetTypeFieldToSQLTypeMap()

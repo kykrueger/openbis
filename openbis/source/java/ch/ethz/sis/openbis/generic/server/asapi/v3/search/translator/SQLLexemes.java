@@ -28,6 +28,8 @@ public class SQLLexemes
     public static final String UPPER = "UPPER";
 
     public static final String GREATEST = "GREATEST";
+    
+    public static final String DATE_TRUNC = "date_trunc";
 
     public static final String TS_RANK = "ts_rank";
 

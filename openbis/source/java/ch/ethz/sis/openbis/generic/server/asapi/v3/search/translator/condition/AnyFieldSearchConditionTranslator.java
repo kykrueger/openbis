@@ -18,6 +18,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractStringValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AnyFieldSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.IDateFormat;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringEqualToValue;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
@@ -29,11 +30,9 @@ import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
 import ch.systemsx.cisd.openbis.generic.shared.util.SimplePropertyValidator;
 
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
+import static ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateFieldSearchCriteria.*;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes.*;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.*;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCriteriaTranslator.MAIN_TABLE_ALIAS;
@@ -48,6 +47,16 @@ public class AnyFieldSearchConditionTranslator implements IConditionTranslator<A
     private static final String REGISTRATOR_JOIN_INFORMATION_KEY = "registrator";
 
     private static final String MODIFIER_JOIN_INFORMATION_KEY = "modifier";
+
+    private static final Map<Class<? extends IDateFormat>, String> TRUNCATION_INTERVAL_BY_DATE_FORMAT =
+            new HashMap<>(3);
+
+    static
+    {
+        TRUNCATION_INTERVAL_BY_DATE_FORMAT.put(SHORT_DATE_FORMAT.getClass(), "day");
+        TRUNCATION_INTERVAL_BY_DATE_FORMAT.put(NORMAL_DATE_FORMAT.getClass(), "minute");
+        TRUNCATION_INTERVAL_BY_DATE_FORMAT.put(LONG_DATE_FORMAT.getClass(), "second");
+    }
 
     @Override
     public Map<String, JoinInformation> getJoinInformationMap(final AnyFieldSearchCriteria criterion, final TableMapper tableMapper,
@@ -110,15 +119,6 @@ public class AnyFieldSearchConditionTranslator implements IConditionTranslator<A
                 IdentifierSearchConditionTranslator.doTranslate(criterion, tableMapper, args, sqlBuilder, aliases, UNIQUE_PREFIX);
                 sqlBuilder.append(separator);
 
-                if (tableMapper.hasRegistrator())
-                {
-                    sqlBuilder.append(aliases.get(REGISTRATOR_JOIN_INFORMATION_KEY).getSubTableAlias()).append(PERIOD)
-                            .append(USER_COLUMN).append(SP);
-                    TranslatorUtils.appendStringComparatorOp(value.getClass(),
-                            TranslatorUtils.stripQuotationMarks(value.getValue()), sqlBuilder, args);
-                    sqlBuilder.append(separator);
-                }
-
                 if (tableMapper.hasModifier())
                 {
                     sqlBuilder.append(aliases.get(MODIFIER_JOIN_INFORMATION_KEY).getSubTableAlias()).append(PERIOD)
@@ -140,18 +140,33 @@ public class AnyFieldSearchConditionTranslator implements IConditionTranslator<A
                             {
                                 if (includeColumn)
                                 {
-                                    stringBuilder.append(separator).append(alias).append(PERIOD).append(fieldName);
                                     if (fieldSQLType == TIMESTAMP_WITH_TZ)
                                     {
-                                        stringBuilder.append(DOUBLE_COLON).append(PSQLTypes.DATE.toString()).
-                                                append(SP).append(EQ).append(SP).append(QU).append(DOUBLE_COLON).
-                                                append(PSQLTypes.DATE.toString());
+                                        final Optional<Object[]> dateFormatWithResultOptional = DATE_FORMATS.stream()
+                                                .map(dateFormat ->
+                                                {
+                                                    final Date formattedValue = formatValue(stringValue, dateFormat);
+                                                    return (formattedValue == null) ? null
+                                                            : new Object[] {TRUNCATION_INTERVAL_BY_DATE_FORMAT.get(
+                                                                    dateFormat.getClass()), formattedValue};
+                                                }).filter(Objects::nonNull).findFirst();
+
+                                        dateFormatWithResultOptional.ifPresent(dateFormatWithResult ->
+                                        {
+                                            stringBuilder.append(separator).append(DATE_TRUNC).append(LP);
+                                            stringBuilder.append(SQ).append(dateFormatWithResult[0]).append(SQ).
+                                                    append(COMMA).append(SP).append(alias).append(PERIOD).
+                                                    append(fieldName);
+                                            stringBuilder.append(RP).append(SP).append(EQ).append(SP).append(QU);
+                                            args.add(dateFormatWithResult[1]);
+                                        });
                                     } else
                                     {
+                                        stringBuilder.append(separator).append(alias).append(PERIOD).append(fieldName);
                                         stringBuilder.append(SP).append(EQ).append(SP).append(QU).append(DOUBLE_COLON).
                                                 append(fieldSQLType.toString());
+                                        args.add(stringValue);
                                     }
-                                    args.add(stringValue);
                                 }
                             } else
                             {
