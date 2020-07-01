@@ -61,7 +61,8 @@ def parse_jackson(input_json):
                     if isinstance(value, dict):
                         deref_graph(value)
                     elif isinstance(value, int):
-                        graph[key] = found[value]
+                        graph[key] = found.get(value)
+
                     elif isinstance(value, list):
                         for i, list_item in enumerate(value):
                             if isinstance(list_item, int):
