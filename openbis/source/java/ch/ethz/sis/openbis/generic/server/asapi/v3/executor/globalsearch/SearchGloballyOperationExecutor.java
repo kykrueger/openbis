@@ -103,7 +103,7 @@ public class SearchGloballyOperationExecutor
         final Set<Map<String, Object>> allResultMaps = new HashSet<>();
 
         // There results from the manager should already be filtered.
-        if (objectKinds.contains(GlobalSearchObjectKind.SAMPLE))
+        if (objectKinds.contains(GlobalSearchObjectKind.SAMPLE))    
         {
             final Set<Map<String, Object>> sampleResultMaps = globalSearchManager.searchForIDs(userId,
                     authorisationInformation, criteria, null, TableMapper.SAMPLE, fetchOptions);

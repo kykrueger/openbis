@@ -190,13 +190,10 @@ public class GlobalSearchCriteriaTranslator
                         .append(SP);
                 break;
             }
-            case MATERIAL:
-            {
-                sqlBuilder.append(ENTITY_TYPES_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(SP)
-                        .append(ENTITY_TYPES_CODE_ALIAS).append(COMMA).append(SP);
-                break;
-            }
         }
+
+        sqlBuilder.append(ENTITY_TYPES_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(SP)
+                .append(ENTITY_TYPES_CODE_ALIAS).append(COMMA).append(SP);
 
         sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(COMMA).append(SP)
                 .append(SQ).append(tableMapper.getEntityKind()).append(SQ).append(SP).append(OBJECT_KIND_ALIAS).append(COMMA).append(SP);
@@ -573,28 +570,21 @@ public class GlobalSearchCriteriaTranslator
                     .append(SPACE_TABLE_ALIAS).append(PERIOD).append(ID_COLUMN).append(NL);
         }
 
-        switch (tableMapper)
+        sqlBuilder.append(INNER_JOIN).append(SP).append(tableMapper.getEntityTypesTable()).append(SP)
+                .append(ENTITY_TYPES_TABLE_ALIAS)
+                .append(SP).append(ON).append(SP).append(MAIN_TABLE_ALIAS).append(PERIOD)
+                .append(tableMapper.getEntitiesTableEntityTypeIdField())
+                .append(SP).append(EQ).append(SP).append(ENTITY_TYPES_TABLE_ALIAS).append(PERIOD)
+                .append(ID_COLUMN).append(NL);
+
+        if (tableMapper == SAMPLE)
         {
-            case MATERIAL:
-            {
-                sqlBuilder.append(INNER_JOIN).append(SP).append(tableMapper.getEntityTypesTable()).append(SP)
-                        .append(ENTITY_TYPES_TABLE_ALIAS)
-                        .append(SP).append(ON).append(SP).append(MAIN_TABLE_ALIAS).append(PERIOD)
-                        .append(tableMapper.getEntitiesTableEntityTypeIdField())
-                        .append(SP).append(EQ).append(SP).append(ENTITY_TYPES_TABLE_ALIAS).append(PERIOD)
-                        .append(ID_COLUMN).append(NL);
-                break;
-            }
-            case SAMPLE:
-            {
-                sqlBuilder.append(LEFT_JOIN).append(SP).append(SAMPLE.getEntitiesTable())
-                        .append(SP).append(CONTAINER_TABLE_ALIAS)
-                        .append(SP).append(ON).append(SP).append(MAIN_TABLE_ALIAS).append(PERIOD)
-                        .append(PART_OF_SAMPLE_COLUMN)
-                        .append(SP).append(EQ).append(SP).append(CONTAINER_TABLE_ALIAS).append(PERIOD).append(ID_COLUMN)
-                        .append(NL);
-                break;
-            }
+            sqlBuilder.append(LEFT_JOIN).append(SP).append(SAMPLE.getEntitiesTable())
+                    .append(SP).append(CONTAINER_TABLE_ALIAS)
+                    .append(SP).append(ON).append(SP).append(MAIN_TABLE_ALIAS).append(PERIOD)
+                    .append(PART_OF_SAMPLE_COLUMN)
+                    .append(SP).append(EQ).append(SP).append(CONTAINER_TABLE_ALIAS).append(PERIOD).append(ID_COLUMN)
+                    .append(NL);
         }
     }
 
