@@ -41,7 +41,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
  * @author Franz-Josef Elmer
  */
 @Test(groups = { "slow", "systemtest" })
-public class MicroscopyThumbnailsCreationTaskTest extends MicroscopyImageDropboxTest
+public class MicroscopyThumbnailsCreationTaskTest extends AbstractMicroscopyImageDropboxTestCase
 {
     private static SimpleComparator<DataSet, String> CODE_COMPARATOR = new SimpleComparator<DataSet, String>()
         {
