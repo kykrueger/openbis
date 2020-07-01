@@ -131,7 +131,6 @@ public class SearchGloballyOperationExecutor
             allResultMaps.addAll(materialResultMaps);
         }
 
-
         final Collection<MatchingEntity> matchingEntities = globalSearchManager.map(allResultMaps,
                 fetchOptions.hasMatch());
         final List<MatchingEntity> pagedMatchingEntities = sortAndPage(matchingEntities, fetchOptions);

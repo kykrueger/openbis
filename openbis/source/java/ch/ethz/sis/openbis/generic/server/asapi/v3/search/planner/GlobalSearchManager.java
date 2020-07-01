@@ -250,7 +250,8 @@ public class GlobalSearchManager implements IGlobalSearchManager
         return combinedMatches.stream().collect(Collectors.toMap(
                 (propertyMatch) -> Arrays.asList(propertyMatch.getCode(), propertyMatch.getValue()),
                 Function.identity(),
-                (existingPropertyMatch, newPropertyMatch) -> {
+                (existingPropertyMatch, newPropertyMatch) ->
+                {
                     existingPropertyMatch.getSpans().addAll(newPropertyMatch.getSpans());
                     return existingPropertyMatch;
                 },

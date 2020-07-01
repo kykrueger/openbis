@@ -493,7 +493,7 @@ public class GlobalSearchCriteriaTranslator
     private static void appendMatchingColumnCondition(final StringBuilder sqlBuilder,
             final String matchingColumn, final List<Object> args, final String[] criterionValues)
     {
-        sqlBuilder.append(matchingColumn);
+        sqlBuilder.append(LOWER).append(SP).append(LP).append(matchingColumn).append(RP);
         sqlBuilder.append(SP).append(IN).append(SP).append(LP)
                 .append(SELECT).append(SP).append(UNNEST).append(LP).append(QU).append(RP)
                 .append(RP);
