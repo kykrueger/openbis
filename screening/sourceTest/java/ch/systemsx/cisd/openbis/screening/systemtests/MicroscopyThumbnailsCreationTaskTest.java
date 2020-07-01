@@ -69,7 +69,6 @@ public class MicroscopyThumbnailsCreationTaskTest extends AbstractMicroscopyImag
     @Test
     public void test()
     {
-        List<Long> expectedThumbnailSizes = new ArrayList<>(Arrays.asList(44094L, 45114L, 42913L, 45599L, 43491L));
         List<AbstractExternalData> dataSets = getRegisteredContainerDataSets(getClass());
         int actualNumberOfThumbnailDataSets = 0;
         for (int i = 0; i < dataSets.size(); i++)
@@ -107,9 +106,10 @@ public class MicroscopyThumbnailsCreationTaskTest extends AbstractMicroscopyImag
                 assertEquals("Data set " + i, "[, thumbnail.png]", paths.toString());
                 List<Long> sizes = files.stream().map(DataSetFile::getFileLength).collect(Collectors.toList());
                 Collections.sort(sizes);
-                assertEquals("Size of thumbnail " + i + " is of unexpected size " + sizes.get(1)
-                        + ". Expected sizes are " + expectedThumbnailSizes, true,
-                        expectedThumbnailSizes.remove(sizes.get(1)));
+                assertTrue("Size of thumbnail " + i + " is of unexpected size " + sizes.get(1)
+                        + ". Should be > 40000.", sizes.get(1) > 40000);
+                assertTrue("Size of thumbnail " + i + " is of unexpected size " + sizes.get(1)
+                        + ". Should be < 50000.", sizes.get(1) < 50000);
             }
         }
         assertEquals(9, dataSets.size());
