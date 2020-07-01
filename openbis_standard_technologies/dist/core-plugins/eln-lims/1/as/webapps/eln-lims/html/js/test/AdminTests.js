@@ -6,7 +6,7 @@ var AdminTests = new function() {
 
             testChain = Promise.resolve();
 
-            testChain.then(() => TestUtil.login("admin", "a"))
+            testChain.then(() => TestUtil.login("admin", "admin"))
                      .then(() => TestUtil.testPassed(1))
                      .then(() => resolve())
                      .catch((error) => reject(error));

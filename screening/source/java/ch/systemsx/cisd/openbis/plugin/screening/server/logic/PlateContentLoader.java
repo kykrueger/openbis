@@ -28,6 +28,7 @@ import org.apache.log4j.Logger;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
+import ch.systemsx.cisd.openbis.generic.server.authorization.validator.SamplePropertyAccessValidator;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.IDataBO;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.IDataSetTable;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.ISampleBO;
@@ -194,7 +195,8 @@ public class PlateContentLoader
     {
         List<IEntityProperty> properties =
                 EntityPropertyTranslator.translate(plate.getProperties(), null, null,
-                        managedPropertyEvaluatorFactory);
+                        managedPropertyEvaluatorFactory,
+                        new SamplePropertyAccessValidator(session, businessObjectFactory.getDAOFactory()));
         return PlateDimensionParser.getPlateGeometry(properties);
     }
 
@@ -367,7 +369,8 @@ public class PlateContentLoader
         for (T dataset : datasets)
         {
             datasetReferences.add(ScreeningUtils.createDatasetReference(dataset,
-                    session.getBaseIndexURL(), managedPropertyEvaluatorFactory));
+                    session.getBaseIndexURL(), managedPropertyEvaluatorFactory,
+                    new SamplePropertyAccessValidator(session, businessObjectFactory.getDAOFactory())));
         }
         return datasetReferences;
     }
@@ -389,7 +392,8 @@ public class PlateContentLoader
     private Sample translate(SamplePE sample)
     {
         return SampleTranslator.translate(sample, session.getBaseIndexURL(), null,
-                managedPropertyEvaluatorFactory);
+                managedPropertyEvaluatorFactory,
+                new SamplePropertyAccessValidator(session, businessObjectFactory.getDAOFactory()));
     }
 
     private List<WellMetadata> loadWells(TechId plateId)

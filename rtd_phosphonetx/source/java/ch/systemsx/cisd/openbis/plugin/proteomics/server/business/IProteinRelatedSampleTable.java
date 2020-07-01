@@ -19,6 +19,7 @@ package ch.systemsx.cisd.openbis.plugin.proteomics.server.business;
 import java.util.List;
 
 import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
+import ch.systemsx.cisd.openbis.generic.shared.dto.Session;
 import ch.systemsx.cisd.openbis.plugin.proteomics.shared.basic.dto.ProteinRelatedSample;
 
 /**
@@ -28,7 +29,7 @@ import ch.systemsx.cisd.openbis.plugin.proteomics.shared.basic.dto.ProteinRelate
  */
 public interface IProteinRelatedSampleTable
 {
-    public void load(TechId experimentID, TechId proteinReferenceID, String sequenceOrNull);
+    public void load(Session session, TechId experimentID, TechId proteinReferenceID, String sequenceOrNull);
 
     public List<ProteinRelatedSample> getSamples();
 }

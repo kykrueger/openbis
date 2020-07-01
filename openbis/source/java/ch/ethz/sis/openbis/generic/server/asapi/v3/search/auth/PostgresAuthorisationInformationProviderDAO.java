@@ -39,7 +39,7 @@ public class PostgresAuthorisationInformationProviderDAO implements ISQLAuthoris
     @Override
     public Set<Long> getAuthorisedSamples(final Set<Long> requestedIDs, final AuthorisationInformation authInfo)
     {
-        final String query = SELECT + SP + DISTINCT + SP + ID_COLUMN + NL +
+        final String query = SELECT + SP + ID_COLUMN + NL +
                 FROM + SP + TableMapper.SAMPLE.getEntitiesTable() + NL +
                 WHERE + SP + ID_COLUMN + SP + IN + LP + SELECT + SP + UNNEST + LP + QU + RP + RP + SP + AND + NL +
                 LP + SPACE_COLUMN + SP + IN + SP + LP +
@@ -63,7 +63,7 @@ public class PostgresAuthorisationInformationProviderDAO implements ISQLAuthoris
     {
         final String e = "e";
         final String p = "p";
-        final String query = SELECT + SP + DISTINCT + SP + e + PERIOD + ID_COLUMN + NL +
+        final String query = SELECT + SP + e + PERIOD + ID_COLUMN + NL +
                 FROM + SP + TableMapper.EXPERIMENT.getEntitiesTable() + SP + e + NL +
                 INNER_JOIN + SP + PROJECTS_TABLE + SP + p + SP + ON + SP + p + PERIOD + ID_COLUMN + SP + EQ + SP + e + PERIOD + PROJECT_COLUMN + SP +
                 WHERE + SP + e + PERIOD + ID_COLUMN + SP + IN + SP + LP + SELECT + SP + UNNEST + LP + QU + RP + RP + SP + AND +
@@ -81,7 +81,7 @@ public class PostgresAuthorisationInformationProviderDAO implements ISQLAuthoris
     public Set<Long> getAuthorisedProjects(final Set<Long> requestedIDs, final AuthorisationInformation authInfo)
     {
         final String p = "p";
-        final String query = SELECT + SP + DISTINCT + SP + p + PERIOD + ID_COLUMN + NL +
+        final String query = SELECT + SP + p + PERIOD + ID_COLUMN + NL +
                 FROM + SP + TableMapper.PROJECT.getEntitiesTable() + SP + p + NL +
                 WHERE + SP + p + PERIOD + ID_COLUMN + SP + IN + SP + LP + SELECT + SP + UNNEST + LP + QU + RP + RP + SP + AND +
                 SP + LP + p + PERIOD + SPACE_COLUMN + SP + IN + SP + LP + SELECT + SP + UNNEST + LP + QU + RP + RP + SP + OR +
@@ -99,7 +99,7 @@ public class PostgresAuthorisationInformationProviderDAO implements ISQLAuthoris
     {
         final String s = "s";
         final String p = "p";
-        final String query = SELECT + SP + DISTINCT + SP + s + PERIOD + ID_COLUMN + NL +
+        final String query = SELECT + SP + s + PERIOD + ID_COLUMN + NL +
                 FROM + SP + TableMapper.SPACE.getEntitiesTable() + SP + s + NL +
                 INNER_JOIN + SP + TableMapper.PROJECT.getEntitiesTable() + SP + p + SP +
                 ON + SP + p + PERIOD + SPACE_COLUMN + SP + EQ + SP + s + PERIOD + ID_COLUMN + NL +
@@ -111,6 +111,39 @@ public class PostgresAuthorisationInformationProviderDAO implements ISQLAuthoris
                 authInfo.getProjectIds().toArray(new Long[0]));
         final List<Map<String, Object>> queryResultList = executor.execute(query, args);
                                                                          
+        return collectIDs(queryResultList);
+    }
+
+    @Override
+    public Set<Long> getAuthorisedDatasets(final Set<Long> requestedIDs, final AuthorisationInformation authInfo)
+    {
+        final Long[] projectIds = authInfo.getProjectIds().toArray(new Long[0]);
+        final Long[] spaceIds = authInfo.getSpaceIds().toArray(new Long[0]);
+        final String d = "d";
+        final String ep = "ep";
+        final String sp = "sp";
+        final String exp = "exp";
+        final String samp = "samp";
+        final String query = SELECT + SP + d + PERIOD + ID_COLUMN + NL +
+                FROM + SP + TableMapper.DATA_SET.getEntitiesTable() + SP + d + NL +
+                LEFT_JOIN + SP + TableMapper.EXPERIMENT.getEntitiesTable() + SP + exp + SP +
+                ON + SP + d + PERIOD + EXPERIMENT_COLUMN + SP + EQ + SP + exp + PERIOD + ID_COLUMN + NL +
+                LEFT_JOIN + SP + TableMapper.PROJECT.getEntitiesTable() + SP + ep + SP +
+                ON + SP + exp + PERIOD + PROJECT_COLUMN + SP + EQ + SP + ep + PERIOD + ID_COLUMN + NL +
+                LEFT_JOIN + SP + TableMapper.SAMPLE.getEntitiesTable() + SP + samp + SP +
+                ON + SP + d + PERIOD + SAMPLE_COLUMN + SP + EQ + SP + samp + PERIOD + ID_COLUMN + NL +
+                LEFT_JOIN + SP + TableMapper.PROJECT.getEntitiesTable() + SP + sp + SP +
+                ON + SP + samp + PERIOD + PROJECT_COLUMN + SP + EQ + SP + sp + PERIOD + ID_COLUMN + NL +
+                WHERE + SP + d + PERIOD + ID_COLUMN + SP + IN + SP + LP + SELECT + SP + UNNEST + LP + QU + RP + RP + SP + AND + SP + LP +
+                ep + PERIOD + ID_COLUMN + SP + IN + SP + LP + SELECT + SP + UNNEST + LP + QU + RP + RP + SP + OR + SP +
+                sp + PERIOD + ID_COLUMN + SP + IN + SP + LP + SELECT + SP + UNNEST + LP + QU + RP + RP + SP + OR + NL +
+                ep + PERIOD + SPACE_COLUMN + SP + IN + SP + LP + SELECT + SP + UNNEST + LP + QU + RP + RP + OR + SP +
+                sp + PERIOD + SPACE_COLUMN + SP + IN + SP + LP + SELECT + SP + UNNEST + LP + QU + RP + RP +
+                RP;
+
+        final List<Object> args = Arrays.asList(requestedIDs.toArray(new Long[0]), projectIds, projectIds, spaceIds, spaceIds);
+        final List<Map<String, Object>> queryResultList = executor.execute(query, args);
+
         return collectIDs(queryResultList);
     }
 

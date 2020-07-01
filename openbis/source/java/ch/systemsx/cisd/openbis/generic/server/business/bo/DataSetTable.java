@@ -38,6 +38,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 
 import ch.rinn.restrictions.Private;
 import ch.systemsx.cisd.common.collection.CollectionUtils;
+import ch.systemsx.cisd.common.collection.IValidator;
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.common.logging.LogCategory;
@@ -60,6 +61,7 @@ import ch.systemsx.cisd.openbis.generic.server.dataaccess.event.DeleteDataSetEve
 import ch.systemsx.cisd.openbis.generic.shared.Constants;
 import ch.systemsx.cisd.openbis.generic.shared.IDataStoreService;
 import ch.systemsx.cisd.openbis.generic.shared.basic.BasicConstant;
+import ch.systemsx.cisd.openbis.generic.shared.basic.IIdentifierHolder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.TableModelAppender;
 import ch.systemsx.cisd.openbis.generic.shared.basic.TableModelAppender.TableModelWithDifferentColumnCountException;
 import ch.systemsx.cisd.openbis.generic.shared.basic.TableModelAppender.TableModelWithDifferentColumnIdsException;
@@ -488,7 +490,14 @@ public final class DataSetTable extends AbstractDataSetBusinessObject implements
         String sessionToken = dataStore.getSessionToken();
         List<AbstractExternalData> cleanDataSets =
                 DataSetTranslator.translate(list, "?", "?", new HashMap<Long, Set<Metaproject>>(),
-                        managedPropertyEvaluatorFactory);
+                        managedPropertyEvaluatorFactory, new IValidator<IIdentifierHolder>()
+                            {
+                                @Override
+                                public boolean isValid(IIdentifierHolder object)
+                                {
+                                    return false;
+                                }
+                            });
         service.uploadDataSetsToCIFEX(sessionToken, cleanDataSets, context);
     }
 

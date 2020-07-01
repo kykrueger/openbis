@@ -16,10 +16,7 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.property;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,7 +70,7 @@ public class SearchPropertyAssignmentsOperationExecutor extends
 
     @Override
     protected Map<EntityTypePropertyTypePE, PropertyAssignment> doTranslate(TranslationContext translationContext,
-            List<EntityTypePropertyTypePE> assignments,
+            Collection<EntityTypePropertyTypePE> assignments,
             PropertyAssignmentFetchOptions fetchOptions)
     {
         Map<PropertyAssignmentKey, EntityTypePropertyTypePE> keyToPeMap = new HashMap<PropertyAssignmentKey, EntityTypePropertyTypePE>();

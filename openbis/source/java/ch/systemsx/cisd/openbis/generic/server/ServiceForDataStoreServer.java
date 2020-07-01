@@ -107,6 +107,7 @@ import ch.systemsx.cisd.openbis.generic.server.authorization.predicate.SampleUpd
 import ch.systemsx.cisd.openbis.generic.server.authorization.predicate.SpaceIdentifierPredicate;
 import ch.systemsx.cisd.openbis.generic.server.authorization.validator.ExperimentValidator;
 import ch.systemsx.cisd.openbis.generic.server.authorization.validator.ProjectValidator;
+import ch.systemsx.cisd.openbis.generic.server.authorization.validator.SamplePropertyAccessValidator;
 import ch.systemsx.cisd.openbis.generic.server.authorization.validator.SampleValidator;
 import ch.systemsx.cisd.openbis.generic.server.batch.BatchOperationExecutor;
 import ch.systemsx.cisd.openbis.generic.server.batch.DataSetBatchUpdate;
@@ -664,6 +665,7 @@ public class ServiceForDataStoreServer extends AbstractCommonServer<IServiceForD
 
         return ExperimentTranslator.translate(experiment, session.getBaseIndexURL(),
                 MetaprojectTranslator.translate(metaprojectPEs), managedPropertyEvaluatorFactory,
+                new SamplePropertyAccessValidator(session, getDAOFactory()),
                 LoadableFields.PROPERTIES);
     }
 
@@ -718,7 +720,8 @@ public class ServiceForDataStoreServer extends AbstractCommonServer<IServiceForD
                             session.tryGetPerson(), sample);
         }
         return SampleTranslator.translate(sample, session.getBaseIndexURL(), true, true,
-                MetaprojectTranslator.translate(metaprojects), managedPropertyEvaluatorFactory);
+                MetaprojectTranslator.translate(metaprojects), managedPropertyEvaluatorFactory,
+                new SamplePropertyAccessValidator(session, getDAOFactory()));
     }
 
     @Override
@@ -951,7 +954,8 @@ public class ServiceForDataStoreServer extends AbstractCommonServer<IServiceForD
                 MetaprojectTranslator.translateMetaprojectAssignments(assignmentPEs);
         Collections.sort(experiments);
         return ExperimentTranslator.translate(experiments, session.getBaseIndexURL(), assignments,
-                managedPropertyEvaluatorFactory);
+                managedPropertyEvaluatorFactory,
+                new SamplePropertyAccessValidator(session, getDAOFactory()));
     }
 
     @Override
@@ -976,7 +980,8 @@ public class ServiceForDataStoreServer extends AbstractCommonServer<IServiceForD
         HibernateUtils.initialize(properties);
         return EntityPropertyTranslator.translate(properties.toArray(new SamplePropertyPE[0]),
                 new HashMap<MaterialTypePE, MaterialType>(), new HashMap<PropertyTypePE, PropertyType>(),
-                managedPropertyEvaluatorFactory);
+                managedPropertyEvaluatorFactory,
+                new SamplePropertyAccessValidator(session, getDAOFactory()));
     }
 
     @Override
@@ -999,7 +1004,8 @@ public class ServiceForDataStoreServer extends AbstractCommonServer<IServiceForD
         HibernateUtils.initialize(properties);
         return EntityPropertyTranslator.translate(properties.toArray(new SamplePropertyPE[0]),
                 new HashMap<MaterialTypePE, MaterialType>(), new HashMap<PropertyTypePE, PropertyType>(),
-                managedPropertyEvaluatorFactory);
+                managedPropertyEvaluatorFactory,
+                new SamplePropertyAccessValidator(session, getDAOFactory()));
     }
 
     @Override
@@ -1291,7 +1297,8 @@ public class ServiceForDataStoreServer extends AbstractCommonServer<IServiceForD
                 getDAOFactory().getMetaprojectDAO().listMetaprojectsForEntity(
                         session.tryGetPerson(), dataPE);
         return DataSetTranslator.translate(dataPE, session.getBaseIndexURL(),
-                MetaprojectTranslator.translate(metaprojects), managedPropertyEvaluatorFactory);
+                MetaprojectTranslator.translate(metaprojects), managedPropertyEvaluatorFactory,
+                new SamplePropertyAccessValidator(session, getDAOFactory()));
     }
 
     @Override
@@ -1312,7 +1319,8 @@ public class ServiceForDataStoreServer extends AbstractCommonServer<IServiceForD
             return null;
         }
         return DataSetTranslator.translate(dataPE, session.getBaseIndexURL(),
-                Collections.<Metaproject> emptyList(), managedPropertyEvaluatorFactory);
+                Collections.<Metaproject> emptyList(), managedPropertyEvaluatorFactory,
+                new SamplePropertyAccessValidator(session, getDAOFactory()));
     }
 
     @Override
@@ -1398,7 +1406,8 @@ public class ServiceForDataStoreServer extends AbstractCommonServer<IServiceForD
                 MetaprojectTranslator.translateMetaprojectAssignments(assignmentPEs);
 
         return SampleTranslator
-                .translate(samples, "", assignments, managedPropertyEvaluatorFactory);
+                .translate(samples, "", assignments, managedPropertyEvaluatorFactory,
+                        new SamplePropertyAccessValidator(session, getDAOFactory()));
     }
 
     @Override
@@ -1670,7 +1679,8 @@ public class ServiceForDataStoreServer extends AbstractCommonServer<IServiceForD
         registerDataSetInternal(getSession(sessionToken), samplePE, externalData, new DataSetRegistrationCache());
         Sample result =
                 SampleTranslator.translate(samplePE, session.getBaseIndexURL(), null,
-                        managedPropertyEvaluatorFactory);
+                        managedPropertyEvaluatorFactory,
+                        new SamplePropertyAccessValidator(session, getDAOFactory()));
         return result;
     }
 
@@ -1695,7 +1705,8 @@ public class ServiceForDataStoreServer extends AbstractCommonServer<IServiceForD
         Sample result =
                 SampleTranslator.translate(samplePE, session.getBaseIndexURL(),
                         MetaprojectTranslator.translate(metaprojectPEs),
-                        managedPropertyEvaluatorFactory);
+                        managedPropertyEvaluatorFactory,
+                        new SamplePropertyAccessValidator(session, getDAOFactory()));
         return result;
     }
 
@@ -1802,7 +1813,8 @@ public class ServiceForDataStoreServer extends AbstractCommonServer<IServiceForD
             }
             return MaterialTranslator.translate(materialPE,
                     MetaprojectTranslator.translate(metaprojectPEs),
-                    managedPropertyEvaluatorFactory);
+                    managedPropertyEvaluatorFactory,
+                    new SamplePropertyAccessValidator(session, getDAOFactory()));
         } catch (UserFailureException ufe)
         {
             // material does not exist

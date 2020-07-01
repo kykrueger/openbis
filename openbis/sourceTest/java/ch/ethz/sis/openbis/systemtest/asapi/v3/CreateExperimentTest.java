@@ -43,6 +43,10 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.IExperimentId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.IProjectId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.Tag;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.ITagId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagPermId;
@@ -51,7 +55,6 @@ import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewETPTAssignment;
 import ch.systemsx.cisd.openbis.systemtest.authorization.ProjectAuthorizationUser;
-
 import junit.framework.Assert;
 
 /**
@@ -59,6 +62,7 @@ import junit.framework.Assert;
  */
 public class CreateExperimentTest extends AbstractExperimentTest
 {
+    private static final PropertyTypePermId PLATE_GEOMETRY = new PropertyTypePermId("$PLATE_GEOMETRY");
 
     @Test
     public void testCreateWithIndexCheck()
@@ -639,6 +643,167 @@ public class CreateExperimentTest extends AbstractExperimentTest
 
         assertAccessLog(
                 "create-experiments  NEW_EXPERIMENTS('[ExperimentCreation[projectId=/CISD/NEMO,code=LOG_TEST_1], ExperimentCreation[projectId=/TEST-SPACE/TEST-PROJECT,code=LOG_TEST_2]]')");
+    }
+
+    @Test
+    public void testCreateWithUnknownPropertyOfTypeSample()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        ExperimentCreation experiment = new ExperimentCreation();
+        experiment.setCode("EXPERIMENT_WITH_SAMPLE_PROPERTY");
+        experiment.setTypeId(new EntityTypePermId("COMPOUND_HCS"));
+        experiment.setProjectId(new ProjectIdentifier("/CISD/NEMO"));
+        experiment.setSampleProperty("PLATE", new SampleIdentifier("/CISD/CL1"));
+
+        // When
+        assertUserFailureException(Void -> v3api.createExperiments(sessionToken, Arrays.asList(experiment)),
+                // Then
+                "Not a property of data type SAMPLE: PLATE");
+    }
+
+    @Test
+    public void testCreateWithPropertyOfTypeSampleWithUnknownSample()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createASamplePropertyType(sessionToken, null);
+        EntityTypePermId experimentType = createAnExperimentType(sessionToken, false, propertyType);
+
+        ExperimentCreation experiment = new ExperimentCreation();
+        experiment.setCode("EXPERIMENT_WITH_SAMPLE_PROPERTY");
+        experiment.setTypeId(experimentType);
+        experiment.setProjectId(new ProjectIdentifier("/CISD/NEMO"));
+        experiment.setSampleProperty(propertyType.getPermId(), new SampleIdentifier("/CISD/UNKNOWN"));
+
+        // When
+        assertUserFailureException(Void -> v3api.createExperiments(sessionToken, Arrays.asList(experiment)),
+                // Then
+                "Unknown sample: /CISD/UNKNOWN");
+    }
+
+    @Test
+    public void testCreateWithMissingMandatoryPropertyOfTypeSample()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createASamplePropertyType(sessionToken, null);
+        EntityTypePermId experimentType = createAnExperimentType(sessionToken, true, propertyType);
+
+        ExperimentCreation experiment = new ExperimentCreation();
+        experiment.setCode("EXPERIMENT_WITH_SAMPLE_PROPERTY");
+        experiment.setTypeId(experimentType);
+        experiment.setProjectId(new ProjectIdentifier("/CISD/NEMO"));
+
+        // When
+        assertUserFailureException(Void -> v3api.createExperiments(sessionToken, Arrays.asList(experiment)),
+                // Then
+                "Value of mandatory property '" + propertyType.getPermId() + "' not specified.");
+    }
+
+    @Test
+    public void testCreateWithPropertyOfTypeSampleWithSampleOfWrongType()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createASamplePropertyType(sessionToken,
+                new EntityTypePermId("WELL", ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind.SAMPLE));
+        EntityTypePermId experimentType = createAnExperimentType(sessionToken, false, propertyType);
+
+        ExperimentCreation experiment = new ExperimentCreation();
+        experiment.setCode("EXPERIMENT_WITH_SAMPLE_PROPERTY");
+        experiment.setTypeId(experimentType);
+        experiment.setProjectId(new ProjectIdentifier("/CISD/NEMO"));
+        experiment.setSampleProperty(propertyType.getPermId(), new SamplePermId("200811050919915-8"));
+
+        // When
+        assertUserFailureException(Void -> v3api.createExperiments(sessionToken, Arrays.asList(experiment)),
+                // Then
+                "Property " + propertyType.getPermId() + " is not a sample of type WELL but of type CONTROL_LAYOUT");
+    }
+
+    @Test
+    public void testCreateWithPropertyOfTypeSampleWithSampleNotAccessable()
+    {
+        // Given
+        String adminSessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createASamplePropertyType(adminSessionToken, null);
+        EntityTypePermId experimentType = createAnExperimentType(adminSessionToken, true, propertyType);
+        v3api.logout(adminSessionToken);
+
+        String sessionToken = v3api.login(TEST_SPACE_USER, PASSWORD);
+        ExperimentCreation experiment = new ExperimentCreation();
+        experiment.setCode("EXPERIMENT_WITH_SAMPLE_PROPERTY");
+        experiment.setTypeId(experimentType);
+        experiment.setProjectId(new ProjectIdentifier("/TEST-SPACE/TEST-PROJECT"));
+        experiment.setSampleProperty(propertyType.getPermId(), new SampleIdentifier("/CISD/CL1"));
+
+        // When
+        assertUserFailureException(Void -> v3api.createExperiments(sessionToken, Arrays.asList(experiment)),
+                // Then
+                "Unknown sample: /CISD/CL1");
+    }
+
+    @Test
+    public void testCreateWithPropertyOfTypeSampleWithInvisibleSample()
+    {
+        // Given
+        String adminSessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createASamplePropertyType(adminSessionToken, null);
+        EntityTypePermId experimentType = createAnExperimentType(adminSessionToken, true, propertyType, PLATE_GEOMETRY);
+
+        ExperimentCreation creation = new ExperimentCreation();
+        creation.setCode("EXPERIMENT_WITH_SAMPLE_PROPERTY");
+        creation.setTypeId(experimentType);
+        creation.setProjectId(new ProjectIdentifier("/TEST-SPACE/TEST-PROJECT"));
+        creation.setProperty(PLATE_GEOMETRY.getPermId(), "384_WELLS_16X24");
+        creation.setSampleProperty(propertyType.getPermId(), new SampleIdentifier("/CISD/CL1"));
+        ExperimentPermId experimentPermId = v3api.createExperiments(adminSessionToken, Arrays.asList(creation)).get(0);
+        v3api.logout(adminSessionToken);
+
+        String sessionToken = v3api.login(TEST_SPACE_USER, PASSWORD);
+        ExperimentFetchOptions fetchOptions = new ExperimentFetchOptions();
+        fetchOptions.withProperties();
+        fetchOptions.withSampleProperties();
+
+        // When
+        Experiment experiment = v3api.getExperiments(sessionToken, Arrays.asList(experimentPermId), fetchOptions).get(experimentPermId);
+
+        // Then
+        assertEquals(experiment.getSampleProperties().toString(), "{}");
+        assertEquals(experiment.getProperties().toString(), "{$PLATE_GEOMETRY=384_WELLS_16X24}");
+    }
+
+    @Test
+    public void testCreateWithPropertyOfTypeSample()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createASamplePropertyType(sessionToken, null);
+        EntityTypePermId experimentType = createAnExperimentType(sessionToken, true, propertyType, PLATE_GEOMETRY);
+
+        ExperimentCreation creation = new ExperimentCreation();
+        creation.setCode("EXPERIMENT_WITH_SAMPLE_PROPERTY");
+        creation.setTypeId(experimentType);
+        creation.setProjectId(new ProjectIdentifier("/CISD/NEMO"));
+        creation.setProperty(PLATE_GEOMETRY.getPermId(), "384_WELLS_16X24");
+        creation.setSampleProperty(propertyType.getPermId(), new SampleIdentifier("/CISD/CL1"));
+
+        // When
+        List<ExperimentPermId> experimentIds = v3api.createExperiments(sessionToken, Arrays.asList(creation));
+
+        // Then
+        assertEquals(experimentIds.size(), 1);
+        ExperimentFetchOptions fetchOptions = new ExperimentFetchOptions();
+        fetchOptions.withProperties();
+        fetchOptions.withSampleProperties();
+        Experiment experiment2 = v3api.getExperiments(sessionToken, experimentIds, fetchOptions).get(experimentIds.get(0));
+        Sample sampleProperty = experiment2.getSampleProperties().get(propertyType.getPermId());
+        assertEquals(sampleProperty.getIdentifier().getIdentifier(), "/CISD/CL1");
+        assertEquals(experiment2.getSampleProperties().size(), 1);
+        assertEquals(experiment2.getProperties().get(PLATE_GEOMETRY.getPermId()), "384_WELLS_16X24");
+        assertEquals(experiment2.getProperties().get(propertyType.getPermId()), sampleProperty.getPermId().getPermId());
+        assertEquals(experiment2.getProperties().size(), 2);
     }
 
 }

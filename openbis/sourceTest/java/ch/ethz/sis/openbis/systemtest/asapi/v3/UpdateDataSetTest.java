@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import org.testng.annotations.DataProvider;
@@ -45,13 +46,15 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.IExperimentId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.HistoryEntry;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.PropertyHistoryEntry;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.PersonPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.Role;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.create.RoleAssignmentCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.create.SpaceCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.update.SpaceUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.Tag;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagCode;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.FreezingFlags;
@@ -65,7 +68,7 @@ import ch.systemsx.cisd.openbis.systemtest.authorization.ProjectAuthorizationUse
 /**
  * @author pkupczyk
  */
-public class UpdateDataSetTest extends AbstractSampleTest
+public class UpdateDataSetTest extends AbstractDataSetTest
 {
 
     @Test
@@ -1095,6 +1098,215 @@ public class UpdateDataSetTest extends AbstractSampleTest
         assertUserFailureException(Void -> v3api.deleteDataSets(sessionToken, Arrays.asList(containerId), deletionOptions),
                 // Then
                 "ERROR: Operation TRASH is not allowed because data set 20081105092159111-1 is frozen.");
+    }
+
+    @Test
+    public void testUpdateWithUnknownPropertyOfTypeSample()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        
+        DataSetCreation creation = physicalDataSetCreation();
+        DataSetPermId dataSetPermId = v3api.createDataSets(sessionToken, Arrays.asList(creation)).get(0);
+
+        DataSetUpdate update = new DataSetUpdate();
+        update.setDataSetId(dataSetPermId);
+        update.setSampleProperty("PLATE", new SamplePermId("200811050924898-997"));
+
+        // When
+        assertUserFailureException(Void -> v3api.updateDataSets(sessionToken, Arrays.asList(update)),
+                // Then
+                "Not a property of data type SAMPLE: PLATE");
+    }
+
+    @Test
+    public void testUpdateWithPropertyOfTypeSampleWithUnknownSample()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createASamplePropertyType(sessionToken, null);
+        EntityTypePermId dataSetType = createADataSetType(sessionToken, false, propertyType);
+        DataSetCreation creation = physicalDataSetCreation();
+        creation.setTypeId(dataSetType);
+        creation.setSampleProperty(propertyType.getPermId(), new SampleIdentifier("/CISD/CL1"));
+        DataSetPermId dataSetPermId = v3api.createDataSets(sessionToken, Arrays.asList(creation)).get(0);
+
+        DataSetUpdate update = new DataSetUpdate();
+        update.setDataSetId(dataSetPermId);
+        update.setSampleProperty(propertyType.getPermId(), new SampleIdentifier("/CISD/UNKNOWN"));
+
+        // When
+        assertUserFailureException(Void -> v3api.updateDataSets(sessionToken, Arrays.asList(update)),
+                // Then
+                "Unknown sample: /CISD/UNKNOWN");
+    }
+
+    @Test
+    public void testUpdateWithPropertyOfTypeSampleWithSampleOfWrongType()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createASamplePropertyType(sessionToken,
+                new EntityTypePermId("WELL", EntityKind.SAMPLE));
+        EntityTypePermId dataSetType = createADataSetType(sessionToken, false, propertyType);
+        DataSetCreation creation = physicalDataSetCreation();
+        creation.setTypeId(dataSetType);
+        creation.setSampleProperty(propertyType.getPermId(), new SamplePermId("200811050917877-438"));
+        DataSetPermId dataSetPermId = v3api.createDataSets(sessionToken, Arrays.asList(creation)).get(0);
+
+        DataSetUpdate update = new DataSetUpdate();
+        update.setDataSetId(dataSetPermId);
+        update.setSampleProperty(propertyType.getPermId(), new SamplePermId("200811050919915-8"));
+
+        // When
+        assertUserFailureException(Void -> v3api.updateDataSets(sessionToken, Arrays.asList(update)),
+                // Then
+                "Property " + propertyType.getPermId() + " is not a sample of type WELL but of type CONTROL_LAYOUT");
+    }
+
+    @Test
+    public void testUpdateWithPropertyOfTypeSampleWithSampleNotAccessable()
+    {
+        // Given
+        String adminSessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createASamplePropertyType(adminSessionToken, null);
+        EntityTypePermId dataSetType = createADataSetType(adminSessionToken, false, propertyType);
+        DataSetCreation creation = physicalDataSetCreation();
+        creation.setTypeId(dataSetType);
+        creation.setExperimentId(new ExperimentIdentifier("/TEST-SPACE/TEST-PROJECT/EXP-SPACE-TEST"));
+        creation.setSampleProperty(propertyType.getPermId(), new SampleIdentifier("/MP"));
+        DataSetPermId dataSetPermId = v3api.createDataSets(adminSessionToken, Arrays.asList(creation)).get(0);
+
+        String sessionToken = v3api.login(TEST_SPACE_USER, PASSWORD);
+        DataSetUpdate update = new DataSetUpdate();
+        update.setDataSetId(dataSetPermId);
+        update.setSampleProperty(propertyType.getPermId(), new SampleIdentifier("/CISD/CL1"));
+
+        // When
+        assertUserFailureException(Void -> v3api.updateDataSets(sessionToken, Arrays.asList(update)),
+                // Then
+                "Unknown sample: /CISD/CL1");
+    }
+
+    @Test
+    public void testUpdateAddSampleProperty()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createASamplePropertyType(sessionToken, null);
+        EntityTypePermId dataSetType = createADataSetType(sessionToken, false, propertyType);
+        DataSetCreation creation = physicalDataSetCreation();
+        creation.setTypeId(dataSetType);
+        creation.setExperimentId(new ExperimentIdentifier("/TEST-SPACE/TEST-PROJECT/EXP-SPACE-TEST"));
+        DataSetPermId dataSetPermId = v3api.createDataSets(sessionToken, Arrays.asList(creation)).get(0);
+
+        DataSetUpdate update = new DataSetUpdate();
+        update.setDataSetId(dataSetPermId);
+        update.setSampleProperty(propertyType.getPermId(), new SamplePermId("200811050924898-997"));
+
+        // When
+        v3api.updateDataSets(sessionToken, Arrays.asList(update));
+
+        // Then
+        DataSetFetchOptions fetchOptions = new DataSetFetchOptions();
+        fetchOptions.withProperties();
+        fetchOptions.withSampleProperties();
+        DataSet dataSet = v3api.getDataSets(sessionToken, Arrays.asList(dataSetPermId), fetchOptions).get(dataSetPermId);
+        assertEquals(dataSet.getProperties().toString(), "{" + propertyType.getPermId() + "=200811050924898-997}");
+        assertEquals(dataSet.getSampleProperties().toString(), "{" + propertyType.getPermId() + "=Sample 200811050924898-997}");
+    }
+
+    @Test
+    public void testUpdateChangeSampleProperty()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createASamplePropertyType(sessionToken, null);
+        EntityTypePermId dataSetType = createADataSetType(sessionToken, false, propertyType);
+        DataSetCreation creation = physicalDataSetCreation();
+        creation.setTypeId(dataSetType);
+        creation.setExperimentId(new ExperimentIdentifier("/TEST-SPACE/TEST-PROJECT/EXP-SPACE-TEST"));
+        creation.setSampleProperty(propertyType.getPermId(), new SamplePermId("200811050919915-8"));
+        DataSetPermId dataSetPermId = v3api.createDataSets(sessionToken, Arrays.asList(creation)).get(0);
+
+        DataSetUpdate update = new DataSetUpdate();
+        update.setDataSetId(dataSetPermId);
+        update.setSampleProperty(propertyType.getPermId(), new SamplePermId("200811050924898-997"));
+
+        // When
+        v3api.updateDataSets(sessionToken, Arrays.asList(update));
+
+        // Then
+        DataSetFetchOptions fetchOptions = new DataSetFetchOptions();
+        fetchOptions.withProperties();
+        fetchOptions.withSampleProperties();
+        fetchOptions.withHistory().withAuthor();
+        DataSet dataSet = v3api.getDataSets(sessionToken, Arrays.asList(dataSetPermId), fetchOptions).get(dataSetPermId);
+        assertEquals(dataSet.getProperties().toString(), "{" + propertyType.getPermId() + "=200811050924898-997}");
+        assertEquals(dataSet.getSampleProperties().toString(), "{" + propertyType.getPermId() + "=Sample 200811050924898-997}");
+        List<HistoryEntry> history = dataSet.getHistory();
+        assertEquals(history.get(0).getAuthor().getUserId(), TEST_USER);
+        assertEquals(((PropertyHistoryEntry) history.get(0)).getPropertyName(), propertyType.getPermId());
+        assertEquals(((PropertyHistoryEntry) history.get(0)).getPropertyValue(), "200811050919915-8");
+        assertEquals(history.size(), 1);
+    }
+
+    @Test
+    public void testUpdateRemoveSampleProperty()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createASamplePropertyType(sessionToken, null);
+        EntityTypePermId dataSetType = createADataSetType(sessionToken, false, propertyType);
+        DataSetCreation creation = physicalDataSetCreation();
+        creation.setTypeId(dataSetType);
+        creation.setExperimentId(new ExperimentIdentifier("/TEST-SPACE/TEST-PROJECT/EXP-SPACE-TEST"));
+        creation.setSampleProperty(propertyType.getPermId(), new SamplePermId("200811050919915-8"));
+        DataSetPermId dataSetPermId = v3api.createDataSets(sessionToken, Arrays.asList(creation)).get(0);
+
+        DataSetUpdate update = new DataSetUpdate();
+        update.setDataSetId(dataSetPermId);
+        update.setSampleProperty(propertyType.getPermId(), null);
+
+        // When
+        v3api.updateDataSets(sessionToken, Arrays.asList(update));
+
+        // Then
+        DataSetFetchOptions fetchOptions = new DataSetFetchOptions();
+        fetchOptions.withProperties();
+        fetchOptions.withSampleProperties();
+        fetchOptions.withHistory().withAuthor();
+        DataSet dataSet = v3api.getDataSets(sessionToken, Arrays.asList(dataSetPermId), fetchOptions).get(dataSetPermId);
+        assertEquals(dataSet.getProperties().toString(), "{}");
+        assertEquals(dataSet.getSampleProperties().toString(), "{}");
+        List<HistoryEntry> history = dataSet.getHistory();
+        assertEquals(history.get(0).getAuthor().getUserId(), TEST_USER);
+        assertEquals(((PropertyHistoryEntry) history.get(0)).getPropertyName(), propertyType.getPermId());
+        assertEquals(((PropertyHistoryEntry) history.get(0)).getPropertyValue(), "200811050919915-8");
+        assertEquals(history.size(), 1);
+    }
+
+    @Test
+    public void testUpdateRemoveMandatorySampleProperty()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createASamplePropertyType(sessionToken, null);
+        EntityTypePermId dataSetType = createADataSetType(sessionToken, true, propertyType);
+        DataSetCreation creation = physicalDataSetCreation();
+        creation.setTypeId(dataSetType);
+        creation.setExperimentId(new ExperimentIdentifier("/TEST-SPACE/TEST-PROJECT/EXP-SPACE-TEST"));
+        creation.setSampleProperty(propertyType.getPermId(), new SamplePermId("200811050919915-8"));
+        DataSetPermId dataSetPermId = v3api.createDataSets(sessionToken, Arrays.asList(creation)).get(0);
+
+        DataSetUpdate update = new DataSetUpdate();
+        update.setDataSetId(dataSetPermId);
+        update.setSampleProperty(propertyType.getPermId(), null);
+
+        // When
+        assertUserFailureException(Void -> v3api.updateDataSets(sessionToken, Arrays.asList(update)),
+                "Property " + propertyType + " of entity type " + dataSetType.getPermId()
+                        + " can not be deleted because it is mandatory.");
     }
 
     private Collection<String> dataSetCodes(Collection<? extends DataSet> list)

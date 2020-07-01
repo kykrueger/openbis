@@ -34,6 +34,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.Tag;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.AbstractCachingTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.TranslationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.TranslationResults;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.sample.ISampleSamplePropertyTranslator;
 
 /**
  * @author pkupczyk
@@ -65,6 +66,9 @@ public class ExperimentTranslator extends AbstractCachingTranslator<Long, Experi
 
     @Autowired
     private IExperimentMaterialPropertyTranslator materialPropertyTranslator;
+
+    @Autowired
+    private IExperimentSamplePropertyTranslator samplePropertyTranslator;
 
     @Autowired
     private IExperimentRegistratorTranslator registratorTranslator;
@@ -132,6 +136,12 @@ public class ExperimentTranslator extends AbstractCachingTranslator<Long, Experi
         {
             relations.put(IExperimentMaterialPropertyTranslator.class,
                     materialPropertyTranslator.translate(context, experimentIds, fetchOptions.withMaterialProperties()));
+        }
+
+        if (fetchOptions.hasSampleProperties())
+        {
+            relations.put(ISampleSamplePropertyTranslator.class,
+                    samplePropertyTranslator.translate(context, experimentIds, fetchOptions.withSampleProperties()));
         }
 
         if (fetchOptions.hasRegistrator())
@@ -215,6 +225,12 @@ public class ExperimentTranslator extends AbstractCachingTranslator<Long, Experi
         {
             result.setMaterialProperties(relations.get(IExperimentMaterialPropertyTranslator.class, experimentId));
             result.getFetchOptions().withMaterialPropertiesUsing(fetchOptions.withMaterialProperties());
+        }
+
+        if (fetchOptions.hasSampleProperties())
+        {
+            result.setSampleProperties(relations.get(ISampleSamplePropertyTranslator.class, experimentId));
+            result.getFetchOptions().withSamplePropertiesUsing(fetchOptions.withSampleProperties());
         }
 
         if (fetchOptions.hasRegistrator())

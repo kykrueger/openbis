@@ -327,6 +327,55 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testUpdate(c, fCreate, fUpdate, c.findExperiment, null, fCheckError);
 		});
 
+		QUnit.test("updateExperiment() change property of type SAMPLE", function(assert) {
+			var c = new common(assert, openbis);
+			var propertyTypeCode = c.generateId("PROPERTY_TYPE");
+			var experimentTypeCode = c.generateId("EXPERIMENT_TYPE");
+			var code = c.generateId("EXPERIMENT");
+
+			var fCreate = function(facade) {
+				var propertyTypeCreation = new c.PropertyTypeCreation();
+				propertyTypeCreation.setCode(propertyTypeCode);
+				propertyTypeCreation.setDescription("hello");
+				propertyTypeCreation.setDataType(c.DataType.SAMPLE);
+				propertyTypeCreation.setLabel("Test Property Type");
+				return facade.createPropertyTypes([ propertyTypeCreation ]).then(function(results) {
+					var assignmentCreation = new c.PropertyAssignmentCreation();
+					assignmentCreation.setPropertyTypeId(new c.PropertyTypePermId(propertyTypeCode));
+					var experimentTypeCreation = new c.ExperimentTypeCreation();
+					experimentTypeCreation.setCode(experimentTypeCode);
+					experimentTypeCreation.setPropertyAssignments([ assignmentCreation ]);
+					return facade.createExperimentTypes([ experimentTypeCreation ]).then(function(results) {
+						var creation = new c.ExperimentCreation();
+						creation.setTypeId(new c.EntityTypePermId(experimentTypeCode));
+						creation.setCode(code);
+						creation.setProjectId(new c.ProjectIdentifier("/TEST/TEST-PROJECT"));
+						creation.setSampleProperty(propertyTypeCode, new c.SamplePermId("20130412140147735-20"));
+						return facade.createExperiments([ creation ]);
+					});
+				});
+			}
+
+			var fUpdate = function(facade, permId) {
+				var update = new c.ExperimentUpdate();
+				update.setExperimentId(permId);
+				update.setSampleProperty(propertyTypeCode, new c.SamplePermId("20130412140147736-21"));
+				return facade.updateExperiments([ update ]);
+			}
+
+			var fCheck = function(experiment) {
+				c.assertEqual(experiment.getCode(), code, "Experiment code");
+				c.assertEqual(experiment.getType().getCode(), experimentTypeCode, "Type code");
+				c.assertEqual(experiment.getProject().getCode(), "TEST-PROJECT", "Project code");
+				c.assertEqual(experiment.getProject().getSpace().getCode(), "TEST", "Space code");
+				c.assertEqual(experiment.getSampleProperties()[propertyTypeCode].getIdentifier().getIdentifier(), "/PLATONIC/PLATE-2", "Sample property");
+				c.assertEqual(experiment.getHistory()[0].getPropertyName(), propertyTypeCode, "Previous sample property name");
+				c.assertEqual(experiment.getHistory()[0].getPropertyValue(), "20130412140147735-20", "Previous sample property value");
+			}
+
+			testUpdate(c, fCreate, fUpdate, c.findExperiment, fCheck);
+		});
+		
 		QUnit.test("updateSampleTypes()", function(assert) {
 			var c = new common(assert, openbis);
 			var code = c.generateId("SAMPLE_TYPE");
@@ -437,6 +486,102 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testUpdate(c, fCreate, fUpdate, c.findSample, fCheck);
 		});
 
+		QUnit.test("updateSamples() change property of type SAMPLE", function(assert) {
+			var c = new common(assert, openbis);
+			var propertyTypeCode = c.generateId("PROPERTY_TYPE");
+			var sampleTypeCode = c.generateId("SAMPLE_TYPE");
+			var code = c.generateId("SAMPLE");
+
+			var fCreate = function(facade) {
+				var propertyTypeCreation = new c.PropertyTypeCreation();
+				propertyTypeCreation.setCode(propertyTypeCode);
+				propertyTypeCreation.setDescription("hello");
+				propertyTypeCreation.setDataType(c.DataType.SAMPLE);
+				propertyTypeCreation.setLabel("Test Property Type");
+				return facade.createPropertyTypes([ propertyTypeCreation ]).then(function(results) {
+					var assignmentCreation = new c.PropertyAssignmentCreation();
+					assignmentCreation.setPropertyTypeId(new c.PropertyTypePermId(propertyTypeCode));
+					var sampleTypeCreation = new c.SampleTypeCreation();
+					sampleTypeCreation.setCode(sampleTypeCode);
+					sampleTypeCreation.setPropertyAssignments([ assignmentCreation ]);
+					return facade.createSampleTypes([ sampleTypeCreation ]).then(function(results) {
+						var creation = new c.SampleCreation();
+						creation.setTypeId(new c.EntityTypePermId(sampleTypeCode));
+						creation.setCode(code);
+						creation.setSpaceId(new c.SpacePermId("TEST"));
+						creation.setSampleProperty(propertyTypeCode, new c.SamplePermId("20130412140147735-20"));
+						return facade.createSamples([ creation ]);
+					});
+				});
+			}
+
+			var fUpdate = function(facade, permId) {
+				var update = new c.SampleUpdate();
+				update.setSampleId(permId);
+				update.setSampleProperty(propertyTypeCode, new c.SamplePermId("20130412140147736-21"));
+				return facade.updateSamples([ update ]);
+			}
+
+			var fCheck = function(sample) {
+				c.assertEqual(sample.getCode(), code, "Sample code");
+				c.assertEqual(sample.getType().getCode(), sampleTypeCode, "Type code");
+				c.assertEqual(sample.getSpace().getCode(), "TEST", "Space code");
+				c.assertEqual(sample.getSampleProperties()[propertyTypeCode].getIdentifier().getIdentifier(), "/PLATONIC/PLATE-2", "Sample property");
+				c.assertEqual(sample.getHistory()[0].getPropertyName(), propertyTypeCode, "Previous sample property name");
+				c.assertEqual(sample.getHistory()[0].getPropertyValue(), "20130412140147735-20", "Previous sample property value");
+			}
+
+			testUpdate(c, fCreate, fUpdate, c.findSample, fCheck);
+		});
+		
+		QUnit.test("updateSamples() remove property of type SAMPLE", function(assert) {
+			var c = new common(assert, openbis);
+			var propertyTypeCode = c.generateId("PROPERTY_TYPE");
+			var sampleTypeCode = c.generateId("SAMPLE_TYPE");
+			var code = c.generateId("SAMPLE");
+			
+			var fCreate = function(facade) {
+				var propertyTypeCreation = new c.PropertyTypeCreation();
+				propertyTypeCreation.setCode(propertyTypeCode);
+				propertyTypeCreation.setDescription("hello");
+				propertyTypeCreation.setDataType(c.DataType.SAMPLE);
+				propertyTypeCreation.setLabel("Test Property Type");
+				return facade.createPropertyTypes([ propertyTypeCreation ]).then(function(results) {
+					var assignmentCreation = new c.PropertyAssignmentCreation();
+					assignmentCreation.setPropertyTypeId(new c.PropertyTypePermId(propertyTypeCode));
+					var sampleTypeCreation = new c.SampleTypeCreation();
+					sampleTypeCreation.setCode(sampleTypeCode);
+					sampleTypeCreation.setPropertyAssignments([ assignmentCreation ]);
+					return facade.createSampleTypes([ sampleTypeCreation ]).then(function(results) {
+						var creation = new c.SampleCreation();
+						creation.setTypeId(new c.EntityTypePermId(sampleTypeCode));
+						creation.setCode(code);
+						creation.setSpaceId(new c.SpacePermId("TEST"));
+						creation.setSampleProperty(propertyTypeCode, new c.SamplePermId("20130412140147735-20"));
+						return facade.createSamples([ creation ]);
+					});
+				});
+			}
+			
+			var fUpdate = function(facade, permId) {
+				var update = new c.SampleUpdate();
+				update.setSampleId(permId);
+				update.setSampleProperty(propertyTypeCode, null);
+				return facade.updateSamples([ update ]);
+			}
+			
+			var fCheck = function(sample) {
+				c.assertEqual(sample.getCode(), code, "Sample code");
+				c.assertEqual(sample.getType().getCode(), sampleTypeCode, "Type code");
+				c.assertEqual(sample.getSpace().getCode(), "TEST", "Space code");
+				c.assertObjectsCount(Object.keys(sample.getSampleProperties()), 0);
+				c.assertEqual(sample.getHistory()[0].getPropertyName(), propertyTypeCode, "Previous sample property name");
+				c.assertEqual(sample.getHistory()[0].getPropertyValue(), "20130412140147735-20", "Previous sample property value");
+			}
+			
+			testUpdate(c, fCreate, fUpdate, c.findSample, fCheck);
+		});
+
 		QUnit.test("updateDataSetTypes()", function(assert) {
 			var c = new common(assert, openbis);
 			var code = c.generateId("DATA_SET_TYPE");
@@ -538,6 +683,55 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testUpdate(c, fCreate, fUpdate, c.findDataSet, fCheck);
 		});
 
+		QUnit.test("updateDataSet() change property of type SAMPLE", function(assert) {
+			var c = new common(assert, openbis);
+			var propertyTypeCode = c.generateId("PROPERTY_TYPE");
+			var dataSetTypeCode = c.generateId("DATA_SET_TYPE");
+			var code = c.generateId("DATA_SET");
+			
+			var fCreate = function(facade) {
+				var propertyTypeCreation = new c.PropertyTypeCreation();
+				propertyTypeCreation.setCode(propertyTypeCode);
+				propertyTypeCreation.setDescription("hello");
+				propertyTypeCreation.setDataType(c.DataType.SAMPLE);
+				propertyTypeCreation.setLabel("Test Property Type");
+				return facade.createPropertyTypes([ propertyTypeCreation ]).then(function(results) {
+					var assignmentCreation = new c.PropertyAssignmentCreation();
+					assignmentCreation.setPropertyTypeId(new c.PropertyTypePermId(propertyTypeCode));
+					var dataSetTypeCreation = new c.DataSetTypeCreation();
+					dataSetTypeCreation.setCode(dataSetTypeCode);
+					dataSetTypeCreation.setPropertyAssignments([ assignmentCreation ]);
+					return facade.createDataSetTypes([ dataSetTypeCreation ]).then(function(results) {
+						var creation = new c.DataSetCreation();
+						creation.setTypeId(new c.EntityTypePermId(dataSetTypeCode));
+						creation.setCode(code);
+						creation.setDataSetKind(c.DataSetKind.CONTAINER);
+						creation.setDataStoreId(new c.DataStorePermId("DSS1"));
+						creation.setExperimentId(new c.ExperimentIdentifier("/TEST/TEST-PROJECT/TEST-EXPERIMENT"));
+						creation.setSampleProperty(propertyTypeCode, new c.SamplePermId("20130412140147735-20"));
+						return facade.createDataSets([ creation ]);
+					});
+				});
+			}
+
+			var fUpdate = function(facade, permId) {
+				var update = new c.DataSetUpdate();
+				update.setDataSetId(permId);
+				update.setSampleProperty(propertyTypeCode, new c.SamplePermId("20130412140147736-21"));
+				return facade.updateDataSets([ update ]);
+			}
+
+			var fCheck = function(dataSet) {
+				c.assertEqual(dataSet.getCode(), code, "Data set code");
+				c.assertEqual(dataSet.getType().getCode(), dataSetTypeCode, "Type code");
+				c.assertEqual(dataSet.getSampleProperties()[propertyTypeCode].getIdentifier().getIdentifier(), "/PLATONIC/PLATE-2", "Sample property");
+				c.assertEqual(dataSet.getHistory()[0].getPropertyName(), propertyTypeCode, "Previous sample property name");
+				c.assertEqual(dataSet.getHistory()[0].getPropertyValue(), "20130412140147735-20", "Previous sample property value");
+			}
+
+			testUpdate(c, fCreate, fUpdate, c.findDataSet, fCheck);
+		});
+		
 		QUnit.test("updateDataSets() link data set", function(assert) {
 			var c = new common(assert, openbis);
 			var code = "20160613195437233-437";

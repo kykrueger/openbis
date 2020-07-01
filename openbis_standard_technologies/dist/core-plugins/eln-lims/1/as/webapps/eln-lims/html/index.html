@@ -387,8 +387,12 @@
 		    mainController.resetPassword();
 		}
 		var test = queryString.test;
-		if (test == "true") {
-			TestProtocol.startAdminTests();
+		var testWithLogin = queryString.testWithLogin;
+
+		if (testWithLogin == "true") {
+			TestProtocol.startAdminTests(true);
+		} else if (test == "true") {
+			TestProtocol.startAdminTests(false);
 		}
 
 		if ($.cookie("suitename") == "testId") {

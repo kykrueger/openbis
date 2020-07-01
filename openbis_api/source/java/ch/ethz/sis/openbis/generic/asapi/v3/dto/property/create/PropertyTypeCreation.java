@@ -62,6 +62,9 @@ public class PropertyTypeCreation implements ICreation, IObjectCreation
     private IEntityTypeId materialTypeId;
 
     @JsonProperty
+    private IEntityTypeId sampleTypeId;
+
+    @JsonProperty
     private String schema;
 
     @JsonProperty
@@ -69,7 +72,7 @@ public class PropertyTypeCreation implements ICreation, IObjectCreation
 
     @JsonProperty
     private Map<String, String> metaData;
-    
+
     @JsonIgnore
     public String getCode()
     {
@@ -156,6 +159,17 @@ public class PropertyTypeCreation implements ICreation, IObjectCreation
     public void setMaterialTypeId(IEntityTypeId materialTypeId)
     {
         this.materialTypeId = materialTypeId;
+    }
+
+    @JsonIgnore
+    public IEntityTypeId getSampleTypeId()
+    {
+        return sampleTypeId;
+    }
+
+    public void setSampleTypeId(IEntityTypeId sampleTypeId)
+    {
+        this.sampleTypeId = sampleTypeId;
     }
 
     @JsonIgnore

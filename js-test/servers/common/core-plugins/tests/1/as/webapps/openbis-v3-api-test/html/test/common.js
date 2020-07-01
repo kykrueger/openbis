@@ -37,6 +37,7 @@ define([ 'jquery', 'openbis', 'underscore', 'test/dtos' ], function($, defaultOp
 		this.RoleLevel = require('as/dto/roleassignment/RoleLevel');
 		this.DataType = require('as/dto/property/DataType');
 		this.EntityKind = require('as/dto/entitytype/EntityKind');
+		this.DataSetKind = require('as/dto/dataset/DataSetKind');
 		this.PluginKind = require('as/dto/plugin/PluginKind');
 		this.PluginType = require('as/dto/plugin/PluginType');
 		this.SemanticAnnotationCreation = dtos.SemanticAnnotationCreation;
@@ -1103,6 +1104,7 @@ define([ 'jquery', 'openbis', 'underscore', 'test/dtos' ], function($, defaultOp
 			fo.withHistory();
 			fo.withProperties();
 			fo.withMaterialProperties();
+			fo.withSampleProperties();
 			fo.withTags();
 			fo.withRegistrator();
 			fo.withModifier();
@@ -1125,6 +1127,7 @@ define([ 'jquery', 'openbis', 'underscore', 'test/dtos' ], function($, defaultOp
 			fo.withSpace();
 			fo.withProperties();
 			fo.withMaterialProperties();
+			fo.withSampleProperties();
 			fo.withParents();
 			fo.withChildren();
 			fo.withContainer();
@@ -1154,6 +1157,7 @@ define([ 'jquery', 'openbis', 'underscore', 'test/dtos' ], function($, defaultOp
 			fo.withSample();
 			fo.withProperties();
 			fo.withMaterialProperties();
+			fo.withSampleProperties();
 			fo.withParents();
 			fo.withChildren();
 			fo.withContainers();
@@ -1193,13 +1197,6 @@ define([ 'jquery', 'openbis', 'underscore', 'test/dtos' ], function($, defaultOp
 			fo.withPropertyAssignments().withPropertyType();
 			fo.withPropertyAssignments().withRegistrator();
 			fo.withPropertyAssignments().withPlugin();
-			return fo;
-		};
-
-		this.createPropertyTypeFetchOptions = function() {
-			var fo = new dtos.PropertyTyüeFetchOptions();
-			fo.withVocabulary();
-			fo.withMaterialType();
 			return fo;
 		};
 
@@ -1280,6 +1277,7 @@ define([ 'jquery', 'openbis', 'underscore', 'test/dtos' ], function($, defaultOp
 			var fo = new dtos.PropertyTypeFetchOptions();
 			fo.withVocabulary();
 			fo.withMaterialType();
+			fo.withSampleType();
 			fo.withSemanticAnnotations();
 			fo.withRegistrator();
 			return fo;

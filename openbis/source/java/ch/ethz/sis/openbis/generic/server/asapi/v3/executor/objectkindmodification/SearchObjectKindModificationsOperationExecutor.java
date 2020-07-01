@@ -16,6 +16,7 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.objectkindmodification;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -63,7 +64,7 @@ public class SearchObjectKindModificationsOperationExecutor extends
 
     @Override
     protected Map<ObjectKindModification, ObjectKindModification> doTranslate(TranslationContext translationContext,
-            List<ObjectKindModification> objects, ObjectKindModificationFetchOptions fetchOptions)
+            Collection<ObjectKindModification> objects, ObjectKindModificationFetchOptions fetchOptions)
     {
         return new NopTranslator<ObjectKindModification, ObjectKindModificationFetchOptions>().translate(translationContext, objects, fetchOptions);
     }

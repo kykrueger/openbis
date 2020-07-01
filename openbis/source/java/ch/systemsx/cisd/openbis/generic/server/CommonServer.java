@@ -752,7 +752,8 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
                 entityPropertyHistoryDAO.getPropertyHistory(
                         DtoConverters.convertEntityKind(entityKind), entityID);
         return EntityHistoryTranslator.translate(result, session.getBaseIndexURL(),
-                managedPropertyEvaluatorFactory, new RelatedEntityFinder(getDAOFactory()));
+                managedPropertyEvaluatorFactory,
+                new SamplePropertyAccessValidator(session, getDAOFactory()), new RelatedEntityFinder(getDAOFactory()));
     }
 
     private static List<EntityTypePropertyType<?>> extractAssignments(EntityType entityTypeOrNull,
@@ -948,7 +949,8 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
                 MetaprojectTranslator.translateMetaprojectAssignments(assignmentPEs);
         Collections.sort(experiments);
         return ExperimentTranslator.translate(experiments, session.getBaseIndexURL(), assignments,
-                managedPropertyEvaluatorFactory);
+                managedPropertyEvaluatorFactory,
+                new SamplePropertyAccessValidator(session, getDAOFactory()));
     }
 
     private final List<Experiment> listExperiments(final String sessionToken,
@@ -967,7 +969,6 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
         {
             experimentTable.load(experimentType.getCode(), spaceIdentifierOrNull);
         }
-
         return translateExperiments(sessionToken, experimentTable.getExperiments());
     }
 
@@ -986,7 +987,8 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
                 MetaprojectTranslator.translateMetaprojectAssignments(assignmentPEs);
         Collections.sort(experiments);
         return ExperimentTranslator.translate(experiments, session.getBaseIndexURL(), assignments,
-                managedPropertyEvaluatorFactory);
+                managedPropertyEvaluatorFactory,
+                new SamplePropertyAccessValidator(session, getDAOFactory()));
     }
 
     @Override
@@ -1641,7 +1643,8 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
                 getDAOFactory().getMetaprojectDAO().listMetaprojectsForEntity(
                         session.tryGetPerson(), dataset);
         return DataSetTranslator.translate(dataset, session.getBaseIndexURL(),
-                MetaprojectTranslator.translate(metaprojectPEs), managedPropertyEvaluatorFactory);
+                MetaprojectTranslator.translate(metaprojectPEs), managedPropertyEvaluatorFactory,
+                new SamplePropertyAccessValidator(session, getDAOFactory()));
     }
 
     @Override
@@ -1689,7 +1692,8 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
         {
             HibernateUtils.initialize(hit.getChildRelationships());
             list.add(DataSetTranslator.translate(hit, session.getBaseIndexURL(), withDetails,
-                    translation.get(hit.getId()), managedPropertyEvaluatorFactory));
+                    translation.get(hit.getId()), managedPropertyEvaluatorFactory,
+                    new SamplePropertyAccessValidator(session, getDAOFactory())));
         }
         return list;
     }
@@ -1730,7 +1734,8 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
             HibernateUtils.initialize(hit.getChildRelationships());
 
             AbstractExternalData dataSet = DataSetTranslator.translate(hit, session.getBaseIndexURL(), withDetails,
-                    translation.get(hit.getId()), managedPropertyEvaluatorFactory);
+                    translation.get(hit.getId()), managedPropertyEvaluatorFactory,
+                    new SamplePropertyAccessValidator(session, getDAOFactory()));
 
             if (validator.isValid(person, dataSet))
             {
@@ -2376,7 +2381,8 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
                 .getSampleInfo(session, sample), session.getBaseIndexURL(),
                 MetaprojectTranslator
                         .translate(metaprojectPEs),
-                managedPropertyEvaluatorFactory);
+                managedPropertyEvaluatorFactory,
+                new SamplePropertyAccessValidator(session, getDAOFactory()));
     }
 
     @Override
@@ -2421,6 +2427,7 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
 
         return ExperimentTranslator.translate(experiment, session.getBaseIndexURL(),
                 MetaprojectTranslator.translate(metaprojects), managedPropertyEvaluatorFactory,
+                new SamplePropertyAccessValidator(session, getDAOFactory()),
                 ExperimentTranslator.LoadableFields.PROPERTIES,
                 ExperimentTranslator.LoadableFields.ATTACHMENTS);
     }
@@ -2443,6 +2450,7 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
 
         return ExperimentTranslator.translate(experiment, session.getBaseIndexURL(),
                 MetaprojectTranslator.translate(metaprojects), managedPropertyEvaluatorFactory,
+                new SamplePropertyAccessValidator(session, getDAOFactory()),
                 ExperimentTranslator.LoadableFields.PROPERTIES,
                 ExperimentTranslator.LoadableFields.ATTACHMENTS);
     }
@@ -2515,7 +2523,8 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
                         session.tryGetPerson(), materialPE);
 
         return MaterialTranslator.translate(materialPE,
-                MetaprojectTranslator.translate(metaprojectPEs), managedPropertyEvaluatorFactory);
+                MetaprojectTranslator.translate(metaprojectPEs), managedPropertyEvaluatorFactory,
+                new SamplePropertyAccessValidator(session, getDAOFactory()));
     }
 
     @Override
@@ -2531,7 +2540,8 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
                 getDAOFactory().getMetaprojectDAO().listMetaprojectsForEntity(
                         session.tryGetPerson(), material);
         return MaterialTranslator.translate(material, true,
-                MetaprojectTranslator.translate(metaprojectPEs), managedPropertyEvaluatorFactory);
+                MetaprojectTranslator.translate(metaprojectPEs), managedPropertyEvaluatorFactory,
+                new SamplePropertyAccessValidator(session, getDAOFactory()));
     }
 
     @Override

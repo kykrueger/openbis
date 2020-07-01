@@ -16,6 +16,7 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.deletion;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -66,7 +67,7 @@ public class SearchDeletionsOperationExecutor extends
 
     @Override
     protected Map<ch.systemsx.cisd.openbis.generic.shared.basic.dto.Deletion, Deletion> doTranslate(TranslationContext translationContext,
-            List<ch.systemsx.cisd.openbis.generic.shared.basic.dto.Deletion> objects, DeletionFetchOptions fetchOptions)
+            Collection<ch.systemsx.cisd.openbis.generic.shared.basic.dto.Deletion> objects, DeletionFetchOptions fetchOptions)
     {
         return translator.translate(translationContext, objects, fetchOptions);
     }

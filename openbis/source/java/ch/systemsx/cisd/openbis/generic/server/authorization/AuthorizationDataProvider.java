@@ -9,10 +9,6 @@ import java.util.Set;
 
 import org.hibernate.Query;
 import org.hibernate.Session;
-import org.hibernate.engine.spi.QueryParameters;
-import org.hibernate.engine.spi.TypedValue;
-import org.hibernate.query.internal.NativeQueryImpl;
-import org.hibernate.query.internal.QueryParameterBindingsImpl;
 
 import ch.systemsx.cisd.common.action.IMapper;
 import ch.systemsx.cisd.openbis.generic.server.batch.BatchOperationExecutor;

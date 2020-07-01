@@ -53,14 +53,11 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.search.PropertyAssignme
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.entity.EntityKindConverter;
 import ch.systemsx.cisd.openbis.generic.shared.ICommonServer;
 import ch.systemsx.cisd.openbis.generic.shared.basic.SimpleYesNoRenderer;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityTypePropertyType;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Script;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.TypedTableModel;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Vocabulary;
 import ch.systemsx.cisd.openbis.generic.shared.util.TypedTableModelBuilder;
 
 /**
@@ -134,7 +131,7 @@ public class EntityTypePropertyTypeProvider extends
                 }
                 builder.column(IS_MANDATORY).addString(
                         SimpleYesNoRenderer.render(etpt.isMandatory()));
-                builder.column(DATA_TYPE).addString(renderDataType(propertyType));
+                builder.column(DATA_TYPE).addString(PropertyTypeProvider.renderDataType(propertyType));
                 builder.column(IS_DYNAMIC).addString(SimpleYesNoRenderer.render(etpt.isDynamic()));
                 builder.column(IS_MANAGED).addString(SimpleYesNoRenderer.render(etpt.isManaged()));
                 builder.column(IS_SHOWN_IN_EDITOR_VIEW).addString(
@@ -155,49 +152,6 @@ public class EntityTypePropertyTypeProvider extends
             }
         }
         return builder.getModel();
-    }
-
-    protected static String renderDataType(PropertyType entity)
-    {
-        DataTypeCode dataType = entity.getDataType().getCode();
-        switch (dataType)
-        {
-            case BOOLEAN:
-                return "True / False";
-            case CONTROLLEDVOCABULARY:
-                return "Vocabulary: " + tryGetVocabularyCode(entity);
-            case INTEGER:
-                return "Integer Number";
-            case MATERIAL:
-                String materialTypeCode = tryGetMaterialTypeCode(entity);
-                if (materialTypeCode == null)
-                {
-                    return "Material of Any Type";
-                } else
-                {
-                    return "Material of Type: " + materialTypeCode;
-                }
-            case REAL:
-                return "Float Number";
-            case TIMESTAMP:
-                return "Date and Time";
-            case VARCHAR:
-                return "Text";
-            default:
-                return dataType.name();
-        }
-    }
-
-    protected static String tryGetVocabularyCode(PropertyType entity)
-    {
-        Vocabulary vocabulary = entity.getVocabulary();
-        return vocabulary != null ? vocabulary.getCode() : null;
-    }
-
-    protected static String tryGetMaterialTypeCode(PropertyType entity)
-    {
-        MaterialType materialType = entity.getMaterialType();
-        return materialType != null ? materialType.getCode() : null;
     }
 
     protected Map<EntityTypePropertyType<?>, PropertyAssignment> createAssignmentsMap(Collection<EntityTypePropertyType<?>> etpts)

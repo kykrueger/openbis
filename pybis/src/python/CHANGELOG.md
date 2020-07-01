@@ -1,3 +1,7 @@
+## Changes with pybis-1.14.8
+
+- quick fix of parse_jackson error in special circumstances
+
 ## Changes with pybis-1.14.7
 
 - bugfix: no longer any error in get_samples(), get_datasets() and get_experiments() when
