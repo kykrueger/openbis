@@ -89,7 +89,7 @@ public abstract class AbstractMaintenanceTaskWithStateFile implements IMaintenan
     {
         if (stateFile.exists())
         {
-            String timestampAndCode = FileUtilities.loadToString(stateFile);
+            String timestampAndCode = FileUtilities.loadToString(stateFile).trim();
             String timestamp = extractTimeStamp(timestampAndCode);
             try
             {
@@ -107,7 +107,7 @@ public abstract class AbstractMaintenanceTaskWithStateFile implements IMaintenan
     {
         if (stateFile.exists())
         {
-            String timestampAndCode = FileUtilities.loadToString(stateFile);
+            String timestampAndCode = FileUtilities.loadToString(stateFile).trim();
             String[] parts = timestampAndCode.split("\\[");
             if (parts.length > 1)
             {
