@@ -1091,6 +1091,7 @@ class Openbis:
 
         if username is None: username = self._get_username()
         if not username: raise ValueError("no token available - please provide a username")
+
         if password is None: password = self._password()
         if not password: raise ValueError("please provide a password")
 
@@ -1099,12 +1100,12 @@ class Openbis:
 
         if mountpoint is None: mountpoint = os.path.join('~', self.hostname)
 
-
         # check if mountpoint exists, otherwise create it
         full_mountpoint_path = os.path.abspath(os.path.expanduser(mountpoint))
         if not os.path.exists(full_mountpoint_path):
             os.makedirs(full_mountpoint_path)
 
+        print("full_mountpoint_path: ", full_mountpoint_path)
 
         from sys import platform
         supported_platforms = ['darwin', 'linux']
@@ -1145,7 +1146,7 @@ class Openbis:
             self.mountpoint = full_mountpoint_path
             return self.mountpoint
         else:
-            raise OSError("mount failed")
+            raise OSError("mount failed, exit status: ", status)
 
 
     def get_server_information(self):
