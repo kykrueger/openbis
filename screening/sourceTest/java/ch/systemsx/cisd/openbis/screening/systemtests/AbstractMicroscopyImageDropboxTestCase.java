@@ -53,6 +53,8 @@ public abstract class AbstractMicroscopyImageDropboxTestCase extends AbstractIma
         registerDataSetType(commonServer, dataSetType);
         dataSetType = new DataSetType("MICROSCOPY_REPRESENTATIVE_IMG");
         registerDataSetType(commonServer, dataSetType);
+        dataSetType = new DataSetType("MICROSCOPY_IMG_THUMBNAIL");
+        registerDataSetType(commonServer, dataSetType);
         dataSetType = new DataSetType("MICROSCOPY_IMG_CONTAINER");
         registerDataSetType(commonServer, dataSetType);
         registerProject(commonServer, "/TEST/TEST-PROJECT");
