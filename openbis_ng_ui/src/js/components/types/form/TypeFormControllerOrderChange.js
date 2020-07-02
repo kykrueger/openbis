@@ -2,6 +2,7 @@ import _ from 'lodash'
 
 export default class TypeFormControllerOrderChange {
   constructor(controller) {
+    this.controller = controller
     this.context = controller.context
   }
 
@@ -25,11 +26,13 @@ export default class TypeFormControllerOrderChange {
     let newSections = Array.from(sections)
     let [section] = newSections.splice(fromIndex, 1)
     newSections.splice(toIndex, 0, section)
+
     this.context.setState(state => ({
       ...state,
-      sections: newSections,
-      changed: true
+      sections: newSections
     }))
+
+    this.controller.changed(true)
   }
 
   _handleOrderChangeProperty(fromSectionId, fromIndex, toSectionId, toIndex) {
@@ -50,9 +53,10 @@ export default class TypeFormControllerOrderChange {
 
       this.context.setState(state => ({
         ...state,
-        sections: newSections,
-        changed: true
+        sections: newSections
       }))
+
+      this.controller.changed(true)
     } else {
       let { sections } = this.context.getState()
       let newSections = Array.from(sections)
@@ -91,9 +95,10 @@ export default class TypeFormControllerOrderChange {
       this.context.setState(state => ({
         ...state,
         sections: newSections,
-        properties: newProperties,
-        changed: true
+        properties: newProperties
       }))
+
+      this.controller.changed(true)
     }
   }
 }

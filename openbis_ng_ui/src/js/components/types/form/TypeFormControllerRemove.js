@@ -2,6 +2,7 @@ import _ from 'lodash'
 
 export default class TypeFormControllerRemove {
   constructor(controller) {
+    this.controller = controller
     this.context = controller.context
   }
 
@@ -57,9 +58,10 @@ export default class TypeFormControllerRemove {
       ...state,
       sections: newSections,
       properties: newProperties,
-      selection: null,
-      changed: true
+      selection: null
     }))
+
+    this.controller.changed(true)
   }
 
   _handleRemoveProperty(propertyId, confirmed) {
@@ -101,9 +103,10 @@ export default class TypeFormControllerRemove {
       ...state,
       sections: newSections,
       properties: newProperties,
-      selection: null,
-      changed: true
+      selection: null
     }))
+
+    this.controller.changed(true)
   }
 
   _isSectionUsed(section) {

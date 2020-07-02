@@ -13,9 +13,10 @@ export default class TypeFormControllerLoad {
     await this.context.setState({
       mode: 'view',
       loading: true,
-      validate: false,
-      changed: false
+      validate: false
     })
+
+    this.controller.changed(false)
 
     const typePromise = new TypeFormControllerLoadType(
       this.controller

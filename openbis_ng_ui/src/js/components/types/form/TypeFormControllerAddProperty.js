@@ -1,5 +1,6 @@
 export default class TypeFormControllerAddProperty {
   constructor(controller) {
+    this.controller = controller
     this.context = controller.context
   }
 
@@ -100,9 +101,10 @@ export default class TypeFormControllerAddProperty {
       sections: newSections,
       properties: newProperties,
       propertiesCounter,
-      selection: newSelection,
-      changed: true
+      selection: newSelection
     }))
+
+    this.controller.changed(true)
   }
 
   _createField(params = {}) {

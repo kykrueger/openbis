@@ -31,9 +31,10 @@ export default class TypeFormControllerChange {
           ...state.type[field],
           value
         }
-      },
-      changed: true
+      }
     }))
+
+    this.controller.changed(true)
   }
 
   _handleChangeSection(id, field, value) {
@@ -53,9 +54,10 @@ export default class TypeFormControllerChange {
 
     this.context.setState(state => ({
       ...state,
-      sections: newSections,
-      changed: true
+      sections: newSections
     }))
+
+    this.controller.changed(true)
   }
 
   _handleChangeProperty(id, field, newValue) {
@@ -81,9 +83,10 @@ export default class TypeFormControllerChange {
 
     this.context.setState(state => ({
       ...state,
-      properties: newProperties,
-      changed: true
+      properties: newProperties
     }))
+
+    this.controller.changed(true)
   }
 
   _handleChangePropertyScope(oldProperty, newProperty) {
