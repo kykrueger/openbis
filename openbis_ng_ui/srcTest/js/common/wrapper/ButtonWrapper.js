@@ -10,7 +10,7 @@ export default class ButtonWrapper extends BaseWrapper {
   }
 
   click() {
-    this.wrapper.simulate('click')
+    this.wrapper.prop('onClick')()
   }
 
   toJSON() {

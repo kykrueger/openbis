@@ -36,16 +36,6 @@ export default class TypeFormParametersTypeWrapper extends TypeFormParametersCom
     )
   }
 
-  change(fieldName, fieldValue) {
-    this.wrapper.instance().handleChange({
-      target: {
-        name: fieldName,
-        value: fieldValue
-      }
-    })
-    this.wrapper.update()
-  }
-
   toJSON() {
     return {
       ...super.toJSON(),

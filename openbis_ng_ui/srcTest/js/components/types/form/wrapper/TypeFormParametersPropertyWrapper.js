@@ -4,7 +4,7 @@ import AutocompleterFieldWrapper from '@srcTest/js/common/wrapper/AutocompleterF
 import TypeFormParametersCommonWrapper from './TypeFormParametersCommonWrapper.js'
 import TypeFormMessageWrapper from './TypeFormMessageWrapper.js'
 
-export default class TypeFormParametersFormWrapper extends TypeFormParametersCommonWrapper {
+export default class TypeFormParametersPropertyWrapper extends TypeFormParametersCommonWrapper {
   constructor(wrapper) {
     super(wrapper)
   }
@@ -83,16 +83,6 @@ export default class TypeFormParametersFormWrapper extends TypeFormParametersCom
     return new TextFieldWrapper(
       this.wrapper.find('TextFormField[name="transformation"]')
     )
-  }
-
-  change(fieldName, fieldValue) {
-    this.wrapper.instance().handleChange({
-      target: {
-        name: fieldName,
-        value: fieldValue
-      }
-    })
-    this.wrapper.update()
   }
 
   toJSON() {

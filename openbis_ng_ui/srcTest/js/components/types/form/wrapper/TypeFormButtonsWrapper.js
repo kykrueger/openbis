@@ -5,6 +5,10 @@ export default class TypeFormButtonsWrapper {
     this.wrapper = wrapper
   }
 
+  getEdit() {
+    return new ButtonWrapper(this.wrapper.find('button[name="edit"]'))
+  }
+
   getAddSection() {
     return new ButtonWrapper(this.wrapper.find('button[name="addSection"]'))
   }
@@ -21,12 +25,18 @@ export default class TypeFormButtonsWrapper {
     return new ButtonWrapper(this.wrapper.find('button[name="save"]'))
   }
 
+  getCancel() {
+    return new ButtonWrapper(this.wrapper.find('button[name="cancel"]'))
+  }
+
   toJSON() {
     return {
+      edit: this.getEdit().toJSON(),
       addSection: this.getAddSection().toJSON(),
       addProperty: this.getAddProperty().toJSON(),
       remove: this.getRemove().toJSON(),
-      save: this.getSave().toJSON()
+      save: this.getSave().toJSON(),
+      cancel: this.getCancel().toJSON()
     }
   }
 }

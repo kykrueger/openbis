@@ -1,6 +1,10 @@
 import BaseWrapper from './BaseWrapper.js'
 
 export default class FieldWrapper extends BaseWrapper {
+  getName() {
+    return this.wrapper.prop('name')
+  }
+
   getLabel() {
     return this.wrapper.prop('label')
   }
@@ -15,6 +19,15 @@ export default class FieldWrapper extends BaseWrapper {
 
   getError() {
     return this.getStringValue(this.wrapper.prop('error'))
+  }
+
+  change(value) {
+    this.wrapper.prop('onChange')({
+      target: {
+        name: this.getName(),
+        value
+      }
+    })
   }
 
   toJSON() {
