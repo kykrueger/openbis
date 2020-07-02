@@ -89,7 +89,8 @@ export default class TypeFormControllerLoadType {
       usages: loadedUsages,
       assignments: loadedAssignments,
       removeSectionDialogOpen: false,
-      removePropertyDialogOpen: false
+      removePropertyDialogOpen: false,
+      unsavedChangesDialogOpen: false
     }))
   }
 

@@ -76,7 +76,15 @@ export default class TypeFormController {
   }
 
   handleCancel() {
-    return new TypeFormControllerCancel(this).execute()
+    return new TypeFormControllerCancel(this).executeCancel()
+  }
+
+  handleCancelConfirm() {
+    return new TypeFormControllerCancel(this).executeCancel(true)
+  }
+
+  handleCancelCancel() {
+    return new TypeFormControllerCancel(this).executeCancelCancel()
   }
 
   handleSave() {

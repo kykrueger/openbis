@@ -4,6 +4,7 @@ import { withStyles } from '@material-ui/core/styles'
 import Tabs from '@material-ui/core/Tabs'
 import Tab from '@material-ui/core/Tab'
 import CloseIcon from '@material-ui/icons/Close'
+import UnsavedChangesDialog from '@src/js/components/common/dialog/UnsavedChangesDialog.jsx'
 import logger from '@src/js/common/logger.js'
 
 const styles = theme => ({
@@ -27,14 +28,46 @@ const styles = theme => ({
 })
 
 class ContentTabs extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      tabToClose: null,
+      unsavedChangesDialogOpen: false
+    }
+  }
   handleTabChange = (event, value) => {
     const tab = this.props.tabs[value]
     this.props.tabSelect(tab)
   }
 
   handleTabClose = (event, tab) => {
-    this.props.tabClose(tab)
+    if (tab.changed) {
+      this.setState({
+        tabToClose: tab,
+        unsavedChangesDialogOpen: true
+      })
+    } else {
+      this.props.tabClose(tab)
+    }
     event.stopPropagation()
+  }
+
+  handleTabCloseConfirm = () => {
+    const { tabToClose } = this.state
+    if (tabToClose) {
+      this.props.tabClose(tabToClose)
+      this.setState({
+        tabToClose: null,
+        unsavedChangesDialogOpen: false
+      })
+    }
+  }
+
+  handleTabCloseCancel = () => {
+    this.setState({
+      tabToClose: null,
+      unsavedChangesDialogOpen: false
+    })
   }
 
   render() {
@@ -51,24 +84,33 @@ class ContentTabs extends React.Component {
       }
     }
 
+    const { unsavedChangesDialogOpen } = this.state
+
     return (
-      <Tabs
-        value={value}
-        variant='scrollable'
-        scrollButtons='on'
-        onChange={this.handleTabChange}
-        classes={{ root: classes.tabsRoot }}
-      >
-        {this.props.tabs.map(tab => (
-          <Tab
-            key={tab.id}
-            label={this.renderLabel(tab)}
-            classes={{
-              root: classes.tabRoot
-            }}
-          />
-        ))}
-      </Tabs>
+      <React.Fragment>
+        <Tabs
+          value={value}
+          variant='scrollable'
+          scrollButtons='on'
+          onChange={this.handleTabChange}
+          classes={{ root: classes.tabsRoot }}
+        >
+          {this.props.tabs.map(tab => (
+            <Tab
+              key={tab.id}
+              label={this.renderLabel(tab)}
+              classes={{
+                root: classes.tabRoot
+              }}
+            />
+          ))}
+        </Tabs>
+        <UnsavedChangesDialog
+          open={unsavedChangesDialogOpen}
+          onConfirm={this.handleTabCloseConfirm}
+          onCancel={this.handleTabCloseCancel}
+        />
+      </React.Fragment>
     )
   }
 
