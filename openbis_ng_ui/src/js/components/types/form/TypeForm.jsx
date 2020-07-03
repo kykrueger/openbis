@@ -6,6 +6,7 @@ import { Resizable } from 're-resizable'
 import ComponentContext from '@src/js/components/common/ComponentContext.js'
 import Container from '@src/js/components/common/form/Container.jsx'
 import Loading from '@src/js/components/common/loading/Loading.jsx'
+import Message from '@src/js/components/common/form/Message.jsx'
 import UnsavedChangesDialog from '@src/js/components/common/dialog/UnsavedChangesDialog.jsx'
 import logger from '@src/js/common/logger.js'
 
@@ -14,7 +15,6 @@ import TypeFormFacade from './TypeFormFacade.js'
 import TypeFormButtons from './TypeFormButtons.jsx'
 import TypeFormParameters from './TypeFormParameters.jsx'
 import TypeFormPreview from './TypeFormPreview.jsx'
-import TypeFormMessage from './TypeFormMessage.jsx'
 import TypeFormDialogRemoveSection from './TypeFormDialogRemoveSection.jsx'
 import TypeFormDialogRemoveProperty from './TypeFormDialogRemoveProperty.jsx'
 
@@ -190,7 +190,7 @@ class TypeForm extends React.PureComponent {
   doRenderNonExistent() {
     return (
       <Container>
-        <TypeFormMessage type='info'>Object does not exist.</TypeFormMessage>
+        <Message type='info'>Object does not exist.</Message>
       </Container>
     )
   }

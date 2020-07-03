@@ -4,9 +4,9 @@ import Container from '@src/js/components/common/form/Container.jsx'
 import CheckboxField from '@src/js/components/common/form/CheckboxField.jsx'
 import TextField from '@src/js/components/common/form/TextField.jsx'
 import SelectField from '@src/js/components/common/form/SelectField.jsx'
+import Message from '@src/js/components/common/form/Message.jsx'
 import logger from '@src/js/common/logger.js'
 
-import TypeFormMessage from './TypeFormMessage.jsx'
 import TypeFormHeader from './TypeFormHeader.jsx'
 
 const styles = theme => ({
@@ -132,7 +132,7 @@ class TypeFormParametersType extends React.PureComponent {
     if (type.usages !== 0) {
       return (
         <div className={classes.field}>
-          <TypeFormMessage type='info'>{message(type)}</TypeFormMessage>
+          <Message type='info'>{message(type)}</Message>
         </div>
       )
     } else {

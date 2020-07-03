@@ -38,8 +38,8 @@ class ErrorDialog extends React.Component {
     const stack = this.getErrorStack()
     return (
       <div>
-        <div>{message}</div>
-        <pre>{stack}</pre>
+        {message && <div>{message}</div>}
+        {stack && <pre>{stack}</pre>}
       </div>
     )
   }

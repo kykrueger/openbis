@@ -1,6 +1,7 @@
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import Button from '@src/js/components/common/form/Button.jsx'
+import Message from '@src/js/components/common/form/Message.jsx'
 import logger from '@src/js/common/logger.js'
 
 import Dialog from './Dialog.jsx'
@@ -34,7 +35,7 @@ class ConfirmationDialog extends React.Component {
         open={open}
         onClose={this.handleClose}
         title={title || 'Confirmation'}
-        content={content || ''}
+        content={<Message type='warning'>{content}</Message>}
         actions={this.renderButtons()}
       />
     )
@@ -52,7 +53,6 @@ class ConfirmationDialog extends React.Component {
         />
         <Button
           label='Cancel'
-          type='final'
           styles={{ root: classes.button }}
           onClick={onCancel}
         />

@@ -5,10 +5,10 @@ import AutocompleterField from '@src/js/components/common/form/AutocompleterFiel
 import CheckboxField from '@src/js/components/common/form/CheckboxField.jsx'
 import TextField from '@src/js/components/common/form/TextField.jsx'
 import SelectField from '@src/js/components/common/form/SelectField.jsx'
+import Message from '@src/js/components/common/form/Message.jsx'
 import openbis from '@src/js/services/openbis.js'
 import logger from '@src/js/common/logger.js'
 
-import TypeFormMessage from './TypeFormMessage.jsx'
 import TypeFormHeader from './TypeFormHeader.jsx'
 
 const styles = theme => ({
@@ -130,10 +130,10 @@ class TypeFormParametersProperty extends React.PureComponent {
       const { classes } = this.props
       return (
         <div className={classes.field}>
-          <TypeFormMessage type='warning'>
+          <Message type='warning'>
             This property is global. Changes will also influence other types
             where this property is used.
-          </TypeFormMessage>
+          </Message>
         </div>
       )
     } else {
@@ -161,7 +161,7 @@ class TypeFormParametersProperty extends React.PureComponent {
     if (property.usagesLocal !== 0 || property.usagesGlobal !== 0) {
       return (
         <div className={classes.field}>
-          <TypeFormMessage type='info'>{message(property)}</TypeFormMessage>
+          <Message type='info'>{message(property)}</Message>
         </div>
       )
     } else {
@@ -188,7 +188,7 @@ class TypeFormParametersProperty extends React.PureComponent {
     ) {
       return (
         <div className={classes.field}>
-          <TypeFormMessage type='info'>{message(property)}</TypeFormMessage>
+          <Message type='info'>{message(property)}</Message>
         </div>
       )
     } else {

@@ -9,10 +9,11 @@ import logger from '@src/js/common/logger.js'
 const styles = theme => ({
   message: {
     display: 'flex',
-    alignItems: 'center',
     '& svg': {
       marginRight: theme.spacing(1)
-    }
+    },
+    fontSize: theme.typography.body2.fontSize,
+    color: theme.palette.text.primary
   },
   warning: {
     '& svg': {
@@ -26,9 +27,9 @@ const styles = theme => ({
   }
 })
 
-class TypeFormMessage extends React.PureComponent {
+class Message extends React.PureComponent {
   render() {
-    logger.log(logger.DEBUG, 'TypeFormMessage.render')
+    logger.log(logger.DEBUG, 'Message.render')
 
     const { classes, children, type } = this.props
 
@@ -54,4 +55,4 @@ class TypeFormMessage extends React.PureComponent {
   }
 }
 
-export default withStyles(styles)(TypeFormMessage)
+export default withStyles(styles)(Message)

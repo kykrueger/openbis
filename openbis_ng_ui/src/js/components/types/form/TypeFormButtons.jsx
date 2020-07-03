@@ -2,9 +2,8 @@ import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import Container from '@src/js/components/common/form/Container.jsx'
 import Button from '@src/js/components/common/form/Button.jsx'
+import Message from '@src/js/components/common/form/Message.jsx'
 import logger from '@src/js/common/logger.js'
-
-import TypeFormMessage from './TypeFormMessage.jsx'
 
 const styles = theme => ({
   container: {
@@ -16,7 +15,8 @@ const styles = theme => ({
     justifyContent: 'flex-start',
     '& $button': {
       marginRight: theme.spacing(1)
-    }
+    },
+    alignItems: 'center'
   },
   rightContainer: {
     flexGrow: 1,
@@ -24,7 +24,8 @@ const styles = theme => ({
     justifyContent: 'flex-end',
     '& $button': {
       marginLeft: theme.spacing(1)
-    }
+    },
+    alignItems: 'center'
   },
   button: {
     whiteSpace: 'nowrap'
@@ -108,9 +109,7 @@ class TypeFormButtons extends React.PureComponent {
         </div>
         <div className={classes.rightContainer}>
           {changed && (
-            <TypeFormMessage type='warning'>
-              You have unsaved changes.
-            </TypeFormMessage>
+            <Message type='warning'>You have unsaved changes.</Message>
           )}
           <Button
             name='save'

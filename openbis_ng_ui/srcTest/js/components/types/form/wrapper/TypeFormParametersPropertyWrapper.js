@@ -1,8 +1,8 @@
 import TextFieldWrapper from '@srcTest/js/common/wrapper/TextFieldWrapper.js'
 import SelectFieldWrapper from '@srcTest/js/common/wrapper/SelectFieldWrapper.js'
 import AutocompleterFieldWrapper from '@srcTest/js/common/wrapper/AutocompleterFieldWrapper.js'
+import MessageWrapper from '@srcTest/js/common/wrapper/MessageWrapper.js'
 import TypeFormParametersCommonWrapper from './TypeFormParametersCommonWrapper.js'
-import TypeFormMessageWrapper from './TypeFormMessageWrapper.js'
 
 export default class TypeFormParametersPropertyWrapper extends TypeFormParametersCommonWrapper {
   constructor(wrapper) {
@@ -11,8 +11,8 @@ export default class TypeFormParametersPropertyWrapper extends TypeFormParameter
 
   getMessages() {
     const messages = []
-    this.wrapper.find('TypeFormMessage').forEach(message => {
-      messages.push(new TypeFormMessageWrapper(message))
+    this.wrapper.find('Message').forEach(message => {
+      messages.push(new MessageWrapper(message))
     })
     return messages
   }

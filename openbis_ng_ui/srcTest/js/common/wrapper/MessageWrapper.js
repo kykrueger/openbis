@@ -1,6 +1,6 @@
 import BaseWrapper from '@srcTest/js/common/wrapper/BaseWrapper.js'
 
-export default class TypeFormMessageWrapper extends BaseWrapper {
+export default class MessageWrapper extends BaseWrapper {
   getText() {
     return this.getStringValue(this.wrapper.text())
   }

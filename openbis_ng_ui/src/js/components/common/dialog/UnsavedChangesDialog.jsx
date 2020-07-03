@@ -13,13 +13,9 @@ export default class UnsavedChangesDialog extends React.Component {
         open={open}
         onConfirm={onConfirm}
         onCancel={onCancel}
-        title={this.getMessage()}
-        content={this.getMessage()}
+        title='Unsaved changes'
+        content='Are you sure you want to lose the unsaved changes?'
       />
     )
-  }
-
-  getMessage() {
-    return 'Are you sure you want to lose the unsaved changes?'
   }
 }
