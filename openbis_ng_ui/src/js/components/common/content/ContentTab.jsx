@@ -5,9 +5,9 @@ class ContentObjectTab extends React.Component {
   render() {
     logger.log(logger.DEBUG, 'ContentObjectTab.render')
 
-    const { object, changed } = this.props
+    const { prefix, tab } = this.props
 
-    return object.id + (changed ? '*' : '')
+    return (prefix || '') + tab.object.id + (tab.changed ? '*' : '')
   }
 }
 
