@@ -1,17 +1,30 @@
 import actions from '@src/js/store/actions/actions.js'
 import TypeFormControllerLoadType from './TypeFormControllerLoadType.js'
 import TypeFormControllerLoadDictionaries from './TypeFormControllerLoadDictionaries.js'
+import TypeFormControllerStrategies from './TypeFormControllerStrategies.js'
 
 export default class TypeFormControllerLoad {
   constructor(controller) {
     this.controller = controller
     this.context = controller.context
     this.facade = controller.facade
+    this.object = controller.object
   }
 
   async execute() {
+    const strategy = this._getStrategy()
+
+    if (strategy.getNewObjectType() === this.object.type) {
+      await this.context.setState({
+        mode: 'edit'
+      })
+    } else if (strategy.getExistingObjectType() === this.object.type) {
+      await this.context.setState({
+        mode: 'view'
+      })
+    }
+
     await this.context.setState({
-      mode: 'view',
       loading: true,
       validate: false
     })
@@ -36,5 +49,10 @@ export default class TypeFormControllerLoad {
           loading: false
         })
       })
+  }
+
+  _getStrategy() {
+    const strategies = new TypeFormControllerStrategies()
+    return strategies.getStrategy(this.object.type)
   }
 }

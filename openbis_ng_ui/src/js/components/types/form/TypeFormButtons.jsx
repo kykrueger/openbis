@@ -5,6 +5,8 @@ import Button from '@src/js/components/common/form/Button.jsx'
 import Message from '@src/js/components/common/form/Message.jsx'
 import logger from '@src/js/common/logger.js'
 
+import TypeFormControllerStrategies from './TypeFormControllerStrategies.js'
+
 const styles = theme => ({
   container: {
     display: 'flex'
@@ -80,8 +82,12 @@ class TypeFormButtons extends React.PureComponent {
       onRemove,
       onSave,
       onCancel,
-      changed
+      changed,
+      object
     } = this.props
+
+    const strategy = new TypeFormControllerStrategies().getStrategy(object.type)
+    const existing = object.type === strategy.getExistingObjectType()
 
     return (
       <Container className={classes.container}>
@@ -118,12 +124,14 @@ class TypeFormButtons extends React.PureComponent {
             styles={{ root: classes.button }}
             onClick={onSave}
           />
-          <Button
-            name='cancel'
-            label='Cancel'
-            styles={{ root: classes.button }}
-            onClick={onCancel}
-          />
+          {existing && (
+            <Button
+              name='cancel'
+              label='Cancel'
+              styles={{ root: classes.button }}
+              onClick={onCancel}
+            />
+          )}
         </div>
       </Container>
     )

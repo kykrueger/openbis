@@ -101,10 +101,10 @@ export default class TypeFormControllerValidate {
 
   _getStrategy() {
     const strategies = new TypeFormControllerStrategies()
-    strategies.setObjectTypeStrategy(new ObjectTypeStrategy(this))
-    strategies.setCollectionTypeStrategy(new CollectionTypeStrategy())
-    strategies.setDataSetTypeStrategy(new DataSetTypeStrategy())
-    strategies.setMaterialTypeStrategy(new MaterialTypeStrategy())
+    strategies.extendObjectTypeStrategy(new ObjectTypeStrategy(this))
+    strategies.extendCollectionTypeStrategy(new CollectionTypeStrategy())
+    strategies.extendDataSetTypeStrategy(new DataSetTypeStrategy())
+    strategies.extendMaterialTypeStrategy(new MaterialTypeStrategy())
     return strategies.getStrategy(this.object.type)
   }
 }

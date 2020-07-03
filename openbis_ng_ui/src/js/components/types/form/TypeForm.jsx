@@ -103,7 +103,7 @@ class TypeForm extends React.PureComponent {
       mode
     } = this.state
 
-    let { classes } = this.props
+    let { object, classes } = this.props
 
     return (
       <div className={classes.container}>
@@ -159,6 +159,7 @@ class TypeForm extends React.PureComponent {
             onEdit={controller.handleEdit}
             onSave={controller.handleSave}
             onCancel={controller.handleCancel}
+            object={object}
             selection={selection}
             changed={changed}
             mode={mode}

@@ -1,6 +1,5 @@
 import _ from 'lodash'
 import openbis from '@src/js/services/openbis.js'
-import objectTypes from '@src/js/common/consts/objectType.js'
 import util from '@src/js/common/util.js'
 
 import TypeFormControllerStrategies from './TypeFormControllerStrategies.js'
@@ -289,10 +288,10 @@ export default class TypeFormControllerLoadType {
 
   _getStrategy() {
     const strategies = new TypeFormControllerStrategies()
-    strategies.setObjectTypeStrategy(new ObjectTypeStrategy(this))
-    strategies.setCollectionTypeStrategy(new CollectionTypeStrategy())
-    strategies.setDataSetTypeStrategy(new DataSetTypeStrategy(this))
-    strategies.setMaterialTypeStrategy(new MaterialTypeStrategy())
+    strategies.extendObjectTypeStrategy(new ObjectTypeStrategy(this))
+    strategies.extendCollectionTypeStrategy(new CollectionTypeStrategy())
+    strategies.extendDataSetTypeStrategy(new DataSetTypeStrategy(this))
+    strategies.extendMaterialTypeStrategy(new MaterialTypeStrategy())
     return strategies.getStrategy(this.object.type)
   }
 }
@@ -300,14 +299,6 @@ export default class TypeFormControllerLoadType {
 class ObjectTypeStrategy {
   constructor(executor) {
     this.executor = executor
-  }
-
-  getNewObjectType() {
-    return objectTypes.NEW_OBJECT_TYPE
-  }
-
-  getExistingObjectType() {
-    return objectTypes.OBJECT_TYPE
   }
 
   setTypeAttributes(object, loadedType) {
@@ -338,28 +329,12 @@ class ObjectTypeStrategy {
 }
 
 class CollectionTypeStrategy {
-  getNewObjectType() {
-    return objectTypes.NEW_COLLECTION_TYPE
-  }
-
-  getExistingObjectType() {
-    return objectTypes.COLLECTION_TYPE
-  }
-
   setTypeAttributes() {}
 }
 
 class DataSetTypeStrategy {
   constructor(executor) {
     this.executor = executor
-  }
-
-  getNewObjectType() {
-    return objectTypes.NEW_DATA_SET_TYPE
-  }
-
-  getExistingObjectType() {
-    return objectTypes.DATA_SET_TYPE
   }
 
   setTypeAttributes(object, loadedType) {
@@ -378,13 +353,5 @@ class DataSetTypeStrategy {
 }
 
 class MaterialTypeStrategy {
-  getNewObjectType() {
-    return objectTypes.NEW_MATERIAL_TYPE
-  }
-
-  getExistingObjectType() {
-    return objectTypes.MATERIAL_TYPE
-  }
-
   setTypeAttributes() {}
 }

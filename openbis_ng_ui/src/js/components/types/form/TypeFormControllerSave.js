@@ -1,7 +1,6 @@
 import _ from 'lodash'
 import pages from '@src/js/common/consts/pages.js'
 import actions from '@src/js/store/actions/actions.js'
-import objectTypes from '@src/js/common/consts/objectType.js'
 import openbis from '@src/js/services/openbis.js'
 
 import TypeFormControllerStrategies from './TypeFormControllerStrategies.js'
@@ -384,27 +383,15 @@ export default class TypeFormControllerSave {
 
   _getStrategy() {
     const strategies = new TypeFormControllerStrategies()
-    strategies.setObjectTypeStrategy(new ObjectTypeStrategy())
-    strategies.setCollectionTypeStrategy(new CollectionTypeStrategy())
-    strategies.setDataSetTypeStrategy(new DataSetTypeStrategy())
-    strategies.setMaterialTypeStrategy(new MaterialTypeStrategy())
+    strategies.extendObjectTypeStrategy(new ObjectTypeStrategy())
+    strategies.extendCollectionTypeStrategy(new CollectionTypeStrategy())
+    strategies.extendDataSetTypeStrategy(new DataSetTypeStrategy())
+    strategies.extendMaterialTypeStrategy(new MaterialTypeStrategy())
     return strategies.getStrategy(this.object.type)
   }
 }
 
 class ObjectTypeStrategy {
-  getEntityKind() {
-    return openbis.EntityKind.SAMPLE
-  }
-
-  getNewObjectType() {
-    return objectTypes.NEW_OBJECT_TYPE
-  }
-
-  getExistingObjectType() {
-    return objectTypes.OBJECT_TYPE
-  }
-
   createTypeCreation() {
     return new openbis.SampleTypeCreation()
   }
@@ -433,18 +420,6 @@ class ObjectTypeStrategy {
 }
 
 class CollectionTypeStrategy {
-  getEntityKind() {
-    return openbis.EntityKind.EXPERIMENT
-  }
-
-  getNewObjectType() {
-    return objectTypes.NEW_COLLECTION_TYPE
-  }
-
-  getExistingObjectType() {
-    return objectTypes.COLLECTION_TYPE
-  }
-
   createTypeCreation() {
     return new openbis.ExperimentTypeCreation()
   }
@@ -465,18 +440,6 @@ class CollectionTypeStrategy {
 }
 
 class DataSetTypeStrategy {
-  getEntityKind() {
-    return openbis.EntityKind.DATA_SET
-  }
-
-  getNewObjectType() {
-    return objectTypes.NEW_DATA_SET_TYPE
-  }
-
-  getExistingObjectType() {
-    return objectTypes.DATA_SET_TYPE
-  }
-
   createTypeCreation() {
     return new openbis.DataSetTypeCreation()
   }
@@ -501,18 +464,6 @@ class DataSetTypeStrategy {
 }
 
 class MaterialTypeStrategy {
-  getEntityKind() {
-    return openbis.EntityKind.MATERIAL
-  }
-
-  getNewObjectType() {
-    return objectTypes.NEW_MATERIAL_TYPE
-  }
-
-  getExistingObjectType() {
-    return objectTypes.MATERIAL_TYPE
-  }
-
   createTypeCreation() {
     return new openbis.MaterialTypeCreation()
   }
