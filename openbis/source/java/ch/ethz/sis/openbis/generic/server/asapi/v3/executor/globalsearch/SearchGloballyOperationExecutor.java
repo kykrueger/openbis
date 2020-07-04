@@ -27,6 +27,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.GlobalSearchObject;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearchObjectFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearchObjectSortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.*;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.Person;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.fetchoptions.PersonFetchOptions;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.ISearchObjectExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.SearchObjectsOperationExecutor;
@@ -38,6 +40,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ILocalSearchMa
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.ITranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.TranslationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.globalsearch.IGlobalSearchObjectTranslator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.person.IPersonTranslator;
 import ch.systemsx.cisd.openbis.generic.shared.authorization.AuthorizationConfig;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MatchingEntity;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
@@ -49,6 +52,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearchObjectSortOptions.SCORE;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.GlobalSearchCriteriaTranslator.IDENTIFIER_ALIAS;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PERSON_REGISTERER_COLUMN;
 
 /**
  * @author pkupczyk
@@ -64,6 +69,9 @@ public class SearchGloballyOperationExecutor
 
     @Autowired
     private IGlobalSearchObjectTranslator translator;
+
+    @Autowired
+    private IPersonTranslator personTranslator;
 
     @Autowired
     private IGlobalAuthorizationExecutor authorizationExecutor;
@@ -131,8 +139,24 @@ public class SearchGloballyOperationExecutor
             allResultMaps.addAll(materialResultMaps);
         }
 
+        final Map<String, Long> registratorIdByRecordIdentifierMap = allResultMaps.stream().collect(HashMap::new,
+                (supplierMap, record) ->
+                {
+                    final Long registratorId = (Long) record.get(PERSON_REGISTERER_COLUMN);
+                    if (registratorId != null)
+                    {
+                        supplierMap.put((String) record.get(IDENTIFIER_ALIAS), registratorId);
+                    }
+                },
+                HashMap::putAll);
+
+        final Set<Long> registratorIds = new HashSet<>(registratorIdByRecordIdentifierMap.values());
+
+        final Map<Long, Person> registratorByIdMap = personTranslator.translate(translationContext, registratorIds,
+                new PersonFetchOptions());
+
         final Collection<MatchingEntity> matchingEntities = globalSearchManager.map(allResultMaps,
-                fetchOptions.hasMatch());
+                fetchOptions.hasMatch(), registratorByIdMap);
         final List<MatchingEntity> pagedMatchingEntities = sortAndPage(matchingEntities, fetchOptions);
         // TODO: doTranslate() should only filter nested objects of the results (parents, children, components...).
         final Map<MatchingEntity, GlobalSearchObject> pagedResultV3DTOs = doTranslate(translationContext, pagedMatchingEntities, fetchOptions);

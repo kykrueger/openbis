@@ -174,29 +174,33 @@ public class GlobalSearchCriteriaTranslator
         final boolean hasSpaces = hasSpaces(tableMapper);
         final boolean hasProjects = hasProjects(tableMapper);
 
-        sqlBuilder.append(SELECT).append(SP).append(MAIN_TABLE_ALIAS).append(PERIOD).append(ID_COLUMN).append(COMMA).append(SP);
+        sqlBuilder.append(SELECT).append(SP).append(MAIN_TABLE_ALIAS).append(PERIOD).append(ID_COLUMN)
+                .append(COMMA).append(NL);
 
         switch (tableMapper)
         {
             case SAMPLE:
             case EXPERIMENT:
             {
-                sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(PERM_ID_COLUMN).append(COMMA).append(SP);
+                sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(PERM_ID_COLUMN)
+                        .append(COMMA).append(NL);
                 break;
             }
             case DATA_SET:
             {
-                sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(DATA_SET_KIND_COLUMN).append(COMMA)
-                        .append(SP);
+                sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(DATA_SET_KIND_COLUMN)
+                        .append(COMMA).append(NL);
                 break;
             }
         }
 
         sqlBuilder.append(ENTITY_TYPES_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(SP)
-                .append(ENTITY_TYPES_CODE_ALIAS).append(COMMA).append(SP);
+                .append(ENTITY_TYPES_CODE_ALIAS).append(COMMA).append(NL);
 
-        sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(COMMA).append(SP)
-                .append(SQ).append(tableMapper.getEntityKind()).append(SQ).append(SP).append(OBJECT_KIND_ALIAS).append(COMMA).append(SP);
+        sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(COMMA).append(NL);
+        sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(PERSON_REGISTERER_COLUMN).append(COMMA).append(NL);
+        sqlBuilder.append(SQ).append(tableMapper.getEntityKind()).append(SQ).append(SP).append(OBJECT_KIND_ALIAS)
+                .append(COMMA).append(NL);
 
         sqlBuilder.append(UPPER).append(LP);
         if (tableMapper == TableMapper.MATERIAL)

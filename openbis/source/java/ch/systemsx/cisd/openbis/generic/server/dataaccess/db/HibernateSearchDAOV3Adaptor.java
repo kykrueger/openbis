@@ -114,7 +114,8 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
                 globalSearchCriteria,
                 ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN,
                 getTableMapper(searchableEntity), fo);
-        Collection<MatchingEntity> matchingEntities = getGlobalSearchManager().map(newResults, true);
+        // TODO: create and populate registratorByIdMap as in SearchGloballyOperationExecutor
+        Collection<MatchingEntity> matchingEntities = getGlobalSearchManager().map(newResults, true, null);
 
 //        // Adapt V3 to V1 Results
 //

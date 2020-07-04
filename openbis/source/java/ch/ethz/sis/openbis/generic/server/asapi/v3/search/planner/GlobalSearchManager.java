@@ -187,7 +187,8 @@ public class GlobalSearchManager implements IGlobalSearchManager
     }
 
     @Override
-    public Collection<MatchingEntity> map(final Collection<Map<String, Object>> records, final boolean withMatches)
+    public Collection<MatchingEntity> map(final Collection<Map<String, Object>> records, final boolean withMatches,
+            final Map<Long, ch.ethz.sis.openbis.generic.asapi.v3.dto.person.Person> registratorByIdMap)
     {
         return records.stream().map((fieldsMap) ->
         {
@@ -214,6 +215,18 @@ public class GlobalSearchManager implements IGlobalSearchManager
             }
 
             matchingEntity.setScore((Float) fieldsMap.get(RANK_ALIAS));
+            final ch.ethz.sis.openbis.generic.asapi.v3.dto.person.Person registrator =
+                    registratorByIdMap.get((Long) fieldsMap.get(PERSON_REGISTERER_COLUMN));
+
+            if (registrator != null)
+            {
+                final Person matchingEntityRegistrator = new Person();
+                matchingEntityRegistrator.setUserId(registrator.getUserId());
+                matchingEntityRegistrator.setFirstName(registrator.getFirstName());
+                matchingEntityRegistrator.setLastName(registrator.getLastName());
+                matchingEntityRegistrator.setEmail(registrator.getEmail());
+                matchingEntity.setRegistrator(matchingEntityRegistrator);
+            }
 
             final List<PropertyMatch> matches = new ArrayList<>();
 
@@ -225,7 +238,7 @@ public class GlobalSearchManager implements IGlobalSearchManager
 
             matchingEntity.setMatches(matches);
             return matchingEntity;
-        }).collect(Collectors.toMap(MatchingEntity::getId, Function.identity(),
+        }).collect(Collectors.toMap(MatchingEntity::getIdentifier, Function.identity(),
             (existingMatchingEntity, newMatchingEntity) ->
             {
                 existingMatchingEntity.setScore(existingMatchingEntity.getScore() + newMatchingEntity.getScore());

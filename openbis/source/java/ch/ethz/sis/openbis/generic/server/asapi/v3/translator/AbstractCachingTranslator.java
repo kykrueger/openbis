@@ -149,7 +149,9 @@ public abstract class AbstractCachingTranslator<I, O, F extends FetchOptions<?>>
             return (Long) input;
         } else
         {
-            throw new IllegalArgumentException("Unsupported input type: " + input.getClass());
+            final String message = (input != null) ? "Unsupported input type: " + input.getClass()
+                    : "Null input is unsupported.";
+            throw new IllegalArgumentException(message);
         }
     }
 

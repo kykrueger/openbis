@@ -20,6 +20,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.GlobalSearchObject;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearchObjectFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.Person;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MatchingEntity;
@@ -50,6 +51,7 @@ public interface IGlobalSearchManager extends ISearchManager
     List<MatchingEntity> sortRecords(Collection<MatchingEntity> records,
             SortOptions<GlobalSearchObject> sortOptions);
 
-    Collection<MatchingEntity> map(final Collection<Map<String, Object>> ids, boolean withMatches);
+    Collection<MatchingEntity> map(final Collection<Map<String, Object>> ids, boolean withMatches,
+            Map<Long, Person> registratorByIdMap);
 
 }
