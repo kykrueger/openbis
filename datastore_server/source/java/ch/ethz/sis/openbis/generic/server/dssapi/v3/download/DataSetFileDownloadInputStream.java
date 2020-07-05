@@ -22,9 +22,8 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Map;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.DataSetFile;
-import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.id.DataSetFilePermId;
+import ch.ethz.sis.openbis.generic.server.dssapi.v3.Utils;
 import ch.systemsx.cisd.openbis.common.io.ConcatenatedContentInputStream;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchicalContentNode;
 
@@ -70,18 +69,7 @@ public class DataSetFileDownloadInputStream extends ConcatenatedContentInputStre
 
     private DataSetFile createDto(IHierarchicalContentNode content)
     {
-        String dataSetCode = contentNodes.get(content);
-
-        DataSetFile dto = new DataSetFile();
-        dto.setPermId(new DataSetFilePermId(new DataSetPermId(dataSetCode), content.getRelativePath()));
-        dto.setPath(content.getRelativePath());
-        dto.setDirectory(content.isDirectory());
-        if (content.isDirectory() == false)
-        {
-            dto.setFileLength(content.getFileLength());
-        }
-        dto.setDataSetPermId(new DataSetPermId(dataSetCode));
-        return dto;
+        return Utils.createDataSetFile(contentNodes.get(content), content, null);
     }
 
 }

@@ -36,7 +36,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.PhysicalDataSearchCriteria;
-import ch.systemsx.cisd.common.exceptions.EnvironmentFailureException;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.common.logging.LogCategory;
@@ -59,28 +58,28 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.BasicConstant;
 public class DataSetAndPathInfoDBConsistencyCheckTask extends AbstractMaintenanceTaskWithStateFile
 {
     private static final Comparator<DataSet> DATA_SET_COMPARATOR = new Comparator<DataSet>()
-    {
-        @Override
-        public int compare(DataSet ds1, DataSet ds2)
         {
-            long t1 = ds1.getRegistrationDate().getTime();
-            long t2 = ds2.getRegistrationDate().getTime();
-            if (t1 == t2)
+            @Override
+            public int compare(DataSet ds1, DataSet ds2)
             {
-                return ds1.getCode().compareTo(ds2.getCode());
+                long t1 = ds1.getRegistrationDate().getTime();
+                long t2 = ds2.getRegistrationDate().getTime();
+                if (t1 == t2)
+                {
+                    return ds1.getCode().compareTo(ds2.getCode());
+                }
+                return t1 < t2 ? -1 : (t1 > t2 ? 1 : 0);
             }
-            return t1 < t2 ? -1 : (t1 > t2 ? 1 : 0);
-        }
-    };
+        };
 
     private static final String TIME_FORMAT = "HH:mm";
 
     static final String CHECKING_TIME_INTERVAL_KEY = "checking-time-interval";
-    
+
     static final String CHUNK_SIZE_KEY = "chunk-size";
-    
+
     static final String PAUSING_TIME_POINT_KEY = "pausing-time-point";
-    
+
     static final String CONTINUING_TIME_POINT_KEY = "continuing-time-point";
 
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat(
@@ -162,11 +161,11 @@ public class DataSetAndPathInfoDBConsistencyCheckTask extends AbstractMaintenanc
                 checker.checkDataSet(dataSet.getCode());
             }
             reportErrorOrInconsistencies(checker, youngerThanDate, null);
-            
+
         }
     }
 
-    private void reportErrorOrInconsistencies(DataSetAndPathInfoDBConsistencyChecker checker, 
+    private void reportErrorOrInconsistencies(DataSetAndPathInfoDBConsistencyChecker checker,
             Date youngerThanDate, Date olderThanDateOrNull)
     {
         if (checker.noErrorAndInconsistencyFound() == false)
@@ -186,7 +185,7 @@ public class DataSetAndPathInfoDBConsistencyCheckTask extends AbstractMaintenanc
             notificationLog.error(builder.toString());
         }
     }
-    
+
     private void executeInterruptingMode()
     {
         Date now = new Date(timeProvider.getTimeInMilliseconds());
@@ -213,10 +212,11 @@ public class DataSetAndPathInfoDBConsistencyCheckTask extends AbstractMaintenanc
         }
         reportErrorOrInconsistencies(checker, lastRegistrationDate, registrationDate);
     }
-    
+
     private class DataSetIterable implements Iterable<DataSet>
     {
         private Date lastRegistrationDate;
+
         private Date originalStartingTime;
 
         DataSetIterable(Date lastRegistrationDate, Date originalStartingTime)
@@ -231,6 +231,7 @@ public class DataSetAndPathInfoDBConsistencyCheckTask extends AbstractMaintenanc
             return new Iterator<DataSet>()
                 {
                     private List<DataSet> currentChunk;
+
                     private int index;
 
                     @Override
@@ -263,12 +264,12 @@ public class DataSetAndPathInfoDBConsistencyCheckTask extends AbstractMaintenanc
         }
 
     }
-    
+
     private boolean isInInterval(TimeInterval interval)
     {
         return interval.isInTimeInterval(new Date(timeProvider.getTimeInMilliseconds()));
     }
-    
+
     private List<DataSet> getNextDataSets(Date registrationDate, Integer count, String timestampAndCodeOrNull)
     {
         String sessionToken = login();
@@ -308,38 +309,19 @@ public class DataSetAndPathInfoDBConsistencyCheckTask extends AbstractMaintenanc
         String timeStampAndCodeOfDataSet = renderTimeStampAndCode(dataSet.getRegistrationDate(), dataSet.getCode());
         return timeStampAndCodeOfDataSet.compareTo(timestampAndCodeOrNull) > 0;
     }
-    
-    private Date getLastRegistrationDate(Date originalStartingTime)
-    {
-        if (stateFile.exists())
-        {
-            String timestampAndCode = FileUtilities.loadToString(stateFile);
-            String timestamp = extractTimeStamp(timestampAndCode);
-            try
-            {
-                return parseTimeStamp(timestamp);
-            } catch (ParseException ex)
-            {
-                throw new EnvironmentFailureException("Invalid time stamp in file. File: " 
-                        + stateFile.getAbsolutePath() + ", timestamp: " + timestamp);
-            }
-        }
-        return originalStartingTime;
-    }
 
     private Date getOriginalStartingTime()
     {
         return new Date(timeProvider.getTimeInMilliseconds() - timeInterval);
     }
-    
+
     String login()
     {
-        ICredentials credentials 
-                = (ICredentials) ServiceProvider.getApplicationContext().getBean("reauthenticateInterceptor");
+        ICredentials credentials = getEtlServerCredentials();
         String sessionToken = service.login(credentials.getUserId(), credentials.getPassword());
         return sessionToken;
     }
-    
+
     private Date getTime(Properties properties, String key, Date defaultOrNull)
     {
         String timeString = properties.getProperty(key);

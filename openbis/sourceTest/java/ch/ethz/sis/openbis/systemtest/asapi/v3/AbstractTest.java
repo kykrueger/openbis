@@ -44,6 +44,9 @@ import java.util.stream.Collectors;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.query.NativeQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
@@ -164,6 +167,9 @@ public class AbstractTest extends SystemTestCase
         };
 
     protected BufferedAppender logRecorder;
+
+    @Autowired
+    protected SessionFactory sessionFactory;
 
     @Autowired
     protected IApplicationServerInternalApi v3api;
@@ -1132,9 +1138,10 @@ public class AbstractTest extends SystemTestCase
         assertCollectionContainsOnly(actualSet, expectedCodes);
     }
 
-    protected static void assertSampleIdentifier(Sample sample, String expectedIdentifier)
+    protected void assertSampleIdentifier(Sample sample, String expectedIdentifier)
     {
         assertEquals(sample.getIdentifier().getIdentifier(), expectedIdentifier);
+        assertEquals(getSampleIdentifier(sample.getPermId().getPermId()), expectedIdentifier);
     }
 
     protected static void assertSampleIdentifiers(Collection<Sample> samples, String... expectedIdentifiers)
@@ -1540,13 +1547,13 @@ public class AbstractTest extends SystemTestCase
     protected DataSetCreation physicalDataSetCreation()
     {
         String code = UUID.randomUUID().toString();
-    
+
         PhysicalDataCreation physicalCreation = new PhysicalDataCreation();
         physicalCreation.setLocation("test/location/" + code);
         physicalCreation.setFileFormatTypeId(new FileFormatTypePermId("TIFF"));
         physicalCreation.setLocatorTypeId(new RelativeLocationLocatorTypePermId());
         physicalCreation.setStorageFormatId(new ProprietaryStorageFormatPermId());
-    
+
         DataSetCreation creation = new DataSetCreation();
         creation.setCode(code);
         creation.setDataSetKind(DataSetKind.PHYSICAL);
@@ -1555,8 +1562,28 @@ public class AbstractTest extends SystemTestCase
         creation.setDataStoreId(new DataStorePermId("STANDARD"));
         creation.setPhysicalData(physicalCreation);
         creation.setCreationId(new CreationId(code));
-    
+
         return creation;
+    }
+
+    @SuppressWarnings("rawtypes")
+    private String getSampleIdentifier(String permId)
+    {
+        Session session = sessionFactory.getCurrentSession();
+        NativeQuery query = session.createSQLQuery("select sample_identifier from samples where perm_id = :permId")
+                .setParameter("permId", permId);
+        List<?> result = query.getResultList();
+        try
+        {
+            for (Object object : result)
+            {
+                return String.valueOf(object);
+            }
+            return null;
+        } finally
+        {
+            session.flush();
+        }
     }
 
     protected static List<MethodWrapper> getFreezingMethods(Class<?> clazz)

@@ -10,10 +10,10 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.StatusSearchCrite
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.ExternalDmsAddressType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.search.ExternalDmsTypeSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearchObjectFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchObjectKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.PersonSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.AbstractSampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
@@ -29,6 +29,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.*;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SearchableEntity;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.query.NativeQuery;
@@ -56,19 +57,28 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
     // IHibernateSearchDAO interface
     //
 
+//    @Override
+//    public List<MatchingEntity> searchEntitiesByTerm(String userId, SearchableEntity searchableEntity, String searchTerm, HibernateSearchDataProvider dataProvider, boolean useWildcardSearchMode, int alreadyFoundEntities, int maxSize) throws DataAccessException {
+//        return this.hibernateSearchDAO.searchEntitiesByTerm(userId, searchableEntity, searchTerm, dataProvider, useWildcardSearchMode, alreadyFoundEntities, maxSize);
+//    }
+
     @Override
     public List<MatchingEntity> searchEntitiesByTerm(String userId, SearchableEntity searchableEntity, String searchTerm, HibernateSearchDataProvider dataProvider, boolean useWildcardSearchMode, int alreadyFoundEntities, int maxSize) throws DataAccessException {
         operationLog.info("TO ADAPT [FULL TEXT SEARCH] : " + searchableEntity + " [" + searchTerm + "] Wildcards: [" + useWildcardSearchMode + "]");
 
-        if(searchTerm == null) {
-            throw new AssertionError("searchTerm == null");
+        if(StringUtils.isBlank(searchTerm)) {
+            throw new AssertionError("searchTerm is empty");
         }
         if(searchableEntity == null) {
             throw new AssertionError("searchableEntity == null");
         }
+        if(dataProvider == null) {
+            throw new AssertionError("dataProvider == null");
+        }
         if(useWildcardSearchMode) {
             throwUnsupportedOperationException("useWildcardSearchMode not supported");
         }
+
         if(maxSize != Integer.MAX_VALUE) {
             throwIllegalArgumentException("maxSize != Integer.MAX_VALUE");
         }
@@ -86,54 +96,72 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
         // Obtain global criteria
 
         GlobalSearchCriteria globalSearchCriteria = getCriteria(searchableEntity);
-        globalSearchCriteria.withText().thatContains(searchTerm);
+        if (searchTerm.startsWith("\"") && searchTerm.endsWith("\"")) {
+            globalSearchCriteria.withText().thatContainsExactly(searchTerm.substring(1, searchTerm.length() - 1));
+        } else {
+            globalSearchCriteria.withText().thatContains(searchTerm);
+        }
 
         operationLog.info("ADAPTED [FULL TEXT SEARCH] : " + searchableEntity + " [" + searchTerm + "] " + useWildcardSearchMode);
 
         // Obtain entity id results from search manager
 
+        GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
+        fo.withDataSet();
+
         Set<Map<String, Object>> newResults = getGlobalSearchManager().searchForIDs(personPE.getId(),
                 getAuthorisationInformation(personPE),
                 globalSearchCriteria,
                 ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN,
-                getTableMapper(searchableEntity));
+                getTableMapper(searchableEntity), fo);
+        Collection<MatchingEntity> matchingEntities = getGlobalSearchManager().map(newResults, true);
 
-        // Adapt V3 to V1 Results
-
-        // TODO: This adaption is incomplete
-        List<MatchingEntity> newResultsAsMatchingEntity = new ArrayList<>();
-        for (Map<String, Object> newResult:newResults) {
-            MatchingEntity matchingEntity = new MatchingEntity();
-            matchingEntity.setId((Long) newResult.get("id"));
-            matchingEntity.setIdentifier((String) newResult.get("identifier"));
-            matchingEntity.setCode((String) newResult.get("code"));
-            matchingEntity.setScore((Float) newResult.get("rank"));
-            List<PropertyMatch> matches = new ArrayList<>();
-            if ((Float) newResult.get("value_match_rank") > 0) {
-                PropertyMatch propertyMatch = new PropertyMatch();
-                propertyMatch.setCode((String) newResult.get("property_type_label"));
-                propertyMatch.setValue((String) newResult.get("value_headline"));
-                matches.add(propertyMatch);
-            }
-            if ((Float) newResult.get("code_match_rank") > 0) {
-
-            }
-            if ((Float) newResult.get("label_match_rank") > 0) {
-
-            }
-            if ((Float) newResult.get("description_match_rank") > 0) {
-
-            }
-            matchingEntity.setMatches(matches);
-            matchingEntity.setEntityKind(ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind.valueOf((String) newResult.get("object_kind")));
-            newResultsAsMatchingEntity.add(matchingEntity);
-        }
+//        // Adapt V3 to V1 Results
+//
+//        // TODO: This adaption is incomplete
+//        List<MatchingEntity> newResultsAsMatchingEntity = new ArrayList<>();
+//        for (Map<String, Object> newResult:newResults) {
+//            MatchingEntity matchingEntity = new MatchingEntity();
+//            matchingEntity.setId((Long) newResult.get("id"));
+//            matchingEntity.setCode((String) newResult.get("code"));
+//            // TODO permId
+//            matchingEntity.setIdentifier((String) newResult.get("identifier"));
+//            // TODO registrator
+//            // TODO entityType
+//            matchingEntity.setEntityKind(ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind.valueOf((String) newResult.get("object_kind")));
+//            // TODO spaceOrNull
+//            matchingEntity.setMatches(getPropertyMatches(newResult));
+//            matchingEntity.setScore((Float) newResult.get("rank"));
+//            // TODO searchDomain
+//            newResultsAsMatchingEntity.add(matchingEntity);
+//        }
 
         // TODO: Remove when finish, old search to compare when debugging
-        List<MatchingEntity> oldResults = this.hibernateSearchDAO.searchEntitiesByTerm(userId, searchableEntity, searchTerm, dataProvider, useWildcardSearchMode, alreadyFoundEntities, maxSize);
+        //List<MatchingEntity> oldResults = this.hibernateSearchDAO.searchEntitiesByTerm(userId, searchableEntity, searchTerm, dataProvider, useWildcardSearchMode, alreadyFoundEntities, maxSize);
 
-        return newResultsAsMatchingEntity;
+        return (List<MatchingEntity>) matchingEntities;
     }
+
+//    private List<PropertyMatch> getPropertyMatches(Map<String, Object> newResult) {
+//        List<PropertyMatch> matches = new ArrayList<>();
+//        if ((Float) newResult.get("value_match_rank") > 0) {
+//            PropertyMatch propertyMatch = new PropertyMatch();
+//            propertyMatch.setCode((String) newResult.get("property_type_label"));
+//            propertyMatch.setValue((String) newResult.get("value_headline"));
+//            matches.add(propertyMatch);
+//        }
+//        if ((Float) newResult.get("code_match_rank") > 0) {
+//
+//        }
+//        if ((Float) newResult.get("label_match_rank") > 0) {
+//
+//        }
+//        if ((Float) newResult.get("description_match_rank") > 0) {
+//
+//        }
+//
+//        return matches;
+//    }
 
     private GlobalSearchManager globalSearchManager;
 
@@ -194,6 +222,7 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
         }
     }
 
+    // TODO : Remove List<IAssociationCriteria> v1Associations from the interface and the code that build them from the core
     @Override
     public List<Long> searchForEntityIds(final String userId,
                                          final DetailedSearchCriteria mainV1Criteria,
@@ -308,7 +337,7 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
         // They have 3 possible rules depending on the 3 classes
         // Null, Not Null, or Tech Id
         // V1 Handled sub criteria in managers and associations where used to make the link
-        // If sub criteria are handled naturally on the query, like they are implemented now, these are not necessary.
+        // If sub criteria are handled on the query, like they are implemented now, handling associations is not necessary.
 
 //        boolean handleAsociations = false;
 //        if (v1Associations != null && handleAsociations) {
@@ -536,7 +565,7 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
 
                     break;
                 case REGISTRATOR:
-                    criterionV3Criteria = v3Criteria.withRegistrator();
+                    criterionV3Criteria = v3Criteria.withRegistrator().withUserId();
                     break;
             }
 
@@ -578,11 +607,19 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
                 BooleanFieldSearchCriteria booleanFieldSearchCriteria = (BooleanFieldSearchCriteria) criterionV3Criteria;
                 booleanFieldSearchCriteria.thatEquals(Boolean.parseBoolean(value));
             } else if(criterionV3Criteria instanceof DateFieldSearchCriteria) {
+                DateFieldSearchCriteria dateFieldSearchCriteria = (DateFieldSearchCriteria) criterionV3Criteria;
+
                 String timezone = v1Criterion.getTimeZone();
                 if (timezone != null) {
-                    // TODO Convert provided date timezone to the standard one
+                    int hourOffset = 0;
+                    try {
+                        hourOffset = Integer.parseInt(timezone);
+                    } catch (Exception ex) {
+                        throwUnsupportedOperationException("timezone format not supported for: '" + timezone + "'");
+                    }
+                    dateFieldSearchCriteria.withTimeZone(hourOffset);
                 }
-                DateFieldSearchCriteria dateFieldSearchCriteria = (DateFieldSearchCriteria) criterionV3Criteria;
+
                 switch (comparisonOperator) {
                     case LESS_THAN:
                         throwIllegalArgumentException("Date operator LESS_THAN");
@@ -600,11 +637,7 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
                         throwIllegalArgumentException("Date operator MORE_THAN");
                         break;
                 }
-            // Person
-            } else if(criterionV3Criteria instanceof PersonSearchCriteria) {
-                PersonSearchCriteria personFieldSearchCriteria = (PersonSearchCriteria) criterionV3Criteria;
-                personFieldSearchCriteria.withUserId().thatEquals(value);
-            // Enums
+                // Enums
             } else if(criterionV3Criteria instanceof CompleteSearchCriteria) {
                 CompleteSearchCriteria enumFieldSearchCriteria = (CompleteSearchCriteria) criterionV3Criteria;
                 enumFieldSearchCriteria.thatEquals(Complete.valueOf(value));

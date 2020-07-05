@@ -22,9 +22,9 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.*;
 
 public class GlobalSearchCriteriaTranslator
 {
-    public static final String START_SEL = "<b>";
+    public static final String START_SEL = "<SEL--";
 
-    public static final String STOP_SEL = "</b>";
+    public static final String STOP_SEL = "--SEL>";
 
     public static final String RANK_ALIAS = "rank";
 
@@ -86,8 +86,8 @@ public class GlobalSearchCriteriaTranslator
 
     private static final String ATTRIBUTE_TYPES_TABLE_ALIAS = "prty";
 
-//    private static final String TS_HEADLINE_OPTIONS = "HighlightAll=TRUE, StartSel=" + START_SEL
-//            +", StopSel=" + STOP_SEL;
+    private static final String TS_HEADLINE_OPTIONS = "HighlightAll=TRUE, StartSel=" + START_SEL
+            +", StopSel=" + STOP_SEL;
 
     private static final Logger LOG = LogFactory.getLogger(LogCategory.OPERATION, GlobalSearchCriteriaTranslator.class);
 
@@ -220,6 +220,7 @@ public class GlobalSearchCriteriaTranslator
             sqlBuilder.append(NULL).append(SP).append(CV_CODE_ALIAS).append(COMMA).append(NL);
             sqlBuilder.append(NULL).append(SP).append(CV_LABEL_ALIAS).append(COMMA).append(NL);
             sqlBuilder.append(NULL).append(SP).append(CV_DESCRIPTION_ALIAS).append(COMMA).append(NL);
+
             sqlBuilder.append(NULL).append(SP).append(VALUE_HEADLINE_ALIAS).append(COMMA).append(NL);
             sqlBuilder.append(NULL).append(SP).append(CODE_HEADLINE_ALIAS).append(COMMA).append(NL);
             sqlBuilder.append(NULL).append(SP).append(LABEL_HEADLINE_ALIAS).append(COMMA).append(NL);
@@ -262,15 +263,22 @@ public class GlobalSearchCriteriaTranslator
             sqlBuilder.append(CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS).append(PERIOD).append(DESCRIPTION_COLUMN)
                     .append(SP).append(CV_DESCRIPTION_ALIAS).append(COMMA).append(NL);
 
-            buildTsHeadline(sqlBuilder, stringValue, args, PROPERTIES_TABLE_ALIAS + PERIOD + VALUE_COLUMN, VALUE_HEADLINE_ALIAS);
-            sqlBuilder.append(COMMA).append(SP);
-            buildTsHeadline(sqlBuilder, stringValue, args, CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS + PERIOD + CODE_COLUMN, CODE_HEADLINE_ALIAS);
-            sqlBuilder.append(COMMA).append(SP);
-            buildTsHeadline(sqlBuilder, stringValue, args, CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS + PERIOD + LABEL_COLUMN, LABEL_HEADLINE_ALIAS);
-            sqlBuilder.append(COMMA).append(SP);
-            buildTsHeadline(sqlBuilder, stringValue, args, CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS + PERIOD + DESCRIPTION_COLUMN,
-                    DESCRIPTION_HEADLINE_ALIAS);
-            sqlBuilder.append(COMMA).append(SP);
+            final boolean useHeadline = vo.getGlobalSearchObjectFetchOptions().hasMatch();
+            buildTsHeadline(sqlBuilder, stringValue, args, PROPERTIES_TABLE_ALIAS + PERIOD + VALUE_COLUMN,
+                    VALUE_HEADLINE_ALIAS, useHeadline);
+            sqlBuilder.append(COMMA).append(NL);
+            buildTsHeadline(sqlBuilder, stringValue, args,
+                    CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS + PERIOD + CODE_COLUMN, CODE_HEADLINE_ALIAS,
+                    useHeadline);
+            sqlBuilder.append(COMMA).append(NL);
+            buildTsHeadline(sqlBuilder, stringValue, args,
+                    CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS + PERIOD + LABEL_COLUMN, LABEL_HEADLINE_ALIAS,
+                    useHeadline);
+            sqlBuilder.append(COMMA).append(NL);
+            buildTsHeadline(sqlBuilder, stringValue, args,
+                    CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS + PERIOD + DESCRIPTION_COLUMN, DESCRIPTION_HEADLINE_ALIAS,
+                    useHeadline);
+            sqlBuilder.append(COMMA).append(NL);
 
             buildHeadlineTsRank(sqlBuilder, stringValue, args, PROPERTIES_TABLE_ALIAS + PERIOD + VALUE_COLUMN,
                     VALUE_MATCH_RANK_ALIAS);
@@ -301,11 +309,19 @@ public class GlobalSearchCriteriaTranslator
     }
 
     private static void buildTsHeadline(final StringBuilder sqlBuilder, final AbstractStringValue stringValue,
-            final List<Object> args, final String field, final String alias)
+            final List<Object> args, final String field, final String alias, final boolean useHeadline)
     {
-        sqlBuilder.append(TS_HEADLINE).append(LP).append(field).append(COMMA).append(SP);
-        buildTsQueryPart(sqlBuilder, stringValue, args);
-        sqlBuilder.append(RP).append(SP).append(alias);
+        if (useHeadline)
+        {
+            sqlBuilder.append(TS_HEADLINE).append(LP).append(field).append(COMMA).append(SP);
+            buildTsQueryPart(sqlBuilder, stringValue, args);
+            sqlBuilder.append(COMMA).append(SP).append(SQ).append(TS_HEADLINE_OPTIONS).append(SQ);
+            sqlBuilder.append(RP);
+        } else
+        {
+            sqlBuilder.append(NULL);
+        }
+        sqlBuilder.append(SP).append(alias);
     }
 
     /**
@@ -333,13 +349,17 @@ public class GlobalSearchCriteriaTranslator
     private static void buildAttributesMatchSelection(final StringBuilder sqlBuilder, final GlobalSearchTextCriteria criterion,
             final TableMapper tableMapper, final List<Object> args)
     {
+        final String[] criterionValues = criterion.getFieldValue().getValue().trim().split("\\s+");
+
         sqlBuilder.append(CASE).append(SP).append(WHEN).append(SP);
         sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN);
-        sqlBuilder.append(SP).append(EQ).append(SP).append(QU);
+        sqlBuilder.append(SP).append(IN).append(SP).append(LP)
+                .append(SELECT).append(SP).append(UNNEST).append(LP).append(QU).append(RP)
+                .append(RP);
         sqlBuilder.append(SP).append(THEN).append(SP).append(MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN);
         sqlBuilder.append(SP).append(ELSE).append(SP).append(NULL).append(SP).append(END);
         sqlBuilder.append(SP).append(CODE_MATCH_ALIAS);
-        args.add(criterion.getFieldValue().getValue());
+        args.add(criterionValues);
 
         switch (tableMapper)
         {
@@ -350,11 +370,14 @@ public class GlobalSearchCriteriaTranslator
 
                 sqlBuilder.append(CASE).append(SP).append(WHEN).append(SP);
                 sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(PERM_ID_COLUMN);
-                sqlBuilder.append(SP).append(EQ).append(SP).append(QU);
+                sqlBuilder.append(SP).append(IN).append(SP).append(LP)
+                        .append(SELECT).append(SP).append(UNNEST).append(LP).append(QU).append(RP)
+                        .append(RP);
                 sqlBuilder.append(SP).append(THEN).append(SP).append(MAIN_TABLE_ALIAS).append(PERIOD).append(PERM_ID_COLUMN);
                 sqlBuilder.append(SP).append(ELSE).append(SP).append(NULL).append(SP).append(END);
                 sqlBuilder.append(SP).append(PERM_ID_MATCH_ALIAS);
-                args.add(criterion.getFieldValue().getValue());
+
+                args.add(criterionValues);
                 break;
             }
             case DATA_SET:
@@ -363,11 +386,13 @@ public class GlobalSearchCriteriaTranslator
 
                 sqlBuilder.append(CASE).append(SP).append(WHEN).append(SP);
                 sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(DATA_SET_KIND_COLUMN);
-                sqlBuilder.append(SP).append(EQ).append(SP).append(QU);
+                sqlBuilder.append(SP).append(IN).append(SP).append(LP)
+                        .append(SELECT).append(SP).append(UNNEST).append(LP).append(QU).append(RP)
+                        .append(RP);
                 sqlBuilder.append(SP).append(THEN).append(SP).append(MAIN_TABLE_ALIAS).append(PERIOD).append(DATA_SET_KIND_COLUMN);
                 sqlBuilder.append(SP).append(ELSE).append(SP).append(NULL).append(SP).append(END);
                 sqlBuilder.append(SP).append(DATA_SET_KIND_MATCH_ALIAS);
-                args.add(criterion.getFieldValue().getValue());
+                args.add(criterionValues);
                 break;
             }
         }

@@ -32,10 +32,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import javax.imageio.ImageIO;
-
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
-import ch.systemsx.cisd.common.exceptions.EnvironmentFailureException;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.common.properties.PropertyUtils;
 import ch.systemsx.cisd.etlserver.registrator.DataSetRegistrationDetails;
@@ -51,6 +48,7 @@ import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchical
 import ch.systemsx.cisd.openbis.dss.Constants;
 import ch.systemsx.cisd.openbis.dss.etl.Hdf5ThumbnailGenerator;
 import ch.systemsx.cisd.openbis.dss.etl.ImageCache;
+import ch.systemsx.cisd.openbis.dss.etl.Utils;
 import ch.systemsx.cisd.openbis.dss.etl.dto.ImageLibraryInfo;
 import ch.systemsx.cisd.openbis.dss.etl.dto.api.IImageGenerationAlgorithm;
 import ch.systemsx.cisd.openbis.dss.etl.dto.api.ImageFileInfo;
@@ -394,21 +392,7 @@ public class ImagingDataSetRegistrationTransaction extends DataSetRegistrationTr
             List<BufferedImage> images = algorithm.generateImages(imageDataSetInformation, thumbnailDatasets, imageCache);
             if (images.size() > 0)
             {
-                IDataSet representative = createNewDataSet(algorithm.getDataSetTypeCode(), DataSetKind.PHYSICAL);
-                for (int i = 0; i < images.size(); i++)
-                {
-                    BufferedImage imageData = images.get(i);
-                    String imageFile = createNewFile(representative, algorithm.getImageFileName(i));
-                    File f = new File(imageFile);
-                    try
-                    {
-                        ImageIO.write(imageData, "png", f);
-                    } catch (IOException e)
-                    {
-                        throw new EnvironmentFailureException("Can not save representative thumbnail to file '"
-                                + f + "': " + e, e);
-                    }
-                }
+                IDataSet representative = Utils.createDataSetAndImageFiles(this, algorithm, images);
                 containedDataSetCodes.add(representative.getDataSetCode());
                 thumbnailDatasets.add(representative);
             }

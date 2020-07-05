@@ -102,12 +102,14 @@ function MoveEntityController(entityType, entityPermId) {
         			});
 				break;
 			case "SAMPLE":
-				require([ "as/dto/sample/update/SampleUpdate"], 
-			        function(SampleUpdate) {
+				require([ "as/dto/sample/update/SampleUpdate", "as/dto/space/id/SpacePermId"],
+			        function(SampleUpdate, SpacePermId) {
 			            var sampleUpdate = new SampleUpdate();
 			            sampleUpdate.setSampleId(moveEntityModel.entity.getIdentifier());
 			 			sampleUpdate.setExperimentId(moveEntityModel.selected.getIdentifier());
-			            mainController.openbisV3.updateSamples([ sampleUpdate ]).done(done).fail(fail);
+			 			var spaceCode = moveEntityModel.selected.getIdentifier().getIdentifier().split("/")[1];
+			 			sampleUpdate.setSpaceId(new SpacePermId(spaceCode));
+			 			mainController.openbisV3.updateSamples([ sampleUpdate ]).done(done).fail(fail);
         			});
 				break;
 			case "DATASET":

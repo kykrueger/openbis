@@ -2349,4 +2349,10 @@ has Sample Properties
 set Sample Properties
 with Sample Properties
 with Sample Properties Using
+MatchFetchOptions
+hasMatch
+withMatch
+withMatchUsing
 
+List Update Map Values
+put

@@ -78,7 +78,7 @@ public class DssComponentTest extends SystemTestCase
 
     // If the pathinfo-db feeding task post-registration task in the service.properties is
     // configured to compute checksums for data sets, set this to true. Otherwise set to false.
-    private static final boolean ARE_CHECKSUMS_COMPUTED = false;
+    private static final boolean ARE_CHECKSUMS_COMPUTED = true;
 
     private static final Comparator<FileInfoDssDTO> FILE_INFO_COMPARATOR =
             new Comparator<FileInfoDssDTO>()
