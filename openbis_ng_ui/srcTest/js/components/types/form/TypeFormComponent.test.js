@@ -67,19 +67,38 @@ async function testLoadNew() {
         code: {
           label: 'Code',
           value: null,
-          enabled: true
+          enabled: true,
+          mode: 'edit'
         },
         description: {
           label: 'Description',
           value: null,
-          enabled: true
+          enabled: true,
+          mode: 'edit'
         },
         validationPlugin: {
           label: 'Validation Plugin',
           value: null,
-          enabled: true
+          enabled: true,
+          mode: 'edit'
         }
       }
+    },
+    buttons: {
+      addSection: {
+        enabled: true
+      },
+      addProperty: {
+        enabled: false
+      },
+      remove: {
+        enabled: false
+      },
+      save: {
+        enabled: true
+      },
+      edit: null,
+      cancel: null
     }
   })
 }
@@ -117,19 +136,91 @@ async function testLoadExisting() {
         code: {
           label: 'Code',
           value: fixture.TEST_SAMPLE_TYPE_DTO.getCode(),
-          enabled: false
+          mode: 'view'
         },
         description: {
           label: 'Description',
           value: fixture.TEST_SAMPLE_TYPE_DTO.getDescription(),
-          enabled: true
+          mode: 'view'
         },
         validationPlugin: {
           label: 'Validation Plugin',
           value: fixture.TEST_SAMPLE_TYPE_DTO.validationPlugin.name,
-          enabled: true
+          mode: 'view'
         }
       }
+    },
+    buttons: {
+      edit: {
+        enabled: true
+      },
+      addSection: null,
+      addProperty: null,
+      remove: null,
+      save: null,
+      cancel: null
+    }
+  })
+
+  form.getButtons().getEdit().click()
+  await form.update()
+
+  form.expectJSON({
+    preview: {
+      sections: [
+        {
+          name: 'TEST_SECTION_1',
+          properties: [{ code: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode() }]
+        },
+        {
+          name: 'TEST_SECTION_2',
+          properties: [
+            { code: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode() },
+            { code: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode() }
+          ]
+        }
+      ]
+    },
+    parameters: {
+      type: {
+        title: 'Type',
+        code: {
+          label: 'Code',
+          value: fixture.TEST_SAMPLE_TYPE_DTO.getCode(),
+          enabled: false,
+          mode: 'edit'
+        },
+        description: {
+          label: 'Description',
+          value: fixture.TEST_SAMPLE_TYPE_DTO.getDescription(),
+          enabled: true,
+          mode: 'edit'
+        },
+        validationPlugin: {
+          label: 'Validation Plugin',
+          value: fixture.TEST_SAMPLE_TYPE_DTO.validationPlugin.name,
+          enabled: true,
+          mode: 'edit'
+        }
+      }
+    },
+    buttons: {
+      addSection: {
+        enabled: true
+      },
+      addProperty: {
+        enabled: false
+      },
+      remove: {
+        enabled: false
+      },
+      save: {
+        enabled: true
+      },
+      cancel: {
+        enabled: true
+      },
+      edit: null
     }
   })
 }
@@ -216,6 +307,7 @@ async function doTestSelectProperty(scope, used) {
     type: objectTypes.OBJECT_TYPE
   })
 
+  form.getButtons().getEdit().click()
   form.getPreview().getSections()[0].getProperties()[0].click()
   await form.update()
 
@@ -227,32 +319,38 @@ async function doTestSelectProperty(scope, used) {
         scope: {
           label: 'Scope',
           value: scope,
-          enabled: false
+          enabled: false,
+          mode: 'edit'
         },
         code: {
           label: 'Code',
           value: propertyType.getCode(),
-          enabled: false
+          enabled: false,
+          mode: 'edit'
         },
         dataType: {
           label: 'Data Type',
           value: propertyType.getDataType(),
-          enabled: !used
+          enabled: !used,
+          mode: 'edit'
         },
         label: {
           label: 'Label',
           value: propertyType.getLabel(),
-          enabled: true
+          enabled: true,
+          mode: 'edit'
         },
         description: {
           label: 'Description',
           value: propertyType.getDescription(),
-          enabled: true
+          enabled: true,
+          mode: 'edit'
         },
         plugin: {
           label: 'Dynamic Plugin',
           value: plugin.getName(),
-          enabled: !used
+          enabled: !used,
+          mode: 'edit'
         }
       }
     }
@@ -289,7 +387,8 @@ async function testSelectSection() {
         name: {
           label: 'Name',
           value: propertyAssignment.getSection(),
-          enabled: true
+          enabled: true,
+          mode: 'view'
         }
       }
     }
@@ -300,9 +399,6 @@ async function testAddSection() {
   const form = await mountForm({
     type: objectTypes.NEW_OBJECT_TYPE
   })
-
-  form.getButtons().getEdit().click()
-  await form.update()
 
   form.expectJSON({
     preview: {
@@ -341,7 +437,8 @@ async function testAddSection() {
         name: {
           label: 'Name',
           value: null,
-          enabled: true
+          enabled: true,
+          mode: 'edit'
         }
       }
     },
@@ -366,9 +463,6 @@ async function testAddProperty() {
   const form = await mountForm({
     type: objectTypes.NEW_OBJECT_TYPE
   })
-
-  form.getButtons().getEdit().click()
-  await form.update()
 
   form.expectJSON({
     preview: {
@@ -409,32 +503,38 @@ async function testAddProperty() {
         scope: {
           label: 'Scope',
           value: 'local',
-          enabled: true
+          enabled: true,
+          mode: 'edit'
         },
         code: {
           label: 'Code',
           value: null,
-          enabled: true
+          enabled: true,
+          mode: 'edit'
         },
         dataType: {
           label: 'Data Type',
           value: 'VARCHAR',
-          enabled: true
+          enabled: true,
+          mode: 'edit'
         },
         label: {
           label: 'Label',
           value: null,
-          enabled: true
+          enabled: true,
+          mode: 'edit'
         },
         description: {
           label: 'Description',
           value: null,
-          enabled: true
+          enabled: true,
+          mode: 'edit'
         },
         plugin: {
           label: 'Dynamic Plugin',
           value: null,
-          enabled: true
+          enabled: true,
+          mode: 'edit'
         }
       }
     },
@@ -460,9 +560,6 @@ async function testChangeType() {
     type: objectTypes.NEW_OBJECT_TYPE
   })
 
-  form.getButtons().getEdit().click()
-  await form.update()
-
   form.expectJSON({
     preview: {
       header: {
@@ -479,12 +576,14 @@ async function testChangeType() {
         autoGeneratedCode: {
           label: 'Generate Codes',
           value: false,
-          enabled: true
+          enabled: true,
+          mode: 'edit'
         },
         generatedCodePrefix: {
           label: 'Generated code prefix',
           value: null,
-          enabled: true
+          enabled: true,
+          mode: 'edit'
         }
       }
     }
@@ -510,12 +609,14 @@ async function testChangeType() {
         autoGeneratedCode: {
           label: 'Generate Codes',
           value: true,
-          enabled: true
+          enabled: true,
+          mode: 'edit'
         },
         generatedCodePrefix: {
           label: 'Generated code prefix',
           value: 'TEST_PREFIX_',
-          enabled: true
+          enabled: true,
+          mode: 'edit'
         }
       }
     }
@@ -526,9 +627,6 @@ async function testChangeProperty() {
   const form = await mountForm({
     type: objectTypes.NEW_OBJECT_TYPE
   })
-
-  form.getButtons().getEdit().click()
-  await form.update()
 
   form.getButtons().getAddSection().click()
   form.getButtons().getAddProperty().click()
@@ -549,7 +647,8 @@ async function testChangeProperty() {
         dataType: {
           label: 'Data Type',
           value: 'VARCHAR',
-          enabled: true
+          enabled: true,
+          mode: 'edit'
         },
         vocabulary: null,
         materialType: null,
@@ -581,12 +680,14 @@ async function testChangeProperty() {
         dataType: {
           label: 'Data Type',
           value: 'CONTROLLEDVOCABULARY',
-          enabled: true
+          enabled: true,
+          mode: 'edit'
         },
         vocabulary: {
           label: 'Vocabulary',
           value: null,
-          enabled: true
+          enabled: true,
+          mode: 'edit'
         },
         materialType: null,
         schema: null,
@@ -613,13 +714,15 @@ async function testChangeProperty() {
         dataType: {
           label: 'Data Type',
           value: 'MATERIAL',
-          enabled: true
+          enabled: true,
+          mode: 'edit'
         },
         vocabulary: null,
         materialType: {
           label: 'Material Type',
           value: null,
-          enabled: true
+          enabled: true,
+          mode: 'edit'
         },
         schema: null,
         transformation: null
@@ -645,19 +748,22 @@ async function testChangeProperty() {
         dataType: {
           label: 'Data Type',
           value: 'XML',
-          enabled: true
+          enabled: true,
+          mode: 'edit'
         },
         vocabulary: null,
         materialType: null,
         schema: {
           label: 'XML Schema',
           value: null,
-          enabled: true
+          enabled: true,
+          mode: 'edit'
         },
         transformation: {
           label: 'XSLT Script',
           value: null,
-          enabled: true
+          enabled: true,
+          mode: 'edit'
         }
       }
     }
@@ -668,9 +774,6 @@ async function testChangeSection() {
   const form = await mountForm({
     type: objectTypes.NEW_OBJECT_TYPE
   })
-
-  form.getButtons().getEdit().click()
-  await form.update()
 
   form.getButtons().getAddSection().click()
   await form.update()
@@ -689,7 +792,8 @@ async function testChangeSection() {
         name: {
           label: 'Name',
           value: null,
-          enabled: true
+          enabled: true,
+          mode: 'edit'
         }
       }
     }
@@ -712,7 +816,8 @@ async function testChangeSection() {
         name: {
           label: 'Name',
           value: 'Test Name',
-          enabled: true
+          enabled: true,
+          mode: 'edit'
         }
       }
     }
@@ -723,9 +828,6 @@ async function testRemoveProperty() {
   const form = await mountForm({
     type: objectTypes.NEW_OBJECT_TYPE
   })
-
-  form.getButtons().getEdit().click()
-  await form.update()
 
   form.getButtons().getAddSection().click()
   form.getButtons().getAddProperty().click()
@@ -762,9 +864,6 @@ async function testRemoveSection() {
     type: objectTypes.NEW_OBJECT_TYPE
   })
 
-  form.getButtons().getEdit().click()
-  await form.update()
-
   form.getButtons().getAddSection().click()
   await form.update()
 
@@ -794,9 +893,6 @@ async function testValidateType() {
     type: objectTypes.NEW_OBJECT_TYPE
   })
 
-  form.getButtons().getEdit().click()
-  await form.update()
-
   form.getButtons().getSave().click()
   await form.update()
 
@@ -825,9 +921,6 @@ async function testValidateProperty() {
   const form = await mountForm({
     type: objectTypes.NEW_OBJECT_TYPE
   })
-
-  form.getButtons().getEdit().click()
-  await form.update()
 
   form.getParameters().getType().getCode().change('TEST_CODE')
   form.getParameters().getType().getGeneratedCodePrefix().change('TEST_PREFIX_')
@@ -868,9 +961,6 @@ async function testValidateTypeAndProperty() {
   const form = await mountForm({
     type: objectTypes.NEW_OBJECT_TYPE
   })
-
-  form.getButtons().getEdit().click()
-  await form.update()
 
   form.getButtons().getAddSection().click()
   form.getButtons().getAddProperty().click()
