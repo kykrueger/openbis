@@ -10,9 +10,13 @@ export default class MessageWrapper extends BaseWrapper {
   }
 
   toJSON() {
-    return {
-      text: this.getText(),
-      type: this.getType()
+    if (this.wrapper.exists()) {
+      return {
+        text: this.getText(),
+        type: this.getType()
+      }
+    } else {
+      return null
     }
   }
 }

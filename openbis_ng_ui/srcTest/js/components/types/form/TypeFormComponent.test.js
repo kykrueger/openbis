@@ -53,9 +53,7 @@ describe('TypeFormComponent', () => {
 })
 
 async function testLoadNew() {
-  const form = await mountForm({
-    type: objectTypes.NEW_OBJECT_TYPE
-  })
+  const form = await mountFormNew()
 
   form.expectJSON({
     preview: {
@@ -98,21 +96,14 @@ async function testLoadNew() {
         enabled: true
       },
       edit: null,
-      cancel: null
+      cancel: null,
+      message: null
     }
   })
 }
 
 async function testLoadExisting() {
-  facade.loadType.mockReturnValue(Promise.resolve(fixture.TEST_SAMPLE_TYPE_DTO))
-  facade.loadValidationPlugins.mockReturnValue(
-    Promise.resolve([fixture.TEST_SAMPLE_TYPE_DTO.validationPlugin])
-  )
-
-  const form = await mountForm({
-    id: fixture.TEST_SAMPLE_TYPE_DTO.getCode(),
-    type: objectTypes.OBJECT_TYPE
-  })
+  const form = await mountFormExisting()
 
   form.expectJSON({
     preview: {
@@ -158,7 +149,8 @@ async function testLoadExisting() {
       addProperty: null,
       remove: null,
       save: null,
-      cancel: null
+      cancel: null,
+      message: null
     }
   })
 
@@ -220,7 +212,8 @@ async function testLoadExisting() {
       cancel: {
         enabled: true
       },
-      edit: null
+      edit: null,
+      message: null
     }
   })
 }
@@ -307,8 +300,10 @@ async function doTestSelectProperty(scope, used) {
     type: objectTypes.OBJECT_TYPE
   })
 
-  form.getButtons().getEdit().click()
   form.getPreview().getSections()[0].getProperties()[0].click()
+  await form.update()
+
+  form.getButtons().getEdit().click()
   await form.update()
 
   form.expectJSON({
@@ -353,31 +348,20 @@ async function doTestSelectProperty(scope, used) {
           mode: 'edit'
         }
       }
+    },
+    buttons: {
+      message: null
     }
   })
 }
 
 async function testSelectSection() {
-  const propertyType = new openbis.PropertyType()
-  propertyType.setCode('TEST_PROPERTY')
-  propertyType.setDataType(openbis.DataType.VARCHAR)
+  const form = await mountFormExisting()
 
-  const propertyAssignment = new openbis.PropertyAssignment()
-  propertyAssignment.setPropertyType(propertyType)
-  propertyAssignment.setSection('TEST_SECTION')
+  form.getPreview().getSections()[1].click()
+  await form.update()
 
-  const type = new openbis.SampleType()
-  type.setCode('TEST_TYPE')
-  type.setPropertyAssignments([propertyAssignment])
-
-  facade.loadType.mockReturnValue(Promise.resolve(type))
-
-  const form = await mountForm({
-    id: type.getCode(),
-    type: objectTypes.OBJECT_TYPE
-  })
-
-  form.getPreview().getSections()[0].click()
+  form.getButtons().getEdit().click()
   await form.update()
 
   form.expectJSON({
@@ -386,40 +370,49 @@ async function testSelectSection() {
         title: 'Section',
         name: {
           label: 'Name',
-          value: propertyAssignment.getSection(),
+          value: 'TEST_SECTION_2',
           enabled: true,
-          mode: 'view'
+          mode: 'edit'
         }
       }
+    },
+    buttons: {
+      message: null
     }
   })
 }
 
 async function testAddSection() {
-  const form = await mountForm({
-    type: objectTypes.NEW_OBJECT_TYPE
-  })
+  const form = await mountFormExisting()
 
   form.expectJSON({
     preview: {
-      sections: []
+      sections: [
+        {
+          name: 'TEST_SECTION_1'
+        },
+        {
+          name: 'TEST_SECTION_2'
+        }
+      ]
     },
     buttons: {
-      addSection: {
+      edit: {
         enabled: true
       },
-      addProperty: {
-        enabled: false
-      },
-      remove: {
-        enabled: false
-      },
-      save: {
-        enabled: true
-      }
+      addSection: null,
+      addProperty: null,
+      remove: null,
+      save: null,
+      cancel: null,
+      message: null
     }
   })
 
+  form.getButtons().getEdit().click()
+  await form.update()
+
+  form.getPreview().getSections()[0].click()
   form.getButtons().getAddSection().click()
   await form.update()
 
@@ -427,7 +420,13 @@ async function testAddSection() {
     preview: {
       sections: [
         {
+          name: 'TEST_SECTION_1'
+        },
+        {
           name: null
+        },
+        {
+          name: 'TEST_SECTION_2'
         }
       ]
     },
@@ -443,6 +442,7 @@ async function testAddSection() {
       }
     },
     buttons: {
+      edit: null,
       addSection: {
         enabled: true
       },
@@ -454,37 +454,54 @@ async function testAddSection() {
       },
       save: {
         enabled: true
+      },
+      cancel: {
+        enabled: true
+      },
+      message: {
+        text: 'You have unsaved changes.',
+        type: 'warning'
       }
     }
   })
 }
 
 async function testAddProperty() {
-  const form = await mountForm({
-    type: objectTypes.NEW_OBJECT_TYPE
-  })
+  const form = await mountFormExisting()
 
   form.expectJSON({
     preview: {
-      sections: []
+      sections: [
+        {
+          name: 'TEST_SECTION_1',
+          properties: [{ code: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode() }]
+        },
+        {
+          name: 'TEST_SECTION_2',
+          properties: [
+            { code: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode() },
+            { code: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode() }
+          ]
+        }
+      ]
     },
     buttons: {
-      addSection: {
+      edit: {
         enabled: true
       },
-      addProperty: {
-        enabled: false
-      },
-      remove: {
-        enabled: false
-      },
-      save: {
-        enabled: true
-      }
+      addSection: null,
+      addProperty: null,
+      remove: null,
+      save: null,
+      cancel: null,
+      message: null
     }
   })
 
-  form.getButtons().getAddSection().click()
+  form.getButtons().getEdit().click()
+  await form.update()
+
+  form.getPreview().getSections()[1].getProperties()[0].click()
   form.getButtons().getAddProperty().click()
   await form.update()
 
@@ -492,8 +509,16 @@ async function testAddProperty() {
     preview: {
       sections: [
         {
-          name: null,
-          properties: [{ code: 'empty', label: 'empty', dataType: 'VARCHAR' }]
+          name: 'TEST_SECTION_1',
+          properties: [{ code: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode() }]
+        },
+        {
+          name: 'TEST_SECTION_2',
+          properties: [
+            { code: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode() },
+            { code: 'empty', label: 'empty', dataType: 'VARCHAR' },
+            { code: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode() }
+          ]
         }
       ]
     },
@@ -539,6 +564,7 @@ async function testAddProperty() {
       }
     },
     buttons: {
+      edit: null,
       addSection: {
         enabled: true
       },
@@ -550,15 +576,20 @@ async function testAddProperty() {
       },
       save: {
         enabled: true
+      },
+      cancel: {
+        enabled: true
+      },
+      message: {
+        text: 'You have unsaved changes.',
+        type: 'warning'
       }
     }
   })
 }
 
 async function testChangeType() {
-  const form = await mountForm({
-    type: objectTypes.NEW_OBJECT_TYPE
-  })
+  const form = await mountFormExisting()
 
   form.expectJSON({
     preview: {
@@ -566,7 +597,8 @@ async function testChangeType() {
         code: {
           label: 'Code',
           value: null,
-          enabled: true
+          enabled: true,
+          mode: 'edit'
         }
       }
     },
@@ -576,21 +608,25 @@ async function testChangeType() {
         autoGeneratedCode: {
           label: 'Generate Codes',
           value: false,
-          enabled: true,
-          mode: 'edit'
+          mode: 'view'
         },
         generatedCodePrefix: {
           label: 'Generated code prefix',
-          value: null,
-          enabled: true,
-          mode: 'edit'
+          value: 'TEST_PREFIX_',
+          mode: 'view'
         }
       }
+    },
+    buttons: {
+      message: null
     }
   })
 
+  form.getButtons().getEdit().click()
+  await form.update()
+
   form.getParameters().getType().getAutoGeneratedCode().change(true)
-  form.getParameters().getType().getGeneratedCodePrefix().change('TEST_PREFIX_')
+  form.getParameters().getType().getGeneratedCodePrefix().change('NEW_PREFIX_')
   await form.update()
 
   form.expectJSON({
@@ -598,8 +634,9 @@ async function testChangeType() {
       header: {
         code: {
           label: 'Code',
-          value: 'TEST_PREFIX_',
-          enabled: false
+          value: 'NEW_PREFIX_',
+          enabled: false,
+          mode: 'edit'
         }
       }
     },
@@ -614,36 +651,58 @@ async function testChangeType() {
         },
         generatedCodePrefix: {
           label: 'Generated code prefix',
-          value: 'TEST_PREFIX_',
+          value: 'NEW_PREFIX_',
           enabled: true,
           mode: 'edit'
         }
+      }
+    },
+    buttons: {
+      message: {
+        text: 'You have unsaved changes.',
+        type: 'warning'
       }
     }
   })
 }
 
 async function testChangeProperty() {
-  const form = await mountForm({
-    type: objectTypes.NEW_OBJECT_TYPE
-  })
+  const form = await mountFormExisting()
 
-  form.getButtons().getAddSection().click()
-  form.getButtons().getAddProperty().click()
+  form.getButtons().getEdit().click()
+  await form.update()
+
+  form.getPreview().getSections()[1].getProperties()[1].click()
   await form.update()
 
   form.expectJSON({
     preview: {
       sections: [
         {
-          name: null,
-          properties: [{ dataType: 'VARCHAR' }]
+          name: 'TEST_SECTION_1',
+          properties: [{ code: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode() }]
+        },
+        {
+          name: 'TEST_SECTION_2',
+          properties: [
+            { code: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode() },
+            {
+              code: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode(),
+              dataType: 'VARCHAR'
+            }
+          ]
         }
       ]
     },
     parameters: {
       property: {
         title: 'Property',
+        code: {
+          label: 'Code',
+          value: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode(),
+          enabled: false,
+          mode: 'edit'
+        },
         dataType: {
           label: 'Data Type',
           value: 'VARCHAR',
@@ -655,6 +714,9 @@ async function testChangeProperty() {
         schema: null,
         transformation: null
       }
+    },
+    buttons: {
+      message: null
     }
   })
 
@@ -669,14 +731,30 @@ async function testChangeProperty() {
     preview: {
       sections: [
         {
-          name: null,
-          properties: [{ dataType: 'CONTROLLEDVOCABULARY' }]
+          name: 'TEST_SECTION_1',
+          properties: [{ code: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode() }]
+        },
+        {
+          name: 'TEST_SECTION_2',
+          properties: [
+            { code: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode() },
+            {
+              code: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode(),
+              dataType: 'CONTROLLEDVOCABULARY'
+            }
+          ]
         }
       ]
     },
     parameters: {
       property: {
         title: 'Property',
+        code: {
+          label: 'Code',
+          value: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode(),
+          enabled: false,
+          mode: 'edit'
+        },
         dataType: {
           label: 'Data Type',
           value: 'CONTROLLEDVOCABULARY',
@@ -693,6 +771,12 @@ async function testChangeProperty() {
         schema: null,
         transformation: null
       }
+    },
+    buttons: {
+      message: {
+        text: 'You have unsaved changes.',
+        type: 'warning'
+      }
     }
   })
 
@@ -703,14 +787,30 @@ async function testChangeProperty() {
     preview: {
       sections: [
         {
-          name: null,
-          properties: [{ dataType: 'MATERIAL' }]
+          name: 'TEST_SECTION_1',
+          properties: [{ code: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode() }]
+        },
+        {
+          name: 'TEST_SECTION_2',
+          properties: [
+            { code: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode() },
+            {
+              code: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode(),
+              dataType: 'MATERIAL'
+            }
+          ]
         }
       ]
     },
     parameters: {
       property: {
         title: 'Property',
+        code: {
+          label: 'Code',
+          value: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode(),
+          enabled: false,
+          mode: 'edit'
+        },
         dataType: {
           label: 'Data Type',
           value: 'MATERIAL',
@@ -727,6 +827,12 @@ async function testChangeProperty() {
         schema: null,
         transformation: null
       }
+    },
+    buttons: {
+      message: {
+        text: 'You have unsaved changes.',
+        type: 'warning'
+      }
     }
   })
 
@@ -737,14 +843,30 @@ async function testChangeProperty() {
     preview: {
       sections: [
         {
-          name: null,
-          properties: [{ dataType: 'XML' }]
+          name: 'TEST_SECTION_1',
+          properties: [{ code: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode() }]
+        },
+        {
+          name: 'TEST_SECTION_2',
+          properties: [
+            { code: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode() },
+            {
+              code: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode(),
+              dataType: 'XML'
+            }
+          ]
         }
       ]
     },
     parameters: {
       property: {
         title: 'Property',
+        code: {
+          label: 'Code',
+          value: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode(),
+          enabled: false,
+          mode: 'edit'
+        },
         dataType: {
           label: 'Data Type',
           value: 'XML',
@@ -766,23 +888,33 @@ async function testChangeProperty() {
           mode: 'edit'
         }
       }
+    },
+    buttons: {
+      message: {
+        text: 'You have unsaved changes.',
+        type: 'warning'
+      }
     }
   })
 }
 
 async function testChangeSection() {
-  const form = await mountForm({
-    type: objectTypes.NEW_OBJECT_TYPE
-  })
+  const form = await mountFormExisting()
 
-  form.getButtons().getAddSection().click()
+  form.getButtons().getEdit().click()
+  await form.update()
+
+  form.getPreview().getSections()[1].click()
   await form.update()
 
   form.expectJSON({
     preview: {
       sections: [
         {
-          name: null
+          name: 'TEST_SECTION_1'
+        },
+        {
+          name: 'TEST_SECTION_2'
         }
       ]
     },
@@ -791,22 +923,28 @@ async function testChangeSection() {
         title: 'Section',
         name: {
           label: 'Name',
-          value: null,
+          value: 'TEST_SECTION_2',
           enabled: true,
           mode: 'edit'
         }
       }
+    },
+    buttons: {
+      message: null
     }
   })
 
-  form.getParameters().getSection().getName().change('Test Name')
+  form.getParameters().getSection().getName().change('NEW_NAME')
   await form.update()
 
   form.expectJSON({
     preview: {
       sections: [
         {
-          name: 'Test Name'
+          name: 'TEST_SECTION_1'
+        },
+        {
+          name: 'NEW_NAME'
         }
       ]
     },
@@ -815,32 +953,48 @@ async function testChangeSection() {
         title: 'Section',
         name: {
           label: 'Name',
-          value: 'Test Name',
+          value: 'NEW_NAME',
           enabled: true,
           mode: 'edit'
         }
+      }
+    },
+    buttons: {
+      message: {
+        text: 'You have unsaved changes.',
+        type: 'warning'
       }
     }
   })
 }
 
 async function testRemoveProperty() {
-  const form = await mountForm({
-    type: objectTypes.NEW_OBJECT_TYPE
-  })
+  const form = await mountFormExisting()
 
-  form.getButtons().getAddSection().click()
-  form.getButtons().getAddProperty().click()
+  form.getButtons().getEdit().click()
+  await form.update()
+
+  form.getPreview().getSections()[1].getProperties()[0].click()
   await form.update()
 
   form.expectJSON({
     preview: {
       sections: [
         {
-          name: null,
-          properties: [{ code: 'empty' }]
+          name: 'TEST_SECTION_1',
+          properties: [{ code: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode() }]
+        },
+        {
+          name: 'TEST_SECTION_2',
+          properties: [
+            { code: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode() },
+            { code: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode() }
+          ]
         }
       ]
+    },
+    buttons: {
+      message: null
     }
   })
 
@@ -851,30 +1005,46 @@ async function testRemoveProperty() {
     preview: {
       sections: [
         {
-          name: null,
-          properties: []
+          name: 'TEST_SECTION_1',
+          properties: [{ code: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode() }]
+        },
+        {
+          name: 'TEST_SECTION_2',
+          properties: [{ code: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode() }]
         }
       ]
+    },
+    buttons: {
+      message: {
+        text: 'You have unsaved changes.',
+        type: 'warning'
+      }
     }
   })
 }
 
 async function testRemoveSection() {
-  const form = await mountForm({
-    type: objectTypes.NEW_OBJECT_TYPE
-  })
+  const form = await mountFormExisting()
 
-  form.getButtons().getAddSection().click()
+  form.getButtons().getEdit().click()
+  await form.update()
+
+  form.getPreview().getSections()[0].click()
   await form.update()
 
   form.expectJSON({
     preview: {
       sections: [
         {
-          name: null,
-          properties: []
+          name: 'TEST_SECTION_1'
+        },
+        {
+          name: 'TEST_SECTION_2'
         }
       ]
+    },
+    buttons: {
+      message: null
     }
   })
 
@@ -883,7 +1053,17 @@ async function testRemoveSection() {
 
   form.expectJSON({
     preview: {
-      sections: []
+      sections: [
+        {
+          name: 'TEST_SECTION_2'
+        }
+      ]
+    },
+    buttons: {
+      message: {
+        text: 'You have unsaved changes.',
+        type: 'warning'
+      }
     }
   })
 }
@@ -913,6 +1093,9 @@ async function testValidateType() {
           error: 'Generated code prefix cannot be empty'
         }
       }
+    },
+    buttons: {
+      message: null
     }
   })
 }
@@ -953,6 +1136,12 @@ async function testValidateProperty() {
           error: null
         }
       }
+    },
+    buttons: {
+      message: {
+        text: 'You have unsaved changes.',
+        type: 'warning'
+      }
     }
   })
 }
@@ -984,6 +1173,12 @@ async function testValidateTypeAndProperty() {
           error: 'Generated code prefix cannot be empty'
         }
       }
+    },
+    buttons: {
+      message: {
+        text: 'You have unsaved changes.',
+        type: 'warning'
+      }
     }
   })
 }
@@ -999,4 +1194,22 @@ async function mountForm(object) {
 
   const form = new TypeFormWrapper(wrapper)
   return form.update().then(() => form)
+}
+
+async function mountFormNew() {
+  return await mountForm({
+    type: objectTypes.NEW_OBJECT_TYPE
+  })
+}
+
+async function mountFormExisting() {
+  facade.loadType.mockReturnValue(Promise.resolve(fixture.TEST_SAMPLE_TYPE_DTO))
+  facade.loadValidationPlugins.mockReturnValue(
+    Promise.resolve([fixture.TEST_SAMPLE_TYPE_DTO.validationPlugin])
+  )
+
+  return await mountForm({
+    id: fixture.TEST_SAMPLE_TYPE_DTO.getCode(),
+    type: objectTypes.OBJECT_TYPE
+  })
 }

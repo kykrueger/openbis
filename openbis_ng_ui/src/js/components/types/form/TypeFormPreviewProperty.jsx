@@ -243,6 +243,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
         metadata={this.getMetadata()}
         error={this.getError()}
         styles={this.getStyles()}
+        mode='edit'
         onClick={this.handlePropertyClick}
         onChange={this.handleChange}
       />
@@ -263,6 +264,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
         metadata={this.getMetadata()}
         error={this.getError()}
         styles={this.getStyles()}
+        mode='edit'
         onClick={this.handlePropertyClick}
         onChange={this.handleChange}
       />
@@ -283,6 +285,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
           metadata={this.getMetadata()}
           error={this.getError()}
           styles={this.getStyles()}
+          mode='edit'
           onClick={this.handlePropertyClick}
           onChange={this.handleChange}
         />
@@ -315,6 +318,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
         metadata={this.getMetadata()}
         error={this.getError()}
         styles={this.getStyles()}
+        mode='edit'
         onClick={this.handlePropertyClick}
         onChange={this.handleChange}
       />
@@ -345,6 +349,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
         metadata={this.getMetadata()}
         error={this.getError()}
         styles={this.getStyles()}
+        mode='edit'
         onClick={this.handlePropertyClick}
         onChange={this.handleChange}
       />

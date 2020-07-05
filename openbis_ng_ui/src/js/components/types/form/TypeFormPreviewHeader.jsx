@@ -72,6 +72,7 @@ class TypeFormPreviewHeader extends React.PureComponent {
           label='Code'
           value={value}
           disabled={disabled}
+          mode='edit'
           onChange={this.handleChange}
         />
       </div>
@@ -88,6 +89,7 @@ class TypeFormPreviewHeader extends React.PureComponent {
             name='parents'
             label='Parents'
             value={this.state.values.parents}
+            mode='edit'
             onChange={this.handleChange}
           />
         </div>
@@ -107,6 +109,7 @@ class TypeFormPreviewHeader extends React.PureComponent {
             name='container'
             label='Container'
             value={this.state.values.container}
+            mode='edit'
             onChange={this.handleChange}
           />
         </div>

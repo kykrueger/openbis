@@ -1,4 +1,5 @@
 import ButtonWrapper from '@srcTest/js/common/wrapper/ButtonWrapper.js'
+import MessageWrapper from '@srcTest/js/common/wrapper/MessageWrapper.js'
 
 export default class TypeFormButtonsWrapper {
   constructor(wrapper) {
@@ -29,6 +30,10 @@ export default class TypeFormButtonsWrapper {
     return new ButtonWrapper(this.wrapper.find('button[name="cancel"]'))
   }
 
+  getMessage() {
+    return new MessageWrapper(this.wrapper.find('Message'))
+  }
+
   toJSON() {
     return {
       edit: this.getEdit().toJSON(),
@@ -36,7 +41,8 @@ export default class TypeFormButtonsWrapper {
       addProperty: this.getAddProperty().toJSON(),
       remove: this.getRemove().toJSON(),
       save: this.getSave().toJSON(),
-      cancel: this.getCancel().toJSON()
+      cancel: this.getCancel().toJSON(),
+      message: this.getMessage().toJSON()
     }
   }
 }
