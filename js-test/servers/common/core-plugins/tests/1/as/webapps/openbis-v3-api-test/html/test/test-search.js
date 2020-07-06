@@ -846,6 +846,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			var fSearch = function(facade) {
 				var criteria = new c.SampleSearchCriteria();
 				criteria.withCode().thatIsGreaterThan("TEST-SAMPLE-2-CHILD-2");
+				criteria.withCode().thatIsLessThan("V");
 				return facade.searchSamples(criteria, c.createSampleFetchOptions());
 			}
 			
@@ -864,6 +865,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			var fSearch = function(facade) {
 				var criteria = new c.SampleSearchCriteria();
 				criteria.withCode().thatIsGreaterThanOrEqualTo("TEST-SAMPLE-2-CHILD-2");
+				criteria.withCode().thatIsLessThan("V");
 				return facade.searchSamples(criteria, c.createSampleFetchOptions());
 			}
 			
