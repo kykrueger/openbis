@@ -1339,6 +1339,15 @@ define([ 'jquery', 'openbis', 'underscore', 'test/dtos' ], function($, defaultOp
 			return fo;
 		};
 
+		this.extractIdentifiers = function(entities) {
+			identifiers = []
+			entities.forEach(function(entity) {
+				identifiers.push(entity.getIdentifier());
+			});
+			identifiers.sort();
+			return identifiers;
+		}
+
 		this.assertNull = function(actual, msg) {
 			this.assertEqual(actual, null, msg)
 		};
