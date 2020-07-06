@@ -62,7 +62,7 @@ public class CreateSamplesImportTest extends ObjectsImportTest
                 parameters.put(PARAM_USER_EMAIL, TEST_EMAIL);
             }
 
-            long timestamp = System.currentTimeMillis();
+            long timestamp = getTimestampAndWaitASecond();
             String message = executeImport(sessionToken, "createSamples", parameters);
 
             sample = getObject(sessionToken, sampleIdentifier, timestamp, DEFAULT_TIMEOUT);
