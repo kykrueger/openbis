@@ -14,7 +14,7 @@ export default class FieldWrapper extends BaseWrapper {
   }
 
   getEnabled() {
-    return this.getBooleanValue(this.wrapper.prop('disabled'))
+    return !this.getBooleanValue(this.wrapper.prop('disabled'))
   }
 
   getMode() {

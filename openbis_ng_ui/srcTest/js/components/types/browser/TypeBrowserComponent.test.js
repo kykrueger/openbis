@@ -3,24 +3,22 @@ import { Provider } from 'react-redux'
 import { mount } from 'enzyme'
 import { createStore } from '@src/js/store/store.js'
 import ThemeProvider from '@src/js/components/common/theme/ThemeProvider.jsx'
-import BrowserTest from '@srcTest/js/components/common/browser/BrowserTest.js'
+import BrowserWrapper from '@srcTest/js/components/common/browser/wrapper/BrowserWrapper.js'
 import TypeBrowser from '@src/js/components/types/browser/TypeBrowser.jsx'
-import TypeBrowserController from '@src/js/components/types/browser/TypeBrowserController.js'
 import openbis from '@srcTest/js/services/openbis.js'
 import actions from '@src/js/store/actions/actions.js'
 import fixture from '@srcTest/js/common/fixture.js'
 
 let store = null
-let controller = null
 
 beforeEach(() => {
   jest.resetAllMocks()
   store = createStore()
-  controller = new TypeBrowserController()
+  store.dispatch(actions.init())
 })
 
 describe('browser', () => {
-  test('test', done => {
+  test('test', async () => {
     openbis.mockSearchSampleTypes([
       fixture.TEST_SAMPLE_TYPE_DTO,
       fixture.ANOTHER_SAMPLE_TYPE_DTO
@@ -34,52 +32,64 @@ describe('browser', () => {
       fixture.ANOTHER_MATERIAL_TYPE_DTO
     ])
 
-    store.dispatch(actions.init())
+    const browser = await mountBrowser()
+    await browser.update()
 
-    let wrapper = mount(
-      <Provider store={store}>
-        <ThemeProvider>
-          <TypeBrowser controller={controller} />
-        </ThemeProvider>
-      </Provider>
-    )
-
-    setTimeout(() => {
-      wrapper.update()
-
-      BrowserTest.expectFilter(wrapper, '')
-      BrowserTest.expectNodes(wrapper, [
+    browser.expectJSON({
+      filter: {
+        value: null
+      },
+      nodes: [
         { level: 0, text: 'Object Types' },
         { level: 0, text: 'Collection Types' },
         { level: 0, text: 'Data Set Types' },
         { level: 0, text: 'Material Types' }
-      ])
+      ]
+    })
 
-      BrowserTest.simulateNodeIconClick(wrapper, 'objectTypes')
-      wrapper.update()
+    browser.getNodes()[0].getIcon().click()
+    await browser.update()
 
-      BrowserTest.expectFilter(wrapper, '')
-      BrowserTest.expectNodes(wrapper, [
+    browser.expectJSON({
+      filter: {
+        value: null
+      },
+      nodes: [
         { level: 0, text: 'Object Types' },
         { level: 1, text: fixture.ANOTHER_SAMPLE_TYPE_DTO.code },
         { level: 1, text: fixture.TEST_SAMPLE_TYPE_DTO.code },
         { level: 0, text: 'Collection Types' },
         { level: 0, text: 'Data Set Types' },
         { level: 0, text: 'Material Types' }
-      ])
+      ]
+    })
 
-      BrowserTest.simulateFilterChange(wrapper, 'ANOTHER')
-      wrapper.update()
+    browser.getFilter().change('ANOTHER')
+    await browser.update()
 
-      BrowserTest.expectFilter(wrapper, 'ANOTHER')
-      BrowserTest.expectNodes(wrapper, [
+    browser.expectJSON({
+      filter: {
+        value: 'ANOTHER'
+      },
+      nodes: [
         { level: 0, text: 'Object Types' },
         { level: 1, text: fixture.ANOTHER_SAMPLE_TYPE_DTO.code },
         { level: 0, text: 'Material Types' },
         { level: 1, text: fixture.ANOTHER_MATERIAL_TYPE_DTO.code }
-      ])
-
-      done()
+      ]
     })
   })
 })
+
+async function mountBrowser() {
+  const wrapper = mount(
+    <Provider store={store}>
+      <ThemeProvider>
+        <TypeBrowser />
+      </ThemeProvider>
+    </Provider>
+  )
+
+  const browser = new BrowserWrapper(wrapper)
+  return browser.update().then(() => browser)
+}

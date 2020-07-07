@@ -11,8 +11,25 @@ export default class BaseWrapper {
     }
   }
 
+  getNumberValue(value) {
+    if (value === null || value === undefined || value === '') {
+      return null
+    } else {
+      let number = Number(value)
+      if (Number.isNaN(number)) {
+        return null
+      } else {
+        return number
+      }
+    }
+  }
+
   getBooleanValue(value) {
-    return value === undefined || value === null || value === false
+    if (value === null || value === undefined || value === '') {
+      return null
+    } else {
+      return value === true
+    }
   }
 
   async update() {

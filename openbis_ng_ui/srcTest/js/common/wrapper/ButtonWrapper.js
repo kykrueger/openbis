@@ -6,7 +6,7 @@ export default class ButtonWrapper extends BaseWrapper {
   }
 
   getEnabled() {
-    return this.getBooleanValue(this.wrapper.prop('disabled'))
+    return !this.getBooleanValue(this.wrapper.prop('disabled'))
   }
 
   click() {
