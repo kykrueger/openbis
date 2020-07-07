@@ -31,6 +31,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IObjectUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IdListUpdateValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.ListUpdateValue.ListUpdateAction;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.RelationshipUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.IExperimentId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.IProjectId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
@@ -90,6 +91,9 @@ public class SampleUpdate implements IUpdate, IPropertiesHolder, IObjectUpdate<I
 
     @JsonProperty
     private IdListUpdateValue<ISampleId> childIds = new IdListUpdateValue<ISampleId>();
+
+    @JsonProperty
+    private Map<ISampleId, RelationshipUpdate> relationships = new HashMap<>();
 
     @JsonProperty
     private AttachmentListUpdateValue attachments = new AttachmentListUpdateValue();
@@ -281,6 +285,30 @@ public class SampleUpdate implements IUpdate, IPropertiesHolder, IObjectUpdate<I
     public void setParentActions(List<ListUpdateAction<ISampleId>> actions)
     {
         parentIds.setActions(actions);
+    }
+
+    @JsonIgnore
+    public Map<ISampleId, RelationshipUpdate> getRelationships()
+    {
+        return relationships;
+    }
+
+    @JsonIgnore
+    public RelationshipUpdate relationship(ISampleId sampleId)
+    {
+        RelationshipUpdate relationshipUpdate = relationships.get(sampleId);
+        if (relationshipUpdate == null)
+        {
+            relationshipUpdate = new RelationshipUpdate();
+            relationships.put(sampleId, relationshipUpdate);
+        }
+        return relationshipUpdate;
+    }
+
+    @JsonIgnore
+    public void setRelationships(Map<ISampleId, RelationshipUpdate> relationships)
+    {
+        this.relationships = relationships;
     }
 
     @JsonIgnore

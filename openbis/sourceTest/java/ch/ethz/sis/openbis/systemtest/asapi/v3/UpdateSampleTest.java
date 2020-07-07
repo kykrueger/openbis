@@ -20,12 +20,14 @@ import static ch.systemsx.cisd.common.test.AssertionUtil.assertCollectionContain
 import static ch.systemsx.cisd.common.test.AssertionUtil.assertCollectionSize;
 import static org.testng.Assert.assertEquals;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -33,6 +35,7 @@ import org.testng.annotations.Test;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.attachment.Attachment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.attachment.create.AttachmentCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.attachment.id.AttachmentFileName;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.Relationship;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.CreationId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetKind;
@@ -1300,6 +1303,69 @@ public class UpdateSampleTest extends AbstractSampleTest
 
         assertSampleIdentifier(parent3, "/CISD/TEST_PARENT_3");
         assertCollectionContainsOnly(parent3.getChildren(), child2);
+    }
+
+    @Test
+    public void testUpdateParentAnnotations()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        SampleCreation parent1Creation = masterPlateCreation("CISD", "TEST_PARENT_1");
+        SampleCreation parent2Creation = masterPlateCreation("CISD", "TEST_PARENT_2");
+        SampleCreation parent3Creation = masterPlateCreation("CISD", "TEST_PARENT_3");
+        CreationId creationId1 = new CreationId("PARENT_1");
+        parent1Creation.setCreationId(creationId1);
+        CreationId creationId2 = new CreationId("PARENT_2");
+        parent2Creation.setCreationId(creationId2);
+        CreationId creationId3 = new CreationId("PARENT_3");
+        parent3Creation.setCreationId(creationId3);
+
+        SampleCreation childCreation = masterPlateCreation("CISD", "TEST_CHILD");
+        childCreation.setParentIds(Arrays.asList(creationId1, creationId2, creationId3));
+        childCreation.relationship(creationId1)
+                .addParentAnnotation("type", "father").addChildAnnotation("type", "daughter");
+        childCreation.relationship(creationId2).addChildAnnotation("color", "red");
+
+        List<SamplePermId> ids = v3api.createSamples(sessionToken, Arrays.asList(childCreation, parent1Creation,
+                parent2Creation, parent3Creation));
+
+        SamplePermId childId = ids.get(0);
+        SamplePermId parent1Id = ids.get(1);
+        SamplePermId parent2Id = ids.get(2);
+        SamplePermId parent3Id = ids.get(3);
+
+        SampleUpdate updateChild = new SampleUpdate();
+        updateChild.setSampleId(childId);
+//        updateChild.getChildIds().add(new SamplePermId("blabla"));
+//        updateChild.getChildIds().remove(new SamplePermId("blabla"));
+        updateChild.relationship(parent1Id).addChildAnnotation("name", "beta").removeParentAnnotation("type");
+        updateChild.relationship(parent2Id).removeParentAnnotation("color");
+        updateChild.relationship(parent3Id).setRelationship(new Relationship().addParentAnnotation("name", "alpha"));
+
+        // When
+        v3api.updateSamples(sessionToken, Arrays.asList(updateChild));
+
+        // Then
+        SampleFetchOptions fetchOptions = new SampleFetchOptions();
+        fetchOptions.withParents();
+        fetchOptions.withChildren();
+        Sample childSample = v3api.getSamples(sessionToken, Arrays.asList(childId), fetchOptions).get(childId);
+        Relationship childParent1Relationship = childSample.getParentRelationship(parent1Id);
+        assertAnnotations("[type=daughter]", childParent1Relationship.getChildAnnotations());
+        assertAnnotations("[type=father]", childParent1Relationship.getParentAnnotations());
+        Sample parent1Sample = v3api.getSamples(sessionToken, Arrays.asList(parent1Id), fetchOptions).get(parent1Id);
+        Relationship parent1ChildRelationship = parent1Sample.getChildRelationship(childId);
+        assertAnnotations("[type=daughter]", parent1ChildRelationship.getChildAnnotations());
+        assertAnnotations("[type=father]", parent1ChildRelationship.getParentAnnotations());
+        
+    }
+
+    private void assertAnnotations(String expectedAnnotations, Map<String, String> annotations)
+    {
+        List<String> keyValuePairs = annotations.entrySet().stream()
+                .map(e -> e.getKey() + "=" + e.getValue()).collect(Collectors.toList());
+        Collections.sort(keyValuePairs);
+        assertEquals(keyValuePairs.toString(), expectedAnnotations);
     }
 
     @Test

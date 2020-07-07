@@ -17,6 +17,7 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.translator.sample;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
@@ -24,12 +25,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.attachment.Attachment;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.Relationship;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.Tag;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.CommonUtils;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sample.SampleUtils;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.AbstractCachingTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.TranslationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.TranslationResults;
@@ -169,6 +173,7 @@ public class SampleTranslator extends AbstractCachingTranslator<Long, Sample, Sa
         if (fetchOptions.hasParents())
         {
             relations.put(ISampleParentTranslator.class, parentTranslator.translate(context, sampleIds, fetchOptions.withParents()));
+            // TODO
         }
 
         if (fetchOptions.hasChildren())
@@ -277,19 +282,41 @@ public class SampleTranslator extends AbstractCachingTranslator<Long, Sample, Sa
 
         if (fetchOptions.hasComponents())
         {
-            result.setComponents((List<Sample>) relations.get(ISampleComponentsTranslator.class, sampleId));
+            result.setComponents(SampleUtils.extractSamples(relations.get(ISampleComponentsTranslator.class, sampleId)));
             result.getFetchOptions().withComponentsUsing(fetchOptions.withComponents());
         }
 
         if (fetchOptions.hasParents())
         {
-            result.setParents((List<Sample>) relations.get(ISampleParentTranslator.class, sampleId));
+            Collection<SampleWithAnnotations> samples = relations.get(ISampleParentTranslator.class, sampleId);
+            result.setParents(SampleUtils.extractSamples(samples));
+            HashMap<SamplePermId, Relationship> relationships = new HashMap<>();
+            for (SampleWithAnnotations sampleWithAnnotations : samples)
+            {
+                SamplePermId samplePermId = sampleWithAnnotations.getSample().getPermId();
+                Relationship relationship = new Relationship();
+                relationship.setChildAnnotations(CommonUtils.asMap(sampleWithAnnotations.getAnnotations()));
+                relationship.setParentAnnotations(CommonUtils.asMap(sampleWithAnnotations.getRelatedAnnotations()));
+                relationships.put(samplePermId, relationship);
+            }
+            result.setParentsRelationships(relationships);
             result.getFetchOptions().withParentsUsing(fetchOptions.withParents());
         }
 
         if (fetchOptions.hasChildren())
         {
-            result.setChildren((List<Sample>) relations.get(ISampleChildTranslator.class, sampleId));
+            Collection<SampleWithAnnotations> samples = relations.get(ISampleChildTranslator.class, sampleId);
+            result.setChildren(SampleUtils.extractSamples(samples));
+            HashMap<SamplePermId, Relationship> relationships = new HashMap<>();
+            for (SampleWithAnnotations sampleWithAnnotations : samples)
+            {
+                SamplePermId samplePermId = sampleWithAnnotations.getSample().getPermId();
+                Relationship relationship = new Relationship();
+                relationship.setParentAnnotations(CommonUtils.asMap(sampleWithAnnotations.getAnnotations()));
+                relationship.setChildAnnotations(CommonUtils.asMap(sampleWithAnnotations.getRelatedAnnotations()));
+                relationships.put(samplePermId, relationship);
+            }
+            result.setChildrenRelationships(relationships);
             result.getFetchOptions().withChildrenUsing(fetchOptions.withChildren());
         }
 
