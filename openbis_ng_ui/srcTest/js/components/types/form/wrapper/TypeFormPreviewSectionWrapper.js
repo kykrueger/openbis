@@ -1,3 +1,6 @@
+import Typography from '@material-ui/core/Typography'
+import TypeFormPreviewProperty from '@src/js/components/types/form/TypeFormPreviewProperty.jsx'
+
 import TypeFormPreviewPropertyWrapper from './TypeFormPreviewPropertyWrapper.js'
 
 export default class TypeFormPreviewSectionWrapper {
@@ -6,12 +9,12 @@ export default class TypeFormPreviewSectionWrapper {
   }
 
   getName() {
-    return this.wrapper.find('p[data-part="name"]')
+    return this.wrapper.find(Typography).filter({ 'data-part': 'name' })
   }
 
   getProperties() {
     const properties = []
-    this.wrapper.find('TypeFormPreviewProperty').forEach(propertyWrapper => {
+    this.wrapper.find(TypeFormPreviewProperty).forEach(propertyWrapper => {
       properties.push(new TypeFormPreviewPropertyWrapper(propertyWrapper))
     })
     return properties

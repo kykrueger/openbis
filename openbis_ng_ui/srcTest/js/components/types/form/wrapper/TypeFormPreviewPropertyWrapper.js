@@ -4,15 +4,15 @@ export default class TypeFormPreviewPropertyWrapper {
   }
 
   getCode() {
-    return this.wrapper.find('span[data-part="code"]')
+    return this.wrapper.find({ 'data-part': 'code' })
   }
 
   getLabel() {
-    return this.wrapper.find('span[data-part="label"]')
+    return this.wrapper.find({ 'data-part': 'label' })
   }
 
   getDataType() {
-    return this.wrapper.find('span[data-part="dataType"]')
+    return this.wrapper.find({ 'data-part': 'dataType' })
   }
 
   click() {

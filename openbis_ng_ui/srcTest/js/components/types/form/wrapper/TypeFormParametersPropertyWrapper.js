@@ -1,3 +1,8 @@
+import AutocompleterField from '@src/js/components/common/form/AutocompleterField.jsx'
+import SelectField from '@src/js/components/common/form/SelectField.jsx'
+import TextField from '@src/js/components/common/form/TextField.jsx'
+import Message from '@src/js/components/common/form/Message.jsx'
+
 import TextFieldWrapper from '@srcTest/js/common/wrapper/TextFieldWrapper.js'
 import SelectFieldWrapper from '@srcTest/js/common/wrapper/SelectFieldWrapper.js'
 import AutocompleterFieldWrapper from '@srcTest/js/common/wrapper/AutocompleterFieldWrapper.js'
@@ -11,7 +16,7 @@ export default class TypeFormParametersPropertyWrapper extends TypeFormParameter
 
   getMessages() {
     const messages = []
-    this.wrapper.find('Message').forEach(message => {
+    this.wrapper.find(Message).forEach(message => {
       messages.push(new MessageWrapper(message))
     })
     return messages
@@ -19,69 +24,75 @@ export default class TypeFormParametersPropertyWrapper extends TypeFormParameter
 
   getScope() {
     return new SelectFieldWrapper(
-      this.wrapper.find('SelectFormField[name="scope"]')
+      this.wrapper.find(SelectField).filter({ name: 'scope' })
     )
   }
 
   getCode() {
-    const textFieldWrapper = this.wrapper.find('TextFormField[name="code"]')
+    const textFieldWrapper = this.wrapper
+      .find(TextField)
+      .filter({ name: 'code' })
+
     if (textFieldWrapper.exists()) {
       return new TextFieldWrapper(textFieldWrapper)
     }
-    const autocompleterFieldWrapper = this.wrapper.find(
-      'AutocompleterFormField[name="code"]'
-    )
+
+    const autocompleterFieldWrapper = this.wrapper
+      .find(AutocompleterField)
+      .filter({ name: 'code' })
+
     if (autocompleterFieldWrapper.exists()) {
       return new AutocompleterFieldWrapper(autocompleterFieldWrapper)
     }
+
     return null
   }
 
   getDataType() {
     return new SelectFieldWrapper(
-      this.wrapper.find('SelectFormField[name="dataType"]')
+      this.wrapper.find(SelectField).filter({ name: 'dataType' })
     )
   }
 
   getLabel() {
     return new TextFieldWrapper(
-      this.wrapper.find('TextFormField[name="label"]')
+      this.wrapper.find(TextField).filter({ name: 'label' })
     )
   }
 
   getDescription() {
     return new TextFieldWrapper(
-      this.wrapper.find('TextFormField[name="description"]')
+      this.wrapper.find(TextField).filter({ name: 'description' })
     )
   }
 
   getPlugin() {
     return new SelectFieldWrapper(
-      this.wrapper.find('SelectFormField[name="plugin"]')
+      this.wrapper.find(SelectField).filter({ name: 'plugin' })
     )
   }
 
   getVocabulary() {
     return new SelectFieldWrapper(
-      this.wrapper.find('SelectFormField[name="vocabulary"]')
+      this.wrapper.find(SelectField).filter({ name: 'vocabulary' })
     )
   }
 
   getMaterialType() {
     return new SelectFieldWrapper(
-      this.wrapper.find('SelectFormField[name="materialType"]')
+      this.wrapper.find(SelectField).filter({ name: 'materialType' })
     )
   }
 
   getSchema() {
     return new TextFieldWrapper(
-      this.wrapper.find('TextFormField[name="schema"]')
+      this.wrapper.find(TextField).filter({ name: 'schema' })
     )
   }
 
   getTransformation() {
     return new TextFieldWrapper(
-      this.wrapper.find('TextFormField[name="transformation"]')
+      this.wrapper.find(TextField).filter({ name: 'transformation' })
     )
   }
 

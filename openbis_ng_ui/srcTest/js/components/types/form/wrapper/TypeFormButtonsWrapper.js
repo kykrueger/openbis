@@ -1,3 +1,6 @@
+import Button from '@src/js/components/common/form/Button.jsx'
+import Message from '@src/js/components/common/form/Message.jsx'
+
 import ButtonWrapper from '@srcTest/js/common/wrapper/ButtonWrapper.js'
 import MessageWrapper from '@srcTest/js/common/wrapper/MessageWrapper.js'
 
@@ -7,31 +10,39 @@ export default class TypeFormButtonsWrapper {
   }
 
   getEdit() {
-    return new ButtonWrapper(this.wrapper.find('button[name="edit"]'))
+    return new ButtonWrapper(this.wrapper.find(Button).filter({ name: 'edit' }))
   }
 
   getAddSection() {
-    return new ButtonWrapper(this.wrapper.find('button[name="addSection"]'))
+    return new ButtonWrapper(
+      this.wrapper.find(Button).filter({ name: 'addSection' })
+    )
   }
 
   getAddProperty() {
-    return new ButtonWrapper(this.wrapper.find('button[name="addProperty"]'))
+    return new ButtonWrapper(
+      this.wrapper.find(Button).filter({ name: 'addProperty' })
+    )
   }
 
   getRemove() {
-    return new ButtonWrapper(this.wrapper.find('button[name="remove"]'))
+    return new ButtonWrapper(
+      this.wrapper.find(Button).filter({ name: 'remove' })
+    )
   }
 
   getSave() {
-    return new ButtonWrapper(this.wrapper.find('button[name="save"]'))
+    return new ButtonWrapper(this.wrapper.find(Button).filter({ name: 'save' }))
   }
 
   getCancel() {
-    return new ButtonWrapper(this.wrapper.find('button[name="cancel"]'))
+    return new ButtonWrapper(
+      this.wrapper.find(Button).filter({ name: 'cancel' })
+    )
   }
 
   getMessage() {
-    return new MessageWrapper(this.wrapper.find('Message'))
+    return new MessageWrapper(this.wrapper.find(Message))
   }
 
   toJSON() {

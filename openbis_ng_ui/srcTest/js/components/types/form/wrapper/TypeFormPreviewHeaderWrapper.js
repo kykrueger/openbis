@@ -1,3 +1,6 @@
+import TextField from '@src/js/components/common/form/TextField.jsx'
+import TypeFormHeader from '@src/js/components/types/form/TypeFormHeader.jsx'
+
 import TextFieldWrapper from '@srcTest/js/common/wrapper/TextFieldWrapper.js'
 
 export default class TypeFormPreviewHeaderWrapper {
@@ -6,22 +9,24 @@ export default class TypeFormPreviewHeaderWrapper {
   }
 
   getTitle() {
-    return this.wrapper.find('TypeFormHeader')
+    return this.wrapper.find(TypeFormHeader)
   }
 
   getCode() {
-    return new TextFieldWrapper(this.wrapper.find('TextFormField[name="code"]'))
+    return new TextFieldWrapper(
+      this.wrapper.find(TextField).filter({ name: 'code' })
+    )
   }
 
   getParents() {
     return new TextFieldWrapper(
-      this.wrapper.find('TextFormField[name="parents"]')
+      this.wrapper.find(TextField).filter({ name: 'parents' })
     )
   }
 
   getContainer() {
     return new TextFieldWrapper(
-      this.wrapper.find('TextFormField[name="container"]')
+      this.wrapper.find(TextField).filter({ name: 'container' })
     )
   }
 

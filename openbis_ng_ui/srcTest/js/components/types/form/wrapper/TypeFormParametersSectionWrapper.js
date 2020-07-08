@@ -1,3 +1,5 @@
+import TextField from '@src/js/components/common/form/TextField.jsx'
+
 import TextFieldWrapper from '@srcTest/js/common/wrapper/TextFieldWrapper.js'
 import TypeFormParametersCommonWrapper from './TypeFormParametersCommonWrapper.js'
 
@@ -7,7 +9,9 @@ export default class TypeFormParametersSectionWrapper extends TypeFormParameters
   }
 
   getName() {
-    return new TextFieldWrapper(this.wrapper.find('TextFormField[name="name"]'))
+    return new TextFieldWrapper(
+      this.wrapper.find(TextField).filter({ name: 'name' })
+    )
   }
 
   toJSON() {
