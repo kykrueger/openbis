@@ -77,4 +77,11 @@ public class Relationship implements Serializable
         parentAnnotations.put(key, value);
         return this;
     }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("parent annotations", parentAnnotations)
+                .append("child annotations", childAnnotations).toString();
+    }
 }

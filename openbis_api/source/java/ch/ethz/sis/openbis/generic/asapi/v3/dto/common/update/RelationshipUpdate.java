@@ -22,6 +22,7 @@ import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.Relationship;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
@@ -95,5 +96,13 @@ public class RelationshipUpdate implements Serializable
     public void setParentAnnotationsToBeRemoved(Set<String> parentAnnotationsToBeRemoved)
     {
         this.parentAnnotationsToBeRemoved = parentAnnotationsToBeRemoved;
+    }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("relationship", relationship)
+                .append("parent annotations to be removed", parentAnnotationsToBeRemoved)
+                .append("child annotations to be removed", childAnnotationsToBeRemoved).toString();
     }
 }
