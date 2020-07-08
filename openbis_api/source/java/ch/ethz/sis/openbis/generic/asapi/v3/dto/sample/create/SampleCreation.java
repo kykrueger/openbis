@@ -70,7 +70,7 @@ public class SampleCreation implements ICreation, ICreationIdHolder, IProperties
 
     private List<? extends ISampleId> childIds;
 
-    private Map<ISampleId, Relationship> relationships = new HashMap<>();
+    private Map<? extends ISampleId, Relationship> relationships = new HashMap<>();
 
     private List<AttachmentCreation> attachments;
 
@@ -176,6 +176,7 @@ public class SampleCreation implements ICreation, ICreationIdHolder, IProperties
         this.parentIds = parentIds;
     }
 
+    @SuppressWarnings("unchecked")
     @JsonIgnore
     public Relationship relationship(ISampleId sampleId)
     {
@@ -183,17 +184,17 @@ public class SampleCreation implements ICreation, ICreationIdHolder, IProperties
         if (relationship == null)
         {
             relationship = new Relationship();
-            relationships.put(sampleId, relationship);
+            ((Map<ISampleId, Relationship>) relationships).put(sampleId, relationship);
         }
         return relationship;
     }
 
-    public Map<ISampleId, Relationship> getRelationships()
+    public Map<? extends ISampleId, Relationship> getRelationships()
     {
         return relationships;
     }
 
-    public void setRelationships(Map<ISampleId, Relationship> relationships)
+    public void setRelationships(Map<? extends ISampleId, Relationship> relationships)
     {
         this.relationships = relationships;
     }

@@ -20,14 +20,12 @@ import static ch.systemsx.cisd.common.test.AssertionUtil.assertCollectionContain
 import static ch.systemsx.cisd.common.test.AssertionUtil.assertCollectionSize;
 import static org.testng.Assert.assertEquals;
 
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -1324,7 +1322,9 @@ public class UpdateSampleTest extends AbstractSampleTest
         childCreation.setParentIds(Arrays.asList(creationId1, creationId2, creationId3));
         childCreation.relationship(creationId1)
                 .addParentAnnotation("type", "father").addChildAnnotation("type", "daughter");
-        childCreation.relationship(creationId2).addChildAnnotation("color", "red");
+        childCreation.relationship(creationId2).addParentAnnotation("color", "red");
+        childCreation.relationship(creationId3)
+                .addParentAnnotation("type", "mother").addChildAnnotation("type", "daughter");
 
         List<SamplePermId> ids = v3api.createSamples(sessionToken, Arrays.asList(childCreation, parent1Creation,
                 parent2Creation, parent3Creation));
@@ -1333,39 +1333,71 @@ public class UpdateSampleTest extends AbstractSampleTest
         SamplePermId parent1Id = ids.get(1);
         SamplePermId parent2Id = ids.get(2);
         SamplePermId parent3Id = ids.get(3);
+        assertAnnotations(sessionToken, "[type=father]", "[type=daughter]", parent1Id, childId);
+        assertAnnotations(sessionToken, "[color=red]", "[]", parent2Id, childId);
+        assertAnnotations(sessionToken, "[type=mother]", "[type=daughter]", parent3Id, childId);
 
         SampleUpdate updateChild = new SampleUpdate();
         updateChild.setSampleId(childId);
-//        updateChild.getChildIds().add(new SamplePermId("blabla"));
-//        updateChild.getChildIds().remove(new SamplePermId("blabla"));
-        updateChild.relationship(parent1Id).addChildAnnotation("name", "beta").removeParentAnnotation("type");
-        updateChild.relationship(parent2Id).removeParentAnnotation("color");
+        SamplePermId parent4Id = new SamplePermId("200811050924898-997");
+        updateChild.getParentIds().add(parent4Id);
+        updateChild.relationship(parent1Id).addParentAnnotation("name", "beta").removeChildAnnotations("type");
+        updateChild.relationship(parent2Id).removeParentAnnotations("color").addChildAnnotation("type", "daughter");
         updateChild.relationship(parent3Id).setRelationship(new Relationship().addParentAnnotation("name", "alpha"));
+        updateChild.relationship(parent4Id).addChildAnnotation("type", "son");
 
         // When
         v3api.updateSamples(sessionToken, Arrays.asList(updateChild));
 
         // Then
-        SampleFetchOptions fetchOptions = new SampleFetchOptions();
-        fetchOptions.withParents();
-        fetchOptions.withChildren();
-        Sample childSample = v3api.getSamples(sessionToken, Arrays.asList(childId), fetchOptions).get(childId);
-        Relationship childParent1Relationship = childSample.getParentRelationship(parent1Id);
-        assertAnnotations("[type=daughter]", childParent1Relationship.getChildAnnotations());
-        assertAnnotations("[type=father]", childParent1Relationship.getParentAnnotations());
-        Sample parent1Sample = v3api.getSamples(sessionToken, Arrays.asList(parent1Id), fetchOptions).get(parent1Id);
-        Relationship parent1ChildRelationship = parent1Sample.getChildRelationship(childId);
-        assertAnnotations("[type=daughter]", parent1ChildRelationship.getChildAnnotations());
-        assertAnnotations("[type=father]", parent1ChildRelationship.getParentAnnotations());
-        
+        assertAnnotations(sessionToken, "[name=beta, type=father]", "[]", parent1Id, childId);
+        assertAnnotations(sessionToken, "[]", "[type=daughter]", parent2Id, childId);
+        assertAnnotations(sessionToken, "[name=alpha]", "[]", parent3Id, childId);
+        assertAnnotations(sessionToken, "[]", "[type=son]", parent4Id, childId);
     }
 
-    private void assertAnnotations(String expectedAnnotations, Map<String, String> annotations)
+    @Test
+    public void testUpdateChildAnnotations()
     {
-        List<String> keyValuePairs = annotations.entrySet().stream()
-                .map(e -> e.getKey() + "=" + e.getValue()).collect(Collectors.toList());
-        Collections.sort(keyValuePairs);
-        assertEquals(keyValuePairs.toString(), expectedAnnotations);
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        SampleCreation child1Creation = masterPlateCreation("CISD", "TEST_CHILD_1");
+        SampleCreation child2Creation = masterPlateCreation("CISD", "TEST_CHILD_2");
+        CreationId creationId1 = new CreationId("CHILD_1");
+        child1Creation.setCreationId(creationId1);
+        CreationId creationId2 = new CreationId("CHILD_2");
+        child2Creation.setCreationId(creationId2);
+
+        SampleCreation parentCreation = masterPlateCreation("CISD", "TEST_PARENT");
+        parentCreation.setChildIds(Arrays.asList(creationId1, creationId2));
+        parentCreation.relationship(creationId1)
+                .addParentAnnotation("type", "father").addChildAnnotation("type", "daughter");
+        parentCreation.relationship(creationId2).addParentAnnotation("color", "red");
+
+        List<SamplePermId> ids = v3api.createSamples(sessionToken, Arrays.asList(parentCreation, child1Creation,
+                child2Creation));
+
+        SamplePermId parentId = ids.get(0);
+        SamplePermId child1Id = ids.get(1);
+        SamplePermId child2Id = ids.get(2);
+        assertAnnotations(sessionToken, "[type=father]", "[type=daughter]", parentId, child1Id);
+        assertAnnotations(sessionToken, "[color=red]", "[]", parentId, child2Id);
+
+        SampleUpdate updateParent = new SampleUpdate();
+        updateParent.setSampleId(parentId);
+        SamplePermId child3Id = new SamplePermId("200811050924898-997");
+        updateParent.getChildIds().add(child3Id);
+        updateParent.relationship(child1Id).addParentAnnotation("name", "beta").removeChildAnnotations("type");
+        updateParent.relationship(child2Id).removeParentAnnotations("color").addChildAnnotation("type", "daughter");
+        updateParent.relationship(child3Id).addChildAnnotation("type", "son");
+
+        // When
+        v3api.updateSamples(sessionToken, Arrays.asList(updateParent));
+
+        // Then
+        assertAnnotations(sessionToken, "[name=beta, type=father]", "[]", parentId, child1Id);
+        assertAnnotations(sessionToken, "[]", "[type=daughter]", parentId, child2Id);
+        assertAnnotations(sessionToken, "[]", "[type=son]", parentId, child3Id);
     }
 
     @Test

@@ -79,12 +79,12 @@ public class SetSampleChildrenExecutor extends SetSampleToSampleParentChildRelat
     @Override
     protected Map<String, String> getChildAnnotations(Relationship relationship)
     {
-        return relationship.getParentAnnotations();
+        return relationship.getChildAnnotations();
     }
 
     @Override
     protected Map<String, String> getParentAnnotations(Relationship relationship)
     {
-        return relationship.getChildAnnotations();
+        return relationship.getParentAnnotations();
     }
 }

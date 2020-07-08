@@ -131,8 +131,6 @@ public abstract class SetSampleToSampleParentChildRelationExceutor extends SetSa
                 {
                     parentAnnotations = new HashMap<>();
                 }
-                System.err.println("child:" + child.getIdentifier() + ", parent" + parent.getIdentifier()
-                + ", ca:" + childAnnotations + ", pa:" + parentAnnotations);
                 relationshipService.setSampleParentChildAnnotations(context.getSession(), child, parent,
                         childAnnotations, parentAnnotations);
             }

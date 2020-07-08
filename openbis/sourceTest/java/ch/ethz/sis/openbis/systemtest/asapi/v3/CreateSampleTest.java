@@ -605,6 +605,45 @@ public class CreateSampleTest extends AbstractSampleTest
     }
 
     @Test
+    public void testCreateParentChildWithAnnotations()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        SampleCreation parent1Creation = masterPlateCreation("CISD", "TEST_PARENT_1");
+        SampleCreation parent2Creation = masterPlateCreation("CISD", "TEST_PARENT_2");
+        SampleCreation parent3Creation = masterPlateCreation("CISD", "TEST_PARENT_3");
+        CreationId creationId1 = new CreationId("PARENT_1");
+        parent1Creation.setCreationId(creationId1);
+        CreationId creationId2 = new CreationId("PARENT_2");
+        parent2Creation.setCreationId(creationId2);
+        CreationId creationId3 = new CreationId("PARENT_3");
+        parent3Creation.setCreationId(creationId3);
+        SamplePermId parent4Id = new SamplePermId("200811050924898-997");
+
+        SampleCreation childCreation = masterPlateCreation("CISD", "TEST_CHILD");
+        childCreation.setParentIds(Arrays.asList(creationId1, creationId2, creationId3, parent4Id));
+        childCreation.relationship(creationId1)
+                .addParentAnnotation("type", "father").addChildAnnotation("type", "daughter");
+        childCreation.relationship(creationId2).addChildAnnotation("color", "red");
+        childCreation.relationship(parent4Id).addChildAnnotation("color", "green").addParentAnnotation("color", "blue")
+                .addChildAnnotation("type", "daughter");
+
+        // When
+        List<SamplePermId> ids = v3api.createSamples(sessionToken, Arrays.asList(childCreation, parent1Creation,
+                parent2Creation, parent3Creation));
+
+        // Then
+        SamplePermId childId = ids.get(0);
+        SamplePermId parent1Id = ids.get(1);
+        SamplePermId parent2Id = ids.get(2);
+        SamplePermId parent3Id = ids.get(3);
+        assertAnnotations(sessionToken, "[type=father]", "[type=daughter]", parent1Id, childId);
+        assertAnnotations(sessionToken, "[]", "[color=red]", parent2Id, childId);
+        assertAnnotations(sessionToken, "[]", "[]", parent3Id, childId);
+        assertAnnotations(sessionToken, "[color=blue]", "[color=green, type=daughter]", parent4Id, childId);
+    }
+
+    @Test
     public void testCreateWithParentChildCircularDependency()
     {
         final String sessionToken = v3api.login(TEST_USER, PASSWORD);

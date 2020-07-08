@@ -17,8 +17,6 @@
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update;
 
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -34,75 +32,69 @@ public class RelationshipUpdate implements Serializable
 {
     private static final long serialVersionUID = 1L;
 
-    private Relationship relationship = new Relationship();
-
-    private Set<String> childAnnotationsToBeRemoved = new HashSet<>();
-
-    private Set<String> parentAnnotationsToBeRemoved = new HashSet<>();
+    private ListUpdateMapValues childAnnotations = new ListUpdateMapValues();
+    private ListUpdateMapValues parentAnnotations = new ListUpdateMapValues();
 
     @JsonIgnore
     public RelationshipUpdate addChildAnnotation(String key, String value)
     {
-        relationship.addChildAnnotation(key, value);
+        childAnnotations.put(key, value);
         return this;
     }
 
     @JsonIgnore
-    public RelationshipUpdate removeChildAnnotation(String key)
+    public RelationshipUpdate removeChildAnnotations(String... keys)
     {
-        childAnnotationsToBeRemoved.add(key);
+        childAnnotations.remove(keys);
         return this;
     }
 
     @JsonIgnore
     public RelationshipUpdate addParentAnnotation(String key, String value)
     {
-        relationship.addParentAnnotation(key, value);
+        parentAnnotations.put(key, value);
         return this;
     }
 
     @JsonIgnore
-    public RelationshipUpdate removeParentAnnotation(String key)
+    public RelationshipUpdate removeParentAnnotations(String... keys)
     {
-        parentAnnotationsToBeRemoved.add(key);
+        parentAnnotations.remove(keys);
         return this;
     }
 
-    public Relationship getRelationship()
-    {
-        return relationship;
-    }
-
+    @SuppressWarnings("unchecked")
+    @JsonIgnore
     public void setRelationship(Relationship relationship)
     {
-        this.relationship = relationship;
+        childAnnotations.set(relationship.getChildAnnotations());
+        parentAnnotations.set(relationship.getParentAnnotations());
+    }
+    
+    public ListUpdateMapValues getChildAnnotations()
+    {
+        return childAnnotations;
     }
 
-    public Set<String> getChildAnnotationsToBeRemoved()
+    public void setChildAnnotations(ListUpdateMapValues childAnnotations)
     {
-        return childAnnotationsToBeRemoved;
+        this.childAnnotations = childAnnotations;
     }
 
-    public void setChildAnnotationsToBeRemoved(Set<String> childAnnotationsToBeRemoved)
+    public ListUpdateMapValues getParentAnnotations()
     {
-        this.childAnnotationsToBeRemoved = childAnnotationsToBeRemoved;
+        return parentAnnotations;
     }
 
-    public Set<String> getParentAnnotationsToBeRemoved()
+    public void setParentAnnotations(ListUpdateMapValues parentAnnotations)
     {
-        return parentAnnotationsToBeRemoved;
-    }
-
-    public void setParentAnnotationsToBeRemoved(Set<String> parentAnnotationsToBeRemoved)
-    {
-        this.parentAnnotationsToBeRemoved = parentAnnotationsToBeRemoved;
+        this.parentAnnotations = parentAnnotations;
     }
 
     @Override
     public String toString()
     {
-        return new ObjectToString(this).append("relationship", relationship)
-                .append("parent annotations to be removed", parentAnnotationsToBeRemoved)
-                .append("child annotations to be removed", childAnnotationsToBeRemoved).toString();
+        return new ObjectToString(this).append("child annotations update", childAnnotations)
+                .append("parent annotations update", parentAnnotations).toString();
     }
 }
