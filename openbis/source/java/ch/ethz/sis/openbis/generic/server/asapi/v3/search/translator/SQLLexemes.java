@@ -47,6 +47,8 @@ public class SQLLexemes
 
     public static final String NUMERIC = "numeric";
 
+    public static final String TIMESTAMP = "timestamp";
+
     public static final String TIMESTAMPTZ = "timestamptz";
 
     public static final String FLOAT_4 = "float4";

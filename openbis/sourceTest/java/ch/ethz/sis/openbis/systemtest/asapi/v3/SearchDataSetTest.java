@@ -756,7 +756,7 @@ public class SearchDataSetTest extends AbstractDataSetTest
     }
 
     @Test
-    public void testSearchWithRegistrationDate()
+    public void testSearchWithRegistrationDateThatEquals()
     {
         DataSetSearchCriteria criteria = new DataSetSearchCriteria();
         criteria.withRegistrationDate().thatEquals("2009-02-09");
