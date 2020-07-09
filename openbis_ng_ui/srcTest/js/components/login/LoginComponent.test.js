@@ -22,10 +22,12 @@ describe('login', () => {
     login.expectJSON({
       user: {
         value: null,
+        focused: true,
         error: null
       },
       password: {
         value: null,
+        focused: false,
         error: null
       },
       button: {
@@ -39,10 +41,12 @@ describe('login', () => {
     login.expectJSON({
       user: {
         value: null,
+        focused: true,
         error: 'User cannot be empty'
       },
       password: {
         value: null,
+        focused: false,
         error: 'Password cannot be empty'
       },
       button: {
@@ -51,6 +55,25 @@ describe('login', () => {
     })
 
     login.getUser().change('testUser')
+    login.getButton().click()
+    await login.update()
+
+    login.expectJSON({
+      user: {
+        value: 'testUser',
+        focused: false,
+        error: null
+      },
+      password: {
+        value: null,
+        focused: true,
+        error: 'Password cannot be empty'
+      },
+      button: {
+        enabled: true
+      }
+    })
+
     login.getPassword().change('testPassword')
     login.getButton().click()
     await login.update()
@@ -58,10 +81,12 @@ describe('login', () => {
     login.expectJSON({
       user: {
         value: 'testUser',
+        focused: false,
         error: null
       },
       password: {
         value: 'testPassword',
+        focused: true,
         error: null
       },
       button: {
@@ -72,12 +97,17 @@ describe('login', () => {
 })
 
 async function mountLogin() {
+  document.body.innerHTML = '<div></div>'
+
   const wrapper = mount(
     <Provider store={store}>
       <ThemeProvider>
         <Login />
       </ThemeProvider>
-    </Provider>
+    </Provider>,
+    {
+      attachTo: document.getElementsByTagName('div')[0]
+    }
   )
 
   const login = new LoginWrapper(wrapper)

@@ -62,7 +62,7 @@ class AutocompleterFormField extends React.PureComponent {
   render() {
     logger.log(logger.DEBUG, 'AutocompleterFormField.render')
 
-    const { mode = 'edit' } = this.props
+    const { mode } = this.props
 
     if (mode === 'view') {
       return this.renderView()
@@ -91,6 +91,7 @@ class AutocompleterFormField extends React.PureComponent {
       metadata,
       styles,
       classes,
+      variant,
       onClick
     } = this.props
 
@@ -139,7 +140,7 @@ class AutocompleterFormField extends React.PureComponent {
               error={!!error}
               fullWidth={true}
               autoComplete='off'
-              variant='filled'
+              variant={variant}
               margin='dense'
               classes={{
                 root: classes.textField
@@ -156,4 +157,11 @@ class AutocompleterFormField extends React.PureComponent {
   }
 }
 
-export default withStyles(styles)(AutocompleterFormField)
+const StyledAutocompleterFormField = withStyles(styles)(AutocompleterFormField)
+
+StyledAutocompleterFormField.defaultProps = {
+  mode: 'edit',
+  variant: 'filled'
+}
+
+export default StyledAutocompleterFormField

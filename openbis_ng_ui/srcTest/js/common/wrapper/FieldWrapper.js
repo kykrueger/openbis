@@ -17,6 +17,10 @@ export default class FieldWrapper extends BaseWrapper {
     return !this.getBooleanValue(this.wrapper.prop('disabled'))
   }
 
+  getFocused() {
+    throw 'Method not implemented'
+  }
+
   getMode() {
     return this.getStringValue(this.wrapper.prop('mode'))
   }
@@ -40,6 +44,7 @@ export default class FieldWrapper extends BaseWrapper {
         label: this.getLabel(),
         value: this.getValue(),
         enabled: this.getEnabled(),
+        focused: this.getFocused(),
         mode: this.getMode(),
         error: this.getError()
       }

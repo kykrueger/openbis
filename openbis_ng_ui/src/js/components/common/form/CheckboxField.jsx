@@ -77,7 +77,7 @@ class CheckboxFormField extends React.PureComponent {
       disabled,
       error,
       metadata,
-      mode = 'edit',
+      mode,
       styles,
       classes,
       onClick
@@ -130,4 +130,10 @@ class CheckboxFormField extends React.PureComponent {
   }
 }
 
-export default withStyles(styles)(CheckboxFormField)
+const StyledCheckboxFormField = withStyles(styles)(CheckboxFormField)
+
+StyledCheckboxFormField.defaultProps = {
+  mode: 'edit'
+}
+
+export default StyledCheckboxFormField
