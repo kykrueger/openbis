@@ -261,6 +261,66 @@ define(
 					testCreate(c, fCreate, c.findSample, fCheck);
 				});
 
+				QUnit.test("createSamples() with annotated child", function(assert) {
+					var c = new common(assert, openbis);
+					var code = c.generateId("SAMPLE");
+					var childId = new c.SampleIdentifier("/TEST/TEST-SAMPLE-1");
+					
+					var fCreate = function(facade) {
+						var creation = new c.SampleCreation();
+						creation.setTypeId(new c.EntityTypePermId("UNKNOWN"));
+						creation.setCode(code);
+						creation.setSpaceId(new c.SpacePermId("TEST"));
+						creation.setChildIds([ childId ]);
+						creation.relationship(childId)
+								.addParentAnnotation("type", "mother").addChildAnnotation("type", "daughter");
+						return facade.createSamples([ creation ]);
+					}
+					
+					var fCheck = function(sample) {
+						c.assertEqual(sample.getCode(), code, "Sample code");
+						c.assertEqual(sample.getType().getCode(), "UNKNOWN", "Type code");
+						c.assertEqual(sample.getSpace().getCode(), "TEST", "Space code");
+						var child = sample.getChildren()[0];
+						c.assertEqual(child.getIdentifier().getIdentifier(), childId.getIdentifier(), "Child");
+						var relationship = sample.getChildRelationship(child.getPermId());
+						c.assertEqualDictionary(relationship.getChildAnnotations(), {"type": "daughter"}, "Child annotations");
+						c.assertEqualDictionary(relationship.getParentAnnotations(), {"type": "mother"}, "Parent annotations");
+					}
+					
+					testCreate(c, fCreate, c.findSample, fCheck);
+				});
+
+				QUnit.test("createSamples() with annotated parent", function(assert) {
+					var c = new common(assert, openbis);
+					var code = c.generateId("SAMPLE");
+					var parentId = new c.SampleIdentifier("/TEST/TEST-SAMPLE-1");
+					
+					var fCreate = function(facade) {
+						var creation = new c.SampleCreation();
+						creation.setTypeId(new c.EntityTypePermId("UNKNOWN"));
+						creation.setCode(code);
+						creation.setSpaceId(new c.SpacePermId("TEST"));
+						creation.setParentIds([ parentId ]);
+						creation.relationship(parentId)
+							.addParentAnnotation("type", "mother").addChildAnnotation("type", "daughter");
+						return facade.createSamples([ creation ]);
+					}
+					
+					var fCheck = function(sample) {
+						c.assertEqual(sample.getCode(), code, "Sample code");
+						c.assertEqual(sample.getType().getCode(), "UNKNOWN", "Type code");
+						c.assertEqual(sample.getSpace().getCode(), "TEST", "Space code");
+						var parent = sample.getParents()[0];
+						c.assertEqual(parent.getIdentifier().getIdentifier(), parentId.getIdentifier(), "Parent");
+						var relationship = sample.getParentRelationship(parent.getPermId());
+						c.assertEqualDictionary(relationship.getChildAnnotations(), {"type": "daughter"}, "Child annotations");
+						c.assertEqualDictionary(relationship.getParentAnnotations(), {"type": "mother"}, "Parent annotations");
+					}
+					
+					testCreate(c, fCreate, c.findSample, fCheck);
+				});
+
 				QUnit.test("createSamples() with property of type SAMPLE", function(assert) {
 					var c = new common(assert, openbis);
 					var propertyTypeCode = c.generateId("PROPERTY_TYPE");

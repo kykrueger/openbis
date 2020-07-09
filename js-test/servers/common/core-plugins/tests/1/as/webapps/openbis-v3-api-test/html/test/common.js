@@ -1411,6 +1411,24 @@ define([ 'jquery', 'openbis', 'underscore', 'test/dtos' ], function($, defaultOp
 			this.assertDate(millis, msg, today.getUTCFullYear(), today.getUTCMonth() + 1, today.getUTCDate());
 		};
 
+		this.assertEqualDictionary = function(actual, expected, msg) {
+			this.assert.equal(this.renderDictionary(actual), this.renderDictionary(expected), msg);
+		};
+		
+		this.renderDictionary = function(dictionary) {
+			var keys = Object.keys(dictionary);
+			keys.sort();
+			var result = "[";
+			for (i = 0; i < keys.length; i++) {
+				var key = keys[i];
+				result += key + ":" + dictionary[key];
+				if (i < keys.length - 1) {
+					result += ", ";
+				}
+			}
+			return result + "]";
+		}
+
 		this.assertObjectsCount = function(objects, count) {
 			this.assertEqual(objects.length, count, 'Got ' + count + ' object(s)');
 		};
