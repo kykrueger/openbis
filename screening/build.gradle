@@ -71,6 +71,16 @@ task executeScreeningOpenBisDev(type: JavaExec) {
           '--classes', 'targets/gradle/classes/main', '--lib', 'targets/www/lib/', '--port', '8888', 'targets/www'])
 }
 
+task executeScreeningDataStoreDev(type: JavaExec) {
+    main = 'ch.systemsx.cisd.openbis.dss.generic.DataStoreServer'
+    classpath = sourceSets.main.runtimeClasspath + configurations.devRuntime +
+            files("../openbis_standard_technologies/dist/core-plugins/microscopy/3/dss/drop-boxes/MicroscopyDropbox/lib/MicroscopyReader_20190521113500.jar")
+    jvmArgs(['-Dpython.path=../libraries/jython/jython-lib', '-Dlog4j.configuration=../datastore_server/etc/log.xml',
+             '-Djavax.net.ssl.trustStore=../datastore_server/dist/etc/openBIS.keystore',
+             '-Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.StrErrLog',
+             '-Dorg.mortbay.util.FileResource.checkAliases=false', '-Xmx2048M', '-XX:MaxPermSize=512m', '-ea'])
+}
+
 task systemTestSuite(type: Test) {
     useTestNG()
     options.suites('sourceTest/java/tests_system.xml')
