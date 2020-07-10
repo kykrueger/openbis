@@ -2,8 +2,8 @@ import FilterField from '@src/js/components/common/form/FilterField.jsx'
 import BrowserNode from '@src/js/components/common/browser/BrowserNode.jsx'
 import BrowserButtons from '@src/js/components/common/browser/BrowserButtons.jsx'
 
-import BaseWrapper from '@srcTest/js/common/wrapper/BaseWrapper.js'
-import FilterFieldWrapper from '@srcTest/js/common/wrapper/FilterFieldWrapper.js'
+import BaseWrapper from '@srcTest/js/components/common/wrapper/BaseWrapper.js'
+import FilterFieldWrapper from '@srcTest/js/components/common/form/wrapper/FilterFieldWrapper.js'
 
 import BrowserNodeWrapper from './BrowserNodeWrapper.js'
 import BrowserButtonsWrapper from './BrowserButtonsWrapper.js'

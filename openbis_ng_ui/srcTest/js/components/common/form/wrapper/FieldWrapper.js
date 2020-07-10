@@ -1,4 +1,4 @@
-import BaseWrapper from './BaseWrapper.js'
+import BaseWrapper from '@srcTest/js/components/common/wrapper/BaseWrapper.js'
 
 export default class FieldWrapper extends BaseWrapper {
   getName() {

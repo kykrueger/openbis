@@ -1,7 +1,7 @@
 import TextField from '@src/js/components/common/form/TextField.jsx'
 import TypeFormHeader from '@src/js/components/types/form/TypeFormHeader.jsx'
 
-import TextFieldWrapper from '@srcTest/js/common/wrapper/TextFieldWrapper.js'
+import TextFieldWrapper from '@srcTest/js/components/common/form/wrapper/TextFieldWrapper.js'
 
 export default class TypeFormPreviewHeaderWrapper {
   constructor(wrapper) {

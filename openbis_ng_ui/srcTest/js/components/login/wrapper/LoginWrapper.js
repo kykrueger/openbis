@@ -1,10 +1,10 @@
 import TextField from '@src/js/components/common/form/TextField.jsx'
 import Button from '@src/js/components/common/form/Button.jsx'
 
-import TextFieldWrapper from '@srcTest/js/common/wrapper/TextFieldWrapper.js'
-import ButtonWrapper from '@srcTest/js/common/wrapper/ButtonWrapper.js'
+import TextFieldWrapper from '@srcTest/js/components/common/form/wrapper/TextFieldWrapper.js'
+import ButtonWrapper from '@srcTest/js/components/common/form/wrapper/ButtonWrapper.js'
 
-import BaseWrapper from '@srcTest/js/common/wrapper/BaseWrapper.js'
+import BaseWrapper from '@srcTest/js/components/common/wrapper/BaseWrapper.js'
 
 export default class LoginWrapper extends BaseWrapper {
   getUser() {

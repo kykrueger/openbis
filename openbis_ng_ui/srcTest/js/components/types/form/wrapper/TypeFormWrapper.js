@@ -2,7 +2,7 @@ import TypeFormPreview from '@src/js/components/types/form/TypeFormPreview.jsx'
 import TypeFormParameters from '@src/js/components/types/form/TypeFormParameters.jsx'
 import TypeFormButtons from '@src/js/components/types/form/TypeFormButtons.jsx'
 
-import BaseWrapper from '@srcTest/js/common/wrapper/BaseWrapper.js'
+import BaseWrapper from '@srcTest/js/components/common/wrapper/BaseWrapper.js'
 
 import TypeFormPreviewWrapper from './TypeFormPreviewWrapper.js'
 import TypeFormParametersWrapper from './TypeFormParametersWrapper.js'

@@ -1,8 +1,8 @@
 import Button from '@src/js/components/common/form/Button.jsx'
 import Message from '@src/js/components/common/form/Message.jsx'
 
-import ButtonWrapper from '@srcTest/js/common/wrapper/ButtonWrapper.js'
-import MessageWrapper from '@srcTest/js/common/wrapper/MessageWrapper.js'
+import ButtonWrapper from '@srcTest/js/components/common/form/wrapper/ButtonWrapper.js'
+import MessageWrapper from '@srcTest/js/components/common/form/wrapper/MessageWrapper.js'
 
 export default class TypeFormButtonsWrapper {
   constructor(wrapper) {

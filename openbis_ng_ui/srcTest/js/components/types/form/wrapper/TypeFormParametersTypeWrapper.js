@@ -2,9 +2,9 @@ import SelectField from '@src/js/components/common/form/SelectField.jsx'
 import TextField from '@src/js/components/common/form/TextField.jsx'
 import CheckboxField from '@src/js/components/common/form/CheckboxField.jsx'
 
-import CheckboxFieldWrapper from '@srcTest/js/common/wrapper/CheckboxFieldWrapper.js'
-import TextFieldWrapper from '@srcTest/js/common/wrapper/TextFieldWrapper.js'
-import SelectFieldWrapper from '@srcTest/js/common/wrapper/SelectFieldWrapper.js'
+import CheckboxFieldWrapper from '@srcTest/js/components/common/form/wrapper/CheckboxFieldWrapper.js'
+import TextFieldWrapper from '@srcTest/js/components/common/form/wrapper/TextFieldWrapper.js'
+import SelectFieldWrapper from '@srcTest/js/components/common/form/wrapper/SelectFieldWrapper.js'
 import TypeFormParametersCommonWrapper from './TypeFormParametersCommonWrapper.js'
 
 export default class TypeFormParametersTypeWrapper extends TypeFormParametersCommonWrapper {

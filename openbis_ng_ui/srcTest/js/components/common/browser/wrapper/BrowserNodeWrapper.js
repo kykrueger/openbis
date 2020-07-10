@@ -1,5 +1,5 @@
-import BaseWrapper from '@srcTest/js/common/wrapper/BaseWrapper.js'
-import IconWrapper from '@srcTest/js/common/wrapper/IconWrapper.js'
+import BaseWrapper from '@srcTest/js/components/common/wrapper/BaseWrapper.js'
+import IconWrapper from '@srcTest/js/components/common/form/wrapper/IconWrapper.js'
 
 export default class BrowserNodeWrapper extends BaseWrapper {
   getId() {

@@ -3,10 +3,10 @@ import SelectField from '@src/js/components/common/form/SelectField.jsx'
 import TextField from '@src/js/components/common/form/TextField.jsx'
 import Message from '@src/js/components/common/form/Message.jsx'
 
-import TextFieldWrapper from '@srcTest/js/common/wrapper/TextFieldWrapper.js'
-import SelectFieldWrapper from '@srcTest/js/common/wrapper/SelectFieldWrapper.js'
-import AutocompleterFieldWrapper from '@srcTest/js/common/wrapper/AutocompleterFieldWrapper.js'
-import MessageWrapper from '@srcTest/js/common/wrapper/MessageWrapper.js'
+import TextFieldWrapper from '@srcTest/js/components/common/form/wrapper/TextFieldWrapper.js'
+import SelectFieldWrapper from '@srcTest/js/components/common/form/wrapper/SelectFieldWrapper.js'
+import AutocompleterFieldWrapper from '@srcTest/js/components/common/form/wrapper/AutocompleterFieldWrapper.js'
+import MessageWrapper from '@srcTest/js/components/common/form/wrapper/MessageWrapper.js'
 import TypeFormParametersCommonWrapper from './TypeFormParametersCommonWrapper.js'
 
 export default class TypeFormParametersPropertyWrapper extends TypeFormParametersCommonWrapper {

@@ -1,4 +1,4 @@
-import BaseWrapper from './BaseWrapper.js'
+import BaseWrapper from '@srcTest/js/components/common/wrapper/BaseWrapper.js'
 import TextField from '@material-ui/core/TextField'
 
 export default class FilterFieldWrapper extends BaseWrapper {
