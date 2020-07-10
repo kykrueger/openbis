@@ -21,7 +21,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
@@ -61,7 +60,7 @@ public class TranslationVo
 
     private AuthorisationInformation authorisationInformation;
 
-    private GlobalSearchObjectFetchOptions globalSearchObjectFetchOptions;
+    private boolean useHeadline;
 
     public Long getUserId()
     {
@@ -194,14 +193,14 @@ public class TranslationVo
         this.authorisationInformation = authorisationInformation;
     }
 
-    public GlobalSearchObjectFetchOptions getGlobalSearchObjectFetchOptions()
+    public boolean isUseHeadline()
     {
-        return globalSearchObjectFetchOptions;
+        return useHeadline;
     }
 
-    public void setGlobalSearchObjectFetchOptions(final GlobalSearchObjectFetchOptions globalSearchObjectFetchOptions)
+    public void setUseHeadline(final boolean useHeadline)
     {
-        this.globalSearchObjectFetchOptions = globalSearchObjectFetchOptions;
+        this.useHeadline = useHeadline;
     }
 
 }

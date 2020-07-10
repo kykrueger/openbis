@@ -18,9 +18,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.GlobalSearchObject;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearchObjectFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.Person;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MatchingEntity;
@@ -42,16 +40,15 @@ public interface IGlobalSearchManager extends ISearchManager
      * @param idsColumnName name of the column to select the ID's by; usually the
      * {@link ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN}.
      * @param tableMapper the table mapper that points to the table to run global search on.
-     * @param fetchOptions
+     * @param useHeadline whether match spans should be calculated.
      * @return set of IDs of found entities.
      */
     Set<Map<String, Object>> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation,
-            final GlobalSearchCriteria criteria, final String idsColumnName, final TableMapper tableMapper, final GlobalSearchObjectFetchOptions fetchOptions);
+            final GlobalSearchCriteria criteria, final String idsColumnName, final TableMapper tableMapper, final boolean useHeadline);
 
     List<MatchingEntity> sortRecords(Collection<MatchingEntity> records,
             SortOptions<GlobalSearchObject> sortOptions);
 
-    Collection<MatchingEntity> map(final Collection<Map<String, Object>> ids, boolean withMatches,
-            Map<Long, Person> registratorByIdMap);
+    Collection<MatchingEntity> map(final Collection<Map<String, Object>> ids, boolean withMatches);
 
 }

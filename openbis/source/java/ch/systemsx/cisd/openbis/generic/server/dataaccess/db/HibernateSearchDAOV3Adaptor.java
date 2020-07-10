@@ -10,7 +10,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.StatusSearchCrite
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.ExternalDmsAddressType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.search.ExternalDmsTypeSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearchObjectFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchObjectKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialSearchCriteria;
@@ -106,16 +105,13 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
 
         // Obtain entity id results from search manager
 
-        GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
-        fo.withDataSet();
-
         Set<Map<String, Object>> newResults = getGlobalSearchManager().searchForIDs(personPE.getId(),
                 getAuthorisationInformation(personPE),
                 globalSearchCriteria,
                 ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN,
-                getTableMapper(searchableEntity), fo);
-        // TODO: create and populate registratorByIdMap as in SearchGloballyOperationExecutor
-        Collection<MatchingEntity> matchingEntities = getGlobalSearchManager().map(newResults, true, null);
+                getTableMapper(searchableEntity), true);
+        // TODO: add registrators after this mapping use the commented out methods below.
+        Collection<MatchingEntity> matchingEntities = getGlobalSearchManager().map(newResults, true);
 
 //        // Adapt V3 to V1 Results
 //
@@ -142,6 +138,28 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
 
         return new ArrayList<>(matchingEntities);
     }
+
+//    public Set<Long> getRegistratorsIds(final Set<Map<String, Object>> allResultMaps)
+//    {
+//        final Map<String, Long> registratorIdByRecordIdentifierMap = allResultMaps.stream().collect(HashMap::new,
+//                (supplierMap, record) ->
+//                {
+//                    final Long registratorId = (Long) record.get(PERSON_REGISTERER_COLUMN);
+//                    if (registratorId != null)
+//                    {
+//                        supplierMap.put((String) record.get(IDENTIFIER_ALIAS), registratorId);
+//                    }
+//                },
+//                HashMap::putAll);
+//
+//        return new HashSet<>(registratorIdByRecordIdentifierMap.values());
+//    }
+//
+//    private Map<Long, Person> getRegistratorByIdMap(final TranslationContext translationContext, final Set<Map<String, Object>> allResultMaps)
+//    {
+//        return personTranslator.translate(translationContext, getRegistratorsIds(allResultMaps),
+//                new PersonFetchOptions());
+//    }
 
 //    private List<PropertyMatch> getPropertyMatches(Map<String, Object> newResult) {
 //        List<PropertyMatch> matches = new ArrayList<>();

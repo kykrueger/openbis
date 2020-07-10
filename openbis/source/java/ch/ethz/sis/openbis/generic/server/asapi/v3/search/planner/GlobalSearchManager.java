@@ -4,7 +4,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOrder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.Sorting;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.GlobalSearchObject;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearchObjectFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
@@ -45,10 +44,10 @@ public class GlobalSearchManager implements IGlobalSearchManager
 
     @Override
     public Set<Map<String, Object>> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation, final GlobalSearchCriteria criteria,
-            final String idsColumnName, final TableMapper tableMapper, final GlobalSearchObjectFetchOptions fetchOptions)
+            final String idsColumnName, final TableMapper tableMapper, final boolean useHeadline)
     {
         final Set<Map<String, Object>> mainCriteriaIntermediateResults = searchDAO.queryDBWithNonRecursiveCriteria(userId,
-                criteria, tableMapper, idsColumnName, authorisationInformation, fetchOptions);
+                criteria, tableMapper, idsColumnName, authorisationInformation, useHeadline);
 
         // If we have results, we use them
         // If we don't have results and criteria are not empty, there are no results.
@@ -187,8 +186,7 @@ public class GlobalSearchManager implements IGlobalSearchManager
     }
 
     @Override
-    public Collection<MatchingEntity> map(final Collection<Map<String, Object>> records, final boolean withMatches,
-            final Map<Long, ch.ethz.sis.openbis.generic.asapi.v3.dto.person.Person> registratorByIdMap)
+    public Collection<MatchingEntity> map(final Collection<Map<String, Object>> records, final boolean withMatches)
     {
         return records.stream().map((fieldsMap) ->
         {
@@ -215,18 +213,6 @@ public class GlobalSearchManager implements IGlobalSearchManager
             }
 
             matchingEntity.setScore((Float) fieldsMap.get(RANK_ALIAS));
-            final ch.ethz.sis.openbis.generic.asapi.v3.dto.person.Person registrator =
-                    registratorByIdMap.get((Long) fieldsMap.get(PERSON_REGISTERER_COLUMN));
-
-            if (registrator != null)
-            {
-                final Person matchingEntityRegistrator = new Person();
-                matchingEntityRegistrator.setUserId(registrator.getUserId());
-                matchingEntityRegistrator.setFirstName(registrator.getFirstName());
-                matchingEntityRegistrator.setLastName(registrator.getLastName());
-                matchingEntityRegistrator.setEmail(registrator.getEmail());
-                matchingEntity.setRegistrator(matchingEntityRegistrator);
-            }
 
             final List<PropertyMatch> matches = new ArrayList<>();
 

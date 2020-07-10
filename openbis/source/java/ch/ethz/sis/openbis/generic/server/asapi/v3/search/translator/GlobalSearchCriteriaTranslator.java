@@ -289,7 +289,7 @@ public class GlobalSearchCriteriaTranslator
             sqlBuilder.append(CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS).append(PERIOD).append(DESCRIPTION_COLUMN)
                     .append(SP).append(CV_DESCRIPTION_ALIAS).append(COMMA).append(NL);
 
-            final boolean useHeadline = vo.getGlobalSearchObjectFetchOptions().hasMatch();
+            final boolean useHeadline = vo.isUseHeadline();
             buildTsHeadline(sqlBuilder, stringValue, args, PROPERTIES_TABLE_ALIAS + PERIOD + VALUE_COLUMN,
                     VALUE_HEADLINE_ALIAS, useHeadline);
             sqlBuilder.append(COMMA).append(NL);

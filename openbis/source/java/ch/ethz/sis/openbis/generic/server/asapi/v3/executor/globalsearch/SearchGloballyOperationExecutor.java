@@ -27,8 +27,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.GlobalSearchObject;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearchObjectFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearchObjectSortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.*;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.Person;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.fetchoptions.PersonFetchOptions;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.ISearchObjectExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.SearchObjectsOperationExecutor;
@@ -52,8 +50,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearchObjectSortOptions.SCORE;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.GlobalSearchCriteriaTranslator.IDENTIFIER_ALIAS;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PERSON_REGISTERER_COLUMN;
 
 /**
  * @author pkupczyk
@@ -114,49 +110,33 @@ public class SearchGloballyOperationExecutor
         if (objectKinds.contains(GlobalSearchObjectKind.SAMPLE))    
         {
             final Set<Map<String, Object>> sampleResultMaps = globalSearchManager.searchForIDs(userId,
-                    authorisationInformation, criteria, null, TableMapper.SAMPLE, fetchOptions);
+                    authorisationInformation, criteria, null, TableMapper.SAMPLE, fetchOptions.hasMatch());
             allResultMaps.addAll(sampleResultMaps);
         }
 
         if (objectKinds.contains(GlobalSearchObjectKind.EXPERIMENT))
         {
             final Set<Map<String, Object>> experimentResultMaps = globalSearchManager.searchForIDs(userId,
-                    authorisationInformation, criteria, null, TableMapper.EXPERIMENT, fetchOptions);
+                    authorisationInformation, criteria, null, TableMapper.EXPERIMENT, fetchOptions.hasMatch());
             allResultMaps.addAll(experimentResultMaps);
         }
 
         if (objectKinds.contains(GlobalSearchObjectKind.DATA_SET))
         {
             final Set<Map<String, Object>> dataSetResultMaps = globalSearchManager.searchForIDs(userId,
-                    authorisationInformation, criteria, null, TableMapper.DATA_SET, fetchOptions);
+                    authorisationInformation, criteria, null, TableMapper.DATA_SET, fetchOptions.hasMatch());
             allResultMaps.addAll(dataSetResultMaps);
         }
 
         if (objectKinds.contains(GlobalSearchObjectKind.MATERIAL))
         {
             final Set<Map<String, Object>> materialResultMaps = globalSearchManager.searchForIDs(userId,
-                    authorisationInformation, criteria, null, TableMapper.MATERIAL, fetchOptions);
+                    authorisationInformation, criteria, null, TableMapper.MATERIAL, fetchOptions.hasMatch());
             allResultMaps.addAll(materialResultMaps);
         }
 
-        final Map<String, Long> registratorIdByRecordIdentifierMap = allResultMaps.stream().collect(HashMap::new,
-                (supplierMap, record) ->
-                {
-                    final Long registratorId = (Long) record.get(PERSON_REGISTERER_COLUMN);
-                    if (registratorId != null)
-                    {
-                        supplierMap.put((String) record.get(IDENTIFIER_ALIAS), registratorId);
-                    }
-                },
-                HashMap::putAll);
-
-        final Set<Long> registratorIds = new HashSet<>(registratorIdByRecordIdentifierMap.values());
-
-        final Map<Long, Person> registratorByIdMap = personTranslator.translate(translationContext, registratorIds,
-                new PersonFetchOptions());
-
         final Collection<MatchingEntity> matchingEntities = globalSearchManager.map(allResultMaps,
-                fetchOptions.hasMatch(), registratorByIdMap);
+                fetchOptions.hasMatch());
         final List<MatchingEntity> pagedMatchingEntities = sortAndPage(matchingEntities, fetchOptions);
         // TODO: doTranslate() should only filter nested objects of the results (parents, children, components...).
         final Map<MatchingEntity, GlobalSearchObject> pagedResultV3DTOs = doTranslate(translationContext, pagedMatchingEntities, fetchOptions);
