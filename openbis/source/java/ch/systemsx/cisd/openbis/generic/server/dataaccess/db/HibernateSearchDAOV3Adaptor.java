@@ -36,6 +36,9 @@ import org.springframework.dao.DataAccessException;
 
 import java.util.*;
 
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.GlobalSearchCriteriaTranslator.IDENTIFIER_ALIAS;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PERSON_REGISTERER_COLUMN;
+
 /*
  * The goal of this class is to replace HibernateSearchDAO
  * This should make possible to remove Hibernate Search without changing all the other business layers
@@ -112,6 +115,36 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
                 getTableMapper(searchableEntity), true);
         // TODO: add registrators after this mapping use the commented out methods below.
         Collection<MatchingEntity> matchingEntities = getGlobalSearchManager().map(newResults, true);
+
+        // Set registrators for V1
+        final Map<String, Long> registratorIdByRecordIdentifierMap = newResults.stream().collect(HashMap::new,
+                (supplierMap, record) ->
+                {
+                    final Long registratorId = (Long) record.get(PERSON_REGISTERER_COLUMN);
+                    if (registratorId != null)
+                    {
+                        supplierMap.put((String) record.get(IDENTIFIER_ALIAS), registratorId);
+                    }
+                },
+                HashMap::putAll);
+
+        List<PersonPE> registrators = daoFactory.getPersonDAO().getPersons(registratorIdByRecordIdentifierMap.values());
+        Map<Long, PersonPE> registratorsById = new HashMap<>();
+        for (PersonPE registrator:registrators) {
+            registratorsById.put(registrator.getId(), registrator);
+        }
+
+        for (MatchingEntity matchingEntity:matchingEntities) {
+            Long registratorId =registratorIdByRecordIdentifierMap.get(matchingEntity.getIdentifier());
+            PersonPE registratorPersonPE = registratorsById.get(registratorId);
+            Person registrator = new Person();
+            registrator.setFirstName(registratorPersonPE.getFirstName());
+            registrator.setLastName(registratorPersonPE.getLastName());
+            registrator.setUserId(registratorPersonPE.getUserId());
+            registrator.setEmail(registratorPersonPE.getEmail());
+            registrator.setActive(registratorPersonPE.isActive());
+            matchingEntity.setRegistrator(registrator);
+        }
 
 //        // Adapt V3 to V1 Results
 //

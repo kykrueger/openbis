@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.hibernate.Criteria;
@@ -140,6 +141,16 @@ public final class PersonDAO extends AbstractGenericEntityDAO<PersonPE> implemen
             operationLog.debug("getPerson(" + id + "): '" + person + "'.");
         }
         return person;
+    }
+
+    @Override
+    public List<PersonPE> getPersons(Collection<Long> ids) throws DataAccessException {
+        final List<PersonPE> list = DAOUtils.listByCollection(getHibernateTemplate(), ENTITY_CLASS, "id", ids);
+        if (operationLog.isDebugEnabled())
+        {
+            operationLog.debug(String.format("%d persons(s) have been found.", list.size()));
+        }
+        return list;
     }
 
     @Override
