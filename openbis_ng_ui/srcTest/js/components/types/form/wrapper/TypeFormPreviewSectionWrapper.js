@@ -1,27 +1,25 @@
+import BaseWrapper from '@srcTest/js/components/common/wrapper/BaseWrapper.js'
 import Typography from '@material-ui/core/Typography'
 import TypeFormPreviewProperty from '@src/js/components/types/form/TypeFormPreviewProperty.jsx'
-
 import TypeFormPreviewPropertyWrapper from './TypeFormPreviewPropertyWrapper.js'
 
-export default class TypeFormPreviewSectionWrapper {
-  constructor(wrapper) {
-    this.wrapper = wrapper
-  }
-
+export default class TypeFormPreviewSectionWrapper extends BaseWrapper {
   getName() {
-    return this.wrapper.find(Typography).filter({ 'data-part': 'name' })
+    return this.findComponent(Typography).filter({ 'data-part': 'name' })
   }
 
   getProperties() {
     const properties = []
-    this.wrapper.find(TypeFormPreviewProperty).forEach(propertyWrapper => {
+    this.findComponent(TypeFormPreviewProperty).forEach(propertyWrapper => {
       properties.push(new TypeFormPreviewPropertyWrapper(propertyWrapper))
     })
     return properties
   }
 
   click() {
-    this.wrapper.simulate('click')
+    this.wrapper.instance().handleClick({
+      stopPropagation: () => {}
+    })
   }
 
   toJSON() {

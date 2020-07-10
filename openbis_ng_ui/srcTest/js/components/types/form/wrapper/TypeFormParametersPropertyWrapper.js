@@ -2,7 +2,6 @@ import AutocompleterField from '@src/js/components/common/form/AutocompleterFiel
 import SelectField from '@src/js/components/common/form/SelectField.jsx'
 import TextField from '@src/js/components/common/form/TextField.jsx'
 import Message from '@src/js/components/common/form/Message.jsx'
-
 import TextFieldWrapper from '@srcTest/js/components/common/form/wrapper/TextFieldWrapper.js'
 import SelectFieldWrapper from '@srcTest/js/components/common/form/wrapper/SelectFieldWrapper.js'
 import AutocompleterFieldWrapper from '@srcTest/js/components/common/form/wrapper/AutocompleterFieldWrapper.js'
@@ -10,13 +9,9 @@ import MessageWrapper from '@srcTest/js/components/common/form/wrapper/MessageWr
 import TypeFormParametersCommonWrapper from './TypeFormParametersCommonWrapper.js'
 
 export default class TypeFormParametersPropertyWrapper extends TypeFormParametersCommonWrapper {
-  constructor(wrapper) {
-    super(wrapper)
-  }
-
   getMessages() {
     const messages = []
-    this.wrapper.find(Message).forEach(message => {
+    this.findComponent(Message).forEach(message => {
       messages.push(new MessageWrapper(message))
     })
     return messages
@@ -24,22 +19,22 @@ export default class TypeFormParametersPropertyWrapper extends TypeFormParameter
 
   getScope() {
     return new SelectFieldWrapper(
-      this.wrapper.find(SelectField).filter({ name: 'scope' })
+      this.findComponent(SelectField).filter({ name: 'scope' })
     )
   }
 
   getCode() {
-    const textFieldWrapper = this.wrapper
-      .find(TextField)
-      .filter({ name: 'code' })
+    const textFieldWrapper = this.findComponent(TextField).filter({
+      name: 'code'
+    })
 
     if (textFieldWrapper.exists()) {
       return new TextFieldWrapper(textFieldWrapper)
     }
 
-    const autocompleterFieldWrapper = this.wrapper
-      .find(AutocompleterField)
-      .filter({ name: 'code' })
+    const autocompleterFieldWrapper = this.findComponent(
+      AutocompleterField
+    ).filter({ name: 'code' })
 
     if (autocompleterFieldWrapper.exists()) {
       return new AutocompleterFieldWrapper(autocompleterFieldWrapper)
@@ -50,49 +45,49 @@ export default class TypeFormParametersPropertyWrapper extends TypeFormParameter
 
   getDataType() {
     return new SelectFieldWrapper(
-      this.wrapper.find(SelectField).filter({ name: 'dataType' })
+      this.findComponent(SelectField).filter({ name: 'dataType' })
     )
   }
 
   getLabel() {
     return new TextFieldWrapper(
-      this.wrapper.find(TextField).filter({ name: 'label' })
+      this.findComponent(TextField).filter({ name: 'label' })
     )
   }
 
   getDescription() {
     return new TextFieldWrapper(
-      this.wrapper.find(TextField).filter({ name: 'description' })
+      this.findComponent(TextField).filter({ name: 'description' })
     )
   }
 
   getPlugin() {
     return new SelectFieldWrapper(
-      this.wrapper.find(SelectField).filter({ name: 'plugin' })
+      this.findComponent(SelectField).filter({ name: 'plugin' })
     )
   }
 
   getVocabulary() {
     return new SelectFieldWrapper(
-      this.wrapper.find(SelectField).filter({ name: 'vocabulary' })
+      this.findComponent(SelectField).filter({ name: 'vocabulary' })
     )
   }
 
   getMaterialType() {
     return new SelectFieldWrapper(
-      this.wrapper.find(SelectField).filter({ name: 'materialType' })
+      this.findComponent(SelectField).filter({ name: 'materialType' })
     )
   }
 
   getSchema() {
     return new TextFieldWrapper(
-      this.wrapper.find(TextField).filter({ name: 'schema' })
+      this.findComponent(TextField).filter({ name: 'schema' })
     )
   }
 
   getTransformation() {
     return new TextFieldWrapper(
-      this.wrapper.find(TextField).filter({ name: 'transformation' })
+      this.findComponent(TextField).filter({ name: 'transformation' })
     )
   }
 

@@ -24,6 +24,11 @@ const styles = theme => ({
 })
 
 class AutocompleterFormField extends React.PureComponent {
+  static defaultProps = {
+    mode: 'edit',
+    variant: 'filled'
+  }
+
   constructor(props) {
     super(props)
     this.reference = React.createRef()
@@ -157,11 +162,4 @@ class AutocompleterFormField extends React.PureComponent {
   }
 }
 
-const StyledAutocompleterFormField = withStyles(styles)(AutocompleterFormField)
-
-StyledAutocompleterFormField.defaultProps = {
-  mode: 'edit',
-  variant: 'filled'
-}
-
-export default StyledAutocompleterFormField
+export default withStyles(styles)(AutocompleterFormField)

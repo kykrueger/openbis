@@ -24,6 +24,11 @@ const styles = theme => ({
 })
 
 class SelectFormField extends React.PureComponent {
+  static defaultProps = {
+    mode: 'edit',
+    variant: 'filled'
+  }
+
   constructor(props) {
     super(props)
     this.inputReference = React.createRef()
@@ -170,11 +175,4 @@ class SelectFormField extends React.PureComponent {
   }
 }
 
-const StyledSelectFormField = withStyles(styles)(SelectFormField)
-
-StyledSelectFormField.defaultProps = {
-  mode: 'edit',
-  variant: 'filled'
-}
-
-export default StyledSelectFormField
+export default withStyles(styles)(SelectFormField)

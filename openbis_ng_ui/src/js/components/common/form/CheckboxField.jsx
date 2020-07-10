@@ -26,6 +26,10 @@ const styles = () => ({
 })
 
 class CheckboxFormField extends React.PureComponent {
+  static defaultProps = {
+    mode: 'edit'
+  }
+
   constructor(props) {
     super(props)
     this.reference = React.createRef()
@@ -130,10 +134,4 @@ class CheckboxFormField extends React.PureComponent {
   }
 }
 
-const StyledCheckboxFormField = withStyles(styles)(CheckboxFormField)
-
-StyledCheckboxFormField.defaultProps = {
-  mode: 'edit'
-}
-
-export default StyledCheckboxFormField
+export default withStyles(styles)(CheckboxFormField)

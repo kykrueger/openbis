@@ -26,6 +26,10 @@ export default class BrowserNodeWrapper extends BaseWrapper {
     return new IconWrapper(this.wrapper.find('svg'))
   }
 
+  click() {
+    this.wrapper.instance().handleClick()
+  }
+
   toJSON() {
     return {
       id: this.getId(),

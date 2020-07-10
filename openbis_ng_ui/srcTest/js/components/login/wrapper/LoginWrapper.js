@@ -1,26 +1,24 @@
 import TextField from '@src/js/components/common/form/TextField.jsx'
 import Button from '@src/js/components/common/form/Button.jsx'
-
 import TextFieldWrapper from '@srcTest/js/components/common/form/wrapper/TextFieldWrapper.js'
 import ButtonWrapper from '@srcTest/js/components/common/form/wrapper/ButtonWrapper.js'
-
 import BaseWrapper from '@srcTest/js/components/common/wrapper/BaseWrapper.js'
 
 export default class LoginWrapper extends BaseWrapper {
   getUser() {
     return new TextFieldWrapper(
-      this.wrapper.find(TextField).filter({ name: 'user' })
+      this.findComponent(TextField).filter({ name: 'user' })
     )
   }
 
   getPassword() {
     return new TextFieldWrapper(
-      this.wrapper.find(TextField).filter({ name: 'password' })
+      this.findComponent(TextField).filter({ name: 'password' })
     )
   }
 
   getButton() {
-    return new ButtonWrapper(this.wrapper.find(Button))
+    return new ButtonWrapper(this.findComponent(Button))
   }
 
   toJSON() {

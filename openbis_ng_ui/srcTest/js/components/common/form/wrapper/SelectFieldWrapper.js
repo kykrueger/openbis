@@ -1,5 +1,4 @@
 import Select from '@material-ui/core/Select'
-
 import FieldWrapper from './FieldWrapper.js'
 
 export default class SelectFieldWrapper extends FieldWrapper {
@@ -7,7 +6,7 @@ export default class SelectFieldWrapper extends FieldWrapper {
     if (this.getMode() === 'edit') {
       return (
         document.activeElement ===
-        this.wrapper.find(Select).find('div.MuiSelect-root').getDOMNode()
+        this.findComponent(Select).find('div.MuiSelect-root').getDOMNode()
       )
     } else {
       return false

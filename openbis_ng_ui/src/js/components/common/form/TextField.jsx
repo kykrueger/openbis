@@ -24,6 +24,12 @@ const styles = theme => ({
 })
 
 class TextFormField extends React.PureComponent {
+  static defaultProps = {
+    mode: 'edit',
+    variant: 'filled',
+    autoComplete: 'off'
+  }
+
   render() {
     logger.log(logger.DEBUG, 'TextFormField.render')
 
@@ -132,12 +138,4 @@ class TextFormField extends React.PureComponent {
   }
 }
 
-const StyledTextFormField = withStyles(styles)(TextFormField)
-
-StyledTextFormField.defaultProps = {
-  mode: 'edit',
-  variant: 'filled',
-  autoComplete: 'off'
-}
-
-export default StyledTextFormField
+export default withStyles(styles)(TextFormField)

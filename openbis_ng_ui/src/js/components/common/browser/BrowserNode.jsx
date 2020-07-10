@@ -27,6 +27,30 @@ const styles = theme => ({
 })
 
 class BrowserNode extends React.PureComponent {
+  constructor(props) {
+    super(props)
+    this.handleClick = this.handleClick.bind(this)
+    this.handleExpand = this.handleExpand.bind(this)
+    this.handleCollapse = this.handleCollapse.bind(this)
+  }
+
+  handleClick() {
+    const { controller, node } = this.props
+    controller.nodeSelect(node.id)
+  }
+
+  handleExpand(event) {
+    const { controller, node } = this.props
+    event.stopPropagation()
+    controller.nodeExpand(node.id)
+  }
+
+  handleCollapse(event) {
+    const { controller, node } = this.props
+    event.stopPropagation()
+    controller.nodeCollapse(node.id)
+  }
+
   render() {
     logger.log(logger.DEBUG, 'BrowserNode.render')
 
@@ -37,7 +61,7 @@ class BrowserNode extends React.PureComponent {
         <ListItem
           button
           selected={node.selected}
-          onClick={() => controller.nodeSelect(node.id)}
+          onClick={this.handleClick}
           style={{ paddingLeft: level * 24 + 'px' }}
           classes={{
             root: classes.item
@@ -62,28 +86,14 @@ class BrowserNode extends React.PureComponent {
   renderIcon(node) {
     logger.log(logger.DEBUG, 'BrowserNode.renderIcon')
 
-    const { controller, classes } = this.props
+    const { classes } = this.props
 
     if (node.children && node.children.length > 0) {
       let icon = null
       if (node.expanded) {
-        icon = (
-          <ExpandMoreIcon
-            onClick={e => {
-              e.stopPropagation()
-              controller.nodeCollapse(node.id)
-            }}
-          />
-        )
+        icon = <ExpandMoreIcon onClick={this.handleCollapse} />
       } else {
-        icon = (
-          <ChevronRightIcon
-            onClick={e => {
-              e.stopPropagation()
-              controller.nodeExpand(node.id)
-            }}
-          />
-        )
+        icon = <ChevronRightIcon onClick={this.handleExpand} />
       }
       return (
         <ListItemIcon
