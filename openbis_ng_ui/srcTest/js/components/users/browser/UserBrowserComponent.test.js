@@ -1,5 +1,5 @@
 import React from 'react'
-import ComponentTest from '@srcTest/js/common/ComponentTest.js'
+import ComponentTest from '@srcTest/js/components/common/ComponentTest.js'
 import BrowserWrapper from '@srcTest/js/components/common/browser/wrapper/BrowserWrapper.js'
 import UserBrowser from '@src/js/components/users/browser/UserBrowser.jsx'
 import openbis from '@srcTest/js/services/openbis.js'

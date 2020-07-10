@@ -1,5 +1,5 @@
 import React from 'react'
-import ComponentTest from '@srcTest/js/common/ComponentTest.js'
+import ComponentTest from '@srcTest/js/components/common/ComponentTest.js'
 import Login from '@src/js/components/login/Login.jsx'
 import LoginWrapper from '@srcTest/js/components/login/wrapper/LoginWrapper.js'
 

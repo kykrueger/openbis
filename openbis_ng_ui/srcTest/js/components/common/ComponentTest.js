@@ -2,7 +2,7 @@ import React from 'react'
 import { Provider } from 'react-redux'
 import { mount } from 'enzyme'
 import { createStore } from '@src/js/store/store.js'
-import ThemeProvider from '@src/js/components/common/theme/ThemeProvider.jsx'
+import ThemeProvider from '@srcTest/js/components/common/theme/ThemeProvider.jsx'
 import actions from '@src/js/store/actions/actions.js'
 
 export default class ComponentTest {

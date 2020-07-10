@@ -1,5 +1,5 @@
 import React from 'react'
-import ComponentTest from '@srcTest/js/common/ComponentTest.js'
+import ComponentTest from '@srcTest/js/components/common/ComponentTest.js'
 import TypeForm from '@src/js/components/types/form/TypeForm.jsx'
 import TypeFormWrapper from '@srcTest/js/components/types/form/wrapper/TypeFormWrapper.js'
 import TypeFormController from '@src/js/components/types/form/TypeFormController.js'
@@ -10,11 +10,17 @@ import fixture from '@srcTest/js/common/fixture.js'
 
 jest.mock('@src/js/components/types/form/TypeFormFacade')
 
+let common = null
 let facade = null
 let controller = null
-let common = null
 
 beforeEach(() => {
+  common = new ComponentTest(
+    object => <TypeForm object={object} controller={controller} />,
+    wrapper => new TypeFormWrapper(wrapper)
+  )
+  common.beforeEach()
+
   facade = new TypeFormFacade()
   controller = new TypeFormController(facade)
 
@@ -25,12 +31,6 @@ beforeEach(() => {
   facade.loadMaterials.mockReturnValue(Promise.resolve([]))
   facade.loadVocabularyTerms.mockReturnValue(Promise.resolve([]))
   facade.loadGlobalPropertyTypes.mockReturnValue(Promise.resolve([]))
-
-  common = new ComponentTest(
-    object => <TypeForm object={object} controller={controller} />,
-    wrapper => new TypeFormWrapper(wrapper)
-  )
-  common.beforeEach()
 })
 
 describe('TypeFormComponent', () => {
