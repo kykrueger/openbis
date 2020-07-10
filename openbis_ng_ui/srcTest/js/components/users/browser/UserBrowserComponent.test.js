@@ -1,20 +1,18 @@
 import React from 'react'
-import { Provider } from 'react-redux'
-import { mount } from 'enzyme'
-import { createStore } from '@src/js/store/store.js'
-import ThemeProvider from '@src/js/components/common/theme/ThemeProvider.jsx'
+import ComponentTest from '@srcTest/js/common/ComponentTest.js'
 import BrowserWrapper from '@srcTest/js/components/common/browser/wrapper/BrowserWrapper.js'
 import UserBrowser from '@src/js/components/users/browser/UserBrowser.jsx'
 import openbis from '@srcTest/js/services/openbis.js'
-import actions from '@src/js/store/actions/actions.js'
 import fixture from '@srcTest/js/common/fixture.js'
 
-let store = null
+let common = null
 
 beforeEach(() => {
-  jest.resetAllMocks()
-  store = createStore()
-  store.dispatch(actions.init())
+  common = new ComponentTest(
+    () => <UserBrowser />,
+    wrapper => new BrowserWrapper(wrapper)
+  )
+  common.beforeEach()
 })
 
 describe('browser', () => {
@@ -26,7 +24,7 @@ describe('browser', () => {
       fixture.ALL_USERS_GROUP_DTO
     ])
 
-    const browser = await mountBrowser()
+    const browser = await common.mount()
 
     browser.expectJSON({
       filter: {
@@ -71,16 +69,3 @@ describe('browser', () => {
     })
   })
 })
-
-async function mountBrowser() {
-  const wrapper = mount(
-    <Provider store={store}>
-      <ThemeProvider>
-        <UserBrowser />
-      </ThemeProvider>
-    </Provider>
-  )
-
-  const browser = new BrowserWrapper(wrapper)
-  return browser.update().then(() => browser)
-}
