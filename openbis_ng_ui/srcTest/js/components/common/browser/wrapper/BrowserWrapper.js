@@ -30,10 +30,14 @@ export default class BrowserWrapper extends BaseWrapper {
   }
 
   toJSON() {
-    return {
-      filter: this.getFilter().toJSON(),
-      nodes: this.getNodes().map(node => node.toJSON()),
-      buttons: this.getButtons().toJSON()
+    if (this.wrapper.exists()) {
+      return {
+        filter: this.getFilter().toJSON(),
+        nodes: this.getNodes().map(node => node.toJSON()),
+        buttons: this.getButtons().toJSON()
+      }
+    } else {
+      return null
     }
   }
 }

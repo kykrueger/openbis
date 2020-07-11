@@ -22,10 +22,14 @@ export default class LoginWrapper extends BaseWrapper {
   }
 
   toJSON() {
-    return {
-      user: this.getUser().toJSON(),
-      password: this.getPassword().toJSON(),
-      button: this.getButton().toJSON()
+    if (this.wrapper.exists()) {
+      return {
+        user: this.getUser().toJSON(),
+        password: this.getPassword().toJSON(),
+        button: this.getButton().toJSON()
+      }
+    } else {
+      return null
     }
   }
 }
