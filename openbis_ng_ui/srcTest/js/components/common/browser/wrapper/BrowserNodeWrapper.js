@@ -23,7 +23,7 @@ export default class BrowserNodeWrapper extends BaseWrapper {
   }
 
   getIcon() {
-    return new IconWrapper(this.wrapper.find('svg'))
+    return new IconWrapper(this.wrapper.find('svg').first())
   }
 
   click() {
