@@ -10,8 +10,7 @@ import FormFieldLabel from './FormFieldLabel.jsx'
 const styles = () => ({
   container: {
     display: 'flex',
-    alignItems: 'center',
-    marginLeft: '-4px'
+    alignItems: 'center'
   },
   label: {
     cursor: 'pointer'
