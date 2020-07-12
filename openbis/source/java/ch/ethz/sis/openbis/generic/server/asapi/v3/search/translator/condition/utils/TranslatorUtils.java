@@ -263,10 +263,25 @@ public class TranslatorUtils
         joinInformation6.setMainTable(tableMapper.getValuesTable());
         joinInformation6.setMainTableAlias(valuesTableAlias);
         joinInformation6.setMainTableIdField(MATERIAL_PROP_COLUMN);
-        joinInformation6.setSubTable(MATERIALS_TABLE);
+        joinInformation6.setSubTable(TableMapper.MATERIAL.getEntitiesTable());
         joinInformation6.setSubTableAlias(aliasFactory.createAlias());
         joinInformation6.setSubTableIdField(ColumnNames.ID_COLUMN);
-        result.put(MATERIALS_TABLE, joinInformation6);
+        result.put(TableMapper.MATERIAL.getEntitiesTable(), joinInformation6);
+
+        if (tableMapper == TableMapper.SAMPLE || tableMapper == TableMapper.EXPERIMENT
+                || tableMapper == TableMapper.DATA_SET)
+        {
+            final String samplePropertyAlias = aliasFactory.createAlias();
+            final JoinInformation joinInformation7 = new JoinInformation();
+            joinInformation7.setJoinType(JoinType.LEFT);
+            joinInformation7.setMainTable(TableMapper.SAMPLE.getValuesTable());
+            joinInformation7.setMainTableAlias(valuesTableAlias);
+            joinInformation7.setMainTableIdField(SAMPLE_PROP_COLUMN);
+            joinInformation7.setSubTable(TableMapper.SAMPLE.getEntitiesTable());
+            joinInformation7.setSubTableAlias(samplePropertyAlias);
+            joinInformation7.setSubTableIdField(ColumnNames.ID_COLUMN);
+            result.put(SAMPLE_PROP_COLUMN, joinInformation7);
+        }
 
         return result;
     }

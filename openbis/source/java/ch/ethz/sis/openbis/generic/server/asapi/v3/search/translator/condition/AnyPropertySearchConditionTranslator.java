@@ -31,6 +31,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.u
 import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.*;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.*;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.CONTROLLED_VOCABULARY_TERM_TABLE;
 
 public class AnyPropertySearchConditionTranslator implements IConditionTranslator<AnyPropertySearchCriteria>
@@ -79,17 +80,35 @@ public class AnyPropertySearchConditionTranslator implements IConditionTranslato
         {
             sqlBuilder.append(aliases.get(tableMapper.getValuesTable()).getSubTableAlias())
                     .append(PERIOD).append(ColumnNames.VALUE_COLUMN).append(SP);
-            TranslatorUtils.appendStringComparatorOp(value.getClass(), TranslatorUtils.stripQuotationMarks(value.getValue()), sqlBuilder,
+            final String finalValue = TranslatorUtils.stripQuotationMarks(value.getValue());
+            TranslatorUtils.appendStringComparatorOp(value.getClass(), finalValue, sqlBuilder,
                     args);
 
             sqlBuilder.append(SP).append(OR).append(SP).append(aliases.get(CONTROLLED_VOCABULARY_TERM_TABLE).getSubTableAlias())
                     .append(PERIOD).append(ColumnNames.CODE_COLUMN).append(SP);
-            TranslatorUtils.appendStringComparatorOp(value.getClass(), TranslatorUtils.stripQuotationMarks(value.getValue()), sqlBuilder,
+            TranslatorUtils.appendStringComparatorOp(value.getClass(), finalValue, sqlBuilder,
                     args);
+
+            if (tableMapper == TableMapper.SAMPLE || tableMapper == TableMapper.EXPERIMENT
+                    || tableMapper == TableMapper.DATA_SET)
+            {
+                appendSamplePropertyComparison(sqlBuilder, finalValue, aliases, CODE_COLUMN, args);
+                appendSamplePropertyComparison(sqlBuilder, finalValue, aliases, PERM_ID_COLUMN, args);
+                appendSamplePropertyComparison(sqlBuilder, finalValue, aliases, SAMPLE_IDENTIFIER_COLUMN, args);
+            }
         } else
         {
             sqlBuilder.append(TRUE);
         }
+    }
+
+    private static void appendSamplePropertyComparison(final StringBuilder sqlBuilder,
+            final String finalValue, final Map<String, JoinInformation> aliases, final String columnName,
+            final List<Object> args)
+    {
+        sqlBuilder.append(SP).append(OR).append(SP).append(aliases.get(SAMPLE_PROP_COLUMN).getSubTableAlias())
+                .append(PERIOD).append(columnName).append(SP).append(EQ).append(SP).append(QU);
+        args.add(finalValue);
     }
 
 }
