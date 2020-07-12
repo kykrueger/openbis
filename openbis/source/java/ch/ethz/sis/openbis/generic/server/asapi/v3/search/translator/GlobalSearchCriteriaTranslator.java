@@ -81,6 +81,8 @@ public class GlobalSearchCriteriaTranslator
 
     private static final String CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS = "cvte";
 
+    private static final String SAMPLES_TABLE_ALIAS = "samp";
+
     private static final String SPACE_TABLE_ALIAS = "space";
 
     private static final String PROJECT_TABLE_ALIAS = "proj";
@@ -548,6 +550,15 @@ public class GlobalSearchCriteriaTranslator
                     .append(CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS).append(SP).append(ON).append(SP).append(PROPERTIES_TABLE_ALIAS).append(PERIOD)
                     .append(VOCABULARY_TERM_COLUMN).append(SP).append(EQ).append(SP).append(CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS).append(PERIOD)
                     .append(ID_COLUMN).append(NL);
+
+            if (tableMapper == TableMapper.SAMPLE || tableMapper == TableMapper.EXPERIMENT
+                    || tableMapper == TableMapper.DATA_SET)
+            {
+                sqlBuilder.append(LEFT_JOIN).append(SP).append(SAMPLE.getEntitiesTable()).append(SP)
+                        .append(SAMPLES_TABLE_ALIAS).append(SP).append(ON).append(SP).append(PROPERTIES_TABLE_ALIAS)
+                        .append(PERIOD).append(SAMPLE_PROP_COLUMN).append(SP).append(EQ).append(SP)
+                        .append(SAMPLES_TABLE_ALIAS).append(PERIOD).append(ID_COLUMN).append(NL);
+            }
         }
 
         final boolean hasSpaces = hasSpaces(tableMapper);
@@ -621,18 +632,28 @@ public class GlobalSearchCriteriaTranslator
             buildAttributesMatchCondition(sqlBuilder, criterion, args);
         } else
         {
-            buildTsVectorMatch(sqlBuilder, criterion.getFieldValue(), args);
+            buildTsVectorMatch(sqlBuilder, criterion.getFieldValue(), vo.getTableMapper(), args);
         }
         sqlBuilder.append(NL);
     }
 
     private static void buildTsVectorMatch(final StringBuilder sqlBuilder, final AbstractStringValue stringValue,
-            final List<Object> args)
+            final TableMapper tableMapper, final List<Object> args)
     {
         sqlBuilder.append(GlobalSearchCriteriaTranslator.PROPERTIES_TABLE_ALIAS)
                 .append(PERIOD).append(TS_VECTOR_COLUMN).append(SP)
                 .append(DOUBLE_AT).append(SP);
         buildTsQueryPart(sqlBuilder, stringValue, args);
+
+        if (tableMapper == TableMapper.SAMPLE || tableMapper == TableMapper.EXPERIMENT
+                || tableMapper == TableMapper.DATA_SET)
+        {
+            sqlBuilder.append(SP).append(OR).append(SP);
+
+            sqlBuilder.append(SAMPLES_TABLE_ALIAS).append(PERIOD).append(TS_VECTOR_COLUMN).append(SP)
+                    .append(DOUBLE_AT).append(SP).append(QU).append(DOUBLE_COLON).append(TSQUERY);
+            args.add(stringValue.getValue().toLowerCase());
+        }
     }
 
     private static void buildTsQueryPart(final StringBuilder sqlBuilder, final AbstractStringValue stringValue,

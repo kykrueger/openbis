@@ -311,6 +311,7 @@ public class SearchDataSetTest extends AbstractDataSetTest
     {
         final String sessionToken = v3api.login(TEST_USER, PASSWORD);
         final PropertyTypePermId propertyType = createASamplePropertyType(sessionToken, null);
+
         final EntityTypePermId dataSetType = createADataSetType(sessionToken, false, propertyType);
         final DataSetCreation dataSetCreation = physicalDataSetCreation();
         dataSetCreation.setTypeId(dataSetType);
@@ -328,10 +329,11 @@ public class SearchDataSetTest extends AbstractDataSetTest
     }
 
     @Test
-    public void testSearchWithAnyPeopertyMatchingSampleProperty()
+    public void testSearchWithAnyPropertyMatchingSampleProperty()
     {
         final String sessionToken = v3api.login(TEST_USER, PASSWORD);
         final PropertyTypePermId propertyType = createASamplePropertyType(sessionToken, null);
+
         final EntityTypePermId dataSetType = createADataSetType(sessionToken, false, propertyType);
         final DataSetCreation dataSetCreation = physicalDataSetCreation();
         dataSetCreation.setTypeId(dataSetType);
