@@ -18,7 +18,9 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.translator.sample;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -173,7 +175,6 @@ public class SampleTranslator extends AbstractCachingTranslator<Long, Sample, Sa
         if (fetchOptions.hasParents())
         {
             relations.put(ISampleParentTranslator.class, parentTranslator.translate(context, sampleIds, fetchOptions.withParents()));
-            // TODO
         }
 
         if (fetchOptions.hasChildren())
@@ -290,14 +291,14 @@ public class SampleTranslator extends AbstractCachingTranslator<Long, Sample, Sa
         {
             Collection<SampleWithAnnotations> samples = relations.get(ISampleParentTranslator.class, sampleId);
             result.setParents(SampleUtils.extractSamples(samples));
-            HashMap<SamplePermId, Relationship> relationships = new HashMap<>();
+            Map<SamplePermId, Relationship> relationships = new HashMap<>();
             for (SampleWithAnnotations sampleWithAnnotations : samples)
             {
                 SamplePermId samplePermId = sampleWithAnnotations.getSample().getPermId();
                 Relationship relationship = new Relationship();
                 relationship.setChildAnnotations(CommonUtils.asMap(sampleWithAnnotations.getAnnotations()));
                 relationship.setParentAnnotations(CommonUtils.asMap(sampleWithAnnotations.getRelatedAnnotations()));
-                relationships.put(samplePermId, relationship);
+                relationships.put(samplePermId == null ? sampleWithAnnotations : samplePermId, relationship);
             }
             result.setParentsRelationships(relationships);
             result.getFetchOptions().withParentsUsing(fetchOptions.withParents());
@@ -307,14 +308,14 @@ public class SampleTranslator extends AbstractCachingTranslator<Long, Sample, Sa
         {
             Collection<SampleWithAnnotations> samples = relations.get(ISampleChildTranslator.class, sampleId);
             result.setChildren(SampleUtils.extractSamples(samples));
-            HashMap<SamplePermId, Relationship> relationships = new HashMap<>();
+            Map<SamplePermId, Relationship> relationships = new HashMap<>();
             for (SampleWithAnnotations sampleWithAnnotations : samples)
             {
                 SamplePermId samplePermId = sampleWithAnnotations.getSample().getPermId();
                 Relationship relationship = new Relationship();
                 relationship.setParentAnnotations(CommonUtils.asMap(sampleWithAnnotations.getAnnotations()));
                 relationship.setChildAnnotations(CommonUtils.asMap(sampleWithAnnotations.getRelatedAnnotations()));
-                relationships.put(samplePermId, relationship);
+                relationships.put(samplePermId == null ? sampleWithAnnotations : samplePermId, relationship);
             }
             result.setChildrenRelationships(relationships);
             result.getFetchOptions().withChildrenUsing(fetchOptions.withChildren());
@@ -358,4 +359,56 @@ public class SampleTranslator extends AbstractCachingTranslator<Long, Sample, Sa
 
     }
 
+    @Override
+    protected void postTranslate(TranslationContext context, Map<Long, Sample> samplesByIds)
+    {
+        Set<Sample> visitedSamples = new HashSet<>();
+        for (Sample sample : samplesByIds.values())
+        {
+            postTranslate(sample, visitedSamples);
+        }
+    }
+
+    private void postTranslate(Sample sample, Set<Sample> visitedSamples)
+    {
+        if (visitedSamples.contains(sample) == false)
+        {
+            visitedSamples.add(sample);
+            if (sample.getFetchOptions().hasParents())
+            {
+                replaceRelationshipPlaceholders(sample.getParentsRelationships());
+                for (Sample parent : sample.getParents())
+                {
+                    postTranslate(parent, visitedSamples);
+                }
+            }
+            if (sample.getFetchOptions().hasChildren())
+            {
+                replaceRelationshipPlaceholders(sample.getChildrenRelationships());
+                for (Sample child : sample.getChildren())
+                {
+                    postTranslate(child, visitedSamples);
+                }
+            }
+        }
+    }
+
+    private void replaceRelationshipPlaceholders(Map<SamplePermId, Relationship> relationships)
+    {
+        if (relationships != null)
+        {
+            for (SamplePermId samplePermId : new HashSet<>(relationships.keySet()))
+            {
+                if (samplePermId instanceof SampleWithAnnotations)
+                {
+                    SampleWithAnnotations sampleWithAnnotations = (SampleWithAnnotations) samplePermId;
+                    SamplePermId permId = sampleWithAnnotations.getSample().getPermId();
+                    if (permId != null)
+                    {
+                        relationships.put(permId, relationships.remove(sampleWithAnnotations));
+                    }
+                }
+            }
+        }
+    }
 }

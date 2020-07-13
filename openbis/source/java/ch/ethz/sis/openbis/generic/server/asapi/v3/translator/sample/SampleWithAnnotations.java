@@ -17,13 +17,16 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.translator.sample;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 
 /**
  * @author Franz-Josef Elmer
  *
  */
-public class SampleWithAnnotations
+public class SampleWithAnnotations extends SamplePermId
 {
+    private static final long serialVersionUID = 1L;
+
     private final Sample sample;
 
     private String annotations;
@@ -32,6 +35,7 @@ public class SampleWithAnnotations
 
     public SampleWithAnnotations(Sample sample)
     {
+        super("");
         this.sample = sample;
     }
 
@@ -58,6 +62,26 @@ public class SampleWithAnnotations
     public void setRelatedAnnotations(String relatedAnnotations)
     {
         this.relatedAnnotations = relatedAnnotations;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return sample.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (obj == this)
+        {
+            return true;
+        }
+        if (obj instanceof SampleWithAnnotations == false)
+        {
+            return false;
+        }
+        return sample.equals(((SampleWithAnnotations) obj).sample);
     }
     
 }
