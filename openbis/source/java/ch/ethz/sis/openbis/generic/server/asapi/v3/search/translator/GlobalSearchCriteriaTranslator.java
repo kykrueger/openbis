@@ -652,7 +652,7 @@ public class GlobalSearchCriteriaTranslator
 
             sqlBuilder.append(SAMPLES_TABLE_ALIAS).append(PERIOD).append(TS_VECTOR_COLUMN).append(SP)
                     .append(DOUBLE_AT).append(SP).append(QU).append(DOUBLE_COLON).append(TSQUERY);
-            args.add(stringValue.getValue().toLowerCase());
+            args.add(toTsQueryText(stringValue));
         }
     }
 
