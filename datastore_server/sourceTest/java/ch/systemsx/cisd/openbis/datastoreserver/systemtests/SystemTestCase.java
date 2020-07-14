@@ -314,10 +314,11 @@ public abstract class SystemTestCase extends AssertJUnit
 
     protected void waitUntil(ILogMonitoringStopCondition stopCondition, int maxWaitDurationInSeconds) throws Exception
     {
+        int lineIndex = 0;
         for (int loops = 0; loops < maxWaitDurationInSeconds; loops++)
         {
             Thread.sleep(1000);
-            List<ParsedLogEntry> logEntries = getLogEntries();
+            List<ParsedLogEntry> logEntries = getLogEntries(lineIndex);
             for (ParsedLogEntry logEntry : logEntries)
             {
                 if (stopCondition.stopConditionFulfilled(logEntry))
@@ -325,6 +326,7 @@ public abstract class SystemTestCase extends AssertJUnit
                     operationLog.info("Monitoring log stopped after this log entry: " + logEntry);
                     return;
                 }
+                lineIndex = logEntry.getLineIndex() + 1;
             }
         }
         fail("Log monitoring stop condition [" + stopCondition + "] never fulfilled after " + maxWaitDurationInSeconds + " seconds.");
@@ -332,13 +334,19 @@ public abstract class SystemTestCase extends AssertJUnit
 
     protected List<ParsedLogEntry> getLogEntries()
     {
+        return getLogEntries(0);
+    }
+    
+    protected List<ParsedLogEntry> getLogEntries(int lineIndex)
+    {
         List<ParsedLogEntry> result = new ArrayList<ParsedLogEntry>();
         String[] logLines = getLogAppender().getLogContent().split("\n");
         Pattern pattern = Pattern.compile("^(\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}),\\d{3} ([^ ]*) \\[([^\\]]*)\\] (.*)$");
         SimpleDateFormat dateFormat = new SimpleDateFormat(BasicConstant.DATE_WITHOUT_TIMEZONE_PATTERN);
         ParsedLogEntry logEntry = null;
-        for (String logLine : logLines)
+        for (int i = lineIndex; i < logLines.length; i++)
         {
+            String logLine = logLines[i];
             Matcher matcher = pattern.matcher(logLine);
             if (matcher.matches())
             {
@@ -348,7 +356,7 @@ public abstract class SystemTestCase extends AssertJUnit
                     String logLevel = matcher.group(2);
                     String threadName = matcher.group(3);
                     String logMessage = matcher.group(4);
-                    logEntry = new ParsedLogEntry(timestamp, logLevel, threadName, logMessage);
+                    logEntry = new ParsedLogEntry(i, timestamp, logLevel, threadName, logMessage);
                     result.add(logEntry);
                 } catch (ParseException ex)
                 {

@@ -16,7 +16,6 @@
 
 package ch.systemsx.cisd.openbis.screening.systemtests;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -33,6 +32,7 @@ import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.DataSetFile;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fetchoptions.DataSetFileFetchOptions;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.search.DataSetFileSearchCriteria;
 import ch.systemsx.cisd.common.collection.SimpleComparator;
+import ch.systemsx.cisd.openbis.datastoreserver.systemtests.CountStopCondition;
 import ch.systemsx.cisd.openbis.datastoreserver.systemtests.RegexCondition;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
@@ -63,7 +63,7 @@ public class MicroscopyThumbnailsCreationTaskTest extends AbstractMicroscopyImag
     public void dropAnExampleDataSet() throws Exception
     {
         super.dropAnExampleDataSet();
-        waitUntilDataSetImported(new RegexCondition(".* thumbnail data sets have been created."));
+        waitUntilDataSetImported(new CountStopCondition(new RegexCondition(".* thumbnail data sets have been created."), 5));
     }
 
     @Test
