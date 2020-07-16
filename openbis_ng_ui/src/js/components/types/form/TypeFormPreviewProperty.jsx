@@ -15,6 +15,7 @@ const EMPTY = 'empty'
 const styles = theme => ({
   draggable: {
     width: '100%',
+    cursor: 'pointer',
     padding: theme.spacing(1),
     boxSizing: 'border-box',
     borderWidth: '2px',
@@ -25,7 +26,7 @@ const styles = theme => ({
       marginBottom: 0
     },
     '&:hover': {
-      borderColor: theme.palette.background.secondary
+      borderColor: theme.palette.border.primary
     }
   },
   selected: {
@@ -59,7 +60,7 @@ const styles = theme => ({
     '&:hover': {
       borderStyle: 'solid',
       borderWidth: '0px 0px 2px 0px',
-      borderColor: theme.palette.background.secondary
+      borderColor: theme.palette.border.primary
     }
   }
 })
@@ -170,7 +171,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
   render() {
     logger.log(logger.DEBUG, 'TypeFormPreviewProperty.render')
 
-    let { property, selection, index, classes } = this.props
+    let { mode, property, selection, index, classes } = this.props
 
     const selected =
       selection &&
@@ -178,7 +179,11 @@ class TypeFormPreviewProperty extends React.PureComponent {
       selection.params.id === property.id
 
     return (
-      <Draggable draggableId={property.id} index={index}>
+      <Draggable
+        draggableId={property.id}
+        index={index}
+        isDragDisabled={mode !== 'edit'}
+      >
         {provided => (
           <div
             ref={provided.innerRef}
@@ -238,6 +243,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
         metadata={this.getMetadata()}
         error={this.getError()}
         styles={this.getStyles()}
+        mode='edit'
         onClick={this.handlePropertyClick}
         onChange={this.handleChange}
       />
@@ -258,6 +264,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
         metadata={this.getMetadata()}
         error={this.getError()}
         styles={this.getStyles()}
+        mode='edit'
         onClick={this.handlePropertyClick}
         onChange={this.handleChange}
       />
@@ -278,6 +285,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
           metadata={this.getMetadata()}
           error={this.getError()}
           styles={this.getStyles()}
+          mode='edit'
           onClick={this.handlePropertyClick}
           onChange={this.handleChange}
         />
@@ -310,6 +318,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
         metadata={this.getMetadata()}
         error={this.getError()}
         styles={this.getStyles()}
+        mode='edit'
         onClick={this.handlePropertyClick}
         onChange={this.handleChange}
       />
@@ -340,6 +349,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
         metadata={this.getMetadata()}
         error={this.getError()}
         styles={this.getStyles()}
+        mode='edit'
         onClick={this.handlePropertyClick}
         onChange={this.handleChange}
       />

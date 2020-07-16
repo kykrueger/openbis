@@ -7,13 +7,18 @@ import FilterIcon from '@material-ui/icons/FilterList'
 import CloseIcon from '@material-ui/icons/Close'
 import logger from '@src/js/common/logger.js'
 
-const styles = () => ({
+const styles = theme => ({
   field: {
     width: '100%'
   },
   input: {
-    height: '24px',
-    fontSize: '0.875rem'
+    fontSize: theme.typography.body2.fontSize,
+    height: '26px'
+  },
+  underline: {
+    '&:before': {
+      borderBottomColor: theme.palette.border.primary
+    }
   },
   adornment: {
     margin: '8px',
@@ -61,7 +66,8 @@ class FilterField extends React.Component {
           startAdornment: this.renderFilterIcon(),
           endAdornment: this.renderFilterClearIcon(),
           classes: {
-            input: classes.input
+            input: classes.input,
+            underline: classes.underline
           }
         }}
         margin='none'

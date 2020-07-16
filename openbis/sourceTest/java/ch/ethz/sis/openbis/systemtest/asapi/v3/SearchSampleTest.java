@@ -16,6 +16,16 @@
 
 package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotSame;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
+
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.CacheMode;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CodesSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
@@ -40,14 +50,8 @@ import ch.systemsx.cisd.openbis.systemtest.authorization.ProjectAuthorizationUse
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.stream.Collectors;
-
 import static ch.systemsx.cisd.common.test.AssertionUtil.assertCollectionContainsAtLeast;
 import static ch.systemsx.cisd.common.test.AssertionUtil.assertCollectionDoesntContain;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotSame;
 
 /**
  * @author pkupczyk
@@ -290,6 +294,70 @@ public class SearchSampleTest extends AbstractSampleTest
     }
 
     @Test
+    public void testSearchWithCodeThatIsLessOrEqualTo()
+    {
+        SampleSearchCriteria criteria = new SampleSearchCriteria();
+        criteria.withCode().thatIsLessThanOrEqualTo("3VCP5");
+        testSearch(TEST_USER, criteria, "/CISD/3V-125", "/CISD/3V-126", "/CISD/3VCP5");
+    }
+
+    @Test
+    public void testSearchWithCodeThatIsLessThan()
+    {
+        SampleSearchCriteria criteria = new SampleSearchCriteria();
+        criteria.withCode().thatIsLessThan("3VCP5");
+        testSearch(TEST_USER, criteria, "/CISD/3V-125", "/CISD/3V-126");
+    }
+
+    @Test
+    public void testSearchWithCodeThatIsGreaterThanOrEqualTo()
+    {
+        SampleSearchCriteria criteria = new SampleSearchCriteria();
+        criteria.withCode().thatIsGreaterThanOrEqualTo("WELL-A01");
+        testSearch(TEST_USER, criteria, "/CISD/PLATE_WELLSEARCH:WELL-A01", "/CISD/PLATE_WELLSEARCH:WELL-A02");
+    }
+
+    @Test
+    public void testSearchWithCodeThatIsGreaterThan()
+    {
+        SampleSearchCriteria criteria = new SampleSearchCriteria();
+        criteria.withCode().thatIsGreaterThan("WELL-A01");
+        testSearch(TEST_USER, criteria, "/CISD/PLATE_WELLSEARCH:WELL-A02");
+    }
+
+    @Test
+    public void testSearchWithPropertyThatIsLessThanOrEqualTo()
+    {
+        SampleSearchCriteria criteria = new SampleSearchCriteria();
+        criteria.withProperty("COMMENT").thatIsLessThanOrEqualTo("test comment");
+        testSearch(TEST_USER, criteria, "/CISD/3VCP7", "/CISD/CP-TEST-2", "/CISD/CP-TEST-3", "/TEST-SPACE/EV-TEST");
+    }
+
+    @Test
+    public void testSearchWithPropertyThatIsLessThan()
+    {
+        SampleSearchCriteria criteria = new SampleSearchCriteria();
+        criteria.withProperty("COMMENT").thatIsLessThan("test comment");
+        testSearch(TEST_USER, criteria, "/CISD/CP-TEST-2", "/CISD/CP-TEST-3");
+    }
+
+    @Test
+    public void testSearchWithPropertyThatIsGreaterThanOrEqualTo()
+    {
+        SampleSearchCriteria criteria = new SampleSearchCriteria();
+        criteria.withProperty("COMMENT").thatIsGreaterThanOrEqualTo("test comment");
+        testSearch(TEST_USER, criteria, "/CISD/3VCP7", "/CISD/CP-TEST-1", "/TEST-SPACE/EV-TEST");
+    }
+
+    @Test
+    public void testSearchWithPropertyThatIsGreaterThan()
+    {
+        SampleSearchCriteria criteria = new SampleSearchCriteria();
+        criteria.withProperty("COMMENT").thatIsGreaterThan("test comment");
+        testSearch(TEST_USER, criteria, "/CISD/CP-TEST-1");
+    }
+
+    @Test
     public void testSearchWithCodes()
     {
         SampleSearchCriteria criteria = new SampleSearchCriteria();
@@ -309,7 +377,7 @@ public class SearchSampleTest extends AbstractSampleTest
     public void testSearchWithCodesWithNull()
     {
         SampleSearchCriteria criteria = new SampleSearchCriteria();
-        criteria.withCodes().thatIn(Arrays.asList(new String[]{null}));
+        criteria.withCodes().thatIn(Arrays.asList(new String[] { null }));
         criteria.withOrOperator();
         testSearch(TEST_USER, criteria, 0);
     }
@@ -1012,7 +1080,7 @@ public class SearchSampleTest extends AbstractSampleTest
     public void testSearchWithModificationDateThatEquals()
     {
         final Long count = (Long) sqlExecutor.execute("SELECT count(*) FROM samples WHERE modification_timestamp::DATE = ?::DATE",
-            Arrays.asList("2009-08-18")).get(0).get("count");
+                Arrays.asList("2009-08-18")).get(0).get("count");
 
         SampleSearchCriteria criteria = new SampleSearchCriteria();
         criteria.withModificationDate().thatEquals("2009-08-18");
@@ -1026,7 +1094,7 @@ public class SearchSampleTest extends AbstractSampleTest
         criteria.withAnyField().thatEquals("\"very advanced stuff\"");
         testSearch(TEST_USER, criteria, "/CISD/CP-TEST-1");
     }
-    
+
     @Test
     public void testSearchWithAnyFieldMatchingRegistrationDateWithVariousFormats()
     {

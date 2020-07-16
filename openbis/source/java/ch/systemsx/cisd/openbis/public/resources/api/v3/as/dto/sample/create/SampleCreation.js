@@ -1,9 +1,10 @@
 /**
  * @author pkupczyk
  */
-define([ "stjs" ], function(stjs) {
+define([ "stjs", "as/dto/common/Relationship" ], function(stjs, Relationship) {
 	var SampleCreation = function() {
 		this.properties = {};
+		this.relationships = {};
 	};
 	stjs.extend(SampleCreation, null, [], function(constructor, prototype) {
 		prototype['@type'] = 'as.dto.sample.create.SampleCreation';
@@ -18,6 +19,7 @@ define([ "stjs" ], function(stjs) {
 		prototype.componentIds = null;
 		prototype.parentIds = null;
 		prototype.childIds = null;
+		prototype.relationships = null;
 		prototype.properties = null;
 		prototype.attachments = null;
 		prototype.creationId = null;
@@ -88,6 +90,20 @@ define([ "stjs" ], function(stjs) {
 		prototype.setChildIds = function(childIds) {
 			this.childIds = childIds;
 		};
+		prototype.getRelationships = function() {
+			return this.relationships;
+		};
+		prototype.setRelationships = function(relationships) {
+			this.relationships = relationships;
+		};
+		prototype.relationship = function(sampleId) {
+			relationship = this.relationships[sampleId];
+			if (relationship == null) {
+				relationship = new Relationship();
+				this.relationships[sampleId] = relationship;
+			};
+			return relationship;
+		};
 		prototype.getAttachments = function() {
 			return this.attachments;
 		};
@@ -137,6 +153,10 @@ define([ "stjs" ], function(stjs) {
 		childIds : {
 			name : "List",
 			arguments : [ "Object" ]
+		},
+		relationships : {
+			name : "Map",
+			arguments : [ null, "Relationship" ]
 		},
 		attachments : {
 			name : "List",

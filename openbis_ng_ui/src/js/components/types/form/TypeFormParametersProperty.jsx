@@ -1,19 +1,17 @@
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
+import Container from '@src/js/components/common/form/Container.jsx'
 import AutocompleterField from '@src/js/components/common/form/AutocompleterField.jsx'
 import CheckboxField from '@src/js/components/common/form/CheckboxField.jsx'
 import TextField from '@src/js/components/common/form/TextField.jsx'
 import SelectField from '@src/js/components/common/form/SelectField.jsx'
+import Message from '@src/js/components/common/form/Message.jsx'
 import openbis from '@src/js/services/openbis.js'
 import logger from '@src/js/common/logger.js'
 
-import TypeFormMessage from './TypeFormMessage.jsx'
 import TypeFormHeader from './TypeFormHeader.jsx'
 
 const styles = theme => ({
-  container: {
-    padding: `${theme.spacing(1)}px ${theme.spacing(2)}px`
-  },
   header: {
     paddingBottom: theme.spacing(1)
   },
@@ -105,7 +103,7 @@ class TypeFormParametersProperty extends React.PureComponent {
     const { classes } = this.props
 
     return (
-      <div className={classes.container}>
+      <Container>
         <TypeFormHeader className={classes.header}>Property</TypeFormHeader>
         {this.renderMessageGlobal(property)}
         {this.renderMessageUsage(property)}
@@ -123,7 +121,7 @@ class TypeFormParametersProperty extends React.PureComponent {
         {this.renderVisible(property)}
         {this.renderMandatory(property)}
         {this.renderInitialValue(property)}
-      </div>
+      </Container>
     )
   }
 
@@ -132,10 +130,10 @@ class TypeFormParametersProperty extends React.PureComponent {
       const { classes } = this.props
       return (
         <div className={classes.field}>
-          <TypeFormMessage type='warning'>
+          <Message type='warning'>
             This property is global. Changes will also influence other types
             where this property is used.
-          </TypeFormMessage>
+          </Message>
         </div>
       )
     } else {
@@ -163,7 +161,7 @@ class TypeFormParametersProperty extends React.PureComponent {
     if (property.usagesLocal !== 0 || property.usagesGlobal !== 0) {
       return (
         <div className={classes.field}>
-          <TypeFormMessage type='info'>{message(property)}</TypeFormMessage>
+          <Message type='info'>{message(property)}</Message>
         </div>
       )
     } else {
@@ -190,7 +188,7 @@ class TypeFormParametersProperty extends React.PureComponent {
     ) {
       return (
         <div className={classes.field}>
-          <TypeFormMessage type='info'>{message(property)}</TypeFormMessage>
+          <Message type='info'>{message(property)}</Message>
         </div>
       )
     } else {
@@ -210,7 +208,7 @@ class TypeFormParametersProperty extends React.PureComponent {
       { label: 'Global', value: 'global' }
     ]
 
-    const { classes } = this.props
+    const { mode, classes } = this.props
     return (
       <div className={classes.field}>
         <SelectField
@@ -221,6 +219,7 @@ class TypeFormParametersProperty extends React.PureComponent {
           error={error}
           disabled={!enabled}
           value={value}
+          mode={mode}
           options={options}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
@@ -237,7 +236,7 @@ class TypeFormParametersProperty extends React.PureComponent {
       return null
     }
 
-    const { classes } = this.props
+    const { mode, classes } = this.props
     return (
       <div className={classes.field}>
         <TextField
@@ -248,6 +247,7 @@ class TypeFormParametersProperty extends React.PureComponent {
           error={error}
           disabled={!enabled}
           value={value}
+          mode={mode}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
           onBlur={this.handleBlur}
@@ -263,7 +263,7 @@ class TypeFormParametersProperty extends React.PureComponent {
       return null
     }
 
-    const { classes, controller } = this.props
+    const { mode, classes, controller } = this.props
 
     if (property.scope.value === 'local') {
       return (
@@ -276,6 +276,7 @@ class TypeFormParametersProperty extends React.PureComponent {
             error={error}
             disabled={!enabled}
             value={value}
+            mode={mode}
             onChange={this.handleChange}
             onFocus={this.handleFocus}
             onBlur={this.handleBlur}
@@ -300,6 +301,7 @@ class TypeFormParametersProperty extends React.PureComponent {
             error={error}
             disabled={!enabled}
             value={value}
+            mode={mode}
             onChange={this.handleChange}
             onFocus={this.handleFocus}
             onBlur={this.handleBlur}
@@ -316,7 +318,7 @@ class TypeFormParametersProperty extends React.PureComponent {
       return null
     }
 
-    const { classes } = this.props
+    const { mode, classes } = this.props
     return (
       <div className={classes.field}>
         <TextField
@@ -327,6 +329,7 @@ class TypeFormParametersProperty extends React.PureComponent {
           error={error}
           disabled={!enabled}
           value={value}
+          mode={mode}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
           onBlur={this.handleBlur}
@@ -349,7 +352,7 @@ class TypeFormParametersProperty extends React.PureComponent {
       }
     })
 
-    const { classes } = this.props
+    const { mode, classes } = this.props
     return (
       <div className={classes.field}>
         <SelectField
@@ -361,6 +364,7 @@ class TypeFormParametersProperty extends React.PureComponent {
           disabled={!enabled}
           value={value}
           options={options}
+          mode={mode}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
           onBlur={this.handleBlur}
@@ -376,7 +380,7 @@ class TypeFormParametersProperty extends React.PureComponent {
       return null
     }
 
-    const { classes, controller } = this.props
+    const { mode, classes, controller } = this.props
     const { vocabularies = [] } = controller.getDictionaries()
 
     let options = []
@@ -402,6 +406,7 @@ class TypeFormParametersProperty extends React.PureComponent {
           disabled={!enabled}
           value={value}
           options={options}
+          mode={mode}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
           onBlur={this.handleBlur}
@@ -417,7 +422,7 @@ class TypeFormParametersProperty extends React.PureComponent {
       return null
     }
 
-    const { classes, controller } = this.props
+    const { mode, classes, controller } = this.props
     const { materialTypes = [] } = controller.getDictionaries()
 
     let options = []
@@ -443,6 +448,7 @@ class TypeFormParametersProperty extends React.PureComponent {
           disabled={!enabled}
           value={value}
           options={options}
+          mode={mode}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
           onBlur={this.handleBlur}
@@ -458,7 +464,7 @@ class TypeFormParametersProperty extends React.PureComponent {
       return null
     }
 
-    const { classes } = this.props
+    const { mode, classes } = this.props
 
     return (
       <div className={classes.field}>
@@ -470,6 +476,7 @@ class TypeFormParametersProperty extends React.PureComponent {
           disabled={!enabled}
           value={value}
           multiline={true}
+          mode={mode}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
           onBlur={this.handleBlur}
@@ -485,7 +492,7 @@ class TypeFormParametersProperty extends React.PureComponent {
       return null
     }
 
-    const { classes } = this.props
+    const { mode, classes } = this.props
 
     return (
       <div className={classes.field}>
@@ -497,6 +504,7 @@ class TypeFormParametersProperty extends React.PureComponent {
           disabled={!enabled}
           value={value}
           multiline={true}
+          mode={mode}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
           onBlur={this.handleBlur}
@@ -512,7 +520,7 @@ class TypeFormParametersProperty extends React.PureComponent {
       return null
     }
 
-    const { classes, controller } = this.props
+    const { mode, classes, controller } = this.props
     const { dynamicPlugins = [] } = controller.getDictionaries()
 
     let options = []
@@ -537,6 +545,7 @@ class TypeFormParametersProperty extends React.PureComponent {
           disabled={!enabled}
           value={value}
           options={options}
+          mode={mode}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
           onBlur={this.handleBlur}
@@ -552,7 +561,7 @@ class TypeFormParametersProperty extends React.PureComponent {
       return null
     }
 
-    const { classes } = this.props
+    const { mode, classes } = this.props
     return (
       <div className={classes.field}>
         <CheckboxField
@@ -562,6 +571,7 @@ class TypeFormParametersProperty extends React.PureComponent {
           error={error}
           disabled={!enabled}
           value={value}
+          mode={mode}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
           onBlur={this.handleBlur}
@@ -579,7 +589,7 @@ class TypeFormParametersProperty extends React.PureComponent {
       return null
     }
 
-    const { classes } = this.props
+    const { mode, classes } = this.props
     return (
       <div className={classes.field}>
         <TextField
@@ -590,6 +600,7 @@ class TypeFormParametersProperty extends React.PureComponent {
           error={error}
           disabled={!enabled}
           value={value}
+          mode={mode}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
           onBlur={this.handleBlur}
@@ -605,7 +616,7 @@ class TypeFormParametersProperty extends React.PureComponent {
       return null
     }
 
-    const { classes } = this.props
+    const { mode, classes } = this.props
     return (
       <div className={classes.field}>
         <CheckboxField
@@ -615,6 +626,7 @@ class TypeFormParametersProperty extends React.PureComponent {
           error={error}
           disabled={!enabled}
           value={value}
+          mode={mode}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
           onBlur={this.handleBlur}

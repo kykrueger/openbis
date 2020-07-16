@@ -757,6 +757,15 @@ var FormUtil = new function() {
 			$component = this._getInputField("text", propertyType.code, propertyType.description, null, propertyType.mandatory);
 		} else if (propertyType.dataType === "XML") {
 			$component = this._getTextBox(propertyType.code, propertyType.description, propertyType.mandatory);
+		} else if (propertyType.dataType === "SAMPLE") {
+		    var sampleTypeCode = null;
+		    var sampleTypePlaceholder = null;
+		    if(!sampleTypeCode) {
+		        sampleTypePlaceholder = " of any type"
+		    } else {
+		        sampleTypePlaceholder = " of type " + sampleTypeCode
+		    }
+		    $component = new SampleField(propertyType.mandatory, "Select " + ELNDictionary.Sample + sampleTypePlaceholder, sampleTypeCode);
 		}
 		
 		return $component;

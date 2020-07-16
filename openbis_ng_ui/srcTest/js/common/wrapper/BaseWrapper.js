@@ -15,17 +15,21 @@ export default class BaseWrapper {
     return value === undefined || value === null || value === false
   }
 
-  async expectJSON(json) {
-    await new Promise((resolve, reject) => {
+  async update() {
+    // update the wrapper after all queued async callbacks are finished
+    return new Promise((resolve, reject) => {
       setTimeout(() => {
         try {
           this.wrapper.update()
-          expect(this.toJSON()).toMatchObject(json)
           resolve()
         } catch (e) {
           reject(e)
         }
       }, 0)
     })
+  }
+
+  expectJSON(json) {
+    expect(this.toJSON()).toMatchObject(json)
   }
 }

@@ -29,8 +29,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.Tag;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sample.SampleUtils;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.AbstractCachingTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.TranslationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.TranslationResults;
@@ -205,7 +205,7 @@ public class ExperimentTranslator extends AbstractCachingTranslator<Long, Experi
 
         if (fetchOptions.hasSamples())
         {
-            result.setSamples((List<Sample>) relations.get(IExperimentSampleTranslator.class, experimentId));
+            result.setSamples(SampleUtils.extractSamples(relations.get(IExperimentSampleTranslator.class, experimentId)));
             result.getFetchOptions().withSamplesUsing(fetchOptions.withSamples());
         }
 

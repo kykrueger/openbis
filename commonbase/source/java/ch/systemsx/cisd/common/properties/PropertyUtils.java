@@ -185,7 +185,7 @@ public final class PropertyUtils
             {
                 try
                 {
-                    patterns.add(Pattern.compile(regex));
+                    patterns.add(compilePattern(regex, key));
                 } catch (PatternSyntaxException ex)
                 {
                     throw new ConfigurationFailureException("Property '" + key
@@ -194,6 +194,23 @@ public final class PropertyUtils
             }
         }
         return patterns;
+    }
+    
+    public static Pattern getPattern(Properties properties, String key, String defaultValue)
+    {
+        return compilePattern(properties.getProperty(key, defaultValue), key);
+    }
+    
+    private static Pattern compilePattern(String regex, String key)
+    {
+        try
+        {
+            return Pattern.compile(regex);
+        } catch (PatternSyntaxException ex)
+        {
+            throw new ConfigurationFailureException("Property '" + key
+                    + "' has invalid regular expression '" + regex + "': " + ex.getMessage());
+        }
     }
 
     /**
@@ -285,7 +302,7 @@ public final class PropertyUtils
         {
             return defaultValue;
         }
-        if (NumberUtils.isNumber(longOrNull) == false)
+        if (NumberUtils.isCreatable(longOrNull) == false)
         {
             if (loggerOrNull != null)
             {
@@ -360,7 +377,7 @@ public final class PropertyUtils
         {
             return defaultValue;
         }
-        if (NumberUtils.isNumber(intOrNull) == false)
+        if (NumberUtils.isCreatable(intOrNull) == false)
         {
             if (loggerOrNull != null)
             {
@@ -435,7 +452,7 @@ public final class PropertyUtils
         {
             return defaultValue;
         }
-        if (NumberUtils.isNumber(doubleOrNull) == false)
+        if (NumberUtils.isCreatable(doubleOrNull) == false)
         {
             if (loggerOrNull != null)
             {

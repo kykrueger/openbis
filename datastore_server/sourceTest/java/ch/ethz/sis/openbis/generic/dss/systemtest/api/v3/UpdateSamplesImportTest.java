@@ -76,7 +76,7 @@ public class UpdateSamplesImportTest extends ObjectsImportTest
                 parameters.put(PARAM_USER_EMAIL, TEST_EMAIL);
             }
 
-            long timestamp = System.currentTimeMillis();
+            long timestamp = getTimestampAndWaitASecond();
             String message = executeImport(sessionToken, "updateSamples", parameters);
 
             sample = getObject(sessionToken, sampleIdentifier, timestamp, DEFAULT_TIMEOUT);

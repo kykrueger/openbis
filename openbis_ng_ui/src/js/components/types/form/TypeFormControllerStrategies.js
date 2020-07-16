@@ -1,65 +1,92 @@
 import objectTypes from '@src/js/common/consts/objectType.js'
+import openbis from '@src/js/services/openbis.js'
 
 export default class TypeFormControllerStrategies {
   constructor() {
-    this.objectTypeStrategy = null
-    this.collectionTypeStrategy = null
-    this.dataSetTypeStrategy = null
-    this.materialTypeStrategy = null
+    this.objectTypeStrategy = {
+      getEntityKind: function () {
+        return openbis.EntityKind.SAMPLE
+      },
+      getNewObjectType: function () {
+        return objectTypes.NEW_OBJECT_TYPE
+      },
+      getExistingObjectType: function () {
+        return objectTypes.OBJECT_TYPE
+      }
+    }
+    this.collectionTypeStrategy = {
+      getEntityKind: function () {
+        return openbis.EntityKind.EXPERIMENT
+      },
+      getNewObjectType: function () {
+        return objectTypes.NEW_COLLECTION_TYPE
+      },
+      getExistingObjectType: function () {
+        return objectTypes.COLLECTION_TYPE
+      }
+    }
+    this.dataSetTypeStrategy = {
+      getEntityKind: function () {
+        return openbis.EntityKind.DATA_SET
+      },
+      getNewObjectType: function () {
+        return objectTypes.NEW_DATA_SET_TYPE
+      },
+      getExistingObjectType: function () {
+        return objectTypes.DATA_SET_TYPE
+      }
+    }
+    this.materialTypeStrategy = {
+      getEntityKind: function () {
+        return openbis.EntityKind.MATERIAL
+      },
+      getNewObjectType: function () {
+        return objectTypes.NEW_MATERIAL_TYPE
+      },
+      getExistingObjectType: function () {
+        return objectTypes.MATERIAL_TYPE
+      }
+    }
   }
 
-  static isObjectType(type) {
-    return (
-      type === objectTypes.NEW_OBJECT_TYPE || type === objectTypes.OBJECT_TYPE
+  extendObjectTypeStrategy(strategy) {
+    this.objectTypeStrategy = Object.assign(strategy, this.objectTypeStrategy)
+  }
+
+  extendCollectionTypeStrategy(strategy) {
+    this.collectionTypeStrategy = Object.assign(
+      strategy,
+      this.collectionTypeStrategy
     )
   }
 
-  static isCollectionType(type) {
-    return (
-      type === objectTypes.NEW_COLLECTION_TYPE ||
-      type === objectTypes.COLLECTION_TYPE
+  extendDataSetTypeStrategy(strategy) {
+    this.dataSetTypeStrategy = Object.assign(strategy, this.dataSetTypeStrategy)
+  }
+
+  extendMaterialTypeStrategy(strategy) {
+    this.materialTypeStrategy = Object.assign(
+      strategy,
+      this.materialTypeStrategy
     )
-  }
-
-  static isDataSetType(type) {
-    return (
-      type === objectTypes.NEW_DATA_SET_TYPE ||
-      type === objectTypes.DATA_SET_TYPE
-    )
-  }
-
-  static isMaterialType(type) {
-    return (
-      type === objectTypes.NEW_MATERIAL_TYPE ||
-      type === objectTypes.MATERIAL_TYPE
-    )
-  }
-
-  setObjectTypeStrategy(strategy) {
-    this.objectTypeStrategy = strategy
-  }
-
-  setCollectionTypeStrategy(strategy) {
-    this.collectionTypeStrategy = strategy
-  }
-
-  setDataSetTypeStrategy(strategy) {
-    this.dataSetTypeStrategy = strategy
-  }
-
-  setMaterialTypeStrategy(strategy) {
-    this.materialTypeStrategy = strategy
   }
 
   getStrategy(type) {
-    if (TypeFormControllerStrategies.isObjectType(type)) {
-      return this.objectTypeStrategy
-    } else if (TypeFormControllerStrategies.isCollectionType(type)) {
-      return this.collectionTypeStrategy
-    } else if (TypeFormControllerStrategies.isDataSetType(type)) {
-      return this.dataSetTypeStrategy
-    } else if (TypeFormControllerStrategies.isMaterialType(type)) {
-      return this.materialTypeStrategy
+    const strategies = [
+      this.objectTypeStrategy,
+      this.collectionTypeStrategy,
+      this.dataSetTypeStrategy,
+      this.materialTypeStrategy
+    ]
+
+    const strategy = strategies.find(
+      strategy =>
+        type === strategy.getNewObjectType() ||
+        type === strategy.getExistingObjectType()
+    )
+
+    if (strategy) {
+      return strategy
     } else {
       throw 'Unsupported type: ' + type
     }

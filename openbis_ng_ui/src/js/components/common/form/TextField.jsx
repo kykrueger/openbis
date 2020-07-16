@@ -6,8 +6,9 @@ import logger from '@src/js/common/logger.js'
 
 import FormFieldContainer from './FormFieldContainer.jsx'
 import FormFieldLabel from './FormFieldLabel.jsx'
+import FormFieldView from './FormFieldView.jsx'
 
-const styles = () => ({
+const styles = theme => ({
   startAdornment: {
     marginRight: 0
   },
@@ -18,7 +19,7 @@ const styles = () => ({
     margin: 0
   },
   input: {
-    fontSize: '0.875rem'
+    fontSize: theme.typography.body2.fontSize
   }
 })
 
@@ -26,8 +27,26 @@ class TextFormField extends React.PureComponent {
   render() {
     logger.log(logger.DEBUG, 'TextFormField.render')
 
+    const { mode = 'edit' } = this.props
+
+    if (mode === 'view') {
+      return this.renderView()
+    } else if (mode === 'edit') {
+      return this.renderEdit()
+    } else {
+      throw 'Unsupported mode: ' + mode
+    }
+  }
+
+  renderView() {
+    const { label, value } = this.props
+    return <FormFieldView label={label} value={value} />
+  }
+
+  renderEdit() {
     const {
       reference,
+      id,
       type,
       name,
       label,
@@ -35,6 +54,7 @@ class TextFormField extends React.PureComponent {
       value,
       mandatory,
       disabled,
+      autoComplete = 'off',
       error,
       multiline,
       metadata,
@@ -43,6 +63,7 @@ class TextFormField extends React.PureComponent {
       styles,
       classes,
       onClick,
+      onKeyPress,
       onChange,
       onFocus,
       onBlur
@@ -58,6 +79,7 @@ class TextFormField extends React.PureComponent {
       >
         <TextField
           inputRef={reference}
+          id={id}
           type={type}
           label={
             <FormFieldLabel
@@ -92,11 +114,12 @@ class TextFormField extends React.PureComponent {
           error={!!error}
           disabled={disabled}
           multiline={multiline}
+          onKeyPress={onKeyPress}
           onChange={onChange}
           onFocus={onFocus}
           onBlur={onBlur}
           fullWidth={true}
-          autoComplete='off'
+          autoComplete={autoComplete}
           variant='filled'
           margin='dense'
           classes={{

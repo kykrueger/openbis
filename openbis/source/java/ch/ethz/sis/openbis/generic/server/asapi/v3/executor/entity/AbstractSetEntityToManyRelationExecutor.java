@@ -19,7 +19,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.entity;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
-import java.util.LinkedHashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -48,20 +48,18 @@ public abstract class AbstractSetEntityToManyRelationExecutor<ENTITY_CREATION ex
 
     public void set(final IOperationContext context, final MapBatch<ENTITY_CREATION, ENTITY_PE> batch)
     {
-        final Collection<RELATED_PE> allSet = new HashSet<RELATED_PE>();
-        final Map<ENTITY_CREATION, Collection<RELATED_PE>> relatedMap = getRelatedMap(context, batch);
+        final Map<ENTITY_CREATION, Map<RELATED_ID, RELATED_PE>> relatedMap = getRelatedMap(context, batch);
 
         new MapBatchProcessor<ENTITY_CREATION, ENTITY_PE>(context, batch)
             {
                 @Override
                 public void process(ENTITY_CREATION creation, ENTITY_PE entity)
                 {
-                    Collection<RELATED_PE> related = relatedMap.get(creation);
+                    Map<RELATED_ID, RELATED_PE> relatedByIds = relatedMap.get(creation);
 
-                    if (related != null && false == related.isEmpty())
+                    if (relatedByIds != null && false == relatedByIds.isEmpty())
                     {
-                        setRelated(context, entity, related);
-                        allSet.addAll(related);
+                        setRelated(context, entity, relatedByIds.values());
                     }
                 }
 
@@ -72,13 +70,14 @@ public abstract class AbstractSetEntityToManyRelationExecutor<ENTITY_CREATION ex
                 }
             };
 
-        postSet(context, allSet);
+        postSet(context, batch, relatedMap);
     }
 
-    private Map<ENTITY_CREATION, Collection<RELATED_PE>> getRelatedMap(final IOperationContext context,
+    private Map<ENTITY_CREATION, Map<RELATED_ID, RELATED_PE>> getRelatedMap(final IOperationContext context,
             final MapBatch<ENTITY_CREATION, ENTITY_PE> batch)
     {
-        final Map<ENTITY_CREATION, Collection<RELATED_PE>> relatedMap = new IdentityHashMap<ENTITY_CREATION, Collection<RELATED_PE>>();
+        final Map<ENTITY_CREATION, Map<RELATED_ID, RELATED_PE>> relatedMap =
+                new IdentityHashMap<ENTITY_CREATION, Map<RELATED_ID, RELATED_PE>>();
         final Set<RELATED_ID> toLoadIds = new HashSet<RELATED_ID>();
 
         new MapBatchProcessor<ENTITY_CREATION, ENTITY_PE>(context, batch)
@@ -115,7 +114,7 @@ public abstract class AbstractSetEntityToManyRelationExecutor<ENTITY_CREATION ex
 
                         if (relatedIds != null)
                         {
-                            Collection<RELATED_PE> relatedCollection = new LinkedHashSet<RELATED_PE>();
+                            Map<RELATED_ID, RELATED_PE> relatedByIds = new LinkedHashMap<>();
 
                             for (RELATED_ID relatedId : relatedIds)
                             {
@@ -131,11 +130,11 @@ public abstract class AbstractSetEntityToManyRelationExecutor<ENTITY_CREATION ex
                                         check(context, relatedId, related);
                                         checked.add(related);
                                     }
-                                    relatedCollection.add(related);
+                                    relatedByIds.put(relatedId, related);
                                 }
                             }
 
-                            relatedMap.put(creation, relatedCollection);
+                            relatedMap.put(creation, relatedByIds);
                         }
                     }
 
@@ -148,6 +147,17 @@ public abstract class AbstractSetEntityToManyRelationExecutor<ENTITY_CREATION ex
         }
 
         return relatedMap;
+    }
+
+    protected void postSet(IOperationContext context, MapBatch<ENTITY_CREATION, ENTITY_PE> batch,
+            Map<ENTITY_CREATION, Map<RELATED_ID, RELATED_PE>> relatedMap)
+    {
+        Collection<RELATED_PE> allSet = new HashSet<RELATED_PE>();
+        for (Map<RELATED_ID, RELATED_PE> map : relatedMap.values())
+        {
+            allSet.addAll(map.values());
+        }
+        postSet(context, allSet);
     }
 
     protected void postSet(IOperationContext context, Collection<RELATED_PE> allSet)
@@ -165,6 +175,6 @@ public abstract class AbstractSetEntityToManyRelationExecutor<ENTITY_CREATION ex
 
     protected abstract void check(IOperationContext context, RELATED_ID relatedId, RELATED_PE related);
 
-    protected abstract void setRelated(IOperationContext context, ENTITY_PE entity, Collection<RELATED_PE> related);
+    protected abstract void setRelated(IOperationContext context, ENTITY_PE entity, Collection<RELATED_PE> relatedByIds);
 
 }

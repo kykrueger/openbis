@@ -17,7 +17,11 @@ import DataSetTypeFetchOptions from 'as/dto/dataset/fetchoptions/DataSetTypeFetc
 import DataSetTypeSearchCriteria from 'as/dto/dataset/search/DataSetTypeSearchCriteria'
 import DataSetTypeUpdate from 'as/dto/dataset/update/DataSetTypeUpdate'
 import DataType from 'as/dto/property/DataType'
+import DeleteDataSetTypesOperation from 'as/dto/dataset/delete/DeleteDataSetTypesOperation'
+import DeleteExperimentTypesOperation from 'as/dto/experiment/delete/DeleteExperimentTypesOperation'
+import DeleteMaterialTypesOperation from 'as/dto/material/delete/DeleteMaterialTypesOperation'
 import DeletePropertyTypesOperation from 'as/dto/property/delete/DeletePropertyTypesOperation'
+import DeleteSampleTypesOperation from 'as/dto/sample/delete/DeleteSampleTypesOperation'
 import EntityKind from 'as/dto/entitytype/EntityKind'
 import EntityTypePermId from 'as/dto/entitytype/id/EntityTypePermId'
 import ExperimentFetchOptions from 'as/dto/experiment/fetchoptions/ExperimentFetchOptions'
@@ -105,7 +109,11 @@ const dto = {
   DataSetTypeSearchCriteria,
   DataSetTypeUpdate,
   DataType,
+  DeleteDataSetTypesOperation,
+  DeleteExperimentTypesOperation,
+  DeleteMaterialTypesOperation,
   DeletePropertyTypesOperation,
+  DeleteSampleTypesOperation,
   EntityKind,
   EntityTypePermId,
   ExperimentFetchOptions,

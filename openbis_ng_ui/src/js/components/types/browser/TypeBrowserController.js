@@ -103,39 +103,69 @@ export default class TypeBrowserController extends BrowserController {
 
     const { type, id } = node.object
     const reason = 'deleted via ng_ui'
-    let promise = null
+    const operations = []
 
     if (type === objectType.OBJECT_TYPE) {
       const options = new openbis.SampleTypeDeletionOptions()
       options.setReason(reason)
-      promise = openbis.deleteSampleTypes(
-        [new openbis.EntityTypePermId(id)],
-        options
+      operations.push(
+        new openbis.DeleteSampleTypesOperation(
+          [new openbis.EntityTypePermId(id)],
+          options
+        )
       )
     } else if (type === objectType.COLLECTION_TYPE) {
       const options = new openbis.ExperimentTypeDeletionOptions()
       options.setReason(reason)
-      promise = openbis.deleteExperimentTypes(
-        [new openbis.EntityTypePermId(id)],
-        options
+      operations.push(
+        new openbis.DeleteExperimentTypesOperation(
+          [new openbis.EntityTypePermId(id)],
+          options
+        )
       )
     } else if (type === objectType.DATA_SET_TYPE) {
       const options = new openbis.DataSetTypeDeletionOptions()
       options.setReason(reason)
-      promise = openbis.deleteDataSetTypes(
-        [new openbis.EntityTypePermId(id)],
-        options
+      operations.push(
+        new openbis.DeleteDataSetTypesOperation(
+          [new openbis.EntityTypePermId(id)],
+          options
+        )
       )
     } else if (type === objectType.MATERIAL_TYPE) {
       const options = new openbis.MaterialTypeDeletionOptions()
       options.setReason(reason)
-      promise = openbis.deleteMaterialTypes(
-        [new openbis.EntityTypePermId(id)],
-        options
+      operations.push(
+        new openbis.DeleteMaterialTypesOperation(
+          [new openbis.EntityTypePermId(id)],
+          options
+        )
       )
     }
 
-    return promise
+    const criteria = new openbis.PropertyTypeSearchCriteria()
+    criteria.withCode().thatStartsWith(id + '.')
+    const fo = new openbis.PropertyTypeFetchOptions()
+
+    return openbis
+      .searchPropertyTypes(criteria, fo)
+      .then(results => {
+        const ids = results
+          .getObjects()
+          .map(propertyType => propertyType.getPermId())
+        if (!_.isEmpty(ids)) {
+          const options = new openbis.PropertyTypeDeletionOptions()
+          options.setReason(reason)
+          operations.push(
+            new openbis.DeletePropertyTypesOperation(ids, options)
+          )
+        }
+      })
+      .then(() => {
+        const options = new openbis.SynchronousOperationExecutionOptions()
+        options.setExecuteInOrder(true)
+        return openbis.executeOperations(operations, options)
+      })
       .then(() => {
         this.context.dispatch(actions.objectDelete(this.getPage(), type, id))
       })

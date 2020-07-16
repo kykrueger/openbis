@@ -11,7 +11,7 @@ import LastPageIcon from '@material-ui/icons/LastPage'
 import SelectField from '@src/js/components/common/form/SelectField.jsx'
 import logger from '@src/js/common/logger.js'
 
-const styles = () => ({
+const styles = theme => ({
   container: {
     display: 'flex',
     alignItems: 'center',
@@ -21,8 +21,8 @@ const styles = () => ({
     marginRight: 0
   },
   pageSizeLabel: {
+    fontSize: theme.typography.body2.fontSize,
     marginRight: '12px',
-    fontSize: '0.875rem',
     whiteSpace: 'nowrap',
     lineHeight: '46px'
   },

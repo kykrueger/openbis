@@ -83,6 +83,6 @@ var IdentifierUtil = new function() {
 	this.createDummySampleIdentifierFromExperimentIdentifier = function(experimentIdentifier) {
 		var spaceCode = this.getSpaceCodeFromIdentifier(experimentIdentifier);
 		var projectCode = this.getProjectCodeFromExperimentIdentifier(experimentIdentifier);
-		return "/" + spaceCode + "/" + projectCode + "/DUMMY";
+		return "/" + spaceCode + "/" + projectCode + "/__DUMMY_FOR_RIGHTS_CALCULATION__";
 	}
 }

@@ -1,14 +1,14 @@
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
+import Container from '@src/js/components/common/form/Container.jsx'
 import Button from '@src/js/components/common/form/Button.jsx'
 import logger from '@src/js/common/logger.js'
 
 const styles = theme => ({
   container: {
-    padding: `${theme.spacing(1)}px ${theme.spacing(2)}px`,
     display: 'flex',
     borderWidth: '1px 0px 0px 0px',
-    borderColor: theme.palette.background.secondary,
+    borderColor: theme.palette.border.primary,
     borderStyle: 'solid'
   },
   button: {
@@ -24,20 +24,20 @@ class BrowserButtons extends React.Component {
     const { controller, classes, addEnabled, removeEnabled } = this.props
 
     return (
-      <div className={classes.container}>
+      <Container className={classes.container}>
         <Button
           label='Add'
-          classes={{ root: classes.button }}
+          styles={{ root: classes.button }}
           onClick={controller.nodeAdd}
           disabled={!addEnabled}
         />
         <Button
           label='Remove'
-          classes={{ root: classes.button }}
+          styles={{ root: classes.button }}
           onClick={controller.nodeRemove}
           disabled={!removeEnabled}
         />
-      </div>
+      </Container>
     )
   }
 }

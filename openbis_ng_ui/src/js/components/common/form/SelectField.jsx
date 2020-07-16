@@ -6,19 +6,20 @@ import logger from '@src/js/common/logger.js'
 
 import FormFieldContainer from './FormFieldContainer.jsx'
 import FormFieldLabel from './FormFieldLabel.jsx'
+import FormFieldView from './FormFieldView.jsx'
 
-const styles = () => ({
+const styles = theme => ({
   textField: {
     margin: 0
   },
   select: {
-    fontSize: '0.875rem'
+    fontSize: theme.typography.body2.fontSize
   },
   option: {
     '&:after': {
       content: '"\\00a0"'
     },
-    fontSize: '0.875rem'
+    fontSize: theme.typography.body2.fontSize
   }
 })
 
@@ -54,6 +55,24 @@ class SelectFormField extends React.PureComponent {
   render() {
     logger.log(logger.DEBUG, 'SelectFormField.render')
 
+    const { mode = 'edit' } = this.props
+
+    if (mode === 'view') {
+      return this.renderView()
+    } else if (mode === 'edit') {
+      return this.renderEdit()
+    } else {
+      throw 'Unsupported mode: ' + mode
+    }
+  }
+
+  renderView() {
+    const { label, value, options } = this.props
+    const option = options.find(option => option.value === value)
+    return <FormFieldView label={label} value={option ? option.label : null} />
+  }
+
+  renderEdit() {
     const {
       reference,
       name,

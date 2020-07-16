@@ -22,6 +22,7 @@ class TypeFormParameters extends React.PureComponent {
       sections,
       properties,
       selection,
+      mode,
       onChange,
       onSelectionChange,
       onBlur
@@ -33,6 +34,7 @@ class TypeFormParameters extends React.PureComponent {
           controller={controller}
           type={type}
           selection={selection}
+          mode={mode}
           onChange={onChange}
           onSelectionChange={onSelectionChange}
           onBlur={onBlur}
@@ -40,6 +42,7 @@ class TypeFormParameters extends React.PureComponent {
         <TypeFormParametersSection
           sections={sections}
           selection={selection}
+          mode={mode}
           onChange={onChange}
           onSelectionChange={onSelectionChange}
           onBlur={onBlur}
@@ -49,6 +52,7 @@ class TypeFormParameters extends React.PureComponent {
           type={type}
           properties={properties}
           selection={selection}
+          mode={mode}
           onChange={onChange}
           onSelectionChange={onSelectionChange}
           onBlur={onBlur}

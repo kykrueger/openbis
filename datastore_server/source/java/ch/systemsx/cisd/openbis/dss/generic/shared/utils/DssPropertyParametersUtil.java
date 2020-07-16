@@ -125,36 +125,41 @@ public class DssPropertyParametersUtil
     private static File recoveryState;
 
     private static File logRegistrations;
+    
+    private static ExtendedProperties fullServiceProperties;
 
     /** loads server configuration */
     public static ExtendedProperties loadServiceProperties()
     {
-        ExtendedProperties properties = loadProperties(SERVICE_PROPERTIES_FILE);
-        CorePluginsUtils.addCorePluginsProperties(properties, ScannerType.DSS);
-        ExtendedProperties serviceProperties = extendProperties(properties);
-        CorePluginsInjector injector =
-                new CorePluginsInjector(ScannerType.DSS, DssPluginType.values());
-        Map<String, File> pluginFolders = injector.injectCorePlugins(serviceProperties);
-
-        if (PluginContainer.tryGetInstance() == null)
+        if (fullServiceProperties == null)
         {
-            PluginContainer.initHotDeployment();
-        }
-
-        for (String name : pluginFolders.keySet())
-        {
-            File mainFolder = pluginFolders.get(name);
-            File hotDeployFolder = new File(mainFolder, "plugin");
-            if (hotDeployFolder.exists() && hotDeployFolder.isDirectory()
-                    && PluginContainer.tryGetInstance(name) == null)
+            ExtendedProperties properties = loadProperties(SERVICE_PROPERTIES_FILE);
+            CorePluginsUtils.addCorePluginsProperties(properties, ScannerType.DSS);
+            ExtendedProperties serviceProperties = extendProperties(properties);
+            CorePluginsInjector injector =
+                    new CorePluginsInjector(ScannerType.DSS, DssPluginType.values());
+            Map<String, File> pluginFolders = injector.injectCorePlugins(serviceProperties);
+            
+            if (PluginContainer.tryGetInstance() == null)
             {
-                PluginContainer pluginContainer = PluginContainer.initHotDeployment(name);
-                pluginContainer.addPluginDirectory(hotDeployFolder);
-                pluginContainer.refresh(true);
+                PluginContainer.initHotDeployment();
             }
+            
+            for (String name : pluginFolders.keySet())
+            {
+                File mainFolder = pluginFolders.get(name);
+                File hotDeployFolder = new File(mainFolder, "plugin");
+                if (hotDeployFolder.exists() && hotDeployFolder.isDirectory()
+                        && PluginContainer.tryGetInstance(name) == null)
+                {
+                    PluginContainer pluginContainer = PluginContainer.initHotDeployment(name);
+                    pluginContainer.addPluginDirectory(hotDeployFolder);
+                    pluginContainer.refresh(true);
+                }
+            }
+            fullServiceProperties = serviceProperties;
         }
-
-        return serviceProperties;
+        return fullServiceProperties;
     }
 
     public static ExtendedProperties loadProperties(String filePath)

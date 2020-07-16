@@ -89,6 +89,7 @@ public abstract class AbstractCachingTranslator<I, O, F extends FetchOptions<?>>
         }
 
         filterTranslated(context, translated);
+        postTranslate(context, translated);
 
         return translated;
     }
@@ -265,6 +266,11 @@ public abstract class AbstractCachingTranslator<I, O, F extends FetchOptions<?>>
 
     }
 
+    protected void postTranslate(TranslationContext context, Map<I, O> translated)
+    {
+        
+    }
+    
     /**
      * Implementation of this method should create a translated version of the input object. Only basic attributes of the input object should be
      * translated here. Parts that have a corresponding fetch option should be translated in the

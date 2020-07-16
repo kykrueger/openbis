@@ -233,20 +233,21 @@ public class ObjectsImportTest extends AbstractFileTest
 
     protected void assertNoEmails(long timestamp)
     {
-        Email latestEmail = waitAndFindLatestEmail();
+        Email latestEmail = EmailUtil.findLatestEmail();
         assertTrue("Timestamp: " + timestamp + ", Latest email: " + latestEmail, latestEmail == null || latestEmail.timestamp < timestamp);
     }
 
     protected void assertEmail(long timestamp, String expectedEmail, String expectedSubject)
     {
-        Email latestEmail = waitAndFindLatestEmail();
+        Email latestEmail = EmailUtil.findLatestEmail();
         assertTrue("Timestamp: " + timestamp + ", Latest email: " + latestEmail, latestEmail != null && latestEmail.timestamp >= timestamp);
         assertEquals(expectedEmail, latestEmail.to);
         assertTrue(latestEmail.subject, latestEmail.subject.contains(expectedSubject));
     }
 
-    private Email waitAndFindLatestEmail()
+    protected long getTimestampAndWaitASecond()
     {
+        long timestamp = System.currentTimeMillis();
         try
         {
             Thread.sleep(1000);
@@ -254,7 +255,7 @@ public class ObjectsImportTest extends AbstractFileTest
         {
             // silently ignored
         }
-        return EmailUtil.findLatestEmail();
+        return timestamp;
     }
 
     public static class ImportFile

@@ -860,6 +860,9 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		$identificationInfo.append($legend);
 		$identificationInfo.append($fieldset);
 
+        if (this._sampleFormModel.mode !== FormMode.CREATE) {
+            $fieldset.append(FormUtil.getFieldForLabelWithText("PermId", this._sampleFormModel.sample.permId));
+		}
 		if(this._sampleFormModel.mode !== FormMode.CREATE) {
 			$fieldset.append(FormUtil.getFieldForComponentWithLabel(entityPath, "Path"));
 		}

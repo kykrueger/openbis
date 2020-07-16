@@ -486,6 +486,57 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testUpdate(c, fCreate, fUpdate, c.findSample, fCheck);
 		});
 
+		QUnit.test("updateSamples() with annotated parent and child", function(assert) {
+			var c = new common(assert, openbis);
+			var code = c.generateId("SAMPLE");
+			var parentId = new c.SampleIdentifier("/TEST/TEST-SAMPLE-1");
+			var childId = new c.SampleIdentifier("/TEST/TEST-SAMPLE-2");
+			
+			var fCreate = function(facade) {
+				var creation = new c.SampleCreation();
+				creation.setTypeId(new c.EntityTypePermId("UNKNOWN"));
+				creation.setCode(code);
+				creation.setSpaceId(new c.SpacePermId("TEST"));
+				creation.setParentIds([ parentId ]);
+				creation.setChildIds([ childId ]);
+				creation.relationship(parentId).addParentAnnotation("type", "father").addChildAnnotation("type", "daughter");
+				creation.relationship(childId).addParentAnnotation("type", "mother").addChildAnnotation("type", "son")
+					.addParentAnnotation("color", "red");
+				return facade.createSamples([ creation ]);
+			}
+			
+			var fUpdate = function(facade, permId) {
+				var update = new c.SampleUpdate();
+				update.setSampleId(permId);
+				var parentRelationShip = update.relationship(parentId);
+				parentRelationShip.removeChildAnnotations("type").addChildAnnotation("color", "blue")
+						.addParentAnnotation("color", "yellow");
+				var childRelationShip = update.relationship(childId);
+				childRelationShip.addParentAnnotation("color", "green").removeParentAnnotations("type")
+						.addChildAnnotation("color", "black");
+				return facade.updateSamples([ update ]);
+			}
+			
+			var fCheck = function(sample) {
+				c.assertEqual(sample.getCode(), code, "Sample code");
+				c.assertEqual(sample.getType().getCode(), "UNKNOWN", "Type code");
+				c.assertEqual(sample.getSpace().getCode(), "TEST", "Space code");
+				var parent = sample.getParents()[0];
+				c.assertEqual(parent.getIdentifier().getIdentifier(), parentId.getIdentifier(), "Parent");
+				var parentRelationship = sample.getParentRelationship(parent.getPermId());
+				c.assertEqualDictionary(parentRelationship.getChildAnnotations(), {"color": "blue"}, "Parent -> child annotations");
+				c.assertEqualDictionary(parentRelationship.getParentAnnotations(), {"type": "father", "color": "yellow"}, "Parent -> parent annotations");
+				var child = sample.getChildren()[0];
+				c.assertEqual(child.getIdentifier().getIdentifier(), childId.getIdentifier(), "Child");
+				var childRelationship = sample.getChildRelationship(child.getPermId());
+				c.assertEqualDictionary(childRelationship.getChildAnnotations(), {"type": "son", "color": "black"}, "Child -> child annotations");
+				c.assertEqualDictionary(childRelationship.getParentAnnotations(), {"color": "green"}, "Child -> parent annotations");
+
+			}
+			
+			testUpdate(c, fCreate, fUpdate, c.findSample, fCheck);
+		});
+		
 		QUnit.test("updateSamples() change property of type SAMPLE", function(assert) {
 			var c = new common(assert, openbis);
 			var propertyTypeCode = c.generateId("PROPERTY_TYPE");
@@ -906,7 +957,6 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			var description = "Description of " + code;
 			var label = "Label of " + code;
 			var metaData1 = {"greetings" : "hello test"};
-			var metaData2 = {"greetings" : "hello test"};
 
 			var fCreate = function(facade) {
 				var creation = new c.PropertyTypeCreation();
@@ -923,8 +973,9 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				update.setTypeId(new c.PropertyTypePermId(code));
 				update.setDescription(description);
 				update.setLabel(label);
-				update.getMetaData().add(metaData2);
-				update.getMetaData().remove("greetings");
+				var metaData = update.getMetaData();
+				metaData.remove("greetings");
+				metaData.put("valid", "true");
 				return facade.updatePropertyTypes([ update ]);
 			}
 
@@ -932,7 +983,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				c.assertEqual(propertyType.getCode(), code, "Code");
 				c.assertEqual(propertyType.getDescription(), description, "Description");
 				c.assertEqual(propertyType.getLabel(), label, "Label");
-				c.assertEqual(propertyType.getMetaData().toString(), metaData2, "Meta data");
+				c.assertEqualDictionary(propertyType.getMetaData(), {"valid" : "true"}, "Meta data");
 			}
 
 			testUpdate(c, fCreate, fUpdate, c.findPropertyType, fCheck);

@@ -69,9 +69,13 @@ export default class TypeFormFacade {
     return strategy.getTypes([id], fo).then(map => {
       const type = map[object.id]
 
-      return type.getPropertyAssignments().map(assignment => {
-        return assignment.getPropertyType()
-      })
+      if (type) {
+        return type.getPropertyAssignments().map(assignment => {
+          return assignment.getPropertyType()
+        })
+      } else {
+        return []
+      }
     })
   }
 
@@ -293,18 +297,15 @@ export default class TypeFormFacade {
 
   _getStrategy(type) {
     const strategies = new TypeFormControllerStrategies()
-    strategies.setObjectTypeStrategy(new ObjectTypeStrategy())
-    strategies.setCollectionTypeStrategy(new CollectionTypeStrategy())
-    strategies.setDataSetTypeStrategy(new DataSetTypeStrategy())
-    strategies.setMaterialTypeStrategy(new MaterialTypeStrategy())
+    strategies.extendObjectTypeStrategy(new ObjectTypeStrategy())
+    strategies.extendCollectionTypeStrategy(new CollectionTypeStrategy())
+    strategies.extendDataSetTypeStrategy(new DataSetTypeStrategy())
+    strategies.extendMaterialTypeStrategy(new MaterialTypeStrategy())
     return strategies.getStrategy(type)
   }
 }
 
 class ObjectTypeStrategy {
-  getEntityKind() {
-    return openbis.EntityKind.SAMPLE
-  }
   createTypeFetchOptions() {
     return new openbis.SampleTypeFetchOptions()
   }
@@ -323,9 +324,6 @@ class ObjectTypeStrategy {
 }
 
 class CollectionTypeStrategy {
-  getEntityKind() {
-    return openbis.EntityKind.EXPERIMENT
-  }
   createTypeFetchOptions() {
     return new openbis.ExperimentTypeFetchOptions()
   }
@@ -344,9 +342,6 @@ class CollectionTypeStrategy {
 }
 
 class DataSetTypeStrategy {
-  getEntityKind() {
-    return openbis.EntityKind.DATA_SET
-  }
   createTypeFetchOptions() {
     return new openbis.DataSetTypeFetchOptions()
   }
@@ -365,9 +360,6 @@ class DataSetTypeStrategy {
 }
 
 class MaterialTypeStrategy {
-  getEntityKind() {
-    return openbis.EntityKind.MATERIAL
-  }
   createTypeFetchOptions() {
     return new openbis.MaterialTypeFetchOptions()
   }

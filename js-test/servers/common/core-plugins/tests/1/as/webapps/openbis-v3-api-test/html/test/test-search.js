@@ -805,6 +805,114 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testSearch(c, fSearch, fCheck);
 		});
 
+		QUnit.test("searchSamples() with code that is less than", function(assert) {
+			var c = new common(assert, openbis);
+			
+			var fSearch = function(facade) {
+				var criteria = new c.SampleSearchCriteria();
+				criteria.withCode().thatIsLessThan("A1");
+				return facade.searchSamples(criteria, c.createSampleFetchOptions());
+			}
+			
+			var fCheck = function(facade, samples) {
+				identifiers = c.extractIdentifiers(samples);
+				c.assertEqual(identifiers.length, 0);
+			}
+			
+			testSearch(c, fSearch, fCheck);
+		});
+		
+		QUnit.test("searchSamples() with code that is less than or equal to", function(assert) {
+			var c = new common(assert, openbis);
+			
+			var fSearch = function(facade) {
+				var criteria = new c.SampleSearchCriteria();
+				criteria.withCode().thatIsLessThanOrEqualTo("A1");
+				return facade.searchSamples(criteria, c.createSampleFetchOptions());
+			}
+			
+			var fCheck = function(facade, samples) {
+				identifiers = c.extractIdentifiers(samples);
+				c.assertEqual(identifiers.length, 4);
+				c.assertEqual(identifiers.toString(), "/PLATONIC/PLATE-1:A1,/PLATONIC/PLATE-2:A1,/TEST/PLATE-1A:A1,/TEST/PLATE-2:A1");
+			}
+			
+			testSearch(c, fSearch, fCheck);
+		});
+		
+		QUnit.test("searchSamples() with code that is greater than", function(assert) {
+			var c = new common(assert, openbis);
+			
+			var fSearch = function(facade) {
+				var criteria = new c.SampleSearchCriteria();
+				criteria.withCode().thatIsGreaterThan("TEST-SAMPLE-2-CHILD-2");
+				criteria.withCode().thatIsLessThan("V");
+				return facade.searchSamples(criteria, c.createSampleFetchOptions());
+			}
+			
+			var fCheck = function(facade, samples) {
+				identifiers = c.extractIdentifiers(samples);
+				c.assertEqual(identifiers.length, 1);
+				c.assertEqual(identifiers.toString(), "/TEST/TEST-SAMPLE-2-PARENT");
+			}
+			
+			testSearch(c, fSearch, fCheck);
+		});
+		
+		QUnit.test("searchSamples() with code that is greater than or equal to", function(assert) {
+			var c = new common(assert, openbis);
+			
+			var fSearch = function(facade) {
+				var criteria = new c.SampleSearchCriteria();
+				criteria.withCode().thatIsGreaterThanOrEqualTo("TEST-SAMPLE-2-CHILD-2");
+				criteria.withCode().thatIsLessThan("V");
+				return facade.searchSamples(criteria, c.createSampleFetchOptions());
+			}
+			
+			var fCheck = function(facade, samples) {
+				identifiers = c.extractIdentifiers(samples);
+				c.assertEqual(identifiers.length, 2);
+				c.assertEqual(identifiers.toString(), "/TEST/TEST-SAMPLE-2-CHILD-2,/TEST/TEST-SAMPLE-2-PARENT");
+			}
+			
+			testSearch(c, fSearch, fCheck);
+		});
+/*
+	    @Test
+	    public void testSearchWithCodeThatIsLessOrEqualTo()
+	    {
+	        SampleSearchCriteria criteria = new SampleSearchCriteria();
+	        criteria.withCode().thatIsLessThanOrEqualTo("3VCP5");
+	        testSearch(TEST_USER, criteria, "/CISD/3V-125", "/CISD/3V-126", "/CISD/3VCP5");
+	    }
+
+	    @Test
+	    public void testSearchWithCodeThatIsLessThan()
+	    {
+	        SampleSearchCriteria criteria = new SampleSearchCriteria();
+	        criteria.withCode().thatIsLessThan("3VCP5");
+	        testSearch(TEST_USER, criteria, "/CISD/3V-125", "/CISD/3V-126");
+	    }
+
+	    @Test
+	    public void testSearchWithCodeThatIsGreaterThanOrEqualTo()
+	    {
+	        SampleSearchCriteria criteria = new SampleSearchCriteria();
+	        criteria.withCode().thatIsGreaterThanOrEqualTo("WELL-A01");
+	        testSearch(TEST_USER, criteria, "/CISD/PLATE_WELLSEARCH:WELL-A01", "/CISD/PLATE_WELLSEARCH:WELL-A02");
+	    }
+
+	    @Test
+	    public void testSearchWithCodeThatIsGreaterThan()
+	    {
+	        SampleSearchCriteria criteria = new SampleSearchCriteria();
+	        criteria.withCode().thatIsGreaterThan("WELL-A01");
+	        testSearch(TEST_USER, criteria, "/CISD/PLATE_WELLSEARCH:WELL-A02");
+	    }
+
+*/
+		
+		
 		QUnit.test("searchSampleTypes()", function(assert) {
 			var c = new common(assert, openbis);
 

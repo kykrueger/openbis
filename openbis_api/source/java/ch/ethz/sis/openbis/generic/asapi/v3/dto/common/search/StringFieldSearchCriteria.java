@@ -50,4 +50,23 @@ public abstract class StringFieldSearchCriteria extends AbstractFieldSearchCrite
         setFieldValue(new StringContainsValue(string));
     }
 
+    public void thatIsLessThan(String string)
+    {
+        setFieldValue(new StringLessThanValue(string));
+    }
+
+    public void thatIsLessThanOrEqualTo(String string)
+    {
+        setFieldValue(new StringLessThanOrEqualToValue(string));
+    }
+
+    public void thatIsGreaterThan(String string)
+    {
+        setFieldValue(new StringGreaterThanValue(string));
+    }
+
+    public void thatIsGreaterThanOrEqualTo(String string)
+    {
+        setFieldValue(new StringGreaterThanOrEqualToValue(string));
+    }
 }

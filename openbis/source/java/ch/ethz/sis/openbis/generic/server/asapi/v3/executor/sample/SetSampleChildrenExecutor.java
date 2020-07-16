@@ -18,10 +18,12 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.sample;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.springframework.stereotype.Component;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.Relationship;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
@@ -31,7 +33,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
  * @author pkupczyk
  */
 @Component
-public class SetSampleChildrenExecutor extends SetSampleToSamplesRelationExecutor implements
+public class SetSampleChildrenExecutor extends SetSampleToSampleParentChildRelationExceutor implements
         ISetSampleChildrenExecutor
 {
 
@@ -62,4 +64,27 @@ public class SetSampleChildrenExecutor extends SetSampleToSamplesRelationExecuto
         }
     }
 
+    @Override
+    protected SamplePE getChild(SamplePE sample, SamplePE relatedSample)
+    {
+        return relatedSample;
+    }
+
+    @Override
+    protected SamplePE getParent(SamplePE sample, SamplePE relatedSample)
+    {
+        return sample;
+    }
+
+    @Override
+    protected Map<String, String> getChildAnnotations(Relationship relationship)
+    {
+        return relationship.getChildAnnotations();
+    }
+
+    @Override
+    protected Map<String, String> getParentAnnotations(Relationship relationship)
+    {
+        return relationship.getParentAnnotations();
+    }
 }

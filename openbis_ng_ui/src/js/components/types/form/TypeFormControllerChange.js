@@ -33,6 +33,8 @@ export default class TypeFormControllerChange {
         }
       }
     }))
+
+    this.controller.changed(true)
   }
 
   _handleChangeSection(id, field, value) {
@@ -54,6 +56,8 @@ export default class TypeFormControllerChange {
       ...state,
       sections: newSections
     }))
+
+    this.controller.changed(true)
   }
 
   _handleChangeProperty(id, field, newValue) {
@@ -81,6 +85,8 @@ export default class TypeFormControllerChange {
       ...state,
       properties: newProperties
     }))
+
+    this.controller.changed(true)
   }
 
   _handleChangePropertyScope(oldProperty, newProperty) {

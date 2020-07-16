@@ -9,7 +9,7 @@ const styles = theme => ({
   row: {
     display: 'flex',
     alignItems: 'center',
-    paddingBottom: theme.spacing(1)
+    padding: `${theme.spacing(1) / 2}px 0px`
   },
   label: {
     marginLeft: 0
