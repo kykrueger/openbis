@@ -1,6 +1,9 @@
 import autoBind from 'auto-bind'
 import TypeFormControllerLoad from './TypeFormControllerLoad.js'
 import TypeFormControllerValidate from './TypeFormControllerValidate.js'
+import TypeFormControllerChanged from './TypeFormControllerChanged.js'
+import TypeFormControllerEdit from './TypeFormControllerEdit.js'
+import TypeFormControllerCancel from './TypeFormControllerCancel.js'
 import TypeFormControllerSave from './TypeFormControllerSave.js'
 import TypeFormControllerRemove from './TypeFormControllerRemove.js'
 import TypeFormControllerAddSection from './TypeFormControllerAddSection.js'
@@ -26,6 +29,10 @@ export default class TypeFormController {
 
   validate(autofocus) {
     return new TypeFormControllerValidate(this).execute(autofocus)
+  }
+
+  changed(changed) {
+    return new TypeFormControllerChanged(this).execute(changed)
   }
 
   handleOrderChange(type, params) {
@@ -62,6 +69,22 @@ export default class TypeFormController {
 
   handleRemoveCancel() {
     new TypeFormControllerRemove(this).executeCancel()
+  }
+
+  handleEdit() {
+    return new TypeFormControllerEdit(this).execute()
+  }
+
+  handleCancel() {
+    return new TypeFormControllerCancel(this).executeCancel()
+  }
+
+  handleCancelConfirm() {
+    return new TypeFormControllerCancel(this).executeCancel(true)
+  }
+
+  handleCancelCancel() {
+    return new TypeFormControllerCancel(this).executeCancelCancel()
   }
 
   handleSave() {

@@ -60,6 +60,7 @@ public class UpdateSampleRelatedSamplesExecutor extends AbstractUpdateEntityMult
         addRelatedIds(relatedIds, update.getComponentIds());
         addRelatedIds(relatedIds, update.getParentIds());
         addRelatedIds(relatedIds, update.getChildIds());
+        relatedIds.addAll(update.getRelationships().keySet());
     }
 
     @Override

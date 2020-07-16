@@ -4,7 +4,10 @@ import { connect } from 'react-redux'
 import { withStyles } from '@material-ui/core/styles'
 import { Resizable } from 're-resizable'
 import ComponentContext from '@src/js/components/common/ComponentContext.js'
+import Container from '@src/js/components/common/form/Container.jsx'
 import Loading from '@src/js/components/common/loading/Loading.jsx'
+import Message from '@src/js/components/common/form/Message.jsx'
+import UnsavedChangesDialog from '@src/js/components/common/dialog/UnsavedChangesDialog.jsx'
 import logger from '@src/js/common/logger.js'
 
 import TypeFormController from './TypeFormController.js'
@@ -37,11 +40,11 @@ const styles = theme => ({
   buttons: {
     flex: '0 0 auto',
     borderWidth: '1px 0px 0px 0px',
-    borderColor: theme.palette.background.secondary,
+    borderColor: theme.palette.border.primary,
     borderStyle: 'solid'
   },
   parameters: {
-    borderLeft: `1px solid ${theme.palette.background.secondary}`,
+    borderLeft: `1px solid ${theme.palette.border.primary}`,
     height: '100%',
     overflow: 'auto',
     flex: '0 0 auto'
@@ -70,16 +73,22 @@ class TypeForm extends React.PureComponent {
   render() {
     logger.log(logger.DEBUG, 'TypeForm.render')
 
-    const { loading, type, dictionaries } = this.state
+    const { loaded, loading } = this.state
 
-    return (
-      <Loading loading={loading}>
-        {!!type && !!dictionaries && this.doRender()}
-      </Loading>
-    )
+    return <Loading loading={loading}>{loaded && this.doRender()}</Loading>
   }
 
   doRender() {
+    const { type } = this.state
+
+    if (type) {
+      return this.doRenderExisting()
+    } else {
+      return this.doRenderNonExistent()
+    }
+  }
+
+  doRenderExisting() {
     let { controller } = this
 
     let {
@@ -88,10 +97,13 @@ class TypeForm extends React.PureComponent {
       sections,
       selection,
       removePropertyDialogOpen,
-      removeSectionDialogOpen
+      removeSectionDialogOpen,
+      unsavedChangesDialogOpen,
+      changed,
+      mode
     } = this.state
 
-    let { classes } = this.props
+    let { object, classes } = this.props
 
     return (
       <div className={classes.container}>
@@ -103,6 +115,7 @@ class TypeForm extends React.PureComponent {
               properties={properties}
               sections={sections}
               selection={selection}
+              mode={mode}
               onOrderChange={controller.handleOrderChange}
               onSelectionChange={controller.handleSelectionChange}
             />
@@ -130,6 +143,7 @@ class TypeForm extends React.PureComponent {
                 properties={properties}
                 sections={sections}
                 selection={selection}
+                mode={mode}
                 onChange={controller.handleChange}
                 onSelectionChange={controller.handleSelectionChange}
                 onBlur={controller.handleBlur}
@@ -142,8 +156,13 @@ class TypeForm extends React.PureComponent {
             onAddSection={controller.handleAddSection}
             onAddProperty={controller.handleAddProperty}
             onRemove={controller.handleRemove}
+            onEdit={controller.handleEdit}
             onSave={controller.handleSave}
+            onCancel={controller.handleCancel}
+            object={object}
             selection={selection}
+            changed={changed}
+            mode={mode}
           />
           <TypeFormDialogRemoveSection
             open={removeSectionDialogOpen}
@@ -159,8 +178,21 @@ class TypeForm extends React.PureComponent {
             onConfirm={controller.handleRemoveConfirm}
             onCancel={controller.handleRemoveCancel}
           />
+          <UnsavedChangesDialog
+            open={unsavedChangesDialogOpen}
+            onConfirm={controller.handleCancelConfirm}
+            onCancel={controller.handleCancelCancel}
+          />
         </div>
       </div>
+    )
+  }
+
+  doRenderNonExistent() {
+    return (
+      <Container>
+        <Message type='info'>Object does not exist.</Message>
+      </Container>
     )
   }
 }

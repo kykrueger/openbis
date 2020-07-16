@@ -5,12 +5,13 @@ import lightBlue from '@material-ui/core/colors/lightBlue'
 
 const theme = createMuiTheme({
   typography: {
-    useNextVariants: true
+    useNextVariants: true,
+    label: {
+      fontSize: '0.7rem',
+      color: '#0000008a'
+    }
   },
   palette: {
-    grey: {
-      main: '#757575'
-    },
     primary: {
       main: indigo[700]
     },
@@ -25,7 +26,11 @@ const theme = createMuiTheme({
     },
     background: {
       primary: '#ebebeb',
-      secondary: '#dbdbdb'
+      secondary: '#f5f5f5'
+    },
+    border: {
+      primary: '#dbdbdb',
+      secondary: '#ebebeb'
     }
   }
 })

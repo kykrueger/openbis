@@ -17,6 +17,7 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.entity;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
@@ -105,6 +106,12 @@ public abstract class AbstractUpdateEntityToManyRelationExecutor<ENTITY_UPDATE e
                             }
                         }
                     }
+                    Collection<? extends RELATED_ID> relatedIds = getRelatedForRelationshipUpdate(context, update);
+                    for (RELATED_ID relatedId : relatedIds)
+                    {
+                        RELATED_PE related = relatedMap.get(relatedId);
+                        updateRelationships(context, update, entity, relatedId, related);
+                    }
                 }
 
                 @Override
@@ -173,6 +180,15 @@ public abstract class AbstractUpdateEntityToManyRelationExecutor<ENTITY_UPDATE e
                 allRemoved.add(aRelated);
             }
         }
+    }
+
+    protected Collection<? extends RELATED_ID> getRelatedForRelationshipUpdate(IOperationContext context, ENTITY_UPDATE update)
+    {
+        return Collections.emptySet();
+    }
+
+    protected void updateRelationships(IOperationContext context, ENTITY_UPDATE update, ENTITY_PE entity, RELATED_ID relatedId, RELATED_PE related)
+    {
     }
 
     protected abstract String getRelationName();

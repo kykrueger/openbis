@@ -305,6 +305,9 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		var _this = this;
 		var $identificationInfo = $("<div>", { id : "experiment-identification-info" });
 		$identificationInfo.append($('<legend>').text("Identification Info"));
+        if (this._experimentFormModel.mode !== FormMode.CREATE) {
+            $identificationInfo.append(FormUtil.getFieldForLabelWithText("PermId", this._experimentFormModel.experiment.permId));
+		}
 		if (this._experimentFormModel.mode !== FormMode.CREATE) {
 			var spaceCode = IdentifierUtil.getSpaceCodeFromIdentifier(this._experimentFormModel.experiment.identifier);
 			var projectCode = IdentifierUtil.getProjectCodeFromExperimentIdentifier(this._experimentFormModel.experiment.identifier);

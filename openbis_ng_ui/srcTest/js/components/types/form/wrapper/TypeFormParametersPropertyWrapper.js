@@ -1,18 +1,18 @@
 import TextFieldWrapper from '@srcTest/js/common/wrapper/TextFieldWrapper.js'
 import SelectFieldWrapper from '@srcTest/js/common/wrapper/SelectFieldWrapper.js'
 import AutocompleterFieldWrapper from '@srcTest/js/common/wrapper/AutocompleterFieldWrapper.js'
+import MessageWrapper from '@srcTest/js/common/wrapper/MessageWrapper.js'
 import TypeFormParametersCommonWrapper from './TypeFormParametersCommonWrapper.js'
-import TypeFormMessageWrapper from './TypeFormMessageWrapper.js'
 
-export default class TypeFormParametersFormWrapper extends TypeFormParametersCommonWrapper {
+export default class TypeFormParametersPropertyWrapper extends TypeFormParametersCommonWrapper {
   constructor(wrapper) {
     super(wrapper)
   }
 
   getMessages() {
     const messages = []
-    this.wrapper.find('TypeFormMessage').forEach(message => {
-      messages.push(new TypeFormMessageWrapper(message))
+    this.wrapper.find('Message').forEach(message => {
+      messages.push(new MessageWrapper(message))
     })
     return messages
   }
@@ -83,16 +83,6 @@ export default class TypeFormParametersFormWrapper extends TypeFormParametersCom
     return new TextFieldWrapper(
       this.wrapper.find('TextFormField[name="transformation"]')
     )
-  }
-
-  change(fieldName, fieldValue) {
-    this.wrapper.instance().handleChange({
-      target: {
-        name: fieldName,
-        value: fieldValue
-      }
-    })
-    this.wrapper.update()
   }
 
   toJSON() {

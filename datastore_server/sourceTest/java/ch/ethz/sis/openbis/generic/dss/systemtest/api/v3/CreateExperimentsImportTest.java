@@ -61,7 +61,7 @@ public class CreateExperimentsImportTest extends ObjectsImportTest
                 parameters.put(PARAM_USER_EMAIL, TEST_EMAIL);
             }
 
-            long timestamp = System.currentTimeMillis();
+            long timestamp = getTimestampAndWaitASecond();
             String message = executeImport(sessionToken, "createExperiments", parameters);
 
             experiment = getObject(sessionToken, experimentIdentifier, timestamp, DEFAULT_TIMEOUT);

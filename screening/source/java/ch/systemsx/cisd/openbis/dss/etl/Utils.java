@@ -18,23 +18,32 @@ package ch.systemsx.cisd.openbis.dss.etl;
 
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.imageio.ImageIO;
+
 import org.apache.log4j.Logger;
 
+import ch.systemsx.cisd.common.exceptions.EnvironmentFailureException;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
+import ch.systemsx.cisd.etlserver.registrator.api.v2.IDataSet;
+import ch.systemsx.cisd.etlserver.registrator.api.v2.IDataSetRegistrationTransactionV2;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchicalContentNode;
 import ch.systemsx.cisd.openbis.dss.etl.dto.ImageLibraryInfo;
 import ch.systemsx.cisd.openbis.dss.etl.dto.api.Channel;
 import ch.systemsx.cisd.openbis.dss.etl.dto.api.ChannelColorRGB;
+import ch.systemsx.cisd.openbis.dss.etl.dto.api.IImageGenerationAlgorithm;
 import ch.systemsx.cisd.openbis.dss.etl.dto.api.ImageFileInfo;
 import ch.systemsx.cisd.openbis.dss.etl.dto.api.ImageStorageConfiguraton;
 import ch.systemsx.cisd.openbis.dss.etl.dto.api.impl.ImageDataSetStructure;
 import ch.systemsx.cisd.openbis.dss.etl.dto.api.transformations.ImageTransformation;
 import ch.systemsx.cisd.openbis.dss.generic.shared.dto.Size;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.ImageUtil;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetKind;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.Geometry;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.imaging.dataaccess.IImagingReadonlyQueryDAO;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.imaging.dataaccess.ImgAcquiredImageEnrichedDTO;
@@ -209,5 +218,25 @@ public class Utils
         }
         String imageLibraryName = dataset.getImageLibraryName();
         return imageLibraryName == null ? null : new ImageLibraryInfo(imageLibraryName, dataset.getImageReaderName());
+    }
+
+    public static IDataSet createDataSetAndImageFiles(IDataSetRegistrationTransactionV2 transaction, IImageGenerationAlgorithm algorithm, List<BufferedImage> images)
+    {
+        IDataSet representative = transaction.createNewDataSet(algorithm.getDataSetTypeCode(), DataSetKind.PHYSICAL);
+        for (int i = 0; i < images.size(); i++)
+        {
+            BufferedImage imageData = images.get(i);
+            String imageFile = transaction.createNewFile(representative, algorithm.getImageFileName(i));
+            File f = new File(imageFile);
+            try
+            {
+                ImageIO.write(imageData, "png", f);
+            } catch (IOException e)
+            {
+                throw new EnvironmentFailureException("Can not save representative thumbnail to file '"
+                        + f + "': " + e, e);
+            }
+        }
+        return representative;
     }
 }

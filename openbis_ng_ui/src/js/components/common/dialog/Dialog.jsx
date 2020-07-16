@@ -4,7 +4,6 @@ import { withStyles } from '@material-ui/core/styles'
 import Dialog from '@material-ui/core/Dialog'
 import DialogActions from '@material-ui/core/DialogActions'
 import DialogContent from '@material-ui/core/DialogContent'
-import DialogContentText from '@material-ui/core/DialogContentText'
 import DialogTitle from '@material-ui/core/DialogTitle'
 import Slide from '@material-ui/core/Slide'
 import logger from '@src/js/common/logger.js'
@@ -14,8 +13,20 @@ const styles = theme => ({
     position: 'relative',
     zIndex: '2000 !important'
   },
+  title: {
+    fontFamily: theme.typography.h6.fontFamily,
+    fontSize: theme.typography.h6.fontSize,
+    padding: theme.spacing(2)
+  },
+  content: {
+    fontFamily: theme.typography.body2.fontFamily,
+    fontSize: theme.typography.body2.fontSize,
+    padding: 0,
+    paddingLeft: theme.spacing(2),
+    paddingRight: theme.spacing(2)
+  },
   actions: {
-    margin: theme.spacing(1)
+    padding: theme.spacing(2)
   }
 })
 
@@ -43,11 +54,11 @@ class DialogWindow extends React.Component {
         classes={{ root: classes.dialog }}
         TransitionComponent={Transition}
       >
-        <DialogTitle>{_.isFunction(title) ? title(this) : title}</DialogTitle>
-        <DialogContent>
-          <DialogContentText component='div'>
-            {_.isFunction(content) ? content(this) : content}
-          </DialogContentText>
+        <DialogTitle disableTypography={true} classes={{ root: classes.title }}>
+          {_.isFunction(title) ? title(this) : title}
+        </DialogTitle>
+        <DialogContent classes={{ root: classes.content }}>
+          {_.isFunction(content) ? content(this) : content}
         </DialogContent>
         <DialogActions classes={{ root: classes.actions }}>
           {_.isFunction(actions) ? actions(this) : actions}

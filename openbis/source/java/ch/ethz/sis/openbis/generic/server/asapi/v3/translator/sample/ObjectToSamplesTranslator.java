@@ -18,7 +18,9 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.translator.sample;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -30,7 +32,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.common.ObjectToMan
 /**
  * @author pkupczyk
  */
-public abstract class ObjectToSamplesTranslator extends ObjectToManyRelationTranslator<Sample, SampleFetchOptions> implements
+public abstract class ObjectToSamplesTranslator extends ObjectToManyRelationTranslator<SampleWithAnnotations, SampleFetchOptions> implements
         IObjectToSamplesTranslator
 {
 
@@ -38,16 +40,29 @@ public abstract class ObjectToSamplesTranslator extends ObjectToManyRelationTran
     private ISampleTranslator sampleTranslator;
 
     @Override
-    protected Map<Long, Sample> translateRelated(TranslationContext context, Collection<Long> relatedIds,
+    protected Map<Long, SampleWithAnnotations> translateRelated(TranslationContext context, Collection<Long> relatedIds,
             SampleFetchOptions relatedFetchOptions)
     {
-        return sampleTranslator.translate(context, relatedIds, relatedFetchOptions);
+        Map<Long, SampleWithAnnotations> result = new LinkedHashMap<Long, SampleWithAnnotations>();
+        Map<Long, Sample> map = sampleTranslator.translate(context, relatedIds, relatedFetchOptions);
+        for (Entry<Long, Sample> entry : map.entrySet())
+        {
+            result.put(entry.getKey(), new SampleWithAnnotations(entry.getValue()));
+        }
+        return result;
     }
 
     @Override
-    protected Collection<Sample> createCollection()
+    protected Collection<SampleWithAnnotations> createCollection()
     {
-        return new ArrayList<Sample>();
+        return new ArrayList<>();
+    }
+
+    @Override
+    protected void injectAnnotations(SampleWithAnnotations relatedObject, String annotations, String relatedAnnotations)
+    {
+        relatedObject.setAnnotations(annotations);
+        relatedObject.setRelatedAnnotations(relatedAnnotations);
     }
 
 }

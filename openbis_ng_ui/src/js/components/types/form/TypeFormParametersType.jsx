@@ -1,17 +1,15 @@
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
+import Container from '@src/js/components/common/form/Container.jsx'
 import CheckboxField from '@src/js/components/common/form/CheckboxField.jsx'
 import TextField from '@src/js/components/common/form/TextField.jsx'
 import SelectField from '@src/js/components/common/form/SelectField.jsx'
+import Message from '@src/js/components/common/form/Message.jsx'
 import logger from '@src/js/common/logger.js'
 
-import TypeFormMessage from './TypeFormMessage.jsx'
 import TypeFormHeader from './TypeFormHeader.jsx'
 
 const styles = theme => ({
-  container: {
-    padding: `${theme.spacing(1)}px ${theme.spacing(2)}px`
-  },
   header: {
     paddingBottom: theme.spacing(1)
   },
@@ -98,7 +96,7 @@ class TypeFormParametersType extends React.PureComponent {
     const { classes } = this.props
 
     return (
-      <div className={classes.container}>
+      <Container>
         <TypeFormHeader className={classes.header}>Type</TypeFormHeader>
         {this.renderMessageUsage(type)}
         {this.renderCode(type)}
@@ -114,7 +112,7 @@ class TypeFormParametersType extends React.PureComponent {
         {this.renderMainDataSetPattern(type)}
         {this.renderMainDataSetPath(type)}
         {this.renderDisallowDeletion(type)}
-      </div>
+      </Container>
     )
   }
 
@@ -134,7 +132,7 @@ class TypeFormParametersType extends React.PureComponent {
     if (type.usages !== 0) {
       return (
         <div className={classes.field}>
-          <TypeFormMessage type='info'>{message(type)}</TypeFormMessage>
+          <Message type='info'>{message(type)}</Message>
         </div>
       )
     } else {
@@ -149,7 +147,7 @@ class TypeFormParametersType extends React.PureComponent {
       return null
     }
 
-    const { classes } = this.props
+    const { mode, classes } = this.props
     return (
       <div className={classes.field}>
         <TextField
@@ -160,6 +158,7 @@ class TypeFormParametersType extends React.PureComponent {
           error={error}
           disabled={!enabled}
           value={value}
+          mode={mode}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
           onBlur={this.handleBlur}
@@ -175,7 +174,7 @@ class TypeFormParametersType extends React.PureComponent {
       return null
     }
 
-    const { classes } = this.props
+    const { mode, classes } = this.props
     return (
       <div className={classes.field}>
         <TextField
@@ -185,6 +184,7 @@ class TypeFormParametersType extends React.PureComponent {
           error={error}
           disabled={!enabled}
           value={value}
+          mode={mode}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
           onBlur={this.handleBlur}
@@ -200,7 +200,7 @@ class TypeFormParametersType extends React.PureComponent {
       return null
     }
 
-    const { classes, controller } = this.props
+    const { mode, classes, controller } = this.props
     const { validationPlugins = [] } = controller.getDictionaries()
 
     let options = []
@@ -225,6 +225,7 @@ class TypeFormParametersType extends React.PureComponent {
           disabled={!enabled}
           value={value}
           options={options}
+          mode={mode}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
           onBlur={this.handleBlur}
@@ -240,7 +241,7 @@ class TypeFormParametersType extends React.PureComponent {
       return null
     }
 
-    const { classes } = this.props
+    const { mode, classes } = this.props
     return (
       <div className={classes.field}>
         <CheckboxField
@@ -250,6 +251,7 @@ class TypeFormParametersType extends React.PureComponent {
           error={error}
           disabled={!enabled}
           value={value}
+          mode={mode}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
           onBlur={this.handleBlur}
@@ -265,7 +267,7 @@ class TypeFormParametersType extends React.PureComponent {
       return null
     }
 
-    const { classes } = this.props
+    const { mode, classes } = this.props
     return (
       <div className={classes.field}>
         <CheckboxField
@@ -275,6 +277,7 @@ class TypeFormParametersType extends React.PureComponent {
           error={error}
           disabled={!enabled}
           value={value}
+          mode={mode}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
           onBlur={this.handleBlur}
@@ -290,7 +293,7 @@ class TypeFormParametersType extends React.PureComponent {
       return null
     }
 
-    const { classes } = this.props
+    const { mode, classes } = this.props
     return (
       <div className={classes.field}>
         <CheckboxField
@@ -300,6 +303,7 @@ class TypeFormParametersType extends React.PureComponent {
           error={error}
           disabled={!enabled}
           value={value}
+          mode={mode}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
           onBlur={this.handleBlur}
@@ -315,7 +319,7 @@ class TypeFormParametersType extends React.PureComponent {
       return null
     }
 
-    const { classes } = this.props
+    const { mode, classes } = this.props
     return (
       <div className={classes.field}>
         <CheckboxField
@@ -325,6 +329,7 @@ class TypeFormParametersType extends React.PureComponent {
           error={error}
           disabled={!enabled}
           value={value}
+          mode={mode}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
           onBlur={this.handleBlur}
@@ -340,7 +345,7 @@ class TypeFormParametersType extends React.PureComponent {
       return null
     }
 
-    const { classes } = this.props
+    const { mode, classes } = this.props
     return (
       <div className={classes.field}>
         <TextField
@@ -351,6 +356,7 @@ class TypeFormParametersType extends React.PureComponent {
           error={error}
           disabled={!enabled}
           value={value}
+          mode={mode}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
           onBlur={this.handleBlur}
@@ -366,7 +372,7 @@ class TypeFormParametersType extends React.PureComponent {
       return null
     }
 
-    const { classes } = this.props
+    const { mode, classes } = this.props
     return (
       <div className={classes.field}>
         <CheckboxField
@@ -376,6 +382,7 @@ class TypeFormParametersType extends React.PureComponent {
           error={error}
           disabled={!enabled}
           value={value}
+          mode={mode}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
           onBlur={this.handleBlur}
@@ -391,7 +398,7 @@ class TypeFormParametersType extends React.PureComponent {
       return null
     }
 
-    const { classes } = this.props
+    const { mode, classes } = this.props
     return (
       <div className={classes.field}>
         <CheckboxField
@@ -401,6 +408,7 @@ class TypeFormParametersType extends React.PureComponent {
           error={error}
           disabled={!enabled}
           value={value}
+          mode={mode}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
           onBlur={this.handleBlur}
@@ -416,7 +424,7 @@ class TypeFormParametersType extends React.PureComponent {
       return null
     }
 
-    const { classes } = this.props
+    const { mode, classes } = this.props
     return (
       <div className={classes.field}>
         <CheckboxField
@@ -426,6 +434,7 @@ class TypeFormParametersType extends React.PureComponent {
           error={error}
           disabled={!enabled}
           value={value}
+          mode={mode}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
           onBlur={this.handleBlur}
@@ -441,7 +450,7 @@ class TypeFormParametersType extends React.PureComponent {
       return null
     }
 
-    const { classes } = this.props
+    const { mode, classes } = this.props
     return (
       <div className={classes.field}>
         <TextField
@@ -451,6 +460,7 @@ class TypeFormParametersType extends React.PureComponent {
           error={error}
           disabled={!enabled}
           value={value}
+          mode={mode}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
           onBlur={this.handleBlur}
@@ -466,7 +476,7 @@ class TypeFormParametersType extends React.PureComponent {
       return null
     }
 
-    const { classes } = this.props
+    const { mode, classes } = this.props
     return (
       <div className={classes.field}>
         <TextField
@@ -476,6 +486,7 @@ class TypeFormParametersType extends React.PureComponent {
           error={error}
           disabled={!enabled}
           value={value}
+          mode={mode}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
           onBlur={this.handleBlur}

@@ -18,10 +18,15 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 
@@ -51,6 +56,23 @@ public class CommonUtils
             }
         }
         return result;
+    }
+
+    @SuppressWarnings("unchecked")
+    public
+    static Map<String, String> asMap(String json)
+    {
+        if (json == null)
+        {
+            return new HashMap<>();
+        }
+        try
+        {
+            return new ObjectMapper().readValue(json.getBytes("UTF-8"), HashMap.class);
+        } catch (Exception e)
+        {
+            throw CheckedExceptionTunnel.wrapIfNecessary(e);
+        }
     }
 
 }

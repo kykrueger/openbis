@@ -26,7 +26,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.update.SampleUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.exceptions.UnauthorizedObjectAccessException;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.entity.AbstractUpdateEntityToManyRelationExecutor;
 import ch.systemsx.cisd.openbis.generic.server.authorization.AuthorizationDataProvider;
 import ch.systemsx.cisd.openbis.generic.server.authorization.validator.SampleByIdentiferValidator;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
@@ -36,7 +35,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
  * @author pkupczyk
  */
 @Component
-public class UpdateSampleChildrenExecutor extends AbstractUpdateEntityToManyRelationExecutor<SampleUpdate, SamplePE, ISampleId, SamplePE>
+public class UpdateSampleChildrenExecutor extends AbstractUpdateSampleToSampleParentChildRelationExecutor
         implements IUpdateSampleChildrenExecutor
 {
 
@@ -83,6 +82,18 @@ public class UpdateSampleChildrenExecutor extends AbstractUpdateEntityToManyRela
     protected void remove(IOperationContext context, SamplePE entity, SamplePE related)
     {
         relationshipService.removeParentFromSample(context.getSession(), related, entity);
+    }
+
+    @Override
+    protected SamplePE getChild(SamplePE sample, SamplePE relatedSample)
+    {
+        return relatedSample;
+    }
+
+    @Override
+    protected SamplePE getParent(SamplePE sample, SamplePE relatedSample)
+    {
+        return sample;
     }
 
 }

@@ -396,8 +396,10 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 		var $dataSetTypeFieldSet = $('<div>', { id : "data-set-identification-info" });
 		if (!this._dataSetFormModel.isMini) {
 			$dataSetTypeFieldSet.append($('<legend>').text('Identification Info'));
+			if (this._dataSetFormModel.mode !== FormMode.CREATE) {
+                $dataSetTypeFieldSet.append(FormUtil.getFieldForLabelWithText("PermId", this._dataSetFormModel.dataSet.code));
+            }
 		}
-		
 		var $dataSetTypeSelector = null;
 		if (this._dataSetFormModel.mode === FormMode.CREATE) {
 			$dataSetTypeSelector = FormUtil.getDataSetsDropDown('DATASET_TYPE', this._dataSetFormModel.dataSetTypes);

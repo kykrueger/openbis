@@ -31,6 +31,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/common' ], function($, _, open
 			"DataSetFileDownloadInputStream" : "Java class ignored: ",
 			"IDataStoreServerApi" : "Java class ignored: ",
 			"PhysicalDataCreation" : "Java class ignored: ",
+			"SampleIdDeserializer" : "Java class ignored: ",
 			"DataSetFileDownload" : "Java class not implemented in JS: ",
 			"DataSetFileDownloadOptions" : "Java class not implemented in JS: ",
 			"FastDownloader" : "Java class not implemented in JS: ",

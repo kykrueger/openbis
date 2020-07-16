@@ -16,6 +16,8 @@
 
 package ch.systemsx.cisd.openbis.generic.server.business;
 
+import java.util.Map;
+
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,147 +48,139 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.SpacePE;
 public interface IRelationshipService
 {
     @Transactional(propagation = Propagation.MANDATORY)
-    @RolesAllowed(value =
-    { RoleWithHierarchy.SPACE_ETL_SERVER, RoleWithHierarchy.PROJECT_POWER_USER })
+    @RolesAllowed(value = { RoleWithHierarchy.SPACE_ETL_SERVER, RoleWithHierarchy.PROJECT_POWER_USER })
     @Capability("ASSIGN_EXPERIMENT_TO_PROJECT")
     public void assignExperimentToProject(IAuthSession session,
             @AuthorizationGuard(guardClass = ExperimentPEPredicate.class) ExperimentPE experiment,
             @AuthorizationGuard(guardClass = ProjectPEPredicate.class) ProjectPE project);
 
     @Transactional(propagation = Propagation.MANDATORY)
-    @RolesAllowed(value =
-    { RoleWithHierarchy.SPACE_ETL_SERVER, RoleWithHierarchy.PROJECT_POWER_USER })
+    @RolesAllowed(value = { RoleWithHierarchy.SPACE_ETL_SERVER, RoleWithHierarchy.PROJECT_POWER_USER })
     @Capability("ASSIGN_SAMPLE_TO_PROJECT")
     public void assignSampleToProject(IAuthSession session,
             @AuthorizationGuard(guardClass = SamplePEPredicate.class) SamplePE sample,
             @AuthorizationGuard(guardClass = ProjectPEPredicate.class) ProjectPE project);
 
     @Transactional(propagation = Propagation.MANDATORY)
-    @RolesAllowed(value =
-    { RoleWithHierarchy.SPACE_ETL_SERVER, RoleWithHierarchy.SPACE_POWER_USER })
+    @RolesAllowed(value = { RoleWithHierarchy.SPACE_ETL_SERVER, RoleWithHierarchy.SPACE_POWER_USER })
     @Capability("ASSIGN_PROJECT_TO_SPACE")
     public void assignProjectToSpace(IAuthSession session,
             @AuthorizationGuard(guardClass = ProjectPEPredicate.class) ProjectPE project,
             @AuthorizationGuard(guardClass = SpacePEPredicate.class) SpacePE space);
 
     @Transactional(propagation = Propagation.MANDATORY)
-    @RolesAllowed(value =
-    { RoleWithHierarchy.SPACE_ETL_SERVER, RoleWithHierarchy.PROJECT_USER })
+    @RolesAllowed(value = { RoleWithHierarchy.SPACE_ETL_SERVER, RoleWithHierarchy.PROJECT_USER })
     @Capability("ASSIGN_SAMPLE_TO_EXPERIMENT")
     public void assignSampleToExperiment(IAuthSession session,
             @AuthorizationGuard(guardClass = SamplePEPredicate.class) SamplePE sample,
             @AuthorizationGuard(guardClass = ExperimentPEPredicate.class) ExperimentPE experiment);
 
     @Transactional(propagation = Propagation.MANDATORY)
-    @RolesAllowed(value =
-    { RoleWithHierarchy.SPACE_ETL_SERVER, RoleWithHierarchy.PROJECT_POWER_USER })
+    @RolesAllowed(value = { RoleWithHierarchy.SPACE_ETL_SERVER, RoleWithHierarchy.PROJECT_POWER_USER })
     @Capability("UNASSIGN_SAMPLE_FROM_EXPERIMENT")
     public void checkCanUnassignSampleFromExperiment(IAuthSession session,
             @AuthorizationGuard(guardClass = SamplePEPredicate.class) SamplePE sample);
 
     @Transactional(propagation = Propagation.MANDATORY)
-    @RolesAllowed(value =
-    { RoleWithHierarchy.SPACE_ETL_SERVER, RoleWithHierarchy.PROJECT_POWER_USER })
+    @RolesAllowed(value = { RoleWithHierarchy.SPACE_ETL_SERVER, RoleWithHierarchy.PROJECT_POWER_USER })
     @Capability("UNASSIGN_SAMPLE_FROM_EXPERIMENT")
     public void unassignSampleFromExperiment(IAuthSession session,
             @AuthorizationGuard(guardClass = SamplePEPredicate.class) SamplePE sample);
 
     @Transactional(propagation = Propagation.MANDATORY)
-    @RolesAllowed(value =
-    { RoleWithHierarchy.SPACE_ETL_SERVER, RoleWithHierarchy.PROJECT_POWER_USER })
+    @RolesAllowed(value = { RoleWithHierarchy.SPACE_ETL_SERVER, RoleWithHierarchy.PROJECT_POWER_USER })
     @Capability("UNASSIGN_SAMPLE_FROM_PROJECT")
     public void unassignSampleFromProject(IAuthSession session,
             @AuthorizationGuard(guardClass = SamplePEPredicate.class) SamplePE sample);
 
     @Transactional(propagation = Propagation.MANDATORY)
-    @RolesAllowed(value =
-    { RoleWithHierarchy.INSTANCE_ETL_SERVER, RoleWithHierarchy.INSTANCE_ADMIN })
+    @RolesAllowed(value = { RoleWithHierarchy.INSTANCE_ETL_SERVER, RoleWithHierarchy.INSTANCE_ADMIN })
     @Capability("UNSHARE_SAMPLE")
     public void unshareSample(IAuthSession session,
             @AuthorizationGuard(guardClass = SamplePEPredicate.class) SamplePE sample,
             @AuthorizationGuard(guardClass = SpacePEPredicate.class) SpacePE space);
 
     @Transactional(propagation = Propagation.MANDATORY)
-    @RolesAllowed(value =
-    { RoleWithHierarchy.SPACE_ETL_SERVER, RoleWithHierarchy.SPACE_POWER_USER })
+    @RolesAllowed(value = { RoleWithHierarchy.SPACE_ETL_SERVER, RoleWithHierarchy.SPACE_POWER_USER })
     @Capability("ASSIGN_SAMPLE_TO_SPACE")
     public void assignSampleToSpace(IAuthSession session,
             @AuthorizationGuard(guardClass = SamplePEPredicate.class) SamplePE sample,
             @AuthorizationGuard(guardClass = SpacePEPredicate.class) SpacePE space);
 
     @Transactional(propagation = Propagation.MANDATORY)
-    @RolesAllowed(value =
-    { RoleWithHierarchy.INSTANCE_ETL_SERVER, RoleWithHierarchy.INSTANCE_ADMIN })
+    @RolesAllowed(value = { RoleWithHierarchy.INSTANCE_ETL_SERVER, RoleWithHierarchy.INSTANCE_ADMIN })
     @Capability("SHARE_SAMPLE")
     public void shareSample(IAuthSession session,
             @AuthorizationGuard(guardClass = SamplePEPredicate.class) SamplePE sample);
 
     @Transactional(propagation = Propagation.MANDATORY)
-    @RolesAllowed(value =
-    { RoleWithHierarchy.SPACE_ETL_SERVER, RoleWithHierarchy.PROJECT_POWER_USER })
+    @RolesAllowed(value = { RoleWithHierarchy.SPACE_ETL_SERVER, RoleWithHierarchy.PROJECT_POWER_USER })
     @Capability("ASSIGN_DATASET_TO_EXPERIMENT")
     public void assignDataSetToExperiment(IAuthSession session,
             @AuthorizationGuard(guardClass = DataPEPredicate.class) DataPE dataSet,
             @AuthorizationGuard(guardClass = ExperimentPEOrNullPredicate.class) ExperimentPE experimentOrNull);
 
     @Transactional(propagation = Propagation.MANDATORY)
-    @RolesAllowed(value =
-    { RoleWithHierarchy.SPACE_ETL_SERVER, RoleWithHierarchy.PROJECT_POWER_USER })
+    @RolesAllowed(value = { RoleWithHierarchy.SPACE_ETL_SERVER, RoleWithHierarchy.PROJECT_POWER_USER })
     @Capability("ASSIGN_DATASET_TO_SAMPLE")
     public void assignDataSetToSample(IAuthSession session,
             @AuthorizationGuard(guardClass = DataPEPredicate.class) DataPE dataSet,
             @AuthorizationGuard(guardClass = SamplePEOrNullPredicate.class) SamplePE sampleOrNull);
 
     @Transactional(propagation = Propagation.MANDATORY)
-    @RolesAllowed(value =
-    { RoleWithHierarchy.SPACE_ETL_SERVER, RoleWithHierarchy.PROJECT_USER })
+    @RolesAllowed(value = { RoleWithHierarchy.SPACE_ETL_SERVER, RoleWithHierarchy.PROJECT_USER })
     @Capability("ADD_PARENT_TO_SAMPLE")
     public void addParentToSample(IAuthSession session,
             @AuthorizationGuard(name = "SAMPLE", guardClass = SamplePEPredicate.class) SamplePE sample,
-            @AuthorizationGuard(name = "PARENT", guardClass = SamplePEPredicate.class,
-                    rolesAllowed = { RoleWithHierarchy.SPACE_ETL_SERVER, RoleWithHierarchy.PROJECT_USER }) SamplePE parent);
+            @AuthorizationGuard(name = "PARENT", guardClass = SamplePEPredicate.class, rolesAllowed = { RoleWithHierarchy.SPACE_ETL_SERVER,
+                    RoleWithHierarchy.PROJECT_USER }) SamplePE parent);
 
     @Transactional(propagation = Propagation.MANDATORY)
-    @RolesAllowed(value =
-    { RoleWithHierarchy.SPACE_ETL_SERVER, RoleWithHierarchy.PROJECT_POWER_USER })
+    @RolesAllowed(value = { RoleWithHierarchy.SPACE_ETL_SERVER, RoleWithHierarchy.PROJECT_USER })
+    @Capability("SET_SAMPLE_PARENT_CHILD_ANNOTATIONS")
+    public void setSampleParentChildAnnotations(IAuthSession session, 
+            @AuthorizationGuard(name = "CHILD", guardClass = SamplePEPredicate.class) SamplePE child,
+            @AuthorizationGuard(name = "PARENT", guardClass = SamplePEPredicate.class, rolesAllowed = { RoleWithHierarchy.SPACE_ETL_SERVER,
+                    RoleWithHierarchy.PROJECT_USER }) SamplePE parent,
+            Map<String, String> childAnnotations, Map<String, String> parentAnnotations);
+
+    @Transactional(propagation = Propagation.MANDATORY)
+    @RolesAllowed(value = { RoleWithHierarchy.SPACE_ETL_SERVER, RoleWithHierarchy.PROJECT_POWER_USER })
     @Capability("REMOVE_PARENT_FROM_SAMPLE")
     public void removeParentFromSample(IAuthSession session,
             @AuthorizationGuard(name = "SAMPLE", guardClass = SamplePEPredicate.class) SamplePE sample,
-            @AuthorizationGuard(name = "PARENT", guardClass = SamplePEPredicate.class,
-                    rolesAllowed = { RoleWithHierarchy.SPACE_ETL_SERVER, RoleWithHierarchy.PROJECT_USER }) SamplePE parent);
+            @AuthorizationGuard(name = "PARENT", guardClass = SamplePEPredicate.class, rolesAllowed = { RoleWithHierarchy.SPACE_ETL_SERVER,
+                    RoleWithHierarchy.PROJECT_USER }) SamplePE parent);
 
     @Transactional(propagation = Propagation.MANDATORY)
-    @RolesAllowed(value =
-    { RoleWithHierarchy.SPACE_ETL_SERVER, RoleWithHierarchy.PROJECT_POWER_USER })
+    @RolesAllowed(value = { RoleWithHierarchy.SPACE_ETL_SERVER, RoleWithHierarchy.PROJECT_POWER_USER })
     @Capability("ADD_CONTAINER_TO_SAMPLE")
     public void assignSampleToContainer(IAuthSession session,
             @AuthorizationGuard(guardClass = SamplePEPredicate.class) SamplePE sample,
             @AuthorizationGuard(guardClass = SamplePEPredicate.class) SamplePE container);
 
     @Transactional(propagation = Propagation.MANDATORY)
-    @RolesAllowed(value =
-    { RoleWithHierarchy.SPACE_ETL_SERVER, RoleWithHierarchy.PROJECT_POWER_USER })
+    @RolesAllowed(value = { RoleWithHierarchy.SPACE_ETL_SERVER, RoleWithHierarchy.PROJECT_POWER_USER })
     @Capability("REMOVE_CONTAINER_FROM_SAMPLE")
     public void removeSampleFromContainer(IAuthSession session,
             @AuthorizationGuard(guardClass = SamplePEPredicate.class) SamplePE sample);
 
     @Transactional(propagation = Propagation.MANDATORY)
-    @RolesAllowed(value =
-    { RoleWithHierarchy.SPACE_ETL_SERVER, RoleWithHierarchy.PROJECT_POWER_USER })
+    @RolesAllowed(value = { RoleWithHierarchy.SPACE_ETL_SERVER, RoleWithHierarchy.PROJECT_POWER_USER })
     @Capability("ADD_PARENT_TO_DATASET")
     public void addParentToDataSet(IAuthSession session,
-            @AuthorizationGuard(guardClass = DataPEPredicate.class) DataPE data, @AuthorizationGuard(guardClass = DataPEPredicate.class) DataPE parent);
+            @AuthorizationGuard(guardClass = DataPEPredicate.class) DataPE data,
+            @AuthorizationGuard(guardClass = DataPEPredicate.class) DataPE parent);
 
     @Transactional(propagation = Propagation.MANDATORY)
-    @RolesAllowed(value =
-    { RoleWithHierarchy.SPACE_ETL_SERVER, RoleWithHierarchy.PROJECT_POWER_USER })
+    @RolesAllowed(value = { RoleWithHierarchy.SPACE_ETL_SERVER, RoleWithHierarchy.PROJECT_POWER_USER })
     @Capability("REMOVE_PARENT_FROM_DATASET")
     public void removeParentFromDataSet(IAuthSession session,
-            @AuthorizationGuard(guardClass = DataPEPredicate.class) DataPE data, @AuthorizationGuard(guardClass = DataPEPredicate.class) DataPE parent);
+            @AuthorizationGuard(guardClass = DataPEPredicate.class) DataPE data,
+            @AuthorizationGuard(guardClass = DataPEPredicate.class) DataPE parent);
 
     @Transactional(propagation = Propagation.MANDATORY)
-    @RolesAllowed(value =
-    { RoleWithHierarchy.SPACE_ETL_SERVER, RoleWithHierarchy.PROJECT_POWER_USER })
+    @RolesAllowed(value = { RoleWithHierarchy.SPACE_ETL_SERVER, RoleWithHierarchy.PROJECT_POWER_USER })
     @Capability("ADD_CONTAINER_TO_DATASET")
     public void assignDataSetToContainer(IAuthSession session,
             @AuthorizationGuard(guardClass = DataPEPredicate.class) DataPE data,

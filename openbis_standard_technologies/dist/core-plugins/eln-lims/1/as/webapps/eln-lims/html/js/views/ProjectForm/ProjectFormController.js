@@ -37,7 +37,7 @@ function ProjectFormController(mainController, mode, project) {
 						project: projectCode,
 					}, function(roles){
 						_this._projectFormModel.roles = roles;
-						var dummyId = new ExperimentIdentifier("/" + spaceCode + "/" + projectCode + "/DUMMY");
+						var dummyId = new ExperimentIdentifier("/" + spaceCode + "/" + projectCode + "/__DUMMY_FOR_RIGHTS_CALCULATION__");
 						mainController.openbisV3.getRights([id, dummyId], new RightsFetchOptions()).done(function(rightsByIds) {
 							_this._projectFormModel.rights = rightsByIds[id];
 							_this._projectFormModel.experimentRights = rightsByIds[dummyId];

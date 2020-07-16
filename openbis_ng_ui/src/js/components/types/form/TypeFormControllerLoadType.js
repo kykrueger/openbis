@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import openbis from '@src/js/services/openbis.js'
-import objectTypes from '@src/js/common/consts/objectType.js'
+import util from '@src/js/common/util.js'
 
 import TypeFormControllerStrategies from './TypeFormControllerStrategies.js'
 
@@ -14,76 +14,83 @@ export default class TypeFormControllerLoadType {
   async execute() {
     const strategy = this._getStrategy()
 
-    let promise = null
     if (strategy.getNewObjectType() === this.object.type) {
-      promise = Promise.resolve([null, null, null])
+      return this._init(null, null, null)
     } else if (strategy.getExistingObjectType() === this.object.type) {
-      promise = Promise.all([
+      return Promise.all([
         this.facade.loadType(this.object),
         this.facade.loadUsages(this.object),
         this.facade.loadAssignments(this.object)
-      ])
+      ]).then(([loadedType, loadedUsages, loadedAssignments]) => {
+        if (loadedType) {
+          return this._init(loadedType, loadedUsages, loadedAssignments)
+        }
+      })
+    }
+  }
+
+  async _init(loadedType, loadedUsages, loadedAssignments) {
+    const sections = []
+    const properties = []
+    let section = null
+    let property = null
+    let sectionsCounter = 0
+    let propertiesCounter = 0
+
+    if (loadedType && loadedType.propertyAssignments) {
+      loadedType.propertyAssignments.forEach(loadedAssignment => {
+        property = this._createProperty(
+          'property-' + propertiesCounter++,
+          loadedType,
+          loadedAssignment,
+          loadedUsages,
+          loadedAssignments
+        )
+        properties.push(property)
+
+        if (
+          !section ||
+          section.name.value !== util.trim(loadedAssignment.section)
+        ) {
+          section = this._createSection(
+            'section-' + sectionsCounter++,
+            loadedAssignment
+          )
+          sections.push(section)
+        }
+
+        section.properties.push(property.id)
+        property.section = section.id
+        property.original = {
+          ...property
+        }
+      })
     }
 
-    return promise.then(([loadedType, loadedUsages, loadedAssignments]) => {
-      const sections = []
-      const properties = []
-      let section = null
-      let property = null
-      let sectionsCounter = 0
-      let propertiesCounter = 0
+    const type = this._createType(loadedType, loadedUsages)
 
-      if (loadedType && loadedType.propertyAssignments) {
-        loadedType.propertyAssignments.forEach(loadedAssignment => {
-          property = this._createProperty(
-            'property-' + propertiesCounter++,
-            loadedType,
-            loadedAssignment,
-            loadedUsages,
-            loadedAssignments
-          )
-          properties.push(property)
-
-          if (!section || section.name.value !== loadedAssignment.section) {
-            section = this._createSection(
-              'section-' + sectionsCounter++,
-              loadedAssignment
-            )
-            sections.push(section)
-          }
-
-          section.properties.push(property.id)
-          property.section = section.id
-          property.original = {
-            ...property
-          }
-        })
+    if (loadedType) {
+      type.original = {
+        ...type,
+        properties
       }
+    }
 
-      const type = this._createType(loadedType, loadedUsages)
+    const selection = this._createSelection(sections)
 
-      if (loadedType) {
-        type.original = {
-          ...type,
-          properties
-        }
-      }
-
-      const selection = this._createSelection(sections)
-
-      return this.context.setState(() => ({
-        type,
-        properties,
-        propertiesCounter,
-        sections,
-        sectionsCounter,
-        selection: selection,
-        usages: loadedUsages,
-        assignments: loadedAssignments,
-        removeSectionDialogOpen: false,
-        removePropertyDialogOpen: false
-      }))
-    })
+    return this.context.setState(() => ({
+      type,
+      properties,
+      propertiesCounter,
+      sections,
+      sectionsCounter,
+      selection: selection,
+      usages: loadedUsages,
+      assignments: loadedAssignments,
+      removeSectionDialogOpen: false,
+      removePropertyDialogOpen: false,
+      unsavedChangesDialogOpen: false
+    }))
   }
 
   _createType(loadedType, loadedUsages) {
@@ -113,7 +120,7 @@ export default class TypeFormControllerLoadType {
     return {
       id: id,
       name: this._createField({
-        value: loadedAssignment.section
+        value: util.trim(loadedAssignment.section)
       }),
       properties: []
     }
@@ -281,10 +288,10 @@ export default class TypeFormControllerLoadType {
 
   _getStrategy() {
     const strategies = new TypeFormControllerStrategies()
-    strategies.setObjectTypeStrategy(new ObjectTypeStrategy(this))
-    strategies.setCollectionTypeStrategy(new CollectionTypeStrategy())
-    strategies.setDataSetTypeStrategy(new DataSetTypeStrategy(this))
-    strategies.setMaterialTypeStrategy(new MaterialTypeStrategy())
+    strategies.extendObjectTypeStrategy(new ObjectTypeStrategy(this))
+    strategies.extendCollectionTypeStrategy(new CollectionTypeStrategy())
+    strategies.extendDataSetTypeStrategy(new DataSetTypeStrategy(this))
+    strategies.extendMaterialTypeStrategy(new MaterialTypeStrategy())
     return strategies.getStrategy(this.object.type)
   }
 }
@@ -292,14 +299,6 @@ export default class TypeFormControllerLoadType {
 class ObjectTypeStrategy {
   constructor(executor) {
     this.executor = executor
-  }
-
-  getNewObjectType() {
-    return objectTypes.NEW_OBJECT_TYPE
-  }
-
-  getExistingObjectType() {
-    return objectTypes.OBJECT_TYPE
   }
 
   setTypeAttributes(object, loadedType) {
@@ -330,28 +329,12 @@ class ObjectTypeStrategy {
 }
 
 class CollectionTypeStrategy {
-  getNewObjectType() {
-    return objectTypes.NEW_COLLECTION_TYPE
-  }
-
-  getExistingObjectType() {
-    return objectTypes.COLLECTION_TYPE
-  }
-
   setTypeAttributes() {}
 }
 
 class DataSetTypeStrategy {
   constructor(executor) {
     this.executor = executor
-  }
-
-  getNewObjectType() {
-    return objectTypes.NEW_DATA_SET_TYPE
-  }
-
-  getExistingObjectType() {
-    return objectTypes.DATA_SET_TYPE
   }
 
   setTypeAttributes(object, loadedType) {
@@ -370,13 +353,5 @@ class DataSetTypeStrategy {
 }
 
 class MaterialTypeStrategy {
-  getNewObjectType() {
-    return objectTypes.NEW_MATERIAL_TYPE
-  }
-
-  getExistingObjectType() {
-    return objectTypes.MATERIAL_TYPE
-  }
-
   setTypeAttributes() {}
 }

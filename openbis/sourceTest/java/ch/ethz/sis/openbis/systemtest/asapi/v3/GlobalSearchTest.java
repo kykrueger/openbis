@@ -933,6 +933,249 @@ public class GlobalSearchTest extends AbstractTest
         });
     }
 
+// TODO : Finish the Scoring system, these tests are to help with that
+//
+//    private static SampleCreation getSampleCreationForTest(String code, String comment, String organism) {
+//        SampleCreation creation = new SampleCreation();
+//        creation.setSpaceId(new SpacePermId("CISD"));
+//        creation.setCode(code);
+//        creation.setTypeId(new EntityTypePermId("CELL_PLATE"));
+//        if (comment != null) {
+//            creation.setProperty("COMMENT", comment);
+//        }
+//        if (organism != null) {
+//            creation.setProperty("ORGANISM", organism);
+//        }
+//        return creation;
+//    }
+//
+//    private static List<SampleCreation> getSampleCreationsForTest(String term) {
+//        List<SampleCreation> creations = new ArrayList<>();
+//
+//        // Score 1000 + 100 + 1 = 1101
+//        creations.add(getSampleCreationForTest(term, term, term));
+//        // Score 100 + 1 = 101
+//        creations.add(getSampleCreationForTest(term + "2", term, term));
+//        // Score 100 = 100
+//        creations.add(getSampleCreationForTest(term + "3", null, term));
+//        // Score 1 = 1
+//        creations.add(getSampleCreationForTest(term + "4", term, null));
+//
+//        return creations;
+//    }
+//
+//    private static void cleanupSamplesForTest(IApplicationServerInternalApi v3api, String sessionToken, List<? extends ISampleId> identifiers) {
+//        SampleDeletionOptions deletionOptions = new SampleDeletionOptions();
+//        deletionOptions.setReason("Test Cleanup");
+//        IDeletionId deletionId = v3api.deleteSamples(sessionToken, identifiers, deletionOptions);
+//        v3api.confirmDeletions(sessionToken, Arrays.asList(deletionId));
+//    }
+//
+//    @Test
+//    public void testComplexScoreSortingForSamples() {
+//        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+//
+//        /* Setup */
+//        String term = "RAT";
+//        List<SampleCreation> creations = getSampleCreationsForTest(term);
+//        List<SamplePermId> identifiers = v3api.createSamples(sessionToken, creations);
+//
+//        /* Test */
+//        final GlobalSearchCriteria c = new GlobalSearchCriteria();
+//        c.withText().thatContains(term);
+//
+//        final GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
+//        fo.withSample();
+//        fo.sortBy().score();
+//
+//        final List<GlobalSearchObject> results = search(TEST_USER, c, fo).getObjects();
+//        assertTrue(results.size() >= 4);
+//        assertEquals(results.get(0).getSample().getCode(), term);
+//        assertEquals(results.get(1).getSample().getCode(), term + "2");
+//        assertEquals(results.get(2).getSample().getCode(), term + "3");
+//
+//        /* Cleanup */
+//        cleanupSamplesForTest(v3api, sessionToken, identifiers);
+//    }
+//
+//    private static ExperimentCreation getExperimentCreationForTest(String code, String description, String organism) {
+//        ExperimentCreation creation = new ExperimentCreation();
+//        creation.setProjectId(new ProjectIdentifier("/CISD/DEFAULT"));
+//        creation.setCode(code);
+//        creation.setTypeId(new EntityTypePermId("DELETION_TEST"));
+//        if (description != null) {
+//            creation.setProperty("DESCRIPTION", description);
+//        }
+//        if (organism != null) {
+//            creation.setProperty("ORGANISM", organism);
+//        }
+//        return creation;
+//    }
+//
+//    private static List<ExperimentCreation> getExperimentCreationsForTest(String term) {
+//        List<ExperimentCreation> creations = new ArrayList<>();
+//
+//        // Score 1000 + 100 + 1 = 1101
+//        creations.add(getExperimentCreationForTest(term, term, term));
+//        // Score 100 + 1 = 101
+//        creations.add(getExperimentCreationForTest(term + "2", term, term));
+//        // Score 100 = 100
+//        creations.add(getExperimentCreationForTest(term + "3", null, term));
+//        // Score 1 = 1
+//        creations.add(getExperimentCreationForTest(term + "4", term, null));
+//
+//        return creations;
+//    }
+//
+//    private static void cleanupExperinmentsForTest(IApplicationServerInternalApi v3api, String sessionToken, List<? extends IExperimentId> identifiers) {
+//        ExperimentDeletionOptions deletionOptions = new ExperimentDeletionOptions();
+//        deletionOptions.setReason("Test Cleanup");
+//        IDeletionId deletionId = v3api.deleteExperiments(sessionToken, identifiers, deletionOptions);
+//        v3api.confirmDeletions(sessionToken, Arrays.asList(deletionId));
+//    }
+//
+//    @Test
+//    private void testComplexScoreSortingForExperiments() {
+//        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+//
+//        /* Setup */
+//        String term = "RAT";
+//        List<ExperimentCreation> creations = getExperimentCreationsForTest(term);
+//        List<ExperimentPermId> identifiers = v3api.createExperiments(sessionToken, creations);
+//
+//        /* Test */
+//        final GlobalSearchCriteria c = new GlobalSearchCriteria();
+//        c.withText().thatContains(term);
+//
+//        final GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
+//        fo.withExperiment();
+//        fo.sortBy().score();
+//
+//        final List<GlobalSearchObject> results = search(TEST_USER, c, fo).getObjects();
+//        assertTrue(results.size() >= 4);
+//        assertEquals(results.get(0).getExperiment().getCode(), term);
+//        assertEquals(results.get(1).getExperiment().getCode(), term + "2");
+//        assertEquals(results.get(2).getExperiment().getCode(), term + "3");
+//
+//        /* Cleanup */
+//        cleanupExperinmentsForTest(v3api, sessionToken, identifiers);
+//    }
+//
+//    private static DataSetCreation getDataSetCreationForTest(String code, String description, String organism) {
+//        DataSetCreation creation = new DataSetCreation();
+//        creation.setExperimentId(new ExperimentIdentifier("/CISD/DEFAULT/EXP-REUSE"));
+//        creation.setCode(code);
+//        creation.setTypeId(new EntityTypePermId("DELETION_TEST_CONTAINER"));
+//        creation.setComponentIds(Arrays.asList(new DataSetPermId("DATASET-TO-DELETE")));
+//        creation.setDataSetKind(DataSetKind.CONTAINER);
+//        creation.setDataStoreId(new DataStorePermId("STANDARD"));
+//
+//        if (description != null) {
+//            creation.setProperty("DESCRIPTION", description);
+//        }
+//        if (organism != null) {
+//            creation.setProperty("ORGANISM", organism);
+//        }
+//        return creation;
+//    }
+//
+//    private static List<DataSetCreation> getDataSetsCreationsForTest(String term) {
+//        List<DataSetCreation> creations = new ArrayList<>();
+//
+//        // Score 1000 + 100 + 1 = 1101
+//        creations.add(getDataSetCreationForTest(term, term, term));
+//        // Score 100 + 1 = 101
+//        creations.add(getDataSetCreationForTest(term + "2", term, term));
+//        // Score 100 = 100
+//        creations.add(getDataSetCreationForTest(term + "3", null, term));
+//        // Score 1 = 1
+//        creations.add(getDataSetCreationForTest(term + "4", term, null));
+//
+//        return creations;
+//    }
+//
+//    private static void cleanupDataSetsForTest(IApplicationServerInternalApi v3api, String sessionToken, List<? extends IDataSetId> identifiers) {
+//        DataSetDeletionOptions deletionOptions = new DataSetDeletionOptions();
+//        deletionOptions.setReason("Test Cleanup");
+//        IDeletionId deletionId = v3api.deleteDataSets(sessionToken, identifiers, deletionOptions);
+//        v3api.confirmDeletions(sessionToken, Arrays.asList(deletionId));
+//    }
+//
+//    @Test
+//    private void testComplexScoreSortingForDataSets() {
+//        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+//
+//        /* Setup */
+//        String term = "RAT";
+//        List<DataSetCreation> creations = getDataSetsCreationsForTest(term);
+//        List<DataSetPermId> identifiers = v3api.createDataSets(sessionToken, creations);
+//
+//        /* Test */
+//        final GlobalSearchCriteria c = new GlobalSearchCriteria();
+//        c.withText().thatContains(term);
+//
+//        final GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
+//        fo.withDataSet();
+//        fo.sortBy().score();
+//
+//        final List<GlobalSearchObject> results = search(TEST_USER, c, fo).getObjects();
+//        assertTrue(results.size() >= 4);
+//        assertEquals(results.get(0).getDataSet().getCode(), term);
+//        assertEquals(results.get(1).getDataSet().getCode(), term + "2");
+//        assertEquals(results.get(2).getDataSet().getCode(), term + "3");
+//
+//        /* Cleanup */
+//        cleanupDataSetsForTest(v3api, sessionToken, identifiers);
+//    }
+//
+//    @Test
+//    private void testComplexScoreSortingForAll() {
+//        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+//
+//        /* Setup */
+//        String term = "RAT";
+//        List<SampleCreation> creationsS = getSampleCreationsForTest(term);
+//        List<SamplePermId> identifiersS = v3api.createSamples(sessionToken, creationsS);
+//        List<ExperimentCreation> creationsE = getExperimentCreationsForTest(term);
+//        List<ExperimentPermId> identifiersE = v3api.createExperiments(sessionToken, creationsE);
+//        List<DataSetCreation> creationsD = getDataSetsCreationsForTest(term);
+//        List<DataSetPermId> identifiersD = v3api.createDataSets(sessionToken, creationsD);
+//
+//        /* Test */
+//        final GlobalSearchCriteria c = new GlobalSearchCriteria();
+//        c.withText().thatContains(term);
+//
+//        final GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
+//        fo.withSample();
+//        fo.withExperiment();
+//        fo.withDataSet();
+//        fo.sortBy().score();
+//
+//        final List<GlobalSearchObject> results = search(TEST_USER, c, fo).getObjects();
+//        assertTrue(results.size() >= 12);
+//
+//        /*
+//         * When the same Score is given, DataSets come before Samples that come before Experiments
+//         */
+//
+//        assertEquals(results.get(0).getDataSet().getCode(), term);
+//        assertEquals(results.get(1).getSample().getCode(), term);
+//        assertEquals(results.get(3).getExperiment().getCode(), term);
+//
+//        assertEquals(results.get(4).getDataSet().getCode(), term + "2");
+//        assertEquals(results.get(5).getSample().getCode(), term + "2");
+//        assertEquals(results.get(6).getExperiment().getCode(), term + "2");
+//
+//        assertEquals(results.get(7).getDataSet().getCode(), term + "3");
+//        assertEquals(results.get(8).getSample().getCode(), term + "3");
+//        assertEquals(results.get(9).getExperiment().getCode(), term + "3");
+//
+//        /* Cleanup */
+//        cleanupSamplesForTest(v3api, sessionToken, identifiersS);
+//        cleanupExperinmentsForTest(v3api, sessionToken, identifiersE);
+//        cleanupDataSetsForTest(v3api, sessionToken, identifiersD);
+//    }
+
     @Test
     public void testRanking()
     {
@@ -967,7 +1210,7 @@ public class GlobalSearchTest extends AbstractTest
             assertTrue(globalSearchObject.getScore() > 0);
         }
     }
-       
+
     @Test
     public void testCharacterCases()
     {

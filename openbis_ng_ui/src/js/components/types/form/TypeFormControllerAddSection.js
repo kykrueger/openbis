@@ -1,5 +1,6 @@
 export default class TypeFormControllerAddSection {
   constructor(controller) {
+    this.controller = controller
     this.context = controller.context
   }
 
@@ -43,6 +44,8 @@ export default class TypeFormControllerAddSection {
       sectionsCounter,
       selection: newSelection
     }))
+
+    this.controller.changed(true)
   }
 
   _createField(params = {}) {
