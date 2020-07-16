@@ -45,6 +45,10 @@ public class GlobalSearchCriteriaTranslator
 
     public static final String DATA_SET_KIND_MATCH_ALIAS = "data_set_kind_match";
 
+    public static final String SAMPLE_IDENTIFIER_MATCH_ALIAS = "sample_identifier_match";
+
+    public static final String SAMPLE_MATCH_ALIAS = "sample_match";
+
     public static final String ENTITY_TYPES_CODE_ALIAS = "enty_code";
 
     public static final String PROPERTY_TYPE_LABEL_ALIAS = "property_type_label";
@@ -224,9 +228,9 @@ public class GlobalSearchCriteriaTranslator
         }
         sqlBuilder.append(SP).append(SPACE_CODE_ALIAS).append(COMMA).append(NL);
 
+        final String[] criterionValues = criterion.getFieldValue().getValue().toLowerCase().trim().split("\\s+");
         if (forAttributes)
         {
-            final String[] criterionValues = criterion.getFieldValue().getValue().toLowerCase().trim().split("\\s+");
             final String thenValue = ID_RANK + DOUBLE_COLON + FLOAT_4;
             final String elseValue = ATTRIBUTE_RANK + DOUBLE_COLON + FLOAT_4;
             final String[] matchingColumns = (tableMapper == SAMPLE || tableMapper == EXPERIMENT)
@@ -238,6 +242,20 @@ public class GlobalSearchCriteriaTranslator
 
             buildAttributesMatchSelection(sqlBuilder, criterionValues, vo.getTableMapper(), args);
             sqlBuilder.append(COMMA).append(NL);
+
+            if (tableMapper == SAMPLE)
+            {
+                final String sampleIdentifierColumnReference = MAIN_TABLE_ALIAS + PERIOD + SAMPLE_IDENTIFIER_COLUMN;
+                buildCaseWhenIn(sqlBuilder, args, criterionValues,
+                        new String[] { LOWER + LP + sampleIdentifierColumnReference + RP },
+                        sampleIdentifierColumnReference, NULL);
+                sqlBuilder.append(SP).append(SAMPLE_IDENTIFIER_MATCH_ALIAS).append(COMMA).append(NL);
+            }
+
+            if (tableMapper == SAMPLE || tableMapper == EXPERIMENT || tableMapper == DATA_SET)
+            {
+                sqlBuilder.append(NULL).append(SP).append(SAMPLE_MATCH_ALIAS).append(COMMA).append(NL);
+            }
 
             sqlBuilder.append(NULL).append(SP).append(PROPERTY_TYPE_LABEL_ALIAS).append(COMMA).append(NL);
 
@@ -260,7 +278,7 @@ public class GlobalSearchCriteriaTranslator
             sqlBuilder.append(0.0f).append(DOUBLE_COLON).append(FLOAT_4).append(SP).append(DESCRIPTION_MATCH_RANK_ALIAS);
         } else
         {
-            buildPropertyMatchRank(sqlBuilder, stringValue, args);
+            buildPropertyMatchRank(sqlBuilder, stringValue, criterionValues, args);
 
             sqlBuilder.append(NULL).append(SP).append(CODE_MATCH_ALIAS).append(COMMA).append(NL);
             switch (tableMapper)
@@ -276,6 +294,17 @@ public class GlobalSearchCriteriaTranslator
                     sqlBuilder.append(NULL).append(SP).append(DATA_SET_KIND_MATCH_ALIAS).append(COMMA).append(NL);
                     break;
                 }
+            }
+
+            if (tableMapper == SAMPLE)
+            {
+                sqlBuilder.append(NULL).append(SP).append(SAMPLE_IDENTIFIER_MATCH_ALIAS).append(COMMA).append(NL);
+            }
+
+            if (tableMapper == SAMPLE || tableMapper == EXPERIMENT || tableMapper == DATA_SET)
+            {
+                buildSampleMatch(sqlBuilder, criterionValues, args);
+                sqlBuilder.append(COMMA).append(NL);
             }
 
             sqlBuilder.append(ATTRIBUTE_TYPES_TABLE_ALIAS).append(PERIOD).append(LABEL_COLUMN).append(SP)
@@ -324,25 +353,45 @@ public class GlobalSearchCriteriaTranslator
         sqlBuilder.append(NL);
     }
 
+    private static void buildSampleMatch(final StringBuilder sqlBuilder, final String[] values,
+            final List<Object> args)
+    {
+        sqlBuilder.append(CASE).append(NL);
+        appendWhenThen(sqlBuilder, PERM_ID_COLUMN, values, args);
+        appendWhenThen(sqlBuilder, CODE_COLUMN, values, args);
+        appendWhenThen(sqlBuilder, SAMPLE_IDENTIFIER_COLUMN, values, args);
+        sqlBuilder.append('\t').append(ELSE).append(SP).append(NULL).append(NL);
+        sqlBuilder.append(END).append(SP).append(SAMPLE_MATCH_ALIAS);
+    }
+
+    private static void appendWhenThen(final StringBuilder sqlBuilder, final String column, final String[] values,
+            final List<Object> args)
+    {
+        sqlBuilder.append('\t').append(WHEN).append(SP).append(LOWER).append(LP)
+                .append(SAMPLES_TABLE_ALIAS).append(PERIOD).append(column).append(RP).append(SP).append(IN).append(SP)
+                .append(SELECT_UNNEST)
+                .append(THEN).append(SP).append(SAMPLES_TABLE_ALIAS).append(PERIOD).append(column).append(NL);
+        args.add(values);
+    }
+
     /**
      * Builds the rank calculation part of the property matching query part.
      * @param sqlBuilder {@link StringBuilder string builder} containing SQL to be operated on.
      * @param stringValue string value to search by.
+     * @param splitValues string value split to separate values.
      * @param args query arguments.
      */
     private static void buildPropertyMatchRank(final StringBuilder sqlBuilder, final AbstractStringValue stringValue,
-            final List<Object> args)
+            final String[] splitValues, final List<Object> args)
     {
         sqlBuilder.append(CASE).append(SP).append(WHEN).append(SP)
                 .append(CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(SP)
-                .append(EQ).append(SP).append(QU)
+                .append(IN).append(SP).append(SELECT_UNNEST)
                 .append(SP).append(OR).append(SP)
                 .append(DATA_TYPES_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(SP).append(IN).append(SP)
-                .append(LP)
-                        .append(SELECT).append(SP).append(UNNEST).append(LP).append(QU).append(RP)
-                .append(RP);
-        args.add(stringValue.getValue().toLowerCase());
-        args.add(new String[] { MATERIAL.name(), SAMPLE.name() });
+                .append(LP).append(SQ).append(MATERIAL.name()).append(SQ).append(COMMA).append(SP).append(SQ)
+                .append(SAMPLE.name()).append(SQ).append(RP);
+        args.add(splitValues);
         sqlBuilder.append(SP).append(THEN).append(SP).append(ID_PROPERTY_RANK).append(DOUBLE_COLON)
                 .append(FLOAT_4).append(SP);
         sqlBuilder.append(ELSE).append(SP);
