@@ -44,6 +44,6 @@ public class DataSetFileBlastSearchResultLocation extends DataSetFileSearchResul
     @Override
     protected String appendToString()
     {
-        return alignmentMatch.toString();
+        return alignmentMatch != null ? alignmentMatch.toString() : null;
     }
 }
