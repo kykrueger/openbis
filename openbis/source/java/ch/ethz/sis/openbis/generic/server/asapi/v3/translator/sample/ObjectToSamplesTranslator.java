@@ -59,10 +59,10 @@ public abstract class ObjectToSamplesTranslator extends ObjectToManyRelationTran
     }
 
     @Override
-    protected void injectAnnotations(SampleWithAnnotations relatedObject, String annotations, String relatedAnnotations)
+    protected void injectAnnotations(Long objectId, SampleWithAnnotations relatedObject, String annotations, String relatedAnnotations)
     {
-        relatedObject.setAnnotations(annotations);
-        relatedObject.setRelatedAnnotations(relatedAnnotations);
+        relatedObject.setAnnotations(objectId, annotations);
+        relatedObject.setRelatedAnnotations(objectId, relatedAnnotations);
     }
 
 }
