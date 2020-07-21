@@ -29,16 +29,20 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.commons.io.FileUtils;
+
 import ch.ethz.cisd.hotdeploy.PluginContainer;
 import ch.rinn.restrictions.Private;
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
 import ch.systemsx.cisd.common.filesystem.FileOperations;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.common.filesystem.IFileOperations;
+import ch.systemsx.cisd.common.filesystem.highwatermark.HostAwareFileWithHighwaterMark;
 import ch.systemsx.cisd.common.io.PropertyIOUtils;
 import ch.systemsx.cisd.common.properties.ExtendedProperties;
 import ch.systemsx.cisd.common.properties.PropertyUtils;
 import ch.systemsx.cisd.common.string.Template;
+import ch.systemsx.cisd.etlserver.ThreadParameters;
 import ch.systemsx.cisd.openbis.generic.shared.coreplugin.CorePluginScanner.ScannerType;
 import ch.systemsx.cisd.openbis.generic.shared.coreplugin.CorePluginsInjector;
 import ch.systemsx.cisd.openbis.generic.shared.coreplugin.CorePluginsUtils;
@@ -125,7 +129,7 @@ public class DssPropertyParametersUtil
     private static File recoveryState;
 
     private static File logRegistrations;
-    
+
     private static ExtendedProperties fullServiceProperties;
 
     /** loads server configuration */
@@ -139,12 +143,12 @@ public class DssPropertyParametersUtil
             CorePluginsInjector injector =
                     new CorePluginsInjector(ScannerType.DSS, DssPluginType.values());
             Map<String, File> pluginFolders = injector.injectCorePlugins(serviceProperties);
-            
+
             if (PluginContainer.tryGetInstance() == null)
             {
                 PluginContainer.initHotDeployment();
             }
-            
+
             for (String name : pluginFolders.keySet())
             {
                 File mainFolder = pluginFolders.get(name);
@@ -179,6 +183,16 @@ public class DssPropertyParametersUtil
             properties.put(entry.getKey(), entry.getValue());
         }
         return ExtendedProperties.createWith(properties);
+    }
+
+    public static long getHighwaterMark(ThreadParameters threadParameters, final Properties properties)
+    {
+        Long incomingShareMinimumFreeSpace = threadParameters.getIncomingShareMinimumFreeSpace();
+        if (incomingShareMinimumFreeSpace != null)
+        {
+            return incomingShareMinimumFreeSpace / FileUtils.ONE_KB;
+        }
+        return PropertyUtils.getLong(properties, HostAwareFileWithHighwaterMark.HIGHWATER_MARK_PROPERTY_KEY, -1L);
     }
 
     public static String getDataStoreCode(Properties serviceProperties)
