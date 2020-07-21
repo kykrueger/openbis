@@ -87,9 +87,12 @@ def isValidStoragePositionToInsertUpdate(context, parameters):
         storageRackBoxes = {storageBoxName};
         for sample in searchCriteriaStorageRackResults:
             storageRackBoxes.add(sample.getProperty("$STORAGE_POSITION.STORAGE_BOX_NAME"));
-        storageBoxNumAsInt = int(storage.getProperty("$STORAGE.BOX_NUM"));
-        if len(storageRackBoxes) > storageBoxNumAsInt:
-            raise UserFailureException("Number of boxes in rack exceeded, use an existing box.");
+        # 4.2 $STORAGE.BOX_NUM is only checked in is configured
+        storageBoxNum = storage.getProperty("$STORAGE.BOX_NUM");
+        if storageBoxNum is not None:
+            storageBoxNumAsInt = int(storageBoxNum);
+            if len(storageRackBoxes) > storageBoxNumAsInt:
+                raise UserFailureException("Number of boxes in rack exceeded, use an existing box.");
 
     # 5. IF $STORAGE.STORAGE_VALIDATION_LEVEL >= BOX_POSITION
     if storageValidationLevel == "BOX_POSITION":
