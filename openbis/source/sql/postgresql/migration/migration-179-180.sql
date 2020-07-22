@@ -10,7 +10,7 @@ BEGIN
                                             REPLACE(
                                                     REPLACE(
                                                             REPLACE(
-                                                                    REPLACE(LOWER(value), '<', '\<'),
+                                                                    REPLACE(value, '<', '\<'),
                                                                     '!', '\!'),
                                                             '*', '\*'),
                                                     '&', '\&'),
@@ -29,10 +29,11 @@ DECLARE cvt RECORD;
 BEGIN
     IF NEW.cvte_id IS NOT NULL THEN
         SELECT code, label INTO STRICT cvt FROM controlled_vocabulary_terms WHERE id = NEW.cvte_id;
-        NEW.tsvector_document := to_tsvector('english', LOWER(cvt.code)) ||
-                to_tsvector('english', coalesce(LOWER(cvt.label), ''));
+        NEW.tsvector_document := to_tsvector('english', cvt.code) ||
+                to_tsvector('english', coalesce(cvt.label, ''));
     ELSE
-        NEW.tsvector_document := to_tsvector('english', coalesce(LOWER(NEW.value), ''));
+        NEW.tsvector_document := to_tsvector('english', coalesce(NEW.value, ''));
+        RETURN NEW;
     END IF;
     RETURN NEW;
 END

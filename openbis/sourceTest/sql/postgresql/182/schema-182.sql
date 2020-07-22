@@ -329,7 +329,7 @@ BEGIN
                                             REPLACE(
                                                     REPLACE(
                                                             REPLACE(
-                                                                    REPLACE(value, '<', '\<'),
+                                                                    REPLACE(LOWER(value), '<', '\<'),
                                                                     '!', '\!'),
                                                             '*', '\*'),
                                                     '&', '\&'),
@@ -537,11 +537,10 @@ DECLARE cvt RECORD;
 BEGIN
     IF NEW.cvte_id IS NOT NULL THEN
         SELECT code, label INTO STRICT cvt FROM controlled_vocabulary_terms WHERE id = NEW.cvte_id;
-        NEW.tsvector_document := to_tsvector('english', cvt.code) ||
-                to_tsvector('english', coalesce(cvt.label, ''));
+        NEW.tsvector_document := to_tsvector('english', LOWER(cvt.code)) ||
+                                 to_tsvector('english', coalesce(LOWER(cvt.label), ''));
     ELSE
-        NEW.tsvector_document := to_tsvector('english', coalesce(NEW.value, ''));
-        RETURN NEW;
+        NEW.tsvector_document := to_tsvector('english', coalesce(LOWER(NEW.value), ''));
     END IF;
     RETURN NEW;
 END
@@ -2091,7 +2090,8 @@ CREATE TABLE sample_relationships_history (
     valid_from_timestamp time_stamp NOT NULL,
     valid_until_timestamp time_stamp,
     space_id tech_id,
-    proj_id tech_id
+    proj_id tech_id,
+    annotations jsonb
 );
 CREATE VIEW sample_history_view AS
  SELECT (2 * (sample_relationships_history.id)::bigint) AS id,
@@ -2103,6 +2103,7 @@ CREATE VIEW sample_history_view AS
     sample_relationships_history.proj_id,
     sample_relationships_history.data_id,
     sample_relationships_history.entity_perm_id,
+    sample_relationships_history.annotations,
     NULL::bigint AS stpt_id,
     NULL::text AS value,
     NULL::character varying AS vocabulary_term,
@@ -2123,6 +2124,7 @@ UNION
     NULL::bigint AS proj_id,
     NULL::bigint AS data_id,
     NULL::text AS entity_perm_id,
+    NULL::jsonb AS annotations,
     sample_properties_history.stpt_id,
     sample_properties_history.value,
     sample_properties_history.vocabulary_term,
@@ -2176,7 +2178,9 @@ CREATE TABLE sample_relationships_all (
     registration_timestamp time_stamp_dfl DEFAULT now() NOT NULL,
     modification_timestamp time_stamp DEFAULT now(),
     parent_frozen boolean_char DEFAULT false NOT NULL,
-    child_frozen boolean_char DEFAULT false NOT NULL
+    child_frozen boolean_char DEFAULT false NOT NULL,
+    child_annotations jsonb,
+    parent_annotations jsonb
 );
 CREATE VIEW sample_relationships AS
  SELECT sample_relationships_all.id,
@@ -2188,7 +2192,9 @@ CREATE VIEW sample_relationships AS
     sample_relationships_all.del_id,
     sample_relationships_all.pers_id_author,
     sample_relationships_all.registration_timestamp,
-    sample_relationships_all.modification_timestamp
+    sample_relationships_all.modification_timestamp,
+    sample_relationships_all.child_annotations,
+    sample_relationships_all.parent_annotations
    FROM sample_relationships_all
   WHERE (sample_relationships_all.del_id IS NULL);
 CREATE SEQUENCE sample_relationships_history_id_seq

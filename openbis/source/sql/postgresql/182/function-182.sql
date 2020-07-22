@@ -1251,7 +1251,9 @@ CREATE OR REPLACE RULE sample_relationships_insert AS
          child_frozen,
          pers_id_author,
          registration_timestamp,
-         modification_timestamp
+         modification_timestamp,
+         child_annotations,
+         parent_annotations
        ) VALUES (
          NEW.id, 
          NEW.sample_id_parent,
@@ -1261,7 +1263,9 @@ CREATE OR REPLACE RULE sample_relationships_insert AS
          NEW.child_frozen,
          NEW.pers_id_author,
          NEW.registration_timestamp,
-         NEW.modification_timestamp
+         NEW.modification_timestamp,
+         NEW.child_annotations,
+         NEW.parent_annotations
        );
        
 CREATE OR REPLACE RULE sample_relationships_update AS
@@ -1276,7 +1280,9 @@ CREATE OR REPLACE RULE sample_relationships_update AS
              del_id = NEW.del_id,
              pers_id_author = NEW.pers_id_author,
              registration_timestamp = NEW.registration_timestamp,
-             modification_timestamp = NEW.modification_timestamp
+             modification_timestamp = NEW.modification_timestamp,
+             child_annotations = NEW.child_annotations,
+             parent_annotations = NEW.parent_annotations
           WHERE id = NEW.id;
      
 CREATE OR REPLACE RULE sample_relationships_delete AS
@@ -2018,6 +2024,7 @@ CREATE OR REPLACE RULE sample_parent_child_insert AS
            RELATION_TYPE, 
            SAMP_ID, 
            ENTITY_PERM_ID,
+           ANNOTATIONS,
            PERS_ID_AUTHOR,
            VALID_FROM_TIMESTAMP
          ) VALUES (
@@ -2026,6 +2033,7 @@ CREATE OR REPLACE RULE sample_parent_child_insert AS
            'PARENT', 
            NEW.SAMPLE_ID_CHILD, 
            (SELECT PERM_ID FROM samples_all WHERE ID = NEW.SAMPLE_ID_CHILD),
+           NEW.PARENT_ANNOTATIONS,
            NEW.PERS_ID_AUTHOR,
            NEW.MODIFICATION_TIMESTAMP
          );
@@ -2035,6 +2043,7 @@ CREATE OR REPLACE RULE sample_parent_child_insert AS
            RELATION_TYPE, 
            SAMP_ID, 
            ENTITY_PERM_ID,
+           ANNOTATIONS,
            PERS_ID_AUTHOR,
            VALID_FROM_TIMESTAMP
          ) VALUES (
@@ -2043,11 +2052,12 @@ CREATE OR REPLACE RULE sample_parent_child_insert AS
            'CHILD', 
            NEW.SAMPLE_ID_PARENT, 
            (SELECT PERM_ID FROM samples_all WHERE ID = NEW.SAMPLE_ID_PARENT),
+           NEW.CHILD_ANNOTATIONS,
            NEW.PERS_ID_AUTHOR,
            NEW.MODIFICATION_TIMESTAMP
          );
        );
-       
+
 CREATE OR REPLACE RULE sample_parent_child_delete AS
     ON DELETE TO sample_relationships_all
     WHERE OLD.DEL_ID IS NULL
@@ -2055,6 +2065,61 @@ CREATE OR REPLACE RULE sample_parent_child_delete AS
          UPDATE SAMPLE_RELATIONSHIPS_HISTORY SET VALID_UNTIL_TIMESTAMP = current_timestamp
            WHERE (MAIN_SAMP_ID = OLD.SAMPLE_ID_PARENT AND SAMP_ID = OLD.SAMPLE_ID_CHILD AND VALID_UNTIL_TIMESTAMP IS NULL)
              OR (MAIN_SAMP_ID = OLD.SAMPLE_ID_CHILD AND SAMP_ID = OLD.SAMPLE_ID_PARENT AND VALID_UNTIL_TIMESTAMP IS NULL);
+       );
+CREATE OR REPLACE RULE sample_child_annotations_update AS
+    ON UPDATE TO sample_relationships_all
+    WHERE OLD.DEL_ID IS NULL AND NEW.DEL_ID IS NULL 
+          AND OLD.SAMPLE_ID_CHILD = NEW.SAMPLE_ID_CHILD AND OLD.SAMPLE_ID_PARENT = NEW.SAMPLE_ID_PARENT
+          AND OLD.CHILD_ANNOTATIONS <> NEW.CHILD_ANNOTATIONS
+       DO ALSO (
+         INSERT INTO SAMPLE_RELATIONSHIPS_HISTORY (
+           ID, 
+           MAIN_SAMP_ID,
+           RELATION_TYPE, 
+           SAMP_ID, 
+           ENTITY_PERM_ID,
+           ANNOTATIONS,
+           PERS_ID_AUTHOR,
+           VALID_FROM_TIMESTAMP,
+           VALID_UNTIL_TIMESTAMP
+         ) VALUES (
+           nextval('SAMPLE_RELATIONSHIPS_HISTORY_ID_SEQ'), 
+           NEW.SAMPLE_ID_CHILD, 
+           'CHILD', 
+           NEW.SAMPLE_ID_PARENT, 
+           (SELECT PERM_ID FROM samples_all WHERE ID = NEW.SAMPLE_ID_PARENT),
+           OLD.CHILD_ANNOTATIONS,
+           NEW.PERS_ID_AUTHOR,
+           OLD.MODIFICATION_TIMESTAMP,
+           NEW.MODIFICATION_TIMESTAMP
+         );
+       );
+
+CREATE OR REPLACE RULE sample_parent_annotations_update AS
+    ON UPDATE TO sample_relationships_all
+    WHERE OLD.DEL_ID IS NULL AND NEW.DEL_ID IS NULL 
+          AND OLD.SAMPLE_ID_CHILD = NEW.SAMPLE_ID_CHILD AND OLD.SAMPLE_ID_PARENT = NEW.SAMPLE_ID_PARENT
+          AND OLD.PARENT_ANNOTATIONS <> NEW.PARENT_ANNOTATIONS
+       DO ALSO (
+         INSERT INTO SAMPLE_RELATIONSHIPS_HISTORY (
+           ID, 
+           MAIN_SAMP_ID,
+           RELATION_TYPE, 
+           SAMP_ID, 
+           ENTITY_PERM_ID,
+           ANNOTATIONS,
+           PERS_ID_AUTHOR,
+           VALID_FROM_TIMESTAMP
+         ) VALUES (
+           nextval('SAMPLE_RELATIONSHIPS_HISTORY_ID_SEQ'), 
+           NEW.SAMPLE_ID_PARENT, 
+           'PARENT', 
+           NEW.SAMPLE_ID_CHILD, 
+           (SELECT PERM_ID FROM samples_all WHERE ID = NEW.SAMPLE_ID_CHILD),
+           OLD.PARENT_ANNOTATIONS,
+           NEW.PERS_ID_AUTHOR,
+           NEW.MODIFICATION_TIMESTAMP
+         );
        );
 
 CREATE OR REPLACE RULE sample_parent_child_update AS
@@ -2076,6 +2141,7 @@ CREATE OR REPLACE RULE sample_parent_child_revert_update AS
            RELATION_TYPE, 
            SAMP_ID, 
            ENTITY_PERM_ID,
+           ANNOTATIONS,
            PERS_ID_AUTHOR,
            VALID_FROM_TIMESTAMP
          ) VALUES (
@@ -2084,6 +2150,7 @@ CREATE OR REPLACE RULE sample_parent_child_revert_update AS
            'PARENT', 
            NEW.SAMPLE_ID_CHILD, 
            (SELECT PERM_ID FROM samples_all WHERE ID = NEW.SAMPLE_ID_CHILD),
+           NEW.PARENT_ANNOTATIONS,
            NEW.PERS_ID_AUTHOR,
            NEW.MODIFICATION_TIMESTAMP
          );
@@ -2093,6 +2160,7 @@ CREATE OR REPLACE RULE sample_parent_child_revert_update AS
            RELATION_TYPE, 
            SAMP_ID, 
            ENTITY_PERM_ID,
+           ANNOTATIONS,
            PERS_ID_AUTHOR,
            VALID_FROM_TIMESTAMP
          ) VALUES (
@@ -2101,6 +2169,7 @@ CREATE OR REPLACE RULE sample_parent_child_revert_update AS
            'CHILD', 
            NEW.SAMPLE_ID_PARENT, 
            (SELECT PERM_ID FROM samples_all WHERE ID = NEW.SAMPLE_ID_PARENT),
+           NEW.CHILD_ANNOTATIONS,
            NEW.PERS_ID_AUTHOR,
            NEW.MODIFICATION_TIMESTAMP
          );
@@ -3230,6 +3299,8 @@ CREATE TRIGGER TRASH_DATA_SET_FROM_COMPONENT_CHECK AFTER UPDATE ON DATA_SET_RELA
 
 -- start of triggers for full text search
 
+DROP FUNCTION IF EXISTS escape_tsvector_string RESTRICT;
+
 CREATE FUNCTION escape_tsvector_string(value VARCHAR) RETURNS VARCHAR AS $$
 BEGIN
     RETURN REPLACE(
@@ -3240,7 +3311,7 @@ BEGIN
                                             REPLACE(
                                                     REPLACE(
                                                             REPLACE(
-                                                                    REPLACE(value, '<', '\<'),
+                                                                    REPLACE(LOWER(value), '<', '\<'),
                                                                     '!', '\!'),
                                                             '*', '\*'),
                                                     '&', '\&'),
@@ -3252,16 +3323,17 @@ BEGIN
 END
 $$ LANGUAGE plpgsql;
 
+DROP FUNCTION IF EXISTS properties_tsvector_document_trigger CASCADE;
+
 CREATE FUNCTION properties_tsvector_document_trigger() RETURNS trigger AS $$
 DECLARE cvt RECORD;
 BEGIN
     IF NEW.cvte_id IS NOT NULL THEN
         SELECT code, label INTO STRICT cvt FROM controlled_vocabulary_terms WHERE id = NEW.cvte_id;
-        NEW.tsvector_document := to_tsvector('english', cvt.code) ||
-                to_tsvector('english', coalesce(cvt.label, ''));
+        NEW.tsvector_document := to_tsvector('english', LOWER(cvt.code)) ||
+                                 to_tsvector('english', coalesce(LOWER(cvt.label), ''));
     ELSE
-        NEW.tsvector_document := to_tsvector('english', coalesce(NEW.value, ''));
-        RETURN NEW;
+        NEW.tsvector_document := to_tsvector('english', coalesce(LOWER(NEW.value), ''));
     END IF;
     RETURN NEW;
 END
