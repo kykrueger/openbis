@@ -316,6 +316,8 @@ public class TopLevelDataSetRegistratorGlobalState implements IReleasable
     public static final String STAGING_DIR = "staging-dir";
 
     public static final String PRE_STAGING_DIR = "pre-staging-dir";
+    
+    public static final String DEFAULT_PRE_STAGING_DIR = "pre-staging";
 
     public static final String PRE_COMMIT_DIR = "pre-commit-dir";
 
@@ -329,7 +331,7 @@ public class TopLevelDataSetRegistratorGlobalState implements IReleasable
     private static File getPreStagingDir(File storeRoot, String shareId, Properties threadProperties)
     {
         return getShareLocalDir(storeRoot, shareId, threadProperties, PRE_STAGING_DIR,
-                "pre-staging");
+                DEFAULT_PRE_STAGING_DIR);
     }
 
     private static File getPreCommitDir(File storeRoot, String shareId, Properties threadProperties)
