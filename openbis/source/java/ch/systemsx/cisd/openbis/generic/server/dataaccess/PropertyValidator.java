@@ -52,7 +52,7 @@ public final class PropertyValidator implements IPropertyValueValidator
         map.put(DataTypeCode.CONTROLLEDVOCABULARY, new ControlledVocabularyValidator());
         map.put(DataTypeCode.MATERIAL, new MaterialValidator());
         map.put(DataTypeCode.XML, new XmlValidator());
-        // TODO add validator for SAMPLE
+        map.put(DataTypeCode.SAMPLE, new SampleValidator());
         return map;
     }
 
@@ -110,6 +110,27 @@ public final class PropertyValidator implements IPropertyValueValidator
          * @throws UserFailureException if given <var>value</var> is not valid.
          */
         public String validate(final String value) throws UserFailureException;
+    }
+
+    private final static class SampleValidator implements IDataTypeValidator
+    {
+        @Override
+        public String validate(String value) throws UserFailureException {
+            assert value != null : "Unspecified value.";
+
+            if (StringUtils.isBlank(value))
+            {
+                return null;
+            }
+
+            if (value.startsWith("/")) {
+                // Is well formed identifier?
+            } else {
+                // Is well formed permId?
+            }
+
+            return value;
+        }
     }
 
     private final static class ControlledVocabularyValidator implements IDataTypeValidator

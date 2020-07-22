@@ -317,12 +317,6 @@ public final class ETLDaemon
         }
     }
 
-    private final static long getHighwaterMark(final Properties properties)
-    {
-        return PropertyUtils.getLong(properties,
-                HostAwareFileWithHighwaterMark.HIGHWATER_MARK_PROPERTY_KEY, -1L);
-    }
-
     private final static long getRecoveryHighwaterMark(final Properties properties)
     {
         return PropertyUtils.getLong(properties, RECOVERY_HIGHWATER_MARK_PROPERTY_KEY, -1L);
@@ -338,8 +332,8 @@ public final class ETLDaemon
             final IEncapsulatedOpenBISService authorizedLimsService, final IMailClient mailClient,
             final IDataSetValidator dataSetValidator, final boolean notifySuccessfulRegistration)
     {
-        final HighwaterMarkWatcher highwaterMarkWatcher =
-                new HighwaterMarkWatcher(getHighwaterMark(parameters.getProperties()));
+        long highwaterMark = DssPropertyParametersUtil.getHighwaterMark(threadParameters, parameters.getProperties());
+        final HighwaterMarkWatcher highwaterMarkWatcher = new HighwaterMarkWatcher(highwaterMark);
         final File incomingDataDirectory = threadParameters.getIncomingDataDirectory();
         final File recoveryStateDirectory =
                 DssPropertyParametersUtil.getDssRecoveryStateDir(parameters.getProperties());
@@ -353,9 +347,11 @@ public final class ETLDaemon
                 createTopLevelDataSetRegistrator(parameters.getProperties(), threadParameters,
                         authorizedLimsService, mailClient, dataSetValidator,
                         new DataSourceQueryService(), notifySuccessfulRegistration);
+        TopLevelDataSetRegistratorGlobalState globalState = pathHandler.getGlobalState();
+        HostAwareFile shareFolder = new HostAwareFile(new File(globalState.getStoreRootDir(), globalState.getShareId()));
         final HighwaterMarkDirectoryScanningHandler directoryScanningHandler =
                 createDirectoryScanningHandler(pathHandler, highwaterMarkWatcher,
-                        hostAwareIncomingDataDirectory, hostAwareRecoveryStateDirectory,
+                        hostAwareIncomingDataDirectory, shareFolder, hostAwareRecoveryStateDirectory,
                         threadParameters.reprocessFaultyDatasets(),
                         parameters.getCheckIntervalMillis(), pathHandler);
         FileFilter fileFilter =
@@ -594,7 +590,7 @@ public final class ETLDaemon
 
     private final static HighwaterMarkDirectoryScanningHandler createDirectoryScanningHandler(
             final IStopSignaler stopSignaler, final HighwaterMarkWatcher highwaterMarkWatcher,
-            final HostAwareFile incomingDataDirectory, final HostAwareFile recoveryStateDirectory,
+            final HostAwareFile incomingDataDirectory, HostAwareFile shareFolder, final HostAwareFile recoveryStateDirectory,
             boolean reprocessFaultyDatasets, final long checkIntervalMillis,
             IFaultyPathDirectoryScanningHandlerDelegate faultyPathHandlerDelegate)
     {
@@ -602,8 +598,7 @@ public final class ETLDaemon
                 createFaultyPathHandler(stopSignaler, incomingDataDirectory.getLocalFile(),
                         reprocessFaultyDatasets, checkIntervalMillis, faultyPathHandlerDelegate);
         return new HighwaterMarkDirectoryScanningHandler(faultyPathHandler, highwaterMarkWatcher,
-                new HostAwareFile[]
-                { incomingDataDirectory, recoveryStateDirectory });
+                new HostAwareFile[] { shareFolder, recoveryStateDirectory });
     }
 
     private static IDirectoryScanningHandler createFaultyPathHandler(
@@ -656,7 +651,7 @@ public final class ETLDaemon
                 {
                     if (scannedStore.existsOrError(storeItem))
                     {
-                        if (faultyItems.containsValue(storeItem.getName()) == false)
+                        if (faultyItems.containsKey(storeItem.getName()) == false)
                         {
                             StringBuffer sb = new StringBuffer();
                             sb.append("The thread configuration setting "

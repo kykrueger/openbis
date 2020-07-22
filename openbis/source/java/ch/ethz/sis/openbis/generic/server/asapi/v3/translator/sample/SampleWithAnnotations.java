@@ -16,12 +16,14 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.translator.sample;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 
 /**
  * @author Franz-Josef Elmer
- *
  */
 public class SampleWithAnnotations extends SamplePermId
 {
@@ -29,9 +31,9 @@ public class SampleWithAnnotations extends SamplePermId
 
     private final Sample sample;
 
-    private String annotations;
+    private Map<Long, String> annotations = new HashMap<>();
 
-    private String relatedAnnotations;
+    private Map<Long, String> relatedAnnotations = new HashMap<>();
 
     public SampleWithAnnotations(Sample sample)
     {
@@ -44,24 +46,24 @@ public class SampleWithAnnotations extends SamplePermId
         return sample;
     }
 
-    public String getAnnotations()
+    public String getAnnotations(Long objectId)
     {
-        return annotations;
+        return annotations.get(objectId);
     }
 
-    public void setAnnotations(String annotations)
+    public void setAnnotations(Long objectId, String annotations)
     {
-        this.annotations = annotations;
+        this.annotations.put(objectId, annotations);
     }
 
-    public String getRelatedAnnotations()
+    public String getRelatedAnnotations(Long objectId)
     {
-        return relatedAnnotations;
+        return relatedAnnotations.get(objectId);
     }
 
-    public void setRelatedAnnotations(String relatedAnnotations)
+    public void setRelatedAnnotations(Long objectId, String relatedAnnotations)
     {
-        this.relatedAnnotations = relatedAnnotations;
+        this.relatedAnnotations.put(objectId, relatedAnnotations);
     }
 
     @Override
@@ -83,5 +85,5 @@ public class SampleWithAnnotations extends SamplePermId
         }
         return sample.equals(((SampleWithAnnotations) obj).sample);
     }
-    
+
 }

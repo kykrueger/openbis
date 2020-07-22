@@ -296,8 +296,8 @@ public class SampleTranslator extends AbstractCachingTranslator<Long, Sample, Sa
             {
                 SamplePermId samplePermId = sampleWithAnnotations.getSample().getPermId();
                 Relationship relationship = new Relationship();
-                relationship.setChildAnnotations(CommonUtils.asMap(sampleWithAnnotations.getAnnotations()));
-                relationship.setParentAnnotations(CommonUtils.asMap(sampleWithAnnotations.getRelatedAnnotations()));
+                relationship.setChildAnnotations(CommonUtils.asMap(sampleWithAnnotations.getAnnotations(sampleId)));
+                relationship.setParentAnnotations(CommonUtils.asMap(sampleWithAnnotations.getRelatedAnnotations(sampleId)));
                 relationships.put(samplePermId == null ? sampleWithAnnotations : samplePermId, relationship);
             }
             result.setParentsRelationships(relationships);
@@ -313,8 +313,8 @@ public class SampleTranslator extends AbstractCachingTranslator<Long, Sample, Sa
             {
                 SamplePermId samplePermId = sampleWithAnnotations.getSample().getPermId();
                 Relationship relationship = new Relationship();
-                relationship.setParentAnnotations(CommonUtils.asMap(sampleWithAnnotations.getAnnotations()));
-                relationship.setChildAnnotations(CommonUtils.asMap(sampleWithAnnotations.getRelatedAnnotations()));
+                relationship.setParentAnnotations(CommonUtils.asMap(sampleWithAnnotations.getAnnotations(sampleId)));
+                relationship.setChildAnnotations(CommonUtils.asMap(sampleWithAnnotations.getRelatedAnnotations(sampleId)));
                 relationships.put(samplePermId == null ? sampleWithAnnotations : samplePermId, relationship);
             }
             result.setChildrenRelationships(relationships);
