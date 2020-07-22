@@ -23,16 +23,21 @@ import java.util.Date;
 import java.util.List;
 
 import ch.systemsx.cisd.base.annotation.JsonObject;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @JsonObject("as.dto.common.search.DateFieldSearchCriteria")
 public abstract class DateFieldSearchCriteria extends AbstractFieldSearchCriteria<IDate>
 {
+    @JsonIgnore
     public static final ShortDateFormat SHORT_DATE_FORMAT = new ShortDateFormat();
 
+    @JsonIgnore
     public static final NormalDateFormat NORMAL_DATE_FORMAT = new NormalDateFormat();
 
+    @JsonIgnore
     public static final LongDateFormat LONG_DATE_FORMAT = new LongDateFormat();
 
+    @JsonIgnore
     public static final List<IDateFormat> DATE_FORMATS = new ArrayList<IDateFormat>();
 
     private static final long serialVersionUID = 1L;
@@ -127,6 +132,7 @@ public abstract class DateFieldSearchCriteria extends AbstractFieldSearchCriteri
         }
     }
 
+    @JsonIgnore
     public static Date formatValue(final String value, final IDateFormat dateFormat)
     {
         try
