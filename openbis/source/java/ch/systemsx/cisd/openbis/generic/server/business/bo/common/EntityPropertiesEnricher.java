@@ -269,6 +269,7 @@ public final class EntityPropertiesEnricher implements IEntityPropertiesEnricher
                 sample.setCode(record.code);
                 sample.setSampleType(sampleTypes.get(record.saty_id));
                 sample.setId(record.id);
+                sample.setPermId(record.perm_id);
                 map.put(record.id, sample);
             }
         }

@@ -66,7 +66,7 @@ public interface IPropertyListingQuery
             parameterBindings = { LongSetMapper.class}, fetchSize = FETCH_SIZE)
     public DataIterator<MaterialEntityPropertyRecord> getMaterials(LongSet materialIds);
     
-    @Select(sql = "SELECT id, code, saty_id FROM samples WHERE id = any(?{1})", 
+    @Select(sql = "SELECT id, code, perm_id, saty_id FROM samples WHERE id = any(?{1})", 
             parameterBindings = { LongSetMapper.class}, fetchSize = FETCH_SIZE)
     public DataIterator<SampleEntityPropertyRecord> getBasicSamples(LongSet sampleIds);
     

@@ -70,6 +70,9 @@ public abstract class AbstractEntityProperty implements IEntityProperty
                 Material material = getMaterial();
                 return (material != null) ? MaterialIdentifier.print(material.getCode(), material
                         .getMaterialType().getCode()) : getValue();
+            case SAMPLE:
+                Sample sample = getSample();
+                return (sample != null) ? sample.getPermId() : getValue();
             default:
                 return getValue();
         }

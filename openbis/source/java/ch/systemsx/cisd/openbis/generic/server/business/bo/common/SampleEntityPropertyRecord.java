@@ -10,4 +10,6 @@ public class SampleEntityPropertyRecord
     public long saty_id;
 
     public String code;
+
+    public String perm_id;
 }
