@@ -173,6 +173,8 @@ public class SQLLexemes
 
     public static final String TILDA = "~";
 
+    public static final String PLUS = "+";
+
     public static final String SELECT_UNNEST = LP + SELECT + SP + UNNEST + LP + QU + RP + RP;
 
     private SQLLexemes()

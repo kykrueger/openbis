@@ -96,14 +96,17 @@ public class GlobalSearchCriteriaTranslator
     private static final String TS_HEADLINE_OPTIONS = "HighlightAll=TRUE, StartSel=" + START_SEL
             +", StopSel=" + STOP_SEL;
 
-    /** Rank for ID matches. */
-    private static final float ID_RANK = 10.0f;
+    /** Magnitude of difference between important and less important fields. */
+    private static final float IMPORTANCE_MULTIPLIER = 10.0f;
 
     /** Rank for other than ID attribute matches. */
-    private static final float ATTRIBUTE_RANK = 0.1f;
+    private static final float ATTRIBUTE_RANK = 0.6f;
 
     /** Rank for ID properties. */
-    private static final float ID_PROPERTY_RANK = 1f;
+    private static final float ID_PROPERTY_RANK = ATTRIBUTE_RANK * IMPORTANCE_MULTIPLIER;
+
+    /** Rank for ID matches. */
+    private static final float ID_RANK = ID_PROPERTY_RANK * IMPORTANCE_MULTIPLIER;
 
     private static final Logger LOG = LogFactory.getLogger(LogCategory.OPERATION, GlobalSearchCriteriaTranslator.class);
 
@@ -345,8 +348,18 @@ public class GlobalSearchCriteriaTranslator
         sqlBuilder.append(SP).append(THEN).append(SP).append(ID_PROPERTY_RANK).append(DOUBLE_COLON)
                 .append(FLOAT_4).append(SP);
         sqlBuilder.append(ELSE).append(SP);
-        buildTsRank(sqlBuilder, stringValue, args);
-        sqlBuilder.append(SP).append(END).append(SP).append(RANK_ALIAS).append(COMMA).append(NL);
+        buildHeadlineTsRank(sqlBuilder, stringValue, args, PROPERTIES_TABLE_ALIAS + PERIOD + VALUE_COLUMN, "");
+        sqlBuilder.append(PLUS).append(NL);
+        buildHeadlineTsRank(sqlBuilder, stringValue, args,
+                CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS + PERIOD + CODE_COLUMN, "");
+        sqlBuilder.append(ASTERISK).append(SP).append(IMPORTANCE_MULTIPLIER).append(DOUBLE_COLON).append(FLOAT_4)
+                .append(SP).append(PLUS).append(NL);
+        buildHeadlineTsRank(sqlBuilder, stringValue, args,
+                CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS + PERIOD + LABEL_COLUMN, "");
+        sqlBuilder.append(ASTERISK).append(SP).append(IMPORTANCE_MULTIPLIER).append(DOUBLE_COLON).append(FLOAT_4)
+                .append(NL);
+
+        sqlBuilder.append(END).append(SP).append(RANK_ALIAS).append(COMMA).append(NL);
     }
 
     private static void buildHeadlineTsRank(final StringBuilder sqlBuilder, final AbstractStringValue stringValue, final List<Object> args,
@@ -502,17 +515,6 @@ public class GlobalSearchCriteriaTranslator
                 .append(SELECT).append(SP).append(UNNEST).append(LP).append(QU).append(RP)
                 .append(RP);
         args.add(criterionValues);
-    }
-
-    private static void buildTsRank(final StringBuilder sqlBuilder, final AbstractStringValue stringValue,
-            final List<Object> args)
-    {
-        sqlBuilder.append(TS_RANK).append(LP).append(COALESCE).append(LP)
-                .append(GlobalSearchCriteriaTranslator.PROPERTIES_TABLE_ALIAS).append(PERIOD).append(TSVECTOR_DOCUMENT)
-                .append(COMMA).append(SP).append(SQ).append(SQ).append(RP)
-                .append(COMMA).append(SP);
-        buildTsQueryPart(sqlBuilder, stringValue, args);
-        sqlBuilder.append(RP);
     }
 
     private static void buildFrom(final StringBuilder sqlBuilder, final TranslationVo vo, final GlobalSearchTextCriteria criterion,
