@@ -27,6 +27,9 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialEntityProperty;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyType;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Sample;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleEntityProperty;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ScriptType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.VocabularyTerm;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.VocabularyTermEntityProperty;
@@ -89,6 +92,7 @@ public final class EntityPropertiesEnricher implements IEntityPropertiesEnricher
         List<GenericEntityPropertyRecord> records = new ArrayList<>();
         LongSet vocaTermIds = new LongOpenHashSet();
         LongSet materialIds = new LongOpenHashSet();
+        LongSet sampleIds = new LongOpenHashSet();
         for (GenericEntityPropertyRecord record : propertySetQuery.getEntityPropertyGenericValues(entityIDs))
         {
             records.add(record);
@@ -100,10 +104,15 @@ public final class EntityPropertiesEnricher implements IEntityPropertiesEnricher
             {
                 materialIds.add(record.mate_prop_id);
             }
+            if (record.samp_prop_id != null)
+            {
+                sampleIds.add(record.samp_prop_id);
+            }
         }
 
         Long2ObjectMap<VocabularyTerm> vocabularyTerms = getVocabularyTerms(vocaTermIds);
         Long2ObjectMap<Material> materials = getMaterials(materialIds);
+        Long2ObjectMap<Sample> samples = getSamples(sampleIds);
         Long2ObjectMap<PropertyType> propertyTypes = getPropertyTypes();
         for (GenericEntityPropertyRecord val : records)
         {
@@ -116,6 +125,10 @@ public final class EntityPropertiesEnricher implements IEntityPropertiesEnricher
             {
                 property = new MaterialEntityProperty();
                 property.setMaterial(materials.get(val.mate_prop_id));
+            } else if (val.samp_prop_id != null)
+            {
+                property = new SampleEntityProperty();
+                property.setSample(samples.get(val.samp_prop_id));
             } else
             {
                 property = new GenericEntityProperty();
@@ -171,6 +184,21 @@ public final class EntityPropertiesEnricher implements IEntityPropertiesEnricher
         return materialTypeMap;
     }
 
+    private Long2ObjectMap<SampleType> getSampleTypes()
+    {
+        final CodeRecord[] typeCodes = query.getSampleTypeIdsAndCode();
+        final Long2ObjectOpenHashMap<SampleType> sampleTypeMap =
+                new Long2ObjectOpenHashMap<SampleType>(typeCodes.length);
+        for (CodeRecord t : typeCodes)
+        {
+            final SampleType type = new SampleType();
+            type.setCode(t.code);
+            sampleTypeMap.put(t.id, type);
+        }
+        sampleTypeMap.trim();
+        return sampleTypeMap;
+    }
+    
     private Long2ObjectMap<VocabularyTerm> getVocabularyTerms(LongSet vocaTermIds)
     {
         Long2ObjectMap<String> vocabularyURLMap = null;
@@ -220,6 +248,28 @@ public final class EntityPropertiesEnricher implements IEntityPropertiesEnricher
                 material.setMaterialType(materialTypes.get(record.maty_id));
                 material.setId(record.id);
                 map.put(record.id, material);
+            }
+        }
+        return map;
+    }
+    
+    private Long2ObjectMap<Sample> getSamples(LongSet sampleIds)
+    {
+        Long2ObjectMap<SampleType> sampleTypes = null;
+        Long2ObjectOpenHashMap<Sample> map = new Long2ObjectOpenHashMap<Sample>();
+        if (sampleIds.isEmpty() == false)
+        {
+            for (SampleEntityPropertyRecord record : query.getBasicSamples(sampleIds))
+            {
+                if (sampleTypes == null)
+                {
+                    sampleTypes = getSampleTypes();
+                }
+                Sample sample = new Sample();
+                sample.setCode(record.code);
+                sample.setSampleType(sampleTypes.get(record.saty_id));
+                sample.setId(record.id);
+                map.put(record.id, sample);
             }
         }
         return map;

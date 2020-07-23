@@ -47,15 +47,18 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.api.IManagedInputWidget
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.api.IManagedProperty;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.api.IPerson;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EntityPropertyPE;
+import ch.systemsx.cisd.openbis.generic.shared.dto.EntityPropertyWithSampleDataTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePropertyTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PropertyTypePE;
+import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.VocabularyPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.VocabularyTermPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.managed_property.IManagedPropertyEvaluatorFactory;
+import ch.systemsx.cisd.openbis.generic.shared.managed_property.api.IEntityInformationProvider;
 import ch.systemsx.cisd.openbis.generic.shared.managed_property.api.IManagedPropertyEvaluator;
 import ch.systemsx.cisd.openbis.generic.shared.translator.PersonTranslator;
 
@@ -111,16 +114,18 @@ public final class EntityPropertiesConverter implements IEntityPropertiesConvert
     private final IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory;
 
     public EntityPropertiesConverter(final EntityKind entityKind, final IDAOFactory daoFactory,
+            IEntityInformationProvider entityInfoProvider,
             final IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory)
     {
         this(entityKind, daoFactory, new PropertyValidator(), new PlaceholderPropertyCreator(),
-                managedPropertyEvaluatorFactory);
+                entityInfoProvider, managedPropertyEvaluatorFactory);
     }
 
     @Private
     EntityPropertiesConverter(final EntityKind entityKind, final IDAOFactory daoFactory,
             final IPropertyValueValidator propertyValueValidator,
             IPropertyPlaceholderCreator placeholderCreator,
+            IEntityInformationProvider entityInfoProvider,
             IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory)
     {
         assert entityKind != null : "Unspecified entity kind.";
@@ -131,7 +136,7 @@ public final class EntityPropertiesConverter implements IEntityPropertiesConvert
         this.entityKind = entityKind;
         this.propertyValueValidator = propertyValueValidator;
         this.placeholderCreator = placeholderCreator;
-        this.complexPropertyValueHelper = new ComplexPropertyValueHelper(daoFactory, null);
+        this.complexPropertyValueHelper = new ComplexPropertyValueHelper(daoFactory, null, entityInfoProvider);
         this.managedPropertyEvaluatorFactory = managedPropertyEvaluatorFactory;
     }
 
@@ -438,14 +443,15 @@ public final class EntityPropertiesConverter implements IEntityPropertiesConvert
         if (validatedValue.startsWith(BasicConstant.ERROR_PROPERTY_PREFIX))
         {
             // save errors as strings
-            entityProperty.setUntypedValue(validatedValue, null, null);
+            entityProperty.setUntypedValue(validatedValue, null, null, null);
         } else
         {
             final VocabularyTermPE vocabularyTerm =
                     complexPropertyValueHelper.tryGetVocabularyTerm(validatedValue, propertyType);
             final MaterialPE material =
                     complexPropertyValueHelper.tryGetMaterial(validatedValue, propertyType);
-            entityProperty.setUntypedValue(validatedValue, vocabularyTerm, material);
+            SamplePE sample = complexPropertyValueHelper.tryGetSample(validatedValue, propertyType);
+            entityProperty.setUntypedValue(validatedValue, vocabularyTerm, material, sample);
         }
     }
 
@@ -475,8 +481,11 @@ public final class EntityPropertiesConverter implements IEntityPropertiesConvert
             T existingProperty = tryFind(oldProperties, propertyType);
             if (existingProperty != null)
             {
+                SamplePE sample = newProperty instanceof EntityPropertyWithSampleDataTypePE
+                        ? ((EntityPropertyWithSampleDataTypePE) newProperty).getSampleValue()
+                        : null;
                 existingProperty.setUntypedValue(newProperty.getValue(),
-                        newProperty.getVocabularyTerm(), newProperty.getMaterialValue());
+                        newProperty.getVocabularyTerm(), newProperty.getMaterialValue(), sample);
 
                 if (false == existingPropertyValues.get(existingProperty).equals(newProperty.tryGetUntypedValue()))
                 {
@@ -534,7 +543,7 @@ public final class EntityPropertiesConverter implements IEntityPropertiesConvert
         T existingProperty = tryFind(oldProperties, managedProperty.getPropertyTypeCode());
         if (existingProperty != null)
         {
-            existingProperty.setUntypedValue(managedProperty.getValue(), null, null);
+            existingProperty.setUntypedValue(managedProperty.getValue(), null, null, null);
             existingProperty.setAuthor(author);
         }
         return set;
@@ -691,15 +700,43 @@ public final class EntityPropertiesConverter implements IEntityPropertiesConvert
         // creates a new DB connection that are not closed.
         private final IHibernateSessionProvider customSessionProviderOrNull;
 
+        private IEntityInformationProvider entityInfoProvider;
+
         /**
          * @param customSessionProviderOrNull Provider of custom session that should be used for accessing DB instead of default one. If null the
          *            standard way of getting the session should be used.
+         * @param entityInfoProvider
          */
         public ComplexPropertyValueHelper(IDAOFactory daoFactory,
-                IHibernateSessionProvider customSessionProviderOrNull)
+                IHibernateSessionProvider customSessionProviderOrNull, IEntityInformationProvider entityInfoProvider)
         {
             this.daoFactory = daoFactory;
             this.customSessionProviderOrNull = customSessionProviderOrNull;
+            this.entityInfoProvider = entityInfoProvider;
+        }
+
+        public SamplePE tryGetSample(String value, PropertyTypePE propertyType)
+        {
+            if (propertyType.getType().getCode() != DataTypeCode.SAMPLE)
+            {
+                return null; // this is not a property of SAMPLE type
+            }
+            ISampleDAO sampleDAO = daoFactory.getSampleDAO();
+            String samplePermId = value;
+            if (value.startsWith("/"))
+            {
+                samplePermId = entityInfoProvider.getSamplePermId(value);
+                if (samplePermId == null)
+                {
+                    throw UserFailureException.fromTemplate("No sample could be found for identifier %s.", value);
+                }
+            }
+            List<SamplePE> samples = sampleDAO.listByPermID(Collections.singleton(samplePermId));
+            if (samples.isEmpty())
+            {
+                throw UserFailureException.fromTemplate("No sample could be found for perm id %s.", value);
+            }
+            return samples.get(0);
         }
 
         public MaterialPE tryGetMaterial(String value, PropertyTypePE propertyType)

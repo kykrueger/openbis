@@ -35,6 +35,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePropertyTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.IEntityInformationWithPropertiesHolder;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.managed_property.IManagedPropertyEvaluatorFactory;
+import ch.systemsx.cisd.openbis.generic.shared.managed_property.api.IEntityInformationProvider;
 
 /**
  * @author pkupczyk
@@ -47,8 +48,11 @@ public class VerifyEntityPropertyExecutor implements IVerifyEntityPropertyExecut
     private IDAOFactory daoFactory;
 
     @Autowired
-    private IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory;
+    private IEntityInformationProvider entityInformationProvider;
 
+    @Autowired
+    private IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory;
+    
     @SuppressWarnings("unused")
     private VerifyEntityPropertyExecutor()
     {
@@ -86,7 +90,7 @@ public class VerifyEntityPropertyExecutor implements IVerifyEntityPropertyExecut
     private EntityPropertiesConverter getEntityPropertiesConverter(EntityKind entityKindOrNull)
     {
         return new EntityPropertiesConverter(
-                entityKindOrNull, daoFactory, managedPropertyEvaluatorFactory);
+                entityKindOrNull, daoFactory, entityInformationProvider, managedPropertyEvaluatorFactory);
     }
 
 }

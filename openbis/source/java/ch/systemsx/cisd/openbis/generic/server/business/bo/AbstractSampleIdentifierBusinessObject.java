@@ -33,6 +33,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.Session;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SampleIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.managed_property.IManagedPropertyEvaluatorFactory;
+import ch.systemsx.cisd.openbis.generic.shared.managed_property.api.IEntityInformationProvider;
 import ch.systemsx.cisd.openbis.generic.shared.util.HibernateUtils;
 
 /**
@@ -48,11 +49,13 @@ abstract class AbstractSampleIdentifierBusinessObject extends AbstractBusinessOb
     private final SampleOwnerFinder sampleOwnerFinder;
 
     AbstractSampleIdentifierBusinessObject(final IDAOFactory daoFactory, final Session session,
-            EntityKind entityKind, IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory,
+            EntityKind entityKind, IEntityInformationProvider entityInformationProvider,
+            IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory,
             DataSetTypeWithoutExperimentChecker dataSetTypeChecker,
             IRelationshipService relationshipService)
     {
-        super(daoFactory, session, entityKind, managedPropertyEvaluatorFactory, dataSetTypeChecker, relationshipService);
+        super(daoFactory, session, entityKind, entityInformationProvider, managedPropertyEvaluatorFactory, 
+                dataSetTypeChecker, relationshipService);
         sampleOwnerFinder = new SampleOwnerFinder(daoFactory, findPerson());
     }
 
@@ -88,7 +91,7 @@ abstract class AbstractSampleIdentifierBusinessObject extends AbstractBusinessOb
         }
         return sample;
     }
-    
+
     public void clearSampleCache()
     {
         sampleByIdentifierCache.clear();
@@ -154,7 +157,7 @@ abstract class AbstractSampleIdentifierBusinessObject extends AbstractBusinessOb
     protected SamplePE tryToGetSampleByTechId(final TechId sampleId)
     {
         String[] connections =
-        { PROPERTY_TYPES, EXPERIMENT };
+                { PROPERTY_TYPES, EXPERIMENT };
         return getSampleDAO().tryGetByTechId(sampleId, connections);
     }
 }

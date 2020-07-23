@@ -117,6 +117,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.SpacePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SpaceIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.managed_property.IManagedPropertyEvaluatorFactory;
+import ch.systemsx.cisd.openbis.generic.shared.managed_property.api.IEntityInformationProvider;
 import ch.systemsx.cisd.openbis.generic.shared.translator.AttachmentTranslator;
 import ch.systemsx.cisd.openbis.generic.shared.util.WebClientConfigUtils;
 
@@ -152,12 +153,13 @@ abstract class AbstractBusinessObject implements IDAOFactory
 
     AbstractBusinessObject(final IDAOFactory daoFactory, final Session session,
             EntityKind entityKindOrNull,
+            IEntityInformationProvider entityInformationProvider,
             IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory,
             DataSetTypeWithoutExperimentChecker dataSetTypeChecker,
             IRelationshipService relationshipService)
     {
         this(daoFactory, session, entityKindOrNull == null ? null : new EntityPropertiesConverter(
-                entityKindOrNull, daoFactory, managedPropertyEvaluatorFactory),
+                entityKindOrNull, daoFactory, entityInformationProvider, managedPropertyEvaluatorFactory),
                 managedPropertyEvaluatorFactory, dataSetTypeChecker, relationshipService);
     }
 

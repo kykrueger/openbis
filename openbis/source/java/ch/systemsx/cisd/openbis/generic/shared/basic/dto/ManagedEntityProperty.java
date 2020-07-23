@@ -126,6 +126,16 @@ public class ManagedEntityProperty implements IEntityProperty, IManagedProperty
         entityProperty.setMaterial(material);
     }
 
+    public Sample getSample()
+    {
+        return entityProperty.getSample();
+    }
+
+    public void setSample(Sample sample)
+    {
+        entityProperty.setSample(sample);
+    }
+
     @Override
     public VocabularyTerm getVocabularyTerm()
     {

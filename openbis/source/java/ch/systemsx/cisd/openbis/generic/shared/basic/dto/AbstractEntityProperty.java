@@ -104,6 +104,17 @@ public abstract class AbstractEntityProperty implements IEntityProperty
     }
 
     @Override
+    public Sample getSample()
+    {
+        return null;
+    }
+
+    @Override
+    public void setSample(Sample sample)
+    {
+    }
+
+    @Override
     public VocabularyTerm getVocabularyTerm()
     {
         return null;

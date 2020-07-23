@@ -54,6 +54,9 @@ public interface IPropertyListingQuery
     @Select("select id, code from material_types")
     public CodeRecord[] getMaterialTypes();
     
+    @Select("select id, code from sample_types")
+    public CodeRecord[] getSampleTypeIdsAndCode();
+    
     @Select(sql = "SELECT id, covo_id, code, label, ordinal, description "
             + "FROM controlled_vocabulary_terms WHERE id = any(?{1})", 
             parameterBindings = { LongSetMapper.class}, fetchSize = FETCH_SIZE)
@@ -62,5 +65,9 @@ public interface IPropertyListingQuery
     @Select(sql = "SELECT id, code, maty_id FROM materials WHERE id = any(?{1})", 
             parameterBindings = { LongSetMapper.class}, fetchSize = FETCH_SIZE)
     public DataIterator<MaterialEntityPropertyRecord> getMaterials(LongSet materialIds);
+    
+    @Select(sql = "SELECT id, code, saty_id FROM samples WHERE id = any(?{1})", 
+            parameterBindings = { LongSetMapper.class}, fetchSize = FETCH_SIZE)
+    public DataIterator<SampleEntityPropertyRecord> getBasicSamples(LongSet sampleIds);
     
 }
