@@ -65,6 +65,12 @@ public interface IPersonDAO extends IGenericDAO<PersonPE>
     public PersonPE getPerson(long id) throws DataAccessException;
 
     /**
+     * For the given <code>ids</code> returns the corresponding <code>Persons</code>, or throw {@link DataAccessException}, if a person with the given
+     * <var>ids</var> does not exist.
+     */
+    public List<PersonPE> getPersons(Collection<Long> ids) throws DataAccessException;
+
+    /**
      * @returns The list of all persons currently present in the database.
      */
     public List<PersonPE> listPersons() throws DataAccessException;

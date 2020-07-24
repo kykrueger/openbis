@@ -73,13 +73,21 @@ public class SampleContainerSearchManager extends AbstractCompositeEntitySearchM
     @Override
     protected SampleContainerSearchCriteria createEmptyCriteria()
     {
-        return new SampleContainerSearchCriteria();
+        throw new UnsupportedOperationException("This method is not supposed to be called.");
     }
 
     @Override
     protected Set<Long> doFilterIDsByUserRights(final Set<Long> ids, final AuthorisationInformation authorisationInformation)
     {
         return getAuthProvider().getAuthorisedSamples(ids, authorisationInformation);
+    }
+
+    @Override
+    protected Set<Long> getAllIds(final Long userId, final AuthorisationInformation authorisationInformation, final String idsColumnName,
+            final TableMapper tableMapper)
+    {
+        return getSearchDAO().queryDBWithNonRecursiveCriteria(userId, new DummyCompositeSearchCriterion(), tableMapper,
+                idsColumnName, authorisationInformation);
     }
 
 }

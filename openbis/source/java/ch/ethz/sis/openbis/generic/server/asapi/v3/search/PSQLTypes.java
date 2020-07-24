@@ -32,6 +32,8 @@ public enum PSQLTypes
 
     TIMESTAMP_WITH_TZ("timestamptz"),
 
+    DATE("date"),
+
     BOOLEAN("boolean"),
 
     CHARACTER("character"),

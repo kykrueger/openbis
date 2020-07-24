@@ -2353,6 +2353,11 @@ MatchFetchOptions
 hasMatch
 withMatch
 withMatchUsing
+formatValue
+DATE_FORMATS
+LONG_DATE_FORMAT
+NORMAL_DATE_FORMAT
+SHORT_DATE_FORMAT
 
 List Update Map Values
 put

@@ -28,6 +28,8 @@ public class SQLLexemes
     public static final String UPPER = "UPPER";
 
     public static final String GREATEST = "GREATEST";
+    
+    public static final String DATE_TRUNC = "date_trunc";
 
     public static final String TS_RANK = "ts_rank";
 
@@ -170,6 +172,8 @@ public class SQLLexemes
     public static final String DOUBLE_DOLLAR = "$$";
 
     public static final String TILDA = "~";
+
+    public static final String PLUS = "+";
 
     public static final String SELECT_UNNEST = LP + SELECT + SP + UNNEST + LP + QU + RP + RP;
 

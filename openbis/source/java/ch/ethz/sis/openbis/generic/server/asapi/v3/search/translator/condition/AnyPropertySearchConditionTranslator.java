@@ -77,7 +77,7 @@ public class AnyPropertySearchConditionTranslator implements IConditionTranslato
 
         if (value.getClass() != AnyStringValue.class)
         {
-            sqlBuilder.append(SP).append(aliases.get(tableMapper.getValuesTable()).getSubTableAlias())
+            sqlBuilder.append(aliases.get(tableMapper.getValuesTable()).getSubTableAlias())
                     .append(PERIOD).append(ColumnNames.VALUE_COLUMN).append(SP);
             TranslatorUtils.appendStringComparatorOp(value.getClass(), TranslatorUtils.stripQuotationMarks(value.getValue()), sqlBuilder,
                     args);

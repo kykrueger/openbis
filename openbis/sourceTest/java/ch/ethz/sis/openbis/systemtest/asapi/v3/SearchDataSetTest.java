@@ -111,7 +111,7 @@ public class SearchDataSetTest extends AbstractDataSetTest
     }
 
     @Test
-    public void testSearchWithModicationDateIsLaterThan()
+    public void testSearchWithModificationDateIsLaterThan()
     {
         DataSetSearchCriteria criteria = new DataSetSearchCriteria();
         criteria.withModificationDate().thatIsLaterThanOrEqualTo("2011-05-01");
@@ -122,6 +122,16 @@ public class SearchDataSetTest extends AbstractDataSetTest
     @Test
     public void testSearchWithContainer()
     {
+        final DataSetSearchCriteria criteria = new DataSetSearchCriteria();
+        criteria.withContainer();
+        testSearch(TEST_USER, criteria, "CONTAINER_1", "CONTAINER_2", "20110509092359990-11", "20110509092359990-12",
+                "VALIDATIONS_IMPOS-27", "COMPONENT_1A", "COMPONENT_2A", "COMPONENT_1B", "COMPONENT_3A", "COMPONENT_3AB",
+                "COMPONENT_3AX");
+    }
+
+    @Test
+    public void testSearchWithContainerWithPermId()
+    {
         DataSetSearchCriteria criteria = new DataSetSearchCriteria();
         criteria.withContainer().withPermId().thatEquals("20110509092359990-10");
         testSearch(TEST_USER, criteria, "20110509092359990-11", "20110509092359990-12");
@@ -129,6 +139,16 @@ public class SearchDataSetTest extends AbstractDataSetTest
 
     @Test
     public void testSearchWithChildren()
+    {
+        final DataSetSearchCriteria criteria = new DataSetSearchCriteria();
+        criteria.withChildren();
+        testSearch(TEST_USER, criteria, "20081105092159111-1", "20081105092159222-2", "20081105092159333-3",
+                "20081105092259000-19", "20081105092259000-9", "20081105092259900-0", "20081105092259900-1",
+                "20110805092359990-17", "VALIDATIONS_PARENT-28");
+    }
+
+    @Test
+    public void testSearchWithChildrenWithCode()
     {
         DataSetSearchCriteria criteria = new DataSetSearchCriteria();
         criteria.withChildren().withCode().thatEquals("20081105092259000-9");
@@ -146,6 +166,16 @@ public class SearchDataSetTest extends AbstractDataSetTest
 
     @Test
     public void testSearchWithParent()
+    {
+        final DataSetSearchCriteria criteria = new DataSetSearchCriteria();
+        criteria.withParents();
+        testSearch(TEST_USER, criteria, "20081105092259000-18", "20081105092259000-20", "20081105092259000-21",
+                "20081105092259000-8", "20081105092259000-9", "20081105092259900-0", "20081105092259900-1",
+                "20081105092359990-2", "VALIDATIONS_IMPOS-27");
+    }
+
+    @Test
+    public void testSearchWithParentWithCode()
     {
         DataSetSearchCriteria criteria = new DataSetSearchCriteria();
         criteria.withParents().withCode().thatEquals("20081105092159111-1");
