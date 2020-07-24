@@ -7,7 +7,10 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.update.SampleUpdate;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.IApplicationServerInternalApi;
+import ch.systemsx.cisd.common.logging.LogCategory;
+import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
+import org.apache.log4j.Logger;
 import org.w3c.dom.*;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -17,6 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ELNAnnotationsMigration {
+
+    private static final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION, ELNAnnotationsMigration.class);
 
     private static boolean contains(String permId, List<Sample> samples) {
         for (Sample sample:samples) {
@@ -28,7 +33,7 @@ public class ELNAnnotationsMigration {
     }
 
     public static void beforeUpgrade() throws Exception {
-        System.out.println("ELNAnnotationsMigration beforeUpgrade START");
+        operationLog.info("ELNAnnotationsMigration beforeUpgrade START");
         IApplicationServerInternalApi api = CommonServiceProvider.getApplicationServerApi();
         String sessionToken = api.loginAsSystem();
         SampleSearchCriteria criteria = new SampleSearchCriteria();
@@ -45,13 +50,19 @@ public class ELNAnnotationsMigration {
         int from = 0;
         int count = 10000;
         int total = results.getTotalCount();
-        System.out.println("ELNAnnotationsMigration from: " + from + " count: " + count + " total: " + total);
+        operationLog.info("ELNAnnotationsMigration from: " + from + " count: " + count + " total: " + total);
 
         List<SampleUpdate> sampleUpdates = new ArrayList<>();
+
+        int exceptionsTotal = 0;
+        List<String> exceptionsPermIds = new ArrayList<>();
+        int skippedTotal = 0;
+        List<String> skippedPermIds = new ArrayList<>();
+
         while (total > from) {
             options.from(from);
             options.count(count);
-            System.out.println("ELNAnnotationsMigration from: " + from + " count: " + count + " total: " + total);
+            operationLog.info("ELNAnnotationsMigration from: " + from + " count: " + count + " total: " + total);
             for (Sample sample:api.searchSamples(sessionToken, criteria, options).getObjects()) {
                 SampleUpdate sampleUpdate = null;
                 String annotations = sample.getProperty("$ANNOTATIONS_STATE");
@@ -104,9 +115,17 @@ public class ELNAnnotationsMigration {
                             }
                         }
                     } catch (Exception ex) {
+                        exceptionsTotal++;
+                        exceptionsPermIds.add(sample.getPermId().getPermId());
+                        operationLog.info("ELNAnnotationsMigration FAILED: " + sample.getPermId().getPermId() + " $ANNOTATIONS_STATE = " + annotations);
                         ex.printStackTrace();
                     }
+                } else {
+                    skippedTotal++;
+                    skippedPermIds.add(sample.getPermId().getPermId());
+                    operationLog.info("ELNAnnotationsMigration SKIPPED: " + sample.getPermId().getPermId() + " $ANNOTATIONS_STATE = " + annotations);
                 }
+
                 if (sampleUpdate != null) {
                     sampleUpdates.add(sampleUpdate);
                 }
@@ -114,9 +133,13 @@ public class ELNAnnotationsMigration {
             from = from + count;
         }
 
-        System.out.println("ELNAnnotationsMigration sampleUpdates.size: " + sampleUpdates.size());
+        operationLog.info("=== ELNAnnotationsMigration Summary ===");
+        operationLog.info("ELNAnnotationsMigration exceptionsTotal: " + exceptionsTotal);
+        operationLog.info("ELNAnnotationsMigration skippedTotal: " + skippedTotal);
+        operationLog.info("ELNAnnotationsMigration updateSamples sampleUpdates.size: " + sampleUpdates.size());
         api.updateSamples(sessionToken, sampleUpdates);
-
-        System.out.println("ELNAnnotationsMigration beforeUpgrade END");
+        operationLog.info("ELNAnnotationsMigration exceptionsPermIds: " + exceptionsPermIds);
+        operationLog.info("ELNAnnotationsMigration skippedPermIds: " + skippedPermIds);
+        operationLog.info("ELNAnnotationsMigration beforeUpgrade END");
     }
 }
