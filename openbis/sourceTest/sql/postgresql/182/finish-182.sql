@@ -1254,7 +1254,7 @@ ALTER TABLE ONLY operation_executions
 ALTER TABLE ONLY persons
     ADD CONSTRAINT pers_pers_fk FOREIGN KEY (pers_id_registerer) REFERENCES persons(id) DEFERRABLE INITIALLY DEFERRED;
 ALTER TABLE ONLY persons
-    ADD CONSTRAINT pers_space_fk FOREIGN KEY (space_id) REFERENCES spaces(id);
+    ADD CONSTRAINT pers_space_fk FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE SET NULL;
 ALTER TABLE ONLY post_registration_dataset_queue
     ADD CONSTRAINT prdq_ds_fk FOREIGN KEY (ds_id) REFERENCES data_all(id) ON DELETE CASCADE;
 ALTER TABLE ONLY projects
