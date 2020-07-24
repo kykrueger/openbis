@@ -38,6 +38,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ILocalSearchMa
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.ITranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.TranslationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.globalsearch.IGlobalSearchObjectTranslator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.person.IPersonTranslator;
 import ch.systemsx.cisd.openbis.generic.shared.authorization.AuthorizationConfig;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MatchingEntity;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
@@ -64,6 +65,9 @@ public class SearchGloballyOperationExecutor
 
     @Autowired
     private IGlobalSearchObjectTranslator translator;
+
+    @Autowired
+    private IPersonTranslator personTranslator;
 
     @Autowired
     private IGlobalAuthorizationExecutor authorizationExecutor;
@@ -103,34 +107,33 @@ public class SearchGloballyOperationExecutor
         final Set<Map<String, Object>> allResultMaps = new HashSet<>();
 
         // There results from the manager should already be filtered.
-        if (objectKinds.contains(GlobalSearchObjectKind.SAMPLE))
+        if (objectKinds.contains(GlobalSearchObjectKind.SAMPLE))    
         {
             final Set<Map<String, Object>> sampleResultMaps = globalSearchManager.searchForIDs(userId,
-                    authorisationInformation, criteria, null, TableMapper.SAMPLE, fetchOptions);
+                    authorisationInformation, criteria, null, TableMapper.SAMPLE, fetchOptions.hasMatch());
             allResultMaps.addAll(sampleResultMaps);
         }
 
         if (objectKinds.contains(GlobalSearchObjectKind.EXPERIMENT))
         {
             final Set<Map<String, Object>> experimentResultMaps = globalSearchManager.searchForIDs(userId,
-                    authorisationInformation, criteria, null, TableMapper.EXPERIMENT, fetchOptions);
+                    authorisationInformation, criteria, null, TableMapper.EXPERIMENT, fetchOptions.hasMatch());
             allResultMaps.addAll(experimentResultMaps);
         }
 
         if (objectKinds.contains(GlobalSearchObjectKind.DATA_SET))
         {
             final Set<Map<String, Object>> dataSetResultMaps = globalSearchManager.searchForIDs(userId,
-                    authorisationInformation, criteria, null, TableMapper.DATA_SET, fetchOptions);
+                    authorisationInformation, criteria, null, TableMapper.DATA_SET, fetchOptions.hasMatch());
             allResultMaps.addAll(dataSetResultMaps);
         }
 
         if (objectKinds.contains(GlobalSearchObjectKind.MATERIAL))
         {
             final Set<Map<String, Object>> materialResultMaps = globalSearchManager.searchForIDs(userId,
-                    authorisationInformation, criteria, null, TableMapper.MATERIAL, fetchOptions);
+                    authorisationInformation, criteria, null, TableMapper.MATERIAL, fetchOptions.hasMatch());
             allResultMaps.addAll(materialResultMaps);
         }
-
 
         final Collection<MatchingEntity> matchingEntities = globalSearchManager.map(allResultMaps,
                 fetchOptions.hasMatch());

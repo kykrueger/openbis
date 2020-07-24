@@ -16,17 +16,12 @@
 
 package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
-import static ch.systemsx.cisd.common.test.AssertionUtil.assertCollectionContainsAtLeast;
-import static ch.systemsx.cisd.common.test.AssertionUtil.assertCollectionDoesntContain;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotSame;
 
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.CacheMode;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CodesSearchCriteria;
@@ -51,6 +46,11 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagPermId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.ISQLExecutor;
 import ch.systemsx.cisd.common.test.AssertionUtil;
 import ch.systemsx.cisd.openbis.systemtest.authorization.ProjectAuthorizationUser;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.annotations.Test;
+
+import static ch.systemsx.cisd.common.test.AssertionUtil.assertCollectionContainsAtLeast;
+import static ch.systemsx.cisd.common.test.AssertionUtil.assertCollectionDoesntContain;
 
 /**
  * @author pkupczyk

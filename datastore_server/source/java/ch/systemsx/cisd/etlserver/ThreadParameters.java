@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.Properties;
 import java.util.Vector;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -99,6 +100,8 @@ public final class ThreadParameters
     @Private
     public static final String INCOMING_SHARE_ID = "incoming-share-id";
 
+    private static final String INCOMING_SHARE_MINIMUM_FREE_SPACE_IN_GB = "incoming-share-minimum-free-space-in-gb";
+
     /*
      * The properties that control the process of retrying registration by jython dropboxes
      */
@@ -175,6 +178,8 @@ public final class ThreadParameters
 
     private final Integer incomingShareId;
 
+    private final Long incomingShareMinimumFreeSpace;
+
     private final boolean h5Folders;
 
     private final boolean h5arFolders;
@@ -221,6 +226,7 @@ public final class ThreadParameters
         this.dataSetRegistrationPreStagingBehavior =
                 getOriginalnputDataSetBehaviour(threadProperties);
         this.incomingShareId = tryGetIncomingShareId(threadProperties);
+        this.incomingShareMinimumFreeSpace = tryGetIncomingShareMinimumFreeSpace(threadProperties);
 
         boolean developmentMode =
                 PropertyUtils.getBoolean(threadProperties, RECOVERY_DEVELOPMENT_MODE, false);
@@ -286,6 +292,11 @@ public final class ThreadParameters
     public Integer getIncomingShareId()
     {
         return incomingShareId;
+    }
+
+    public Long getIncomingShareMinimumFreeSpace()
+    {
+        return incomingShareMinimumFreeSpace;
     }
 
     // true if marker file should be used, false if autodetection should be used, exceprion when the
@@ -396,6 +407,12 @@ public final class ThreadParameters
             throw new ConfigurationFailureException("Invalid incoming share Id:" + shareId);
         }
         return Integer.parseInt(shareId);
+    }
+
+    private static Long tryGetIncomingShareMinimumFreeSpace(Properties properties)
+    {
+        double min = PropertyUtils.getDouble(properties, INCOMING_SHARE_MINIMUM_FREE_SPACE_IN_GB, -1);
+        return min < 0 ? null : (long) (min * FileUtils.ONE_GB);
     }
 
     private static String nullIfEmpty(String value)

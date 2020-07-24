@@ -70,6 +70,9 @@ public abstract class AbstractEntityProperty implements IEntityProperty
                 Material material = getMaterial();
                 return (material != null) ? MaterialIdentifier.print(material.getCode(), material
                         .getMaterialType().getCode()) : getValue();
+            case SAMPLE:
+                Sample sample = getSample();
+                return (sample != null) ? sample.getPermId() : getValue();
             default:
                 return getValue();
         }
@@ -100,6 +103,17 @@ public abstract class AbstractEntityProperty implements IEntityProperty
 
     @Override
     public void setMaterial(Material material)
+    {
+    }
+
+    @Override
+    public Sample getSample()
+    {
+        return null;
+    }
+
+    @Override
+    public void setSample(Sample sample)
     {
     }
 

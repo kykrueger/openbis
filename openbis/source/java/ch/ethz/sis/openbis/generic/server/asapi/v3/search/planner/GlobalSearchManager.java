@@ -4,7 +4,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOrder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.Sorting;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.GlobalSearchObject;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearchObjectFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
@@ -45,10 +44,10 @@ public class GlobalSearchManager implements IGlobalSearchManager
 
     @Override
     public Set<Map<String, Object>> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation, final GlobalSearchCriteria criteria,
-            final String idsColumnName, final TableMapper tableMapper, final GlobalSearchObjectFetchOptions fetchOptions)
+            final String idsColumnName, final TableMapper tableMapper, final boolean useHeadline)
     {
         final Set<Map<String, Object>> mainCriteriaIntermediateResults = searchDAO.queryDBWithNonRecursiveCriteria(userId,
-                criteria, tableMapper, idsColumnName, authorisationInformation, fetchOptions);
+                criteria, tableMapper, idsColumnName, authorisationInformation, useHeadline);
 
         // If we have results, we use them
         // If we don't have results and criteria are not empty, there are no results.
@@ -225,7 +224,7 @@ public class GlobalSearchManager implements IGlobalSearchManager
 
             matchingEntity.setMatches(matches);
             return matchingEntity;
-        }).collect(Collectors.toMap(MatchingEntity::getId, Function.identity(),
+        }).collect(Collectors.toMap(MatchingEntity::getIdentifier, Function.identity(),
             (existingMatchingEntity, newMatchingEntity) ->
             {
                 existingMatchingEntity.setScore(existingMatchingEntity.getScore() + newMatchingEntity.getScore());
@@ -250,7 +249,8 @@ public class GlobalSearchManager implements IGlobalSearchManager
         return combinedMatches.stream().collect(Collectors.toMap(
                 (propertyMatch) -> Arrays.asList(propertyMatch.getCode(), propertyMatch.getValue()),
                 Function.identity(),
-                (existingPropertyMatch, newPropertyMatch) -> {
+                (existingPropertyMatch, newPropertyMatch) ->
+                {
                     existingPropertyMatch.getSpans().addAll(newPropertyMatch.getSpans());
                     return existingPropertyMatch;
                 },

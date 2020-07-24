@@ -91,6 +91,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.Session;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SampleIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.managed_property.IManagedPropertyEvaluatorFactory;
+import ch.systemsx.cisd.openbis.generic.shared.managed_property.api.IEntityInformationProvider;
 import ch.systemsx.cisd.openbis.generic.shared.translator.DataSetTranslator;
 import ch.systemsx.cisd.openbis.generic.shared.util.HibernateUtils;
 
@@ -221,10 +222,11 @@ public final class DataSetTable extends AbstractDataSetBusinessObject implements
     public DataSetTable(IDAOFactory daoFactory, IDataStoreServiceFactory dssFactory,
             Session session, IRelationshipService relationshipService,
             IServiceConversationClientManagerLocal conversationClient,
+            IEntityInformationProvider entityInformationProvider,
             IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory,
             IMultiplexer multiplexer, DataSetTypeWithoutExperimentChecker dataSetTypeChecker)
     {
-        super(daoFactory, session, relationshipService, conversationClient,
+        super(daoFactory, session, relationshipService, conversationClient, entityInformationProvider,
                 managedPropertyEvaluatorFactory, dataSetTypeChecker);
         this.dssFactory = dssFactory;
         this.multiplexer = multiplexer;

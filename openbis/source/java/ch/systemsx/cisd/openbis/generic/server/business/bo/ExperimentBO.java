@@ -63,6 +63,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.ExperimentIdentifi
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.ProjectIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.managed_property.IManagedPropertyEvaluatorFactory;
+import ch.systemsx.cisd.openbis.generic.shared.managed_property.api.IEntityInformationProvider;
 import ch.systemsx.cisd.openbis.generic.shared.util.HibernateUtils;
 import ch.systemsx.cisd.openbis.generic.shared.util.RelationshipUtils;
 
@@ -89,10 +90,11 @@ public final class ExperimentBO extends AbstractBusinessObject implements IExper
 
     public ExperimentBO(final IDAOFactory daoFactory, final Session session,
             IRelationshipService relationshipService,
+            IEntityInformationProvider entityInformationProvider,
             IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory,
             DataSetTypeWithoutExperimentChecker dataSetTypeChecker)
     {
-        super(daoFactory, session, EntityKind.EXPERIMENT, managedPropertyEvaluatorFactory,
+        super(daoFactory, session, EntityKind.EXPERIMENT, entityInformationProvider, managedPropertyEvaluatorFactory,
                 dataSetTypeChecker, relationshipService);
     }
 

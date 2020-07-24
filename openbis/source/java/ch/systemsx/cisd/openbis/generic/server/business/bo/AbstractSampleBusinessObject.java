@@ -63,6 +63,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SampleIdentifierFa
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SampleOwnerIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.managed_property.IManagedPropertyEvaluatorFactory;
+import ch.systemsx.cisd.openbis.generic.shared.managed_property.api.IEntityInformationProvider;
 import ch.systemsx.cisd.openbis.generic.shared.util.EntityHelper;
 import ch.systemsx.cisd.openbis.generic.shared.util.RelationshipUtils;
 
@@ -83,11 +84,12 @@ abstract class AbstractSampleBusinessObject extends AbstractSampleIdentifierBusi
     AbstractSampleBusinessObject(final IDAOFactory daoFactory, final Session session,
             IRelationshipService relationshipService,
             IEntityOperationChecker entityOperationChecker,
+            IEntityInformationProvider entityInformationProvider,
             IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory,
             DataSetTypeWithoutExperimentChecker dataSetTypeChecker)
     {
-        super(daoFactory, session, EntityKind.SAMPLE, managedPropertyEvaluatorFactory, dataSetTypeChecker,
-                relationshipService);
+        super(daoFactory, session, EntityKind.SAMPLE, entityInformationProvider, managedPropertyEvaluatorFactory,
+                dataSetTypeChecker, relationshipService);
         this.entityOperationChecker = entityOperationChecker;
     }
 

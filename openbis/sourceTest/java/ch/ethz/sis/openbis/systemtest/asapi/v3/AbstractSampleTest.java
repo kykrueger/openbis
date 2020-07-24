@@ -13,6 +13,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataType;
@@ -59,29 +60,57 @@ public class AbstractSampleTest extends AbstractTest
         commonServer.registerAndAssignPropertyType(sessionToken, propertyType, assignment);
     }
 
+    protected void assertNoRelationships(String sessionToken, SamplePermId parentId, SamplePermId... children)
+    {
+        for (SamplePermId childId : children)
+        {
+            assertAnnotations(sessionToken, null, null, parentId, childId);
+        }
+    }
+
+    protected void assertNoRelationships(Sample parent, Sample... children)
+    {
+        for (Sample child : children)
+        {
+            assertAnnotations(null, null, parent, child);
+        }
+    }
+
     protected void assertAnnotations(String sessionToken, String expectedParentAnnotations, String expectedChildAnnotations,
             SamplePermId parentId, SamplePermId childId)
     {
         SampleFetchOptions fetchOptions = new SampleFetchOptions();
         fetchOptions.withParents();
         fetchOptions.withChildren();
-        Sample parentSample = v3api.getSamples(sessionToken, Arrays.asList(parentId), fetchOptions).get(parentId);
-        assertAnnotations(expectedParentAnnotations, expectedChildAnnotations, parentSample.getChildRelationship(childId));
-        Sample childSample = v3api.getSamples(sessionToken, Arrays.asList(childId), fetchOptions).get(childId);
-        assertAnnotations(expectedParentAnnotations, expectedChildAnnotations, childSample.getParentRelationship(parentId));
+        Map<ISampleId, Sample> samples = v3api.getSamples(sessionToken, Arrays.asList(parentId, childId), fetchOptions);
+        Sample parentSample = samples.get(parentId);
+        Sample childSample = samples.get(childId);
+        assertAnnotations(expectedParentAnnotations, expectedChildAnnotations, parentSample, childSample);
+    }
+
+    protected void assertAnnotations(String expectedParentAnnotations, String expectedChildAnnotations, Sample parent, Sample child)
+    {
+        assertAnnotations(expectedParentAnnotations, expectedChildAnnotations, parent.getChildRelationship(child.getPermId()));
+        assertAnnotations(expectedParentAnnotations, expectedChildAnnotations, child.getParentRelationship(parent.getPermId()));
     }
 
     private void assertAnnotations(String expectedParentAnnotations, String expectedChildAnnotations, Relationship relationship)
     {
-        assertAnnotations(expectedParentAnnotations, relationship.getParentAnnotations());
-        assertAnnotations(expectedChildAnnotations, relationship.getChildAnnotations());
+        assertAnnotations(expectedParentAnnotations, relationship != null ? relationship.getParentAnnotations() : null);
+        assertAnnotations(expectedChildAnnotations, relationship != null ? relationship.getChildAnnotations() : null);
     }
 
     private void assertAnnotations(String expectedAnnotations, Map<String, String> annotations)
     {
-        List<String> keyValuePairs = annotations.entrySet().stream()
-                .map(e -> e.getKey() + "=" + e.getValue()).collect(Collectors.toList());
-        Collections.sort(keyValuePairs);
-        assertEquals(keyValuePairs.toString(), expectedAnnotations);
+        if (annotations == null)
+        {
+            assertEquals(annotations, expectedAnnotations);
+        } else
+        {
+            List<String> keyValuePairs = annotations.entrySet().stream()
+                    .map(e -> e.getKey() + "=" + e.getValue()).collect(Collectors.toList());
+            Collections.sort(keyValuePairs);
+            assertEquals(keyValuePairs.toString(), expectedAnnotations);
+        }
     }
 }

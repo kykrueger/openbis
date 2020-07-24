@@ -23,7 +23,6 @@ import java.util.Set;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearchObjectFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.relationship.IGetRelationshipIdExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
@@ -55,11 +54,11 @@ public interface ISQLSearchDAO
      * @param idsColumnName name of the column to select by, if {@code null} {@link ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN}
      *     is used.
      * @param authorisationInformation user authorisation information.
-     * @param fetchOptions global search fetch options.
+     * @param useHeadline global search fetch options.
      * @return set of numbers which represent the IDs of the scpecified ID column name.
      */
     Set<Map<String, Object>> queryDBWithNonRecursiveCriteria(final Long userId, final GlobalSearchCriteria criterion, final TableMapper tableMapper,
-            final String idsColumnName, final AuthorisationInformation authorisationInformation, final GlobalSearchObjectFetchOptions fetchOptions);
+            final String idsColumnName, final AuthorisationInformation authorisationInformation, final boolean useHeadline);
 
     /**
      * Finds child IDs which correspond to parent IDs.

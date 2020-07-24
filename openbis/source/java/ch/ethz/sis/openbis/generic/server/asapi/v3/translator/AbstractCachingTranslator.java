@@ -150,7 +150,9 @@ public abstract class AbstractCachingTranslator<I, O, F extends FetchOptions<?>>
             return (Long) input;
         } else
         {
-            throw new IllegalArgumentException("Unsupported input type: " + input.getClass());
+            final String message = (input != null) ? "Unsupported input type: " + input.getClass()
+                    : "Null input is unsupported.";
+            throw new IllegalArgumentException(message);
         }
     }
 
@@ -266,9 +268,8 @@ public abstract class AbstractCachingTranslator<I, O, F extends FetchOptions<?>>
 
     protected void postTranslate(TranslationContext context, Map<I, O> translated)
     {
-        
     }
-    
+
     /**
      * Implementation of this method should create a translated version of the input object. Only basic attributes of the input object should be
      * translated here. Parts that have a corresponding fetch option should be translated in the

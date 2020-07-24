@@ -69,12 +69,12 @@ define([ "require", "stjs", "util/Exceptions", "as/dto/common/search/AbstractFie
 			}
 		};
 		constructor.formatValue = function(value, dateFormat) {
-			try {
-				var DateFormat = require("util/DateFormat");
-				var dateFormat = new DateFormat(dateFormat.getFormat());
-				dateFormat.setLenient(false);
+					try {
+						var DateFormat = require("util/DateFormat");
+						var dateFormat = new DateFormat(dateFormat.getFormat());
+						dateFormat.setLenient(false);
 				return dateFormat.parse(value.getValue());
-			} catch (e) {
+					} catch (e) {
 				return null;
 			}
 		};

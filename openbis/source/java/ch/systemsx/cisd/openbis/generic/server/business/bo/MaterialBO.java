@@ -46,6 +46,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.Session;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.managed_property.IManagedPropertyEvaluatorFactory;
+import ch.systemsx.cisd.openbis.generic.shared.managed_property.api.IEntityInformationProvider;
 import ch.systemsx.cisd.openbis.generic.shared.util.HibernateUtils;
 
 /**
@@ -62,11 +63,13 @@ public final class MaterialBO extends AbstractMaterialBusinessObject implements 
     private EntityHistoryCreator historyCreator;
 
     public MaterialBO(final IDAOFactory daoFactory, final Session session,
+            IEntityInformationProvider entityInformationProvider,
             IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory,
             DataSetTypeWithoutExperimentChecker dataSetTypeChecker,
             IRelationshipService relationshipService, EntityHistoryCreator historyCreator)
     {
-        super(daoFactory, session, managedPropertyEvaluatorFactory, dataSetTypeChecker, relationshipService);
+        super(daoFactory, session, entityInformationProvider, managedPropertyEvaluatorFactory,
+                dataSetTypeChecker, relationshipService);
         this.historyCreator = historyCreator;
     }
 

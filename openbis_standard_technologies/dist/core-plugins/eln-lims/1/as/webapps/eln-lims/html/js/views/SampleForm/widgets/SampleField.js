@@ -23,9 +23,10 @@ function SampleField(isRequired,
 	var sampleTypeCode = sampleTypeCode;
 	var $plainSelect = FormUtil.getPlainDropdown({}, "");
 
-    var firstTime = true;
+    var initialised = false;
 	var storedParams = null;
 	var changeListener = null;
+    var initialValue = null;
 
 	//
 	// Form API
@@ -44,7 +45,12 @@ function SampleField(isRequired,
 
 
 	this.val = function(samplePermId) {
-	    if(samplePermId === undefined) {
+	    if(!initialised) {
+	        if(samplePermId) {
+	            initialValue = samplePermId;
+	        }
+	        return;
+	    } else if(samplePermId === undefined) {
 	        var selected = $plainSelect.select2('data');
 	        if(selected && selected[0]) {
 	            return selected[0].id;
@@ -87,7 +93,12 @@ function SampleField(isRequired,
 							"UUIDv4-1": { type: "Property/Attribute", 	name: "PROP.$NAME", operator : "thatContainsString", value: storedParams.data.q },
 							"UUIDv4-2": { type: "Property/Attribute", 	name: "ATTR.CODE", operator : "thatContains", 		value: storedParams.data.q }
 						}
-					};
+	    };
+
+	    if(sampleTypeCode) {
+            criteria.rules["UUIDv4-3"] = { type: "Property/Attribute", 	name: "ATTR.SAMPLE_TYPE", operator : "thatEquals", value: sampleTypeCode };
+        }
+
 		mainController.serverFacade.searchForSamplesAdvanced(criteria, {
 			only : true,
 			withType : true,
@@ -169,13 +180,6 @@ function SampleField(isRequired,
 
         			    var search = searches.shift();
         			    search(action);
-
-                        if(firstTime) {
-                            $plainSelect.on('select2:select', function (e) {
-                                changeListener(null, _this.val());
-                            });
-                            firstTime = false;
-                        }
         			    return {
         				    abort : function () { /*Not implemented*/ }
         			    }
@@ -183,7 +187,20 @@ function SampleField(isRequired,
         	    }
             });
 
-
+            $plainSelect.on('select2:select', function (e) {
+                if(changeListener) {
+                    changeListener(null, _this.val());
+                }
+            });
+            $plainSelect.on('select2:unselect', function (e) {
+                if(changeListener) {
+                    changeListener(null, "");
+                }
+            });
+            initialised = true;
+            if(initialValue) {
+                _this.val(initialValue);
+            }
     });
 
 	return $plainSelect;

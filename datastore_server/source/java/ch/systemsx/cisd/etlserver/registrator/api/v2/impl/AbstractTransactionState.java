@@ -29,9 +29,16 @@ import java.util.Queue;
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.base.exceptions.IOExceptionUnchecked;
 import ch.systemsx.cisd.base.exceptions.InterruptedExceptionUnchecked;
+import ch.systemsx.cisd.common.exceptions.EnvironmentFailureException;
 import ch.systemsx.cisd.common.exceptions.NotImplementedException;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
+import ch.systemsx.cisd.common.filesystem.HostAwareFile;
+import ch.systemsx.cisd.common.filesystem.highwatermark.HighwaterMarkWatcher;
+import ch.systemsx.cisd.common.filesystem.highwatermark.HighwaterMarkWatcher.HighwaterMarkState;
+import ch.systemsx.cisd.common.properties.ExtendedProperties;
 import ch.systemsx.cisd.etlserver.DynamicTransactionQueryFactory;
+import ch.systemsx.cisd.etlserver.ThreadParameters;
+import ch.systemsx.cisd.etlserver.TopLevelDataSetRegistratorGlobalState;
 import ch.systemsx.cisd.etlserver.registrator.DataSetRegistrationDetails;
 import ch.systemsx.cisd.etlserver.registrator.ITransactionalCommand;
 import ch.systemsx.cisd.etlserver.registrator.api.impl.MkdirsCommand;
@@ -65,6 +72,7 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v2.ISpaceImmutab
 import ch.systemsx.cisd.openbis.dss.generic.shared.dto.AtomicEntityOperationDetails;
 import ch.systemsx.cisd.openbis.dss.generic.shared.dto.DataSetInformation;
 import ch.systemsx.cisd.openbis.dss.generic.shared.dto.DataSetRegistrationInformation;
+import ch.systemsx.cisd.openbis.dss.generic.shared.utils.DssPropertyParametersUtil;
 import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetKind;
@@ -95,7 +103,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.ProjectIdentifierF
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SampleIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SampleIdentifierFactory;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SpaceIdentifierFactory;
-
 import net.lemnik.eodsql.DynamicTransactionQuery;
 
 /**
@@ -140,6 +147,8 @@ public abstract class AbstractTransactionState<T extends DataSetInformation>
         private static int fileSystemAvailablityWaitCount = 6 * 5;
 
         private static int fileSystemAvailablityPollingWaitTimeMs = 10 * 1000;
+
+        private static final double KB_TO_GB_FACTOR = 1.0 / 1024 / 1024;
 
         /**
          * These two variables determine together how long the rollback mechanism waits for a file system that has become unavailable and how often it
@@ -302,6 +311,7 @@ public abstract class AbstractTransactionState<T extends DataSetInformation>
                 DataSetRegistrationDetails<T> registrationDetailsOrNull, String dataSetTypeOrNull,
                 String specifiedCodeOrNull, DataSetKind dataSetKindOrNull)
         {
+            checkFreeStorageSpace();
             DataSetRegistrationDetails<T> registrationDetails = registrationDetailsOrNull;
             if (null == registrationDetails)
             {
@@ -314,7 +324,7 @@ public abstract class AbstractTransactionState<T extends DataSetInformation>
             }
             if (null != dataSetKindOrNull)
             {
-            	registrationDetails.setDataSetKind(dataSetKindOrNull);
+                registrationDetails.setDataSetKind(dataSetKindOrNull);
             }
             final String dataSetCode;
             if (null == specifiedCodeOrNull)
@@ -442,9 +452,9 @@ public abstract class AbstractTransactionState<T extends DataSetInformation>
                     return false;
                 }
                 ProjectIdentifier project = sampleIdentifier.getProjectLevel();
-                return project.getProjectCode().equals(projectDTO.getCode()) 
+                return project.getProjectCode().equals(projectDTO.getCode())
                         && project.getSpaceCode().equals(projectDTO.getSpace().getCode());
-            } 
+            }
             if (sampleIdentifier.isSpaceLevel())
             {
                 return sampleIdentifier.getSpaceLevel().getSpaceCode()
@@ -645,14 +655,14 @@ public abstract class AbstractTransactionState<T extends DataSetInformation>
         {
             return openBisService.generateCodes(sampleType.getGeneratedCodePrefix(), EntityKind.SAMPLE, 1).get(0);
         }
-        
+
         /// Asserts that given entity hasn't been yet created within this transaction
         private void addIdentifier(String identifier, String entityKind)
         {
             String updatedId = entityKind + identifier.trim().toUpperCase();
             if (registeredIdentifiers.contains(updatedId))
             {
-                throw new IllegalArgumentException(entityKind + " with identifier " + identifier 
+                throw new IllegalArgumentException(entityKind + " with identifier " + identifier
                         + " has already been created in this transaction");
             }
             registeredIdentifiers.add(updatedId);
@@ -1207,6 +1217,25 @@ public abstract class AbstractTransactionState<T extends DataSetInformation>
                 }
             }
             return algorithms;
+        }
+
+        private void checkFreeStorageSpace()
+        {
+            TopLevelDataSetRegistratorGlobalState globalState = registrationService.getRegistratorContext().getGlobalState();
+            String shareId = globalState.getShareId();
+            ThreadParameters threadParameters = globalState.getThreadParameters();
+            ExtendedProperties dssServiceProperties = DssPropertyParametersUtil.loadServiceProperties();
+            long highWaterMark = DssPropertyParametersUtil.getHighwaterMark(threadParameters, dssServiceProperties);
+            HostAwareFile share = new HostAwareFile(new File(globalState.getStoreRootDir(), shareId));
+            HighwaterMarkState state = new HighwaterMarkWatcher(highWaterMark).getHighwaterMarkState(share);
+            if (state.getFreeSpace() < state.getHighwaterMark())
+            {
+                throw EnvironmentFailureException.fromTemplate("Data Store has not enough free space. "
+                        + "Please, contact your openBIS administrator. "
+                        + "%5.2f GB is the required minimum free space of share %s, "
+                        + "but actually there is only %5.2f GB free.",
+                        state.getHighwaterMark() * KB_TO_GB_FACTOR, shareId, state.getFreeSpace() * KB_TO_GB_FACTOR);
+            }
         }
 
         /**

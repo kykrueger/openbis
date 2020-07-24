@@ -18,7 +18,6 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.*;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearchObjectFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.relationship.IGetRelationshipIdExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
@@ -33,7 +32,6 @@ import org.springframework.context.ApplicationContext;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.executor.relationship.IGetRelationshipIdExecutor.RelationshipType.PARENT_CHILD;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.*;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.*;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.RELATIONSHIP_TYPES_TABLE;
@@ -80,7 +78,7 @@ public class PostgresSearchDAO implements ISQLSearchDAO
     @Override
     public Set<Map<String, Object>> queryDBWithNonRecursiveCriteria(final Long userId, final GlobalSearchCriteria criterion,
             final TableMapper tableMapper, final String idsColumnName,
-            final AuthorisationInformation authorisationInformation, final GlobalSearchObjectFetchOptions fetchOptions)
+            final AuthorisationInformation authorisationInformation, final boolean useHeadline)
     {
         final Collection<ISearchCriteria> criteria = criterion.getCriteria();
         final SearchOperator operator = criterion.getOperator();
@@ -95,7 +93,7 @@ public class PostgresSearchDAO implements ISQLSearchDAO
         translationVo.setOperator(operator);
         translationVo.setIdColumnName(finalIdColumnName);
         translationVo.setAuthorisationInformation(authorisationInformation);
-        translationVo.setGlobalSearchObjectFetchOptions(fetchOptions);
+        translationVo.setUseHeadline(useHeadline);
 
         final SelectQuery selectQuery = GlobalSearchCriteriaTranslator.translate(translationVo);
         final List<Map<String, Object>> result = sqlExecutor.execute(selectQuery.getQuery(), selectQuery.getArgs());

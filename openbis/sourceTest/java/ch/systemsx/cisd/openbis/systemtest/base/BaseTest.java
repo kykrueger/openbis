@@ -17,11 +17,14 @@
 package ch.systemsx.cisd.openbis.systemtest.base;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.fail;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
@@ -41,8 +44,10 @@ import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Test;
 
 import ch.systemsx.cisd.authentication.ISessionManager;
+import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.common.logging.LogInitializer;
 import ch.systemsx.cisd.common.servlet.SpringRequestContextProvider;
+import ch.systemsx.cisd.common.test.AssertionUtil;
 import ch.systemsx.cisd.openbis.generic.client.web.client.ICommonClientService;
 import ch.systemsx.cisd.openbis.generic.server.ICommonServerForInternalUse;
 import ch.systemsx.cisd.openbis.generic.server.business.IRelationshipService;
@@ -697,6 +702,20 @@ public abstract class BaseTest extends AbstractTransactionalTestNGSpringContextT
     protected static <T> Matcher<T> isNot(Matcher<T> matcher)
     {
         return CoreMatchers.not(is(matcher));
+    }
+
+    protected void assertUserFailureException(Consumer<Void> action, String expectedMessage)
+    {
+        try
+        {
+            action.accept(null);
+            fail("Expected an exception to be thrown");
+        } catch (Exception e)
+        {
+            assertEquals(e.getClass(), UserFailureException.class);
+            AssertionUtil.assertContains(expectedMessage, e.getMessage());
+        }
+
     }
 
 }

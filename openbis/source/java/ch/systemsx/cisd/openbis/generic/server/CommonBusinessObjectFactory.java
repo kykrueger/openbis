@@ -93,6 +93,7 @@ import ch.systemsx.cisd.openbis.generic.shared.IJythonEvaluatorPool;
 import ch.systemsx.cisd.openbis.generic.shared.dto.Session;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.managed_property.IManagedPropertyEvaluatorFactory;
+import ch.systemsx.cisd.openbis.generic.shared.managed_property.api.IEntityInformationProvider;
 
 /**
  * The unique {@link ICommonBusinessObjectFactory} implementation.
@@ -107,10 +108,13 @@ public final class CommonBusinessObjectFactory extends AbstractBusinessObjectFac
 
     private EntityHistoryCreator historyCreator;
 
+    private IEntityInformationProvider entityInformationProvider;
+
     public CommonBusinessObjectFactory(IDAOFactory daoFactory, IDataStoreServiceFactory dssFactory,
             IRelationshipService relationshipService,
             IEntityOperationChecker entityOperationChecker,
             IServiceConversationClientManagerLocal conversationClient,
+            IEntityInformationProvider entityInformationProvider,
             IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory,
             IMultiplexer multiplexer,
             IJythonEvaluatorPool jythonEvaluatorPool,
@@ -118,6 +122,7 @@ public final class CommonBusinessObjectFactory extends AbstractBusinessObjectFac
     {
         super(daoFactory, dssFactory, relationshipService, entityOperationChecker,
                 conversationClient, managedPropertyEvaluatorFactory, multiplexer);
+        this.entityInformationProvider = entityInformationProvider;
         this.jythonEvaluatorPool = jythonEvaluatorPool;
         this.historyCreator = historyCreator;
     }
@@ -155,7 +160,7 @@ public final class CommonBusinessObjectFactory extends AbstractBusinessObjectFac
     public final ISampleTable createSampleTable(final Session session)
     {
         return new SampleTable(getDaoFactory(), session, getRelationshipService(),
-                getEntityOperationChecker(), getManagedPropertyEvaluatorFactory(),
+                getEntityOperationChecker(), entityInformationProvider, getManagedPropertyEvaluatorFactory(),
                 dataSetTypeWithoutExperimentChecker);
     }
 
@@ -196,7 +201,7 @@ public final class CommonBusinessObjectFactory extends AbstractBusinessObjectFac
     public final ISampleBO createSampleBO(final Session session)
     {
         return new SampleBO(getDaoFactory(), session, getRelationshipService(),
-                getEntityOperationChecker(), getManagedPropertyEvaluatorFactory(),
+                getEntityOperationChecker(), entityInformationProvider, getManagedPropertyEvaluatorFactory(),
                 dataSetTypeWithoutExperimentChecker);
     }
 
@@ -204,7 +209,7 @@ public final class CommonBusinessObjectFactory extends AbstractBusinessObjectFac
     public IDataBO createDataBO(Session session)
     {
         return new DataBO(getDaoFactory(), session, getRelationshipService(),
-                getConversationClient(), getManagedPropertyEvaluatorFactory(),
+                getConversationClient(), entityInformationProvider, getManagedPropertyEvaluatorFactory(),
                 dataSetTypeWithoutExperimentChecker);
     }
 
@@ -213,7 +218,7 @@ public final class CommonBusinessObjectFactory extends AbstractBusinessObjectFac
     {
         return new DataSetTable(getDaoFactory(), getDSSFactory(), session,
                 getRelationshipService(), getConversationClient(),
-                getManagedPropertyEvaluatorFactory(), getMultiplexer(),
+                entityInformationProvider, getManagedPropertyEvaluatorFactory(), getMultiplexer(),
                 dataSetTypeWithoutExperimentChecker);
     }
 
@@ -229,21 +234,21 @@ public final class CommonBusinessObjectFactory extends AbstractBusinessObjectFac
     {
         return new DeletedDataSetTable(getDaoFactory(), getDSSFactory(), session,
                 getRelationshipService(), getConversationClient(),
-                getManagedPropertyEvaluatorFactory());
+                entityInformationProvider, getManagedPropertyEvaluatorFactory());
     }
 
     @Override
     public IExperimentTable createExperimentTable(final Session session)
     {
         return new ExperimentTable(getDaoFactory(), session, getRelationshipService(),
-                getManagedPropertyEvaluatorFactory(),
+                entityInformationProvider, getManagedPropertyEvaluatorFactory(),
                 dataSetTypeWithoutExperimentChecker);
     }
 
     @Override
     public IMaterialTable createMaterialTable(final Session session)
     {
-        return new MaterialTable(getDaoFactory(), session, getManagedPropertyEvaluatorFactory(),
+        return new MaterialTable(getDaoFactory(), session, entityInformationProvider, getManagedPropertyEvaluatorFactory(),
                 dataSetTypeWithoutExperimentChecker, relationshipService);
     }
 
@@ -251,7 +256,7 @@ public final class CommonBusinessObjectFactory extends AbstractBusinessObjectFac
     public final IExperimentBO createExperimentBO(final Session session)
     {
         return new ExperimentBO(getDaoFactory(), session, getRelationshipService(),
-                getManagedPropertyEvaluatorFactory(),
+                entityInformationProvider, getManagedPropertyEvaluatorFactory(),
                 dataSetTypeWithoutExperimentChecker);
     }
 
@@ -288,7 +293,7 @@ public final class CommonBusinessObjectFactory extends AbstractBusinessObjectFac
             EntityKind entityKind)
     {
         return new EntityTypePropertyTypeBO(getDaoFactory(), session, entityKind,
-                getManagedPropertyEvaluatorFactory(),
+                entityInformationProvider, getManagedPropertyEvaluatorFactory(),
                 dataSetTypeWithoutExperimentChecker, relationshipService);
     }
 
@@ -311,7 +316,7 @@ public final class CommonBusinessObjectFactory extends AbstractBusinessObjectFac
     @Override
     public IMaterialBO createMaterialBO(Session session)
     {
-        return new MaterialBO(getDaoFactory(), session, getManagedPropertyEvaluatorFactory(),
+        return new MaterialBO(getDaoFactory(), session, entityInformationProvider, getManagedPropertyEvaluatorFactory(),
                 dataSetTypeWithoutExperimentChecker, relationshipService, historyCreator);
     }
 

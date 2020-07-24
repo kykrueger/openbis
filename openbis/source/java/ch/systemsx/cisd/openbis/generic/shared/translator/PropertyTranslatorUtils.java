@@ -26,6 +26,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IEntityProperty;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ManagedEntityProperty;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialEntityProperty;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyType;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleEntityProperty;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.VocabularyTermEntityProperty;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EntityPropertyPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePropertyTypePE;
@@ -114,6 +115,8 @@ final class PropertyTranslatorUtils
                 return new VocabularyTermEntityProperty();
             case MATERIAL:
                 return new MaterialEntityProperty();
+            case SAMPLE:
+                return new SampleEntityProperty();
             default:
                 return new GenericEntityProperty();
         }

@@ -39,6 +39,10 @@ public interface IEntityProperty extends Serializable, Comparable<IEntityPropert
 
     public void setMaterial(Material material);
 
+    public Sample getSample();
+    
+    public void setSample(Sample sample);
+    
     public VocabularyTerm getVocabularyTerm();
 
     public void setVocabularyTerm(VocabularyTerm vocabularyTerm);

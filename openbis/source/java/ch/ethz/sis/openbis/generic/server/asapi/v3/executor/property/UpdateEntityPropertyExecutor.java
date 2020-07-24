@@ -59,6 +59,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SampleTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.managed_property.IManagedPropertyEvaluatorFactory;
+import ch.systemsx.cisd.openbis.generic.shared.managed_property.api.IEntityInformationProvider;
 import ch.systemsx.cisd.openbis.generic.shared.util.EntityHelper;
 
 /**
@@ -72,8 +73,11 @@ public class UpdateEntityPropertyExecutor implements IUpdateEntityPropertyExecut
     private IDAOFactory daoFactory;
 
     @Autowired
-    private IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory;
+    private IEntityInformationProvider entityInformationProvider;
 
+    @Autowired
+    private IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory;
+    
     @Autowired
     private IMapSampleByIdExecutor mapSampleByIdExecutor;
 
@@ -119,7 +123,7 @@ public class UpdateEntityPropertyExecutor implements IUpdateEntityPropertyExecut
                     if (converters.get(entityKind) == null)
                     {
                         EntityPropertiesConverter converter =
-                                new EntityPropertiesConverter(entityKind, daoFactory, managedPropertyEvaluatorFactory);
+                                new EntityPropertiesConverter(entityKind, daoFactory, entityInformationProvider, managedPropertyEvaluatorFactory);
                         converters.put(entityKind, converter);
                     }
 

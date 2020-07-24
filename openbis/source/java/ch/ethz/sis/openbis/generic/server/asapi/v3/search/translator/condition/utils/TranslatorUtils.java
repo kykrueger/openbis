@@ -70,6 +70,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringStartsWithVa
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.TimeZone;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.IAliasFactory;
 import ch.systemsx.cisd.openbis.generic.shared.basic.BasicConstant;
