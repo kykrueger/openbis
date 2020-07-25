@@ -90,3 +90,9 @@ UPDATE samples_all SET code = code;
 UPDATE experiments_all SET code = code;
 UPDATE data_all SET code = code;
 UPDATE materials SET code = code;
+
+ALTER TABLE persons
+    DROP CONSTRAINT pers_space_fk;
+
+ALTER TABLE persons
+    ADD CONSTRAINT pers_space_fk FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE SET NULL;
