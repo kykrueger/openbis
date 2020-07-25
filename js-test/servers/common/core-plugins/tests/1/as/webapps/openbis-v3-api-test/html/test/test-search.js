@@ -1752,46 +1752,46 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testSearch(c, fSearch, fCheck);
 		});
 
-		// QUnit.test("searchGlobally() withObjectKind thatIn", function(assert) {
-		// 	var c = new common(assert, openbis);
-		//
-		// 	var fSearch = function(facade) {
-		// 		var criteria = new c.GlobalSearchCriteria();
-		// 		criteria.withText().thatContains("20130412150049446-204 20130412140147735-20 20130417094936021-428 H2O");
-		// 		criteria.withObjectKind().thatIn([ "EXPERIMENT" ]);
-		// 		var fo = c.createGlobalSearchObjectFetchOptions();
-		// 		fo.withMatch();
-		// 		return facade.searchGlobally(criteria, fo);
-		// 	}
-		//
-		// 	var fCheck = function(facade, objects) {
-		// 		c.assertEqual(objects.length, 3);
-		//
-		// 		var prepopulatedExperimentsCount = 0;
-		// 		for (var i = 0; i < objects.length; i++) {
-		// 			var objectExperiment = objects[i];
-		// 			var experimentPermId = objectExperiment.getObjectPermId().getPermId();
-		// 			c.assertEqual(objectExperiment.getObjectKind(), "EXPERIMENT", "ObjectKind");
-		// 			if (objectExperiment.getObjectKind === "20130412150049446-204") {
-		// 				prepopulatedExperimentsCount++;
-		// 			}
-		// 			c.assertTrue(objectExperiment.getObjectIdentifier().getIdentifier() ===
-		// 				"/TEST/TEST-PROJECT/TEST-EXPERIMENT" || objectExperiment.getObjectIdentifier().getIdentifier()
-		// 					.startsWith("/TEST/TEST-PROJECT/V3_EXPERIMENT_"), "ObjectIdentifier");
-		// 			c.assertTrue(["Perm ID: " + experimentPermId,
-		// 				"Property 'Test Property Type': 20130412140147735-20"]
-		// 				.includes(objectExperiment.getMatch()), "Match");
-		// 			c.assertNotNull(objectExperiment.getScore(), "Score");
-		// 			c.assertTrue(objectExperiment.getExperiment().getCode() === "TEST-EXPERIMENT" ||
-		// 				objectExperiment.getExperiment().getCode().startsWith("V3_EXPERIMENT_"), "Experiment");
-		// 			c.assertNull(objectExperiment.getSample(), "Sample");
-		// 			c.assertNull(objectExperiment.getDataSet(), "DataSet");
-		// 			c.assertNull(objectExperiment.getMaterial(), "Material");
-		// 		}
-		// 	}
-		//
-		// 	testSearch(c, fSearch, fCheck);
-		// });
+		QUnit.test("searchGlobally() withObjectKind thatIn", function(assert) {
+			var c = new common(assert, openbis);
+
+			var fSearch = function(facade) {
+				var criteria = new c.GlobalSearchCriteria();
+				criteria.withText().thatContains("20130412150049446-204 20130412140147735-20 20130417094936021-428 H2O");
+				criteria.withObjectKind().thatIn([ "EXPERIMENT" ]);
+				var fo = c.createGlobalSearchObjectFetchOptions();
+				fo.withMatch();
+				return facade.searchGlobally(criteria, fo);
+			}
+
+			var fCheck = function(facade, objects) {
+				c.assertEqual(objects.length, 3);
+
+				var prepopulatedExperimentsCount = 0;
+				for (var i = 0; i < objects.length; i++) {
+					var objectExperiment = objects[i];
+					var experimentPermId = objectExperiment.getObjectPermId().getPermId();
+					c.assertEqual(objectExperiment.getObjectKind(), "EXPERIMENT", "ObjectKind");
+					if (objectExperiment.getObjectKind === "20130412150049446-204") {
+						prepopulatedExperimentsCount++;
+					}
+					c.assertTrue(objectExperiment.getObjectIdentifier().getIdentifier() ===
+						"/TEST/TEST-PROJECT/TEST-EXPERIMENT" || objectExperiment.getObjectIdentifier().getIdentifier()
+							.startsWith("/TEST/TEST-PROJECT/V3_EXPERIMENT_"), "ObjectIdentifier");
+					c.assertTrue(["Perm ID: " + experimentPermId,
+						"Property 'Test Property Type': 20130412140147735-20"]
+						.includes(objectExperiment.getMatch()), "Match");
+					c.assertNotNull(objectExperiment.getScore(), "Score");
+					c.assertTrue(objectExperiment.getExperiment().getCode() === "TEST-EXPERIMENT" ||
+						objectExperiment.getExperiment().getCode().startsWith("V3_EXPERIMENT_"), "Experiment");
+					c.assertNull(objectExperiment.getSample(), "Sample");
+					c.assertNull(objectExperiment.getDataSet(), "DataSet");
+					c.assertNull(objectExperiment.getMaterial(), "Material");
+				}
+			}
+
+			testSearch(c, fSearch, fCheck);
+		});
 
 		QUnit.test("searchObjectKindModifications()", function(assert) {
 			var c = new common(assert, openbis);
