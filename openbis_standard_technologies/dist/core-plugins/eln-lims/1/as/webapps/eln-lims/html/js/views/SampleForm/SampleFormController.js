@@ -289,6 +289,9 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
                 mergedAnnotationsState[key] = childrenAnnotationsState[key];
             }
 			properties["$ANNOTATIONS_STATE"] = FormUtil.getXMLFromAnnotations(mergedAnnotationsState);
+
+		    // TODO : Write the annotations to the API DTO.
+
 			//
 			
 			var experimentIdentifier = sample.experimentIdentifierOrNull;
@@ -505,5 +508,47 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 		} else { //This should never happen
 			Util.showError("Unknown Error.", function() {Util.unblockUI();});
 		}
+	}
+
+    // TODO : Read the annotations from the property AND/OR the API DTO.
+	this.getAnnotationsState = function(type) {
+	    var isStateFieldAvailable = false;
+
+        if(this._sampleFormModel.sample) {
+            var availableFields = profile.getAllPropertiCodesForTypeCode(this._sampleFormModel.sample.sampleTypeCode);
+            var pos = $.inArray("$ANNOTATIONS_STATE", availableFields);
+            isStateFieldAvailable = (pos !== -1);
+        }
+
+        if(!isStateFieldAvailable && this.sampleTypeHints && this.sampleTypeHints.length !== 0) { //Indicates annotations are needed
+            Util.showError("You need a property with code ANNOTATIONS_STATE on this entity to store the state of the annotations.");
+            return;
+        }
+
+        if(this._sampleFormModel.mode === FormMode.CREATE) {
+            return {};
+        }
+
+        if(isStateFieldAvailable) {
+            var allAnnotations = FormUtil.getAnnotationsFromSample(this._sampleFormModel.sample);
+            var typeAnnotations = {};
+            if(type === 'PARENTS') {
+                for(var pIdx = 0; pIdx < this._sampleFormModel.sample.parents.length; pIdx++) {
+                    var parentPermId =  this._sampleFormModel.sample.parents[pIdx].permId;
+                    if(parentPermId in allAnnotations) {
+                        typeAnnotations[parentPermId] = allAnnotations[parentPermId];
+                    }
+                }
+            }
+            if(type === 'CHILDREN') {
+                for(var cIdx = 0; cIdx < this._sampleFormModel.sample.children.length; cIdx++) {
+                    var childPermId =  this._sampleFormModel.sample.children[cIdx].permId;
+                    if(childPermId in allAnnotations) {
+                        typeAnnotations[childPermId] = allAnnotations[childPermId];
+                    }
+                }
+            }
+            return typeAnnotations;
+        }
 	}
 }

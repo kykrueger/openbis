@@ -17,6 +17,9 @@
 var EmptyLinksController = {
 	    init : function($container) {
 	    },
+	    getAnnotations : function() {
+	        return {};
+	    },
         isValid : function() {
             return true;
         },
@@ -43,8 +46,8 @@ var EmptyLinksController = {
         }
 };
 
-function LinksController(title, sampleTypeHints, isDisabled, samplesToEdit, showAnnotableTypes, disableAddAnyType, sampleTypeCode) {
-	var linksModel = new LinksModel(title, sampleTypeHints, isDisabled, showAnnotableTypes, disableAddAnyType, sampleTypeCode);
+function LinksController(title, sampleTypeHints, isDisabled, samplesToEdit, showAnnotableTypes, disableAddAnyType, sampleTypeCode, stateObj) {
+	var linksModel = new LinksModel(title, sampleTypeHints, isDisabled, showAnnotableTypes, disableAddAnyType, sampleTypeCode, stateObj);
 	var linksView = new LinksView(this, linksModel);
 	
 	this.init = function($container) {
@@ -69,12 +72,12 @@ function LinksController(title, sampleTypeHints, isDisabled, samplesToEdit, show
 	// API - Used by Sample Form
 	//
 
-	// 2. The Form get the Annotations
+	// 2. Used by other Controller/Form get the Annotations
 	this.getAnnotations = function() {
 	    return linksModel.stateObj;
 	}
 
-    // 1. isValid should validates the stateObj
+    // 1. isValid validates the stateObj
 	this.isValid = function() {
 		if(sampleTypeHints) {
 

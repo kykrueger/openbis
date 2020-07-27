@@ -941,13 +941,15 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 			parentsTitle = sampleTypeDefinitionsExtension["SAMPLE_PARENTS_TITLE"];
 		}
 		var parentsAnyTypeDisabled = sampleTypeDefinitionsExtension && sampleTypeDefinitionsExtension["SAMPLE_PARENTS_ANY_TYPE_DISABLED"];
+		var annotations = this._sampleFormController.getAnnotationsState('PARENTS');
 		this._sampleFormModel.sampleLinksParents = new LinksController(parentsTitle,
 																			requiredParents,
 																			isDisabled,
 																			currentParentsLinks,
 																			this._sampleFormModel.mode === FormMode.CREATE || this._sampleFormModel.mode === FormMode.EDIT,
 																			parentsAnyTypeDisabled,
-																			sampleTypeCode);
+																			sampleTypeCode,
+																			annotations);
 		if (!sampleTypeDefinitionsExtension || !sampleTypeDefinitionsExtension["SAMPLE_PARENTS_DISABLED"]) {
 			this._sampleFormModel.sampleLinksParents.init($sampleParentsWidget);
 		}
@@ -993,13 +995,15 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		}
 		var isDisabled = this._sampleFormModel.mode === FormMode.VIEW;
 		var childrenAnyTypeDisabled = sampleTypeDefinitionsExtension && sampleTypeDefinitionsExtension["SAMPLE_CHILDREN_ANY_TYPE_DISABLED"];
+		var annotations = this._sampleFormController.getAnnotationsState('CHILDREN');
 		this._sampleFormModel.sampleLinksChildren = new LinksController(childrenTitle,
 															requiredChildren,
 															isDisabled,
 															currentChildrenLinksNoStorage,
 															this._sampleFormModel.mode === FormMode.CREATE,
 															childrenAnyTypeDisabled,
-															sampleTypeCode);
+															sampleTypeCode,
+															annotations);
 		if(!sampleTypeDefinitionsExtension || !sampleTypeDefinitionsExtension["SAMPLE_CHILDREN_DISABLED"]) {
 			this._sampleFormModel.sampleLinksChildren.init($sampleChildrenWidget);
 		}
