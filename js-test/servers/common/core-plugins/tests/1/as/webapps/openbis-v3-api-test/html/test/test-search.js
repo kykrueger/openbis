@@ -1765,42 +1765,27 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			}
 
 			var fCheck = function(facade, objects) {
-				console.log("c.assertEqual(objects.length, 3);");
 				c.assertEqual(objects.length, 3);
 
 				var prepopulatedExperimentsCount = 0;
 				for (var i = 0; i < objects.length; i++) {
 					var objectExperiment = objects[i];
 					var experimentPermId = objectExperiment.getObjectPermId().getPermId();
-					console.log("i=" + i);
-					console.log("c.assertEqual(objectExperiment.getObjectKind(), \"EXPERIMENT\", \"ObjectKind\");");
 					c.assertEqual(objectExperiment.getObjectKind(), "EXPERIMENT", "ObjectKind");
 					if (objectExperiment.getObjectKind === "20130412150049446-204") {
 						prepopulatedExperimentsCount++;
 					}
-					console.log("c.assertTrue(objectExperiment.getObjectIdentifier().getIdentifier() ===\n" +
-						"\t\t\t\t\t\t\"/TEST/TEST-PROJECT/TEST-EXPERIMENT\" || objectExperiment.getObjectIdentifier().getIdentifier()\n" +
-						"\t\t\t\t\t\t\t.startsWith(\"/TEST/TEST-PROJECT/V3_EXPERIMENT_\"), \"ObjectIdentifier\");");
 					c.assertTrue(objectExperiment.getObjectIdentifier().getIdentifier() ===
 						"/TEST/TEST-PROJECT/TEST-EXPERIMENT" || objectExperiment.getObjectIdentifier().getIdentifier()
 							.startsWith("/TEST/TEST-PROJECT/V3_EXPERIMENT_"), "ObjectIdentifier");
-					console.log("c.assertTrue([\"Perm ID: \" + experimentPermId,\n" +
-						"\t\t\t\t\t\t\"Property 'Test Property Type': 20130412140147735-20\"]\n" +
-						"\t\t\t\t\t\t.includes(objectExperiment.getMatch()), \"Match\");");
 					c.assertTrue(["Perm ID: " + experimentPermId,
 						"Property 'Test Property Type': 20130412140147735-20"]
 						.includes(objectExperiment.getMatch()), "Match");
-					console.log("c.assertNotNull(objectExperiment.getScore(), \"Score\");");
 					c.assertNotNull(objectExperiment.getScore(), "Score");
-					console.log("c.assertTrue(objectExperiment.getExperiment().getCode() === \"TEST-EXPERIMENT\" ||\n" +
-						"\t\t\t\t\t\tobjectExperiment.getExperiment().getCode().startsWith(\"V3_EXPERIMENT_\"), \"Experiment\");");
 					c.assertTrue(objectExperiment.getExperiment().getCode() === "TEST-EXPERIMENT" ||
 						objectExperiment.getExperiment().getCode().startsWith("V3_EXPERIMENT_"), "Experiment");
-					console.log("c.assertNull(objectExperiment.getSample(), \"Sample\");");
 					c.assertNull(objectExperiment.getSample(), "Sample");
-					console.log("c.assertNull(objectExperiment.getDataSet(), \"DataSet\");");
 					c.assertNull(objectExperiment.getDataSet(), "DataSet");
-					console.log("c.assertNull(objectExperiment.getMaterial(), \"Material\");");
 					c.assertNull(objectExperiment.getMaterial(), "Material");
 				}
 			}
