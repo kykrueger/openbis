@@ -36,9 +36,6 @@ function LinksModel(title, sampleTypeHints, isDisabled, showInfo, disableAddAnyT
 		} else {
 			FormUtil.writeAnnotationForSample(this.stateObj, sample, propertyTypeCode, propertyValue);
 		}
-		
-		var xmlDoc = FormUtil.getXMLFromAnnotations(this.stateObj);
-		mainController.currentView._sampleFormModel.sample.properties["$ANNOTATIONS_STATE"] = xmlDoc;
 	}
 	
 	this.readState = function(permId, propertyTypeCode) {
@@ -47,7 +44,8 @@ function LinksModel(title, sampleTypeHints, isDisabled, showInfo, disableAddAnyT
 		}
 		return null;
 	}
-	
+
+	// TODO : 4. This load, should be done on the Sample Form with auxiliar functions and the state object given to the links controller
 	this.loadState = function() {
 		var isStateFieldAvailable = false;
 		

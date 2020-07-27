@@ -68,11 +68,18 @@ function LinksController(title, sampleTypeHints, isDisabled, samplesToEdit, show
 	//
 	// API - Used by Sample Form
 	//
+
+	// 2. The Form get the Annotations
+	this.getAnnotations = function() {
+	    return linksModel.stateObj;
+	}
+
+    // 1. isValid should validates the stateObj
 	this.isValid = function() {
 		if(sampleTypeHints) {
-			var sampleFromIdxOwner = mainController.currentView._sampleFormModel.sample;
-			var allOwnerAnnotations = FormUtil.getAnnotationsFromSample(sampleFromIdxOwner);
-			
+
+            var allOwnerAnnotations = linksView.stateObj;
+
 			for(var typeIdx = 0; typeIdx < sampleTypeHints.length; typeIdx++) {
 				var sampleTypeHint = sampleTypeHints[typeIdx];
 				var sampleTypeCode = sampleTypeHint["TYPE"];

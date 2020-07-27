@@ -254,26 +254,41 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 			var properties = $.extend(true, {}, sample.properties); //Deep copy that can be modified before sending to the server and gets discarded in case of failure / simulates a rollback.
 			
 			//
-			// Patch annotations in
+			// Annotations
 			//
+
+			var parentsAnnotationsState = _this._sampleFormModel.sampleLinksParents.getAnnotations();
+			var childrenAnnotationsState = _this._sampleFormModel.sampleLinksChildren.getAnnotations();
+
 			if(newSampleParents) {
-				var annotationsStateObj = FormUtil.getAnnotationsFromSample(sample);
 				var writeNew = false;
 				for(var pIdx = 0; pIdx < newSampleParents.length; pIdx++) {
 					var newSampleParent = newSampleParents[pIdx];
 					if(newSampleParent.annotations) {
 						for(var annotationKey in newSampleParent.annotations) {
 							if (newSampleParent.annotations.hasOwnProperty(annotationKey)) {
-								FormUtil.writeAnnotationForSample(annotationsStateObj, newSampleParent, annotationKey, newSampleParent.annotations[annotationKey]);
+								FormUtil.writeAnnotationForSample(parentsAnnotationsState, newSampleParent, annotationKey, newSampleParent.annotations[annotationKey]);
 								writeNew = true;
 							}
 						}
 					}
 				}
-				if(writeNew) {
-					properties["$ANNOTATIONS_STATE"] = FormUtil.getXMLFromAnnotations(annotationsStateObj);
-				}
 			}
+
+            var mergedAnnotationsState = {};
+            for(key in parentsAnnotationsState) {
+                if(key in mergedAnnotationsState) {
+                   throw 'Error merging annotations: Do you have the same object as parent or children?';
+                }
+                mergedAnnotationsState[key] = parentsAnnotationsState[key];
+            }
+            for(key in childrenAnnotationsState) {
+                if(key in mergedAnnotationsState) {
+                   throw 'Error merging annotations: Do you have the same object as parent or children?';
+                }
+                mergedAnnotationsState[key] = childrenAnnotationsState[key];
+            }
+			properties["$ANNOTATIONS_STATE"] = FormUtil.getXMLFromAnnotations(mergedAnnotationsState);
 			//
 			
 			var experimentIdentifier = sample.experimentIdentifierOrNull;
