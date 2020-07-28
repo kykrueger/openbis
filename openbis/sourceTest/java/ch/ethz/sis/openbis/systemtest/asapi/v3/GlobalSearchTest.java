@@ -18,9 +18,9 @@ package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.IObjectId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.delete.DataSetDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.IDataSetId;
@@ -62,6 +62,8 @@ import static org.testng.Assert.*;
  */
 public class GlobalSearchTest extends AbstractTest
 {
+
+    private static final String TERM = "RAT";
 
     @Test
     public void testSearchWithAuthorized()
@@ -1010,27 +1012,25 @@ public class GlobalSearchTest extends AbstractTest
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
 
         /* Setup */
-        String term = "RAT";
-        List<SampleCreation> creations = getSampleCreationsForTest(term);
+        List<SampleCreation> creations = getSampleCreationsForTest(TERM);
         List<SamplePermId> identifiers = v3api.createSamples(sessionToken, creations);
 
         try
         {
             /* Test */
             final GlobalSearchCriteria c = new GlobalSearchCriteria();
-            c.withText().thatContains(term);
+            c.withText().thatContains(TERM);
 
             final GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
             fo.withSample();
             fo.sortBy().score().desc();
 
-            final List<GlobalSearchObject> results = search(TEST_USER, c, fo).getObjects();
-            assertTrue(results.size() >= 4);
-            assertEquals(results.get(0).getSample().getCode(), term);
-            assertEquals(results.get(1).getSample().getCode(), term + "2");
-            assertTrue((results.get(2).getSample() != null &&
-                    results.get(2).getSample().getCode().equals(term + "3")) ||
-                    (results.get(3).getSample() != null && results.get(3).getSample().getCode().equals(term + "3")));
+            final List<GlobalSearchObject> results = filterSearchResults(search(TEST_USER, c, fo).getObjects(),
+                    false, true, false);
+            assertEquals(results.size(), 4);
+            assertEquals(results.get(0).getSample().getCode(), TERM);
+            assertEquals(results.get(1).getSample().getCode(), TERM + "2");
+            assertEquals(results.get(2).getSample().getCode(), TERM + "3");
         } finally
         {
             /* Cleanup */
@@ -1043,28 +1043,25 @@ public class GlobalSearchTest extends AbstractTest
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
 
         /* Setup */
-        String term = "RAT";
-        List<ExperimentCreation> creations = getExperimentCreationsForTest(term);
+        List<ExperimentCreation> creations = getExperimentCreationsForTest(TERM);
         List<ExperimentPermId> identifiers = v3api.createExperiments(sessionToken, creations);
 
         try
         {
             /* Test */
             final GlobalSearchCriteria c = new GlobalSearchCriteria();
-            c.withText().thatContains(term);
+            c.withText().thatContains(TERM);
 
             final GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
             fo.withExperiment();
             fo.sortBy().score().desc();
 
-            final List<GlobalSearchObject> results = search(TEST_USER, c, fo).getObjects();
-            assertTrue(results.size() >= 4);
-            assertEquals(results.get(0).getExperiment().getCode(), term);
-            assertEquals(results.get(1).getExperiment().getCode(), term + "2");
-            assertTrue((results.get(2).getExperiment() != null &&
-                    results.get(2).getExperiment().getCode().equals(term + "3")) ||
-                    (results.get(3).getExperiment() != null &&
-                    results.get(3).getExperiment().getCode().equals(term + "3")));
+            final List<GlobalSearchObject> results = filterSearchResults(search(TEST_USER, c, fo).getObjects(),
+                    false, false, true);
+            assertEquals(results.size(), 4);
+            assertEquals(results.get(0).getExperiment().getCode(), TERM);
+            assertEquals(results.get(1).getExperiment().getCode(), TERM + "2");
+            assertEquals(results.get(2).getExperiment().getCode(), TERM + "3");
         } finally
         {
             /* Cleanup */
@@ -1077,27 +1074,25 @@ public class GlobalSearchTest extends AbstractTest
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
 
         /* Setup */
-        String term = "RAT";
-        List<DataSetCreation> creations = getDataSetsCreationsForTest(term);
+        List<DataSetCreation> creations = getDataSetsCreationsForTest(TERM);
         List<DataSetPermId> identifiers = v3api.createDataSets(sessionToken, creations);
 
         try
         {
             /* Test */
             final GlobalSearchCriteria c = new GlobalSearchCriteria();
-            c.withText().thatContains(term);
+            c.withText().thatContains(TERM);
 
             final GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
             fo.withDataSet();
             fo.sortBy().score().desc();
 
-            final List<GlobalSearchObject> results = search(TEST_USER, c, fo).getObjects();
-            assertTrue(results.size() >= 4);
-            assertEquals(results.get(0).getDataSet().getCode(), term);
-            assertEquals(results.get(1).getDataSet().getCode(), term + "2");
-            assertTrue((results.get(2).getDataSet() != null &&
-                    results.get(2).getDataSet().getCode().equals(term + "3")) ||
-                    (results.get(3).getDataSet() != null && results.get(3).getDataSet().getCode().equals(term + "3")));
+            final List<GlobalSearchObject> results = filterSearchResults(search(TEST_USER, c, fo).getObjects(),
+                    true, false, false);
+            assertEquals(results.size(), 4);
+            assertEquals(results.get(0).getDataSet().getCode(), TERM);
+            assertEquals(results.get(1).getDataSet().getCode(), TERM + "2");
+            assertEquals(results.get(2).getDataSet().getCode(), TERM + "3");
         } finally
         {
             /* Cleanup */
@@ -1110,19 +1105,18 @@ public class GlobalSearchTest extends AbstractTest
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
 
         /* Setup */
-        String term = "RAT";
-        List<SampleCreation> creationsS = getSampleCreationsForTest(term);
+        List<SampleCreation> creationsS = getSampleCreationsForTest(TERM);
         List<SamplePermId> identifiersS = v3api.createSamples(sessionToken, creationsS);
-        List<ExperimentCreation> creationsE = getExperimentCreationsForTest(term);
+        List<ExperimentCreation> creationsE = getExperimentCreationsForTest(TERM);
         List<ExperimentPermId> identifiersE = v3api.createExperiments(sessionToken, creationsE);
-        List<DataSetCreation> creationsD = getDataSetsCreationsForTest(term);
+        List<DataSetCreation> creationsD = getDataSetsCreationsForTest(TERM);
         List<DataSetPermId> identifiersD = v3api.createDataSets(sessionToken, creationsD);
 
         try
         {
             /* Test */
             final GlobalSearchCriteria c = new GlobalSearchCriteria();
-            c.withText().thatContains(term);
+            c.withText().thatContains(TERM);
 
             final GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
             fo.withSample();
@@ -1131,24 +1125,25 @@ public class GlobalSearchTest extends AbstractTest
             fo.sortBy().score().desc();
             fo.sortBy().objectKind().desc();
 
-            final List<GlobalSearchObject> results = search(TEST_USER, c, fo).getObjects();
-            assertTrue(results.size() >= 12);
+            final List<GlobalSearchObject> results = filterSearchResults(search(TEST_USER, c, fo).getObjects(),
+                    true, true, true);
+            assertEquals(results.size(), 12);
 
             /*
              * When the same Score is given, DataSets come before Samples that come before Experiments
              */
 
-            assertEquals(results.get(0).getDataSet().getCode(), term);
-            assertEquals(results.get(1).getSample().getCode(), term);
-            assertEquals(results.get(2).getExperiment().getCode(), term);
+            assertEquals(results.get(0).getDataSet().getCode(), TERM);
+            assertEquals(results.get(1).getSample().getCode(), TERM);
+            assertEquals(results.get(2).getExperiment().getCode(), TERM);
 
-            assertEquals(results.get(3).getDataSet().getCode(), term + "2");
-            assertEquals(results.get(4).getSample().getCode(), term + "2");
-            assertEquals(results.get(5).getExperiment().getCode(), term + "2");
+            assertEquals(results.get(3).getDataSet().getCode(), TERM + "2");
+            assertEquals(results.get(4).getSample().getCode(), TERM + "2");
+            assertEquals(results.get(5).getExperiment().getCode(), TERM + "2");
 
-            assertEquals(results.get(6).getDataSet().getCode(), term + "3");
-            assertEquals(results.get(7).getSample().getCode(), term + "3");
-            assertEquals(results.get(9).getExperiment().getCode(), term + "3");
+            assertEquals(results.get(6).getDataSet().getCode(), TERM + "3");
+            assertEquals(results.get(7).getSample().getCode(), TERM + "3");
+            assertEquals(results.get(8).getExperiment().getCode(), TERM + "3");
         } finally
         {
             /* Cleanup */
@@ -1156,6 +1151,19 @@ public class GlobalSearchTest extends AbstractTest
             cleanupExperinmentsForTest(v3api, sessionToken, identifiersE);
             cleanupDataSetsForTest(v3api, sessionToken, identifiersD);
         }
+    }
+
+    public List<GlobalSearchObject> filterSearchResults(final List<GlobalSearchObject> results,
+            final boolean withDataset, final boolean withSample, final boolean withExperiment)
+    {
+        return results.stream().filter(globalSearchObject ->
+                        withDataset && globalSearchObject.getDataSet() != null &&
+                                globalSearchObject.getDataSet().getCode().startsWith(TERM) ||
+                        withSample && globalSearchObject.getSample() != null &&
+                                globalSearchObject.getSample().getCode().startsWith(TERM) ||
+                        withExperiment && globalSearchObject.getExperiment() != null &&
+                                globalSearchObject.getExperiment().getCode().startsWith(TERM)
+                ).collect(Collectors.toList());
     }
 
     private static DataSetCreation getDataSetCreationForTest(String code, String description, String organism) {

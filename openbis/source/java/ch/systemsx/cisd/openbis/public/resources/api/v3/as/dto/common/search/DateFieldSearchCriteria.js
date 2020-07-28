@@ -60,21 +60,23 @@ define([ "require", "stjs", "util/Exceptions", "as/dto/common/search/AbstractFie
 			if (stjs.isInstanceOf(value.constructor, AbstractDateValue)) {
 				var formats = DateFieldSearchCriteria.DATE_FORMATS;
 				for (var i in formats) {
-					var dateFormat = formats[i];
-					if (this.formatValue(value, dateFormat)) {
-						return;
+					if (formats.hasOwnProperty(i)) {
+						var dateFormat = formats[i];
+						if (this.formatValue(value, dateFormat)) {
+							return;
+						}
 					}
 				}
 				throw new exceptions.IllegalArgumentException("Date value: " + value + " does not match any of the supported formats: " + DateFieldSearchCriteria.DATE_FORMATS);
 			}
 		};
 		constructor.formatValue = function(value, dateFormat) {
-					try {
-						var DateFormat = require("util/DateFormat");
-						var dateFormat = new DateFormat(dateFormat.getFormat());
-						dateFormat.setLenient(false);
-				return dateFormat.parse(value.getValue());
-					} catch (e) {
+			try {
+				var DateFormat = require("util/DateFormat");
+				var dateFormat1 = new DateFormat(dateFormat.getFormat());
+				dateFormat1.setLenient(false);
+				return dateFormat1.parse(value.getValue());
+			} catch (e) {
 				return null;
 			}
 		};

@@ -268,8 +268,12 @@ public class GlobalSearchManager implements IGlobalSearchManager
                 break;
             }
 
-            case EXPERIMENT:
             case SAMPLE:
+            {
+                mapAttributeMatch(fieldsMap, matches, SAMPLE_IDENTIFIER_MATCH_ALIAS, IDENTIFIER_FIELD_NAME);
+                // Falls through.
+            }
+            case EXPERIMENT:
             {
                 mapAttributeMatch(fieldsMap, matches, CODE_MATCH_ALIAS, CODE_FIELD_NAME);
                 mapAttributeMatch(fieldsMap, matches, PERM_ID_MATCH_ALIAS, PERM_ID_FIELD_NAME);
@@ -304,6 +308,12 @@ public class GlobalSearchManager implements IGlobalSearchManager
         if (cvCodeMatch != null)
         {
             addPropertyMatch(cvCodeMatch, fieldsMap, matches);
+        }
+
+        final String sampleMatch = (String) fieldsMap.get(SAMPLE_MATCH_ALIAS);
+        if (sampleMatch != null)
+        {
+            addPropertyMatch(sampleMatch, fieldsMap, matches);
         }
     }
 

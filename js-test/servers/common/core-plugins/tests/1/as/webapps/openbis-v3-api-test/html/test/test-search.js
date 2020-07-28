@@ -1644,62 +1644,80 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			}
 
 			var fCheck = function(facade, objects) {
-				c.assertEqual(objects.length, 4);
-                for(var oIdx = 0; oIdx < objects.length; oIdx++) {
+				c.assertEqual(objects.length, 10);
+				var prepopulatedExperimentsCount = 0;
+				var prepopulatedSamplesCount = 0;
+                for (var oIdx = 0; oIdx < objects.length; oIdx++) {
                     var result = objects[oIdx];
-                    switch(result.getObjectKind()) {
+                    switch (result.getObjectKind()) {
                         case "DATA_SET":
-                            var objectDataSet = result;
-                            c.assertEqual(objectDataSet.getObjectKind(), "DATA_SET", "ObjectKind");
-                            c.assertEqual(objectDataSet.getObjectPermId().getPermId(), "20130417094936021-428", "ObjectPermId");
-                            c.assertEqual(objectDataSet.getObjectIdentifier().getPermId(), "20130417094936021-428", "ObjectIdentifier");
-                            c.assertContains(objectDataSet.getMatch(), "Perm ID: 20130417094936021-428", "Match");
-                            c.assertNotNull(objectDataSet.getScore(), "Score");
-                            c.assertNull(objectDataSet.getExperiment(), "Experiment");
-                            c.assertNull(objectDataSet.getSample(), "Sample");
-                            c.assertEqual(objectDataSet.getDataSet().getCode(), "20130417094936021-428", "DataSet");
-                            c.assertNull(objectDataSet.getMaterial(), "Material");
+							var dataSetPermId = result.getObjectPermId().getPermId();
+							c.assertTrue(dataSetPermId === "20130417094936021-428"
+								|| dataSetPermId.startsWith("V3_DATA_SET_"), "DataSetPermId (" + dataSetPermId + ")");
+							c.assertEqual(result.getObjectIdentifier().getPermId(), dataSetPermId,
+								"ObjectIdentifier");
+                            c.assertTrue(["Perm ID: " + dataSetPermId,
+								"Property 'Test Property Type': 20130412140147735-20"]
+								.includes(result.getMatch()), "Match");
+                            c.assertNotNull(result.getScore(), "Score");
+                            c.assertNull(result.getExperiment(), "Experiment");
+                            c.assertNull(result.getSample(), "Sample");
+                            c.assertEqual(result.getDataSet().getCode(), dataSetPermId, "DataSet");
+                            c.assertNull(result.getMaterial(), "Material");
                         break;
 						case "EXPERIMENT":
-                            var objectExperiment = result;
-                            c.assertEqual(objectExperiment.getObjectKind(), "EXPERIMENT", "ObjectKind");
-                            c.assertEqual(objectExperiment.getObjectPermId().getPermId(), "20130412150049446-204", "ObjectPermId");
-                            c.assertEqual(objectExperiment.getObjectIdentifier().getIdentifier(), "/TEST/TEST-PROJECT/TEST-EXPERIMENT", "ObjectIdentifier");
-                            c.assertEqual(objectExperiment.getMatch(), "Perm ID: 20130412150049446-204", "Match");
-                            c.assertNotNull(objectExperiment.getScore(), "Score");
-                            c.assertEqual(objectExperiment.getExperiment().getCode(), "TEST-EXPERIMENT", "Experiment");
-                            c.assertNull(objectExperiment.getSample(), "Sample");
-                            c.assertNull(objectExperiment.getDataSet(), "DataSet");
-                            c.assertNull(objectExperiment.getMaterial(), "Material");
+							var experimentPermId = result.getObjectPermId().getPermId();
+							if (experimentPermId === "20130412150049446-204") {
+								prepopulatedExperimentsCount++;
+							}
+                            c.assertTrue(result.getObjectIdentifier().getIdentifier() ===
+								"/TEST/TEST-PROJECT/TEST-EXPERIMENT" || result.getObjectIdentifier()
+									.getIdentifier().startsWith("/TEST/TEST-PROJECT/V3_EXPERIMENT_"),
+								"ObjectIdentifier");
+							c.assertTrue(["Perm ID: " + experimentPermId,
+								"Property 'Test Property Type': 20130412140147735-20"]
+								.includes(result.getMatch()), "Match");
+                            c.assertNotNull(result.getScore(), "Score");
+                            c.assertTrue(result.getExperiment().getCode() === "TEST-EXPERIMENT" ||
+								result.getExperiment().getCode().startsWith("V3_EXPERIMENT_"), "Experiment");
+                            c.assertNull(result.getSample(), "Sample");
+                            c.assertNull(result.getDataSet(), "DataSet");
+                            c.assertNull(result.getMaterial(), "Material");
                         break;
                         case "SAMPLE":
-                            var objectSample = result;
-                            c.assertEqual(objectSample.getObjectKind(), "SAMPLE", "ObjectKind");
-                            c.assertEqual(objectSample.getObjectPermId().getPermId(), "20130412140147735-20", "ObjectPermId");
-                            c.assertEqual(objectSample.getObjectIdentifier().getIdentifier(), "/PLATONIC/PLATE-1", "ObjectIdentifier");
-                            c.assertEqual(objectSample.getMatch(), "Perm ID: 20130412140147735-20", "Match");
-                            c.assertNotNull(objectSample.getScore(), "Score");
-                            c.assertNull(objectSample.getExperiment(), "Experiment");
-                            c.assertEqual(objectSample.getSample().getCode(), "PLATE-1", "Sample");
-                            c.assertNull(objectSample.getDataSet(), "DataSet");
-                            c.assertNull(objectSample.getMaterial(), "Material");
+							var samplePermId = result.getObjectPermId().getPermId();
+							if (samplePermId === "20130412140147735-20") {
+								prepopulatedSamplesCount++;
+							}
+							c.assertTrue(result.getObjectIdentifier().getIdentifier() === "/PLATONIC/PLATE-1" ||
+								result.getObjectIdentifier().getIdentifier().startsWith("/TEST/V3_SAMPLE_"),
+								"ObjectIdentifier");
+							c.assertTrue(["Perm ID: " + samplePermId,
+								"Property 'Test Property Type': 20130412140147735-20"]
+								.includes(result.getMatch()), "Match");
+                            c.assertNotNull(result.getScore(), "Score");
+                            c.assertNull(result.getExperiment(), "Experiment");
+                            c.assertTrue(result.getSample().getCode() === "PLATE-1" ||
+								result.getSample().getCode().startsWith("V3_SAMPLE_"), "Sample");
+                            c.assertNull(result.getDataSet(), "DataSet");
+                            c.assertNull(result.getMaterial(), "Material");
                         break;
                         case "MATERIAL":
-                            var objectMaterial = result;
-                            c.assertEqual(objectMaterial.getObjectKind(), "MATERIAL", "ObjectKind");
-                            c.assertEqual(objectMaterial.getObjectPermId().getCode(), "H2O", "ObjectPermId 1");
-                            c.assertEqual(objectMaterial.getObjectPermId().getTypeCode(), "COMPOUND", "ObjectPermId 2");
-                            c.assertEqual(objectMaterial.getObjectIdentifier().getCode(), "H2O", "ObjectIdentifier 1");
-                            c.assertEqual(objectMaterial.getObjectIdentifier().getTypeCode(), "COMPOUND", "ObjectIdentifier 2");
-                            c.assertEqual(objectMaterial.getMatch(), "Identifier: H2O (COMPOUND)", "Match");
-                            c.assertNotNull(objectMaterial.getScore(), "Score");
-                            c.assertNull(objectMaterial.getExperiment(), "Experiment");
-                            c.assertNull(objectMaterial.getSample(), "Sample");
-                            c.assertNull(objectMaterial.getDataSet(), "DataSet");
-                            c.assertEqual(objectMaterial.getMaterial().getCode(), "H2O", "Material");
+							c.assertEqual(result.getObjectPermId().getCode(), "H2O", "ObjectPermId 1");
+                            c.assertEqual(result.getObjectPermId().getTypeCode(), "COMPOUND", "ObjectPermId 2");
+                            c.assertEqual(result.getObjectIdentifier().getCode(), "H2O", "ObjectIdentifier 1");
+                            c.assertEqual(result.getObjectIdentifier().getTypeCode(), "COMPOUND", "ObjectIdentifier 2");
+                            c.assertEqual(result.getMatch(), "Identifier: H2O (COMPOUND)", "Match");
+                            c.assertNotNull(result.getScore(), "Score");
+                            c.assertNull(result.getExperiment(), "Experiment");
+                            c.assertNull(result.getSample(), "Sample");
+                            c.assertNull(result.getDataSet(), "DataSet");
+                            c.assertEqual(result.getMaterial().getCode(), "H2O", "Material");
                         break;
 				    }
 				}
+				c.assertEqual(prepopulatedExperimentsCount, 1, "ExperimentPermId");
+				c.assertEqual(prepopulatedSamplesCount, 1, "SamplePermId");
 			}
 
 			testSearch(c, fSearch, fCheck);
@@ -1747,18 +1765,29 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			}
 
 			var fCheck = function(facade, objects) {
-				c.assertEqual(objects.length, 1);
+				c.assertEqual(objects.length, 3);
 
-				var object0 = objects[0];
-				c.assertEqual(object0.getObjectKind(), "EXPERIMENT", "ObjectKind");
-				c.assertEqual(object0.getObjectPermId().getPermId(), "20130412150049446-204", "ObjectPermId");
-				c.assertEqual(object0.getObjectIdentifier().getIdentifier(), "/TEST/TEST-PROJECT/TEST-EXPERIMENT", "ObjectIdentifier");
-				c.assertEqual(object0.getMatch(), "Perm ID: 20130412150049446-204", "Match");
-				c.assertNotNull(object0.getScore(), "Score");
-				c.assertEqual(object0.getExperiment().getCode(), "TEST-EXPERIMENT", "Experiment");
-				c.assertNull(object0.getSample(), "Sample");
-				c.assertNull(object0.getDataSet(), "DataSet");
-				c.assertNull(object0.getMaterial(), "Material");
+				var prepopulatedExperimentsCount = 0;
+				for (var i = 0; i < objects.length; i++) {
+					var objectExperiment = objects[i];
+					var experimentPermId = objectExperiment.getObjectPermId().getPermId();
+					c.assertEqual(objectExperiment.getObjectKind(), "EXPERIMENT", "ObjectKind");
+					if (objectExperiment.getObjectKind === "20130412150049446-204") {
+						prepopulatedExperimentsCount++;
+					}
+					c.assertTrue(objectExperiment.getObjectIdentifier().getIdentifier() ===
+						"/TEST/TEST-PROJECT/TEST-EXPERIMENT" || objectExperiment.getObjectIdentifier().getIdentifier()
+							.startsWith("/TEST/TEST-PROJECT/V3_EXPERIMENT_"), "ObjectIdentifier");
+					c.assertTrue(["Perm ID: " + experimentPermId,
+						"Property 'Test Property Type': 20130412140147735-20"]
+						.includes(objectExperiment.getMatch()), "Match");
+					c.assertNotNull(objectExperiment.getScore(), "Score");
+					c.assertTrue(objectExperiment.getExperiment().getCode() === "TEST-EXPERIMENT" ||
+						objectExperiment.getExperiment().getCode().startsWith("V3_EXPERIMENT_"), "Experiment");
+					c.assertNull(objectExperiment.getSample(), "Sample");
+					c.assertNull(objectExperiment.getDataSet(), "DataSet");
+					c.assertNull(objectExperiment.getMaterial(), "Material");
+				}
 			}
 
 			testSearch(c, fSearch, fCheck);

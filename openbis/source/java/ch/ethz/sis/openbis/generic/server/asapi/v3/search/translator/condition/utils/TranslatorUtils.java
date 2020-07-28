@@ -95,16 +95,21 @@ public class TranslatorUtils
     }
 
     public static void translateStringComparison(final String tableAlias, final String columnName,
-            final AbstractStringValue value, final PSQLTypes casting, final StringBuilder sqlBuilder, final List<Object> args) {
+            final AbstractStringValue value, final PSQLTypes casting, final StringBuilder sqlBuilder,
+            final List<Object> args)
+    {
         final boolean equalsToComparison = (value.getClass() == StringEqualToValue.class);
-        if (equalsToComparison) {
+        if (equalsToComparison)
+        {
             sqlBuilder.append(LOWER).append(LP);
         }
         sqlBuilder.append(tableAlias).append(PERIOD).append(columnName);
-        if (equalsToComparison) {
+        if (equalsToComparison)
+        {
             sqlBuilder.append(RP);
         }
-        if (casting != null) {
+        if (casting != null)
+        {
             sqlBuilder.append(DOUBLE_COLON).append(casting);
         }
 
@@ -311,10 +316,25 @@ public class TranslatorUtils
         joinInformation6.setMainTable(tableMapper.getValuesTable());
         joinInformation6.setMainTableAlias(valuesTableAlias);
         joinInformation6.setMainTableIdField(MATERIAL_PROP_COLUMN);
-        joinInformation6.setSubTable(MATERIALS_TABLE);
+        joinInformation6.setSubTable(TableMapper.MATERIAL.getEntitiesTable());
         joinInformation6.setSubTableAlias(aliasFactory.createAlias());
         joinInformation6.setSubTableIdField(ColumnNames.ID_COLUMN);
-        result.put(MATERIALS_TABLE, joinInformation6);
+        result.put(TableMapper.MATERIAL.getEntitiesTable(), joinInformation6);
+
+        if (tableMapper == TableMapper.SAMPLE || tableMapper == TableMapper.EXPERIMENT
+                || tableMapper == TableMapper.DATA_SET)
+        {
+            final String samplePropertyAlias = aliasFactory.createAlias();
+            final JoinInformation joinInformation7 = new JoinInformation();
+            joinInformation7.setJoinType(JoinType.LEFT);
+            joinInformation7.setMainTable(TableMapper.SAMPLE.getValuesTable());
+            joinInformation7.setMainTableAlias(valuesTableAlias);
+            joinInformation7.setMainTableIdField(SAMPLE_PROP_COLUMN);
+            joinInformation7.setSubTable(TableMapper.SAMPLE.getEntitiesTable());
+            joinInformation7.setSubTableAlias(samplePropertyAlias);
+            joinInformation7.setSubTableIdField(ColumnNames.ID_COLUMN);
+            result.put(SAMPLE_PROP_COLUMN, joinInformation7);
+        }
 
         return result;
     }
@@ -413,7 +433,7 @@ public class TranslatorUtils
                 final TimeZone timeZoneImpl = (TimeZone) timeZone;
                 final ZoneId zoneId = ZoneId.ofOffset("UTC", ZoneOffset.ofHours(-timeZoneImpl.getHourOffset()));
 
-                sqlBuilder.append(AT_TIME_ZONE).append(SP).append(SQ).append(zoneId.getId()).append(SQ);
+                sqlBuilder.append(SP).append(AT_TIME_ZONE).append(SP).append(SQ).append(zoneId.getId()).append(SQ);
             }
         }
     }
@@ -467,7 +487,8 @@ public class TranslatorUtils
         }
     }
 
-    public static void appendDateComparatorOp(final Object fieldValue, final StringBuilder sqlBuilder)
+    public static void appendDateComparatorOp(final IDate fieldValue, final StringBuilder sqlBuilder,
+            final List<Object> args)
     {
         if (fieldValue instanceof DateEqualToValue || fieldValue instanceof DateObjectEqualToValue)
         {
@@ -484,14 +505,22 @@ public class TranslatorUtils
         }
         sqlBuilder.append(SP);
 
-        final boolean bareDateValue = fieldValue instanceof AbstractDateValue && TranslatorUtils.isDateWithoutTime(((AbstractDateValue) fieldValue).getValue());
+        final boolean bareDateValue = fieldValue instanceof AbstractDateValue &&
+                TranslatorUtils.isDateWithoutTime(((AbstractDateValue) fieldValue).getValue());
+
         if (bareDateValue)
         {
-            sqlBuilder.append(DATE).append(LP).append(QU).append(RP);
-        } else
-        {
-            sqlBuilder.append(QU);
+            sqlBuilder.append(LP);
         }
+
+        sqlBuilder.append(QU).append(DOUBLE_COLON).append(TIMESTAMP);
+
+        if (bareDateValue)
+        {
+            sqlBuilder.append(RP).append(DOUBLE_COLON).append(DATE);
+        }
+
+        TranslatorUtils.addDateValueToArgs(fieldValue, args);
     }
 
     public static boolean isPropertyInternal(final String propertyName)

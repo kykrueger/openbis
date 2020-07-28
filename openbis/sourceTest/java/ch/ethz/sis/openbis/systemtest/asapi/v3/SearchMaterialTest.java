@@ -222,6 +222,39 @@ public class SearchMaterialTest extends AbstractTest
         testSearch(TEST_USER, criteria, new MaterialPermId("VIRUS1", "VIRUS"));
     }
 
+// TODO: perhaps this test should be deleted, because the material_properties does not contain samp_prop_id.
+
+//    @Test
+//    public void testSearchWithAnyFieldMatchingSampleProperty()
+//    {
+//        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+//        final PropertyTypePermId propertyType = createASamplePropertyType(sessionToken, null);
+//
+//        final MaterialTypeCreation creation = new MaterialTypeCreation();
+//        creation.setCode("MATERIAL-TYPE-" + System.currentTimeMillis());
+//        final List<PropertyAssignmentCreation> assignments = new ArrayList<>();
+//        final PropertyAssignmentCreation propertyAssignmentCreation = new PropertyAssignmentCreation();
+//        propertyAssignmentCreation.setPropertyTypeId(propertyType);
+//        propertyAssignmentCreation.setMandatory(false);
+//        assignments.add(propertyAssignmentCreation);
+//        creation.setPropertyAssignments(assignments);
+//        final EntityTypePermId experimentType = v3api.createMaterialTypes(sessionToken, Arrays.asList(creation)).get(0);
+//
+//        final MaterialCreation materialCreation = new MaterialCreation();
+//        materialCreation.setCode("SAMPLE_PROPERTY_TEST");
+//        materialCreation.setTypeId(experimentType);
+//        materialCreation.setProperty(propertyType.getPermId(), "/CISD/CL1");
+//        v3api.createMaterials(sessionToken, Arrays.asList(materialCreation));
+//
+//        final MaterialSearchCriteria criteria = new MaterialSearchCriteria();
+//        criteria.withOrOperator();
+//        criteria.withAnyField().thatEquals("/CISD/CL1");
+//
+//        testSearch(TEST_USER, criteria, 1);
+//
+//        v3api.logout(sessionToken);
+//    }
+
     @Test
     public void testSearchWithTagWithIdSetToPermId()
     {
