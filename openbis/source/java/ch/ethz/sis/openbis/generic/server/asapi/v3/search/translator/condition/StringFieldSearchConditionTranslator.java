@@ -33,6 +33,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes.VARCHAR;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.*;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.*;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.CONTROLLED_VOCABULARY_TERM_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.MATERIALS_TABLE;
 
@@ -86,7 +87,7 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
 
                 TranslatorUtils.appendInternalExternalConstraint(sqlBuilder, args, entityTypesSubTableAlias, internalProperty);
 
-                sqlBuilder.append(SP).append(entityTypesSubTableAlias).append(PERIOD).append(ColumnNames.CODE_COLUMN).append(SP).append(EQ).
+                sqlBuilder.append(SP).append(entityTypesSubTableAlias).append(PERIOD).append(CODE_COLUMN).append(SP).append(EQ).
                         append(SP).append(QU);
                 args.add(propertyName);
 
@@ -98,7 +99,7 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
                     if (casting != null)
                     {
                         sqlBuilder.append(aliases.get(tableMapper.getValuesTable()).getSubTableAlias())
-                                .append(PERIOD).append(ColumnNames.VALUE_COLUMN);
+                                .append(PERIOD).append(VALUE_COLUMN);
 
                         final String lowerCaseCasting = casting.toLowerCase();
                         sqlBuilder.append(DOUBLE_COLON).append(lowerCaseCasting).append(SP).append(EQ).append(SP).append(QU);
@@ -109,15 +110,31 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
                     } else
                     {
                         TranslatorUtils.translateStringComparison(aliases.get(tableMapper.getValuesTable()).getSubTableAlias(),
-                                ColumnNames.VALUE_COLUMN, value, null, sqlBuilder, args);
+                                VALUE_COLUMN, value, null, sqlBuilder, args);
                     }
                     sqlBuilder.append(SP).append(OR).append(SP);
                     TranslatorUtils.translateStringComparison(aliases.get(CONTROLLED_VOCABULARY_TERM_TABLE).getSubTableAlias(),
-                            ColumnNames.CODE_COLUMN, value, null, sqlBuilder, args);
+                            CODE_COLUMN, value, null, sqlBuilder, args);
 
                     sqlBuilder.append(SP).append(OR).append(SP);
                     TranslatorUtils.translateStringComparison(aliases.get(MATERIALS_TABLE).getSubTableAlias(),
-                            ColumnNames.CODE_COLUMN, value, null, sqlBuilder, args);
+                            CODE_COLUMN, value, null, sqlBuilder, args);
+
+                    final JoinInformation samplesPropertyTable = aliases.get(SAMPLE_PROP_COLUMN);
+                    if (samplesPropertyTable != null)
+                    {
+                        sqlBuilder.append(SP).append(OR).append(SP);
+                        TranslatorUtils.translateStringComparison(samplesPropertyTable.getSubTableAlias(),
+                                CODE_COLUMN, value, null, sqlBuilder, args);
+
+                        sqlBuilder.append(SP).append(OR).append(SP);
+                        TranslatorUtils.translateStringComparison(samplesPropertyTable.getSubTableAlias(),
+                                PERM_ID_COLUMN, value, null, sqlBuilder, args);
+
+                        sqlBuilder.append(SP).append(OR).append(SP);
+                        TranslatorUtils.translateStringComparison(samplesPropertyTable.getSubTableAlias(),
+                                SAMPLE_IDENTIFIER_COLUMN, value, null, sqlBuilder, args);
+                    }
 
                     sqlBuilder.append(RP);
                 }
@@ -134,7 +151,7 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
 
     private static void normalizeValue(final AbstractStringValue value, final String columnName)
     {
-        if (columnName.equals(ColumnNames.CODE_COLUMN) && value.getValue().startsWith("/"))
+        if (columnName.equals(CODE_COLUMN) && value.getValue().startsWith("/"))
         {
             value.setValue(value.getValue().substring(1));
         }
