@@ -500,6 +500,7 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
                                 }
                             }
                             // Remove deleted parent annotations
+                            // This is actually done by storing on the annotation an empty string
                         }
                         if(childrenAnnotationsState) {
                             // Add children annotations
@@ -512,6 +513,7 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
                                 }
                             }
                             // Remove deleted children annotations
+                            // This is actually done by storing on the annotation an empty string
                         }
                         mainController.openbisV3.updateSamples([sampleUpdate]).done(function() {
                             if(samplesToDelete) {
