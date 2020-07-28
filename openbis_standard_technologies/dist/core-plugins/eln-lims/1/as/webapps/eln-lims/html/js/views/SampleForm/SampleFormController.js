@@ -288,7 +288,10 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
                 }
                 mergedAnnotationsState[key] = childrenAnnotationsState[key];
             }
-			properties["$ANNOTATIONS_STATE"] = FormUtil.getXMLFromAnnotations(mergedAnnotationsState);
+
+            if(!profile.enableNewAnnotationsBackend) { // Used by openBIS 19.X
+			    properties["$ANNOTATIONS_STATE"] = FormUtil.getXMLFromAnnotations(mergedAnnotationsState);
+            }
 
 			//
 			
@@ -544,24 +547,24 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 	}
 
 	this.getAnnotationsState = function(type) {
-	    var isStateFieldAvailable = false;
-	    var isRelationshipFieldAvailable = profile.enableNewAnnotationsBackend;
-
-        if(this._sampleFormModel.sample) {
-            var availableFields = profile.getAllPropertiCodesForTypeCode(this._sampleFormModel.sample.sampleTypeCode);
-            var pos = $.inArray("$ANNOTATIONS_STATE", availableFields);
-            isStateFieldAvailable = (pos !== -1);
-        }
-
-        if((!isStateFieldAvailable && !isRelationshipFieldAvailable) && this.sampleTypeHints && this.sampleTypeHints.length !== 0) { //Indicates annotations are needed
-            Util.showError("You need a property with code ANNOTATIONS_STATE on this entity to store the state of the annotations.");
-            return;
+        // Used by openBIS 19.X : Check if annotations can't be saved
+        if(!profile.enableNewAnnotationsBackend) {
+            var isStateFieldAvailable = false;
+            if(this._sampleFormModel.sample) {
+                var availableFields = profile.getAllPropertiCodesForTypeCode(this._sampleFormModel.sample.sampleTypeCode);
+                var pos = $.inArray("$ANNOTATIONS_STATE", availableFields);
+                isStateFieldAvailable = (pos !== -1);
+            }
+            if(!isStateFieldAvailable && this.sampleTypeHints && this.sampleTypeHints.length !== 0) { //Indicates annotations are needed
+                Util.showError("You need a property with code ANNOTATIONS_STATE on this entity to store the state of the annotations.");
+                return;
+            }
         }
 
         var typeAnnotations = {};
         if(this._sampleFormModel.mode === FormMode.CREATE) {
             // Nothing to load
-        } else if(isRelationshipFieldAvailable) {
+        } else if(profile.enableNewAnnotationsBackend) { // Used by openBIS 20.X
             if(type === 'PARENTS') {
                 for(var parentPermId in this._sampleFormModel.v3_sample.parentsRelationships) {
                     var parentAnnotations = {};
@@ -580,7 +583,7 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
                     typeAnnotations[childPermId] = childAnnotations;
                 }
             }
-        } else if(isStateFieldAvailable) {
+        } else { // Used by openBIS 19.X
             var allAnnotations = FormUtil.getAnnotationsFromSample(this._sampleFormModel.sample);
 
             if(type === 'PARENTS') {
