@@ -1684,36 +1684,36 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
                             c.assertNull(result.getDataSet(), "DataSet");
                             c.assertNull(result.getMaterial(), "Material");
                         break;
-                        case "SAMPLE":
-							var samplePermId = result.getObjectPermId().getPermId();
-							if (samplePermId === "20130412140147735-20") {
-								prepopulatedSamplesCount++;
-							}
-							c.assertTrue(result.getObjectIdentifier().getIdentifier() === "/PLATONIC/PLATE-1" ||
-								result.getObjectIdentifier().getIdentifier().startsWith("/TEST/V3_SAMPLE_"),
-								"ObjectIdentifier");
-							c.assertTrue(["Perm ID: " + samplePermId,
-								"Property 'Test Property Type': 20130412140147735-20"]
-								.includes(result.getMatch()), "Match");
-                            c.assertNotNull(result.getScore(), "Score");
-                            c.assertNull(result.getExperiment(), "Experiment");
-                            c.assertTrue(result.getSample().getCode() === "PLATE-1" ||
-								result.getSample().getCode().startsWith("V3_SAMPLE_"), "Sample");
-                            c.assertNull(result.getDataSet(), "DataSet");
-                            c.assertNull(result.getMaterial(), "Material");
-                        break;
-                        case "MATERIAL":
-							c.assertEqual(result.getObjectPermId().getCode(), "H2O", "ObjectPermId 1");
-                            c.assertEqual(result.getObjectPermId().getTypeCode(), "COMPOUND", "ObjectPermId 2");
-                            c.assertEqual(result.getObjectIdentifier().getCode(), "H2O", "ObjectIdentifier 1");
-                            c.assertEqual(result.getObjectIdentifier().getTypeCode(), "COMPOUND", "ObjectIdentifier 2");
-                            c.assertEqual(result.getMatch(), "Identifier: H2O (COMPOUND)", "Match");
-                            c.assertNotNull(result.getScore(), "Score");
-                            c.assertNull(result.getExperiment(), "Experiment");
-                            c.assertNull(result.getSample(), "Sample");
-                            c.assertNull(result.getDataSet(), "DataSet");
-                            c.assertEqual(result.getMaterial().getCode(), "H2O", "Material");
-                        break;
+                        // case "SAMPLE":
+						// 	var samplePermId = result.getObjectPermId().getPermId();
+						// 	if (samplePermId === "20130412140147735-20") {
+						// 		prepopulatedSamplesCount++;
+						// 	}
+						// 	c.assertTrue(result.getObjectIdentifier().getIdentifier() === "/PLATONIC/PLATE-1" ||
+						// 		result.getObjectIdentifier().getIdentifier().startsWith("/TEST/V3_SAMPLE_"),
+						// 		"ObjectIdentifier");
+						// 	c.assertTrue(["Perm ID: " + samplePermId,
+						// 		"Property 'Test Property Type': 20130412140147735-20"]
+						// 		.includes(result.getMatch()), "Match");
+                        //     c.assertNotNull(result.getScore(), "Score");
+                        //     c.assertNull(result.getExperiment(), "Experiment");
+                        //     c.assertTrue(result.getSample().getCode() === "PLATE-1" ||
+						// 		result.getSample().getCode().startsWith("V3_SAMPLE_"), "Sample");
+                        //     c.assertNull(result.getDataSet(), "DataSet");
+                        //     c.assertNull(result.getMaterial(), "Material");
+                        // break;
+                        // case "MATERIAL":
+						// 	c.assertEqual(result.getObjectPermId().getCode(), "H2O", "ObjectPermId 1");
+                        //     c.assertEqual(result.getObjectPermId().getTypeCode(), "COMPOUND", "ObjectPermId 2");
+                        //     c.assertEqual(result.getObjectIdentifier().getCode(), "H2O", "ObjectIdentifier 1");
+                        //     c.assertEqual(result.getObjectIdentifier().getTypeCode(), "COMPOUND", "ObjectIdentifier 2");
+                        //     c.assertEqual(result.getMatch(), "Identifier: H2O (COMPOUND)", "Match");
+                        //     c.assertNotNull(result.getScore(), "Score");
+                        //     c.assertNull(result.getExperiment(), "Experiment");
+                        //     c.assertNull(result.getSample(), "Sample");
+                        //     c.assertNull(result.getDataSet(), "DataSet");
+                        //     c.assertEqual(result.getMaterial().getCode(), "H2O", "Material");
+                        // break;
 				    }
 				}
 				c.assertEqual(prepopulatedExperimentsCount, 1, "ExperimentPermId");
