@@ -1665,55 +1665,55 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
                             c.assertEqual(result.getDataSet().getCode(), dataSetPermId, "DataSet");
                             c.assertNull(result.getMaterial(), "Material");
                         break;
-						// case "EXPERIMENT":
-						// 	var experimentPermId = result.getObjectPermId().getPermId();
-						// 	if (experimentPermId === "20130412150049446-204") {
-						// 		prepopulatedExperimentsCount++;
-						// 	}
-                        //     c.assertTrue(result.getObjectIdentifier().getIdentifier() ===
-						// 		"/TEST/TEST-PROJECT/TEST-EXPERIMENT" || result.getObjectIdentifier()
-						// 			.getIdentifier().startsWith("/TEST/TEST-PROJECT/V3_EXPERIMENT_"),
-						// 		"ObjectIdentifier");
-						// 	c.assertTrue(["Perm ID: " + experimentPermId,
-						// 		"Property 'Test Property Type': 20130412140147735-20"]
-						// 		.includes(result.getMatch()), "Match");
-                        //     c.assertNotNull(result.getScore(), "Score");
-                        //     c.assertTrue(result.getExperiment().getCode() === "TEST-EXPERIMENT" ||
-						// 		result.getExperiment().getCode().startsWith("V3_EXPERIMENT_"), "Experiment");
-                        //     c.assertNull(result.getSample(), "Sample");
-                        //     c.assertNull(result.getDataSet(), "DataSet");
-                        //     c.assertNull(result.getMaterial(), "Material");
-                        // break;
-                        // case "SAMPLE":
-						// 	var samplePermId = result.getObjectPermId().getPermId();
-						// 	if (samplePermId === "20130412140147735-20") {
-						// 		prepopulatedSamplesCount++;
-						// 	}
-						// 	c.assertTrue(result.getObjectIdentifier().getIdentifier() === "/PLATONIC/PLATE-1" ||
-						// 		result.getObjectIdentifier().getIdentifier().startsWith("/TEST/V3_SAMPLE_"),
-						// 		"ObjectIdentifier");
-						// 	c.assertTrue(["Perm ID: " + samplePermId,
-						// 		"Property 'Test Property Type': 20130412140147735-20"]
-						// 		.includes(result.getMatch()), "Match");
-                        //     c.assertNotNull(result.getScore(), "Score");
-                        //     c.assertNull(result.getExperiment(), "Experiment");
-                        //     c.assertTrue(result.getSample().getCode() === "PLATE-1" ||
-						// 		result.getSample().getCode().startsWith("V3_SAMPLE_"), "Sample");
-                        //     c.assertNull(result.getDataSet(), "DataSet");
-                        //     c.assertNull(result.getMaterial(), "Material");
-                        // break;
-                        // case "MATERIAL":
-						// 	c.assertEqual(result.getObjectPermId().getCode(), "H2O", "ObjectPermId 1");
-                        //     c.assertEqual(result.getObjectPermId().getTypeCode(), "COMPOUND", "ObjectPermId 2");
-                        //     c.assertEqual(result.getObjectIdentifier().getCode(), "H2O", "ObjectIdentifier 1");
-                        //     c.assertEqual(result.getObjectIdentifier().getTypeCode(), "COMPOUND", "ObjectIdentifier 2");
-                        //     c.assertEqual(result.getMatch(), "Identifier: H2O (COMPOUND)", "Match");
-                        //     c.assertNotNull(result.getScore(), "Score");
-                        //     c.assertNull(result.getExperiment(), "Experiment");
-                        //     c.assertNull(result.getSample(), "Sample");
-                        //     c.assertNull(result.getDataSet(), "DataSet");
-                        //     c.assertEqual(result.getMaterial().getCode(), "H2O", "Material");
-                        // break;
+						case "EXPERIMENT":
+							var experimentPermId = result.getObjectPermId().getPermId();
+							if (experimentPermId === "20130412150049446-204") {
+								prepopulatedExperimentsCount++;
+							}
+                            c.assertTrue(result.getObjectIdentifier().getIdentifier() ===
+								"/TEST/TEST-PROJECT/TEST-EXPERIMENT" || result.getObjectIdentifier()
+									.getIdentifier().startsWith("/TEST/TEST-PROJECT/V3_EXPERIMENT_"),
+								"ObjectIdentifier");
+							c.assertTrue(["Perm ID: " + experimentPermId,
+								"Property 'Test Property Type': 20130412140147735-20"]
+								.includes(result.getMatch()), "Match");
+                            c.assertNotNull(result.getScore(), "Score");
+                            c.assertTrue(result.getExperiment().getCode() === "TEST-EXPERIMENT" ||
+								result.getExperiment().getCode().startsWith("V3_EXPERIMENT_"), "Experiment");
+                            c.assertNull(result.getSample(), "Sample");
+                            c.assertNull(result.getDataSet(), "DataSet");
+                            c.assertNull(result.getMaterial(), "Material");
+                        break;
+                        case "SAMPLE":
+							var samplePermId = result.getObjectPermId().getPermId();
+							if (samplePermId === "20130412140147735-20") {
+								prepopulatedSamplesCount++;
+							}
+							c.assertTrue(result.getObjectIdentifier().getIdentifier() === "/PLATONIC/PLATE-1" ||
+								result.getObjectIdentifier().getIdentifier().startsWith("/TEST/V3_SAMPLE_"),
+								"ObjectIdentifier");
+							c.assertTrue(["Perm ID: " + samplePermId,
+								"Property 'Test Property Type': 20130412140147735-20"]
+								.includes(result.getMatch()), "Match");
+                            c.assertNotNull(result.getScore(), "Score");
+                            c.assertNull(result.getExperiment(), "Experiment");
+                            c.assertTrue(result.getSample().getCode() === "PLATE-1" ||
+								result.getSample().getCode().startsWith("V3_SAMPLE_"), "Sample");
+                            c.assertNull(result.getDataSet(), "DataSet");
+                            c.assertNull(result.getMaterial(), "Material");
+                        break;
+                        case "MATERIAL":
+							c.assertEqual(result.getObjectPermId().getCode(), "H2O", "ObjectPermId 1");
+                            c.assertEqual(result.getObjectPermId().getTypeCode(), "COMPOUND", "ObjectPermId 2");
+                            c.assertEqual(result.getObjectIdentifier().getCode(), "H2O", "ObjectIdentifier 1");
+                            c.assertEqual(result.getObjectIdentifier().getTypeCode(), "COMPOUND", "ObjectIdentifier 2");
+                            c.assertEqual(result.getMatch(), "Identifier: H2O (COMPOUND)", "Match");
+                            c.assertNotNull(result.getScore(), "Score");
+                            c.assertNull(result.getExperiment(), "Experiment");
+                            c.assertNull(result.getSample(), "Sample");
+                            c.assertNull(result.getDataSet(), "DataSet");
+                            c.assertEqual(result.getMaterial().getCode(), "H2O", "Material");
+                        break;
 				    }
 				}
 				c.assertEqual(prepopulatedExperimentsCount, 1, "ExperimentPermId");
@@ -1752,46 +1752,46 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testSearch(c, fSearch, fCheck);
 		});
 
-		// QUnit.test("searchGlobally() withObjectKind thatIn", function(assert) {
-		// 	var c = new common(assert, openbis);
-		//
-		// 	var fSearch = function(facade) {
-		// 		var criteria = new c.GlobalSearchCriteria();
-		// 		criteria.withText().thatContains("20130412150049446-204 20130412140147735-20 20130417094936021-428 H2O");
-		// 		criteria.withObjectKind().thatIn([ "EXPERIMENT" ]);
-		// 		var fo = c.createGlobalSearchObjectFetchOptions();
-		// 		fo.withMatch();
-		// 		return facade.searchGlobally(criteria, fo);
-		// 	}
-		//
-		// 	var fCheck = function(facade, objects) {
-		// 		c.assertEqual(objects.length, 3);
-		//
-		// 		var prepopulatedExperimentsCount = 0;
-		// 		for (var i = 0; i < objects.length; i++) {
-		// 			var objectExperiment = objects[i];
-		// 			var experimentPermId = objectExperiment.getObjectPermId().getPermId();
-		// 			c.assertEqual(objectExperiment.getObjectKind(), "EXPERIMENT", "ObjectKind");
-		// 			if (objectExperiment.getObjectKind === "20130412150049446-204") {
-		// 				prepopulatedExperimentsCount++;
-		// 			}
-		// 			c.assertTrue(objectExperiment.getObjectIdentifier().getIdentifier() ===
-		// 				"/TEST/TEST-PROJECT/TEST-EXPERIMENT" || objectExperiment.getObjectIdentifier().getIdentifier()
-		// 					.startsWith("/TEST/TEST-PROJECT/V3_EXPERIMENT_"), "ObjectIdentifier");
-		// 			c.assertTrue(["Perm ID: " + experimentPermId,
-		// 				"Property 'Test Property Type': 20130412140147735-20"]
-		// 				.includes(objectExperiment.getMatch()), "Match");
-		// 			c.assertNotNull(objectExperiment.getScore(), "Score");
-		// 			c.assertTrue(objectExperiment.getExperiment().getCode() === "TEST-EXPERIMENT" ||
-		// 				objectExperiment.getExperiment().getCode().startsWith("V3_EXPERIMENT_"), "Experiment");
-		// 			c.assertNull(objectExperiment.getSample(), "Sample");
-		// 			c.assertNull(objectExperiment.getDataSet(), "DataSet");
-		// 			c.assertNull(objectExperiment.getMaterial(), "Material");
-		// 		}
-		// 	}
-		//
-		// 	testSearch(c, fSearch, fCheck);
-		// });
+		QUnit.test("searchGlobally() withObjectKind thatIn", function(assert) {
+			var c = new common(assert, openbis);
+
+			var fSearch = function(facade) {
+				var criteria = new c.GlobalSearchCriteria();
+				criteria.withText().thatContains("20130412150049446-204 20130412140147735-20 20130417094936021-428 H2O");
+				criteria.withObjectKind().thatIn([ "EXPERIMENT" ]);
+				var fo = c.createGlobalSearchObjectFetchOptions();
+				fo.withMatch();
+				return facade.searchGlobally(criteria, fo);
+			}
+
+			var fCheck = function(facade, objects) {
+				c.assertEqual(objects.length, 3);
+
+				var prepopulatedExperimentsCount = 0;
+				for (var i = 0; i < objects.length; i++) {
+					var objectExperiment = objects[i];
+					var experimentPermId = objectExperiment.getObjectPermId().getPermId();
+					c.assertEqual(objectExperiment.getObjectKind(), "EXPERIMENT", "ObjectKind");
+					if (objectExperiment.getObjectKind === "20130412150049446-204") {
+						prepopulatedExperimentsCount++;
+					}
+					c.assertTrue(objectExperiment.getObjectIdentifier().getIdentifier() ===
+						"/TEST/TEST-PROJECT/TEST-EXPERIMENT" || objectExperiment.getObjectIdentifier().getIdentifier()
+							.startsWith("/TEST/TEST-PROJECT/V3_EXPERIMENT_"), "ObjectIdentifier");
+					c.assertTrue(["Perm ID: " + experimentPermId,
+						"Property 'Test Property Type': 20130412140147735-20"]
+						.includes(objectExperiment.getMatch()), "Match");
+					c.assertNotNull(objectExperiment.getScore(), "Score");
+					c.assertTrue(objectExperiment.getExperiment().getCode() === "TEST-EXPERIMENT" ||
+						objectExperiment.getExperiment().getCode().startsWith("V3_EXPERIMENT_"), "Experiment");
+					c.assertNull(objectExperiment.getSample(), "Sample");
+					c.assertNull(objectExperiment.getDataSet(), "DataSet");
+					c.assertNull(objectExperiment.getMaterial(), "Material");
+				}
+			}
+
+			testSearch(c, fSearch, fCheck);
+		});
 
 		QUnit.test("searchObjectKindModifications()", function(assert) {
 			var c = new common(assert, openbis);
