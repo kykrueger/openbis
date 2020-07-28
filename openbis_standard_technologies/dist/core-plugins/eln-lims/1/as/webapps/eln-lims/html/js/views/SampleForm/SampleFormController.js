@@ -490,7 +490,7 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
                         var sampleUpdate = new SampleUpdate();
                         sampleUpdate.setSampleId(new SamplePermId(currentSample.permId.permId));
                         if(parentsAnnotationsState) {
-                            // Add parent annotations
+                            // Add annotations
                             for(var parentPermId in parentsAnnotationsState) {
                                 var parentAnnotation = parentsAnnotationsState[parentPermId];
                                 delete parentAnnotation["identifier"];
@@ -499,11 +499,13 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
                                     sampleUpdate.relationship(new SamplePermId(parentPermId)).addParentAnnotation(annotationKey, parentAnnotation[annotationKey]);
                                 }
                             }
-                            // Remove deleted parent annotations
-                            // This is actually done by storing on the annotation an empty string
+                            // Update annotations
+                            // Adding an existing annotation, overrides the old one, updating it.
+                            // Remove annotations
+                            // Adding an emtpy string on exiting annotation, effectively deletes the value.
                         }
                         if(childrenAnnotationsState) {
-                            // Add children annotations
+                            // Add annotations
                             for(var childPermId in childrenAnnotationsState) {
                                 var childAnnotation = childrenAnnotationsState[childPermId];
                                 delete childAnnotation["identifier"];
@@ -512,8 +514,10 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
                                     sampleUpdate.relationship(new SamplePermId(childPermId)).addChildAnnotation(annotationKey, childAnnotation[annotationKey]);
                                 }
                             }
-                            // Remove deleted children annotations
-                            // This is actually done by storing on the annotation an empty string
+                            // Update annotations
+                            // Adding an existing annotation, overrides the old one, updating it.
+                            // Remove annotations
+                            // Adding an emtpy string on exiting annotation, effectively deletes the value.
                         }
                         mainController.openbisV3.updateSamples([sampleUpdate]).done(function() {
                             if(samplesToDelete) {
