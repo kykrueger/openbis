@@ -1665,25 +1665,25 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
                             c.assertEqual(result.getDataSet().getCode(), dataSetPermId, "DataSet");
                             c.assertNull(result.getMaterial(), "Material");
                         break;
-						case "EXPERIMENT":
-							var experimentPermId = result.getObjectPermId().getPermId();
-							if (experimentPermId === "20130412150049446-204") {
-								prepopulatedExperimentsCount++;
-							}
-                            c.assertTrue(result.getObjectIdentifier().getIdentifier() ===
-								"/TEST/TEST-PROJECT/TEST-EXPERIMENT" || result.getObjectIdentifier()
-									.getIdentifier().startsWith("/TEST/TEST-PROJECT/V3_EXPERIMENT_"),
-								"ObjectIdentifier");
-							c.assertTrue(["Perm ID: " + experimentPermId,
-								"Property 'Test Property Type': 20130412140147735-20"]
-								.includes(result.getMatch()), "Match");
-                            c.assertNotNull(result.getScore(), "Score");
-                            c.assertTrue(result.getExperiment().getCode() === "TEST-EXPERIMENT" ||
-								result.getExperiment().getCode().startsWith("V3_EXPERIMENT_"), "Experiment");
-                            c.assertNull(result.getSample(), "Sample");
-                            c.assertNull(result.getDataSet(), "DataSet");
-                            c.assertNull(result.getMaterial(), "Material");
-                        break;
+						// case "EXPERIMENT":
+						// 	var experimentPermId = result.getObjectPermId().getPermId();
+						// 	if (experimentPermId === "20130412150049446-204") {
+						// 		prepopulatedExperimentsCount++;
+						// 	}
+                        //     c.assertTrue(result.getObjectIdentifier().getIdentifier() ===
+						// 		"/TEST/TEST-PROJECT/TEST-EXPERIMENT" || result.getObjectIdentifier()
+						// 			.getIdentifier().startsWith("/TEST/TEST-PROJECT/V3_EXPERIMENT_"),
+						// 		"ObjectIdentifier");
+						// 	c.assertTrue(["Perm ID: " + experimentPermId,
+						// 		"Property 'Test Property Type': 20130412140147735-20"]
+						// 		.includes(result.getMatch()), "Match");
+                        //     c.assertNotNull(result.getScore(), "Score");
+                        //     c.assertTrue(result.getExperiment().getCode() === "TEST-EXPERIMENT" ||
+						// 		result.getExperiment().getCode().startsWith("V3_EXPERIMENT_"), "Experiment");
+                        //     c.assertNull(result.getSample(), "Sample");
+                        //     c.assertNull(result.getDataSet(), "DataSet");
+                        //     c.assertNull(result.getMaterial(), "Material");
+                        // break;
                         // case "SAMPLE":
 						// 	var samplePermId = result.getObjectPermId().getPermId();
 						// 	if (samplePermId === "20130412140147735-20") {
