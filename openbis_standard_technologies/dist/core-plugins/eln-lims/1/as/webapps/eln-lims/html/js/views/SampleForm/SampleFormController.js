@@ -276,21 +276,19 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 			}
 
             var mergedAnnotationsState = {};
-            for(key in parentsAnnotationsState) {
+            for(var key in parentsAnnotationsState) {
                 if(key in mergedAnnotationsState) {
                    throw 'Error merging annotations: Do you have the same object as parent or children?';
                 }
                 mergedAnnotationsState[key] = parentsAnnotationsState[key];
             }
-            for(key in childrenAnnotationsState) {
+            for(var key in childrenAnnotationsState) {
                 if(key in mergedAnnotationsState) {
                    throw 'Error merging annotations: Do you have the same object as parent or children?';
                 }
                 mergedAnnotationsState[key] = childrenAnnotationsState[key];
             }
 			properties["$ANNOTATIONS_STATE"] = FormUtil.getXMLFromAnnotations(mergedAnnotationsState);
-
-		    // TODO : Write the annotations to the API DTO.
 
 			//
 			
@@ -420,7 +418,7 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 			if(profile.getDefaultDataStoreCode()) {
 				
 				mainController.serverFacade.createReportFromAggregationService(profile.getDefaultDataStoreCode(), parameters, function(response) {
-					_this._createUpdateCopySampleCallback(_this, isCopyWithNewCode, response, samplesToDelete);
+					_this._createUpdateCopySampleCallback(_this, isCopyWithNewCode, response, samplesToDelete, parentsAnnotationsState, childrenAnnotationsState);
 				});
 				
 			} else {
@@ -432,7 +430,7 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 		return false;
 	}
 	
-	this._createUpdateCopySampleCallback = function(_this, isCopyWithNewCode, response, samplesToDelete) {
+	this._createUpdateCopySampleCallback = function(_this, isCopyWithNewCode, response, samplesToDelete, parentsAnnotationsState, childrenAnnotationsState) {
 		if(response.error) { //Error Case 1
 			Util.showError(response.error.message, function() {Util.unblockUI();});
 		} else if (response.result.columns[1].title === "Error") { //Error Case 2
@@ -481,7 +479,37 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 				}
 				searchUntilFound(); //First call
 			}
-			
+
+//			if(profile.enableNewAnnotationsBackend) {
+//	            require([ "as/dto/sample/id/SamplePermId", "as/dto/sample/update/SampleUpdate" ],
+//                    function(SamplePermId, SampleUpdate) {
+//                        var currentSample = _this._sampleFormModel.v3_sample;
+//                        var sampleUpdate = new SampleUpdate();
+//                        sampleUpdate.setSampleId(new SamplePermId(currentSample.permId.permId));
+//                        if(parentsAnnotationsState) {
+//                            // Add parent annotations
+//                            for(var parentPermId in parentsAnnotationsState) {
+//                                parentAnnotation = parentsAnnotationsState[parentPermId];
+//                                delete parentAnnotation["identifier"];
+//                                delete parentAnnotation["sampleType"];
+//                                for(var annotationKey in parentAnnotation) {
+//                                    sampleUpdate.relationship(new SamplePermId(parentPermId)).addParentAnnotation(annotationKey, parentAnnotation[annotationKey]);
+//                                }
+//                            }
+//                            // Remove deleted parent annotations
+//                        }
+//                        if(childrenAnnotationsState) {
+//
+//                        }
+//                        mainController.openbisV3.updateSamples([sampleUpdate]).done(function() {
+//                            console.log("Updated")
+//                        }).fail(function(result) {
+//                            console.log(JSON.stringify(result))
+//                        });
+//                        debugger;
+//                });
+//			}
+
 			if(samplesToDelete) {
 			    mainController.serverFacade.trashStorageSamplesWithoutParents(samplesToDelete,
 			                                                                    "Deleted to trashcan from eln sample form " + _this._sampleFormModel.sample.identifier,
@@ -510,9 +538,9 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 		}
 	}
 
-    // TODO : Read the annotations from the property AND/OR the API DTO.
 	this.getAnnotationsState = function(type) {
 	    var isStateFieldAvailable = false;
+	    var isRelationshipFieldAvailable = profile.enableNewAnnotationsBackend;
 
         if(this._sampleFormModel.sample) {
             var availableFields = profile.getAllPropertiCodesForTypeCode(this._sampleFormModel.sample.sampleTypeCode);
@@ -520,18 +548,36 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
             isStateFieldAvailable = (pos !== -1);
         }
 
-        if(!isStateFieldAvailable && this.sampleTypeHints && this.sampleTypeHints.length !== 0) { //Indicates annotations are needed
+        if((!isStateFieldAvailable && !isRelationshipFieldAvailable) && this.sampleTypeHints && this.sampleTypeHints.length !== 0) { //Indicates annotations are needed
             Util.showError("You need a property with code ANNOTATIONS_STATE on this entity to store the state of the annotations.");
             return;
         }
 
+        var typeAnnotations = {};
         if(this._sampleFormModel.mode === FormMode.CREATE) {
-            return {};
-        }
-
-        if(isStateFieldAvailable) {
+            // Nothing to load
+        } else if(isRelationshipFieldAvailable) {
+            if(type === 'PARENTS') {
+                for(var parentPermId in this._sampleFormModel.v3_sample.parentsRelationships) {
+                    var parentAnnotations = {};
+                    for(var parentAnnotationKey in this._sampleFormModel.v3_sample.parentsRelationships[parentPermId].parentAnnotations) {
+                        parentAnnotations[parentAnnotationKey] = this._sampleFormModel.v3_sample.parentsRelationships[parentPermId].parentAnnotations[parentAnnotationKey];
+                    }
+                    typeAnnotations[parentPermId] = parentAnnotations;
+                }
+            }
+            if(type === 'CHILDREN') {
+                for(var childPermId in this._sampleFormModel.v3_sample.childrenRelationships) {
+                    var childAnnotations = {};
+                    for(var childAnnotationKey in this._sampleFormModel.v3_sample.childrenRelationships[childPermId].childAnnotations) {
+                        childAnnotations[childAnnotationKey] = this._sampleFormModel.v3_sample.childrenRelationships[childPermId].childAnnotations[childAnnotationKey];
+                    }
+                    typeAnnotations[childPermId] = childAnnotations;
+                }
+            }
+        } else if(isStateFieldAvailable) {
             var allAnnotations = FormUtil.getAnnotationsFromSample(this._sampleFormModel.sample);
-            var typeAnnotations = {};
+
             if(type === 'PARENTS') {
                 for(var pIdx = 0; pIdx < this._sampleFormModel.sample.parents.length; pIdx++) {
                     var parentPermId =  this._sampleFormModel.sample.parents[pIdx].permId;
@@ -548,7 +594,8 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
                     }
                 }
             }
-            return typeAnnotations;
         }
+
+        return typeAnnotations;
 	}
 }
