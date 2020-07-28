@@ -480,58 +480,63 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 				searchUntilFound(); //First call
 			}
 
-//			if(profile.enableNewAnnotationsBackend) {
-//	            require([ "as/dto/sample/id/SamplePermId", "as/dto/sample/update/SampleUpdate" ],
-//                    function(SamplePermId, SampleUpdate) {
-//                        var currentSample = _this._sampleFormModel.v3_sample;
-//                        var sampleUpdate = new SampleUpdate();
-//                        sampleUpdate.setSampleId(new SamplePermId(currentSample.permId.permId));
-//                        if(parentsAnnotationsState) {
-//                            // Add parent annotations
-//                            for(var parentPermId in parentsAnnotationsState) {
-//                                parentAnnotation = parentsAnnotationsState[parentPermId];
-//                                delete parentAnnotation["identifier"];
-//                                delete parentAnnotation["sampleType"];
-//                                for(var annotationKey in parentAnnotation) {
-//                                    sampleUpdate.relationship(new SamplePermId(parentPermId)).addParentAnnotation(annotationKey, parentAnnotation[annotationKey]);
-//                                }
-//                            }
-//                            // Remove deleted parent annotations
-//                        }
-//                        if(childrenAnnotationsState) {
-//
-//                        }
-//                        mainController.openbisV3.updateSamples([sampleUpdate]).done(function() {
-//                            console.log("Updated")
-//                        }).fail(function(result) {
-//                            console.log(JSON.stringify(result))
-//                        });
-//                        debugger;
-//                });
-//			}
-
-			if(samplesToDelete) {
-			    mainController.serverFacade.trashStorageSamplesWithoutParents(samplesToDelete,
-			                                                                    "Deleted to trashcan from eln sample form " + _this._sampleFormModel.sample.identifier,
-			                                                                    function(response) {
-			                                                                        Util.showSuccess(message, callbackOk);
-			                                                                    });
-
-//				mainController.serverFacade.deleteSamples(samplesToDelete,  "Deleted to trashcan from eln sample form " + _this._sampleFormModel.sample.identifier,
-//															function(response) {
-//																if(response.error) {
-//																	Util.showError("Deletions failed, other changes were committed: " + response.error.message, callbackOk);
-//																} else {
-//																	Util.showSuccess(message, callbackOk);
-//																}
-//																_this._sampleFormModel.isFormDirty = false;
-//															},
-//															false);
-			} else {
-				Util.showSuccess(message, callbackOk);
-				_this._sampleFormModel.isFormDirty = false;
+			if(profile.enableNewAnnotationsBackend) { // Branch for openBIS 20.X
+	            require([ "as/dto/sample/id/SamplePermId", "as/dto/sample/update/SampleUpdate" ],
+                    function(SamplePermId, SampleUpdate) {
+                        var currentSample = _this._sampleFormModel.v3_sample;
+                        var sampleUpdate = new SampleUpdate();
+                        sampleUpdate.setSampleId(new SamplePermId(currentSample.permId.permId));
+                        if(parentsAnnotationsState) {
+                            // Add parent annotations
+                            for(var parentPermId in parentsAnnotationsState) {
+                                var parentAnnotation = parentsAnnotationsState[parentPermId];
+                                delete parentAnnotation["identifier"];
+                                delete parentAnnotation["sampleType"];
+                                for(var annotationKey in parentAnnotation) {
+                                    sampleUpdate.relationship(new SamplePermId(parentPermId)).addParentAnnotation(annotationKey, parentAnnotation[annotationKey]);
+                                }
+                            }
+                            // Remove deleted parent annotations
+                        }
+                        if(childrenAnnotationsState) {
+                            // Add children annotations
+                            for(var childPermId in childrenAnnotationsState) {
+                                var childAnnotation = childrenAnnotationsState[childPermId];
+                                delete childAnnotation["identifier"];
+                                delete childAnnotation["sampleType"];
+                                for(var annotationKey in childAnnotation) {
+                                    sampleUpdate.relationship(new SamplePermId(childPermId)).addChildAnnotation(annotationKey, childAnnotation[annotationKey]);
+                                }
+                            }
+                            // Remove deleted children annotations
+                        }
+                        mainController.openbisV3.updateSamples([sampleUpdate]).done(function() {
+                            if(samplesToDelete) {
+                                mainController.serverFacade.trashStorageSamplesWithoutParents(samplesToDelete,
+                                "Deleted to trashcan from eln sample form " + _this._sampleFormModel.sample.identifier,
+                                function(response) {
+                                    Util.showSuccess(message, callbackOk);
+                                });
+                            } else {
+                                Util.showSuccess(message, callbackOk);
+                                _this._sampleFormModel.isFormDirty = false;
+                            }
+                        }).fail(function(result) {
+                            Util.showError("Failed to save annotations: " + console.log(JSON.stringify(result)), function() {Util.unblockUI();});
+                        });
+                });
+			} else { // Branch for openBIS 19.X
+                if(samplesToDelete) {
+                    mainController.serverFacade.trashStorageSamplesWithoutParents(samplesToDelete,
+                        "Deleted to trashcan from eln sample form " + _this._sampleFormModel.sample.identifier,
+                        function(response) {
+                            Util.showSuccess(message, callbackOk);
+                    });
+                } else {
+                    Util.showSuccess(message, callbackOk);
+                    _this._sampleFormModel.isFormDirty = false;
+                }
 			}
-			
 			
 		} else { //This should never happen
 			Util.showError("Unknown Error.", function() {Util.unblockUI();});
