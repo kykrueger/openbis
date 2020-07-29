@@ -569,46 +569,9 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
         var typeAnnotations = {};
         if(this._sampleFormModel.mode === FormMode.CREATE) {
             // Nothing to load
-        } else if(profile.enableNewAnnotationsBackend) { // Used by openBIS 20.X
-            if(type === 'PARENTS') {
-                for(var parentPermId in this._sampleFormModel.v3_sample.parentsRelationships) {
-                    var parentAnnotations = {};
-                    for(var parentAnnotationKey in this._sampleFormModel.v3_sample.parentsRelationships[parentPermId].parentAnnotations) {
-                        parentAnnotations[parentAnnotationKey] = this._sampleFormModel.v3_sample.parentsRelationships[parentPermId].parentAnnotations[parentAnnotationKey];
-                    }
-                    typeAnnotations[parentPermId] = parentAnnotations;
-                }
-            }
-            if(type === 'CHILDREN') {
-                for(var childPermId in this._sampleFormModel.v3_sample.childrenRelationships) {
-                    var childAnnotations = {};
-                    for(var childAnnotationKey in this._sampleFormModel.v3_sample.childrenRelationships[childPermId].childAnnotations) {
-                        childAnnotations[childAnnotationKey] = this._sampleFormModel.v3_sample.childrenRelationships[childPermId].childAnnotations[childAnnotationKey];
-                    }
-                    typeAnnotations[childPermId] = childAnnotations;
-                }
-            }
-        } else { // Used by openBIS 19.X
-            var allAnnotations = FormUtil.getAnnotationsFromSample(this._sampleFormModel.sample);
-
-            if(type === 'PARENTS') {
-                for(var pIdx = 0; pIdx < this._sampleFormModel.sample.parents.length; pIdx++) {
-                    var parentPermId =  this._sampleFormModel.sample.parents[pIdx].permId;
-                    if(parentPermId in allAnnotations) {
-                        typeAnnotations[parentPermId] = allAnnotations[parentPermId];
-                    }
-                }
-            }
-            if(type === 'CHILDREN') {
-                for(var cIdx = 0; cIdx < this._sampleFormModel.sample.children.length; cIdx++) {
-                    var childPermId =  this._sampleFormModel.sample.children[cIdx].permId;
-                    if(childPermId in allAnnotations) {
-                        typeAnnotations[childPermId] = allAnnotations[childPermId];
-                    }
-                }
-            }
+        } else {
+            typeAnnotations = FormUtil.getAnnotationsFromSample(this._sampleFormModel.v3_sample, type);
         }
-
         return typeAnnotations;
 	}
 }

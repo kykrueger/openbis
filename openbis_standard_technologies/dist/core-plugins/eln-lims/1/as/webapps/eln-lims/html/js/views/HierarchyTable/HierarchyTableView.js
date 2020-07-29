@@ -171,7 +171,10 @@ function HierarchyTableView(controller, model) {
 	 * Only samples have annotations, if they are not samples, they will simply not be found
 	 */
 	this._annotationsRenderer = function(entities, entity) {
-		var annotations = FormUtil.getAnnotationsFromSample(entity);
+	    var annotations = {};
+	    if(entity["@type"] === "as.dto.sample.Sample") {
+	        annotations = FormUtil.getAnnotationsFromSample(entity);
+	    }
 		var content = "";
 		var rowStarted = false;
 		AnnotationUtil.buildAnnotations(annotations, entities, {

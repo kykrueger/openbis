@@ -14,23 +14,17 @@
  * limitations under the License.
  */
 var AnnotationUtil = new function() {
-	var isFound = function(samples, identifier) {
+	var isFound = function(samples, permId) {
 		if (samples) {
 			for (var i = 0; i < samples.length; i++) {
-				if (samples[i].identifier === identifier ||
-					(samples[i].identifier && samples[i].identifier.identifier === identifier)
+				if (samples[i].permId === permId ||
+					(samples[i].permId.permId && samples[i].permId.permId === permId)
 					) {
-					return true;
+					return samples[i];
 				}
 			}
 		}
 		return false;
-	}
-	
-	var extractCode = function(identifier)
-	{
-		var terms = identifier.split("/");
-		return terms[terms.length - 1];
 	}
 	
 	/*
@@ -42,9 +36,10 @@ var AnnotationUtil = new function() {
 		for (var permId in annotations) {
 			var annotation = annotations[permId];
 			var identifier = annotation.identifier;
-			if (isFound(samples, identifier)) {
+			var sample = null;
+			if (sample = isFound(samples, permId)) {
 				annotationsBuilder.startRow();
-				annotationsBuilder.addKeyValue("CODE", extractCode(identifier));
+				annotationsBuilder.addKeyValue("CODE", sample.code);
 				for (var propertyTypeCode in annotation) {
 					if ($.inArray(propertyTypeCode, ["identifier", "sampleType"]) < 0) {
 						annotationsBuilder.addKeyValue(propertyTypeCode, annotation[propertyTypeCode]);
