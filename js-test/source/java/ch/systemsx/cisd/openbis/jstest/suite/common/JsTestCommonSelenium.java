@@ -156,12 +156,13 @@ public class JsTestCommonSelenium extends SeleniumTest
                 }
             }
 
+            Assert.assertTrue("JUnit test report is empty", junitReport.length() > 0);
+
             File report =
                     new File("targets/dist/" + this.getClass().getSimpleName() + "/" + method
                             + "/TEST-" + method + ".xml");
             FileUtilities.writeToFile(report, junitReport);
 
-            Assert.assertTrue("JUnit test report is empty", junitReport.length() > 0);
             Assert.assertEquals(0, webapp.getFailedCount());
         } catch (Throwable t)
         {
