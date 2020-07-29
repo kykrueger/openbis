@@ -486,9 +486,8 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 			if(profile.enableNewAnnotationsBackend) { // Branch for openBIS 20.X
 	            require([ "as/dto/sample/id/SamplePermId", "as/dto/sample/update/SampleUpdate" ],
                     function(SamplePermId, SampleUpdate) {
-                        var currentSample = _this._sampleFormModel.v3_sample;
                         var sampleUpdate = new SampleUpdate();
-                        sampleUpdate.setSampleId(new SamplePermId(currentSample.permId.permId));
+                        sampleUpdate.setSampleId(new SamplePermId(permId));
                         if(parentsAnnotationsState) {
                             // Add annotations
                             for(var parentPermId in parentsAnnotationsState) {
