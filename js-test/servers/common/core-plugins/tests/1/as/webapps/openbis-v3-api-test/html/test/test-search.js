@@ -1785,7 +1785,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 							.startsWith("/TEST/TEST-PROJECT/V3_EXPERIMENT_"), "ObjectIdentifier");
 					c.assertTrue(["Perm ID: " + experimentPermId,
 						"Property 'Test Property Type': 20130412140147735-20"]
-						.includes(objectExperiment.getMatch()), "Match");
+						.includes(objectExperiment.getMatch()), "Match. Actual value: " + objectExperiment.getMatch());
 					c.assertNotNull(objectExperiment.getScore(), "Score");
 					c.assertTrue(objectExperiment.getExperiment().getCode() === "TEST-EXPERIMENT" ||
 						objectExperiment.getExperiment().getCode().startsWith("V3_EXPERIMENT_"), "Experiment");
