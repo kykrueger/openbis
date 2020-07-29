@@ -1658,12 +1658,12 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 								"ObjectIdentifier");
                             c.assertTrue(["Perm ID: " + dataSetPermId,
 								"Property 'Test Property Type': 20130412140147735-20"]
-								.includes(result.getMatch()), "Match");
-                            c.assertNotNull(result.getScore(), "Score");
-                            c.assertNull(result.getExperiment(), "Experiment");
-                            c.assertNull(result.getSample(), "Sample");
-                            c.assertEqual(result.getDataSet().getCode(), dataSetPermId, "DataSet");
-                            c.assertNull(result.getMaterial(), "Material");
+								.includes(result.getMatch()), "Match (case DATA_SET). Actual value: " + result.getMatch());
+                            c.assertNotNull(result.getScore(), "Score (case DATA_SET)");
+                            c.assertNull(result.getExperiment(), "Experiment (case DATA_SET)");
+                            c.assertNull(result.getSample(), "Sample (case DATA_SET)");
+                            c.assertEqual(result.getDataSet().getCode(), dataSetPermId, "DataSet (case DATA_SET)");
+                            c.assertNull(result.getMaterial(), "Material (case DATA_SET)");
                         break;
 						case "EXPERIMENT":
 							var experimentPermId = result.getObjectPermId().getPermId();
@@ -1676,13 +1676,14 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 								"ObjectIdentifier");
 							c.assertTrue(["Perm ID: " + experimentPermId,
 								"Property 'Test Property Type': 20130412140147735-20"]
-								.includes(result.getMatch()), "Match");
-                            c.assertNotNull(result.getScore(), "Score");
+								.includes(result.getMatch()), "Match (case EXPERIMENT). Actual value: " + result.getMatch());
+                            c.assertNotNull(result.getScore(), "Score (case EXPERIMENT)");
                             c.assertTrue(result.getExperiment().getCode() === "TEST-EXPERIMENT" ||
-								result.getExperiment().getCode().startsWith("V3_EXPERIMENT_"), "Experiment");
-                            c.assertNull(result.getSample(), "Sample");
-                            c.assertNull(result.getDataSet(), "DataSet");
-                            c.assertNull(result.getMaterial(), "Material");
+								result.getExperiment().getCode().startsWith("V3_EXPERIMENT_"),
+								"Experiment (case EXPERIMENT)");
+                            c.assertNull(result.getSample(), "Sample (case EXPERIMENT)");
+                            c.assertNull(result.getDataSet(), "DataSet (case EXPERIMENT)");
+                            c.assertNull(result.getMaterial(), "Material (case EXPERIMENT)");
                         break;
                         case "SAMPLE":
 							var samplePermId = result.getObjectPermId().getPermId();
@@ -1694,25 +1695,29 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 								"ObjectIdentifier");
 							c.assertTrue(["Perm ID: " + samplePermId,
 								"Property 'Test Property Type': 20130412140147735-20"]
-								.includes(result.getMatch()), "Match");
-                            c.assertNotNull(result.getScore(), "Score");
-                            c.assertNull(result.getExperiment(), "Experiment");
+								.includes(result.getMatch()), "Match (case SAMPLE). Actual value: " +
+								result.getMatch());
+                            c.assertNotNull(result.getScore(), "Score (case SAMPLE)");
+                            c.assertNull(result.getExperiment(), "Experiment (case SAMPLE)");
                             c.assertTrue(result.getSample().getCode() === "PLATE-1" ||
-								result.getSample().getCode().startsWith("V3_SAMPLE_"), "Sample");
-                            c.assertNull(result.getDataSet(), "DataSet");
-                            c.assertNull(result.getMaterial(), "Material");
+								result.getSample().getCode().startsWith("V3_SAMPLE_"), "Sample (case SAMPLE)");
+                            c.assertNull(result.getDataSet(), "DataSet (case SAMPLE)");
+                            c.assertNull(result.getMaterial(), "Material (case SAMPLE)");
                         break;
                         case "MATERIAL":
-							c.assertEqual(result.getObjectPermId().getCode(), "H2O", "ObjectPermId 1");
-                            c.assertEqual(result.getObjectPermId().getTypeCode(), "COMPOUND", "ObjectPermId 2");
-                            c.assertEqual(result.getObjectIdentifier().getCode(), "H2O", "ObjectIdentifier 1");
-                            c.assertEqual(result.getObjectIdentifier().getTypeCode(), "COMPOUND", "ObjectIdentifier 2");
-                            c.assertEqual(result.getMatch(), "Identifier: H2O (COMPOUND)", "Match");
-                            c.assertNotNull(result.getScore(), "Score");
-                            c.assertNull(result.getExperiment(), "Experiment");
-                            c.assertNull(result.getSample(), "Sample");
-                            c.assertNull(result.getDataSet(), "DataSet");
-                            c.assertEqual(result.getMaterial().getCode(), "H2O", "Material");
+							c.assertEqual(result.getObjectPermId().getCode(), "H2O", "ObjectPermId 1 (case MATERIAL)");
+                            c.assertEqual(result.getObjectPermId().getTypeCode(), "COMPOUND",
+								"ObjectPermId 2 (case MATERIAL)");
+                            c.assertEqual(result.getObjectIdentifier().getCode(), "H2O",
+								"ObjectIdentifier 1 (case MATERIAL)");
+                            c.assertEqual(result.getObjectIdentifier().getTypeCode(), "COMPOUND",
+								"ObjectIdentifier 2 (case MATERIAL)");
+                            c.assertEqual(result.getMatch(), "Identifier: H2O (COMPOUND)", "Match (case MATERIAL)");
+                            c.assertNotNull(result.getScore(), "Score (case MATERIAL)");
+                            c.assertNull(result.getExperiment(), "Experiment (case MATERIAL)");
+                            c.assertNull(result.getSample(), "Sample (case MATERIAL)");
+                            c.assertNull(result.getDataSet(), "DataSet (case MATERIAL)");
+                            c.assertEqual(result.getMaterial().getCode(), "H2O", "Material (case MATERIAL)");
                         break;
 				    }
 				}
