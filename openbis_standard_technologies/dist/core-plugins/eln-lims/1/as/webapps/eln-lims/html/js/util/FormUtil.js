@@ -88,7 +88,7 @@ var FormUtil = new function() {
 		}
 		var allAnnotations = this.getAnnotationsFromField(stateFieldValue);
 		var typeAnnotations = {};
-        if(type === 'PARENTS' || !type) {
+        if(sample.parents && (type === 'PARENTS' || !type)) {
             for(var pIdx = 0; pIdx < sample.parents.length; pIdx++) {
                 var parentPermId =  sample.parents[pIdx].permId;
                 if(parentPermId in allAnnotations) {
@@ -96,7 +96,7 @@ var FormUtil = new function() {
                 }
             }
         }
-        if(type === 'CHILDREN' || !type) {
+        if(sample.children && (type === 'CHILDREN' || !type)) {
             for(var cIdx = 0; cIdx < sample.children.length; cIdx++) {
                 var childPermId =  sample.children[cIdx].permId;
                 if(childPermId in allAnnotations) {
@@ -138,7 +138,7 @@ var FormUtil = new function() {
 
     this.getAnnotationsFromSampleV3 = function(sample, type) {
         var typeAnnotations = {};
-        if(type === 'PARENTS' || !type) {
+        if(sample.parents && (type === 'PARENTS' || !type)) {
             for(var parentPermId in sample.parentsRelationships) {
                 var parentAnnotations = {};
                 for(var parentAnnotationKey in sample.parentsRelationships[parentPermId].parentAnnotations) {
@@ -147,7 +147,7 @@ var FormUtil = new function() {
                 typeAnnotations[parentPermId] = parentAnnotations;
             }
         }
-        if(type === 'CHILDREN' || !type) {
+        if(sample.children && (type === 'CHILDREN' || !type)) {
             for(var childPermId in sample.childrenRelationships) {
                 var childAnnotations = {};
                 for(var childAnnotationKey in sample.childrenRelationships[childPermId].childAnnotations) {
