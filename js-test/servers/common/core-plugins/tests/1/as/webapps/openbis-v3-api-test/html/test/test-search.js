@@ -16,7 +16,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				if (fCheckError) {
 					fCheckError(error);
 				} else {
-					c.fail(error.message);
+					c.fail(error ? error.message : "Unknown error.");
 				}
 				c.finish();
 			});
