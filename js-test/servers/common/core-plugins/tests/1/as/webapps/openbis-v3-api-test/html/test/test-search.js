@@ -12,7 +12,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 					try {
 						fCheck(facade, results.getObjects());
 					} catch (e) {
-						console.error("Exception.", e);
+						c.fail("Exception. " + e);
 						throw e;
 					} finally {
 						c.finish();
