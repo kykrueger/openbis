@@ -9,8 +9,14 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				c.ok("Login");
 				return fSearch(facade).then(function(results) {
 					c.ok("Got results");
-					fCheck(facade, results.getObjects());
-					c.finish();
+					try {
+						fCheck(facade, results.getObjects());
+					} catch (e) {
+						console.error("Exception.", e);
+						throw e;
+					} finally {
+						c.finish();
+					}
 				});
 			}).fail(function(error) {
 				if (fCheckError) {
