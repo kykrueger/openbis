@@ -17,7 +17,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 						} else {
 							c.fail(e.message);
 						}
-						console.error("Exception.", e);
+						console.error("Exception.", e.message);
 						throw e;
 					} finally {
 						c.finish();
