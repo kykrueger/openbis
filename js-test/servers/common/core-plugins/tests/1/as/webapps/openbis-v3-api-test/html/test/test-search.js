@@ -13,9 +13,9 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 						fCheck(facade, results.getObjects());
 					} catch (e) {
 						if (fCheckError) {
-							fCheckError(error);
+							fCheckError(e);
 						} else {
-							c.fail(error ? error.message : "Unknown error.");
+							c.fail(e.message);
 						}
 						console.error("Exception.", e);
 						throw e;
@@ -1655,6 +1655,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			}
 
 			var fCheck = function(facade, objects) {
+				['a'].blaBla();
 				c.assertEqual(objects.length, 10);
 				var prepopulatedExperimentsCount = 0;
 				var prepopulatedSamplesCount = 0;
@@ -1668,12 +1669,9 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 								|| dataSetPermId.startsWith("V3_DATA_SET_"), "DataSetPermId (" + dataSetPermId + ")");
 							c.assertEqual(result.getObjectIdentifier().getPermId(), dataSetPermId,
 								"ObjectIdentifier");
-                            c.assertTrue(["Perm ID: " + dataSetPermId,
-								"Property 'Test Property Type': 20130412140147735-20"]
-								.includes(result.getMatch()), "Match (case DATA_SET). Actual value: " + result.getMatch());
-							// c.assertTrue(match === "Perm ID: " + dataSetPermId ||
-							// 	match === "Property 'Test Property Type': 20130412140147735-20",
-							// 	"Match (case DATA_SET). Actual value: " + match);
+							c.assertTrue(match === "Perm ID: " + dataSetPermId ||
+								match === "Property 'Test Property Type': 20130412140147735-20",
+								"Match (case DATA_SET). Actual value: " + match);
                             c.assertNotNull(result.getScore(), "Score (case DATA_SET)");
                             c.assertNull(result.getExperiment(), "Experiment (case DATA_SET)");
                             c.assertNull(result.getSample(), "Sample (case DATA_SET)");
@@ -1791,6 +1789,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				for (var i = 0; i < objects.length; i++) {
 					var objectExperiment = objects[i];
 					var experimentPermId = objectExperiment.getObjectPermId().getPermId();
+					var match = objectExperiment.getMatch();
 					c.assertEqual(objectExperiment.getObjectKind(), "EXPERIMENT", "ObjectKind");
 					if (objectExperiment.getObjectKind === "20130412150049446-204") {
 						prepopulatedExperimentsCount++;
@@ -1798,9 +1797,9 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 					c.assertTrue(objectExperiment.getObjectIdentifier().getIdentifier() ===
 						"/TEST/TEST-PROJECT/TEST-EXPERIMENT" || objectExperiment.getObjectIdentifier().getIdentifier()
 							.startsWith("/TEST/TEST-PROJECT/V3_EXPERIMENT_"), "ObjectIdentifier");
-					c.assertTrue(["Perm ID: " + experimentPermId,
-						"Property 'Test Property Type': 20130412140147735-20"]
-						.includes(objectExperiment.getMatch()), "Match. Actual value: " + objectExperiment.getMatch());
+					c.assertTrue(match === "Perm ID: " + experimentPermId ||
+						match === "Property 'Test Property Type': 20130412140147735-20",
+						"Match. Actual value: " + match);
 					c.assertNotNull(objectExperiment.getScore(), "Score");
 					c.assertTrue(objectExperiment.getExperiment().getCode() === "TEST-EXPERIMENT" ||
 						objectExperiment.getExperiment().getCode().startsWith("V3_EXPERIMENT_"), "Experiment");
