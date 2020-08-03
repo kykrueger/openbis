@@ -10,6 +10,7 @@ import ContentTab from '@src/js/components/common/content/ContentTab.jsx'
 import TypeBrowser from './browser/TypeBrowser.jsx'
 import TypeSearch from './search/TypeSearch.jsx'
 import TypeForm from './form/TypeForm.jsx'
+import VocabularyForm from './form/VocabularyForm.jsx'
 
 const styles = () => ({
   container: {
@@ -40,6 +41,11 @@ class Types extends React.Component {
     const { object } = tab
     if (object.type === objectType.SEARCH) {
       return <TypeSearch objectId={object.id} />
+    } else if (
+      object.type === objectType.VOCABULARY_TYPE ||
+      object.type === objectType.NEW_VOCABULARY_TYPE
+    ) {
+      return <VocabularyForm object={object} />
     } else {
       return <TypeForm object={object} />
     }
@@ -53,6 +59,7 @@ class Types extends React.Component {
       [objectType.NEW_COLLECTION_TYPE]: 'New Collection Type ',
       [objectType.NEW_DATA_SET_TYPE]: 'New Data Set Type ',
       [objectType.NEW_MATERIAL_TYPE]: 'New Material Type ',
+      [objectType.NEW_VOCABULARY_TYPE]: 'New Vocabulary Type ',
       [objectType.SEARCH]: 'search: '
     }
 

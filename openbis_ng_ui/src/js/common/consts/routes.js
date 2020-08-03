@@ -168,6 +168,34 @@ const routes = {
       })
     }
   },
+  NEW_VOCABULARY_TYPE: {
+    format: params => {
+      return doFormat(params, '/new-vocabulary-type/:id', {
+        page: pages.TYPES,
+        type: objectTypes.NEW_VOCABULARY_TYPE
+      })
+    },
+    parse: path => {
+      return doParse(path, '/new-vocabulary-type/:id', {
+        page: pages.TYPES,
+        type: objectTypes.NEW_VOCABULARY_TYPE
+      })
+    }
+  },
+  VOCABULARY_TYPE: {
+    format: params => {
+      return doFormat(params, '/vocabulary-type/:id', {
+        page: pages.TYPES,
+        type: objectTypes.VOCABULARY_TYPE
+      })
+    },
+    parse: path => {
+      return doParse(path, '/vocabulary-type/:id', {
+        page: pages.TYPES,
+        type: objectTypes.VOCABULARY_TYPE
+      })
+    }
+  },
   USERS: {
     format: params => {
       return doFormat(params, '/users', {
