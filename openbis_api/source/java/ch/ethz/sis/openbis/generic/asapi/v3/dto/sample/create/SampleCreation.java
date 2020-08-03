@@ -20,18 +20,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.attachment.create.AttachmentCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.Relationship;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.create.ICreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.create.IObjectCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.CreationId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ICreationIdHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IPropertiesHolder;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ISamplePropertiesHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.IExperimentId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.IProjectId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdDeserializer;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.ISpaceId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.ITagId;
 import ch.systemsx.cisd.base.annotation.JsonObject;
@@ -40,7 +44,7 @@ import ch.systemsx.cisd.base.annotation.JsonObject;
  * @author pkupczyk
  */
 @JsonObject("as.dto.sample.create.SampleCreation")
-public class SampleCreation implements ICreation, ICreationIdHolder, IPropertiesHolder, ISamplePropertiesHolder, IObjectCreation
+public class SampleCreation implements ICreation, ICreationIdHolder, IPropertiesHolder, IObjectCreation
 {
     private static final long serialVersionUID = 1L;
 
@@ -60,8 +64,6 @@ public class SampleCreation implements ICreation, ICreationIdHolder, IProperties
 
     private Map<String, String> properties = new HashMap<String, String>();
 
-    private Map<String, ISampleId> sampleProperties = new HashMap<String, ISampleId>();
-
     private ISampleId containerId;
 
     private List<? extends ISampleId> componentIds;
@@ -69,6 +71,9 @@ public class SampleCreation implements ICreation, ICreationIdHolder, IProperties
     private List<? extends ISampleId> parentIds;
 
     private List<? extends ISampleId> childIds;
+
+    @JsonDeserialize(keyUsing = SampleIdDeserializer.class)
+    private Map<? extends ISampleId, Relationship> relationships = new HashMap<>();
 
     private List<AttachmentCreation> attachments;
 
@@ -174,6 +179,29 @@ public class SampleCreation implements ICreation, ICreationIdHolder, IProperties
         this.parentIds = parentIds;
     }
 
+    @SuppressWarnings("unchecked")
+    @JsonIgnore
+    public Relationship relationship(ISampleId sampleId)
+    {
+        Relationship relationship = relationships.get(sampleId);
+        if (relationship == null)
+        {
+            relationship = new Relationship();
+            ((Map<ISampleId, Relationship>) relationships).put(sampleId, relationship);
+        }
+        return relationship;
+    }
+
+    public Map<? extends ISampleId, Relationship> getRelationships()
+    {
+        return relationships;
+    }
+
+    public void setRelationships(Map<? extends ISampleId, Relationship> relationships)
+    {
+        this.relationships = relationships;
+    }
+
     public List<? extends ISampleId> getChildIds()
     {
         return childIds;
@@ -216,16 +244,6 @@ public class SampleCreation implements ICreation, ICreationIdHolder, IProperties
     public Map<String, String> getProperties()
     {
         return properties;
-    }
-
-    public void setSampleProperty(String propertyName, ISampleId sampleId)
-    {
-        sampleProperties.put(propertyName, sampleId);
-    }
-
-    public Map<String, ISampleId> getSampleProperties()
-    {
-        return sampleProperties;
     }
 
     @Override

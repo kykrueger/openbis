@@ -26,7 +26,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.NoSampleContainerS
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.NoSampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.search.NoSpaceSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinInformation;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
 
@@ -47,7 +47,7 @@ public class AbsenceConditionTranslator implements IConditionTranslator<ISearchC
     public void translate(final ISearchCriteria criterion, final TableMapper tableMapper, final List<Object> args, final StringBuilder sqlBuilder,
             final Map<String, JoinInformation> aliases, final Map<String, String> dataTypeByPropertyName)
     {
-        final String alias = CriteriaTranslator.MAIN_TABLE_ALIAS;
+        final String alias = SearchCriteriaTranslator.MAIN_TABLE_ALIAS;
         sqlBuilder.append(alias).append(PERIOD);
         if (criterion instanceof NoSampleContainerSearchCriteria)
         {

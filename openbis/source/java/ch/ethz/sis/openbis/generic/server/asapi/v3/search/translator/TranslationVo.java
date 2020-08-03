@@ -21,15 +21,14 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearchObjectFetchOptions;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinInformation;
 
 public class TranslationVo
@@ -60,6 +59,8 @@ public class TranslationVo
     private String idColumnName;
 
     private AuthorisationInformation authorisationInformation;
+
+    private boolean useHeadline;
 
     public Long getUserId()
     {
@@ -190,6 +191,16 @@ public class TranslationVo
     public void setAuthorisationInformation(final AuthorisationInformation authorisationInformation)
     {
         this.authorisationInformation = authorisationInformation;
+    }
+
+    public boolean isUseHeadline()
+    {
+        return useHeadline;
+    }
+
+    public void setUseHeadline(final boolean useHeadline)
+    {
+        this.useHeadline = useHeadline;
     }
 
 }

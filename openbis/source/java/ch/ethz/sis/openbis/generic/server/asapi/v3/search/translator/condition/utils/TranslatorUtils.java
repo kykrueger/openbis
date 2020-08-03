@@ -16,25 +16,62 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils;
 
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator.*;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.*;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCriteriaTranslator.DATE_FORMAT;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCriteriaTranslator.DATE_WITHOUT_TIME_FORMAT;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCriteriaTranslator.DATE_WITH_SHORT_TIME_FORMAT;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCriteriaTranslator.MAIN_TABLE_ALIAS;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.*;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.*;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.CONTROLLED_VOCABULARY_TERM_TABLE;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.MATERIALS_TABLE;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.PROJECTS_TABLE;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.RELATIONSHIP_TYPES_TABLE;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SPACES_TABLE;
 
 import java.text.ParseException;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.*;
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.EntityWithPropertiesSortOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractDateObjectValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractDateValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractNumberValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractStringValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AnyStringValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateEarlierThanOrEqualToValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateEqualToValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateLaterThanOrEqualToValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateObjectEarlierThanOrEqualToValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateObjectEqualToValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateObjectLaterThanOrEqualToValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.IDate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ITimeZone;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.NumberEqualToValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.NumberGreaterThanOrEqualToValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.NumberGreaterThanValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.NumberLessThanOrEqualToValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.NumberLessThanValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringContainsExactlyValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringContainsValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringEndsWithValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringEqualToValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringGreaterThanOrEqualToValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringGreaterThanValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringLessThanOrEqualToValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringLessThanValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringStartsWithValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.TimeZone;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.*;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.IAliasFactory;
 import ch.systemsx.cisd.openbis.generic.shared.basic.BasicConstant;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
@@ -58,16 +95,21 @@ public class TranslatorUtils
     }
 
     public static void translateStringComparison(final String tableAlias, final String columnName,
-            final AbstractStringValue value, final PSQLTypes casting, final StringBuilder sqlBuilder, final List<Object> args) {
+            final AbstractStringValue value, final PSQLTypes casting, final StringBuilder sqlBuilder,
+            final List<Object> args)
+    {
         final boolean equalsToComparison = (value.getClass() == StringEqualToValue.class);
-        if (equalsToComparison) {
+        if (equalsToComparison)
+        {
             sqlBuilder.append(LOWER).append(LP);
         }
         sqlBuilder.append(tableAlias).append(PERIOD).append(columnName);
-        if (equalsToComparison) {
+        if (equalsToComparison)
+        {
             sqlBuilder.append(RP);
         }
-        if (casting != null) {
+        if (casting != null)
+        {
             sqlBuilder.append(DOUBLE_COLON).append(casting);
         }
 
@@ -95,6 +137,22 @@ public class TranslatorUtils
                 sqlBuilder.append(ILIKE).append(SP).append(QU);
                 args.add(toPSQLWildcards(finalValue));
             }
+        } else if (valueClass == StringLessThanValue.class)
+        {
+            sqlBuilder.append(LT).append(SP).append(QU);
+            args.add(finalValue);
+        } else if (valueClass == StringLessThanOrEqualToValue.class)
+        {
+            sqlBuilder.append(LE).append(SP).append(QU);
+            args.add(finalValue);
+        } else if (valueClass == StringGreaterThanValue.class)
+        {
+            sqlBuilder.append(GT).append(SP).append(QU);
+            args.add(finalValue);
+        } else if (valueClass == StringGreaterThanOrEqualToValue.class)
+        {
+            sqlBuilder.append(GE).append(SP).append(QU);
+            args.add(finalValue);
         } else if (valueClass == StringStartsWithValue.class)
         {
             sqlBuilder.append(ILIKE).append(SP).append(QU);
@@ -103,7 +161,7 @@ public class TranslatorUtils
         {
             sqlBuilder.append(ILIKE).append(SP).append(QU);
             args.add(PERCENT + toPSQLWildcards(finalValue));
-        } else if (valueClass == StringContainsValue.class)
+        } else if (valueClass == StringContainsValue.class || valueClass == StringContainsExactlyValue.class)
         {
             sqlBuilder.append(ILIKE).append(SP).append(QU);
             args.add(PERCENT + toPSQLWildcards(finalValue) + PERCENT);
@@ -146,17 +204,25 @@ public class TranslatorUtils
                 case PERCENT:
                     // Fall through.
                 case BACKSLASH:
+                {
                     sb.append(BACKSLASH).append(ch);
                     break;
+                }
                 case ASTERISK:
+                {
                     sb.append(PERCENT);
                     break;
+                }
                 case QU:
+                {
                     sb.append(UNDERSCORE);
                     break;
+                }
                 default:
+                {
                     sb.append(ch);
                     break;
+                }
             }
         });
         return sb.toString();
@@ -197,7 +263,7 @@ public class TranslatorUtils
         final JoinInformation joinInformation1 = new JoinInformation();
         joinInformation1.setJoinType(joinType);
         joinInformation1.setMainTable(tableMapper.getEntitiesTable());
-        joinInformation1.setMainTableAlias(CriteriaTranslator.MAIN_TABLE_ALIAS);
+        joinInformation1.setMainTableAlias(SearchCriteriaTranslator.MAIN_TABLE_ALIAS);
         joinInformation1.setMainTableIdField(ID_COLUMN);
         joinInformation1.setSubTable(tableMapper.getValuesTable());
         joinInformation1.setSubTableAlias(valuesTableAlias);
@@ -225,7 +291,8 @@ public class TranslatorUtils
         result.put(tableMapper.getAttributeTypesTable(), joinInformation3);
 
         final JoinInformation joinInformation4 = new JoinInformation();
-        joinInformation4.setJoinType(joinType);
+        // Workaroung for the issue with Postgres 12, where inner join causes problems.
+        joinInformation4.setJoinType(JoinType.LEFT);
         joinInformation4.setMainTable(tableMapper.getAttributeTypesTable());
         joinInformation4.setMainTableAlias(attributeTypesTableAlias);
         joinInformation4.setMainTableIdField(tableMapper.getAttributeTypesTableDataTypeIdField());
@@ -249,10 +316,25 @@ public class TranslatorUtils
         joinInformation6.setMainTable(tableMapper.getValuesTable());
         joinInformation6.setMainTableAlias(valuesTableAlias);
         joinInformation6.setMainTableIdField(MATERIAL_PROP_COLUMN);
-        joinInformation6.setSubTable(MATERIALS_TABLE);
+        joinInformation6.setSubTable(TableMapper.MATERIAL.getEntitiesTable());
         joinInformation6.setSubTableAlias(aliasFactory.createAlias());
         joinInformation6.setSubTableIdField(ColumnNames.ID_COLUMN);
-        result.put(MATERIALS_TABLE, joinInformation6);
+        result.put(TableMapper.MATERIAL.getEntitiesTable(), joinInformation6);
+
+        if (tableMapper == TableMapper.SAMPLE || tableMapper == TableMapper.EXPERIMENT
+                || tableMapper == TableMapper.DATA_SET)
+        {
+            final String samplePropertyAlias = aliasFactory.createAlias();
+            final JoinInformation joinInformation7 = new JoinInformation();
+            joinInformation7.setJoinType(JoinType.LEFT);
+            joinInformation7.setMainTable(TableMapper.SAMPLE.getValuesTable());
+            joinInformation7.setMainTableAlias(valuesTableAlias);
+            joinInformation7.setMainTableIdField(SAMPLE_PROP_COLUMN);
+            joinInformation7.setSubTable(TableMapper.SAMPLE.getEntitiesTable());
+            joinInformation7.setSubTableAlias(samplePropertyAlias);
+            joinInformation7.setSubTableIdField(ColumnNames.ID_COLUMN);
+            result.put(SAMPLE_PROP_COLUMN, joinInformation7);
+        }
 
         return result;
     }
@@ -264,7 +346,7 @@ public class TranslatorUtils
         final JoinInformation joinInformation = new JoinInformation();
         joinInformation.setJoinType(JoinType.INNER);
         joinInformation.setMainTable(tableMapper.getEntitiesTable());
-        joinInformation.setMainTableAlias(CriteriaTranslator.MAIN_TABLE_ALIAS);
+        joinInformation.setMainTableAlias(SearchCriteriaTranslator.MAIN_TABLE_ALIAS);
         joinInformation.setMainTableIdField(tableMapper.getEntitiesTableEntityTypeIdField());
         joinInformation.setSubTable(tableMapper.getEntityTypesTable());
         joinInformation.setSubTableAlias(aliasFactory.createAlias());
@@ -282,7 +364,7 @@ public class TranslatorUtils
         final JoinInformation joinInformation1 = new JoinInformation();
         joinInformation1.setJoinType(JoinType.INNER);
         joinInformation1.setMainTable(tableMapper.getEntitiesTable());
-        joinInformation1.setMainTableAlias(CriteriaTranslator.MAIN_TABLE_ALIAS);
+        joinInformation1.setMainTableAlias(SearchCriteriaTranslator.MAIN_TABLE_ALIAS);
         joinInformation1.setMainTableIdField(ID_COLUMN);
         joinInformation1.setSubTable(tableMapper.getRelationshipsTable());
         joinInformation1.setSubTableAlias(relationshipsTableAlias);
@@ -351,7 +433,7 @@ public class TranslatorUtils
                 final TimeZone timeZoneImpl = (TimeZone) timeZone;
                 final ZoneId zoneId = ZoneId.ofOffset("UTC", ZoneOffset.ofHours(-timeZoneImpl.getHourOffset()));
 
-                sqlBuilder.append(AT_TIME_ZONE).append(SP).append(SQ).append(zoneId.getId()).append(SQ);
+                sqlBuilder.append(SP).append(AT_TIME_ZONE).append(SP).append(SQ).append(zoneId.getId()).append(SQ);
             }
         }
     }
@@ -405,7 +487,8 @@ public class TranslatorUtils
         }
     }
 
-    public static void appendDateComparatorOp(final Object fieldValue, final StringBuilder sqlBuilder)
+    public static void appendDateComparatorOp(final IDate fieldValue, final StringBuilder sqlBuilder,
+            final List<Object> args)
     {
         if (fieldValue instanceof DateEqualToValue || fieldValue instanceof DateObjectEqualToValue)
         {
@@ -422,14 +505,22 @@ public class TranslatorUtils
         }
         sqlBuilder.append(SP);
 
-        final boolean bareDateValue = fieldValue instanceof AbstractDateValue && TranslatorUtils.isDateWithoutTime(((AbstractDateValue) fieldValue).getValue());
+        final boolean bareDateValue = fieldValue instanceof AbstractDateValue &&
+                TranslatorUtils.isDateWithoutTime(((AbstractDateValue) fieldValue).getValue());
+
         if (bareDateValue)
         {
-            sqlBuilder.append(DATE).append(LP).append(QU).append(RP);
-        } else
-        {
-            sqlBuilder.append(QU);
+            sqlBuilder.append(LP);
         }
+
+        sqlBuilder.append(QU).append(DOUBLE_COLON).append(TIMESTAMP);
+
+        if (bareDateValue)
+        {
+            sqlBuilder.append(RP).append(DOUBLE_COLON).append(DATE);
+        }
+
+        TranslatorUtils.addDateValueToArgs(fieldValue, args);
     }
 
     public static boolean isPropertyInternal(final String propertyName)
@@ -488,7 +579,7 @@ public class TranslatorUtils
         return sortingCriteriaFieldName.startsWith(EntityWithPropertiesSortOptions.PROPERTY);
     }
 
-    public static Object convertStringToType(final String value, final Class klass)
+    public static Object convertStringToType(final String value, final Class<?> klass)
     {
         // Integer numbers need to be converted from string to a real number first, because they can be presented with decimal point.
         if (Boolean.class == klass)
@@ -539,7 +630,22 @@ public class TranslatorUtils
     }
 
     /**
-     * Appends one of the the following texts to sqlBuilder depending on the value of {@code samplesTableAlias}. If it is {@code null} the second
+     * Appends the following test to {@code sqlBuilder}.
+     * <pre>
+     *     t0.code || '(' || [entityTypesTableAlias].code || ')'
+     * </pre>
+     * @param sqlBuilder query builder.
+     * @param entityTypesTableAlias alias of the entity type table.
+     */
+    public static void buildTypeCodeIdentifierConcatenationString(final StringBuilder sqlBuilder, final String entityTypesTableAlias)
+    {
+        sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(SP).append(BARS).append(SP)
+                .append(SQ).append(" (").append(SQ).append(SP).append(BARS).append(SP).append(entityTypesTableAlias).append(PERIOD)
+                .append(CODE_COLUMN).append(SP).append(BARS).append(SP).append(SQ).append(")").append(SQ);
+    }
+
+    /**
+     * Appends one of the the following texts to {@code sqlBuilder} depending on the value of {@code samplesTableAlias}. If it is {@code null} the second
      * version will be appended.
      *
      * <pre>
@@ -548,7 +654,6 @@ public class TranslatorUtils
      * <pre>
      *     '/' || coalesce([spacesTableAlias].code || '/', '') || coalesce([projectsTableAlias].code || '/', '') || t0.code
      * </pre>
-     *
      * @param sqlBuilder query builder.
      * @param spacesTableAlias alias of the spaces table.
      * @param projectsTableAlias alias of the projects table.
@@ -574,7 +679,8 @@ public class TranslatorUtils
             appendCoalesce(sqlBuilder, samplesTableAlias, colon);
         }
 
-        sqlBuilder.append(SP).append(LOWER).append(LP).append(MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(RP).append(SP);
+        sqlBuilder.append(SP).append(LOWER).append(LP).append(MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN)
+                .append(RP);
     }
 
     /**
@@ -583,7 +689,6 @@ public class TranslatorUtils
      * <pre>
      *     coalesce([alias].code || '[separator]', '') ||
      * </pre>
-     *
      * @param sqlBuilder query builder.
      * @param alias alias of the table.
      * @param separator string to be appender at the end in the first parameter.

@@ -16,11 +16,12 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator.MAIN_TABLE_ALIAS;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCriteriaTranslator.MAIN_TABLE_ALIAS;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.*;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils.appendStringComparatorOp;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils.buildFullIdentifierConcatenationString;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.SAMPLE_IDENTIFIER_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.PROJECTS_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SPACES_TABLE;
 
@@ -73,7 +74,14 @@ public class IdentifierSearchConditionTranslator implements IConditionTranslator
         final String samplesTableAlias = entitiesTable.equals(samplesTableName)
                 ? aliases.get(prefix + entitiesTable).getSubTableAlias() : null;
 
-        buildFullIdentifierConcatenationString(sqlBuilder, spacesTableAlias, projectsTableAlias, samplesTableAlias);
+        if (tableMapper != TableMapper.SAMPLE)
+        {
+            buildFullIdentifierConcatenationString(sqlBuilder, spacesTableAlias, projectsTableAlias, samplesTableAlias);
+        } else
+        {
+            sqlBuilder.append(LOWER).append(LP).append(MAIN_TABLE_ALIAS).append(PERIOD)
+                    .append(SAMPLE_IDENTIFIER_COLUMN).append(RP);
+        }
         appendStringComparatorOp(fieldValue.getClass(), fieldValue.getValue().toLowerCase(), sqlBuilder, args);
     }
 

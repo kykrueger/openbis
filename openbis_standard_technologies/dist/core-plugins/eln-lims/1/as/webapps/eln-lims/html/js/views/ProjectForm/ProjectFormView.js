@@ -192,6 +192,9 @@ function ProjectFormView(projectFormController, projectFormModel) {
 		var $identificationInfo = $("<div>", { id : "project-identification-info" });
 
         $identificationInfo.append($("<legend>").append("Identification Info"));
+        if (this._projectFormModel.mode !== FormMode.CREATE) {
+            $identificationInfo.append(FormUtil.getFieldForLabelWithText("PermId", this._projectFormModel.project.permId));
+		}
 
 		var spaceCode = this._projectFormModel.project.spaceCode;
 		if (this._projectFormModel.mode !== FormMode.CREATE) {

@@ -16,7 +16,7 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.property;
 
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ILocalSearchManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -74,7 +74,7 @@ public class SearchPropertyTypesOperationExecutor extends
     }
 
     @Override
-    protected ISearchManager<PropertyTypeSearchCriteria, PropertyType, Long> getSearchManager() {
+    protected ILocalSearchManager<PropertyTypeSearchCriteria, PropertyType, Long> getSearchManager() {
         throw new RuntimeException("This method is not implemented yet.");
     }
 

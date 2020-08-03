@@ -2,7 +2,7 @@
  * Class automatically generated with
  * {@link ch.ethz.sis.openbis.generic.shared.api.v3.dto.generators.DtoGenerator}
  */
-define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
+define([ "stjs", "util/Exceptions", "as/dto/common/Relationship" ], function(stjs, exceptions, Relationship) {
 	var Sample = function() {
 	};
 	stjs.extend(Sample, null, [], function(constructor, prototype) {
@@ -27,7 +27,9 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		prototype.materialProperties = null;
 		prototype.sampleProperties = null;
 		prototype.parents = null;
+		prototype.parentsRelationships = null;
 		prototype.children = null;
+		prototype.childrenRelationships = null;
 		prototype.container = null;
 		prototype.components = null;
 		prototype.dataSets = null;
@@ -202,6 +204,23 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		prototype.setParents = function(parents) {
 			this.parents = parents;
 		};
+		prototype.getParentsRelationships = function() {
+			if (this.getFetchOptions() && this.getFetchOptions().hasParents()) {
+				return this.parentsRelationships;
+			} else {
+				throw new exceptions.NotFetchedException("Parents has not been fetched.");
+			}
+		};
+		prototype.getParentRelationship = function(sampleId) {
+			var relationships = this.getParentsRelationships();
+			if (relationships == null) {
+				return new Relationship();
+			}
+			return relationships[sampleId];
+		};
+		prototype.setParentsRelationships = function(parentsRelationships) {
+			this.parentsRelationships = parentsRelationships;
+		};
 		prototype.getChildren = function() {
 			if (this.getFetchOptions() && this.getFetchOptions().hasChildren()) {
 				return this.children;
@@ -211,6 +230,23 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		};
 		prototype.setChildren = function(children) {
 			this.children = children;
+		};
+		prototype.getChildrenRelationships = function() {
+			if (this.getFetchOptions() && this.getFetchOptions().hasChildren()) {
+				return this.childrenRelationships;
+			} else {
+				throw new exceptions.NotFetchedException("Children has not been fetched.");
+			}
+		};
+		prototype.getChildRelationship = function(sampleId) {
+			var relationships = this.getChildrenRelationships();
+			if (relationships == null) {
+				return new Relationship();
+			}
+			return relationships[sampleId];
+		};
+		prototype.setChildrenRelationships = function(childrenRelationships) {
+			this.childrenRelationships = childrenRelationships;
 		};
 		prototype.getContainer = function() {
 			if (this.getFetchOptions() && this.getFetchOptions().hasContainer()) {
@@ -321,9 +357,17 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 			name : "List",
 			arguments : [ "Sample" ]
 		},
+		parentsRelationships : {
+			name : "Map",
+			arguments : [ null, "Relationship" ]
+		},
 		children : {
 			name : "List",
 			arguments : [ "Sample" ]
+		},
+		childrenRelationships : {
+			name : "Map",
+			arguments : [ null, "Relationship" ]
 		},
 		container : "Sample",
 		components : {

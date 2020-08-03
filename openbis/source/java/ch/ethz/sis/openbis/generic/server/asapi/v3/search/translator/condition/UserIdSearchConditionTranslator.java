@@ -22,7 +22,7 @@ import java.util.Map;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractStringValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.UserIdSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinInformation;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
 
@@ -51,7 +51,7 @@ public class UserIdSearchConditionTranslator implements IConditionTranslator<Use
         if (criterion.getFieldType() == ATTRIBUTE)
         {
             final AbstractStringValue value = criterion.getFieldValue();
-            sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(ColumnNames.USER_COLUMN).append(SP).append(EQ).append(SP).append(QU)
+            sqlBuilder.append(SearchCriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(ColumnNames.USER_COLUMN).append(SP).append(EQ).append(SP).append(QU)
                     .append(NL);
             args.add(value.getValue());
         } else

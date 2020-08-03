@@ -26,7 +26,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleParentsSearc
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PEMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 
 import java.util.Collection;
@@ -43,9 +43,9 @@ public class MaterialSearchManager extends AbstractCompositeEntitySearchManager<
 {
 
     public MaterialSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
-            final IID2PETranslator idsTranslator)
+            final IID2PEMapper<Long, Long> idsMapper)
     {
-        super(searchDAO, authProvider, idsTranslator);
+        super(searchDAO, authProvider, idsMapper);
     }
 
     @Override
@@ -74,7 +74,7 @@ public class MaterialSearchManager extends AbstractCompositeEntitySearchManager<
 
     @Override
     public Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation,
-            final MaterialSearchCriteria criteria, final SortOptions<Material> sortOptions,
+            final MaterialSearchCriteria criteria,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName) {
         if (criteria.getCriteria().stream().anyMatch((criterion) -> criterion instanceof PermIdSearchCriteria))
         {

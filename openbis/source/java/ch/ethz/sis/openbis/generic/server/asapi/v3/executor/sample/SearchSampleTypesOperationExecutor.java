@@ -18,6 +18,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.sample;
 
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ILocalSearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SampleTypeSearchManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -79,7 +80,7 @@ public class SearchSampleTypesOperationExecutor
     }
 
     @Override
-    protected ISearchManager<SampleTypeSearchCriteria, SampleType, Long> getSearchManager() {
+    protected ILocalSearchManager<SampleTypeSearchCriteria, SampleType, Long> getSearchManager() {
         return sampleTypeSearchManager;
     }
 

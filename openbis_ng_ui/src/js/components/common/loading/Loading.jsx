@@ -13,7 +13,7 @@ const styles = theme => ({
     position: 'absolute',
     width: '100%',
     height: '100%',
-    zIndex: 10000,
+    zIndex: 1000,
     backgroundColor: theme.palette.background.paper,
     opacity: 0.6,
     textAlign: 'center'
@@ -22,7 +22,7 @@ const styles = theme => ({
     position: 'absolute',
     top: '20%',
     left: 'calc(50% - 20px)',
-    zIndex: 10001
+    zIndex: 1001
   }
 })
 

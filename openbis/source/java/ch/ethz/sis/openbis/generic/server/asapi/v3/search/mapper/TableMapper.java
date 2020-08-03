@@ -36,60 +36,75 @@ public enum TableMapper
 {
 
     SAMPLE(SAMPLES_VIEW, SAMPLE_TYPE_COLUMN, PROPERTY_TYPES_TABLE, DATA_TYPE_COLUMN, SAMPLE_TYPES_TABLE,
-            SAMPLE_TYPE_PROPERTY_TYPE_TABLE, SAMPLE_TYPE_COLUMN, PROPERTY_TYPE_COLUMN, SAMPLE_PROPERTIES_TABLE, SAMPLE_COLUMN,
-            SAMPLE_TYPE_PROPERTY_TYPE_COLUMN, SAMPLE_RELATIONSHIPS_ALL_TABLE, PARENT_SAMPLE_COLUMN, CHILD_SAMPLE_COLUMN, DATA_VIEW,
-            SAMPLE_COLUMN, SAMPLE_COLUMN, EntityKind.SAMPLE),
+            SAMPLE_TYPE_PROPERTY_TYPE_TABLE, SAMPLE_TYPE_COLUMN, PROPERTY_TYPE_COLUMN, SAMPLE_PROPERTIES_TABLE,
+            SAMPLE_COLUMN, SAMPLE_TYPE_PROPERTY_TYPE_COLUMN, SAMPLE_RELATIONSHIPS_VIEW, PARENT_SAMPLE_COLUMN,
+            CHILD_SAMPLE_COLUMN, DATA_VIEW, SAMPLE_COLUMN, SAMPLE_COLUMN, EntityKind.SAMPLE, true, true),
 
     SAMPLE_TYPE(SAMPLE_TYPES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null,
-            null, null, null, null, EntityKind.SAMPLE),
+            null, null, null, null, EntityKind.SAMPLE, false, false),
 
     EXPERIMENT(EXPERIMENTS_VIEW, EXPERIMENT_TYPE_COLUMN, PROPERTY_TYPES_TABLE, DATA_TYPE_COLUMN, EXPERIMENT_TYPES_TABLE,
-            EXPERIMENT_TYPE_PROPERTY_TYPE_TABLE, EXPERIMENT_TYPE_COLUMN, PROPERTY_TYPE_COLUMN, EXPERIMENT_PROPERTIES_TABLE, EXPERIMENT_COLUMN,
-            EXPERIMENT_TYPE_PROPERTY_TYPE_COLUMN, null, null, null, DATA_VIEW, EXPERIMENT_COLUMN, EXPERIMENT_COLUMN, EntityKind.EXPERIMENT),
+            EXPERIMENT_TYPE_PROPERTY_TYPE_TABLE, EXPERIMENT_TYPE_COLUMN, PROPERTY_TYPE_COLUMN,
+            EXPERIMENT_PROPERTIES_TABLE, EXPERIMENT_COLUMN, EXPERIMENT_TYPE_PROPERTY_TYPE_COLUMN, null, null, null,
+            DATA_VIEW, EXPERIMENT_COLUMN, EXPERIMENT_COLUMN, EntityKind.EXPERIMENT, true, true),
 
-    EXPERIMENT_TYPE(EXPERIMENT_TYPES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
-            EntityKind.EXPERIMENT),
+    EXPERIMENT_TYPE(EXPERIMENT_TYPES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null,
+            null, null, null, null, EntityKind.EXPERIMENT, false, false),
 
-    DATA_SET(DATA_VIEW, DATA_SET_TYPE_COLUMN, PROPERTY_TYPES_TABLE, DATA_TYPE_COLUMN, DATA_SET_TYPES_TABLE, DATA_SET_TYPE_PROPERTY_TYPE_TABLE,
-            DATA_SET_TYPE_COLUMN, PROPERTY_TYPE_COLUMN, DATA_SET_PROPERTIES_TABLE, DATA_SET_COLUMN, DATA_SET_TYPE_PROPERTY_TYPE_COLUMN,
-            DATA_SET_RELATIONSHIPS_ALL_TABLE, DATA_PARENT_COLUMN, DATA_CHILD_COLUMN, DATA_VIEW, ID_COLUMN, DATA_ID_COLUMN, EntityKind.DATA_SET),
+    DATA_SET(DATA_VIEW, DATA_SET_TYPE_COLUMN, PROPERTY_TYPES_TABLE, DATA_TYPE_COLUMN, DATA_SET_TYPES_TABLE,
+            DATA_SET_TYPE_PROPERTY_TYPE_TABLE, DATA_SET_TYPE_COLUMN, PROPERTY_TYPE_COLUMN, DATA_SET_PROPERTIES_TABLE,
+            DATA_SET_COLUMN, DATA_SET_TYPE_PROPERTY_TYPE_COLUMN, DATA_SET_RELATIONSHIPS_VIEW, DATA_PARENT_COLUMN,
+            DATA_CHILD_COLUMN, DATA_VIEW, ID_COLUMN, DATA_ID_COLUMN, EntityKind.DATA_SET, true, true),
 
-    DATA_SET_TYPE(DATA_SET_TYPES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
-            EntityKind.DATA_SET),
+    DATA_SET_TYPE(DATA_SET_TYPES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null,
+            null, null, null, EntityKind.DATA_SET, false, false),
 
     MATERIAL(MATERIALS_TABLE, MATERIAL_TYPE_COLUMN, PROPERTY_TYPES_TABLE, DATA_TYPE_COLUMN, MATERIAL_TYPES_TABLE,
-            MATERIAL_TYPE_PROPERTY_TYPE_TABLE, MATERIAL_TYPE_COLUMN, PROPERTY_TYPE_COLUMN, MATERIAL_PROPERTIES_TABLE, MATERIAL_COLUMN,
-            MATERIAL_TYPE_PROPERTY_TYPE_COLUMN, null, null, null, DATA_VIEW, MATERIAL_COLUMN, MATERIAL_COLUMN, EntityKind.MATERIAL),
+            MATERIAL_TYPE_PROPERTY_TYPE_TABLE, MATERIAL_TYPE_COLUMN, PROPERTY_TYPE_COLUMN, MATERIAL_PROPERTIES_TABLE,
+            MATERIAL_COLUMN, MATERIAL_TYPE_PROPERTY_TYPE_COLUMN, null, null, null, DATA_VIEW, MATERIAL_COLUMN,
+            MATERIAL_COLUMN, EntityKind.MATERIAL, true, false),
 
-    MATERIAL_TYPE(MATERIAL_TYPES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
-            EntityKind.MATERIAL),
+    MATERIAL_TYPE(MATERIAL_TYPES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null,
+            null, null, null, EntityKind.MATERIAL, false, false),
 
-    PERSON(PERSONS_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
+    PERSON(PERSONS_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+            null, null, true, false),
 
-    PROJECT(PROJECTS_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
+    PROJECT(PROJECTS_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+            null, null, true, true),
 
-    SPACE(SPACES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
+    SPACE(SPACES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+            null, true, false),
 
-    TAG(METAPROJECTS_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
+    TAG(METAPROJECTS_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+            null, null, false, false),
 
-    SEMANTIC_ANNOTATION(SEMANTIC_ANNOTATIONS_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
+    SEMANTIC_ANNOTATION(SEMANTIC_ANNOTATIONS_TABLE, null, null, null, null, null, null, null, null, null, null, null,
+            null, null, null, null, null, null, false, false),
 
-    PROPERTY_TYPE(PROPERTY_TYPES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
+    PROPERTY_TYPE(PROPERTY_TYPES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null,
+            null, null, null, null, true, false),
 
-    SAMPLE_PROPERTY_ASSIGNMENT(SAMPLE_TYPE_PROPERTY_TYPE_TABLE, null, null, null, null, null, SAMPLE_TYPE_COLUMN, null, null, null, null, null, null, null, null,
-            null, null, EntityKind.SAMPLE),
+    SAMPLE_PROPERTY_ASSIGNMENT(SAMPLE_TYPE_PROPERTY_TYPE_TABLE, null, null, null, null, null, SAMPLE_TYPE_COLUMN, null,
+            null, null, null, null, null, null, null, null, null, EntityKind.SAMPLE, true, false),
 
-    CONTENT_COPIES(CONTENT_COPIES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
+    CONTENT_COPIES(CONTENT_COPIES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null,
+            null, null, null, null, true, false),
 
-    EXTERNAL_DATA(EXTERNAL_DATA_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
+    EXTERNAL_DATA(EXTERNAL_DATA_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null,
+            null, null, null, null, false, false),
 
-    EXTERNAL_DMS(EXTERNAL_DATA_MANAGEMENT_SYSTEMS_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
+    EXTERNAL_DMS(EXTERNAL_DATA_MANAGEMENT_SYSTEMS_TABLE, null, null, null, null, null, null, null, null, null, null,
+            null, null, null, null, null, null, null, false, false),
 
-    FILE_FORMAT_TYPES(FILE_FORMAT_TYPES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
+    FILE_FORMAT_TYPES(FILE_FORMAT_TYPES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null,
+            null, null, null, null, null, false, false),
 
-    LOCATOR_TYPES(LOCATOR_TYPES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null),
+    LOCATOR_TYPES(LOCATOR_TYPES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null,
+            null, null, null, null, false, false),
 
-    CONTROLLED_VOCABULARY_TERMS(CONTROLLED_VOCABULARY_TERM_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+    CONTROLLED_VOCABULARY_TERMS(CONTROLLED_VOCABULARY_TERM_TABLE, null, null, null, null, null, null, null, null, null,
+            null, null, null, null, null, null, null, null, true, false);
 
     static
     {
@@ -116,6 +131,9 @@ public enum TableMapper
 
         initDataSetFieldToSQLTypeMap();
         initDataSetSQLTypeToFieldsMap();
+
+        initMaterialsFieldToSQLTypeMap();
+        initMaterialsSQLTypeToFieldsMap();
 
         initDataSetTypeFieldToSQLTypeMap();
         initDataSetTypeSQLTypeToFieldsMap();
@@ -189,12 +207,18 @@ public enum TableMapper
 
     private Map<PSQLTypes, Set<String>> sqlTypeToFieldsMap = new HashMap<>();
 
+    private final boolean withRegistrator;
+
+    private final boolean withModifier;
+
     TableMapper(final String entitiesTable, final String entitiesTableEntityTypeIdField, final String attributeTypesTable,
             final String attributeTypesTableDataTypeIdField, final String entityTypesTable, final String entityTypesAttributeTypesTable,
             final String entityTypesAttributeTypesTableEntityTypeIdField, final String entityTypesAttributeTypesTableAttributeTypeIdField,
             final String valuesTable, final String valuesTableEntityIdField, final String valuesTableEntityTypeAttributeTypeIdField,
             final String relationshipsTable, final String relationshipsTableParentIdField, final String relationshipsTableChildIdField,
-            final String dataTable, final String dataTableEntityIdField, final String metaprojectAssignmentsEntityIdField, final EntityKind entityKind)
+            final String dataTable, final String dataTableEntityIdField,
+            final String metaprojectAssignmentsEntityIdField, final EntityKind entityKind, final boolean withRegistrator,
+            final boolean withModifier)
     {
         this.entitiesTable = entitiesTable;
         this.entitiesTableEntityTypeIdField = entitiesTableEntityTypeIdField;
@@ -214,6 +238,8 @@ public enum TableMapper
         this.dataTableEntityIdField = dataTableEntityIdField;
         this.metaprojectAssignmentsEntityIdField = metaprojectAssignmentsEntityIdField;
         this.entityKind = entityKind;
+        this.withRegistrator = withRegistrator;
+        this.withModifier = withModifier;
     }
 
     public static TableMapper toEntityMapper(final EntityKind entityKind, final boolean isEntityType)
@@ -316,136 +342,99 @@ public enum TableMapper
         return entityKind;
     }
 
+    public boolean hasRegistrator()
+    {
+        return withRegistrator;
+    }
+
+    public boolean hasModifier()
+    {
+        return withModifier;
+    }
+
     private static void initSampleFieldToSQLTypeMap()
     {
         final Map<String, PSQLTypes> fields = SAMPLE.fieldToSQLTypeMap;
         fields.put(CODE_COLUMN, PSQLTypes.VARCHAR);
+        fields.put(PERM_ID_COLUMN, PSQLTypes.VARCHAR);
         fields.put(REGISTRATION_TIMESTAMP_COLUMN, PSQLTypes.TIMESTAMP_WITH_TZ);
-        fields.put(MODIFICATION_TIMESTAMP_COLUMN, PSQLTypes.TIMESTAMP_WITH_TZ);
-        fields.put(EXPERIMENT_COLUMN, PSQLTypes.INT8);
-        fields.put(SAMPLE_TYPE_COLUMN, PSQLTypes.INT8);
-        fields.put(PERSON_REGISTERER_COLUMN, PSQLTypes.INT8);
-        fields.put(SPACE_COLUMN, PSQLTypes.INT8);
-        fields.put(PART_OF_SAMPLE_COLUMN, PSQLTypes.INT8);
-        fields.put(PERSON_MODIFIER_COLUMN, PSQLTypes.INT8);
-        fields.put(PROJECT_COLUMN, PSQLTypes.INT8);
     }
 
     private static void initSampleTypeFieldToSQLTypeMap()
     {
         final Map<String, PSQLTypes> fields = SAMPLE_TYPE.fieldToSQLTypeMap;
         fields.put(CODE_COLUMN, PSQLTypes.VARCHAR);
-        fields.put(DESCRIPTION_COLUMN, PSQLTypes.VARCHAR);
-        fields.put(GENERATED_CODE_PREFIX, PSQLTypes.VARCHAR);
         fields.put(MODIFICATION_TIMESTAMP_COLUMN, PSQLTypes.TIMESTAMP_WITH_TZ);
-        fields.put(GENERATED_FROM_DEPTH, PSQLTypes.INT4);
-        fields.put(PART_OF_DEPTH, PSQLTypes.INT4);
-        fields.put(VALIDATION_SCRIPT_ID_COLUMN, PSQLTypes.INT8);
-        fields.put(IS_AUTO_GENERATED_CODE, PSQLTypes.BOOLEAN);
-        fields.put(IS_SUBCODE_UNIQUE, PSQLTypes.BOOLEAN);
-        fields.put(IS_LISTABLE, PSQLTypes.BOOLEAN);
-        fields.put(SHOW_PARENT_METADATA, PSQLTypes.BOOLEAN);
     }
 
     private static void initExperimentFieldToSQLTypeMap()
     {
         final Map<String, PSQLTypes> fields = EXPERIMENT.fieldToSQLTypeMap;
         fields.put(CODE_COLUMN, PSQLTypes.VARCHAR);
+        fields.put(PERM_ID_COLUMN, PSQLTypes.VARCHAR);
         fields.put(REGISTRATION_TIMESTAMP_COLUMN, PSQLTypes.TIMESTAMP_WITH_TZ);
-        fields.put(MODIFICATION_TIMESTAMP_COLUMN, PSQLTypes.TIMESTAMP_WITH_TZ);
-        fields.put(EXPERIMENT_TYPE_COLUMN, PSQLTypes.INT8);
-        fields.put(PERSON_REGISTERER_COLUMN, PSQLTypes.INT8);
-        fields.put(PROJECT_COLUMN, PSQLTypes.INT8);
-        fields.put(DELETION_COLUMN, PSQLTypes.INT8);
-        fields.put(ORIGINAL_DELETION_COLUMN, PSQLTypes.INT8);
-        fields.put(PERSON_MODIFIER_COLUMN, PSQLTypes.INT8);
-        fields.put(IS_PUBLIC, PSQLTypes.BOOLEAN);
     }
 
     private static void initExperimentTypeFieldToSQLTypeMap()
     {
         final Map<String, PSQLTypes> fields = EXPERIMENT_TYPE.fieldToSQLTypeMap;
         fields.put(CODE_COLUMN, PSQLTypes.VARCHAR);
-        fields.put(DESCRIPTION_COLUMN, PSQLTypes.VARCHAR);
         fields.put(MODIFICATION_TIMESTAMP_COLUMN, PSQLTypes.TIMESTAMP_WITH_TZ);
-        fields.put(VALIDATION_SCRIPT_ID_COLUMN, PSQLTypes.INT8);
     }
 
     private static void initPersonFieldToSQLTypeMap()
     {
         final Map<String, PSQLTypes> fields = PERSON.fieldToSQLTypeMap;
-        fields.put(FIRST_NAME_COLUMN, PSQLTypes.VARCHAR);
-        fields.put(LAST_NAME_COLUMN, PSQLTypes.VARCHAR);
         fields.put(USER_COLUMN, PSQLTypes.VARCHAR);
-        fields.put(EMAIL_COLUMN, PSQLTypes.VARCHAR);
         fields.put(REGISTRATION_TIMESTAMP_COLUMN, PSQLTypes.TIMESTAMP_WITH_TZ);
-        fields.put(PERSON_IS_ACTIVE_COLUMN, PSQLTypes.BOOLEAN);
     }
 
     private static void initSampleSQLTypeToFieldsMap()
     {
         final Map<PSQLTypes, Set<String>> map = SAMPLE.sqlTypeToFieldsMap;
-        map.put(PSQLTypes.VARCHAR, new HashSet<>(Arrays.asList(CODE_COLUMN)));
-        map.put(PSQLTypes.TIMESTAMP_WITH_TZ, new HashSet<>(Arrays.asList(REGISTRATION_TIMESTAMP_COLUMN, MODIFICATION_TIMESTAMP_COLUMN)));
-        map.put(PSQLTypes.INT8, new HashSet<>(Arrays.asList(EXPERIMENT_COLUMN, SAMPLE_TYPE_COLUMN, PERSON_REGISTERER_COLUMN, SPACE_COLUMN,
-                PART_OF_SAMPLE_COLUMN, PERSON_MODIFIER_COLUMN, PROJECT_COLUMN)));
+        map.put(PSQLTypes.VARCHAR, new HashSet<>(Arrays.asList(CODE_COLUMN, PERM_ID_COLUMN)));
+        map.put(PSQLTypes.TIMESTAMP_WITH_TZ, new HashSet<>(Arrays.asList(REGISTRATION_TIMESTAMP_COLUMN)));
     }
 
     private static void initSampleTypeSQLTypeToFieldsMap()
     {
         final Map<PSQLTypes, Set<String>> map = SAMPLE_TYPE.sqlTypeToFieldsMap;
-        map.put(PSQLTypes.VARCHAR, new HashSet<>(Arrays.asList(CODE_COLUMN, DESCRIPTION_COLUMN, GENERATED_CODE_PREFIX)));
+        map.put(PSQLTypes.VARCHAR, new HashSet<>(Arrays.asList(CODE_COLUMN)));
         map.put(PSQLTypes.TIMESTAMP_WITH_TZ, new HashSet<>(Arrays.asList(MODIFICATION_TIMESTAMP_COLUMN)));
-        map.put(PSQLTypes.INT4, new HashSet<>(Arrays.asList(GENERATED_FROM_DEPTH, PART_OF_DEPTH)));
-        map.put(PSQLTypes.INT8, new HashSet<>(Arrays.asList(VALIDATION_SCRIPT_ID_COLUMN)));
-        map.put(PSQLTypes.BOOLEAN, new HashSet<>(Arrays.asList(IS_AUTO_GENERATED_CODE, IS_SUBCODE_UNIQUE, IS_LISTABLE, SHOW_PARENT_METADATA)));
     }
 
     private static void initPersonSQLTypeToFieldsMap()
     {
         final Map<PSQLTypes, Set<String>> map = PERSON.sqlTypeToFieldsMap;
-        map.put(PSQLTypes.VARCHAR, new HashSet<>(Arrays.asList(FIRST_NAME_COLUMN, LAST_NAME_COLUMN, USER_COLUMN, EMAIL_COLUMN)));
+        map.put(PSQLTypes.VARCHAR, new HashSet<>(Arrays.asList(USER_COLUMN)));
         map.put(PSQLTypes.TIMESTAMP_WITH_TZ, new HashSet<>(Arrays.asList(REGISTRATION_TIMESTAMP_COLUMN)));
-        map.put(PSQLTypes.BOOLEAN, new HashSet<>(Arrays.asList(PERSON_IS_ACTIVE_COLUMN)));
     }
 
     private static void initExperimentSQLTypeToFieldsMap()
     {
         final Map<PSQLTypes, Set<String>> map = EXPERIMENT.sqlTypeToFieldsMap;
-        map.put(PSQLTypes.VARCHAR, new HashSet<>(Arrays.asList(GENERATED_CODE_PREFIX, CODE_COLUMN, DESCRIPTION_COLUMN)));
-        map.put(PSQLTypes.TIMESTAMP_WITH_TZ, new HashSet<>(Arrays.asList(REGISTRATION_TIMESTAMP_COLUMN, MODIFICATION_TIMESTAMP_COLUMN)));
-        map.put(PSQLTypes.INT8, new HashSet<>(Arrays.asList(EXPERIMENT_TYPE_COLUMN, PERSON_REGISTERER_COLUMN, PROJECT_COLUMN, DELETION_COLUMN,
-                ORIGINAL_DELETION_COLUMN)));
-        map.put(PSQLTypes.BOOLEAN, new HashSet<>(Arrays.asList(IS_PUBLIC)));
+        map.put(PSQLTypes.VARCHAR, new HashSet<>(Arrays.asList(CODE_COLUMN, PERM_ID_COLUMN)));
     }
 
     private static void initExperimentTypeSQLTypeToFieldsMap()
     {
         final Map<PSQLTypes, Set<String>> map = SAMPLE_TYPE.sqlTypeToFieldsMap;
-        map.put(PSQLTypes.VARCHAR, new HashSet<>(Arrays.asList(CODE_COLUMN, DESCRIPTION_COLUMN)));
+        map.put(PSQLTypes.VARCHAR, new HashSet<>(Arrays.asList(CODE_COLUMN)));
         map.put(PSQLTypes.TIMESTAMP_WITH_TZ, new HashSet<>(Arrays.asList(MODIFICATION_TIMESTAMP_COLUMN)));
-        map.put(PSQLTypes.INT8, new HashSet<>(Arrays.asList(VALIDATION_SCRIPT_ID_COLUMN)));
     }
 
     private static void initProjectFieldToSQLTypeMap()
     {
         final Map<String, PSQLTypes> fields = PROJECT.fieldToSQLTypeMap;
         fields.put(CODE_COLUMN, PSQLTypes.VARCHAR);
-        fields.put(DESCRIPTION_COLUMN, PSQLTypes.VARCHAR);
-        fields.put(SPACE_COLUMN, PSQLTypes.INT8);
-        fields.put(PERSON_LEADER_COLUMN, PSQLTypes.INT8);
-        fields.put(PERSON_REGISTERER_COLUMN, PSQLTypes.INT8);
-        fields.put(PERSON_MODIFIER_COLUMN, PSQLTypes.INT8);
         fields.put(REGISTRATION_TIMESTAMP_COLUMN, PSQLTypes.TIMESTAMP_WITH_TZ);
-        fields.put(MODIFICATION_TIMESTAMP_COLUMN, PSQLTypes.TIMESTAMP_WITH_TZ);
     }
 
     private static void initProjectSQLTypeToFieldsMap()
     {
         final Map<PSQLTypes, Set<String>> map = PROJECT.sqlTypeToFieldsMap;
         map.put(PSQLTypes.VARCHAR, new HashSet<>(Arrays.asList(CODE_COLUMN, DESCRIPTION_COLUMN)));
-        map.put(PSQLTypes.TIMESTAMP_WITH_TZ, new HashSet<>(Arrays.asList(REGISTRATION_TIMESTAMP_COLUMN, MODIFICATION_TIMESTAMP_COLUMN)));
-        map.put(PSQLTypes.INT8, new HashSet<>(Arrays.asList(SPACE_COLUMN, PERSON_LEADER_COLUMN, PERSON_REGISTERER_COLUMN, PERSON_MODIFIER_COLUMN)));
+        map.put(PSQLTypes.TIMESTAMP_WITH_TZ, new HashSet<>(Arrays.asList(REGISTRATION_TIMESTAMP_COLUMN)));
     }
 
     private static void initSpaceFieldToSQLTypeMap()
@@ -454,74 +443,55 @@ public enum TableMapper
         fields.put(CODE_COLUMN, PSQLTypes.VARCHAR);
         fields.put(DESCRIPTION_COLUMN, PSQLTypes.VARCHAR);
         fields.put(REGISTRATION_TIMESTAMP_COLUMN, PSQLTypes.TIMESTAMP_WITH_TZ);
-        fields.put(PERSON_REGISTERER_COLUMN, PSQLTypes.INT8);
     }
 
     private static void initSpaceSQLTypeToFieldsMap()
     {
         final Map<PSQLTypes, Set<String>> map = SPACE.sqlTypeToFieldsMap;
-        map.put(PSQLTypes.VARCHAR, new HashSet<>(Arrays.asList(CODE_COLUMN, DESCRIPTION_COLUMN)));
+        map.put(PSQLTypes.VARCHAR, new HashSet<>(Arrays.asList(CODE_COLUMN)));
         map.put(PSQLTypes.TIMESTAMP_WITH_TZ, new HashSet<>(Arrays.asList(REGISTRATION_TIMESTAMP_COLUMN)));
-        map.put(PSQLTypes.INT8, new HashSet<>(Arrays.asList(PERSON_REGISTERER_COLUMN)));
     }
 
     private static void initDataSetFieldToSQLTypeMap()
     {
         final Map<String, PSQLTypes> fields = DATA_SET.fieldToSQLTypeMap;
         fields.put(CODE_COLUMN, PSQLTypes.VARCHAR);
-        fields.put(DATA_SET_KIND_COLUMN, PSQLTypes.VARCHAR);
-        fields.put(DATA_PRODUCER_CODE_COLUMN, PSQLTypes.VARCHAR);
-
-        fields.put(PRODUCTION_TIMESTAMP_COLUMN, PSQLTypes.TIMESTAMP_WITH_TZ);
         fields.put(REGISTRATION_TIMESTAMP_COLUMN, PSQLTypes.TIMESTAMP_WITH_TZ);
-        fields.put(MODIFICATION_TIMESTAMP_COLUMN, PSQLTypes.TIMESTAMP_WITH_TZ);
-        fields.put(ACCESS_TIMESTAMP, PSQLTypes.TIMESTAMP_WITH_TZ);
-
-        fields.put(DATA_SET_TYPE_COLUMN, PSQLTypes.INT8);
-        fields.put(DATA_STORE_COLUMN, PSQLTypes.INT8);
-        fields.put(EXPERIMENT_COLUMN, PSQLTypes.INT8);
-        fields.put(SAMPLE_COLUMN, PSQLTypes.INT8);
-        fields.put(PERSON_REGISTERER_COLUMN, PSQLTypes.INT8);
-        fields.put(PERSON_MODIFIER_COLUMN, PSQLTypes.INT8);
-        fields.put(DELETION_COLUMN, PSQLTypes.INT8);
-        fields.put(ORIGINAL_DELETION_COLUMN, PSQLTypes.INT8);
-
-        fields.put(IS_DERIVED, PSQLTypes.BOOLEAN);
     }
 
     private static void initDataSetSQLTypeToFieldsMap()
     {
         final Map<PSQLTypes, Set<String>> map = DATA_SET.sqlTypeToFieldsMap;
-        map.put(PSQLTypes.VARCHAR, new HashSet<>(Arrays.asList(CODE_COLUMN, DATA_SET_KIND_COLUMN, DATA_PRODUCER_CODE_COLUMN)));
-        map.put(PSQLTypes.TIMESTAMP_WITH_TZ, new HashSet<>(Arrays.asList(PRODUCTION_TIMESTAMP_COLUMN, REGISTRATION_TIMESTAMP_COLUMN,
-                MODIFICATION_TIMESTAMP_COLUMN, ACCESS_TIMESTAMP)));
-        map.put(PSQLTypes.INT8, new HashSet<>(Arrays.asList(DATA_SET_TYPE_COLUMN, DATA_STORE_COLUMN, EXPERIMENT_COLUMN, SAMPLE_COLUMN,
-                PERSON_REGISTERER_COLUMN, PERSON_MODIFIER_COLUMN, DELETION_COLUMN, ORIGINAL_DELETION_COLUMN)));
-        map.put(PSQLTypes.BOOLEAN, new HashSet<>(Arrays.asList(IS_DERIVED)));
+        map.put(PSQLTypes.VARCHAR, new HashSet<>(Arrays.asList(CODE_COLUMN)));
+        map.put(PSQLTypes.TIMESTAMP_WITH_TZ, new HashSet<>(Arrays.asList(REGISTRATION_TIMESTAMP_COLUMN)));
+    }
+
+    private static void initMaterialsFieldToSQLTypeMap()
+    {
+        final Map<String, PSQLTypes> fields = MATERIAL.fieldToSQLTypeMap;
+        fields.put(CODE_COLUMN, PSQLTypes.VARCHAR);
+        fields.put(REGISTRATION_TIMESTAMP_COLUMN, PSQLTypes.TIMESTAMP_WITH_TZ);
+    }
+
+    private static void initMaterialsSQLTypeToFieldsMap()
+    {
+        final Map<PSQLTypes, Set<String>> map = MATERIAL.sqlTypeToFieldsMap;
+        map.put(PSQLTypes.VARCHAR, new HashSet<>(Arrays.asList(CODE_COLUMN)));
+        map.put(PSQLTypes.TIMESTAMP_WITH_TZ, new HashSet<>(Arrays.asList(REGISTRATION_TIMESTAMP_COLUMN)));
     }
 
     private static void initDataSetTypeFieldToSQLTypeMap()
     {
         final Map<String, PSQLTypes> fields = DATA_SET_TYPE.fieldToSQLTypeMap;
         fields.put(CODE_COLUMN, PSQLTypes.VARCHAR);
-        fields.put(DESCRIPTION_COLUMN, PSQLTypes.VARCHAR);
-        fields.put(MAIN_DS_PATTERN, PSQLTypes.VARCHAR);
-        fields.put(MAIN_DS_PATH, PSQLTypes.VARCHAR);
-
         fields.put(MODIFICATION_TIMESTAMP_COLUMN, PSQLTypes.TIMESTAMP_WITH_TZ);
-
-        fields.put(VALIDATION_SCRIPT_ID_COLUMN, PSQLTypes.INT8);
-
-        fields.put(DELETION_DISALLOW, PSQLTypes.BOOLEAN);
     }
 
     private static void initDataSetTypeSQLTypeToFieldsMap()
     {
         final Map<PSQLTypes, Set<String>> map = DATA_SET_TYPE.sqlTypeToFieldsMap;
-        map.put(PSQLTypes.VARCHAR, new HashSet<>(Arrays.asList(CODE_COLUMN, DESCRIPTION_COLUMN, MAIN_DS_PATTERN, MAIN_DS_PATH)));
+        map.put(PSQLTypes.VARCHAR, new HashSet<>(Arrays.asList(CODE_COLUMN)));
         map.put(PSQLTypes.TIMESTAMP_WITH_TZ, new HashSet<>(Arrays.asList(MODIFICATION_TIMESTAMP_COLUMN)));
-        map.put(PSQLTypes.INT8, new HashSet<>(Arrays.asList(VALIDATION_SCRIPT_ID_COLUMN)));
-        map.put(PSQLTypes.BOOLEAN, new HashSet<>(Arrays.asList(DELETION_DISALLOW)));
     }
 
 }

@@ -26,7 +26,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInfo
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.IPropertyAssignmentSearchDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PEMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 
 import java.util.Collection;
@@ -42,15 +42,16 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PROPERTY_T
  * @author Viktor Kovtun
  */
 public class PropertyAssignmentSearchManager extends
-        AbstractSearchManager<PropertyAssignmentSearchCriteria, PropertyAssignment, Long>
+        AbstractLocalSearchManager<PropertyAssignmentSearchCriteria, PropertyAssignment, Long>
 {
 
-    private IPropertyAssignmentSearchDAO assignmentsSearchDAO;
+    private final IPropertyAssignmentSearchDAO assignmentsSearchDAO;
 
-    public PropertyAssignmentSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
-            final IID2PETranslator idsTranslator, final IPropertyAssignmentSearchDAO assignmentsSearchDAO)
+    public PropertyAssignmentSearchManager(final ISQLSearchDAO searchDAO,
+            final ISQLAuthorisationInformationProviderDAO authProvider,
+            final IID2PEMapper<Long, Long> idsMapper, final IPropertyAssignmentSearchDAO assignmentsSearchDAO)
     {
-        super(searchDAO, authProvider, idsTranslator);
+        super(searchDAO, authProvider, idsMapper);
         this.assignmentsSearchDAO = assignmentsSearchDAO;
     }
 
@@ -62,7 +63,7 @@ public class PropertyAssignmentSearchManager extends
 
     @Override
     public Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation,
-            final PropertyAssignmentSearchCriteria criteria, final SortOptions<PropertyAssignment> sortOptions,
+            final PropertyAssignmentSearchCriteria criteria,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
         // TODO: not always related to samples.

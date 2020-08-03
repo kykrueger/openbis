@@ -23,4 +23,7 @@ public class ObjectRelationRecord
 
     public Long relatedId;
 
+    public String annotations;
+    
+    public String relatedAnnotations;
 }

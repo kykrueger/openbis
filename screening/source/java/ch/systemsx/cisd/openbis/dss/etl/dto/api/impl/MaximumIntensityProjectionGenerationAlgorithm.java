@@ -66,6 +66,8 @@ public class MaximumIntensityProjectionGenerationAlgorithm implements IImageGene
     private int height;
 
     private boolean useThumbnails;
+    
+    private IHierarchicalContent content;
 
     /**
      * Creates an instance for the specified data set type. The generated image will have the same size as the original images. The file name will be
@@ -234,8 +236,23 @@ public class MaximumIntensityProjectionGenerationAlgorithm implements IImageGene
     BufferedImage loadImage(IImageProvider imageProvider, File incomingDirectory, String imagePath,
             String identifier, ImageLibraryInfo library)
     {
-        File file = new File(incomingDirectory, imagePath);
-        return imageProvider.getImage(new FileBasedContentNode(file), identifier, library);
+        IHierarchicalContentNode contentNode = createContentNode(incomingDirectory, imagePath);
+        return imageProvider.getImage(contentNode, identifier, library);
+    }
+
+    private IHierarchicalContentNode createContentNode(File incomingDirectory, String imagePath)
+    {
+        if (content == null)
+        {
+            return new FileBasedContentNode(new File(incomingDirectory, imagePath));
+        }
+        return content.getNode(imagePath);
+    }
+
+    @Override
+    public void setContent(IHierarchicalContent content)
+    {
+        this.content = content;
     }
 
     /**

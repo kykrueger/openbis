@@ -4,6 +4,7 @@ const CLASS_FULL_NAMES = [
   'as/dto/dataset/create/CreateDataSetTypesOperation',
   'as/dto/dataset/create/DataSetTypeCreation',
   'as/dto/dataset/delete/DataSetTypeDeletionOptions',
+  'as/dto/dataset/delete/DeleteDataSetTypesOperation',
   'as/dto/dataset/fetchoptions/DataSetFetchOptions',
   'as/dto/dataset/fetchoptions/DataSetTypeFetchOptions',
   'as/dto/dataset/search/DataSetSearchCriteria',
@@ -16,6 +17,7 @@ const CLASS_FULL_NAMES = [
   'as/dto/experiment/create/CreateExperimentTypesOperation',
   'as/dto/experiment/create/ExperimentTypeCreation',
   'as/dto/experiment/delete/ExperimentTypeDeletionOptions',
+  'as/dto/experiment/delete/DeleteExperimentTypesOperation',
   'as/dto/experiment/fetchoptions/ExperimentFetchOptions',
   'as/dto/experiment/fetchoptions/ExperimentTypeFetchOptions',
   'as/dto/experiment/search/ExperimentSearchCriteria',
@@ -26,6 +28,7 @@ const CLASS_FULL_NAMES = [
   'as/dto/material/create/CreateMaterialTypesOperation',
   'as/dto/material/create/MaterialTypeCreation',
   'as/dto/material/delete/MaterialTypeDeletionOptions',
+  'as/dto/material/delete/DeleteMaterialTypesOperation',
   'as/dto/material/fetchoptions/MaterialFetchOptions',
   'as/dto/material/fetchoptions/MaterialTypeFetchOptions',
   'as/dto/material/search/MaterialSearchCriteria',
@@ -49,15 +52,18 @@ const CLASS_FULL_NAMES = [
   'as/dto/property/create/PropertyTypeCreation',
   'as/dto/property/delete/DeletePropertyTypesOperation',
   'as/dto/property/delete/PropertyTypeDeletionOptions',
+  'as/dto/property/fetchoptions/PropertyAssignmentFetchOptions',
   'as/dto/property/fetchoptions/PropertyTypeFetchOptions',
   'as/dto/property/id/PropertyAssignmentPermId',
   'as/dto/property/id/PropertyTypePermId',
+  'as/dto/property/search/PropertyAssignmentSearchCriteria',
   'as/dto/property/search/PropertyTypeSearchCriteria',
   'as/dto/property/update/PropertyTypeUpdate',
   'as/dto/property/update/UpdatePropertyTypesOperation',
   'as/dto/sample/create/CreateSampleTypesOperation',
   'as/dto/sample/create/SampleTypeCreation',
   'as/dto/sample/delete/SampleTypeDeletionOptions',
+  'as/dto/sample/delete/DeleteSampleTypesOperation',
   'as/dto/sample/fetchoptions/SampleFetchOptions',
   'as/dto/sample/fetchoptions/SampleTypeFetchOptions',
   'as/dto/sample/fetchoptions/SampleTypeFetchOptions',
@@ -80,7 +86,7 @@ class Dto {
   _init() {
     let _this = this
 
-    let load = function(index) {
+    let load = function (index) {
       return new Promise((resolve, reject) => {
         if (index < CLASS_FULL_NAMES.length) {
           let classFullName = CLASS_FULL_NAMES[index]
@@ -112,7 +118,7 @@ const dto = new Dto()
 
 CLASS_FULL_NAMES.forEach(classFullName => {
   let className = classFullName.substring(classFullName.lastIndexOf('/') + 1)
-  dto[className] = function() {}
+  dto[className] = function () {}
 })
 
 export default dto

@@ -23,7 +23,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.search.SpaceSearchCriteria
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PEMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 
 import java.util.Collection;
@@ -36,13 +36,13 @@ import java.util.Set;
  *
  * @author Viktor Kovtun
  */
-public class SpaceSearchManager extends AbstractSearchManager<SpaceSearchCriteria, Space, Long>
+public class SpaceSearchManager extends AbstractLocalSearchManager<SpaceSearchCriteria, Space, Long>
 {
 
     public SpaceSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
-            final IID2PETranslator<Long> idsTranslator)
+            final IID2PEMapper<Long, Long> idsMapper)
     {
-        super(searchDAO, authProvider, idsTranslator);
+        super(searchDAO, authProvider, idsMapper);
     }
 
     @Override
@@ -53,7 +53,7 @@ public class SpaceSearchManager extends AbstractSearchManager<SpaceSearchCriteri
 
     @Override
     public Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation, final SpaceSearchCriteria criteria,
-            final SortOptions<Space> sortOptions,
+
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
         final Set<Long> mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId, criteria, TableMapper.SPACE,

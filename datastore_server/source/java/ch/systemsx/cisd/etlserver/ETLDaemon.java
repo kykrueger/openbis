@@ -35,6 +35,7 @@ import org.apache.commons.io.filefilter.NameFileFilter;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import ch.ethz.sis.openbis.generic.server.dss.plugins.PreStagingCleanUpMaintenanceTask;
 import ch.rinn.restrictions.Private;
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.base.exceptions.InterruptedExceptionUnchecked;
@@ -64,6 +65,7 @@ import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.common.mail.IMailClient;
 import ch.systemsx.cisd.common.mail.MailClient;
+import ch.systemsx.cisd.common.maintenance.IMaintenanceTask;
 import ch.systemsx.cisd.common.maintenance.MaintenancePlugin;
 import ch.systemsx.cisd.common.maintenance.MaintenanceTaskParameters;
 import ch.systemsx.cisd.common.maintenance.MaintenanceTaskUtils;
@@ -317,12 +319,6 @@ public final class ETLDaemon
         }
     }
 
-    private final static long getHighwaterMark(final Properties properties)
-    {
-        return PropertyUtils.getLong(properties,
-                HostAwareFileWithHighwaterMark.HIGHWATER_MARK_PROPERTY_KEY, -1L);
-    }
-
     private final static long getRecoveryHighwaterMark(final Properties properties)
     {
         return PropertyUtils.getLong(properties, RECOVERY_HIGHWATER_MARK_PROPERTY_KEY, -1L);
@@ -338,8 +334,8 @@ public final class ETLDaemon
             final IEncapsulatedOpenBISService authorizedLimsService, final IMailClient mailClient,
             final IDataSetValidator dataSetValidator, final boolean notifySuccessfulRegistration)
     {
-        final HighwaterMarkWatcher highwaterMarkWatcher =
-                new HighwaterMarkWatcher(getHighwaterMark(parameters.getProperties()));
+        long highwaterMark = DssPropertyParametersUtil.getHighwaterMark(threadParameters, parameters.getProperties());
+        final HighwaterMarkWatcher highwaterMarkWatcher = new HighwaterMarkWatcher(highwaterMark);
         final File incomingDataDirectory = threadParameters.getIncomingDataDirectory();
         final File recoveryStateDirectory =
                 DssPropertyParametersUtil.getDssRecoveryStateDir(parameters.getProperties());
@@ -353,9 +349,11 @@ public final class ETLDaemon
                 createTopLevelDataSetRegistrator(parameters.getProperties(), threadParameters,
                         authorizedLimsService, mailClient, dataSetValidator,
                         new DataSourceQueryService(), notifySuccessfulRegistration);
+        TopLevelDataSetRegistratorGlobalState globalState = pathHandler.getGlobalState();
+        HostAwareFile shareFolder = new HostAwareFile(new File(globalState.getStoreRootDir(), globalState.getShareId()));
         final HighwaterMarkDirectoryScanningHandler directoryScanningHandler =
                 createDirectoryScanningHandler(pathHandler, highwaterMarkWatcher,
-                        hostAwareIncomingDataDirectory, hostAwareRecoveryStateDirectory,
+                        hostAwareIncomingDataDirectory, shareFolder, hostAwareRecoveryStateDirectory,
                         threadParameters.reprocessFaultyDatasets(),
                         parameters.getCheckIntervalMillis(), pathHandler);
         FileFilter fileFilter =
@@ -594,7 +592,7 @@ public final class ETLDaemon
 
     private final static HighwaterMarkDirectoryScanningHandler createDirectoryScanningHandler(
             final IStopSignaler stopSignaler, final HighwaterMarkWatcher highwaterMarkWatcher,
-            final HostAwareFile incomingDataDirectory, final HostAwareFile recoveryStateDirectory,
+            final HostAwareFile incomingDataDirectory, HostAwareFile shareFolder, final HostAwareFile recoveryStateDirectory,
             boolean reprocessFaultyDatasets, final long checkIntervalMillis,
             IFaultyPathDirectoryScanningHandlerDelegate faultyPathHandlerDelegate)
     {
@@ -602,8 +600,7 @@ public final class ETLDaemon
                 createFaultyPathHandler(stopSignaler, incomingDataDirectory.getLocalFile(),
                         reprocessFaultyDatasets, checkIntervalMillis, faultyPathHandlerDelegate);
         return new HighwaterMarkDirectoryScanningHandler(faultyPathHandler, highwaterMarkWatcher,
-                new HostAwareFile[]
-                { incomingDataDirectory, recoveryStateDirectory });
+                new HostAwareFile[] { shareFolder, recoveryStateDirectory });
     }
 
     private static IDirectoryScanningHandler createFaultyPathHandler(
@@ -656,7 +653,7 @@ public final class ETLDaemon
                 {
                     if (scannedStore.existsOrError(storeItem))
                     {
-                        if (faultyItems.containsValue(storeItem.getName()) == false)
+                        if (faultyItems.containsKey(storeItem.getName()) == false)
                         {
                             StringBuffer sb = new StringBuffer();
                             sb.append("The thread configuration setting "
@@ -717,7 +714,11 @@ public final class ETLDaemon
         MaintenanceTaskUtils.startupMaintenancePlugins(maintenancePlugins);
 
         injectPostRegistrationMaintenanceTaskIfNecessary(maintenancePlugins);
-        injectDeleteDataSetsAlreadyDeletedInApplicationServerMaintenanceTaskIfNecessary(maintenancePlugins);
+        injectMaintenanceTask(maintenancePlugins, DeleteDataSetsAlreadyDeletedInApplicationServerMaintenanceTask.class,
+                300, "injected-delete-datasets-already-deleted-from-application-server-task");
+        injectMaintenanceTask(maintenancePlugins, PreStagingCleanUpMaintenanceTask.class,
+                PreStagingCleanUpMaintenanceTask.DEFAULT_MAINTENANCE_TASK_INTERVAL,
+                PreStagingCleanUpMaintenanceTask.DEFAULT_MAINTENANCE_TASK_NAME);
 
         operationLog.info("Data Store Server ready and waiting for data.");
     }
@@ -761,38 +762,31 @@ public final class ETLDaemon
         }
 
         PostRegistrationMaintenanceTask task = new PostRegistrationMaintenanceTask();
-        Properties props = new Properties();
-        props.setProperty(MaintenanceTaskParameters.CLASS_KEY, task.getClass().getName());
-        // Have the task run every second
-        props.setProperty(MaintenanceTaskParameters.INTERVAL_KEY,
-                Integer.toString(INJECTED_POST_REGISTRATION_TASK_INTERVAL));
-        MaintenanceTaskParameters parameters =
-                new MaintenanceTaskParameters(props, "injected-post-registration-task");
         task.setUpEmpty();
-
-        MaintenancePlugin plugin = new MaintenancePlugin(task, parameters);
-        MaintenanceTaskUtils.injectMaintenancePlugin(plugin);
+        injectMaintenanceTask(PostRegistrationMaintenanceTask.class, task,
+                INJECTED_POST_REGISTRATION_TASK_INTERVAL, "injected-post-registration-task");
     }
 
-    private static void injectDeleteDataSetsAlreadyDeletedInApplicationServerMaintenanceTaskIfNecessary(
-            MaintenanceTaskParameters[] maintenancePlugins)
+    private static void injectMaintenanceTask(MaintenanceTaskParameters[] maintenancePlugins,
+            Class<? extends IMaintenanceTask> taskClass, int interval, String pluginName)
     {
-        if (hasMaintenanceTaskOfClass(maintenancePlugins,
-                DeleteDataSetsAlreadyDeletedInApplicationServerMaintenanceTask.class))
+        if (hasMaintenanceTaskOfClass(maintenancePlugins, taskClass))
         {
             // Nothing additional to do.
             return;
         }
 
-        Properties props = new Properties();
-        props.setProperty(MaintenanceTaskParameters.CLASS_KEY,
-                DeleteDataSetsAlreadyDeletedInApplicationServerMaintenanceTask.class.getName());
-        props.setProperty(MaintenanceTaskParameters.INTERVAL_KEY, Integer.toString(300));
-        MaintenanceTaskParameters parameters =
-                new MaintenanceTaskParameters(props,
-                        "injected-delete-datasets-already-deleted-from-application-server-task");
+        injectMaintenanceTask(taskClass, null, interval, pluginName);
+    }
 
-        MaintenancePlugin plugin = new MaintenancePlugin(parameters);
+    private static void injectMaintenanceTask(Class<? extends IMaintenanceTask> taskClass, IMaintenanceTask task, int interval, String pluginName)
+    {
+        Properties props = new Properties();
+        props.setProperty(MaintenanceTaskParameters.CLASS_KEY, taskClass.getName());
+        props.setProperty(MaintenanceTaskParameters.INTERVAL_KEY, Integer.toString(interval));
+        MaintenanceTaskParameters parameters = new MaintenanceTaskParameters(props, pluginName);
+
+        MaintenancePlugin plugin = task == null ? new MaintenancePlugin(parameters) : new MaintenancePlugin(task, parameters);
         MaintenanceTaskUtils.injectMaintenancePlugin(plugin);
     }
 

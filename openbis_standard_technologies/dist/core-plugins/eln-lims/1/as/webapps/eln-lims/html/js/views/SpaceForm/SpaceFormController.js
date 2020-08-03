@@ -33,7 +33,7 @@ function SpaceFormController(mainController, space) {
 					space: space
 				}, function(roles){
 					_this._spaceFormModel.roles = roles;
-					var dummyId = new ProjectIdentifier("/" + space + "/DUMMY");
+					var dummyId = new ProjectIdentifier("/" + space + "/__DUMMY_FOR_RIGHTS_CALCULATION__");
 					mainController.openbisV3.getRights([id, dummyId], new RightsFetchOptions()).done(function(rightsByIds) {
 						_this._spaceFormModel.projectRights = rightsByIds[dummyId];
 						_this._spaceFormView.repaint(views);

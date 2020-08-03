@@ -23,8 +23,13 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringContainsValu
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringEndsWithValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringEqualToValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringFieldSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringGreaterThanOrEqualToValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringGreaterThanValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringLessThanOrEqualToValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringLessThanValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringStartsWithValue;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.CompareType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchCriterion;
 
 /**
@@ -56,6 +61,26 @@ public class StringFieldSearchCriteriaTranslator extends AbstractFieldSearchCrit
         {
             StringEqualToValue equalToValue = (StringEqualToValue) valueObject;
             value = equalToValue.getValue();
+        } else if (valueObject instanceof StringLessThanValue)
+        {
+            StringLessThanValue lessToValue = (StringLessThanValue) valueObject;
+            return new SearchCriteriaTranslationResult(new DetailedSearchCriterion(getDetailedSearchField(context, stringCriteria),
+                    CompareType.LESS_THAN, lessToValue.getValue()));
+        } else if (valueObject instanceof StringLessThanOrEqualToValue)
+        {
+            StringLessThanOrEqualToValue lessOrEqualToValue = (StringLessThanOrEqualToValue) valueObject;
+            return new SearchCriteriaTranslationResult(new DetailedSearchCriterion(getDetailedSearchField(context, stringCriteria),
+                    CompareType.LESS_THAN_OR_EQUAL, lessOrEqualToValue.getValue()));
+        } else if (valueObject instanceof StringGreaterThanOrEqualToValue)
+        {
+            StringGreaterThanOrEqualToValue greaterOrEqualToValue = (StringGreaterThanOrEqualToValue) valueObject;
+            return new SearchCriteriaTranslationResult(new DetailedSearchCriterion(getDetailedSearchField(context, stringCriteria),
+                    CompareType.MORE_THAN_OR_EQUAL, greaterOrEqualToValue.getValue()));
+        } else if (valueObject instanceof StringGreaterThanValue)
+        {
+            StringGreaterThanValue greaterToValue = (StringGreaterThanValue) valueObject;
+            return new SearchCriteriaTranslationResult(new DetailedSearchCriterion(getDetailedSearchField(context, stringCriteria),
+                    CompareType.MORE_THAN, greaterToValue.getValue()));
         } else if (valueObject instanceof StringStartsWithValue)
         {
             StringStartsWithValue startsWithValue = (StringStartsWithValue) valueObject;

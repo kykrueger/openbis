@@ -16,11 +16,13 @@ const styles = {
     flexDirection: 'column',
     flex: 1,
     width: '100px',
-    zIndex: 1000
+    zIndex: 100,
+    overflow: 'auto'
   },
   component: {
     height: 0,
-    flex: '1 1 100%'
+    flex: '1 1 100%',
+    overflow: 'auto'
   },
   visible: {
     display: 'block'

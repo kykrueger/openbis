@@ -16,17 +16,13 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractStringValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AnyFieldSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.IDateFormat;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringEqualToValue;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinType;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils;
@@ -34,27 +30,33 @@ import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
 import ch.systemsx.cisd.openbis.generic.shared.util.SimplePropertyValidator;
 
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes.BOOLEAN;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes.FLOAT4;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes.FLOAT8;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes.INT2;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes.INT4;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes.INT8;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes.TIMESTAMP_WITH_TZ;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes.VARCHAR;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.DOUBLE_COLON;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.EQ;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.FALSE;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.NL;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.OR;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.PERIOD;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.QU;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SP;
+import java.util.*;
+
+import static ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateFieldSearchCriteria.*;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes.*;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.*;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCriteriaTranslator.MAIN_TABLE_ALIAS;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.*;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.PERSONS_TABLE;
 
 public class AnyFieldSearchConditionTranslator implements IConditionTranslator<AnyFieldSearchCriteria>
 {
 
     private static final String UNIQUE_PREFIX = AnyFieldSearchConditionTranslator.class.getName();
+
+    private static final String REGISTRATOR_JOIN_INFORMATION_KEY = "registrator";
+
+    private static final String MODIFIER_JOIN_INFORMATION_KEY = "modifier";
+
+    private static final Map<Class<? extends IDateFormat>, String> TRUNCATION_INTERVAL_BY_DATE_FORMAT =
+            new HashMap<>(3);
+
+    static
+    {
+        TRUNCATION_INTERVAL_BY_DATE_FORMAT.put(SHORT_DATE_FORMAT.getClass(), "day");
+        TRUNCATION_INTERVAL_BY_DATE_FORMAT.put(NORMAL_DATE_FORMAT.getClass(), "minute");
+        TRUNCATION_INTERVAL_BY_DATE_FORMAT.put(LONG_DATE_FORMAT.getClass(), "second");
+    }
 
     @Override
     public Map<String, JoinInformation> getJoinInformationMap(final AnyFieldSearchCriteria criterion, final TableMapper tableMapper,
@@ -62,6 +64,33 @@ public class AnyFieldSearchConditionTranslator implements IConditionTranslator<A
     {
         final Map<String, JoinInformation> result = TranslatorUtils.getPropertyJoinInformationMap(tableMapper, aliasFactory, JoinType.LEFT);
         TranslatorUtils.appendIdentifierJoinInformationMap(result, tableMapper, aliasFactory, UNIQUE_PREFIX);
+
+        if (tableMapper.hasRegistrator())
+        {
+            final JoinInformation registratorJoinInformation = new JoinInformation();
+            registratorJoinInformation.setJoinType(JoinType.LEFT);
+            registratorJoinInformation.setMainTable(tableMapper.getEntitiesTable());
+            registratorJoinInformation.setMainTableAlias(MAIN_TABLE_ALIAS);
+            registratorJoinInformation.setMainTableIdField(PERSON_REGISTERER_COLUMN);
+            registratorJoinInformation.setSubTable(PERSONS_TABLE);
+            registratorJoinInformation.setSubTableAlias(aliasFactory.createAlias());
+            registratorJoinInformation.setSubTableIdField(ID_COLUMN);
+            result.put(REGISTRATOR_JOIN_INFORMATION_KEY, registratorJoinInformation);
+        }
+
+        if (tableMapper.hasModifier())
+        {
+            final JoinInformation registratorJoinInformation = new JoinInformation();
+            registratorJoinInformation.setJoinType(JoinType.LEFT);
+            registratorJoinInformation.setMainTable(tableMapper.getEntitiesTable());
+            registratorJoinInformation.setMainTableAlias(MAIN_TABLE_ALIAS);
+            registratorJoinInformation.setMainTableIdField(PERSON_MODIFIER_COLUMN);
+            registratorJoinInformation.setSubTable(PERSONS_TABLE);
+            registratorJoinInformation.setSubTableAlias(aliasFactory.createAlias());
+            registratorJoinInformation.setSubTableIdField(ID_COLUMN);
+            result.put(MODIFIER_JOIN_INFORMATION_KEY, registratorJoinInformation);
+        }
+
         return result;
     }
 
@@ -74,7 +103,7 @@ public class AnyFieldSearchConditionTranslator implements IConditionTranslator<A
         {
             case ANY_FIELD:
             {
-                final String alias = CriteriaTranslator.MAIN_TABLE_ALIAS;
+                final String alias = SearchCriteriaTranslator.MAIN_TABLE_ALIAS;
                 final AbstractStringValue value = criterion.getFieldValue();
                 final String stringValue = TranslatorUtils.stripQuotationMarks(value.getValue().trim());
                 final Set<PSQLTypes> compatiblePSQLTypesForValue = findCompatibleSqlTypesForValue(stringValue);
@@ -82,11 +111,22 @@ public class AnyFieldSearchConditionTranslator implements IConditionTranslator<A
                 final String separator = SP + OR + SP;
                 final int separatorLength = separator.length();
 
+                sqlBuilder.append(LP);
+
                 AnyPropertySearchConditionTranslator.doTranslate(criterion, tableMapper, args, sqlBuilder, aliases);
                 sqlBuilder.append(separator);
 
                 IdentifierSearchConditionTranslator.doTranslate(criterion, tableMapper, args, sqlBuilder, aliases, UNIQUE_PREFIX);
                 sqlBuilder.append(separator);
+
+                if (tableMapper.hasModifier())
+                {
+                    sqlBuilder.append(aliases.get(MODIFIER_JOIN_INFORMATION_KEY).getSubTableAlias()).append(PERIOD)
+                            .append(USER_COLUMN).append(SP);
+                    TranslatorUtils.appendStringComparatorOp(value.getClass(),
+                            TranslatorUtils.stripQuotationMarks(value.getValue()), sqlBuilder, args);
+                    sqlBuilder.append(separator);
+                }
 
                 final StringBuilder resultSqlBuilder = tableMapper.getFieldToSQLTypeMap().entrySet().stream().collect(
                         StringBuilder::new,
@@ -96,18 +136,43 @@ public class AnyFieldSearchConditionTranslator implements IConditionTranslator<A
                             final PSQLTypes fieldSQLType = fieldToSQLTypesEntry.getValue();
                             final boolean includeColumn = compatiblePSQLTypesForValue.contains(fieldSQLType);
 
-                            if (equalsToComparison)
+                            if (equalsToComparison || fieldSQLType == TIMESTAMP_WITH_TZ)
                             {
                                 if (includeColumn)
                                 {
-                                    stringBuilder.append(separator).append(alias).append(PERIOD).append(fieldName).append(EQ).append(QU).
-                                            append(DOUBLE_COLON).append(fieldSQLType.toString());
-                                    args.add(stringValue);
+                                    if (fieldSQLType == TIMESTAMP_WITH_TZ)
+                                    {
+                                        final Optional<Object[]> dateFormatWithResultOptional = DATE_FORMATS.stream()
+                                                .map(dateFormat ->
+                                                {
+                                                    final Date formattedValue = formatValue(stringValue, dateFormat);
+                                                    return (formattedValue == null) ? null
+                                                            : new Object[] {TRUNCATION_INTERVAL_BY_DATE_FORMAT.get(
+                                                                    dateFormat.getClass()), formattedValue};
+                                                }).filter(Objects::nonNull).findFirst();
+
+                                        dateFormatWithResultOptional.ifPresent(dateFormatWithResult ->
+                                        {
+                                            stringBuilder.append(separator).append(DATE_TRUNC).append(LP);
+                                            stringBuilder.append(SQ).append(dateFormatWithResult[0]).append(SQ).
+                                                    append(COMMA).append(SP).append(alias).append(PERIOD).
+                                                    append(fieldName);
+                                            stringBuilder.append(RP).append(SP).append(EQ).append(SP).append(QU);
+                                            args.add(dateFormatWithResult[1]);
+                                        });
+                                    } else
+                                    {
+                                        stringBuilder.append(separator).append(alias).append(PERIOD).append(fieldName);
+                                        stringBuilder.append(SP).append(EQ).append(SP).append(QU).append(DOUBLE_COLON).
+                                                append(fieldSQLType.toString());
+                                        args.add(stringValue);
+                                    }
                                 }
                             } else
                             {
                                 stringBuilder.append(separator);
-                                TranslatorUtils.translateStringComparison(alias, fieldName, value, VARCHAR, stringBuilder, args);
+                                TranslatorUtils.translateStringComparison(alias, fieldName, value, VARCHAR,
+                                        stringBuilder, args);
                             }
                         },
                         StringBuilder::append
@@ -124,7 +189,7 @@ public class AnyFieldSearchConditionTranslator implements IConditionTranslator<A
                     sqlBuilder.append(FALSE);
                 }
 
-                sqlBuilder.append(NL);
+                sqlBuilder.append(RP).append(NL);
 
                 break;
             }

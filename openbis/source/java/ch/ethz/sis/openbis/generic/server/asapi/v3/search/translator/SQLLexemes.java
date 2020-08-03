@@ -19,15 +19,41 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator;
 public class SQLLexemes
 {
 
-    public static final String UNNEST = "unnest";
+    public static final String UNNEST = "UNNEST";
 
-    public static final String COALESCE = "coalesce";
+    public static final String COALESCE = "COALESCE";
 
-    public static final String LOWER = "lower";
+    public static final String CONCAT = "CONCAT";
+
+    public static final String LOWER = "LOWER";
+
+    public static final String UPPER = "UPPER";
+
+    public static final String GREATEST = "GREATEST";
+
+    public static final String DATE_TRUNC = "date_trunc";
+
+    public static final String TS_RANK = "ts_rank";
+
+    public static final String TSVECTOR_DOCUMENT = "tsvector_document";
+
+    public static final String TO_TSQUERY = "to_tsquery";
+
+    public static final String TO_TSVECTOR = "to_tsvector";
+
+    public static final String TS_HEADLINE = "ts_headline";
+
+    public static final String TSQUERY = "tsquery";
+
+    public static final String PLAINTO_TSQUERY = "plainto_tsquery";
 
     public static final String NUMERIC = "numeric";
 
+    public static final String TIMESTAMP = "timestamp";
+
     public static final String TIMESTAMPTZ = "timestamptz";
+
+    public static final String FLOAT_4 = "float4";
 
     public static final String AT_TIME_ZONE = "AT TIME ZONE";
 
@@ -101,6 +127,12 @@ public class SQLLexemes
 
     public static final String ORDER_BY = "ORDER BY";
 
+    public static final String INTERSECT = "INTERSECT";
+
+    public static final String UNION = "UNION";
+
+    public static final String UNION_ALL = "UNION ALL";
+
     public static final String NL = "\n";
 
     public static final String COMMA = ",";
@@ -139,7 +171,13 @@ public class SQLLexemes
 
     public static final String DQ = "\"";
 
+    public static final String DOUBLE_AT = "@@";
+
+    public static final String DOUBLE_DOLLAR = "$$";
+
     public static final String TILDA = "~";
+
+    public static final String PLUS = "+";
 
     public static final String SELECT_UNNEST = LP + SELECT + SP + UNNEST + LP + QU + RP + RP;
 

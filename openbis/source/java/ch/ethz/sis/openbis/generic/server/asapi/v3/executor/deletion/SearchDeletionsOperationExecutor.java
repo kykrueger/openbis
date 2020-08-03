@@ -20,7 +20,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ILocalSearchManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -79,7 +79,7 @@ public class SearchDeletionsOperationExecutor extends
     }
 
     @Override
-    protected ISearchManager<DeletionSearchCriteria, Deletion, ch.systemsx.cisd.openbis.generic.shared.basic.dto.Deletion> getSearchManager() {
+    protected ILocalSearchManager<DeletionSearchCriteria, Deletion, ch.systemsx.cisd.openbis.generic.shared.basic.dto.Deletion> getSearchManager() {
         throw new RuntimeException("This method is not implemented yet.");
     }
 

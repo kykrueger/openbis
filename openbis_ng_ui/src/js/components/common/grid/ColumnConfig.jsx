@@ -2,6 +2,7 @@ import _ from 'lodash'
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import { DragDropContext, Droppable } from 'react-beautiful-dnd'
+import Container from '@src/js/components/common/form/Container.jsx'
 import IconButton from '@material-ui/core/IconButton'
 import SettingsIcon from '@material-ui/icons/Settings'
 import Popover from '@material-ui/core/Popover'
@@ -16,8 +17,8 @@ const styles = () => ({
   },
   columns: {
     listStyle: 'none',
-    padding: '10px 20px',
-    margin: 0
+    margin: 0,
+    padding: 0
   }
 })
 
@@ -60,7 +61,7 @@ class ColumnConfig extends React.Component {
     return (
       <div className={classes.container}>
         <IconButton onClick={this.handleOpen}>
-          <SettingsIcon />
+          <SettingsIcon fontSize='small' />
         </IconButton>
         <Popover
           open={Boolean(el)}
@@ -78,21 +79,23 @@ class ColumnConfig extends React.Component {
           <DragDropContext onDragEnd={this.handleDragEnd}>
             <Droppable droppableId='root'>
               {provided => (
-                <ol
-                  ref={provided.innerRef}
-                  {...provided.droppableProps}
-                  className={classes.columns}
-                >
-                  {columns.map((column, index) => (
-                    <ColumnConfigRow
-                      key={column.field}
-                      column={column}
-                      index={index}
-                      onVisibleChange={onVisibleChange}
-                    />
-                  ))}
-                  {provided.placeholder}
-                </ol>
+                <Container>
+                  <ol
+                    ref={provided.innerRef}
+                    {...provided.droppableProps}
+                    className={classes.columns}
+                  >
+                    {columns.map((column, index) => (
+                      <ColumnConfigRow
+                        key={column.field}
+                        column={column}
+                        index={index}
+                        onVisibleChange={onVisibleChange}
+                      />
+                    ))}
+                    {provided.placeholder}
+                  </ol>
+                </Container>
               )}
             </Droppable>
           </DragDropContext>

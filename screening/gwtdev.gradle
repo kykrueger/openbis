@@ -11,7 +11,7 @@ if (System.getProperty("openbis.development-build") != null) {
 	    	'google:gwt-debug-panel:1.0',
 	    	'sencha:gxt:2.2.5',
             'sis:sis-base:18.09.0',
-			'fasterxml:jackson-annotations:2.9.7',    	
+			'fasterxml:jackson-annotations:2.9.10',    	
 	    	project(':common'),
 	    	project(path:':common', configuration: 'archives'),
 	    	project(':commonbase'),

@@ -859,7 +859,8 @@ span.fancytree-custom-icon {
     overflow-y: scroll;
 }
 
-.document-editor__editable-container .ck-editor__editable {
+.document-editor__editable-container,
+.document-editor__editable-container > .ck-editor__editable {
     /* Set the dimensions of the "page". */
     width: 85%;
     /* min-height: 21cm; */

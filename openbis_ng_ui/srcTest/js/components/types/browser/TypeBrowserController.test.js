@@ -105,6 +105,7 @@ describe('browser', () => {
   })
 
   test('remove node', async () => {
+    openbis.mockSearchPropertyTypes([fixture.TEST_PROPERTY_TYPE_1_DTO])
     openbis.deleteSampleTypes.mockReturnValue(Promise.resolve())
 
     await controller.load()
@@ -121,10 +122,32 @@ describe('browser', () => {
     await controller.nodeRemoveConfirm()
 
     expect(controller.isRemoveNodeDialogOpen()).toBe(false)
-    const id = new openbis.EntityTypePermId(fixture.TEST_SAMPLE_TYPE_DTO.code)
-    const options = new openbis.SampleTypeDeletionOptions()
-    options.setReason('deleted via ng_ui')
-    expect(openbis.deleteSampleTypes).toHaveBeenCalledWith([id], options)
+
+    const createDeleteTypeOperation = typeCode => {
+      const id = new openbis.EntityTypePermId(typeCode)
+      const options = new openbis.SampleTypeDeletionOptions()
+      options.setReason('deleted via ng_ui')
+      return new openbis.DeleteSampleTypesOperation([id], options)
+    }
+
+    const createDeletePropertyTypeOperation = propertyTypeCode => {
+      const id = new openbis.PropertyTypePermId(propertyTypeCode)
+      const options = new openbis.PropertyTypeDeletionOptions()
+      options.setReason('deleted via ng_ui')
+      return new openbis.DeletePropertyTypesOperation([id], options)
+    }
+
+    const options = new openbis.SynchronousOperationExecutionOptions()
+    options.setExecuteInOrder(true)
+
+    expect(openbis.executeOperations).toHaveBeenCalledWith(
+      [
+        createDeleteTypeOperation(fixture.TEST_SAMPLE_TYPE_DTO.code),
+        createDeletePropertyTypeOperation(fixture.TEST_PROPERTY_TYPE_1_DTO.code)
+      ],
+      options
+    )
+
     expectDeleteTypeAction(
       objectType.OBJECT_TYPE,
       fixture.TEST_SAMPLE_TYPE_DTO.code

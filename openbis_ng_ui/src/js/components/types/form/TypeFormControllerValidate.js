@@ -1,6 +1,5 @@
 import _ from 'lodash'
 import FormValidator from '@src/js/components/common/form/FormValidator.js'
-import openbis from '@src/js/services/openbis.js'
 
 import TypeFormControllerStrategies from './TypeFormControllerStrategies.js'
 
@@ -9,179 +8,117 @@ export default class TypeFormControllerValidate {
     this.controller = controller
     this.context = controller.context
     this.object = controller.object
+    this.validator = new FormValidator()
   }
 
-  execute(autofocus) {
+  async execute(autofocus) {
     const { validate, type, properties } = this.context.getState()
 
     if (!validate) {
       return true
     }
 
-    const [typeErrors, typeErrorsMap] = this._validateType(type)
-    const [propertiesErrors, propertiesErrorsMap] = this._validateProperties(
-      type,
-      properties
-    )
+    const newType = {
+      ...type
+    }
+    const newProperties = properties.map(property => ({
+      ...property
+    }))
 
-    let errorSelection = null
+    this._validateType(newType)
+    this._validateProperties(newType, newProperties)
 
-    if (autofocus) {
-      if (!_.isEmpty(typeErrors)) {
-        errorSelection = {
+    const errors = this.validator.getErrors()
+
+    if (!_.isEmpty(errors) && autofocus) {
+      let selection = null
+
+      const firstError = errors[0]
+      if (firstError.object === newType) {
+        selection = {
           type: 'type',
           params: {
-            part: typeErrors[0].field
+            part: firstError.name
           }
         }
-      } else if (!_.isEmpty(propertiesErrors)) {
-        errorSelection = {
+      } else if (newProperties.includes(firstError.object)) {
+        selection = {
           type: 'property',
           params: {
-            id: propertiesErrors[0].property,
-            part: propertiesErrors[0].errors[0].field
+            id: firstError.object.id,
+            part: firstError.name
           }
         }
       }
+
+      if (selection) {
+        await this.context.setState({
+          selection
+        })
+      }
     }
 
-    this.context.setState(state => {
-      const newType = {
-        ...state.type,
-        errors: typeErrorsMap
-      }
-      const newProperties = state.properties.map(property => ({
-        ...property,
-        errors: propertiesErrorsMap[property.id] || {}
-      }))
-
-      return {
-        type: newType,
-        properties: newProperties
-      }
+    await this.context.setState({
+      type: newType,
+      properties: newProperties
     })
 
-    if (errorSelection) {
-      this.context.setState({
-        selection: errorSelection
-      })
-    }
-
-    return _.isEmpty(typeErrors) && _.isEmpty(propertiesErrors)
+    return _.isEmpty(errors)
   }
 
   _validateType(type) {
     const strategy = this._getStrategy()
-    const errors = []
-
-    FormValidator.validateNotEmpty('Code', 'code', type.code, errors)
-    strategy.validateTypeAttributes(type, errors)
-
-    const errorsMap = errors.reduce((map, error) => {
-      map[error.field] = error.message
-      return map
-    }, {})
-
-    return [errors, errorsMap]
+    this.validator.validateNotEmpty(type, 'code', 'Code')
+    strategy.validateTypeAttributes(type)
   }
 
   _validateProperties(type, properties) {
-    const errors = []
-    const errorsMap = {}
-
     properties.forEach(property => {
-      const propertyErrors = this._validateProperty(type, property)
-
-      if (!_.isEmpty(propertyErrors)) {
-        errors.push({
-          property: property.id,
-          errors: propertyErrors
-        })
-
-        errorsMap[property.id] = propertyErrors.reduce((map, error) => {
-          map[error.field] = error.message
-          return map
-        }, {})
-      }
+      this._validateProperty(type, property)
     })
-
-    return [errors, errorsMap]
   }
 
   _validateProperty(type, property) {
-    const errors = []
+    this.validator.validateNotEmpty(property, 'code', 'Code')
+    this.validator.validateNotEmpty(property, 'label', 'Label')
+    this.validator.validateNotEmpty(property, 'description', 'Description')
+    this.validator.validateNotEmpty(property, 'dataType', 'Data Type')
 
-    FormValidator.validateNotEmpty('Code', 'code', property.code, errors)
-    FormValidator.validateNotEmpty('Label', 'label', property.label, errors)
-    FormValidator.validateNotEmpty(
-      'Description',
-      'description',
-      property.description,
-      errors
-    )
-    FormValidator.validateNotEmpty(
-      'Data Type',
-      'dataType',
-      property.dataType,
-      errors
-    )
-
-    if (property.dataType === openbis.DataType.CONTROLLEDVOCABULARY) {
-      FormValidator.validateNotEmpty(
-        'Vocabulary',
-        'vocabulary',
-        property.vocabulary,
-        errors
-      )
-    } else if (property.dataType === openbis.DataType.MATERIAL) {
-      FormValidator.validateNotEmpty(
-        'Material Type',
-        'materialType',
-        property.materialType,
-        errors
-      )
+    if (property.vocabulary.visible) {
+      this.validator.validateNotEmpty(property, 'vocabulary', 'Vocabulary')
     }
-
-    const typeIsUsed = type.usages > 0
-    const propertyIsNew = !property.original
-    const propertyIsMandatory = property.mandatory
-    const propertyWasMandatory = property.original
-      ? property.original.mandatory
-      : false
-
-    if (
-      typeIsUsed &&
-      propertyIsMandatory &&
-      (propertyIsNew || !propertyWasMandatory)
-    ) {
-      FormValidator.validateNotEmpty(
-        'Initial Value',
+    if (property.materialType.visible) {
+      this.validator.validateNotEmpty(property, 'materialType', 'Material Type')
+    }
+    if (property.initialValueForExistingEntities.visible) {
+      this.validator.validateNotEmpty(
+        property,
         'initialValueForExistingEntities',
-        property.initialValueForExistingEntities,
-        errors
+        'Initial Value'
       )
     }
-
-    return errors
   }
 
   _getStrategy() {
     const strategies = new TypeFormControllerStrategies()
-    strategies.setObjectTypeStrategy(new ObjectTypeStrategy())
-    strategies.setCollectionTypeStrategy(new CollectionTypeStrategy())
-    strategies.setDataSetTypeStrategy(new DataSetTypeStrategy())
-    strategies.setMaterialTypeStrategy(new MaterialTypeStrategy())
+    strategies.extendObjectTypeStrategy(new ObjectTypeStrategy(this))
+    strategies.extendCollectionTypeStrategy(new CollectionTypeStrategy())
+    strategies.extendDataSetTypeStrategy(new DataSetTypeStrategy())
+    strategies.extendMaterialTypeStrategy(new MaterialTypeStrategy())
     return strategies.getStrategy(this.object.type)
   }
 }
 
 class ObjectTypeStrategy {
-  validateTypeAttributes(type, errors) {
-    FormValidator.validateNotEmpty(
-      'Generated code prefix',
+  constructor(executor) {
+    this.validator = executor.validator
+  }
+
+  validateTypeAttributes(type) {
+    this.validator.validateNotEmpty(
+      type,
       'generatedCodePrefix',
-      type.generatedCodePrefix,
-      errors
+      'Generated code prefix'
     )
   }
 }

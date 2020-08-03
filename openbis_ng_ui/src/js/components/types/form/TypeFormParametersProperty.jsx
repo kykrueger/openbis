@@ -1,24 +1,22 @@
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
+import Container from '@src/js/components/common/form/Container.jsx'
+import AutocompleterField from '@src/js/components/common/form/AutocompleterField.jsx'
 import CheckboxField from '@src/js/components/common/form/CheckboxField.jsx'
 import TextField from '@src/js/components/common/form/TextField.jsx'
 import SelectField from '@src/js/components/common/form/SelectField.jsx'
+import Message from '@src/js/components/common/form/Message.jsx'
 import openbis from '@src/js/services/openbis.js'
 import logger from '@src/js/common/logger.js'
 
-import TypeFormWarningUsage from './TypeFormWarningUsage.jsx'
-import TypeFormWarningLegacy from './TypeFormWarningLegacy.jsx'
 import TypeFormHeader from './TypeFormHeader.jsx'
 
 const styles = theme => ({
-  container: {
-    padding: theme.spacing(2)
-  },
   header: {
-    paddingBottom: theme.spacing(2)
+    paddingBottom: theme.spacing(1)
   },
   field: {
-    paddingBottom: theme.spacing(2)
+    paddingBottom: theme.spacing(1)
   }
 })
 
@@ -46,89 +44,16 @@ class TypeFormParametersProperty extends React.PureComponent {
   }
 
   componentDidMount() {
-    this.load()
     this.focus()
   }
 
   componentDidUpdate(prevProps) {
-    const prevProperty = this.getProperty(prevProps)
-    const property = this.getProperty(this.props)
-
-    const prevDataType = prevProperty ? prevProperty.dataType : null
-    const dataType = property ? property.dataType : null
-
-    if (prevDataType !== dataType) {
-      this.load()
-    }
-
     const prevSelection = prevProps.selection
     const selection = this.props.selection
 
     if (prevSelection !== selection) {
       this.focus()
     }
-  }
-
-  load() {
-    const property = this.getProperty(this.props)
-
-    if (property) {
-      const dataType = property.dataType
-
-      if (dataType === openbis.DataType.CONTROLLEDVOCABULARY) {
-        this.loadVocabularies()
-      } else if (dataType === openbis.DataType.MATERIAL) {
-        this.loadMaterialTypes()
-      }
-
-      this.loadDynamicPlugins()
-    }
-  }
-
-  loadDynamicPlugins() {
-    const { objectType } = this.getType()
-    const { controller } = this.props
-    return controller
-      .getFacade()
-      .loadDynamicPlugins(objectType)
-      .then(dynamicPlugins => {
-        this.setState(() => ({
-          dynamicPlugins
-        }))
-      })
-      .catch(error => {
-        controller.getFacade().catch(error)
-      })
-  }
-
-  loadVocabularies() {
-    const { controller } = this.props
-    return controller
-      .getFacade()
-      .loadVocabularies()
-      .then(vocabularies => {
-        this.setState(() => ({
-          vocabularies
-        }))
-      })
-      .catch(error => {
-        controller.getFacade().catch(error)
-      })
-  }
-
-  loadMaterialTypes() {
-    const { controller } = this.props
-    return controller
-      .getFacade()
-      .loadMaterialTypes()
-      .then(materialTypes => {
-        this.setState(() => ({
-          materialTypes
-        }))
-      })
-      .catch(error => {
-        controller.getFacade().catch(error)
-      })
   }
 
   focus() {
@@ -178,10 +103,12 @@ class TypeFormParametersProperty extends React.PureComponent {
     const { classes } = this.props
 
     return (
-      <div className={classes.container}>
+      <Container>
         <TypeFormHeader className={classes.header}>Property</TypeFormHeader>
-        {this.renderWarningLegacy(property)}
-        {this.renderWarningUsage(property)}
+        {this.renderMessageGlobal(property)}
+        {this.renderMessageUsage(property)}
+        {this.renderMessageAssignments(property)}
+        {this.renderScope(property)}
         {this.renderCode(property)}
         {this.renderDataType(property)}
         {this.renderVocabulary(property)}
@@ -194,16 +121,19 @@ class TypeFormParametersProperty extends React.PureComponent {
         {this.renderVisible(property)}
         {this.renderMandatory(property)}
         {this.renderInitialValue(property)}
-      </div>
+      </Container>
     )
   }
 
-  renderWarningLegacy(property) {
-    if (this.isLegacy(property)) {
+  renderMessageGlobal(property) {
+    if (property.scope.value === 'global') {
       const { classes } = this.props
       return (
         <div className={classes.field}>
-          <TypeFormWarningLegacy />
+          <Message type='warning'>
+            This property is global. Changes will also influence other types
+            where this property is used.
+          </Message>
         </div>
       )
     } else {
@@ -211,12 +141,27 @@ class TypeFormParametersProperty extends React.PureComponent {
     }
   }
 
-  renderWarningUsage(property) {
-    if (property.usages > 0) {
-      const { classes } = this.props
+  renderMessageUsage(property) {
+    const { classes } = this.props
+
+    function entities(number) {
+      return number === 0 || number > 1
+        ? `${number} entities`
+        : `${number} entity`
+    }
+
+    function message(property) {
+      return `This property is already used by ${entities(
+        property.usagesGlobal
+      )} (${entities(property.usagesLocal)} of this type and ${entities(
+        property.usagesGlobal - property.usagesLocal
+      )} of other types).`
+    }
+
+    if (property.usagesLocal !== 0 || property.usagesGlobal !== 0) {
       return (
         <div className={classes.field}>
-          <TypeFormWarningUsage subject='property' usages={property.usages} />
+          <Message type='info'>{message(property)}</Message>
         </div>
       )
     } else {
@@ -224,86 +169,57 @@ class TypeFormParametersProperty extends React.PureComponent {
     }
   }
 
-  renderLabel(property) {
+  renderMessageAssignments(property) {
     const { classes } = this.props
-    return (
-      <div className={classes.field}>
-        <TextField
-          reference={this.references.label}
-          label='Label'
-          name='label'
-          mandatory={true}
-          error={property.errors.label}
-          disabled={this.isLegacy(property)}
-          value={property.label}
-          onChange={this.handleChange}
-          onFocus={this.handleFocus}
-          onBlur={this.handleBlur}
-        />
-      </div>
-    )
+
+    function types(number) {
+      return number === 0 || number > 1 ? `${number} types` : `${number} type`
+    }
+
+    function message(property) {
+      return `This property is already assigned to ${types(
+        property.assignments
+      )}.`
+    }
+
+    if (
+      (property.original && property.assignments > 1) ||
+      (!property.original && property.assignments > 0)
+    ) {
+      return (
+        <div className={classes.field}>
+          <Message type='info'>{message(property)}</Message>
+        </div>
+      )
+    } else {
+      return null
+    }
   }
 
-  renderCode(property) {
-    const { classes } = this.props
-    return (
-      <div className={classes.field}>
-        <TextField
-          reference={this.references.code}
-          label='Code'
-          name='code'
-          mandatory={true}
-          error={property.errors.code}
-          disabled={!!property.original}
-          value={property.code}
-          onChange={this.handleChange}
-          onFocus={this.handleFocus}
-          onBlur={this.handleBlur}
-        />
-      </div>
-    )
-  }
+  renderScope(property) {
+    const { visible, enabled, error, value } = { ...property.scope }
 
-  renderDescription(property) {
-    const { classes } = this.props
-    return (
-      <div className={classes.field}>
-        <TextField
-          reference={this.references.description}
-          label='Description'
-          name='description'
-          mandatory={true}
-          error={property.errors.description}
-          disabled={this.isLegacy(property)}
-          value={property.description}
-          onChange={this.handleChange}
-          onFocus={this.handleFocus}
-          onBlur={this.handleBlur}
-        />
-      </div>
-    )
-  }
+    if (!visible) {
+      return null
+    }
 
-  renderDataType(property) {
-    const { classes } = this.props
+    const options = [
+      { label: 'Local', value: 'local' },
+      { label: 'Global', value: 'global' }
+    ]
 
-    const options = openbis.DataType.values.sort().map(dataType => {
-      return {
-        label: dataType,
-        value: dataType
-      }
-    })
-
+    const { mode, classes } = this.props
     return (
       <div className={classes.field}>
         <SelectField
-          reference={this.references.dataType}
-          label='Data Type'
-          name='dataType'
+          reference={this.references.scope}
+          label='Scope'
+          name='scope'
           mandatory={true}
-          error={property.errors.dataType}
-          disabled={property.usages > 0 || this.isLegacy(property)}
-          value={property.dataType}
+          error={error}
+          disabled={!enabled}
+          value={value}
+          mode={mode}
           options={options}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
@@ -313,135 +229,299 @@ class TypeFormParametersProperty extends React.PureComponent {
     )
   }
 
-  renderVocabulary(property) {
-    if (property.dataType === openbis.DataType.CONTROLLEDVOCABULARY) {
-      const { classes } = this.props
-      const { vocabularies = [] } = this.state
+  renderLabel(property) {
+    const { visible, enabled, error, value } = { ...property.label }
 
-      let options = []
+    if (!visible) {
+      return null
+    }
 
-      if (vocabularies.length > 0) {
-        options = vocabularies.map(vocabulary => {
-          return {
-            label: vocabulary.code,
-            value: vocabulary.code
-          }
-        })
-        options.unshift({})
-      }
+    const { mode, classes } = this.props
+    return (
+      <div className={classes.field}>
+        <TextField
+          reference={this.references.label}
+          label='Label'
+          name='label'
+          mandatory={true}
+          error={error}
+          disabled={!enabled}
+          value={value}
+          mode={mode}
+          onChange={this.handleChange}
+          onFocus={this.handleFocus}
+          onBlur={this.handleBlur}
+        />
+      </div>
+    )
+  }
 
+  renderCode(property) {
+    const { visible, enabled, error, value } = { ...property.code }
+
+    if (!visible) {
+      return null
+    }
+
+    const { mode, classes, controller } = this.props
+
+    if (property.scope.value === 'local') {
       return (
         <div className={classes.field}>
-          <SelectField
-            reference={this.references.vocabulary}
-            label='Vocabulary'
-            name='vocabulary'
+          <TextField
+            reference={this.references.code}
+            label='Code'
+            name='code'
             mandatory={true}
-            error={property.errors.vocabulary}
-            disabled={property.usages > 0 || this.isLegacy(property)}
-            value={property.vocabulary}
-            options={options}
+            error={error}
+            disabled={!enabled}
+            value={value}
+            mode={mode}
             onChange={this.handleChange}
             onFocus={this.handleFocus}
             onBlur={this.handleBlur}
           />
         </div>
       )
-    } else {
+    } else if (property.scope.value === 'global') {
+      const { globalPropertyTypes = [] } = controller.getDictionaries()
+
+      const options = globalPropertyTypes.map(globalPropertyType => {
+        return globalPropertyType.code
+      })
+
+      return (
+        <div className={classes.field}>
+          <AutocompleterField
+            reference={this.references.code}
+            label='Code'
+            name='code'
+            options={options}
+            mandatory={true}
+            error={error}
+            disabled={!enabled}
+            value={value}
+            mode={mode}
+            onChange={this.handleChange}
+            onFocus={this.handleFocus}
+            onBlur={this.handleBlur}
+          />
+        </div>
+      )
+    }
+  }
+
+  renderDescription(property) {
+    const { visible, enabled, error, value } = { ...property.description }
+
+    if (!visible) {
       return null
     }
+
+    const { mode, classes } = this.props
+    return (
+      <div className={classes.field}>
+        <TextField
+          reference={this.references.description}
+          label='Description'
+          name='description'
+          mandatory={true}
+          error={error}
+          disabled={!enabled}
+          value={value}
+          mode={mode}
+          onChange={this.handleChange}
+          onFocus={this.handleFocus}
+          onBlur={this.handleBlur}
+        />
+      </div>
+    )
+  }
+
+  renderDataType(property) {
+    const { visible, enabled, error, value } = { ...property.dataType }
+
+    if (!visible) {
+      return null
+    }
+
+    const options = openbis.DataType.values.sort().map(dataType => {
+      return {
+        label: dataType,
+        value: dataType
+      }
+    })
+
+    const { mode, classes } = this.props
+    return (
+      <div className={classes.field}>
+        <SelectField
+          reference={this.references.dataType}
+          label='Data Type'
+          name='dataType'
+          mandatory={true}
+          error={error}
+          disabled={!enabled}
+          value={value}
+          options={options}
+          mode={mode}
+          onChange={this.handleChange}
+          onFocus={this.handleFocus}
+          onBlur={this.handleBlur}
+        />
+      </div>
+    )
+  }
+
+  renderVocabulary(property) {
+    const { visible, enabled, error, value } = { ...property.vocabulary }
+
+    if (!visible) {
+      return null
+    }
+
+    const { mode, classes, controller } = this.props
+    const { vocabularies = [] } = controller.getDictionaries()
+
+    let options = []
+
+    if (vocabularies.length > 0) {
+      options = vocabularies.map(vocabulary => {
+        return {
+          label: vocabulary.code,
+          value: vocabulary.code
+        }
+      })
+      options.unshift({})
+    }
+
+    return (
+      <div className={classes.field}>
+        <SelectField
+          reference={this.references.vocabulary}
+          label='Vocabulary'
+          name='vocabulary'
+          mandatory={true}
+          error={error}
+          disabled={!enabled}
+          value={value}
+          options={options}
+          mode={mode}
+          onChange={this.handleChange}
+          onFocus={this.handleFocus}
+          onBlur={this.handleBlur}
+        />
+      </div>
+    )
   }
 
   renderMaterialType(property) {
-    if (property.dataType === openbis.DataType.MATERIAL) {
-      const { classes } = this.props
-      const { materialTypes = [] } = this.state
+    const { visible, enabled, error, value } = { ...property.materialType }
 
-      let options = []
-
-      if (materialTypes.length > 0) {
-        options = materialTypes.map(materialType => {
-          return {
-            label: materialType.code,
-            value: materialType.code
-          }
-        })
-        options.unshift({})
-      }
-
-      return (
-        <div className={classes.field}>
-          <SelectField
-            reference={this.references.materialType}
-            label='Material Type'
-            name='materialType'
-            mandatory={true}
-            error={property.errors.materialType}
-            disabled={property.usages > 0 || this.isLegacy(property)}
-            value={property.materialType}
-            options={options}
-            onChange={this.handleChange}
-            onFocus={this.handleFocus}
-            onBlur={this.handleBlur}
-          />
-        </div>
-      )
-    } else {
+    if (!visible) {
       return null
     }
+
+    const { mode, classes, controller } = this.props
+    const { materialTypes = [] } = controller.getDictionaries()
+
+    let options = []
+
+    if (materialTypes.length > 0) {
+      options = materialTypes.map(materialType => {
+        return {
+          label: materialType.code,
+          value: materialType.code
+        }
+      })
+      options.unshift({})
+    }
+
+    return (
+      <div className={classes.field}>
+        <SelectField
+          reference={this.references.materialType}
+          label='Material Type'
+          name='materialType'
+          mandatory={true}
+          error={error}
+          disabled={!enabled}
+          value={value}
+          options={options}
+          mode={mode}
+          onChange={this.handleChange}
+          onFocus={this.handleFocus}
+          onBlur={this.handleBlur}
+        />
+      </div>
+    )
   }
 
   renderSchema(property) {
-    if (property.dataType === openbis.DataType.XML) {
-      const { classes } = this.props
-      return (
-        <div className={classes.field}>
-          <TextField
-            reference={this.references.schema}
-            label='XML Schema'
-            name='schema'
-            error={property.errors.schema}
-            disabled={this.isLegacy(property)}
-            value={property.schema}
-            multiline={true}
-            onChange={this.handleChange}
-            onFocus={this.handleFocus}
-            onBlur={this.handleBlur}
-          />
-        </div>
-      )
-    } else {
+    const { visible, enabled, error, value } = { ...property.schema }
+
+    if (!visible) {
       return null
     }
+
+    const { mode, classes } = this.props
+
+    return (
+      <div className={classes.field}>
+        <TextField
+          reference={this.references.schema}
+          label='XML Schema'
+          name='schema'
+          error={error}
+          disabled={!enabled}
+          value={value}
+          multiline={true}
+          mode={mode}
+          onChange={this.handleChange}
+          onFocus={this.handleFocus}
+          onBlur={this.handleBlur}
+        />
+      </div>
+    )
   }
 
   renderTransformation(property) {
-    if (property.dataType === openbis.DataType.XML) {
-      const { classes } = this.props
-      return (
-        <div className={classes.field}>
-          <TextField
-            reference={this.references.transformation}
-            label='XSLT Script'
-            name='transformation'
-            error={property.errors.transformation}
-            disabled={this.isLegacy(property)}
-            value={property.transformation}
-            multiline={true}
-            onChange={this.handleChange}
-            onFocus={this.handleFocus}
-            onBlur={this.handleBlur}
-          />
-        </div>
-      )
-    } else {
+    const { visible, enabled, error, value } = { ...property.transformation }
+
+    if (!visible) {
       return null
     }
+
+    const { mode, classes } = this.props
+
+    return (
+      <div className={classes.field}>
+        <TextField
+          reference={this.references.transformation}
+          label='XSLT Script'
+          name='transformation'
+          error={error}
+          disabled={!enabled}
+          value={value}
+          multiline={true}
+          mode={mode}
+          onChange={this.handleChange}
+          onFocus={this.handleFocus}
+          onBlur={this.handleBlur}
+        />
+      </div>
+    )
   }
 
   renderDynamicPlugin(property) {
-    const { classes } = this.props
-    const { dynamicPlugins = [] } = this.state
+    const { visible, enabled, error, value } = { ...property.plugin }
+
+    if (!visible) {
+      return null
+    }
+
+    const { mode, classes, controller } = this.props
+    const { dynamicPlugins = [] } = controller.getDictionaries()
 
     let options = []
 
@@ -461,10 +541,11 @@ class TypeFormParametersProperty extends React.PureComponent {
           reference={this.references.plugin}
           label='Dynamic Plugin'
           name='plugin'
-          error={property.errors.plugin}
-          disabled={property.usages > 0}
-          value={property.plugin}
+          error={error}
+          disabled={!enabled}
+          value={value}
           options={options}
+          mode={mode}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
           onBlur={this.handleBlur}
@@ -474,14 +555,23 @@ class TypeFormParametersProperty extends React.PureComponent {
   }
 
   renderMandatory(property) {
-    const { classes } = this.props
+    const { visible, enabled, error, value } = { ...property.mandatory }
+
+    if (!visible) {
+      return null
+    }
+
+    const { mode, classes } = this.props
     return (
       <div className={classes.field}>
         <CheckboxField
           reference={this.references.mandatory}
           label='Mandatory'
           name='mandatory'
-          value={property.mandatory}
+          error={error}
+          disabled={!enabled}
+          value={value}
+          mode={mode}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
           onBlur={this.handleBlur}
@@ -491,49 +581,52 @@ class TypeFormParametersProperty extends React.PureComponent {
   }
 
   renderInitialValue(property) {
-    const { classes, type } = this.props
+    const { visible, enabled, error, value } = {
+      ...property.initialValueForExistingEntities
+    }
 
-    const typeIsUsed = type.usages > 0
-    const propertyIsNew = !property.original
-    const propertyIsMandatory = property.mandatory
-    const propertyWasMandatory = property.original
-      ? property.original.mandatory
-      : false
-
-    if (
-      typeIsUsed &&
-      propertyIsMandatory &&
-      (propertyIsNew || !propertyWasMandatory)
-    ) {
-      return (
-        <div className={classes.field}>
-          <TextField
-            reference={this.references.initialValueForExistingEntities}
-            label='Initial Value'
-            name='initialValueForExistingEntities'
-            mandatory={true}
-            error={property.errors.initialValueForExistingEntities}
-            value={property.initialValueForExistingEntities}
-            onChange={this.handleChange}
-            onFocus={this.handleFocus}
-            onBlur={this.handleBlur}
-          />
-        </div>
-      )
-    } else {
+    if (!visible) {
       return null
     }
+
+    const { mode, classes } = this.props
+    return (
+      <div className={classes.field}>
+        <TextField
+          reference={this.references.initialValueForExistingEntities}
+          label='Initial Value'
+          name='initialValueForExistingEntities'
+          mandatory={true}
+          error={error}
+          disabled={!enabled}
+          value={value}
+          mode={mode}
+          onChange={this.handleChange}
+          onFocus={this.handleFocus}
+          onBlur={this.handleBlur}
+        />
+      </div>
+    )
   }
 
   renderVisible(property) {
-    const { classes } = this.props
+    const { visible, enabled, error, value } = { ...property.showInEditView }
+
+    if (!visible) {
+      return null
+    }
+
+    const { mode, classes } = this.props
     return (
       <div className={classes.field}>
         <CheckboxField
           reference={this.references.showInEditView}
           label='Visible'
           name='showInEditView'
-          value={property.showInEditView}
+          error={error}
+          disabled={!enabled}
+          value={value}
+          mode={mode}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
           onBlur={this.handleBlur}
@@ -557,12 +650,6 @@ class TypeFormParametersProperty extends React.PureComponent {
     } else {
       return null
     }
-  }
-
-  isLegacy(property) {
-    return (
-      property.original && !property.code.startsWith(this.props.type.code + '.')
-    )
   }
 }
 

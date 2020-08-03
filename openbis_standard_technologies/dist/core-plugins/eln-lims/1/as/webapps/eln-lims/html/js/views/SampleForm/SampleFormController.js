@@ -254,26 +254,45 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 			var properties = $.extend(true, {}, sample.properties); //Deep copy that can be modified before sending to the server and gets discarded in case of failure / simulates a rollback.
 			
 			//
-			// Patch annotations in
+			// Annotations
 			//
+
+			var parentsAnnotationsState = _this._sampleFormModel.sampleLinksParents.getAnnotations();
+			var childrenAnnotationsState = _this._sampleFormModel.sampleLinksChildren.getAnnotations();
+
 			if(newSampleParents) {
-				var annotationsStateObj = FormUtil.getAnnotationsFromSample(sample);
 				var writeNew = false;
 				for(var pIdx = 0; pIdx < newSampleParents.length; pIdx++) {
 					var newSampleParent = newSampleParents[pIdx];
 					if(newSampleParent.annotations) {
 						for(var annotationKey in newSampleParent.annotations) {
 							if (newSampleParent.annotations.hasOwnProperty(annotationKey)) {
-								FormUtil.writeAnnotationForSample(annotationsStateObj, newSampleParent, annotationKey, newSampleParent.annotations[annotationKey]);
+								FormUtil.writeAnnotationForSample(parentsAnnotationsState, newSampleParent, annotationKey, newSampleParent.annotations[annotationKey]);
 								writeNew = true;
 							}
 						}
 					}
 				}
-				if(writeNew) {
-					properties["$ANNOTATIONS_STATE"] = FormUtil.getXMLFromAnnotations(annotationsStateObj);
-				}
 			}
+
+            var mergedAnnotationsState = {};
+            for(var key in parentsAnnotationsState) {
+                if(key in mergedAnnotationsState) {
+                   throw 'Error merging annotations: Do you have the same object as parent or children?';
+                }
+                mergedAnnotationsState[key] = parentsAnnotationsState[key];
+            }
+            for(var key in childrenAnnotationsState) {
+                if(key in mergedAnnotationsState) {
+                   throw 'Error merging annotations: Do you have the same object as parent or children?';
+                }
+                mergedAnnotationsState[key] = childrenAnnotationsState[key];
+            }
+
+            if(!profile.enableNewAnnotationsBackend) { // Used by openBIS 19.X
+			    properties["$ANNOTATIONS_STATE"] = FormUtil.getXMLFromAnnotations(mergedAnnotationsState);
+            }
+
 			//
 			
 			var experimentIdentifier = sample.experimentIdentifierOrNull;
@@ -402,7 +421,7 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 			if(profile.getDefaultDataStoreCode()) {
 				
 				mainController.serverFacade.createReportFromAggregationService(profile.getDefaultDataStoreCode(), parameters, function(response) {
-					_this._createUpdateCopySampleCallback(_this, isCopyWithNewCode, response, samplesToDelete);
+					_this._createUpdateCopySampleCallback(_this, isCopyWithNewCode, response, samplesToDelete, parentsAnnotationsState, childrenAnnotationsState);
 				});
 				
 			} else {
@@ -414,7 +433,7 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 		return false;
 	}
 	
-	this._createUpdateCopySampleCallback = function(_this, isCopyWithNewCode, response, samplesToDelete) {
+	this._createUpdateCopySampleCallback = function(_this, isCopyWithNewCode, response, samplesToDelete, parentsAnnotationsState, childrenAnnotationsState) {
 		if(response.error) { //Error Case 1
 			Util.showError(response.error.message, function() {Util.unblockUI();});
 		} else if (response.result.columns[1].title === "Error") { //Error Case 2
@@ -463,32 +482,96 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 				}
 				searchUntilFound(); //First call
 			}
-			
-			if(samplesToDelete) {
-			    mainController.serverFacade.trashStorageSamplesWithoutParents(samplesToDelete,
-			                                                                    "Deleted to trashcan from eln sample form " + _this._sampleFormModel.sample.identifier,
-			                                                                    function(response) {
-			                                                                        Util.showSuccess(message, callbackOk);
-			                                                                    });
 
-//				mainController.serverFacade.deleteSamples(samplesToDelete,  "Deleted to trashcan from eln sample form " + _this._sampleFormModel.sample.identifier,
-//															function(response) {
-//																if(response.error) {
-//																	Util.showError("Deletions failed, other changes were committed: " + response.error.message, callbackOk);
-//																} else {
-//																	Util.showSuccess(message, callbackOk);
-//																}
-//																_this._sampleFormModel.isFormDirty = false;
-//															},
-//															false);
-			} else {
-				Util.showSuccess(message, callbackOk);
-				_this._sampleFormModel.isFormDirty = false;
+			if(profile.enableNewAnnotationsBackend) { // Branch for openBIS 20.X
+	            require([ "as/dto/sample/id/SamplePermId", "as/dto/sample/update/SampleUpdate" ],
+                    function(SamplePermId, SampleUpdate) {
+                        var sampleUpdate = new SampleUpdate();
+                        sampleUpdate.setSampleId(new SamplePermId(permId));
+                        if(parentsAnnotationsState) {
+                            // Add annotations
+                            for(var parentPermId in parentsAnnotationsState) {
+                                var parentAnnotation = parentsAnnotationsState[parentPermId];
+                                delete parentAnnotation["identifier"];
+                                delete parentAnnotation["sampleType"];
+                                for(var annotationKey in parentAnnotation) {
+                                    sampleUpdate.relationship(new SamplePermId(parentPermId)).addParentAnnotation(annotationKey, parentAnnotation[annotationKey]);
+                                }
+                            }
+                            // Update annotations
+                            // Adding an existing annotation, overrides the old one, updating it.
+                            // Remove annotations
+                            // Adding an emtpy string on exiting annotation, effectively deletes the value.
+                        }
+                        if(childrenAnnotationsState) {
+                            // Add annotations
+                            for(var childPermId in childrenAnnotationsState) {
+                                var childAnnotation = childrenAnnotationsState[childPermId];
+                                delete childAnnotation["identifier"];
+                                delete childAnnotation["sampleType"];
+                                for(var annotationKey in childAnnotation) {
+                                    sampleUpdate.relationship(new SamplePermId(childPermId)).addChildAnnotation(annotationKey, childAnnotation[annotationKey]);
+                                }
+                            }
+                            // Update annotations
+                            // Adding an existing annotation, overrides the old one, updating it.
+                            // Remove annotations
+                            // Adding an emtpy string on exiting annotation, effectively deletes the value.
+                        }
+                        mainController.openbisV3.updateSamples([sampleUpdate]).done(function() {
+                            if(samplesToDelete) {
+                                mainController.serverFacade.trashStorageSamplesWithoutParents(samplesToDelete,
+                                "Deleted to trashcan from eln sample form " + _this._sampleFormModel.sample.identifier,
+                                function(response) {
+                                    Util.showSuccess(message, callbackOk);
+                                });
+                            } else {
+                                Util.showSuccess(message, callbackOk);
+                                _this._sampleFormModel.isFormDirty = false;
+                            }
+                        }).fail(function(result) {
+                            Util.showError("Failed to save annotations: " + console.log(JSON.stringify(result)), function() {Util.unblockUI();});
+                        });
+                });
+			} else { // Branch for openBIS 19.X
+                if(samplesToDelete) {
+                    mainController.serverFacade.trashStorageSamplesWithoutParents(samplesToDelete,
+                        "Deleted to trashcan from eln sample form " + _this._sampleFormModel.sample.identifier,
+                        function(response) {
+                            Util.showSuccess(message, callbackOk);
+                    });
+                } else {
+                    Util.showSuccess(message, callbackOk);
+                    _this._sampleFormModel.isFormDirty = false;
+                }
 			}
-			
 			
 		} else { //This should never happen
 			Util.showError("Unknown Error.", function() {Util.unblockUI();});
 		}
+	}
+
+	this.getAnnotationsState = function(type) {
+        // Used by openBIS 19.X : Check if annotations can't be saved
+        if(!profile.enableNewAnnotationsBackend) {
+            var isStateFieldAvailable = false;
+            if(this._sampleFormModel.sample) {
+                var availableFields = profile.getAllPropertiCodesForTypeCode(this._sampleFormModel.sample.sampleTypeCode);
+                var pos = $.inArray("$ANNOTATIONS_STATE", availableFields);
+                isStateFieldAvailable = (pos !== -1);
+            }
+            if(!isStateFieldAvailable && this.sampleTypeHints && this.sampleTypeHints.length !== 0) { //Indicates annotations are needed
+                Util.showError("You need a property with code ANNOTATIONS_STATE on this entity to store the state of the annotations.");
+                return;
+            }
+        }
+
+        var typeAnnotations = {};
+        if(this._sampleFormModel.mode === FormMode.CREATE) {
+            // Nothing to load
+        } else {
+            typeAnnotations = FormUtil.getAnnotationsFromSample(this._sampleFormModel.v3_sample, type);
+        }
+        return typeAnnotations;
 	}
 }

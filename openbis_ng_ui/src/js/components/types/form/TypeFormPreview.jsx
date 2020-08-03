@@ -2,19 +2,21 @@ import _ from 'lodash'
 import React from 'react'
 import { DragDropContext, Droppable } from 'react-beautiful-dnd'
 import { withStyles } from '@material-ui/core/styles'
+import Container from '@src/js/components/common/form/Container.jsx'
 import logger from '@src/js/common/logger.js'
 
 import TypeFormPreviewHeader from './TypeFormPreviewHeader.jsx'
 import TypeFormPreviewProperty from './TypeFormPreviewProperty.jsx'
 import TypeFormPreviewSection from './TypeFormPreviewSection.jsx'
 
-const styles = theme => ({
+const styles = () => ({
   container: {
     flex: '1 1 auto',
-    display: 'flex',
-    padding: `${theme.spacing(2)}px ${theme.spacing(4)}px`
+    display: 'flex'
   },
-  form: {},
+  form: {
+    width: '100%'
+  },
   droppable: {
     display: 'flex',
     flexDirection: 'column',
@@ -74,7 +76,7 @@ class TypeFormPreview extends React.PureComponent {
     const { classes, type, sections } = this.props
 
     return (
-      <div className={classes.container} onClick={this.handleClick}>
+      <Container className={classes.container} onClick={this.handleClick}>
         <div className={classes.form}>
           <TypeFormPreviewHeader type={type} />
           <DragDropContext
@@ -97,12 +99,12 @@ class TypeFormPreview extends React.PureComponent {
             </Droppable>
           </DragDropContext>
         </div>
-      </div>
+      </Container>
     )
   }
 
   renderSection(section, index) {
-    const { properties, selection, onSelectionChange } = this.props
+    const { mode, properties, selection, onSelectionChange } = this.props
 
     const sectionProperties = section.properties.map(id =>
       _.find(properties, ['id', id])
@@ -114,6 +116,7 @@ class TypeFormPreview extends React.PureComponent {
         section={section}
         index={index}
         selection={selection}
+        mode={mode}
         onSelectionChange={onSelectionChange}
       >
         {this.renderProperties(sectionProperties, 0)}
@@ -122,7 +125,7 @@ class TypeFormPreview extends React.PureComponent {
   }
 
   renderProperties(properties, index) {
-    const { controller, selection, onSelectionChange } = this.props
+    const { mode, controller, selection, onSelectionChange } = this.props
 
     return properties.map((property, offset) => {
       return (
@@ -132,6 +135,7 @@ class TypeFormPreview extends React.PureComponent {
           property={property}
           index={index + offset}
           selection={selection}
+          mode={mode}
           onSelectionChange={onSelectionChange}
         />
       )

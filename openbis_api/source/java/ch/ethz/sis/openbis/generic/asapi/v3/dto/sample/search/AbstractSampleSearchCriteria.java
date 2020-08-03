@@ -62,7 +62,7 @@ public abstract class AbstractSampleSearchCriteria<T extends AbstractSampleSearc
         with(new NoSpaceSearchCriteria());
         return (T) this;
     }
-    
+
     public ProjectSearchCriteria withProject()
     {
         return with(new ProjectSearchCriteria());
@@ -99,14 +99,16 @@ public abstract class AbstractSampleSearchCriteria<T extends AbstractSampleSearc
         return with(new SampleTypeSearchCriteria());
     }
 
-    public SampleSearchCriteria withOrOperator()
+    @SuppressWarnings("unchecked")
+    public T withOrOperator()
     {
-        return (SampleSearchCriteria) withOperator(SearchOperator.OR);
+        return (T) withOperator(SearchOperator.OR);
     }
 
-    public SampleSearchCriteria withAndOperator()
+    @SuppressWarnings("unchecked")
+    public T withAndOperator()
     {
-        return (SampleSearchCriteria) withOperator(SearchOperator.AND);
+        return (T) withOperator(SearchOperator.AND);
     }
 
     public SampleSearchRelation getRelation()

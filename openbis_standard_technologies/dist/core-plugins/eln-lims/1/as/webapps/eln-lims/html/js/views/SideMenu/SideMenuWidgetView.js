@@ -636,7 +636,8 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
                             var sampleIsExperiment = sample.type.code.indexOf("EXPERIMENT") > -1;
                             var sampleTypeOnNav = profile.showOnNav(sample.type.code);
     						var sampleExperimentIdentifier = sample.experiment.identifier.identifier;
-                            if(sampleIsExperiment || sampleTypeOnNav) {
+                            if((sampleIsExperiment || sampleTypeOnNav) &&
+                                profile.showOnNav(sample.type.code)) {
                                 var parentInELN = false;
                                 if(sample.parents) {
                                     for(var pIdx = 0; pIdx < sample.parents.length; pIdx++) {
@@ -745,7 +746,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
                         
                         if(samplesToShow.length > 50) {
                             var toExecute = function() {
-                                Util.blockUIConfirm("Do you want to show " + samplesWithoutELNParents.length + " " + ELNDictionary.Samples + " on the tree?",
+                                Util.blockUIConfirm("Do you want to show " + samplesToShow.length + " " + ELNDictionary.Samples + " on the tree?",
                                         getOkResultsFunction(dfd, samplesToShow),
                                         getCancelResultsFunction(dfd));
                             };

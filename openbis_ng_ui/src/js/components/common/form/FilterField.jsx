@@ -7,15 +7,25 @@ import FilterIcon from '@material-ui/icons/FilterList'
 import CloseIcon from '@material-ui/icons/Close'
 import logger from '@src/js/common/logger.js'
 
-const styles = () => ({
+const styles = theme => ({
   field: {
     width: '100%'
   },
   input: {
-    height: '35px'
+    fontSize: theme.typography.body2.fontSize,
+    height: '26px'
+  },
+  underline: {
+    '&:before': {
+      borderBottomColor: theme.palette.border.primary
+    }
   },
   adornment: {
-    margin: '8px'
+    margin: '8px',
+    marginLeft: '10px'
+  },
+  adornmentButton: {
+    padding: '4px'
   },
   adornmentSpacer: {
     width: '64px'
@@ -56,9 +66,11 @@ class FilterField extends React.Component {
           startAdornment: this.renderFilterIcon(),
           endAdornment: this.renderFilterClearIcon(),
           classes: {
-            input: classes.input
+            input: classes.input,
+            underline: classes.underline
           }
         }}
+        margin='none'
       />
     )
   }
@@ -72,7 +84,7 @@ class FilterField extends React.Component {
           root: classes.adornment
         }}
       >
-        <FilterIcon />
+        <FilterIcon fontSize='small' />
       </InputAdornment>
     )
   }
@@ -88,8 +100,11 @@ class FilterField extends React.Component {
             root: classes.adornment
           }}
         >
-          <IconButton onMouseDown={this.handleFilterClear}>
-            <CloseIcon />
+          <IconButton
+            onMouseDown={this.handleFilterClear}
+            classes={{ root: classes.adornmentButton }}
+          >
+            <CloseIcon fontSize='small' />
           </IconButton>
         </InputAdornment>
       )

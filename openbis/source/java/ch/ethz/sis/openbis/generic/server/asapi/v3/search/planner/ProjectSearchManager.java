@@ -23,7 +23,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.search.ProjectSearchCrit
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PEMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 
 import java.util.Collection;
@@ -35,13 +35,13 @@ import java.util.Set;
  *
  * @author Viktor Kovtun
  */
-public class ProjectSearchManager extends AbstractSearchManager<ProjectSearchCriteria, Project, Long>
+public class ProjectSearchManager extends AbstractLocalSearchManager<ProjectSearchCriteria, Project, Long>
 {
 
     public ProjectSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
-            final IID2PETranslator<Long> idsTranslator)
+            final IID2PEMapper<Long, Long> idsMapper)
     {
-        super(searchDAO, authProvider, idsTranslator);
+        super(searchDAO, authProvider, idsMapper);
     }
 
     @Override
@@ -52,7 +52,7 @@ public class ProjectSearchManager extends AbstractSearchManager<ProjectSearchCri
 
     @Override
     public Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation, final ProjectSearchCriteria criteria,
-            final SortOptions<Project> sortOptions,
+
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
         return super.searchForIDs(userId, authorisationInformation, criteria, idsColumnName, TableMapper.PROJECT);

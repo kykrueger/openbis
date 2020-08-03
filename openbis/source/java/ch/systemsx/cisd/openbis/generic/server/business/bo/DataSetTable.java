@@ -91,6 +91,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.Session;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SampleIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.managed_property.IManagedPropertyEvaluatorFactory;
+import ch.systemsx.cisd.openbis.generic.shared.managed_property.api.IEntityInformationProvider;
 import ch.systemsx.cisd.openbis.generic.shared.translator.DataSetTranslator;
 import ch.systemsx.cisd.openbis.generic.shared.util.HibernateUtils;
 
@@ -221,10 +222,11 @@ public final class DataSetTable extends AbstractDataSetBusinessObject implements
     public DataSetTable(IDAOFactory daoFactory, IDataStoreServiceFactory dssFactory,
             Session session, IRelationshipService relationshipService,
             IServiceConversationClientManagerLocal conversationClient,
+            IEntityInformationProvider entityInformationProvider,
             IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory,
             IMultiplexer multiplexer, DataSetTypeWithoutExperimentChecker dataSetTypeChecker)
     {
-        super(daoFactory, session, relationshipService, conversationClient,
+        super(daoFactory, session, relationshipService, conversationClient, entityInformationProvider,
                 managedPropertyEvaluatorFactory, dataSetTypeChecker);
         this.dssFactory = dssFactory;
         this.multiplexer = multiplexer;
@@ -791,15 +793,43 @@ public final class DataSetTable extends AbstractDataSetBusinessObject implements
     {
         Map<DataStorePE, List<ExternalDataPE>> datasetsByStore = groupExternalDataByDataStores();
         Map<DataStoreWithService, List<ExternalDataPE>> datasetsWithService =
-                enrichWithService(datasetsByStore);
+                removeDataStoresWhereArchivingIsCurrentlyNotPossible(enrichWithService(datasetsByStore));
 
         DataSetArchivingStatus pendingStatus =
                 (removeFromDataStore) ? DataSetArchivingStatus.ARCHIVE_PENDING
                         : DataSetArchivingStatus.BACKUP_PENDING;
         int result =
-                filterByStatusAndUpdate(datasetsByStore, DataSetArchivingStatus.AVAILABLE,
+                filterByStatusAndUpdate(remap(datasetsWithService), DataSetArchivingStatus.AVAILABLE,
                         pendingStatus);
+        
         performArchiving(datasetsWithService, removeFromDataStore, options);
+        return result;
+    }
+    
+    private Map<DataStorePE, List<ExternalDataPE>> remap(Map<DataStoreWithService, List<ExternalDataPE>> datasetsWithService)
+    {
+        Map<DataStorePE, List<ExternalDataPE>> result = new HashMap<>();
+        for (Entry<DataStoreWithService, List<ExternalDataPE>> entry : datasetsWithService.entrySet())
+        {
+            result.put(entry.getKey().dataStore, entry.getValue());
+        }
+        return result;
+    }
+
+    private Map<DataStoreWithService, List<ExternalDataPE>> removeDataStoresWhereArchivingIsCurrentlyNotPossible(Map<DataStoreWithService, List<ExternalDataPE>> datasetsWithService)
+    {
+        Map<DataStoreWithService, List<ExternalDataPE>> result = new HashMap<>();
+        for (Entry<DataStoreWithService, List<ExternalDataPE>> entry : datasetsWithService.entrySet())
+        {
+            DataStoreWithService storeWithService = entry.getKey();
+            if (storeWithService.service.isArchivingPossible(storeWithService.dataStore.getSessionToken()))
+            {
+                result.put(storeWithService, entry.getValue());
+            } else
+            {
+                operationLog.warn("Archiving is currently not possible on Data Store " + storeWithService.dataStore.getCode());
+            }
+        }
         return result;
     }
 

@@ -26,7 +26,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.SearchProcessingS
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.SearchProcessingServicesOperationResult;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.ISearchObjectExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.SearchObjectsOperationExecutor;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ILocalSearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.AbstractTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.ITranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.TranslationContext;
@@ -66,7 +66,7 @@ public class SearchProcessingServicesOperationExecutor extends
     }
 
     @Override
-    protected ISearchManager<ProcessingServiceSearchCriteria, ProcessingService, ProcessingService> getSearchManager()
+    protected ILocalSearchManager<ProcessingServiceSearchCriteria, ProcessingService, ProcessingService> getSearchManager()
     {
         throw new RuntimeException("This method is not implemented yet.");
     }

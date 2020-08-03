@@ -84,10 +84,10 @@ public class SynchronizationConfigReader
 
     private static final String SPACE_WHITE_LIST_PROPERTY_NAME = "space-white-list";
 
-    private static final String MASTER_DATA_UPDATE_PROPERTY_NAME = "master-data-update";
+    private static final String MASTER_DATA_UPDATE_ALLOWED_PROPERTY_NAME = "master-data-update-allowed";
 
     private static final String PROPERTY_UNASSIGNMENT_ALLOWED_PROPERTY_NAME = "property-unassignment-allowed";
-    
+
     private static final String DELETION_ALLOWED_PROPERTY_NAME = "deletion-allowed";
 
     private static final String KEEP_ORIGINAL_TIMESTAMPS_AND_USERS_PROPERTY_NAME = "keep-original-timestamps-and-users";
@@ -132,7 +132,7 @@ public class SynchronizationConfigReader
             config.setEmailAddresses(reader.getString(section, EMAIL_ADDRESSES_PROPERTY_NAME, null, true));
             config.setDataSourceAlias(reader.getString(section, DATA_SOURCE_ALIAS_PROPERTY_NAME, section, false));
             String defaultLogFilePath = DEFAULT_LOG_FILE_PATH.replaceFirst(Pattern.quote("{alias}"), config.getDataSourceAlias());
-            config.setLogFilePath(reader.getString(section, LOG_FILE_PROPERTY_NAME, defaultLogFilePath, false) 
+            config.setLogFilePath(reader.getString(section, LOG_FILE_PROPERTY_NAME, defaultLogFilePath, false)
                     + new SimpleDateFormat(".yyyy-MM-dd_HH-mm-ss", Locale.US).format(new Date()));
             config.setDataSourceURI(reader.getString(section, DATA_SOURCE_URL_PROPERTY_NAME, null, true));
             config.setDataSourceOpenbisURL(reader.getString(section, DATA_SOURCE_OPENBIS_URL_PROPERTY_NAME, null, true));
@@ -192,7 +192,7 @@ public class SynchronizationConfigReader
             {
                 config.setVerbose(true);
             }
-            config.setMasterDataUpdate(reader.getBoolean(section, MASTER_DATA_UPDATE_PROPERTY_NAME, true));
+            config.setMasterDataUpdateAllowed(reader.getBoolean(section, MASTER_DATA_UPDATE_ALLOWED_PROPERTY_NAME, false));
             config.setDeletionAllowed(reader.getBoolean(section, DELETION_ALLOWED_PROPERTY_NAME, false));
             config.setPropertyUnassignmentAllowed(reader.getBoolean(section, PROPERTY_UNASSIGNMENT_ALLOWED_PROPERTY_NAME, false));
             config.setKeepOriginalTimestampsAndUsers(reader.getBoolean(section, KEEP_ORIGINAL_TIMESTAMPS_AND_USERS_PROPERTY_NAME, true));

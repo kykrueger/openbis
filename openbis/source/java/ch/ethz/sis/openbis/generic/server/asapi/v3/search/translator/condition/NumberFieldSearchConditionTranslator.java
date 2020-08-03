@@ -22,7 +22,7 @@ import java.util.Map;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractNumberValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.NumberFieldSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.AttributesMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinType;
@@ -86,7 +86,7 @@ public class NumberFieldSearchConditionTranslator implements IConditionTranslato
                 final String columnName = AttributesMapper.getColumnName(criterionFieldName, tableMapper.getValuesTable(), criterion.getFieldName());
                 final AbstractNumberValue value = criterion.getFieldValue();
 
-                sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(columnName).append(SP);
+                sqlBuilder.append(SearchCriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(columnName).append(SP);
                 TranslatorUtils.appendNumberComparatorOp(value, sqlBuilder);
                 sqlBuilder.append(NL);
                 args.add(value.getValue());

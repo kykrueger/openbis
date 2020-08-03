@@ -19,6 +19,7 @@ package ch.systemsx.cisd.openbis.screening.systemtests;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -99,16 +100,23 @@ public abstract class AbstractImageDropboxTestCase extends AbstractScreeningSyst
 
     protected AbstractExternalData getRegisteredContainerDataSet(Class<? extends AbstractImageDropboxTestCase> testClass)
     {
+        List<AbstractExternalData> dataSets = getRegisteredContainerDataSets(testClass);
+        return dataSets.isEmpty() ? null : dataSets.get(0);
+    }
+
+    protected List<AbstractExternalData> getRegisteredContainerDataSets(Class<? extends AbstractImageDropboxTestCase> testClass)
+    {
+        List<AbstractExternalData> result = new ArrayList<AbstractExternalData>();
         String experimentCode = translateIntoCamelCase(testClass.getSimpleName()).toUpperCase();
         List<AbstractExternalData> dataSets = getRegisteredDataSets(experimentCode);
         for (AbstractExternalData dataSet : dataSets)
         {
             if (dataSet.getDataSetKind().equals(DataSetKind.CONTAINER))
             {
-                return dataSet;
+                result.add(dataSet);
             }
         }
-        return null;
+        return result;
     }
 
     private List<AbstractExternalData> getRegisteredDataSets(String experimentCode)

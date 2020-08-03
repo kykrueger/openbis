@@ -1,5 +1,6 @@
 export default class TypeFormControllerAddProperty {
   constructor(controller) {
+    this.controller = controller
     this.context = controller.context
   }
 
@@ -37,17 +38,45 @@ export default class TypeFormControllerAddProperty {
     let newProperties = Array.from(properties)
     let newProperty = {
       id: 'property-' + propertiesCounter++,
-      code: null,
-      label: null,
-      description: null,
-      dataType: 'VARCHAR',
-      vocabulary: null,
-      materialType: null,
-      showInEditView: true,
-      mandatory: false,
+      scope: this._createField({
+        value: 'local'
+      }),
+      code: this._createField(),
+      label: this._createField(),
+      description: this._createField(),
+      dataType: this._createField({
+        value: 'VARCHAR'
+      }),
+      plugin: this._createField(),
+      vocabulary: this._createField({
+        visible: false
+      }),
+      materialType: this._createField({
+        visible: false
+      }),
+      schema: this._createField({
+        visible: false
+      }),
+      transformation: this._createField({
+        visible: false
+      }),
+      mandatory: this._createField({
+        value: false
+      }),
+      showInEditView: this._createField({
+        value: true
+      }),
+      showRawValueInForms: this._createField({
+        value: false
+      }),
+      initialValueForExistingEntities: this._createField({
+        visible: false
+      }),
       section: section.id,
-      errors: {},
-      usages: 0
+      assignments: 0,
+      usagesLocal: 0,
+      usagesGlobal: 0,
+      errors: 0
     }
     newProperties.push(newProperty)
 
@@ -74,5 +103,16 @@ export default class TypeFormControllerAddProperty {
       propertiesCounter,
       selection: newSelection
     }))
+
+    this.controller.changed(true)
+  }
+
+  _createField(params = {}) {
+    return {
+      value: null,
+      visible: true,
+      enabled: true,
+      ...params
+    }
   }
 }

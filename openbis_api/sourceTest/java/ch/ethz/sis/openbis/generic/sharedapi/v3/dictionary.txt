@@ -2349,4 +2349,51 @@ has Sample Properties
 set Sample Properties
 with Sample Properties
 with Sample Properties Using
+MatchFetchOptions
+hasMatch
+withMatch
+withMatchUsing
+formatValue
+DATE_FORMATS
+LONG_DATE_FORMAT
+NORMAL_DATE_FORMAT
+SHORT_DATE_FORMAT
 
+List Update Map Values
+put
+
+String Greater Than Or Equal To Value
+String Greater Than Value
+String Less Than Or Equal To Value
+String Less Than Value
+
+add Child Annotation
+add Parent Annotation
+get Child Annotations
+get Child Annotations To Be Removed
+get Child Relationship
+get Children Relationships
+get Parent Annotations
+get Parent Annotations To Be Removed
+get Parent Relationship
+get Parents Relationships
+get Relationship
+get Relationships
+Relationship
+relationship
+Relationship Update
+remove Child Annotation
+remove Parent Annotation
+set Child Annotations
+set Child Annotations To Be Removed
+set Children Relationships
+set Parent Annotations
+set Parent Annotations To Be Removed
+set Parents Relationships
+set Relationship
+set Relationships
+remove Child Annotations
+remove Parent Annotations
+
+deserialize Key
+Sample Id Deserializer

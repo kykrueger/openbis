@@ -16,9 +16,7 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.externaldms;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.AggregationService;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.AggregationServiceSearchCriteria;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ILocalSearchManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -76,7 +74,7 @@ public class SearchExternalDmsOperationExecutor
     }
 
     @Override
-    protected ISearchManager<ExternalDmsSearchCriteria, ExternalDms, Long> getSearchManager() {
+    protected ILocalSearchManager<ExternalDmsSearchCriteria, ExternalDms, Long> getSearchManager() {
         throw new RuntimeException("This method is not implemented yet.");
     }
 

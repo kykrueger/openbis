@@ -23,7 +23,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentType
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PEMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 
 import java.util.Collection;
@@ -35,13 +35,13 @@ import java.util.Set;
  *
  * @author Viktor Kovtun
  */
-public class ExperimentTypeSearchManager extends AbstractSearchManager<ExperimentTypeSearchCriteria, ExperimentType, Long>
+public class ExperimentTypeSearchManager extends AbstractLocalSearchManager<ExperimentTypeSearchCriteria, ExperimentType, Long>
 {
 
     public ExperimentTypeSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
-            final IID2PETranslator<Long> idsTranslator)
+            final IID2PEMapper<Long, Long> idsMapper)
     {
-        super(searchDAO, authProvider, idsTranslator);
+        super(searchDAO, authProvider, idsMapper);
     }
 
     @Override
@@ -53,7 +53,7 @@ public class ExperimentTypeSearchManager extends AbstractSearchManager<Experimen
 
     @Override
     public Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation,
-            final ExperimentTypeSearchCriteria criteria, final SortOptions<ExperimentType> sortOptions,
+            final ExperimentTypeSearchCriteria criteria,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
         return super.searchForIDs(userId, authorisationInformation, criteria, null, TableMapper.EXPERIMENT_TYPE);

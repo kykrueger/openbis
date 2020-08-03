@@ -17,6 +17,7 @@
 package ch.systemsx.cisd.openbis.generic.server.business;
 
 import java.util.Date;
+import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
@@ -224,6 +225,23 @@ public class RelationshipService implements IRelationshipService, ApplicationCon
         RelationshipUtils.updateModificationDateAndModifier(parent, session, timeStamp);
         sample.addParentRelationship(new SampleRelationshipPE(parent, sample, relationshipType,
                 actor));
+    }
+
+    @Override
+    public void setSampleParentChildAnnotations(IAuthSession session, SamplePE child, SamplePE parent,
+            Map<String, String> childAnnotations, Map<String, String> parentAnnotations)
+    {
+        Date timeStamp = getTransactionTimeStamp();
+        RelationshipUtils.updateModificationDateAndModifier(child, session, timeStamp);
+        RelationshipUtils.updateModificationDateAndModifier(parent, session, timeStamp);
+        for (SampleRelationshipPE relationship : child.getParentRelationships())
+        {
+            if (relationship.getParentSample() == parent)
+            {
+                relationship.setChildAnnotations(childAnnotations);
+                relationship.setParentAnnotations(parentAnnotations);
+            }
+        }
     }
 
     @Override

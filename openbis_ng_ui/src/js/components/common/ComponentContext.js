@@ -3,41 +3,41 @@ import autoBind from 'auto-bind'
 export default class ComponentContext {
   constructor(component) {
     autoBind(this)
-    this.initState = initialState => {
+    this.initStateFn = initialState => {
       component.state = initialState
     }
-    this.getProps = () => {
+    this.getPropsFn = () => {
       return component.props
     }
-    this.getState = () => {
+    this.getStateFn = () => {
       return component.state
     }
-    this.setState = component.setState.bind(component)
-    this.dispatch = component.props.dispatch
+    this.setStateFn = component.setState.bind(component)
+    this.dispatchFn = component.props.dispatch
   }
 
   initState(initialState) {
-    this.initState(initialState)
+    this.initStateFn(initialState)
   }
 
   getProps() {
-    return this.getProps()
+    return this.getPropsFn()
   }
 
   getState() {
-    return this.getState()
+    return this.getStateFn()
   }
 
-  setState(args) {
+  setState(state) {
     return new Promise(resolve => {
-      this.setState(args, () => {
+      this.setStateFn(state, () => {
         resolve()
       })
     })
   }
 
   dispatch(action) {
-    this.dispatch(action)
+    this.dispatchFn(action)
   }
 
   getFacade() {

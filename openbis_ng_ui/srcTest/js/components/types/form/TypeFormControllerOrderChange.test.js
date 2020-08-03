@@ -42,12 +42,12 @@ describe('TypeFormController.handleOrderChange', () => {
       sections: [
         {
           id: 'section-0',
-          name: 'TEST_SECTION_1',
+          name: { value: 'TEST_SECTION_1' },
           properties: ['property-0']
         },
         {
           id: 'section-1',
-          name: 'TEST_SECTION_2',
+          name: { value: 'TEST_SECTION_2' },
           properties: ['property-1', 'property-2']
         }
       ]
@@ -62,12 +62,12 @@ describe('TypeFormController.handleOrderChange', () => {
       sections: [
         {
           id: 'section-1',
-          name: 'TEST_SECTION_2',
+          name: { value: 'TEST_SECTION_2' },
           properties: ['property-1', 'property-2']
         },
         {
           id: 'section-0',
-          name: 'TEST_SECTION_1',
+          name: { value: 'TEST_SECTION_1' },
           properties: ['property-0']
         }
       ]
@@ -86,12 +86,12 @@ describe('TypeFormController.handleOrderChange', () => {
       sections: [
         {
           id: 'section-0',
-          name: 'TEST_SECTION_1',
+          name: { value: 'TEST_SECTION_1' },
           properties: ['property-0']
         },
         {
           id: 'section-1',
-          name: 'TEST_SECTION_2',
+          name: { value: 'TEST_SECTION_2' },
           properties: ['property-1', 'property-2']
         }
       ]
@@ -108,12 +108,12 @@ describe('TypeFormController.handleOrderChange', () => {
       sections: [
         {
           id: 'section-0',
-          name: 'TEST_SECTION_1',
+          name: { value: 'TEST_SECTION_1' },
           properties: ['property-0']
         },
         {
           id: 'section-1',
-          name: 'TEST_SECTION_2',
+          name: { value: 'TEST_SECTION_2' },
           properties: ['property-2', 'property-1']
         }
       ]
@@ -132,12 +132,12 @@ describe('TypeFormController.handleOrderChange', () => {
       sections: [
         {
           id: 'section-0',
-          name: 'TEST_SECTION_1',
+          name: { value: 'TEST_SECTION_1' },
           properties: ['property-0']
         },
         {
           id: 'section-1',
-          name: 'TEST_SECTION_2',
+          name: { value: 'TEST_SECTION_2' },
           properties: ['property-1', 'property-2']
         }
       ]
@@ -154,12 +154,12 @@ describe('TypeFormController.handleOrderChange', () => {
       sections: [
         {
           id: 'section-0',
-          name: 'TEST_SECTION_1',
+          name: { value: 'TEST_SECTION_1' },
           properties: ['property-2', 'property-0']
         },
         {
           id: 'section-1',
-          name: 'TEST_SECTION_2',
+          name: { value: 'TEST_SECTION_2' },
           properties: ['property-1']
         }
       ]

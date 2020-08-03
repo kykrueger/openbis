@@ -16,14 +16,13 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.translator.sample;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.common.IObjectToManyRelationTranslator;
 
 /**
  * @author pkupczyk
  */
-public interface IObjectToSamplesTranslator extends IObjectToManyRelationTranslator<Sample, SampleFetchOptions>
+public interface IObjectToSamplesTranslator extends IObjectToManyRelationTranslator<SampleWithAnnotations, SampleFetchOptions>
 {
 
 }

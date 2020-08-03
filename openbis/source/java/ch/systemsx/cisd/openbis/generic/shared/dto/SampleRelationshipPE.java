@@ -18,6 +18,7 @@ package ch.systemsx.cisd.openbis.generic.shared.dto;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Map;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -43,6 +44,7 @@ import org.hibernate.search.annotations.Resolution;
 import org.hibernate.type.DbTimestampType;
 
 import ch.systemsx.cisd.openbis.generic.shared.IServer;
+import ch.systemsx.cisd.openbis.generic.shared.dto.hibernate.JsonMapUserType;
 
 /**
  * <i>Persistent Entity</i> object representing sample relationship.
@@ -53,7 +55,8 @@ import ch.systemsx.cisd.openbis.generic.shared.IServer;
 @Table(name = TableNames.SAMPLE_RELATIONSHIPS_VIEW, uniqueConstraints = @UniqueConstraint(columnNames = { ColumnNames.PARENT_SAMPLE_COLUMN,
         ColumnNames.CHILD_SAMPLE_COLUMN,
         ColumnNames.RELATIONSHIP_COLUMN }))
-@TypeDefs({ @TypeDef(name = "transactiontimestamp", typeClass = DbTimestampType.class) })
+@TypeDefs({ @TypeDef(name = "transactiontimestamp", typeClass = DbTimestampType.class),
+    @TypeDef(name = "JsonMap", typeClass = JsonMapUserType.class) })
 public class SampleRelationshipPE implements Serializable
 {
     private static final long serialVersionUID = IServer.VERSION;
@@ -62,9 +65,13 @@ public class SampleRelationshipPE implements Serializable
 
     private SamplePE parentSample;
 
+    private Map<String, String> parentAnnotations;
+
     private boolean parentFrozen;
 
     private SamplePE childSample;
+
+    private Map<String, String> childAnnotations;
 
     private boolean childFrozen;
 
@@ -117,6 +124,18 @@ public class SampleRelationshipPE implements Serializable
         }
     }
 
+    @Column(name = "parent_annotations")
+    @Type(type = "JsonMap")
+    public Map<String, String> getParentAnnotations()
+    {
+        return parentAnnotations;
+    }
+
+    public void setParentAnnotations(Map<String, String> parentAnnotations)
+    {
+        this.parentAnnotations = parentAnnotations;
+    }
+
     @NotNull
     @Column(name = ColumnNames.PARENT_FROZEN_COLUMN, nullable = false)
     public boolean isParentFrozen()
@@ -148,6 +167,18 @@ public class SampleRelationshipPE implements Serializable
         {
             childFrozen = childSample.isFrozen() && childSample.isFrozenForParents();
         }
+    }
+
+    @Column(name = "child_annotations")
+    @Type(type = "JsonMap")
+    public Map<String, String> getChildAnnotations()
+    {
+        return childAnnotations;
+    }
+
+    public void setChildAnnotations(Map<String, String> childAnnotations)
+    {
+        this.childAnnotations = childAnnotations;
     }
 
     @NotNull

@@ -20,7 +20,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ILocalSearchManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -76,7 +76,7 @@ public class SearchObjectKindModificationsOperationExecutor extends
     }
 
     @Override
-    protected ISearchManager<ObjectKindModificationSearchCriteria, ObjectKindModification, ObjectKindModification> getSearchManager() {
+    protected ILocalSearchManager<ObjectKindModificationSearchCriteria, ObjectKindModification, ObjectKindModification> getSearchManager() {
         throw new RuntimeException("This method is not implemented yet.");
     }
 

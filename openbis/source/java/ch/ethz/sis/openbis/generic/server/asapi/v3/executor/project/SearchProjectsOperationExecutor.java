@@ -19,6 +19,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.project;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ProjectSearchManager;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ILocalSearchManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -78,7 +79,7 @@ public class SearchProjectsOperationExecutor extends SearchObjectsPEOperationExe
     }
 
     @Override
-    protected ISearchManager<ProjectSearchCriteria, Project, Long> getSearchManager() {
+    protected ILocalSearchManager<ProjectSearchCriteria, Project, Long> getSearchManager() {
         return manager;
     }
 

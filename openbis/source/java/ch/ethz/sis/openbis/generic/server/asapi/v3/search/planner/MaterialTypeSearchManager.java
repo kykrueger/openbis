@@ -23,7 +23,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialTypeSear
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PEMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 
 import java.util.Collection;
@@ -37,13 +37,13 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
  * 
  * @author Viktor Kovtun
  */
-public class MaterialTypeSearchManager extends AbstractSearchManager<MaterialTypeSearchCriteria, MaterialType, Long>
+public class MaterialTypeSearchManager extends AbstractLocalSearchManager<MaterialTypeSearchCriteria, MaterialType, Long>
 {
 
     public MaterialTypeSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
-            final IID2PETranslator idsTranslator)
+            final IID2PEMapper<Long, Long> idsMapper)
     {
-        super(searchDAO, authProvider, idsTranslator);
+        super(searchDAO, authProvider, idsMapper);
     }
 
     @Override
@@ -54,7 +54,7 @@ public class MaterialTypeSearchManager extends AbstractSearchManager<MaterialTyp
 
     @Override
     public Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation,
-            final MaterialTypeSearchCriteria criteria, final SortOptions<MaterialType> sortOptions, final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName) {
+            final MaterialTypeSearchCriteria criteria, final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName) {
         return super.searchForIDs(userId, authorisationInformation, criteria, ID_COLUMN, TableMapper.MATERIAL_TYPE);
     }
 

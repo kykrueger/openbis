@@ -22,7 +22,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.LocatorTypeSearch
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PEMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.LocatorType;
 
@@ -37,13 +37,13 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
  *
  * @author Viktor Kovtun
  */
-public class LocatorTypeSearchManager extends AbstractSearchManager<LocatorTypeSearchCriteria, LocatorType, Long>
+public class LocatorTypeSearchManager extends AbstractLocalSearchManager<LocatorTypeSearchCriteria, LocatorType, Long>
 {
 
     public LocatorTypeSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
-            final IID2PETranslator<Long> idsTranslator)
+            final IID2PEMapper<Long, Long> idsMapper)
     {
-        super(searchDAO, authProvider, idsTranslator);
+        super(searchDAO, authProvider, idsMapper);
     }
 
     @Override
@@ -54,7 +54,7 @@ public class LocatorTypeSearchManager extends AbstractSearchManager<LocatorTypeS
 
     @Override
     public Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation,
-            final LocatorTypeSearchCriteria criteria, final SortOptions<LocatorType> sortOptions,
+            final LocatorTypeSearchCriteria criteria,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
         return super.searchForIDs(userId, authorisationInformation, criteria, ID_COLUMN, TableMapper.LOCATOR_TYPES);

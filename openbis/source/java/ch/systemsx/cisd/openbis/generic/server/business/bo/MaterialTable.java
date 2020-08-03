@@ -46,6 +46,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.Session;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.managed_property.IManagedPropertyEvaluatorFactory;
+import ch.systemsx.cisd.openbis.generic.shared.managed_property.api.IEntityInformationProvider;
 
 /**
  * The only productive implementation of {@link IMaterialTable}.
@@ -59,11 +60,13 @@ public final class MaterialTable extends AbstractMaterialBusinessObject implemen
     private boolean dataChanged;
 
     public MaterialTable(final IDAOFactory daoFactory, final Session session,
+            IEntityInformationProvider entityInformationProvider,
             IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory,
             DataSetTypeWithoutExperimentChecker dataSetTypeChecker,
             IRelationshipService relationshipService)
     {
-        super(daoFactory, session, managedPropertyEvaluatorFactory, dataSetTypeChecker, relationshipService);
+        super(daoFactory, session, entityInformationProvider, managedPropertyEvaluatorFactory,
+                dataSetTypeChecker, relationshipService);
     }
 
     @Private

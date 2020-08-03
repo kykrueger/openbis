@@ -35,7 +35,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagPermId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sample.FullSampleIdentifier;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sample.SampleIdentifierParts;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils;
 
@@ -132,51 +132,51 @@ public class IdSearchConditionTranslator implements IConditionTranslator<IdSearc
                 sqlBuilder.append(RP).append(SP).append(AND).append(SP);
             }
 
-            sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(codeColumnName).append(SP).append(EQ).append(SP).append(QU);
+            sqlBuilder.append(SearchCriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(codeColumnName).append(SP).append(EQ).append(SP).append(QU);
             args.add(objectCode);
         } else if (entityId.getClass() == SamplePermId.class)
         {
-            sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(PERM_ID_COLUMN).append(EQ).append(QU);
+            sqlBuilder.append(SearchCriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(PERM_ID_COLUMN).append(EQ).append(QU);
             args.add(((SamplePermId) entityId).getPermId());
         } else if (entityId.getClass() == ExperimentPermId.class)
         {
-            sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(PERM_ID_COLUMN).append(EQ).append(QU);
+            sqlBuilder.append(SearchCriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(PERM_ID_COLUMN).append(EQ).append(QU);
             args.add(((ExperimentPermId) entityId).getPermId());
         } else if (entityId.getClass() == DataSetPermId.class)
         {
-            sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(EQ).append(QU);
+            sqlBuilder.append(SearchCriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(EQ).append(QU);
             args.add(((DataSetPermId) entityId).getPermId());
         } else if (entityId.getClass() == ProjectPermId.class)
         {
-            sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(PERM_ID_COLUMN).append(EQ).append(QU);
+            sqlBuilder.append(SearchCriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(PERM_ID_COLUMN).append(EQ).append(QU);
             args.add(((ProjectPermId) entityId).getPermId());
         } else if (entityId.getClass() == SpacePermId.class)
         {
-            sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(EQ).append(QU);
+            sqlBuilder.append(SearchCriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(EQ).append(QU);
             args.add(((SpacePermId) entityId).getPermId());
         } else if (entityId.getClass() == EntityTypePermId.class)
         {
-            sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(EQ).append(QU);
+            sqlBuilder.append(SearchCriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(EQ).append(QU);
             args.add(((EntityTypePermId) entityId).getPermId());
         } else if (entityId.getClass() == TagCode.class)
         {
-            sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(NAME_COLUMN).append(EQ).append(QU);
+            sqlBuilder.append(SearchCriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(NAME_COLUMN).append(EQ).append(QU);
             args.add(((TagCode) entityId).getCode());
         } else if (entityId.getClass() == SemanticAnnotationPermId.class)
         {
-            sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(PERM_ID_COLUMN).append(EQ).append(QU);
+            sqlBuilder.append(SearchCriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(PERM_ID_COLUMN).append(EQ).append(QU);
             args.add(((SemanticAnnotationPermId) entityId).getPermId());
         } else if (entityId.getClass() == MaterialPermId.class)
         {
             final String materialTypeTableAlias = aliases.get(tableMapper.getEntityTypesTable()).getSubTableAlias();
-            sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(EQ).append(QU)
+            sqlBuilder.append(SearchCriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(EQ).append(QU)
                     .append(SP).append(AND).append(SP).append(materialTypeTableAlias).append(PERIOD).append(CODE_COLUMN).append(EQ).append(QU);
             final MaterialPermId materialPermId = (MaterialPermId) entityId;
             args.add(materialPermId.getCode());
             args.add(materialPermId.getTypeCode());
         } else if (entityId.getClass() == PropertyTypePermId.class)
         {
-            sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(EQ).append(QU);
+            sqlBuilder.append(SearchCriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(EQ).append(QU);
             args.add(((PropertyTypePermId) entityId).getPermId());
         } else
         {
@@ -186,7 +186,7 @@ public class IdSearchConditionTranslator implements IConditionTranslator<IdSearc
 
     private static void buildSelectByIdConditionWithSubqueryProjects(final StringBuilder sqlBuilder)
     {
-        sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(SPACE_COLUMN).append(SP).append(IN).append(SP).append(LP).
+        sqlBuilder.append(SearchCriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(SPACE_COLUMN).append(SP).append(IN).append(SP).append(LP).
                 append(SELECT).append(SP).append(ID_COLUMN).append(SP).
                 append(FROM).append(SP).append(SPACES_TABLE).append(SP).
                 append(WHERE).append(SP).append(CODE_COLUMN).append(SP).append(EQ).append(SP).append(QU).
@@ -197,7 +197,7 @@ public class IdSearchConditionTranslator implements IConditionTranslator<IdSearc
     {
         final String p = "p";
         final String s = "s";
-        sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(PROJECT_COLUMN).append(SP).append(IN).append(SP).append(LP).
+        sqlBuilder.append(SearchCriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(PROJECT_COLUMN).append(SP).append(IN).append(SP).append(LP).
                 append(SELECT).append(SP).append(p).append(PERIOD).append(ID_COLUMN).append(SP).
                 append(FROM).append(SP).append(PROJECTS_TABLE).append(SP).append(p).append(SP).
                 append(INNER_JOIN).append(SP).append(SPACES_TABLE).append(SP).append(s).append(SP).
@@ -220,7 +220,7 @@ public class IdSearchConditionTranslator implements IConditionTranslator<IdSearc
     private static void buildSelectByIdConditionWithSubquery(final StringBuilder sqlBuilder, final String columnName, final String subqueryTable,
             final String subqueryTableColumn)
     {
-        sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(columnName).append(SP).append(EQ).append(SP).append(LP).
+        sqlBuilder.append(SearchCriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(columnName).append(SP).append(EQ).append(SP).append(LP).
                 append(SELECT).append(SP).append(ID_COLUMN).append(SP).append(FROM).append(SP).append(subqueryTable).append(SP).
                 append(WHERE).append(SP).append(subqueryTableColumn).append(SP).append(EQ).append(SP).append(QU).
                 append(RP);

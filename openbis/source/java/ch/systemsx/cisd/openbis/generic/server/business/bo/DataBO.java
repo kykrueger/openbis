@@ -79,6 +79,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.VocabularyPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.VocabularyTermPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SampleIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.managed_property.IManagedPropertyEvaluatorFactory;
+import ch.systemsx.cisd.openbis.generic.shared.managed_property.api.IEntityInformationProvider;
 import ch.systemsx.cisd.openbis.generic.shared.util.HibernateUtils;
 import ch.systemsx.cisd.openbis.generic.shared.util.RelationshipUtils;
 
@@ -95,10 +96,11 @@ public class DataBO extends AbstractDataSetBusinessObject implements IDataBO
     public DataBO(IDAOFactory daoFactory, Session session,
             IRelationshipService relationshipService,
             IServiceConversationClientManagerLocal conversationClient,
+            IEntityInformationProvider entityInformationProvider,
             IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory,
             DataSetTypeWithoutExperimentChecker dataSetTypeChecker)
     {
-        super(daoFactory, session, relationshipService, conversationClient,
+        super(daoFactory, session, relationshipService, conversationClient, entityInformationProvider,
                 managedPropertyEvaluatorFactory, dataSetTypeChecker);
     }
 

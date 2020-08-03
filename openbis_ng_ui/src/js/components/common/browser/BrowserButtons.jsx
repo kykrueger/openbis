@@ -1,18 +1,18 @@
 import React from 'react'
-import Button from '@material-ui/core/Button'
 import { withStyles } from '@material-ui/core/styles'
+import Container from '@src/js/components/common/form/Container.jsx'
+import Button from '@src/js/components/common/form/Button.jsx'
 import logger from '@src/js/common/logger.js'
 
 const styles = theme => ({
   container: {
-    padding: theme.spacing(2),
     display: 'flex',
     borderWidth: '1px 0px 0px 0px',
-    borderColor: theme.palette.background.secondary,
+    borderColor: theme.palette.border.primary,
     borderStyle: 'solid'
   },
   button: {
-    marginRight: theme.spacing(2),
+    marginRight: theme.spacing(1),
     whiteSpace: 'nowrap'
   }
 })
@@ -24,26 +24,20 @@ class BrowserButtons extends React.Component {
     const { controller, classes, addEnabled, removeEnabled } = this.props
 
     return (
-      <div className={classes.container}>
+      <Container className={classes.container}>
         <Button
-          classes={{ root: classes.button }}
-          variant='contained'
-          color='secondary'
+          label='Add'
+          styles={{ root: classes.button }}
           onClick={controller.nodeAdd}
           disabled={!addEnabled}
-        >
-          Add
-        </Button>
+        />
         <Button
-          classes={{ root: classes.button }}
-          variant='contained'
-          color='secondary'
+          label='Remove'
+          styles={{ root: classes.button }}
           onClick={controller.nodeRemove}
           disabled={!removeEnabled}
-        >
-          Remove
-        </Button>
-      </div>
+        />
+      </Container>
     )
   }
 }

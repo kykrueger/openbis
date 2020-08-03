@@ -26,10 +26,10 @@ import org.springframework.stereotype.Component;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.Material;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.Tag;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.fetchoptions.TagFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagPermId;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sample.SampleUtils;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.AbstractCachingTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.TranslationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.TranslationResults;
@@ -137,7 +137,7 @@ public class TagTranslator extends AbstractCachingTranslator<Long, Tag, TagFetch
 
         if (fetchOptions.hasSamples())
         {
-            result.setSamples((List<Sample>) relations.get(ITagSampleTranslator.class, tagId));
+            result.setSamples(SampleUtils.extractSamples(relations.get(ITagSampleTranslator.class, tagId)));
             result.getFetchOptions().withSamplesUsing(fetchOptions.withSamples());
         }
 

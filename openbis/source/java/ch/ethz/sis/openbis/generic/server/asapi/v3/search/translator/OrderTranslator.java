@@ -24,7 +24,6 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.AttributesMappe
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinType;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils;
-import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
 import ch.systemsx.cisd.openbis.generic.shared.dto.TableNames;
 
 import java.util.Collections;
@@ -82,7 +81,7 @@ public class OrderTranslator
 
     private static String buildSelect(final TranslationVo vo)
     {
-        final StringBuilder sqlBuilder = new StringBuilder(SELECT + SP + DISTINCT + SP + CriteriaTranslator.MAIN_TABLE_ALIAS + PERIOD + ID_COLUMN);
+        final StringBuilder sqlBuilder = new StringBuilder(SELECT + SP + DISTINCT + SP + SearchCriteriaTranslator.MAIN_TABLE_ALIAS + PERIOD + ID_COLUMN);
 
         vo.getSortOptions().getSortings().forEach((sorting) ->
         {
@@ -96,7 +95,7 @@ public class OrderTranslator
     private static String buildFrom(final TranslationVo vo)
     {
         final TableMapper tableMapper = vo.getTableMapper();
-        final StringBuilder sqlBuilder = new StringBuilder(FROM + SP + tableMapper.getEntitiesTable() + SP + CriteriaTranslator.MAIN_TABLE_ALIAS);
+        final StringBuilder sqlBuilder = new StringBuilder(FROM + SP + tableMapper.getEntitiesTable() + SP + SearchCriteriaTranslator.MAIN_TABLE_ALIAS);
         final AtomicInteger indexCounter = new AtomicInteger(1);
 
         vo.getSortOptions().getSortings().forEach((sorting) ->
@@ -136,7 +135,7 @@ public class OrderTranslator
 
     private static String buildWhere(final TranslationVo vo)
     {
-        final StringBuilder sqlBuilder = new StringBuilder(WHERE + SP + CriteriaTranslator.MAIN_TABLE_ALIAS + PERIOD + ID_COLUMN + SP + IN + SP +
+        final StringBuilder sqlBuilder = new StringBuilder(WHERE + SP + SearchCriteriaTranslator.MAIN_TABLE_ALIAS + PERIOD + ID_COLUMN + SP + IN + SP +
                 LP + SELECT + SP + UNNEST + LP + QU + RP + RP);
         final Map<Object, Map<String, JoinInformation>> aliases = vo.getAliases();
         final TableMapper tableMapper = vo.getTableMapper();
@@ -209,7 +208,7 @@ public class OrderTranslator
         {
             final String materialTypeTableAlias = vo.getAliases().get(EntityWithPropertiesSortOptions.TYPE)
                     .get(vo.getTableMapper().getEntityTypesTable()).getSubTableAlias();
-            sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN);
+            sqlBuilder.append(SearchCriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN);
 
             if (!inSelect)
             {
@@ -219,13 +218,13 @@ public class OrderTranslator
             sqlBuilder.append(COMMA).append(SP).append(materialTypeTableAlias).append(PERIOD).append(CODE_COLUMN);
         } else if (isSortingBySpaceModificationDate(vo, sortingCriteriaFieldName))
         {
-            sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(REGISTRATION_TIMESTAMP_COLUMN.toLowerCase());
+            sqlBuilder.append(SearchCriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(REGISTRATION_TIMESTAMP_COLUMN.toLowerCase());
         } else
         {
             final String lowerCaseSortingCriteriaFieldName = sortingCriteriaFieldName.toLowerCase();
             final String fieldName = AttributesMapper.getColumnName(lowerCaseSortingCriteriaFieldName, vo.getTableMapper().getEntitiesTable(),
                     lowerCaseSortingCriteriaFieldName);
-            sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(fieldName);
+            sqlBuilder.append(SearchCriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(fieldName);
         }
 
         if (!inSelect)
@@ -263,9 +262,9 @@ public class OrderTranslator
         final TableMapper tableMapper = vo.getTableMapper();
         final String result = SELECT + SP + DISTINCT + SP + "o3" + PERIOD + CODE_COLUMN + SP + PROPERTY_CODE_ALIAS + COMMA + SP +
                 "o4" + PERIOD + CODE_COLUMN + SP + TYPE_CODE_ALIAS + NL +
-                FROM + SP + tableMapper.getEntitiesTable() + SP + CriteriaTranslator.MAIN_TABLE_ALIAS + NL +
+                FROM + SP + tableMapper.getEntitiesTable() + SP + SearchCriteriaTranslator.MAIN_TABLE_ALIAS + NL +
                 INNER_JOIN + SP + tableMapper.getValuesTable() + SP + "o1" + SP +
-                ON + SP + CriteriaTranslator.MAIN_TABLE_ALIAS + PERIOD + ID_COLUMN + SP + EQ + SP + "o1" + PERIOD + tableMapper.getValuesTableEntityIdField() + NL +
+                ON + SP + SearchCriteriaTranslator.MAIN_TABLE_ALIAS + PERIOD + ID_COLUMN + SP + EQ + SP + "o1" + PERIOD + tableMapper.getValuesTableEntityIdField() + NL +
                 INNER_JOIN + SP + tableMapper.getEntityTypesAttributeTypesTable() + SP + "o2" + SP +
                 ON + SP + "o1" + PERIOD + tableMapper.getValuesTableEntityTypeAttributeTypeIdField() + SP + EQ + SP + "o2" + PERIOD + ID_COLUMN + NL +
                 INNER_JOIN + SP + tableMapper.getAttributeTypesTable() + SP + "o3" + SP +

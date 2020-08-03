@@ -1904,12 +1904,12 @@ public class CreateDataSetTest extends AbstractDataSetTest
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
         DataSetCreation creation = physicalDataSetCreation();
         creation.setExperimentId(new ExperimentIdentifier("/TEST-SPACE/TEST-PROJECT/EXP-SPACE-TEST"));
-        creation.setSampleProperty("PLATE", new SampleIdentifier("/CISD/CL1"));
+        creation.setProperty("PLATE", "/CISD/CL1");
 
         // When
         assertUserFailureException(Void -> v3api.createDataSets(sessionToken, Arrays.asList(creation)),
                 // Then
-                "Not a property of data type SAMPLE: PLATE");
+                "Property type with code 'PLATE' does not exist");
     }
 
     @Test
@@ -1923,7 +1923,7 @@ public class CreateDataSetTest extends AbstractDataSetTest
         DataSetCreation creation = physicalDataSetCreation();
         creation.setTypeId(dataSetType);
         creation.setExperimentId(new ExperimentIdentifier("/TEST-SPACE/TEST-PROJECT/EXP-SPACE-TEST"));
-        creation.setSampleProperty(propertyType.getPermId(), new SampleIdentifier("/CISD/UNKNOWN"));
+        creation.setProperty(propertyType.getPermId(), "/CISD/UNKNOWN");
 
         // When
         assertUserFailureException(Void -> v3api.createDataSets(sessionToken, Arrays.asList(creation)),
@@ -1959,7 +1959,7 @@ public class CreateDataSetTest extends AbstractDataSetTest
 
         DataSetCreation creation = physicalDataSetCreation();
         creation.setTypeId(dataSetType);
-        creation.setSampleProperty(propertyType.getPermId(), new SamplePermId("200811050919915-8"));
+        creation.setProperty(propertyType.getPermId(), "200811050919915-8");
 
         // When
         assertUserFailureException(Void -> v3api.createDataSets(sessionToken, Arrays.asList(creation)),
@@ -1980,7 +1980,7 @@ public class CreateDataSetTest extends AbstractDataSetTest
         DataSetCreation creation = physicalDataSetCreation();
         creation.setTypeId(dataSetType);
         creation.setExperimentId(new ExperimentIdentifier("/TEST-SPACE/TEST-PROJECT/EXP-SPACE-TEST"));
-        creation.setSampleProperty(propertyType.getPermId(), new SampleIdentifier("/CISD/CL1"));
+        creation.setProperty(propertyType.getPermId(), "/CISD/CL1");
 
         // When
         assertUserFailureException(Void -> v3api.createDataSets(sessionToken, Arrays.asList(creation)),
@@ -2000,7 +2000,7 @@ public class CreateDataSetTest extends AbstractDataSetTest
         creation.setTypeId(dataSetType);
         creation.setExperimentId(new ExperimentIdentifier("/TEST-SPACE/TEST-PROJECT/EXP-SPACE-TEST"));
         creation.setProperty(PLATE_GEOMETRY.getPermId(), "384_WELLS_16X24");
-        creation.setSampleProperty(propertyType.getPermId(), new SampleIdentifier("/CISD/CL1"));
+        creation.setProperty(propertyType.getPermId(), "/CISD/CL1");
         DataSetPermId dataSetPermId = v3api.createDataSets(adminSessionToken, Arrays.asList(creation)).get(0);
         v3api.logout(adminSessionToken);
 
@@ -2028,7 +2028,7 @@ public class CreateDataSetTest extends AbstractDataSetTest
         DataSetCreation creation = physicalDataSetCreation();
         creation.setTypeId(dataSetType);
         creation.setProperty(PLATE_GEOMETRY.getPermId(), "384_WELLS_16X24");
-        creation.setSampleProperty(propertyType.getPermId(), new SampleIdentifier("/CISD/CL1"));
+        creation.setProperty(propertyType.getPermId(), "/CISD/CL1");
 
         // When
         List<DataSetPermId> dataSetIds = v3api.createDataSets(sessionToken, Arrays.asList(creation));

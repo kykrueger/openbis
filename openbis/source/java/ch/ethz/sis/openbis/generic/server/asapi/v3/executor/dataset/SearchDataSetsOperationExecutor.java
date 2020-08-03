@@ -28,7 +28,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.ISearchObjectExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.SearchObjectsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DataSetSearchManager;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ILocalSearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.ITranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.dataset.IDataSetTranslator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,7 +70,7 @@ public class SearchDataSetsOperationExecutor extends SearchObjectsOperationExecu
     }
 
     @Override
-    protected ISearchManager<DataSetSearchCriteria, DataSet, Long> getSearchManager()
+    protected ILocalSearchManager<DataSetSearchCriteria, DataSet, Long> getSearchManager()
     {
         return dataSetSearchManager;
     }

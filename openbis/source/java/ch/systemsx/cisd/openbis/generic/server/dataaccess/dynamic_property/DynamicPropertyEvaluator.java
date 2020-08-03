@@ -47,6 +47,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.IEntityInformationWithPropert
 import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialPropertyPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PropertyTypePE;
+import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePropertyPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.VocabularyTermPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
@@ -237,13 +238,14 @@ public class DynamicPropertyEvaluator implements IDynamicPropertyEvaluator
                 final String dynamicValue = evaluateProperty(entityAdaptor, etpt, true);
                 String valueOrNull = null;
                 MaterialPE materialOrNull = null;
+                SamplePE sampleOrNull = null;
                 VocabularyTermPE termOrNull = null;
                 if (dynamicValue == null)
                 {
                     propertiesToRemove.add(property);
                 } else if (dynamicValue.startsWith(BasicConstant.ERROR_PROPERTY_PREFIX))
                 {
-                    property.setUntypedValue(dynamicValue, null, null);
+                    property.setUntypedValue(dynamicValue, null, null, null);
                 } else
                 {
                     try
@@ -260,6 +262,11 @@ public class DynamicPropertyEvaluator implements IDynamicPropertyEvaluator
                                         entityPropertiesConverter.tryGetMaterial(dynamicValue,
                                                 etpt.getPropertyType());
                                 break;
+                            case SAMPLE:
+                                sampleOrNull =
+                                entityPropertiesConverter.tryGetSample(dynamicValue,
+                                        etpt.getPropertyType());
+                                break;
                             default:
                                 valueOrNull = dynamicValue;
                         }
@@ -267,7 +274,7 @@ public class DynamicPropertyEvaluator implements IDynamicPropertyEvaluator
                     {
                         valueOrNull = errorPropertyValue(ex.getMessage());
                     }
-                    property.setUntypedValue(valueOrNull, termOrNull, materialOrNull);
+                    property.setUntypedValue(valueOrNull, termOrNull, materialOrNull, sampleOrNull);
                     if (session.contains(property) == false)
                     {
                         session.persist(property);
@@ -355,11 +362,11 @@ public class DynamicPropertyEvaluator implements IDynamicPropertyEvaluator
         {
             this.complexPropertyValueHelper =
                     new EntityPropertiesConverter.ComplexPropertyValueHelper(daoFactory,
-                            customSessionProviderOrNull);
+                            customSessionProviderOrNull, null);
             for (EntityKind entityKind : EntityKind.values())
             {
                 convertersByEntityKind.put(entityKind, new EntityPropertiesConverter(entityKind,
-                        daoFactory, managedPropertyEvaluatorFactory));
+                        daoFactory, null, managedPropertyEvaluatorFactory));
             }
         }
 
@@ -376,6 +383,11 @@ public class DynamicPropertyEvaluator implements IDynamicPropertyEvaluator
             return complexPropertyValueHelper.tryGetMaterial(value, propertyType);
         }
 
+        public SamplePE tryGetSample(String value, PropertyTypePE propertyType)
+        {
+            return complexPropertyValueHelper.tryGetSample(value, propertyType);
+        }
+        
         public VocabularyTermPE tryGetVocabularyTerm(String value, PropertyTypePE propertyType)
         {
             return complexPropertyValueHelper.tryGetVocabularyTerm(value, propertyType);

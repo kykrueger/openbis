@@ -83,7 +83,6 @@ public class UpdatePropertyTypesTest extends AbstractTest
         v3api.logout(sessionToken);
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void testAddMetaData()
     {
@@ -92,7 +91,7 @@ public class UpdatePropertyTypesTest extends AbstractTest
         PropertyTypePermId id = new PropertyTypePermId("COMMENT");
         PropertyTypeUpdate update = new PropertyTypeUpdate();
         update.setTypeId(id);
-        update.getMetaData().add(Collections.singletonMap("greetings", "hello world"));
+        update.getMetaData().put("greetings", "hello world");
 
         // When
         v3api.updatePropertyTypes(sessionToken, Arrays.asList(update));
@@ -138,7 +137,7 @@ public class UpdatePropertyTypesTest extends AbstractTest
         PropertyTypePermId id = new PropertyTypePermId("DESCRIPTION");
         PropertyTypeUpdate update = new PropertyTypeUpdate();
         update.setTypeId(id);
-        update.getMetaData().add(Collections.singletonMap("greetings", "hello world"));
+        update.getMetaData().put("greetings", "hello world");
         update.getMetaData().set(Collections.singletonMap("new key", "new value"));
 
         // When

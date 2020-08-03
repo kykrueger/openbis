@@ -25,7 +25,7 @@ import java.util.Map;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.*;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.CriteriaTranslator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinType;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils;
@@ -63,39 +63,43 @@ public class DateFieldSearchConditionTranslator implements IConditionTranslator<
             final Map<String, String> dataTypeByPropertyName)
     {
         final IDate value = criterion.getFieldValue();
-        final boolean bareDateValue = value instanceof AbstractDateValue && TranslatorUtils.isDateWithoutTime(((AbstractDateValue) value).getValue());
+        final ITimeZone timeZone = criterion.getTimeZone();
+        final boolean bareDateValue = value instanceof AbstractDateValue &&
+                TranslatorUtils.isDateWithoutTime(((AbstractDateValue) value).getValue());
 
-        switch (criterion.getFieldType()) {
+        switch (criterion.getFieldType())
+        {
             case ATTRIBUTE:
             {
                 final String fieldName = criterion.getFieldName();
 
                 if (bareDateValue)
                 {
-                    sqlBuilder.append(DATE).append(LP);
+                    sqlBuilder.append(LP);
                 }
 
-                sqlBuilder.append(CriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD);
+                sqlBuilder.append(SearchCriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD);
                 if (criterion instanceof RegistrationDateSearchCriteria)
                 {
-                    TranslatorUtils.appendCastedTimestamp(sqlBuilder, REGISTRATION_TIMESTAMP_COLUMN, value);
+                    sqlBuilder.append(REGISTRATION_TIMESTAMP_COLUMN);
                 } else if (criterion instanceof ModificationDateSearchCriteria)
                 {
-                    TranslatorUtils.appendCastedTimestamp(sqlBuilder, MODIFICATION_TIMESTAMP_COLUMN, value);
+                    sqlBuilder.append(MODIFICATION_TIMESTAMP_COLUMN);
                 } else
                 {
-                    TranslatorUtils.appendCastedTimestamp(sqlBuilder, fieldName, value);
+                    sqlBuilder.append(fieldName);
                 }
+                sqlBuilder.append(SP);
+                TranslatorUtils.appendTimeZoneConversion(value, sqlBuilder, timeZone);
 
                 if (bareDateValue)
                 {
-                    sqlBuilder.append(RP);
+                    sqlBuilder.append(RP).append(DOUBLE_COLON).append(DATE);
                 }
 
                 sqlBuilder.append(SP);
 
-                TranslatorUtils.appendDateComparatorOp(value, sqlBuilder);
-                TranslatorUtils.addDateValueToArgs(value, args);
+                TranslatorUtils.appendDateComparatorOp(value, sqlBuilder, args);
                 break;
             }
 
@@ -123,20 +127,20 @@ public class DateFieldSearchConditionTranslator implements IConditionTranslator<
 
                 if (bareDateValue)
                 {
-                    sqlBuilder.append(DATE).append(LP);
+                    sqlBuilder.append(LP);
                 }
 
                 sqlBuilder.append(aliases.get(tableMapper.getValuesTable()).getSubTableAlias())
-                        .append(PERIOD).append(ColumnNames.VALUE_COLUMN).append(DOUBLE_COLON).append(TIMESTAMPTZ).append(SP);
-                TranslatorUtils.appendTimeZoneConversion(value, sqlBuilder, criterion.getTimeZone());
+                        .append(PERIOD).append(ColumnNames.VALUE_COLUMN).append(DOUBLE_COLON).append(TIMESTAMPTZ)
+                        .append(SP);
+                TranslatorUtils.appendTimeZoneConversion(value, sqlBuilder, timeZone);
 
                 if (bareDateValue)
                 {
-                    sqlBuilder.append(RP).append(SP);
+                    sqlBuilder.append(RP).append(DOUBLE_COLON).append(DATE).append(SP);
                 }
 
-                TranslatorUtils.appendDateComparatorOp(value, sqlBuilder);
-                TranslatorUtils.addDateValueToArgs(value, args);
+                TranslatorUtils.appendDateComparatorOp(value, sqlBuilder, args);
 
                 sqlBuilder.append(SP).append(ELSE).append(SP).append(false).append(SP).append(END);
 

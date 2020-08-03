@@ -73,7 +73,7 @@ public class UpdateMaterialsImportTest extends ObjectsImportTest
                 parameters.put(PARAM_USER_EMAIL, TEST_EMAIL);
             }
 
-            long timestamp = System.currentTimeMillis();
+            long timestamp = getTimestampAndWaitASecond();
             String message = executeImport(sessionToken, "updateMaterials", parameters);
 
             material = getObject(sessionToken, materialPermId, timestamp, DEFAULT_TIMEOUT);

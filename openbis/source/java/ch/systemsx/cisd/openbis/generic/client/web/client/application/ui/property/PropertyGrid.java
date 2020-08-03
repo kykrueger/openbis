@@ -41,6 +41,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialEntityProperty;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Person;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Project;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Sample;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleEntityProperty;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.VocabularyTermEntityProperty;
 
 /**
@@ -109,6 +110,7 @@ public final class PropertyGrid extends Grid
         registerPropertyValueRenderer(GenericEntityProperty.class, propertyValueRenderer);
         registerPropertyValueRenderer(ManagedEntityProperty.class, propertyValueRenderer);
         registerPropertyValueRenderer(MaterialEntityProperty.class, propertyValueRenderer);
+        registerPropertyValueRenderer(SampleEntityProperty.class, propertyValueRenderer);
         registerPropertyValueRenderer(VocabularyTermEntityProperty.class, propertyValueRenderer);
     }
 

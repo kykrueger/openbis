@@ -39,6 +39,11 @@ public class PostgresAuthorisationInformationProviderDAO implements ISQLAuthoris
     @Override
     public Set<Long> getAuthorisedSamples(final Set<Long> requestedIDs, final AuthorisationInformation authInfo)
     {
+        if (requestedIDs.isEmpty())
+        {
+            return requestedIDs;
+        }
+
         final String query = SELECT + SP + ID_COLUMN + NL +
                 FROM + SP + TableMapper.SAMPLE.getEntitiesTable() + NL +
                 WHERE + SP + ID_COLUMN + SP + IN + LP + SELECT + SP + UNNEST + LP + QU + RP + RP + SP + AND + NL +
@@ -61,6 +66,11 @@ public class PostgresAuthorisationInformationProviderDAO implements ISQLAuthoris
     @Override
     public Set<Long> getAuthorisedExperiments(final Set<Long> requestedIDs, final AuthorisationInformation authInfo)
     {
+        if (requestedIDs.isEmpty())
+        {
+            return requestedIDs;
+        }
+
         final String e = "e";
         final String p = "p";
         final String query = SELECT + SP + e + PERIOD + ID_COLUMN + NL +
@@ -80,6 +90,11 @@ public class PostgresAuthorisationInformationProviderDAO implements ISQLAuthoris
     @Override
     public Set<Long> getAuthorisedProjects(final Set<Long> requestedIDs, final AuthorisationInformation authInfo)
     {
+        if (requestedIDs.isEmpty())
+        {
+            return requestedIDs;
+        }
+
         final String p = "p";
         final String query = SELECT + SP + p + PERIOD + ID_COLUMN + NL +
                 FROM + SP + TableMapper.PROJECT.getEntitiesTable() + SP + p + NL +
@@ -97,11 +112,16 @@ public class PostgresAuthorisationInformationProviderDAO implements ISQLAuthoris
     @Override
     public Set<Long> getAuthorisedSpaces(final Set<Long> requestedIDs, final AuthorisationInformation authInfo)
     {
+        if (requestedIDs.isEmpty())
+        {
+            return requestedIDs;
+        }
+
         final String s = "s";
         final String p = "p";
         final String query = SELECT + SP + s + PERIOD + ID_COLUMN + NL +
                 FROM + SP + TableMapper.SPACE.getEntitiesTable() + SP + s + NL +
-                INNER_JOIN + SP + TableMapper.PROJECT.getEntitiesTable() + SP + p + SP +
+                LEFT_JOIN + SP + TableMapper.PROJECT.getEntitiesTable() + SP + p + SP +
                 ON + SP + p + PERIOD + SPACE_COLUMN + SP + EQ + SP + s + PERIOD + ID_COLUMN + NL +
                 WHERE + SP + s + PERIOD + ID_COLUMN + SP + IN + SP + LP + SELECT + SP + UNNEST + LP + QU + RP + RP + SP + AND +
                 SP + LP + s + PERIOD + ID_COLUMN + SP + IN + SP + LP + SELECT + SP + UNNEST + LP + QU + RP + RP + SP + OR +
@@ -117,6 +137,11 @@ public class PostgresAuthorisationInformationProviderDAO implements ISQLAuthoris
     @Override
     public Set<Long> getAuthorisedDatasets(final Set<Long> requestedIDs, final AuthorisationInformation authInfo)
     {
+        if (requestedIDs.isEmpty())
+        {
+            return requestedIDs;
+        }
+
         final Long[] projectIds = authInfo.getProjectIds().toArray(new Long[0]);
         final Long[] spaceIds = authInfo.getSpaceIds().toArray(new Long[0]);
         final String d = "d";
@@ -150,6 +175,11 @@ public class PostgresAuthorisationInformationProviderDAO implements ISQLAuthoris
     @Override
     public Set<Long> getTagsOfUser(final Set<Long> requestedIDs, final Long userID)
     {
+        if (requestedIDs.isEmpty())
+        {
+            return requestedIDs;
+        }
+
         final String query = SELECT + SP + ID_COLUMN + SP + NL +
                 FROM + SP + METAPROJECTS_TABLE + NL +
                 WHERE + SP + OWNER_COLUMN + SP + EQ + SP + QU + SP +
