@@ -12,7 +12,12 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 					try {
 						fCheck(facade, results.getObjects());
 					} catch (e) {
-						console.error("Exception.", e);
+						if (fCheckError) {
+							fCheckError(e);
+						} else {
+							c.fail(e.message);
+						}
+						console.error("Exception.", e.message);
 						throw e;
 					} finally {
 						c.finish();
@@ -1655,16 +1660,17 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				var prepopulatedSamplesCount = 0;
                 for (var oIdx = 0; oIdx < objects.length; oIdx++) {
                     var result = objects[oIdx];
-                    switch (result.getObjectKind()) {
+					var match = result.getMatch();
+					switch (result.getObjectKind()) {
                         case "DATA_SET":
 							var dataSetPermId = result.getObjectPermId().getPermId();
 							c.assertTrue(dataSetPermId === "20130417094936021-428"
 								|| dataSetPermId.startsWith("V3_DATA_SET_"), "DataSetPermId (" + dataSetPermId + ")");
 							c.assertEqual(result.getObjectIdentifier().getPermId(), dataSetPermId,
 								"ObjectIdentifier");
-                            c.assertTrue(["Perm ID: " + dataSetPermId,
-								"Property 'Test Property Type': 20130412140147735-20"]
-								.includes(result.getMatch()), "Match (case DATA_SET). Actual value: " + result.getMatch());
+							c.assertTrue(match === "Perm ID: " + dataSetPermId ||
+								match === "Property 'Test Property Type': 20130412140147735-20",
+								"Match (case DATA_SET). Actual value: " + match);
                             c.assertNotNull(result.getScore(), "Score (case DATA_SET)");
                             c.assertNull(result.getExperiment(), "Experiment (case DATA_SET)");
                             c.assertNull(result.getSample(), "Sample (case DATA_SET)");
@@ -1680,9 +1686,9 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 								"/TEST/TEST-PROJECT/TEST-EXPERIMENT" || result.getObjectIdentifier()
 									.getIdentifier().startsWith("/TEST/TEST-PROJECT/V3_EXPERIMENT_"),
 								"ObjectIdentifier");
-							c.assertTrue(["Perm ID: " + experimentPermId,
-								"Property 'Test Property Type': 20130412140147735-20"]
-								.includes(result.getMatch()), "Match (case EXPERIMENT). Actual value: " + result.getMatch());
+							c.assertTrue(match === "Perm ID: " + experimentPermId ||
+								match === "Property 'Test Property Type': 20130412140147735-20",
+								"Match (case EXPERIMENT). Actual value: " + match);
                             c.assertNotNull(result.getScore(), "Score (case EXPERIMENT)");
                             c.assertTrue(result.getExperiment().getCode() === "TEST-EXPERIMENT" ||
 								result.getExperiment().getCode().startsWith("V3_EXPERIMENT_"),
@@ -1699,10 +1705,10 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 							c.assertTrue(result.getObjectIdentifier().getIdentifier() === "/PLATONIC/PLATE-1" ||
 								result.getObjectIdentifier().getIdentifier().startsWith("/TEST/V3_SAMPLE_"),
 								"ObjectIdentifier");
-							c.assertTrue(["Perm ID: " + samplePermId,
-								"Property 'Test Property Type': 20130412140147735-20"]
-								.includes(result.getMatch()), "Match (case SAMPLE). Actual value: " +
-								result.getMatch());
+							c.assertTrue(match === "Perm ID: " + samplePermId ||
+								match === "Property 'Test Property Type': 20130412140147735-20",
+								"Match (case SAMPLE). Actual value: " +
+								match);
                             c.assertNotNull(result.getScore(), "Score (case SAMPLE)");
                             c.assertNull(result.getExperiment(), "Experiment (case SAMPLE)");
                             c.assertTrue(result.getSample().getCode() === "PLATE-1" ||
@@ -1718,7 +1724,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 								"ObjectIdentifier 1 (case MATERIAL)");
                             c.assertEqual(result.getObjectIdentifier().getTypeCode(), "COMPOUND",
 								"ObjectIdentifier 2 (case MATERIAL)");
-                            c.assertEqual(result.getMatch(), "Identifier: H2O (COMPOUND)", "Match (case MATERIAL)");
+                            c.assertEqual(match, "Identifier: H2O (COMPOUND)", "Match (case MATERIAL)");
                             c.assertNotNull(result.getScore(), "Score (case MATERIAL)");
                             c.assertNull(result.getExperiment(), "Experiment (case MATERIAL)");
                             c.assertNull(result.getSample(), "Sample (case MATERIAL)");
@@ -1782,6 +1788,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				for (var i = 0; i < objects.length; i++) {
 					var objectExperiment = objects[i];
 					var experimentPermId = objectExperiment.getObjectPermId().getPermId();
+					var match = objectExperiment.getMatch();
 					c.assertEqual(objectExperiment.getObjectKind(), "EXPERIMENT", "ObjectKind");
 					if (objectExperiment.getObjectKind === "20130412150049446-204") {
 						prepopulatedExperimentsCount++;
@@ -1789,9 +1796,9 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 					c.assertTrue(objectExperiment.getObjectIdentifier().getIdentifier() ===
 						"/TEST/TEST-PROJECT/TEST-EXPERIMENT" || objectExperiment.getObjectIdentifier().getIdentifier()
 							.startsWith("/TEST/TEST-PROJECT/V3_EXPERIMENT_"), "ObjectIdentifier");
-					c.assertTrue(["Perm ID: " + experimentPermId,
-						"Property 'Test Property Type': 20130412140147735-20"]
-						.includes(objectExperiment.getMatch()), "Match. Actual value: " + objectExperiment.getMatch());
+					c.assertTrue(match === "Perm ID: " + experimentPermId ||
+						match === "Property 'Test Property Type': 20130412140147735-20",
+						"Match. Actual value: " + match);
 					c.assertNotNull(objectExperiment.getScore(), "Score");
 					c.assertTrue(objectExperiment.getExperiment().getCode() === "TEST-EXPERIMENT" ||
 						objectExperiment.getExperiment().getCode().startsWith("V3_EXPERIMENT_"), "Experiment");

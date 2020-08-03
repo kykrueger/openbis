@@ -1,22 +1,22 @@
-export default class TypeFormPreviewPropertyWrapper {
-  constructor(wrapper) {
-    this.wrapper = wrapper
-  }
+import BaseWrapper from '@srcTest/js/components/common/wrapper/BaseWrapper.js'
 
+export default class TypeFormPreviewPropertyWrapper extends BaseWrapper {
   getCode() {
-    return this.wrapper.find('span[data-part="code"]')
+    return this.wrapper.find({ 'data-part': 'code' })
   }
 
   getLabel() {
-    return this.wrapper.find('span[data-part="label"]')
+    return this.wrapper.find({ 'data-part': 'label' })
   }
 
   getDataType() {
-    return this.wrapper.find('span[data-part="dataType"]')
+    return this.wrapper.find({ 'data-part': 'dataType' })
   }
 
   click() {
-    this.wrapper.simulate('click')
+    this.wrapper.instance().handleDraggableClick({
+      stopPropagation: () => {}
+    })
   }
 
   toJSON() {

@@ -1,8 +1,5 @@
 import React from 'react'
-import { Provider } from 'react-redux'
-import { mount } from 'enzyme'
-import { createStore } from '@src/js/store/store.js'
-import ThemeProvider from '@src/js/components/common/theme/ThemeProvider.jsx'
+import ComponentTest from '@srcTest/js/components/common/ComponentTest.js'
 import TypeForm from '@src/js/components/types/form/TypeForm.jsx'
 import TypeFormWrapper from '@srcTest/js/components/types/form/wrapper/TypeFormWrapper.js'
 import TypeFormController from '@src/js/components/types/form/TypeFormController.js'
@@ -13,13 +10,17 @@ import fixture from '@srcTest/js/common/fixture.js'
 
 jest.mock('@src/js/components/types/form/TypeFormFacade')
 
-let store = null
+let common = null
 let facade = null
 let controller = null
 
 beforeEach(() => {
-  jest.resetAllMocks()
-  store = createStore()
+  common = new ComponentTest(
+    object => <TypeForm object={object} controller={controller} />,
+    wrapper => new TypeFormWrapper(wrapper)
+  )
+  common.beforeEach()
+
   facade = new TypeFormFacade()
   controller = new TypeFormController(facade)
 
@@ -53,7 +54,7 @@ describe('TypeFormComponent', () => {
 })
 
 async function testLoadNew() {
-  const form = await mountFormNew()
+  const form = await mountNew()
 
   form.expectJSON({
     preview: {
@@ -103,7 +104,7 @@ async function testLoadNew() {
 }
 
 async function testLoadExisting() {
-  const form = await mountFormExisting()
+  const form = await mountExisting()
 
   form.expectJSON({
     preview: {
@@ -295,7 +296,7 @@ async function doTestSelectProperty(scope, used) {
     })
   }
 
-  const form = await mountForm({
+  const form = await common.mount({
     id: type.getCode(),
     type: objectTypes.OBJECT_TYPE
   })
@@ -356,7 +357,7 @@ async function doTestSelectProperty(scope, used) {
 }
 
 async function testSelectSection() {
-  const form = await mountFormExisting()
+  const form = await mountExisting()
 
   form.getPreview().getSections()[1].click()
   await form.update()
@@ -383,7 +384,7 @@ async function testSelectSection() {
 }
 
 async function testAddSection() {
-  const form = await mountFormExisting()
+  const form = await mountExisting()
 
   form.expectJSON({
     preview: {
@@ -467,7 +468,7 @@ async function testAddSection() {
 }
 
 async function testAddProperty() {
-  const form = await mountFormExisting()
+  const form = await mountExisting()
 
   form.expectJSON({
     preview: {
@@ -589,7 +590,7 @@ async function testAddProperty() {
 }
 
 async function testChangeType() {
-  const form = await mountFormExisting()
+  const form = await mountExisting()
 
   form.expectJSON({
     preview: {
@@ -667,7 +668,7 @@ async function testChangeType() {
 }
 
 async function testChangeProperty() {
-  const form = await mountFormExisting()
+  const form = await mountExisting()
 
   form.getButtons().getEdit().click()
   await form.update()
@@ -899,7 +900,7 @@ async function testChangeProperty() {
 }
 
 async function testChangeSection() {
-  const form = await mountFormExisting()
+  const form = await mountExisting()
 
   form.getButtons().getEdit().click()
   await form.update()
@@ -969,7 +970,7 @@ async function testChangeSection() {
 }
 
 async function testRemoveProperty() {
-  const form = await mountFormExisting()
+  const form = await mountExisting()
 
   form.getButtons().getEdit().click()
   await form.update()
@@ -1024,7 +1025,7 @@ async function testRemoveProperty() {
 }
 
 async function testRemoveSection() {
-  const form = await mountFormExisting()
+  const form = await mountExisting()
 
   form.getButtons().getEdit().click()
   await form.update()
@@ -1069,9 +1070,7 @@ async function testRemoveSection() {
 }
 
 async function testValidateType() {
-  const form = await mountForm({
-    type: objectTypes.NEW_OBJECT_TYPE
-  })
+  const form = await mountNew()
 
   form.getButtons().getSave().click()
   await form.update()
@@ -1101,9 +1100,7 @@ async function testValidateType() {
 }
 
 async function testValidateProperty() {
-  const form = await mountForm({
-    type: objectTypes.NEW_OBJECT_TYPE
-  })
+  const form = await mountNew()
 
   form.getParameters().getType().getCode().change('TEST_CODE')
   form.getParameters().getType().getGeneratedCodePrefix().change('TEST_PREFIX_')
@@ -1147,9 +1144,7 @@ async function testValidateProperty() {
 }
 
 async function testValidateTypeAndProperty() {
-  const form = await mountForm({
-    type: objectTypes.NEW_OBJECT_TYPE
-  })
+  const form = await mountNew()
 
   form.getButtons().getAddSection().click()
   form.getButtons().getAddProperty().click()
@@ -1183,32 +1178,19 @@ async function testValidateTypeAndProperty() {
   })
 }
 
-async function mountForm(object) {
-  const wrapper = mount(
-    <Provider store={store}>
-      <ThemeProvider>
-        <TypeForm object={object} controller={controller} />
-      </ThemeProvider>
-    </Provider>
-  )
-
-  const form = new TypeFormWrapper(wrapper)
-  return form.update().then(() => form)
-}
-
-async function mountFormNew() {
-  return await mountForm({
+async function mountNew() {
+  return await common.mount({
     type: objectTypes.NEW_OBJECT_TYPE
   })
 }
 
-async function mountFormExisting() {
+async function mountExisting() {
   facade.loadType.mockReturnValue(Promise.resolve(fixture.TEST_SAMPLE_TYPE_DTO))
   facade.loadValidationPlugins.mockReturnValue(
     Promise.resolve([fixture.TEST_SAMPLE_TYPE_DTO.validationPlugin])
   )
 
-  return await mountForm({
+  return await common.mount({
     id: fixture.TEST_SAMPLE_TYPE_DTO.getCode(),
     type: objectTypes.OBJECT_TYPE
   })

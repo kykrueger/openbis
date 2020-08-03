@@ -3,7 +3,7 @@ import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles'
 import indigo from '@material-ui/core/colors/indigo'
 import lightBlue from '@material-ui/core/colors/lightBlue'
 
-const theme = createMuiTheme({
+const config = {
   typography: {
     useNextVariants: true,
     label: {
@@ -33,12 +33,17 @@ const theme = createMuiTheme({
       secondary: '#ebebeb'
     }
   }
-})
+}
 
-export default class ThemeProvider extends React.Component {
+const theme = createMuiTheme(config)
+
+class ThemeProvider extends React.Component {
   render() {
     return (
       <MuiThemeProvider theme={theme}>{this.props.children}</MuiThemeProvider>
     )
   }
 }
+
+export default ThemeProvider
+export { config }

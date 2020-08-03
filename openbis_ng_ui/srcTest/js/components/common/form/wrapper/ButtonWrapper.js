@@ -1,4 +1,4 @@
-import BaseWrapper from './BaseWrapper.js'
+import BaseWrapper from '@srcTest/js/components/common/wrapper/BaseWrapper.js'
 
 export default class ButtonWrapper extends BaseWrapper {
   getLabel() {
@@ -6,7 +6,7 @@ export default class ButtonWrapper extends BaseWrapper {
   }
 
   getEnabled() {
-    return this.getBooleanValue(this.wrapper.prop('disabled'))
+    return !this.getBooleanValue(this.wrapper.prop('disabled'))
   }
 
   click() {

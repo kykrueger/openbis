@@ -1,4 +1,4 @@
-import BaseWrapper from './BaseWrapper.js'
+import BaseWrapper from '@srcTest/js/components/common/wrapper/BaseWrapper.js'
 
 export default class FieldWrapper extends BaseWrapper {
   getName() {
@@ -14,7 +14,11 @@ export default class FieldWrapper extends BaseWrapper {
   }
 
   getEnabled() {
-    return this.getBooleanValue(this.wrapper.prop('disabled'))
+    return !this.getBooleanValue(this.wrapper.prop('disabled'))
+  }
+
+  getFocused() {
+    throw 'Method not implemented'
   }
 
   getMode() {
@@ -40,6 +44,7 @@ export default class FieldWrapper extends BaseWrapper {
         label: this.getLabel(),
         value: this.getValue(),
         enabled: this.getEnabled(),
+        focused: this.getFocused(),
         mode: this.getMode(),
         error: this.getError()
       }

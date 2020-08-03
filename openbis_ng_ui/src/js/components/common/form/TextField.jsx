@@ -24,10 +24,16 @@ const styles = theme => ({
 })
 
 class TextFormField extends React.PureComponent {
+  static defaultProps = {
+    mode: 'edit',
+    variant: 'filled',
+    autoComplete: 'off'
+  }
+
   render() {
     logger.log(logger.DEBUG, 'TextFormField.render')
 
-    const { mode = 'edit' } = this.props
+    const { mode } = this.props
 
     if (mode === 'view') {
       return this.renderView()
@@ -54,7 +60,7 @@ class TextFormField extends React.PureComponent {
       value,
       mandatory,
       disabled,
-      autoComplete = 'off',
+      autoComplete,
       error,
       multiline,
       metadata,
@@ -62,6 +68,7 @@ class TextFormField extends React.PureComponent {
       endAdornment,
       styles,
       classes,
+      variant,
       onClick,
       onKeyPress,
       onChange,
@@ -120,7 +127,7 @@ class TextFormField extends React.PureComponent {
           onBlur={onBlur}
           fullWidth={true}
           autoComplete={autoComplete}
-          variant='filled'
+          variant={variant}
           margin='dense'
           classes={{
             root: classes.textField

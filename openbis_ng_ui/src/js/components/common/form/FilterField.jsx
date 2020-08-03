@@ -101,7 +101,7 @@ class FilterField extends React.Component {
           }}
         >
           <IconButton
-            onMouseDown={this.handleFilterClear}
+            onClick={this.handleFilterClear}
             classes={{ root: classes.adornmentButton }}
           >
             <CloseIcon fontSize='small' />

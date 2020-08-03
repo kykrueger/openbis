@@ -10,8 +10,7 @@ import FormFieldLabel from './FormFieldLabel.jsx'
 const styles = () => ({
   container: {
     display: 'flex',
-    alignItems: 'center',
-    marginLeft: '-4px'
+    alignItems: 'center'
   },
   label: {
     cursor: 'pointer'
@@ -26,6 +25,10 @@ const styles = () => ({
 })
 
 class CheckboxFormField extends React.PureComponent {
+  static defaultProps = {
+    mode: 'edit'
+  }
+
   constructor(props) {
     super(props)
     this.reference = React.createRef()
@@ -77,7 +80,7 @@ class CheckboxFormField extends React.PureComponent {
       disabled,
       error,
       metadata,
-      mode = 'edit',
+      mode,
       styles,
       classes,
       onClick

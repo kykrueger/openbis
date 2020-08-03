@@ -1,27 +1,28 @@
-import TextFieldWrapper from '@srcTest/js/common/wrapper/TextFieldWrapper.js'
+import BaseWrapper from '@srcTest/js/components/common/wrapper/BaseWrapper.js'
+import TextField from '@src/js/components/common/form/TextField.jsx'
+import TypeFormHeader from '@src/js/components/types/form/TypeFormHeader.jsx'
+import TextFieldWrapper from '@srcTest/js/components/common/form/wrapper/TextFieldWrapper.js'
 
-export default class TypeFormPreviewHeaderWrapper {
-  constructor(wrapper) {
-    this.wrapper = wrapper
-  }
-
+export default class TypeFormPreviewHeaderWrapper extends BaseWrapper {
   getTitle() {
-    return this.wrapper.find('TypeFormHeader')
+    return this.findComponent(TypeFormHeader)
   }
 
   getCode() {
-    return new TextFieldWrapper(this.wrapper.find('TextFormField[name="code"]'))
+    return new TextFieldWrapper(
+      this.findComponent(TextField).filter({ name: 'code' })
+    )
   }
 
   getParents() {
     return new TextFieldWrapper(
-      this.wrapper.find('TextFormField[name="parents"]')
+      this.findComponent(TextField).filter({ name: 'parents' })
     )
   }
 
   getContainer() {
     return new TextFieldWrapper(
-      this.wrapper.find('TextFormField[name="container"]')
+      this.findComponent(TextField).filter({ name: 'container' })
     )
   }
 

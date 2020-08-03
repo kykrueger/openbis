@@ -1,4 +1,4 @@
-import BaseWrapper from '@srcTest/js/common/wrapper/BaseWrapper.js'
+import BaseWrapper from '@srcTest/js/components/common/wrapper/BaseWrapper.js'
 
 export default class MessageWrapper extends BaseWrapper {
   getText() {
