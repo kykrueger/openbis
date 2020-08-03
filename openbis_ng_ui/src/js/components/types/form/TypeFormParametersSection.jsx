@@ -43,23 +43,17 @@ class TypeFormParametersSection extends React.PureComponent {
     }
   }
 
-  params(event) {
+  handleChange(event) {
     const section = this.getSection(this.props)
-
-    return {
+    this.props.onChange('section', {
       id: section.id,
       field: event.target.name,
-      part: event.target.name,
       value: event.target.value
-    }
+    })
   }
 
-  handleChange(event) {
-    this.props.onChange('section', this.params(event))
-  }
-
-  handleBlur(event) {
-    this.props.onBlur('section', this.params(event))
+  handleBlur() {
+    this.props.onBlur()
   }
 
   render() {

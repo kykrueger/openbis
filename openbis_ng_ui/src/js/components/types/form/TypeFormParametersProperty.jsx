@@ -69,27 +69,25 @@ class TypeFormParametersProperty extends React.PureComponent {
     }
   }
 
-  params(event) {
+  handleChange(event) {
     const property = this.getProperty(this.props)
-
-    return {
+    this.props.onChange('property', {
       id: property.id,
       field: event.target.name,
-      part: event.target.name,
       value: event.target.value
-    }
-  }
-
-  handleChange(event) {
-    this.props.onChange('property', this.params(event))
+    })
   }
 
   handleFocus(event) {
-    this.props.onSelectionChange('property', this.params(event))
+    const property = this.getProperty(this.props)
+    this.props.onSelectionChange('property', {
+      id: property.id,
+      part: event.target.name
+    })
   }
 
-  handleBlur(event) {
-    this.props.onBlur('property', this.params(event))
+  handleBlur() {
+    this.props.onBlur()
   }
 
   render() {

@@ -44,11 +44,23 @@ class TypeFormPreviewSection extends React.PureComponent {
   }
 
   handleClick(event) {
+    const { selection } = this.props
+
     event.stopPropagation()
-    this.props.onSelectionChange('section', {
-      id: this.props.section.id,
-      part: 'name'
-    })
+
+    const newSelection = {
+      type: 'section',
+      params: {
+        id: this.props.section.id,
+        part: 'name'
+      }
+    }
+
+    if (_.isEqual(selection, newSelection)) {
+      this.props.onSelectionChange()
+    } else {
+      this.props.onSelectionChange(newSelection.type, newSelection.params)
+    }
   }
 
   render() {

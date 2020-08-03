@@ -142,18 +142,36 @@ class TypeFormPreviewProperty extends React.PureComponent {
   }
 
   handleDraggableClick(event) {
-    event.stopPropagation()
-    this.props.onSelectionChange('property', {
-      id: this.props.property.id
-    })
+    let newSelection = {
+      type: 'property',
+      params: {
+        id: this.props.property.id
+      }
+    }
+    this.handleClick(event, newSelection)
   }
 
   handlePropertyClick(event) {
+    let newSelection = {
+      type: 'property',
+      params: {
+        id: this.props.property.id,
+        part: event.target.dataset.part
+      }
+    }
+    this.handleClick(event, newSelection)
+  }
+
+  handleClick(event, newSelection) {
+    const { selection } = this.props
+
     event.stopPropagation()
-    this.props.onSelectionChange('property', {
-      id: this.props.property.id,
-      part: event.target.dataset.part
-    })
+
+    if (_.isEqual(selection, newSelection)) {
+      this.props.onSelectionChange()
+    } else {
+      this.props.onSelectionChange(newSelection.type, newSelection.params)
+    }
   }
 
   handleChange(event) {

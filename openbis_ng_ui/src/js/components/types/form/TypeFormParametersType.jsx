@@ -65,24 +65,21 @@ class TypeFormParametersType extends React.PureComponent {
     }
   }
 
-  params(event) {
-    return {
-      field: event.target.name,
-      part: event.target.name,
-      value: event.target.value
-    }
-  }
-
   handleChange(event) {
-    this.props.onChange('type', this.params(event))
+    this.props.onChange('type', {
+      field: event.target.name,
+      value: event.target.value
+    })
   }
 
   handleFocus(event) {
-    this.props.onSelectionChange('type', this.params(event))
+    this.props.onSelectionChange('type', {
+      part: event.target.name
+    })
   }
 
-  handleBlur(event) {
-    this.props.onBlur('type', this.params(event))
+  handleBlur() {
+    this.props.onBlur()
   }
 
   render() {
