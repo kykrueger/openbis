@@ -1,4 +1,5 @@
 import BaseWrapper from '@srcTest/js/components/common/wrapper/BaseWrapper.js'
+import IconWrapper from '@srcTest/js/components/common/form/wrapper/IconWrapper.js'
 
 export default class TabWrapper extends BaseWrapper {
   getLabel() {
@@ -7,6 +8,10 @@ export default class TabWrapper extends BaseWrapper {
 
   getSelected() {
     return this.getBooleanValue(this.wrapper.prop('selected'))
+  }
+
+  getCloseIcon() {
+    return new IconWrapper(this.wrapper.find('svg').first())
   }
 
   toJSON() {
