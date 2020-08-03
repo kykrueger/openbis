@@ -1,3 +1,8 @@
+## Changes with pybis-1.14.10
+
+- bugfix when deleting dataSets
+- some improvements with the documentation
+
 ## Changes with pybis-1.14.9
 
 - quick fix of parse_jackson error in special circumstances
