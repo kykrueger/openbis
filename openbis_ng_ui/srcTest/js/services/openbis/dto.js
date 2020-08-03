@@ -22,6 +22,7 @@ import DeleteExperimentTypesOperation from 'as/dto/experiment/delete/DeleteExper
 import DeleteMaterialTypesOperation from 'as/dto/material/delete/DeleteMaterialTypesOperation'
 import DeletePropertyTypesOperation from 'as/dto/property/delete/DeletePropertyTypesOperation'
 import DeleteSampleTypesOperation from 'as/dto/sample/delete/DeleteSampleTypesOperation'
+import DeleteVocabulariesOperation from 'as/dto/vocabulary/delete/DeleteVocabulariesOperation'
 import EntityKind from 'as/dto/entitytype/EntityKind'
 import EntityTypePermId from 'as/dto/entitytype/id/EntityTypePermId'
 import ExperimentFetchOptions from 'as/dto/experiment/fetchoptions/ExperimentFetchOptions'
@@ -82,6 +83,7 @@ import UpdateMaterialTypesOperation from 'as/dto/material/update/UpdateMaterialT
 import UpdatePropertyTypesOperation from 'as/dto/property/update/UpdatePropertyTypesOperation'
 import UpdateSampleTypesOperation from 'as/dto/sample/update/UpdateSampleTypesOperation'
 import Vocabulary from 'as/dto/vocabulary/Vocabulary'
+import VocabularyDeletionOptions from 'as/dto/vocabulary/delete/VocabularyDeletionOptions'
 import VocabularyFetchOptions from 'as/dto/vocabulary/fetchoptions/VocabularyFetchOptions'
 import VocabularyPermId from 'as/dto/vocabulary/id/VocabularyPermId'
 import VocabularySearchCriteria from 'as/dto/vocabulary/search/VocabularySearchCriteria'
@@ -114,6 +116,7 @@ const dto = {
   DeleteMaterialTypesOperation,
   DeletePropertyTypesOperation,
   DeleteSampleTypesOperation,
+  DeleteVocabulariesOperation,
   EntityKind,
   EntityTypePermId,
   ExperimentFetchOptions,
@@ -174,6 +177,7 @@ const dto = {
   UpdatePropertyTypesOperation,
   UpdateSampleTypesOperation,
   Vocabulary,
+  VocabularyDeletionOptions,
   VocabularyFetchOptions,
   VocabularyPermId,
   VocabularySearchCriteria,

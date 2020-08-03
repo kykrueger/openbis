@@ -28,64 +28,86 @@ export default class TypeBrowserController extends BrowserController {
       openbis.searchMaterialTypes(
         new openbis.MaterialTypeSearchCriteria(),
         new openbis.MaterialTypeFetchOptions()
+      ),
+      openbis.searchVocabularies(
+        new openbis.VocabularySearchCriteria(),
+        new openbis.VocabularyFetchOptions()
       )
-    ]).then(([objectTypes, collectionTypes, dataSetTypes, materialTypes]) => {
-      const _createNodes = (types, typeName) => {
-        return _.map(types, type => {
-          return {
-            id: `${typeName}s/${type.code}`,
-            text: type.code,
-            object: { type: typeName, id: type.code }
-          }
-        })
-      }
-
-      let objectTypeNodes = _createNodes(
-        objectTypes.getObjects(),
-        objectType.OBJECT_TYPE
-      )
-      let collectionTypeNodes = _createNodes(
-        collectionTypes.getObjects(),
-        objectType.COLLECTION_TYPE
-      )
-      let dataSetTypeNodes = _createNodes(
-        dataSetTypes.getObjects(),
-        objectType.DATA_SET_TYPE
-      )
-      let materialTypeNodes = _createNodes(
-        materialTypes.getObjects(),
-        objectType.MATERIAL_TYPE
-      )
-
-      let nodes = [
-        {
-          id: 'objectTypes',
-          text: 'Object Types',
-          children: objectTypeNodes,
-          childrenType: objectType.NEW_OBJECT_TYPE
-        },
-        {
-          id: 'collectionTypes',
-          text: 'Collection Types',
-          children: collectionTypeNodes,
-          childrenType: objectType.NEW_COLLECTION_TYPE
-        },
-        {
-          id: 'dataSetTypes',
-          text: 'Data Set Types',
-          children: dataSetTypeNodes,
-          childrenType: objectType.NEW_DATA_SET_TYPE
-        },
-        {
-          id: 'materialTypes',
-          text: 'Material Types',
-          children: materialTypeNodes,
-          childrenType: objectType.NEW_MATERIAL_TYPE
+    ]).then(
+      ([
+        objectTypes,
+        collectionTypes,
+        dataSetTypes,
+        materialTypes,
+        vocabularyTypes
+      ]) => {
+        const _createNodes = (types, typeName) => {
+          return _.map(types, type => {
+            return {
+              id: `${typeName}s/${type.code}`,
+              text: type.code,
+              object: { type: typeName, id: type.code }
+            }
+          })
         }
-      ]
 
-      return nodes
-    })
+        let objectTypeNodes = _createNodes(
+          objectTypes.getObjects(),
+          objectType.OBJECT_TYPE
+        )
+        let collectionTypeNodes = _createNodes(
+          collectionTypes.getObjects(),
+          objectType.COLLECTION_TYPE
+        )
+        let dataSetTypeNodes = _createNodes(
+          dataSetTypes.getObjects(),
+          objectType.DATA_SET_TYPE
+        )
+        let materialTypeNodes = _createNodes(
+          materialTypes.getObjects(),
+          objectType.MATERIAL_TYPE
+        )
+        let vocabularyTypeNodes = _createNodes(
+          vocabularyTypes.getObjects(),
+          objectType.VOCABULARY_TYPE
+        )
+
+        let nodes = [
+          {
+            id: 'objectTypes',
+            text: 'Object Types',
+            children: objectTypeNodes,
+            childrenType: objectType.NEW_OBJECT_TYPE
+          },
+          {
+            id: 'collectionTypes',
+            text: 'Collection Types',
+            children: collectionTypeNodes,
+            childrenType: objectType.NEW_COLLECTION_TYPE
+          },
+          {
+            id: 'dataSetTypes',
+            text: 'Data Set Types',
+            children: dataSetTypeNodes,
+            childrenType: objectType.NEW_DATA_SET_TYPE
+          },
+          {
+            id: 'materialTypes',
+            text: 'Material Types',
+            children: materialTypeNodes,
+            childrenType: objectType.NEW_MATERIAL_TYPE
+          },
+          {
+            id: 'vocabularyTypes',
+            text: 'Vocabulary Types',
+            children: vocabularyTypeNodes,
+            childrenType: objectType.NEW_VOCABULARY_TYPE
+          }
+        ]
+
+        return nodes
+      }
+    )
   }
 
   doNodeAdd(node) {
@@ -103,6 +125,35 @@ export default class TypeBrowserController extends BrowserController {
 
     const { type, id } = node.object
     const reason = 'deleted via ng_ui'
+
+    return this._prepareRemoveOperations(type, id, reason)
+      .then(operations => {
+        const options = new openbis.SynchronousOperationExecutionOptions()
+        options.setExecuteInOrder(true)
+        return openbis.executeOperations(operations, options)
+      })
+      .then(() => {
+        this.context.dispatch(actions.objectDelete(this.getPage(), type, id))
+      })
+      .catch(error => {
+        this.context.dispatch(actions.errorChange(error))
+      })
+  }
+
+  _prepareRemoveOperations(type, id, reason) {
+    if (
+      type === objectType.OBJECT_TYPE ||
+      type === objectType.COLLECTION_TYPE ||
+      type === objectType.DATA_SET_TYPE ||
+      type === objectType.MATERIAL_TYPE
+    ) {
+      return this._prepareRemoveEntityTypeOperations(type, id, reason)
+    } else if (type === objectType.VOCABULARY_TYPE) {
+      return this._prepareRemoveVocabularyTypeOperations(type, id, reason)
+    }
+  }
+
+  _prepareRemoveEntityTypeOperations(type, id, reason) {
     const operations = []
 
     if (type === objectType.OBJECT_TYPE) {
@@ -147,31 +198,28 @@ export default class TypeBrowserController extends BrowserController {
     criteria.withCode().thatStartsWith(id + '.')
     const fo = new openbis.PropertyTypeFetchOptions()
 
-    return openbis
-      .searchPropertyTypes(criteria, fo)
-      .then(results => {
-        const ids = results
-          .getObjects()
-          .map(propertyType => propertyType.getPermId())
-        if (!_.isEmpty(ids)) {
-          const options = new openbis.PropertyTypeDeletionOptions()
-          options.setReason(reason)
-          operations.push(
-            new openbis.DeletePropertyTypesOperation(ids, options)
-          )
-        }
-      })
-      .then(() => {
-        const options = new openbis.SynchronousOperationExecutionOptions()
-        options.setExecuteInOrder(true)
-        return openbis.executeOperations(operations, options)
-      })
-      .then(() => {
-        this.context.dispatch(actions.objectDelete(this.getPage(), type, id))
-      })
-      .catch(error => {
-        this.context.dispatch(actions.errorChange(error))
-      })
+    return openbis.searchPropertyTypes(criteria, fo).then(results => {
+      const ids = results
+        .getObjects()
+        .map(propertyType => propertyType.getPermId())
+      if (!_.isEmpty(ids)) {
+        const options = new openbis.PropertyTypeDeletionOptions()
+        options.setReason(reason)
+        operations.push(new openbis.DeletePropertyTypesOperation(ids, options))
+      }
+      return operations
+    })
+  }
+
+  _prepareRemoveVocabularyTypeOperations(type, id, reason) {
+    const options = new openbis.VocabularyDeletionOptions()
+    options.setReason(reason)
+    return Promise.resolve([
+      new openbis.DeleteVocabulariesOperation(
+        [new openbis.VocabularyPermId(id)],
+        options
+      )
+    ])
   }
 
   doGetObservedModifications() {
@@ -189,6 +237,10 @@ export default class TypeBrowserController extends BrowserController {
         objectOperation.DELETE
       ],
       [objectType.MATERIAL_TYPE]: [
+        objectOperation.CREATE,
+        objectOperation.DELETE
+      ],
+      [objectType.VOCABULARY_TYPE]: [
         objectOperation.CREATE,
         objectOperation.DELETE
       ]
