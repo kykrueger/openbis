@@ -46,6 +46,10 @@ public class PropertyType implements Serializable
     {
         private DataTypeCode dataType;
 
+        private String sampleTypeCode;
+
+        private String materialTypeCode;
+
         private String code;
 
         private String label;
@@ -100,6 +104,14 @@ public class PropertyType implements Serializable
             this.dataType = dataType;
         }
 
+        public String getSampleTypeCode() { return sampleTypeCode; }
+
+        public void setSampleTypeCode(String sampleTypeCode) { this.sampleTypeCode = sampleTypeCode; }
+
+        public String getMaterialTypeCode() { return materialTypeCode; }
+
+        public void setMaterialTypeCode(String materialTypeCode) { this.materialTypeCode = materialTypeCode; }
+
         public String getCode()
         {
             return code;
@@ -143,6 +155,10 @@ public class PropertyType implements Serializable
 
     private DataTypeCode dataType;
 
+    private String sampleTypeCode;
+
+    private String materialTypeCode;
+
     private String code;
 
     private String label;
@@ -169,6 +185,8 @@ public class PropertyType implements Serializable
             throw new IllegalArgumentException("Unspecified data type.");
         }
         this.dataType = initializer.getDataType();
+        this.sampleTypeCode = initializer.getSampleTypeCode();
+        this.materialTypeCode = initializer.getMaterialTypeCode();
 
         InitializingChecks.checkValidString(initializer.getCode(), "Unspecified code.");
         this.code = initializer.getCode();
@@ -203,6 +221,10 @@ public class PropertyType implements Serializable
     {
         return dataType;
     }
+
+    public String getSampleTypeCode() { return sampleTypeCode; }
+
+    public String getMaterialTypeCode() { return materialTypeCode; }
 
     /**
      * Return the code of this property type.
@@ -292,6 +314,10 @@ public class PropertyType implements Serializable
     {
         this.dataType = dataType;
     }
+
+    public void setSampleTypeCode(String sampleTypeCode) { this.sampleTypeCode = sampleTypeCode; }
+
+    public void setMaterialTypeCode(String materialTypeCode) { this.materialTypeCode = materialTypeCode; }
 
     private void setCode(String code)
     {

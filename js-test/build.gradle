@@ -37,9 +37,9 @@ dependencies {
 
 	compile 'reflections:reflections:0.9.10', 
 	'testng:testng:6.8-CISD', 
-	'fasterxml:jackson-core:2.9.7',
-	'fasterxml:jackson-annotations:2.9.7',
-	'fasterxml:jackson-databind:2.9.7'
+	'fasterxml:jackson-core:2.9.10',
+	'fasterxml:jackson-annotations:2.9.10',
+	'fasterxml:jackson-databind:2.9.10'
 
 	testCompile project(path: ':ui-test', configuration: 'tests')
 	

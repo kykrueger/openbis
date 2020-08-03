@@ -47,19 +47,28 @@ describe('TypeFormController.handleRemove', () => {
         }
       },
       properties: [
-        { id: 'property-0', code: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode() },
-        { id: 'property-1', code: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode() },
-        { id: 'property-2', code: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode() }
+        {
+          id: 'property-0',
+          code: { value: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode() }
+        },
+        {
+          id: 'property-1',
+          code: { value: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode() }
+        },
+        {
+          id: 'property-2',
+          code: { value: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode() }
+        }
       ],
       sections: [
         {
           id: 'section-0',
-          name: 'TEST_SECTION_1',
+          name: { value: 'TEST_SECTION_1' },
           properties: ['property-0']
         },
         {
           id: 'section-1',
-          name: 'TEST_SECTION_2',
+          name: { value: 'TEST_SECTION_2' },
           properties: ['property-1', 'property-2']
         }
       ]
@@ -70,13 +79,19 @@ describe('TypeFormController.handleRemove', () => {
     expect(context.getState()).toMatchObject({
       selection: null,
       properties: [
-        { id: 'property-1', code: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode() },
-        { id: 'property-2', code: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode() }
+        {
+          id: 'property-1',
+          code: { value: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode() }
+        },
+        {
+          id: 'property-2',
+          code: { value: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode() }
+        }
       ],
       sections: [
         {
           id: 'section-1',
-          name: 'TEST_SECTION_2',
+          name: { value: 'TEST_SECTION_2' },
           properties: ['property-1', 'property-2']
         }
       ]
@@ -89,8 +104,11 @@ describe('TypeFormController.handleRemove', () => {
     )
     facade.loadUsages.mockReturnValue(
       Promise.resolve({
-        property: {
+        propertyLocal: {
           [fixture.TEST_PROPERTY_TYPE_1_DTO.getCode()]: 1
+        },
+        propertyGlobal: {
+          [fixture.TEST_PROPERTY_TYPE_1_DTO.getCode()]: 10
         }
       })
     )
@@ -108,21 +126,28 @@ describe('TypeFormController.handleRemove', () => {
       properties: [
         {
           id: 'property-0',
-          code: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode(),
-          usages: 1
+          code: { value: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode() },
+          usagesLocal: 1,
+          usagesGlobal: 10
         },
-        { id: 'property-1', code: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode() },
-        { id: 'property-2', code: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode() }
+        {
+          id: 'property-1',
+          code: { value: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode() }
+        },
+        {
+          id: 'property-2',
+          code: { value: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode() }
+        }
       ],
       sections: [
         {
           id: 'section-0',
-          name: 'TEST_SECTION_1',
+          name: { value: 'TEST_SECTION_1' },
           properties: ['property-0']
         },
         {
           id: 'section-1',
-          name: 'TEST_SECTION_2',
+          name: { value: 'TEST_SECTION_2' },
           properties: ['property-1', 'property-2']
         }
       ]
@@ -141,21 +166,28 @@ describe('TypeFormController.handleRemove', () => {
       properties: [
         {
           id: 'property-0',
-          code: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode(),
-          usages: 1
+          code: { value: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode() },
+          usagesLocal: 1,
+          usagesGlobal: 10
         },
-        { id: 'property-1', code: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode() },
-        { id: 'property-2', code: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode() }
+        {
+          id: 'property-1',
+          code: { value: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode() }
+        },
+        {
+          id: 'property-2',
+          code: { value: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode() }
+        }
       ],
       sections: [
         {
           id: 'section-0',
-          name: 'TEST_SECTION_1',
+          name: { value: 'TEST_SECTION_1' },
           properties: ['property-0']
         },
         {
           id: 'section-1',
-          name: 'TEST_SECTION_2',
+          name: { value: 'TEST_SECTION_2' },
           properties: ['property-1', 'property-2']
         }
       ]
@@ -167,13 +199,19 @@ describe('TypeFormController.handleRemove', () => {
       removeSectionDialogOpen: false,
       selection: null,
       properties: [
-        { id: 'property-1', code: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode() },
-        { id: 'property-2', code: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode() }
+        {
+          id: 'property-1',
+          code: { value: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode() }
+        },
+        {
+          id: 'property-2',
+          code: { value: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode() }
+        }
       ],
       sections: [
         {
           id: 'section-1',
-          name: 'TEST_SECTION_2',
+          name: { value: 'TEST_SECTION_2' },
           properties: ['property-1', 'property-2']
         }
       ]
@@ -186,8 +224,11 @@ describe('TypeFormController.handleRemove', () => {
     )
     facade.loadUsages.mockReturnValue(
       Promise.resolve({
-        property: {
+        propertyLocal: {
           [fixture.TEST_PROPERTY_TYPE_1_DTO.getCode()]: 1
+        },
+        propertyGlobal: {
+          [fixture.TEST_PROPERTY_TYPE_1_DTO.getCode()]: 10
         }
       })
     )
@@ -205,21 +246,28 @@ describe('TypeFormController.handleRemove', () => {
       properties: [
         {
           id: 'property-0',
-          code: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode(),
-          usages: 1
+          code: { value: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode() },
+          usagesLocal: 1,
+          usagesGlobal: 10
         },
-        { id: 'property-1', code: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode() },
-        { id: 'property-2', code: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode() }
+        {
+          id: 'property-1',
+          code: { value: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode() }
+        },
+        {
+          id: 'property-2',
+          code: { value: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode() }
+        }
       ],
       sections: [
         {
           id: 'section-0',
-          name: 'TEST_SECTION_1',
+          name: { value: 'TEST_SECTION_1' },
           properties: ['property-0']
         },
         {
           id: 'section-1',
-          name: 'TEST_SECTION_2',
+          name: { value: 'TEST_SECTION_2' },
           properties: ['property-1', 'property-2']
         }
       ]
@@ -238,21 +286,28 @@ describe('TypeFormController.handleRemove', () => {
       properties: [
         {
           id: 'property-0',
-          code: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode(),
-          usages: 1
+          code: { value: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode() },
+          usagesLocal: 1,
+          usagesGlobal: 10
         },
-        { id: 'property-1', code: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode() },
-        { id: 'property-2', code: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode() }
+        {
+          id: 'property-1',
+          code: { value: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode() }
+        },
+        {
+          id: 'property-2',
+          code: { value: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode() }
+        }
       ],
       sections: [
         {
           id: 'section-0',
-          name: 'TEST_SECTION_1',
+          name: { value: 'TEST_SECTION_1' },
           properties: ['property-0']
         },
         {
           id: 'section-1',
-          name: 'TEST_SECTION_2',
+          name: { value: 'TEST_SECTION_2' },
           properties: ['property-1', 'property-2']
         }
       ]
@@ -271,21 +326,28 @@ describe('TypeFormController.handleRemove', () => {
       properties: [
         {
           id: 'property-0',
-          code: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode(),
-          usages: 1
+          code: { value: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode() },
+          usagesLocal: 1,
+          usagesGlobal: 10
         },
-        { id: 'property-1', code: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode() },
-        { id: 'property-2', code: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode() }
+        {
+          id: 'property-1',
+          code: { value: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode() }
+        },
+        {
+          id: 'property-2',
+          code: { value: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode() }
+        }
       ],
       sections: [
         {
           id: 'section-0',
-          name: 'TEST_SECTION_1',
+          name: { value: 'TEST_SECTION_1' },
           properties: ['property-0']
         },
         {
           id: 'section-1',
-          name: 'TEST_SECTION_2',
+          name: { value: 'TEST_SECTION_2' },
           properties: ['property-1', 'property-2']
         }
       ]
@@ -309,19 +371,28 @@ describe('TypeFormController.handleRemove', () => {
         }
       },
       properties: [
-        { id: 'property-0', code: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode() },
-        { id: 'property-1', code: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode() },
-        { id: 'property-2', code: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode() }
+        {
+          id: 'property-0',
+          code: { value: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode() }
+        },
+        {
+          id: 'property-1',
+          code: { value: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode() }
+        },
+        {
+          id: 'property-2',
+          code: { value: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode() }
+        }
       ],
       sections: [
         {
           id: 'section-0',
-          name: 'TEST_SECTION_1',
+          name: { value: 'TEST_SECTION_1' },
           properties: ['property-0']
         },
         {
           id: 'section-1',
-          name: 'TEST_SECTION_2',
+          name: { value: 'TEST_SECTION_2' },
           properties: ['property-1', 'property-2']
         }
       ]
@@ -332,18 +403,24 @@ describe('TypeFormController.handleRemove', () => {
     expect(context.getState()).toMatchObject({
       selection: null,
       properties: [
-        { id: 'property-0', code: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode() },
-        { id: 'property-2', code: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode() }
+        {
+          id: 'property-0',
+          code: { value: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode() }
+        },
+        {
+          id: 'property-2',
+          code: { value: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode() }
+        }
       ],
       sections: [
         {
           id: 'section-0',
-          name: 'TEST_SECTION_1',
+          name: { value: 'TEST_SECTION_1' },
           properties: ['property-0']
         },
         {
           id: 'section-1',
-          name: 'TEST_SECTION_2',
+          name: { value: 'TEST_SECTION_2' },
           properties: ['property-2']
         }
       ]
@@ -356,8 +433,11 @@ describe('TypeFormController.handleRemove', () => {
     )
     facade.loadUsages.mockReturnValue(
       Promise.resolve({
-        property: {
+        propertyLocal: {
           [fixture.TEST_PROPERTY_TYPE_2_DTO.getCode()]: 1
+        },
+        propertyGlobal: {
+          [fixture.TEST_PROPERTY_TYPE_2_DTO.getCode()]: 10
         }
       })
     )
@@ -373,23 +453,30 @@ describe('TypeFormController.handleRemove', () => {
         }
       },
       properties: [
-        { id: 'property-0', code: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode() },
+        {
+          id: 'property-0',
+          code: { value: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode() }
+        },
         {
           id: 'property-1',
-          code: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode(),
-          usages: 1
+          code: { value: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode() },
+          usagesLocal: 1,
+          usagesGlobal: 10
         },
-        { id: 'property-2', code: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode() }
+        {
+          id: 'property-2',
+          code: { value: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode() }
+        }
       ],
       sections: [
         {
           id: 'section-0',
-          name: 'TEST_SECTION_1',
+          name: { value: 'TEST_SECTION_1' },
           properties: ['property-0']
         },
         {
           id: 'section-1',
-          name: 'TEST_SECTION_2',
+          name: { value: 'TEST_SECTION_2' },
           properties: ['property-1', 'property-2']
         }
       ]
@@ -406,23 +493,30 @@ describe('TypeFormController.handleRemove', () => {
         }
       },
       properties: [
-        { id: 'property-0', code: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode() },
+        {
+          id: 'property-0',
+          code: { value: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode() }
+        },
         {
           id: 'property-1',
-          code: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode(),
-          usages: 1
+          code: { value: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode() },
+          usagesLocal: 1,
+          usagesGlobal: 10
         },
-        { id: 'property-2', code: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode() }
+        {
+          id: 'property-2',
+          code: { value: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode() }
+        }
       ],
       sections: [
         {
           id: 'section-0',
-          name: 'TEST_SECTION_1',
+          name: { value: 'TEST_SECTION_1' },
           properties: ['property-0']
         },
         {
           id: 'section-1',
-          name: 'TEST_SECTION_2',
+          name: { value: 'TEST_SECTION_2' },
           properties: ['property-1', 'property-2']
         }
       ]
@@ -434,18 +528,24 @@ describe('TypeFormController.handleRemove', () => {
       removePropertyDialogOpen: false,
       selection: null,
       properties: [
-        { id: 'property-0', code: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode() },
-        { id: 'property-2', code: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode() }
+        {
+          id: 'property-0',
+          code: { value: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode() }
+        },
+        {
+          id: 'property-2',
+          code: { value: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode() }
+        }
       ],
       sections: [
         {
           id: 'section-0',
-          name: 'TEST_SECTION_1',
+          name: { value: 'TEST_SECTION_1' },
           properties: ['property-0']
         },
         {
           id: 'section-1',
-          name: 'TEST_SECTION_2',
+          name: { value: 'TEST_SECTION_2' },
           properties: ['property-2']
         }
       ]
@@ -458,8 +558,11 @@ describe('TypeFormController.handleRemove', () => {
     )
     facade.loadUsages.mockReturnValue(
       Promise.resolve({
-        property: {
+        propertyLocal: {
           [fixture.TEST_PROPERTY_TYPE_2_DTO.getCode()]: 1
+        },
+        propertyGlobal: {
+          [fixture.TEST_PROPERTY_TYPE_2_DTO.getCode()]: 10
         }
       })
     )
@@ -475,23 +578,30 @@ describe('TypeFormController.handleRemove', () => {
         }
       },
       properties: [
-        { id: 'property-0', code: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode() },
+        {
+          id: 'property-0',
+          code: { value: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode() }
+        },
         {
           id: 'property-1',
-          code: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode(),
-          usages: 1
+          code: { value: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode() },
+          usagesLocal: 1,
+          usagesGlobal: 10
         },
-        { id: 'property-2', code: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode() }
+        {
+          id: 'property-2',
+          code: { value: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode() }
+        }
       ],
       sections: [
         {
           id: 'section-0',
-          name: 'TEST_SECTION_1',
+          name: { value: 'TEST_SECTION_1' },
           properties: ['property-0']
         },
         {
           id: 'section-1',
-          name: 'TEST_SECTION_2',
+          name: { value: 'TEST_SECTION_2' },
           properties: ['property-1', 'property-2']
         }
       ]
@@ -508,23 +618,30 @@ describe('TypeFormController.handleRemove', () => {
         }
       },
       properties: [
-        { id: 'property-0', code: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode() },
+        {
+          id: 'property-0',
+          code: { value: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode() }
+        },
         {
           id: 'property-1',
-          code: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode(),
-          usages: 1
+          code: { value: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode() },
+          usagesLocal: 1,
+          usagesGlobal: 10
         },
-        { id: 'property-2', code: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode() }
+        {
+          id: 'property-2',
+          code: { value: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode() }
+        }
       ],
       sections: [
         {
           id: 'section-0',
-          name: 'TEST_SECTION_1',
+          name: { value: 'TEST_SECTION_1' },
           properties: ['property-0']
         },
         {
           id: 'section-1',
-          name: 'TEST_SECTION_2',
+          name: { value: 'TEST_SECTION_2' },
           properties: ['property-1', 'property-2']
         }
       ]
@@ -541,23 +658,30 @@ describe('TypeFormController.handleRemove', () => {
         }
       },
       properties: [
-        { id: 'property-0', code: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode() },
+        {
+          id: 'property-0',
+          code: { value: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode() }
+        },
         {
           id: 'property-1',
-          code: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode(),
-          usages: 1
+          code: { value: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode() },
+          usagesLocal: 1,
+          usagesGlobal: 10
         },
-        { id: 'property-2', code: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode() }
+        {
+          id: 'property-2',
+          code: { value: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode() }
+        }
       ],
       sections: [
         {
           id: 'section-0',
-          name: 'TEST_SECTION_1',
+          name: { value: 'TEST_SECTION_1' },
           properties: ['property-0']
         },
         {
           id: 'section-1',
-          name: 'TEST_SECTION_2',
+          name: { value: 'TEST_SECTION_2' },
           properties: ['property-1', 'property-2']
         }
       ]

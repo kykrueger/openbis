@@ -47,19 +47,28 @@ describe('TypeFormController.handleAddProperty', () => {
         }
       },
       properties: [
-        { id: 'property-0', code: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode() },
-        { id: 'property-1', code: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode() },
-        { id: 'property-2', code: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode() }
+        {
+          id: 'property-0',
+          code: { value: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode() }
+        },
+        {
+          id: 'property-1',
+          code: { value: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode() }
+        },
+        {
+          id: 'property-2',
+          code: { value: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode() }
+        }
       ],
       sections: [
         {
           id: 'section-0',
-          name: 'TEST_SECTION_1',
+          name: { value: 'TEST_SECTION_1' },
           properties: ['property-0']
         },
         {
           id: 'section-1',
-          name: 'TEST_SECTION_2',
+          name: { value: 'TEST_SECTION_2' },
           properties: ['property-1', 'property-2']
         }
       ]
@@ -75,20 +84,32 @@ describe('TypeFormController.handleAddProperty', () => {
         }
       },
       properties: [
-        { id: 'property-0', code: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode() },
-        { id: 'property-1', code: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode() },
-        { id: 'property-2', code: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode() },
-        { id: 'property-3', code: null }
+        {
+          id: 'property-0',
+          code: { value: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode() }
+        },
+        {
+          id: 'property-1',
+          code: { value: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode() }
+        },
+        {
+          id: 'property-2',
+          code: { value: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode() }
+        },
+        {
+          id: 'property-3',
+          code: { value: null }
+        }
       ],
       sections: [
         {
           id: 'section-0',
-          name: 'TEST_SECTION_1',
+          name: { value: 'TEST_SECTION_1' },
           properties: ['property-0']
         },
         {
           id: 'section-1',
-          name: 'TEST_SECTION_2',
+          name: { value: 'TEST_SECTION_2' },
           properties: ['property-1', 'property-2', 'property-3']
         }
       ]
@@ -112,19 +133,28 @@ describe('TypeFormController.handleAddProperty', () => {
         }
       },
       properties: [
-        { id: 'property-0', code: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode() },
-        { id: 'property-1', code: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode() },
-        { id: 'property-2', code: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode() }
+        {
+          id: 'property-0',
+          code: { value: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode() }
+        },
+        {
+          id: 'property-1',
+          code: { value: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode() }
+        },
+        {
+          id: 'property-2',
+          code: { value: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode() }
+        }
       ],
       sections: [
         {
           id: 'section-0',
-          name: 'TEST_SECTION_1',
+          name: { value: 'TEST_SECTION_1' },
           properties: ['property-0']
         },
         {
           id: 'section-1',
-          name: 'TEST_SECTION_2',
+          name: { value: 'TEST_SECTION_2' },
           properties: ['property-1', 'property-2']
         }
       ]
@@ -140,20 +170,32 @@ describe('TypeFormController.handleAddProperty', () => {
         }
       },
       properties: [
-        { id: 'property-0', code: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode() },
-        { id: 'property-1', code: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode() },
-        { id: 'property-2', code: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode() },
-        { id: 'property-3', code: null }
+        {
+          id: 'property-0',
+          code: { value: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode() }
+        },
+        {
+          id: 'property-1',
+          code: { value: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode() }
+        },
+        {
+          id: 'property-2',
+          code: { value: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode() }
+        },
+        {
+          id: 'property-3',
+          code: { value: null }
+        }
       ],
       sections: [
         {
           id: 'section-0',
-          name: 'TEST_SECTION_1',
+          name: { value: 'TEST_SECTION_1' },
           properties: ['property-0']
         },
         {
           id: 'section-1',
-          name: 'TEST_SECTION_2',
+          name: { value: 'TEST_SECTION_2' },
           properties: ['property-1', 'property-3', 'property-2']
         }
       ]

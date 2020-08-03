@@ -10,10 +10,18 @@ import FormFieldLabel from './FormFieldLabel.jsx'
 const styles = () => ({
   container: {
     display: 'flex',
-    alignItems: 'center'
+    alignItems: 'center',
+    marginLeft: '-4px'
   },
   label: {
     cursor: 'pointer'
+  },
+  labelDisabled: {
+    cursor: 'inherit'
+  },
+  checkbox: {
+    padding: '2px',
+    marginRight: '4px'
   }
 })
 
@@ -69,10 +77,17 @@ class CheckboxFormField extends React.PureComponent {
       disabled,
       error,
       metadata,
+      mode = 'edit',
       styles,
       classes,
       onClick
     } = this.props
+
+    if (mode !== 'view' && mode !== 'edit') {
+      throw 'Unsupported mode: ' + mode
+    }
+
+    const isDisabled = disabled || mode !== 'edit'
 
     return (
       <FormFieldContainer
@@ -88,13 +103,15 @@ class CheckboxFormField extends React.PureComponent {
             action={action => (this.action = action)}
             value={name}
             checked={!!value}
-            disabled={disabled}
+            disabled={isDisabled}
             onChange={this.handleChange}
             onFocus={this.handleFocus}
+            classes={{ root: classes.checkbox }}
+            size='small'
           />
           <Typography
             component='label'
-            className={classes.label}
+            className={isDisabled ? classes.labelDisabled : classes.label}
             onClick={this.handleLabelClick}
           >
             <FormFieldLabel

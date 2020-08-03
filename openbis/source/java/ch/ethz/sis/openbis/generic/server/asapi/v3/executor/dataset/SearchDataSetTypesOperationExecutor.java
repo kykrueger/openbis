@@ -18,7 +18,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset;
 
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DataSetTypeSearchManager;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ILocalSearchManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -85,7 +85,7 @@ public class SearchDataSetTypesOperationExecutor
     }
 
     @Override
-    protected ISearchManager<DataSetTypeSearchCriteria, DataSetType, Long> getSearchManager() {
+    protected ILocalSearchManager<DataSetTypeSearchCriteria, DataSetType, Long> getSearchManager() {
         return dataSetTypeSearchManager;
     }
 

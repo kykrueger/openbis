@@ -96,6 +96,7 @@ public class ScreeningApiImplTest extends AbstractServerTestCase
         context.checking(new Expectations()
             {
                 {
+                    one(screeningBOFactory).getDAOFactory();
                     one(screeningBOFactory).createSampleBO(session);
                     will(returnValue(sampleBO));
                     one(sampleBO).loadBySampleIdentifier(SampleIdentifierFactory.parse(identifier));
@@ -132,6 +133,7 @@ public class ScreeningApiImplTest extends AbstractServerTestCase
         context.checking(new Expectations()
             {
                 {
+                    one(screeningBOFactory).getDAOFactory();
                     one(screeningBOFactory).createSampleBO(session);
                     will(returnValue(sampleBO));
                     one(sampleBO).loadBySamplePermId(permId);

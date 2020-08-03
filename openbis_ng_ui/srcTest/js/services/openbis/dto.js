@@ -17,7 +17,11 @@ import DataSetTypeFetchOptions from 'as/dto/dataset/fetchoptions/DataSetTypeFetc
 import DataSetTypeSearchCriteria from 'as/dto/dataset/search/DataSetTypeSearchCriteria'
 import DataSetTypeUpdate from 'as/dto/dataset/update/DataSetTypeUpdate'
 import DataType from 'as/dto/property/DataType'
+import DeleteDataSetTypesOperation from 'as/dto/dataset/delete/DeleteDataSetTypesOperation'
+import DeleteExperimentTypesOperation from 'as/dto/experiment/delete/DeleteExperimentTypesOperation'
+import DeleteMaterialTypesOperation from 'as/dto/material/delete/DeleteMaterialTypesOperation'
 import DeletePropertyTypesOperation from 'as/dto/property/delete/DeletePropertyTypesOperation'
+import DeleteSampleTypesOperation from 'as/dto/sample/delete/DeleteSampleTypesOperation'
 import EntityKind from 'as/dto/entitytype/EntityKind'
 import EntityTypePermId from 'as/dto/entitytype/id/EntityTypePermId'
 import ExperimentFetchOptions from 'as/dto/experiment/fetchoptions/ExperimentFetchOptions'
@@ -48,7 +52,9 @@ import PluginSearchCriteria from 'as/dto/plugin/search/PluginSearchCriteria'
 import PluginType from 'as/dto/plugin/PluginType'
 import PropertyAssignment from 'as/dto/property/PropertyAssignment'
 import PropertyAssignmentCreation from 'as/dto/property/create/PropertyAssignmentCreation'
+import PropertyAssignmentFetchOptions from 'as/dto/property/fetchoptions/PropertyAssignmentFetchOptions'
 import PropertyAssignmentPermId from 'as/dto/property/id/PropertyAssignmentPermId'
+import PropertyAssignmentSearchCriteria from 'as/dto/property/search/PropertyAssignmentSearchCriteria'
 import PropertyType from 'as/dto/property/PropertyType'
 import PropertyTypeCreation from 'as/dto/property/create/PropertyTypeCreation'
 import PropertyTypeDeletionOptions from 'as/dto/property/delete/PropertyTypeDeletionOptions'
@@ -103,7 +109,11 @@ const dto = {
   DataSetTypeSearchCriteria,
   DataSetTypeUpdate,
   DataType,
+  DeleteDataSetTypesOperation,
+  DeleteExperimentTypesOperation,
+  DeleteMaterialTypesOperation,
   DeletePropertyTypesOperation,
+  DeleteSampleTypesOperation,
   EntityKind,
   EntityTypePermId,
   ExperimentFetchOptions,
@@ -134,7 +144,9 @@ const dto = {
   PluginType,
   PropertyAssignment,
   PropertyAssignmentCreation,
+  PropertyAssignmentFetchOptions,
   PropertyAssignmentPermId,
+  PropertyAssignmentSearchCriteria,
   PropertyType,
   PropertyTypeCreation,
   PropertyTypeDeletionOptions,

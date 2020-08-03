@@ -59,6 +59,8 @@ public class ImportVocabularyTypesTest extends AbstractImportTest {
 
     private static final String VOCABULARIES_NO_TERMS = "vocabularies/vocab_no_term_label.xlsx";
 
+    private static final String EXIST_VOCABULARIES = "vocabularies/exist_vocab_type.xlsx";
+
     @Autowired
     private IApplicationServerInternalApi v3api;
 
@@ -180,6 +182,16 @@ public class ImportVocabularyTypesTest extends AbstractImportTest {
         Vocabulary detection = TestUtils.getVocabulary(v3api, sessionToken, "DETECTION");
         // THEN
         assertNotNull(detection);
+    }
+
+    @Test
+    @DirtiesContext
+    public void updateVocabularyInDBThatIsNotInJson() throws IOException {
+        TestUtils.createVocabulary(v3api, sessionToken, "TEST_VOCABULARY_TYPE", "Test desc");
+        // there should be no exceptions
+        TestUtils.createFrom(v3api, sessionToken, UpdateMode.UPDATE_IF_EXISTS, Paths.get(FilenameUtils.concat(FILES_DIR, EXIST_VOCABULARIES)));
+        Vocabulary test = TestUtils.getVocabulary(v3api, sessionToken, "TEST_VOCABULARY_TYPE");
+        assertNotNull(test);
     }
 
 }

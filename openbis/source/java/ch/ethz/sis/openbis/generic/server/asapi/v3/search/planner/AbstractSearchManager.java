@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 ETH Zuerich, CISD
+ * Copyright 2016 ETH Zuerich, CISD
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,33 +24,22 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * Manages detailed search with complex search criteria.
- *
- * @author Viktor Kovtun
- * @author Juan Fuentes
- */
-public abstract class AbstractSearchManager<CRITERIA extends ISearchCriteria, OBJECT, OBJECT_PE>
-        implements ISearchManager<CRITERIA, OBJECT, OBJECT_PE>
+public abstract class AbstractSearchManager<OBJECT>
 {
+
+    protected final ISQLAuthorisationInformationProviderDAO authProvider;
+
     private final ISQLSearchDAO searchDAO;
 
-    private final ISQLAuthorisationInformationProviderDAO authProvider;
-
-    private final IID2PETranslator<OBJECT_PE> idsTranslator;
-
-    public AbstractSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
-            final IID2PETranslator<OBJECT_PE> idsTranslator)
+    public AbstractSearchManager(final ISQLAuthorisationInformationProviderDAO authProvider, final ISQLSearchDAO searchDAO)
     {
-        this.searchDAO = searchDAO;
         this.authProvider = authProvider;
-        this.idsTranslator = idsTranslator;
+        this.searchDAO = searchDAO;
     }
 
     /**
@@ -64,7 +53,6 @@ public abstract class AbstractSearchManager<CRITERIA extends ISearchCriteria, OB
         return collection != null && !collection.isEmpty();
     }
 
-    @Override
     public Set<Long> filterIDsByUserRights(final Long userId, final AuthorisationInformation authorisationInformation, final Set<Long> ids)
     {
         if (authorisationInformation.isInstanceRole())
@@ -177,10 +165,6 @@ public abstract class AbstractSearchManager<CRITERIA extends ISearchCriteria, OB
     protected ISQLAuthorisationInformationProviderDAO getAuthProvider()
     {
         return authProvider;
-    }
-
-    public Collection<OBJECT_PE> translate(final Collection <Long> ids) {
-        return idsTranslator.translate(ids);
     }
 
     protected List<Long> doSortIDs(final Collection<Long> filteredIDs, final SortOptions<OBJECT> sortOptions, final TableMapper tableMapper)

@@ -6,6 +6,7 @@ import CheckboxField from '@src/js/components/common/form/CheckboxField.jsx'
 import TextField from '@src/js/components/common/form/TextField.jsx'
 import SelectField from '@src/js/components/common/form/SelectField.jsx'
 import openbis from '@src/js/services/openbis.js'
+import actions from '@src/js/store/actions/actions.js'
 import logger from '@src/js/common/logger.js'
 import util from '@src/js/common/util.js'
 
@@ -14,7 +15,8 @@ const EMPTY = 'empty'
 const styles = theme => ({
   draggable: {
     width: '100%',
-    padding: theme.spacing(2),
+    cursor: 'pointer',
+    padding: theme.spacing(1),
     boxSizing: 'border-box',
     borderWidth: '2px',
     borderStyle: 'solid',
@@ -24,7 +26,7 @@ const styles = theme => ({
       marginBottom: 0
     },
     '&:hover': {
-      borderColor: theme.palette.background.secondary
+      borderColor: theme.palette.border.primary
     }
   },
   selected: {
@@ -58,7 +60,7 @@ const styles = theme => ({
     '&:hover': {
       borderStyle: 'solid',
       borderWidth: '0px 0px 2px 0px',
-      borderColor: theme.palette.background.secondary
+      borderColor: theme.palette.border.primary
     }
   }
 })
@@ -77,9 +79,9 @@ class TypeFormPreviewProperty extends React.PureComponent {
   componentDidMount() {
     const { dataType } = this.props.property
 
-    if (dataType === openbis.DataType.MATERIAL) {
+    if (dataType.value === openbis.DataType.MATERIAL) {
       this.loadMaterials()
-    } else if (dataType === openbis.DataType.CONTROLLEDVOCABULARY) {
+    } else if (dataType.value === openbis.DataType.CONTROLLEDVOCABULARY) {
       this.loadVocabularyTerms()
     }
   }
@@ -88,9 +90,9 @@ class TypeFormPreviewProperty extends React.PureComponent {
     let { property: prevProperty } = prevProps
     let { property } = this.props
 
-    if (property.materialType !== prevProperty.materialType) {
+    if (property.materialType.value !== prevProperty.materialType.value) {
       this.loadMaterials()
-    } else if (property.vocabulary !== prevProperty.vocabulary) {
+    } else if (property.vocabulary.value !== prevProperty.vocabulary.value) {
       this.loadVocabularyTerms()
     }
   }
@@ -98,17 +100,17 @@ class TypeFormPreviewProperty extends React.PureComponent {
   loadMaterials() {
     const { controller, property } = this.props
 
-    if (property.materialType) {
+    if (property.materialType.value) {
       return controller
         .getFacade()
-        .loadMaterials(property.materialType)
+        .loadMaterials(property.materialType.value)
         .then(materials => {
           this.setState(() => ({
             materials
           }))
         })
         .catch(error => {
-          controller.getFacade().catch(error)
+          controller.getContext().dispatch(actions.errorChange(error))
         })
     } else {
       this.setState(() => ({
@@ -120,17 +122,17 @@ class TypeFormPreviewProperty extends React.PureComponent {
   loadVocabularyTerms() {
     const { controller, property } = this.props
 
-    if (property.vocabulary) {
+    if (property.vocabulary.value) {
       return controller
         .getFacade()
-        .loadVocabularyTerms(property.vocabulary)
+        .loadVocabularyTerms(property.vocabulary.value)
         .then(terms => {
           this.setState(() => ({
             terms
           }))
         })
         .catch(error => {
-          controller.getFacade().catch(error)
+          controller.getContext().dispatch(actions.errorChange(error))
         })
     } else {
       this.setState(() => ({
@@ -169,7 +171,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
   render() {
     logger.log(logger.DEBUG, 'TypeFormPreviewProperty.render')
 
-    let { property, selection, index, classes } = this.props
+    let { mode, property, selection, index, classes } = this.props
 
     const selected =
       selection &&
@@ -177,7 +179,11 @@ class TypeFormPreviewProperty extends React.PureComponent {
       selection.params.id === property.id
 
     return (
-      <Draggable draggableId={property.id} index={index}>
+      <Draggable
+        draggableId={property.id}
+        index={index}
+        isDragDisabled={mode !== 'edit'}
+      >
         {provided => (
           <div
             ref={provided.innerRef}
@@ -197,7 +203,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
   }
 
   renderProperty() {
-    const { dataType } = this.props.property
+    const dataType = this.props.property.dataType.value
 
     if (
       dataType === openbis.DataType.VARCHAR ||
@@ -237,6 +243,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
         metadata={this.getMetadata()}
         error={this.getError()}
         styles={this.getStyles()}
+        mode='edit'
         onClick={this.handlePropertyClick}
         onChange={this.handleChange}
       />
@@ -257,6 +264,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
         metadata={this.getMetadata()}
         error={this.getError()}
         styles={this.getStyles()}
+        mode='edit'
         onClick={this.handlePropertyClick}
         onChange={this.handleChange}
       />
@@ -277,6 +285,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
           metadata={this.getMetadata()}
           error={this.getError()}
           styles={this.getStyles()}
+          mode='edit'
           onClick={this.handlePropertyClick}
           onChange={this.handleChange}
         />
@@ -309,6 +318,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
         metadata={this.getMetadata()}
         error={this.getError()}
         styles={this.getStyles()}
+        mode='edit'
         onClick={this.handlePropertyClick}
         onChange={this.handleChange}
       />
@@ -339,6 +349,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
         metadata={this.getMetadata()}
         error={this.getError()}
         styles={this.getStyles()}
+        mode='edit'
         onClick={this.handlePropertyClick}
         onChange={this.handleChange}
       />
@@ -346,23 +357,23 @@ class TypeFormPreviewProperty extends React.PureComponent {
   }
 
   getCode() {
-    return this.props.property.code || EMPTY
+    return this.props.property.code.value || EMPTY
   }
 
   getLabel() {
-    return this.props.property.label || EMPTY
+    return this.props.property.label.value || EMPTY
   }
 
   getDescription() {
-    return this.props.property.description || EMPTY
+    return this.props.property.description.value || EMPTY
   }
 
   getDataType() {
-    return this.props.property.dataType
+    return this.props.property.dataType.value
   }
 
   getMandatory() {
-    return this.props.property.mandatory
+    return this.props.property.mandatory.value
   }
 
   getMultiline() {
@@ -399,11 +410,10 @@ class TypeFormPreviewProperty extends React.PureComponent {
   }
 
   getError() {
-    const errors = this.props.property.errors
-    if (_.isEmpty(errors)) {
-      return null
-    } else {
+    if (this.props.property.errors > 0) {
       return 'Property configuration is incorrect'
+    } else {
+      return null
     }
   }
 
@@ -428,7 +438,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
         partStyles.push(classes.partNotSelected)
       }
 
-      const partValue = property[part]
+      const partValue = property[part].value
 
       if (!partValue) {
         partStyles.push(classes.partEmpty)
@@ -440,7 +450,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
       }
     })
 
-    if (!property.showInEditView) {
+    if (!property.showInEditView.value) {
       styles = {
         ...styles,
         container: classes.hidden

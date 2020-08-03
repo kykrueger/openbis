@@ -65,6 +65,7 @@ function CreateUserView(createUserController, createUserModel) {
 		//
 		var $userIdField = FormUtil._getInputField('text', 'userId', 'User ID', null, true);
 		$userIdField.change(function(event) {
+		    $(this).val($(this).val().toLowerCase());
 			_this._createUserModel.userId = $(this).val();
 		});
 		var $userIdGroup = FormUtil.getFieldForComponentWithLabel($userIdField, "User ID", null);

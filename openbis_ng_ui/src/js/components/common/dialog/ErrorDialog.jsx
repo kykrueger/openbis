@@ -1,6 +1,6 @@
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
-import Button from '@material-ui/core/Button'
+import Button from '@src/js/components/common/form/Button.jsx'
 import profile from '@src/js/profile.js'
 import logger from '@src/js/common/logger.js'
 
@@ -8,7 +8,7 @@ import Dialog from './Dialog.jsx'
 
 const styles = theme => ({
   button: {
-    marginLeft: theme.spacing(2)
+    marginLeft: theme.spacing(1)
   }
 })
 
@@ -38,8 +38,8 @@ class ErrorDialog extends React.Component {
     const stack = this.getErrorStack()
     return (
       <div>
-        <div>{message}</div>
-        <pre>{stack}</pre>
+        {message && <div>{message}</div>}
+        {stack && <pre>{stack}</pre>}
       </div>
     )
   }
@@ -49,21 +49,16 @@ class ErrorDialog extends React.Component {
     return (
       <div>
         <Button
-          variant='contained'
-          color='secondary'
-          classes={{ root: classes.button }}
+          label='Send error report'
+          styles={{ root: classes.button }}
           href={this.getErrorMailtoHref()}
-        >
-          Send error report
-        </Button>
+        />
         <Button
-          variant='contained'
-          color='primary'
-          classes={{ root: classes.button }}
+          label='Close'
+          type='final'
+          styles={{ root: classes.button }}
           onClick={onClose}
-        >
-          Close
-        </Button>
+        />
       </div>
     )
   }

@@ -101,7 +101,7 @@ class App extends React.Component {
         </div>
       )
     } else {
-      return <Login />
+      return <Login disabled={this.props.loading} />
     }
   }
 }

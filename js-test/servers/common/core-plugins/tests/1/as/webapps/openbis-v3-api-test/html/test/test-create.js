@@ -174,7 +174,7 @@ define(
 								creation.setTypeId(new c.EntityTypePermId(experimentTypeCode));
 								creation.setCode(code);
 								creation.setProjectId(new c.ProjectIdentifier("/TEST/TEST-PROJECT"));
-								creation.setSampleProperty(propertyTypeCode, new c.SamplePermId("20130412140147735-20"));
+								creation.setProperty(propertyTypeCode, "20130412140147735-20");
 								return facade.createExperiments([ creation ]);
 							});
 						});
@@ -261,6 +261,66 @@ define(
 					testCreate(c, fCreate, c.findSample, fCheck);
 				});
 
+				QUnit.test("createSamples() with annotated child", function(assert) {
+					var c = new common(assert, openbis);
+					var code = c.generateId("SAMPLE");
+					var childId = new c.SampleIdentifier("/TEST/TEST-SAMPLE-1");
+					
+					var fCreate = function(facade) {
+						var creation = new c.SampleCreation();
+						creation.setTypeId(new c.EntityTypePermId("UNKNOWN"));
+						creation.setCode(code);
+						creation.setSpaceId(new c.SpacePermId("TEST"));
+						creation.setChildIds([ childId ]);
+						creation.relationship(childId)
+								.addParentAnnotation("type", "mother").addChildAnnotation("type", "daughter");
+						return facade.createSamples([ creation ]);
+					}
+					
+					var fCheck = function(sample) {
+						c.assertEqual(sample.getCode(), code, "Sample code");
+						c.assertEqual(sample.getType().getCode(), "UNKNOWN", "Type code");
+						c.assertEqual(sample.getSpace().getCode(), "TEST", "Space code");
+						var child = sample.getChildren()[0];
+						c.assertEqual(child.getIdentifier().getIdentifier(), childId.getIdentifier(), "Child");
+						var relationship = sample.getChildRelationship(child.getPermId());
+						c.assertEqualDictionary(relationship.getChildAnnotations(), {"type": "daughter"}, "Child annotations");
+						c.assertEqualDictionary(relationship.getParentAnnotations(), {"type": "mother"}, "Parent annotations");
+					}
+					
+					testCreate(c, fCreate, c.findSample, fCheck);
+				});
+
+				QUnit.test("createSamples() with annotated parent", function(assert) {
+					var c = new common(assert, openbis);
+					var code = c.generateId("SAMPLE");
+					var parentId = new c.SampleIdentifier("/TEST/TEST-SAMPLE-1");
+					
+					var fCreate = function(facade) {
+						var creation = new c.SampleCreation();
+						creation.setTypeId(new c.EntityTypePermId("UNKNOWN"));
+						creation.setCode(code);
+						creation.setSpaceId(new c.SpacePermId("TEST"));
+						creation.setParentIds([ parentId ]);
+						creation.relationship(parentId)
+							.addParentAnnotation("type", "mother").addChildAnnotation("type", "daughter");
+						return facade.createSamples([ creation ]);
+					}
+					
+					var fCheck = function(sample) {
+						c.assertEqual(sample.getCode(), code, "Sample code");
+						c.assertEqual(sample.getType().getCode(), "UNKNOWN", "Type code");
+						c.assertEqual(sample.getSpace().getCode(), "TEST", "Space code");
+						var parent = sample.getParents()[0];
+						c.assertEqual(parent.getIdentifier().getIdentifier(), parentId.getIdentifier(), "Parent");
+						var relationship = sample.getParentRelationship(parent.getPermId());
+						c.assertEqualDictionary(relationship.getChildAnnotations(), {"type": "daughter"}, "Child annotations");
+						c.assertEqualDictionary(relationship.getParentAnnotations(), {"type": "mother"}, "Parent annotations");
+					}
+					
+					testCreate(c, fCreate, c.findSample, fCheck);
+				});
+
 				QUnit.test("createSamples() with property of type SAMPLE", function(assert) {
 					var c = new common(assert, openbis);
 					var propertyTypeCode = c.generateId("PROPERTY_TYPE");
@@ -284,7 +344,7 @@ define(
 								creation.setTypeId(new c.EntityTypePermId(sampleTypeCode));
 								creation.setCode(code);
 								creation.setSpaceId(new c.SpacePermId("TEST"));
-								creation.setSampleProperty(propertyTypeCode, new c.SamplePermId("20130412140147735-20"));
+								creation.setProperty(propertyTypeCode, "20130412140147735-20");
 								return facade.createSamples([ creation ]);
 							});
 						});
@@ -460,7 +520,7 @@ define(
 								creation.setDataSetKind(c.DataSetKind.CONTAINER);
 								creation.setDataStoreId(new c.DataStorePermId("DSS1"));
 								creation.setExperimentId(new c.ExperimentIdentifier("/TEST/TEST-PROJECT/TEST-EXPERIMENT"));
-								creation.setSampleProperty(propertyTypeCode, new c.SamplePermId("20130412140147735-20"));
+								creation.setProperty(propertyTypeCode, "20130412140147735-20");
 								return facade.createDataSets([ creation ]);
 							});
 						});

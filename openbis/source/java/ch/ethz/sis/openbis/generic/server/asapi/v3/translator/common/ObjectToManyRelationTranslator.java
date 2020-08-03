@@ -73,6 +73,7 @@ public abstract class ObjectToManyRelationTranslator<RELATED_OBJECT, RELATED_FET
             if (relatedObject != null)
             {
                 relatedCollection.add(relatedObject);
+                injectAnnotations(record.objectId, relatedObject, record.annotations, record.relatedAnnotations);
             }
         }
 
@@ -109,4 +110,8 @@ public abstract class ObjectToManyRelationTranslator<RELATED_OBJECT, RELATED_FET
 
     protected abstract Collection<RELATED_OBJECT> createCollection();
 
+    protected void injectAnnotations(Long objectId, RELATED_OBJECT relatedObject, String annotations, String relatedAnnotations)
+    {
+    }
+    
 }

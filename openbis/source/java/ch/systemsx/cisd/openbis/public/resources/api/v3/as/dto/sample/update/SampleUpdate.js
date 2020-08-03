@@ -1,11 +1,12 @@
 /**
  * @author pkupczyk
  */
-define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/IdListUpdateValue", "as/dto/attachment/update/AttachmentListUpdateValue" ], function(stjs, FieldUpdateValue,
-		IdListUpdateValue, AttachmentListUpdateValue) {
+define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/IdListUpdateValue", 
+			"as/dto/attachment/update/AttachmentListUpdateValue", "as/dto/common/update/RelationshipUpdate" ], 
+			function(stjs, FieldUpdateValue,
+					IdListUpdateValue, AttachmentListUpdateValue, RelationshipUpdate) {
 	var SampleUpdate = function() {
 		this.properties = {};
-		this.sampleProperties = {};
 		this.experimentId = new FieldUpdateValue();
 		this.projectId = new FieldUpdateValue();		
 		this.spaceId = new FieldUpdateValue();
@@ -14,6 +15,7 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/
 		this.componentIds = new IdListUpdateValue();
 		this.parentIds = new IdListUpdateValue();
 		this.childIds = new IdListUpdateValue();
+		this.relationships = {};
 		this.attachments = new AttachmentListUpdateValue();
 	};
 	stjs.extend(SampleUpdate, null, [], function(constructor, prototype) {
@@ -26,7 +28,6 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/
 		prototype.freezeForParents = null;
 		prototype.freezeForDataSets = null;
 		prototype.properties = null;
-		prototype.sampleProperties = null;
 		prototype.experimentId = null;
 		prototype.projectId = null;
 		prototype.spaceId = null;
@@ -35,6 +36,7 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/
 		prototype.componentIds = null;
 		prototype.parentIds = null;
 		prototype.childIds = null;
+		prototype.relationships = null;
 		prototype.attachments = null;
 
 		prototype.getObjectId = function() {
@@ -116,12 +118,6 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/
 		prototype.setProperties = function(properties) {
 			this.properties = properties;
 		};
-		prototype.setSampleProperty = function(propertyName, sampleId) {
-			this.sampleProperties[propertyName] = sampleId;
-		};
-		prototype.getSampleProperties = function() {
-			return this.sampleProperties;
-		};
 		prototype.getTagIds = function() {
 			return this.tagIds;
 		};
@@ -149,6 +145,20 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/
 		prototype.getAttachments = function() {
 			return this.attachments;
 		};
+		prototype.getRelationships = function() {
+			return this.relationships;
+		};
+		prototype.relationship = function(sampleId) {
+			var relationshipUpdate = this.relationships[sampleId];
+			if (relationshipUpdate == null) {
+				relationshipUpdate = new RelationshipUpdate();
+				this.relationships[sampleId] = relationshipUpdate;
+			}
+			return relationshipUpdate;
+		};
+		prototype.setRelationships = function(relationships) {
+			this.relationships = relationships;
+		};
 		prototype.setAttachmentsActions = function(actions) {
 			this.attachments.setActions(actions);
 		};
@@ -174,10 +184,6 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/
 			name : "Map",
 			arguments : [ null, null ]
 		},
-		sampleProperties : {
-			name : "Map",
-			arguments : [ null, null ]
-		},
 		containerId : {
 			name : "FieldUpdateValue",
 			arguments : [ "ISampleId" ]
@@ -193,6 +199,10 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/
 		childIds : {
 			name : "IdListUpdateValue",
 			arguments : [ "ISampleId" ]
+		},
+		relationships : {
+			name : "Map",
+			arguments : [ null, null ]
 		},
 		attachments : "AttachmentListUpdateValue"
 	});

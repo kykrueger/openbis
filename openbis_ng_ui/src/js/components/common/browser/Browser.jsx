@@ -3,7 +3,6 @@ import React from 'react'
 import { connect } from 'react-redux'
 import { Resizable } from 're-resizable'
 import { withStyles } from '@material-ui/core/styles'
-import Paper from '@material-ui/core/Paper'
 import FilterField from '@src/js/components/common/form/FilterField.jsx'
 import ComponentContext from '@src/js/components/common/ComponentContext.js'
 import selectors from '@src/js/store/selectors/selectors.js'
@@ -13,21 +12,22 @@ import BrowserNodes from './BrowserNodes.jsx'
 import BrowserButtons from './BrowserButtons.jsx'
 import BrowserDialogRemoveNode from './BrowserDialogRemoveNode.jsx'
 
-const styles = {
+const styles = theme => ({
   resizable: {
-    zIndex: 2000,
+    zIndex: 200,
     position: 'relative'
   },
   paper: {
     height: '100%',
     display: 'flex',
-    flexDirection: 'column'
+    flexDirection: 'column',
+    borderRight: `1px solid ${theme.palette.border.primary}`
   },
   nodes: {
     height: '100%',
     overflow: 'auto'
   }
-}
+})
 
 function mapStateToProps() {
   return (state, ownProps) => {
@@ -95,7 +95,7 @@ class Browser extends React.PureComponent {
         }}
         className={classes.resizable}
       >
-        <Paper square={true} elevation={3} classes={{ root: classes.paper }}>
+        <div className={classes.paper}>
           <FilterField
             filter={controller.getFilter()}
             filterChange={controller.filterChange}
@@ -118,7 +118,7 @@ class Browser extends React.PureComponent {
             onConfirm={controller.nodeRemoveConfirm}
             onCancel={controller.nodeRemoveCancel}
           />
-        </Paper>
+        </div>
       </Resizable>
     )
   }

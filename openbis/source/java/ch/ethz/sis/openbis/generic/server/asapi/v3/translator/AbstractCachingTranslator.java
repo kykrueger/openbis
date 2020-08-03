@@ -89,6 +89,7 @@ public abstract class AbstractCachingTranslator<I, O, F extends FetchOptions<?>>
         }
 
         filterTranslated(context, translated);
+        postTranslate(context, translated);
 
         return translated;
     }
@@ -149,7 +150,9 @@ public abstract class AbstractCachingTranslator<I, O, F extends FetchOptions<?>>
             return (Long) input;
         } else
         {
-            throw new IllegalArgumentException("Unsupported input type: " + input.getClass());
+            final String message = (input != null) ? "Unsupported input type: " + input.getClass()
+                    : "Null input is unsupported.";
+            throw new IllegalArgumentException(message);
         }
     }
 
@@ -261,6 +264,10 @@ public abstract class AbstractCachingTranslator<I, O, F extends FetchOptions<?>>
     protected void filterTranslated(TranslationContext context, Map<I, O> translated)
     {
 
+    }
+
+    protected void postTranslate(TranslationContext context, Map<I, O> translated)
+    {
     }
 
     /**

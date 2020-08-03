@@ -161,7 +161,8 @@ var Util = new function() {
 		this.showError("Call failed to server: " + (msg ? msg : JSON.stringify(error)));
 	}
 	
-	this.showError = function(withHTML, andCallback, noBlock, isUserError, isEnvironmentError, disableReport) {		
+	this.showError = function(withHTML, andCallback, noBlock, isUserError, isEnvironmentError, disableReport) {
+	    disableReport = true; // Report permanently disabled
 		var userErrorWarning = "";
 		if(isUserError) {
 			userErrorWarning = "<b>This error looks like a user error:</b>" + "<br>";
@@ -784,6 +785,22 @@ var Util = new function() {
     		}
     		return false;
 	}
+
+	this.isInPage = function(node) {
+      return (node === document.body) ? false : document.body.contains(node);
+    };
+
+    this.onIsInPage = function(node, action) {
+        var _polling = function() {
+            if(Util.isInPage(node)) {
+                action();
+            } else {
+                setTimeout(_polling, 50);
+            }
+        }
+
+        setTimeout(_polling, 50);
+    };
 }
 
 

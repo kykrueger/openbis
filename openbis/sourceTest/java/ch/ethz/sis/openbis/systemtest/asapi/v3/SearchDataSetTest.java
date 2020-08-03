@@ -20,8 +20,12 @@ import static org.junit.Assert.assertTrue;
 import static org.testng.Assert.assertEquals;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
@@ -103,6 +107,28 @@ public class SearchDataSetTest extends AbstractDataSetTest
     }
 
     @Test
+    public void testSearchWithPropertyMatchingSampleProperty()
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        final PropertyTypePermId propertyType = createASamplePropertyType(sessionToken, null);
+
+        final EntityTypePermId dataSetType = createADataSetType(sessionToken, false, propertyType);
+        final DataSetCreation dataSetCreation = physicalDataSetCreation();
+        dataSetCreation.setTypeId(dataSetType);
+        dataSetCreation.setExperimentId(new ExperimentIdentifier("/TEST-SPACE/TEST-PROJECT/EXP-SPACE-TEST"));
+        dataSetCreation.setProperty(propertyType.getPermId(), "/CISD/CL1");
+        v3api.createDataSets(sessionToken, Collections.singletonList(dataSetCreation));
+
+        final DataSetSearchCriteria criteria = new DataSetSearchCriteria();
+        criteria.withOrOperator();
+        criteria.withProperty(propertyType.getPermId()).thatEquals("/CISD/CL1");
+
+        testSearch(TEST_USER, criteria, 1);
+
+        v3api.logout(sessionToken);
+    }
+
+    @Test
     public void testSearchWithRegistrationDateIsEarlierThan()
     {
         DataSetSearchCriteria criteria = new DataSetSearchCriteria();
@@ -111,7 +137,7 @@ public class SearchDataSetTest extends AbstractDataSetTest
     }
 
     @Test
-    public void testSearchWithModicationDateIsLaterThan()
+    public void testSearchWithModificationDateIsLaterThan()
     {
         DataSetSearchCriteria criteria = new DataSetSearchCriteria();
         criteria.withModificationDate().thatIsLaterThanOrEqualTo("2011-05-01");
@@ -122,6 +148,16 @@ public class SearchDataSetTest extends AbstractDataSetTest
     @Test
     public void testSearchWithContainer()
     {
+        final DataSetSearchCriteria criteria = new DataSetSearchCriteria();
+        criteria.withContainer();
+        testSearch(TEST_USER, criteria, "CONTAINER_1", "CONTAINER_2", "20110509092359990-11", "20110509092359990-12",
+                "VALIDATIONS_IMPOS-27", "COMPONENT_1A", "COMPONENT_2A", "COMPONENT_1B", "COMPONENT_3A", "COMPONENT_3AB",
+                "COMPONENT_3AX");
+    }
+
+    @Test
+    public void testSearchWithContainerWithPermId()
+    {
         DataSetSearchCriteria criteria = new DataSetSearchCriteria();
         criteria.withContainer().withPermId().thatEquals("20110509092359990-10");
         testSearch(TEST_USER, criteria, "20110509092359990-11", "20110509092359990-12");
@@ -129,6 +165,16 @@ public class SearchDataSetTest extends AbstractDataSetTest
 
     @Test
     public void testSearchWithChildren()
+    {
+        final DataSetSearchCriteria criteria = new DataSetSearchCriteria();
+        criteria.withChildren();
+        testSearch(TEST_USER, criteria, "20081105092159111-1", "20081105092159222-2", "20081105092159333-3",
+                "20081105092259000-19", "20081105092259000-9", "20081105092259900-0", "20081105092259900-1",
+                "20110805092359990-17", "VALIDATIONS_PARENT-28");
+    }
+
+    @Test
+    public void testSearchWithChildrenWithCode()
     {
         DataSetSearchCriteria criteria = new DataSetSearchCriteria();
         criteria.withChildren().withCode().thatEquals("20081105092259000-9");
@@ -146,6 +192,16 @@ public class SearchDataSetTest extends AbstractDataSetTest
 
     @Test
     public void testSearchWithParent()
+    {
+        final DataSetSearchCriteria criteria = new DataSetSearchCriteria();
+        criteria.withParents();
+        testSearch(TEST_USER, criteria, "20081105092259000-18", "20081105092259000-20", "20081105092259000-21",
+                "20081105092259000-8", "20081105092259000-9", "20081105092259900-0", "20081105092259900-1",
+                "20081105092359990-2", "VALIDATIONS_IMPOS-27");
+    }
+
+    @Test
+    public void testSearchWithParentWithCode()
     {
         DataSetSearchCriteria criteria = new DataSetSearchCriteria();
         criteria.withParents().withCode().thatEquals("20081105092159111-1");
@@ -267,6 +323,50 @@ public class SearchDataSetTest extends AbstractDataSetTest
         DataSetSearchCriteria criteria = new DataSetSearchCriteria();
         criteria.withAnyField().thatEquals("20110509092359990-11");
         testSearch(TEST_USER, criteria, "20110509092359990-11");
+    }
+
+    @Test
+    public void testSearchWithAnyFieldMatchingSampleProperty()
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        final PropertyTypePermId propertyType = createASamplePropertyType(sessionToken, null);
+
+        final EntityTypePermId dataSetType = createADataSetType(sessionToken, false, propertyType);
+        final DataSetCreation dataSetCreation = physicalDataSetCreation();
+        dataSetCreation.setTypeId(dataSetType);
+        dataSetCreation.setExperimentId(new ExperimentIdentifier("/TEST-SPACE/TEST-PROJECT/EXP-SPACE-TEST"));
+        dataSetCreation.setProperty(propertyType.getPermId(), "/CISD/CL1");
+        v3api.createDataSets(sessionToken, Arrays.asList(dataSetCreation));
+
+        final DataSetSearchCriteria criteria = new DataSetSearchCriteria();
+        criteria.withOrOperator();
+        criteria.withAnyField().thatEquals("/CISD/CL1");
+
+        testSearch(TEST_USER, criteria, 1);
+
+        v3api.logout(sessionToken);
+    }
+
+    @Test
+    public void testSearchWithAnyPropertyMatchingSampleProperty()
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        final PropertyTypePermId propertyType = createASamplePropertyType(sessionToken, null);
+
+        final EntityTypePermId dataSetType = createADataSetType(sessionToken, false, propertyType);
+        final DataSetCreation dataSetCreation = physicalDataSetCreation();
+        dataSetCreation.setTypeId(dataSetType);
+        dataSetCreation.setExperimentId(new ExperimentIdentifier("/TEST-SPACE/TEST-PROJECT/EXP-SPACE-TEST"));
+        dataSetCreation.setProperty(propertyType.getPermId(), "/CISD/CL1");
+        v3api.createDataSets(sessionToken, Arrays.asList(dataSetCreation));
+
+        final DataSetSearchCriteria criteria = new DataSetSearchCriteria();
+        criteria.withOrOperator();
+        criteria.withAnyProperty().thatEquals("/CISD/CL1");
+
+        testSearch(TEST_USER, criteria, 1);
+
+        v3api.logout(sessionToken);
     }
 
     @Test
@@ -726,7 +826,7 @@ public class SearchDataSetTest extends AbstractDataSetTest
     }
 
     @Test
-    public void testSearchWithRegistrationDate()
+    public void testSearchWithRegistrationDateThatEquals()
     {
         DataSetSearchCriteria criteria = new DataSetSearchCriteria();
         criteria.withRegistrationDate().thatEquals("2009-02-09");

@@ -5,17 +5,56 @@ var SampleDataGridUtil = new function() {
 		
 		//Fill Columns model
 		var columnsFirst = [];
-		
+
 		columnsFirst.push({
-			label : 'Name/Code',
+			label : 'Code',
+			property : 'code',
+			isExportable: false,
+			sortable : true,
+			render : function(data, grid) {
+				var paginationInfo = null;
+				if(isDynamic) {
+					var indexFound = null;
+					for(var idx = 0; idx < grid.lastReceivedData.objects.length; idx++) {
+						if(grid.lastReceivedData.objects[idx].permId === data.permId) {
+							indexFound = idx + (grid.lastUsedOptions.pageIndex * grid.lastUsedOptions.pageSize);
+							break;
+						}
+					}
+
+					if(indexFound !== null) {
+						paginationInfo = {
+								pagFunction : _this.getDataListDynamic(samplesOrCriteria, false),
+								pagOptions : grid.lastUsedOptions,
+								currentIndex : indexFound,
+								totalCount : grid.lastReceivedData.totalCount
+						}
+					}
+				}
+				return (isLinksDisabled)?data.code:FormUtil.getFormLink(data.code, "Sample", data.permId, paginationInfo);
+			},
+			filter : function(data, filter) {
+				return data.identifier.toLowerCase().indexOf(filter) !== -1;
+			},
+			sort : function(data1, data2, asc) {
+				var value1 = data1.identifier;
+				var value2 = data2.identifier;
+				var sortDirection = (asc)? 1 : -1;
+				return sortDirection * naturalSort(value1, value2);
+			}
+		});
+
+		columnsFirst.push({
+			label : 'Name',
 			property : '$NAME',
 			isExportable: true,
-			sortable : false,
+			sortable : true,
 			render : function(data) {
-				var nameToUse = Util.getNameOrCode(data);
-				var codeId = data.code.toLowerCase() + "-column-id";
-				var $controlLabel = $('<label>', { 'id' : codeId }).html(nameToUse);
-				return (isLinksDisabled) ? $controlLabel : FormUtil.getFormLink(nameToUse, "Sample", data.permId, null, codeId);
+				var nameToUse = "";
+                if(data[profile.propertyReplacingCode]) {
+                    nameToUse = data[profile.propertyReplacingCode];
+                }
+				return (isLinksDisabled) ? nameToUse : FormUtil.getFormLink(nameToUse, "Sample", data.permId);
 			}
 		});
 
@@ -166,44 +205,6 @@ var SampleDataGridUtil = new function() {
 		    render : function(data, grid) {
                 return Util.getDisplayNameFromCode(data.sampleTypeCode);
             },
-		});
-
-		columnsLast.push({
-			label : 'Code',
-			property : 'code',
-			isExportable: false,
-			sortable : true,
-			render : function(data, grid) {
-				var paginationInfo = null;
-				if(isDynamic) {
-					var indexFound = null;
-					for(var idx = 0; idx < grid.lastReceivedData.objects.length; idx++) {
-						if(grid.lastReceivedData.objects[idx].permId === data.permId) {
-							indexFound = idx + (grid.lastUsedOptions.pageIndex * grid.lastUsedOptions.pageSize);
-							break;
-						}
-					}
-
-					if(indexFound !== null) {
-						paginationInfo = {
-								pagFunction : _this.getDataListDynamic(samplesOrCriteria, false),
-								pagOptions : grid.lastUsedOptions,
-								currentIndex : indexFound,
-								totalCount : grid.lastReceivedData.totalCount
-						}
-					}
-				}
-				return (isLinksDisabled)?data.code:FormUtil.getFormLink(data.code, "Sample", data.permId, paginationInfo);
-			},
-			filter : function(data, filter) {
-				return data.identifier.toLowerCase().indexOf(filter) !== -1;
-			},
-			sort : function(data1, data2, asc) {
-				var value1 = data1.identifier;
-				var value2 = data2.identifier;
-				var sortDirection = (asc)? 1 : -1;
-				return sortDirection * naturalSort(value1, value2);
-			}
 		});
 
 		columnsLast.push({

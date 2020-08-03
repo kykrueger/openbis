@@ -124,11 +124,11 @@ public interface IDatasetListingQuery extends BaseQuery, IPropertyListingQuery
             + "where expe_id = ?{1} "
             + "   or samp_id in (with recursive connected_samples as "
             + "                    (select id from samples where expe_id = ?{1} "
-            + "                     union select s.id from connected_samples as cs "
+            + "                     union all select s.id from connected_samples as cs "
             + "                                       inner join sample_relationships as sr on sr.sample_id_parent = cs.id "
             + "                                       left join samples as s on s.id = sr.sample_id_child) "
             + "                  select * from connected_samples) "
-            + "union select d.*, " + ED_COLUMNS + ", "
+            + "union all select d.*, " + ED_COLUMNS + ", "
             + " ld.id, prdq.id IS NULL as is_post_registered from connected_data as cd "
             + "                       inner join data_set_relationships as dr on dr.data_id_parent = cd.id "
             + "                       left join data as d on d.id = dr.data_id_child "
@@ -344,7 +344,7 @@ public interface IDatasetListingQuery extends BaseQuery, IPropertyListingQuery
      * @param entityIds The set of sample ids to get the property values for.
      */
     @Select(sql = "SELECT pr.ds_id as entity_id, etpt.prty_id, etpt.script_id, pr.value, "
-            + "           pr.cvte_id, pr.mate_prop_id, sc.script_type "
+            + "           pr.cvte_id, pr.mate_prop_id, pr.samp_prop_id, sc.script_type "
             + "      FROM data_set_properties pr"
             + "      JOIN data_set_type_property_types etpt ON pr.dstpt_id=etpt.id"
             + "      LEFT OUTER JOIN scripts sc ON etpt.script_id = sc.id"

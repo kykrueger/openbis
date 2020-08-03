@@ -5,17 +5,24 @@ import FormHelperText from '@material-ui/core/FormHelperText'
 import logger from '@src/js/common/logger.js'
 
 const styles = theme => ({
+  container: {
+    overflow: 'hidden'
+  },
   metadataDefault: {
+    fontSize: theme.typography.label.fontSize,
+    color: theme.typography.label.color,
     flex: '0 0 auto',
     margin: 0,
-    marginBottom: theme.spacing(1),
-    color: theme.palette.grey.main
+    marginBottom: theme.spacing(1) / 2
   },
   controlDefault: {
     flex: '0 0'
   },
-  descriptionDefault: {},
+  descriptionDefault: {
+    fontSize: theme.typography.label.fontSize
+  },
   errorDefault: {
+    fontSize: theme.typography.label.fontSize,
     color: theme.palette.error.main
   }
 })
@@ -28,10 +35,14 @@ class FormFieldContainer extends React.PureComponent {
   render() {
     logger.log(logger.DEBUG, 'FormField.render')
 
-    const { onClick, styles = {} } = this.props
+    const { onClick, styles = {}, classes } = this.props
 
     return (
-      <FormControl fullWidth={true}>
+      <FormControl
+        fullWidth={true}
+        margin='none'
+        classes={{ root: classes.container }}
+      >
         <div onClick={onClick} className={styles.container}>
           {this.renderMetadata()}
           {this.renderControl()}

@@ -27,7 +27,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.create.IObjectCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.CreationId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ICreationIdHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IPropertiesHolder;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ISamplePropertiesHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.IDataSetId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.id.IDataStoreId;
@@ -41,7 +40,7 @@ import ch.systemsx.cisd.base.annotation.JsonObject;
  * @author pkupczyk
  */
 @JsonObject("as.dto.dataset.create.DataSetCreation")
-public class DataSetCreation implements ICreation, ICreationIdHolder, IObjectCreation, IPropertiesHolder, ISamplePropertiesHolder
+public class DataSetCreation implements ICreation, ICreationIdHolder, IObjectCreation, IPropertiesHolder
 {
     private static final long serialVersionUID = 1L;
 
@@ -70,8 +69,6 @@ public class DataSetCreation implements ICreation, ICreationIdHolder, IObjectCre
     private List<? extends ITagId> tagIds;
 
     private Map<String, String> properties = new HashMap<String, String>();
-
-    private Map<String, ISampleId> sampleProperties = new HashMap<String, ISampleId>();
 
     private List<? extends IDataSetId> containerIds;
 
@@ -267,16 +264,6 @@ public class DataSetCreation implements ICreation, ICreationIdHolder, IObjectCre
     public Map<String, String> getProperties()
     {
         return properties;
-    }
-
-    public void setSampleProperty(String propertyName, ISampleId sampleId)
-    {
-        sampleProperties.put(propertyName, sampleId);
-    }
-
-    public Map<String, ISampleId> getSampleProperties()
-    {
-        return sampleProperties;
     }
 
     @Override

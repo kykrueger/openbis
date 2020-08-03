@@ -1,12 +1,11 @@
 import _ from 'lodash'
-import { matchPath } from 'react-router'
-import pathToRegexp from 'path-to-regexp'
+import { compile, match } from 'path-to-regexp'
 import pages from '@src/js/common/consts/pages.js'
 import objectTypes from '@src/js/common/consts/objectType.js'
 
 function doFormat(actualParams, pattern, requiredParams) {
   if (_.isMatch(actualParams, requiredParams)) {
-    let toPath = pathToRegexp.compile(pattern)
+    let toPath = compile(pattern, { encode: encodeURIComponent })
     return {
       path: toPath(actualParams),
       match: Object.keys(requiredParams).length
@@ -17,15 +16,12 @@ function doFormat(actualParams, pattern, requiredParams) {
 }
 
 function doParse(path, pattern, extraParams) {
-  let match = matchPath(path, {
-    path: pattern,
-    exact: true,
-    strict: false
-  })
-  if (match) {
+  let toPathObject = match(pattern, { decode: decodeURIComponent })
+  let pathObject = toPathObject(path)
+  if (pathObject) {
     return {
-      path: match.url,
-      ...match.params,
+      path: pathObject.path,
+      ...pathObject.params,
       ...extraParams
     }
   } else {

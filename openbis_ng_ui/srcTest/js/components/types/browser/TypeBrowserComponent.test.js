@@ -2,6 +2,7 @@ import React from 'react'
 import { Provider } from 'react-redux'
 import { mount } from 'enzyme'
 import { createStore } from '@src/js/store/store.js'
+import ThemeProvider from '@src/js/components/common/theme/ThemeProvider.jsx'
 import BrowserTest from '@srcTest/js/components/common/browser/BrowserTest.js'
 import TypeBrowser from '@src/js/components/types/browser/TypeBrowser.jsx'
 import TypeBrowserController from '@src/js/components/types/browser/TypeBrowserController.js'
@@ -37,7 +38,9 @@ describe('browser', () => {
 
     let wrapper = mount(
       <Provider store={store}>
-        <TypeBrowser controller={controller} />
+        <ThemeProvider>
+          <TypeBrowser controller={controller} />
+        </ThemeProvider>
       </Provider>
     )
 

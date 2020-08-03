@@ -16,7 +16,6 @@
 
 package ch.systemsx.cisd.openbis.generic.server.dataaccess.db;
 
-import java.math.BigInteger;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -151,7 +150,15 @@ public final class DAOFactory extends AuthorizationDAOFactory implements IDAOFac
         this.dynamicPropertyEvaluationScheduler = dynamicPropertyEvaluationScheduler;
         historyCreator.setDaoFactory(this);
         sampleTypeDAO = new SampleTypeDAO(sessionFactory, historyCreator);
-        hibernateSearchDAO = new HibernateSearchDAO(sessionFactory, hibernateSearchContext);
+
+        // TODO : Remove this if/else when the adaptor is finally finished, this is here just to facilitate development/testing keeping changes in master
+        boolean useNewSQLEngineForV1 = false;
+        if (useNewSQLEngineForV1) {
+            hibernateSearchDAO = new HibernateSearchDAOV3Adaptor(new HibernateSearchDAO(sessionFactory, hibernateSearchContext));
+        } else {
+            hibernateSearchDAO = new HibernateSearchDAO(sessionFactory, hibernateSearchContext);
+        }
+
         propertyTypeDAO = new PropertyTypeDAO(sessionFactory, historyCreator);
         vocabularyDAO = new VocabularyDAO(sessionFactory, historyCreator);
         vocabularyTermDAO = new VocabularyTermDAO(sessionFactory, historyCreator);

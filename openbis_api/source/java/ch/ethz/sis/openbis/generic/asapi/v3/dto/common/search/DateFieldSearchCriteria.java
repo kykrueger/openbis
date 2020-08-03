@@ -23,20 +23,30 @@ import java.util.Date;
 import java.util.List;
 
 import ch.systemsx.cisd.base.annotation.JsonObject;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @JsonObject("as.dto.common.search.DateFieldSearchCriteria")
 public abstract class DateFieldSearchCriteria extends AbstractFieldSearchCriteria<IDate>
 {
+    @JsonIgnore
+    public static final ShortDateFormat SHORT_DATE_FORMAT = new ShortDateFormat();
+
+    @JsonIgnore
+    public static final NormalDateFormat NORMAL_DATE_FORMAT = new NormalDateFormat();
+
+    @JsonIgnore
+    public static final LongDateFormat LONG_DATE_FORMAT = new LongDateFormat();
+
+    @JsonIgnore
+    public static final List<IDateFormat> DATE_FORMATS = new ArrayList<IDateFormat>();
 
     private static final long serialVersionUID = 1L;
 
-    private static final List<IDateFormat> DATE_FORMATS = new ArrayList<IDateFormat>();
-
     static
     {
-        DATE_FORMATS.add(new ShortDateFormat());
-        DATE_FORMATS.add(new NormalDateFormat());
-        DATE_FORMATS.add(new LongDateFormat());
+        DATE_FORMATS.add(LONG_DATE_FORMAT);
+        DATE_FORMATS.add(NORMAL_DATE_FORMAT);
+        DATE_FORMATS.add(SHORT_DATE_FORMAT);
     }
 
     private ITimeZone timeZone = new ServerTimeZone();
@@ -111,20 +121,28 @@ public abstract class DateFieldSearchCriteria extends AbstractFieldSearchCriteri
         {
             for (IDateFormat dateFormat : DATE_FORMATS)
             {
-                try
+                if (formatValue(((AbstractDateValue) value).getValue(), dateFormat) != null)
                 {
-                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat(dateFormat.getFormat());
-                    simpleDateFormat.setLenient(false);
-                    simpleDateFormat.parse(((AbstractDateValue) value).getValue());
                     return;
-                } catch (ParseException e)
-                {
-                    // do nothing
                 }
             }
 
             throw new IllegalArgumentException("Date value: " + value + " does not match any of the supported formats: "
                     + DATE_FORMATS);
+        }
+    }
+
+    @JsonIgnore
+    public static Date formatValue(final String value, final IDateFormat dateFormat)
+    {
+        try
+        {
+            final SimpleDateFormat simpleDateFormat = new SimpleDateFormat(dateFormat.getFormat());
+            simpleDateFormat.setLenient(false);
+            return simpleDateFormat.parse(value);
+        } catch (final ParseException e)
+        {
+            return null;
         }
     }
 

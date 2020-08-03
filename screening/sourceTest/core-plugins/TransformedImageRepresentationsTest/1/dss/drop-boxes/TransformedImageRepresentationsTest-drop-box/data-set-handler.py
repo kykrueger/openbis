@@ -106,7 +106,7 @@ def create_experiment(tr):
     return exp
 
 def create_plate(tr, experiment, plateCode):
-    plateId = "/TEST/" + plateCode
+    plateId = "/TEST/TEST-PROJECT/" + plateCode
     plate = tr.createNewSample(plateId, 'PLATE')
     plate.setPropertyValue(PLATE_GEOMETRY_PROPERTY_CODE, PLATE_GEOMETRY)
     plate.setExperiment(experiment)
@@ -129,7 +129,7 @@ if incoming.isDirectory():
   
   imageDataset = ImageDataSetFlexible()
   imageDataset.setRawImageDatasetType()
-  imageDataset.setPlate("TEST", 'TRANSFORMED-THUMB-PLATE')
+  imageDataset.setPlate("TEST/TEST-PROJECT", 'TRANSFORMED-THUMB-PLATE')
   imageDataset.setColorDepth(8)
   transforms = getAvailableChannelTransformations()
   # We want thumbnails generarted for the following resolutions, and they should be JPEG and have the

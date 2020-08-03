@@ -70,7 +70,6 @@ import ch.systemsx.cisd.common.test.AssertionUtil;
 import ch.systemsx.cisd.openbis.generic.shared.basic.CodeConverter;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SampleIdentifierFactory;
 import ch.systemsx.cisd.openbis.systemtest.authorization.ProjectAuthorizationUser;
-
 import junit.framework.Assert;
 
 /**
@@ -103,7 +102,6 @@ public class GetSampleTest extends AbstractSampleTest
         // Then
         assertEquals(samples.size(), newSamples.size());
     }
-
 
     @Test
     public void testGetByPermId()
@@ -506,11 +504,11 @@ public class GetSampleTest extends AbstractSampleTest
     public void testGetWithFetchOptionsNested()
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
-        
+
         SampleFetchOptions fetchOptions = new SampleFetchOptions();
         fetchOptions.withProperties();
         fetchOptions.withType().withValidationPlugin();
-        
+
         SampleFetchOptions nestedFetchOptions = fetchOptions.withComponents().withContainer();
         nestedFetchOptions.withExperiment();
         nestedFetchOptions.withType().withValidationPlugin();
@@ -523,10 +521,10 @@ public class GetSampleTest extends AbstractSampleTest
 
         Sample sample = samples.get(0);
         Sample nestedSample = sample.getComponents().get(0).getContainer();
-        
-        // sample and nested sample represent the same object in the database but are two different 
+
+        // sample and nested sample represent the same object in the database but are two different
         // objects in memory as they have been fetched with different fetch options
-        
+
         assertEquals(sample.getCode(), "PLATE_WELLSEARCH");
         assertEquals(sample.getCode(), nestedSample.getCode());
         assertTrue(sample != nestedSample);
@@ -537,15 +535,15 @@ public class GetSampleTest extends AbstractSampleTest
         assertExperimentNotFetched(sample);
         Experiment nestedExperiment = nestedSample.getExperiment();
         assertEquals(nestedExperiment.getIdentifier().toString(), "/CISD/DEFAULT/EXP-WELLS");
-        
+
         // sample type and nested sample type represent the same object in the database and are the same
         // object in memory as they have both been fetched with equal fetch options
-        
+
         SampleType type = sample.getType();
         SampleType nestedType = nestedSample.getType();
         assertEquals(type.getCode(), "CELL_PLATE");
         assertTrue(type == nestedType);
-        
+
         v3api.logout(sessionToken);
     }
 
@@ -910,6 +908,38 @@ public class GetSampleTest extends AbstractSampleTest
     }
 
     @Test
+    public void testGetWithGrandParentAndGrandChildWithParentInbetween()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        SampleFetchOptions fetchOptions = new SampleFetchOptions();
+        fetchOptions.withChildren();
+        fetchOptions.withChildrenUsing(fetchOptions);
+
+        SamplePermId permId1 = new SamplePermId("200811050929035-1015"); // grand parent
+        SamplePermId permId2 = new SamplePermId("200811050931564-1022"); // grand child of permId1
+
+        // When
+        Map<ISampleId, Sample> map = v3api.getSamples(sessionToken, Arrays.asList(permId1, permId2), fetchOptions);
+
+        // Then
+        assertEquals(2, map.size());
+        Sample sample1 = map.get(permId1);
+        Sample sample2 = map.get(permId2);
+        assertEquals(sample1.getChildren().size(), 1);
+        assertEquals(sample1.getChildren().get(0).getPermId().getPermId(), "200811050929940-1019"); // parent
+        assertEquals(sample1.getChildrenRelationships().toString(), 
+                "{200811050929940-1019=Relationship[parent annotations={},child annotations={}]}");
+        assertEquals(sample1.getChildren().get(0).getChildren().get(0).getPermId().getPermId(), "200811050931564-1022");
+        assertEquals(sample1.getChildren().get(0).getChildrenRelationships().toString(), 
+                "{200811050931564-1022=Relationship[parent annotations={},child annotations={}]}");
+        assertEquals(sample2.getChildren().size(), 0);
+
+        v3api.logout(sessionToken);
+    }
+
+    @Test
     public void testGetWithComponentsAndContainer()
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
@@ -1245,7 +1275,7 @@ public class GetSampleTest extends AbstractSampleTest
 
         DataSet ds1 = dataSets.get(0);
         DataSet nestedDs1 = ds1.getSample().getDataSets().get(0);
-        
+
         assertTrue(nestedDs1 != ds1);
         assertEquals(nestedDs1.getCode(), ds1.getCode());
         assertTypeNotFetched(ds1);

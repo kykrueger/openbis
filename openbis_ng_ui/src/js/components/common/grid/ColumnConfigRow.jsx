@@ -1,15 +1,15 @@
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import { Draggable } from 'react-beautiful-dnd'
-import FormControlLabel from '@material-ui/core/FormControlLabel'
-import Checkbox from '@material-ui/core/Checkbox'
 import DragHandleIcon from '@material-ui/icons/DragHandle'
+import CheckboxField from '@src/js/components/common/form/CheckboxField.jsx'
 import logger from '@src/js/common/logger.js'
 
-const styles = () => ({
+const styles = theme => ({
   row: {
     display: 'flex',
-    alignItems: 'center'
+    alignItems: 'center',
+    padding: `${theme.spacing(1) / 2}px 0px`
   },
   label: {
     marginLeft: 0
@@ -44,17 +44,12 @@ class ColumnConfigRow extends React.Component {
             className={classes.row}
           >
             <div {...provided.dragHandleProps} className={classes.drag}>
-              <DragHandleIcon />
+              <DragHandleIcon fontSize='small' />
             </div>
-            <FormControlLabel
-              classes={{ root: classes.label }}
-              control={
-                <Checkbox
-                  checked={column.visible}
-                  onChange={this.handleVisibleChange}
-                />
-              }
+            <CheckboxField
               label={column.label || column.field}
+              value={column.visible}
+              onChange={this.handleVisibleChange}
             />
           </div>
         )}

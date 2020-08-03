@@ -24,8 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
-import net.lemnik.eodsql.DynamicTransactionQuery;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
@@ -57,6 +55,7 @@ import ch.systemsx.cisd.etlserver.registrator.recovery.DataSetStorageRecoveryMan
 import ch.systemsx.cisd.etlserver.registrator.recovery.IDataSetStorageRecoveryManager;
 import ch.systemsx.cisd.etlserver.registrator.v1.JythonTopLevelDataSetHandler;
 import ch.systemsx.cisd.etlserver.validation.IDataSetValidator;
+import ch.systemsx.cisd.openbis.dss.generic.shared.Constants;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IEncapsulatedOpenBISService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.IDataSourceQueryService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.DatasetLocationUtil;
@@ -65,6 +64,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DatabaseInstance;
 import ch.systemsx.cisd.openbis.generic.shared.dto.AtomicEntityOperationDetails;
 import ch.systemsx.cisd.openbis.generic.shared.dto.NewExternalData;
 import ch.systemsx.cisd.openbis.generic.shared.dto.StorageFormat;
+import net.lemnik.eodsql.DynamicTransactionQuery;
 
 /**
  * Abstract superclass for tests that should run on jython data set handler code.
@@ -146,6 +146,8 @@ public abstract class AbstractJythonDataSetHandlerTest extends AbstractFileSyste
 
     protected File subDataSet2;
 
+    private File recoveryMarkerDirectory;
+
     protected static final String DATA_SET_CODE = "data-set-code";
 
     protected static final String DATA_SET_CODE_1 = "data-set-code-1";
@@ -195,6 +197,9 @@ public abstract class AbstractJythonDataSetHandlerTest extends AbstractFileSyste
         stagingDirectory = new File(workingDirectory, "staging");
         prestagingDirectory = new File(workingDirectory, "pre-staging");
         precommitDirectory = new File(workingDirectory, "pre-commit");
+        recoveryMarkerDirectory = new File(workingDirectory, "recovery-marker");
+        share = new File(workingDirectory, Constants.DEFAULT_SHARE_ID);
+        share.mkdirs();
 
         cleanUpDirectoryBeforeTheTest(recoveryStateDir);
         DssRegistrationHealthMonitor.setOpenBisServiceForTest(openBisService);
@@ -254,7 +259,7 @@ public abstract class AbstractJythonDataSetHandlerTest extends AbstractFileSyste
 
         TopLevelDataSetRegistratorGlobalState globalState =
                 new TopLevelDataSetRegistratorGlobalState("dss",
-                        ch.systemsx.cisd.openbis.dss.generic.shared.Constants.DEFAULT_SHARE_ID,
+                        Constants.DEFAULT_SHARE_ID,
                         workingDirectory, workingDirectory, workingDirectory, recoveryStateDir,
                         openBisService, mailClient, dataSetValidator, dataSourceQueryService,
                         myFactory, true, threadParameters, storageRecoveryManager);
@@ -270,8 +275,7 @@ public abstract class AbstractJythonDataSetHandlerTest extends AbstractFileSyste
                 {
                     one(storageRecoveryManager).setDropboxRecoveryStateDir(with(any(File.class)));
                     one(storageRecoveryManager).setRecoveryMarkerFilesDir(
-                            new File(new File(workingDirectory, "recovery-marker"),
-                                    "jython-handler-test"));
+                            new File(recoveryMarkerDirectory, "jython-handler-test"));
                     one(storageRecoveryManager).setMaximumRertyCount(with(any(Integer.class)));
                     one(storageRecoveryManager).setRetryPeriodInSeconds(with(any(Integer.class)));
 
@@ -355,6 +359,8 @@ public abstract class AbstractJythonDataSetHandlerTest extends AbstractFileSyste
                 prestagingDirectory.getPath());
         threadProperties.setProperty(TopLevelDataSetRegistratorGlobalState.PRE_COMMIT_DIR,
                 precommitDirectory.getPath());
+        threadProperties.setProperty(TopLevelDataSetRegistratorGlobalState.RECOVERY_MARKER_DIR,
+                recoveryMarkerDirectory.getPath());
 
         threadProperties.setProperty(ThreadParameters.PROCESS_MAX_RETRY_COUNT, "0");
         threadProperties.setProperty(ThreadParameters.PROCESS_RETRY_PAUSE_IN_SEC, "0");
@@ -504,12 +510,10 @@ public abstract class AbstractJythonDataSetHandlerTest extends AbstractFileSyste
 
         File datasetLocation =
                 DatasetLocationUtil.getDatasetLocationPath(workingDirectory, dataSetCode,
-                        ch.systemsx.cisd.openbis.dss.generic.shared.Constants.DEFAULT_SHARE_ID,
-                        DATABASE_INSTANCE_UUID);
+                        Constants.DEFAULT_SHARE_ID, DATABASE_INSTANCE_UUID);
 
         assertEquals(FileUtilities.getRelativeFilePath(new File(workingDirectory,
-                ch.systemsx.cisd.openbis.dss.generic.shared.Constants.DEFAULT_SHARE_ID),
-                datasetLocation), dataSet.getLocation());
+                Constants.DEFAULT_SHARE_ID), datasetLocation), dataSet.getLocation());
 
         assertEquals(new File(stagingDirectory, dataSetCode + "-storage"),
                 MockStorageProcessor.instance.rootDirs.get(testId));
@@ -536,7 +540,7 @@ public abstract class AbstractJythonDataSetHandlerTest extends AbstractFileSyste
     {
         File datasetLocation =
                 DatasetLocationUtil.getDatasetLocationPath(workingDirectory, dataSetCode,
-                        ch.systemsx.cisd.openbis.dss.generic.shared.Constants.DEFAULT_SHARE_ID,
+                        Constants.DEFAULT_SHARE_ID,
                         DATABASE_INSTANCE_UUID);
         boolean existsAndNotEmpty = datasetLocation.exists() && datasetLocation.list().length > 0;
         assertFalse("The storage path of the dataset should not exist " + datasetLocation,
@@ -544,7 +548,9 @@ public abstract class AbstractJythonDataSetHandlerTest extends AbstractFileSyste
     }
 
     private static final String[] registrationDirectories =
-    { "1", "pre-commit", "staging", "pre-staging" };
+            { "1", "pre-commit", "staging", "pre-staging" };
+
+    private File share;
 
     /**
      * Simulate the file system becoming unavailable

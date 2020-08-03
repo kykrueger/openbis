@@ -708,18 +708,6 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 				isExportable: true,
 				sortable : !isGlobalSearch
 			}, {
-				label : 'Name',
-				property : '$NAME',
-				isExportable: true,
-				sortable : !isGlobalSearch,
-				render : function(data) {
-					if(data[profile.propertyReplacingCode]) {
-						return _this._getLinkOnClick(data[profile.propertyReplacingCode], data);
-					} else {
-						return "";
-					}
-				}
-			}, {
 				label : 'Code',
 				property : 'code',
 				isExportable: true,
@@ -734,7 +722,7 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 								break;
 							}
 						}
-						
+
 						if(indexFound !== null) {
 							paginationInfo = {
 									pagFunction : _this._advancedSearchController.searchWithPagination(_this._advancedSearchModel.criteria, false),
@@ -746,6 +734,18 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 					}
 					var id = data.code.toLowerCase() + "-id";
 					return _this._getLinkOnClick(data.code, data, paginationInfo, id);
+				}
+			}, {
+				label : 'Name',
+				property : '$NAME',
+				isExportable: true,
+				sortable : !isGlobalSearch,
+				render : function(data) {
+					if(data[profile.propertyReplacingCode]) {
+						return _this._getLinkOnClick(data[profile.propertyReplacingCode], data);
+					} else {
+						return "";
+					}
 				}
 			}, {
 				label : 'Identifier',

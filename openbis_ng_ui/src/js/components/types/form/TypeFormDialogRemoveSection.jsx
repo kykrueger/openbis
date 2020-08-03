@@ -15,7 +15,7 @@ class TypeFormDialogRemoveSection extends React.Component {
         onConfirm={onConfirm}
         onCancel={onCancel}
         title={this.getTitle()}
-        content='This section contains properties which are already used by some entities. Removing the section and the contained property definitions is going to remove the existing property values as well - data will be lost! Are you sure you want to proceed?'
+        content='This section contains properties which are already used by some entities of this type. Removing the section and the contained property assignments is going to remove the existing property values as well - data will be lost! Are you sure you want to proceed?'
       />
     )
   }
@@ -25,8 +25,8 @@ class TypeFormDialogRemoveSection extends React.Component {
 
     if (open) {
       const section = _.find(sections, ['id', selection.params.id])
-      if (section.name) {
-        return `Do you want to remove "${section.name}" section? Some data will be lost!`
+      if (section.name.value) {
+        return `Do you want to remove "${section.name.value}" section? Some data will be lost!`
       } else {
         return 'Do you want to remove the section? Some data will be lost!'
       }

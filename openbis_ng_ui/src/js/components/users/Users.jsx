@@ -5,8 +5,7 @@ import pages from '@src/js/common/consts/pages.js'
 import objectType from '@src/js/common/consts/objectType.js'
 
 import Content from '@src/js/components/common/content/Content.jsx'
-import ContentObjectTab from '@src/js/components/common/content/ContentObjectTab.jsx'
-import ContentSearchTab from '@src/js/components/common/content/ContentSearchTab.jsx'
+import ContentTab from '@src/js/components/common/content/ContentTab.jsx'
 
 import UserBrowser from './browser/UserBrowser.jsx'
 import UserSearch from './search/UserSearch.jsx'
@@ -50,12 +49,13 @@ class Users extends React.Component {
   }
 
   renderTab(tab) {
-    const { object, changed } = tab
-    if (object.type === objectType.USER || object.type === objectType.GROUP) {
-      return <ContentObjectTab object={object} changed={changed} />
-    } else if (object.type === objectType.SEARCH) {
-      return <ContentSearchTab object={object} />
+    const { object } = tab
+
+    const prefixes = {
+      [objectType.SEARCH]: 'search: '
     }
+
+    return <ContentTab prefix={prefixes[object.type]} tab={tab} />
   }
 }
 

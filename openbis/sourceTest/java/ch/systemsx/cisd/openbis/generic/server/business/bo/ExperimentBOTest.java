@@ -93,7 +93,7 @@ public final class ExperimentBOTest extends AbstractBOTest
 
     private final ExperimentBO createExperimentBO()
     {
-        return new ExperimentBO(daoFactory, ManagerTestTool.EXAMPLE_SESSION, relationshipService,
+        return new ExperimentBO(daoFactory, ManagerTestTool.EXAMPLE_SESSION, relationshipService, null,
                 managedPropertyEvaluatorFactory, new DataSetTypeWithoutExperimentChecker("NE.*"));
     }
 

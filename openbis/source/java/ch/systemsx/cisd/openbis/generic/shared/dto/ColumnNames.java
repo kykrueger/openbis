@@ -450,6 +450,10 @@ public final class ColumnNames
 
     public static final String EMAIL_COLUMN = "email";
 
+    public static final String TS_VECTOR_COLUMN = "tsvector_document";
+
+    public static final String SAMPLE_IDENTIFIER_COLUMN = "sample_identifier";
+
     private ColumnNames()
     {
         // Can not be instantiated.

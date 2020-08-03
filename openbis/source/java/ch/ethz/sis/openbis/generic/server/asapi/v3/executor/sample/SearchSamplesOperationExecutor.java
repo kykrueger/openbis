@@ -27,7 +27,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SearchSamplesOpera
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.ISearchObjectExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.SearchObjectsOperationExecutor;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ILocalSearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SampleSearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.ITranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.sample.ISampleTranslator;
@@ -74,7 +74,7 @@ public class SearchSamplesOperationExecutor extends SearchObjectsOperationExecut
     }
 
     @Override
-    protected ISearchManager<SampleSearchCriteria, Sample, Long> getSearchManager()
+    protected ILocalSearchManager<SampleSearchCriteria, Sample, Long> getSearchManager()
     {
         return sampleSearchManager;
     }

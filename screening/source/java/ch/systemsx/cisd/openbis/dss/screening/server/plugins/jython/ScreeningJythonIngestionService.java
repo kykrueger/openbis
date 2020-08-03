@@ -53,10 +53,7 @@ public class ScreeningJythonIngestionService extends JythonIngestionService
                 getScriptPathProperty(properties)));
     }
 
-    /**
-     * Constructor used in tests.
-     */
-    protected ScreeningJythonIngestionService(Properties properties, File storeRoot,
+    public ScreeningJythonIngestionService(Properties properties, File storeRoot,
             IPluginScriptRunnerFactory scriptRunnerFactory)
     {
         super(properties, storeRoot, scriptRunnerFactory);

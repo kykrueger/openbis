@@ -43,12 +43,12 @@ describe('TypeFormController.handleAddProperty', () => {
       sections: [
         {
           id: 'section-0',
-          name: 'TEST_SECTION_1',
+          name: { value: 'TEST_SECTION_1' },
           properties: ['property-0']
         },
         {
           id: 'section-1',
-          name: 'TEST_SECTION_2',
+          name: { value: 'TEST_SECTION_2' },
           properties: ['property-1', 'property-2']
         }
       ]
@@ -66,17 +66,17 @@ describe('TypeFormController.handleAddProperty', () => {
       sections: [
         {
           id: 'section-0',
-          name: 'TEST_SECTION_1',
+          name: { value: 'TEST_SECTION_1' },
           properties: ['property-0']
         },
         {
           id: 'section-1',
-          name: 'TEST_SECTION_2',
+          name: { value: 'TEST_SECTION_2' },
           properties: ['property-1', 'property-2']
         },
         {
           id: 'section-2',
-          name: null,
+          name: { value: null },
           properties: []
         }
       ]
@@ -102,12 +102,12 @@ describe('TypeFormController.handleAddProperty', () => {
       sections: [
         {
           id: 'section-0',
-          name: 'TEST_SECTION_1',
+          name: { value: 'TEST_SECTION_1' },
           properties: ['property-0']
         },
         {
           id: 'section-1',
-          name: 'TEST_SECTION_2',
+          name: { value: 'TEST_SECTION_2' },
           properties: ['property-1', 'property-2']
         }
       ]
@@ -125,17 +125,17 @@ describe('TypeFormController.handleAddProperty', () => {
       sections: [
         {
           id: 'section-0',
-          name: 'TEST_SECTION_1',
+          name: { value: 'TEST_SECTION_1' },
           properties: ['property-0']
         },
         {
           id: 'section-2',
-          name: null,
+          name: { value: null },
           properties: []
         },
         {
           id: 'section-1',
-          name: 'TEST_SECTION_2',
+          name: { value: 'TEST_SECTION_2' },
           properties: ['property-1', 'property-2']
         }
       ]
@@ -161,12 +161,12 @@ describe('TypeFormController.handleAddProperty', () => {
       sections: [
         {
           id: 'section-0',
-          name: 'TEST_SECTION_1',
+          name: { value: 'TEST_SECTION_1' },
           properties: ['property-0']
         },
         {
           id: 'section-1',
-          name: 'TEST_SECTION_2',
+          name: { value: 'TEST_SECTION_2' },
           properties: ['property-1', 'property-2']
         }
       ]
@@ -184,17 +184,17 @@ describe('TypeFormController.handleAddProperty', () => {
       sections: [
         {
           id: 'section-0',
-          name: 'TEST_SECTION_1',
+          name: { value: 'TEST_SECTION_1' },
           properties: ['property-0']
         },
         {
           id: 'section-2',
-          name: null,
+          name: { value: null },
           properties: []
         },
         {
           id: 'section-1',
-          name: 'TEST_SECTION_2',
+          name: { value: 'TEST_SECTION_2' },
           properties: ['property-1', 'property-2']
         }
       ]

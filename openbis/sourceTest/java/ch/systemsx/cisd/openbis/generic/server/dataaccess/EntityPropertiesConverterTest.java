@@ -88,7 +88,7 @@ public final class EntityPropertiesConverterTest extends AbstractBOTest
             final EntityKind entityKind)
     {
         return new EntityPropertiesConverter(entityKind, daoFactory, propertyValueValidator,
-                placeholderCreator, managedPropertyEvaluatorFactory);
+                placeholderCreator, null, managedPropertyEvaluatorFactory);
     }
 
     private void prepareForConvertion(final Expectations exp)

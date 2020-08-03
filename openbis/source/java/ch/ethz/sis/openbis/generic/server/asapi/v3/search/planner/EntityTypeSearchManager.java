@@ -22,7 +22,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.search.EntityTypeSear
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PEMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 
 import java.util.Collection;
@@ -37,13 +37,13 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
  * @author Viktor Kovtun
  */
 
-public class EntityTypeSearchManager extends AbstractSearchManager<EntityTypeSearchCriteria, Void, Long>
+public class EntityTypeSearchManager extends AbstractLocalSearchManager<EntityTypeSearchCriteria, Void, Long>
 {
 
     public EntityTypeSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
-            final IID2PETranslator idsTranslator)
+            final IID2PEMapper<Long, Long> idsMapper)
     {
-        super(searchDAO, authProvider, idsTranslator);
+        super(searchDAO, authProvider, idsMapper);
     }
 
     @Override
@@ -54,7 +54,7 @@ public class EntityTypeSearchManager extends AbstractSearchManager<EntityTypeSea
 
     @Override
     public Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation,
-            final EntityTypeSearchCriteria criteria, final SortOptions<Void> sortOptions,
+            final EntityTypeSearchCriteria criteria,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName) {
         return super.searchForIDs(userId, authorisationInformation, criteria, ID_COLUMN, TableMapper.DATA_SET_TYPE);
     }

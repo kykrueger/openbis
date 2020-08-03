@@ -66,7 +66,10 @@ function HierarchyTableModel(entity) {
 	}
 	
 	this._addRow = function(dataList, entity, level, path) {
-		var annotations = FormUtil.getAnnotationsFromSample(entity);
+        var annotations = {};
+	    if(entity["@type"] === "as.dto.sample.Sample") {
+	        annotations = FormUtil.getAnnotationsFromSample(entity);
+	    }
 		var relationShips = this.relationShipsMap[entity.permId.permId];
 		
 		var repositoryId = null;

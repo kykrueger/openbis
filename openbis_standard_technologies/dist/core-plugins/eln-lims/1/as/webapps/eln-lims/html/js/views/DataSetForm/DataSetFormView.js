@@ -396,8 +396,10 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 		var $dataSetTypeFieldSet = $('<div>', { id : "data-set-identification-info" });
 		if (!this._dataSetFormModel.isMini) {
 			$dataSetTypeFieldSet.append($('<legend>').text('Identification Info'));
+			if (this._dataSetFormModel.mode !== FormMode.CREATE) {
+                $dataSetTypeFieldSet.append(FormUtil.getFieldForLabelWithText("PermId", this._dataSetFormModel.dataSet.code));
+            }
 		}
-		
 		var $dataSetTypeSelector = null;
 		if (this._dataSetFormModel.mode === FormMode.CREATE) {
 			$dataSetTypeSelector = FormUtil.getDataSetsDropDown('DATASET_TYPE', this._dataSetFormModel.dataSetTypes);
@@ -790,6 +792,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
                                         $component = FormUtil.activateRichTextProperties($component, changeEvent(propertyType), propertyType, value, false);
                                     } else {
                                         alert("Word Processor only works with MULTILINE_VARCHAR data type.");
+                                        $component.change(changeEvent(propertyType));
                                     }
                                     break;
                                 case 'Spreadsheet':
@@ -799,6 +802,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
                                         $component = $jexcelContainer;
                                     } else {
                                         alert("Spreadsheet only works with XML data type.");
+                                        $component.change(changeEvent(propertyType));
                                     }
                                     break;
                             }

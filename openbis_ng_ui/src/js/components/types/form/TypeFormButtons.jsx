@@ -1,16 +1,35 @@
 import React from 'react'
-import Button from '@material-ui/core/Button'
 import { withStyles } from '@material-ui/core/styles'
+import Container from '@src/js/components/common/form/Container.jsx'
+import Button from '@src/js/components/common/form/Button.jsx'
+import Message from '@src/js/components/common/form/Message.jsx'
 import logger from '@src/js/common/logger.js'
+
+import TypeFormControllerStrategies from './TypeFormControllerStrategies.js'
 
 const styles = theme => ({
   container: {
-    padding: theme.spacing(2),
-    paddingLeft: theme.spacing(4),
     display: 'flex'
   },
+  leftContainer: {
+    flexGrow: 1,
+    display: 'flex',
+    justifyContent: 'flex-start',
+    '& $button': {
+      marginRight: theme.spacing(1)
+    },
+    alignItems: 'center'
+  },
+  rightContainer: {
+    flexGrow: 1,
+    display: 'flex',
+    justifyContent: 'flex-end',
+    '& $button': {
+      marginLeft: theme.spacing(1)
+    },
+    alignItems: 'center'
+  },
   button: {
-    marginRight: theme.spacing(2),
     whiteSpace: 'nowrap'
   }
 })
@@ -27,51 +46,94 @@ class TypeFormButtons extends React.PureComponent {
   render() {
     logger.log(logger.DEBUG, 'TypeFormButtons.render')
 
+    const { mode } = this.props
+
+    if (mode === 'view') {
+      return this.renderView()
+    } else if (mode === 'edit') {
+      return this.renderEdit()
+    } else {
+      throw 'Unsupported mode: ' + mode
+    }
+  }
+
+  renderView() {
+    const { classes, onEdit } = this.props
+
+    return (
+      <Container className={classes.container}>
+        <div className={classes.rightContainer}>
+          <Button
+            name='edit'
+            label='Edit'
+            styles={{ root: classes.button }}
+            onClick={onEdit}
+          />
+        </div>
+      </Container>
+    )
+  }
+
+  renderEdit() {
     const {
       classes,
       onAddSection,
       onAddProperty,
       onRemove,
-      onSave
+      onSave,
+      onCancel,
+      changed,
+      object
     } = this.props
 
+    const strategy = new TypeFormControllerStrategies().getStrategy(object.type)
+    const existing = object.type === strategy.getExistingObjectType()
+
     return (
-      <div className={classes.container}>
-        <Button
-          classes={{ root: classes.button }}
-          variant='contained'
-          color='secondary'
-          onClick={onAddSection}
-        >
-          Add Section
-        </Button>
-        <Button
-          classes={{ root: classes.button }}
-          variant='contained'
-          color='secondary'
-          disabled={!this.isSectionOrPropertySelected()}
-          onClick={onAddProperty}
-        >
-          Add Property
-        </Button>
-        <Button
-          classes={{ root: classes.button }}
-          variant='contained'
-          color='secondary'
-          disabled={!this.isSectionOrPropertySelected()}
-          onClick={onRemove}
-        >
-          Remove
-        </Button>
-        <Button
-          classes={{ root: classes.button }}
-          variant='contained'
-          color='primary'
-          onClick={onSave}
-        >
-          Save
-        </Button>
-      </div>
+      <Container className={classes.container}>
+        <div className={classes.leftContainer}>
+          <Button
+            name='addSection'
+            label='Add Section'
+            styles={{ root: classes.button }}
+            onClick={onAddSection}
+          />
+          <Button
+            name='addProperty'
+            label='Add Property'
+            styles={{ root: classes.button }}
+            disabled={!this.isSectionOrPropertySelected()}
+            onClick={onAddProperty}
+          />
+          <Button
+            name='remove'
+            label='Remove'
+            styles={{ root: classes.button }}
+            disabled={!this.isSectionOrPropertySelected()}
+            onClick={onRemove}
+          />
+        </div>
+        <div className={classes.rightContainer}>
+          {changed && (
+            <Message type='warning'>You have unsaved changes.</Message>
+          )}
+          <Button
+            name='save'
+            label='Save'
+            type='final'
+            styles={{ root: classes.button }}
+            onClick={onSave}
+          />
+          {existing && (
+            <Button
+              name='cancel'
+              label='Cancel'
+              styles={{ root: classes.button }}
+              onClick={onCancel}
+            />
+          )}
+        </div>
+      </Container>
     )
   }
 }

@@ -17,7 +17,7 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.material;
 
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ILocalSearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.MaterialTypeSearchManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -85,7 +85,7 @@ public class SearchMaterialTypesOperationExecutor
     }
 
     @Override
-    protected ISearchManager<MaterialTypeSearchCriteria, MaterialType, Long> getSearchManager() {
+    protected ILocalSearchManager<MaterialTypeSearchCriteria, MaterialType, Long> getSearchManager() {
         return materialTypeSearchManager;
     }
 

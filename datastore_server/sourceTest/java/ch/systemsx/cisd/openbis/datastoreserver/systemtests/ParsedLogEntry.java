@@ -25,6 +25,8 @@ public final class ParsedLogEntry
 {
     private static final String FORMAT_TEMPLATE = "[{0,date," + BasicConstant.DATE_WITHOUT_TIMEZONE_PATTERN + "}][{1}][{2}][{3}]";
 
+    private int lineIndex;
+
     private Date timestamp;
 
     private String logLevel;
@@ -33,8 +35,9 @@ public final class ParsedLogEntry
 
     private String logMessage;
 
-    ParsedLogEntry(Date timestamp, String logLevel, String threadName, String logMessage)
+    ParsedLogEntry(int lineIndex, Date timestamp, String logLevel, String threadName, String logMessage)
     {
+        this.lineIndex = lineIndex;
         this.timestamp = timestamp;
         this.logLevel = logLevel;
         this.threadName = threadName;
@@ -44,6 +47,11 @@ public final class ParsedLogEntry
     public void appendToMessage(String logLine)
     {
         logMessage += "\n" + logLine;
+    }
+
+    public int getLineIndex()
+    {
+        return lineIndex;
     }
 
     public Date getTimestamp()

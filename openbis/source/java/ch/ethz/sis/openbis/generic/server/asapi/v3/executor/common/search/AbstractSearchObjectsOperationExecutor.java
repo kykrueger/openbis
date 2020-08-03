@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.*;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ILocalSearchManager;
 import ch.systemsx.cisd.openbis.generic.shared.authorization.AuthorizationConfig;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.RoleWithHierarchy;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
@@ -70,7 +70,7 @@ public abstract class AbstractSearchObjectsOperationExecutor<OBJECT, OBJECT_PE, 
 
     protected abstract SearchObjectsOperationResult<OBJECT> getOperationResult(SearchResult<OBJECT> searchResult);
 
-    protected abstract ISearchManager<CRITERIA, OBJECT, OBJECT_PE> getSearchManager();
+    protected abstract ILocalSearchManager<CRITERIA, OBJECT, OBJECT_PE> getSearchManager();
 
     @Override
     protected SearchObjectsOperationResult<OBJECT> doExecute(IOperationContext context, SearchObjectsOperation<CRITERIA, FETCH_OPTIONS> operation)
@@ -236,25 +236,24 @@ public abstract class AbstractSearchObjectsOperationExecutor<OBJECT, OBJECT_PE, 
         }
 
         final PersonPE personPE = context.getSession().tryGetPerson();
-
-        final AuthorisationInformation authorisationInformation = AuthorisationInformation.getInstance(personPE, authorizationConfig);
+        final AuthorisationInformation authorisationInformation = AuthorisationInformation.getInstance(personPE,
+                authorizationConfig);
 
         final Long userId = personPE.getId();
         final TranslationContext translationContext = new TranslationContext(context.getSession());
 
-        final Set<Long> allResultsIds = getSearchManager().searchForIDs(userId, authorisationInformation, criteria, fetchOptions.getSortBy(), null,
-                ID_COLUMN);
+        final Set<Long> allResultsIds = getSearchManager().searchForIDs(userId, authorisationInformation, criteria,
+                null, ID_COLUMN);
         final Collection<Long> pagedResultIds = sortAndPage(allResultsIds, fetchOptions);
-        
-        final Collection<OBJECT_PE> pagedResultPEs = getSearchManager().translate(pagedResultIds);
+        final Collection<OBJECT_PE> pagedResultPEs = getSearchManager().map(pagedResultIds);
         // TODO: doTranslate() should only filter nested objects of the results (parents, children, components...).
         final Map<OBJECT_PE, OBJECT> pagedResultV3DTOs = doTranslate(translationContext, pagedResultPEs, fetchOptions);
 
-        assert pagedResultPEs.size() == pagedResultV3DTOs.size() : "The number of results after translation should not change. [pagedResultPEs.size()="
-                + pagedResultPEs.size() + ", pagedResultV3DTOs.size()=" + pagedResultV3DTOs.size() + "]";
+        assert pagedResultPEs.size() == pagedResultV3DTOs.size() : "The number of results after translation should not change. " +
+                "[pagedResultPEs.size()=" + pagedResultPEs.size() + ", pagedResultV3DTOs.size()=" + pagedResultV3DTOs.size() + "]";
 
         // Reordering of pagedResultV3DTOs is needed because translation mixes the order
-        final List<OBJECT> objectResults = pagedResultPEs.stream().map(pagedResultV3DTOs::get).filter(Objects::nonNull)
+        final List<OBJECT> objectResults = pagedResultPEs.stream().map(pagedResultV3DTOs::get)
                 .collect(Collectors.toList());
 
         // Sorting and paging parents and children in a "conventional" way.
@@ -271,8 +270,8 @@ public abstract class AbstractSearchObjectsOperationExecutor<OBJECT, OBJECT_PE, 
         // Filter out sorts to ignore
         if (sortOptions != null) {
             List<Sorting> sortingToRemove = new ArrayList<>();
-            for (Sorting sorting:sortOptions.getSortings()) {
-                for (String sortToIgnore: SORTS_TO_IGNORE) {
+            for (Sorting sorting : sortOptions.getSortings()) {
+                for (String sortToIgnore : SORTS_TO_IGNORE) {
                     if (sorting.getField().equals(sortToIgnore)) {
                         sortingToRemove.add(sorting);
                     }

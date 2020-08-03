@@ -39,7 +39,11 @@ function* objectCreate(action) {
   const oldTab = _.find(openTabs, { object: { type: oldType, id: oldId } })
 
   if (oldTab) {
-    const newTab = { ...oldTab, object: { type: newType, id: newId } }
+    const newTab = {
+      ...oldTab,
+      object: { type: newType, id: newId },
+      changed: false
+    }
     yield put(actions.replaceOpenTab(page, oldTab.id, newTab))
 
     yield put(

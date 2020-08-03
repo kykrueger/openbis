@@ -24,10 +24,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.fetchoptions.SpaceFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sample.SampleUtils;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.AbstractCachingTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.TranslationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.TranslationResults;
@@ -117,7 +117,7 @@ public class SpaceTranslator extends AbstractCachingTranslator<Long, Space, Spac
 
         if (fetchOptions.hasSamples())
         {
-            result.setSamples((List<Sample>) relations.get(ISpaceSampleTranslator.class, spaceId));
+            result.setSamples(SampleUtils.extractSamples(relations.get(ISpaceSampleTranslator.class, spaceId)));
             result.getFetchOptions().withSamplesUsing(fetchOptions.withSamples());
         }
 

@@ -56,6 +56,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.ProjectIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SpaceIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.managed_property.IManagedPropertyEvaluatorFactory;
+import ch.systemsx.cisd.openbis.generic.shared.managed_property.api.IEntityInformationProvider;
 
 /**
  * The only productive implementation of {@link IExperimentTable}.
@@ -80,10 +81,11 @@ public final class ExperimentTable extends AbstractBusinessObject implements IEx
 
     public ExperimentTable(final IDAOFactory daoFactory, final Session session,
             IRelationshipService relationshipService,
+            IEntityInformationProvider entityInformationProvider,
             IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory,
             DataSetTypeWithoutExperimentChecker dataSetTypeChecker)
     {
-        super(daoFactory, session, EntityKind.EXPERIMENT, managedPropertyEvaluatorFactory,
+        super(daoFactory, session, EntityKind.EXPERIMENT, entityInformationProvider, managedPropertyEvaluatorFactory,
                 dataSetTypeChecker, relationshipService);
     }
 

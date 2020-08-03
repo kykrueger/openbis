@@ -92,6 +92,7 @@ import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.id.project.ProjectIden
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.id.project.ProjectPermIdId;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.id.project.ProjectTechIdId;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.id.sample.ISampleId;
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.id.sample.ISampleId;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.id.sample.SampleIdentifierId;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.id.sample.SamplePermIdId;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.id.sample.SampleTechIdId;
@@ -366,6 +367,12 @@ public class Translator
             }
 
             ptInitializer.setDataType(propertyType.getDataType().getCode());
+            if (propertyType.getSampleType() != null) {
+                ptInitializer.setSampleTypeCode(propertyType.getSampleType().getCode());
+            }
+            if (propertyType.getMaterialType() != null) {
+                ptInitializer.setMaterialTypeCode(propertyType.getMaterialType().getCode());
+            }
             ptInitializer.setCode(propertyType.getCode());
             ptInitializer.setLabel(propertyType.getLabel());
             ptInitializer.setDescription(propertyType.getDescription());
@@ -851,6 +858,12 @@ public class Translator
             ptInitializer = new PropertyTypeInitializer();
         }
         ptInitializer.setDataType(propertyType.getDataType().getCode());
+        if (propertyType.getSampleType() != null) {
+            ptInitializer.setSampleTypeCode(propertyType.getSampleType().getCode());
+        }
+        if (propertyType.getMaterialType() != null) {
+            ptInitializer.setMaterialTypeCode(propertyType.getMaterialType().getCode());
+        }
         ptInitializer.setCode(propertyType.getCode());
         ptInitializer.setLabel(propertyType.getLabel());
         ptInitializer.setDescription(propertyType.getDescription());

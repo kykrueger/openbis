@@ -23,7 +23,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.search.PropertyTypeSear
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PEMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 
 import java.util.Collection;
@@ -35,13 +35,13 @@ import java.util.Set;
  * 
  * @author Viktor Kovtun
  */
-public class PropertyTypeSearchManager extends AbstractSearchManager<PropertyTypeSearchCriteria, PropertyType, Long>
+public class PropertyTypeSearchManager extends AbstractLocalSearchManager<PropertyTypeSearchCriteria, PropertyType, Long>
 {
 
     public PropertyTypeSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
-            final IID2PETranslator idsTranslator)
+            final IID2PEMapper<Long, Long> idsMapper)
     {
-        super(searchDAO, authProvider, idsTranslator);
+        super(searchDAO, authProvider, idsMapper);
     }
 
     @Override
@@ -52,7 +52,7 @@ public class PropertyTypeSearchManager extends AbstractSearchManager<PropertyTyp
 
     @Override
     public Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation,
-            final PropertyTypeSearchCriteria criteria, final SortOptions<PropertyType> sortOptions,
+            final PropertyTypeSearchCriteria criteria,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
         return super.searchForIDs(userId, authorisationInformation, criteria, idsColumnName, TableMapper.PROPERTY_TYPE);

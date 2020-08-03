@@ -4,7 +4,10 @@ import { connect } from 'react-redux'
 import { withStyles } from '@material-ui/core/styles'
 import { Resizable } from 're-resizable'
 import ComponentContext from '@src/js/components/common/ComponentContext.js'
+import Container from '@src/js/components/common/form/Container.jsx'
 import Loading from '@src/js/components/common/loading/Loading.jsx'
+import Message from '@src/js/components/common/form/Message.jsx'
+import UnsavedChangesDialog from '@src/js/components/common/dialog/UnsavedChangesDialog.jsx'
 import logger from '@src/js/common/logger.js'
 
 import TypeFormController from './TypeFormController.js'
@@ -19,13 +22,13 @@ const styles = theme => ({
   container: {
     height: '100%',
     display: 'flex',
-    flexDirection: 'row'
+    flexDirection: 'column'
   },
   content: {
     display: 'flex',
-    flexDirection: 'column',
-    height: '100%',
-    flex: '1 1 auto'
+    flexDirection: 'row',
+    flex: '1 1 auto',
+    overflow: 'auto'
   },
   preview: {
     height: '100%',
@@ -37,11 +40,11 @@ const styles = theme => ({
   buttons: {
     flex: '0 0 auto',
     borderWidth: '1px 0px 0px 0px',
-    borderColor: theme.palette.background.secondary,
+    borderColor: theme.palette.border.primary,
     borderStyle: 'solid'
   },
   parameters: {
-    backgroundColor: theme.palette.action.selected,
+    borderLeft: `1px solid ${theme.palette.border.primary}`,
     height: '100%',
     overflow: 'auto',
     flex: '0 0 auto'
@@ -70,12 +73,22 @@ class TypeForm extends React.PureComponent {
   render() {
     logger.log(logger.DEBUG, 'TypeForm.render')
 
-    const { loading, type } = this.state
+    const { loaded, loading } = this.state
 
-    return <Loading loading={loading}>{!!type && this.doRender()}</Loading>
+    return <Loading loading={loading}>{loaded && this.doRender()}</Loading>
   }
 
   doRender() {
+    const { type } = this.state
+
+    if (type) {
+      return this.doRenderExisting()
+    } else {
+      return this.doRenderNonExistent()
+    }
+  }
+
+  doRenderExisting() {
     let { controller } = this
 
     let {
@@ -84,10 +97,13 @@ class TypeForm extends React.PureComponent {
       sections,
       selection,
       removePropertyDialogOpen,
-      removeSectionDialogOpen
+      removeSectionDialogOpen,
+      unsavedChangesDialogOpen,
+      changed,
+      mode
     } = this.state
 
-    let { classes } = this.props
+    let { object, classes } = this.props
 
     return (
       <div className={classes.container}>
@@ -99,64 +115,84 @@ class TypeForm extends React.PureComponent {
               properties={properties}
               sections={sections}
               selection={selection}
+              mode={mode}
               onOrderChange={controller.handleOrderChange}
               onSelectionChange={controller.handleSelectionChange}
             />
           </div>
-          <div className={classes.buttons}>
-            <TypeFormButtons
-              onAddSection={controller.handleAddSection}
-              onAddProperty={controller.handleAddProperty}
-              onRemove={controller.handleRemove}
-              onSave={controller.handleSave}
-              selection={selection}
-            />
-            <TypeFormDialogRemoveSection
-              open={removeSectionDialogOpen}
-              selection={selection}
-              sections={sections}
-              onConfirm={controller.handleRemoveConfirm}
-              onCancel={controller.handleRemoveCancel}
-            />
-            <TypeFormDialogRemoveProperty
-              open={removePropertyDialogOpen}
-              selection={selection}
-              properties={properties}
-              onConfirm={controller.handleRemoveConfirm}
-              onCancel={controller.handleRemoveCancel}
-            />
-          </div>
+          <Resizable
+            defaultSize={{
+              width: 400,
+              height: 'auto'
+            }}
+            enable={{
+              left: true,
+              top: false,
+              right: false,
+              bottom: false,
+              topRight: false,
+              bottomRight: false,
+              bottomLeft: false,
+              topLeft: false
+            }}
+          >
+            <div className={classes.parameters}>
+              <TypeFormParameters
+                controller={controller}
+                type={type}
+                properties={properties}
+                sections={sections}
+                selection={selection}
+                mode={mode}
+                onChange={controller.handleChange}
+                onSelectionChange={controller.handleSelectionChange}
+                onBlur={controller.handleBlur}
+              />
+            </div>
+          </Resizable>
         </div>
-        <Resizable
-          defaultSize={{
-            width: 400,
-            height: 'auto'
-          }}
-          enable={{
-            left: true,
-            top: false,
-            right: false,
-            bottom: false,
-            topRight: false,
-            bottomRight: false,
-            bottomLeft: false,
-            topLeft: false
-          }}
-        >
-          <div className={classes.parameters}>
-            <TypeFormParameters
-              controller={controller}
-              type={type}
-              properties={properties}
-              sections={sections}
-              selection={selection}
-              onChange={controller.handleChange}
-              onSelectionChange={controller.handleSelectionChange}
-              onBlur={controller.handleBlur}
-            />
-          </div>
-        </Resizable>
+        <div className={classes.buttons}>
+          <TypeFormButtons
+            onAddSection={controller.handleAddSection}
+            onAddProperty={controller.handleAddProperty}
+            onRemove={controller.handleRemove}
+            onEdit={controller.handleEdit}
+            onSave={controller.handleSave}
+            onCancel={controller.handleCancel}
+            object={object}
+            selection={selection}
+            changed={changed}
+            mode={mode}
+          />
+          <TypeFormDialogRemoveSection
+            open={removeSectionDialogOpen}
+            selection={selection}
+            sections={sections}
+            onConfirm={controller.handleRemoveConfirm}
+            onCancel={controller.handleRemoveCancel}
+          />
+          <TypeFormDialogRemoveProperty
+            open={removePropertyDialogOpen}
+            selection={selection}
+            properties={properties}
+            onConfirm={controller.handleRemoveConfirm}
+            onCancel={controller.handleRemoveCancel}
+          />
+          <UnsavedChangesDialog
+            open={unsavedChangesDialogOpen}
+            onConfirm={controller.handleCancelConfirm}
+            onCancel={controller.handleCancelCancel}
+          />
+        </div>
       </div>
+    )
+  }
+
+  doRenderNonExistent() {
+    return (
+      <Container>
+        <Message type='info'>Object does not exist.</Message>
+      </Container>
     )
   }
 }

@@ -78,6 +78,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.CreateSamplesOpera
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdDeserializer;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
@@ -100,7 +101,7 @@ import ch.ethz.sis.openbis.generic.dssapi.v3.fastdownload.FastDownloadUtils;
  */
 public class ToStringCheck
 {
-    private static final Set<Class<?>> IGNORED_CLASSES = new HashSet<>(Arrays.asList(FastDownloadUtils.class));
+    private static final Set<Class<?>> IGNORED_CLASSES = new HashSet<>(Arrays.asList(FastDownloadUtils.class, SampleIdDeserializer.class));
 
     @Test
     public void testMissingToStringMethods() throws Exception

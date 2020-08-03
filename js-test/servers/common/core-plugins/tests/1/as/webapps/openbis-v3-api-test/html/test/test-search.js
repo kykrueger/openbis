@@ -9,14 +9,25 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				c.ok("Login");
 				return fSearch(facade).then(function(results) {
 					c.ok("Got results");
-					fCheck(facade, results.getObjects());
-					c.finish();
+					try {
+						fCheck(facade, results.getObjects());
+					} catch (e) {
+						if (fCheckError) {
+							fCheckError(e);
+						} else {
+							c.fail(e.message);
+						}
+						console.error("Exception.", e.message);
+						throw e;
+					} finally {
+						c.finish();
+					}
 				});
 			}).fail(function(error) {
 				if (fCheckError) {
 					fCheckError(error);
 				} else {
-					c.fail(error.message);
+					c.fail(error ? error.message : "Unknown error.");
 				}
 				c.finish();
 			});
@@ -805,6 +816,114 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testSearch(c, fSearch, fCheck);
 		});
 
+		QUnit.test("searchSamples() with code that is less than", function(assert) {
+			var c = new common(assert, openbis);
+			
+			var fSearch = function(facade) {
+				var criteria = new c.SampleSearchCriteria();
+				criteria.withCode().thatIsLessThan("A1");
+				return facade.searchSamples(criteria, c.createSampleFetchOptions());
+			}
+			
+			var fCheck = function(facade, samples) {
+				identifiers = c.extractIdentifiers(samples);
+				c.assertEqual(identifiers.length, 0);
+			}
+			
+			testSearch(c, fSearch, fCheck);
+		});
+		
+		QUnit.test("searchSamples() with code that is less than or equal to", function(assert) {
+			var c = new common(assert, openbis);
+			
+			var fSearch = function(facade) {
+				var criteria = new c.SampleSearchCriteria();
+				criteria.withCode().thatIsLessThanOrEqualTo("A1");
+				return facade.searchSamples(criteria, c.createSampleFetchOptions());
+			}
+			
+			var fCheck = function(facade, samples) {
+				identifiers = c.extractIdentifiers(samples);
+				c.assertEqual(identifiers.length, 4);
+				c.assertEqual(identifiers.toString(), "/PLATONIC/PLATE-1:A1,/PLATONIC/PLATE-2:A1,/TEST/PLATE-1A:A1,/TEST/PLATE-2:A1");
+			}
+			
+			testSearch(c, fSearch, fCheck);
+		});
+		
+		QUnit.test("searchSamples() with code that is greater than", function(assert) {
+			var c = new common(assert, openbis);
+			
+			var fSearch = function(facade) {
+				var criteria = new c.SampleSearchCriteria();
+				criteria.withCode().thatIsGreaterThan("TEST-SAMPLE-2-CHILD-2");
+				criteria.withCode().thatIsLessThan("V");
+				return facade.searchSamples(criteria, c.createSampleFetchOptions());
+			}
+			
+			var fCheck = function(facade, samples) {
+				identifiers = c.extractIdentifiers(samples);
+				c.assertEqual(identifiers.length, 1);
+				c.assertEqual(identifiers.toString(), "/TEST/TEST-SAMPLE-2-PARENT");
+			}
+			
+			testSearch(c, fSearch, fCheck);
+		});
+		
+		QUnit.test("searchSamples() with code that is greater than or equal to", function(assert) {
+			var c = new common(assert, openbis);
+			
+			var fSearch = function(facade) {
+				var criteria = new c.SampleSearchCriteria();
+				criteria.withCode().thatIsGreaterThanOrEqualTo("TEST-SAMPLE-2-CHILD-2");
+				criteria.withCode().thatIsLessThan("V");
+				return facade.searchSamples(criteria, c.createSampleFetchOptions());
+			}
+			
+			var fCheck = function(facade, samples) {
+				identifiers = c.extractIdentifiers(samples);
+				c.assertEqual(identifiers.length, 2);
+				c.assertEqual(identifiers.toString(), "/TEST/TEST-SAMPLE-2-CHILD-2,/TEST/TEST-SAMPLE-2-PARENT");
+			}
+			
+			testSearch(c, fSearch, fCheck);
+		});
+/*
+	    @Test
+	    public void testSearchWithCodeThatIsLessOrEqualTo()
+	    {
+	        SampleSearchCriteria criteria = new SampleSearchCriteria();
+	        criteria.withCode().thatIsLessThanOrEqualTo("3VCP5");
+	        testSearch(TEST_USER, criteria, "/CISD/3V-125", "/CISD/3V-126", "/CISD/3VCP5");
+	    }
+
+	    @Test
+	    public void testSearchWithCodeThatIsLessThan()
+	    {
+	        SampleSearchCriteria criteria = new SampleSearchCriteria();
+	        criteria.withCode().thatIsLessThan("3VCP5");
+	        testSearch(TEST_USER, criteria, "/CISD/3V-125", "/CISD/3V-126");
+	    }
+
+	    @Test
+	    public void testSearchWithCodeThatIsGreaterThanOrEqualTo()
+	    {
+	        SampleSearchCriteria criteria = new SampleSearchCriteria();
+	        criteria.withCode().thatIsGreaterThanOrEqualTo("WELL-A01");
+	        testSearch(TEST_USER, criteria, "/CISD/PLATE_WELLSEARCH:WELL-A01", "/CISD/PLATE_WELLSEARCH:WELL-A02");
+	    }
+
+	    @Test
+	    public void testSearchWithCodeThatIsGreaterThan()
+	    {
+	        SampleSearchCriteria criteria = new SampleSearchCriteria();
+	        criteria.withCode().thatIsGreaterThan("WELL-A01");
+	        testSearch(TEST_USER, criteria, "/CISD/PLATE_WELLSEARCH:WELL-A02");
+	    }
+
+*/
+		
+		
 		QUnit.test("searchSampleTypes()", function(assert) {
 			var c = new common(assert, openbis);
 
@@ -1523,65 +1642,99 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			
 			testSearch(c, fSearch, fCheck);
 		});
-		
+
 		QUnit.test("searchGlobally() withText thatContains", function(assert) {
 			var c = new common(assert, openbis);
 
 			var fSearch = function(facade) {
 				var criteria = new c.GlobalSearchCriteria();
 				criteria.withText().thatContains("20130412150049446-204 20130412140147735-20 20130417094936021-428 H2O");
-				return facade.searchGlobally(criteria, c.createGlobalSearchObjectFetchOptions());
+				var fo = c.createGlobalSearchObjectFetchOptions();
+				fo.withMatch();
+				return facade.searchGlobally(criteria, fo);
 			}
 
 			var fCheck = function(facade, objects) {
-				c.assertEqual(objects.length, 4);
-
-				var objectDataSet = objects[0];
-				c.assertEqual(objectDataSet.getObjectKind(), "DATA_SET", "ObjectKind");
-				c.assertEqual(objectDataSet.getObjectPermId().getPermId(), "20130417094936021-428", "ObjectPermId");
-				c.assertEqual(objectDataSet.getObjectIdentifier().getPermId(), "20130417094936021-428", "ObjectIdentifier");
-				c.assertContains(objectDataSet.getMatch(), "Perm ID: 20130417094936021-428", "Match");
-				c.assertContains(objectDataSet.getMatch(), "Location: 1FD3FF61-1576-4908-AE3D-296E60B4CE06/67/85/36/20130417094936021-428", "Match");
-				c.assertNotNull(objectDataSet.getScore(), "Score");
-				c.assertNull(objectDataSet.getExperiment(), "Experiment");
-				c.assertNull(objectDataSet.getSample(), "Sample");
-				c.assertEqual(objectDataSet.getDataSet().getCode(), "20130417094936021-428", "DataSet");
-				c.assertNull(objectDataSet.getMaterial(), "Material");
-
-				var objectExperiment = objects[1];
-				c.assertEqual(objectExperiment.getObjectKind(), "EXPERIMENT", "ObjectKind");
-				c.assertEqual(objectExperiment.getObjectPermId().getPermId(), "20130412150049446-204", "ObjectPermId");
-				c.assertEqual(objectExperiment.getObjectIdentifier().getIdentifier(), "/TEST/TEST-PROJECT/TEST-EXPERIMENT", "ObjectIdentifier");
-				c.assertEqual(objectExperiment.getMatch(), "Perm ID: 20130412150049446-204", "Match");
-				c.assertNotNull(objectExperiment.getScore(), "Score");
-				c.assertEqual(objectExperiment.getExperiment().getCode(), "TEST-EXPERIMENT", "Experiment");
-				c.assertNull(objectExperiment.getSample(), "Sample");
-				c.assertNull(objectExperiment.getDataSet(), "DataSet");
-				c.assertNull(objectExperiment.getMaterial(), "Material");
-
-				var objectSample = objects[2];
-				c.assertEqual(objectSample.getObjectKind(), "SAMPLE", "ObjectKind");
-				c.assertEqual(objectSample.getObjectPermId().getPermId(), "20130412140147735-20", "ObjectPermId");
-				c.assertEqual(objectSample.getObjectIdentifier().getIdentifier(), "/PLATONIC/PLATE-1", "ObjectIdentifier");
-				c.assertEqual(objectSample.getMatch(), "Perm ID: 20130412140147735-20", "Match");
-				c.assertNotNull(objectSample.getScore(), "Score");
-				c.assertNull(objectSample.getExperiment(), "Experiment");
-				c.assertEqual(objectSample.getSample().getCode(), "PLATE-1", "Sample");
-				c.assertNull(objectSample.getDataSet(), "DataSet");
-				c.assertNull(objectSample.getMaterial(), "Material");
-
-				var objectMaterial = objects[3];
-				c.assertEqual(objectMaterial.getObjectKind(), "MATERIAL", "ObjectKind");
-				c.assertEqual(objectMaterial.getObjectPermId().getCode(), "H2O", "ObjectPermId 1");
-				c.assertEqual(objectMaterial.getObjectPermId().getTypeCode(), "COMPOUND", "ObjectPermId 2");
-				c.assertEqual(objectMaterial.getObjectIdentifier().getCode(), "H2O", "ObjectIdentifier 1");
-				c.assertEqual(objectMaterial.getObjectIdentifier().getTypeCode(), "COMPOUND", "ObjectIdentifier 2");
-				c.assertEqual(objectMaterial.getMatch(), "Identifier: H2O (COMPOUND)", "Match");
-				c.assertNotNull(objectMaterial.getScore(), "Score");
-				c.assertNull(objectMaterial.getExperiment(), "Experiment");
-				c.assertNull(objectMaterial.getSample(), "Sample");
-				c.assertNull(objectMaterial.getDataSet(), "DataSet");
-				c.assertEqual(objectMaterial.getMaterial().getCode(), "H2O", "Material");
+				c.assertEqual(objects.length, 10);
+				var prepopulatedExperimentsCount = 0;
+				var prepopulatedSamplesCount = 0;
+                for (var oIdx = 0; oIdx < objects.length; oIdx++) {
+                    var result = objects[oIdx];
+					var match = result.getMatch();
+					switch (result.getObjectKind()) {
+                        case "DATA_SET":
+							var dataSetPermId = result.getObjectPermId().getPermId();
+							c.assertTrue(dataSetPermId === "20130417094936021-428"
+								|| dataSetPermId.startsWith("V3_DATA_SET_"), "DataSetPermId (" + dataSetPermId + ")");
+							c.assertEqual(result.getObjectIdentifier().getPermId(), dataSetPermId,
+								"ObjectIdentifier");
+							c.assertTrue(match === "Perm ID: " + dataSetPermId ||
+								match === "Property 'Test Property Type': 20130412140147735-20",
+								"Match (case DATA_SET). Actual value: " + match);
+                            c.assertNotNull(result.getScore(), "Score (case DATA_SET)");
+                            c.assertNull(result.getExperiment(), "Experiment (case DATA_SET)");
+                            c.assertNull(result.getSample(), "Sample (case DATA_SET)");
+                            c.assertEqual(result.getDataSet().getCode(), dataSetPermId, "DataSet (case DATA_SET)");
+                            c.assertNull(result.getMaterial(), "Material (case DATA_SET)");
+                        break;
+						case "EXPERIMENT":
+							var experimentPermId = result.getObjectPermId().getPermId();
+							if (experimentPermId === "20130412150049446-204") {
+								prepopulatedExperimentsCount++;
+							}
+                            c.assertTrue(result.getObjectIdentifier().getIdentifier() ===
+								"/TEST/TEST-PROJECT/TEST-EXPERIMENT" || result.getObjectIdentifier()
+									.getIdentifier().startsWith("/TEST/TEST-PROJECT/V3_EXPERIMENT_"),
+								"ObjectIdentifier");
+							c.assertTrue(match === "Perm ID: " + experimentPermId ||
+								match === "Property 'Test Property Type': 20130412140147735-20",
+								"Match (case EXPERIMENT). Actual value: " + match);
+                            c.assertNotNull(result.getScore(), "Score (case EXPERIMENT)");
+                            c.assertTrue(result.getExperiment().getCode() === "TEST-EXPERIMENT" ||
+								result.getExperiment().getCode().startsWith("V3_EXPERIMENT_"),
+								"Experiment (case EXPERIMENT)");
+                            c.assertNull(result.getSample(), "Sample (case EXPERIMENT)");
+                            c.assertNull(result.getDataSet(), "DataSet (case EXPERIMENT)");
+                            c.assertNull(result.getMaterial(), "Material (case EXPERIMENT)");
+                        break;
+                        case "SAMPLE":
+							var samplePermId = result.getObjectPermId().getPermId();
+							if (samplePermId === "20130412140147735-20") {
+								prepopulatedSamplesCount++;
+							}
+							c.assertTrue(result.getObjectIdentifier().getIdentifier() === "/PLATONIC/PLATE-1" ||
+								result.getObjectIdentifier().getIdentifier().startsWith("/TEST/V3_SAMPLE_"),
+								"ObjectIdentifier");
+							c.assertTrue(match === "Perm ID: " + samplePermId ||
+								match === "Property 'Test Property Type': 20130412140147735-20",
+								"Match (case SAMPLE). Actual value: " +
+								match);
+                            c.assertNotNull(result.getScore(), "Score (case SAMPLE)");
+                            c.assertNull(result.getExperiment(), "Experiment (case SAMPLE)");
+                            c.assertTrue(result.getSample().getCode() === "PLATE-1" ||
+								result.getSample().getCode().startsWith("V3_SAMPLE_"), "Sample (case SAMPLE)");
+                            c.assertNull(result.getDataSet(), "DataSet (case SAMPLE)");
+                            c.assertNull(result.getMaterial(), "Material (case SAMPLE)");
+                        break;
+                        case "MATERIAL":
+							c.assertEqual(result.getObjectPermId().getCode(), "H2O", "ObjectPermId 1 (case MATERIAL)");
+                            c.assertEqual(result.getObjectPermId().getTypeCode(), "COMPOUND",
+								"ObjectPermId 2 (case MATERIAL)");
+                            c.assertEqual(result.getObjectIdentifier().getCode(), "H2O",
+								"ObjectIdentifier 1 (case MATERIAL)");
+                            c.assertEqual(result.getObjectIdentifier().getTypeCode(), "COMPOUND",
+								"ObjectIdentifier 2 (case MATERIAL)");
+                            c.assertEqual(match, "Identifier: H2O (COMPOUND)", "Match (case MATERIAL)");
+                            c.assertNotNull(result.getScore(), "Score (case MATERIAL)");
+                            c.assertNull(result.getExperiment(), "Experiment (case MATERIAL)");
+                            c.assertNull(result.getSample(), "Sample (case MATERIAL)");
+                            c.assertNull(result.getDataSet(), "DataSet (case MATERIAL)");
+                            c.assertEqual(result.getMaterial().getCode(), "H2O", "Material (case MATERIAL)");
+                        break;
+				    }
+				}
+				c.assertEqual(prepopulatedExperimentsCount, 1, "ExperimentPermId");
+				c.assertEqual(prepopulatedSamplesCount, 1, "SamplePermId");
 			}
 
 			testSearch(c, fSearch, fCheck);
@@ -1593,7 +1746,9 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			var fSearch = function(facade) {
 				var criteria = new c.GlobalSearchCriteria();
 				criteria.withText().thatContainsExactly("407 description");
-				return facade.searchGlobally(criteria, c.createGlobalSearchObjectFetchOptions());
+				var fo = c.createGlobalSearchObjectFetchOptions();
+				fo.withMatch();
+				return facade.searchGlobally(criteria, fo);
 			}
 
 			var fCheck = function(facade, objects) {
@@ -1621,50 +1776,36 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				var criteria = new c.GlobalSearchCriteria();
 				criteria.withText().thatContains("20130412150049446-204 20130412140147735-20 20130417094936021-428 H2O");
 				criteria.withObjectKind().thatIn([ "EXPERIMENT" ]);
-				return facade.searchGlobally(criteria, c.createGlobalSearchObjectFetchOptions());
+				var fo = c.createGlobalSearchObjectFetchOptions();
+				fo.withMatch();
+				return facade.searchGlobally(criteria, fo);
 			}
 
 			var fCheck = function(facade, objects) {
-				c.assertEqual(objects.length, 1);
+				c.assertEqual(objects.length, 3);
 
-				var object0 = objects[0];
-				c.assertEqual(object0.getObjectKind(), "EXPERIMENT", "ObjectKind");
-				c.assertEqual(object0.getObjectPermId().getPermId(), "20130412150049446-204", "ObjectPermId");
-				c.assertEqual(object0.getObjectIdentifier().getIdentifier(), "/TEST/TEST-PROJECT/TEST-EXPERIMENT", "ObjectIdentifier");
-				c.assertEqual(object0.getMatch(), "Perm ID: 20130412150049446-204", "Match");
-				c.assertNotNull(object0.getScore(), "Score");
-				c.assertEqual(object0.getExperiment().getCode(), "TEST-EXPERIMENT", "Experiment");
-				c.assertNull(object0.getSample(), "Sample");
-				c.assertNull(object0.getDataSet(), "DataSet");
-				c.assertNull(object0.getMaterial(), "Material");
-			}
-
-			testSearch(c, fSearch, fCheck);
-		});
-
-		QUnit.test("searchGlobally() withWildCards", function(assert) {
-			var c = new common(assert, openbis);
-
-			var fSearch = function(facade) {
-				var criteria = new c.GlobalSearchCriteria();
-				criteria.withText().thatContains("256x25*");
-				criteria.withWildCards();
-				return facade.searchGlobally(criteria, c.createGlobalSearchObjectFetchOptions());
-			}
-
-			var fCheck = function(facade, objects) {
-				c.assertEqual(objects.length, 1);
-
-				var object0 = objects[0];
-				c.assertEqual(object0.getObjectKind(), "DATA_SET", "ObjectKind");
-				c.assertEqual(object0.getObjectPermId().getPermId(), "20130412142942295-198", "ObjectPermId");
-				c.assertEqual(object0.getObjectIdentifier().getPermId(), "20130412142942295-198", "ObjectIdentifier");
-				c.assertEqual(object0.getMatch(), "Property 'Resolution': 256x256", "Match");
-				c.assertNotNull(object0.getScore(), "Score");
-				c.assertEqual(object0.getDataSet().getCode(), "20130412142942295-198", "DataSet");
-				c.assertNull(object0.getExperiment(), "Experiment");
-				c.assertNull(object0.getSample(), "Sample");
-				c.assertNull(object0.getMaterial(), "Material");
+				var prepopulatedExperimentsCount = 0;
+				for (var i = 0; i < objects.length; i++) {
+					var objectExperiment = objects[i];
+					var experimentPermId = objectExperiment.getObjectPermId().getPermId();
+					var match = objectExperiment.getMatch();
+					c.assertEqual(objectExperiment.getObjectKind(), "EXPERIMENT", "ObjectKind");
+					if (objectExperiment.getObjectKind === "20130412150049446-204") {
+						prepopulatedExperimentsCount++;
+					}
+					c.assertTrue(objectExperiment.getObjectIdentifier().getIdentifier() ===
+						"/TEST/TEST-PROJECT/TEST-EXPERIMENT" || objectExperiment.getObjectIdentifier().getIdentifier()
+							.startsWith("/TEST/TEST-PROJECT/V3_EXPERIMENT_"), "ObjectIdentifier");
+					c.assertTrue(match === "Perm ID: " + experimentPermId ||
+						match === "Property 'Test Property Type': 20130412140147735-20",
+						"Match. Actual value: " + match);
+					c.assertNotNull(objectExperiment.getScore(), "Score");
+					c.assertTrue(objectExperiment.getExperiment().getCode() === "TEST-EXPERIMENT" ||
+						objectExperiment.getExperiment().getCode().startsWith("V3_EXPERIMENT_"), "Experiment");
+					c.assertNull(objectExperiment.getSample(), "Sample");
+					c.assertNull(objectExperiment.getDataSet(), "DataSet");
+					c.assertNull(objectExperiment.getMaterial(), "Material");
+				}
 			}
 
 			testSearch(c, fSearch, fCheck);

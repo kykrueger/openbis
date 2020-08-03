@@ -1,5 +1,6 @@
 export default class TypeFormControllerAddSection {
   constructor(controller) {
+    this.controller = controller
     this.context = controller.context
   }
 
@@ -9,7 +10,7 @@ export default class TypeFormControllerAddSection {
     let newSections = Array.from(sections)
     let newSection = {
       id: 'section-' + sectionsCounter++,
-      name: null,
+      name: this._createField(),
       properties: []
     }
     let newSelection = {
@@ -43,5 +44,16 @@ export default class TypeFormControllerAddSection {
       sectionsCounter,
       selection: newSelection
     }))
+
+    this.controller.changed(true)
+  }
+
+  _createField(params = {}) {
+    return {
+      value: null,
+      visible: true,
+      enabled: true,
+      ...params
+    }
   }
 }

@@ -18,11 +18,13 @@ var JExcelEditorManager = new function() {
                     }
                 }
                 // Save Editor
+                var headers = jExcelEditor.getHeaders(true);
                 var data = jExcelEditor.getData();
                 var style = jExcelEditor.getStyle();
                 var meta = jExcelEditor.getMeta();
                 var width = jExcelEditor.getWidth();
                 var jExcelEditorValue = {
+                    headers : headers,
                     data : data,
                     style : style,
                     meta : meta,
@@ -118,6 +120,7 @@ var JExcelEditorManager = new function() {
 	this.createField = function($container, mode, propertyCode, entity) {
 	    $container.attr('style', 'width: 100%; height: 450px; overflow-y: scroll; overflow-x: scroll;');
 
+        var headers = null;
 	    var data = [];
 	    var style = null;
 	    var meta = null;
@@ -130,6 +133,7 @@ var JExcelEditorManager = new function() {
                 jExcelEditorValue = JSON.parse(window.atob(jExcelEditorValueAsStringNoTags));
 	        }
 	        if(jExcelEditorValue) {
+	            headers = jExcelEditorValue.headers;
 	            data = jExcelEditorValue.data;
 	            style = jExcelEditorValue.style;
 	            meta = jExcelEditorValue.meta;
@@ -146,10 +150,15 @@ var JExcelEditorManager = new function() {
                     editable : mode !== FormMode.VIEW,
                     minDimensions:[30, 30],
                     toolbar: null,
+                    onchangeheader: null,
                     onchange: null,
                     onchangestyle: null,
                     onchangemeta: null
         };
+
+        if(headers) {
+            options.colHeaders = headers;
+        }
 
         if(width) {
             options.colWidths = width;
@@ -170,6 +179,7 @@ var JExcelEditorManager = new function() {
             }
         } else {
             var onChangeHandler = this.getOnChange(guid, propertyCode, entity);
+            options.onchangeheader = onChangeHandler;
             options.onchange = onChangeHandler;
             options.onchangestyle = onChangeHandler;
             options.onchangemeta = onChangeHandler;

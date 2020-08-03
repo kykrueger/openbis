@@ -1,6 +1,4 @@
 import autoBind from 'auto-bind'
-import store from '@src/js/store/store.js'
-import actions from '@src/js/store/actions/actions.js'
 import dto from './dto.js'
 
 class Facade {
@@ -71,6 +69,10 @@ class Facade {
 
   searchAuthorizationGroups(criteria, fo) {
     return this.promise(this.v3.searchAuthorizationGroups(criteria, fo))
+  }
+
+  searchPropertyAssignments(criteria, fo) {
+    return this.promise(this.v3.searchPropertyAssignments(criteria, fo))
   }
 
   getSampleTypes(ids, fo) {
@@ -158,10 +160,6 @@ class Facade {
         }
       )
     })
-  }
-
-  catch(error) {
-    store.dispatch(actions.errorChange(error))
   }
 }
 

@@ -616,11 +616,22 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		// PREVIEW IMAGE
 		//
 		if(this._sampleFormModel.mode !== FormMode.CREATE) {
+
+            var maxWidth = Math.floor(LayoutManager.getExpectedContentWidth() / 3);
+            var maxHeight = Math.floor(LayoutManager.getExpectedContentHeight() / 3);
+
+            var previewStyle = null;
+            if (maxHeight < maxWidth) {
+                previewStyle = "max-height:" + maxHeight + "px; display:none;";
+            } else {
+                previewStyle = "max-width:" + maxWidth + "px; display:none;";
+            }
+
 			var $previewImage = $("<img>", { 'data-preview-loaded' : 'false',
 											 'class' : 'zoomableImage',
 											 'id' : 'preview-image',
 											 'src' : './img/image_loading.gif',
-											 'style' : 'max-width:300px; display:none;'
+											 'style' : previewStyle
 											});
 			$previewImage.click(function() {
 				Util.showImage($("#preview-image").attr("src"));
@@ -795,6 +806,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 					                $component = FormUtil.activateRichTextProperties($component, changeEvent(propertyType), propertyType, value, false);
 					            } else {
 					                alert("Word Processor only works with MULTILINE_VARCHAR data type, " + propertyType.code + " is " + propertyType.dataType + ".");
+					                $component.change(changeEvent(propertyType));
 					            }
 					            break;
 					        case 'Spreadsheet':
@@ -804,6 +816,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
                                     $component = $jexcelContainer;
 					            } else {
 					                alert("Spreadsheet only works with XML data type, " + propertyType.code + " is " + propertyType.dataType + ".");
+					                $component.change(changeEvent(propertyType));
 					            }
 					            break;
 					    }
@@ -847,6 +860,9 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		$identificationInfo.append($legend);
 		$identificationInfo.append($fieldset);
 
+        if (this._sampleFormModel.mode !== FormMode.CREATE) {
+            $fieldset.append(FormUtil.getFieldForLabelWithText("PermId", this._sampleFormModel.sample.permId));
+		}
 		if(this._sampleFormModel.mode !== FormMode.CREATE) {
 			$fieldset.append(FormUtil.getFieldForComponentWithLabel(entityPath, "Path"));
 		}
@@ -925,13 +941,15 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 			parentsTitle = sampleTypeDefinitionsExtension["SAMPLE_PARENTS_TITLE"];
 		}
 		var parentsAnyTypeDisabled = sampleTypeDefinitionsExtension && sampleTypeDefinitionsExtension["SAMPLE_PARENTS_ANY_TYPE_DISABLED"];
+		var annotations = this._sampleFormController.getAnnotationsState('PARENTS');
 		this._sampleFormModel.sampleLinksParents = new LinksController(parentsTitle,
 																			requiredParents,
 																			isDisabled,
 																			currentParentsLinks,
 																			this._sampleFormModel.mode === FormMode.CREATE || this._sampleFormModel.mode === FormMode.EDIT,
 																			parentsAnyTypeDisabled,
-																			sampleTypeCode);
+																			sampleTypeCode,
+																			annotations);
 		if (!sampleTypeDefinitionsExtension || !sampleTypeDefinitionsExtension["SAMPLE_PARENTS_DISABLED"]) {
 			this._sampleFormModel.sampleLinksParents.init($sampleParentsWidget);
 		}
@@ -977,13 +995,15 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		}
 		var isDisabled = this._sampleFormModel.mode === FormMode.VIEW;
 		var childrenAnyTypeDisabled = sampleTypeDefinitionsExtension && sampleTypeDefinitionsExtension["SAMPLE_CHILDREN_ANY_TYPE_DISABLED"];
+		var annotations = this._sampleFormController.getAnnotationsState('CHILDREN');
 		this._sampleFormModel.sampleLinksChildren = new LinksController(childrenTitle,
 															requiredChildren,
 															isDisabled,
 															currentChildrenLinksNoStorage,
 															this._sampleFormModel.mode === FormMode.CREATE,
 															childrenAnyTypeDisabled,
-															sampleTypeCode);
+															sampleTypeCode,
+															annotations);
 		if(!sampleTypeDefinitionsExtension || !sampleTypeDefinitionsExtension["SAMPLE_CHILDREN_DISABLED"]) {
 			this._sampleFormModel.sampleLinksChildren.init($sampleChildrenWidget);
 		}

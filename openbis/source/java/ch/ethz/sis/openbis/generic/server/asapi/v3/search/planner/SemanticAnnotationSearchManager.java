@@ -23,7 +23,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.search.Semant
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PEMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 
 import java.util.Collection;
@@ -36,13 +36,13 @@ import java.util.Set;
  * @author Viktor Kovtun
  */
 public class SemanticAnnotationSearchManager extends
-        AbstractSearchManager<SemanticAnnotationSearchCriteria, SemanticAnnotation, Long>
+        AbstractLocalSearchManager<SemanticAnnotationSearchCriteria, SemanticAnnotation, Long>
 {
 
     public SemanticAnnotationSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
-            final IID2PETranslator idsTranslator)
+            final IID2PEMapper<Long, Long> idsMapper)
     {
-        super(searchDAO, authProvider, idsTranslator);
+        super(searchDAO, authProvider, idsMapper);
     }
 
     @Override
@@ -54,7 +54,7 @@ public class SemanticAnnotationSearchManager extends
     @Override
     public Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation,
             final SemanticAnnotationSearchCriteria criteria,
-            final SortOptions<SemanticAnnotation> sortOptions, final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
+            final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
         return super.searchForIDs(userId, authorisationInformation, criteria, idsColumnName, TableMapper.SEMANTIC_ANNOTATION);
     }

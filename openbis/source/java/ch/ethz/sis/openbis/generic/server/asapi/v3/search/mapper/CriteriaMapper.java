@@ -1,3 +1,19 @@
+/*
+ * Copyright 2016 ETH Zuerich, CISD
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.*;
@@ -7,6 +23,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSear
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.NoExperimentSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.search.LabelSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchTextCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.*;
@@ -19,6 +37,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.search.Semant
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.search.NoSpaceSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.search.SpaceSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.search.TagSearchCriteria;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.IGlobalSearchManager;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ILocalSearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DataSetKindSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.*;
@@ -35,7 +55,7 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.*;
  */
 public class CriteriaMapper {
 
-    private static final Map<Class<? extends ISearchCriteria>, ISearchManager<ISearchCriteria, ?, ?>>
+    private static final Map<Class<? extends ISearchCriteria>, ISearchManager>
             CRITERIA_TO_MANAGER_MAP = new HashMap<>();
 
     /**
@@ -48,7 +68,7 @@ public class CriteriaMapper {
     /**
      * This map is used for the special case when EntityTypeSearchCriteria should be substituted by a concrete criterion.
      */
-    private static final Map<EntityKind, ISearchManager<ISearchCriteria, ?, ?>> ENTITY_KIND_TO_MANAGER_MAP =
+    private static final Map<EntityKind, ILocalSearchManager<ISearchCriteria, ?, ?>> ENTITY_KIND_TO_MANAGER_MAP =
             new EnumMap<>(EntityKind.class);
 
     /**
@@ -178,14 +198,14 @@ public class CriteriaMapper {
     @SuppressWarnings("unchecked")
     public static void initCriteriaToManagerMap(final ApplicationContext applicationContext)
     {
-        final ISearchManager<ISearchCriteria, ?, ?> sampleTypeSearchManager = applicationContext.getBean("sample-type-search-manager",
-                ISearchManager.class);
-        final ISearchManager<ISearchCriteria, ?, ?> experimentTypeSearchManager = applicationContext.getBean("experiment-type-search-manager",
-                ISearchManager.class);
-        final ISearchManager<ISearchCriteria, ?, ?> materialTypeSearchManager = applicationContext.getBean("material-type-search-manager",
-                ISearchManager.class);
-        final ISearchManager<ISearchCriteria, ?, ?> dataSetTypeSearchManager = applicationContext.getBean("data-set-type-search-manager",
-                ISearchManager.class);
+        final ILocalSearchManager<ISearchCriteria, ?, ?> sampleTypeSearchManager = applicationContext.getBean("sample-type-search-manager",
+                ILocalSearchManager.class);
+        final ILocalSearchManager<ISearchCriteria, ?, ?> experimentTypeSearchManager = applicationContext.getBean("experiment-type-search-manager",
+                ILocalSearchManager.class);
+        final ILocalSearchManager<ISearchCriteria, ?, ?> materialTypeSearchManager = applicationContext.getBean("material-type-search-manager",
+                ILocalSearchManager.class);
+        final ILocalSearchManager<ISearchCriteria, ?, ?> dataSetTypeSearchManager = applicationContext.getBean("data-set-type-search-manager",
+                ILocalSearchManager.class);
 
         ENTITY_KIND_TO_MANAGER_MAP.put(EntityKind.SAMPLE, sampleTypeSearchManager);
         ENTITY_KIND_TO_MANAGER_MAP.put(EntityKind.EXPERIMENT, experimentTypeSearchManager);
@@ -193,52 +213,54 @@ public class CriteriaMapper {
         ENTITY_KIND_TO_MANAGER_MAP.put(EntityKind.MATERIAL, materialTypeSearchManager);
 
         CRITERIA_TO_MANAGER_MAP.put(ContentCopySearchCriteria.class,
-                applicationContext.getBean("content-copy-search-manager", ISearchManager.class));
+                applicationContext.getBean("content-copy-search-manager", ILocalSearchManager.class));
         CRITERIA_TO_MANAGER_MAP.put(DataSetSearchCriteria.class,
-                applicationContext.getBean("data-set-search-manager", ISearchManager.class));
+                applicationContext.getBean("data-set-search-manager", ILocalSearchManager.class));
         CRITERIA_TO_MANAGER_MAP.put(DataSetTypeSearchCriteria.class, dataSetTypeSearchManager);
         CRITERIA_TO_MANAGER_MAP.put(ExperimentSearchCriteria.class,
-                applicationContext.getBean("experiment-search-manager", ISearchManager.class));
+                applicationContext.getBean("experiment-search-manager", ILocalSearchManager.class));
         CRITERIA_TO_MANAGER_MAP.put(ExperimentTypeSearchCriteria.class, experimentTypeSearchManager);
         CRITERIA_TO_MANAGER_MAP.put(SampleSearchCriteria.class,
-                applicationContext.getBean("sample-search-manager", ISearchManager.class));
+                applicationContext.getBean("sample-search-manager", ILocalSearchManager.class));
         CRITERIA_TO_MANAGER_MAP.put(SampleTypeSearchCriteria.class, sampleTypeSearchManager);
         CRITERIA_TO_MANAGER_MAP.put(SampleContainerSearchCriteria.class,
-                applicationContext.getBean("sample-container-search-manager", ISearchManager.class));
+                applicationContext.getBean("sample-container-search-manager", ILocalSearchManager.class));
         CRITERIA_TO_MANAGER_MAP.put(RegistratorSearchCriteria.class,
-                applicationContext.getBean("person-search-manager", ISearchManager.class));
+                applicationContext.getBean("person-search-manager", ILocalSearchManager.class));
         CRITERIA_TO_MANAGER_MAP.put(ModifierSearchCriteria.class,
-                applicationContext.getBean("person-search-manager", ISearchManager.class));
+                applicationContext.getBean("person-search-manager", ILocalSearchManager.class));
         CRITERIA_TO_MANAGER_MAP.put(ProjectSearchCriteria.class,
-                applicationContext.getBean("project-search-manager", ISearchManager.class));
+                applicationContext.getBean("project-search-manager", ILocalSearchManager.class));
         CRITERIA_TO_MANAGER_MAP.put(SpaceSearchCriteria.class,
-                applicationContext.getBean("space-search-manager", ISearchManager.class));
+                applicationContext.getBean("space-search-manager", ILocalSearchManager.class));
         CRITERIA_TO_MANAGER_MAP.put(TagSearchCriteria.class,
-                applicationContext.getBean("tag-search-manager", ISearchManager.class));
+                applicationContext.getBean("tag-search-manager", ILocalSearchManager.class));
         CRITERIA_TO_MANAGER_MAP.put(SemanticAnnotationSearchCriteria.class,
-                applicationContext.getBean("semantic-annotation-search-manager", ISearchManager.class));
+                applicationContext.getBean("semantic-annotation-search-manager", ILocalSearchManager.class));
         CRITERIA_TO_MANAGER_MAP.put(PropertyAssignmentSearchCriteria.class,
-                applicationContext.getBean("property-assignment-search-manager", ISearchManager.class));
+                applicationContext.getBean("property-assignment-search-manager", ILocalSearchManager.class));
         CRITERIA_TO_MANAGER_MAP.put(PropertyTypeSearchCriteria.class,
-                applicationContext.getBean("property-type-search-manager", ISearchManager.class));
+                applicationContext.getBean("property-type-search-manager", ILocalSearchManager.class));
         CRITERIA_TO_MANAGER_MAP.put(LinkedDataSearchCriteria.class,
-                applicationContext.getBean("linked-data-set-kind-search-manager", ISearchManager.class));
+                applicationContext.getBean("linked-data-set-kind-search-manager", ILocalSearchManager.class));
         CRITERIA_TO_MANAGER_MAP.put(PhysicalDataSearchCriteria.class,
-                applicationContext.getBean("physical-data-set-kind-search-manager", ISearchManager.class));
+                applicationContext.getBean("physical-data-set-kind-search-manager", ILocalSearchManager.class));
         CRITERIA_TO_MANAGER_MAP.put(ExternalDmsSearchCriteria.class,
-                applicationContext.getBean("external-dms-search-manager", ISearchManager.class));
+                applicationContext.getBean("external-dms-search-manager", ILocalSearchManager.class));
         CRITERIA_TO_MANAGER_MAP.put(FileFormatTypeSearchCriteria.class,
-                applicationContext.getBean("ffty-search-manager", ISearchManager.class));
+                applicationContext.getBean("ffty-search-manager", ILocalSearchManager.class));
         CRITERIA_TO_MANAGER_MAP.put(LocatorTypeSearchCriteria.class,
-                applicationContext.getBean("locator-type-search-manager", ISearchManager.class));
+                applicationContext.getBean("locator-type-search-manager", ILocalSearchManager.class));
         CRITERIA_TO_MANAGER_MAP.put(StorageFormatSearchCriteria.class,
-                applicationContext.getBean("storage-format-search-manager", ISearchManager.class));
+                applicationContext.getBean("storage-format-search-manager", ILocalSearchManager.class));
         CRITERIA_TO_MANAGER_MAP.put(MaterialSearchCriteria.class,
-                applicationContext.getBean("material-search-manager", ISearchManager.class));
+                applicationContext.getBean("material-search-manager", ILocalSearchManager.class));
         CRITERIA_TO_MANAGER_MAP.put(MaterialTypeSearchCriteria.class, materialTypeSearchManager);
+        CRITERIA_TO_MANAGER_MAP.put(GlobalSearchCriteria.class,
+                applicationContext.getBean("global-search-manager", IGlobalSearchManager.class));
     }
 
-    public static Map<Class<? extends ISearchCriteria>, ISearchManager<ISearchCriteria, ?, ?>> getCriteriaToManagerMap()
+    public static Map<Class<? extends ISearchCriteria>, ISearchManager> getCriteriaToManagerMap()
     {
         return CRITERIA_TO_MANAGER_MAP;
     }
@@ -259,7 +281,7 @@ public class CriteriaMapper {
         return PARENT_CHILD_CRITERIA_TO_CHILD_SELECT_ID_MAP;
     }
 
-    public static Map<EntityKind, ISearchManager<ISearchCriteria, ?, ?>> getEntityKindToManagerMap() {
+    public static Map<EntityKind, ILocalSearchManager<ISearchCriteria, ?, ?>> getEntityKindToManagerMap() {
         return ENTITY_KIND_TO_MANAGER_MAP;
     }
 
