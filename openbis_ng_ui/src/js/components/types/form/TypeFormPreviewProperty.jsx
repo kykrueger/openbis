@@ -230,7 +230,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
   }
 
   renderVarcharProperty() {
-    const { property } = this.props
+    const { property, mode } = this.props
     const { values } = this.state
     return (
       <TextField
@@ -244,6 +244,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
         error={this.getError()}
         styles={this.getStyles()}
         mode='edit'
+        disabled={mode !== 'edit'}
         onClick={this.handlePropertyClick}
         onChange={this.handleChange}
       />
@@ -251,7 +252,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
   }
 
   renderNumberProperty() {
-    const { property } = this.props
+    const { property, mode } = this.props
     const { values } = this.state
     return (
       <TextField
@@ -265,6 +266,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
         error={this.getError()}
         styles={this.getStyles()}
         mode='edit'
+        disabled={mode !== 'edit'}
         onClick={this.handlePropertyClick}
         onChange={this.handleChange}
       />
@@ -272,7 +274,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
   }
 
   renderBooleanProperty() {
-    const { property } = this.props
+    const { property, mode } = this.props
     const { values } = this.state
     return (
       <div>
@@ -286,6 +288,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
           error={this.getError()}
           styles={this.getStyles()}
           mode='edit'
+          disabled={mode !== 'edit'}
           onClick={this.handlePropertyClick}
           onChange={this.handleChange}
         />
@@ -294,7 +297,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
   }
 
   renderVocabularyProperty() {
-    const { property } = this.props
+    const { property, mode } = this.props
     const { terms, values } = this.state
 
     let options = []
@@ -319,6 +322,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
         error={this.getError()}
         styles={this.getStyles()}
         mode='edit'
+        disabled={mode !== 'edit'}
         onClick={this.handlePropertyClick}
         onChange={this.handleChange}
       />
@@ -326,7 +330,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
   }
 
   renderMaterialProperty() {
-    const { property } = this.props
+    const { property, mode } = this.props
     const { materials, values } = this.state
 
     let options = []
@@ -350,6 +354,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
         error={this.getError()}
         styles={this.getStyles()}
         mode='edit'
+        disabled={mode !== 'edit'}
         onClick={this.handlePropertyClick}
         onChange={this.handleChange}
       />

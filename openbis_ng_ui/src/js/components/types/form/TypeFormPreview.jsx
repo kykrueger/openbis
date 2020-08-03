@@ -73,12 +73,12 @@ class TypeFormPreview extends React.PureComponent {
   render() {
     logger.log(logger.DEBUG, 'TypeFormPreview.render')
 
-    const { classes, type, sections } = this.props
+    const { mode, classes, type, sections } = this.props
 
     return (
       <Container className={classes.container} onClick={this.handleClick}>
         <div className={classes.form}>
-          <TypeFormPreviewHeader type={type} />
+          <TypeFormPreviewHeader type={type} mode={mode} />
           <DragDropContext
             onDragStart={this.handleDragStart}
             onDragEnd={this.handleDragEnd}
