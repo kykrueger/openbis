@@ -27,7 +27,11 @@ $.extend(StandardProfile.prototype, DefaultProfile.prototype, {
 					
 					mainController.serverFacade.searchForSamplesAdvanced(searchSamples, { only : true, withProperties : true, withAncestors : true, withAncestorsProperties : true }, function(result) {
 						sample.parents = mainController.serverFacade.getV3SamplesAsV1(result.objects);
-						
+						// We force V1 annotations on the ordering system to be backwards compatible, just in case is openBIS 20.X
+						for(var pIdx = 0; pIdx < sample.parents.length; pIdx++) {
+						    var pIdxAnnotationState = FormUtil.getAnnotationsFromSample(result.objects[pIdx], null);
+						    sample.parents[pIdx].properties["$ANNOTATIONS_STATE"] = FormUtil.getXMLFromAnnotations(pIdxAnnotationState);
+						}
 						//Set property
 						sample.properties["$ORDER.ORDER_STATE"] = window.btoa(unescape(encodeURIComponent(JSON.stringify(sample))));
 						
@@ -75,7 +79,7 @@ $.extend(StandardProfile.prototype, DefaultProfile.prototype, {
 						//
 						for(var rIdx = 0; rIdx < requests.length; rIdx++) {
 							var request = requests[rIdx];
-							var requestProductsAnnotations = FormUtil.getAnnotationsFromSample(request);
+							var requestProductsAnnotations = FormUtil.getAnnotationsFromSampleV1(request);
 							var requestProducts = request.parents;
 							for(var pIdx = 0; pIdx < requestProducts.length; pIdx++) {
 								var requestProduct = requestProducts[pIdx];

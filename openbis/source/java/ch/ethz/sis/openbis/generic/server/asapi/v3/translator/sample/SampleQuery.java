@@ -89,7 +89,7 @@ public interface SampleQuery extends ObjectQuery
             + "join property_types pt on etpt.prty_id = pt.id "
             + "where p.samp_prop_id is not null and p.samp_id = any(?{1})", parameterBindings = { LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<SamplePropertyRecord> getSampleProperties(LongSet sampleIds);
-    
+
     // PropertyQueryGenerator was used to generate this query
     @Select(sql = "select ph.samp_id as objectId, ph.pers_id_author as authorId, case pt.is_internal_namespace when FALSE then pt.code else '$' || pt.code end as propertyCode, ph.value as propertyValue, ph.material as materialPropertyValue, ph.sample as samplePropertyValue, ph.vocabulary_term as vocabularyPropertyValue, ph.valid_from_timestamp as validFrom, ph.valid_until_timestamp as validTo "
             + "from sample_properties_history ph "
@@ -117,13 +117,15 @@ public interface SampleQuery extends ObjectQuery
             LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<ObjectRelationRecord> getComponentsIds(LongSet sampleIds);
 
-    @Select(sql = "select sr.sample_id_child as objectId, sr.sample_id_parent as relatedId from "
+    @Select(sql = "select sr.sample_id_child as objectId, sr.sample_id_parent as relatedId, "
+            + "sr.child_annotations as annotations, sr.parent_annotations as relatedAnnotations from "
             + "sample_relationships sr, relationship_types rt "
             + "where sr.relationship_id = rt.id and rt.code = 'PARENT_CHILD' and sr.sample_id_child = any(?{1}) order by sr.id", parameterBindings = {
                     LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<ObjectRelationRecord> getParentIds(LongSet sampleIds);
 
-    @Select(sql = "select sr.sample_id_parent as objectId, sr.sample_id_child as relatedId from "
+    @Select(sql = "select sr.sample_id_parent as objectId, sr.sample_id_child as relatedId, "
+            + "sr.parent_annotations as annotations, sr.child_annotations as relatedAnnotations from "
             + "sample_relationships sr, relationship_types rt "
             + "where sr.relationship_id = rt.id and rt.code = 'PARENT_CHILD' and sr.sample_id_parent = any(?{1}) order by sr.id", parameterBindings = {
                     LongSetMapper.class }, fetchSize = FETCH_SIZE)
@@ -165,7 +167,8 @@ public interface SampleQuery extends ObjectQuery
             LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<ObjectRelationRecord> getPropertyAssignmentAnnotationIds(LongSet sampleTypePropertyTypeIds);
 
-    @Select(sql = "select t.id as objectId, t.validation_script_id as relatedId from sample_types t where t.id = any(?{1})", parameterBindings = { LongSetMapper.class }, fetchSize = FETCH_SIZE)
+    @Select(sql = "select t.id as objectId, t.validation_script_id as relatedId from sample_types t where t.id = any(?{1})", parameterBindings = {
+            LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<ObjectRelationRecord> getValidationPluginIds(LongSet sampleTypeIds);
 
 }

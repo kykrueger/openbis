@@ -4,7 +4,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOrder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.Sorting;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.GlobalSearchObject;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearchObjectFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
@@ -13,6 +12,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.*;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearchObjectSortOptions.*;
@@ -32,16 +32,6 @@ public class GlobalSearchManager implements IGlobalSearchManager
 
     private static final String PROPERTY_NAME = "Property";
 
-    private static final Map<String, String> SORTING_NAME_TO_RESULT_KEY_MAP = new HashMap<>();
-
-    static
-    {
-        SORTING_NAME_TO_RESULT_KEY_MAP.put(SCORE, RANK_ALIAS);
-        SORTING_NAME_TO_RESULT_KEY_MAP.put(OBJECT_KIND, OBJECT_KIND_ALIAS);
-        SORTING_NAME_TO_RESULT_KEY_MAP.put(OBJECT_PERM_ID, PERM_ID_COLUMN);
-        SORTING_NAME_TO_RESULT_KEY_MAP.put(OBJECT_IDENTIFIER, IDENTIFIER_ALIAS);
-    }
-
     protected final ISQLAuthorisationInformationProviderDAO authProvider;
 
     private final ISQLSearchDAO searchDAO;
@@ -54,33 +44,32 @@ public class GlobalSearchManager implements IGlobalSearchManager
 
     @Override
     public Set<Map<String, Object>> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation, final GlobalSearchCriteria criteria,
-            final String idsColumnName, final TableMapper tableMapper, final GlobalSearchObjectFetchOptions fetchOptions)
+            final String idsColumnName, final TableMapper tableMapper, final boolean useHeadline)
     {
         final Set<Map<String, Object>> mainCriteriaIntermediateResults = searchDAO.queryDBWithNonRecursiveCriteria(userId,
-                criteria, tableMapper, idsColumnName, authorisationInformation, fetchOptions);
+                criteria, tableMapper, idsColumnName, authorisationInformation, useHeadline);
 
         // If we have results, we use them
         // If we don't have results and criteria are not empty, there are no results.
-        final Set<Map<String, Object>> resultBeforeFiltering =
-                containsValues(mainCriteriaIntermediateResults) ? mainCriteriaIntermediateResults : Collections.emptySet();
+        final Set<Map<String, Object>> resultBeforeFiltering = containsValues(mainCriteriaIntermediateResults)
+                ? mainCriteriaIntermediateResults : Collections.emptySet();
 
         return filterResultsByUserRights(authorisationInformation, resultBeforeFiltering, tableMapper);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
-    public List<Map<String, Object>> sortRecords(final Set<Map<String, Object>> records,
+    public List<MatchingEntity> sortRecords(final Collection<MatchingEntity> records,
             final SortOptions<GlobalSearchObject> sortOptions)
     {
-        final ArrayList<Map<String, Object>> result = new ArrayList<>(records);
+        final ArrayList<MatchingEntity> result = new ArrayList<>(records);
         final List<Sorting> sortingList = sortOptions.getSortings();
         result.sort((o1, o2) ->
         {
             for (final Sorting sorting : sortingList)
             {
-                final String resultKey = SORTING_NAME_TO_RESULT_KEY_MAP.get(sorting.getField());
-                final Comparable<Object> v1 = (Comparable<Object>) o1.get(resultKey);
-                final Object v2 = o2.get(resultKey);
+                final Comparable<Comparable> v1 = getPropertyByKey(o1, sorting.getField());
+                final Comparable<Comparable> v2 = getPropertyByKey(o2, sorting.getField());
 
                 if (v1 != null && v2 != null && !v1.equals(v2))
                 {
@@ -96,6 +85,39 @@ public class GlobalSearchManager implements IGlobalSearchManager
             return 0;
         });
         return result;
+    }
+
+    @SuppressWarnings({"unchecked", "UnnecessaryBoxing"})
+    private <T extends Comparable<T>> Comparable<T> getPropertyByKey(final MatchingEntity matchingEntity,
+            final String field)
+    {
+        switch (field)
+        {
+            case SCORE:
+            {
+                return (Comparable<T>) Double.valueOf(matchingEntity.getScore());
+            }
+
+            case OBJECT_KIND:
+            {
+                return (Comparable<T>) matchingEntity.getEntityKind();
+            }
+
+            case OBJECT_PERM_ID:
+            {
+                return (Comparable<T>) matchingEntity.getPermId();
+            }
+
+            case OBJECT_IDENTIFIER:
+            {
+                return (Comparable<T>) matchingEntity.getIdentifier();
+            }
+
+            default:
+            {
+                throw new IllegalArgumentException(String.format("Unknown field %s", field));
+            }
+        }
     }
 
     private static int sortOrderToInt(final SortOrder sortOrder)
@@ -202,7 +224,38 @@ public class GlobalSearchManager implements IGlobalSearchManager
 
             matchingEntity.setMatches(matches);
             return matchingEntity;
-        }).collect(Collectors.toList());
+        }).collect(Collectors.toMap(MatchingEntity::getIdentifier, Function.identity(),
+            (existingMatchingEntity, newMatchingEntity) ->
+            {
+                existingMatchingEntity.setScore(existingMatchingEntity.getScore() + newMatchingEntity.getScore());
+                if (withMatches)
+                {
+                    final Collection<PropertyMatch> existingMatches = existingMatchingEntity.getMatches();
+                    final Collection<PropertyMatch> newMatches = newMatchingEntity.getMatches();
+                    final Collection<PropertyMatch> mergedMatches = mergeMatches(existingMatches, newMatches);
+                    existingMatchingEntity.setMatches(new ArrayList<>(mergedMatches));
+                }
+                return existingMatchingEntity;
+            },
+            LinkedHashMap::new
+        )).values();
+    }
+
+    private Collection<PropertyMatch> mergeMatches(final Collection<PropertyMatch> existingMatches,
+            final Collection<PropertyMatch> newMatches)
+    {
+        final List<PropertyMatch> combinedMatches = new ArrayList<>(existingMatches);
+        combinedMatches.addAll(newMatches);
+        return combinedMatches.stream().collect(Collectors.toMap(
+                (propertyMatch) -> Arrays.asList(propertyMatch.getCode(), propertyMatch.getValue()),
+                Function.identity(),
+                (existingPropertyMatch, newPropertyMatch) ->
+                {
+                    existingPropertyMatch.getSpans().addAll(newPropertyMatch.getSpans());
+                    return existingPropertyMatch;
+                },
+                HashMap::new
+                )).values();
     }
 
     private void mapAttributeMatches(final Map<String, Object> fieldsMap, final EntityKind entityKind, final List<PropertyMatch> matches)
@@ -215,8 +268,12 @@ public class GlobalSearchManager implements IGlobalSearchManager
                 break;
             }
 
-            case EXPERIMENT:
             case SAMPLE:
+            {
+                mapAttributeMatch(fieldsMap, matches, SAMPLE_IDENTIFIER_MATCH_ALIAS, IDENTIFIER_FIELD_NAME);
+                // Falls through.
+            }
+            case EXPERIMENT:
             {
                 mapAttributeMatch(fieldsMap, matches, CODE_MATCH_ALIAS, CODE_FIELD_NAME);
                 mapAttributeMatch(fieldsMap, matches, PERM_ID_MATCH_ALIAS, PERM_ID_FIELD_NAME);
@@ -235,23 +292,47 @@ public class GlobalSearchManager implements IGlobalSearchManager
 
     private void mapPropertyMatches(final Map<String, Object> fieldsMap, final List<PropertyMatch> matches)
     {
-        final String codeMatchString = (String) fieldsMap.get(PROPERTY_VALUE_ALIAS);
-        if (codeMatchString != null)
+        final String propertyValueMatch = (String) fieldsMap.get(PROPERTY_VALUE_ALIAS);
+        if (propertyValueMatch != null)
         {
-            final PropertyMatch propertyMatch = new PropertyMatch();
-            propertyMatch.setCode(PROPERTY_NAME + " '" + fieldsMap.get(PROPERTY_TYPE_LABEL_ALIAS) + "'");
-            propertyMatch.setValue(codeMatchString);
-
-            final String headline = coalesceMap(fieldsMap, VALUE_HEADLINE_ALIAS, LABEL_HEADLINE_ALIAS,
-                    CODE_HEADLINE_ALIAS, DESCRIPTION_HEADLINE_ALIAS);
-
-            if (headline != null)
-            {
-                computeSpans(propertyMatch, headline);
-            }
-
-            matches.add(propertyMatch);
+            addPropertyMatch(propertyValueMatch, fieldsMap, matches);
         }
+
+        final String cvLabelMatch = (String) fieldsMap.get(CV_LABEL_ALIAS);
+        if (cvLabelMatch != null)
+        {
+            addPropertyMatch(cvLabelMatch, fieldsMap, matches);
+        }
+
+        final String cvCodeMatch = (String) fieldsMap.get(CV_CODE_ALIAS);
+        if (cvCodeMatch != null)
+        {
+            addPropertyMatch(cvCodeMatch, fieldsMap, matches);
+        }
+
+        final String sampleMatch = (String) fieldsMap.get(SAMPLE_MATCH_ALIAS);
+        if (sampleMatch != null)
+        {
+            addPropertyMatch(sampleMatch, fieldsMap, matches);
+        }
+    }
+
+    private void addPropertyMatch(final String codeMatchString, final Map<String, Object> fieldsMap,
+            final List<PropertyMatch> matches)
+    {
+        final PropertyMatch propertyMatch = new PropertyMatch();
+        propertyMatch.setCode(PROPERTY_NAME + " '" + fieldsMap.get(PROPERTY_TYPE_LABEL_ALIAS) + "'");
+        propertyMatch.setValue(codeMatchString);
+
+        final String headline = coalesceMap(fieldsMap, VALUE_HEADLINE_ALIAS, LABEL_HEADLINE_ALIAS,
+                CODE_HEADLINE_ALIAS, DESCRIPTION_HEADLINE_ALIAS);
+
+        if (headline != null)
+        {
+            computeSpans(propertyMatch, headline);
+        }
+
+        matches.add(propertyMatch);
     }
 
     /**

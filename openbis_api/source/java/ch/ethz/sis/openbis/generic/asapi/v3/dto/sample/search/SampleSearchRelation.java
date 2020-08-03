@@ -22,7 +22,7 @@ import ch.systemsx.cisd.base.annotation.JsonObject;
  * @author pkupczyk
  */
 @JsonObject("as.dto.sample.search.SampleSearchRelation")
-enum SampleSearchRelation
+public enum SampleSearchRelation
 {
 
     SAMPLE, PARENTS, CHILDREN, CONTAINER

@@ -107,7 +107,7 @@ public final class DataSetTableTest extends AbstractBOTest
     private final DataSetTable createDataSetTable()
     {
         return new DataSetTable(daoFactory, dssFactory, ManagerTestTool.EXAMPLE_SESSION,
-                relationshipService, conversationClient, managedPropertyEvaluatorFactory,
+                relationshipService, conversationClient, null, managedPropertyEvaluatorFactory,
                 multiplexer, new DataSetTypeWithoutExperimentChecker(new Properties()));
     }
 

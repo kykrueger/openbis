@@ -23,11 +23,15 @@ public class SQLLexemes
 
     public static final String COALESCE = "COALESCE";
 
+    public static final String CONCAT = "CONCAT";
+
     public static final String LOWER = "LOWER";
 
     public static final String UPPER = "UPPER";
 
     public static final String GREATEST = "GREATEST";
+
+    public static final String DATE_TRUNC = "date_trunc";
 
     public static final String TS_RANK = "ts_rank";
 
@@ -44,6 +48,8 @@ public class SQLLexemes
     public static final String PLAINTO_TSQUERY = "plainto_tsquery";
 
     public static final String NUMERIC = "numeric";
+
+    public static final String TIMESTAMP = "timestamp";
 
     public static final String TIMESTAMPTZ = "timestamptz";
 
@@ -170,6 +176,8 @@ public class SQLLexemes
     public static final String DOUBLE_DOLLAR = "$$";
 
     public static final String TILDA = "~";
+
+    public static final String PLUS = "+";
 
     public static final String SELECT_UNNEST = LP + SELECT + SP + UNNEST + LP + QU + RP + RP;
 

@@ -472,7 +472,7 @@ public class DataStoreServer
 
         if (configParams.isUseSSL())
         {
-            final SslContextFactory sslContextFactory = new SslContextFactory();
+            final SslContextFactory sslContextFactory = new SslContextFactory.Server();
             sslContextFactory.setKeyStorePath(configParams.getKeystorePath());
             sslContextFactory.setKeyStorePassword(configParams.getKeystorePassword());
             sslContextFactory.setKeyManagerPassword(configParams.getKeystoreKeyPassword());

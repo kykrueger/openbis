@@ -27,6 +27,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.search.EntityTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialTypeSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleContainerSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.search.TagSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
@@ -156,7 +157,7 @@ public class SearchCriteriaTranslator
     /**
      * Appends condition translated from a criterion.
      * @param vo value object with miscellaneous information.
-     * @param authorisationInformation
+     * @param authorisationInformation authorisation information to be used to filter final results.
      * @param sqlBuilder string builder to append the condition to.
      * @param criterion criterion to be translated.
      */
@@ -195,7 +196,6 @@ public class SearchCriteriaTranslator
                     } else {
                         throw new IllegalArgumentException("Only local search subqueries are supported.");
                     }
-
 
                     appendInStatement(sqlBuilder, criterion, column, tableMapper);
                     vo.getArgs().add(ids.toArray(new Long[0]));
@@ -391,7 +391,8 @@ public class SearchCriteriaTranslator
             {
                 final ISearchCriteria criterion = criteria.iterator().next();
                 return criterion instanceof AbstractEntitySearchCriteria<?> &&
-                        ((AbstractEntitySearchCriteria<?>) criterion).getCriteria().isEmpty();
+                        ((AbstractEntitySearchCriteria<?>) criterion).getCriteria().isEmpty() &&
+                        !(criterion instanceof SampleContainerSearchCriteria);
             }
 
             default:

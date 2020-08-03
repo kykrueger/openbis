@@ -123,7 +123,7 @@ public class MicroscopyThumbnailsCreationTask extends AbstractMaintenanceTaskWit
         searchCriteria.withRegistrationDate().thatIsLaterThanOrEqualTo(lastRegistrationDate);
         if (lastCode != null)
         {
-//            searchCriteria.withCode().thatsIsGreaterOrEqualTo(lastCode);
+            searchCriteria.withCode().thatIsGreaterThan(lastCode);
         }
         DataSetFetchOptions fetchOptions = new DataSetFetchOptions();
         fetchOptions.withComponents().withType();

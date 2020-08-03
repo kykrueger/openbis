@@ -16,9 +16,25 @@ var FormUtil = new function() {
 	this.shortControlColumnClass = 'col-md-5';
 	this.controlColumnClass = 'col-md-9';
 	this.controlColumnClassBig = 'col-md-9';
+
 	//
-	// Annotations
+	// Sample Relationship Annotations 19.X & 20.X
 	//
+
+	this.getAnnotationsFromSample = function(sample, type) {
+        var typeAnnotations = {};
+        if(profile.enableNewAnnotationsBackend) { // Used by openBIS 20.X
+            typeAnnotations = this.getAnnotationsFromSampleV3(sample, type);
+        } else { // Used by openBIS 19.X
+            typeAnnotations = this.getAnnotationsFromSampleV1(sample, type);
+        }
+        return typeAnnotations;
+	}
+
+	//
+	// Sample Relationship Annotations 19.X
+	//
+
 	this.addAnnotationSlotForSample = function(stateObj, sample) {
 		var sampleAnnotations = stateObj[sample.permId];
 		if(!sampleAnnotations) {
@@ -63,14 +79,32 @@ var FormUtil = new function() {
 		return xmlDoc;
 	}
 	
-	this.getAnnotationsFromSample = function(sample) {
+	this.getAnnotationsFromSampleV1 = function(sample, type) {
 		var field = sample.properties["$ANNOTATIONS_STATE"];
 		var stateFieldValue = Util.getEmptyIfNull(field);
 		if(stateFieldValue === "") {
 			stateFieldValue = undefined;
 			sample.properties["$ANNOTATIONS_STATE"] = undefined;
 		}
-		return this.getAnnotationsFromField(stateFieldValue);
+		var allAnnotations = this.getAnnotationsFromField(stateFieldValue);
+		var typeAnnotations = {};
+        if(sample.parents && (type === 'PARENTS' || !type)) {
+            for(var pIdx = 0; pIdx < sample.parents.length; pIdx++) {
+                var parentPermId =  sample.parents[pIdx].permId;
+                if(parentPermId in allAnnotations) {
+                    typeAnnotations[parentPermId] = allAnnotations[parentPermId];
+                }
+            }
+        }
+        if(sample.children && (type === 'CHILDREN' || !type)) {
+            for(var cIdx = 0; cIdx < sample.children.length; cIdx++) {
+                var childPermId =  sample.children[cIdx].permId;
+                if(childPermId in allAnnotations) {
+                    typeAnnotations[childPermId] = allAnnotations[childPermId];
+                }
+            }
+        }
+        return typeAnnotations;
 	}
 	
 	this.getAnnotationsFromField = function(field) {
@@ -97,6 +131,34 @@ var FormUtil = new function() {
 		}
 		return stateObj;
 	}
+
+	//
+	// Sample Relationship Annotations 19.X
+	//
+
+    this.getAnnotationsFromSampleV3 = function(sample, type) {
+        var typeAnnotations = {};
+        if(sample.parents && (type === 'PARENTS' || !type)) {
+            for(var parentPermId in sample.parentsRelationships) {
+                var parentAnnotations = {};
+                for(var parentAnnotationKey in sample.parentsRelationships[parentPermId].parentAnnotations) {
+                    parentAnnotations[parentAnnotationKey] = sample.parentsRelationships[parentPermId].parentAnnotations[parentAnnotationKey];
+                }
+                typeAnnotations[parentPermId] = parentAnnotations;
+            }
+        }
+        if(sample.children && (type === 'CHILDREN' || !type)) {
+            for(var childPermId in sample.childrenRelationships) {
+                var childAnnotations = {};
+                for(var childAnnotationKey in sample.childrenRelationships[childPermId].childAnnotations) {
+                    childAnnotations[childAnnotationKey] = sample.childrenRelationships[childPermId].childAnnotations[childAnnotationKey];
+                }
+                typeAnnotations[childPermId] = childAnnotations;
+            }
+        }
+        return typeAnnotations;
+	}
+
 	//
 	// Standard Form Fields
 	//
@@ -757,6 +819,15 @@ var FormUtil = new function() {
 			$component = this._getInputField("text", propertyType.code, propertyType.description, null, propertyType.mandatory);
 		} else if (propertyType.dataType === "XML") {
 			$component = this._getTextBox(propertyType.code, propertyType.description, propertyType.mandatory);
+		} else if (propertyType.dataType === "SAMPLE") {
+		    var sampleTypeCode = propertyType.sampleTypeCode;
+		    var sampleTypePlaceholder = null;
+		    if(!sampleTypeCode) {
+		        sampleTypePlaceholder = " of any type"
+		    } else {
+		        sampleTypePlaceholder = " of type " + Util.getDisplayNameFromCode(sampleTypeCode);
+		    }
+		    $component = new SampleField(propertyType.mandatory, "Select " + ELNDictionary.Sample + sampleTypePlaceholder, sampleTypeCode);
 		}
 		
 		return $component;

@@ -133,8 +133,8 @@ public abstract class EntityPropertyPE extends HibernateAbstractRegistrationHold
         @Override
         public void set(
                 String name,
-                Object/* EntityPropertyPE */value,
-                Document/* Lucene document */document,
+                Object/* EntityPropertyPE */ value,
+                Document/* Lucene document */ document,
                 LuceneOptions luceneOptions)
         {
             EntityPropertyPE entityProperty = (EntityPropertyPE) value;
@@ -157,8 +157,7 @@ public abstract class EntityPropertyPE extends HibernateAbstractRegistrationHold
                     // leave the original value
                 }
                 field = new Field(fieldFullName, fieldValue, luceneOptions.getStore(), indexingStrategy);
-            }
-            else if (DataTypeCode.INTEGER.equals(entityProperty.getEntityTypePropertyType().getPropertyType().getType().getCode()))
+            } else if (DataTypeCode.INTEGER.equals(entityProperty.getEntityTypePropertyType().getPropertyType().getType().getCode()))
             {
                 try
                 {
@@ -253,7 +252,7 @@ public abstract class EntityPropertyPE extends HibernateAbstractRegistrationHold
     {
         this.id = id;
     }
-    
+
     public void setEntityFrozen(boolean frozen)
     {
         this.entityFrozen = frozen;
@@ -300,8 +299,8 @@ public abstract class EntityPropertyPE extends HibernateAbstractRegistrationHold
     //
 
     @Override
-    public final void setUntypedValue(final String valueOrNull,
-            final VocabularyTermPE vocabularyTermOrNull, MaterialPE materialOrNull)
+    public void setUntypedValue(final String valueOrNull,
+            final VocabularyTermPE vocabularyTermOrNull, MaterialPE materialOrNull, SamplePE sampleOrNull)
     {
         assert valueOrNull != null || vocabularyTermOrNull != null || materialOrNull != null : "Either value, vocabulary term or material should not be null.";
         setVocabularyTerm(null);
@@ -375,7 +374,7 @@ public abstract class EntityPropertyPE extends HibernateAbstractRegistrationHold
     //
 
     @Override
-    public final String tryGetUntypedValue()
+    public String tryGetUntypedValue()
     {
         if (getVocabularyTerm() != null)
         {

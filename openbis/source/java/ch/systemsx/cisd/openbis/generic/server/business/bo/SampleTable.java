@@ -57,6 +57,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SampleIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SampleOwnerIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.managed_property.IManagedPropertyEvaluatorFactory;
+import ch.systemsx.cisd.openbis.generic.shared.managed_property.api.IEntityInformationProvider;
 import ch.systemsx.cisd.openbis.generic.shared.util.RelationshipUtils;
 
 /**
@@ -75,10 +76,11 @@ public final class SampleTable extends AbstractSampleBusinessObject implements I
     public SampleTable(final IDAOFactory daoFactory, final Session session,
             IRelationshipService relationshipService,
             IEntityOperationChecker entityOperationChecker,
+            IEntityInformationProvider entityInformationProvider,
             IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory,
             DataSetTypeWithoutExperimentChecker dataSetTypeChecker)
     {
-        super(daoFactory, session, relationshipService, entityOperationChecker,
+        super(daoFactory, session, relationshipService, entityOperationChecker, entityInformationProvider,
                 managedPropertyEvaluatorFactory, dataSetTypeChecker);
     }
 

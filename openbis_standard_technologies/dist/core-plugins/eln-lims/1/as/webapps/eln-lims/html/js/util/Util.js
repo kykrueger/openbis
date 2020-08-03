@@ -785,6 +785,22 @@ var Util = new function() {
     		}
     		return false;
 	}
+
+	this.isInPage = function(node) {
+      return (node === document.body) ? false : document.body.contains(node);
+    };
+
+    this.onIsInPage = function(node, action) {
+        var _polling = function() {
+            if(Util.isInPage(node)) {
+                action();
+            } else {
+                setTimeout(_polling, 50);
+            }
+        }
+
+        setTimeout(_polling, 50);
+    };
 }
 
 

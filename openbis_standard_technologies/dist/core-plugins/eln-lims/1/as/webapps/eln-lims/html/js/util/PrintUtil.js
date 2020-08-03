@@ -165,8 +165,8 @@ var PrintUtil = new function() {
 					propertyContent = Util.replaceURLWithHTMLLinks(propertyContent);
 
 					if(propertyType.dataType === "MULTILINE_VARCHAR") {
-                        var imageWithoutDomain = "<img src=\"/openbis/openbis/";
-                        var imageWithDomain = "<img src=\"" + window.location.origin + "/openbis/openbis/openbis/";
+                        var imageWithoutDomain = "src=\"/openbis/openbis/";
+                        var imageWithDomain = "src=\"" + window.location.origin + "/openbis/openbis/openbis/";
 					    propertyContent = propertyContent.split(imageWithoutDomain).join(imageWithDomain);
 					}
 				}

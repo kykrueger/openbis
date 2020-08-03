@@ -26,4 +26,31 @@ public abstract class EntityPropertyWithSampleDataTypePE extends EntityPropertyP
         this.sample = sample;
     }
 
+    @Override
+    public final String tryGetUntypedValue()
+    {
+        if (getSampleValue() != null)
+        {
+            return getSampleValue().getPermId();
+        }
+        return super.tryGetUntypedValue();
+    }
+
+    @Override
+    public final void setUntypedValue(final String valueOrNull,
+            final VocabularyTermPE vocabularyTermOrNull, MaterialPE materialOrNull, SamplePE sampleOrNull)
+    {
+        assert valueOrNull != null || vocabularyTermOrNull != null
+                || materialOrNull != null || sampleOrNull != null : 
+                    "Either value, vocabulary term, material or sample should not be null.";
+        if (sampleOrNull != null)
+        {
+            setSampleValue(sampleOrNull);
+        } else
+        {
+            setSampleValue(null);
+            super.setUntypedValue(valueOrNull, vocabularyTermOrNull, materialOrNull, sampleOrNull);
+        }
+    }
+
 }

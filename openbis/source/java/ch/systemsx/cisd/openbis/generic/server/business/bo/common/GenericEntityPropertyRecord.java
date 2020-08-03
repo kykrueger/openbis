@@ -8,4 +8,5 @@ public class GenericEntityPropertyRecord extends BaseEntityPropertyRecord
     public String value;
     public Long cvte_id;
     public Long mate_prop_id;
+    public Long samp_prop_id;
 }

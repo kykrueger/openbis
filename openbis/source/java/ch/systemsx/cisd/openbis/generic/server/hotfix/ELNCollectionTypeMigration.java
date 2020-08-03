@@ -14,9 +14,12 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.create.PropertyAssignmentCreation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.IApplicationServerInternalApi;
+import ch.systemsx.cisd.common.logging.LogCategory;
+import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
 import ch.systemsx.cisd.openbis.generic.server.ComponentNames;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.DAOFactory;
+import org.apache.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.internal.SessionImpl;
 import org.hibernate.query.NativeQuery;
@@ -30,6 +33,8 @@ import java.util.stream.Stream;
 
 
 public class ELNCollectionTypeMigration {
+
+    private static final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION, ELNCollectionTypeMigration.class);
 
     private static final String COLLECTION = "COLLECTION";
 
@@ -178,7 +183,7 @@ public class ELNCollectionTypeMigration {
     }
 
     private static List executeQuery(String SQL, String key, Object value) {
-        //System.out.println("SQL: " + SQL + " Key: " + key + " Value: " + value);
+        //operationLog.info("SQL: " + SQL + " Key: " + key + " Value: " + value);
         DAOFactory daoFactory = (DAOFactory) CommonServiceProvider.getApplicationContext().getBean(ComponentNames.DAO_FACTORY);
         Session currentSession = daoFactory.getSessionFactory().getCurrentSession();
         NativeQuery nativeQuery = currentSession.createNativeQuery(SQL);
@@ -221,12 +226,12 @@ public class ELNCollectionTypeMigration {
     }
 
     public static void beforeUpgrade() {
-        System.out.println("ELNCollectionTypeMigration beforeUpgrade START");
+        operationLog.info("ELNCollectionTypeMigration beforeUpgrade START");
         // Obtain property types used by experiments that should be of type COLLECTION
         for (String experimentCode:experimentsOfTypeCollection) {
             Set<ExperimentType> experimentTypes = getExperimentTypes(new String[]{experimentCode});
             if (!experimentTypes.isEmpty()) {
-                //System.out.println("EXPERIMENT_CODE: " + experimentCode + " IS OF TYPE: " + experimentTypes.iterator().next().getCode());
+                //operationLog.info("EXPERIMENT_CODE: " + experimentCode + " IS OF TYPE: " + experimentTypes.iterator().next().getCode());
                 ExperimentType experimentType = experimentTypes.iterator().next();
                 if (!experimentType.getCode().equals(COLLECTION)) {
                     // Property Type used
@@ -266,21 +271,21 @@ public class ELNCollectionTypeMigration {
                         BigInteger oldAssignment = experiment_prty_id_2_etpt_id.get(propertyTechId);
                         BigInteger newAssignment = collection_prty_id_2_etpt_id.get(propertyTechId);
                         final String UPDATE_PROPERTY_ASSIGNMENT = "UPDATE experiment_properties SET etpt_id = :new_etpt_id WHERE etpt_id = :old_etpt_id";
-                        System.out.println("ELNCollectionTypeMigration - Swap for property tech id : " + propertyTechId + " : " + oldAssignment + " <> " + newAssignment);
+                        operationLog.info("ELNCollectionTypeMigration - Swap for property tech id : " + propertyTechId + " : " + oldAssignment + " <> " + newAssignment);
                         executeUpdate(UPDATE_PROPERTY_ASSIGNMENT, "old_etpt_id", oldAssignment, "new_etpt_id", newAssignment);
                     }
 
                     // Update type
                     final String UPDATE_TYPE = "UPDATE experiments_all SET exty_id = :exty_id WHERE code = :code";
                     executeUpdate(UPDATE_TYPE, "exty_id", collectionTypeTechId, "code", experimentCode);
-                    System.out.println("ELNCollectionTypeMigration -  Update for : " + experimentCode + " : exty_id : " + collectionTypeTechId);
+                    operationLog.info("ELNCollectionTypeMigration -  Update for : " + experimentCode + " : exty_id : " + collectionTypeTechId);
 
                 }
             }
         }
 
         for (Map.Entry<String, String> entry : PROPERTY_UPDATES_MAP.entrySet()) {
-            System.out.println("Going to Execute PROPERTY_UPDATE: " + entry.getKey());
+            operationLog.info("Going to Execute PROPERTY_UPDATE: " + entry.getKey());
 
             String query = String.format("UPDATE property_types SET code = '%s' WHERE code = '%s' and " +
                                          "(select count(*) from property_types where code = '%s') = 0 and " +
@@ -288,18 +293,18 @@ public class ELNCollectionTypeMigration {
                                          entry.getValue(), entry.getKey(), entry.getValue());
 
             executeUpdate(query, null, null, null, null);
-            System.out.println("PROPERTY_UPDATE DONE");
+            operationLog.info("PROPERTY_UPDATE DONE");
         }
-        System.out.println("ELNCollectionTypeMigration beforeUpgrade END");
+        operationLog.info("ELNCollectionTypeMigration beforeUpgrade END");
     }
 
     public static void afterUpgrade() {
-        System.out.println("ELNCollectionTypeMigration afterUpgrade START");
+        operationLog.info("ELNCollectionTypeMigration afterUpgrade START");
         for (String WIDGET_POST_UPDATE:WIDGET_POST_UPDATES) {
-            System.out.println("Going to Execute WIDGET_POST_UPDATES: " + WIDGET_POST_UPDATE);
+            operationLog.info("Going to Execute WIDGET_POST_UPDATES: " + WIDGET_POST_UPDATE);
             executeNativeUpdate(WIDGET_POST_UPDATE);
-            System.out.println("WIDGET_POST_UPDATE DONE");
+            operationLog.info("WIDGET_POST_UPDATE DONE");
         }
-        System.out.println("ELNCollectionTypeMigration afterUpgrade END");
+        operationLog.info("ELNCollectionTypeMigration afterUpgrade END");
     }
 }

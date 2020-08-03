@@ -605,6 +605,199 @@ public class CreateSampleTest extends AbstractSampleTest
     }
 
     @Test
+    public void testCreateParentChildWithAnnotations()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        SampleCreation parent1Creation = masterPlateCreation("CISD", "TEST_PARENT_1");
+        SampleCreation parent2Creation = masterPlateCreation("CISD", "TEST_PARENT_2");
+        SampleCreation parent3Creation = masterPlateCreation("CISD", "TEST_PARENT_3");
+        CreationId creationId1 = new CreationId("PARENT_1");
+        parent1Creation.setCreationId(creationId1);
+        CreationId creationId2 = new CreationId("PARENT_2");
+        parent2Creation.setCreationId(creationId2);
+        CreationId creationId3 = new CreationId("PARENT_3");
+        parent3Creation.setCreationId(creationId3);
+        SamplePermId parent4Id = new SamplePermId("200811050924898-997");
+
+        SampleCreation childCreation = masterPlateCreation("CISD", "TEST_CHILD");
+        childCreation.setParentIds(Arrays.asList(creationId1, creationId2, creationId3, parent4Id));
+        childCreation.relationship(creationId1)
+                .addParentAnnotation("type", "father").addChildAnnotation("type", "daughter");
+        childCreation.relationship(creationId2).addChildAnnotation("color", "red");
+        childCreation.relationship(parent4Id).addChildAnnotation("color", "green").addParentAnnotation("color", "blue")
+                .addChildAnnotation("type", "daughter");
+
+        // When
+        List<SamplePermId> ids = v3api.createSamples(sessionToken, Arrays.asList(childCreation, parent1Creation,
+                parent2Creation, parent3Creation));
+
+        // Then
+        SamplePermId childId = ids.get(0);
+        SamplePermId parent1Id = ids.get(1);
+        SamplePermId parent2Id = ids.get(2);
+        SamplePermId parent3Id = ids.get(3);
+        assertAnnotations(sessionToken, "[type=father]", "[type=daughter]", parent1Id, childId);
+        assertAnnotations(sessionToken, "[]", "[color=red]", parent2Id, childId);
+        assertAnnotations(sessionToken, "[]", "[]", parent3Id, childId);
+        assertAnnotations(sessionToken, "[color=blue]", "[color=green, type=daughter]", parent4Id, childId);
+    }
+
+    @Test
+    public void testCreateWithTwoParentsWithAnnotations()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        SampleCreation creation1 = creation("TEST_1001");
+        SampleCreation creation2 = creation("TEST_1002");
+        SamplePermId sc1Id = new SamplePermId("200811050924898-997"); // /CISD/C1
+
+        creation2.setParentIds(Arrays.asList(creation1.getCreationId(), sc1Id));
+        creation2.relationship(creation1.getCreationId()).addParentAnnotation("type", "mother").addChildAnnotation("type", "son");
+        creation2.relationship(sc1Id).addChildAnnotation("color", "blue").addParentAnnotation("valid", "true");
+
+        // When
+        List<SamplePermId> sampleIds = v3api.createSamples(sessionToken, Arrays.asList(creation1, creation2));
+
+        // Then
+        List<ISampleId> ids = new ArrayList<>();
+        ids.addAll(sampleIds);
+        ids.add(sc1Id);
+        SampleFetchOptions fetchOptions = new SampleFetchOptions();
+        fetchOptions.withChildren();
+        fetchOptions.withParents();
+        Map<ISampleId, Sample> samples = v3api.getSamples(sessionToken, ids, fetchOptions);
+        Sample s1 = samples.get(sampleIds.get(0));
+        Sample s2 = samples.get(sampleIds.get(1));
+        Sample sc1 = samples.get(sc1Id);
+        assertAnnotations("[type=mother]", "[type=son]", s1, s2);
+        assertAnnotations("[valid=true]", "[color=blue]", sc1, s2);
+    }
+
+    @Test
+    public void testCreateWithTwoChildrenWithAnnotations()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        SampleCreation creation1 = creation("TEST_1001");
+        SampleCreation creation2 = creation("TEST_1002");
+        SamplePermId sc1Id = new SamplePermId("200811050924898-997"); // /CISD/C1
+
+        creation2.setChildIds(Arrays.asList(creation1.getCreationId(), sc1Id));
+        creation2.relationship(creation1.getCreationId()).addChildAnnotation("type", "daughter").addParentAnnotation("type", "father");
+        creation2.relationship(sc1Id).addParentAnnotation("valid", "false").addChildAnnotation("color", "green");
+
+        // When
+        List<SamplePermId> sampleIds = v3api.createSamples(sessionToken, Arrays.asList(creation1, creation2));
+
+        // Then
+        List<ISampleId> ids = new ArrayList<>();
+        ids.addAll(sampleIds);
+        ids.add(sc1Id);
+        SampleFetchOptions fetchOptions = new SampleFetchOptions();
+        fetchOptions.withChildren();
+        fetchOptions.withParents();
+        Map<ISampleId, Sample> samples = v3api.getSamples(sessionToken, ids, fetchOptions);
+        Sample s1 = samples.get(sampleIds.get(0));
+        Sample s2 = samples.get(sampleIds.get(1));
+        Sample sc1 = samples.get(sc1Id);
+        assertAnnotations("[type=father]", "[type=daughter]", s2, s1);
+        assertAnnotations("[valid=false]", "[color=green]", s2, sc1);
+    }
+
+    @Test
+    public void testCreateNetOfSamplesWithAnnotations()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        SampleCreation creation1 = creation("TEST_1001");
+        SampleCreation creation2 = creation("TEST_1002");
+        SampleCreation creation3 = creation("TEST_1003");
+        SampleCreation creation4 = creation("TEST_1004");
+        SampleCreation creation5 = creation("TEST_1005");
+        SampleCreation creation6 = creation("TEST_1006");
+        SamplePermId sc1Id = new SamplePermId("200811050924898-997"); // /CISD/C1
+        SamplePermId sc2Id = new SamplePermId("200811050925507-999"); // /CISD/C2
+        SamplePermId sc3Id = new SamplePermId("200811050926038-1001"); // /CISD/C3
+
+        // sc1 -> s3 -> s4 -> s2
+        // s1 ---^ \--> s6
+        creation3.setParentIds(Arrays.asList(creation1.getCreationId(), sc1Id));
+        creation3.relationship(creation1.getCreationId()).addChildAnnotation("type", "son");
+        creation3.relationship(sc1Id).addChildAnnotation("color", "blue");
+        creation3.setChildIds(Arrays.asList(creation4.getCreationId()));
+        creation4.setChildIds(Arrays.asList(creation2.getCreationId(), creation6.getCreationId()));
+        creation4.relationship(creation2.getCreationId())
+                .addParentAnnotation("type", "mother").addChildAnnotation("type", "daughter")
+                .addParentAnnotation("color", "red");
+        // sc2 -> s5 -> sc3
+        creation5.setParentIds(Arrays.asList(sc2Id));
+        creation5.setChildIds(Arrays.asList(sc3Id));
+        creation5.relationship(creation2.getCreationId()).addChildAnnotation("ignored", "true"); // ignored because s2 isn't related
+
+        // When
+        List<SamplePermId> ids = v3api.createSamples(sessionToken, Arrays.asList(creation1, creation2,
+                creation3, creation4, creation5, creation6));
+
+        // Then
+        ids = new ArrayList<>(ids);
+        ids.addAll(Arrays.asList(sc1Id, sc2Id, sc3Id));
+        SampleFetchOptions fetchOptions = new SampleFetchOptions();
+        fetchOptions.withChildren();
+        fetchOptions.withParents();
+        Map<ISampleId, Sample> samples = v3api.getSamples(sessionToken, ids, fetchOptions);
+        Sample s1 = samples.get(ids.get(0));
+        Sample s2 = samples.get(ids.get(1));
+        Sample s3 = samples.get(ids.get(2));
+        Sample s4 = samples.get(ids.get(3));
+        Sample s5 = samples.get(ids.get(4));
+        Sample s6 = samples.get(ids.get(5));
+        Sample sc1 = samples.get(sc1Id);
+        Sample sc2 = samples.get(sc2Id);
+        Sample sc3 = samples.get(sc3Id);
+        // s1 as parent
+        assertAnnotations("[]", "[type=son]", s1, s3);
+        assertNoRelationships(s1, s2, s4, s5, s6, sc1, sc2, sc3);
+
+        // s2 as parent
+        assertNoRelationships(s2, s1, s3, s4, s5, s6, sc1, sc2, sc3);
+
+        // s3 as parent
+        assertAnnotations("[]", "[]", s3, s4);
+        assertNoRelationships(s3, s1, s2, s5, s6, sc1, sc2, sc3);
+
+        // s4 as parent
+        assertAnnotations("[color=red, type=mother]", "[type=daughter]", s4, s2);
+        assertAnnotations("[]", "[]", s4, s6);
+        assertNoRelationships(s4, s1, s3, s5, sc1, sc2, sc3);
+
+        // s5 as parent
+        assertAnnotations("[]", "[]", s5, sc3);
+        assertNoRelationships(s5, s1, s2, s3, s4, s6, sc1, sc2);
+
+        // s6 as parent
+        assertNoRelationships(s6, s1, s2, s3, s4, s5, sc1, sc2, sc3);
+
+        // sc1 as parent
+        assertAnnotations("[]", "[color=blue]", sc1, s3);
+        assertNoRelationships(sc1, s1, s2, s4, s5, s6, sc2, sc3);
+
+        // sc2 as parent
+        assertAnnotations("[]", "[]", sc2, s5);
+        assertNoRelationships(sc2, s1, s2, s3, s4, s6, sc1, sc3);
+
+        // sc3 as parent
+        assertNoRelationships(sc3, s1, s2, s3, s4, s5, s6, sc1, sc2);
+    }
+
+    private SampleCreation creation(String code)
+    {
+        SampleCreation creation = masterPlateCreation("CISD", code);
+        creation.setCreationId(new CreationId(code));
+        return creation;
+    }
+
+    @Test
     public void testCreateWithParentChildCircularDependency()
     {
         final String sessionToken = v3api.login(TEST_USER, PASSWORD);

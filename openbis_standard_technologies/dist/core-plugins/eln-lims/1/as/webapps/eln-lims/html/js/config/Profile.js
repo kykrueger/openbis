@@ -32,6 +32,11 @@ function DefaultProfile(serverFacade) {
 
 $.extend(DefaultProfile.prototype, {
 	init: function(serverFacade) {
+	    //
+	    // Enable on new openBIS 20.x release
+	    //
+	    this.enableNewAnnotationsBackend = true;
+
 		//
 		// Updating title and logo
 		//
@@ -127,7 +132,7 @@ $.extend(DefaultProfile.prototype, {
 					"ADDITIONAL_INFO_LABEL" : "Zusätzliche Informationen"
 				}
 		}
-		
+
 		this.isAdmin = false;
 		this.devEmail = "sis.eln.servicedesk@id.ethz.ch";
 		

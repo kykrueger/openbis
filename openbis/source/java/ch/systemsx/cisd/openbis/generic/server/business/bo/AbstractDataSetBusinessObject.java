@@ -47,6 +47,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.ExperimentIdentifi
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SampleIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.managed_property.IManagedPropertyEvaluatorFactory;
+import ch.systemsx.cisd.openbis.generic.shared.managed_property.api.IEntityInformationProvider;
 import ch.systemsx.cisd.openbis.generic.shared.util.HibernateUtils;
 import ch.systemsx.cisd.openbis.generic.shared.util.RelationshipUtils;
 
@@ -61,11 +62,12 @@ public abstract class AbstractDataSetBusinessObject extends AbstractSampleIdenti
     public AbstractDataSetBusinessObject(IDAOFactory daoFactory, Session session,
             IRelationshipService relationshipService,
             IServiceConversationClientManagerLocal conversationClient,
+            IEntityInformationProvider entityInformationProvider,
             IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory,
             DataSetTypeWithoutExperimentChecker dataSetTypeChecker)
     {
-        super(daoFactory, session, EntityKind.DATA_SET, managedPropertyEvaluatorFactory, dataSetTypeChecker,
-                relationshipService);
+        super(daoFactory, session, EntityKind.DATA_SET, entityInformationProvider, managedPropertyEvaluatorFactory,
+                dataSetTypeChecker, relationshipService);
         this.conversationClient = conversationClient;
     }
 

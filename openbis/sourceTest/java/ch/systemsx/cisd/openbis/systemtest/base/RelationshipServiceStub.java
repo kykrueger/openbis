@@ -16,6 +16,8 @@
 
 package ch.systemsx.cisd.openbis.systemtest.base;
 
+import java.util.Map;
+
 import ch.systemsx.cisd.openbis.generic.server.business.IRelationshipService;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentPE;
@@ -87,6 +89,12 @@ public class RelationshipServiceStub implements IRelationshipService
     @Override
     public void addParentToSample(IAuthSession session, SamplePE sample,
             SamplePE parent)
+    {
+    }
+
+    @Override
+    public void setSampleParentChildAnnotations(IAuthSession session, SamplePE child, SamplePE parent,
+            Map<String, String> childAnnotations, Map<String, String> parentAnnotations)
     {
     }
 

@@ -78,7 +78,7 @@ public class GeneralImportTest extends ObjectsImportTest
                 parameters.put(PARAM_USER_EMAIL, TEST_EMAIL);
             }
 
-            long timestamp = System.currentTimeMillis();
+            long timestamp = getTimestampAndWaitASecond();
             String message = executeImport(sessionToken, "generalImport", parameters);
 
             material1 = getObject(sessionToken, materialPermId1, timestamp, DEFAULT_TIMEOUT);

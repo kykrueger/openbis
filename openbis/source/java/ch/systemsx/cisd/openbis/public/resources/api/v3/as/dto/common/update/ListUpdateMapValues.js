@@ -6,7 +6,9 @@ define([ "stjs", "as/dto/common/update/ListUpdateValue" ], function(stjs, ListUp
 		prototype['@type'] = 'as.dto.common.update.ListUpdateMapValues';
 		constructor.serialVersionUID = 1;
 		prototype.put = function(key, value) {
-			add({key: value});
+			var pair = {};
+			pair[key] = value;
+			this.add(pair);
 			return this;
 		}
 	}, {

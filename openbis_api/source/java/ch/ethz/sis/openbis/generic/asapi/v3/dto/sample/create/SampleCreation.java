@@ -20,8 +20,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.attachment.create.AttachmentCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.Relationship;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.create.ICreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.create.IObjectCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.CreationId;
@@ -31,6 +35,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.IExperimentId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.IProjectId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdDeserializer;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.ISpaceId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.ITagId;
 import ch.systemsx.cisd.base.annotation.JsonObject;
@@ -66,6 +71,9 @@ public class SampleCreation implements ICreation, ICreationIdHolder, IProperties
     private List<? extends ISampleId> parentIds;
 
     private List<? extends ISampleId> childIds;
+
+    @JsonDeserialize(keyUsing = SampleIdDeserializer.class)
+    private Map<? extends ISampleId, Relationship> relationships = new HashMap<>();
 
     private List<AttachmentCreation> attachments;
 
@@ -169,6 +177,29 @@ public class SampleCreation implements ICreation, ICreationIdHolder, IProperties
     public void setParentIds(List<? extends ISampleId> parentIds)
     {
         this.parentIds = parentIds;
+    }
+
+    @SuppressWarnings("unchecked")
+    @JsonIgnore
+    public Relationship relationship(ISampleId sampleId)
+    {
+        Relationship relationship = relationships.get(sampleId);
+        if (relationship == null)
+        {
+            relationship = new Relationship();
+            ((Map<ISampleId, Relationship>) relationships).put(sampleId, relationship);
+        }
+        return relationship;
+    }
+
+    public Map<? extends ISampleId, Relationship> getRelationships()
+    {
+        return relationships;
+    }
+
+    public void setRelationships(Map<? extends ISampleId, Relationship> relationships)
+    {
+        this.relationships = relationships;
     }
 
     public List<? extends ISampleId> getChildIds()
