@@ -19,27 +19,8 @@ import ColumnConfig from './ColumnConfig.jsx'
 import PageConfig from './PageConfig.jsx'
 
 const styles = theme => ({
-  container: {
-    display: 'flex',
-    flexDirection: 'column',
-    height: '100%'
-  },
-  footerContainer: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    borderTopWidth: '1px',
-    borderTopStyle: 'solid',
-    borderTopColor: theme.palette.border.secondary
-  },
-  tableContainer: {
-    flexGrow: 1,
-    overflow: 'auto',
-    paddingLeft: theme.spacing(2),
-    paddingRight: theme.spacing(2)
-  },
   table: {
-    height: '100%'
+    borderCollapse: 'unset'
   },
   tableHeader: {
     '& th': {
@@ -50,9 +31,8 @@ const styles = theme => ({
       backgroundColor: theme.palette.background.primary
     }
   },
-  tableSpacer: {
-    height: '100%',
-    '& td': {
+  tableBody: {
+    '& tr:last-child td': {
       border: 0
     }
   },
@@ -62,6 +42,17 @@ const styles = theme => ({
   tableCell: {
     padding: `${theme.spacing(1)}px ${theme.spacing(2)}px`,
     borderColor: theme.palette.border.secondary
+  },
+  tableFooter: {
+    position: 'sticky',
+    bottom: 0,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    borderTopWidth: '1px',
+    borderTopStyle: 'solid',
+    borderTopColor: theme.palette.border.secondary,
+    backgroundColor: theme.palette.background.paper
   }
 })
 
@@ -369,32 +360,27 @@ class Grid extends React.Component {
     }
 
     return (
-      <div className={classes.container}>
-        <div className={classes.tableContainer}>
-          <Table classes={{ root: classes.table }}>
-            <TableHead>
-              <TableRow>
-                {columns.map(column => this.renderFilterCell(column))}
-              </TableRow>
-              <TableRow classes={{ root: classes.tableHeader }}>
-                {columns.map(column => this.renderHeaderCell(column))}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {pagedObjects.map(row => {
-                return (
-                  <TableRow key={row.id} hover>
-                    {columns.map(column => this.renderRowCell(column, row))}
-                  </TableRow>
-                )
-              })}
-              <TableRow classes={{ root: classes.tableSpacer }}>
-                <TableCell classes={{ root: classes.tableCell }}></TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
-        </div>
-        <div className={classes.footerContainer}>
+      <div>
+        <Table classes={{ root: classes.table }}>
+          <TableHead>
+            <TableRow>
+              {columns.map(column => this.renderFilterCell(column))}
+            </TableRow>
+            <TableRow classes={{ root: classes.tableHeader }}>
+              {columns.map(column => this.renderHeaderCell(column))}
+            </TableRow>
+          </TableHead>
+          <TableBody classes={{ root: classes.tableBody }}>
+            {pagedObjects.map(row => {
+              return (
+                <TableRow key={row.id} hover>
+                  {columns.map(column => this.renderRowCell(column, row))}
+                </TableRow>
+              )
+            })}
+          </TableBody>
+        </Table>
+        <div className={classes.tableFooter}>
           <PageConfig
             count={totalCount}
             page={page}
