@@ -1,6 +1,6 @@
 import React from 'react'
-import FormLayout from '@src/js/components/common/form/FormLayout.jsx'
-import FormButtons from '@src/js/components/common/form/FormButtons.jsx'
+import PageWithTwoPanels from '@src/js/components/common/page/PageWithTwoPanels.jsx'
+import PageButtons from '@src/js/components/common/page/PageButtons.jsx'
 import Grid from '@src/js/components/common/grid/Grid.jsx'
 import ids from '@src/js/common/consts/ids.js'
 import store from '@src/js/store/store.js'
@@ -57,7 +57,7 @@ export default class VocabularyForm extends React.PureComponent {
     const { loading, loaded, terms } = this.state
 
     return (
-      <FormLayout
+      <PageWithTwoPanels
         loading={loading}
         loaded={loaded}
         object={terms}
@@ -99,7 +99,7 @@ export default class VocabularyForm extends React.PureComponent {
   renderButtons() {
     const { mode } = this.state
     return (
-      <FormButtons
+      <PageButtons
         mode={mode}
         onEdit={() => {}}
         onSave={() => {}}

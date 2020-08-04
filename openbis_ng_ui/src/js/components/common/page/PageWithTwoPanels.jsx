@@ -41,9 +41,9 @@ const styles = theme => ({
   }
 })
 
-class FormLayout extends React.PureComponent {
+class PageWithTwoPanels extends React.PureComponent {
   render() {
-    logger.log(logger.DEBUG, 'FormLayout.render')
+    logger.log(logger.DEBUG, 'PageWithTwoPanels.render')
 
     const { loaded, loading } = this.props
 
@@ -113,4 +113,4 @@ class FormLayout extends React.PureComponent {
   }
 }
 
-export default _.flow(connect(), withStyles(styles))(FormLayout)
+export default _.flow(connect(), withStyles(styles))(PageWithTwoPanels)

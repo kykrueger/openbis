@@ -32,9 +32,9 @@ const styles = theme => ({
   }
 })
 
-class FormButtons extends React.PureComponent {
+class PageButtons extends React.PureComponent {
   render() {
-    logger.log(logger.DEBUG, 'FormButtons.render')
+    logger.log(logger.DEBUG, 'PageButtons.render')
 
     const { mode } = this.props
 
@@ -109,4 +109,4 @@ class FormButtons extends React.PureComponent {
   }
 }
 
-export default withStyles(styles)(FormButtons)
+export default withStyles(styles)(PageButtons)

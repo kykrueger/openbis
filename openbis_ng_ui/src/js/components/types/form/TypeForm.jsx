@@ -3,7 +3,7 @@ import React from 'react'
 import { connect } from 'react-redux'
 import { withStyles } from '@material-ui/core/styles'
 import ComponentContext from '@src/js/components/common/ComponentContext.js'
-import FormLayout from '@src/js/components/common/form/FormLayout.jsx'
+import PageWithTwoPanels from '@src/js/components/common/page/PageWithTwoPanels.jsx'
 import UnsavedChangesDialog from '@src/js/components/common/dialog/UnsavedChangesDialog.jsx'
 import logger from '@src/js/common/logger.js'
 
@@ -42,7 +42,7 @@ class TypeForm extends React.PureComponent {
     const { loading, loaded, type } = this.state
 
     return (
-      <FormLayout
+      <PageWithTwoPanels
         loading={loading}
         loaded={loaded}
         object={type}

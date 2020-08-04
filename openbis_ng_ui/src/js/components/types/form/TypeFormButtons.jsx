@@ -1,5 +1,5 @@
 import React from 'react'
-import FormButtons from '@src/js/components/common/form/FormButtons.jsx'
+import PageButtons from '@src/js/components/common/page/PageButtons.jsx'
 import Button from '@src/js/components/common/form/Button.jsx'
 import logger from '@src/js/common/logger.js'
 
@@ -19,7 +19,7 @@ class TypeFormButtons extends React.PureComponent {
     const existing = object.type === strategy.getExistingObjectType()
 
     return (
-      <FormButtons
+      <PageButtons
         mode={mode}
         changed={changed}
         onEdit={onEdit}
