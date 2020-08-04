@@ -76,7 +76,7 @@ class FormButtons extends React.PureComponent {
     } = this.props
 
     const additionalButtons = renderAdditionalButtons
-      ? renderAdditionalButtons()
+      ? renderAdditionalButtons(classes)
       : null
 
     return (
