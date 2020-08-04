@@ -17,10 +17,6 @@ export default class VocabularyForm extends React.PureComponent {
       loaded: false,
       mode: 'view'
     }
-
-    this.renderMainPanel = this.renderMainPanel.bind(this)
-    this.renderAdditionalPanel = this.renderAdditionalPanel.bind(this)
-    this.renderButtons = this.renderButtons.bind(this)
   }
 
   componentDidMount() {
@@ -65,9 +61,9 @@ export default class VocabularyForm extends React.PureComponent {
         loading={loading}
         loaded={loaded}
         object={terms}
-        renderMainPanel={this.renderMainPanel}
-        renderAdditionalPanel={this.renderAdditionalPanel}
-        renderButtons={this.renderButtons}
+        renderMainPanel={() => this.renderMainPanel()}
+        renderAdditionalPanel={() => this.renderAdditionalPanel()}
+        renderButtons={() => this.renderButtons()}
       />
     )
   }

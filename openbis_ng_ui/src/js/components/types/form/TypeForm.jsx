@@ -30,10 +30,6 @@ class TypeForm extends React.PureComponent {
     }
 
     this.controller.init(new ComponentContext(this))
-
-    this.renderMainPanel = this.renderMainPanel.bind(this)
-    this.renderAdditionalPanel = this.renderAdditionalPanel.bind(this)
-    this.renderButtons = this.renderButtons.bind(this)
   }
 
   componentDidMount() {
@@ -50,10 +46,9 @@ class TypeForm extends React.PureComponent {
         loading={loading}
         loaded={loaded}
         object={type}
-        state={this.state}
-        renderMainPanel={this.renderMainPanel}
-        renderAdditionalPanel={this.renderAdditionalPanel}
-        renderButtons={this.renderButtons}
+        renderMainPanel={() => this.renderMainPanel()}
+        renderAdditionalPanel={() => this.renderAdditionalPanel()}
+        renderButtons={() => this.renderButtons()}
       />
     )
   }
