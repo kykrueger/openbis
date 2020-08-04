@@ -1,4 +1,5 @@
 import React from 'react'
+import FormLayout from '@src/js/components/common/form/FormLayout.jsx'
 import Grid from '@src/js/components/common/grid/Grid.jsx'
 import ids from '@src/js/common/consts/ids.js'
 import store from '@src/js/store/store.js'
@@ -11,14 +12,20 @@ export default class VocabularyForm extends React.PureComponent {
     super(props)
 
     this.state = {
+      loading: true,
       loaded: false
     }
+
+    this.renderMainPanel = this.renderMainPanel.bind(this)
+    this.renderAdditionalPanel = this.renderAdditionalPanel.bind(this)
+    this.renderButtons = this.renderButtons.bind(this)
   }
 
   componentDidMount() {
     this.load().then(terms => {
       this.setState(() => ({
         terms,
+        loading: false,
         loaded: true
       }))
     })
@@ -49,10 +56,21 @@ export default class VocabularyForm extends React.PureComponent {
   render() {
     logger.log(logger.DEBUG, 'VocabularyForm.render')
 
-    if (!this.state.loaded) {
-      return null
-    }
+    const { loading, loaded, terms } = this.state
 
+    return (
+      <FormLayout
+        loading={loading}
+        loaded={loaded}
+        object={terms}
+        renderMainPanel={this.renderMainPanel}
+        renderAdditionalPanel={this.renderAdditionalPanel}
+        renderButtons={this.renderButtons}
+      />
+    )
+  }
+
+  renderMainPanel() {
     return (
       <Grid
         id={ids.VOCABULARY_TERMS_GRID_ID}
@@ -73,5 +91,13 @@ export default class VocabularyForm extends React.PureComponent {
         data={this.state.terms}
       />
     )
+  }
+
+  renderAdditionalPanel() {
+    return <div>Additional panel</div>
+  }
+
+  renderButtons() {
+    return <div>Buttons</div>
   }
 }
