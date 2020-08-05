@@ -317,15 +317,17 @@ class Grid extends React.Component {
 
     if (sort) {
       let column = _.find(this.state.columns, ['field', sort])
-      return objects.sort((t1, t2) => {
-        let sign = sortDirection === 'asc' ? 1 : -1
-        let v1 = _.get(t1, column.field) || ''
-        let v2 = _.get(t2, column.field) || ''
-        return sign * v1.localeCompare(v2)
-      })
-    } else {
-      return objects
+      if (column) {
+        return objects.sort((t1, t2) => {
+          let sign = sortDirection === 'asc' ? 1 : -1
+          let v1 = _.get(t1, column.field) || ''
+          let v2 = _.get(t2, column.field) || ''
+          return sign * v1.localeCompare(v2)
+        })
+      }
     }
+
+    return objects
   }
 
   page(objects) {

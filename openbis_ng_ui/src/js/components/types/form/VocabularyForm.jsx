@@ -1,4 +1,7 @@
+import _ from 'lodash'
 import React from 'react'
+import { connect } from 'react-redux'
+import { withStyles } from '@material-ui/core/styles'
 import ComponentContext from '@src/js/components/common/ComponentContext.js'
 import PageWithTwoPanels from '@src/js/components/common/page/PageWithTwoPanels.jsx'
 import Grid from '@src/js/components/common/grid/Grid.jsx'
@@ -9,7 +12,9 @@ import VocabularyFormController from './VocabularyFormController.js'
 import VocabularyFormFacade from './VocabularyFormFacade.js'
 import VocabularyFormButtons from './VocabularyFormButtons.jsx'
 
-export default class VocabularyForm extends React.PureComponent {
+const styles = () => ({})
+
+class VocabularyForm extends React.PureComponent {
   constructor(props) {
     super(props)
 
@@ -45,25 +50,29 @@ export default class VocabularyForm extends React.PureComponent {
   }
 
   renderMainPanel() {
-    const { vocabulary } = this.state
+    const { terms } = this.state
     return (
       <Grid
         id={ids.VOCABULARY_TERMS_GRID_ID}
         columns={[
           {
-            field: 'code'
+            field: 'code.value',
+            label: 'Code'
           },
           {
-            field: 'label'
+            field: 'label.value',
+            label: 'Label'
           },
           {
-            field: 'description'
+            field: 'description.value',
+            label: 'Description'
           },
           {
-            field: 'official'
+            field: 'official.value',
+            label: 'Official'
           }
         ]}
-        data={vocabulary.terms}
+        data={terms}
       />
     )
   }
@@ -90,3 +99,5 @@ export default class VocabularyForm extends React.PureComponent {
     )
   }
 }
+
+export default _.flow(connect(), withStyles(styles))(VocabularyForm)
