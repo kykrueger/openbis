@@ -74,7 +74,7 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
         }
         if(useWildcardSearchMode) {
             operationLog.warn("TO ADAPT [FULL TEXT SEARCH] : useWildcardSearchMode not supported");
-//            throwUnsupportedOperationException("useWildcardSearchMode not supported");
+            throwUnsupportedOperationException("useWildcardSearchMode not supported");
         }
 
         if(maxSize != Integer.MAX_VALUE) {

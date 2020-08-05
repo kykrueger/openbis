@@ -16,6 +16,7 @@
 
 package ch.systemsx.cisd.openbis.generic.server.dataaccess.db;
 
+import static ch.systemsx.cisd.openbis.generic.server.dataaccess.db.DAOFactory.USE_NEW_SQL_ENGINE;
 import static org.testng.AssertJUnit.assertEquals;
 import static org.testng.AssertJUnit.assertFalse;
 import static org.testng.AssertJUnit.assertTrue;
@@ -169,7 +170,7 @@ public final class HibernateSearchDAOTest extends AbstractDAOTest
         String propertyValue = "adenovirus";
         final List<MatchingEntity> hits =
                 hibernateSearchDAO.searchEntitiesByTerm(USER_ID, SearchableEntity.MATERIAL,
-                        propertyValue, createDataProvider(), true, 0, Integer.MAX_VALUE);
+                        propertyValue, createDataProvider(), false, 0, Integer.MAX_VALUE);
         assertEquals(2, hits.size());
         for (MatchingEntity matchingEntity : hits)
         {
@@ -596,8 +597,11 @@ public final class HibernateSearchDAOTest extends AbstractDAOTest
         DetailedSearchCriterion criterion2 = createFieldTypeCriterion(FILE_TYPE_TIFF);
 
         DetailedSearchCriteria criteria = createAndDatasetQuery(criterion1, criterion2);
-
-        assertCorrectDatasetsFound(criteria, DSLoc.A_1, DSLoc.XXX_YYY_ZZZ);
+        if (USE_NEW_SQL_ENGINE) {
+            assertCorrectDatasetsFound(criteria, DSLoc.A_1);
+        } else {
+            assertCorrectDatasetsFound(criteria, DSLoc.A_1, DSLoc.XXX_YYY_ZZZ); // The old search engine returns a deleted dataset
+        }
 
         // This data set has "no comment" value as a COMMENT property and TIFF file type.
         // We change it and check if it is removed from results.

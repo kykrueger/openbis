@@ -286,7 +286,7 @@ public class GeneralInformationServiceJsonApiTest extends RemoteApiTestCase
         if (USE_NEW_SQL_ENGINE) {
             assertEquals(2, result.size());
         } else {
-            assertEquals(9, result.size());
+            assertEquals(9, result.size()); // The old search engine doesn't have real equals
         }
     }
 

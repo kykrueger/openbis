@@ -246,7 +246,7 @@ public class ETLServiceDatabaseTest extends AbstractDAOTest
         if (USE_NEW_SQL_ENGINE) {
             assertEquals(11, dataSetsToUpdate.size());
         } else {
-            assertEquals(22, dataSetsToUpdate.size());
+            assertEquals(22, dataSetsToUpdate.size()); // The old search engine doesn't have real equals
         }
         Date now = daoFactory.getTransactionTimestamp();
 
