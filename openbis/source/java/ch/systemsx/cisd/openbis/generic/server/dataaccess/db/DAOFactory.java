@@ -140,6 +140,8 @@ public final class DAOFactory extends AuthorizationDAOFactory implements IDAOFac
 
     private DatabaseConfigurationContext context;
 
+    public static final boolean USE_NEW_SQL_ENGINE = true;
+
     public DAOFactory(final DatabaseConfigurationContext context,
             final SessionFactory sessionFactory, HibernateSearchContext hibernateSearchContext,
             final IDynamicPropertyEvaluationScheduler dynamicPropertyEvaluationScheduler,
@@ -152,8 +154,7 @@ public final class DAOFactory extends AuthorizationDAOFactory implements IDAOFac
         sampleTypeDAO = new SampleTypeDAO(sessionFactory, historyCreator);
 
         // TODO : Remove this if/else when the adaptor is finally finished, this is here just to facilitate development/testing keeping changes in master
-        boolean useNewSQLEngineForV1 = false;
-        if (useNewSQLEngineForV1) {
+        if (USE_NEW_SQL_ENGINE) {
             hibernateSearchDAO = new HibernateSearchDAOV3Adaptor(new HibernateSearchDAO(sessionFactory, hibernateSearchContext));
         } else {
             hibernateSearchDAO = new HibernateSearchDAO(sessionFactory, hibernateSearchContext);

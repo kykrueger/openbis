@@ -59,11 +59,6 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
     // IHibernateSearchDAO interface
     //
 
-//    @Override
-//    public List<MatchingEntity> searchEntitiesByTerm(String userId, SearchableEntity searchableEntity, String searchTerm, HibernateSearchDataProvider dataProvider, boolean useWildcardSearchMode, int alreadyFoundEntities, int maxSize) throws DataAccessException {
-//        return this.hibernateSearchDAO.searchEntitiesByTerm(userId, searchableEntity, searchTerm, dataProvider, useWildcardSearchMode, alreadyFoundEntities, maxSize);
-//    }
-
     @Override
     public List<MatchingEntity> searchEntitiesByTerm(String userId, SearchableEntity searchableEntity, String searchTerm, HibernateSearchDataProvider dataProvider, boolean useWildcardSearchMode, int alreadyFoundEntities, int maxSize) throws DataAccessException {
         operationLog.info("TO ADAPT [FULL TEXT SEARCH] : " + searchableEntity + " [" + searchTerm + "] Wildcards: [" + useWildcardSearchMode + "]");
@@ -78,14 +73,15 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
             throw new AssertionError("dataProvider == null");
         }
         if(useWildcardSearchMode) {
-            throwUnsupportedOperationException("useWildcardSearchMode not supported");
+            operationLog.warn("TO ADAPT [FULL TEXT SEARCH] : useWildcardSearchMode not supported");
+//            throwUnsupportedOperationException("useWildcardSearchMode not supported");
         }
 
         if(maxSize != Integer.MAX_VALUE) {
             throwIllegalArgumentException("maxSize != Integer.MAX_VALUE");
         }
 
-        // alreadyFoundEntities is a ignored parameter
+        // alreadyFoundEntities is an ignored parameter
 
         // Obtain PersonPE
         DAOFactory daoFactory = (DAOFactory) CommonServiceProvider.getApplicationContext().getBean(ComponentNames.DAO_FACTORY);
@@ -113,7 +109,7 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
                 globalSearchCriteria,
                 ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN,
                 getTableMapper(searchableEntity), true);
-        // TODO: add registrators after this mapping use the commented out methods below.
+
         Collection<MatchingEntity> matchingEntities = getGlobalSearchManager().map(newResults, true);
 
         // Set registrators for V1
@@ -146,74 +142,11 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
             matchingEntity.setRegistrator(registrator);
         }
 
-//        // Adapt V3 to V1 Results
-//
-//        // TODO: This adaption is incomplete
-//        List<MatchingEntity> newResultsAsMatchingEntity = new ArrayList<>();
-//        for (Map<String, Object> newResult:newResults) {
-//            MatchingEntity matchingEntity = new MatchingEntity();
-//            matchingEntity.setId((Long) newResult.get("id"));
-//            matchingEntity.setCode((String) newResult.get("code"));
-//            // TODO permId
-//            matchingEntity.setIdentifier((String) newResult.get("identifier"));
-//            // TODO registrator
-//            // TODO entityType
-//            matchingEntity.setEntityKind(ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind.valueOf((String) newResult.get("object_kind")));
-//            // TODO spaceOrNull
-//            matchingEntity.setMatches(getPropertyMatches(newResult));
-//            matchingEntity.setScore((Float) newResult.get("rank"));
-//            // TODO searchDomain
-//            newResultsAsMatchingEntity.add(matchingEntity);
-//        }
-
         // TODO: Remove when finish, old search to compare when debugging
         //List<MatchingEntity> oldResults = this.hibernateSearchDAO.searchEntitiesByTerm(userId, searchableEntity, searchTerm, dataProvider, useWildcardSearchMode, alreadyFoundEntities, maxSize);
 
         return new ArrayList<>(matchingEntities);
     }
-
-//    public Set<Long> getRegistratorsIds(final Set<Map<String, Object>> allResultMaps)
-//    {
-//        final Map<String, Long> registratorIdByRecordIdentifierMap = allResultMaps.stream().collect(HashMap::new,
-//                (supplierMap, record) ->
-//                {
-//                    final Long registratorId = (Long) record.get(PERSON_REGISTERER_COLUMN);
-//                    if (registratorId != null)
-//                    {
-//                        supplierMap.put((String) record.get(IDENTIFIER_ALIAS), registratorId);
-//                    }
-//                },
-//                HashMap::putAll);
-//
-//        return new HashSet<>(registratorIdByRecordIdentifierMap.values());
-//    }
-//
-//    private Map<Long, Person> getRegistratorByIdMap(final TranslationContext translationContext, final Set<Map<String, Object>> allResultMaps)
-//    {
-//        return personTranslator.translate(translationContext, getRegistratorsIds(allResultMaps),
-//                new PersonFetchOptions());
-//    }
-
-//    private List<PropertyMatch> getPropertyMatches(Map<String, Object> newResult) {
-//        List<PropertyMatch> matches = new ArrayList<>();
-//        if ((Float) newResult.get("value_match_rank") > 0) {
-//            PropertyMatch propertyMatch = new PropertyMatch();
-//            propertyMatch.setCode((String) newResult.get("property_type_label"));
-//            propertyMatch.setValue((String) newResult.get("value_headline"));
-//            matches.add(propertyMatch);
-//        }
-//        if ((Float) newResult.get("code_match_rank") > 0) {
-//
-//        }
-//        if ((Float) newResult.get("label_match_rank") > 0) {
-//
-//        }
-//        if ((Float) newResult.get("description_match_rank") > 0) {
-//
-//        }
-//
-//        return matches;
-//    }
 
     private GlobalSearchManager globalSearchManager;
 

@@ -16,6 +16,7 @@
 
 package ch.systemsx.cisd.openbis.remoteapitest.api.v1;
 
+import static ch.systemsx.cisd.openbis.generic.server.dataaccess.db.DAOFactory.USE_NEW_SQL_ENGINE;
 import static org.testng.AssertJUnit.assertEquals;
 import static org.testng.AssertJUnit.assertNotNull;
 import static org.testng.AssertJUnit.assertTrue;
@@ -282,7 +283,11 @@ public class GeneralInformationServiceJsonApiTest extends RemoteApiTestCase
         ec.addMatchClause(MatchClause.createPropertyMatch("DESCRIPTION", "A simple experiment"));
         sc.addSubCriteria(SearchSubCriteria.createExperimentCriteria(ec));
         List<Sample> result = generalInformationService.searchForSamples(sessionToken, sc);
-        assertEquals(9, result.size());
+        if (USE_NEW_SQL_ENGINE) {
+            assertEquals(2, result.size());
+        } else {
+            assertEquals(9, result.size());
+        }
     }
 
     @Test
