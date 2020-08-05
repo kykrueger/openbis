@@ -1,13 +1,13 @@
 import React from 'react'
 import ComponentContext from '@src/js/components/common/ComponentContext.js'
 import PageWithTwoPanels from '@src/js/components/common/page/PageWithTwoPanels.jsx'
-import PageButtons from '@src/js/components/common/page/PageButtons.jsx'
 import Grid from '@src/js/components/common/grid/Grid.jsx'
 import ids from '@src/js/common/consts/ids.js'
 import logger from '@src/js/common/logger.js'
 
 import VocabularyFormController from './VocabularyFormController.js'
 import VocabularyFormFacade from './VocabularyFormFacade.js'
+import VocabularyFormButtons from './VocabularyFormButtons.jsx'
 
 export default class VocabularyForm extends React.PureComponent {
   constructor(props) {
@@ -74,13 +74,18 @@ export default class VocabularyForm extends React.PureComponent {
 
   renderButtons() {
     const { controller } = this
-    const { mode } = this.state
+    const { object } = this.props
+    const { selection, changed, mode } = this.state
+
     return (
-      <PageButtons
-        mode={mode}
+      <VocabularyFormButtons
         onEdit={controller.handleEdit}
         onSave={() => {}}
         onCancel={controller.handleCancel}
+        object={object}
+        selection={selection}
+        changed={changed}
+        mode={mode}
       />
     )
   }
