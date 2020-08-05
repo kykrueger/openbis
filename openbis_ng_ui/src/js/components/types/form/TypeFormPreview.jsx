@@ -31,7 +31,6 @@ class TypeFormPreview extends React.PureComponent {
     this.state = {}
     this.handleDragStart = this.handleDragStart.bind(this)
     this.handleDragEnd = this.handleDragEnd.bind(this)
-    this.handleClick = this.handleClick.bind(this)
   }
 
   handleDragStart(start) {
@@ -64,19 +63,13 @@ class TypeFormPreview extends React.PureComponent {
     }
   }
 
-  handleClick() {
-    if (!this.state.dragging) {
-      this.props.onSelectionChange()
-    }
-  }
-
   render() {
     logger.log(logger.DEBUG, 'TypeFormPreview.render')
 
     const { mode, classes, type, sections } = this.props
 
     return (
-      <Container className={classes.container} onClick={this.handleClick}>
+      <Container className={classes.container}>
         <div className={classes.form}>
           <TypeFormPreviewHeader type={type} mode={mode} />
           <DragDropContext
