@@ -84,7 +84,7 @@ class VocabularyForm extends React.PureComponent {
             label: 'Official'
           }
         ]}
-        data={terms}
+        rows={terms}
         onRowSelect={this.handleRowSelect}
         selectedRowId={
           selection && selection.type === 'term' ? selection.params.id : null

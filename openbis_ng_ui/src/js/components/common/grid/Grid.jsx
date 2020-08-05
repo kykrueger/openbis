@@ -69,7 +69,7 @@ class Grid extends React.Component {
   constructor(props) {
     super(props)
 
-    const sortDefault = _.isFunction(props.data) ? false : true
+    const sortDefault = _.isFunction(props.rows) ? false : true
 
     let columns = props.columns.map(column => ({
       ...column,
@@ -101,7 +101,7 @@ class Grid extends React.Component {
 
   load() {
     this.loadSettings().then(() => {
-      this.loadData().then(() => {
+      this.loadRows().then(() => {
         this.setState(() => ({
           loaded: true
         }))
@@ -109,8 +109,8 @@ class Grid extends React.Component {
     })
   }
 
-  loadData() {
-    if (_.isFunction(this.props.data)) {
+  loadRows() {
+    if (_.isFunction(this.props.rows)) {
       let loadConfig = {
         filters: this.state.filters,
         page: this.state.page,
@@ -118,15 +118,15 @@ class Grid extends React.Component {
         sort: this.state.sort,
         sortDirection: this.state.sortDirection
       }
-      return this.props.data(loadConfig).then(({ objects, totalCount }) => {
+      return this.props.rows(loadConfig).then(({ rows, totalCount }) => {
         this.setState(() => ({
-          objects,
+          rows,
           totalCount
         }))
       })
     } else if (!this.state.loaded) {
       this.setState(() => ({
-        objects: this.props.data
+        rows: this.props.rows
       }))
     }
     return Promise.resolve()
@@ -208,7 +208,7 @@ class Grid extends React.Component {
         filters
       }),
       () => {
-        this.loadData()
+        this.loadRows()
       }
     )
   }
@@ -263,7 +263,7 @@ class Grid extends React.Component {
         }),
         () => {
           this.saveSettings()
-          this.loadData()
+          this.loadRows()
         }
       )
     }
@@ -275,7 +275,7 @@ class Grid extends React.Component {
         page
       }),
       () => {
-        this.loadData()
+        this.loadRows()
       }
     )
   }
@@ -288,7 +288,7 @@ class Grid extends React.Component {
       }),
       () => {
         this.saveSettings()
-        this.loadData()
+        this.loadRows()
       }
     )
   }
@@ -300,7 +300,7 @@ class Grid extends React.Component {
     }
   }
 
-  filter(objects) {
+  filter(rows) {
     function matches(value, filter) {
       if (filter) {
         return value
@@ -311,7 +311,7 @@ class Grid extends React.Component {
       }
     }
 
-    return _.filter(objects, row => {
+    return _.filter(rows, row => {
       let matchesAll = true
       this.state.columns.forEach(column => {
         let value = _.get(row, column.field)
@@ -322,13 +322,13 @@ class Grid extends React.Component {
     })
   }
 
-  sort(objects) {
+  sort(rows) {
     const { sort, sortDirection } = this.state
 
     if (sort) {
       let column = _.find(this.state.columns, ['field', sort])
       if (column) {
-        return objects.sort((t1, t2) => {
+        return rows.sort((t1, t2) => {
           let sign = sortDirection === 'asc' ? 1 : -1
           let v1 = _.get(t1, column.field) || ''
           let v2 = _.get(t2, column.field) || ''
@@ -337,14 +337,14 @@ class Grid extends React.Component {
       }
     }
 
-    return objects
+    return rows
   }
 
-  page(objects) {
+  page(rows) {
     const { page, pageSize } = this.state
-    return objects.slice(
+    return rows.slice(
       page * pageSize,
-      Math.min(objects.length, (page + 1) * pageSize)
+      Math.min(rows.length, (page + 1) * pageSize)
     )
   }
 
@@ -358,17 +358,17 @@ class Grid extends React.Component {
     const { classes } = this.props
     const { page, pageSize, columns } = this.state
 
-    let pagedObjects = null
+    let pagedRows = null
     let totalCount = null
 
-    if (_.isFunction(this.props.data)) {
-      pagedObjects = this.state.objects
+    if (_.isFunction(this.props.rows)) {
+      pagedRows = this.state.rows
       totalCount = this.state.totalCount
     } else {
-      const filteredObjects = this.filter([...this.state.objects])
-      const sortedObjects = this.sort(filteredObjects)
-      pagedObjects = this.page(sortedObjects)
-      totalCount = filteredObjects.length
+      const filteredRows = this.filter([...this.state.rows])
+      const sortedRows = this.sort(filteredRows)
+      pagedRows = this.page(sortedRows)
+      totalCount = filteredRows.length
     }
 
     return (
@@ -383,7 +383,7 @@ class Grid extends React.Component {
             </TableRow>
           </TableHead>
           <TableBody classes={{ root: classes.tableBody }}>
-            {pagedObjects.map(row => {
+            {pagedRows.map(row => {
               return (
                 <TableRow
                   key={row.id}

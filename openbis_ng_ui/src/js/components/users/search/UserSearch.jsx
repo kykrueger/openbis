@@ -71,7 +71,7 @@ class UserSearch extends React.Component {
             field: 'lastName'
           }
         ]}
-        data={this.state.users}
+        rows={this.state.users}
       />
     )
   }

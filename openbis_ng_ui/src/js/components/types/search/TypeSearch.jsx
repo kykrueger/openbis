@@ -161,7 +161,7 @@ class TypeSearch extends React.Component {
             field: 'description'
           }
         ]}
-        data={types}
+        rows={types}
       />
     )
   }
