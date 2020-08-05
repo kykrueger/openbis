@@ -34,6 +34,9 @@ const styles = theme => ({
   tableBody: {
     '& tr:last-child td': {
       border: 0
+    },
+    '& tr': {
+      cursor: 'pointer'
     }
   },
   tableLink: {
@@ -290,6 +293,13 @@ class Grid extends React.Component {
     )
   }
 
+  handleRowSelect(row) {
+    const { onRowSelect, selectedRowId } = this.props
+    if (onRowSelect) {
+      onRowSelect(selectedRowId === row.id ? null : row)
+    }
+  }
+
   filter(objects) {
     function matches(value, filter) {
       if (filter) {
@@ -375,7 +385,12 @@ class Grid extends React.Component {
           <TableBody classes={{ root: classes.tableBody }}>
             {pagedObjects.map(row => {
               return (
-                <TableRow key={row.id} hover>
+                <TableRow
+                  key={row.id}
+                  onClick={() => this.handleRowSelect(row)}
+                  hover={true}
+                  selected={row.id === this.props.selectedRowId}
+                >
                   {columns.map(column => this.renderRowCell(column, row))}
                 </TableRow>
               )

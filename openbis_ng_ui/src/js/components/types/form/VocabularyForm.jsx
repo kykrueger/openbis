@@ -1,5 +1,6 @@
 import _ from 'lodash'
 import React from 'react'
+import autoBind from 'auto-bind'
 import { connect } from 'react-redux'
 import { withStyles } from '@material-ui/core/styles'
 import ComponentContext from '@src/js/components/common/ComponentContext.js'
@@ -17,6 +18,7 @@ const styles = () => ({})
 class VocabularyForm extends React.PureComponent {
   constructor(props) {
     super(props)
+    autoBind(this)
 
     this.state = {}
 
@@ -30,6 +32,15 @@ class VocabularyForm extends React.PureComponent {
   }
   componentDidMount() {
     this.controller.load()
+  }
+
+  handleRowSelect(row) {
+    const { controller } = this
+    if (row) {
+      controller.handleSelectionChange('term', { id: row.id })
+    } else {
+      controller.handleSelectionChange()
+    }
   }
 
   render() {
@@ -50,7 +61,8 @@ class VocabularyForm extends React.PureComponent {
   }
 
   renderMainPanel() {
-    const { terms } = this.state
+    const { terms, selection } = this.state
+
     return (
       <Grid
         id={ids.VOCABULARY_TERMS_GRID_ID}
@@ -73,6 +85,10 @@ class VocabularyForm extends React.PureComponent {
           }
         ]}
         data={terms}
+        onRowSelect={this.handleRowSelect}
+        selectedRowId={
+          selection && selection.type === 'term' ? selection.params.id : null
+        }
       />
     )
   }

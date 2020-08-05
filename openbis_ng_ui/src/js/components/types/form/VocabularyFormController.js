@@ -2,6 +2,7 @@ import autoBind from 'auto-bind'
 import VocabularyFormControllerLoad from './VocabularyFormControllerLoad.js'
 import VocabularyFormControllerEdit from './VocabularyFormControllerEdit.js'
 import VocabularyFormControllerCancel from './VocabularyFormControllerCancel.js'
+import VocabularyFormControllerSelectionChange from './VocabularyFormControllerSelectionChange.js'
 
 export default class VocabularyFormController {
   constructor(facade) {
@@ -24,6 +25,13 @@ export default class VocabularyFormController {
 
   handleCancel() {
     return new VocabularyFormControllerCancel(this).execute()
+  }
+
+  handleSelectionChange(type, params) {
+    return new VocabularyFormControllerSelectionChange(this).execute(
+      type,
+      params
+    )
   }
 
   getContext() {

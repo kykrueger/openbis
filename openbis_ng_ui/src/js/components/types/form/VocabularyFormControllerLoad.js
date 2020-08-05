@@ -62,6 +62,7 @@ export default class VocabularyFormControllerLoad {
       return []
     }
     return vocabulary.terms.map(term => ({
+      id: _.get(term, 'code', null),
       code: this._createField({
         value: _.get(term, 'code', null),
         enabled: false
