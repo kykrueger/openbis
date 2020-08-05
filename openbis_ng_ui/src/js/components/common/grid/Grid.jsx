@@ -34,10 +34,10 @@ const styles = theme => ({
   tableBody: {
     '& tr:last-child td': {
       border: 0
-    },
-    '& tr': {
-      cursor: 'pointer'
     }
+  },
+  tableRowSelectable: {
+    cursor: 'pointer'
   },
   tableLink: {
     fontSize: 'inherit'
@@ -355,7 +355,7 @@ class Grid extends React.Component {
       return <React.Fragment />
     }
 
-    const { classes } = this.props
+    const { classes, onRowSelect } = this.props
     const { page, pageSize, columns } = this.state
 
     let pagedRows = null
@@ -390,6 +390,9 @@ class Grid extends React.Component {
                   onClick={() => this.handleRowSelect(row)}
                   hover={true}
                   selected={row.id === this.props.selectedRowId}
+                  classes={{
+                    root: onRowSelect ? classes.tableRowSelectable : null
+                  }}
                 >
                   {columns.map(column => this.renderRowCell(column, row))}
                 </TableRow>
