@@ -4,31 +4,11 @@ export default class TypeFormControllerEdit {
     this.context = controller.context
   }
 
-  executeCancel(confirmed = false) {
-    const { changed } = this.context.getState()
-    if (!changed || confirmed) {
-      return this.context
-        .setState({
-          unsavedChangesDialogOpen: false
-        })
-        .then(() => {
-          return this.controller.load()
-        })
-        .then(() => {
-          return this.context.setState({
-            mode: 'view'
-          })
-        })
-    } else {
-      this.context.setState({
-        unsavedChangesDialogOpen: true
+  execute() {
+    return this.controller.load().then(() => {
+      return this.context.setState({
+        mode: 'view'
       })
-    }
-  }
-
-  executeCancelCancel() {
-    this.context.setState({
-      unsavedChangesDialogOpen: false
     })
   }
 }

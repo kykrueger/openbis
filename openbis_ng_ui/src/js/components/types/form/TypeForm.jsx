@@ -4,7 +4,6 @@ import { connect } from 'react-redux'
 import { withStyles } from '@material-ui/core/styles'
 import ComponentContext from '@src/js/components/common/ComponentContext.js'
 import PageWithTwoPanels from '@src/js/components/common/page/PageWithTwoPanels.jsx'
-import UnsavedChangesDialog from '@src/js/components/common/dialog/UnsavedChangesDialog.jsx'
 import logger from '@src/js/common/logger.js'
 
 import TypeFormController from './TypeFormController.js'
@@ -98,7 +97,6 @@ class TypeForm extends React.PureComponent {
       selection,
       removePropertyDialogOpen,
       removeSectionDialogOpen,
-      unsavedChangesDialogOpen,
       changed,
       mode
     } = this.state
@@ -131,11 +129,6 @@ class TypeForm extends React.PureComponent {
           properties={properties}
           onConfirm={controller.handleRemoveConfirm}
           onCancel={controller.handleRemoveCancel}
-        />
-        <UnsavedChangesDialog
-          open={unsavedChangesDialogOpen}
-          onConfirm={controller.handleCancelConfirm}
-          onCancel={controller.handleCancelCancel}
         />
       </React.Fragment>
     )

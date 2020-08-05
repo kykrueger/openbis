@@ -1,8 +1,10 @@
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
+import autoBind from 'auto-bind'
 import Container from '@src/js/components/common/form/Container.jsx'
 import Button from '@src/js/components/common/form/Button.jsx'
 import Message from '@src/js/components/common/form/Message.jsx'
+import UnsavedChangesDialog from '@src/js/components/common/dialog/UnsavedChangesDialog.jsx'
 import logger from '@src/js/common/logger.js'
 
 const styles = theme => ({
@@ -33,6 +35,41 @@ const styles = theme => ({
 })
 
 class PageButtons extends React.PureComponent {
+  constructor(props) {
+    super(props)
+    this.state = {
+      unsavedChangesDialogOpen: false
+    }
+    autoBind(this)
+  }
+
+  handleCancel() {
+    const { changed, onCancel } = this.props
+
+    if (changed) {
+      this.setState({
+        unsavedChangesDialogOpen: true
+      })
+    } else {
+      onCancel()
+    }
+  }
+
+  handleCancelConfirm() {
+    const { onCancel } = this.props
+
+    this.setState({
+      unsavedChangesDialogOpen: false
+    })
+    onCancel()
+  }
+
+  handleCancelCancel() {
+    this.setState({
+      unsavedChangesDialogOpen: false
+    })
+  }
+
   render() {
     logger.log(logger.DEBUG, 'PageButtons.render')
 
@@ -84,7 +121,14 @@ class PageButtons extends React.PureComponent {
         <div className={classes.leftContainer}>{additionalButtons}</div>
         <div className={classes.rightContainer}>
           {changed && (
-            <Message type='warning'>You have unsaved changes.</Message>
+            <React.Fragment>
+              <Message type='warning'>You have unsaved changes.</Message>
+              <UnsavedChangesDialog
+                open={this.state.unsavedChangesDialogOpen}
+                onConfirm={this.handleCancelConfirm}
+                onCancel={this.handleCancelCancel}
+              />
+            </React.Fragment>
           )}
           {onSave && (
             <Button
@@ -100,7 +144,7 @@ class PageButtons extends React.PureComponent {
               name='cancel'
               label='Cancel'
               styles={{ root: classes.button }}
-              onClick={onCancel}
+              onClick={this.handleCancel}
             />
           )}
         </div>

@@ -23,7 +23,7 @@ export default class VocabularyFormController {
   }
 
   handleCancel() {
-    return new VocabularyFormControllerCancel(this).executeCancel()
+    return new VocabularyFormControllerCancel(this).execute()
   }
 
   getContext() {
