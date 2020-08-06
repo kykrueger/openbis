@@ -31,7 +31,7 @@ class VocabularyFormButtons extends React.PureComponent {
   }
 
   renderAdditionalButtons(classes) {
-    const { onAddTerm, onRemoveTerm } = this.props
+    const { onAdd, onRemove } = this.props
 
     return (
       <React.Fragment>
@@ -39,14 +39,14 @@ class VocabularyFormButtons extends React.PureComponent {
           name='addTerm'
           label='Add Term'
           styles={{ root: classes.button }}
-          onClick={onAddTerm}
+          onClick={onAdd}
         />
         <Button
           name='removeTerm'
           label='Remove Term'
           styles={{ root: classes.button }}
           disabled={!this.isTermSelected()}
-          onClick={onRemoveTerm}
+          onClick={onRemove}
         />
       </React.Fragment>
     )

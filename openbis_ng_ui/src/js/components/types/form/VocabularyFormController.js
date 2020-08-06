@@ -2,6 +2,7 @@ import autoBind from 'auto-bind'
 import VocabularyFormControllerLoad from './VocabularyFormControllerLoad.js'
 import VocabularyFormControllerEdit from './VocabularyFormControllerEdit.js'
 import VocabularyFormControllerCancel from './VocabularyFormControllerCancel.js'
+import VocabularyFormControllerRemove from './VocabularyFormControllerRemove.js'
 import VocabularyFormControllerValidate from './VocabularyFormControllerValidate.js'
 import VocabularyFormControllerChange from './VocabularyFormControllerChange.js'
 import VocabularyFormControllerChanged from './VocabularyFormControllerChanged.js'
@@ -37,6 +38,10 @@ export default class VocabularyFormController {
 
   handleCancel() {
     return new VocabularyFormControllerCancel(this).execute()
+  }
+
+  handleRemove() {
+    return new VocabularyFormControllerRemove(this).execute()
   }
 
   handleChange(type, params) {

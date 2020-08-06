@@ -125,6 +125,7 @@ class VocabularyForm extends React.PureComponent {
         onEdit={controller.handleEdit}
         onSave={controller.handleSave}
         onCancel={controller.handleCancel}
+        onRemove={controller.handleRemove}
         object={object}
         selection={selection}
         changed={changed}
