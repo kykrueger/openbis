@@ -158,7 +158,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
         id: this.props.property.id
       }
     }
-    if (event.target.dataset.part) {
+    if (event.target.dataset && event.target.dataset.part) {
       newSelection.params.part = event.target.dataset.part
     }
     this.handleClick(event, newSelection)
