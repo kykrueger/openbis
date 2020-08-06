@@ -12,6 +12,7 @@ import logger from '@src/js/common/logger.js'
 
 import VocabularyFormController from './VocabularyFormController.js'
 import VocabularyFormFacade from './VocabularyFormFacade.js'
+import VocabularyFormParameters from './VocabularyFormParameters.jsx'
 import VocabularyFormButtons from './VocabularyFormButtons.jsx'
 
 const styles = () => ({})
@@ -66,38 +67,52 @@ class VocabularyForm extends React.PureComponent {
 
     return (
       <GridContainer>
-      <Grid
-        id={ids.VOCABULARY_TERMS_GRID_ID}
-        columns={[
-          {
-            field: 'code.value',
-            label: 'Code'
-          },
-          {
-            field: 'label.value',
-            label: 'Label'
-          },
-          {
-            field: 'description.value',
-            label: 'Description'
-          },
-          {
-            field: 'official.value',
-            label: 'Official'
+        <Grid
+          id={ids.VOCABULARY_TERMS_GRID_ID}
+          columns={[
+            {
+              field: 'code.value',
+              label: 'Code'
+            },
+            {
+              field: 'label.value',
+              label: 'Label'
+            },
+            {
+              field: 'description.value',
+              label: 'Description'
+            },
+            {
+              field: 'official.value',
+              label: 'Official'
+            }
+          ]}
+          rows={terms}
+          onRowSelect={this.handleRowSelect}
+          selectedRowId={
+            selection && selection.type === 'term' ? selection.params.id : null
           }
-        ]}
-        rows={terms}
-        onRowSelect={this.handleRowSelect}
-        selectedRowId={
-          selection && selection.type === 'term' ? selection.params.id : null
-        }
-      />
+        />
       </GridContainer>
     )
   }
 
   renderAdditionalPanel() {
-    return <div>Additional panel</div>
+    const { controller } = this
+    const { vocabulary, terms, selection, mode } = this.state
+
+    return (
+      <VocabularyFormParameters
+        controller={controller}
+        vocabulary={vocabulary}
+        terms={terms}
+        selection={selection}
+        mode={mode}
+        onChange={controller.handleChange}
+        onSelectionChange={controller.handleSelectionChange}
+        onBlur={controller.handleBlur}
+      />
+    )
   }
 
   renderButtons() {
