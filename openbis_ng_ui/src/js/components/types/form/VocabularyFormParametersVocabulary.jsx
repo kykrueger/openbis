@@ -2,6 +2,7 @@ import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import Container from '@src/js/components/common/form/Container.jsx'
 import TextField from '@src/js/components/common/form/TextField.jsx'
+import Message from '@src/js/components/common/form/Message.jsx'
 import logger from '@src/js/common/logger.js'
 
 import TypeFormHeader from './TypeFormHeader.jsx'
@@ -84,10 +85,26 @@ class VocabularyFormParametersVocabulary extends React.PureComponent {
     return (
       <Container>
         <TypeFormHeader className={classes.header}>Vocabulary</TypeFormHeader>
+        {this.renderMessageManagedInternally(vocabulary)}
         {this.renderCode(vocabulary)}
         {this.renderDescription(vocabulary)}
+        {this.renderUrlTemplate(vocabulary)}
       </Container>
     )
+  }
+
+  renderMessageManagedInternally(vocabulary) {
+    const { classes } = this.props
+
+    if (vocabulary.managedInternally.value) {
+      return (
+        <div className={classes.field}>
+          <Message type='info'>This vocabulary is managed internally.</Message>
+        </div>
+      )
+    } else {
+      return null
+    }
   }
 
   renderCode(vocabulary) {
@@ -131,6 +148,32 @@ class VocabularyFormParametersVocabulary extends React.PureComponent {
           reference={this.references.description}
           label='Description'
           name='description'
+          error={error}
+          disabled={!enabled}
+          value={value}
+          mode={mode}
+          onChange={this.handleChange}
+          onFocus={this.handleFocus}
+          onBlur={this.handleBlur}
+        />
+      </div>
+    )
+  }
+
+  renderUrlTemplate(vocabulary) {
+    const { visible, enabled, error, value } = { ...vocabulary.urlTemplate }
+
+    if (!visible) {
+      return null
+    }
+
+    const { mode, classes } = this.props
+    return (
+      <div className={classes.field}>
+        <TextField
+          reference={this.references.urlTemplate}
+          label='URL template'
+          name='urlTemplate'
           error={error}
           disabled={!enabled}
           value={value}

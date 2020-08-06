@@ -2,6 +2,7 @@ import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import Container from '@src/js/components/common/form/Container.jsx'
 import TextField from '@src/js/components/common/form/TextField.jsx'
+import CheckboxField from '@src/js/components/common/form/CheckboxField.jsx'
 import logger from '@src/js/common/logger.js'
 
 import TypeFormHeader from './TypeFormHeader.jsx'
@@ -90,6 +91,8 @@ class VocabularyFormParametersTerm extends React.PureComponent {
         <TypeFormHeader className={classes.header}>Term</TypeFormHeader>
         {this.renderCode(term)}
         {this.renderLabel(term)}
+        {this.renderDescription(term)}
+        {this.renderOfficial(term)}
       </Container>
     )
   }
@@ -135,6 +138,58 @@ class VocabularyFormParametersTerm extends React.PureComponent {
           reference={this.references.label}
           label='Label'
           name='label'
+          error={error}
+          disabled={!enabled}
+          value={value}
+          mode={mode}
+          onChange={this.handleChange}
+          onFocus={this.handleFocus}
+          onBlur={this.handleBlur}
+        />
+      </div>
+    )
+  }
+
+  renderDescription(term) {
+    const { visible, enabled, error, value } = { ...term.description }
+
+    if (!visible) {
+      return null
+    }
+
+    const { mode, classes } = this.props
+    return (
+      <div className={classes.field}>
+        <TextField
+          reference={this.references.description}
+          label='Description'
+          name='description'
+          error={error}
+          disabled={!enabled}
+          value={value}
+          mode={mode}
+          onChange={this.handleChange}
+          onFocus={this.handleFocus}
+          onBlur={this.handleBlur}
+        />
+      </div>
+    )
+  }
+
+  renderOfficial(term) {
+    const { visible, enabled, error, value } = { ...term.official }
+
+    if (!visible) {
+      return null
+    }
+
+    const { mode, classes } = this.props
+    return (
+      <div className={classes.field}>
+        <CheckboxField
+          reference={this.references.official}
+          label='Official'
+          name='official'
           error={error}
           disabled={!enabled}
           value={value}

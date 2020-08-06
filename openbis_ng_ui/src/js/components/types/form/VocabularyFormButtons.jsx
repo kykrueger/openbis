@@ -1,7 +1,6 @@
 import React from 'react'
 import PageButtons from '@src/js/components/common/page/PageButtons.jsx'
 import Button from '@src/js/components/common/form/Button.jsx'
-import objectType from '@src/js/common/consts/objectType.js'
 import logger from '@src/js/common/logger.js'
 
 class VocabularyFormButtons extends React.PureComponent {
@@ -12,17 +11,15 @@ class VocabularyFormButtons extends React.PureComponent {
   render() {
     logger.log(logger.DEBUG, 'VocabularyFormButtons.render')
 
-    const { mode, onEdit, onSave, onCancel, changed, object } = this.props
-
-    const existing = object.type === objectType.VOCABULARY_TYPE
+    const { mode, onEdit, onSave, onCancel, changed, vocabulary } = this.props
 
     return (
       <PageButtons
         mode={mode}
         changed={changed}
-        onEdit={onEdit}
+        onEdit={vocabulary.managedInternally.value ? null : onEdit}
         onSave={onSave}
-        onCancel={existing ? onCancel : null}
+        onCancel={vocabulary.id ? onCancel : null}
         renderAdditionalButtons={classes =>
           this.renderAdditionalButtons(classes)
         }

@@ -48,12 +48,19 @@ export default class VocabularyFormControllerLoad {
 
   _createVocabulary(vocabulary) {
     return {
+      id: _.get(vocabulary, 'code', null),
       code: this._createField({
         value: _.get(vocabulary, 'code', null),
         enabled: vocabulary === null
       }),
       description: this._createField({
         value: _.get(vocabulary, 'description', null)
+      }),
+      urlTemplate: this._createField({
+        value: _.get(vocabulary, 'urlTemplate', null)
+      }),
+      managedInternally: this._createField({
+        value: _.get(vocabulary, 'managedInternally', false)
       })
     }
   }
@@ -75,7 +82,7 @@ export default class VocabularyFormControllerLoad {
         value: _.get(term, 'description', null)
       }),
       official: this._createField({
-        value: _.get(term, 'official', false)
+        value: _.get(term, 'official', true)
       })
     }))
   }

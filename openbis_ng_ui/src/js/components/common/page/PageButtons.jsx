@@ -9,7 +9,8 @@ import logger from '@src/js/common/logger.js'
 
 const styles = theme => ({
   container: {
-    display: 'flex'
+    display: 'flex',
+    minHeight: '30px'
   },
   leftContainer: {
     flexGrow: 1,

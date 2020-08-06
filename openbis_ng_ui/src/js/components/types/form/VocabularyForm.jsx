@@ -117,8 +117,7 @@ class VocabularyForm extends React.PureComponent {
 
   renderButtons() {
     const { controller } = this
-    const { object } = this.props
-    const { selection, changed, mode } = this.state
+    const { vocabulary, selection, changed, mode } = this.state
 
     return (
       <VocabularyFormButtons
@@ -126,7 +125,7 @@ class VocabularyForm extends React.PureComponent {
         onSave={controller.handleSave}
         onCancel={controller.handleCancel}
         onRemove={controller.handleRemove}
-        object={object}
+        vocabulary={vocabulary}
         selection={selection}
         changed={changed}
         mode={mode}
