@@ -6,6 +6,7 @@ import { withStyles } from '@material-ui/core/styles'
 import ComponentContext from '@src/js/components/common/ComponentContext.js'
 import PageWithTwoPanels from '@src/js/components/common/page/PageWithTwoPanels.jsx'
 import Grid from '@src/js/components/common/grid/Grid.jsx'
+import GridContainer from '@src/js/components/common/grid/GridContainer.jsx'
 import ids from '@src/js/common/consts/ids.js'
 import logger from '@src/js/common/logger.js'
 
@@ -64,6 +65,7 @@ class VocabularyForm extends React.PureComponent {
     const { terms, selection } = this.state
 
     return (
+      <GridContainer>
       <Grid
         id={ids.VOCABULARY_TERMS_GRID_ID}
         columns={[
@@ -90,6 +92,7 @@ class VocabularyForm extends React.PureComponent {
           selection && selection.type === 'term' ? selection.params.id : null
         }
       />
+      </GridContainer>
     )
   }
 
