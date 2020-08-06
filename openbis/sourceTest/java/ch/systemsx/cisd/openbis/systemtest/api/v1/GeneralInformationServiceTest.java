@@ -1921,7 +1921,7 @@ public class GeneralInformationServiceTest extends SystemTestCase
 
         List<Experiment> experiments =
                 generalInformationService.searchForExperiments(sessionToken, searchCriteria);
-        assertEntities("[/CISD/NEMO/EXP1, /CISD/NEMO/EXP10]", experiments);
+        assertTrue(contains(experiments, Arrays.asList("/CISD/NEMO/EXP1", "/CISD/NEMO/EXP10")));
     }
 
     @Test
@@ -1934,7 +1934,7 @@ public class GeneralInformationServiceTest extends SystemTestCase
 
         List<Experiment> experiments =
                 generalInformationService.searchForExperiments(sessionToken, searchCriteria);
-        assertEntities("[/CISD/NEMO/EXP1, /CISD/NEMO/EXP10]", experiments);
+        assertTrue(contains(experiments, Arrays.asList("/CISD/NEMO/EXP1", "/CISD/NEMO/EXP10")));
     }
 
     @Test
