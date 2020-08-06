@@ -1886,6 +1886,18 @@ public class GeneralInformationServiceTest extends SystemTestCase
         return null;
     }
 
+    private boolean contains(List<Experiment> experiments, List<String> experimentIdentifiers) {
+        int found = 0;
+        for (String experimentIdentifier : experimentIdentifiers) {
+            for (Experiment experiment : experiments) {
+                if (experiment.getIdentifier().equals(experimentIdentifier)) {
+                    found++;
+                }
+            }
+        }
+        return found == experimentIdentifiers.size();
+    }
+
     @Test
     public void testSearchForExperimentsByModifierUserId()
     {
@@ -1935,7 +1947,7 @@ public class GeneralInformationServiceTest extends SystemTestCase
 
         List<Experiment> experiments =
                 generalInformationService.searchForExperiments(sessionToken, searchCriteria);
-        assertEntities("[/CISD/NEMO/EXP1, /CISD/NEMO/EXP10]", experiments);
+        assertTrue(contains(experiments, Arrays.asList("/CISD/NEMO/EXP1", "/CISD/NEMO/EXP10")));
     }
 
     @Test
