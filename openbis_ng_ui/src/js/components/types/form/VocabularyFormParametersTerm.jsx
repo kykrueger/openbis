@@ -55,14 +55,18 @@ class VocabularyFormParametersTerm extends React.PureComponent {
   }
 
   handleChange(event) {
+    const term = this.getTerm(this.props)
     this.props.onChange('term', {
+      id: term.id,
       field: event.target.name,
       value: event.target.value
     })
   }
 
   handleFocus(event) {
+    const term = this.getTerm(this.props)
     this.props.onSelectionChange('term', {
+      id: term.id,
       part: event.target.name
     })
   }

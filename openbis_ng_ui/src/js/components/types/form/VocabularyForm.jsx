@@ -123,7 +123,7 @@ class VocabularyForm extends React.PureComponent {
     return (
       <VocabularyFormButtons
         onEdit={controller.handleEdit}
-        onSave={() => {}}
+        onSave={controller.handleSave}
         onCancel={controller.handleCancel}
         object={object}
         selection={selection}
