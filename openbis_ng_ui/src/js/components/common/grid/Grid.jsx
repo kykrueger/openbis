@@ -74,7 +74,7 @@ class Grid extends React.Component {
     let columns = props.columns.map(column => ({
       ...column,
       label: column.label || _.upperFirst(column.field),
-      render: column.render || (row => _.get(row, column.field)),
+      render: column.render || (row => this.getValue(row, column.field)),
       sort: column.sort === undefined ? sortDefault : Boolean(column.sort),
       visible: true
     }))
@@ -322,7 +322,7 @@ class Grid extends React.Component {
     return _.filter(rows, row => {
       let matchesAll = true
       this.state.columns.forEach(column => {
-        let value = _.get(row, column.field)
+        let value = this.getValue(row, column.field)
         let filter = this.state.filters[column.field]
         matchesAll = matchesAll && matches(value, filter)
       })
@@ -338,8 +338,8 @@ class Grid extends React.Component {
       if (column) {
         return rows.sort((t1, t2) => {
           let sign = sortDirection === 'asc' ? 1 : -1
-          let v1 = _.get(t1, column.field) || ''
-          let v2 = _.get(t2, column.field) || ''
+          let v1 = this.getValue(t1, column.field)
+          let v2 = this.getValue(t2, column.field)
           return sign * v1.localeCompare(v2)
         })
       }
@@ -354,6 +354,15 @@ class Grid extends React.Component {
       page * pageSize,
       Math.min(rows.length, (page + 1) * pageSize)
     )
+  }
+
+  getValue(row, field) {
+    const value = _.get(row, field)
+    if (value !== null && value !== undefined) {
+      return String(value)
+    } else {
+      return ''
+    }
   }
 
   render() {
