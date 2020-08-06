@@ -99,6 +99,14 @@ class Grid extends React.Component {
     this.load()
   }
 
+  componentDidUpdate(prevProps) {
+    if (this.props.rows !== prevProps.rows) {
+      this.setState({
+        rows: this.props.rows
+      })
+    }
+  }
+
   load() {
     this.loadSettings().then(() => {
       this.loadRows().then(() => {
