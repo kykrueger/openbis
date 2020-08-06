@@ -96,6 +96,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.ExperimentIdentifi
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SampleIdentifierFactory;
 import ch.systemsx.cisd.openbis.systemtest.SystemTestCase;
 import ch.systemsx.cisd.openbis.systemtest.authorization.ProjectAuthorizationUser;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Person;
 
 import junit.framework.Assert;
 
@@ -1874,11 +1875,24 @@ public class GeneralInformationServiceTest extends SystemTestCase
         assertEntities("[/CISD/NEMO/EXP-TEST-1, /CISD/NEMO/EXP-TEST-2]", experiments);
     }
 
+    private Person getPerson(String userId)
+    {
+        List<Person> persons = generalInformationService.listPersons(sessionToken);
+        for(Person person:persons) {
+            if(person.getUserId().equals(userId)) {
+                return person;
+            }
+        }
+        return null;
+    }
+
     @Test
     public void testSearchForExperimentsByModifierUserId()
     {
+        String userId = "test_role";
+        Person person = getPerson(userId);
         SearchCriteria searchCriteria = new SearchCriteria();
-        searchCriteria.addMatchClause(MatchClause.createAttributeMatch(MatchClauseAttribute.MODIFIER_USER_ID, "test_role"));
+        searchCriteria.addMatchClause(MatchClause.createAttributeMatch(MatchClauseAttribute.MODIFIER_USER_ID, person.getUserId()));
 
         List<Experiment> experiments =
                 generalInformationService.searchForExperiments(sessionToken, searchCriteria);
@@ -1888,8 +1902,10 @@ public class GeneralInformationServiceTest extends SystemTestCase
     @Test
     public void testSearchForExperimentsByModifierFirstName()
     {
+        String userId = "test_role";
+        Person person = getPerson(userId);
         SearchCriteria searchCriteria = new SearchCriteria();
-        searchCriteria.addMatchClause(MatchClause.createAttributeMatch(MatchClauseAttribute.MODIFIER_FIRST_NAME, "\"John 3\""));
+        searchCriteria.addMatchClause(MatchClause.createAttributeMatch(MatchClauseAttribute.MODIFIER_FIRST_NAME, "\"" + person.getFirstName() + "\""));
 
         List<Experiment> experiments =
                 generalInformationService.searchForExperiments(sessionToken, searchCriteria);
@@ -1899,8 +1915,10 @@ public class GeneralInformationServiceTest extends SystemTestCase
     @Test
     public void testSearchForExperimentsByModifierLastName()
     {
+        String userId = "test_role";
+        Person person = getPerson(userId);
         SearchCriteria searchCriteria = new SearchCriteria();
-        searchCriteria.addMatchClause(MatchClause.createAttributeMatch(MatchClauseAttribute.MODIFIER_LAST_NAME, "\"Doe test role\""));
+        searchCriteria.addMatchClause(MatchClause.createAttributeMatch(MatchClauseAttribute.MODIFIER_LAST_NAME, "\"" + person.getLastName() + "\""));
 
         List<Experiment> experiments =
                 generalInformationService.searchForExperiments(sessionToken, searchCriteria);
@@ -1910,8 +1928,10 @@ public class GeneralInformationServiceTest extends SystemTestCase
     @Test
     public void testSearchForExperimentsByModifierEmail()
     {
+        String userId = "test_role";
+        Person person = getPerson(userId);
         SearchCriteria searchCriteria = new SearchCriteria();
-        searchCriteria.addMatchClause(MatchClause.createAttributeMatch(MatchClauseAttribute.MODIFIER_EMAIL, "\"test_role@in.active\""));
+        searchCriteria.addMatchClause(MatchClause.createAttributeMatch(MatchClauseAttribute.MODIFIER_EMAIL, "\"" + person.getEmail() + "\""));
 
         List<Experiment> experiments =
                 generalInformationService.searchForExperiments(sessionToken, searchCriteria);
