@@ -1,7 +1,7 @@
-export default class TypeFormControllerEdit {
+export default class PageControllerEdit {
   constructor(controller) {
     this.controller = controller
-    this.context = controller.context
+    this.context = controller.getContext()
   }
 
   execute() {

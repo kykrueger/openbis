@@ -1,6 +1,6 @@
-export default class TypeFormControllerSelectionChange {
+export default class PageControllerSelectionChange {
   constructor(controller) {
-    this.context = controller.context
+    this.context = controller.getContext()
   }
 
   execute(type, params) {
