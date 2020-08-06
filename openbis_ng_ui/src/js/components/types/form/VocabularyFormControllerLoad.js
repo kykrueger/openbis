@@ -31,6 +31,7 @@ export default class VocabularyFormControllerLoad {
     } catch (error) {
       this.context.dispatch(actions.errorChange(error))
     } finally {
+      this.controller.changed(false)
       this.context.setState({
         loaded: true,
         loading: false
