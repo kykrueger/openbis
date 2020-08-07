@@ -5,10 +5,19 @@ import VocabularyFormControllerValidate from './VocabularyFormControllerValidate
 import VocabularyFormControllerChange from './VocabularyFormControllerChange.js'
 import VocabularyFormControllerSave from './VocabularyFormControllerSave.js'
 import pages from '@src/js/common/consts/pages.js'
+import objectTypes from '@src/js/common/consts/objectType.js'
 
 export default class VocabularyFormController extends PageController {
   getPage() {
     return pages.TYPES
+  }
+
+  getNewObjectType() {
+    return objectTypes.NEW_VOCABULARY_TYPE
+  }
+
+  getExistingObjectType() {
+    return objectTypes.VOCABULARY_TYPE
   }
 
   load() {

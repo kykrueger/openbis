@@ -20,6 +20,14 @@ export default class PageController {
     throw 'Method not implemented'
   }
 
+  getNewObjectType() {
+    throw 'Method not implemented'
+  }
+
+  getExistingObjectType() {
+    throw 'Method not implemented'
+  }
+
   load() {
     throw 'Method not implemented'
   }
