@@ -35,7 +35,8 @@ $.extend(DefaultProfile.prototype, {
 	    //
 	    // Enable on new openBIS 20.x release
 	    //
-	    this.enableNewAnnotationsBackend = true;
+	    this.isOpenBIS2020 = true;
+	    this.enableNewAnnotationsBackend = this.isOpenBIS2020;
 
 		//
 		// Updating title and logo
