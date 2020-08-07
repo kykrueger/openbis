@@ -39,52 +39,67 @@ export default class VocabularyFormControllerLoad {
     }
   }
 
-  async _init(vocabulary) {
-    return this.context.setState(() => ({
-      vocabulary: this._createVocabulary(vocabulary),
-      terms: this._createTerms(vocabulary)
-    }))
+  async _init(loadedVocabulary) {
+    const vocabulary = this._createVocabulary(loadedVocabulary)
+    const terms = this._createTerms(loadedVocabulary)
+
+    return this.context.setState({
+      vocabulary,
+      terms,
+      original: {
+        vocabulary: vocabulary.original,
+        terms: terms.map(term => term.original)
+      }
+    })
   }
 
-  _createVocabulary(vocabulary) {
-    return {
-      id: _.get(vocabulary, 'code', null),
+  _createVocabulary(loadedVocabulary) {
+    const vocabulary = {
+      id: _.get(loadedVocabulary, 'code', null),
       code: this._createField({
-        value: _.get(vocabulary, 'code', null),
-        enabled: vocabulary === null
+        value: _.get(loadedVocabulary, 'code', null),
+        enabled: loadedVocabulary === null
       }),
       description: this._createField({
-        value: _.get(vocabulary, 'description', null)
+        value: _.get(loadedVocabulary, 'description', null)
       }),
       urlTemplate: this._createField({
-        value: _.get(vocabulary, 'urlTemplate', null)
+        value: _.get(loadedVocabulary, 'urlTemplate', null)
       }),
       managedInternally: this._createField({
-        value: _.get(vocabulary, 'managedInternally', false)
+        value: _.get(loadedVocabulary, 'managedInternally', false)
       })
     }
+    if (loadedVocabulary) {
+      vocabulary.original = _.cloneDeep(vocabulary)
+    }
+    return vocabulary
   }
 
-  _createTerms(vocabulary) {
-    if (!vocabulary) {
+  _createTerms(loadedVocabulary) {
+    if (!loadedVocabulary) {
       return []
     }
-    return vocabulary.terms.map(term => ({
-      id: _.get(term, 'code', null),
-      code: this._createField({
-        value: _.get(term, 'code', null),
-        enabled: false
-      }),
-      label: this._createField({
-        value: _.get(term, 'label', null)
-      }),
-      description: this._createField({
-        value: _.get(term, 'description', null)
-      }),
-      official: this._createField({
-        value: _.get(term, 'official', true)
-      })
-    }))
+    return loadedVocabulary.terms.map(loadedTerm => {
+      const term = {
+        id: _.get(loadedTerm, 'code', null),
+        code: this._createField({
+          value: _.get(loadedTerm, 'code', null),
+          enabled: false
+        }),
+        label: this._createField({
+          value: _.get(loadedTerm, 'label', null)
+        }),
+        description: this._createField({
+          value: _.get(loadedTerm, 'description', null)
+        }),
+        official: this._createField({
+          value: _.get(loadedTerm, 'official', true)
+        })
+      }
+      term.original = _.cloneDeep(term)
+      return term
+    })
   }
 
   _createField(params = {}) {

@@ -9,4 +9,8 @@ export default class VocabularyFormFacade {
       return map[code]
     })
   }
+
+  async executeOperations(operations, options) {
+    return openbis.executeOperations(operations, options)
+  }
 }
