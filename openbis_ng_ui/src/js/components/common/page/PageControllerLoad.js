@@ -3,9 +3,9 @@ import actions from '@src/js/store/actions/actions.js'
 export default class PageControllerLoad {
   constructor(controller) {
     this.controller = controller
-    this.context = controller.context
-    this.facade = controller.facade
-    this.object = controller.object
+    this.context = controller.getContext()
+    this.facade = controller.getFacade()
+    this.object = controller.getObject()
   }
 
   async load() {

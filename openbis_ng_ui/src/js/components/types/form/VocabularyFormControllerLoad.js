@@ -3,9 +3,14 @@ import PageControllerLoad from '@src/js/components/common/page/PageControllerLoa
 
 export default class VocabularyFormControllerLoad extends PageControllerLoad {
   async load(object, isNew) {
-    const loadedVocabulary = isNew
-      ? null
-      : await this.facade.loadVocabulary(object.id)
+    let loadedVocabulary = null
+
+    if (!isNew) {
+      loadedVocabulary = await this.facade.loadVocabulary(object.id)
+      if (!loadedVocabulary) {
+        return
+      }
+    }
 
     const vocabulary = this._createVocabulary(loadedVocabulary)
     const terms = this._createTerms(loadedVocabulary)
