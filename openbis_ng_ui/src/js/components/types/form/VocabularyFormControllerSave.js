@@ -1,65 +1,15 @@
 import _ from 'lodash'
+import PageControllerSave from '@src/js/components/common/page/PageControllerSave.js'
 import pages from '@src/js/common/consts/pages.js'
 import actions from '@src/js/store/actions/actions.js'
 import objectTypes from '@src/js/common/consts/objectType.js'
 import openbis from '@src/js/services/openbis.js'
 
-export default class VocabularyFormControllerSave {
-  constructor(controller) {
-    this.controller = controller
-    this.context = controller.getContext()
-    this.facade = controller.getFacade()
-    this.object = controller.getObject()
-  }
-
-  async execute() {
-    await this.context.setState({
-      validate: true
-    })
-
-    const valid = await this.controller.validate(true)
-    if (!valid) {
-      return
-    }
-
-    await this.context.setState({
-      loading: true
-    })
-
+export default class VocabularyFormControllerSave extends PageControllerSave {
+  async save() {
     const state = this.context.getState()
     const vocabulary = this._prepareVocabulary(state.vocabulary)
     const terms = this._prepareTerms(state.terms)
-
-    const operations = this._createOperations(vocabulary, terms)
-    const options = new openbis.SynchronousOperationExecutionOptions()
-    options.setExecuteInOrder(true)
-
-    const oldObject = this.object
-    const newObject = {
-      type: objectTypes.VOCABULARY_TYPE,
-      id: vocabulary.code.value
-    }
-
-    return this.facade
-      .executeOperations(operations, options)
-      .then(async () => {
-        this.controller.object = newObject
-        await this.controller.load()
-        await this.context.setState({
-          loading: false
-        })
-        this._dispatchActions(oldObject, newObject)
-      })
-      .catch(error => {
-        this.context.setState({
-          loading: false
-        })
-        this.context.dispatch(actions.errorChange(error))
-      })
-  }
-
-  _createOperations(vocabulary, terms) {
-    const { original } = this.context.getState()
     const operations = []
 
     if (vocabulary.original) {
@@ -70,7 +20,7 @@ export default class VocabularyFormControllerSave {
       operations.push(this._createVocabularyOperation(vocabulary))
     }
 
-    original.terms.forEach(originalTerm => {
+    state.original.terms.forEach(originalTerm => {
       const term = _.find(terms, ['id', originalTerm.id])
       if (!term) {
         operations.push(this._deleteTermOperation(vocabulary, originalTerm))
@@ -87,7 +37,11 @@ export default class VocabularyFormControllerSave {
       }
     })
 
-    return operations
+    const options = new openbis.SynchronousOperationExecutionOptions()
+    options.setExecuteInOrder(true)
+    await this.facade.executeOperations(operations, options)
+
+    return vocabulary.code.value
   }
 
   _prepareVocabulary(vocabulary) {
