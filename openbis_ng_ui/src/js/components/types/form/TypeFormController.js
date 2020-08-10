@@ -42,10 +42,6 @@ export default class TypeFormController extends PageController {
     new TypeFormControllerChange(this).execute(type, params)
   }
 
-  handleBlur() {
-    this.validate()
-  }
-
   handleAddSection() {
     new TypeFormControllerAddSection(this).execute()
   }

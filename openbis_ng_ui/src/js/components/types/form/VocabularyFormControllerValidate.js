@@ -1,20 +1,8 @@
-import _ from 'lodash'
-import FormValidator from '@src/js/components/common/form/FormValidator.js'
+import PageControllerValidate from '@src/js/components/common/page/PageConrollerValidate.js'
 
-export default class VocabularyFormControllerValidate {
-  constructor(controller) {
-    this.controller = controller
-    this.context = controller.context
-    this.object = controller.object
-    this.validator = new FormValidator()
-  }
-
-  async execute(autofocus) {
-    const { validate, vocabulary, terms } = this.context.getState()
-
-    if (!validate) {
-      return true
-    }
+export default class VocabularyFormControllerValidate extends PageControllerValidate {
+  validate(validator) {
+    const { vocabulary, terms } = this.context.getState()
 
     const newVocabulary = {
       ...vocabulary
@@ -23,58 +11,45 @@ export default class VocabularyFormControllerValidate {
       ...term
     }))
 
-    this._validateVocabulary(newVocabulary)
-    this._validateTerms(newVocabulary, newTerms)
+    this._validateVocabulary(validator, newVocabulary)
+    this._validateTerms(validator, newTerms)
 
-    const errors = this.validator.getErrors()
-
-    if (!_.isEmpty(errors) && autofocus) {
-      let selection = null
-
-      const firstError = errors[0]
-      if (firstError.object === newVocabulary) {
-        selection = {
-          type: 'vocabulary',
-          params: {
-            part: firstError.name
-          }
-        }
-      } else if (newTerms.includes(firstError.object)) {
-        selection = {
-          type: 'term',
-          params: {
-            id: firstError.object.id,
-            part: firstError.name
-          }
-        }
-      }
-
-      if (selection) {
-        await this.context.setState({
-          selection
-        })
-      }
-    }
-
-    await this.context.setState({
+    return {
       vocabulary: newVocabulary,
       terms: newTerms
-    })
-
-    return _.isEmpty(errors)
+    }
   }
 
-  _validateVocabulary(vocabulary) {
-    this.validator.validateNotEmpty(vocabulary, 'code', 'Code')
+  selection(newState, firstError) {
+    if (firstError.object === newState.vocabulary) {
+      return {
+        type: 'vocabulary',
+        params: {
+          part: firstError.name
+        }
+      }
+    } else if (newState.terms.includes(firstError.object)) {
+      return {
+        type: 'term',
+        params: {
+          id: firstError.object.id,
+          part: firstError.name
+        }
+      }
+    }
   }
 
-  _validateTerms(vocabulary, terms) {
+  _validateVocabulary(validator, vocabulary) {
+    validator.validateNotEmpty(vocabulary, 'code', 'Code')
+  }
+
+  _validateTerms(validator, terms) {
     terms.forEach(term => {
-      this._validateTerm(vocabulary, term)
+      this._validateTerm(validator, term)
     })
   }
 
-  _validateTerm(vocabulary, term) {
-    this.validator.validateNotEmpty(term, 'code', 'Code')
+  _validateTerm(validator, term) {
+    validator.validateNotEmpty(term, 'code', 'Code')
   }
 }

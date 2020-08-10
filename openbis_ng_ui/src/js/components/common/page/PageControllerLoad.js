@@ -8,7 +8,8 @@ export default class PageControllerLoad {
     this.object = controller.getObject()
   }
 
-  async load() {
+  // eslint-disable-next-line no-unused-vars
+  async load(object, isNew) {
     throw 'Method not implemented'
   }
 

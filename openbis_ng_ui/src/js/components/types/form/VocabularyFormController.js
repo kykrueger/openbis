@@ -36,10 +36,6 @@ export default class VocabularyFormController extends PageController {
     return new VocabularyFormControllerChange(this).execute(type, params)
   }
 
-  handleBlur() {
-    return this.validate()
-  }
-
   handleSave() {
     return new VocabularyFormControllerSave(this).execute()
   }

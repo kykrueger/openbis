@@ -32,6 +32,11 @@ export default class PageController {
     throw 'Method not implemented'
   }
 
+  // eslint-disable-next-line no-unused-vars
+  validate(autofocus) {
+    throw 'Method not implemented'
+  }
+
   handleEdit() {
     return new PageControllerEdit(this).execute()
   }
@@ -42,6 +47,10 @@ export default class PageController {
 
   handleSelectionChange(type, params) {
     return new PageControllerSelectionChange(this).execute(type, params)
+  }
+
+  handleBlur() {
+    return this.validate()
   }
 
   changed(changed) {
