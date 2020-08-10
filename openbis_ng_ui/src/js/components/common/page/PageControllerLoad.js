@@ -43,13 +43,4 @@ export default class PageControllerLoad {
       })
     }
   }
-
-  createField(params = {}) {
-    return {
-      value: null,
-      visible: true,
-      enabled: true,
-      ...params
-    }
-  }
 }

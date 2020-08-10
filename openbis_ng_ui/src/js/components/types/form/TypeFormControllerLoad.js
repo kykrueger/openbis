@@ -1,6 +1,7 @@
 import _ from 'lodash'
 import openbis from '@src/js/services/openbis.js'
 import PageControllerLoad from '@src/js/components/common/page/PageControllerLoad.js'
+import FormUtil from '@src/js/components/common/form/FormUtil.js'
 import util from '@src/js/common/util.js'
 
 import TypeFormControllerStrategies from './TypeFormControllerStrategies.js'
@@ -121,17 +122,17 @@ export default class TypeFormControllerLoad extends PageControllerLoad {
   _createType(loadedType, loadedUsages) {
     const strategy = this._getStrategy()
     const type = {
-      code: this.createField({
+      code: FormUtil.createField({
         value: _.get(loadedType, 'code', null),
         enabled: loadedType === null
       }),
-      objectType: this.createField({
+      objectType: FormUtil.createField({
         value: this.object.type
       }),
-      description: this.createField({
+      description: FormUtil.createField({
         value: _.get(loadedType, 'description', null)
       }),
-      validationPlugin: this.createField({
+      validationPlugin: FormUtil.createField({
         value: _.get(loadedType, 'validationPlugin.name', null)
       }),
       usages: (loadedUsages && loadedUsages.type) || 0,
@@ -144,7 +145,7 @@ export default class TypeFormControllerLoad extends PageControllerLoad {
   _createSection(id, loadedAssignment) {
     return {
       id: id,
-      name: this.createField({
+      name: FormUtil.createField({
         value: util.trim(loadedAssignment.section)
       }),
       properties: []
@@ -182,56 +183,56 @@ export default class TypeFormControllerLoad extends PageControllerLoad {
 
     return {
       id: id,
-      scope: this.createField({
+      scope: FormUtil.createField({
         value: scope,
         enabled: false
       }),
-      code: this.createField({
+      code: FormUtil.createField({
         value: code,
         enabled: false
       }),
-      label: this.createField({
+      label: FormUtil.createField({
         value: _.get(propertyType, 'label', null)
       }),
-      description: this.createField({
+      description: FormUtil.createField({
         value: _.get(propertyType, 'description', null)
       }),
-      dataType: this.createField({
+      dataType: FormUtil.createField({
         value: dataType,
         enabled
       }),
-      plugin: this.createField({
+      plugin: FormUtil.createField({
         value: _.get(loadedAssignment, 'plugin.name', null),
         enabled
       }),
-      vocabulary: this.createField({
+      vocabulary: FormUtil.createField({
         value: _.get(propertyType, 'vocabulary.code', null),
         visible: dataType === openbis.DataType.CONTROLLEDVOCABULARY,
         enabled
       }),
-      materialType: this.createField({
+      materialType: FormUtil.createField({
         value: _.get(propertyType, 'materialType.code', null),
         visible: dataType === openbis.DataType.MATERIAL,
         enabled
       }),
-      schema: this.createField({
+      schema: FormUtil.createField({
         value: _.get(propertyType, 'schema', null),
         visible: dataType === openbis.DataType.XML
       }),
-      transformation: this.createField({
+      transformation: FormUtil.createField({
         value: _.get(propertyType, 'transformation', null),
         visible: dataType === openbis.DataType.XML
       }),
-      mandatory: this.createField({
+      mandatory: FormUtil.createField({
         value: _.get(loadedAssignment, 'mandatory', false)
       }),
-      showInEditView: this.createField({
+      showInEditView: FormUtil.createField({
         value: _.get(loadedAssignment, 'showInEditView', false)
       }),
-      showRawValueInForms: this.createField({
+      showRawValueInForms: FormUtil.createField({
         value: _.get(loadedAssignment, 'showRawValueInForms', false)
       }),
-      initialValueForExistingEntities: this.createField({
+      initialValueForExistingEntities: FormUtil.createField({
         visible: false
       }),
       assignments,
@@ -304,40 +305,36 @@ export default class TypeFormControllerLoad extends PageControllerLoad {
 
   _getStrategy() {
     const strategies = new TypeFormControllerStrategies()
-    strategies.extendObjectTypeStrategy(new ObjectTypeStrategy(this))
+    strategies.extendObjectTypeStrategy(new ObjectTypeStrategy())
     strategies.extendCollectionTypeStrategy(new CollectionTypeStrategy())
-    strategies.extendDataSetTypeStrategy(new DataSetTypeStrategy(this))
+    strategies.extendDataSetTypeStrategy(new DataSetTypeStrategy())
     strategies.extendMaterialTypeStrategy(new MaterialTypeStrategy())
     return strategies.getStrategy(this.object.type)
   }
 }
 
 class ObjectTypeStrategy {
-  constructor(executor) {
-    this.executor = executor
-  }
-
   setTypeAttributes(object, loadedType) {
     Object.assign(object, {
-      listable: this.executor.createField({
+      listable: FormUtil.createField({
         value: _.get(loadedType, 'listable', false)
       }),
-      showContainer: this.executor.createField({
+      showContainer: FormUtil.createField({
         value: _.get(loadedType, 'showContainer', false)
       }),
-      showParents: this.executor.createField({
+      showParents: FormUtil.createField({
         value: _.get(loadedType, 'showParents', false)
       }),
-      showParentMetadata: this.executor.createField({
+      showParentMetadata: FormUtil.createField({
         value: _.get(loadedType, 'showParentMetadata', false)
       }),
-      autoGeneratedCode: this.executor.createField({
+      autoGeneratedCode: FormUtil.createField({
         value: _.get(loadedType, 'autoGeneratedCode', false)
       }),
-      generatedCodePrefix: this.executor.createField({
+      generatedCodePrefix: FormUtil.createField({
         value: _.get(loadedType, 'generatedCodePrefix', null)
       }),
-      subcodeUnique: this.executor.createField({
+      subcodeUnique: FormUtil.createField({
         value: _.get(loadedType, 'subcodeUnique', false)
       })
     })
@@ -349,19 +346,15 @@ class CollectionTypeStrategy {
 }
 
 class DataSetTypeStrategy {
-  constructor(executor) {
-    this.executor = executor
-  }
-
   setTypeAttributes(object, loadedType) {
     Object.assign(object, {
-      mainDataSetPattern: this.executor.createField({
+      mainDataSetPattern: FormUtil.createField({
         value: _.get(loadedType, 'mainDataSetPattern', null)
       }),
-      mainDataSetPath: this.executor.createField({
+      mainDataSetPath: FormUtil.createField({
         value: _.get(loadedType, 'mainDataSetPath', null)
       }),
-      disallowDeletion: this.executor.createField({
+      disallowDeletion: FormUtil.createField({
         value: _.get(loadedType, 'disallowDeletion', false)
       })
     })

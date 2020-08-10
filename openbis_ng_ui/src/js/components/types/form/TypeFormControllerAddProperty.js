@@ -1,3 +1,5 @@
+import FormUtil from '@src/js/components/common/form/FormUtil.js'
+
 export default class TypeFormControllerAddProperty {
   constructor(controller) {
     this.controller = controller
@@ -38,38 +40,38 @@ export default class TypeFormControllerAddProperty {
     let newProperties = Array.from(properties)
     let newProperty = {
       id: 'property-' + propertiesCounter++,
-      scope: this._createField({
+      scope: FormUtil.createField({
         value: 'local'
       }),
-      code: this._createField(),
-      label: this._createField(),
-      description: this._createField(),
-      dataType: this._createField({
+      code: FormUtil.createField(),
+      label: FormUtil.createField(),
+      description: FormUtil.createField(),
+      dataType: FormUtil.createField({
         value: 'VARCHAR'
       }),
-      plugin: this._createField(),
-      vocabulary: this._createField({
+      plugin: FormUtil.createField(),
+      vocabulary: FormUtil.createField({
         visible: false
       }),
-      materialType: this._createField({
+      materialType: FormUtil.createField({
         visible: false
       }),
-      schema: this._createField({
+      schema: FormUtil.createField({
         visible: false
       }),
-      transformation: this._createField({
+      transformation: FormUtil.createField({
         visible: false
       }),
-      mandatory: this._createField({
+      mandatory: FormUtil.createField({
         value: false
       }),
-      showInEditView: this._createField({
+      showInEditView: FormUtil.createField({
         value: true
       }),
-      showRawValueInForms: this._createField({
+      showRawValueInForms: FormUtil.createField({
         value: false
       }),
-      initialValueForExistingEntities: this._createField({
+      initialValueForExistingEntities: FormUtil.createField({
         visible: false
       }),
       section: section.id,
@@ -105,14 +107,5 @@ export default class TypeFormControllerAddProperty {
     }))
 
     this.controller.changed(true)
-  }
-
-  _createField(params = {}) {
-    return {
-      value: null,
-      visible: true,
-      enabled: true,
-      ...params
-    }
   }
 }

@@ -1,5 +1,6 @@
 import _ from 'lodash'
 import PageControllerLoad from '@src/js/components/common/page/PageControllerLoad.js'
+import FormUtil from '@src/js/components/common/form/FormUtil.js'
 
 export default class VocabularyFormControllerLoad extends PageControllerLoad {
   async load(object, isNew) {
@@ -28,17 +29,17 @@ export default class VocabularyFormControllerLoad extends PageControllerLoad {
   _createVocabulary(loadedVocabulary) {
     const vocabulary = {
       id: _.get(loadedVocabulary, 'code', null),
-      code: this.createField({
+      code: FormUtil.createField({
         value: _.get(loadedVocabulary, 'code', null),
         enabled: loadedVocabulary === null
       }),
-      description: this.createField({
+      description: FormUtil.createField({
         value: _.get(loadedVocabulary, 'description', null)
       }),
-      urlTemplate: this.createField({
+      urlTemplate: FormUtil.createField({
         value: _.get(loadedVocabulary, 'urlTemplate', null)
       }),
-      managedInternally: this.createField({
+      managedInternally: FormUtil.createField({
         value: _.get(loadedVocabulary, 'managedInternally', false)
       })
     }
@@ -55,17 +56,17 @@ export default class VocabularyFormControllerLoad extends PageControllerLoad {
     return loadedVocabulary.terms.map(loadedTerm => {
       const term = {
         id: _.get(loadedTerm, 'code', null),
-        code: this.createField({
+        code: FormUtil.createField({
           value: _.get(loadedTerm, 'code', null),
           enabled: false
         }),
-        label: this.createField({
+        label: FormUtil.createField({
           value: _.get(loadedTerm, 'label', null)
         }),
-        description: this.createField({
+        description: FormUtil.createField({
           value: _.get(loadedTerm, 'description', null)
         }),
-        official: this.createField({
+        official: FormUtil.createField({
           value: _.get(loadedTerm, 'official', true)
         })
       }
