@@ -278,7 +278,6 @@ class SearchEngine():
                         # explicitly mentioned in xls sheet, it is ok.
                         existing_elements[results_key].extend(existing_specific_elements)
 
-        print("DEBUGDEBUG")
         print(existing_elements)
 
         return existing_elements
