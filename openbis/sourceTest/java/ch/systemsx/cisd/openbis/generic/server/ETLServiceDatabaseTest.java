@@ -16,6 +16,7 @@
 
 package ch.systemsx.cisd.openbis.generic.server;
 
+import static ch.systemsx.cisd.openbis.generic.server.dataaccess.db.DAOFactory.USE_NEW_SQL_ENGINE;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
@@ -32,6 +33,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.AssertJUnit;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -241,8 +243,11 @@ public class ETLServiceDatabaseTest extends AbstractDAOTest
                 "no comment"));
         List<AbstractExternalData> dataSetsToUpdate =
                 service.searchForDataSets(sessionToken, searchCriteria);
-        assertEquals(22, dataSetsToUpdate.size());
-
+        if (USE_NEW_SQL_ENGINE) {
+            assertEquals(11, dataSetsToUpdate.size());
+        } else {
+            assertEquals(22, dataSetsToUpdate.size()); // The old search engine doesn't have real equals
+        }
         Date now = daoFactory.getTransactionTimestamp();
 
         // Update the comment
@@ -263,8 +268,15 @@ public class ETLServiceDatabaseTest extends AbstractDAOTest
         performDataSetUpdates(dataSetUpdates, 1);
 
         // Now retrieve the sample again and check that the properties were updated.
+        // Find the samples to add
+        SearchCriteria searchCriteriaUpdated = new SearchCriteria();
+        searchCriteriaUpdated.addMatchClause(SearchCriteria.MatchClause.createAttributeMatch(
+                MatchClauseAttribute.TYPE, "HCS_IMAGE"));
+        searchCriteriaUpdated.addMatchClause(SearchCriteria.MatchClause.createPropertyMatch("COMMENT",
+                newComment));
+
         List<AbstractExternalData> updatedDataSets =
-                service.searchForDataSets(sessionToken, searchCriteria);
+                service.searchForDataSets(sessionToken, searchCriteriaUpdated);
         // The index has not been updated yet, so we have to group the items into those that
         // still have the old comment and those with the new comment
 
