@@ -1,8 +1,6 @@
 import _ from 'lodash'
 import PageControllerSave from '@src/js/components/common/page/PageControllerSave.js'
-import pages from '@src/js/common/consts/pages.js'
-import actions from '@src/js/store/actions/actions.js'
-import objectTypes from '@src/js/common/consts/objectType.js'
+import FormUtil from '@src/js/components/common/form/FormUtil.js'
 import openbis from '@src/js/services/openbis.js'
 
 export default class VocabularyFormControllerSave extends PageControllerSave {
@@ -45,88 +43,42 @@ export default class VocabularyFormControllerSave extends PageControllerSave {
   }
 
   _prepareVocabulary(vocabulary) {
-    let code = vocabulary.code.value
-
-    if (code) {
-      code = code.toUpperCase()
-    }
-
-    return _.mapValues(
-      {
-        ...vocabulary,
-        code: {
-          value: code
-        }
-      },
-      this._prepareValue
-    )
+    const code = vocabulary.code.value
+    return FormUtil.trimFields({
+      ...vocabulary,
+      code: {
+        value: code ? code.toUpperCase() : null
+      }
+    })
   }
 
   _prepareTerms(terms) {
     return terms.map(term => {
-      let code = term.code.value
-
-      if (code) {
-        code = code.toUpperCase()
-      }
-
-      return _.mapValues(
-        {
-          ...term,
-          code: {
-            value: code
-          }
-        },
-        this._prepareValue
-      )
+      const code = term.code.value
+      return FormUtil.trimFields({
+        ...term,
+        code: {
+          value: code ? code.toUpperCase() : null
+        }
+      })
     })
   }
 
-  _prepareValue(field) {
-    const trim = str => {
-      const trimmed = str.trim()
-      return trimmed.length > 0 ? trimmed : null
-    }
-
-    if (field) {
-      if (_.isString(field)) {
-        return trim(field)
-      } else if (_.isObject(field) && _.isString(field.value)) {
-        return {
-          ...field,
-          value: trim(field.value)
-        }
-      }
-    }
-
-    return field
-  }
-
-  _hasPropertyChanged(property, original, path) {
-    const originalValue = original ? _.get(original, path) : null
-    const currentValue = _.get(property, path)
-    return originalValue.value !== currentValue.value
-  }
-
   _isVocabularyUpdateNeeded(vocabulary) {
-    return (
-      this._hasPropertyChanged(vocabulary, vocabulary.original, 'code') ||
-      this._hasPropertyChanged(
-        vocabulary,
-        vocabulary.original,
-        'description'
-      ) ||
-      this._hasPropertyChanged(vocabulary, vocabulary.original, 'urlTemplate')
-    )
+    return FormUtil.haveFieldsChanged(vocabulary, vocabulary.original, [
+      'code',
+      'description',
+      'urlTemplate'
+    ])
   }
 
   _isTermUpdateNeeded(term) {
-    return (
-      this._hasPropertyChanged(term, term.original, 'code') ||
-      this._hasPropertyChanged(term, term.original, 'label') ||
-      this._hasPropertyChanged(term, term.original, 'description') ||
-      this._hasPropertyChanged(term, term.original, 'official')
-    )
+    return FormUtil.haveFieldsChanged(term, term.original, [
+      'code',
+      'label',
+      'description',
+      'official'
+    ])
   }
 
   _createVocabularyOperation(vocabulary) {
@@ -176,23 +128,5 @@ export default class VocabularyFormControllerSave extends PageControllerSave {
     const options = new openbis.VocabularyTermDeletionOptions()
     options.setReason('deleted via ng_ui')
     return new openbis.DeleteVocabularyTermsOperation([termId], options)
-  }
-
-  _dispatchActions(oldObject, newObject) {
-    if (oldObject.type === objectTypes.NEW_VOCABULARY_TYPE) {
-      this.context.dispatch(
-        actions.objectCreate(
-          pages.TYPES,
-          oldObject.type,
-          oldObject.id,
-          newObject.type,
-          newObject.id
-        )
-      )
-    } else if (oldObject.type === objectTypes.VOCABULARY_TYPE) {
-      this.context.dispatch(
-        actions.objectUpdate(pages.TYPES, oldObject.type, oldObject.id)
-      )
-    }
   }
 }

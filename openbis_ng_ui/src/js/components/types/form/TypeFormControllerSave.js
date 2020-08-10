@@ -1,5 +1,6 @@
 import _ from 'lodash'
 import PageControllerSave from '@src/js/components/common/page/PageControllerSave.js'
+import FormUtil from '@src/js/components/common/form/FormUtil.js'
 import openbis from '@src/js/services/openbis.js'
 
 import TypeFormControllerStrategies from './TypeFormControllerStrategies.js'
@@ -69,44 +70,14 @@ export default class TypeFormControllerSave extends PageControllerSave {
     return type.code.value
   }
 
-  _prepareValue(field) {
-    const trim = str => {
-      const trimmed = str.trim()
-      return trimmed.length > 0 ? trimmed : null
-    }
-
-    if (field) {
-      if (_.isString(field)) {
-        return trim(field)
-      } else if (_.isObject(field) && _.isString(field.value)) {
-        return {
-          ...field,
-          value: trim(field.value)
-        }
-      }
-    }
-
-    return field
-  }
-
   _prepareType(type) {
-    let code = type.code.value
-
-    if (code) {
-      code = code.toUpperCase()
-    }
-
-    const newType = _.mapValues(
-      {
-        ...type,
-        code: {
-          value: code
-        }
-      },
-      this._prepareValue
-    )
-
-    return newType
+    const code = type.code.value
+    return FormUtil.trimFields({
+      ...type,
+      code: {
+        value: code ? code.toUpperCase() : null
+      }
+    })
   }
 
   _prepareProperties(type, properties, sections) {
@@ -119,23 +90,14 @@ export default class TypeFormControllerSave extends PageControllerSave {
     sections.forEach(section => {
       section.properties.forEach(propertyId => {
         const property = propertiesMap[propertyId]
-
-        let code = property.code.value
-        if (code) {
-          code = code.toUpperCase()
-        }
-
-        const newProperty = _.mapValues(
-          {
-            ...property,
-            code: {
-              value: code
-            },
-            section: section.name.value
+        const code = property.code.value
+        const newProperty = FormUtil.trimFields({
+          ...property,
+          code: {
+            value: code ? code.toUpperCase() : null
           },
-          this._prepareValue
-        )
-
+          section: section.name.value
+        })
         results.push(newProperty)
       })
     })
@@ -153,33 +115,24 @@ export default class TypeFormControllerSave extends PageControllerSave {
     }
   }
 
-  _hasPropertyChanged(property, original, path) {
-    const originalValue = original ? _.get(original, path) : null
-    const currentValue = _.get(property, path)
-    return originalValue.value !== currentValue.value
-  }
-
   _isPropertyTypeUpdateNeeded(property, original) {
-    return (
-      this._hasPropertyChanged(property, original, 'dataType') ||
-      this._hasPropertyChanged(property, original, 'vocabulary') ||
-      this._hasPropertyChanged(property, original, 'materialType') ||
-      this._hasPropertyChanged(property, original, 'label') ||
-      this._hasPropertyChanged(property, original, 'description') ||
-      this._hasPropertyChanged(property, original, 'schema') ||
-      this._hasPropertyChanged(property, original, 'transformation')
-    )
+    return FormUtil.haveFieldsChanged(property, original, [
+      'dataType',
+      'vocabulary',
+      'materialType',
+      'label',
+      'description',
+      'schema',
+      'transformation'
+    ])
   }
 
   _isPropertyTypeUpdatePossible(property, original) {
-    if (
-      this._hasPropertyChanged(property, original, 'dataType') ||
-      this._hasPropertyChanged(property, original, 'vocabulary') ||
-      this._hasPropertyChanged(property, original, 'materialType')
-    ) {
-      return false
-    }
-    return true
+    return !FormUtil.haveFieldsChanged(property, original, [
+      'dataType',
+      'vocabulary',
+      'materialType'
+    ])
   }
 
   _deletePropertyAssignmentOperation(type, property) {
