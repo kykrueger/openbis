@@ -278,8 +278,6 @@ class SearchEngine():
                         # explicitly mentioned in xls sheet, it is ok.
                         existing_elements[results_key].extend(existing_specific_elements)
 
-        print(existing_elements)
-
         return existing_elements
 
     def _get_existing_elements(self, search_criterias, **kwargs):
