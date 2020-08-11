@@ -6,16 +6,16 @@ export default class PageControllerChange {
     this.context = controller.context
   }
 
-  changeObjectField(stateKey, field, value, processFn) {
-    this.context.setState(state =>
+  async changeObjectField(stateKey, field, value, processFn) {
+    await this.context.setState(state =>
       FormUtil.changeObjectField(state, stateKey, field, value, processFn)
     )
 
-    this.controller.changed(true)
+    await this.controller.changed(true)
   }
 
-  changeCollectionItemField(stateKey, itemId, field, value, processFn) {
-    this.context.setState(state =>
+  async changeCollectionItemField(stateKey, itemId, field, value, processFn) {
+    await this.context.setState(state =>
       FormUtil.changeCollectionItemField(
         state,
         stateKey,
@@ -26,6 +26,6 @@ export default class PageControllerChange {
       )
     )
 
-    this.controller.changed(true)
+    await this.controller.changed(true)
   }
 }

@@ -1,4 +1,5 @@
 import PageController from '@src/js/components/common/page/PageController.js'
+import GridController from '@src/js/components/common/grid/GridController.js'
 import VocabularyFormControllerLoad from './VocabularyFormControllerLoad.js'
 import VocabularyFormControllerRemove from './VocabularyFormControllerRemove.js'
 import VocabularyFormControllerValidate from './VocabularyFormControllerValidate.js'
@@ -8,6 +9,11 @@ import pages from '@src/js/common/consts/pages.js'
 import objectTypes from '@src/js/common/consts/objectType.js'
 
 export default class VocabularyFormController extends PageController {
+  constructor(facade) {
+    super(facade)
+    this.gridController = new GridController()
+  }
+
   getPage() {
     return pages.TYPES
   }

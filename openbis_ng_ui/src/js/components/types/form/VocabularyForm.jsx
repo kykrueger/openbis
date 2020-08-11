@@ -36,12 +36,18 @@ class VocabularyForm extends React.PureComponent {
     this.controller.load()
   }
 
-  handleRowSelect(row) {
+  handleSelectedRowChange(row) {
     const { controller } = this
     if (row) {
       controller.handleSelectionChange('term', { id: row.id })
+      this.setState({
+        selectedRow: row
+      })
     } else {
       controller.handleSelectionChange()
+      this.setState({
+        selectedRow: null
+      })
     }
   }
 
@@ -63,12 +69,14 @@ class VocabularyForm extends React.PureComponent {
   }
 
   renderMainPanel() {
-    const { terms, selection } = this.state
+    const { controller } = this
+    const { terms, selectedRow } = this.state
 
     return (
       <GridContainer>
         <Grid
           id={ids.VOCABULARY_TERMS_GRID_ID}
+          controller={controller.gridController}
           columns={[
             {
               field: 'code.value',
@@ -88,10 +96,8 @@ class VocabularyForm extends React.PureComponent {
             }
           ]}
           rows={terms}
-          onRowSelect={this.handleRowSelect}
-          selectedRowId={
-            selection && selection.type === 'term' ? selection.params.id : null
-          }
+          selectedRowId={selectedRow ? selectedRow.id : null}
+          onSelectedRowChange={this.handleSelectedRowChange}
         />
       </GridContainer>
     )
@@ -99,7 +105,7 @@ class VocabularyForm extends React.PureComponent {
 
   renderAdditionalPanel() {
     const { controller } = this
-    const { vocabulary, terms, selection, mode } = this.state
+    const { vocabulary, terms, selection, selectedRow, mode } = this.state
 
     return (
       <VocabularyFormParameters
@@ -107,6 +113,7 @@ class VocabularyForm extends React.PureComponent {
         vocabulary={vocabulary}
         terms={terms}
         selection={selection}
+        selectedRow={selectedRow}
         mode={mode}
         onChange={controller.handleChange}
         onSelectionChange={controller.handleSelectionChange}

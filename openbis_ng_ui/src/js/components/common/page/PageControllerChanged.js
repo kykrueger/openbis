@@ -6,8 +6,8 @@ export default class PageControllerChanged {
     this.context = controller.getContext()
   }
 
-  execute(changed) {
-    this.context.setState({
+  async execute(changed) {
+    await this.context.setState({
       changed
     })
 

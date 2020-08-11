@@ -43,8 +43,8 @@ class VocabularyFormParametersVocabulary extends React.PureComponent {
   }
 
   focus() {
-    const type = this.getVocabulary(this.props)
-    if (type && this.props.selection) {
+    const vocabulary = this.getVocabulary(this.props)
+    if (vocabulary && this.props.selection) {
       const { part } = this.props.selection.params
       if (part) {
         const reference = this.references[part]

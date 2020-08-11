@@ -3,6 +3,7 @@ import { withStyles } from '@material-ui/core/styles'
 import Container from '@src/js/components/common/form/Container.jsx'
 import TextField from '@src/js/components/common/form/TextField.jsx'
 import CheckboxField from '@src/js/components/common/form/CheckboxField.jsx'
+import Message from '@src/js/components/common/form/Message.jsx'
 import logger from '@src/js/common/logger.js'
 
 import TypeFormHeader from './TypeFormHeader.jsx'
@@ -43,8 +44,8 @@ class VocabularyFormParametersTerm extends React.PureComponent {
   }
 
   focus() {
-    const type = this.getTerm(this.props)
-    if (type && this.props.selection) {
+    const term = this.getTerm(this.props)
+    if (term && this.props.selection) {
       const { part } = this.props.selection.params
       if (part) {
         const reference = this.references[part]
@@ -89,12 +90,30 @@ class VocabularyFormParametersTerm extends React.PureComponent {
     return (
       <Container>
         <TypeFormHeader className={classes.header}>Term</TypeFormHeader>
+        {this.renderMessageVisible(term)}
         {this.renderCode(term)}
         {this.renderLabel(term)}
         {this.renderDescription(term)}
         {this.renderOfficial(term)}
       </Container>
     )
+  }
+
+  renderMessageVisible() {
+    const { classes, selectedRow } = this.props
+
+    if (selectedRow && !selectedRow.visible) {
+      return (
+        <div className={classes.field}>
+          <Message type='warning'>
+            The selected term is currently not visible in the term list due to
+            the chosen filtering and paging.
+          </Message>
+        </div>
+      )
+    } else {
+      return null
+    }
   }
 
   renderCode(term) {

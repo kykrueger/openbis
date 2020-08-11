@@ -9,12 +9,12 @@ import TableHead from '@material-ui/core/TableHead'
 import TableRow from '@material-ui/core/TableRow'
 import TableSortLabel from '@material-ui/core/TableSortLabel'
 
+import ComponentContext from '@src/js/components/common/ComponentContext.js'
 import FilterField from '@src/js/components/common/form/FilterField.jsx'
 import selectors from '@src/js/store/selectors/selectors.js'
-import openbis from '@src/js/services/openbis.js'
-import ids from '@src/js/common/consts/ids.js'
 import logger from '@src/js/common/logger.js'
 
+import GridController from './GridController.js'
 import ColumnConfig from './ColumnConfig.jsx'
 import PageConfig from './PageConfig.jsx'
 
@@ -69,299 +69,27 @@ class Grid extends React.Component {
   constructor(props) {
     super(props)
 
-    const sortDefault = _.isFunction(props.rows) ? false : true
+    this.state = {}
 
-    let columns = props.columns.map(column => ({
-      ...column,
-      label: column.label || _.upperFirst(column.field),
-      render: column.render || (row => this.getValue(row, column.field)),
-      sort: column.sort === undefined ? sortDefault : Boolean(column.sort),
-      visible: true
-    }))
-
-    this.state = {
-      loaded: false,
-      filters: this.props.filters || {},
-      page: 0,
-      pageSize: 10,
-      columns: columns,
-      columnConfigEl: null
+    if (this.props.controller) {
+      this.controller = this.props.controller
+    } else {
+      this.controller = new GridController()
     }
 
-    this.handleFilterChange = this.handleFilterChange.bind(this)
-    this.handleColumnVisibleChange = this.handleColumnVisibleChange.bind(this)
-    this.handleColumnOrderChange = this.handleColumnOrderChange.bind(this)
-    this.handlePageChange = this.handlePageChange.bind(this)
-    this.handlePageSizeChange = this.handlePageSizeChange.bind(this)
+    this.controller.init(new ComponentContext(this))
   }
 
   componentDidMount() {
-    this.load()
+    this.controller.load()
   }
 
   componentDidUpdate(prevProps) {
     if (this.props.rows !== prevProps.rows) {
-      this.setState({
-        rows: this.props.rows
-      })
+      this.controller.updateAllRows(this.props.rows)
     }
-  }
-
-  load() {
-    this.loadSettings().then(() => {
-      this.loadRows().then(() => {
-        this.setState(() => ({
-          loaded: true
-        }))
-      })
-    })
-  }
-
-  loadRows() {
-    if (_.isFunction(this.props.rows)) {
-      let loadConfig = {
-        filters: this.state.filters,
-        page: this.state.page,
-        pageSize: this.state.pageSize,
-        sort: this.state.sort,
-        sortDirection: this.state.sortDirection
-      }
-      return this.props.rows(loadConfig).then(({ rows, totalCount }) => {
-        this.setState(() => ({
-          rows,
-          totalCount
-        }))
-      })
-    } else if (!this.state.loaded) {
-      this.setState(() => ({
-        rows: this.props.rows
-      }))
-    }
-    return Promise.resolve()
-  }
-
-  loadSettings() {
-    let id = new openbis.PersonPermId(this.props.session.userName)
-    let fo = new openbis.PersonFetchOptions()
-    fo.withWebAppSettings(ids.WEB_APP_ID).withAllSettings()
-
-    return openbis.getPersons([id], fo).then(map => {
-      let person = map[id]
-      let webAppSettings = person.webAppSettings[ids.WEB_APP_ID]
-      if (webAppSettings && webAppSettings.settings) {
-        let gridSettings = webAppSettings.settings[this.props.id]
-        if (gridSettings) {
-          let settings = JSON.parse(gridSettings.value)
-          if (settings) {
-            let newColumns = [...this.state.columns]
-            newColumns.sort((c1, c2) => {
-              let index1 = _.findIndex(settings.columns, ['field', c1.field])
-              let index2 = _.findIndex(settings.columns, ['field', c2.field])
-              return index1 - index2
-            })
-            newColumns = newColumns.map(column => {
-              let setting = _.find(settings.columns, ['field', column.field])
-              if (setting) {
-                return {
-                  ...column,
-                  visible: setting.visible
-                }
-              } else {
-                return column
-              }
-            })
-            this.setState(() => ({
-              ...settings,
-              columns: newColumns
-            }))
-          }
-        }
-      }
-    })
-  }
-
-  saveSettings() {
-    let columns = this.state.columns.map(column => ({
-      field: column.field,
-      visible: column.visible
-    }))
-
-    let settings = {
-      pageSize: this.state.pageSize,
-      sort: this.state.sort,
-      sortDirection: this.state.sortDirection,
-      columns
-    }
-
-    let gridSettings = new openbis.WebAppSettingCreation()
-    gridSettings.setName(this.props.id)
-    gridSettings.setValue(JSON.stringify(settings))
-
-    let update = new openbis.PersonUpdate()
-    update.setUserId(new openbis.PersonPermId(this.props.session.userName))
-    update.getWebAppSettings(ids.WEB_APP_ID).add(gridSettings)
-
-    openbis.updatePersons([update])
-  }
-
-  handleFilterChange(column, filter) {
-    let filters = {
-      ...this.state.filters,
-      [column]: filter
-    }
-
-    this.setState(
-      () => ({
-        page: 0,
-        filters
-      }),
-      () => {
-        this.loadRows()
-      }
-    )
-  }
-
-  handleColumnVisibleChange(field) {
-    let columns = this.state.columns.map(column => {
-      if (column.field === field) {
-        return {
-          ...column,
-          visible: !column.visible
-        }
-      } else {
-        return column
-      }
-    })
-
-    this.setState(
-      () => ({
-        columns
-      }),
-      () => {
-        this.saveSettings()
-      }
-    )
-  }
-
-  handleColumnOrderChange(sourceIndex, destinationIndex) {
-    let columns = [...this.state.columns]
-    let source = columns[sourceIndex]
-    columns.splice(sourceIndex, 1)
-    columns.splice(destinationIndex, 0, source)
-
-    this.setState(
-      () => ({
-        columns
-      }),
-      () => {
-        this.saveSettings()
-      }
-    )
-  }
-
-  handleSortChange(column) {
-    if (!column.sort) {
-      return
-    }
-    return () => {
-      this.setState(
-        prevState => ({
-          sort: column.field,
-          sortDirection: prevState.sortDirection === 'asc' ? 'desc' : 'asc'
-        }),
-        () => {
-          this.saveSettings()
-          this.loadRows()
-        }
-      )
-    }
-  }
-
-  handlePageChange(page) {
-    this.setState(
-      () => ({
-        page
-      }),
-      () => {
-        this.loadRows()
-      }
-    )
-  }
-
-  handlePageSizeChange(pageSize) {
-    this.setState(
-      () => ({
-        page: 0,
-        pageSize
-      }),
-      () => {
-        this.saveSettings()
-        this.loadRows()
-      }
-    )
-  }
-
-  handleRowSelect(row) {
-    const { onRowSelect, selectedRowId } = this.props
-    if (onRowSelect) {
-      onRowSelect(selectedRowId === row.id ? null : row)
-    }
-  }
-
-  filter(rows) {
-    function matches(value, filter) {
-      if (filter) {
-        return value
-          ? value.trim().toUpperCase().includes(filter.trim().toUpperCase())
-          : false
-      } else {
-        return true
-      }
-    }
-
-    return _.filter(rows, row => {
-      let matchesAll = true
-      this.state.columns.forEach(column => {
-        let value = this.getValue(row, column.field)
-        let filter = this.state.filters[column.field]
-        matchesAll = matchesAll && matches(value, filter)
-      })
-      return matchesAll
-    })
-  }
-
-  sort(rows) {
-    const { sort, sortDirection } = this.state
-
-    if (sort) {
-      let column = _.find(this.state.columns, ['field', sort])
-      if (column) {
-        return rows.sort((t1, t2) => {
-          let sign = sortDirection === 'asc' ? 1 : -1
-          let v1 = this.getValue(t1, column.field)
-          let v2 = this.getValue(t2, column.field)
-          return sign * v1.localeCompare(v2)
-        })
-      }
-    }
-
-    return rows
-  }
-
-  page(rows) {
-    const { page, pageSize } = this.state
-    return rows.slice(
-      page * pageSize,
-      Math.min(rows.length, (page + 1) * pageSize)
-    )
-  }
-
-  getValue(row, field) {
-    const value = _.get(row, field)
-    if (value !== null && value !== undefined) {
-      return String(value)
-    } else {
-      return ''
+    if (this.props.selectedRowId !== prevProps.selectedRowId) {
+      this.controller.updateSelectedRowId(this.props.selectedRowId)
     }
   }
 
@@ -372,21 +100,8 @@ class Grid extends React.Component {
       return <React.Fragment />
     }
 
-    const { classes, onRowSelect } = this.props
-    const { page, pageSize, columns } = this.state
-
-    let pagedRows = null
-    let totalCount = null
-
-    if (_.isFunction(this.props.rows)) {
-      pagedRows = this.state.rows
-      totalCount = this.state.totalCount
-    } else {
-      const filteredRows = this.filter([...this.state.rows])
-      const sortedRows = this.sort(filteredRows)
-      pagedRows = this.page(sortedRows)
-      totalCount = filteredRows.length
-    }
+    const { classes, onSelectedRowChange } = this.props
+    const { page, pageSize, columns, currentRows, allRows } = this.state
 
     return (
       <div>
@@ -400,15 +115,17 @@ class Grid extends React.Component {
             </TableRow>
           </TableHead>
           <TableBody classes={{ root: classes.tableBody }}>
-            {pagedRows.map(row => {
+            {currentRows.map(row => {
               return (
                 <TableRow
                   key={row.id}
-                  onClick={() => this.handleRowSelect(row)}
+                  onClick={() => this.controller.handleRowSelect(row)}
                   hover={true}
                   selected={row.id === this.props.selectedRowId}
                   classes={{
-                    root: onRowSelect ? classes.tableRowSelectable : null
+                    root: onSelectedRowChange
+                      ? classes.tableRowSelectable
+                      : null
                   }}
                 >
                   {columns.map(column => this.renderRowCell(column, row))}
@@ -419,16 +136,16 @@ class Grid extends React.Component {
         </Table>
         <div className={classes.tableFooter}>
           <PageConfig
-            count={totalCount}
+            count={allRows.length}
             page={page}
             pageSize={pageSize}
-            onPageChange={this.handlePageChange}
-            onPageSizeChange={this.handlePageSizeChange}
+            onPageChange={this.controller.handlePageChange}
+            onPageSizeChange={this.controller.handlePageSizeChange}
           />
           <ColumnConfig
             columns={columns}
-            onVisibleChange={this.handleColumnVisibleChange}
-            onOrderChange={this.handleColumnOrderChange}
+            onVisibleChange={this.controller.handleColumnVisibleChange}
+            onOrderChange={this.controller.handleColumnOrderChange}
           />
         </div>
       </div>
@@ -446,7 +163,7 @@ class Grid extends React.Component {
             <TableSortLabel
               active={sort === column.field}
               direction={sortDirection}
-              onClick={this.handleSortChange(column)}
+              onClick={this.controller.handleSortChange(column)}
             >
               {column.label}
             </TableSortLabel>
@@ -471,7 +188,7 @@ class Grid extends React.Component {
     if (column.visible) {
       let filter = filters[column.field] || ''
       let filterChange = filter => {
-        this.handleFilterChange(column.field, filter)
+        this.controller.handleFilterChange(column.field, filter)
       }
       return (
         <TableCell key={column.field} classes={{ root: classes.tableCell }}>
