@@ -20,7 +20,7 @@ const styles = theme => ({
   }
 })
 
-class ColumnConfigRow extends React.Component {
+class ColumnConfigRow extends React.PureComponent {
   constructor(props) {
     super(props)
     this.handleVisibleChange = this.handleVisibleChange.bind(this)

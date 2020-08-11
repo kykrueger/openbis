@@ -35,7 +35,7 @@ const styles = theme => ({
   }
 })
 
-class PageConfig extends React.Component {
+class PageConfig extends React.PureComponent {
   constructor(props) {
     super(props)
     this.handlePageSizeChange = this.handlePageSizeChange.bind(this)

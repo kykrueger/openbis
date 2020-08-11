@@ -294,17 +294,15 @@ export default class GridController {
     if (!column.sort) {
       return
     }
-    return () => {
-      this.context
-        .setState(prevState => ({
-          sort: column.field,
-          sortDirection: prevState.sortDirection === 'asc' ? 'desc' : 'asc'
-        }))
-        .then(() => {
-          this._saveSettings()
-          this._recalculateCurrentRows()
-        })
-    }
+    this.context
+      .setState(prevState => ({
+        sort: column.field,
+        sortDirection: prevState.sortDirection === 'asc' ? 'desc' : 'asc'
+      }))
+      .then(() => {
+        this._saveSettings()
+        this._recalculateCurrentRows()
+      })
   }
 
   handlePageChange(page) {

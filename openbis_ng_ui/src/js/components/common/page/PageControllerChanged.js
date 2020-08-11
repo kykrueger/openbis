@@ -6,15 +6,19 @@ export default class PageControllerChanged {
     this.context = controller.getContext()
   }
 
-  async execute(changed) {
-    await this.context.setState({
-      changed
-    })
+  async execute(newChanged) {
+    const { changed } = this.context.getState()
 
-    const { id, type } = this.controller.getObject()
+    if (newChanged !== changed) {
+      await this.context.setState({
+        changed: newChanged
+      })
 
-    this.context.dispatch(
-      actions.objectChange(this.controller.getPage(), type, id, changed)
-    )
+      const { id, type } = this.controller.getObject()
+
+      this.context.dispatch(
+        actions.objectChange(this.controller.getPage(), type, id, newChanged)
+      )
+    }
   }
 }

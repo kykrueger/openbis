@@ -12,14 +12,14 @@ let isLevelEnabled = level => {
 let log = (level, message, ...params) => {
   if (isLevelEnabled(level)) {
     // eslint-disable-next-line no-console
-    console.log(message, ...params)
+    console.log(new Date().toISOString() + ' ' + message, ...params)
   }
 }
 
 let group = (level, message, ...params) => {
   if (isLevelEnabled(level)) {
     // eslint-disable-next-line no-console
-    console.group(message, ...params)
+    console.group(new Date().toISOString() + ' ' + message, ...params)
   }
 }
 

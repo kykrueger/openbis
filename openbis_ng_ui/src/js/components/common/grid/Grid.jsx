@@ -4,17 +4,14 @@ import { connect } from 'react-redux'
 import { withStyles } from '@material-ui/core/styles'
 import Table from '@material-ui/core/Table'
 import TableBody from '@material-ui/core/TableBody'
-import TableCell from '@material-ui/core/TableCell'
-import TableHead from '@material-ui/core/TableHead'
-import TableRow from '@material-ui/core/TableRow'
-import TableSortLabel from '@material-ui/core/TableSortLabel'
 
 import ComponentContext from '@src/js/components/common/ComponentContext.js'
-import FilterField from '@src/js/components/common/form/FilterField.jsx'
 import selectors from '@src/js/store/selectors/selectors.js'
 import logger from '@src/js/common/logger.js'
 
 import GridController from './GridController.js'
+import GridHeader from './GridHeader.jsx'
+import GridRow from './GridRow.jsx'
 import ColumnConfig from './ColumnConfig.jsx'
 import PageConfig from './PageConfig.jsx'
 
@@ -22,29 +19,10 @@ const styles = theme => ({
   table: {
     borderCollapse: 'unset'
   },
-  tableHeader: {
-    '& th': {
-      position: 'sticky',
-      top: 0,
-      zIndex: 10,
-      fontWeight: 'bold',
-      backgroundColor: theme.palette.background.primary
-    }
-  },
   tableBody: {
     '& tr:last-child td': {
       border: 0
     }
-  },
-  tableRowSelectable: {
-    cursor: 'pointer'
-  },
-  tableLink: {
-    fontSize: 'inherit'
-  },
-  tableCell: {
-    padding: `${theme.spacing(1)}px ${theme.spacing(2)}px`,
-    borderColor: theme.palette.border.secondary
   },
   tableFooter: {
     position: 'sticky',
@@ -65,7 +43,7 @@ function mapStateToProps(state) {
   }
 }
 
-class Grid extends React.Component {
+class Grid extends React.PureComponent {
   constructor(props) {
     super(props)
 
@@ -101,35 +79,39 @@ class Grid extends React.Component {
     }
 
     const { classes, onSelectedRowChange } = this.props
-    const { page, pageSize, columns, currentRows, allRows } = this.state
+    const {
+      filters,
+      sort,
+      sortDirection,
+      page,
+      pageSize,
+      columns,
+      currentRows,
+      allRows
+    } = this.state
 
     return (
       <div>
         <Table classes={{ root: classes.table }}>
-          <TableHead>
-            <TableRow>
-              {columns.map(column => this.renderFilterCell(column))}
-            </TableRow>
-            <TableRow classes={{ root: classes.tableHeader }}>
-              {columns.map(column => this.renderHeaderCell(column))}
-            </TableRow>
-          </TableHead>
+          <GridHeader
+            columns={columns}
+            filters={filters}
+            sort={sort}
+            sortDirection={sortDirection}
+            onSortChange={this.controller.handleSortChange}
+            onFilterChange={this.controller.handleFilterChange}
+          />
           <TableBody classes={{ root: classes.tableBody }}>
             {currentRows.map(row => {
               return (
-                <TableRow
+                <GridRow
                   key={row.id}
-                  onClick={() => this.controller.handleRowSelect(row)}
-                  hover={true}
+                  columns={columns}
+                  row={row}
                   selected={row.id === this.props.selectedRowId}
-                  classes={{
-                    root: onSelectedRowChange
-                      ? classes.tableRowSelectable
-                      : null
-                  }}
-                >
-                  {columns.map(column => this.renderRowCell(column, row))}
-                </TableRow>
+                  selectable={onSelectedRowChange}
+                  onClick={this.controller.handleRowSelect}
+                />
               )
             })}
           </TableBody>
@@ -150,69 +132,6 @@ class Grid extends React.Component {
         </div>
       </div>
     )
-  }
-
-  renderHeaderCell(column) {
-    const { classes } = this.props
-    const { sort, sortDirection } = this.state
-
-    if (column.visible) {
-      if (column.sort) {
-        return (
-          <TableCell key={column.field} classes={{ root: classes.tableCell }}>
-            <TableSortLabel
-              active={sort === column.field}
-              direction={sortDirection}
-              onClick={this.controller.handleSortChange(column)}
-            >
-              {column.label}
-            </TableSortLabel>
-          </TableCell>
-        )
-      } else {
-        return (
-          <TableCell key={column.field} classes={{ root: classes.tableCell }}>
-            {column.label}
-          </TableCell>
-        )
-      }
-    } else {
-      return null
-    }
-  }
-
-  renderFilterCell(column) {
-    const { classes } = this.props
-    const { filters } = this.state
-
-    if (column.visible) {
-      let filter = filters[column.field] || ''
-      let filterChange = filter => {
-        this.controller.handleFilterChange(column.field, filter)
-      }
-      return (
-        <TableCell key={column.field} classes={{ root: classes.tableCell }}>
-          <FilterField filter={filter} filterChange={filterChange} />
-        </TableCell>
-      )
-    } else {
-      return null
-    }
-  }
-
-  renderRowCell(column, row) {
-    const { classes } = this.props
-
-    if (column.visible) {
-      let rendered = column.render(row)
-      return (
-        <TableCell key={column.field} classes={{ root: classes.tableCell }}>
-          {rendered ? rendered : <span>&nbsp;</span>}
-        </TableCell>
-      )
-    } else {
-      return null
-    }
   }
 }
 

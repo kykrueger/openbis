@@ -22,7 +22,7 @@ const styles = () => ({
   }
 })
 
-class ColumnConfig extends React.Component {
+class ColumnConfig extends React.PureComponent {
   constructor(props) {
     super(props)
     this.state = {
