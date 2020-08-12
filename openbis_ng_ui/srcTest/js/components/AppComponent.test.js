@@ -142,11 +142,11 @@ async function testOpenCloseTypes() {
       content: {
         tabs: [
           {
-            label: fixture.TEST_SAMPLE_TYPE_DTO.code,
+            label: 'Object Type: ' + fixture.TEST_SAMPLE_TYPE_DTO.code,
             selected: false
           },
           {
-            label: fixture.ANOTHER_SAMPLE_TYPE_DTO.code,
+            label: 'Object Type: ' + fixture.ANOTHER_SAMPLE_TYPE_DTO.code,
             selected: true
           }
         ]
@@ -181,7 +181,7 @@ async function testOpenCloseTypes() {
       content: {
         tabs: [
           {
-            label: fixture.TEST_SAMPLE_TYPE_DTO.code,
+            label: 'Object Type: ' + fixture.TEST_SAMPLE_TYPE_DTO.code,
             selected: true
           }
         ]

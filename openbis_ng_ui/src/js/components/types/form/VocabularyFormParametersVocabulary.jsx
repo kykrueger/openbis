@@ -1,16 +1,12 @@
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import Container from '@src/js/components/common/form/Container.jsx'
+import Header from '@src/js/components/common/form/Header.jsx'
 import TextField from '@src/js/components/common/form/TextField.jsx'
 import Message from '@src/js/components/common/form/Message.jsx'
 import logger from '@src/js/common/logger.js'
 
-import TypeFormHeader from './TypeFormHeader.jsx'
-
 const styles = theme => ({
-  header: {
-    paddingBottom: theme.spacing(1)
-  },
   field: {
     paddingBottom: theme.spacing(1)
   }
@@ -80,11 +76,9 @@ class VocabularyFormParametersVocabulary extends React.PureComponent {
       return null
     }
 
-    const { classes } = this.props
-
     return (
       <Container>
-        <TypeFormHeader className={classes.header}>Vocabulary</TypeFormHeader>
+        <Header>Vocabulary</Header>
         {this.renderMessageManagedInternally(vocabulary)}
         {this.renderCode(vocabulary)}
         {this.renderDescription(vocabulary)}

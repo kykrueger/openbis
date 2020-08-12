@@ -1,9 +1,9 @@
 import BaseWrapper from '@srcTest/js/components/common/wrapper/BaseWrapper.js'
-import TypeFormHeader from '@src/js/components/types/form/TypeFormHeader.jsx'
+import Header from '@src/js/components/common/form/Header.jsx'
 
 export default class TypeFormParametersCommonWrapper extends BaseWrapper {
   getTitle() {
-    return this.findComponent(TypeFormHeader)
+    return this.findComponent(Header)
   }
 
   toJSON() {

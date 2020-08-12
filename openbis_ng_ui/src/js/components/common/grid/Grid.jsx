@@ -17,7 +17,8 @@ import PageConfig from './PageConfig.jsx'
 
 const styles = theme => ({
   table: {
-    borderCollapse: 'unset'
+    borderCollapse: 'unset',
+    marginTop: -theme.spacing(1)
   },
   tableBody: {
     '& tr:last-child td': {

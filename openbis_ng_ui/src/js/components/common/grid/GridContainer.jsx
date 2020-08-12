@@ -4,6 +4,7 @@ import { withStyles } from '@material-ui/core/styles'
 const styles = theme => ({
   container: {
     padding: theme.spacing(2),
+    paddingTop: theme.spacing(1),
     paddingBottom: 0
   }
 })

@@ -1,6 +1,7 @@
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import Container from '@src/js/components/common/form/Container.jsx'
+import Header from '@src/js/components/common/form/Header.jsx'
 import AutocompleterField from '@src/js/components/common/form/AutocompleterField.jsx'
 import CheckboxField from '@src/js/components/common/form/CheckboxField.jsx'
 import TextField from '@src/js/components/common/form/TextField.jsx'
@@ -9,12 +10,7 @@ import Message from '@src/js/components/common/form/Message.jsx'
 import openbis from '@src/js/services/openbis.js'
 import logger from '@src/js/common/logger.js'
 
-import TypeFormHeader from './TypeFormHeader.jsx'
-
 const styles = theme => ({
-  header: {
-    paddingBottom: theme.spacing(1)
-  },
   field: {
     paddingBottom: theme.spacing(1)
   }
@@ -98,11 +94,9 @@ class TypeFormParametersProperty extends React.PureComponent {
       return null
     }
 
-    const { classes } = this.props
-
     return (
       <Container>
-        <TypeFormHeader className={classes.header}>Property</TypeFormHeader>
+        <Header>Property</Header>
         {this.renderMessageGlobal(property)}
         {this.renderMessageUsage(property)}
         {this.renderMessageAssignments(property)}

@@ -1,11 +1,11 @@
 import BaseWrapper from '@srcTest/js/components/common/wrapper/BaseWrapper.js'
+import Header from '@src/js/components/common/form/Header.jsx'
 import TextField from '@src/js/components/common/form/TextField.jsx'
-import TypeFormHeader from '@src/js/components/types/form/TypeFormHeader.jsx'
 import TextFieldWrapper from '@srcTest/js/components/common/form/wrapper/TextFieldWrapper.js'
 
 export default class TypeFormPreviewHeaderWrapper extends BaseWrapper {
   getTitle() {
-    return this.findComponent(TypeFormHeader)
+    return this.findComponent(Header)
   }
 
   getCode() {

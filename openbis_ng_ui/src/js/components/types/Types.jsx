@@ -55,12 +55,17 @@ class Types extends React.Component {
     const { object } = tab
 
     const prefixes = {
+      [objectType.OBJECT_TYPE]: 'Object Type: ',
+      [objectType.COLLECTION_TYPE]: 'Collection Type: ',
+      [objectType.DATA_SET_TYPE]: 'Data Set Type: ',
+      [objectType.MATERIAL_TYPE]: 'Material Type: ',
+      [objectType.VOCABULARY_TYPE]: 'Vocabulary Type: ',
       [objectType.NEW_OBJECT_TYPE]: 'New Object Type ',
       [objectType.NEW_COLLECTION_TYPE]: 'New Collection Type ',
       [objectType.NEW_DATA_SET_TYPE]: 'New Data Set Type ',
       [objectType.NEW_MATERIAL_TYPE]: 'New Material Type ',
       [objectType.NEW_VOCABULARY_TYPE]: 'New Vocabulary Type ',
-      [objectType.SEARCH]: 'search: '
+      [objectType.SEARCH]: 'Search: '
     }
 
     return <ContentTab prefix={prefixes[object.type]} tab={tab} />

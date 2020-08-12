@@ -52,7 +52,9 @@ class Users extends React.Component {
     const { object } = tab
 
     const prefixes = {
-      [objectType.SEARCH]: 'search: '
+      [objectType.USER]: 'User: ',
+      [objectType.GROUP]: 'Group: ',
+      [objectType.SEARCH]: 'Search: '
     }
 
     return <ContentTab prefix={prefixes[object.type]} tab={tab} />

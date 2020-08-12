@@ -1,10 +1,9 @@
 import _ from 'lodash'
 import React from 'react'
+import Header from '@src/js/components/common/form/Header.jsx'
 import TextField from '@src/js/components/common/form/TextField.jsx'
 import { withStyles } from '@material-ui/core/styles'
 import logger from '@src/js/common/logger.js'
-
-import TypeFormHeader from './TypeFormHeader.jsx'
 
 const styles = theme => ({
   field: {
@@ -47,12 +46,7 @@ class TypeFormPreviewHeader extends React.PureComponent {
   }
 
   renderTitle() {
-    const { classes } = this.props
-    return (
-      <div className={classes.field}>
-        <TypeFormHeader>Preview</TypeFormHeader>
-      </div>
-    )
+    return <Header>Form Preview</Header>
   }
 
   renderCode() {

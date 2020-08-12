@@ -1,18 +1,14 @@
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import Container from '@src/js/components/common/form/Container.jsx'
+import Header from '@src/js/components/common/form/Header.jsx'
 import CheckboxField from '@src/js/components/common/form/CheckboxField.jsx'
 import TextField from '@src/js/components/common/form/TextField.jsx'
 import SelectField from '@src/js/components/common/form/SelectField.jsx'
 import Message from '@src/js/components/common/form/Message.jsx'
 import logger from '@src/js/common/logger.js'
 
-import TypeFormHeader from './TypeFormHeader.jsx'
-
 const styles = theme => ({
-  header: {
-    paddingBottom: theme.spacing(1)
-  },
   field: {
     paddingBottom: theme.spacing(1)
   }
@@ -90,11 +86,9 @@ class TypeFormParametersType extends React.PureComponent {
       return null
     }
 
-    const { classes } = this.props
-
     return (
       <Container>
-        <TypeFormHeader className={classes.header}>Type</TypeFormHeader>
+        {this.renderHeader(type)}
         {this.renderMessageUsage(type)}
         {this.renderCode(type)}
         {this.renderDescription(type)}
@@ -111,6 +105,10 @@ class TypeFormParametersType extends React.PureComponent {
         {this.renderDisallowDeletion(type)}
       </Container>
     )
+  }
+
+  renderHeader() {
+    return <Header>Type</Header>
   }
 
   renderMessageUsage(type) {
