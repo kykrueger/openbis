@@ -26,6 +26,8 @@ export default class GridController {
       pageSize: 10,
       columns,
       allRows: [],
+      filteredRows: [],
+      sortedRows: [],
       currentRows: [],
       selectedRowId: null,
       selectedRow: null,
@@ -117,27 +119,21 @@ export default class GridController {
     openbis.updatePersons([update])
   }
 
-  updateAllRows(rows) {
-    this.context
-      .setState({
-        allRows: rows
-      })
-      .then(() => {
-        this._recalculateCurrentRows()
-      })
+  async updateAllRows(rows) {
+    await this.context.setState({
+      allRows: rows
+    })
+    await this._recalculateCurrentRows()
   }
 
-  updateSelectedRowId(selectedRowId) {
-    this.context
-      .setState({
-        selectedRowId
-      })
-      .then(() => {
-        this._recalculateSelectedRow()
-      })
+  async updateSelectedRowId(selectedRowId) {
+    await this.context.setState({
+      selectedRowId
+    })
+    await this._recalculateSelectedRow()
   }
 
-  _recalculateCurrentRows() {
+  async _recalculateCurrentRows() {
     const {
       allRows,
       columns,
@@ -151,20 +147,19 @@ export default class GridController {
 
     const filteredRows = this._filter(allRows, columns, filters)
     const sortedRows = this._sort(filteredRows, columns, sort, sortDirection)
-    const pagedRows = this._page(sortedRows, page, pageSize)
+    const currentRows = this._page(sortedRows, page, pageSize)
 
-    this.context
-      .setState({
-        currentRows: pagedRows
-      })
-      .then(() => {
-        if (selectedRowId) {
-          this._recalculateSelectedRow()
-        }
-      })
+    await this.context.setState({
+      filteredRows,
+      sortedRows,
+      currentRows
+    })
+    if (selectedRowId) {
+      await this._recalculateSelectedRow()
+    }
   }
 
-  _recalculateSelectedRow() {
+  async _recalculateSelectedRow() {
     const { selectedRowId, selectedRow, currentRows } = this.context.getState()
     const { onSelectedRowChange } = this.context.getProps()
 
@@ -182,37 +177,22 @@ export default class GridController {
     }
 
     if (!_.isEqual(selectedRow, newSelectedRow)) {
-      this.context
-        .setState({
-          selectedRow: newSelectedRow
-        })
-        .then(() => {
-          if (onSelectedRowChange) {
-            onSelectedRowChange(newSelectedRow)
-          }
-        })
+      await this.context.setState({
+        selectedRow: newSelectedRow
+      })
+      if (onSelectedRowChange) {
+        await onSelectedRowChange(newSelectedRow)
+      }
     }
   }
 
-  showSelectedRow() {
-    const { selectedRow } = this.context.getState()
+  async showSelectedRow() {
+    const { selectedRow, sortedRows, page, pageSize } = this.context.getState()
 
     if (!selectedRow) {
       return
     }
 
-    const {
-      allRows,
-      columns,
-      filters,
-      sort,
-      sortDirection,
-      page,
-      pageSize
-    } = this.context.getState()
-
-    const filteredRows = this._filter(allRows, columns, filters)
-    const sortedRows = this._sort(filteredRows, columns, sort, sortDirection)
     const index = _.findIndex(sortedRows, ['id', selectedRow.id])
 
     if (index === -1) {
@@ -222,13 +202,10 @@ export default class GridController {
     const newPage = Math.floor(index / pageSize)
 
     if (newPage !== page) {
-      this.context
-        .setState({
-          page: newPage
-        })
-        .then(() => {
-          this._recalculateCurrentRows()
-        })
+      await this.context.setState({
+        page: newPage
+      })
+      await this._recalculateCurrentRows()
     }
   }
 

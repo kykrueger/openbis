@@ -71,7 +71,7 @@ class VocabularyForm extends React.PureComponent {
 
   renderMainPanel() {
     const { controller } = this
-    const { terms, selectedRow } = this.state
+    const { terms, selection } = this.state
 
     return (
       <GridContainer>
@@ -98,7 +98,9 @@ class VocabularyForm extends React.PureComponent {
             }
           ]}
           rows={terms}
-          selectedRowId={selectedRow ? selectedRow.id : null}
+          selectedRowId={
+            selection && selection.type === 'term' ? selection.params.id : null
+          }
           onSelectedRowChange={this.handleSelectedRowChange}
         />
       </GridContainer>
@@ -133,6 +135,7 @@ class VocabularyForm extends React.PureComponent {
         onEdit={controller.handleEdit}
         onSave={controller.handleSave}
         onCancel={controller.handleCancel}
+        onAdd={controller.handleAdd}
         onRemove={controller.handleRemove}
         vocabulary={vocabulary}
         selection={selection}

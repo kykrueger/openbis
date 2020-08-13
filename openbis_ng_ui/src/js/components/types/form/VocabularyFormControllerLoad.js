@@ -3,6 +3,11 @@ import PageControllerLoad from '@src/js/components/common/page/PageControllerLoa
 import FormUtil from '@src/js/components/common/form/FormUtil.js'
 
 export default class VocabularyFormControllerLoad extends PageControllerLoad {
+  constructor(controller) {
+    super(controller)
+    this.gridController = controller.gridController
+  }
+
   async load(object, isNew) {
     let loadedVocabulary = null
 
@@ -14,11 +19,23 @@ export default class VocabularyFormControllerLoad extends PageControllerLoad {
     }
 
     const vocabulary = this._createVocabulary(loadedVocabulary)
-    const terms = this._createTerms(loadedVocabulary)
+
+    let termsCounter = 0
+    let terms = []
+
+    if (loadedVocabulary) {
+      terms = loadedVocabulary.terms.map(loadedTerm =>
+        this._createTerm('term-' + termsCounter++, loadedTerm)
+      )
+    }
+
+    const selection = this._createSelection(terms)
 
     return this.context.setState({
       vocabulary,
       terms,
+      termsCounter,
+      selection,
       original: {
         vocabulary: vocabulary.original,
         terms: terms.map(term => term.original)
@@ -49,29 +66,52 @@ export default class VocabularyFormControllerLoad extends PageControllerLoad {
     return vocabulary
   }
 
-  _createTerms(loadedVocabulary) {
-    if (!loadedVocabulary) {
-      return []
+  _createTerm(id, loadedTerm) {
+    const term = {
+      id: id,
+      code: FormUtil.createField({
+        value: _.get(loadedTerm, 'code', null),
+        enabled: false
+      }),
+      label: FormUtil.createField({
+        value: _.get(loadedTerm, 'label', null)
+      }),
+      description: FormUtil.createField({
+        value: _.get(loadedTerm, 'description', null)
+      }),
+      official: FormUtil.createField({
+        value: _.get(loadedTerm, 'official', true)
+      })
     }
-    return loadedVocabulary.terms.map(loadedTerm => {
-      const term = {
-        id: _.get(loadedTerm, 'code', null),
-        code: FormUtil.createField({
-          value: _.get(loadedTerm, 'code', null),
-          enabled: false
-        }),
-        label: FormUtil.createField({
-          value: _.get(loadedTerm, 'label', null)
-        }),
-        description: FormUtil.createField({
-          value: _.get(loadedTerm, 'description', null)
-        }),
-        official: FormUtil.createField({
-          value: _.get(loadedTerm, 'official', true)
-        })
+    term.original = _.cloneDeep(term)
+    return term
+  }
+
+  _createSelection(newTerms) {
+    const { selection: oldSelection, terms: oldTerms } = this.context.getState()
+
+    if (!oldSelection) {
+      return null
+    } else if (oldSelection.type === 'term') {
+      const oldTerm = _.find(
+        oldTerms,
+        oldTerm => oldTerm.id === oldSelection.params.id
+      )
+      const newTerm = _.find(
+        newTerms,
+        newTerm => newTerm.code.value === oldTerm.code.value
+      )
+
+      if (newTerm) {
+        return {
+          type: 'term',
+          params: {
+            id: newTerm.id
+          }
+        }
       }
-      term.original = _.cloneDeep(term)
-      return term
-    })
+    } else {
+      return null
+    }
   }
 }

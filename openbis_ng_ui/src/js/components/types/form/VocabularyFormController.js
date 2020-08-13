@@ -1,6 +1,7 @@
 import PageController from '@src/js/components/common/page/PageController.js'
 import GridController from '@src/js/components/common/grid/GridController.js'
 import VocabularyFormControllerLoad from './VocabularyFormControllerLoad.js'
+import VocabularyFormControllerAdd from './VocabularyFormControllerAdd.js'
 import VocabularyFormControllerRemove from './VocabularyFormControllerRemove.js'
 import VocabularyFormControllerValidate from './VocabularyFormControllerValidate.js'
 import VocabularyFormControllerChange from './VocabularyFormControllerChange.js'
@@ -32,6 +33,10 @@ export default class VocabularyFormController extends PageController {
 
   validate(autofocus) {
     return new VocabularyFormControllerValidate(this).execute(autofocus)
+  }
+
+  handleAdd() {
+    return new VocabularyFormControllerAdd(this).execute()
   }
 
   handleRemove() {
