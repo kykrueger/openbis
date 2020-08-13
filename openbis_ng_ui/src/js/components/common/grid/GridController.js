@@ -338,13 +338,17 @@ export default class GridController {
 
   _sort(rows, columns, sort, sortDirection) {
     if (sort) {
-      let column = _.find(columns, ['field', sort])
+      const column = _.find(columns, ['field', sort])
       if (column) {
+        const collator = new Intl.Collator(undefined, {
+          numeric: true,
+          sensitivity: 'base'
+        })
         return rows.sort((t1, t2) => {
           let sign = sortDirection === 'asc' ? 1 : -1
           let v1 = this._getValue(t1, column.field)
           let v2 = this._getValue(t2, column.field)
-          return sign * v1.localeCompare(v2)
+          return sign * collator.compare(v1, v2)
         })
       }
     }
