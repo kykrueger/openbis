@@ -403,8 +403,9 @@ class TypeFormPreviewProperty extends React.PureComponent {
 
   getMultiline() {
     return (
-      this.props.property.dataType === openbis.DataType.MULTILINE_VARCHAR ||
-      this.props.property.dataType === openbis.DataType.XML
+      this.props.property.dataType.value ===
+        openbis.DataType.MULTILINE_VARCHAR ||
+      this.props.property.dataType.value === openbis.DataType.XML
     )
   }
 
