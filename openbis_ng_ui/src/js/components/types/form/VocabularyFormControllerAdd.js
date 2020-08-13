@@ -31,7 +31,8 @@ export default class VocabularyFormControllerAdd {
       selection: {
         type: 'term',
         params: {
-          id: newTerm.id
+          id: newTerm.id,
+          part: 'code'
         }
       }
     }))

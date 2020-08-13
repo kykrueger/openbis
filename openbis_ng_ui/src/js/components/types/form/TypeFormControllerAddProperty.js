@@ -94,7 +94,8 @@ export default class TypeFormControllerAddProperty {
     let newSelection = {
       type: 'property',
       params: {
-        id: newProperty.id
+        id: newProperty.id,
+        part: 'code'
       }
     }
 
