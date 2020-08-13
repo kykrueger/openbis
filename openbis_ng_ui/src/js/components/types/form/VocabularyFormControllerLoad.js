@@ -67,6 +67,8 @@ export default class VocabularyFormControllerLoad extends PageControllerLoad {
   }
 
   _createTerm(id, loadedTerm) {
+    const official = _.get(loadedTerm, 'official', false)
+
     const term = {
       id: id,
       code: FormUtil.createField({
@@ -80,7 +82,8 @@ export default class VocabularyFormControllerLoad extends PageControllerLoad {
         value: _.get(loadedTerm, 'description', null)
       }),
       official: FormUtil.createField({
-        value: _.get(loadedTerm, 'official', true)
+        value: official,
+        enabled: !official
       })
     }
     term.original = _.cloneDeep(term)
