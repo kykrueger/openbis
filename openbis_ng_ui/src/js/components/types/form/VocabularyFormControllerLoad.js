@@ -3,11 +3,6 @@ import PageControllerLoad from '@src/js/components/common/page/PageControllerLoa
 import FormUtil from '@src/js/components/common/form/FormUtil.js'
 
 export default class VocabularyFormControllerLoad extends PageControllerLoad {
-  constructor(controller) {
-    super(controller)
-    this.gridController = controller.gridController
-  }
-
   async load(object, isNew) {
     let loadedVocabulary = null
 

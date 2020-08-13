@@ -57,6 +57,10 @@ class Grid extends React.PureComponent {
     }
 
     this.controller.init(new ComponentContext(this))
+
+    if (this.props.controllerRef) {
+      this.props.controllerRef(this.controller)
+    }
   }
 
   componentDidMount() {

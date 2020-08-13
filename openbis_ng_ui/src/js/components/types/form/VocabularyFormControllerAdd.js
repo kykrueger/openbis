@@ -38,6 +38,9 @@ export default class VocabularyFormControllerAdd {
     }))
 
     await this.controller.changed(true)
-    await this.gridController.showSelectedRow()
+
+    if (this.gridController) {
+      await this.gridController.showSelectedRow()
+    }
   }
 }

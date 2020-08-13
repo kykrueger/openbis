@@ -13,7 +13,10 @@ export default class VocabularyFormControllerChange extends PageControllerChange
     } else if (type === 'term') {
       const { id, field, value } = params
       await this.changeCollectionItemField('terms', id, field, value)
-      this.gridController.showSelectedRow()
+
+      if (this.gridController) {
+        this.gridController.showSelectedRow()
+      }
     }
   }
 }

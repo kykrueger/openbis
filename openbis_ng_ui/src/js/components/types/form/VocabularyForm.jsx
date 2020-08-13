@@ -41,14 +41,8 @@ class VocabularyForm extends React.PureComponent {
     const { controller } = this
     if (row) {
       controller.handleSelectionChange('term', { id: row.id })
-      this.setState({
-        selectedRow: row
-      })
     } else {
       controller.handleSelectionChange()
-      this.setState({
-        selectedRow: null
-      })
     }
   }
 
@@ -78,7 +72,9 @@ class VocabularyForm extends React.PureComponent {
         <Header>Terms</Header>
         <Grid
           id={ids.VOCABULARY_TERMS_GRID_ID}
-          controller={controller.gridController}
+          controllerRef={gridController =>
+            (controller.gridController = gridController)
+          }
           columns={[
             {
               field: 'code.value',
@@ -109,7 +105,11 @@ class VocabularyForm extends React.PureComponent {
 
   renderAdditionalPanel() {
     const { controller } = this
-    const { vocabulary, terms, selection, selectedRow, mode } = this.state
+    const { vocabulary, terms, selection, mode } = this.state
+
+    const selectedRow = controller.gridController
+      ? controller.gridController.getSelectedRow()
+      : null
 
     return (
       <VocabularyFormParameters
