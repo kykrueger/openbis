@@ -69,7 +69,7 @@
     "lint": "eslint --ext .js,.jsx src/js srcTest/js",
     "lint:fix": "eslint --ext .js,.jsx src/js srcTest/js --fix",
     "test": "jest",
-    "test:debug": "node --inspect-brk=9229 ./node_modules/.bin/jest --runInBand",
+    "test:debug": "node --inspect=9229 ./node_modules/.bin/jest --runInBand",
     "test:watch": "npm test -- --watch"
   }
 }
