@@ -1,11 +1,9 @@
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
-import TableCell from '@material-ui/core/TableCell'
 import TableHead from '@material-ui/core/TableHead'
 import TableRow from '@material-ui/core/TableRow'
-import TableSortLabel from '@material-ui/core/TableSortLabel'
-
-import FilterField from '@src/js/components/common/form/FilterField.jsx'
+import GridHeaderFilter from '@src/js/components/common/grid/GridHeaderFilter.jsx'
+import GridHeaderLabel from '@src/js/components/common/grid/GridHeaderLabel.jsx'
 import logger from '@src/js/common/logger.js'
 
 const styles = theme => ({
@@ -43,48 +41,30 @@ class GridHeader extends React.PureComponent {
   }
 
   renderHeaderCell(column) {
-    const { sort, sortDirection, onSortChange, classes } = this.props
+    const { sort, sortDirection, onSortChange } = this.props
 
-    if (column.visible) {
-      if (column.sort) {
-        return (
-          <TableCell key={column.field} classes={{ root: classes.cell }}>
-            <TableSortLabel
-              active={sort === column.field}
-              direction={sortDirection}
-              onClick={() => onSortChange(column)}
-            >
-              {column.label}
-            </TableSortLabel>
-          </TableCell>
-        )
-      } else {
-        return (
-          <TableCell key={column.field} classes={{ root: classes.cell }}>
-            {column.label}
-          </TableCell>
-        )
-      }
-    } else {
-      return null
-    }
+    return (
+      <GridHeaderLabel
+        key={column.field}
+        column={column}
+        sort={sort}
+        sortDirection={sortDirection}
+        onSortChange={onSortChange}
+      />
+    )
   }
 
   renderFilterCell(column) {
-    const { filters, onFilterChange, classes } = this.props
+    const { filters, onFilterChange } = this.props
 
-    if (column.visible) {
-      return (
-        <TableCell key={column.field} classes={{ root: classes.cell }}>
-          <FilterField
-            filter={filters[column.field] || ''}
-            filterChange={filter => onFilterChange(column.field, filter)}
-          />
-        </TableCell>
-      )
-    } else {
-      return null
-    }
+    return (
+      <GridHeaderFilter
+        key={column.field}
+        column={column}
+        filter={filters[column.field]}
+        onFilterChange={onFilterChange}
+      />
+    )
   }
 }
 

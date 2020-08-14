@@ -18,7 +18,7 @@ export default class VocabularyFormControllerLoad extends PageControllerLoad {
     let termsCounter = 0
     let terms = []
 
-    if (loadedVocabulary) {
+    if (loadedVocabulary && loadedVocabulary.terms) {
       terms = loadedVocabulary.terms.map(loadedTerm =>
         this._createTerm('term-' + termsCounter++, loadedTerm)
       )

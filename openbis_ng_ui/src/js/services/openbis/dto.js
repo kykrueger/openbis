@@ -74,6 +74,8 @@ const CLASS_FULL_NAMES = [
   'as/dto/sample/update/UpdateSampleTypesOperation',
   'as/dto/service/CustomASServiceExecutionOptions',
   'as/dto/service/id/CustomASServiceCode',
+  'as/dto/vocabulary/Vocabulary',
+  'as/dto/vocabulary/VocabularyTerm',
   'as/dto/vocabulary/create/CreateVocabulariesOperation',
   'as/dto/vocabulary/create/CreateVocabularyTermsOperation',
   'as/dto/vocabulary/create/VocabularyCreation',

@@ -93,6 +93,7 @@ import VocabularyDeletionOptions from 'as/dto/vocabulary/delete/VocabularyDeleti
 import VocabularyFetchOptions from 'as/dto/vocabulary/fetchoptions/VocabularyFetchOptions'
 import VocabularyPermId from 'as/dto/vocabulary/id/VocabularyPermId'
 import VocabularySearchCriteria from 'as/dto/vocabulary/search/VocabularySearchCriteria'
+import VocabularyTerm from 'as/dto/vocabulary/VocabularyTerm'
 import VocabularyTermCreation from 'as/dto/vocabulary/create/VocabularyTermCreation'
 import VocabularyTermDeletionOptions from 'as/dto/vocabulary/delete/VocabularyTermDeletionOptions'
 import VocabularyTermFetchOptions from 'as/dto/vocabulary/fetchoptions/VocabularyTermFetchOptions'
@@ -193,6 +194,7 @@ const dto = {
   UpdateVocabulariesOperation,
   UpdateVocabularyTermsOperation,
   Vocabulary,
+  VocabularyTerm,
   VocabularyCreation,
   VocabularyDeletionOptions,
   VocabularyFetchOptions,

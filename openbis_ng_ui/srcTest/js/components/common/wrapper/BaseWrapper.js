@@ -34,8 +34,8 @@ export default class BaseWrapper {
     }
   }
 
-  findComponent(component) {
-    return this.wrapper.find(this.unwrapComponent(component))
+  findComponent(component, wrapper = this.wrapper) {
+    return wrapper.find(this.unwrapComponent(component))
   }
 
   unwrapComponent(component) {
