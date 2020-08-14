@@ -32,7 +32,7 @@ export default class GridController {
       selectedRowId: null,
       selectedRow: null,
       sort: null,
-      sortDirection: null
+      sortDirection: 'asc'
     })
 
     this.context = context
@@ -52,6 +52,10 @@ export default class GridController {
   _loadSettings() {
     const props = this.context.getProps()
     const state = this.context.getState()
+
+    if (!props.session) {
+      return Promise.resolve()
+    }
 
     let id = new openbis.PersonPermId(props.session.userName)
     let fo = new openbis.PersonFetchOptions()
@@ -95,6 +99,10 @@ export default class GridController {
   _saveSettings() {
     const props = this.context.getProps()
     const state = this.context.getState()
+
+    if (!props.session) {
+      return Promise.resolve()
+    }
 
     let columns = state.columns.map(column => ({
       field: column.field,
