@@ -92,7 +92,7 @@ class Grid extends React.PureComponent {
       pageSize,
       columns,
       currentRows,
-      allRows
+      sortedRows
     } = this.state
 
     return (
@@ -123,7 +123,7 @@ class Grid extends React.PureComponent {
         </Table>
         <div className={classes.tableFooter}>
           <PageConfig
-            count={allRows.length}
+            count={sortedRows.length}
             page={page}
             pageSize={pageSize}
             onPageChange={this.controller.handlePageChange}
