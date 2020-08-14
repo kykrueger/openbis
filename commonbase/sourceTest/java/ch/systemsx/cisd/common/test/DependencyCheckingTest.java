@@ -45,11 +45,15 @@ public class DependencyCheckingTest extends AssertJUnit
     private static final String PATH_TO_DEPENDENCY_STRUCTURE_DDF =
             "resource/dependency-structure.ddf";
 
-    private static final String CLASSES_FOLDER = "targets/classes";
+    private static final String ECLIPSE_CLASSES_FOLDER = "targets/classes";
 
     private static final String ANT_CLASSES_FOLDER = "targets/ant/classes";
 
-    private static final String GRADLE_CLASSES_FOLDER = "targets/gradle/classes/main";
+    private static final String GRADLE_3_CLASSES_FOLDER = "targets/gradle/classes/main";
+
+    private static final String GRADLE_4_CLASSES_FOLDER = "targets/gradle/classes/java/main";
+
+    private static final String[] CLASSES_FOLDERS = { GRADLE_4_CLASSES_FOLDER, GRADLE_3_CLASSES_FOLDER, ECLIPSE_CLASSES_FOLDER, ANT_CLASSES_FOLDER};
 
     @Test
     public void test()
@@ -81,17 +85,12 @@ public class DependencyCheckingTest extends AssertJUnit
 
     private String[] getClassPaths()
     {
-
-        if (new File(GRADLE_CLASSES_FOLDER).isDirectory())
-        {
-            return new String[]
-            { GRADLE_CLASSES_FOLDER };
+        for (int i = 0; i < CLASSES_FOLDERS.length; i++) {
+            if (new File(CLASSES_FOLDERS[i]).isDirectory()) {
+                return new String[] { CLASSES_FOLDERS[i] };
+            }
         }
-
-        String classes = getPathToClassesCompiledByEclipse();
-        String path = new File(classes).isDirectory() ? classes : ANT_CLASSES_FOLDER;
-        return new String[]
-        { path };
+        throw new RuntimeException("Class path not found");
     }
 
     /**
@@ -99,7 +98,7 @@ public class DependencyCheckingTest extends AssertJUnit
      */
     protected String getPathToClassesCompiledByEclipse()
     {
-        return CLASSES_FOLDER;
+        return ECLIPSE_CLASSES_FOLDER;
     }
 
     /**

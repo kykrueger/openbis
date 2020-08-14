@@ -39,15 +39,17 @@ public abstract class JsTestDataStoreServer extends TestDataStoreServer
 
         try
         {
-            File extraClassPath = new File("../../../targets/gradle/classes/test");
-            if (extraClassPath.exists())
+            File extraGradle4ClassPath = new File("../../../targets/gradle/classes/java/test");
+            File extraGradle3ClassPath = new File("../../../targets/gradle/classes/test");
+            if (extraGradle4ClassPath.exists())
             {
-                classpath += ":" + (extraClassPath).getCanonicalPath();
+                classpath += ":" + (extraGradle4ClassPath).getCanonicalPath();
+            } else if(extraGradle3ClassPath.exists()) {
+                classpath += ":" + (extraGradle3ClassPath).getCanonicalPath();
             } else
             {
-                throw new RuntimeException("Classpath Missing: " + extraClassPath);
+                throw new RuntimeException("Classpath Missing: " + extraGradle3ClassPath + " or " + extraGradle3ClassPath);
             }
-
         } catch (Exception e)
         {
             e.printStackTrace();
