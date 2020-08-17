@@ -27,6 +27,7 @@ beforeEach(() => {
 describe('VocabularyFormComponent', () => {
   test('load new', testLoadNew)
   test('load existing', testLoadExisting)
+  test('select term', testSelectTerm)
 })
 
 async function testLoadNew() {
@@ -84,30 +85,44 @@ async function testLoadExisting() {
       {
         field: 'code.value',
         label: 'Code',
-        filter: null,
-        sort: false
+        filter: {
+          value: null
+        },
+        sort: null
       },
       {
         field: 'label.value',
         label: 'Label',
-        filter: null,
-        sort: false
+        filter: {
+          value: null
+        },
+        sort: null
       },
       {
         field: 'description.value',
         label: 'Description',
-        filter: null,
-        sort: false
+        filter: {
+          value: null
+        },
+        sort: null
       },
       {
         field: 'official.value',
         label: 'Official',
-        filter: null,
-        sort: false
+        filter: {
+          value: null
+        },
+        sort: null
       }
     ],
     rows: fixture.TEST_VOCABULARY_DTO.terms.map(term => ({
-      'code.value': term.getCode()
+      values: {
+        'code.value': term.getCode(),
+        'label.value': term.getLabel(),
+        'description.value': term.getDescription(),
+        'official.value': String(term.isOfficial())
+      },
+      selected: false
     }))
   }
 
@@ -178,6 +193,74 @@ async function testLoadExisting() {
       },
       removeTerm: {
         enabled: false
+      },
+      save: {
+        enabled: true
+      },
+      cancel: {
+        enabled: true
+      },
+      edit: null,
+      message: null
+    }
+  })
+}
+
+async function testSelectTerm() {
+  const form = await mountExisting()
+
+  form.getGrid().getRows()[1].click()
+  await form.update()
+
+  form.getButtons().getEdit().click()
+  await form.update()
+
+  form.expectJSON({
+    grid: {
+      rows: [
+        { selected: false },
+        { selected: true },
+        { selected: false },
+        { selected: false },
+        { selected: false },
+        { selected: false }
+      ]
+    },
+    parameters: {
+      term: {
+        title: 'Term',
+        code: {
+          label: 'Code',
+          value: fixture.TEST_TERM_2_DTO.getCode(),
+          enabled: false,
+          mode: 'edit'
+        },
+        label: {
+          label: 'Label',
+          value: fixture.TEST_TERM_2_DTO.getLabel(),
+          enabled: true,
+          mode: 'edit'
+        },
+        description: {
+          label: 'Description',
+          value: fixture.TEST_TERM_2_DTO.getDescription(),
+          enabled: true,
+          mode: 'edit'
+        },
+        official: {
+          label: 'Official',
+          value: fixture.TEST_TERM_2_DTO.isOfficial(),
+          enabled: false,
+          mode: 'edit'
+        }
+      }
+    },
+    buttons: {
+      addTerm: {
+        enabled: true
+      },
+      removeTerm: {
+        enabled: true
       },
       save: {
         enabled: true

@@ -23,7 +23,8 @@ export default class FilterFieldWrapper extends BaseWrapper {
   toJSON() {
     if (this.wrapper.exists()) {
       return {
-        value: this.getValue()
+        value: this.getValue(),
+        clearIcon: this.getClearIcon().toJSON()
       }
     } else {
       return null

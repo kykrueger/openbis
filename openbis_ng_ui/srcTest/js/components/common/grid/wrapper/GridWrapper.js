@@ -1,54 +1,41 @@
 import BaseWrapper from '@srcTest/js/components/common/wrapper/BaseWrapper.js'
-import TableCell from '@material-ui/core/TableCell'
 import TableSortLabel from '@material-ui/core/TableSortLabel'
+import FilterField from '@src/js/components/common/form/FilterField.jsx'
 import GridHeaderLabel from '@src/js/components/common/grid/GridHeaderLabel.jsx'
-import GridHeaderFilter from '@src/js/components/common/grid/GridHeaderFilter.jsx'
 import GridRow from '@src/js/components/common/grid/GridRow.jsx'
+import GridRowWrapper from '@srcTest/js/components/common/grid/wrapper/GridRowWrapper.js'
+import GridColumnWrapper from '@srcTest/js/components/common/grid/wrapper/GridColumnWrapper.js'
 
 export default class GridWrapper extends BaseWrapper {
   getColumns() {
     const columns = this.wrapper.prop('columns')
 
-    const sortLabels = this.findComponent(TableSortLabel)
     const labels = this.findComponent(GridHeaderLabel)
-    const filters = this.findComponent(GridHeaderFilter)
+    const filters = this.findComponent(FilterField)
+    const sorts = this.findComponent(TableSortLabel)
 
     return columns.map((column, index) => {
-      const label = labels.at(index).text()
-      const filter = filters.at(index).text()
-      const sort = sortLabels.at(index).prop('active')
-      const sortDirection = sortLabels.at(index).prop('direction')
+      const label = labels.at(index)
+      const filter = filters.at(index)
+      const sort = sorts.at(index)
 
-      return {
-        field: this.getStringValue(column.field),
-        label: this.getStringValue(label),
-        filter: this.getStringValue(filter),
-        sort: this.getBooleanValue(sort),
-        sortDirection: this.getStringValue(sortDirection)
-      }
+      return new GridColumnWrapper(column, label, filter, sort)
     })
   }
 
   getRows() {
-    const columns = this.wrapper.prop('columns')
-
-    return this.findComponent(GridRow).map(row => {
-      const values = {}
-
-      this.findComponent(TableCell, row).forEach((cell, index) => {
-        const column = columns[index]
-        values[column.field] = this.getStringValue(cell.text())
-      })
-
-      return values
+    const rows = []
+    this.findComponent(GridRow).forEach(rowWrapper => {
+      rows.push(new GridRowWrapper(rowWrapper))
     })
+    return rows
   }
 
   toJSON() {
     if (this.wrapper.exists()) {
       return {
-        columns: this.getColumns(),
-        rows: this.getRows()
+        columns: this.getColumns().map(row => row.toJSON()),
+        rows: this.getRows().map(row => row.toJSON())
       }
     } else {
       return null
