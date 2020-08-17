@@ -30,6 +30,8 @@ describe('VocabularyFormComponent', () => {
   test('select term', testSelectTerm)
   test('add term', testAddTerm)
   test('remove term', testRemoveTerm)
+  test('change term', testChangeTerm)
+  test('change vocabulary', testChangeVocabulary)
 })
 
 async function testLoadNew() {
@@ -476,6 +478,125 @@ async function testRemoveTerm() {
         enabled: true
       },
       edit: null,
+      message: {
+        text: 'You have unsaved changes.',
+        type: 'warning'
+      }
+    }
+  })
+}
+
+async function testChangeTerm() {
+  const form = await mountExisting()
+
+  form.getButtons().getEdit().click()
+  await form.update()
+
+  form.getGrid().getRows()[1].click()
+  await form.update()
+
+  form
+    .getGrid()
+    .getRows()[1]
+    .expectJSON({
+      values: {
+        'label.value': fixture.TEST_TERM_2_DTO.getLabel()
+      }
+    })
+
+  form.expectJSON({
+    parameters: {
+      term: {
+        title: 'Term',
+        label: {
+          label: 'Label',
+          value: fixture.TEST_TERM_2_DTO.getLabel(),
+          enabled: true,
+          mode: 'edit'
+        }
+      }
+    },
+    buttons: {
+      message: null
+    }
+  })
+
+  form.getParameters().getTerm().getLabel().change('New Label')
+  await form.update()
+
+  form
+    .getGrid()
+    .getRows()[1]
+    .expectJSON({
+      values: {
+        'label.value': 'New Label'
+      }
+    })
+
+  form.expectJSON({
+    parameters: {
+      term: {
+        title: 'Term',
+        label: {
+          label: 'Label',
+          value: 'New Label',
+          enabled: true,
+          mode: 'edit'
+        }
+      }
+    },
+    buttons: {
+      message: {
+        text: 'You have unsaved changes.',
+        type: 'warning'
+      }
+    }
+  })
+}
+
+async function testChangeVocabulary() {
+  const form = await mountExisting()
+
+  form.getButtons().getEdit().click()
+  await form.update()
+
+  form.expectJSON({
+    parameters: {
+      vocabulary: {
+        title: 'Vocabulary',
+        description: {
+          label: 'Description',
+          value: fixture.TEST_VOCABULARY_DTO.getDescription(),
+          enabled: true,
+          mode: 'edit'
+        }
+      }
+    },
+    buttons: {
+      message: null
+    }
+  })
+
+  form
+    .getParameters()
+    .getVocabulary()
+    .getDescription()
+    .change('New Description')
+  await form.update()
+
+  form.expectJSON({
+    parameters: {
+      vocabulary: {
+        title: 'Vocabulary',
+        description: {
+          label: 'Description',
+          value: 'New Description',
+          enabled: true,
+          mode: 'edit'
+        }
+      }
+    },
+    buttons: {
       message: {
         text: 'You have unsaved changes.',
         type: 'warning'
