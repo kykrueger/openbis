@@ -1,3 +1,7 @@
+## Changes with pybis-1.15.1
+
+- added support for date-searching
+
 ## Changes with pybis-1.14.10
 
 - bugfix when deleting dataSets

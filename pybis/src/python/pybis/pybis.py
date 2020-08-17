@@ -415,14 +415,39 @@ def _subcriteria_for_is_finished(is_finished):
     }
 
 
-def _subcriteria_for_properties(prop, val):
+def _subcriteria_for_properties(prop, value):
+
+    str_type=  "as.dto.common.search.StringPropertySearchCriteria",
+    eq_type = "as.dto.common.search.StringEqualToValue"
+    fieldType = "PROPERTY"
+
+    if 'date' in prop.lower() and re.search(r'\d+\-\d+\-\d+', value):
+        
+        if prop.lower() =='registrationdate':
+            str_type = "as.dto.common.search.RegistrationDateSearchCriteria"
+            fieldType = "ATTRIBUTE"
+        elif prop.lower() =='modificationdate':
+            str_type = "as.dto.common.search.ModificationDateSearchCriteria"
+            fieldType = "ATTRIBUTE"
+        else:
+            str_type = "as.dto.common.search.DatePropertySearchCriteria"
+
+        if value.startswith('>'):
+            value = value[1:]
+            eq_type = "as.dto.common.search.DateLaterThanOrEqualToValue"
+        elif value.startswith('<'):
+            value = value[1:]
+            eq_type = "as.dto.common.search.DateEarlierThanOrEqualToValue"
+        else:
+            eq_type = "as.dto.common.search.DateEqualToValue"
+
     return {
-        "@type": "as.dto.common.search.StringPropertySearchCriteria",
+        "@type": str_type,
         "fieldName": prop.upper(),
-        "fieldType": "PROPERTY",
+        "fieldType": fieldType,
         "fieldValue": {
-            "value": val,
-            "@type": "as.dto.common.search.StringEqualToValue"
+            "value": value,
+            "@type": eq_type
         }
     }
 
@@ -1808,6 +1833,9 @@ class Openbis:
             "@type": "as.dto.sample.search.SampleSearchCriteria",
             "operator": "AND"
         }
+
+        #import json
+        #print(json.dumps(criteria))
 
         attrs_fetchoptions = self._get_fetchopts_for_attrs(attrs)
 
