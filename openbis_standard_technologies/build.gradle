@@ -1,12 +1,16 @@
 buildscript {
     apply from: '../gradle/repository.gradle'
-    
-    repositories repositoryConfig
-    
+
+	repositories repositoryConfig
+	// TODO: Remove after adding org.paleozogt:symzip-plugin:0.10.1 to the Ivy repository
+	repositories {
+		jcenter()
+	};
+
     dependencies {
         classpath 'apache:commons-codec:1.10',
                   'owasp:dependency-check-gradle:3.1.2',
-                  'paleozogt:symzip-plugin:0.9.7'
+                  'org.paleozogt:symzip-plugin:0.10.1'
     }
 }
 
@@ -130,7 +134,8 @@ task compileGwt (dependsOn: classes, type: JavaExec) {
      
 	// inputs.source
 	sourceSets.main.java.srcDirs
-	inputs.dir sourceSets.main.output.resourcesDir
+	// inputs.dir
+	sourceSets.main.output.resourcesDir
 	outputs.dir buildDir
      
 	doFirst {
@@ -144,7 +149,7 @@ task compileGwt (dependsOn: classes, type: JavaExec) {
 			sourceSets.main.java.srcDirs,		
 			project(":openbis").sourceSets.main.java.srcDirs,
 			project(":openbis").sourceSets.main.output.resourcesDir,
-			project(":openbis").sourceSets.main.output.classesDir,
+			project(":openbis").sourceSets.main.output.classesDirs,
 			project(":openbis").sourceSets.main.compileClasspath,
 			project(":common").sourceSets.main.java.srcDirs,
 			project(":openbis_api").sourceSets.main.java.srcDirs,

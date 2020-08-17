@@ -62,7 +62,7 @@ task trackingJar(type: Jar) {
         include '**/com/google/gwt/user/client/rpc/SerializableException.class'
     }
     
-    from (sourceSets.main.output.classesDir) {
+    from (sourceSets.main.output.classesDirs) {
         include '**/*'
     }    
 

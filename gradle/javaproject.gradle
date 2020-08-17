@@ -18,10 +18,10 @@ configurations.all {
     resolutionStrategy.cacheChangingModulesFor 0, 'hours'
 }
 
-task wrapper(type: Wrapper) {
-    gradleVersion = '4.10.3'
-    distributionUrl = "https://services.gradle.org/distributions/gradle-4.10.3-bin.zip"
-}
+//task wrapper(type: Wrapper) {
+//    gradleVersion = '4.10.3'
+//    distributionUrl = "https://services.gradle.org/distributions/gradle-4.10.3-bin.zip"
+//}
 sourceCompatibility='1.8'
 targetCompatibility='1.8'
 
@@ -331,13 +331,15 @@ task testRuntimeDependencies(type: Copy) {
     from configurations.testRuntime
 }
 
-task checkDependencies(dependsOn: classes) << {
-	ant.taskdef(name: 'dependencychecker', classname: 'classycle.ant.DependencyCheckingTask', classpath: configurations.testRuntime.asPath)
-    ant.dependencychecker(
-                definitionFile: 'resource/dependency-structure.ddf', 
-                failOnUnwantedDependencies: 'true',
-                mergeInnerClasses: 'true') {
-        fileset(dir: "${buildDir}", includes: "**/*.class")
+task checkDependencies(dependsOn: classes) {
+    doLast {
+        ant.taskdef(name: 'dependencychecker', classname: 'classycle.ant.DependencyCheckingTask', classpath: configurations.testRuntime.asPath)
+        ant.dependencychecker(
+                    definitionFile: 'resource/dependency-structure.ddf',
+                    failOnUnwantedDependencies: 'true',
+                    mergeInnerClasses: 'true') {
+            fileset(dir: "${buildDir}", includes: "**/*.class")
+        }
     }
 }
 

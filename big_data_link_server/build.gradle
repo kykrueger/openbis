@@ -22,6 +22,8 @@ dependencies {
 			'fasterxml:jackson-core:2.9.10',
 			'fasterxml:jackson-databind:2.9.10',
 			'openbis:openbis-v3-api-batteries-included:S269'
+
+    annotationProcessor 'lombok:lombok:1.16.20'
 }
 
 
