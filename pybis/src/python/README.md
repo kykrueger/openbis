@@ -219,7 +219,7 @@ The `dataType` attribute can contain any of these values:
 * `CONTROLLEDVOCABULARY`
 * `MATERIAL`
 
-When choosing `CONTROLLEDVOCABULARY`, you must specify a `vocabulary` attribute (see example). Likewise, when choosing `MATERIAL`, a `materialType` attribute must be provided. PropertyTypes that start with a $ belong by definition to the `internalNameSpace` and therefore this attribute must be set to True.
+When choosing `CONTROLLEDVOCABULARY`, you must specify a `vocabulary` attribute (see example). Likewise, when choosing `MATERIAL`, a `materialType` attribute must be provided. PropertyTypes that start with a \$ belong by definition to the `internalNameSpace` and therefore this attribute must be set to True.
 
 
 ## create sample types / object types
@@ -560,7 +560,9 @@ samples = o.get_samples(
     NAME       = 'some name',         # properties are always uppercase 
                                       # to distinguish them from attributes
     **{ "SOME.WEIRD:PROP": "value"}   # property name contains a dot or a
-                                      # colon: cannot be passed as an argument 
+                                      # colon: cannot be passed as an argument
+    registrationDate = "2020-01-01",  # date format: YYYY-MM-DD
+    modificationDate = "<2020-12-31", # use > or < to search for specified date and later / earlier
     attrs=[                           # show these attributes in the dataFrame
         'sample.code',
         'registrator.email',
@@ -729,6 +731,8 @@ dataSets = o.get_dataSets(
                                       # colon: cannot be passed as an argument 
     start_with = 0,                   # start_with and count
     count      = 10,                  # enable paging
+    registrationDate = "2020-01-01",  # date format: YYYY-MM-DD
+    modificationDate = "<2020-12-31", # use > or < to search for specified date and later / earlier
     attrs=[                           # show these attributes in the dataFrame
         'sample.code',
         'registrator.email',
