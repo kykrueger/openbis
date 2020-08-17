@@ -154,14 +154,20 @@ export default class GridController {
     } = this.context.getState()
 
     const filteredRows = this._filter(allRows, columns, filters)
+
+    const pageCount = Math.max(Math.ceil(filteredRows.length / pageSize), 1)
+    const newPage = Math.min(page, pageCount - 1)
+
     const sortedRows = this._sort(filteredRows, columns, sort, sortDirection)
-    const currentRows = this._page(sortedRows, page, pageSize)
+    const currentRows = this._page(sortedRows, newPage, pageSize)
 
     await this.context.setState({
       filteredRows,
       sortedRows,
-      currentRows
+      currentRows,
+      page: newPage
     })
+
     if (selectedRowId) {
       await this._recalculateSelectedRow()
     }

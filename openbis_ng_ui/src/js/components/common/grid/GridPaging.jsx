@@ -106,6 +106,7 @@ class GridPaging extends React.PureComponent {
             onClick={this.handleFirstPageButtonClick}
             disabled={page === 0}
             aria-label='First Page'
+            data-part='firstPage'
           >
             <FirstPageIcon fontSize='small' />
           </IconButton>
@@ -113,6 +114,7 @@ class GridPaging extends React.PureComponent {
             onClick={this.handleBackButtonClick}
             disabled={page === 0}
             aria-label='Previous Page'
+            data-part='prevPage'
           >
             <KeyboardArrowLeft fontSize='small' />
           </IconButton>
@@ -120,6 +122,7 @@ class GridPaging extends React.PureComponent {
             onClick={this.handleNextButtonClick}
             disabled={page >= Math.ceil(count / pageSize) - 1}
             aria-label='Next Page'
+            data-part='nextPage'
           >
             <KeyboardArrowRight fontSize='small' />
           </IconButton>
@@ -127,6 +130,7 @@ class GridPaging extends React.PureComponent {
             onClick={this.handleLastPageButtonClick}
             disabled={page >= Math.ceil(count / pageSize) - 1}
             aria-label='Last Page'
+            data-part='lastPage'
           >
             <LastPageIcon fontSize='small' />
           </IconButton>
