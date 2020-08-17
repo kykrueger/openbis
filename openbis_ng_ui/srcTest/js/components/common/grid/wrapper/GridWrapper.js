@@ -1,6 +1,8 @@
 import BaseWrapper from '@srcTest/js/components/common/wrapper/BaseWrapper.js'
 import TableSortLabel from '@material-ui/core/TableSortLabel'
 import FilterField from '@src/js/components/common/form/FilterField.jsx'
+import GridPaging from '@src/js/components/common/grid/GridPaging.jsx'
+import GridPagingWrapper from '@srcTest/js/components/common/grid/wrapper/GridPagingWrapper.js'
 import GridHeaderLabel from '@src/js/components/common/grid/GridHeaderLabel.jsx'
 import GridRow from '@src/js/components/common/grid/GridRow.jsx'
 import GridRowWrapper from '@srcTest/js/components/common/grid/wrapper/GridRowWrapper.js'
@@ -31,11 +33,16 @@ export default class GridWrapper extends BaseWrapper {
     return rows
   }
 
+  getPaging() {
+    return new GridPagingWrapper(this.findComponent(GridPaging))
+  }
+
   toJSON() {
     if (this.wrapper.exists()) {
       return {
         columns: this.getColumns().map(row => row.toJSON()),
-        rows: this.getRows().map(row => row.toJSON())
+        rows: this.getRows().map(row => row.toJSON()),
+        paging: this.getPaging().toJSON()
       }
     } else {
       return null

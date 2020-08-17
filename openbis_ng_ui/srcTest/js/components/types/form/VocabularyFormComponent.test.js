@@ -28,6 +28,7 @@ describe('VocabularyFormComponent', () => {
   test('load new', testLoadNew)
   test('load existing', testLoadExisting)
   test('select term', testSelectTerm)
+  test('add term', testAddTerm)
 })
 
 async function testLoadNew() {
@@ -270,6 +271,108 @@ async function testSelectTerm() {
       },
       edit: null,
       message: null
+    }
+  })
+}
+
+async function testAddTerm() {
+  const form = await mountExisting()
+
+  form.expectJSON({
+    grid: {
+      rows: fixture.TEST_VOCABULARY_DTO.terms.map(term => ({
+        values: {
+          'code.value': term.getCode(),
+          'label.value': term.getLabel(),
+          'description.value': term.getDescription(),
+          'official.value': String(term.isOfficial())
+        },
+        selected: false
+      })),
+      paging: {
+        pageSize: {
+          value: 10
+        },
+        range: '1-6 of 6'
+      }
+    }
+  })
+
+  form.getGrid().getPaging().getPageSize().change(5)
+  await form.update()
+
+  form.getButtons().getEdit().click()
+  await form.update()
+
+  form.getButtons().getAddTerm().click()
+  await form.update()
+
+  form.expectJSON({
+    grid: {
+      rows: [
+        {
+          values: { 'code.value': fixture.TEST_TERM_6_DTO.getCode() },
+          selected: false
+        },
+        {
+          values: { 'code.value': null },
+          selected: true
+        }
+      ],
+      paging: {
+        pageSize: {
+          value: 5
+        },
+        range: '6-7 of 7'
+      }
+    },
+    parameters: {
+      term: {
+        title: 'Term',
+        code: {
+          label: 'Code',
+          value: null,
+          enabled: true,
+          mode: 'edit'
+        },
+        label: {
+          label: 'Label',
+          value: null,
+          enabled: true,
+          mode: 'edit'
+        },
+        description: {
+          label: 'Description',
+          value: null,
+          enabled: true,
+          mode: 'edit'
+        },
+        official: {
+          label: 'Official',
+          value: true,
+          enabled: true,
+          mode: 'edit'
+        }
+      }
+    },
+    buttons: {
+      addTerm: {
+        enabled: true
+      },
+      removeTerm: {
+        enabled: true
+      },
+      save: {
+        enabled: true
+      },
+      cancel: {
+        enabled: true
+      },
+      edit: null,
+      message: {
+        text: 'You have unsaved changes.',
+        type: 'warning'
+      }
     }
   })
 }

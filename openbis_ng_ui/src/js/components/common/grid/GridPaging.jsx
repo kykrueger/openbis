@@ -35,7 +35,7 @@ const styles = theme => ({
   }
 })
 
-class PageConfig extends React.PureComponent {
+class GridPaging extends React.PureComponent {
   constructor(props) {
     super(props)
     this.handlePageSizeChange = this.handlePageSizeChange.bind(this)
@@ -68,7 +68,7 @@ class PageConfig extends React.PureComponent {
   }
 
   render() {
-    logger.log(logger.DEBUG, 'PageConfig.render')
+    logger.log(logger.DEBUG, 'GridPaging.render')
 
     const { classes, count, page, pageSize } = this.props
 
@@ -96,7 +96,7 @@ class PageConfig extends React.PureComponent {
           />
         </div>
         <div className={classes.pageRange}>
-          <Typography variant='body2'>
+          <Typography variant='body2' data-part='range'>
             {Math.min(count, page * pageSize + 1)}-
             {Math.min(count, (page + 1) * pageSize)} of {count}
           </Typography>
@@ -136,4 +136,4 @@ class PageConfig extends React.PureComponent {
   }
 }
 
-export default _.flow(withStyles(styles))(PageConfig)
+export default _.flow(withStyles(styles))(GridPaging)
