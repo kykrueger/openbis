@@ -142,18 +142,38 @@ class TypeFormPreviewProperty extends React.PureComponent {
   }
 
   handleDraggableClick(event) {
-    event.stopPropagation()
-    this.props.onSelectionChange('property', {
-      id: this.props.property.id
-    })
+    let newSelection = {
+      type: 'property',
+      params: {
+        id: this.props.property.id
+      }
+    }
+    this.handleClick(event, newSelection)
   }
 
   handlePropertyClick(event) {
+    let newSelection = {
+      type: 'property',
+      params: {
+        id: this.props.property.id
+      }
+    }
+    if (event.target.dataset && event.target.dataset.part) {
+      newSelection.params.part = event.target.dataset.part
+    }
+    this.handleClick(event, newSelection)
+  }
+
+  handleClick(event, newSelection) {
+    const { selection } = this.props
+
     event.stopPropagation()
-    this.props.onSelectionChange('property', {
-      id: this.props.property.id,
-      part: event.target.dataset.part
-    })
+
+    if (_.isEqual(selection, newSelection)) {
+      this.props.onSelectionChange()
+    } else {
+      this.props.onSelectionChange(newSelection.type, newSelection.params)
+    }
   }
 
   handleChange(event) {
@@ -230,7 +250,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
   }
 
   renderVarcharProperty() {
-    const { property } = this.props
+    const { property, mode } = this.props
     const { values } = this.state
     return (
       <TextField
@@ -244,6 +264,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
         error={this.getError()}
         styles={this.getStyles()}
         mode='edit'
+        disabled={mode !== 'edit'}
         onClick={this.handlePropertyClick}
         onChange={this.handleChange}
       />
@@ -251,7 +272,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
   }
 
   renderNumberProperty() {
-    const { property } = this.props
+    const { property, mode } = this.props
     const { values } = this.state
     return (
       <TextField
@@ -265,6 +286,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
         error={this.getError()}
         styles={this.getStyles()}
         mode='edit'
+        disabled={mode !== 'edit'}
         onClick={this.handlePropertyClick}
         onChange={this.handleChange}
       />
@@ -272,7 +294,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
   }
 
   renderBooleanProperty() {
-    const { property } = this.props
+    const { property, mode } = this.props
     const { values } = this.state
     return (
       <div>
@@ -286,6 +308,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
           error={this.getError()}
           styles={this.getStyles()}
           mode='edit'
+          disabled={mode !== 'edit'}
           onClick={this.handlePropertyClick}
           onChange={this.handleChange}
         />
@@ -294,7 +317,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
   }
 
   renderVocabularyProperty() {
-    const { property } = this.props
+    const { property, mode } = this.props
     const { terms, values } = this.state
 
     let options = []
@@ -319,6 +342,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
         error={this.getError()}
         styles={this.getStyles()}
         mode='edit'
+        disabled={mode !== 'edit'}
         onClick={this.handlePropertyClick}
         onChange={this.handleChange}
       />
@@ -326,7 +350,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
   }
 
   renderMaterialProperty() {
-    const { property } = this.props
+    const { property, mode } = this.props
     const { materials, values } = this.state
 
     let options = []
@@ -350,6 +374,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
         error={this.getError()}
         styles={this.getStyles()}
         mode='edit'
+        disabled={mode !== 'edit'}
         onClick={this.handlePropertyClick}
         onChange={this.handleChange}
       />
@@ -378,8 +403,9 @@ class TypeFormPreviewProperty extends React.PureComponent {
 
   getMultiline() {
     return (
-      this.props.property.dataType === openbis.DataType.MULTILINE_VARCHAR ||
-      this.props.property.dataType === openbis.DataType.XML
+      this.props.property.dataType.value ===
+        openbis.DataType.MULTILINE_VARCHAR ||
+      this.props.property.dataType.value === openbis.DataType.XML
     )
   }
 

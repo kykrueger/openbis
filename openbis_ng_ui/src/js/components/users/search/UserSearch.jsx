@@ -1,5 +1,6 @@
 import React from 'react'
 import Grid from '@src/js/components/common/grid/Grid.jsx'
+import GridContainer from '@src/js/components/common/grid/GridContainer.jsx'
 import ids from '@src/js/common/consts/ids.js'
 import store from '@src/js/store/store.js'
 import actions from '@src/js/store/actions/actions.js'
@@ -58,21 +59,23 @@ class UserSearch extends React.Component {
     }
 
     return (
-      <Grid
-        id={ids.USERS_GRID_ID}
-        columns={[
-          {
-            field: 'userId'
-          },
-          {
-            field: 'firstName'
-          },
-          {
-            field: 'lastName'
-          }
-        ]}
-        data={this.state.users}
-      />
+      <GridContainer>
+        <Grid
+          id={ids.USERS_GRID_ID}
+          columns={[
+            {
+              field: 'userId'
+            },
+            {
+              field: 'firstName'
+            },
+            {
+              field: 'lastName'
+            }
+          ]}
+          rows={this.state.users}
+        />
+      </GridContainer>
     )
   }
 }

@@ -51,7 +51,7 @@ class FilterField extends React.Component {
   }
 
   render() {
-    logger.log(logger.DEBUG, 'BrowserFilter.render')
+    logger.log(logger.DEBUG, 'FilterField.render')
 
     const classes = this.props.classes
 
@@ -101,7 +101,7 @@ class FilterField extends React.Component {
           }}
         >
           <IconButton
-            onMouseDown={this.handleFilterClear}
+            onClick={this.handleFilterClear}
             classes={{ root: classes.adornmentButton }}
           >
             <CloseIcon fontSize='small' />

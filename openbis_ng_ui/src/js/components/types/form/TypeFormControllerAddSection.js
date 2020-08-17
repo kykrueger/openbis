@@ -1,3 +1,5 @@
+import FormUtil from '@src/js/components/common/form/FormUtil.js'
+
 export default class TypeFormControllerAddSection {
   constructor(controller) {
     this.controller = controller
@@ -10,7 +12,7 @@ export default class TypeFormControllerAddSection {
     let newSections = Array.from(sections)
     let newSection = {
       id: 'section-' + sectionsCounter++,
-      name: this._createField(),
+      name: FormUtil.createField(),
       properties: []
     }
     let newSelection = {
@@ -46,14 +48,5 @@ export default class TypeFormControllerAddSection {
     }))
 
     this.controller.changed(true)
-  }
-
-  _createField(params = {}) {
-    return {
-      value: null,
-      visible: true,
-      enabled: true,
-      ...params
-    }
   }
 }

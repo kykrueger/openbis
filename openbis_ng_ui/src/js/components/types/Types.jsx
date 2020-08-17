@@ -10,6 +10,7 @@ import ContentTab from '@src/js/components/common/content/ContentTab.jsx'
 import TypeBrowser from './browser/TypeBrowser.jsx'
 import TypeSearch from './search/TypeSearch.jsx'
 import TypeForm from './form/TypeForm.jsx'
+import VocabularyForm from './form/VocabularyForm.jsx'
 
 const styles = () => ({
   container: {
@@ -40,6 +41,11 @@ class Types extends React.Component {
     const { object } = tab
     if (object.type === objectType.SEARCH) {
       return <TypeSearch objectId={object.id} />
+    } else if (
+      object.type === objectType.VOCABULARY_TYPE ||
+      object.type === objectType.NEW_VOCABULARY_TYPE
+    ) {
+      return <VocabularyForm object={object} />
     } else {
       return <TypeForm object={object} />
     }
@@ -49,11 +55,17 @@ class Types extends React.Component {
     const { object } = tab
 
     const prefixes = {
+      [objectType.OBJECT_TYPE]: 'Object Type: ',
+      [objectType.COLLECTION_TYPE]: 'Collection Type: ',
+      [objectType.DATA_SET_TYPE]: 'Data Set Type: ',
+      [objectType.MATERIAL_TYPE]: 'Material Type: ',
+      [objectType.VOCABULARY_TYPE]: 'Vocabulary Type: ',
       [objectType.NEW_OBJECT_TYPE]: 'New Object Type ',
       [objectType.NEW_COLLECTION_TYPE]: 'New Collection Type ',
       [objectType.NEW_DATA_SET_TYPE]: 'New Data Set Type ',
       [objectType.NEW_MATERIAL_TYPE]: 'New Material Type ',
-      [objectType.SEARCH]: 'search: '
+      [objectType.NEW_VOCABULARY_TYPE]: 'New Vocabulary Type ',
+      [objectType.SEARCH]: 'Search: '
     }
 
     return <ContentTab prefix={prefixes[object.type]} tab={tab} />

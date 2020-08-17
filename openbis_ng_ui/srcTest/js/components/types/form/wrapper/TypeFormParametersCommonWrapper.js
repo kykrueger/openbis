@@ -1,10 +1,9 @@
-export default class TypeFormParametersCommonWrapper {
-  constructor(wrapper) {
-    this.wrapper = wrapper
-  }
+import BaseWrapper from '@srcTest/js/components/common/wrapper/BaseWrapper.js'
+import Header from '@src/js/components/common/form/Header.jsx'
 
+export default class TypeFormParametersCommonWrapper extends BaseWrapper {
   getTitle() {
-    return this.wrapper.find('TypeFormHeader')
+    return this.findComponent(Header)
   }
 
   toJSON() {

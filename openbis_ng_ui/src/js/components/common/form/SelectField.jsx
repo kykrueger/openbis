@@ -24,6 +24,11 @@ const styles = theme => ({
 })
 
 class SelectFormField extends React.PureComponent {
+  static defaultProps = {
+    mode: 'edit',
+    variant: 'filled'
+  }
+
   constructor(props) {
     super(props)
     this.inputReference = React.createRef()
@@ -55,7 +60,7 @@ class SelectFormField extends React.PureComponent {
   render() {
     logger.log(logger.DEBUG, 'SelectFormField.render')
 
-    const { mode = 'edit' } = this.props
+    const { mode } = this.props
 
     if (mode === 'view') {
       return this.renderView()
@@ -134,7 +139,7 @@ class SelectFormField extends React.PureComponent {
               root: classes.select
             }
           }}
-          variant={variant ? variant : 'filled'}
+          variant={variant}
           margin='dense'
           classes={{
             root: classes.textField

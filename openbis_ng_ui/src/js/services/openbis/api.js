@@ -91,6 +91,10 @@ class Facade {
     return this.promise(this.v3.getMaterialTypes(ids, fo))
   }
 
+  getVocabularies(ids, fo) {
+    return this.promise(this.v3.getVocabularies(ids, fo))
+  }
+
   updateSampleTypes(updates) {
     return this.promise(this.v3.updateSampleTypes(updates))
   }

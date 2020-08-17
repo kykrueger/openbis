@@ -1,83 +1,156 @@
 import React from 'react'
-import { Provider } from 'react-redux'
-import { mount } from 'enzyme'
-import { createStore } from '@src/js/store/store.js'
-import ThemeProvider from '@src/js/components/common/theme/ThemeProvider.jsx'
-import BrowserTest from '@srcTest/js/components/common/browser/BrowserTest.js'
+import ComponentTest from '@srcTest/js/components/common/ComponentTest.js'
+import BrowserWrapper from '@srcTest/js/components/common/browser/wrapper/BrowserWrapper.js'
 import UserBrowser from '@src/js/components/users/browser/UserBrowser.jsx'
-import UserBrowserController from '@src/js/components/users/browser/UserBrowserController.js'
 import openbis from '@srcTest/js/services/openbis.js'
-import actions from '@src/js/store/actions/actions.js'
 import fixture from '@srcTest/js/common/fixture.js'
 
-let store = null
-let controller = null
+let common = null
 
 beforeEach(() => {
-  jest.resetAllMocks()
-  store = createStore()
-  controller = new UserBrowserController()
+  common = new ComponentTest(
+    () => <UserBrowser />,
+    wrapper => new BrowserWrapper(wrapper)
+  )
+  common.beforeEach()
+
+  openbis.mockSearchPersons([fixture.TEST_USER_DTO, fixture.ANOTHER_USER_DTO])
+  openbis.mockSearchGroups([
+    fixture.TEST_GROUP_DTO,
+    fixture.ANOTHER_GROUP_DTO,
+    fixture.ALL_USERS_GROUP_DTO
+  ])
 })
 
 describe('browser', () => {
-  test('test', done => {
-    openbis.mockSearchPersons([fixture.TEST_USER_DTO, fixture.ANOTHER_USER_DTO])
-    openbis.mockSearchGroups([
-      fixture.TEST_GROUP_DTO,
-      fixture.ANOTHER_GROUP_DTO,
-      fixture.ALL_USERS_GROUP_DTO
-    ])
-
-    store.dispatch(actions.init())
-
-    let wrapper = mount(
-      <Provider store={store}>
-        <ThemeProvider>
-          <UserBrowser controller={controller} />
-        </ThemeProvider>
-      </Provider>
-    )
-
-    setTimeout(() => {
-      wrapper.update()
-
-      BrowserTest.expectFilter(wrapper, '')
-      BrowserTest.expectNodes(wrapper, [
-        { level: 0, text: 'Users' },
-        { level: 0, text: 'Groups' }
-      ])
-
-      BrowserTest.simulateNodeIconClick(wrapper, 'users')
-      wrapper.update()
-
-      BrowserTest.expectFilter(wrapper, '')
-      BrowserTest.expectNodes(wrapper, [
-        { level: 0, text: 'Users' },
-        { level: 1, text: fixture.ANOTHER_USER_DTO.userId },
-        { level: 1, text: fixture.TEST_USER_DTO.userId },
-        { level: 0, text: 'Groups' }
-      ])
-
-      BrowserTest.simulateFilterChange(
-        wrapper,
-        fixture.ANOTHER_GROUP_DTO.code.toUpperCase()
-      )
-      wrapper.update()
-
-      BrowserTest.expectFilter(
-        wrapper,
-        fixture.ANOTHER_GROUP_DTO.code.toUpperCase()
-      )
-      BrowserTest.expectNodes(wrapper, [
-        { level: 0, text: 'Users' },
-        { level: 1, text: fixture.ANOTHER_USER_DTO.userId },
-        { level: 2, text: fixture.ANOTHER_GROUP_DTO.code },
-        { level: 0, text: 'Groups' },
-        { level: 1, text: fixture.ANOTHER_GROUP_DTO.code },
-        { level: 2, text: fixture.ANOTHER_USER_DTO.userId }
-      ])
-
-      done()
-    })
-  })
+  test('load', testLoad)
+  test('open/close', testOpenClose)
+  test('filter', testFilter)
 })
+
+async function testLoad() {
+  const browser = await common.mount()
+
+  browser.expectJSON({
+    filter: {
+      value: null
+    },
+    nodes: [
+      { level: 0, text: 'Users' },
+      { level: 0, text: 'Groups' }
+    ]
+  })
+}
+
+async function testOpenClose() {
+  const browser = await common.mount()
+
+  browser.getNodes()[0].getIcon().click()
+  await browser.update()
+
+  browser.expectJSON({
+    filter: {
+      value: null
+    },
+    nodes: [
+      { level: 0, text: 'Users' },
+      { level: 1, text: fixture.ANOTHER_USER_DTO.userId },
+      { level: 1, text: fixture.TEST_USER_DTO.userId },
+      { level: 0, text: 'Groups' }
+    ]
+  })
+
+  browser.getNodes()[1].getIcon().click()
+  await browser.update()
+
+  browser.expectJSON({
+    filter: {
+      value: null
+    },
+    nodes: [
+      { level: 0, text: 'Users' },
+      { level: 1, text: fixture.ANOTHER_USER_DTO.userId },
+      { level: 2, text: fixture.ALL_USERS_GROUP_DTO.code },
+      { level: 2, text: fixture.ANOTHER_GROUP_DTO.code },
+      { level: 1, text: fixture.TEST_USER_DTO.userId },
+      { level: 0, text: 'Groups' }
+    ]
+  })
+
+  browser.getNodes()[0].getIcon().click()
+  await browser.update()
+
+  browser.expectJSON({
+    filter: {
+      value: null
+    },
+    nodes: [
+      { level: 0, text: 'Users' },
+      { level: 0, text: 'Groups' }
+    ]
+  })
+
+  browser.getNodes()[0].getIcon().click()
+  await browser.update()
+
+  browser.expectJSON({
+    filter: {
+      value: null
+    },
+    nodes: [
+      { level: 0, text: 'Users' },
+      { level: 1, text: fixture.ANOTHER_USER_DTO.userId },
+      { level: 2, text: fixture.ALL_USERS_GROUP_DTO.code },
+      { level: 2, text: fixture.ANOTHER_GROUP_DTO.code },
+      { level: 1, text: fixture.TEST_USER_DTO.userId },
+      { level: 0, text: 'Groups' }
+    ]
+  })
+}
+
+async function testFilter() {
+  const browser = await common.mount()
+
+  browser.getFilter().change(fixture.ANOTHER_GROUP_DTO.code.toUpperCase())
+  await browser.update()
+
+  browser.expectJSON({
+    filter: {
+      value: fixture.ANOTHER_GROUP_DTO.code.toUpperCase()
+    },
+    nodes: [
+      { level: 0, text: 'Users' },
+      { level: 1, text: fixture.ANOTHER_USER_DTO.userId },
+      { level: 2, text: fixture.ANOTHER_GROUP_DTO.code },
+      { level: 0, text: 'Groups' },
+      { level: 1, text: fixture.ANOTHER_GROUP_DTO.code },
+      { level: 2, text: fixture.ANOTHER_USER_DTO.userId }
+    ]
+  })
+
+  browser.getFilter().getClearIcon().click()
+  await browser.update()
+
+  browser.expectJSON({
+    filter: {
+      value: null
+    },
+    nodes: [
+      { level: 0, text: 'Users' },
+      { level: 1, text: fixture.ANOTHER_USER_DTO.userId },
+      { level: 2, text: fixture.ALL_USERS_GROUP_DTO.code },
+      { level: 2, text: fixture.ANOTHER_GROUP_DTO.code },
+      { level: 1, text: fixture.TEST_USER_DTO.userId },
+      { level: 2, text: fixture.ALL_USERS_GROUP_DTO.code },
+      { level: 2, text: fixture.TEST_GROUP_DTO.code },
+      { level: 0, text: 'Groups' },
+      { level: 1, text: fixture.ALL_USERS_GROUP_DTO.code },
+      { level: 2, text: fixture.ANOTHER_USER_DTO.userId },
+      { level: 2, text: fixture.TEST_USER_DTO.userId },
+      { level: 1, text: fixture.ANOTHER_GROUP_DTO.code },
+      { level: 2, text: fixture.ANOTHER_USER_DTO.userId },
+      { level: 1, text: fixture.TEST_GROUP_DTO.code },
+      { level: 2, text: fixture.TEST_USER_DTO.userId }
+    ]
+  })
+}

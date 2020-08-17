@@ -28,6 +28,11 @@ beforeEach(() => {
     fixture.TEST_MATERIAL_TYPE_DTO,
     fixture.ANOTHER_MATERIAL_TYPE_DTO
   ])
+
+  openbis.mockSearchVocabularies([
+    fixture.TEST_VOCABULARY_DTO,
+    fixture.ANOTHER_VOCABULARY_DTO
+  ])
 })
 
 describe('browser', () => {
@@ -52,6 +57,11 @@ describe('browser', () => {
       },
       {
         text: 'Material Types',
+        expanded: false,
+        selected: false
+      },
+      {
+        text: 'Vocabulary Types',
         expanded: false,
         selected: false
       }
@@ -85,6 +95,18 @@ describe('browser', () => {
         children: [
           {
             text: fixture.ANOTHER_MATERIAL_TYPE_DTO.code,
+            expanded: false,
+            selected: false
+          }
+        ]
+      },
+      {
+        text: 'Vocabulary Types',
+        expanded: true,
+        selected: false,
+        children: [
+          {
+            text: fixture.ANOTHER_VOCABULARY_DTO.code,
             expanded: false,
             selected: false
           }

@@ -4,6 +4,7 @@ import { connect } from 'react-redux'
 import { withStyles } from '@material-ui/core/styles'
 import Link from '@material-ui/core/Link'
 import Grid from '@src/js/components/common/grid/Grid.jsx'
+import GridContainer from '@src/js/components/common/grid/GridContainer.jsx'
 import ids from '@src/js/common/consts/ids.js'
 import pages from '@src/js/common/consts/pages.js'
 import objectTypes from '@src/js/common/consts/objectType.js'
@@ -138,31 +139,33 @@ class TypeSearch extends React.Component {
     const { types } = this.state
 
     return (
-      <Grid
-        id={ids.TYPES_GRID_ID}
-        columns={[
-          {
-            field: 'permId.entityKind',
-            label: 'Kind'
-          },
-          {
-            field: 'code',
-            render: row => (
-              <Link
-                component='button'
-                classes={{ root: classes.tableLink }}
-                onClick={this.handleLinkClick(row.permId)}
-              >
-                {row.code}
-              </Link>
-            )
-          },
-          {
-            field: 'description'
-          }
-        ]}
-        data={types}
-      />
+      <GridContainer>
+        <Grid
+          id={ids.TYPES_GRID_ID}
+          columns={[
+            {
+              field: 'permId.entityKind',
+              label: 'Kind'
+            },
+            {
+              field: 'code',
+              render: row => (
+                <Link
+                  component='button'
+                  classes={{ root: classes.tableLink }}
+                  onClick={this.handleLinkClick(row.permId)}
+                >
+                  {row.code}
+                </Link>
+              )
+            },
+            {
+              field: 'description'
+            }
+          ]}
+          rows={types}
+        />
+      </GridContainer>
     )
   }
 }

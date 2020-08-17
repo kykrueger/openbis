@@ -6,6 +6,8 @@ import CreateExperimentTypesOperation from 'as/dto/experiment/create/CreateExper
 import CreateMaterialTypesOperation from 'as/dto/material/create/CreateMaterialTypesOperation'
 import CreatePropertyTypesOperation from 'as/dto/property/create/CreatePropertyTypesOperation'
 import CreateSampleTypesOperation from 'as/dto/sample/create/CreateSampleTypesOperation'
+import CreateVocabulariesOperation from 'as/dto/vocabulary/create/CreateVocabulariesOperation'
+import CreateVocabularyTermsOperation from 'as/dto/vocabulary/create/CreateVocabularyTermsOperation'
 import CustomASServiceCode from 'as/dto/service/id/CustomASServiceCode'
 import CustomASServiceExecutionOptions from 'as/dto/service/CustomASServiceExecutionOptions'
 import DataSetFetchOptions from 'as/dto/dataset/fetchoptions/DataSetFetchOptions'
@@ -22,6 +24,8 @@ import DeleteExperimentTypesOperation from 'as/dto/experiment/delete/DeleteExper
 import DeleteMaterialTypesOperation from 'as/dto/material/delete/DeleteMaterialTypesOperation'
 import DeletePropertyTypesOperation from 'as/dto/property/delete/DeletePropertyTypesOperation'
 import DeleteSampleTypesOperation from 'as/dto/sample/delete/DeleteSampleTypesOperation'
+import DeleteVocabulariesOperation from 'as/dto/vocabulary/delete/DeleteVocabulariesOperation'
+import DeleteVocabularyTermsOperation from 'as/dto/vocabulary/delete/DeleteVocabularyTermsOperation'
 import EntityKind from 'as/dto/entitytype/EntityKind'
 import EntityTypePermId from 'as/dto/entitytype/id/EntityTypePermId'
 import ExperimentFetchOptions from 'as/dto/experiment/fetchoptions/ExperimentFetchOptions'
@@ -81,12 +85,22 @@ import UpdateExperimentTypesOperation from 'as/dto/experiment/update/UpdateExper
 import UpdateMaterialTypesOperation from 'as/dto/material/update/UpdateMaterialTypesOperation'
 import UpdatePropertyTypesOperation from 'as/dto/property/update/UpdatePropertyTypesOperation'
 import UpdateSampleTypesOperation from 'as/dto/sample/update/UpdateSampleTypesOperation'
+import UpdateVocabulariesOperation from 'as/dto/vocabulary/update/UpdateVocabulariesOperation'
+import UpdateVocabularyTermsOperation from 'as/dto/vocabulary/update/UpdateVocabularyTermsOperation'
 import Vocabulary from 'as/dto/vocabulary/Vocabulary'
+import VocabularyCreation from 'as/dto/vocabulary/create/VocabularyCreation'
+import VocabularyDeletionOptions from 'as/dto/vocabulary/delete/VocabularyDeletionOptions'
 import VocabularyFetchOptions from 'as/dto/vocabulary/fetchoptions/VocabularyFetchOptions'
 import VocabularyPermId from 'as/dto/vocabulary/id/VocabularyPermId'
 import VocabularySearchCriteria from 'as/dto/vocabulary/search/VocabularySearchCriteria'
+import VocabularyTerm from 'as/dto/vocabulary/VocabularyTerm'
+import VocabularyTermCreation from 'as/dto/vocabulary/create/VocabularyTermCreation'
+import VocabularyTermDeletionOptions from 'as/dto/vocabulary/delete/VocabularyTermDeletionOptions'
 import VocabularyTermFetchOptions from 'as/dto/vocabulary/fetchoptions/VocabularyTermFetchOptions'
+import VocabularyTermPermId from 'as/dto/vocabulary/id/VocabularyTermPermId'
 import VocabularyTermSearchCriteria from 'as/dto/vocabulary/search/VocabularyTermSearchCriteria'
+import VocabularyTermUpdate from 'as/dto/vocabulary/update/VocabularyTermUpdate'
+import VocabularyUpdate from 'as/dto/vocabulary/update/VocabularyUpdate'
 import WebAppSettingCreation from 'as/dto/webapp/create/WebAppSettingCreation'
 
 const dto = {
@@ -98,6 +112,8 @@ const dto = {
   CreateMaterialTypesOperation,
   CreatePropertyTypesOperation,
   CreateSampleTypesOperation,
+  CreateVocabulariesOperation,
+  CreateVocabularyTermsOperation,
   CustomASServiceCode,
   CustomASServiceExecutionOptions,
   DataSetFetchOptions,
@@ -114,6 +130,8 @@ const dto = {
   DeleteMaterialTypesOperation,
   DeletePropertyTypesOperation,
   DeleteSampleTypesOperation,
+  DeleteVocabulariesOperation,
+  DeleteVocabularyTermsOperation,
   EntityKind,
   EntityTypePermId,
   ExperimentFetchOptions,
@@ -173,12 +191,22 @@ const dto = {
   UpdateMaterialTypesOperation,
   UpdatePropertyTypesOperation,
   UpdateSampleTypesOperation,
+  UpdateVocabulariesOperation,
+  UpdateVocabularyTermsOperation,
   Vocabulary,
+  VocabularyTerm,
+  VocabularyCreation,
+  VocabularyDeletionOptions,
   VocabularyFetchOptions,
   VocabularyPermId,
   VocabularySearchCriteria,
+  VocabularyTermCreation,
+  VocabularyTermDeletionOptions,
   VocabularyTermFetchOptions,
+  VocabularyTermPermId,
   VocabularyTermSearchCriteria,
+  VocabularyTermUpdate,
+  VocabularyUpdate,
   WebAppSettingCreation
 }
 

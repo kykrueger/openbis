@@ -11,7 +11,7 @@ const styles = theme => ({
   metadataDefault: {
     fontSize: theme.typography.label.fontSize,
     color: theme.typography.label.color,
-    flex: '0 0 auto',
+    display: 'inline-block',
     margin: 0,
     marginBottom: theme.spacing(1) / 2
   },

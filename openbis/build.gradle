@@ -73,7 +73,7 @@ sourceSets {
 	}
 	test {
 		resources {
-			srcDirs = ['source/java']
+			srcDirs = ['sourceTest/java']
 		}
 	}
 }
@@ -131,13 +131,13 @@ task executeOpenBisDev(type: JavaExec) {
 	jvmArgs(['-Dpython.path=../libraries/jython/jython-lib', '-Dlog4j.configuration=etc/log.xml',
 			 '-Djavax.net.ssl.trustStore=dist/server/openBIS.keystore',
 			 '-Dorg.mortbay.util.FileResource.checkAliases=false', '-Xmx2048M', '-XX:MaxPermSize=512m', '-ea'])
-	args(['--classes', '../commonbase/targets/gradle/classes/main', 
-		  '--classes', '../common/targets/gradle/classes/main',
-		  '--classes', '../authentication/targets/gradle/classes/main', 
-		  '--classes', '../dbmigration/targets/gradle/classes/main',
-		  '--classes', '../openbis-common/targets/gradle/classes/main', 
-		  '--classes', '../openbis_api/targets/gradle/classes/main',
-		  '--classes', 'targets/gradle/classes/main', '--lib', 'targets/www/lib/', '--port', '8888', 'targets/www'])
+	args(['--classes', '../commonbase/targets/gradle/classes/java/main',
+		  '--classes', '../common/targets/gradle/classes/java/main',
+		  '--classes', '../authentication/targets/gradle/classes/java/main',
+		  '--classes', '../dbmigration/targets/gradle/classes/java/main',
+		  '--classes', '../openbis-common/targets/gradle/classes/java/main',
+		  '--classes', '../openbis_api/targets/gradle/classes/java/main',
+		  '--classes', 'targets/gradle/classes/java/main', '--lib', 'targets/www/lib/', '--port', '8888', 'targets/www'])
 }
 
 testProjectSamplesEnabled.dependsOn(copyTestData)

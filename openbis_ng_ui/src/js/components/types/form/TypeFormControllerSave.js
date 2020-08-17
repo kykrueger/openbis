@@ -1,105 +1,83 @@
 import _ from 'lodash'
-import pages from '@src/js/common/consts/pages.js'
-import actions from '@src/js/store/actions/actions.js'
+import PageControllerSave from '@src/js/components/common/page/PageControllerSave.js'
+import FormUtil from '@src/js/components/common/form/FormUtil.js'
 import openbis from '@src/js/services/openbis.js'
 
 import TypeFormControllerStrategies from './TypeFormControllerStrategies.js'
 import TypeFormUtil from './TypeFormUtil.js'
 
-export default class TypeFormControllerSave {
-  constructor(controller) {
-    this.controller = controller
-    this.context = controller.context
-    this.facade = controller.facade
-    this.object = controller.object
+export default class TypeFormControllerSave extends PageControllerSave {
+  async save() {
+    const state = this.context.getState()
+    const type = this._prepareType(state.type)
+    const properties = this._prepareProperties(
+      state.type,
+      state.properties,
+      state.sections
+    )
+    const operations = []
+    const assignments = []
 
-    let { type, properties, sections } = this.context.getState()
-
-    this.type = this._prepareType(type)
-    this.properties = this._prepareProperties(type, properties, sections)
-  }
-
-  async execute() {
-    await this.context.setState({
-      validate: true
-    })
-
-    const valid = await this.controller.validate(true)
-    if (!valid) {
-      return
+    if (type.original) {
+      type.original.properties.forEach(originalProperty => {
+        const property = _.find(properties, ['id', originalProperty.id])
+        if (!property) {
+          operations.push(
+            this._deletePropertyAssignmentOperation(type, originalProperty)
+          )
+          if (originalProperty.assignments === 1) {
+            operations.push(this._deletePropertyTypeOperation(originalProperty))
+          }
+        }
+      })
     }
 
-    await this.context.setState({
-      loading: true
+    properties.forEach((property, index) => {
+      const original = property.scope.globalPropertyType || property.original
+
+      if (original) {
+        if (this._isPropertyTypeUpdateNeeded(property, original)) {
+          if (this._isPropertyTypeUpdatePossible(property, original)) {
+            operations.push(this._updatePropertyTypeOperation(property))
+          } else {
+            operations.push(
+              this._deletePropertyAssignmentOperation(type, property)
+            )
+            operations.push(this._deletePropertyTypeOperation(property))
+            operations.push(this._createPropertyTypeOperation(property))
+          }
+        }
+        assignments.push(this._propertyAssignmentCreation(property, index))
+      } else {
+        if (property.scope.value === 'local') {
+          property = this._addTypePrefix(type, property)
+        }
+        operations.push(this._createPropertyTypeOperation(property))
+        assignments.push(this._propertyAssignmentCreation(property, index))
+      }
     })
 
-    const strategy = this._getStrategy()
-    const operations = this._createOperations()
+    if (type.original) {
+      operations.push(this._updateTypeOperation(type, assignments))
+    } else {
+      operations.push(this._createTypeOperation(type, assignments))
+    }
+
     const options = new openbis.SynchronousOperationExecutionOptions()
     options.setExecuteInOrder(true)
+    await this.facade.executeOperations(operations, options)
 
-    const oldObject = this.object
-    const newObject = {
-      type: strategy.getExistingObjectType(),
-      id: this.type.code.value
-    }
-
-    return this.facade
-      .executeOperations(operations, options)
-      .then(async () => {
-        this.controller.object = newObject
-        await this.controller.load()
-        await this.context.setState({
-          loading: false
-        })
-        this._dispatchActions(oldObject, newObject)
-      })
-      .catch(error => {
-        this.context.setState({
-          loading: false
-        })
-        this.context.dispatch(actions.errorChange(error))
-      })
-  }
-
-  _prepareValue(field) {
-    const trim = str => {
-      const trimmed = str.trim()
-      return trimmed.length > 0 ? trimmed : null
-    }
-
-    if (field) {
-      if (_.isString(field)) {
-        return trim(field)
-      } else if (_.isObject(field) && _.isString(field.value)) {
-        return {
-          ...field,
-          value: trim(field.value)
-        }
-      }
-    }
-
-    return field
+    return type.code.value
   }
 
   _prepareType(type) {
-    let code = type.code.value
-
-    if (code) {
-      code = code.toUpperCase()
-    }
-
-    const newType = _.mapValues(
-      {
-        ...type,
-        code: {
-          value: code
-        }
-      },
-      this._prepareValue
-    )
-
-    return newType
+    const code = type.code.value
+    return FormUtil.trimFields({
+      ...type,
+      code: {
+        value: code ? code.toUpperCase() : null
+      }
+    })
   }
 
   _prepareProperties(type, properties, sections) {
@@ -112,23 +90,14 @@ export default class TypeFormControllerSave {
     sections.forEach(section => {
       section.properties.forEach(propertyId => {
         const property = propertiesMap[propertyId]
-
-        let code = property.code.value
-        if (code) {
-          code = code.toUpperCase()
-        }
-
-        const newProperty = _.mapValues(
-          {
-            ...property,
-            code: {
-              value: code
-            },
-            section: section.name.value
+        const code = property.code.value
+        const newProperty = FormUtil.trimFields({
+          ...property,
+          code: {
+            value: code ? code.toUpperCase() : null
           },
-          this._prepareValue
-        )
-
+          section: section.name.value
+        })
         results.push(newProperty)
       })
     })
@@ -136,114 +105,46 @@ export default class TypeFormControllerSave {
     return results
   }
 
-  _addTypePrefix(property) {
+  _addTypePrefix(type, property) {
     return {
       ...property,
       code: {
         ...property.code,
-        value: TypeFormUtil.addTypePrefix(
-          this.type.code.value,
-          property.code.value
-        )
+        value: TypeFormUtil.addTypePrefix(type.code.value, property.code.value)
       }
     }
-  }
-
-  _hasPropertyChanged(property, original, path) {
-    const originalValue = original ? _.get(original, path) : null
-    const currentValue = _.get(property, path)
-    return originalValue.value !== currentValue.value
   }
 
   _isPropertyTypeUpdateNeeded(property, original) {
-    return (
-      this._hasPropertyChanged(property, original, 'dataType') ||
-      this._hasPropertyChanged(property, original, 'vocabulary') ||
-      this._hasPropertyChanged(property, original, 'materialType') ||
-      this._hasPropertyChanged(property, original, 'label') ||
-      this._hasPropertyChanged(property, original, 'description') ||
-      this._hasPropertyChanged(property, original, 'schema') ||
-      this._hasPropertyChanged(property, original, 'transformation')
-    )
+    return FormUtil.haveFieldsChanged(property, original, [
+      'dataType',
+      'vocabulary',
+      'materialType',
+      'label',
+      'description',
+      'schema',
+      'transformation'
+    ])
   }
 
   _isPropertyTypeUpdatePossible(property, original) {
-    if (
-      this._hasPropertyChanged(property, original, 'dataType') ||
-      this._hasPropertyChanged(property, original, 'vocabulary') ||
-      this._hasPropertyChanged(property, original, 'materialType')
-    ) {
-      return false
-    }
-    return true
+    return !FormUtil.haveFieldsChanged(property, original, [
+      'dataType',
+      'vocabulary',
+      'materialType'
+    ])
   }
 
-  _createOperations() {
-    const operations = []
-    const assignments = []
-
-    if (this.type.original) {
-      this.type.original.properties.forEach(originalProperty => {
-        const property = _.find(this.properties, ['id', originalProperty.id])
-        if (!property) {
-          operations.push(
-            this._deletePropertyAssignmentOperation(originalProperty)
-          )
-          if (originalProperty.assignments === 1) {
-            operations.push(this._deletePropertyTypeOperation(originalProperty))
-          }
-        }
-      })
-    }
-
-    this.properties.forEach((property, index) => {
-      const original = property.scope.globalPropertyType || property.original
-
-      if (original) {
-        if (this._isPropertyTypeUpdateNeeded(property, original)) {
-          if (this._isPropertyTypeUpdatePossible(property, original)) {
-            operations.push(this._updatePropertyTypeOperation(property))
-          } else {
-            operations.push(this._deletePropertyAssignmentOperation(property))
-            operations.push(this._deletePropertyTypeOperation(property))
-            operations.push(this._createPropertyTypeOperation(property))
-          }
-        }
-        assignments.push(this._propertyAssignmentCreation(property, index))
-      } else {
-        if (property.scope.value === 'local') {
-          property = this._addTypePrefix(property)
-        }
-        operations.push(this._createPropertyTypeOperation(property))
-        assignments.push(this._propertyAssignmentCreation(property, index))
-      }
-    })
-
-    if (this.type.original) {
-      operations.push(this._updateTypeOperation(assignments))
-    } else {
-      operations.push(this._createTypeOperation(assignments))
-    }
-
-    return operations
-  }
-
-  _deletePropertyAssignmentOperation(property) {
+  _deletePropertyAssignmentOperation(type, property) {
     const strategy = this._getStrategy()
     const assignmentId = new openbis.PropertyAssignmentPermId(
-      new openbis.EntityTypePermId(
-        this.type.code.value,
-        strategy.getEntityKind()
-      ),
+      new openbis.EntityTypePermId(type.code.value, strategy.getEntityKind()),
       new openbis.PropertyTypePermId(property.code.value)
     )
 
     const update = strategy.createTypeUpdate()
     update.setTypeId(
-      new openbis.EntityTypePermId(
-        this.type.code.value,
-        strategy.getEntityKind()
-      )
+      new openbis.EntityTypePermId(type.code.value, strategy.getEntityKind())
     )
     update.getPropertyAssignments().remove([assignmentId])
     update
@@ -327,58 +228,36 @@ export default class TypeFormControllerSave {
     return creation
   }
 
-  _createTypeOperation(assignments) {
+  _createTypeOperation(type, assignments) {
     const strategy = this._getStrategy()
     const creation = strategy.createTypeCreation()
-    creation.setCode(this.type.code.value)
-    creation.setDescription(this.type.description.value)
+    creation.setCode(type.code.value)
+    creation.setDescription(type.description.value)
     creation.setValidationPluginId(
-      this.type.validationPlugin.value
-        ? new openbis.PluginPermId(this.type.validationPlugin.value)
+      type.validationPlugin.value
+        ? new openbis.PluginPermId(type.validationPlugin.value)
         : null
     )
     creation.setPropertyAssignments(assignments.reverse())
-    strategy.setTypeAttributes(creation, this.type)
+    strategy.setTypeAttributes(creation, type)
     return strategy.createTypeCreateOperation([creation])
   }
 
-  _updateTypeOperation(assignments) {
+  _updateTypeOperation(type, assignments) {
     const strategy = this._getStrategy()
     const update = strategy.createTypeUpdate()
     update.setTypeId(
-      new openbis.EntityTypePermId(
-        this.type.code.value,
-        strategy.getEntityKind()
-      )
+      new openbis.EntityTypePermId(type.code.value, strategy.getEntityKind())
     )
-    update.setDescription(this.type.description.value)
+    update.setDescription(type.description.value)
     update.setValidationPluginId(
-      this.type.validationPlugin.value
-        ? new openbis.PluginPermId(this.type.validationPlugin.value)
+      type.validationPlugin.value
+        ? new openbis.PluginPermId(type.validationPlugin.value)
         : null
     )
     update.getPropertyAssignments().set(assignments.reverse())
-    strategy.setTypeAttributes(update, this.type)
+    strategy.setTypeAttributes(update, type)
     return strategy.createTypeUpdateOperation([update])
-  }
-
-  _dispatchActions(oldObject, newObject) {
-    const strategy = this._getStrategy()
-    if (oldObject.type === strategy.getNewObjectType()) {
-      this.context.dispatch(
-        actions.objectCreate(
-          pages.TYPES,
-          oldObject.type,
-          oldObject.id,
-          newObject.type,
-          newObject.id
-        )
-      )
-    } else if (oldObject.type === strategy.getExistingObjectType()) {
-      this.context.dispatch(
-        actions.objectUpdate(pages.TYPES, oldObject.type, oldObject.id)
-      )
-    }
   }
 
   _getStrategy() {

@@ -3299,7 +3299,7 @@ CREATE TRIGGER TRASH_DATA_SET_FROM_COMPONENT_CHECK AFTER UPDATE ON DATA_SET_RELA
 
 -- start of triggers for full text search
 
-DROP FUNCTION IF EXISTS escape_tsvector_string RESTRICT;
+DROP FUNCTION IF EXISTS escape_tsvector_string(VARCHAR) RESTRICT;
 
 CREATE FUNCTION escape_tsvector_string(value VARCHAR) RETURNS VARCHAR AS $$
 BEGIN
@@ -3323,7 +3323,7 @@ BEGIN
 END
 $$ LANGUAGE plpgsql;
 
-DROP FUNCTION IF EXISTS properties_tsvector_document_trigger CASCADE;
+DROP FUNCTION IF EXISTS properties_tsvector_document_trigger() CASCADE;
 
 CREATE FUNCTION properties_tsvector_document_trigger() RETURNS trigger AS $$
 DECLARE cvt RECORD;
