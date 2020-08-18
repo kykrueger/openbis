@@ -144,10 +144,6 @@ class TypeSearch extends React.Component {
           id={ids.TYPES_GRID_ID}
           columns={[
             {
-              field: 'permId.entityKind',
-              label: 'Kind'
-            },
-            {
               field: 'code',
               render: row => (
                 <Link
@@ -157,7 +153,12 @@ class TypeSearch extends React.Component {
                 >
                   {row.code}
                 </Link>
-              )
+              ),
+              sort: 'asc'
+            },
+            {
+              field: 'permId.entityKind',
+              label: 'Kind'
             },
             {
               field: 'description'

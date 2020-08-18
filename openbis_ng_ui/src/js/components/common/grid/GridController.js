@@ -11,13 +11,24 @@ export default class GridController {
   init(context) {
     const props = context.getProps()
 
-    const columns = props.columns.map(column => ({
-      ...column,
-      label: column.label || _.upperFirst(column.field),
-      render: column.render || (row => this._getValue(row, column.field)),
-      sort: column.sort === undefined ? true : column.sort,
-      visible: true
-    }))
+    const columns = []
+    let initialSort = null
+    let initialSortDirection = null
+
+    props.columns.forEach(column => {
+      if (column.sort) {
+        initialSort = column.field
+        initialSortDirection = column.sort
+      }
+      columns.push({
+        ...column,
+        field: column.field,
+        label: column.label || _.upperFirst(column.field),
+        render: column.render || (row => this._getValue(row, column.field)),
+        sortable: column.sortable === undefined ? true : column.sortable,
+        visible: true
+      })
+    })
 
     context.initState({
       loaded: false,
@@ -31,8 +42,8 @@ export default class GridController {
       currentRows: [],
       selectedRowId: null,
       selectedRow: null,
-      sort: null,
-      sortDirection: 'asc'
+      sort: initialSort,
+      sortDirection: initialSortDirection
     })
 
     this.context = context
@@ -282,14 +293,23 @@ export default class GridController {
   }
 
   handleSortChange(column) {
-    if (!column.sort) {
+    if (!column.sortable) {
       return
     }
+
     this.context
-      .setState(prevState => ({
-        sort: column.field,
-        sortDirection: prevState.sortDirection === 'asc' ? 'desc' : 'asc'
-      }))
+      .setState(state => {
+        if (column.field === state.sort) {
+          return {
+            sortDirection: state.sortDirection === 'asc' ? 'desc' : 'asc'
+          }
+        } else {
+          return {
+            sort: column.field,
+            sortDirection: 'asc'
+          }
+        }
+      })
       .then(() => {
         this._saveSettings()
         this._recalculateCurrentRows()

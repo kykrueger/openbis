@@ -27,6 +27,7 @@ beforeEach(() => {
 describe('VocabularyFormComponent', () => {
   test('load new', testLoadNew)
   test('load existing', testLoadExisting)
+  test('sort', testSort)
   test('select term', testSelectTerm)
   test('add term', testAddTerm)
   test('remove term', testRemoveTerm)
@@ -94,7 +95,7 @@ async function testLoadExisting() {
         filter: {
           value: null
         },
-        sort: null
+        sort: 'asc'
       },
       {
         field: 'label.value',
@@ -213,6 +214,76 @@ async function testLoadExisting() {
   })
 }
 
+async function testSort() {
+  const form = await mountNew()
+
+  const labels = [
+    'Term 1',
+    'term 11',
+    'Term 2',
+    'TERM A',
+    'term B',
+    'Term A1',
+    'tErM A11',
+    'term A2'
+  ]
+
+  for (let i = 0; i < labels.length; i++) {
+    form.getButtons().getAddTerm().click()
+    await form.update()
+    form.getParameters().getTerm().getLabel().change(labels[i])
+    await form.update()
+  }
+
+  form.getGrid().getColumns()[1].getLabel().click()
+  await form.update()
+
+  form.expectJSON({
+    grid: {
+      columns: [
+        { field: 'code.value', sort: null },
+        { field: 'label.value', sort: 'asc' },
+        { field: 'description.value', sort: null },
+        { field: 'official.value', sort: null }
+      ],
+      rows: [
+        { values: { 'label.value': 'Term 1' } },
+        { values: { 'label.value': 'Term 2' } },
+        { values: { 'label.value': 'term 11' } },
+        { values: { 'label.value': 'TERM A' } },
+        { values: { 'label.value': 'Term A1' } },
+        { values: { 'label.value': 'term A2' } },
+        { values: { 'label.value': 'tErM A11' } },
+        { values: { 'label.value': 'term B' } }
+      ]
+    }
+  })
+
+  form.getGrid().getColumns()[1].getLabel().click()
+  await form.update()
+
+  form.expectJSON({
+    grid: {
+      columns: [
+        { field: 'code.value', sort: null },
+        { field: 'label.value', sort: 'desc' },
+        { field: 'description.value', sort: null },
+        { field: 'official.value', sort: null }
+      ],
+      rows: [
+        { values: { 'label.value': 'term B' } },
+        { values: { 'label.value': 'tErM A11' } },
+        { values: { 'label.value': 'term A2' } },
+        { values: { 'label.value': 'Term A1' } },
+        { values: { 'label.value': 'TERM A' } },
+        { values: { 'label.value': 'term 11' } },
+        { values: { 'label.value': 'Term 2' } },
+        { values: { 'label.value': 'Term 1' } }
+      ]
+    }
+  })
+}
+
 async function testSelectTerm() {
   const form = await mountExisting()
 
@@ -286,12 +357,22 @@ async function testAddTerm() {
 
   form.expectJSON({
     grid: {
-      rows: fixture.TEST_VOCABULARY_DTO.terms.map(term => ({
+      columns: [
+        { field: 'code.value', sort: 'asc' },
+        { field: 'label.value', sort: null },
+        { field: 'description.value', sort: null },
+        { field: 'official.value', sort: null }
+      ],
+      rows: [
+        fixture.TEST_TERM_1_DTO,
+        fixture.TEST_TERM_2_DTO,
+        fixture.TEST_TERM_3_DTO,
+        fixture.TEST_TERM_4_DTO,
+        fixture.TEST_TERM_5_DTO,
+        fixture.TEST_TERM_6_DTO
+      ].map(term => ({
         values: {
-          'code.value': term.getCode(),
-          'label.value': term.getLabel(),
-          'description.value': term.getDescription(),
-          'official.value': String(term.isOfficial())
+          'code.value': term.getCode()
         },
         selected: false
       })),
@@ -304,6 +385,9 @@ async function testAddTerm() {
     }
   })
 
+  form.getGrid().getColumns()[0].getLabel().click()
+  await form.update()
+
   form.getGrid().getPaging().getPageSize().change(5)
   await form.update()
 
@@ -315,9 +399,15 @@ async function testAddTerm() {
 
   form.expectJSON({
     grid: {
+      columns: [
+        { field: 'code.value', sort: 'desc' },
+        { field: 'label.value', sort: null },
+        { field: 'description.value', sort: null },
+        { field: 'official.value', sort: null }
+      ],
       rows: [
         {
-          values: { 'code.value': fixture.TEST_TERM_6_DTO.getCode() },
+          values: { 'code.value': fixture.TEST_TERM_1_DTO.getCode() },
           selected: false
         },
         {
@@ -497,16 +587,17 @@ async function testChangeTerm() {
   form.getGrid().getRows()[1].click()
   await form.update()
 
-  form
-    .getGrid()
-    .getRows()[1]
-    .expectJSON({
-      values: {
-        'label.value': fixture.TEST_TERM_2_DTO.getLabel()
-      }
-    })
-
   form.expectJSON({
+    grid: {
+      rows: [
+        { values: { 'label.value': fixture.TEST_TERM_1_DTO.getLabel() } },
+        { values: { 'label.value': fixture.TEST_TERM_2_DTO.getLabel() } },
+        { values: { 'label.value': fixture.TEST_TERM_3_DTO.getLabel() } },
+        { values: { 'label.value': fixture.TEST_TERM_4_DTO.getLabel() } },
+        { values: { 'label.value': fixture.TEST_TERM_5_DTO.getLabel() } },
+        { values: { 'label.value': fixture.TEST_TERM_6_DTO.getLabel() } }
+      ]
+    },
     parameters: {
       term: {
         title: 'Term',
@@ -526,16 +617,17 @@ async function testChangeTerm() {
   form.getParameters().getTerm().getLabel().change('New Label')
   await form.update()
 
-  form
-    .getGrid()
-    .getRows()[1]
-    .expectJSON({
-      values: {
-        'label.value': 'New Label'
-      }
-    })
-
   form.expectJSON({
+    grid: {
+      rows: [
+        { values: { 'label.value': fixture.TEST_TERM_1_DTO.getLabel() } },
+        { values: { 'label.value': 'New Label' } },
+        { values: { 'label.value': fixture.TEST_TERM_3_DTO.getLabel() } },
+        { values: { 'label.value': fixture.TEST_TERM_4_DTO.getLabel() } },
+        { values: { 'label.value': fixture.TEST_TERM_5_DTO.getLabel() } },
+        { values: { 'label.value': fixture.TEST_TERM_6_DTO.getLabel() } }
+      ]
+    },
     parameters: {
       term: {
         title: 'Term',
@@ -619,20 +711,14 @@ async function testValidateTerm() {
   form.getGrid().getPaging().getPageSize().change(5)
   await form.update()
 
+  form.getGrid().getPaging().getNextPage().click()
+  await form.update()
+
   form.expectJSON({
     grid: {
-      rows: [
-        fixture.TEST_TERM_1_DTO,
-        fixture.TEST_TERM_2_DTO,
-        fixture.TEST_TERM_3_DTO,
-        fixture.TEST_TERM_4_DTO,
-        fixture.TEST_TERM_5_DTO
-      ].map(term => ({
+      rows: [fixture.TEST_TERM_5_DTO, fixture.TEST_TERM_6_DTO].map(term => ({
         values: {
-          'code.value': term.getCode(),
-          'label.value': term.getLabel(),
-          'description.value': term.getDescription(),
-          'official.value': String(term.isOfficial())
+          'code.value': term.getCode()
         },
         selected: false
       })),
@@ -640,7 +726,7 @@ async function testValidateTerm() {
         pageSize: {
           value: 5
         },
-        range: '1-5 of 7'
+        range: '6-7 of 7'
       }
     },
     parameters: {
@@ -668,28 +754,23 @@ async function testValidateTerm() {
       rows: [
         {
           values: {
-            'code.value': fixture.TEST_TERM_6_DTO.getCode(),
-            'label.value': fixture.TEST_TERM_6_DTO.getLabel(),
-            'description.value': fixture.TEST_TERM_6_DTO.getDescription(),
-            'official.value': String(fixture.TEST_TERM_6_DTO.isOfficial())
-          },
-          selected: false
-        },
-        {
-          values: {
             'code.value': null,
             'label.value': null,
             'description.value': null,
             'official.value': String(true)
           },
           selected: true
-        }
+        },
+        { values: { 'code.value': fixture.TEST_TERM_1_DTO.getCode() } },
+        { values: { 'code.value': fixture.TEST_TERM_2_DTO.getCode() } },
+        { values: { 'code.value': fixture.TEST_TERM_3_DTO.getCode() } },
+        { values: { 'code.value': fixture.TEST_TERM_4_DTO.getCode() } }
       ],
       paging: {
         pageSize: {
           value: 5
         },
-        range: '6-7 of 7'
+        range: '1-5 of 7'
       }
     },
     parameters: {
