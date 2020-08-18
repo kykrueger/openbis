@@ -92,7 +92,8 @@ class Grid extends React.PureComponent {
       pageSize,
       columns,
       currentRows,
-      sortedRows
+      sortedRows,
+      selectedRow
     } = this.state
 
     return (
@@ -113,7 +114,7 @@ class Grid extends React.PureComponent {
                   key={row.id}
                   columns={columns}
                   row={row}
-                  selected={row.id === this.props.selectedRowId}
+                  selected={selectedRow ? selectedRow.id === row.id : false}
                   selectable={onSelectedRowChange}
                   onClick={this.controller.handleRowSelect}
                 />

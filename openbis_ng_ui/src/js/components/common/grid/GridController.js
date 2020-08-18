@@ -40,7 +40,6 @@ export default class GridController {
       filteredRows: [],
       sortedRows: [],
       currentRows: [],
-      selectedRowId: null,
       selectedRow: null,
       sort: initialSort,
       sortDirection: initialSortDirection
@@ -49,15 +48,16 @@ export default class GridController {
     this.context = context
   }
 
-  load() {
-    this._loadSettings().then(() => {
-      const { rows, selectedRowId } = this.context.getProps()
-      this.updateAllRows(rows)
-      this.updateSelectedRowId(selectedRowId)
-      this.context.setState(() => ({
-        loaded: true
-      }))
-    })
+  async load() {
+    const { rows, selectedRowId } = this.context.getProps()
+
+    await this._loadSettings()
+    await this.updateAllRows(rows)
+    await this.updateSelectedRowId(selectedRowId)
+
+    await this.context.setState(() => ({
+      loaded: true
+    }))
   }
 
   _loadSettings() {
@@ -139,20 +139,14 @@ export default class GridController {
   }
 
   async updateAllRows(rows) {
-    await this.context.setState({
-      allRows: rows
-    })
-    await this._recalculateCurrentRows()
+    await this._recalculateCurrentRows(rows)
   }
 
   async updateSelectedRowId(selectedRowId) {
-    await this.context.setState({
-      selectedRowId
-    })
-    await this._recalculateSelectedRow()
+    await this._recalculateSelectedRow(selectedRowId)
   }
 
-  async _recalculateCurrentRows() {
+  async _recalculateCurrentRows(rows) {
     const {
       allRows,
       columns,
@@ -160,11 +154,14 @@ export default class GridController {
       sort,
       sortDirection,
       page,
-      pageSize,
-      selectedRowId
+      pageSize
     } = this.context.getState()
 
-    const filteredRows = this._filter(allRows, columns, filters)
+    if (!rows) {
+      rows = allRows
+    }
+
+    const filteredRows = this._filter(rows, columns, filters)
 
     const pageCount = Math.max(Math.ceil(filteredRows.length / pageSize), 1)
     const newPage = Math.min(page, pageCount - 1)
@@ -173,19 +170,22 @@ export default class GridController {
     const currentRows = this._page(sortedRows, newPage, pageSize)
 
     await this.context.setState({
+      allRows: rows,
       filteredRows,
       sortedRows,
       currentRows,
       page: newPage
     })
 
-    if (selectedRowId) {
-      await this._recalculateSelectedRow()
+    const { selectedRow } = this.context.getState()
+
+    if (selectedRow) {
+      await this._recalculateSelectedRow(selectedRow.id)
     }
   }
 
-  async _recalculateSelectedRow() {
-    const { selectedRowId, selectedRow, currentRows } = this.context.getState()
+  async _recalculateSelectedRow(selectedRowId) {
+    const { selectedRow, currentRows } = this.context.getState()
     const { onSelectedRowChange } = this.context.getProps()
 
     let newSelectedRow = null
