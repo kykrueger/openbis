@@ -20,21 +20,25 @@ export default class VocabularyFormControllerValidate extends PageControllerVali
     }
   }
 
-  selection(newState, firstError) {
+  async select(newState, firstError) {
     if (firstError.object === newState.vocabulary) {
-      return {
+      await this.setSelection({
         type: 'vocabulary',
         params: {
           part: firstError.name
         }
-      }
+      })
     } else if (newState.terms.includes(firstError.object)) {
-      return {
+      await this.setSelection({
         type: 'term',
         params: {
           id: firstError.object.id,
           part: firstError.name
         }
+      })
+
+      if (this.controller.gridController) {
+        await this.controller.gridController.showSelectedRow()
       }
     }
   }

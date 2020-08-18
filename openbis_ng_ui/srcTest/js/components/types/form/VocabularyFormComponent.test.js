@@ -32,6 +32,8 @@ describe('VocabularyFormComponent', () => {
   test('remove term', testRemoveTerm)
   test('change term', testChangeTerm)
   test('change vocabulary', testChangeVocabulary)
+  test('validate term', testValidateTerm)
+  test('validate vocabulary', testValidateVocabulary)
 })
 
 async function testLoadNew() {
@@ -593,6 +595,149 @@ async function testChangeVocabulary() {
           value: 'New Description',
           enabled: true,
           mode: 'edit'
+        }
+      }
+    },
+    buttons: {
+      message: {
+        text: 'You have unsaved changes.',
+        type: 'warning'
+      }
+    }
+  })
+}
+
+async function testValidateTerm() {
+  const form = await mountExisting()
+
+  form.getButtons().getEdit().click()
+  await form.update()
+
+  form.getButtons().getAddTerm().click()
+  await form.update()
+
+  form.getGrid().getPaging().getPageSize().change(5)
+  await form.update()
+
+  form.expectJSON({
+    grid: {
+      rows: [
+        fixture.TEST_TERM_1_DTO,
+        fixture.TEST_TERM_2_DTO,
+        fixture.TEST_TERM_3_DTO,
+        fixture.TEST_TERM_4_DTO,
+        fixture.TEST_TERM_5_DTO
+      ].map(term => ({
+        values: {
+          'code.value': term.getCode(),
+          'label.value': term.getLabel(),
+          'description.value': term.getDescription(),
+          'official.value': String(term.isOfficial())
+        },
+        selected: false
+      })),
+      paging: {
+        pageSize: {
+          value: 5
+        },
+        range: '1-5 of 7'
+      }
+    },
+    parameters: {
+      term: {
+        title: 'Term',
+        code: {
+          value: null,
+          error: null
+        }
+      }
+    },
+    buttons: {
+      message: {
+        text: 'You have unsaved changes.',
+        type: 'warning'
+      }
+    }
+  })
+
+  form.getButtons().getSave().click()
+  await form.update()
+
+  form.expectJSON({
+    grid: {
+      rows: [
+        {
+          values: {
+            'code.value': fixture.TEST_TERM_6_DTO.getCode(),
+            'label.value': fixture.TEST_TERM_6_DTO.getLabel(),
+            'description.value': fixture.TEST_TERM_6_DTO.getDescription(),
+            'official.value': String(fixture.TEST_TERM_6_DTO.isOfficial())
+          },
+          selected: false
+        },
+        {
+          values: {
+            'code.value': null,
+            'label.value': null,
+            'description.value': null,
+            'official.value': String(true)
+          },
+          selected: true
+        }
+      ],
+      paging: {
+        pageSize: {
+          value: 5
+        },
+        range: '6-7 of 7'
+      }
+    },
+    parameters: {
+      term: {
+        title: 'Term',
+        code: {
+          value: null,
+          error: 'Code cannot be empty'
+        }
+      }
+    },
+    buttons: {
+      message: {
+        text: 'You have unsaved changes.',
+        type: 'warning'
+      }
+    }
+  })
+}
+
+async function testValidateVocabulary() {
+  const form = await mountNew()
+
+  form.getButtons().getAddTerm().click()
+  await form.update()
+
+  form.getButtons().getSave().click()
+  await form.update()
+
+  form.expectJSON({
+    grid: {
+      rows: [
+        {
+          values: {
+            'code.value': null,
+            'label.value': null,
+            'description.value': null,
+            'official.value': String(true)
+          },
+          selected: false
+        }
+      ]
+    },
+    parameters: {
+      vocabulary: {
+        title: 'Vocabulary',
+        code: {
+          error: 'Code cannot be empty'
         }
       }
     },

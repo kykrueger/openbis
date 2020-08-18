@@ -21,22 +21,22 @@ export default class TypeFormControllerValidate extends PageControllerValidate {
     }
   }
 
-  selection(newState, firstError) {
+  async select(newState, firstError) {
     if (firstError.object === newState.type) {
-      return {
+      await this.setSelection({
         type: 'type',
         params: {
           part: firstError.name
         }
-      }
+      })
     } else if (newState.properties.includes(firstError.object)) {
-      return {
+      await this.setSelection({
         type: 'property',
         params: {
           id: firstError.object.id,
           part: firstError.name
         }
-      }
+      })
     }
   }
 

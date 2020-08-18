@@ -14,7 +14,7 @@ export default class PageControllerValidate {
   }
 
   // eslint-disable-next-line no-unused-vars
-  async selection(newState, firstError) {
+  async select(newState, firstError) {
     throw 'Method not implemented'
   }
 
@@ -31,17 +31,17 @@ export default class PageControllerValidate {
 
     if (!_.isEmpty(errors) && autofocus) {
       const firstError = errors[0]
-      const selection = await this.selection(newState, firstError)
-
-      if (selection) {
-        await this.context.setState({
-          selection
-        })
-      }
+      await this.select(newState, firstError)
     }
 
     await this.context.setState(newState)
 
     return _.isEmpty(errors)
+  }
+
+  async setSelection(selection) {
+    await this.context.setState({
+      selection
+    })
   }
 }
