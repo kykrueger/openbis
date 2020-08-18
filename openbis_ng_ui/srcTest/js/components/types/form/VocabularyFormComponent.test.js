@@ -31,6 +31,7 @@ describe('VocabularyFormComponent', () => {
   test('filter', testFilter)
   test('page', testPage)
   test('select term', testSelectTerm)
+  test('follow selected term', testFollowSelectedTerm)
   test('add term', testAddTerm)
   test('remove term', testRemoveTerm)
   test('change term', testChangeTerm)
@@ -515,6 +516,142 @@ async function testSelectTerm() {
       },
       edit: null,
       message: null
+    }
+  })
+}
+
+async function testFollowSelectedTerm() {
+  const form = await mountNew()
+
+  const labels = [
+    'Term 10',
+    'Term 20',
+    'Term 30',
+    'Term 40',
+    'Term 50',
+    'Term 60'
+  ]
+
+  for (let i = 0; i < labels.length; i++) {
+    form.getButtons().getAddTerm().click()
+    await form.update()
+    form.getParameters().getTerm().getLabel().change(labels[i])
+    await form.update()
+  }
+
+  form.getGrid().getPaging().getPageSize().change(5)
+  await form.update()
+
+  form.getGrid().getColumns()[1].getLabel().click()
+  await form.update()
+
+  form.expectJSON({
+    grid: {
+      rows: [
+        { values: { 'label.value': 'Term 10' }, selected: false },
+        { values: { 'label.value': 'Term 20' }, selected: false },
+        { values: { 'label.value': 'Term 30' }, selected: false },
+        { values: { 'label.value': 'Term 40' }, selected: false },
+        { values: { 'label.value': 'Term 50' }, selected: false }
+      ],
+      paging: {
+        range: '1-5 of 6'
+      }
+    },
+    parameters: {
+      term: {
+        label: {
+          value: 'Term 60'
+        },
+        messages: [
+          {
+            type: 'warning',
+            text:
+              'The selected term is currently not visible in the term list due to the chosen filtering and paging.'
+          }
+        ]
+      }
+    }
+  })
+
+  form.getGrid().getRows()[0].click()
+  await form.update()
+
+  form.getParameters().getTerm().getLabel().change('Term 25')
+  await form.update()
+
+  form.expectJSON({
+    grid: {
+      rows: [
+        { values: { 'label.value': 'Term 20' }, selected: false },
+        { values: { 'label.value': 'Term 25' }, selected: true },
+        { values: { 'label.value': 'Term 30' }, selected: false },
+        { values: { 'label.value': 'Term 40' }, selected: false },
+        { values: { 'label.value': 'Term 50' }, selected: false }
+      ],
+      paging: {
+        range: '1-5 of 6'
+      }
+    },
+    parameters: {
+      term: {
+        label: {
+          value: 'Term 25'
+        },
+        messages: []
+      }
+    }
+  })
+
+  form.getParameters().getTerm().getLabel().change('Term 65')
+  await form.update()
+
+  form.expectJSON({
+    grid: {
+      rows: [{ values: { 'label.value': 'Term 65' }, selected: true }],
+      paging: {
+        range: '6-6 of 6'
+      }
+    },
+    parameters: {
+      term: {
+        label: {
+          value: 'Term 65'
+        },
+        messages: []
+      }
+    }
+  })
+
+  form.getGrid().getPaging().getFirstPage().click()
+  await form.update()
+
+  form.expectJSON({
+    grid: {
+      rows: [
+        { values: { 'label.value': 'Term 20' }, selected: false },
+        { values: { 'label.value': 'Term 30' }, selected: false },
+        { values: { 'label.value': 'Term 40' }, selected: false },
+        { values: { 'label.value': 'Term 50' }, selected: false },
+        { values: { 'label.value': 'Term 60' }, selected: false }
+      ],
+      paging: {
+        range: '1-5 of 6'
+      }
+    },
+    parameters: {
+      term: {
+        label: {
+          value: 'Term 65'
+        },
+        messages: [
+          {
+            type: 'warning',
+            text:
+              'The selected term is currently not visible in the term list due to the chosen filtering and paging.'
+          }
+        ]
+      }
     }
   })
 }
