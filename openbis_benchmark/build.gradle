@@ -3,10 +3,6 @@ apply plugin: 'application'
 
 applicationDefaultJvmArgs = ["-Xms2048m", "-Xmx2048m"]
 
-task wrapper(type: Wrapper) {
-    gradleVersion = '4.5'
-}
-
 repositories {
     ivy {
         ivyPattern "http://svnsis.ethz.ch/repos/cisd/ivy-repository/trunk/[organisation]/[module]/[revision]/ivy.xml"
@@ -23,8 +19,9 @@ dependencies {
 			'fasterxml:jackson-databind:2.0.2',
             'postgresql:postgresql:42.1.4.jre7',
 			'openbis:openbis-v3-api-batteries-included:S300'
-}
 
+    annotationProcessor 'lombok:lombok:1.16.20'
+}
 
 mainClassName = "ch.ethz.sis.startup.Main"
 
