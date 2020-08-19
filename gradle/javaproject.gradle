@@ -18,10 +18,10 @@ configurations.all {
     resolutionStrategy.cacheChangingModulesFor 0, 'hours'
 }
 
-task wrapper(type: Wrapper) {
-    gradleVersion = '4.10.3'
-    distributionUrl = "https://services.gradle.org/distributions/gradle-4.10.3-bin.zip"
-}
+//task wrapper(type: Wrapper) {
+//    gradleVersion = '4.10.3'
+//    distributionUrl = "https://services.gradle.org/distributions/gradle-4.10.3-bin.zip"
+//}
 sourceCompatibility='1.8'
 targetCompatibility='1.8'
 
@@ -189,14 +189,14 @@ group='cisd'
 task checkRestrictions(type: Exec, dependsOn: [classes, testClasses]) {
     doFirst {
         def cp = configurations.testCompile.filter({ f -> f.name.startsWith('restrictionchecker') || f.name.startsWith('bcel')}).asPath
-        def cmd = ['java', '-cp', cp, 'ch.rinn.restrictions.RestrictionChecker', '-r', sourceSets.main.output.classesDir]
-        if (sourceSets.test.output.classesDir.exists()) {
-            cmd.add(sourceSets.test.output.classesDir)
+        def cmd = ['java', '-cp', cp, 'ch.rinn.restrictions.RestrictionChecker', '-r', sourceSets.main.output.classesDirs.first()]
+        if (sourceSets.test.output.classesDirs.first().exists()) {
+            cmd.add(sourceSets.test.output.classesDirs.first())
         }
         cmd.add('-cp')
-        cmd.add(sourceSets.main.output.classesDir)
-        if (sourceSets.test.output.classesDir.exists()) {
-            cmd.add(sourceSets.test.output.classesDir)
+        cmd.add(sourceSets.main.output.classesDirs.first())
+        if (sourceSets.test.output.classesDirs.first().exists()) {
+            cmd.add(sourceSets.test.output.classesDirs.first())
         }
         cmd.add(configurations.testCompile.asPath)
         commandLine cmd
@@ -331,13 +331,15 @@ task testRuntimeDependencies(type: Copy) {
     from configurations.testRuntime
 }
 
-task checkDependencies(dependsOn: classes) << {
-	ant.taskdef(name: 'dependencychecker', classname: 'classycle.ant.DependencyCheckingTask', classpath: configurations.testRuntime.asPath)
-    ant.dependencychecker(
-                definitionFile: 'resource/dependency-structure.ddf', 
-                failOnUnwantedDependencies: 'true',
-                mergeInnerClasses: 'true') {
-        fileset(dir: "${buildDir}", includes: "**/*.class")
+task checkDependencies(dependsOn: classes) {
+    doLast {
+        ant.taskdef(name: 'dependencychecker', classname: 'classycle.ant.DependencyCheckingTask', classpath: configurations.testRuntime.asPath)
+        ant.dependencychecker(
+                    definitionFile: 'resource/dependency-structure.ddf',
+                    failOnUnwantedDependencies: 'true',
+                    mergeInnerClasses: 'true') {
+            fileset(dir: "${buildDir}", includes: "**/*.class")
+        }
     }
 }
 

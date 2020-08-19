@@ -178,7 +178,9 @@ o.get_tags()
 
 ## create property types
 
-Samples (objects), experiments (collections) and dataSets contain general **attributes** as well as type-specific **properties**. Before they can be assigned to their respective type, they need to be created first.
+**Samples** (objects), **experiments** (collections) and **dataSets** contain type-specific **properties**. When you create a new sample, experiment or datasSet of a given type, the set of properties is well defined. Also, the values of these properties are being type-checked.
+
+The first step in creating a new entity type is to create a so called **property type**:
 
 ```
 pt = o.new_property_type(
@@ -217,12 +219,14 @@ The `dataType` attribute can contain any of these values:
 * `CONTROLLEDVOCABULARY`
 * `MATERIAL`
 
-When choosing `CONTROLLEDVOCABULARY`, you must specify a `vocabulary` attribute (see example). Likewise, when choosing `MATERIAL`, a `materialType` attribute must be provided. PropertyTypes that start with a $ belong by definition to the `internalNameSpace` and therefore this attribute must be set to True.
+When choosing `CONTROLLEDVOCABULARY`, you must specify a `vocabulary` attribute (see example). Likewise, when choosing `MATERIAL`, a `materialType` attribute must be provided. PropertyTypes that start with a \$ belong by definition to the `internalNameSpace` and therefore this attribute must be set to True.
 
 
 ## create sample types / object types
 
-The new name for `sample_type` is `object_type`. You can use boths names interchangeably.
+The second step (after creating a property type, see above) is to create the **sample type**. The new name for **sample** is **object**. You can use both methods interchangeably:
+
+* `new_sample_type()` == `new_object_type()`
 
 ```
 sample_type = o.new_sample_type(
@@ -240,9 +244,9 @@ sample_type = o.new_sample_type(
 sample_type.save()
 ```
 
-## assign properties to sample type / object type
+## assign and revoke properties to sample type / object type
 
-A sample type needs to be saved before properties can be assigned to. This assignment procedure applies to all entity types (dataset type, experiment type, material type).
+The third step, after saving the sample type, is to **assign or revoke properties** to the newly created sample type. This assignment procedure applies to all entity types (dataset type, experiment type).
 
 ```
 sample_type.assign_property(
@@ -258,7 +262,9 @@ sample_type.revoke_property('diff_time')
 sample_type.get_property_assignments()
 ```
 
-## create dataset types
+## create a dataset type
+
+The second step (after creating a **property type**, see above) is to create the **dataset type**. The third step is to **assign or revoke the properties** to the newly created dataset type. 
 
 ```
 dataset_type = o.new_dataset_type(
@@ -275,9 +281,13 @@ dataset_type.revoke_property('property_name')
 dataset_type.get_property_assignments()
 ```
 
-## create experiment types / collection types
+## create a experiment / collection type
 
-The new name for `experiment_type` is `collection_type`. You can use boths names interchangeably.
+The second step (after creating a **property type**, see above) is to create the **experiment type**.
+
+The new name for **experiment** is **collection**. You can use both methods interchangeably:
+
+* `new_experiment_type()` == `new_collection_type()`
 
 ```
 experiment_type = o.new_experiment_type(
@@ -292,6 +302,8 @@ experiment_type.get_property_assignments()
 ```
 
 ## create material types
+
+Materials and material types are deprecated in newer versions of openBIS.
 
 ```
 material_type = o.new_material_type(
@@ -340,6 +352,7 @@ o.get_persons()
 person = o.new_person(userId='username')
 person.space = 'USER_SPACE'
 person.save()
+# person.delete() is currently not possible.
 
 person.assign_role(role='ADMIN', space='MY_SPACE')
 person.assign_role(role='OBSERVER')
@@ -359,19 +372,28 @@ ra.delete()
 ```
 space = o.new_space(code='space_name', description='')
 space.save()
-space.delete('reason for deletion')
 o.get_spaces(
     start_with = 0,                   # start_with and count
     count      = 10,                  # enable paging
 )
 space = o.get_space('MY_SPACE')
+
+# get individual attributes
 space.code
 space.description
 space.registrator
 space.registrationDate
 space.modifier
 space.modificationDate
-space.attrs.all()                     # returns a dict containing all attributes
+
+# set individual attribute
+# most of the attributes above are set automatically and cannot be modified.
+space.description = '...'
+
+# get all attributes as a dictionary
+space.attrs.all()
+
+space.delete('reason for deletion')
 ```
 
 ## Projects
@@ -400,20 +422,24 @@ project.get_attachments()
 p.add_attachment(fileName='testfile', description= 'another file', title= 'one more attachment')
 project.download_attachments()
 
+# get individual attributes
 project.code
 project.description
-# ... any other attribute
-project.attrs.all()                   # returns a dict containing all attributes
+
+# set individual attribute
+project.description = '...'
+
+# get all attributes as a dictionary
+project.attrs.all()
 
 project.freeze = True
 project.freezeForExperiments = True
 project.freezeForSamples = True
-
 ```
 
 ## Samples / Objects
 
-The new name for `sample` is `object`. You can use boths names interchangeably:
+The new name for **sample** is **object**. You can use boths names interchangeably:
 
 * `get_sample()`  = `get_object()`
 * `new_sample()`  = `new_object()`
@@ -436,13 +462,14 @@ sample.save()
 sample = o.get_sample('/MY_SPACE/MY_SAMPLE_CODE')
 sample = o.get_sample('20170518112808649-52')
 
+# get individual attributes
 sample.space
 sample.code
 sample.permId
 sample.identifier
 sample.type  # once the sample type is defined, you cannot modify it
 
-sample.space
+# set attribute
 sample.space = 'MY_OTHER_SPACE'
 
 sample.experiment    # a sample can belong to one experiment only
@@ -461,6 +488,8 @@ sample.props.all()                    # returns all properties as a dict
 sample.get_attachments()
 sample.download_attachments()
 sample.add_attachment('testfile.xls')
+
+sample.delete('deleted for some reason')
 ```
 
 ### parents, children, components and container
@@ -531,7 +560,9 @@ samples = o.get_samples(
     NAME       = 'some name',         # properties are always uppercase 
                                       # to distinguish them from attributes
     **{ "SOME.WEIRD:PROP": "value"}   # property name contains a dot or a
-                                      # colon: cannot be passed as an argument 
+                                      # colon: cannot be passed as an argument
+    registrationDate = "2020-01-01",  # date format: YYYY-MM-DD
+    modificationDate = "<2020-12-31", # use > or < to search for specified date and later / earlier
     attrs=[                           # show these attributes in the dataFrame
         'sample.code',
         'registrator.email',
@@ -557,7 +588,7 @@ sample.freezeForDataSets = True
 
 ## Experiments / Collections
 
-The new name for `experiment` is `collection`. You can use boths names interchangeably:
+The new name for **experiment** is **collection**. You can use boths names interchangeably:
 
 * `get_experiment()`  = `get_collection()`
 * `new_experiment()`  = `new_collection()`
@@ -700,6 +731,8 @@ dataSets = o.get_dataSets(
                                       # colon: cannot be passed as an argument 
     start_with = 0,                   # start_with and count
     count      = 10,                  # enable paging
+    registrationDate = "2020-01-01",  # date format: YYYY-MM-DD
+    modificationDate = "<2020-12-31", # use > or < to search for specified date and later / earlier
     attrs=[                           # show these attributes in the dataFrame
         'sample.code',
         'registrator.email',

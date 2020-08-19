@@ -617,10 +617,6 @@ class DataSet(
         }
         return request
 
-    def delete(self, reason):
-        self.openbis.delete_entity(entity='DataSet',id=self.permId, reason=reason)
-        if VERBOSE: print("DataSet {} successfully deleted.".format(self.permId))
-
 
     def save(self, permId=None):
         for prop_name, prop in self.props._property_names.items():

@@ -1,3 +1,16 @@
+## Changes with pybis-1.15.1
+
+- added support for date-searching
+
+## Changes with pybis-1.14.10
+
+- bugfix when deleting dataSets
+- some improvements with the documentation
+
+## Changes with pybis-1.14.9
+
+- quick fix of parse_jackson error in special circumstances
+
 ## Changes with pybis-1.14.7
 
 - bugfix: no longer any error in get_samples(), get_datasets() and get_experiments() when

@@ -415,14 +415,39 @@ def _subcriteria_for_is_finished(is_finished):
     }
 
 
-def _subcriteria_for_properties(prop, val):
+def _subcriteria_for_properties(prop, value):
+
+    str_type=  "as.dto.common.search.StringPropertySearchCriteria",
+    eq_type = "as.dto.common.search.StringEqualToValue"
+    fieldType = "PROPERTY"
+
+    if 'date' in prop.lower() and re.search(r'\d+\-\d+\-\d+', value):
+        
+        if prop.lower() =='registrationdate':
+            str_type = "as.dto.common.search.RegistrationDateSearchCriteria"
+            fieldType = "ATTRIBUTE"
+        elif prop.lower() =='modificationdate':
+            str_type = "as.dto.common.search.ModificationDateSearchCriteria"
+            fieldType = "ATTRIBUTE"
+        else:
+            str_type = "as.dto.common.search.DatePropertySearchCriteria"
+
+        if value.startswith('>'):
+            value = value[1:]
+            eq_type = "as.dto.common.search.DateLaterThanOrEqualToValue"
+        elif value.startswith('<'):
+            value = value[1:]
+            eq_type = "as.dto.common.search.DateEarlierThanOrEqualToValue"
+        else:
+            eq_type = "as.dto.common.search.DateEqualToValue"
+
     return {
-        "@type": "as.dto.common.search.StringPropertySearchCriteria",
+        "@type": str_type,
         "fieldName": prop.upper(),
-        "fieldType": "PROPERTY",
+        "fieldType": fieldType,
         "fieldValue": {
-            "value": val,
-            "@type": "as.dto.common.search.StringEqualToValue"
+            "value": value,
+            "@type": eq_type
         }
     }
 
@@ -1091,6 +1116,7 @@ class Openbis:
 
         if username is None: username = self._get_username()
         if not username: raise ValueError("no token available - please provide a username")
+
         if password is None: password = self._password()
         if not password: raise ValueError("please provide a password")
 
@@ -1099,12 +1125,12 @@ class Openbis:
 
         if mountpoint is None: mountpoint = os.path.join('~', self.hostname)
 
-
         # check if mountpoint exists, otherwise create it
         full_mountpoint_path = os.path.abspath(os.path.expanduser(mountpoint))
         if not os.path.exists(full_mountpoint_path):
             os.makedirs(full_mountpoint_path)
 
+        print("full_mountpoint_path: ", full_mountpoint_path)
 
         from sys import platform
         supported_platforms = ['darwin', 'linux']
@@ -1145,7 +1171,7 @@ class Openbis:
             self.mountpoint = full_mountpoint_path
             return self.mountpoint
         else:
-            raise OSError("mount failed")
+            raise OSError("mount failed, exit status: ", status)
 
 
     def get_server_information(self):
@@ -1807,6 +1833,9 @@ class Openbis:
             "@type": "as.dto.sample.search.SampleSearchCriteria",
             "operator": "AND"
         }
+
+        #import json
+        #print(json.dumps(criteria))
 
         attrs_fetchoptions = self._get_fetchopts_for_attrs(attrs)
 
