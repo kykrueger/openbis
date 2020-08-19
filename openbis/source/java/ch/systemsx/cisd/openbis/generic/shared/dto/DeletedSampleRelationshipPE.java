@@ -29,11 +29,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
-import org.hibernate.search.annotations.DocumentId;
-import org.hibernate.search.annotations.FieldBridge;
-
 import ch.systemsx.cisd.openbis.generic.shared.IServer;
-import ch.systemsx.cisd.openbis.generic.shared.dto.hibernate.SearchFieldConstants;
 
 /**
  * @author Kaloyan Enimanev
@@ -59,7 +55,6 @@ public class DeletedSampleRelationshipPE implements Serializable
     @Id
     @SequenceGenerator(name = SequenceNames.SAMPLE_SEQUENCE, sequenceName = SequenceNames.SAMPLE_SEQUENCE, allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = SequenceNames.SAMPLE_SEQUENCE)
-    @DocumentId(name = SearchFieldConstants.ID)
     public Long getId()
     {
         return id;

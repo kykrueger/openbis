@@ -54,16 +54,6 @@ import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Generated;
 import org.hibernate.annotations.GenerationTime;
 import org.hibernate.annotations.OptimisticLock;
-import org.hibernate.search.annotations.ClassBridge;
-import org.hibernate.search.annotations.DateBridge;
-import org.hibernate.search.annotations.DocumentId;
-import org.hibernate.search.annotations.Field;
-import org.hibernate.search.annotations.FieldBridge;
-import org.hibernate.search.annotations.Index;
-import org.hibernate.search.annotations.Indexed;
-import org.hibernate.search.annotations.IndexedEmbedded;
-import org.hibernate.search.annotations.Resolution;
-import org.hibernate.search.annotations.Store;
 import org.hibernate.validator.constraints.Length;
 
 import ch.systemsx.cisd.common.collection.UnmodifiableSetDecorator;
@@ -87,8 +77,6 @@ import ch.systemsx.cisd.openbis.generic.shared.util.HibernateUtils;
 @Entity
 @Table(name = TableNames.DATA_VIEW, uniqueConstraints = @UniqueConstraint(columnNames = ColumnNames.CODE_COLUMN))
 @Inheritance(strategy = InheritanceType.JOINED)
-@Indexed(index = "DataPE")
-@ClassBridge(impl = DataGlobalSearchBridge.class)
 public class DataPE extends AbstractIdAndCodeHolder<DataPE> implements
         IEntityInformationWithPropertiesHolder, IMatchingEntity, IIdentifierHolder, IDeletablePE,
         IEntityWithMetaprojects, IModifierAndModificationDateBean, IIdentityHolder
@@ -343,7 +331,6 @@ public class DataPE extends AbstractIdAndCodeHolder<DataPE> implements
     @Override
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = ColumnNames.PERSON_REGISTERER_COLUMN, updatable = false)
-    @IndexedEmbedded(prefix = SearchFieldConstants.PREFIX_REGISTRATOR)
     public PersonPE getRegistrator()
     {
         return registrator;
@@ -358,7 +345,6 @@ public class DataPE extends AbstractIdAndCodeHolder<DataPE> implements
     @OptimisticLock(excluded = true)
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = ColumnNames.PERSON_MODIFIER_COLUMN)
-    @IndexedEmbedded(prefix = SearchFieldConstants.PREFIX_MODIFIER)
     public PersonPE getModifier()
     {
         return modifier;
@@ -372,10 +358,6 @@ public class DataPE extends AbstractIdAndCodeHolder<DataPE> implements
 
     @Column(name = ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, nullable = false, insertable = false)
     @Generated(GenerationTime.ALWAYS)
-    @Field(name = SearchFieldConstants.REGISTRATION_DATE, index = Index.YES, store = Store.NO)
-    @FieldBridge(impl = org.hibernate.search.bridge.builtin.StringEncodingDateBridge.class, params = {
-            @org.hibernate.search.annotations.Parameter(name = "resolution", value = "SECOND") })
-    @DateBridge(resolution = Resolution.SECOND)
     public Date getRegistrationDate()
     {
         return HibernateAbstractRegistrationHolder.getDate(registrationDate);
@@ -389,7 +371,6 @@ public class DataPE extends AbstractIdAndCodeHolder<DataPE> implements
     @ManyToOne(fetch = FetchType.LAZY)
     @NotNull(message = ValidationMessages.DATA_SET_TYPE_NOT_NULL_MESSAGE)
     @JoinColumn(name = ColumnNames.DATA_SET_TYPE_COLUMN)
-    @IndexedEmbedded(prefix = SearchFieldConstants.PREFIX_ENTITY_TYPE)
     public DataSetTypePE getDataSetType()
     {
         return dataSetType;
@@ -556,8 +537,6 @@ public class DataPE extends AbstractIdAndCodeHolder<DataPE> implements
     // used only by Hibernate Search
     @SuppressWarnings("unused")
     @Transient
-    @Field(index = Index.YES, store = Store.YES, name = SearchFieldConstants.SAMPLE_ID)
-    @FieldBridge(impl = NullBridge.class)
     private Long getSampleId()
     {
         Long result = null;
@@ -640,10 +619,6 @@ public class DataPE extends AbstractIdAndCodeHolder<DataPE> implements
     @Override
     @OptimisticLock(excluded = true)
     @Column(name = ColumnNames.MODIFICATION_TIMESTAMP_COLUMN, nullable = false)
-    @Field(name = SearchFieldConstants.MODIFICATION_DATE, index = Index.YES, store = Store.NO)
-    @FieldBridge(impl = org.hibernate.search.bridge.builtin.StringEncodingDateBridge.class, params = {
-            @org.hibernate.search.annotations.Parameter(name = "resolution", value = "SECOND") })
-    @DateBridge(resolution = Resolution.SECOND)
     public Date getModificationDate()
     {
         return modificationDate;
@@ -657,10 +632,6 @@ public class DataPE extends AbstractIdAndCodeHolder<DataPE> implements
 
     @Column(name = ColumnNames.ACCESS_TIMESTAMP, nullable = false, insertable = false)
     @Generated(GenerationTime.ALWAYS)
-    @Field(name = SearchFieldConstants.ACCESS_DATE, index = Index.YES, store = Store.NO)
-    @FieldBridge(impl = org.hibernate.search.bridge.builtin.StringEncodingDateBridge.class, params = {
-            @org.hibernate.search.annotations.Parameter(name = "resolution", value = "SECOND") })
-    @DateBridge(resolution = Resolution.SECOND)
     public Date getAccessDate()
     {
         return accessDate;
@@ -719,7 +690,6 @@ public class DataPE extends AbstractIdAndCodeHolder<DataPE> implements
     @Id
     @SequenceGenerator(name = SequenceNames.DATA_SEQUENCE, sequenceName = SequenceNames.DATA_SEQUENCE, allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = SequenceNames.DATA_SEQUENCE)
-    @DocumentId(name = SearchFieldConstants.ID)
     public Long getId()
     {
         return id;
@@ -730,7 +700,6 @@ public class DataPE extends AbstractIdAndCodeHolder<DataPE> implements
     @NotNull(message = ValidationMessages.CODE_NOT_NULL_MESSAGE)
     @Length(min = 1, max = Code.CODE_LENGTH_MAX, message = ValidationMessages.CODE_LENGTH_MESSAGE)
     @Pattern(regexp = AbstractIdAndCodeHolder.CODE_PATTERN, flags = Pattern.Flag.CASE_INSENSITIVE, message = ValidationMessages.CODE_PATTERN_MESSAGE)
-    @Field(index = Index.YES, store = Store.YES, name = SearchFieldConstants.CODE)
     public String getCode()
     {
         return code;
@@ -777,8 +746,6 @@ public class DataPE extends AbstractIdAndCodeHolder<DataPE> implements
     // used only by Hibernate Search
     @SuppressWarnings("unused")
     @Transient
-    @Field(index = Index.YES, store = Store.YES, name = SearchFieldConstants.EXPERIMENT_ID)
-    @FieldBridge(impl = NullBridge.class)
     private Long getExperimentId()
     {
         Long result = null;
@@ -810,7 +777,6 @@ public class DataPE extends AbstractIdAndCodeHolder<DataPE> implements
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "entity", orphanRemoval = true)
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-    @IndexedEmbedded(prefix = SearchFieldConstants.PREFIX_PROPERTIES)
     @BatchSize(size = 100)
     private Set<DataSetPropertyPE> getDataSetProperties()
     {
@@ -888,7 +854,6 @@ public class DataPE extends AbstractIdAndCodeHolder<DataPE> implements
 
     @Override
     @Transient
-    @Field(index = Index.NO, store = Store.YES, name = SearchFieldConstants.IDENTIFIER)
     public String getIdentifier()
     {
         return getCode();
@@ -896,7 +861,6 @@ public class DataPE extends AbstractIdAndCodeHolder<DataPE> implements
 
     @Override
     @Transient
-    @Field(index = Index.NO, store = Store.YES, name = SearchFieldConstants.PERM_ID)
     public String getPermId()
     {
         return code;
@@ -986,8 +950,6 @@ public class DataPE extends AbstractIdAndCodeHolder<DataPE> implements
 
     // used only by Hibernate Search
     @Transient
-    @Field(index = Index.YES, store = Store.YES, name = SearchFieldConstants.SPACE_ID)
-    @FieldBridge(impl = NullBridge.class)
     private Long getSpaceId()
     {
         Long result = null;
@@ -1055,7 +1017,6 @@ public class DataPE extends AbstractIdAndCodeHolder<DataPE> implements
 
     @Override
     @Transient
-    @IndexedEmbedded(prefix = SearchFieldConstants.PREFIX_METAPROJECT)
     public Set<MetaprojectPE> getMetaprojects()
     {
         Set<MetaprojectPE> metaprojects = new HashSet<MetaprojectPE>();

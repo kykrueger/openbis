@@ -41,7 +41,6 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
-import org.hibernate.search.annotations.DocumentId;
 import org.hibernate.validator.constraints.Length;
 
 import ch.systemsx.cisd.common.reflection.ModifiedShortPrefixToStringStyle;
@@ -85,7 +84,6 @@ public class DeletedSamplePE extends AbstractDeletedEntityPE
     @Id
     @SequenceGenerator(name = SequenceNames.SAMPLE_SEQUENCE, sequenceName = SequenceNames.SAMPLE_SEQUENCE, allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = SequenceNames.SAMPLE_SEQUENCE)
-    @DocumentId(name = SearchFieldConstants.ID)
     public Long getId()
     {
         return id;

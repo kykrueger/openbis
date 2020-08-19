@@ -33,8 +33,6 @@ import javax.validation.constraints.Pattern;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.hibernate.search.annotations.DocumentId;
-import org.hibernate.search.annotations.FieldBridge;
 import org.hibernate.validator.constraints.Length;
 
 import ch.rinn.restrictions.Private;
@@ -70,7 +68,6 @@ public class DeletedExperimentPE extends AbstractDeletedEntityPE
     @Id
     @SequenceGenerator(name = SequenceNames.EXPERIMENT_SEQUENCE, sequenceName = SequenceNames.EXPERIMENT_SEQUENCE, allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = SequenceNames.EXPERIMENT_SEQUENCE)
-    @DocumentId(name = SearchFieldConstants.ID)
     public Long getId()
     {
         return id;
