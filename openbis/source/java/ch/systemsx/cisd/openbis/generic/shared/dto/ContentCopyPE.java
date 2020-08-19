@@ -14,11 +14,6 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.search.annotations.Field;
-import org.hibernate.search.annotations.Index;
-import org.hibernate.search.annotations.IndexedEmbedded;
-import org.hibernate.search.annotations.Store;
-
 import ch.systemsx.cisd.openbis.generic.shared.dto.hibernate.SearchFieldConstants;
 
 @Entity
@@ -90,7 +85,6 @@ public class ContentCopyPE extends HibernateAbstractRegistrationHolder
     @ManyToOne(fetch = FetchType.EAGER)
     @NotNull(message = ValidationMessages.EXTERNAL_DATA_MANAGEMENT_SYSTEM_NOT_NULL_MESSAGE)
     @JoinColumn(name = ColumnNames.EXTERNAL_DATA_MANAGEMENT_SYSTEM_ID_COLUMN, updatable = true)
-    @IndexedEmbedded(prefix = SearchFieldConstants.PREFIX_EXTERNAL_DMS)
     public ExternalDataManagementSystemPE getExternalDataManagementSystem()
     {
         return externalDataManagementSystem;
@@ -114,7 +108,6 @@ public class ContentCopyPE extends HibernateAbstractRegistrationHolder
     }
 
     @Column(name = ColumnNames.EXTERNAL_CODE_COLUMN)
-    @Field(name = SearchFieldConstants.EXTERNAL_CODE, index = Index.YES, store = Store.YES)
     public String getExternalCode()
     {
         return externalCode;
@@ -126,7 +119,6 @@ public class ContentCopyPE extends HibernateAbstractRegistrationHolder
     }
 
     @Column(name = ColumnNames.PATH_COLUMN)
-    @Field(name = SearchFieldConstants.PATH, index = Index.YES, store = Store.YES)
     public String getPath()
     {
         return path;
@@ -138,7 +130,6 @@ public class ContentCopyPE extends HibernateAbstractRegistrationHolder
     }
 
     @Column(name = ColumnNames.GIT_COMMIT_HASH_COLUMN)
-    @Field(index = Index.YES, store = Store.YES, name = SearchFieldConstants.GIT_COMMIT_HASH)
     public String getGitCommitHash()
     {
         return gitCommitHash;
@@ -150,7 +141,6 @@ public class ContentCopyPE extends HibernateAbstractRegistrationHolder
     }
 
     @Column(name = ColumnNames.GIT_REPOSITORY_ID_COLUMN)
-    @Field(index = Index.YES, store = Store.YES, name = SearchFieldConstants.GIT_REPOSITORY_ID)
     public String getGitRepositoryId()
     {
         return gitRepositoryId;
