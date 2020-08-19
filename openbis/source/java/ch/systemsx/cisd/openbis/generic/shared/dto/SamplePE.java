@@ -55,17 +55,6 @@ import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Generated;
 import org.hibernate.annotations.GenerationTime;
 import org.hibernate.annotations.OptimisticLock;
-import org.hibernate.search.annotations.Analyzer;
-import org.hibernate.search.annotations.ClassBridge;
-import org.hibernate.search.annotations.DateBridge;
-import org.hibernate.search.annotations.DocumentId;
-import org.hibernate.search.annotations.Field;
-import org.hibernate.search.annotations.FieldBridge;
-import org.hibernate.search.annotations.Index;
-import org.hibernate.search.annotations.Indexed;
-import org.hibernate.search.annotations.IndexedEmbedded;
-import org.hibernate.search.annotations.Resolution;
-import org.hibernate.search.annotations.Store;
 import org.hibernate.validator.constraints.Length;
 
 import ch.systemsx.cisd.common.collection.UnmodifiableSetDecorator;
@@ -92,8 +81,6 @@ import ch.systemsx.cisd.openbis.generic.shared.util.HibernateUtils;
 
 @Entity
 @Table(name = TableNames.SAMPLES_VIEW)
-@Indexed(index = "SamplePE")
-@ClassBridge(impl = SampleGlobalSearchBridge.class)
 public class SamplePE extends AttachmentHolderPE implements IIdAndCodeHolder, Comparable<SamplePE>,
         IEntityInformationWithPropertiesHolder, IMatchingEntity, IDeletablePE,
         IEntityWithMetaprojects, IModifierAndModificationDateBean, IIdentityHolder, Serializable
@@ -367,7 +354,6 @@ public class SamplePE extends AttachmentHolderPE implements IIdAndCodeHolder, Co
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = ColumnNames.SPACE_COLUMN, updatable = true)
-    @IndexedEmbedded(prefix = SearchFieldConstants.PREFIX_SPACE, includeEmbeddedObjectId = true)
     public SpacePE getSpace()
     {
         return space;
@@ -411,7 +397,6 @@ public class SamplePE extends AttachmentHolderPE implements IIdAndCodeHolder, Co
     @ManyToOne(fetch = FetchType.EAGER)
     @NotNull(message = ValidationMessages.SAMPLE_TYPE_NOT_NULL_MESSAGE)
     @JoinColumn(name = ColumnNames.SAMPLE_TYPE_COLUMN, updatable = false)
-    @IndexedEmbedded(prefix = SearchFieldConstants.PREFIX_ENTITY_TYPE)
     public SampleTypePE getSampleType()
     {
         return sampleType;
@@ -484,7 +469,6 @@ public class SamplePE extends AttachmentHolderPE implements IIdAndCodeHolder, Co
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "entity", orphanRemoval = true)
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-    @IndexedEmbedded(prefix = SearchFieldConstants.PREFIX_PROPERTIES)
     @BatchSize(size = 100)
     private Set<SamplePropertyPE> getSampleProperties()
     {
@@ -508,8 +492,6 @@ public class SamplePE extends AttachmentHolderPE implements IIdAndCodeHolder, Co
     // used only by Hibernate Search
     @SuppressWarnings("unused")
     @Transient
-    @Field(index = Index.YES, store = Store.YES, name = SearchFieldConstants.CONTAINER_ID)
-    @FieldBridge(impl = NullBridge.class)
     private Long getContainerId()
     {
         Long result = null;
@@ -625,7 +607,6 @@ public class SamplePE extends AttachmentHolderPE implements IIdAndCodeHolder, Co
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = ColumnNames.PROJECT_COLUMN, updatable = true)
-    @IndexedEmbedded(prefix = SearchFieldConstants.PREFIX_PROJECT)
     public ProjectPE getProject()
     {
         return project;
@@ -687,8 +668,6 @@ public class SamplePE extends AttachmentHolderPE implements IIdAndCodeHolder, Co
     // used only by Hibernate Search
     @SuppressWarnings("unused")
     @Transient
-    @Field(index = Index.YES, store = Store.YES, name = SearchFieldConstants.EXPERIMENT_ID)
-    @FieldBridge(impl = NullBridge.class)
     private Long getExperimentId()
     {
         return getId(getExperimentInternal());
@@ -717,8 +696,6 @@ public class SamplePE extends AttachmentHolderPE implements IIdAndCodeHolder, Co
     // used only by Hibernate Search
     @SuppressWarnings("unused")
     @Transient
-    @Field(index = Index.YES, store = Store.YES, name = SearchFieldConstants.PROJECT_ID)
-    @FieldBridge(impl = NullBridge.class)
     private Long getProjectId()
     {
         return getId(getProject());
@@ -727,8 +704,6 @@ public class SamplePE extends AttachmentHolderPE implements IIdAndCodeHolder, Co
     // used only by Hibernate Search
     @SuppressWarnings("unused")
     @Transient
-    @Field(index = Index.YES, store = Store.YES, name = SearchFieldConstants.SAMPLE_SPACE_ID)
-    @FieldBridge(impl = NullBridge.class)
     private Long getSpaceId()
     {
         return getId(getSpace());
@@ -753,7 +728,6 @@ public class SamplePE extends AttachmentHolderPE implements IIdAndCodeHolder, Co
     @SequenceGenerator(name = SequenceNames.SAMPLE_SEQUENCE, sequenceName = SequenceNames.SAMPLE_SEQUENCE, allocationSize = 1)
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = SequenceNames.SAMPLE_SEQUENCE)
-    @DocumentId(name = SearchFieldConstants.ID)
     public final Long getId()
     {
         return id;
@@ -771,7 +745,6 @@ public class SamplePE extends AttachmentHolderPE implements IIdAndCodeHolder, Co
     // used only by Hibernate Search
     @SuppressWarnings("unused")
     @Transient
-    @Field(index = Index.YES, store = Store.YES, name = SearchFieldConstants.CODE)
     private String getFullCode()
     {
         // full code of contained sample consists of <container code>:<contained sample code>
@@ -780,10 +753,6 @@ public class SamplePE extends AttachmentHolderPE implements IIdAndCodeHolder, Co
 
     @Column(name = ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, nullable = false, insertable = false, updatable = false)
     @Generated(GenerationTime.INSERT)
-    @Field(name = SearchFieldConstants.REGISTRATION_DATE, index = Index.YES, store = Store.NO)
-    @FieldBridge(impl = org.hibernate.search.bridge.builtin.StringEncodingDateBridge.class, params = {
-            @org.hibernate.search.annotations.Parameter(name = "resolution", value = "SECOND") })
-    @DateBridge(resolution = Resolution.SECOND)
     public Date getRegistrationDate()
     {
         return HibernateAbstractRegistrationHolder.getDate(registrationDate);
@@ -801,7 +770,6 @@ public class SamplePE extends AttachmentHolderPE implements IIdAndCodeHolder, Co
     @Override
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = ColumnNames.PERSON_REGISTERER_COLUMN, updatable = false)
-    @IndexedEmbedded(prefix = SearchFieldConstants.PREFIX_REGISTRATOR)
     public PersonPE getRegistrator()
     {
         return registrator;
@@ -816,7 +784,6 @@ public class SamplePE extends AttachmentHolderPE implements IIdAndCodeHolder, Co
     @OptimisticLock(excluded = true)
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = ColumnNames.PERSON_MODIFIER_COLUMN)
-    @IndexedEmbedded(prefix = SearchFieldConstants.PREFIX_MODIFIER)
     public PersonPE getModifier()
     {
         return modifier;
@@ -939,10 +906,6 @@ public class SamplePE extends AttachmentHolderPE implements IIdAndCodeHolder, Co
     @Override
     @OptimisticLock(excluded = true)
     @Column(name = ColumnNames.MODIFICATION_TIMESTAMP_COLUMN, nullable = false)
-    @Field(name = SearchFieldConstants.MODIFICATION_DATE, index = Index.YES, store = Store.NO)
-    @FieldBridge(impl = org.hibernate.search.bridge.builtin.StringEncodingDateBridge.class, params = {
-            @org.hibernate.search.annotations.Parameter(name = "resolution", value = "SECOND") })
-    @DateBridge(resolution = Resolution.SECOND)
     public Date getModificationDate()
     {
         return modificationDate;
@@ -972,8 +935,6 @@ public class SamplePE extends AttachmentHolderPE implements IIdAndCodeHolder, Co
 
     @Override
     @Transient
-    @Analyzer(impl = IgnoreCaseAnalyzer.class)
-    @Field(index = Index.YES, store = Store.YES, name = SearchFieldConstants.IDENTIFIER)
     public final String getIdentifier()
     {
         return getSampleIdentifier().toString();
@@ -1002,7 +963,6 @@ public class SamplePE extends AttachmentHolderPE implements IIdAndCodeHolder, Co
 
     @Override
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "sampleParentInternal", cascade = CascadeType.ALL, orphanRemoval = true)
-    @IndexedEmbedded(prefix = SearchFieldConstants.PREFIX_ATTACHMENT)
     @Fetch(FetchMode.SUBSELECT)
     protected Set<AttachmentPE> getInternalAttachments()
     {
@@ -1014,7 +974,6 @@ public class SamplePE extends AttachmentHolderPE implements IIdAndCodeHolder, Co
     @Length(min = 1, max = Code.CODE_LENGTH_MAX, message = ValidationMessages.CODE_LENGTH_MESSAGE)
     @Pattern(regexp = AbstractIdAndCodeHolder.CODE_PATTERN, flags = Pattern.Flag.CASE_INSENSITIVE, message = ValidationMessages.CODE_PATTERN_MESSAGE)
     @Column(name = ColumnNames.PERM_ID_COLUMN, nullable = false)
-    @Field(index = Index.YES, store = Store.YES, name = SearchFieldConstants.PERM_ID)
     public String getPermId()
     {
         return permId;
@@ -1110,7 +1069,6 @@ public class SamplePE extends AttachmentHolderPE implements IIdAndCodeHolder, Co
 
     @Override
     @Transient
-    @IndexedEmbedded(prefix = SearchFieldConstants.PREFIX_METAPROJECT)
     public Set<MetaprojectPE> getMetaprojects()
     {
         Set<MetaprojectPE> metaprojects = new HashSet<MetaprojectPE>();
