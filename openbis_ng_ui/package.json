@@ -7,7 +7,7 @@
   "dependencies": {
     "@material-ui/core": "^4.9.11",
     "@material-ui/icons": "^4.9.1",
-    "@material-ui/lab": "^4.0.0-alpha.50",
+    "@material-ui/lab": "^4.0.0-alpha.56",
     "history": "^4.10.1",
     "install": "^0.13.0",
     "npm": "^6.14.4",

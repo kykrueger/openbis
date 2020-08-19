@@ -2,6 +2,9 @@ import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import Autocomplete from '@material-ui/lab/Autocomplete'
 import TextField from '@material-ui/core/TextField'
+import InputAdornment from '@material-ui/core/InputAdornment'
+import ArrowDropUpIcon from '@material-ui/icons/ArrowDropUp'
+import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown'
 import logger from '@src/js/common/logger.js'
 
 import FormFieldContainer from './FormFieldContainer.jsx'
@@ -20,6 +23,11 @@ const styles = theme => ({
   },
   option: {
     fontSize: theme.typography.body2.fontSize
+  },
+  adornment: {
+    marginRight: '-4px',
+    marginTop: '-16px',
+    color: '#0000008a'
   }
 })
 
@@ -31,13 +39,55 @@ class AutocompleterFormField extends React.PureComponent {
 
   constructor(props) {
     super(props)
+
+    this.state = {
+      open: false
+    }
+
     this.reference = React.createRef()
+    this.handleClick = this.handleClick.bind(this)
+    this.handleKeyDown = this.handleKeyDown.bind(this)
     this.handleChange = this.handleChange.bind(this)
     this.handleFocus = this.handleFocus.bind(this)
     this.handleBlur = this.handleBlur.bind(this)
   }
 
+  handleClick(event) {
+    const { onClick } = this.props
+
+    this.setState(state => ({
+      open: !state.open
+    }))
+
+    if (onClick) {
+      onClick(event)
+    }
+  }
+
+  handleKeyDown(event) {
+    const { open } = this.state
+
+    switch (event.key) {
+      case 'Enter':
+      case 'Esc':
+      case 'Escape':
+      case 'Tab':
+        if (open) {
+          this.setState({ open: false })
+        }
+        return
+      default:
+        if (!open) {
+          this.setState({ open: true })
+        }
+    }
+  }
+
   handleChange(event, value) {
+    this.setState({
+      open: true
+    })
+
     this.handleEvent(event, value, this.props.onChange)
   }
 
@@ -46,7 +96,15 @@ class AutocompleterFormField extends React.PureComponent {
   }
 
   handleBlur(event) {
-    this.handleEvent(event, null, this.props.onBlur)
+    this.setState({
+      open: false
+    })
+
+    if (event.target.value !== this.props.value) {
+      this.handleEvent(event, event.target.value, this.props.onChange)
+    } else {
+      this.handleEvent(event, null, this.props.onBlur)
+    }
   }
 
   handleEvent(event, value, handler) {
@@ -87,18 +145,17 @@ class AutocompleterFormField extends React.PureComponent {
     const {
       name,
       options,
-      label,
       description,
       value,
-      mandatory,
       disabled,
       error,
       metadata,
       styles,
       classes,
-      variant,
-      onClick
+      variant
     } = this.props
+
+    const { open } = this.state
 
     return (
       <FormFieldContainer
@@ -106,20 +163,20 @@ class AutocompleterFormField extends React.PureComponent {
         error={error}
         metadata={metadata}
         styles={styles}
-        onClick={onClick}
+        onClick={this.handleClick}
       >
         <Autocomplete
           freeSolo
-          autoSelect
-          autoComplete
-          openOnFocus
+          disableClearable
           name={name}
           disabled={disabled}
           options={options}
           value={value}
+          open={open}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
           onBlur={this.handleBlur}
+          onKeyDown={this.handleKeyDown}
           classes={{
             paper: classes.paper,
             option: classes.option
@@ -130,18 +187,13 @@ class AutocompleterFormField extends React.PureComponent {
               inputRef={this.getReference()}
               InputProps={{
                 ...params.InputProps,
+                endAdornment: this.renderAdornment(),
                 classes: {
                   ...params.InputProps.classes,
                   input: classes.input
                 }
               }}
-              label={
-                <FormFieldLabel
-                  label={label}
-                  mandatory={mandatory}
-                  styles={styles}
-                />
-              }
+              label={this.renderLabel()}
               error={!!error}
               fullWidth={true}
               autoComplete='off'
@@ -154,6 +206,23 @@ class AutocompleterFormField extends React.PureComponent {
           )}
         />
       </FormFieldContainer>
+    )
+  }
+
+  renderLabel() {
+    const { label, mandatory, styles } = this.props
+    return (
+      <FormFieldLabel label={label} mandatory={mandatory} styles={styles} />
+    )
+  }
+
+  renderAdornment() {
+    const { open } = this.state
+    const { classes } = this.props
+    return (
+      <InputAdornment position='end' classes={{ root: classes.adornment }}>
+        {open ? <ArrowDropUpIcon /> : <ArrowDropDownIcon />}
+      </InputAdornment>
     )
   }
 
