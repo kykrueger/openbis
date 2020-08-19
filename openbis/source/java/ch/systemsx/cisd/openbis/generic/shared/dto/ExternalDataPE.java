@@ -29,13 +29,7 @@ import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.search.annotations.ClassBridge;
-import org.hibernate.search.annotations.Field;
-import org.hibernate.search.annotations.FieldBridge;
-import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
-import org.hibernate.search.annotations.IndexedEmbedded;
-import org.hibernate.search.annotations.Store;
 import org.hibernate.validator.constraints.Length;
 
 import ch.systemsx.cisd.openbis.common.types.BooleanOrUnknown;
@@ -43,7 +37,6 @@ import ch.systemsx.cisd.openbis.generic.shared.Constants;
 import ch.systemsx.cisd.openbis.generic.shared.IServer;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetArchivingStatus;
 import ch.systemsx.cisd.openbis.generic.shared.dto.hibernate.Location;
-import ch.systemsx.cisd.openbis.generic.shared.dto.hibernate.SearchFieldConstants;
 
 /**
  * Kind of <i>Java Bean</i> or <i>Value Object</i> which contains any information we would like to know about one EXTERNAL DATA.
@@ -58,7 +51,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.hibernate.SearchFieldConstant
         ColumnNames.LOCATOR_TYPE_COLUMN }))
 @PrimaryKeyJoinColumn(name = ColumnNames.ID_COLUMN)
 @Indexed(index = "DataPE")
-@ClassBridge(impl = ExternalDataGlobalSearchBridge.class)
 public final class ExternalDataPE extends DataPE
 {
     private static final long serialVersionUID = IServer.VERSION;
@@ -104,7 +96,6 @@ public final class ExternalDataPE extends DataPE
     @ManyToOne(fetch = FetchType.LAZY)
     @NotNull(message = ValidationMessages.LOCATOR_TYPE_NOT_NULL_MESSAGE)
     @JoinColumn(name = ColumnNames.LOCATOR_TYPE_COLUMN, updatable = false)
-    @IndexedEmbedded(prefix = SearchFieldConstants.PREFIX_LOCATOR_TYPE)
     public LocatorTypePE getLocatorType()
     {
         return locatorType;
@@ -120,7 +111,6 @@ public final class ExternalDataPE extends DataPE
     @Length(max = 1024, message = ValidationMessages.LOCATION_LENGTH_MESSAGE)
     @NotNull(message = ValidationMessages.LOCATION_NOT_NULL_MESSAGE)
     @Location(relative = true, message = ValidationMessages.LOCATION_NOT_RELATIVE)
-    @Field(name = SearchFieldConstants.LOCATION, index = Index.YES, store = Store.YES)
     public String getLocation()
     {
         return location;
@@ -133,7 +123,6 @@ public final class ExternalDataPE extends DataPE
     }
 
     @Column(name = ColumnNames.SHARE_ID_COLUMN)
-    @Field(name = SearchFieldConstants.SHARE_ID, index = Index.YES, store = Store.YES)
     public String getShareId()
     {
         return shareId;
@@ -145,8 +134,6 @@ public final class ExternalDataPE extends DataPE
     }
 
     @Column(name = ColumnNames.SIZE_COLUMN)
-    @Field(name = SearchFieldConstants.SIZE, index = Index.YES, store = Store.YES)
-    @FieldBridge(impl = NumberFieldBridge.class)
     public Long getSize()
     {
         return size;
@@ -160,7 +147,6 @@ public final class ExternalDataPE extends DataPE
     @ManyToOne(fetch = FetchType.LAZY)
     @NotNull(message = ValidationMessages.STORAGE_FORMAT_NOT_NULL_MESSAGE)
     @JoinColumn(name = ColumnNames.STORAGE_FORMAT_COLUMN, updatable = false)
-    @IndexedEmbedded(prefix = SearchFieldConstants.PREFIX_STORAGE_FORMAT)
     public VocabularyTermPE getStorageFormatVocabularyTerm()
     {
         return storageFormatVocabularyTerm;
@@ -184,7 +170,6 @@ public final class ExternalDataPE extends DataPE
     @ManyToOne(fetch = FetchType.LAZY)
     @NotNull(message = ValidationMessages.FILE_FORMAT_TYPE_NOT_NULL_MESSAGE)
     @JoinColumn(name = ColumnNames.FILE_FORMAT_TYPE, updatable = true)
-    @IndexedEmbedded(prefix = SearchFieldConstants.PREFIX_FILE_FORMAT_TYPE)
     public FileFormatTypePE getFileFormatType()
     {
         return fileFormatType;
@@ -204,7 +189,6 @@ public final class ExternalDataPE extends DataPE
      * are missing. If the completeness is not known (e.g. because the data set is stored in a format that does not allow to assess the completeness,
      * {@link BooleanOrUnknown#U} is returned.
      */
-    @Field(name = SearchFieldConstants.COMPLETE, index = Index.YES, store = Store.YES)
     public BooleanOrUnknown getComplete()
     {
         return complete;
@@ -222,7 +206,6 @@ public final class ExternalDataPE extends DataPE
     @NotNull(message = ValidationMessages.STATUS_NOT_NULL_MESSAGE)
     @Column(name = ColumnNames.STATUS)
     @Enumerated(EnumType.STRING)
-    @Field(name = SearchFieldConstants.STATUS, index = Index.YES, store = Store.YES)
     public DataSetArchivingStatus getStatus()
     {
         return status;
@@ -234,7 +217,6 @@ public final class ExternalDataPE extends DataPE
     }
 
     @Column(name = ColumnNames.PRESENT_IN_ARCHIVE)
-    @Field(name = SearchFieldConstants.PRESENT_IN_ARCHIVE, index = Index.YES, store = Store.YES)
     public boolean isPresentInArchive()
     {
         return isPresentInArchive;
@@ -246,7 +228,6 @@ public final class ExternalDataPE extends DataPE
     }
 
     @Column(name = ColumnNames.STORAGE_CONFIRMATION)
-    @Field(name = SearchFieldConstants.STORAGE_CONFIRMATION, index = Index.YES, store = Store.YES)
     public boolean isStorageConfirmation()
     {
         return storageConfirmation;
@@ -258,8 +239,6 @@ public final class ExternalDataPE extends DataPE
     }
 
     @Column(name = ColumnNames.SPEED_HINT)
-    @Field(name = SearchFieldConstants.SPEED_HINT, index = Index.YES, store = Store.YES)
-    @FieldBridge(impl = NumberFieldBridge.class)
     public int getSpeedHint()
     {
         return speedHint;
@@ -293,7 +272,6 @@ public final class ExternalDataPE extends DataPE
     }
 
     @Column(name = ColumnNames.ARCHIVING_REQUESTED)
-    @Field(name = SearchFieldConstants.ARCHIVING_REQUESTED, index = Index.YES, store = Store.YES)
     public boolean isArchivingRequested()
     {
         return archivingRequested;
