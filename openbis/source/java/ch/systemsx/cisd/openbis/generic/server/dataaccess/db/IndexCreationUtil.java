@@ -22,8 +22,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.springframework.context.support.AbstractApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.common.logging.LogCategory;
@@ -51,23 +49,9 @@ public final class IndexCreationUtil
     private static final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION,
             IndexCreationUtil.class);
 
-
-    private static AbstractApplicationContext applicationContext;
-
     private IndexCreationUtil()
     {
         // Can not be instantiated.
-    }
-
-    private final static AbstractApplicationContext getApplicationContext()
-    {
-        if (applicationContext == null)
-        {
-            final AbstractApplicationContext appC = new ClassPathXmlApplicationContext(new String[]
-            { "applicationContext.xml" }, true);
-            IndexCreationUtil.applicationContext = appC;
-        }
-        return applicationContext;
     }
 
     //
@@ -84,8 +68,6 @@ public final class IndexCreationUtil
         {
             dumpDatabase(parameters);
         }
-
-        releaseResources();
     }
 
     private static void dumpDatabase(Parameters parameters)
@@ -120,13 +102,6 @@ public final class IndexCreationUtil
             throw e;
         }
         return parameters;
-    }
-
-    private static void releaseResources()
-    {
-        applicationContext.stop();
-        applicationContext.close();
-        applicationContext.destroy();
     }
 
     static boolean duplicateDatabase(String destinationDatabase, String sourceDatabase)
