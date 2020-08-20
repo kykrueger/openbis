@@ -110,6 +110,7 @@ export default class TypeFormControllerLoad extends PageControllerLoad {
       propertiesCounter,
       sections,
       sectionsCounter,
+      preview: {},
       selection: selection,
       usages: loadedUsages,
       assignments: loadedAssignments,

@@ -34,6 +34,9 @@ export default class TypeFormControllerChange extends PageControllerChange {
           return newProperty
         }
       )
+    } else if (type === 'preview') {
+      const { field, value } = params
+      this.changeObjectField('preview', field, value)
     }
   }
 

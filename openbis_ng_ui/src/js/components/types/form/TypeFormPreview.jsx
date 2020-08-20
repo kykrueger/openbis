@@ -66,12 +66,17 @@ class TypeFormPreview extends React.PureComponent {
   render() {
     logger.log(logger.DEBUG, 'TypeFormPreview.render')
 
-    const { mode, classes, type, sections } = this.props
+    const { mode, classes, type, sections, preview, onChange } = this.props
 
     return (
       <Container className={classes.container}>
         <div className={classes.form}>
-          <TypeFormPreviewHeader type={type} mode={mode} />
+          <TypeFormPreviewHeader
+            type={type}
+            preview={preview}
+            mode={mode}
+            onChange={onChange}
+          />
           <DragDropContext
             onDragStart={this.handleDragStart}
             onDragEnd={this.handleDragEnd}
@@ -118,17 +123,27 @@ class TypeFormPreview extends React.PureComponent {
   }
 
   renderProperties(properties, index) {
-    const { mode, controller, selection, onSelectionChange } = this.props
+    const {
+      mode,
+      controller,
+      preview,
+      selection,
+      onChange,
+      onSelectionChange
+    } = this.props
 
     return properties.map((property, offset) => {
+      const value = _.get(preview, [property.id, 'value'])
       return (
         <TypeFormPreviewProperty
           key={property.id}
           controller={controller}
           property={property}
+          value={value}
           index={index + offset}
           selection={selection}
           mode={mode}
+          onChange={onChange}
           onSelectionChange={onSelectionChange}
         />
       )
