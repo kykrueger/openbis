@@ -43,6 +43,7 @@ export default class TypeFormControllerValidate extends PageControllerValidate {
   _validateType(validator, type) {
     const strategy = this._getStrategy()
     validator.validateNotEmpty(type, 'code', 'Code')
+    validator.validateCode(type, 'code', 'Code')
     strategy.validateTypeAttributes(validator, type)
   }
 
@@ -54,6 +55,7 @@ export default class TypeFormControllerValidate extends PageControllerValidate {
 
   _validateProperty(validator, property) {
     validator.validateNotEmpty(property, 'code', 'Code')
+    validator.validateCode(property, 'code', 'Code')
     validator.validateNotEmpty(property, 'label', 'Label')
     validator.validateNotEmpty(property, 'description', 'Description')
     validator.validateNotEmpty(property, 'dataType', 'Data Type')

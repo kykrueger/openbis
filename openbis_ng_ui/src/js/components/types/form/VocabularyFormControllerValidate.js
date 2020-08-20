@@ -1,5 +1,7 @@
 import PageControllerValidate from '@src/js/components/common/page/PageConrollerValidate.js'
 
+const TERM_CODE_PATTERN = /^[A-Za-z0-9_\\-\\.:]+$/
+
 export default class VocabularyFormControllerValidate extends PageControllerValidate {
   validate(validator) {
     const { vocabulary, terms } = this.context.getState()
@@ -45,6 +47,7 @@ export default class VocabularyFormControllerValidate extends PageControllerVali
 
   _validateVocabulary(validator, vocabulary) {
     validator.validateNotEmpty(vocabulary, 'code', 'Code')
+    validator.validateCode(vocabulary, 'code', 'Code')
   }
 
   _validateTerms(validator, terms) {
@@ -55,5 +58,11 @@ export default class VocabularyFormControllerValidate extends PageControllerVali
 
   _validateTerm(validator, term) {
     validator.validateNotEmpty(term, 'code', 'Code')
+    validator.validatePattern(
+      term,
+      'code',
+      'Code can only contain A-Z, a-z, 0-9 and _, -, ., :',
+      TERM_CODE_PATTERN
+    )
   }
 }

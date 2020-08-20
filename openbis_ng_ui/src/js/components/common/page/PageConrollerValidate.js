@@ -21,11 +21,7 @@ export default class PageControllerValidate {
   async execute(autofocus) {
     const { validate } = this.context.getState()
 
-    if (!validate) {
-      return true
-    }
-
-    const validator = new FormValidator()
+    const validator = new FormValidator(validate)
     const newState = await this.validate(validator)
     const errors = validator.getErrors()
 

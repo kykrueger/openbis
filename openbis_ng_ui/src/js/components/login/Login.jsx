@@ -61,7 +61,7 @@ class WithLogin extends React.Component {
         error: null
       },
       selection: 'user',
-      validate: false
+      validate: 'basic'
     }
     this.references = {
       user: React.createRef(),
@@ -94,13 +94,9 @@ class WithLogin extends React.Component {
   }
 
   validate(autofocus) {
-    if (!this.state.validate) {
-      return true
-    }
-
     const newState = { ...this.state }
 
-    const validator = new FormValidator()
+    const validator = new FormValidator(this.state.validate)
     validator.validateNotEmpty(newState, 'user', 'User')
     validator.validateNotEmpty(newState, 'password', 'Password')
 
@@ -144,7 +140,7 @@ class WithLogin extends React.Component {
 
     this.setState(
       {
-        validate: true
+        validate: 'full'
       },
       () => {
         if (this.validate(true)) {

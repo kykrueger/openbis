@@ -1093,7 +1093,8 @@ async function testValidateType() {
       type: {
         title: 'Type',
         code: {
-          error: 'Code cannot be empty'
+          error: 'Code cannot be empty',
+          focused: true
         },
         description: {
           error: null
@@ -1108,6 +1109,30 @@ async function testValidateType() {
     },
     buttons: {
       message: null
+    }
+  })
+
+  form.getParameters().getType().getCode().change('I am illegal')
+  await form.update()
+
+  form.getButtons().getSave().click()
+  await form.update()
+
+  form.expectJSON({
+    parameters: {
+      type: {
+        code: {
+          value: 'I am illegal',
+          error: 'Code can only contain A-Z, a-z, 0-9 and _, -, .',
+          focused: true
+        }
+      }
+    },
+    buttons: {
+      message: {
+        text: 'You have unsaved changes.',
+        type: 'warning'
+      }
     }
   })
 }
@@ -1131,7 +1156,8 @@ async function testValidateProperty() {
           error: null
         },
         code: {
-          error: 'Code cannot be empty'
+          error: 'Code cannot be empty',
+          focused: true
         },
         dataType: {
           error: null
@@ -1151,6 +1177,24 @@ async function testValidateProperty() {
       message: {
         text: 'You have unsaved changes.',
         type: 'warning'
+      }
+    }
+  })
+
+  form.getParameters().getProperty().getCode().change('I am illegal')
+  await form.update()
+
+  form.getButtons().getSave().click()
+  await form.update()
+
+  form.expectJSON({
+    parameters: {
+      property: {
+        code: {
+          value: 'I am illegal',
+          error: 'Code can only contain A-Z, a-z, 0-9 and _, -, .',
+          focused: true
+        }
       }
     }
   })

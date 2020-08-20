@@ -1082,7 +1082,8 @@ async function testValidateTerm() {
         title: 'Term',
         code: {
           value: null,
-          error: 'Code cannot be empty'
+          error: 'Code cannot be empty',
+          focused: true
         }
       }
     },
@@ -1090,6 +1091,24 @@ async function testValidateTerm() {
       message: {
         text: 'You have unsaved changes.',
         type: 'warning'
+      }
+    }
+  })
+
+  form.getParameters().getTerm().getCode().change('I am illegal')
+  await form.update()
+
+  form.getButtons().getSave().click()
+  await form.update()
+
+  form.expectJSON({
+    parameters: {
+      term: {
+        code: {
+          value: 'I am illegal',
+          error: 'Code can only contain A-Z, a-z, 0-9 and _, -, ., :',
+          focused: true
+        }
       }
     }
   })
@@ -1122,7 +1141,9 @@ async function testValidateVocabulary() {
       vocabulary: {
         title: 'Vocabulary',
         code: {
-          error: 'Code cannot be empty'
+          value: null,
+          error: 'Code cannot be empty',
+          focused: true
         }
       }
     },
@@ -1130,6 +1151,24 @@ async function testValidateVocabulary() {
       message: {
         text: 'You have unsaved changes.',
         type: 'warning'
+      }
+    }
+  })
+
+  form.getParameters().getVocabulary().getCode().change('I am illegal')
+  await form.update()
+
+  form.getButtons().getSave().click()
+  await form.update()
+
+  form.expectJSON({
+    parameters: {
+      vocabulary: {
+        code: {
+          value: 'I am illegal',
+          error: 'Code can only contain A-Z, a-z, 0-9 and _, -, .',
+          focused: true
+        }
       }
     }
   })
