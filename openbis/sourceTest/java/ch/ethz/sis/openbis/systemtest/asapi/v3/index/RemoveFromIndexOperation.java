@@ -16,15 +16,13 @@
 
 package ch.ethz.sis.openbis.systemtest.asapi.v3.index;
 
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.search.IndexUpdateOperation;
-
 /**
  * @author pkupczyk
  */
 public class RemoveFromIndexOperation extends IndexOperation
 {
 
-    public RemoveFromIndexOperation(IndexUpdateOperation operation)
+    public <E extends IndexOperation> RemoveFromIndexOperation(E operation)
     {
         super(operation, operation.getClassName(), operation.getIds());
     }
