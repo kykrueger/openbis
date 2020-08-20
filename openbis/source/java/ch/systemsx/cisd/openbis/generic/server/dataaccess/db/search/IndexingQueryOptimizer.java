@@ -29,7 +29,6 @@ import javax.persistence.OneToOne;
 
 import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
-import org.hibernate.search.annotations.IndexedEmbedded;
 
 /**
  * @author Antti Luomi
@@ -135,17 +134,7 @@ public class IndexingQueryOptimizer
             return true;
         }
 
-        if (isAnnotatedToBeIndexedEmbedded(method))
-        {
-            return true;
-        }
-
         return false;
-    }
-
-    private static boolean isAnnotatedToBeIndexedEmbedded(Method method)
-    {
-        return method.getAnnotation(IndexedEmbedded.class) != null;
     }
 
     private static boolean isAnnotatedToBeEagerlyFetched(Method method)
