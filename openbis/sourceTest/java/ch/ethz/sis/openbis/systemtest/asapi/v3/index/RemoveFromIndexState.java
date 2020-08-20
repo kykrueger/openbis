@@ -39,19 +39,15 @@ public class RemoveFromIndexState extends IndexState
     private static Collection<RemoveFromIndexOperation> createOperations()
     {
         FullTextIndexUpdater indexUpdater = (FullTextIndexUpdater) CommonServiceProvider.tryToGetBean("full-text-index-updater");
-        if(indexUpdater != null) {
-            Collection<IndexUpdateOperation> updateOperations = indexUpdater.getQueue();
-            List<RemoveFromIndexOperation> removeOperations = new ArrayList<RemoveFromIndexOperation>();
+        Collection<IndexUpdateOperation> updateOperations = indexUpdater.getQueue();
+        List<RemoveFromIndexOperation> removeOperations = new ArrayList<RemoveFromIndexOperation>();
 
-            for (IndexUpdateOperation updateOperation : updateOperations) {
-                if (IndexUpdateOperationKind.REMOVE.equals(updateOperation.getOperationKind())) {
-                    removeOperations.add(new RemoveFromIndexOperation(updateOperation));
-                }
+        for (IndexUpdateOperation updateOperation : updateOperations) {
+            if (IndexUpdateOperationKind.REMOVE.equals(updateOperation.getOperationKind())) {
+                removeOperations.add(new RemoveFromIndexOperation(updateOperation));
             }
-
-            return removeOperations;
-        } else {
-            return new ArrayList<>();
         }
+
+        return removeOperations;
     }
 }
