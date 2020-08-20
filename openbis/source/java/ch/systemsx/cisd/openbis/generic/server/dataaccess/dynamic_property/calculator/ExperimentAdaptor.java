@@ -16,18 +16,14 @@
 
 package ch.systemsx.cisd.openbis.generic.server.dataaccess.dynamic_property.calculator;
 
-import org.apache.lucene.search.Query;
-import org.hibernate.ScrollableResults;
+import ch.systemsx.cisd.common.exceptions.NotImplementedException;
 import org.hibernate.Session;
 
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.dynamic_property.IDynamicPropertyEvaluator;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.dynamic_property.calculator.api.IDataAdaptor;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.dynamic_property.calculator.api.IExperimentAdaptor;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.dynamic_property.calculator.api.ISampleAdaptor;
-import ch.systemsx.cisd.openbis.generic.shared.dto.DataPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.hibernate.SearchFieldConstants;
 import ch.systemsx.cisd.openbis.generic.shared.hotdeploy_plugins.api.IEntityAdaptor;
 
 /**
@@ -64,40 +60,28 @@ public class ExperimentAdaptor extends AbstractEntityAdaptor implements IExperim
     @Override
     public Iterable<ISampleAdaptor> samples()
     {
-        return samplesOfType(ENTITY_TYPE_ANY_CODE_REGEXP);
+        //TODO Lucene: Method to be implemented if is used after removing lucene.
+        throw new NotImplementedException("TODO Lucene: Method to be implemented if is used after removing lucene.");
     }
 
     @Override
     public Iterable<ISampleAdaptor> samplesOfType(String typeRegexp)
     {
-        Query typeConstraint = regexpConstraint(ENTITY_TYPE_CODE_FIELD, typeRegexp.toLowerCase());
-        Query experimentCodeConstraint =
-                constraint(SearchFieldConstants.EXPERIMENT_ID, Long.toString(experimentPE.getId()));
-        Query query = and(typeConstraint, experimentCodeConstraint);
-
-        ScrollableResults results = execute(query, SamplePE.class, session);
-        EntityAdaptorIterator<ISampleAdaptor> iterator = new EntityAdaptorIterator<ISampleAdaptor>(results, evaluator, session);
-        getResources().add(iterator);
-        return iterator;
+        //TODO Lucene: Method to be implemented if is used after removing lucene.
+        throw new NotImplementedException("TODO Lucene: Method to be implemented if is used after removing lucene.");
     }
 
     @Override
     public Iterable<IDataAdaptor> dataSets()
     {
-        return dataSetsOfType(ENTITY_TYPE_ANY_CODE_REGEXP);
+        //TODO Lucene: Method to be implemented if is used after removing lucene.
+        throw new NotImplementedException("TODO Lucene: Method to be implemented if is used after removing lucene.");
     }
 
     @Override
     public Iterable<IDataAdaptor> dataSetsOfType(String typeRegexp)
     {
-        Query typeConstraint = regexpConstraint(ENTITY_TYPE_CODE_FIELD, typeRegexp.toLowerCase());
-        Query experimentCodeConstraint =
-                constraint(SearchFieldConstants.EXPERIMENT_ID, Long.toString(experimentPE.getId()));
-        Query query = and(typeConstraint, experimentCodeConstraint);
-
-        ScrollableResults results = execute(query, DataPE.class, session);
-        EntityAdaptorIterator<IDataAdaptor> iterator = new EntityAdaptorIterator<IDataAdaptor>(results, evaluator, session);
-        getResources().add(iterator);
-        return iterator;
+        //TODO Lucene: Method to be implemented if is used after removing lucene.
+        throw new NotImplementedException("TODO Lucene: Method to be implemented if is used after removing lucene.");
     }
 }

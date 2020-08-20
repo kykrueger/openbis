@@ -21,10 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.commons.lang3.time.StopWatch;
 import org.apache.log4j.Logger;
-import org.hibernate.SessionFactory;
-import org.springframework.beans.factory.BeanFactory;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -35,11 +32,6 @@ import ch.systemsx.cisd.common.logging.LogInitializer;
 import ch.systemsx.cisd.common.process.ProcessExecutionHelper;
 import ch.systemsx.cisd.common.string.Template;
 import ch.systemsx.cisd.dbmigration.postgresql.DumpPreparator;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.search.FullTextIndexerRunnable;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.search.HibernateSearchContext;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.search.IFullTextIndexUpdater;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.search.IndexMode;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.search.IndexUpdateOperation;
 
 /**
  * Utility methods around database indexing with <i>Hibernate</i>.
@@ -59,7 +51,6 @@ public final class IndexCreationUtil
     private static final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION,
             IndexCreationUtil.class);
 
-    private static HibernateSearchContext hibernateSearchContext;
 
     private static AbstractApplicationContext applicationContext;
 
@@ -79,56 +70,6 @@ public final class IndexCreationUtil
         return applicationContext;
     }
 
-    /**
-     * Performs a full text index because the test database has been migrated.
-     */
-    private final static void createAndRunFullTextIndexer() throws Exception
-    {
-        final BeanFactory factory = getApplicationContext();
-        final IFullTextIndexUpdater updater = createDummyUpdater();
-        final FullTextIndexerRunnable fullTextIndexer =
-                new FullTextIndexerRunnable(
-                        (SessionFactory) factory.getBean("hibernate-session-factory"),
-                        hibernateSearchContext, updater);
-        fullTextIndexer.run();
-    }
-
-    /**
-     * Creates a dummy {@link IFullTextIndexUpdater} that does nothing.
-     */
-    private final static IFullTextIndexUpdater createDummyUpdater()
-    {
-        return new IFullTextIndexUpdater()
-            {
-
-                @Override
-                public void clear()
-                {
-                }
-
-                @Override
-                public void start()
-                {
-                }
-
-                @Override
-                public void scheduleUpdate(IndexUpdateOperation entities)
-                {
-                }
-            };
-    }
-
-    /**
-     * Creates a freshly new {@link HibernateSearchContext} overriding the one loaded by <i>Spring</i>.
-     */
-    private final static HibernateSearchContext createHibernateSearchContext(String indexFolder)
-    {
-        final HibernateSearchContext context = new HibernateSearchContext();
-        context.setIndexBase(indexFolder);
-        context.setIndexMode(IndexMode.INDEX_FROM_SCRATCH);
-        return context;
-    }
-
     //
     // Main method
     //
@@ -143,8 +84,6 @@ public final class IndexCreationUtil
         {
             dumpDatabase(parameters);
         }
-
-        performIsolatedIndexing(parameters);
 
         releaseResources();
     }
@@ -188,39 +127,6 @@ public final class IndexCreationUtil
         applicationContext.stop();
         applicationContext.close();
         applicationContext.destroy();
-    }
-
-    /**
-     * Performs indexing and restored the environment to original state
-     */
-    private static void performIsolatedIndexing(Parameters parameters) throws Exception
-    {
-        String databaseKind = parameters.getDatabaseKind();
-        String indexFolder = parameters.getIndexFolder();
-
-        System.setProperty("database.kind", databaseKind);
-        // Deactivate the indexing in the application context loaded by Spring.
-        System.setProperty("hibernate.search.index-mode", "NO_INDEX");
-        System.setProperty("hibernate.search.index-base", indexFolder);
-        System.setProperty("database.create-from-scratch", parameters.getFromScratch());
-
-        performAndTimeIndexing(databaseKind, indexFolder);
-
-    }
-
-    private static void performAndTimeIndexing(String databaseKind, String indexFolder)
-            throws Exception
-    {
-        hibernateSearchContext = createHibernateSearchContext(indexFolder);
-        hibernateSearchContext.afterPropertiesSet();
-        operationLog.info("=========== Start indexing ===========");
-        StopWatch stopWatch = new StopWatch();
-        stopWatch.start();
-        createAndRunFullTextIndexer();
-        stopWatch.stop();
-        operationLog.info("Index of database '" + DATABASE_NAME_PREFIX + databaseKind
-                + "' successfully built in '" + indexFolder + "' after "
-                + ((stopWatch.getTime() + 30000) / 60000) + " minutes.");
     }
 
     static boolean duplicateDatabase(String destinationDatabase, String sourceDatabase)

@@ -17,27 +17,21 @@
 package ch.systemsx.cisd.openbis.generic.server.util;
 
 import java.io.File;
-import java.io.FileFilter;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.commons.io.FileUtils;
+import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.IndexCreationUtil;
 import org.apache.log4j.Logger;
 
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
-import ch.systemsx.cisd.base.exceptions.IOExceptionUnchecked;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.common.logging.LogInitializer;
 import ch.systemsx.cisd.common.process.ProcessExecutionHelper;
 import ch.systemsx.cisd.dbmigration.postgresql.DumpPreparator;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.IndexCreationUtil;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.search.FullTextIndexerRunnable;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.search.IndexMode;
 
 /**
  * @author Franz-Josef Elmer
@@ -68,27 +62,27 @@ public class TestInitializer
 
     public static void initWithoutIndex()
     {
-        init(IndexMode.NO_INDEX, getScriptFolderTestDB());
+        init(getScriptFolderTestDB());
     }
 
     public static void initWithIndex()
     {
-        init(IndexMode.SKIP_IF_MARKER_FOUND, getScriptFolderTestDB());
+        initWithoutIndex();
     }
 
     public static void initEmptyDbNoIndex()
     {
-        init(IndexMode.NO_INDEX, getScriptFolderEmptyDB());
+        init(getScriptFolderEmptyDB());
     }
 
     public static void initEmptyDbWithIndex()
     {
-        init(IndexMode.SKIP_IF_MARKER_FOUND, getScriptFolderEmptyDB());
+        initEmptyDbNoIndex();
     }
 
     private static boolean firstTry = true;
 
-    private static void init(IndexMode hibernateIndexMode, String scriptFolder)
+    private static void init(String scriptFolder)
     {
         LogInitializer.init();
 
@@ -155,10 +149,6 @@ public class TestInitializer
         System.setProperty("database.create-from-scratch", String.valueOf(getCreateDBFromScratch()));
         System.setProperty("database.kind", getDBKind());
         System.setProperty("script-folder", scriptFolder);
-        System.setProperty("hibernate.search.index-mode", hibernateIndexMode.name());
-        System.setProperty("hibernate.search.index-base", LUCENE_INDEX_PATH);
-        System.setProperty("hibernate.search.worker.execution", "sync");
-
     }
 
     public static boolean getCreateDBFromScratch()

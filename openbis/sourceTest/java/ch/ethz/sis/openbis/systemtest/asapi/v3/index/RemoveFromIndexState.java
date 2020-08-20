@@ -18,12 +18,6 @@ package ch.ethz.sis.openbis.systemtest.asapi.v3.index;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
-
-import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.search.FullTextIndexUpdater;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.search.IndexUpdateOperation;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.search.IndexUpdateOperation.IndexUpdateOperationKind;
 
 /**
  * @author pkupczyk
@@ -38,16 +32,6 @@ public class RemoveFromIndexState extends IndexState
 
     private static Collection<RemoveFromIndexOperation> createOperations()
     {
-        FullTextIndexUpdater indexUpdater = (FullTextIndexUpdater) CommonServiceProvider.tryToGetBean("full-text-index-updater");
-        Collection<IndexUpdateOperation> updateOperations = indexUpdater.getQueue();
-        List<RemoveFromIndexOperation> removeOperations = new ArrayList<RemoveFromIndexOperation>();
-
-        for (IndexUpdateOperation updateOperation : updateOperations) {
-            if (IndexUpdateOperationKind.REMOVE.equals(updateOperation.getOperationKind())) {
-                removeOperations.add(new RemoveFromIndexOperation(updateOperation));
-            }
-        }
-
-        return removeOperations;
+        return new ArrayList<>();
     }
 }
