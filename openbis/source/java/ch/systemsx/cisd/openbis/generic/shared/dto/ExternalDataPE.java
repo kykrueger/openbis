@@ -29,7 +29,6 @@ import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.search.annotations.Indexed;
 import org.hibernate.validator.constraints.Length;
 
 import ch.systemsx.cisd.openbis.common.types.BooleanOrUnknown;
@@ -50,7 +49,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.hibernate.Location;
 @Table(name = TableNames.EXTERNAL_DATA_TABLE, uniqueConstraints = @UniqueConstraint(columnNames = { ColumnNames.LOCATION_COLUMN,
         ColumnNames.LOCATOR_TYPE_COLUMN }))
 @PrimaryKeyJoinColumn(name = ColumnNames.ID_COLUMN)
-@Indexed(index = "DataPE")
 public final class ExternalDataPE extends DataPE
 {
     private static final long serialVersionUID = IServer.VERSION;

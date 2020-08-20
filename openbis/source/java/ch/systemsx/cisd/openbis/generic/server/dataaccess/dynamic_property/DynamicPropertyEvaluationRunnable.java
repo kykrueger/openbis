@@ -52,20 +52,16 @@ public final class DynamicPropertyEvaluationRunnable extends HibernateDaoSupport
     private static final Logger notificationLog = LogFactory.getLogger(LogCategory.NOTIFY,
             DynamicPropertyEvaluationRunnable.class);
 
-    private final IFullTextIndexUpdateScheduler fullTextIndexUpdateScheduler;
-
     private final IDynamicPropertyEvaluationSchedulerWithQueue evaluationQueue;
 
     private final IBatchDynamicPropertyEvaluator evaluator;
 
     public DynamicPropertyEvaluationRunnable(final SessionFactory sessionFactory,
             final IDAOFactory daoFactory,
-            final IFullTextIndexUpdateScheduler fullTextIndexUpdateScheduler,
             final IDynamicPropertyEvaluationSchedulerWithQueue evaluationQueue,
             final IDynamicPropertyCalculatorFactory dynamicPropertyCalculatorFactory,
             final IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory)
     {
-        this.fullTextIndexUpdateScheduler = fullTextIndexUpdateScheduler;
         this.evaluationQueue = evaluationQueue;
         setSessionFactory(sessionFactory);
         evaluator =
@@ -112,11 +108,6 @@ public final class DynamicPropertyEvaluationRunnable extends HibernateDaoSupport
                         } else
                         {
                             List<Long> ids = new ArrayList<Long>(operation.getIds());
-                            if (ids.isEmpty() == false)
-                            {
-                                fullTextIndexUpdateScheduler.scheduleUpdate(
-                                        IndexUpdateOperation.reindex(clazz, ids));
-                            }
                             // new collection is passed because it can be modified inside
                             modifiedIds = evaluator.doEvaluateProperties(session, clazz, ids);
                         }
@@ -136,25 +127,6 @@ public final class DynamicPropertyEvaluationRunnable extends HibernateDaoSupport
                         operationLog.info("Update of "
                                 + (modifiedIds == null ? "" : modifiedIds.size() + " ")
                                 + operation.getClassName() + "s took " + stopWatch);
-                    }
-                    if (clazz != null)
-                    {
-                        Collection<Long> ids =
-                                operation.getIds() == null ? modifiedIds : operation.getIds();
-                        if (ids.size() > 0)
-                        {
-                            IndexUpdateOperation indexUpdateOperation;
-                            if (operation.isDeletion())
-                            {
-                                indexUpdateOperation =
-                                        IndexUpdateOperation.remove(clazz, new LinkedList<Long>(ids));
-                            } else
-                            {
-                                indexUpdateOperation =
-                                        IndexUpdateOperation.reindex(clazz, new LinkedList<Long>(ids));
-                            }
-                            fullTextIndexUpdateScheduler.scheduleUpdate(indexUpdateOperation);
-                        }
                     }
                 }
                 evaluationQueue.take();

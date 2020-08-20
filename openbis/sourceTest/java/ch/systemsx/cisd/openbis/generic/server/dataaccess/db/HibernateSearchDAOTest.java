@@ -59,7 +59,7 @@ import ch.systemsx.cisd.openbis.generic.shared.util.HibernateUtils;
  * @author Christian Ribeaud
  */
 @Test(groups = { "db", "hibernateSearch" })
-@Friend(toClasses = HibernateSearchDAO.class)
+@Friend(toClasses = HibernateSearchDAOV3Adaptor.class)
 public final class HibernateSearchDAOTest extends AbstractDAOTest
 {
 
@@ -610,7 +610,6 @@ public final class HibernateSearchDAOTest extends AbstractDAOTest
         changeExternalDataProperty(externalData, propertyCode, newValue);
         flushSearchIndices();
         assertCorrectDatasetsFound(criteria, DSLoc.XXX_YYY_ZZZ);
-        TestInitializer.restoreSearchIndex();
     }
 
     private void flushSearchIndices()

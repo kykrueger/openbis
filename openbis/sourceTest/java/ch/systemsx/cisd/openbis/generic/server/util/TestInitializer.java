@@ -152,10 +152,6 @@ public class TestInitializer
             firstTry = false;
         }
 
-        // make sure the search index is up-to-date
-        // and in the right place when we run tests
-        restoreSearchIndex();
-
         System.setProperty("database.create-from-scratch", String.valueOf(getCreateDBFromScratch()));
         System.setProperty("database.kind", getDBKind());
         System.setProperty("script-folder", scriptFolder);
@@ -163,38 +159,6 @@ public class TestInitializer
         System.setProperty("hibernate.search.index-base", LUCENE_INDEX_PATH);
         System.setProperty("hibernate.search.worker.execution", "sync");
 
-    }
-
-    // create a fresh copy of the Lucene index
-    public static void restoreSearchIndex()
-    {
-        File targetPath = new File(TestInitializer.LUCENE_INDEX_PATH).getAbsoluteFile();
-        FileUtilities.deleteRecursively(targetPath);
-
-        operationLog.info("Removed Lucene index from '" + targetPath + "'.");
-
-        targetPath.mkdirs();
-        File srcPath = new File(LUCENE_INDEX_TEMPLATE_PATH).getAbsoluteFile();
-        try
-        {
-            FileUtils.copyDirectory(srcPath, targetPath, new FileFilter()
-                {
-                    @Override
-                    public boolean accept(File path)
-                    {
-                        return false == path.getName().equalsIgnoreCase(".svn");
-                    }
-                });
-            new File(srcPath, FullTextIndexerRunnable.FULL_TEXT_INDEX_MARKER_FILENAME)
-                    .createNewFile();
-
-            operationLog.info("Copied Lucene index from '" + srcPath + "' to '" + targetPath + "'.");
-
-        } catch (IOException ex)
-        {
-            operationLog.error("Could not copy Lucene index from '" + srcPath + "' to '" + targetPath + "'.", ex);
-            throw new IOExceptionUnchecked(ex);
-        }
     }
 
     public static boolean getCreateDBFromScratch()
