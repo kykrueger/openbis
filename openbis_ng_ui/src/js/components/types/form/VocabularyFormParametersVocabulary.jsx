@@ -18,7 +18,8 @@ class VocabularyFormParametersVocabulary extends React.PureComponent {
     this.state = {}
     this.references = {
       code: React.createRef(),
-      description: React.createRef()
+      description: React.createRef(),
+      urlTemplate: React.createRef()
     }
     this.handleChange = this.handleChange.bind(this)
     this.handleFocus = this.handleFocus.bind(this)
