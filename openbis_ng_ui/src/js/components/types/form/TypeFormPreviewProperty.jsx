@@ -2,6 +2,7 @@ import _ from 'lodash'
 import React from 'react'
 import { Draggable } from 'react-beautiful-dnd'
 import { withStyles } from '@material-ui/core/styles'
+import Message from '@src/js/components/common/form/Message.jsx'
 import CheckboxField from '@src/js/components/common/form/CheckboxField.jsx'
 import TextField from '@src/js/components/common/form/TextField.jsx'
 import SelectField from '@src/js/components/common/form/SelectField.jsx'
@@ -240,8 +241,28 @@ class TypeFormPreviewProperty extends React.PureComponent {
     } else if (dataType === openbis.DataType.MATERIAL) {
       return this.renderMaterialProperty()
     } else {
-      return <span>Data type not supported yet</span>
+      if (dataType) {
+        return this.renderPropertyNotSupported()
+      } else {
+        return this.renderPropertyWithoutDataType()
+      }
     }
+  }
+
+  renderPropertyNotSupported() {
+    return (
+      <Message type='warning'>
+        The selected data type is not supported yet.
+      </Message>
+    )
+  }
+
+  renderPropertyWithoutDataType() {
+    return (
+      <Message type='info'>
+        Please select a data type to display the field preview.
+      </Message>
+    )
   }
 
   renderVarcharProperty() {
@@ -386,7 +407,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
   }
 
   getDataType() {
-    return this.props.property.dataType.value
+    return this.props.property.dataType.value || EMPTY
   }
 
   getMandatory() {

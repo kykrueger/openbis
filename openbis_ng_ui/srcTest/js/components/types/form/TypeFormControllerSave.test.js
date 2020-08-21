@@ -86,7 +86,7 @@ describe('TypeFormController.handleSave', () => {
         {
           id: 'property-0',
           code: { value: null },
-          dataType: { value: openbis.DataType.VARCHAR },
+          dataType: { value: null },
           label: { value: null },
           description: { value: null },
           errors: 0
@@ -116,10 +116,10 @@ describe('TypeFormController.handleSave', () => {
         {
           id: 'property-0',
           code: { value: null, error: 'Code cannot be empty' },
-          dataType: { value: openbis.DataType.VARCHAR },
+          dataType: { value: null, error: 'Data Type cannot be empty' },
           label: { value: null, error: 'Label cannot be empty' },
           description: { value: null, error: 'Description cannot be empty' },
-          errors: 3
+          errors: 4
         }
       ]
     })
@@ -221,10 +221,21 @@ describe('TypeFormController.handleSave', () => {
 
     controller.handleAddSection()
     controller.handleAddProperty()
+
+    controller.handleChange('property', {
+      id: 'property-0',
+      field: 'scope',
+      value: scope
+    })
     controller.handleChange('property', {
       id: 'property-0',
       field: 'code',
       value: 'NEW_CODE'
+    })
+    controller.handleChange('property', {
+      id: 'property-0',
+      field: 'dataType',
+      value: 'VARCHAR'
     })
     controller.handleChange('property', {
       id: 'property-0',
@@ -235,11 +246,6 @@ describe('TypeFormController.handleSave', () => {
       id: 'property-0',
       field: 'description',
       value: 'NEW_DESCRIPTION'
-    })
-    controller.handleChange('property', {
-      id: 'property-0',
-      field: 'scope',
-      value: scope
     })
 
     await controller.handleSave()
