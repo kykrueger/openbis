@@ -42,19 +42,18 @@ export default class TypeFormControllerLoad extends PageControllerLoad {
 
   async _loadType(object, isNew) {
     let loadedType = null
-    let loadedUsages = null
-    let loadedAssignments = null
 
     if (!isNew) {
-      ;[loadedType, loadedUsages, loadedAssignments] = await Promise.all([
-        this.facade.loadType(object),
-        this.facade.loadUsages(object),
-        this.facade.loadAssignments(object)
-      ])
+      loadedType = await this.facade.loadType(object)
       if (!loadedType) {
         return
       }
     }
+
+    let [loadedUsages, loadedAssignments] = await Promise.all([
+      this.facade.loadUsages(object),
+      this.facade.loadAssignments(object)
+    ])
 
     const sections = []
     const properties = []
