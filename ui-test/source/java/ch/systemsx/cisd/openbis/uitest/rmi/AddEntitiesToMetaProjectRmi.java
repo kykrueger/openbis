@@ -106,7 +106,6 @@ public class AddEntitiesToMetaProjectRmi implements Command<Void>
         openbis.addToMetaproject(session,
                 new MetaprojectIdentifierId("/" + user.getName() + "/" + metaProject.getName()),
                 ids);
-        console.waitFor("REINDEX of", "took");
         return null;
     }
 }
