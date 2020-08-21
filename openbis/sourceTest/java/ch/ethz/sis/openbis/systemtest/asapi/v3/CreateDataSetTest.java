@@ -70,7 +70,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagCode;
-import ch.ethz.sis.openbis.systemtest.asapi.v3.index.ReindexingState;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.common.test.AssertionUtil;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind;
@@ -256,11 +255,10 @@ public class CreateDataSetTest extends AbstractDataSetTest
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
 
         DataSetCreation dataSet = physicalDataSetCreation();
-        ReindexingState state = new ReindexingState();
 
         List<DataSetPermId> permIds = v3api.createDataSets(sessionToken, Arrays.asList(dataSet));
 
-        assertDataSetsReindexed(state, permIds.get(0).getPermId());
+        assertDataSetsExists(permIds.get(0).getPermId());
         return permIds;
     }
 

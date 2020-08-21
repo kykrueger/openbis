@@ -67,7 +67,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.ITagId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagCode;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.FreezingFlags;
-import ch.ethz.sis.openbis.systemtest.asapi.v3.index.ReindexingState;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.common.test.AssertionUtil;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE.EntityType;
@@ -104,7 +103,6 @@ public class UpdateSampleTest extends AbstractSampleTest
     public void testUpdateBiggerThanPostgresDriverArgumentsLimitWithIndexCheck()
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
-        ReindexingState state = new ReindexingState();
         List<SampleUpdate> updates = new ArrayList<SampleUpdate>();
         for (int i = 0; i < 40000; i++)
         {
@@ -116,14 +114,13 @@ public class UpdateSampleTest extends AbstractSampleTest
 
         v3api.updateSamples(sessionToken, updates);
 
-        assertSamplesReindexed(state, "200811050945092-976");
+        assertSamplesExists("200811050945092-976");
     }
 
     @Test
     public void testUpdateWithIndexCheck()
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
-        ReindexingState state = new ReindexingState();
 
         SampleUpdate update = new SampleUpdate();
         update.setSampleId(new SamplePermId("200811050945092-976"));
@@ -131,7 +128,7 @@ public class UpdateSampleTest extends AbstractSampleTest
 
         v3api.updateSamples(sessionToken, Arrays.asList(update));
 
-        assertSamplesReindexed(state, "200811050945092-976");
+        assertSamplesExists("200811050945092-976");
     }
 
     @Test
@@ -1144,11 +1141,9 @@ public class UpdateSampleTest extends AbstractSampleTest
         containerUpdate.setSampleId(containerId);
         containerUpdate.getComponentIds().add(componentId);
 
-        ReindexingState state = new ReindexingState();
-
         v3api.updateSamples(sessionToken, Arrays.asList(containerUpdate));
 
-        assertSamplesReindexed(state, containerId.getPermId(), componentId.getPermId());
+        assertSamplesExists(containerId.getPermId(), componentId.getPermId());
     }
 
     @Test

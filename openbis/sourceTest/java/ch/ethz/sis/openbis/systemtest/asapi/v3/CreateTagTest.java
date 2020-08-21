@@ -34,7 +34,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.fetchoptions.TagFetchOptions
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.ITagId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagCode;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagPermId;
-import ch.ethz.sis.openbis.systemtest.asapi.v3.index.ReindexingState;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.openbis.systemtest.authorization.ProjectAuthorizationUser;
 
@@ -118,8 +117,6 @@ public class CreateTagTest extends AbstractTest
     @Test
     public void testCreateWithExperiments()
     {
-        ReindexingState state = new ReindexingState();
-
         final ExperimentIdentifier experimentId = new ExperimentIdentifier("/CISD/NEMO/EXP10");
 
         TagCreation creation = new TagCreation();
@@ -129,7 +126,7 @@ public class CreateTagTest extends AbstractTest
         Tag tag = createTag(TEST_USER, PASSWORD, creation);
 
         assertExperimentIdentifiers(tag.getExperiments(), experimentId.getIdentifier());
-        assertExperimentsReindexed(state, "200811050952663-1029");
+        assertExperimentsExists("200811050952663-1029");
     }
 
     @Test
@@ -173,8 +170,6 @@ public class CreateTagTest extends AbstractTest
     @Test
     public void testCreateWithSamples()
     {
-        ReindexingState state = new ReindexingState();
-
         final SampleIdentifier sampleId = new SampleIdentifier("/CISD/CP-TEST-1");
 
         TagCreation creation = new TagCreation();
@@ -184,7 +179,7 @@ public class CreateTagTest extends AbstractTest
         Tag tag = createTag(TEST_USER, PASSWORD, creation);
 
         assertSampleIdentifiers(tag.getSamples(), sampleId.getIdentifier());
-        assertSamplesReindexed(state, "200902091219327-1025");
+        assertSamplesExists("200902091219327-1025");
     }
 
     @Test
@@ -228,8 +223,6 @@ public class CreateTagTest extends AbstractTest
     @Test
     public void testCreateWithDataSets()
     {
-        ReindexingState state = new ReindexingState();
-
         final DataSetPermId dataSetId = new DataSetPermId("20120619092259000-22");
 
         TagCreation creation = new TagCreation();
@@ -239,7 +232,7 @@ public class CreateTagTest extends AbstractTest
         Tag tag = createTag(TEST_USER, PASSWORD, creation);
 
         assertDataSetCodes(tag.getDataSets(), "20120619092259000-22");
-        assertDataSetsReindexed(state, "20120619092259000-22");
+        assertDataSetsExists("20120619092259000-22");
     }
 
     @Test
@@ -284,8 +277,6 @@ public class CreateTagTest extends AbstractTest
     @Test
     public void testCreateWithMaterials()
     {
-        ReindexingState state = new ReindexingState();
-
         MaterialPermId materialId = new MaterialPermId("AD3", "VIRUS");
 
         TagCreation creation = new TagCreation();
@@ -295,7 +286,7 @@ public class CreateTagTest extends AbstractTest
         Tag tag = createTag(TEST_USER, PASSWORD, creation);
 
         assertMaterialPermIds(tag.getMaterials(), materialId);
-        assertMaterialsReindexed(state, materialId);
+        assertMaterialsExists(materialId);
     }
 
     @Test

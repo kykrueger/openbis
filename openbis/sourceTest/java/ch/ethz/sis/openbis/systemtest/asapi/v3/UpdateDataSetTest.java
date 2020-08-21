@@ -57,7 +57,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.Tag;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagCode;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.FreezingFlags;
-import ch.ethz.sis.openbis.systemtest.asapi.v3.index.ReindexingState;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.common.test.AssertionUtil;
@@ -74,7 +73,6 @@ public class UpdateDataSetTest extends AbstractDataSetTest
     public void testUpdateWithIndexCheck()
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
-        ReindexingState state = new ReindexingState();
 
         DataSetUpdate update = new DataSetUpdate();
         update.setDataSetId(new DataSetPermId("20081105092159111-1"));
@@ -82,7 +80,7 @@ public class UpdateDataSetTest extends AbstractDataSetTest
 
         v3api.updateDataSets(sessionToken, Arrays.asList(update));
 
-        assertDataSetsReindexed(state, "20081105092159111-1");
+        assertDataSetsExists("20081105092159111-1");
     }
 
     @Test
@@ -384,8 +382,6 @@ public class UpdateDataSetTest extends AbstractDataSetTest
         update.setDataSetId(containerId);
         update.setExperimentId(experimentAfterId);
 
-        ReindexingState state = new ReindexingState();
-
         v3api.updateDataSets(sessionToken, Collections.singletonList(update));
 
         result = v3api.getDataSets(sessionToken, Collections.singletonList(containerId), fe).get(containerId);
@@ -398,7 +394,7 @@ public class UpdateDataSetTest extends AbstractDataSetTest
             assertEquals(component.getExperiment().getPermId(), experimentAfterId);
         }
 
-        assertDataSetsReindexed(state, containerId.getPermId(), component1Id.getPermId(), component2Id.getPermId());
+        assertDataSetsExists(containerId.getPermId(), component1Id.getPermId(), component2Id.getPermId());
     }
 
     @Test

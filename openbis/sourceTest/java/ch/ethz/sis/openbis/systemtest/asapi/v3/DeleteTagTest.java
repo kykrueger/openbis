@@ -37,7 +37,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.fetchoptions.TagFetchOptions
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.ITagId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagCode;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagPermId;
-import ch.ethz.sis.openbis.systemtest.asapi.v3.index.ReindexingState;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.openbis.systemtest.authorization.ProjectAuthorizationUser;
 
@@ -109,8 +108,6 @@ public class DeleteTagTest extends AbstractDeletionTest
     @Test
     public void testDeleteWithNotEmptyTag()
     {
-        ReindexingState state = new ReindexingState();
-
         ExperimentPermId experimentId = new ExperimentPermId("200811050952663-1029");
         SamplePermId sampleId = new SamplePermId("200902091219327-1025");
         DataSetPermId dataSetId = new DataSetPermId("20120619092259000-22");
@@ -131,10 +128,10 @@ public class DeleteTagTest extends AbstractDeletionTest
         Tag after = deleteTag(TEST_USER, PASSWORD, before.getPermId(), options);
         assertNull(after);
 
-        assertExperimentsReindexed(state, experimentId.getPermId());
-        assertSamplesReindexed(state, sampleId.getPermId());
-        assertDataSetsReindexed(state, dataSetId.getPermId());
-        assertMaterialsReindexed(state, materialId);
+        assertExperimentsExists(experimentId.getPermId());
+        assertSamplesExists(sampleId.getPermId());
+        assertDataSetsExists(dataSetId.getPermId());
+        assertMaterialsExists(materialId);
     }
 
     @Test
