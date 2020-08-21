@@ -114,8 +114,7 @@ export default class TypeFormControllerLoad extends PageControllerLoad {
       usages: loadedUsages,
       assignments: loadedAssignments,
       removeSectionDialogOpen: false,
-      removePropertyDialogOpen: false,
-      unsavedChangesDialogOpen: false
+      removePropertyDialogOpen: false
     }))
   }
 
