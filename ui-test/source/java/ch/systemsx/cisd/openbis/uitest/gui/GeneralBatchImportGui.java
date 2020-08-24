@@ -38,9 +38,12 @@ public class GeneralBatchImportGui implements Command<Void>
 
     private ImportFile file;
 
-    public GeneralBatchImportGui(ImportFile file)
+    private final String expectedErrorMsg
+
+    public GeneralBatchImportGui(ImportFile file, final String expectedErrorMsg)
     {
         this.file = file;
+        this.expectedErrorMsg = expectedErrorMsg;
     }
 
     @Override
@@ -52,6 +55,13 @@ public class GeneralBatchImportGui implements Command<Void>
         console.setError("'General Batch Import' failed.");
         page.upload(file.getPath());
         console.waitFor("ms) register_or_update_samples_and_materials ");
+
+        if (expectedErrorMsg != null)
+        {
+            console.startBuffering();
+            console.waitFor(expectedErrorMsg);
+        }
+
         return null;
     }
 }

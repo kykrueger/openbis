@@ -117,7 +117,6 @@ public class Console extends Writer
 
                 throw new CommandNotSuccessful("Failed: " + line);
             }
-            System.out.println(String.format("Command successful. [line=%s, error=%s]", line, error));
 
             if (System.currentTimeMillis() - startTime > timeout)
             {
