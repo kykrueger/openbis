@@ -68,7 +68,8 @@ export default class VocabularyFormControllerSave extends PageControllerSave {
     return FormUtil.haveFieldsChanged(vocabulary, vocabulary.original, [
       'code',
       'description',
-      'urlTemplate'
+      'urlTemplate',
+      'chosenFromList'
     ])
   }
 
@@ -86,6 +87,7 @@ export default class VocabularyFormControllerSave extends PageControllerSave {
     creation.setCode(vocabulary.code.value)
     creation.setDescription(vocabulary.description.value)
     creation.setUrlTemplate(vocabulary.urlTemplate.value)
+    creation.setChosenFromList(vocabulary.chosenFromList.value)
     return new openbis.CreateVocabulariesOperation([creation])
   }
 
@@ -94,6 +96,7 @@ export default class VocabularyFormControllerSave extends PageControllerSave {
     update.setVocabularyId(new openbis.VocabularyPermId(vocabulary.code.value))
     update.setDescription(vocabulary.description.value)
     update.setUrlTemplate(vocabulary.urlTemplate.value)
+    update.setChosenFromList(vocabulary.chosenFromList.value)
     return new openbis.UpdateVocabulariesOperation([update])
   }
 

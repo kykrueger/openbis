@@ -67,6 +67,12 @@ async function testLoadNew() {
           value: null,
           enabled: true,
           mode: 'edit'
+        },
+        chosenFromList: {
+          label: 'Chosen from list',
+          value: true,
+          enabled: true,
+          mode: 'edit'
         }
       }
     },
@@ -155,6 +161,11 @@ async function testLoadExisting() {
           label: 'URL template',
           value: fixture.TEST_VOCABULARY_DTO.getUrlTemplate(),
           mode: 'view'
+        },
+        chosenFromList: {
+          label: 'Chosen from list',
+          value: fixture.TEST_VOCABULARY_DTO.isChosenFromList(),
+          mode: 'view'
         }
       }
     },
@@ -193,6 +204,12 @@ async function testLoadExisting() {
         urlTemplate: {
           label: 'URL template',
           value: fixture.TEST_VOCABULARY_DTO.getUrlTemplate(),
+          enabled: true,
+          mode: 'edit'
+        },
+        chosenFromList: {
+          label: 'Chosen from list',
+          value: fixture.TEST_VOCABULARY_DTO.isChosenFromList(),
           enabled: true,
           mode: 'edit'
         }
@@ -855,6 +872,12 @@ async function testRemoveTerm() {
         urlTemplate: {
           label: 'URL template',
           value: fixture.TEST_VOCABULARY_DTO.getUrlTemplate(),
+          enabled: true,
+          mode: 'edit'
+        },
+        chosenFromList: {
+          label: 'Chosen from list',
+          value: fixture.TEST_VOCABULARY_DTO.isChosenFromList(),
           enabled: true,
           mode: 'edit'
         }

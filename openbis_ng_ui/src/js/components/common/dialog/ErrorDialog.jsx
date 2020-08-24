@@ -1,7 +1,7 @@
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
+import Message from '@src/js/components/common/form/Message.jsx'
 import Button from '@src/js/components/common/form/Button.jsx'
-import profile from '@src/js/profile.js'
 import logger from '@src/js/common/logger.js'
 
 import Dialog from './Dialog.jsx'
@@ -9,6 +9,9 @@ import Dialog from './Dialog.jsx'
 const styles = theme => ({
   button: {
     marginLeft: theme.spacing(1)
+  },
+  content: {
+    whiteSpace: 'pre'
   }
 })
 
@@ -34,12 +37,17 @@ class ErrorDialog extends React.Component {
   }
 
   renderContent() {
+    const { classes } = this.props
+
     const message = this.getErrorMessage()
     const stack = this.getErrorStack()
+
     return (
-      <div>
-        {message && <div>{message}</div>}
-        {stack && <pre>{stack}</pre>}
+      <div className={classes.content}>
+        <Message type='error'>
+          {message && <div>{message}</div>}
+          {stack && <div>{stack}</div>}
+        </Message>
       </div>
     )
   }
@@ -49,52 +57,12 @@ class ErrorDialog extends React.Component {
     return (
       <div>
         <Button
-          label='Send error report'
-          styles={{ root: classes.button }}
-          href={this.getErrorMailtoHref()}
-        />
-        <Button
           label='Close'
-          type='final'
           styles={{ root: classes.button }}
           onClick={onClose}
         />
       </div>
     )
-  }
-
-  getErrorMailtoHref() {
-    const message = this.getErrorMessage()
-    const stack = this.getErrorStack()
-
-    let report =
-      'agent: ' +
-      navigator.userAgent +
-      '\n' +
-      'domain: ' +
-      location.hostname +
-      '\n' +
-      'timestamp: ' +
-      new Date() +
-      '\n' +
-      'href: ' +
-      location.href +
-      '\n' +
-      'error: ' +
-      (message ? message : '') +
-      '\n' +
-      'stack: ' +
-      (stack ? stack : '')
-
-    let href =
-      'mailto:' +
-      profile.devEmail +
-      '?subject=' +
-      encodeURIComponent('openBIS Error Report [' + location.hostname + ']') +
-      '&body=' +
-      encodeURIComponent(report)
-
-    return href
   }
 
   getErrorMessage() {
