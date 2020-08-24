@@ -16,7 +16,7 @@ const styles = {
     flexDirection: 'column',
     flex: 1,
     width: '100px',
-    zIndex: 100,
+    zIndex: 200,
     overflow: 'auto'
   },
   component: {
