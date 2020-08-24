@@ -29,8 +29,16 @@ class TypeFormPreview extends React.PureComponent {
   constructor(props) {
     super(props)
     this.state = {}
+    this.handleClick = this.handleClick.bind(this)
     this.handleDragStart = this.handleDragStart.bind(this)
     this.handleDragEnd = this.handleDragEnd.bind(this)
+  }
+
+  handleClick() {
+    const { dragging } = this.state
+    if (!dragging) {
+      this.props.onSelectionChange()
+    }
   }
 
   handleDragStart(start) {
@@ -69,7 +77,7 @@ class TypeFormPreview extends React.PureComponent {
     const { mode, classes, type, sections, preview, onChange } = this.props
 
     return (
-      <Container className={classes.container}>
+      <Container className={classes.container} onClick={this.handleClick}>
         <div className={classes.form}>
           <TypeFormPreviewHeader
             type={type}
