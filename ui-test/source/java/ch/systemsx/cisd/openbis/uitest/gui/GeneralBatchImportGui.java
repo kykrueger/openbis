@@ -38,7 +38,7 @@ public class GeneralBatchImportGui implements Command<Void>
 
     private ImportFile file;
 
-    private final String expectedErrorMsg
+    private final String expectedErrorMsg;
 
     public GeneralBatchImportGui(ImportFile file, final String expectedErrorMsg)
     {
