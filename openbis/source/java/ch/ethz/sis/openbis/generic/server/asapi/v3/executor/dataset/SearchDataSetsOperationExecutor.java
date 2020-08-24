@@ -37,7 +37,7 @@ import org.springframework.stereotype.Component;
 /**
  * @author pkupczyk
  */
-@Component
+@Component("search-data-sets-operation-executor")
 public class SearchDataSetsOperationExecutor extends SearchObjectsOperationExecutor<DataSet, Long, DataSetSearchCriteria, DataSetFetchOptions>
         implements ISearchDataSetsOperationExecutor
 {

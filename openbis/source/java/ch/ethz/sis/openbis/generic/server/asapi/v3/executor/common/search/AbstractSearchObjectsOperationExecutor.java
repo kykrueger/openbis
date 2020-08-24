@@ -220,6 +220,17 @@ public abstract class AbstractSearchObjectsOperationExecutor<OBJECT, OBJECT_PE, 
         }
     }
 
+    public Collection<Long> executeDirectSQLSearchForIds(final PersonPE personPE,
+            final CRITERIA criteria, final FETCH_OPTIONS fetchOptions)
+    {
+        final AuthorisationInformation authorisationInformation = AuthorisationInformation.getInstance(personPE,
+                authorizationConfig);
+        final Long userId = personPE.getId();
+        final Set<Long> allResultsIds = getSearchManager().searchForIDs(userId, authorisationInformation, criteria,
+                null, ID_COLUMN);
+        return sortAndPage(allResultsIds, fetchOptions);
+    }
+
     protected SearchObjectsOperationResult<OBJECT> executeDirectSQLSearch(final IOperationContext context,
             final SearchObjectsOperation<CRITERIA, FETCH_OPTIONS> operation)
     {

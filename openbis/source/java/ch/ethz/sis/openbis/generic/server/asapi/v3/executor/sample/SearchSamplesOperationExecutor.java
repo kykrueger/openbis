@@ -38,7 +38,7 @@ import org.springframework.stereotype.Component;
 /**
  * @author pkupczyk
  */
-@Component
+@Component("search-samples-operation-executor")
 public class SearchSamplesOperationExecutor extends SearchObjectsOperationExecutor<Sample, Long, SampleSearchCriteria, SampleFetchOptions>
         implements ISearchSamplesOperationExecutor
 {
