@@ -30,17 +30,12 @@ import java.util.List;
 import java.util.Set;
 
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.*;
-import org.hibernate.Session;
-import org.hibernate.search.FullTextSession;
-import org.hibernate.search.Search;
 import org.testng.AssertJUnit;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import ch.rinn.restrictions.Friend;
-import ch.systemsx.cisd.common.test.AssertionUtil;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IHibernateSearchDAO;
-import ch.systemsx.cisd.openbis.generic.server.util.TestInitializer;
 import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataSetPropertyPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EntityPropertyPE;
@@ -54,7 +49,7 @@ import ch.systemsx.cisd.openbis.generic.shared.translator.DtoConverters;
 import ch.systemsx.cisd.openbis.generic.shared.util.HibernateUtils;
 
 /**
- * Test cases for corresponding {@link HibernateSearchDAO} class.
+ * Test cases for corresponding {@link IHibernateSearchDAO} class.
  * 
  * @author Christian Ribeaud
  */
@@ -608,15 +603,7 @@ public final class HibernateSearchDAOTest extends AbstractDAOTest
         ExternalDataPE externalData = findExternalData("20081105092159111-1"); // LOC3
         String newValue = "sth";
         changeExternalDataProperty(externalData, propertyCode, newValue);
-        flushSearchIndices();
         assertCorrectDatasetsFound(criteria, DSLoc.XXX_YYY_ZZZ);
-    }
-
-    private void flushSearchIndices()
-    {
-        Session currentSession = sessionFactory.getCurrentSession();
-        FullTextSession fullTextSession = Search.getFullTextSession(currentSession);
-        fullTextSession.flushToIndexes();
     }
 
     private void flushSession()

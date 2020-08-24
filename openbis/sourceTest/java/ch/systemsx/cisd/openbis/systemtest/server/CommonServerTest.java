@@ -89,26 +89,6 @@ public class CommonServerTest extends SystemTestCase
     }
 
     @Test
-    public void testExperimentAdaptorSamples()
-    {
-        testAdaptorCommon(EntityKind.EXPERIMENT, "/CISD/DEFAULT/EXP-REUSE",
-                "experiment_adaptor_test__samples.py");
-        assertEntitiesReleased(EntityKind.EXPERIMENT, 1);
-        assertEntitiesReleased(EntityKind.SAMPLE, 14);
-        assertScrollableResultsReleased(3);
-    }
-
-    @Test
-    public void testExperimentAdaptorDataSets()
-    {
-        testAdaptorCommon(EntityKind.EXPERIMENT, "/CISD/DEFAULT/EXP-REUSE",
-                "experiment_adaptor_test__datasets.py");
-        assertEntitiesReleased(EntityKind.EXPERIMENT, 1);
-        assertEntitiesReleased(EntityKind.DATA_SET, 29);
-        assertScrollableResultsReleased(2);
-    }
-
-    @Test
     public void testSampleAdaptor()
     {
         testAdaptorCommon(EntityKind.SAMPLE, "/CISD/CP-TEST-1", "sample_adaptor_test.py");
@@ -142,27 +122,10 @@ public class CommonServerTest extends SystemTestCase
     }
 
     @Test
-    public void testSampleAdaptorDataSets()
-    {
-        testAdaptorCommon(EntityKind.SAMPLE, "/CISD/CP-TEST-3", "sample_adaptor_test__datasets.py");
-        assertEntitiesReleased(EntityKind.SAMPLE, 1);
-        assertEntitiesReleased(EntityKind.DATA_SET, 4);
-        assertScrollableResultsReleased(3);
-    }
-
-    @Test
     public void testSampleAdaptorContainer()
     {
         testAdaptorCommon(EntityKind.SAMPLE, "/CISD/CL1:A01", "sample_adaptor_test__container.py");
         assertEntitiesReleased(EntityKind.SAMPLE, 2);
-    }
-
-    @Test
-    public void testSampleAdaptorContained()
-    {
-        testAdaptorCommon(EntityKind.SAMPLE, "/CISD/CL1", "sample_adaptor_test__contained.py");
-        assertEntitiesReleased(EntityKind.SAMPLE, 5);
-        assertScrollableResultsReleased(3);
     }
 
     @Test
