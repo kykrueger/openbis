@@ -19,6 +19,7 @@ package ch.systemsx.cisd.openbis.dss.etl;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -61,7 +62,10 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v2.ISearchServic
 import ch.systemsx.cisd.openbis.dss.screening.server.plugins.jython.ScreeningJythonIngestionService;
 import ch.systemsx.cisd.openbis.dss.screening.server.plugins.jython.ScreeningPluginScriptRunnerFactory;
 import ch.systemsx.cisd.openbis.dss.shared.DssScreeningUtils;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IntegerTableCell;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.TableModel;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.TableModelColumnHeader;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.TableModelRow;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.imaging.dataaccess.IImagingReadonlyQueryDAO;
 
 /**
@@ -90,6 +94,8 @@ public class MicroscopyThumbnailsCreationTask extends AbstractMaintenanceTaskWit
             MicroscopyThumbnailsCreationTask.class);
 
     private Properties properties;
+
+    private IJythonEvaluator evaluator;
 
     private String dataSetContainerType;
 
@@ -139,23 +145,23 @@ public class MicroscopyThumbnailsCreationTask extends AbstractMaintenanceTaskWit
         SearchResult<DataSet> searchResult = getService().searchDataSets(sessionToken, searchCriteria, fetchOptions);
         List<DataSet> containerDataSets = searchResult.getObjects();
         int totalCount = searchResult.getTotalCount();
-        operationLog.info(totalCount + " found."
+        operationLog.info(totalCount + " data sets found."
                 + (totalCount > containerDataSets.size() ? " Handle the first " + containerDataSets.size() : ""));
         int numberOfCreatedThumbnailDataSets = 0;
+        evaluator = null; // allow to re-compile script
         for (DataSet containerDataSet : containerDataSets)
         {
             if (hasNoThumbnails(containerDataSet) && containerDataSet.getComponents().isEmpty() == false)
             {
                 operationLog.info("Generate thumbnails for data set " + containerDataSet.getCode());
-                createThumbnailDataSet(sessionToken, containerDataSet);
-                numberOfCreatedThumbnailDataSets++;
+                numberOfCreatedThumbnailDataSets += createThumbnailDataSet(sessionToken, containerDataSet);
             }
             updateTimeStampFile(renderTimeStampAndCode(containerDataSet.getRegistrationDate(), containerDataSet.getCode()));
         }
         operationLog.info(numberOfCreatedThumbnailDataSets + " thumbnail data sets have been created.");
     }
 
-    private void createThumbnailDataSet(String sessionToken, DataSet containerDataSet)
+    private int createThumbnailDataSet(String sessionToken, DataSet containerDataSet)
     {
         String containerCode = containerDataSet.getCode();
         IImagingReadonlyQueryDAO imageDb = getImageDb();
@@ -176,19 +182,24 @@ public class MicroscopyThumbnailsCreationTask extends AbstractMaintenanceTaskWit
                         {
                             // Populate object 'config' by the jython script based on 'imageDataSetStructure'
                             super.process(transaction, parameters, context);
-                            composeThumbnailDataSet(transaction, containerDataSet, imageDataSetStructure, config, context);
-                            return null;
+                            int numberOfThumbnailDataSets = composeThumbnailDataSet(transaction, containerDataSet,
+                                    imageDataSetStructure, config, context);
+                            return new TableModel(Arrays.asList(new TableModelColumnHeader()),
+                                    Arrays.asList(new TableModelRow(Arrays.asList(
+                                            new IntegerTableCell(numberOfThumbnailDataSets)))));
                         }
                     };
         IHierarchicalContentProvider contentProvider = getHierarchicalContentProvider();
         DataSetProcessingContext context =
                 new DataSetProcessingContext(contentProvider, null, null, null, null, null, sessionToken);
-        ingestionService.createAggregationReport(new HashMap<String, Object>(), context);
+        TableModel tableModel = ingestionService.createAggregationReport(new HashMap<String, Object>(), context);
+        return (int) ((IntegerTableCell) tableModel.getRows().get(0).getValues().get(0)).getNumber();
     }
 
-    private void composeThumbnailDataSet(IDataSetRegistrationTransactionV2 transaction, DataSet containerDataSet,
+    private int composeThumbnailDataSet(IDataSetRegistrationTransactionV2 transaction, DataSet containerDataSet,
             ImageDataSetStructure imageDataSetStructure, SimpleImageDataConfig config, DataSetProcessingContext context)
     {
+        int numberOfThumbnailDataSets = 0;
         String containerCode = containerDataSet.getCode();
         IDataSetUpdatable container = transaction.getDataSetForUpdate(containerCode);
         DataSet mainDataSet = getMainDataSet(containerDataSet);
@@ -221,6 +232,7 @@ public class MicroscopyThumbnailsCreationTask extends AbstractMaintenanceTaskWit
             {
                 dataSet.setSample(searchService.getSampleByPermId(sample.getPermId().getPermId()));
             }
+            numberOfThumbnailDataSets++;
         }
 
         List<ThumbnailsStorageFormat> thumbnailFormats = config.getImageStorageConfiguration().getThumbnailsStorageFormat();
@@ -228,6 +240,8 @@ public class MicroscopyThumbnailsCreationTask extends AbstractMaintenanceTaskWit
         {
             // to be implemented when needed
         }
+
+        return numberOfThumbnailDataSets;
     }
 
     private Properties createIngestionServiceProperties()
@@ -237,7 +251,7 @@ public class MicroscopyThumbnailsCreationTask extends AbstractMaintenanceTaskWit
         return ingestionServiceProperties;
     }
 
-    private ScreeningPluginScriptRunnerFactory createScriptRunner(ImageDataSetStructure imageDataSetStructure, 
+    private ScreeningPluginScriptRunnerFactory createScriptRunner(ImageDataSetStructure imageDataSetStructure,
             SimpleImageContainerDataConfig config)
     {
         ScreeningPluginScriptRunnerFactory scriptRunnerFactory = new ScreeningPluginScriptRunnerFactory(
@@ -247,12 +261,22 @@ public class MicroscopyThumbnailsCreationTask extends AbstractMaintenanceTaskWit
                 private static final long serialVersionUID = 1L;
 
                 @Override
-                protected IJythonEvaluator createEvaluator(String scriptString, String[] jythonPath, 
+                protected IJythonEvaluator createEvaluator(String scriptString, String[] jythonPath,
                         DataSetProcessingContext context)
                 {
-                    IJythonEvaluator evaluator = super.createEvaluator(scriptString, jythonPath, context);
+                    IJythonEvaluator evaluator = getEvaluator(scriptString, jythonPath, context);
                     evaluator.set("image_data_set_structure", imageDataSetStructure);
                     evaluator.set("image_config", config);
+                    return evaluator;
+                }
+
+                private IJythonEvaluator getEvaluator(String scriptString, String[] jythonPath,
+                        DataSetProcessingContext context)
+                {
+                    if (evaluator == null)
+                    {
+                        evaluator = super.createEvaluator(scriptString, jythonPath, context);
+                    }
                     return evaluator;
                 }
             };
