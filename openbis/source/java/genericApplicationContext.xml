@@ -82,7 +82,6 @@
 		class="ch.systemsx.cisd.openbis.generic.server.dataaccess.dynamic_property.DynamicPropertyEvaluationRunnable">
 		<constructor-arg ref="hibernate-session-factory" />
 		<constructor-arg ref="dao-factory" />
-		<constructor-arg ref="full-text-index-updater" />
 		<constructor-arg ref="dynamic-property-scheduler" />
 		<constructor-arg ref="dynamic-property-calculator-factory" />
 		<constructor-arg ref="managed-property-evaluator-factory" />
@@ -107,7 +106,6 @@
 		class="ch.systemsx.cisd.openbis.generic.server.dataaccess.db.DAOFactory">
 		<constructor-arg ref="db-configuration-context" />
 		<constructor-arg ref="hibernate-session-factory" />
-		<constructor-arg ref="hibernate-search-context" />
 		<constructor-arg ref="dynamic-property-scheduler" />
 		<constructor-arg ref="entity-history-creator" />
 		<constructor-arg ref="authorization-config" />

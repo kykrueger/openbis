@@ -51,7 +51,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.ISpaceId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.FreezingFlags;
-import ch.ethz.sis.openbis.systemtest.asapi.v3.index.ReindexingState;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE.EntityType;
 import ch.systemsx.cisd.openbis.systemtest.authorization.ProjectAuthorizationUser;
@@ -262,8 +261,6 @@ public class UpdateProjectTest extends AbstractTest
         update.setProjectId(projectId);
         update.setSpaceId(new SpacePermId("CISD"));
 
-        ReindexingState state = new ReindexingState();
-
         v3api.updateProjects(sessionToken, Arrays.asList(update));
 
         projectMap = v3api.getProjects(sessionToken, Arrays.asList(projectId), projectFetchOptions);
@@ -285,7 +282,7 @@ public class UpdateProjectTest extends AbstractTest
         }
         assertTrue(afterExperimentPermIds.size() > 0);
         assertEquals(beforeExperimentPermIds, afterExperimentPermIds);
-        assertExperimentsReindexed(state, beforeExperimentPermIds.toArray(new String[] {}));
+        assertExperimentsExists(beforeExperimentPermIds.toArray(new String[] {}));
     }
 
     @Test

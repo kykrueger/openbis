@@ -64,7 +64,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.ITagId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagCode;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagPermId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.FreezingFlags;
-import ch.ethz.sis.openbis.systemtest.asapi.v3.index.ReindexingState;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.common.test.AssertionUtil;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE.EntityType;
@@ -81,7 +80,6 @@ public class UpdateExperimentTest extends AbstractExperimentTest
     public void testUpdateWithIndexCheck()
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
-        ReindexingState state = new ReindexingState();
 
         ExperimentUpdate experiment = new ExperimentUpdate();
         experiment.setExperimentId(new ExperimentPermId("200811050951882-1028"));
@@ -89,7 +87,7 @@ public class UpdateExperimentTest extends AbstractExperimentTest
 
         v3api.updateExperiments(sessionToken, Arrays.asList(experiment));
 
-        assertExperimentsReindexed(state, "200811050951882-1028");
+        assertExperimentsExists("200811050951882-1028");
     }
 
     @Test

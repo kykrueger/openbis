@@ -31,7 +31,6 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.search.annotations.ContainedIn;
 
 import ch.systemsx.cisd.openbis.generic.shared.IServer;
 
@@ -76,7 +75,6 @@ public class DataSetPropertyPE extends EntityPropertyWithSampleDataTypePE
     @NotNull(message = ValidationMessages.DATA_NOT_NULL_MESSAGE)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = ColumnNames.DATA_SET_COLUMN)
-    @ContainedIn
     public DataPE getEntity()
     {
         return (DataPE) entity;

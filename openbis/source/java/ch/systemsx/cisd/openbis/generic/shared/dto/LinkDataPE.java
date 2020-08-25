@@ -28,9 +28,6 @@ import javax.persistence.Transient;
 
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
-import org.hibernate.search.annotations.ClassBridge;
-import org.hibernate.search.annotations.Indexed;
-import org.hibernate.search.annotations.IndexedEmbedded;
 
 import ch.systemsx.cisd.openbis.generic.shared.IServer;
 import ch.systemsx.cisd.openbis.generic.shared.dto.hibernate.SearchFieldConstants;
@@ -41,8 +38,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.hibernate.SearchFieldConstant
 @Entity
 @Table(name = TableNames.LINK_DATA_TABLE)
 @PrimaryKeyJoinColumn(name = ColumnNames.ID_COLUMN)
-@Indexed(index = "DataPE")
-@ClassBridge(impl = LinkDataGlobalSearchBridge.class)
 public class LinkDataPE extends DataPE
 {
     private static final long serialVersionUID = IServer.VERSION;
@@ -51,7 +46,6 @@ public class LinkDataPE extends DataPE
 
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "dataSet", orphanRemoval = true)
     @Fetch(FetchMode.SUBSELECT)
-    @IndexedEmbedded(prefix = SearchFieldConstants.PREFIX_CONTENT_COPY)
     public Set<ContentCopyPE> getContentCopies()
     {
         return contentCopies;

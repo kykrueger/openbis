@@ -82,8 +82,6 @@ public class CreateMaterialRmi implements Command<Material>
         MaterialIdentifier identifier = new MaterialIdentifier(material.getCode(), type.getCode());
         ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material materialInfo 
                 = commonServer.getMaterialInfo(session, identifier);
-        console.waitFor("REINDEX of 1 ch.systemsx.cisd.openbis.generic.shared.dto.MaterialPEs [" 
-                + materialInfo.getId() + "] took");
 
         return material;
     }

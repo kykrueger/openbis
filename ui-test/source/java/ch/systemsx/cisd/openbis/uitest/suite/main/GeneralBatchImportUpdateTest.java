@@ -45,7 +45,7 @@ public class GeneralBatchImportUpdateTest extends MainSuite
         create(in(file), anUpdateOf(sample).settingProperty(propertyType, newValue),
                 IdentifiedBy.SPACE_AND_CODE);
 
-        generalBatchImport(file);
+        generalBatchImport(file, null);
 
         assertThat(browserEntryOf(sample), containsValue(propertyType.getLabel(), newValue));
     }
@@ -66,7 +66,7 @@ public class GeneralBatchImportUpdateTest extends MainSuite
         create(in(file), anUpdateOf(sample).settingProperty(propertyType, newValue),
                 IdentifiedBy.CODE);
 
-        generalBatchImport(file);
+        generalBatchImport(file, null);
 
         assertThat(browserEntryOf(sample), containsValue(propertyType.getLabel(), newValue));
     }
@@ -85,7 +85,7 @@ public class GeneralBatchImportUpdateTest extends MainSuite
         create(in(file), anUpdateOf(sampleInHomeSpace).settingProperty(propertyType, newValue),
                 IdentifiedBy.CODE);
 
-        as(user(withHomeSpace), generalBatchImport(file));
+        as(user(withHomeSpace), generalBatchImport(file, null));
 
         assertThat(browserEntryOf(sampleInHomeSpace), containsValue(propertyType.getLabel(),
                 newValue));
@@ -109,7 +109,7 @@ public class GeneralBatchImportUpdateTest extends MainSuite
         create(in(file), anUpdateOf(component).settingProperty(propertyType, newValue),
                 IdentifiedBy.SPACE_AND_CODE_AND_SUBCODE);
 
-        generalBatchImport(file);
+        generalBatchImport(file, null);
 
         assertThat(browserEntryOf(component), containsValue(propertyType.getLabel(), newValue));
         assertThat(browserEntryOf(component), hasContainer(container));
@@ -133,7 +133,7 @@ public class GeneralBatchImportUpdateTest extends MainSuite
         create(in(file), anUpdateOf(component).settingProperty(propertyType, newValue),
                 IdentifiedBy.SPACE_AND_CODE);
 
-        generalBatchImport(file);
+        generalBatchImport(file, null);
 
         assertThat(browserEntryOf(component), containsValue(propertyType.getLabel(), newValue));
         assertThat(browserEntryOf(component), hasContainer(container));

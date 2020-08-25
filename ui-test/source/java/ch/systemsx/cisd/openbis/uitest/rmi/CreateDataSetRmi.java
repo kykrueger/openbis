@@ -80,8 +80,6 @@ public class CreateDataSetRmi implements Command<DataSet>
         if (false == external)
         {
             AbstractExternalData ds = etlService.tryGetDataSet(session, code);
-            console.waitFor("REINDEX of 1 ch.systemsx.cisd.openbis.generic.shared.dto.DataPEs [" 
-                    + ds.getId() + "] took");
         }
         return new DataSet()
             {

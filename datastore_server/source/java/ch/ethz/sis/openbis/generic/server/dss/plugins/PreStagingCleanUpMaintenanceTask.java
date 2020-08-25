@@ -79,6 +79,7 @@ public class PreStagingCleanUpMaintenanceTask implements IMaintenanceTask
     @Override
     public void execute()
     {
+        long now = getTimeProvider().getTimeInMilliseconds();
         File[] shares = SegmentedStoreUtils.getShares(getStoreRoot());
         for (File share : shares)
         {
@@ -91,7 +92,7 @@ public class PreStagingCleanUpMaintenanceTask implements IMaintenanceTask
                     try
                     {
                         Date date = new SimpleDateFormat("yyyy-MM-dd").parse(dateStamp);
-                        if (date.getTime() + minimumAge < getTimeProvider().getTimeInMilliseconds())
+                        if (date.getTime() + minimumAge < now)
                         {
                             FileUtilities.deleteRecursively(file);
                             operationLog.info("Stale folder deleted: " + file.getAbsolutePath());

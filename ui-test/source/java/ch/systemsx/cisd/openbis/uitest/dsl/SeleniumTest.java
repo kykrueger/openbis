@@ -1036,9 +1036,9 @@ public abstract class SeleniumTest
         openbis.execute(new RegisterSampleBatchGui(samples));
     }
 
-    public Void generalBatchImport(GeneralBatchImportFile file)
+    public Void generalBatchImport(GeneralBatchImportFile file, final String expectedErrorMsg)
     {
-        openbis.execute(new GeneralBatchImportGui(file));
+        openbis.execute(new GeneralBatchImportGui(file, expectedErrorMsg));
         return null;
     }
 

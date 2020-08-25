@@ -16,25 +16,10 @@
 
 package ch.systemsx.cisd.openbis.generic.shared.dto.hibernate;
 
-import org.hibernate.search.bridge.builtin.LongBridge;
-
 /**
  * @author pkupczyk
  */
-public class NullBridge extends LongBridge
+public class NullBridge
 {
-
     public static final String NULL = "NULL";
-
-    @Override
-    public String objectToString(Object object)
-    {
-        return object == null ? NULL : super.objectToString(object);
-    }
-
-    @Override
-    public Object stringToObject(String stringValue)
-    {
-        return NULL.equals(stringValue) ? null : super.stringToObject(stringValue);
-    }
 }

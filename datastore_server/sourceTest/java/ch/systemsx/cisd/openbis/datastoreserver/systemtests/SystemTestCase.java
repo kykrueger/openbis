@@ -400,7 +400,6 @@ public abstract class SystemTestCase extends AssertJUnit
 
     protected void waitUntilIndexUpdaterIsIdle()
     {
-        UpdateUtils.waitUntilIndexUpdaterIsIdle(applicationContext, operationLog);
     }
 
     @SuppressWarnings("unchecked")

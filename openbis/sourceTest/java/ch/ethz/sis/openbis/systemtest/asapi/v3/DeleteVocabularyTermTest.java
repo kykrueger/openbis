@@ -38,7 +38,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.IVocabularyTermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.VocabularyPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.VocabularyTermPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.search.VocabularyTermSearchCriteria;
-import ch.ethz.sis.openbis.systemtest.asapi.v3.index.ReindexingState;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 
@@ -316,7 +315,6 @@ public class DeleteVocabularyTermTest extends AbstractVocabularyTermTest
     public void testReplaceTermUsedInExperimentProperty()
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
-        ReindexingState state = new ReindexingState();
 
         String vocabularyCode = "GENDER";
         String experimentPermId = "200811050951882-1028";
@@ -343,14 +341,13 @@ public class DeleteVocabularyTermTest extends AbstractVocabularyTermTest
         terms = searchTerms(vocabularyCode);
         assertVocabularyTermPermIds(terms, termIdFemale);
 
-        assertExperimentsReindexed(state, experimentPermId, "200811050952663-1029", "200811050952663-1030");
+        assertExperimentsExists(experimentPermId, "200811050952663-1029", "200811050952663-1030");
     }
 
     @Test
     public void testReplaceTermUsedInSampleProperty()
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
-        ReindexingState state = new ReindexingState();
 
         String vocabularyCode = "ORGANISM";
         String samplePermId = "200902091219327-1025";
@@ -380,14 +377,13 @@ public class DeleteVocabularyTermTest extends AbstractVocabularyTermTest
         terms = searchTerms(vocabularyCode);
         assertVocabularyTermPermIds(terms, termIdRat, termIdDog, termIdGorilla, termIdFly);
 
-        assertSamplesReindexed(state, samplePermId);
+        assertSamplesExists(samplePermId);
     }
 
     @Test
     public void testReplaceTermUsedInDataSetProperty()
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
-        ReindexingState state = new ReindexingState();
 
         String vocabularyCode = "GENDER";
         String dataSetPermId = "20081105092159111-1";
@@ -414,14 +410,13 @@ public class DeleteVocabularyTermTest extends AbstractVocabularyTermTest
         terms = searchTerms(vocabularyCode);
         assertVocabularyTermPermIds(terms, termIdMale);
 
-        assertDataSetsReindexed(state, dataSetPermId);
+        assertDataSetsExists(dataSetPermId);
     }
 
     @Test
     public void testReplaceTermUsedInMaterialProperty()
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
-        ReindexingState state = new ReindexingState();
 
         String vocabularyCode = "ORGANISM";
         String materialCode = "BACTERIUM-X";
@@ -452,7 +447,7 @@ public class DeleteVocabularyTermTest extends AbstractVocabularyTermTest
         terms = searchTerms(vocabularyCode);
         assertVocabularyTermPermIds(terms, termIdRat, termIdDog, termIdHuman, termIdGorilla);
 
-        assertMaterialsReindexed(state, new MaterialPermId(materialCode, materialTypeCode));
+        assertMaterialsExists(new MaterialPermId(materialCode, materialTypeCode));
     }
 
     @Test

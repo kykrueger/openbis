@@ -36,14 +36,6 @@ import javax.validation.constraints.NotNull;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-import org.hibernate.search.annotations.ClassBridge;
-import org.hibernate.search.annotations.ContainedIn;
-import org.hibernate.search.annotations.Index;
-import org.hibernate.search.annotations.Store;
-import org.hibernate.search.bridge.FieldBridge;
-import org.hibernate.search.bridge.LuceneOptions;
 import org.hibernate.validator.constraints.Length;
 
 import ch.rinn.restrictions.Private;
@@ -51,7 +43,6 @@ import ch.systemsx.cisd.common.reflection.ModifiedShortPrefixToStringStyle;
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.GenericConstants;
 import ch.systemsx.cisd.openbis.generic.shared.IServer;
 import ch.systemsx.cisd.openbis.generic.shared.basic.IIdHolder;
-import ch.systemsx.cisd.openbis.generic.shared.dto.hibernate.SearchFieldConstants;
 import ch.systemsx.cisd.openbis.generic.shared.util.EqualsHashUtils;
 
 /**
@@ -67,7 +58,6 @@ import ch.systemsx.cisd.openbis.generic.shared.util.EqualsHashUtils;
                 ColumnNames.VERSION_COLUMN }),
         @UniqueConstraint(columnNames = { ColumnNames.PROJECT_COLUMN, ColumnNames.FILE_NAME_COLUMN,
                 ColumnNames.VERSION_COLUMN }) })
-@ClassBridge(impl = AttachmentPE.AttachmentSearchBridge.class, index = Index.YES, store = Store.NO)
 public class AttachmentPE extends HibernateAbstractRegistrationHolder implements Serializable,
         Comparable<AttachmentPE>, IIdHolder
 {
@@ -101,43 +91,6 @@ public class AttachmentPE extends HibernateAbstractRegistrationHolder implements
     private String description;
 
     private String title;
-
-    /**
-     * This bridge allows to save in the search index not only the content of the attachment, but also corresponding file name and version.
-     */
-    public static class AttachmentSearchBridge implements FieldBridge
-    {
-        @Override
-        public void set(String name, Object/* AttachmentPE */ value,
-                Document/* Lucene document */ document, LuceneOptions luceneOptions)
-        {
-            AttachmentPE attachment = (AttachmentPE) value;
-            String attachmentName = attachment.getFileName();
-
-            String attachmentNameFieldName = name + SearchFieldConstants.FILE_NAME;
-            String attachmentTitleFieldName = name + SearchFieldConstants.FILE_TITLE;
-            String attachmentDescriptionFieldName = name + SearchFieldConstants.FILE_DESCRIPTION;
-
-            document.add(createField(attachmentNameFieldName, attachmentName, luceneOptions));
-            if (attachment.getTitle() != null && attachment.getTitle().length() > 0)
-            {
-                document.add(createField(attachmentTitleFieldName, attachment.getTitle() + " (" + attachmentName + ")", luceneOptions));
-            }
-            if (attachment.getDescription() != null && attachment.getDescription().length() > 0)
-            {
-
-                document.add(createField(attachmentDescriptionFieldName, attachment.getDescription() + " (" + attachmentName + ")",
-                        luceneOptions));
-            }
-        }
-
-        private static Field createField(String name, String value, LuceneOptions luceneOptions)
-        {
-            return new Field(name, (value == null) ? "" : value, Field.Store.YES,
-                    luceneOptions.getIndex());
-        }
-
-    }
 
     /**
      * Returns the file name of the property or <code>null</code>.
@@ -184,8 +137,6 @@ public class AttachmentPE extends HibernateAbstractRegistrationHolder implements
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = ColumnNames.EXPERIMENT_COLUMN, updatable = false)
     @Private
-    // for Hibernate and bean conversion only
-    @ContainedIn
     public ExperimentPE getExperimentParentInternal()
     {
         return experimentParent;
@@ -308,8 +259,6 @@ public class AttachmentPE extends HibernateAbstractRegistrationHolder implements
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = ColumnNames.SAMPLE_COLUMN, updatable = false)
     @Private
-    // for Hibernate and bean conversion only
-    @ContainedIn
     public SamplePE getSampleParentInternal()
     {
         return sampleParent;
@@ -341,8 +290,6 @@ public class AttachmentPE extends HibernateAbstractRegistrationHolder implements
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = ColumnNames.PROJECT_COLUMN, updatable = false)
     @Private
-    // for Hibernate and bean conversion only
-    @ContainedIn
     public ProjectPE getProjectParentInternal()
     {
         return projectParent;

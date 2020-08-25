@@ -252,7 +252,7 @@ public abstract class AbstractQueryFacadeTest extends SystemTestCase
             {
                 if (code.equalsIgnoreCase(sample.getCode()))
                 {
-                    waitUntilDataSetImported(new ContainsCondition("REINDEX " + SamplePE.class.getName() + ": [" + sample.getId() + "]"));
+                    waitUntilDataSetImported(new ContainsCondition(SamplePE.class.getName() + ": [" + sample.getId() + "]"));
                     foundSample = true;
                 }
             }

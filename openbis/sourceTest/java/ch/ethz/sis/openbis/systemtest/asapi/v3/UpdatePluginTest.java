@@ -27,7 +27,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.Plugin;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.fetchoptions.PluginFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.id.PluginPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.update.PluginUpdate;
-import ch.ethz.sis.openbis.systemtest.asapi.v3.index.ReindexingState;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
 
 /**
@@ -72,7 +71,6 @@ public class UpdatePluginTest extends AbstractTest
         update.setDescription("test");
         update.setAvailable(true);
         update.setScript("42");
-        ReindexingState state = new ReindexingState();
 
         // When
         v3api.updatePlugins(sessionToken, Arrays.asList(update));
@@ -84,7 +82,7 @@ public class UpdatePluginTest extends AbstractTest
         assertEquals(plugin.getName(), "code");
         assertEquals(plugin.getScript(), update.getScript().getValue());
         assertEquals(plugin.isAvailable(), true);
-        assertSamplesReindexed(state, "200902091219327-1053");
+        assertSamplesExists("200902091219327-1053");
 
         v3api.logout(sessionToken);
     }

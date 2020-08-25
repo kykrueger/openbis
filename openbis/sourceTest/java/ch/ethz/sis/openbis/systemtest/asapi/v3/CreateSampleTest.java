@@ -52,7 +52,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.Tag;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.ITagId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagPermId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.batch.Batch;
-import ch.ethz.sis.openbis.systemtest.asapi.v3.index.ReindexingState;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.common.test.AssertionUtil;
 import ch.systemsx.cisd.openbis.systemtest.authorization.ProjectAuthorizationUser;
@@ -140,11 +139,10 @@ public class CreateSampleTest extends AbstractSampleTest
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
 
         SampleCreation sample = sampleCreation("TO_BE_REINDEXED");
-        ReindexingState state = new ReindexingState();
 
         List<SamplePermId> permIds = v3api.createSamples(sessionToken, Arrays.asList(sample));
 
-        assertSamplesReindexed(state, permIds.get(0).getPermId());
+        assertSamplesExists(permIds.get(0).getPermId());
     }
 
     @Test
@@ -1180,13 +1178,11 @@ public class CreateSampleTest extends AbstractSampleTest
         final SampleCreation creation = sampleCreation("CISD", "HAS_COMPONENT");
         creation.setComponentIds(Collections.singletonList(componentId));
 
-        ReindexingState state = new ReindexingState();
-
         List<SamplePermId> containerIds = v3api.createSamples(sessionToken, Collections.singletonList(creation));
         assertEquals(containerIds.size(), 1);
         SamplePermId containerId = containerIds.get(0);
 
-        assertSamplesReindexed(state, containerId.getPermId(), componentId.getPermId());
+        assertSamplesExists(containerId.getPermId(), componentId.getPermId());
     }
 
     @Test
