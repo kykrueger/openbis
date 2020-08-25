@@ -102,17 +102,14 @@ public class UserManagementMaintenanceTask extends AbstractMaintenanceTask
         UserManager userManager = createUserManager(config, logger, report);
         for (UserGroup group : config.getGroups())
         {
-            if (addGroup(userManager, group) == false)
-            {
-                return;
-            }
+            addGroup(userManager, group);
         }
         userManager.manage();
         handleReport(report);
         operationLog.info("finished");
     }
 
-    private boolean addGroup(UserManager userManager, UserGroup group)
+    private void addGroup(UserManager userManager, UserGroup group)
     {
         String key = group.getKey();
         if (shareIdsMappingFile != null)
@@ -120,8 +117,8 @@ public class UserManagementMaintenanceTask extends AbstractMaintenanceTask
             List<String> shareIds = group.getShareIds();
             if (shareIds == null || shareIds.isEmpty())
             {
-                operationLog.error("No shareIds specified for group '" + key + "'. Task aborted.");
-                return false;
+                operationLog.warn("Group '" + key + "' skipped because no shareIds specified.");
+                return;
             }
         }
         Map<String, Principal> principalsByUserId = new TreeMap<>();
@@ -140,18 +137,22 @@ public class UserManagementMaintenanceTask extends AbstractMaintenanceTask
             {
                 if (StringUtils.isBlank(ldapGroupKey))
                 {
-                    operationLog.error("Empty ldapGroupKey for group '" + key + "'. Task aborted.");
-                    return false;
+                    operationLog.warn("Group '" + key + "' skipped because of empty ldapGroupKey.");
+                    return;
                 }
-                List<Principal> principals = getUsersOfGroup(ldapGroupKey);
-                for (Principal principal : principals)
+                try
                 {
-                    principalsByUserId.put(principal.getUserId(), principal);
+                    for (Principal principal : getUsersOfGroup(ldapGroupKey))
+                    {
+                        principalsByUserId.put(principal.getUserId(), principal);
+                    }
+                } catch (Throwable e)
+                {
+                    operationLog.error("Group '" + key + "' skipped because of " + e, e);
                 }
             }
         }
         userManager.addGroup(group, principalsByUserId);
-        return true;
     }
 
     private void handleReport(UserManagerReport report)
