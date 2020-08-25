@@ -204,7 +204,7 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
                 + "INFO  OPERATION.UserManagementMaintenanceTaskWithMocks - finished",
                 logRecorder.getLogContent());
     }
-    
+
     @Test
     public void testExecuteWithUsersButWithoutLdapGroupKeys()
     {
@@ -214,10 +214,10 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
         FileUtilities.writeToFile(configFile, "");
         task.setUp("", properties);
         FileUtilities.writeToFile(configFile, "{\"groups\": [{\"key\":\"ABC\", \"users\":[\"alpha\", \"beta\"]}]}");
-        
+
         // When
         task.execute();
-        
+
         // Then
         assertEquals("INFO  OPERATION.UserManagementMaintenanceTaskWithMocks - Setup plugin \n"
                 + "INFO  OPERATION.UserManagementMaintenanceTaskWithMocks - Plugin '' initialized. Configuration file: "
@@ -262,7 +262,8 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
     public void testExecuteEmptyLdapGroups()
     {
         // Given
-        UserManagementMaintenanceTaskWithMocks task = new UserManagementMaintenanceTaskWithMocks();
+        UserManagementMaintenanceTaskWithMocks task = new UserManagementMaintenanceTaskWithMocks()
+                .withUserManagerReport(new UserManagerReport(new MockTimeProvider(0, 1000)));
         FileUtilities.writeToFile(configFile, "");
         task.setUp("", properties);
         FileUtilities.writeToFile(configFile, "{\"groups\": [{\"key\":\"ABC\",\"ldapGroupKeys\":[\"a1\"]}]}");
@@ -279,7 +280,9 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
                 + "INFO  OPERATION.UserManagementMaintenanceTaskWithMocks - Common spaces: {}\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTaskWithMocks - Common samples: {}\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTaskWithMocks - Common experiments: {}\n"
-                + "ERROR OPERATION.UserManagementMaintenanceTaskWithMocks - No users found for ldapGroupKey 'a1' for group 'ABC'. Task aborted.",
+                + "INFO  OPERATION.UserManagementMaintenanceTaskWithMocks - Add group ABC[name:null, enabled:true, ldapGroupKeys:[a1], users:null, admins:null] with users []\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTaskWithMocks - 0 users for group ABC\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTaskWithMocks - finished",
                 logRecorder.getLogContent());
     }
 

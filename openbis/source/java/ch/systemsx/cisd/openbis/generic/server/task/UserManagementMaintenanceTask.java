@@ -142,14 +142,8 @@ public class UserManagementMaintenanceTask extends AbstractMaintenanceTask
                 {
                     operationLog.error("Empty ldapGroupKey for group '" + key + "'. Task aborted.");
                     return false;
-
                 }
                 List<Principal> principals = getUsersOfGroup(ldapGroupKey);
-                if (group.isEnabled() && principals.isEmpty())
-                {
-                    operationLog.error("No users found for ldapGroupKey '" + ldapGroupKey + "' for group '" + key + "'. Task aborted.");
-                    return false;
-                }
                 for (Principal principal : principals)
                 {
                     principalsByUserId.put(principal.getUserId(), principal);

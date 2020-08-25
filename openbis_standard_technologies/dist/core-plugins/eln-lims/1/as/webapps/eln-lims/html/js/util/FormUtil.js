@@ -806,13 +806,13 @@ var FormUtil = new function() {
 		} else if (propertyType.dataType === "HYPERLINK") {
 			$component = this._getInputField("url", propertyType.code, propertyType.description, null, propertyType.mandatory);
 		} else if (propertyType.dataType === "INTEGER") {
-			$component = this._getInputField("number", propertyType.code, propertyType.description, '1', propertyType.mandatory);
+			$component = this._getNumberInputField(propertyType.code, propertyType.description, '1', propertyType.mandatory);
 		} else if (propertyType.dataType === "MATERIAL") {
 			$component = this._getInputField("text", propertyType.code, propertyType.description, null, propertyType.mandatory);
 		} else if (propertyType.dataType === "MULTILINE_VARCHAR") {
 			$component = this._getTextBox(propertyType.code, propertyType.description, propertyType.mandatory);
 		} else if (propertyType.dataType === "REAL") {
-			$component = this._getInputField("number", propertyType.code, propertyType.description, 'any', propertyType.mandatory);
+			$component = this._getNumberInputField(propertyType.code, propertyType.description, 'any', propertyType.mandatory);
 		} else if (propertyType.dataType === "TIMESTAMP") {
 			$component = this._getDatePickerField(propertyType.code, propertyType.description, propertyType.mandatory, timestampValue);
 		} else if (propertyType.dataType === "VARCHAR") {
@@ -902,6 +902,23 @@ var FormUtil = new function() {
 	
 	this.getIntegerInputField = function(id, alt, isRequired) {
 		return this._getInputField('text', id, alt, 1, isRequired);
+	}
+	
+	this._getNumberInputField = function(id, alt, step, isRequired)
+	{
+		var $component = this._getInputField("number", id, alt, step, isRequired);
+		var validator = function(event) {
+			var target = event.target;
+			if (!target.checkValidity()) {
+				Util.showError("Not a valid number in field '" + target.alt + "'.",
+						function() {
+							Util.unblockUI();
+							target.focus();
+						});
+			}
+		};
+		$component.blur(validator);
+		return $component;
 	}
 	
 	this._getInputField = function(type, id, alt, step, isRequired) {
