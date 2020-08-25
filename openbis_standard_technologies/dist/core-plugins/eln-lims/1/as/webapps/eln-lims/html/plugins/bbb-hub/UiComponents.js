@@ -1,44 +1,5 @@
 var UiComponents = new function() {
 
-    this.addDropdown = function(label, options, $container, selectAction) {
-        var $dropdown = UiComponents.getDropdown(options);
-        $inputGroup = UiComponents.getInputGroup($dropdown, label);
-        $inputGroup.css("margin-top", "3px");
-        $container.append($inputGroup);
-        $dropdown.select2({ width : "100%", theme : "bootstrap", minimumResultsForSearch: 10 });
-        if (selectAction) {
-           $dropdown.on('select2:select', function (e) {
-               selectAction(e.params.data.id);
-           });
-        }
-        $inputGroup.getValue = function() {
-           return $dropdown.val();
-        }
-        return $inputGroup;
-    }
-
-    this.getDropdown = function(options, value) {
-        var $input = $("<select>", { class : "form-control", type : "text" });
-        $input.append($("<option>", { "disabled" : true, "selected" : true, "value" : true }).text(" -- select an option -- "));
-        for (option of options) {
-            var $option = $("<option>");
-            $option.text(option.label);
-            $option.attr("value", option.value);
-            $input.append($option);
-        }
-        if (value) {
-            $input.val(value);
-        }
-        return $input;
-    }
-
-    this.getInputGroup = function($input, label) {
-        var $inputGroup = $("<div>", { class : "input-group" });
-        $inputGroup.append($("<span>", { class : "input-group-addon" }).text(label).css({ 'min-width' : '150px' }));
-        $inputGroup.append($input);
-        return $inputGroup;
-    }
-
     this.getButton = function($html, action, size, icon) {
         var buttonSize = size ? size : 'md';
         var $button = $('<button>', {
