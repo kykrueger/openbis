@@ -2,15 +2,11 @@ buildscript {
     apply from: '../gradle/repository.gradle'
 
 	repositories repositoryConfig
-	// TODO: Remove after adding org.paleozogt:symzip-plugin:0.10.1 to the Ivy repository
-	repositories {
-		jcenter()
-	};
 
     dependencies {
         classpath 'apache:commons-codec:1.10',
                   'owasp:dependency-check-gradle:3.1.2',
-                  'org.paleozogt:symzip-plugin:0.10.1'
+				  'paleozogt:symzip-plugin:0.10.1'
     }
 }
 
