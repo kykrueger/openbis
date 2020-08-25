@@ -1,3 +1,4 @@
+import FormValidator from '@src/js/components/common/form/FormValidator.js'
 import actions from '@src/js/store/actions/actions.js'
 
 export default class PageControllerSave {
@@ -15,7 +16,7 @@ export default class PageControllerSave {
   async execute() {
     try {
       await this.context.setState({
-        validate: 'full'
+        validate: FormValidator.MODE_FULL
       })
 
       const valid = await this.controller.validate(true)

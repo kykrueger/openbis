@@ -18,10 +18,33 @@ import VocabularyFormButtons from './VocabularyFormButtons.jsx'
 
 const styles = () => ({})
 
+const columns = [
+  {
+    field: 'code.value',
+    label: 'Code',
+    sort: 'asc'
+  },
+  {
+    field: 'label.value',
+    label: 'Label'
+  },
+  {
+    field: 'description.value',
+    label: 'Description'
+  },
+  {
+    field: 'official.value',
+    label: 'Official'
+  }
+]
+
 class VocabularyForm extends React.PureComponent {
   constructor(props) {
     super(props)
     autoBind(this)
+
+    this.handleSelectedRowChange = this.handleSelectedRowChange.bind(this)
+    this.handleGridControllerRef = this.handleGridControllerRef.bind(this)
 
     this.state = {}
 
@@ -33,6 +56,7 @@ class VocabularyForm extends React.PureComponent {
 
     this.controller.init(new ComponentContext(this))
   }
+
   componentDidMount() {
     this.controller.load()
   }
@@ -44,6 +68,10 @@ class VocabularyForm extends React.PureComponent {
     } else {
       controller.handleSelectionChange()
     }
+  }
+
+  handleGridControllerRef(gridController) {
+    this.controller.gridController = gridController
   }
 
   render() {
@@ -64,7 +92,6 @@ class VocabularyForm extends React.PureComponent {
   }
 
   renderMainPanel() {
-    const { controller } = this
     const { terms, selection } = this.state
 
     return (
@@ -72,28 +99,8 @@ class VocabularyForm extends React.PureComponent {
         <Header>Terms</Header>
         <Grid
           id={ids.VOCABULARY_TERMS_GRID_ID}
-          controllerRef={gridController =>
-            (controller.gridController = gridController)
-          }
-          columns={[
-            {
-              field: 'code.value',
-              label: 'Code',
-              sort: 'asc'
-            },
-            {
-              field: 'label.value',
-              label: 'Label'
-            },
-            {
-              field: 'description.value',
-              label: 'Description'
-            },
-            {
-              field: 'official.value',
-              label: 'Official'
-            }
-          ]}
+          controllerRef={this.handleGridControllerRef}
+          columns={columns}
           rows={terms}
           selectedRowId={
             selection && selection.type === 'term' ? selection.params.id : null

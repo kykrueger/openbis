@@ -5,15 +5,8 @@ export default class TypeFormControllerValidate extends PageControllerValidate {
   validate(validator) {
     const { type, properties } = this.context.getState()
 
-    const newType = {
-      ...type
-    }
-    const newProperties = properties.map(property => ({
-      ...property
-    }))
-
-    this._validateType(validator, newType)
-    this._validateProperties(validator, newProperties)
+    const newType = this._validateType(validator, type)
+    const newProperties = this._validateProperties(validator, properties)
 
     return {
       type: newType,
@@ -21,15 +14,17 @@ export default class TypeFormControllerValidate extends PageControllerValidate {
     }
   }
 
-  async select(newState, firstError) {
-    if (firstError.object === newState.type) {
+  async select(firstError) {
+    const { type, properties } = this.context.getState()
+
+    if (firstError.object === type) {
       await this.setSelection({
         type: 'type',
         params: {
           part: firstError.name
         }
       })
-    } else if (newState.properties.includes(firstError.object)) {
+    } else if (properties.includes(firstError.object)) {
       await this.setSelection({
         type: 'property',
         params: {
@@ -45,12 +40,14 @@ export default class TypeFormControllerValidate extends PageControllerValidate {
     validator.validateNotEmpty(type, 'code', 'Code')
     validator.validateCode(type, 'code', 'Code')
     strategy.validateTypeAttributes(validator, type)
+    return validator.withErrors(type)
   }
 
   _validateProperties(validator, properties) {
     properties.forEach(property => {
       this._validateProperty(validator, property)
     })
+    return validator.withErrors(properties)
   }
 
   _validateProperty(validator, property) {

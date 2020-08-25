@@ -1,20 +1,11 @@
 import PageControllerValidate from '@src/js/components/common/page/PageConrollerValidate.js'
 
-const TERM_CODE_PATTERN = /^[A-Za-z0-9_\\-\\.:]+$/
-
 export default class VocabularyFormControllerValidate extends PageControllerValidate {
   validate(validator) {
     const { vocabulary, terms } = this.context.getState()
 
-    const newVocabulary = {
-      ...vocabulary
-    }
-    const newTerms = terms.map(term => ({
-      ...term
-    }))
-
-    this._validateVocabulary(validator, newVocabulary)
-    this._validateTerms(validator, newTerms)
+    const newVocabulary = this._validateVocabulary(validator, vocabulary)
+    const newTerms = this._validateTerms(validator, terms)
 
     return {
       vocabulary: newVocabulary,
@@ -22,15 +13,17 @@ export default class VocabularyFormControllerValidate extends PageControllerVali
     }
   }
 
-  async select(newState, firstError) {
-    if (firstError.object === newState.vocabulary) {
+  async select(firstError) {
+    const { vocabulary, terms } = this.context.getState()
+
+    if (firstError.object === vocabulary) {
       await this.setSelection({
         type: 'vocabulary',
         params: {
           part: firstError.name
         }
       })
-    } else if (newState.terms.includes(firstError.object)) {
+    } else if (terms.includes(firstError.object)) {
       await this.setSelection({
         type: 'term',
         params: {
@@ -48,21 +41,18 @@ export default class VocabularyFormControllerValidate extends PageControllerVali
   _validateVocabulary(validator, vocabulary) {
     validator.validateNotEmpty(vocabulary, 'code', 'Code')
     validator.validateCode(vocabulary, 'code', 'Code')
+    return validator.withErrors(vocabulary)
   }
 
   _validateTerms(validator, terms) {
     terms.forEach(term => {
       this._validateTerm(validator, term)
     })
+    return validator.withErrors(terms)
   }
 
   _validateTerm(validator, term) {
     validator.validateNotEmpty(term, 'code', 'Code')
-    validator.validatePattern(
-      term,
-      'code',
-      'Code can only contain A-Z, a-z, 0-9 and _, -, ., :',
-      TERM_CODE_PATTERN
-    )
+    validator.validateTermCode(term, 'code', 'Code')
   }
 }
