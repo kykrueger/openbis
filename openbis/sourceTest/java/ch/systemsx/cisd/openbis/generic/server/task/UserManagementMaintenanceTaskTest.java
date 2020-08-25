@@ -237,7 +237,8 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
     public void testExecuteEmptyLdapGroupKeys()
     {
         // Given
-        UserManagementMaintenanceTaskWithMocks task = new UserManagementMaintenanceTaskWithMocks();
+        UserManagementMaintenanceTaskWithMocks task = new UserManagementMaintenanceTaskWithMocks()
+                .withUserManagerReport(new UserManagerReport(new MockTimeProvider(0, 1000)));
         FileUtilities.writeToFile(configFile, "");
         task.setUp("", properties);
         FileUtilities.writeToFile(configFile, "{\"groups\": [{\"key\":\"ABC\",\"ldapGroupKeys\":[\"\"]}]}");
@@ -254,7 +255,8 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
                 + "INFO  OPERATION.UserManagementMaintenanceTaskWithMocks - Common spaces: {}\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTaskWithMocks - Common samples: {}\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTaskWithMocks - Common experiments: {}\n"
-                + "ERROR OPERATION.UserManagementMaintenanceTaskWithMocks - Empty ldapGroupKey for group 'ABC'. Task aborted.",
+                + "WARN  OPERATION.UserManagementMaintenanceTaskWithMocks - Group 'ABC' skipped because of empty ldapGroupKey.\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTaskWithMocks - finished",
                 logRecorder.getLogContent());
     }
 
@@ -290,7 +292,8 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
     public void testExecuteMissingShareIds()
     {
         // Given
-        UserManagementMaintenanceTaskWithMocks task = new UserManagementMaintenanceTaskWithMocks().withGroup("s", U1);
+        UserManagementMaintenanceTaskWithMocks task = new UserManagementMaintenanceTaskWithMocks().withGroup("s", U1)
+                .withUserManagerReport(new UserManagerReport(new MockTimeProvider(0, 1000)));
         properties.setProperty(UserManagementMaintenanceTask.SHARES_MAPPING_FILE_PATH_PROPERTY, mappingFile.getPath());
         FileUtilities.writeToFile(configFile, "");
         task.setUp("", properties);
@@ -309,7 +312,8 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
                 + "INFO  OPERATION.UserManagementMaintenanceTaskWithMocks - Common spaces: {USER=[ALPHA]}\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTaskWithMocks - Common samples: {}\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTaskWithMocks - Common experiments: {}\n"
-                + "ERROR OPERATION.UserManagementMaintenanceTaskWithMocks - No shareIds specified for group 'SIS'. Task aborted.",
+                + "WARN  OPERATION.UserManagementMaintenanceTaskWithMocks - Group 'SIS' skipped because no shareIds specified.\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTaskWithMocks - finished",
                 logRecorder.getLogContent());
     }
 
@@ -317,7 +321,8 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
     public void testExecuteEmptyShareIds()
     {
         // Given
-        UserManagementMaintenanceTaskWithMocks task = new UserManagementMaintenanceTaskWithMocks().withGroup("s", U1);
+        UserManagementMaintenanceTaskWithMocks task = new UserManagementMaintenanceTaskWithMocks().withGroup("s", U1)
+                .withUserManagerReport(new UserManagerReport(new MockTimeProvider(0, 1000)));
         properties.setProperty(UserManagementMaintenanceTask.SHARES_MAPPING_FILE_PATH_PROPERTY, mappingFile.getPath());
         FileUtilities.writeToFile(configFile, "");
         task.setUp("", properties);
@@ -336,7 +341,8 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
                 + "INFO  OPERATION.UserManagementMaintenanceTaskWithMocks - Common spaces: {USER=[ALPHA]}\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTaskWithMocks - Common samples: {}\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTaskWithMocks - Common experiments: {}\n"
-                + "ERROR OPERATION.UserManagementMaintenanceTaskWithMocks - No shareIds specified for group 'SIS'. Task aborted.",
+                + "WARN  OPERATION.UserManagementMaintenanceTaskWithMocks - Group 'SIS' skipped because no shareIds specified.\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTaskWithMocks - finished",
                 logRecorder.getLogContent());
     }
 
