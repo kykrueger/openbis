@@ -146,8 +146,8 @@ public class CommonServerTest extends SystemTestCase
     {
         testAdaptorCommon(EntityKind.SAMPLE, "/CISD/CP-TEST-3", "sample_adaptor_test__datasets.py");
         assertEntitiesReleased(EntityKind.SAMPLE, 1);
-        assertEntitiesReleased(EntityKind.DATA_SET, 4);
-        assertScrollableResultsReleased(3);
+        assertEntitiesReleased(EntityKind.DATA_SET, 0);
+        assertScrollableResultsReleased(0);
     }
 
     @Test
@@ -161,8 +161,8 @@ public class CommonServerTest extends SystemTestCase
     public void testSampleAdaptorContained()
     {
         testAdaptorCommon(EntityKind.SAMPLE, "/CISD/CL1", "sample_adaptor_test__contained.py");
-        assertEntitiesReleased(EntityKind.SAMPLE, 5);
-        assertScrollableResultsReleased(3);
+        assertEntitiesReleased(EntityKind.SAMPLE, 1);
+        assertScrollableResultsReleased(0);
     }
 
     @Test

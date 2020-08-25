@@ -131,7 +131,7 @@ public class SampleAdaptor extends AbstractEntityAdaptor implements ISampleAdapt
     @Override
     public Iterable<ISampleAdaptor> contained()
     {
-        return containedOfType(ENTITY_TYPE_ANY_CODE_REGEXP);
+        return containedOfType("*");
     }
 
     @Override
@@ -145,8 +145,9 @@ public class SampleAdaptor extends AbstractEntityAdaptor implements ISampleAdapt
         final ISampleDAO sampleDAO = daoFactory.getSampleDAO();
 
         final SampleFetchOptions fetchOptions = new SampleFetchOptions();
-        final SampleSearchCriteria criteria = new SampleSearchCriteria();
-        criteria.withContainer().withType().withCode().thatContains(typeCodeRegexp);
+        final SampleSearchCriteria criteria = new SampleSearchCriteria().withAndOperator();
+        criteria.withContainer().withPermId().thatEquals(samplePE.getPermId());
+        criteria.withType().withCode().thatEquals(typeCodeRegexp);
 
         final PersonPE systemUser = personDAO.tryFindPersonByUserId(PersonPE.SYSTEM_USER_ID);
         final Collection<Long> ids = searchSamplesOperationExecutor.executeDirectSQLSearchForIds(systemUser, criteria,
@@ -160,7 +161,7 @@ public class SampleAdaptor extends AbstractEntityAdaptor implements ISampleAdapt
     @Override
     public Iterable<IDataAdaptor> dataSets()
     {
-        return dataSetsOfType(ENTITY_TYPE_ANY_CODE_REGEXP);
+        return dataSetsOfType("*");
     }
 
     @Override
@@ -174,8 +175,9 @@ public class SampleAdaptor extends AbstractEntityAdaptor implements ISampleAdapt
         final IDataDAO dataSetDAO = daoFactory.getDataDAO();
 
         final DataSetFetchOptions fetchOptions = new DataSetFetchOptions();
-        final DataSetSearchCriteria criteria = new DataSetSearchCriteria();
-        criteria.withType().withCode().thatContains(typeCodeRegexp);
+        final DataSetSearchCriteria criteria = new DataSetSearchCriteria().withAndOperator();
+        criteria.withSample().withPermId().thatEquals(samplePE.getPermId());
+        criteria.withType().withCode().thatEquals(typeCodeRegexp);
 
         final PersonPE systemUser = personDAO.tryFindPersonByUserId(PersonPE.SYSTEM_USER_ID);
         final Collection<Long> ids = searchDataSetsOperationExecutor.executeDirectSQLSearchForIds(systemUser, criteria,
