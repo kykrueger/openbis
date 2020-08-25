@@ -11,13 +11,24 @@ export default class GridController {
   init(context) {
     const props = context.getProps()
 
-    const columns = props.columns.map(column => ({
-      ...column,
-      label: column.label || _.upperFirst(column.field),
-      render: column.render || (row => this._getValue(row, column.field)),
-      sort: column.sort === undefined ? true : column.sort,
-      visible: true
-    }))
+    const columns = []
+    let initialSort = null
+    let initialSortDirection = null
+
+    props.columns.forEach(column => {
+      if (column.sort) {
+        initialSort = column.field
+        initialSortDirection = column.sort
+      }
+      columns.push({
+        ...column,
+        field: column.field,
+        label: column.label || _.upperFirst(column.field),
+        render: column.render || (row => this._getValue(row, column.field)),
+        sortable: column.sortable === undefined ? true : column.sortable,
+        visible: true
+      })
+    })
 
     context.initState({
       loaded: false,
@@ -29,24 +40,24 @@ export default class GridController {
       filteredRows: [],
       sortedRows: [],
       currentRows: [],
-      selectedRowId: null,
       selectedRow: null,
-      sort: null,
-      sortDirection: 'asc'
+      sort: initialSort,
+      sortDirection: initialSortDirection
     })
 
     this.context = context
   }
 
-  load() {
-    this._loadSettings().then(() => {
-      const { rows, selectedRowId } = this.context.getProps()
-      this.updateAllRows(rows)
-      this.updateSelectedRowId(selectedRowId)
-      this.context.setState(() => ({
-        loaded: true
-      }))
-    })
+  async load() {
+    const { rows, selectedRowId } = this.context.getProps()
+
+    await this._loadSettings()
+    await this.updateAllRows(rows)
+    await this.updateSelectedRowId(selectedRowId)
+
+    await this.context.setState(() => ({
+      loaded: true
+    }))
   }
 
   _loadSettings() {
@@ -128,20 +139,14 @@ export default class GridController {
   }
 
   async updateAllRows(rows) {
-    await this.context.setState({
-      allRows: rows
-    })
-    await this._recalculateCurrentRows()
+    await this._recalculateCurrentRows(rows)
   }
 
   async updateSelectedRowId(selectedRowId) {
-    await this.context.setState({
-      selectedRowId
-    })
-    await this._recalculateSelectedRow()
+    await this._recalculateSelectedRow(selectedRowId)
   }
 
-  async _recalculateCurrentRows() {
+  async _recalculateCurrentRows(rows) {
     const {
       allRows,
       columns,
@@ -149,26 +154,38 @@ export default class GridController {
       sort,
       sortDirection,
       page,
-      pageSize,
-      selectedRowId
+      pageSize
     } = this.context.getState()
 
-    const filteredRows = this._filter(allRows, columns, filters)
+    if (!rows) {
+      rows = allRows
+    }
+
+    const filteredRows = this._filter(rows, columns, filters)
+
+    const pageCount = Math.max(Math.ceil(filteredRows.length / pageSize), 1)
+    const newPage = Math.min(page, pageCount - 1)
+
     const sortedRows = this._sort(filteredRows, columns, sort, sortDirection)
-    const currentRows = this._page(sortedRows, page, pageSize)
+    const currentRows = this._page(sortedRows, newPage, pageSize)
 
     await this.context.setState({
+      allRows: rows,
       filteredRows,
       sortedRows,
-      currentRows
+      currentRows,
+      page: newPage
     })
-    if (selectedRowId) {
-      await this._recalculateSelectedRow()
+
+    const { selectedRow } = this.context.getState()
+
+    if (selectedRow) {
+      await this._recalculateSelectedRow(selectedRow.id)
     }
   }
 
-  async _recalculateSelectedRow() {
-    const { selectedRowId, selectedRow, currentRows } = this.context.getState()
+  async _recalculateSelectedRow(selectedRowId) {
+    const { selectedRow, currentRows } = this.context.getState()
     const { onSelectedRowChange } = this.context.getProps()
 
     let newSelectedRow = null
@@ -276,14 +293,23 @@ export default class GridController {
   }
 
   handleSortChange(column) {
-    if (!column.sort) {
+    if (!column.sortable) {
       return
     }
+
     this.context
-      .setState(prevState => ({
-        sort: column.field,
-        sortDirection: prevState.sortDirection === 'asc' ? 'desc' : 'asc'
-      }))
+      .setState(state => {
+        if (column.field === state.sort) {
+          return {
+            sortDirection: state.sortDirection === 'asc' ? 'desc' : 'asc'
+          }
+        } else {
+          return {
+            sort: column.field,
+            sortDirection: 'asc'
+          }
+        }
+      })
       .then(() => {
         this._saveSettings()
         this._recalculateCurrentRows()

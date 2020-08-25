@@ -7,4 +7,12 @@ export default class IconWrapper extends BaseWrapper {
       preventDefault: function () {}
     })
   }
+
+  toJSON() {
+    if (this.wrapper.exists()) {
+      return {}
+    } else {
+      return null
+    }
+  }
 }

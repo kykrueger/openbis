@@ -35,7 +35,7 @@ const styles = theme => ({
   }
 })
 
-class PageConfig extends React.PureComponent {
+class GridPaging extends React.PureComponent {
   constructor(props) {
     super(props)
     this.handlePageSizeChange = this.handlePageSizeChange.bind(this)
@@ -68,7 +68,7 @@ class PageConfig extends React.PureComponent {
   }
 
   render() {
-    logger.log(logger.DEBUG, 'PageConfig.render')
+    logger.log(logger.DEBUG, 'GridPaging.render')
 
     const { classes, count, page, pageSize } = this.props
 
@@ -96,7 +96,7 @@ class PageConfig extends React.PureComponent {
           />
         </div>
         <div className={classes.pageRange}>
-          <Typography variant='body2'>
+          <Typography variant='body2' data-part='range'>
             {Math.min(count, page * pageSize + 1)}-
             {Math.min(count, (page + 1) * pageSize)} of {count}
           </Typography>
@@ -106,6 +106,7 @@ class PageConfig extends React.PureComponent {
             onClick={this.handleFirstPageButtonClick}
             disabled={page === 0}
             aria-label='First Page'
+            data-part='firstPage'
           >
             <FirstPageIcon fontSize='small' />
           </IconButton>
@@ -113,6 +114,7 @@ class PageConfig extends React.PureComponent {
             onClick={this.handleBackButtonClick}
             disabled={page === 0}
             aria-label='Previous Page'
+            data-part='prevPage'
           >
             <KeyboardArrowLeft fontSize='small' />
           </IconButton>
@@ -120,6 +122,7 @@ class PageConfig extends React.PureComponent {
             onClick={this.handleNextButtonClick}
             disabled={page >= Math.ceil(count / pageSize) - 1}
             aria-label='Next Page'
+            data-part='nextPage'
           >
             <KeyboardArrowRight fontSize='small' />
           </IconButton>
@@ -127,6 +130,7 @@ class PageConfig extends React.PureComponent {
             onClick={this.handleLastPageButtonClick}
             disabled={page >= Math.ceil(count / pageSize) - 1}
             aria-label='Last Page'
+            data-part='lastPage'
           >
             <LastPageIcon fontSize='small' />
           </IconButton>
@@ -136,4 +140,4 @@ class PageConfig extends React.PureComponent {
   }
 }
 
-export default _.flow(withStyles(styles))(PageConfig)
+export default _.flow(withStyles(styles))(GridPaging)

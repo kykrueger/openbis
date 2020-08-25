@@ -269,6 +269,16 @@ async function doTestSelectProperty(scope, used) {
   }
 
   if (used) {
+    facade.loadAssignments.mockReturnValue(
+      Promise.resolve({
+        [propertyType.getCode()]: 2
+      })
+    )
+    messages.push({
+      text: 'This property is already assigned to 2 types.',
+      type: 'info'
+    })
+
     facade.loadUsages.mockReturnValue(
       Promise.resolve({
         propertyLocal: {
@@ -282,16 +292,6 @@ async function doTestSelectProperty(scope, used) {
     messages.push({
       text:
         'This property is already used by 3 entities (1 entity of this type and 2 entities of other types).',
-      type: 'info'
-    })
-
-    facade.loadAssignments.mockReturnValue(
-      Promise.resolve({
-        [propertyType.getCode()]: 2
-      })
-    )
-    messages.push({
-      text: 'This property is already assigned to 2 types.',
       type: 'info'
     })
   }
@@ -517,7 +517,12 @@ async function testAddProperty() {
           name: 'TEST_SECTION_2',
           properties: [
             { code: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode() },
-            { code: 'empty', label: 'empty', dataType: 'VARCHAR' },
+            {
+              message: {
+                type: 'info',
+                text: 'Please select a data type to display the field preview.'
+              }
+            },
             { code: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode() }
           ]
         }
@@ -540,7 +545,7 @@ async function testAddProperty() {
         },
         dataType: {
           label: 'Data Type',
-          value: 'VARCHAR',
+          value: null,
           enabled: true,
           mode: 'edit'
         },
@@ -1093,7 +1098,8 @@ async function testValidateType() {
       type: {
         title: 'Type',
         code: {
-          error: 'Code cannot be empty'
+          error: 'Code cannot be empty',
+          focused: true
         },
         description: {
           error: null
@@ -1108,6 +1114,30 @@ async function testValidateType() {
     },
     buttons: {
       message: null
+    }
+  })
+
+  form.getParameters().getType().getCode().change('I am illegal')
+  await form.update()
+
+  form.getButtons().getSave().click()
+  await form.update()
+
+  form.expectJSON({
+    parameters: {
+      type: {
+        code: {
+          value: 'I am illegal',
+          error: 'Code can only contain A-Z, a-z, 0-9 and _, -, .',
+          focused: true
+        }
+      }
+    },
+    buttons: {
+      message: {
+        text: 'You have unsaved changes.',
+        type: 'warning'
+      }
     }
   })
 }
@@ -1131,10 +1161,11 @@ async function testValidateProperty() {
           error: null
         },
         code: {
-          error: 'Code cannot be empty'
+          error: 'Code cannot be empty',
+          focused: true
         },
         dataType: {
-          error: null
+          error: 'Data Type cannot be empty'
         },
         label: {
           error: 'Label cannot be empty'
@@ -1151,6 +1182,24 @@ async function testValidateProperty() {
       message: {
         text: 'You have unsaved changes.',
         type: 'warning'
+      }
+    }
+  })
+
+  form.getParameters().getProperty().getCode().change('I am illegal')
+  await form.update()
+
+  form.getButtons().getSave().click()
+  await form.update()
+
+  form.expectJSON({
+    parameters: {
+      property: {
+        code: {
+          value: 'I am illegal',
+          error: 'Code can only contain A-Z, a-z, 0-9 and _, -, .',
+          focused: true
+        }
       }
     }
   })

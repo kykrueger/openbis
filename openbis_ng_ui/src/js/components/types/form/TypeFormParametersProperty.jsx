@@ -98,8 +98,8 @@ class TypeFormParametersProperty extends React.PureComponent {
       <Container>
         <Header>Property</Header>
         {this.renderMessageGlobal(property)}
-        {this.renderMessageUsage(property)}
         {this.renderMessageAssignments(property)}
+        {this.renderMessageUsage(property)}
         {this.renderScope(property)}
         {this.renderCode(property)}
         {this.renderDataType(property)}
@@ -343,6 +343,7 @@ class TypeFormParametersProperty extends React.PureComponent {
         value: dataType
       }
     })
+    options.unshift({})
 
     const { mode, classes } = this.props
     return (

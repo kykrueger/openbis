@@ -207,7 +207,7 @@ public class ResourceListParser
                 }
 
                 // This method isn't necessary for XPath processing either.
-                public Iterator<?> getPrefixes(String uri)
+                public Iterator<String> getPrefixes(String uri)
                 {
                     throw new UnsupportedOperationException("Not implemented!!!");
                 }

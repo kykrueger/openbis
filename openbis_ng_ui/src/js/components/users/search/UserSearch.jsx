@@ -64,7 +64,8 @@ class UserSearch extends React.Component {
           id={ids.USERS_GRID_ID}
           columns={[
             {
-              field: 'userId'
+              field: 'userId',
+              sort: 'asc'
             },
             {
               field: 'firstName'

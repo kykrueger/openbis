@@ -34,6 +34,9 @@ export default class TypeFormControllerChange extends PageControllerChange {
           return newProperty
         }
       )
+    } else if (type === 'preview') {
+      const { field, value } = params
+      this.changeObjectField('preview', field, value)
     }
   }
 
@@ -49,35 +52,116 @@ export default class TypeFormControllerChange extends PageControllerChange {
     if (oldScope !== newScope || oldCode !== newCode) {
       let globalPropertyType = null
 
-      if (newScope === 'global') {
+      if (oldScope !== newScope) {
+        newProperty = {
+          ...newProperty,
+          code: {
+            ...newProperty.code,
+            value: null
+          },
+          label: {
+            ...newProperty.label,
+            value: null
+          },
+          description: {
+            ...newProperty.description,
+            value: null
+          },
+          dataType: {
+            ...newProperty.dataType,
+            value: null
+          },
+          plugin: {
+            ...newProperty.plugin,
+            value: null
+          },
+          vocabulary: {
+            ...newProperty.vocabulary,
+            value: null
+          },
+          materialType: {
+            ...newProperty.materialType,
+            value: null
+          },
+          schema: {
+            ...newProperty.schema,
+            value: null
+          },
+          transformation: {
+            ...newProperty.transformation,
+            value: null
+          }
+        }
+      }
+
+      if (oldCode !== newCode && newScope === 'global') {
         const { globalPropertyTypes } = this.controller.getDictionaries()
 
-        globalPropertyType = globalPropertyTypes.find(
+        let oldExisting = globalPropertyTypes.find(
+          propertyType => propertyType.code === oldCode
+        )
+        let newExisting = globalPropertyTypes.find(
           propertyType => propertyType.code === newCode
         )
 
-        if (globalPropertyType) {
-          globalPropertyType = {
+        if (oldExisting && !newExisting) {
+          newProperty = {
+            ...newProperty,
             label: {
-              value: _.get(globalPropertyType, 'label', null)
+              ...newProperty.label,
+              value: null
             },
             description: {
-              value: _.get(globalPropertyType, 'description', null)
+              ...newProperty.description,
+              value: null
             },
             dataType: {
-              value: _.get(globalPropertyType, 'dataType', null)
+              ...newProperty.dataType,
+              value: null
+            },
+            plugin: {
+              ...newProperty.plugin,
+              value: null
             },
             vocabulary: {
-              value: _.get(globalPropertyType, 'vocabulary.code', null)
+              ...newProperty.vocabulary,
+              value: null
             },
             materialType: {
-              value: _.get(globalPropertyType, 'materialType.code', null)
+              ...newProperty.materialType,
+              value: null
             },
             schema: {
-              value: _.get(globalPropertyType, 'schema', null)
+              ...newProperty.schema,
+              value: null
             },
             transformation: {
-              value: _.get(globalPropertyType, 'transformation', null)
+              ...newProperty.transformation,
+              value: null
+            }
+          }
+        } else if (newExisting) {
+          newExisting = {
+            label: {
+              value: _.get(newExisting, 'label', null)
+            },
+            description: {
+              value: _.get(newExisting, 'description', null)
+            },
+            dataType: {
+              value: _.get(newExisting, 'dataType', null)
+            },
+            vocabulary: {
+              value: _.get(newExisting, 'vocabulary.code', null)
+            },
+            materialType: {
+              value: _.get(newExisting, 'materialType.code', null)
+            },
+            schema: {
+              value: _.get(newExisting, 'schema', null)
+            },
+            transformation: {
+              value: _.get(newExisting, 'transformation', null)
             }
           }
 
@@ -85,33 +169,35 @@ export default class TypeFormControllerChange extends PageControllerChange {
             ...newProperty,
             label: {
               ...newProperty.label,
-              value: globalPropertyType.label.value
+              value: newExisting.label.value
             },
             description: {
               ...newProperty.description,
-              value: globalPropertyType.description.value
+              value: newExisting.description.value
             },
             dataType: {
               ...newProperty.dataType,
-              value: globalPropertyType.dataType.value
+              value: newExisting.dataType.value
             },
             vocabulary: {
               ...newProperty.vocabulary,
-              value: globalPropertyType.vocabulary.value
+              value: newExisting.vocabulary.value
             },
             materialType: {
               ...newProperty.materialType,
-              value: globalPropertyType.materialType.value
+              value: newExisting.materialType.value
             },
             schema: {
               ...newProperty.schema,
-              value: globalPropertyType.schema.value
+              value: newExisting.schema.value
             },
             transformation: {
               ...newProperty.transformation,
-              value: globalPropertyType.transformation.value
+              value: newExisting.transformation.value
             }
           }
+
+          globalPropertyType = newExisting
         }
       }
 
@@ -165,6 +251,7 @@ export default class TypeFormControllerChange extends PageControllerChange {
         usagesGlobal: propertyUsagesGlobal
       }
     }
+
     return newProperty
   }
 

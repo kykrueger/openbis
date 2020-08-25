@@ -15,7 +15,7 @@ export default class PageControllerSave {
   async execute() {
     try {
       await this.context.setState({
-        validate: true
+        validate: 'full'
       })
 
       const valid = await this.controller.validate(true)

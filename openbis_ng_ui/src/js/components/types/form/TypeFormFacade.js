@@ -62,6 +62,10 @@ export default class TypeFormFacade {
   async loadLocalPropertyTypes(object) {
     const strategy = this._getStrategy(object.type)
 
+    if (object.type === strategy.getNewObjectType()) {
+      return Promise.resolve([])
+    }
+
     const id = new openbis.EntityTypePermId(object.id)
     const fo = strategy.createTypeFetchOptions()
     fo.withPropertyAssignments().withPropertyType()
@@ -157,6 +161,10 @@ export default class TypeFormFacade {
   _loadTypeUsages(object) {
     const strategy = this._getStrategy(object.type)
 
+    if (object.type === strategy.getNewObjectType()) {
+      return Promise.resolve(0)
+    }
+
     function createTypeUsedOperation(typeCode) {
       const criteria = strategy.createEntitySearchCriteria()
       criteria.withType().withCode().thatEquals(typeCode)
@@ -189,6 +197,10 @@ export default class TypeFormFacade {
 
   async _loadPropertyLocalUsages(object) {
     const strategy = this._getStrategy(object.type)
+
+    if (object.type === strategy.getNewObjectType()) {
+      return Promise.resolve({})
+    }
 
     function createPropertyUsedOperation(typeCode, propertyTypeCode) {
       const criteria = strategy.createEntitySearchCriteria()

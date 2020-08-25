@@ -1,16 +1,37 @@
 import BaseWrapper from '@srcTest/js/components/common/wrapper/BaseWrapper.js'
+import Message from '@src/js/components/common/form/Message.jsx'
+import MessageWrapper from '@srcTest/js/components/common/form/wrapper/MessageWrapper.js'
 
 export default class TypeFormPreviewPropertyWrapper extends BaseWrapper {
   getCode() {
-    return this.wrapper.find({ 'data-part': 'code' })
+    const code = this.wrapper.find({ 'data-part': 'code' })
+    if (code.exists()) {
+      return this.getStringValue(code.text())
+    } else {
+      return null
+    }
   }
 
   getLabel() {
-    return this.wrapper.find({ 'data-part': 'label' })
+    const label = this.wrapper.find({ 'data-part': 'label' })
+    if (label.exists()) {
+      return this.getStringValue(label.text())
+    } else {
+      return null
+    }
   }
 
   getDataType() {
-    return this.wrapper.find({ 'data-part': 'dataType' })
+    const dataType = this.wrapper.find({ 'data-part': 'dataType' })
+    if (dataType.exists()) {
+      return this.getStringValue(dataType.text())
+    } else {
+      return null
+    }
+  }
+
+  getMessage() {
+    return new MessageWrapper(this.findComponent(Message))
   }
 
   click() {
@@ -20,13 +41,11 @@ export default class TypeFormPreviewPropertyWrapper extends BaseWrapper {
   }
 
   toJSON() {
-    const code = this.getCode().text().trim()
-    const label = this.getLabel().text().trim()
-    const dataType = this.getDataType().text().trim()
     return {
-      code: code.length > 0 ? code : null,
-      label: label.length > 0 ? label : null,
-      dataType: dataType.length > 0 ? dataType : null
+      code: this.getCode(),
+      label: this.getLabel(),
+      dataType: this.getDataType(),
+      message: this.getMessage().toJSON()
     }
   }
 }

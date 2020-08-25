@@ -2,6 +2,7 @@ import _ from 'lodash'
 import React from 'react'
 import { Draggable } from 'react-beautiful-dnd'
 import { withStyles } from '@material-ui/core/styles'
+import Message from '@src/js/components/common/form/Message.jsx'
 import CheckboxField from '@src/js/components/common/form/CheckboxField.jsx'
 import TextField from '@src/js/components/common/form/TextField.jsx'
 import SelectField from '@src/js/components/common/form/SelectField.jsx'
@@ -177,15 +178,10 @@ class TypeFormPreviewProperty extends React.PureComponent {
   }
 
   handleChange(event) {
-    const name = event.target.name
-    const value = event.target.value
-
-    this.setState(state => ({
-      values: {
-        ...state.values,
-        [name]: value
-      }
-    }))
+    this.props.onChange('preview', {
+      field: this.props.property.id,
+      value: event.target.value
+    })
   }
 
   render() {
@@ -245,19 +241,38 @@ class TypeFormPreviewProperty extends React.PureComponent {
     } else if (dataType === openbis.DataType.MATERIAL) {
       return this.renderMaterialProperty()
     } else {
-      return <span>Data type not supported yet</span>
+      if (dataType) {
+        return this.renderPropertyNotSupported()
+      } else {
+        return this.renderPropertyWithoutDataType()
+      }
     }
   }
 
+  renderPropertyNotSupported() {
+    return (
+      <Message type='warning'>
+        The selected data type is not supported yet.
+      </Message>
+    )
+  }
+
+  renderPropertyWithoutDataType() {
+    return (
+      <Message type='info'>
+        Please select a data type to display the field preview.
+      </Message>
+    )
+  }
+
   renderVarcharProperty() {
-    const { property, mode } = this.props
-    const { values } = this.state
+    const { property, value, mode } = this.props
     return (
       <TextField
         name={property.id}
         label={this.getLabel()}
         description={this.getDescription()}
-        value={values[property.id]}
+        value={value}
         mandatory={this.getMandatory()}
         multiline={this.getMultiline()}
         metadata={this.getMetadata()}
@@ -272,15 +287,14 @@ class TypeFormPreviewProperty extends React.PureComponent {
   }
 
   renderNumberProperty() {
-    const { property, mode } = this.props
-    const { values } = this.state
+    const { property, value, mode } = this.props
     return (
       <TextField
         type='number'
         name={property.id}
         label={this.getLabel()}
         description={this.getDescription()}
-        value={values[property.id]}
+        value={value}
         mandatory={this.getMandatory()}
         metadata={this.getMetadata()}
         error={this.getError()}
@@ -294,15 +308,14 @@ class TypeFormPreviewProperty extends React.PureComponent {
   }
 
   renderBooleanProperty() {
-    const { property, mode } = this.props
-    const { values } = this.state
+    const { property, value, mode } = this.props
     return (
       <div>
         <CheckboxField
           name={property.id}
           label={this.getLabel()}
           description={this.getDescription()}
-          value={values[property.id]}
+          value={value}
           mandatory={this.getMandatory()}
           metadata={this.getMetadata()}
           error={this.getError()}
@@ -317,8 +330,8 @@ class TypeFormPreviewProperty extends React.PureComponent {
   }
 
   renderVocabularyProperty() {
-    const { property, mode } = this.props
-    const { terms, values } = this.state
+    const { property, value, mode } = this.props
+    const { terms } = this.state
 
     let options = []
 
@@ -335,7 +348,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
         name={property.id}
         label={this.getLabel()}
         description={this.getDescription()}
-        value={values[property.id]}
+        value={value}
         mandatory={this.getMandatory()}
         options={options}
         metadata={this.getMetadata()}
@@ -350,8 +363,8 @@ class TypeFormPreviewProperty extends React.PureComponent {
   }
 
   renderMaterialProperty() {
-    const { property, mode } = this.props
-    const { materials, values } = this.state
+    const { property, value, mode } = this.props
+    const { materials } = this.state
 
     let options = []
 
@@ -367,7 +380,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
         name={property.id}
         label={this.getLabel()}
         description={this.getDescription()}
-        value={values[property.id]}
+        value={value}
         mandatory={this.getMandatory()}
         options={options}
         metadata={this.getMetadata()}
@@ -394,7 +407,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
   }
 
   getDataType() {
-    return this.props.property.dataType.value
+    return this.props.property.dataType.value || EMPTY
   }
 
   getMandatory() {

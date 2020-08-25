@@ -17,10 +17,10 @@ const styles = theme => ({
 class GridRow extends React.PureComponent {
   constructor(props) {
     super(props)
-    this.handleOnClick = this.handleOnClick.bind(this)
+    this.handleClick = this.handleClick.bind(this)
   }
 
-  handleOnClick() {
+  handleClick() {
     const { onClick, row } = this.props
     if (onClick) {
       onClick(row)
@@ -35,7 +35,7 @@ class GridRow extends React.PureComponent {
     return (
       <TableRow
         key={row.id}
-        onClick={this.handleOnClick}
+        onClick={this.handleClick}
         hover={true}
         selected={selected}
         classes={{

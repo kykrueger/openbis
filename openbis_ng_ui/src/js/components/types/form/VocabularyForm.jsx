@@ -78,7 +78,8 @@ class VocabularyForm extends React.PureComponent {
           columns={[
             {
               field: 'code.value',
-              label: 'Code'
+              label: 'Code',
+              sort: 'asc'
             },
             {
               field: 'label.value',

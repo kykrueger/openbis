@@ -17,7 +17,7 @@ export default class PageControllerLoad {
     try {
       await this.context.setState({
         loading: true,
-        validate: false
+        validate: 'basic'
       })
 
       const isNew = this.object.type === this.controller.getNewObjectType()
