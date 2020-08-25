@@ -16,7 +16,21 @@
 
 package ch.systemsx.cisd.openbis.generic.server.dataaccess.dynamic_property.calculator;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset.SearchDataSetsOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.sample.SearchSamplesOperationExecutor;
 import ch.systemsx.cisd.common.exceptions.NotImplementedException;
+import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
+import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
+import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDataDAO;
+import ch.systemsx.cisd.openbis.generic.server.dataaccess.IPersonDAO;
+import ch.systemsx.cisd.openbis.generic.server.dataaccess.ISampleDAO;
+import ch.systemsx.cisd.openbis.generic.shared.dto.DataPE;
+import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
+import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
 import org.hibernate.Session;
 
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.dynamic_property.IDynamicPropertyEvaluator;
@@ -25,6 +39,10 @@ import ch.systemsx.cisd.openbis.generic.server.dataaccess.dynamic_property.calcu
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.dynamic_property.calculator.api.ISampleAdaptor;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentPE;
 import ch.systemsx.cisd.openbis.generic.shared.hotdeploy_plugins.api.IEntityAdaptor;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * {@link IEntityAdaptor} implementation for {@link ExperimentPE}.
@@ -60,28 +78,60 @@ public class ExperimentAdaptor extends AbstractEntityAdaptor implements IExperim
     @Override
     public Iterable<ISampleAdaptor> samples()
     {
-        //TODO Lucene: Method to be implemented if is used after removing lucene.
-        throw new NotImplementedException("TODO Lucene: Method to be implemented if is used after removing lucene.");
+        return samplesOfType("*");
     }
 
     @Override
     public Iterable<ISampleAdaptor> samplesOfType(String typeRegexp)
     {
-        //TODO Lucene: Method to be implemented if is used after removing lucene.
-        throw new NotImplementedException("TODO Lucene: Method to be implemented if is used after removing lucene.");
+        final IDAOFactory daoFactory = CommonServiceProvider.getDAOFactory();
+        final SearchSamplesOperationExecutor searchSamplesOperationExecutor =
+                (SearchSamplesOperationExecutor) CommonServiceProvider
+                        .tryToGetBean("search-samples-operation-executor");
+        final IPersonDAO personDAO = daoFactory.getPersonDAO();
+        final ISampleDAO sampleDAO = daoFactory.getSampleDAO();
+
+        final SampleFetchOptions fetchOptions = new SampleFetchOptions();
+        final SampleSearchCriteria criteria = new SampleSearchCriteria().withAndOperator();
+        criteria.withType().withCode().thatEquals(typeRegexp);
+        criteria.withExperiment().withPermId().thatEquals(String.valueOf(experimentPE.getPermId()));
+
+        final PersonPE systemUser = personDAO.tryFindPersonByUserId(PersonPE.SYSTEM_USER_ID);
+        final Collection<Long> ids = searchSamplesOperationExecutor.executeDirectSQLSearchForIds(systemUser, criteria,
+                fetchOptions);
+        final List<SamplePE> samplePEs = sampleDAO.listByIDs(ids);
+
+        return samplePEs.stream().map(samplePE -> new SampleAdaptor(samplePE, this.evaluator, this.session))
+                .collect(Collectors.toList());
     }
 
     @Override
     public Iterable<IDataAdaptor> dataSets()
     {
-        //TODO Lucene: Method to be implemented if is used after removing lucene.
-        throw new NotImplementedException("TODO Lucene: Method to be implemented if is used after removing lucene.");
+        return dataSetsOfType("*");
     }
 
     @Override
     public Iterable<IDataAdaptor> dataSetsOfType(String typeRegexp)
     {
-        //TODO Lucene: Method to be implemented if is used after removing lucene.
-        throw new NotImplementedException("TODO Lucene: Method to be implemented if is used after removing lucene.");
+        final IDAOFactory daoFactory = CommonServiceProvider.getDAOFactory();
+        final SearchDataSetsOperationExecutor searchDataSetsOperationExecutor =
+                (SearchDataSetsOperationExecutor) CommonServiceProvider
+                        .tryToGetBean("search-data-sets-operation-executor");
+        final IPersonDAO personDAO = daoFactory.getPersonDAO();
+        final IDataDAO dataSetDAO = daoFactory.getDataDAO();
+
+        final DataSetFetchOptions fetchOptions = new DataSetFetchOptions();
+        final DataSetSearchCriteria criteria = new DataSetSearchCriteria().withAndOperator();
+        criteria.withType().withCode().thatEquals(typeRegexp);
+        criteria.withExperiment().withPermId().thatEquals(experimentPE.getPermId());
+
+        final PersonPE systemUser = personDAO.tryFindPersonByUserId(PersonPE.SYSTEM_USER_ID);
+        final Collection<Long> ids = searchDataSetsOperationExecutor.executeDirectSQLSearchForIds(systemUser, criteria,
+                fetchOptions);
+        final List<DataPE> dataPEs = dataSetDAO.listByIDs(ids);
+
+        return dataPEs.stream().map(dataPE -> new ExternalDataAdaptor(dataPE, this.evaluator, this.session))
+                .collect(Collectors.toList());
     }
 }
