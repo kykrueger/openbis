@@ -417,7 +417,7 @@ def _subcriteria_for_is_finished(is_finished):
 
 def _subcriteria_for_properties(prop, value):
 
-    str_type=  "as.dto.common.search.StringPropertySearchCriteria",
+    str_type=  "as.dto.common.search.StringPropertySearchCriteria"
     eq_type = "as.dto.common.search.StringEqualToValue"
     fieldType = "PROPERTY"
 
