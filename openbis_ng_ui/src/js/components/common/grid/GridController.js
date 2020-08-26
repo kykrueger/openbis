@@ -1,6 +1,7 @@
 import _ from 'lodash'
 import autoBind from 'auto-bind'
 import openbis from '@src/js/services/openbis.js'
+import compare from '@src/js/common/compare.js'
 import ids from '@src/js/common/consts/ids.js'
 
 export default class GridController {
@@ -374,15 +375,11 @@ export default class GridController {
     if (sort) {
       const column = _.find(columns, ['field', sort])
       if (column) {
-        const collator = new Intl.Collator(undefined, {
-          numeric: true,
-          sensitivity: 'base'
-        })
         return rows.sort((t1, t2) => {
           let sign = sortDirection === 'asc' ? 1 : -1
           let v1 = this._getValue(t1, column.field)
           let v2 = this._getValue(t2, column.field)
-          return sign * collator.compare(v1, v2)
+          return sign * compare(v1, v2)
         })
       }
     }

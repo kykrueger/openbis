@@ -339,7 +339,7 @@ class TypeFormParametersProperty extends React.PureComponent {
       return null
     }
 
-    const options = openbis.DataType.values.sort().map(dataType => {
+    const options = openbis.DataType.values.map(dataType => {
       return {
         label: dataType,
         value: dataType

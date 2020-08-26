@@ -2,6 +2,7 @@ import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import TextField from '@material-ui/core/TextField'
 import MenuItem from '@material-ui/core/MenuItem'
+import compare from '@src/js/common/compare.js'
 import logger from '@src/js/common/logger.js'
 
 import FormFieldContainer from './FormFieldContainer.jsx'
@@ -87,7 +88,6 @@ class SelectFormField extends React.PureComponent {
       mandatory,
       disabled,
       error,
-      options,
       metadata,
       styles,
       onChange,
@@ -145,16 +145,15 @@ class SelectFormField extends React.PureComponent {
             root: classes.textField
           }}
         >
-          {options &&
-            options.map(option => (
-              <MenuItem
-                key={option.value || ''}
-                value={option.value || ''}
-                classes={{ root: classes.option }}
-              >
-                {option.label || option.value || ''}
-              </MenuItem>
-            ))}
+          {this.getSortedOptions().map(option => (
+            <MenuItem
+              key={option.value || ''}
+              value={option.value || ''}
+              classes={{ root: classes.option }}
+            >
+              {this.getOptionText(option)}
+            </MenuItem>
+          ))}
         </TextField>
       </FormFieldContainer>
     )
@@ -172,6 +171,28 @@ class SelectFormField extends React.PureComponent {
         }
       }
     }
+  }
+
+  getSortedOptions() {
+    const { options, sort = true } = this.props
+
+    if (options) {
+      if (sort) {
+        return Array.from(options).sort((option1, option2) => {
+          const text1 = this.getOptionText(option1)
+          const text2 = this.getOptionText(option2)
+          return compare(text1, text2)
+        })
+      } else {
+        return options
+      }
+    } else {
+      return []
+    }
+  }
+
+  getOptionText(option) {
+    return option.label || option.value || ''
   }
 }
 
