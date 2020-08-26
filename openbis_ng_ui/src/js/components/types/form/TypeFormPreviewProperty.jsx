@@ -82,6 +82,8 @@ class TypeFormPreviewProperty extends React.PureComponent {
 
     if (dataType.value === openbis.DataType.MATERIAL) {
       this.loadMaterials()
+    } else if (dataType.value === openbis.DataType.SAMPLE) {
+      this.loadSamples()
     } else if (dataType.value === openbis.DataType.CONTROLLEDVOCABULARY) {
       this.loadVocabularyTerms()
     }
@@ -93,6 +95,8 @@ class TypeFormPreviewProperty extends React.PureComponent {
 
     if (property.materialType.value !== prevProperty.materialType.value) {
       this.loadMaterials()
+    } else if (property.sampleType.value !== prevProperty.sampleType.value) {
+      this.loadSamples()
     } else if (property.vocabulary.value !== prevProperty.vocabulary.value) {
       this.loadVocabularyTerms()
     }
@@ -118,6 +122,22 @@ class TypeFormPreviewProperty extends React.PureComponent {
         materials: null
       }))
     }
+  }
+
+  loadSamples() {
+    const { controller, property } = this.props
+
+    return controller
+      .getFacade()
+      .loadSamples(property.sampleType.value)
+      .then(samples => {
+        this.setState(() => ({
+          samples
+        }))
+      })
+      .catch(error => {
+        controller.getContext().dispatch(actions.errorChange(error))
+      })
   }
 
   loadVocabularyTerms() {
@@ -240,6 +260,8 @@ class TypeFormPreviewProperty extends React.PureComponent {
       return this.renderVocabularyProperty()
     } else if (dataType === openbis.DataType.MATERIAL) {
       return this.renderMaterialProperty()
+    } else if (dataType === openbis.DataType.SAMPLE) {
+      return this.renderSampleProperty()
     } else {
       if (dataType) {
         return this.renderPropertyNotSupported()
@@ -371,6 +393,38 @@ class TypeFormPreviewProperty extends React.PureComponent {
     if (materials) {
       options = materials.map(material => ({
         value: material.code
+      }))
+      options.unshift({})
+    }
+
+    return (
+      <SelectField
+        name={property.id}
+        label={this.getLabel()}
+        description={this.getDescription()}
+        value={value}
+        mandatory={this.getMandatory()}
+        options={options}
+        metadata={this.getMetadata()}
+        error={this.getError()}
+        styles={this.getStyles()}
+        mode='edit'
+        disabled={mode !== 'edit'}
+        onClick={this.handlePropertyClick}
+        onChange={this.handleChange}
+      />
+    )
+  }
+
+  renderSampleProperty() {
+    const { property, value, mode } = this.props
+    const { samples } = this.state
+
+    let options = []
+
+    if (samples) {
+      options = samples.map(sample => ({
+        value: sample.identifier.identifier
       }))
       options.unshift({})
     }

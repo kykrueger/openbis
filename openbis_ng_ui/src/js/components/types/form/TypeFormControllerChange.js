@@ -83,6 +83,10 @@ export default class TypeFormControllerChange extends PageControllerChange {
             ...newProperty.materialType,
             value: null
           },
+          sampleType: {
+            ...newProperty.sampleType,
+            value: null
+          },
           schema: {
             ...newProperty.schema,
             value: null
@@ -131,6 +135,10 @@ export default class TypeFormControllerChange extends PageControllerChange {
               ...newProperty.materialType,
               value: null
             },
+            sampleType: {
+              ...newProperty.sampleType,
+              value: null
+            },
             schema: {
               ...newProperty.schema,
               value: null
@@ -156,6 +164,9 @@ export default class TypeFormControllerChange extends PageControllerChange {
             },
             materialType: {
               value: _.get(newExisting, 'materialType.code', null)
+            },
+            sampleType: {
+              value: _.get(newExisting, 'sampleType.code', null)
             },
             schema: {
               value: _.get(newExisting, 'schema', null)
@@ -186,6 +197,10 @@ export default class TypeFormControllerChange extends PageControllerChange {
             materialType: {
               ...newProperty.materialType,
               value: newExisting.materialType.value
+            },
+            sampleType: {
+              ...newProperty.sampleType,
+              value: newExisting.sampleType.value
             },
             schema: {
               ...newProperty.schema,
@@ -242,6 +257,10 @@ export default class TypeFormControllerChange extends PageControllerChange {
           ...newProperty.materialType,
           enabled
         },
+        sampleType: {
+          ...newProperty.sampleType,
+          enabled
+        },
         plugin: {
           ...newProperty.plugin,
           enabled
@@ -269,6 +288,10 @@ export default class TypeFormControllerChange extends PageControllerChange {
         materialType: {
           ...newProperty.materialType,
           visible: newDataType === openbis.DataType.MATERIAL
+        },
+        sampleType: {
+          ...newProperty.sampleType,
+          visible: newDataType === openbis.DataType.SAMPLE
         },
         schema: {
           ...newProperty.schema,

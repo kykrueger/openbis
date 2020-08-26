@@ -27,6 +27,7 @@ class TypeFormParametersProperty extends React.PureComponent {
       dataType: React.createRef(),
       vocabulary: React.createRef(),
       materialType: React.createRef(),
+      sampleType: React.createRef(),
       schema: React.createRef(),
       transformation: React.createRef(),
       initialValueForExistingEntities: React.createRef(),
@@ -105,6 +106,7 @@ class TypeFormParametersProperty extends React.PureComponent {
         {this.renderDataType(property)}
         {this.renderVocabulary(property)}
         {this.renderMaterialType(property)}
+        {this.renderSampleType(property)}
         {this.renderSchema(property)}
         {this.renderTransformation(property)}
         {this.renderLabel(property)}
@@ -436,6 +438,48 @@ class TypeFormParametersProperty extends React.PureComponent {
           reference={this.references.materialType}
           label='Material Type'
           name='materialType'
+          mandatory={true}
+          error={error}
+          disabled={!enabled}
+          value={value}
+          options={options}
+          mode={mode}
+          onChange={this.handleChange}
+          onFocus={this.handleFocus}
+          onBlur={this.handleBlur}
+        />
+      </div>
+    )
+  }
+
+  renderSampleType(property) {
+    const { visible, enabled, error, value } = { ...property.sampleType }
+
+    if (!visible) {
+      return null
+    }
+
+    const { mode, classes, controller } = this.props
+    const { sampleTypes = [] } = controller.getDictionaries()
+
+    let options = []
+
+    if (sampleTypes.length > 0) {
+      options = sampleTypes.map(sampleType => {
+        return {
+          label: sampleType.code,
+          value: sampleType.code
+        }
+      })
+      options.unshift({})
+    }
+
+    return (
+      <div className={classes.field}>
+        <SelectField
+          reference={this.references.sampleType}
+          label='Sample Type'
+          name='sampleType'
           mandatory={true}
           error={error}
           disabled={!enabled}

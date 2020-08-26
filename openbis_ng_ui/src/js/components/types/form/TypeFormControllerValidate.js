@@ -63,6 +63,9 @@ export default class TypeFormControllerValidate extends PageControllerValidate {
     if (property.materialType.visible) {
       validator.validateNotEmpty(property, 'materialType', 'Material Type')
     }
+    if (property.sampleType.visible) {
+      validator.validateNotEmpty(property, 'sampleType', 'Sample Type')
+    }
     if (property.initialValueForExistingEntities.visible) {
       validator.validateNotEmpty(
         property,

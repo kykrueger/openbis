@@ -54,6 +54,9 @@ export default class TypeFormControllerAddProperty {
       materialType: FormUtil.createField({
         visible: false
       }),
+      sampleType: FormUtil.createField({
+        visible: false
+      }),
       schema: FormUtil.createField({
         visible: false
       }),

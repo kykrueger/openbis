@@ -120,6 +120,7 @@ export default class TypeFormControllerSave extends PageControllerSave {
       'dataType',
       'vocabulary',
       'materialType',
+      'sampleType',
       'label',
       'description',
       'schema',
@@ -131,7 +132,8 @@ export default class TypeFormControllerSave extends PageControllerSave {
     return !FormUtil.haveFieldsChanged(property, original, [
       'dataType',
       'vocabulary',
-      'materialType'
+      'materialType',
+      'sampleType'
     ])
   }
 
@@ -179,6 +181,17 @@ export default class TypeFormControllerSave extends PageControllerSave {
         new openbis.EntityTypePermId(
           property.materialType.value,
           openbis.EntityKind.MATERIAL
+        )
+      )
+    }
+    if (
+      property.dataType.value === openbis.DataType.SAMPLE &&
+      property.sampleType.value
+    ) {
+      creation.setSampleTypeId(
+        new openbis.EntityTypePermId(
+          property.sampleType.value,
+          openbis.EntityKind.SAMPLE
         )
       )
     }

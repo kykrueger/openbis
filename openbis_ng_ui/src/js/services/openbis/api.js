@@ -55,6 +55,10 @@ class Facade {
     return this.promise(this.v3.searchMaterials(criteria, fo))
   }
 
+  searchSamples(criteria, fo) {
+    return this.promise(this.v3.searchSamples(criteria, fo))
+  }
+
   searchVocabularies(criteria, fo) {
     return this.promise(this.v3.searchVocabularies(criteria, fo))
   }

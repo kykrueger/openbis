@@ -10,6 +10,7 @@ export default class TypeFormFacade {
     fo.withValidationPlugin()
     fo.withPropertyAssignments().withPlugin()
     fo.withPropertyAssignments().withPropertyType().withMaterialType()
+    fo.withPropertyAssignments().withPropertyType().withSampleType()
     fo.withPropertyAssignments().withPropertyType().withVocabulary()
     fo.withPropertyAssignments().sortBy().ordinal()
 
@@ -136,6 +137,14 @@ export default class TypeFormFacade {
       .then(result => result.objects)
   }
 
+  async loadSampleTypes() {
+    let criteria = new openbis.SampleTypeSearchCriteria()
+    let fo = new openbis.SampleTypeFetchOptions()
+    return openbis
+      .searchSampleTypes(criteria, fo)
+      .then(result => result.objects)
+  }
+
   async loadMaterials(materialType) {
     let criteria = new openbis.MaterialSearchCriteria()
     let fo = new openbis.MaterialFetchOptions()
@@ -143,6 +152,19 @@ export default class TypeFormFacade {
     criteria.withType().withCode().thatEquals(materialType)
 
     return openbis.searchMaterials(criteria, fo).then(result => result.objects)
+  }
+
+  async loadSamples(sampleType) {
+    const criteria = new openbis.SampleSearchCriteria()
+    if (sampleType) {
+      criteria.withType().withCode().thatEquals(sampleType)
+    }
+
+    const fo = new openbis.SampleFetchOptions()
+    fo.sortBy().identifier().asc()
+    fo.from(0).count(10)
+
+    return openbis.searchSamples(criteria, fo).then(result => result.objects)
   }
 
   async executeOperations(operations, options) {

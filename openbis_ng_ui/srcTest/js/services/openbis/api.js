@@ -23,6 +23,7 @@ const searchPersons = jest.fn()
 const searchPlugins = jest.fn()
 const searchPropertyAssignments = jest.fn()
 const searchPropertyTypes = jest.fn()
+const searchSamples = jest.fn()
 const searchSampleTypes = jest.fn()
 const searchVocabularies = jest.fn()
 const searchVocabularyTerms = jest.fn()
@@ -106,6 +107,7 @@ export default {
   searchPlugins,
   searchPropertyAssignments,
   searchPropertyTypes,
+  searchSamples,
   searchSampleTypes,
   searchVocabularies,
   searchVocabularyTerms,

@@ -20,12 +20,14 @@ export default class TypeFormControllerLoad extends PageControllerLoad {
       dynamicPlugins,
       vocabularies,
       materialTypes,
+      sampleTypes,
       globalPropertyTypes
     ] = await Promise.all([
       this.facade.loadValidationPlugins(object.type),
       this.facade.loadDynamicPlugins(object.type),
       this.facade.loadVocabularies(),
       this.facade.loadMaterialTypes(),
+      this.facade.loadSampleTypes(),
       this.facade.loadGlobalPropertyTypes()
     ])
 
@@ -35,6 +37,7 @@ export default class TypeFormControllerLoad extends PageControllerLoad {
         dynamicPlugins,
         vocabularies,
         materialTypes,
+        sampleTypes,
         globalPropertyTypes
       }
     }))
@@ -212,6 +215,11 @@ export default class TypeFormControllerLoad extends PageControllerLoad {
       materialType: FormUtil.createField({
         value: _.get(propertyType, 'materialType.code', null),
         visible: dataType === openbis.DataType.MATERIAL,
+        enabled
+      }),
+      sampleType: FormUtil.createField({
+        value: _.get(propertyType, 'sampleType.code', null),
+        visible: dataType === openbis.DataType.SAMPLE,
         enabled
       }),
       schema: FormUtil.createField({
