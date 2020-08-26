@@ -60,7 +60,6 @@ import ch.systemsx.cisd.openbis.generic.server.dataaccess.ISemanticAnnotationDAO
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IVocabularyDAO;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IVocabularyTermDAO;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.deletion.EntityHistoryCreator;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.search.HibernateSearchContext;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.util.UpdateUtils;
 import ch.systemsx.cisd.openbis.generic.shared.Constants;
 import ch.systemsx.cisd.openbis.generic.shared.authorization.IAuthorizationConfig;
@@ -143,7 +142,7 @@ public final class DAOFactory extends AuthorizationDAOFactory implements IDAOFac
     public static final boolean USE_NEW_SQL_ENGINE = true;
 
     public DAOFactory(final DatabaseConfigurationContext context,
-            final SessionFactory sessionFactory, HibernateSearchContext hibernateSearchContext,
+            final SessionFactory sessionFactory,
             final IDynamicPropertyEvaluationScheduler dynamicPropertyEvaluationScheduler,
             final EntityHistoryCreator historyCreator, final IAuthorizationConfig authorizationConfig)
     {
@@ -152,14 +151,7 @@ public final class DAOFactory extends AuthorizationDAOFactory implements IDAOFac
         this.dynamicPropertyEvaluationScheduler = dynamicPropertyEvaluationScheduler;
         historyCreator.setDaoFactory(this);
         sampleTypeDAO = new SampleTypeDAO(sessionFactory, historyCreator);
-
-        // TODO : Remove this if/else when the adaptor is finally finished, this is here just to facilitate development/testing keeping changes in master
-        if (USE_NEW_SQL_ENGINE) {
-            hibernateSearchDAO = new HibernateSearchDAOV3Adaptor(new HibernateSearchDAO(sessionFactory, hibernateSearchContext));
-        } else {
-            hibernateSearchDAO = new HibernateSearchDAO(sessionFactory, hibernateSearchContext);
-        }
-
+        hibernateSearchDAO = new HibernateSearchDAOV3Adaptor();
         propertyTypeDAO = new PropertyTypeDAO(sessionFactory, historyCreator);
         vocabularyDAO = new VocabularyDAO(sessionFactory, historyCreator);
         vocabularyTermDAO = new VocabularyTermDAO(sessionFactory, historyCreator);

@@ -36,7 +36,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.update.MaterialUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.Tag;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.ITagId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagCode;
-import ch.ethz.sis.openbis.systemtest.asapi.v3.index.ReindexingState;
 import ch.systemsx.cisd.common.test.AssertionUtil;
 
 /**
@@ -49,7 +48,6 @@ public class UpdateMaterialTest extends AbstractSampleTest
     public void testUpdateWithIndexCheck()
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
-        ReindexingState state = new ReindexingState();
 
         MaterialUpdate update = new MaterialUpdate();
         update.setMaterialId(new MaterialPermId("VIRUS2", "VIRUS"));
@@ -57,7 +55,7 @@ public class UpdateMaterialTest extends AbstractSampleTest
 
         v3api.updateMaterials(sessionToken, Arrays.asList(update));
 
-        assertMaterialsReindexed(state, new MaterialPermId("VIRUS2", "VIRUS"));
+        assertMaterialsExists(new MaterialPermId("VIRUS2", "VIRUS"));
     }
 
     @Test

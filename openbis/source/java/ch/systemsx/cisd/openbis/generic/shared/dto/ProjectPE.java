@@ -48,11 +48,6 @@ import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Generated;
 import org.hibernate.annotations.GenerationTime;
 import org.hibernate.annotations.OptimisticLock;
-import org.hibernate.search.annotations.ContainedIn;
-import org.hibernate.search.annotations.Field;
-import org.hibernate.search.annotations.Index;
-import org.hibernate.search.annotations.IndexedEmbedded;
-import org.hibernate.search.annotations.Store;
 import org.hibernate.validator.constraints.Length;
 
 import ch.rinn.restrictions.Friend;
@@ -180,7 +175,6 @@ public final class ProjectPE extends AttachmentHolderPE implements Comparable<Pr
     @ManyToOne(fetch = FetchType.EAGER)
     @NotNull(message = ValidationMessages.SPACE_NOT_NULL_MESSAGE)
     @JoinColumn(name = ColumnNames.SPACE_COLUMN, updatable = true)
-    @IndexedEmbedded(prefix = SearchFieldConstants.PREFIX_SPACE, includeEmbeddedObjectId = true)
     public final SpacePE getSpace()
     {
         return space;
@@ -204,7 +198,6 @@ public final class ProjectPE extends AttachmentHolderPE implements Comparable<Pr
 
     @OptimisticLock(excluded = true)
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "projectInternal")
-    @ContainedIn
     private List<ExperimentPE> getExperimentsInternal()
     {
         return experiments;
@@ -365,7 +358,6 @@ public final class ProjectPE extends AttachmentHolderPE implements Comparable<Pr
     @Length(min = 1, max = Code.CODE_LENGTH_MAX, message = ValidationMessages.CODE_LENGTH_MESSAGE)
     @Pattern(regexp = AbstractIdAndCodeHolder.CODE_PATTERN, flags = Pattern.Flag.CASE_INSENSITIVE, message = ValidationMessages.CODE_PATTERN_MESSAGE)
     @Column(name = ColumnNames.PERM_ID_COLUMN, nullable = false)
-    @Field(index = Index.YES, store = Store.YES, name = SearchFieldConstants.PERM_ID)
     public String getPermId()
     {
         return permId;
@@ -376,7 +368,6 @@ public final class ProjectPE extends AttachmentHolderPE implements Comparable<Pr
     @NotNull(message = ValidationMessages.CODE_NOT_NULL_MESSAGE)
     @Length(min = 1, max = Code.CODE_LENGTH_MAX, message = ValidationMessages.CODE_LENGTH_MESSAGE)
     @Pattern(regexp = AbstractIdAndCodeHolder.CODE_PATTERN, flags = Pattern.Flag.CASE_INSENSITIVE, message = ValidationMessages.CODE_PATTERN_MESSAGE)
-    @Field(index = Index.YES, store = Store.YES, name = SearchFieldConstants.CODE)
     public final String getCode()
     {
         return code;
@@ -427,7 +418,6 @@ public final class ProjectPE extends AttachmentHolderPE implements Comparable<Pr
 
     @Override
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "projectParentInternal", cascade = CascadeType.ALL, orphanRemoval = true)
-    @IndexedEmbedded(prefix = SearchFieldConstants.PREFIX_ATTACHMENT)
     @Fetch(FetchMode.SUBSELECT)
     protected Set<AttachmentPE> getInternalAttachments()
     {

@@ -21,22 +21,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanClause;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.RegexpQuery;
-import org.hibernate.ScrollMode;
-import org.hibernate.ScrollableResults;
-import org.hibernate.Session;
-import org.hibernate.search.FullTextQuery;
-import org.hibernate.search.FullTextSession;
-import org.hibernate.search.Search;
 
 import ch.systemsx.cisd.common.reflection.ModifiedShortPrefixToStringStyle;
 import ch.systemsx.cisd.common.resource.IReleasable;
 import ch.systemsx.cisd.common.resource.Resources;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.search.LuceneQueryBuilder;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.dynamic_property.IDynamicPropertyEvaluator;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EntityPropertyPE;
@@ -202,35 +190,6 @@ public class AbstractEntityAdaptor implements IEntityAdaptor, IReleasable
     public Collection<IEntityPropertyAdaptor> properties()
     {
         return propertiesMap().values();
-    }
-
-    protected Query regexpConstraint(String field, String value)
-    {
-        return new RegexpQuery(new Term(field, value.toLowerCase()));
-    }
-
-    protected Query constraint(String field, String value)
-    {
-        return LuceneQueryBuilder.parseQuery(field, value,
-                LuceneQueryBuilder.createSearchAnalyzer());
-    }
-
-    protected Query and(Query... queries)
-    {
-        BooleanQuery query = new BooleanQuery();
-        for (Query subquery : queries)
-        {
-            query.add(subquery, BooleanClause.Occur.MUST);
-        }
-        return query;
-    }
-
-    protected ScrollableResults execute(Query query, Class<?> resultClass, Session session)
-    {
-        FullTextSession fullTextSession = Search.getFullTextSession(session);
-        FullTextQuery ftQuery = fullTextSession.createFullTextQuery(query, resultClass);
-        ftQuery.setFetchSize(10);
-        return ftQuery.scroll(ScrollMode.FORWARD_ONLY);
     }
 
     @Override

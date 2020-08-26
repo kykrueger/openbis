@@ -48,11 +48,7 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
     private final static Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION,
             HibernateSearchDAOV3Adaptor.class);
 
-    private HibernateSearchDAO hibernateSearchDAO;
-
-    // TODO : Remove HibernateSearchDAO when Full Text Search "searchEntitiesByTerm" is also implemented
-    public HibernateSearchDAOV3Adaptor(HibernateSearchDAO hibernateSearchDAO) {
-        this.hibernateSearchDAO = hibernateSearchDAO;
+    public HibernateSearchDAOV3Adaptor() {
     }
 
     //

@@ -16,9 +16,6 @@
 
 package ch.systemsx.cisd.openbis.generic.shared.dto.hibernate;
 
-import org.hibernate.search.annotations.Field;
-import org.hibernate.search.annotations.IndexedEmbedded;
-
 /**
  * Prefixes for indexed fields. Should be used everywhere where {@link IndexedEmbedded} or {@link Field} annotation is used, in this way we can make
  * search query syntax independent from bean field names.

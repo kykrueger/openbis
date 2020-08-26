@@ -14,10 +14,10 @@ const styles = theme => ({
 class GridHeaderLabel extends React.PureComponent {
   constructor(props) {
     super(props)
-    this.handleSortChange = this.handleSortChange.bind(this)
+    this.handleClick = this.handleClick.bind(this)
   }
 
-  handleSortChange() {
+  handleClick() {
     const { column, onSortChange } = this.props
     if (onSortChange) {
       onSortChange(column)
@@ -30,13 +30,14 @@ class GridHeaderLabel extends React.PureComponent {
     const { column, sort, sortDirection, classes } = this.props
 
     if (column.visible) {
-      if (column.sort) {
+      if (column.sortable) {
+        const active = sort === column.field
         return (
           <TableCell classes={{ root: classes.cell }}>
             <TableSortLabel
-              active={sort === column.field}
-              direction={sortDirection}
-              onClick={this.handleSortChange}
+              active={active}
+              direction={active ? sortDirection : 'asc'}
+              onClick={this.handleClick}
             >
               {column.label}
             </TableSortLabel>

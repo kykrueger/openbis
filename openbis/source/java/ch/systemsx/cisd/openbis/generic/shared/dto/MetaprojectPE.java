@@ -44,19 +44,12 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Generated;
 import org.hibernate.annotations.GenerationTime;
-import org.hibernate.search.annotations.Analyzer;
-import org.hibernate.search.annotations.DocumentId;
-import org.hibernate.search.annotations.Field;
-import org.hibernate.search.annotations.Index;
-import org.hibernate.search.annotations.Store;
 
 import ch.systemsx.cisd.openbis.generic.shared.IServer;
 import ch.systemsx.cisd.openbis.generic.shared.basic.ICodeHolder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.IIdHolder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.IIdentityHolder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MetaprojectIdentifier;
-import ch.systemsx.cisd.openbis.generic.shared.dto.hibernate.SearchFieldConstants;
-import ch.systemsx.cisd.openbis.generic.shared.search.IgnoreCaseAnalyzer;
 import ch.systemsx.cisd.openbis.generic.shared.util.EqualsHashUtils;
 
 /**
@@ -86,7 +79,6 @@ public class MetaprojectPE implements Serializable, IIdHolder, ICodeHolder, IIde
     @Id
     @SequenceGenerator(name = SequenceNames.METAPROJECTS_SEQUENCE, sequenceName = SequenceNames.METAPROJECTS_SEQUENCE, allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = SequenceNames.METAPROJECTS_SEQUENCE)
-    @DocumentId(name = SearchFieldConstants.ID)
     public Long getId()
     {
         return id;
@@ -118,8 +110,6 @@ public class MetaprojectPE implements Serializable, IIdHolder, ICodeHolder, IIde
 
     @Override
     @Transient
-    @Field(index = Index.YES, name = SearchFieldConstants.IDENTIFIER, store = Store.YES)
-    @Analyzer(impl = IgnoreCaseAnalyzer.class)
     public String getIdentifier()
     {
         return new MetaprojectIdentifier(getOwner() != null ? getOwner().getUserId() : null,

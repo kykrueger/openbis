@@ -36,6 +36,9 @@ import ch.systemsx.cisd.openbis.uitest.type.User;
 public class GeneralBatchImportRegistrationTest extends MainSuite
 {
 
+    private static final String SAME_SUBCODE_ERROR_MSG =
+            "failed because sample of the same type with the same subcode already exists.";
+
     @Test
     public void spaceOfSampleIdentifiedWithSpaceAndCodeIsDefinedByIdentifier()
             throws Exception
@@ -47,7 +50,7 @@ public class GeneralBatchImportRegistrationTest extends MainSuite
                 create(in(file), aSample().in(sampleSpace).ofType(basic),
                         IdentifiedBy.SPACE_AND_CODE);
 
-        as(user(withHomeSpace), generalBatchImport(file));
+        as(user(withHomeSpace), generalBatchImport(file, null));
 
         assertThat(browserEntryOf(sample), hasSpace(sampleSpace));
     }
@@ -60,7 +63,7 @@ public class GeneralBatchImportRegistrationTest extends MainSuite
                 create(aGeneralBatchImportFile().withDefaultSpace(defaultSpace));
         Sample sample = create(in(file), aSample().ofType(basic), IdentifiedBy.CODE);
 
-        as(user(withHomeSpace), generalBatchImport(file));
+        as(user(withHomeSpace), generalBatchImport(file, null));
 
         assertThat(browserEntryOf(sample), hasSpace(defaultSpace));
     }
@@ -72,7 +75,7 @@ public class GeneralBatchImportRegistrationTest extends MainSuite
         GeneralBatchImportFile file = create(aGeneralBatchImportFile());
         Sample sample = create(in(file), aSample().ofType(basic), IdentifiedBy.CODE);
 
-        as(user(withHomeSpace), generalBatchImport(file));
+        as(user(withHomeSpace), generalBatchImport(file, null));
 
         assertThat(browserEntryOf(sample), hasSpace(homeSpace));
     }
@@ -88,7 +91,7 @@ public class GeneralBatchImportRegistrationTest extends MainSuite
         // This is really makes the test hard to read. We need a way to handle this transparently.
         try
         {
-            as(user(withoutHomeSpace), generalBatchImport(file));
+            as(user(withoutHomeSpace), generalBatchImport(file, SAME_SUBCODE_ERROR_MSG));
         } finally
         {
             if (SeleniumTest.ADMIN_USER.equals(loggedInAs()) == false)
@@ -122,7 +125,7 @@ public class GeneralBatchImportRegistrationTest extends MainSuite
                                 .containedBy(container),
                         IdentifiedBy.SPACE_AND_CODE);
 
-        as(user(withHomeSpace), generalBatchImport(file));
+        as(user(withHomeSpace), generalBatchImport(file, null));
 
         assertThat(browserEntryOf(container), hasSpace(sampleSpace));
         assertThat(browserEntryOf(component), hasSpace(componentSpace));
@@ -152,7 +155,7 @@ public class GeneralBatchImportRegistrationTest extends MainSuite
                                 .in(sampleSpace),
                         IdentifiedBy.SPACE_AND_CODE_AND_SUBCODE);
 
-        as(user(withHomeSpace), generalBatchImport(file));
+        as(user(withHomeSpace), generalBatchImport(file, null));
 
         assertThat(browserEntryOf(component), hasSpace(sampleSpace));
         assertThat(browserEntryOf(component), hasContainer(container));
@@ -177,7 +180,7 @@ public class GeneralBatchImportRegistrationTest extends MainSuite
                         sampleSpace),
                 IdentifiedBy.SPACE_AND_CODE_AND_SUBCODE);
 
-        generalBatchImport(file);
+        generalBatchImport(file, SAME_SUBCODE_ERROR_MSG);
     }
 
     @Test
@@ -199,7 +202,7 @@ public class GeneralBatchImportRegistrationTest extends MainSuite
                         aSample().ofType(componentType).containedBy(container),
                         IdentifiedBy.SUBCODE);
 
-        as(user(withHomeSpace), generalBatchImport(file));
+        as(user(withHomeSpace), generalBatchImport(file, null));
 
         assertThat(browserEntryOf(component), hasSpace(defaultSpace));
         assertThat(browserEntryOf(component), hasContainer(container));
@@ -224,7 +227,7 @@ public class GeneralBatchImportRegistrationTest extends MainSuite
                         aSample().ofType(componentType).containedBy(container),
                         IdentifiedBy.SUBCODE);
 
-        generalBatchImport(file);
+        generalBatchImport(file, null);
 
         assertThat(browserEntryOf(component), hasSpace(defaultSpace));
         assertThat(browserEntryOf(component), hasContainer(container));
@@ -246,7 +249,7 @@ public class GeneralBatchImportRegistrationTest extends MainSuite
                 aSample().ofType(componentType).containedBy(container),
                 IdentifiedBy.CODE_AND_SUBCODE);
 
-        generalBatchImport(file);
+        generalBatchImport(file, SAME_SUBCODE_ERROR_MSG);
     }
 
     @Test(expectedExceptions = CommandNotSuccessful.class)
@@ -264,7 +267,7 @@ public class GeneralBatchImportRegistrationTest extends MainSuite
         create(in(file), aSample().ofType(uniqueSubCodesType).withCode("subcode").containedBy(
                 container2).in(componentSpace));
 
-        generalBatchImport(file);
+        generalBatchImport(file, SAME_SUBCODE_ERROR_MSG);
     }
 
     @Test
@@ -280,7 +283,7 @@ public class GeneralBatchImportRegistrationTest extends MainSuite
         Sample sample =
                 create(in(file), aSample().ofType(sampleType).withProperty(propertyType,
                         propertyValue).in(sampleSpace));
-        generalBatchImport(file);
+        generalBatchImport(file, null);
 
         assertThat(browserEntryOf(sample), containsValue(propertyType.getLabel(), propertyValue));
     }

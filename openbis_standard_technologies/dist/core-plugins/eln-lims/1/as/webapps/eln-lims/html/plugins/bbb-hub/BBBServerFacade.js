@@ -79,6 +79,44 @@ var BBBServerFacade = new function() {
         });
     }
 
+
+    this.userIsAdmin = function(action) {
+        require(["openbis", "as/dto/roleassignment/fetchoptions/RoleAssignmentFetchOptions",
+                            "as/dto/roleassignment/search/RoleAssignmentSearchCriteria"],
+        function(openbis, RoleAssignmentFetchOptions, RoleAssignmentSearchCriteria) {
+
+            var v3 = new openbis(null);
+            v3._private.sessionToken = mainController.openbisV1._internal.sessionToken;
+            var sessionToken = v3._private.sessionToken;
+
+            var userId = sessionToken.substring(0, sessionToken.lastIndexOf("-"));
+            var webAppContext = v3.getWebAppContext();
+
+            var criteria = new RoleAssignmentSearchCriteria();
+            criteria.withUser().withUserId().thatEquals(userId);
+
+            var fetchOptions = new RoleAssignmentFetchOptions();
+            fetchOptions.withUser();
+            fetchOptions.withAuthorizationGroup();
+
+            v3.searchRoleAssignments(criteria, fetchOptions).done(function(result) {
+                var roles = result.objects;
+                var isAdmin = false;
+
+                for (i = 0; i < roles.length; i++) {
+                    var role = roles[i].role;
+                    var roleLevel = roles[i].roleLevel;
+
+                    if (role === "ADMIN" && roleLevel === "INSTANCE") {
+                        isAdmin = true;
+                    }
+                }
+
+                action(isAdmin);
+            });
+        });
+    }
+
     this.getRoleAssignment = function ($content, experiments) {
         require(["openbis", "as/dto/roleassignment/fetchoptions/RoleAssignmentFetchOptions",
                             "as/dto/roleassignment/search/RoleAssignmentSearchCriteria"],

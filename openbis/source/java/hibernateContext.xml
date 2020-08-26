@@ -13,7 +13,7 @@
 
     <bean id="hibernate-session-factory"
         class="org.springframework.orm.hibernate5.LocalSessionFactoryBean"
-        depends-on="sql-script-provider, hibernate-search-context">
+        depends-on="sql-script-provider">
         <property name="dataSource">
             <ref bean="data-source" />
         </property>
@@ -126,24 +126,6 @@
                     org.hibernate.cache.EhCacheProvider
                 </prop>
                 <prop key="hibernate.max_fetch_depth">4</prop>
-                <prop key="hibernate.search.default.directory_provider">
-                     org.hibernate.search.store.impl.FSDirectoryProvider
-                </prop>
-                <prop key="hibernate.search.default.indexBase">${hibernate.search.index-base}</prop>
-                <!-- Automatic optimization -->
-                <!--  prop key="hibernate.search.default.optimizer.operation_limit.max">1000</prop -->
-                <prop key="hibernate.search.default.optimizer.transaction_limit.max">100</prop>
-                <prop key="hibernate.search.worker.batch_size">${hibernate.search.batch-size}</prop>
-                <prop key="hibernate.search.worker.execution">${hibernate.search.worker.execution}</prop>
-                <prop key="hibernate.search.worker.buffer_queue.max">1000</prop>
-                <prop key="hibernate.search.worker.thread_pool.size">8</prop>
-                
-                <prop key="hibernate.search.analyzer">ch.systemsx.cisd.openbis.generic.server.dataaccess.db.search.SearchAnalyzer</prop>
-                <!-- Disabling Hibernate Search. Possible values are [true, false].
-                    <prop key="hibernate.search.autoregister_listeners">false</prop>
-                -->
-                <!-- Disabling automatic indexing. Possible values are [event, manual]. -->
-                <prop key="hibernate.search.indexing_strategy">manual</prop>
                 <!--  Uncomment this for debugging the Hibernate sql queries> 
 <prop key="hibernate.show_sql">true</prop>
 <prop key="hibernate.use_sql_comments">true</prop>
@@ -156,28 +138,6 @@
     <!--
         // Hibernate Search
     -->
-
-
-    <bean id="hibernate-search-context"
-        class="ch.systemsx.cisd.openbis.generic.server.dataaccess.db.search.HibernateSearchContext">
-        <property name="indexBase" value="${hibernate.search.index-base}" />
-        <property name="indexMode" value="${hibernate.search.index-mode}" />
-        <property name="batchSize" value="${hibernate.search.batch-size}" />
-        <property name="maxResults" value="${hibernate.search.maxResults}" />
-    </bean>
-
-    <bean id="full-text-index-updater"
-        class="ch.systemsx.cisd.openbis.generic.server.dataaccess.db.search.FullTextIndexUpdater">
-        <constructor-arg ref="hibernate-session-factory" />
-        <constructor-arg ref="hibernate-search-context" />
-    </bean>
-    
-    <bean id="full-text-indexer"
-        class="ch.systemsx.cisd.openbis.generic.server.dataaccess.db.search.FullTextIndexerRunnable">
-        <constructor-arg ref="hibernate-session-factory" />
-        <constructor-arg ref="hibernate-search-context" />
-        <constructor-arg ref="full-text-index-updater" />
-    </bean>
 
     <bean id="dynamic-property-scheduler"
         class="ch.systemsx.cisd.openbis.generic.server.dataaccess.DynamicPropertyEvaluationScheduler">

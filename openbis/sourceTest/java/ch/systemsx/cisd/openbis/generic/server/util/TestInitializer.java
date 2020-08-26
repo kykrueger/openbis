@@ -17,27 +17,21 @@
 package ch.systemsx.cisd.openbis.generic.server.util;
 
 import java.io.File;
-import java.io.FileFilter;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.commons.io.FileUtils;
+import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.IndexCreationUtil;
 import org.apache.log4j.Logger;
 
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
-import ch.systemsx.cisd.base.exceptions.IOExceptionUnchecked;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.common.logging.LogInitializer;
 import ch.systemsx.cisd.common.process.ProcessExecutionHelper;
 import ch.systemsx.cisd.dbmigration.postgresql.DumpPreparator;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.IndexCreationUtil;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.search.FullTextIndexerRunnable;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.search.IndexMode;
 
 /**
  * @author Franz-Josef Elmer
@@ -68,27 +62,27 @@ public class TestInitializer
 
     public static void initWithoutIndex()
     {
-        init(IndexMode.NO_INDEX, getScriptFolderTestDB());
+        init(getScriptFolderTestDB());
     }
 
     public static void initWithIndex()
     {
-        init(IndexMode.SKIP_IF_MARKER_FOUND, getScriptFolderTestDB());
+        initWithoutIndex();
     }
 
     public static void initEmptyDbNoIndex()
     {
-        init(IndexMode.NO_INDEX, getScriptFolderEmptyDB());
+        init(getScriptFolderEmptyDB());
     }
 
     public static void initEmptyDbWithIndex()
     {
-        init(IndexMode.SKIP_IF_MARKER_FOUND, getScriptFolderEmptyDB());
+        initEmptyDbNoIndex();
     }
 
     private static boolean firstTry = true;
 
-    private static void init(IndexMode hibernateIndexMode, String scriptFolder)
+    private static void init(String scriptFolder)
     {
         LogInitializer.init();
 
@@ -152,49 +146,9 @@ public class TestInitializer
             firstTry = false;
         }
 
-        // make sure the search index is up-to-date
-        // and in the right place when we run tests
-        restoreSearchIndex();
-
         System.setProperty("database.create-from-scratch", String.valueOf(getCreateDBFromScratch()));
         System.setProperty("database.kind", getDBKind());
         System.setProperty("script-folder", scriptFolder);
-        System.setProperty("hibernate.search.index-mode", hibernateIndexMode.name());
-        System.setProperty("hibernate.search.index-base", LUCENE_INDEX_PATH);
-        System.setProperty("hibernate.search.worker.execution", "sync");
-
-    }
-
-    // create a fresh copy of the Lucene index
-    public static void restoreSearchIndex()
-    {
-        File targetPath = new File(TestInitializer.LUCENE_INDEX_PATH).getAbsoluteFile();
-        FileUtilities.deleteRecursively(targetPath);
-
-        operationLog.info("Removed Lucene index from '" + targetPath + "'.");
-
-        targetPath.mkdirs();
-        File srcPath = new File(LUCENE_INDEX_TEMPLATE_PATH).getAbsoluteFile();
-        try
-        {
-            FileUtils.copyDirectory(srcPath, targetPath, new FileFilter()
-                {
-                    @Override
-                    public boolean accept(File path)
-                    {
-                        return false == path.getName().equalsIgnoreCase(".svn");
-                    }
-                });
-            new File(srcPath, FullTextIndexerRunnable.FULL_TEXT_INDEX_MARKER_FILENAME)
-                    .createNewFile();
-
-            operationLog.info("Copied Lucene index from '" + srcPath + "' to '" + targetPath + "'.");
-
-        } catch (IOException ex)
-        {
-            operationLog.error("Could not copy Lucene index from '" + srcPath + "' to '" + targetPath + "'.", ex);
-            throw new IOExceptionUnchecked(ex);
-        }
     }
 
     public static boolean getCreateDBFromScratch()

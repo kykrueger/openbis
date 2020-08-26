@@ -41,7 +41,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
-import ch.ethz.sis.openbis.systemtest.asapi.v3.index.RemoveFromIndexState;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
 import ch.systemsx.cisd.openbis.systemtest.authorization.ProjectAuthorizationUser;
@@ -123,13 +122,10 @@ public class DeleteSampleTest extends AbstractDeletionTest
         List<SamplePE> samples = daoFactory.getSampleDAO().listByPermID(Arrays.asList(samplePermId.getPermId()));
         assertEquals(samples.size(), 1);
 
-        RemoveFromIndexState state = new RemoveFromIndexState();
-
         v3api.deleteSamples(sessionToken, Collections.singletonList(samplePermId), options);
         TestTransaction.flagForCommit();
         TestTransaction.end();
-        Thread.sleep(2000);
-        assertSamplesRemovedFromIndex(state, samples.get(0).getId());
+        assertSamplesRemoved(samples.get(0).getId());
 
         TestTransaction.start();
         ExperimentDeletionOptions experimentDeletionOptions = new ExperimentDeletionOptions();

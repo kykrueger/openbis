@@ -35,15 +35,15 @@ public class FilterableMutableTreeNode extends DefaultMutableTreeNode
 {
     private static final long serialVersionUID = 1L;
 
-    private static class FilteredEnumerationWrapper implements Enumeration<Object>
+    private static class FilteredEnumerationWrapper implements Enumeration<TreeNode>
     {
-        private final Enumeration<Object> enumeration;
+        private final Enumeration<TreeNode> enumeration;
 
         private final Pattern pattern;
 
-        private Object next;
+        private TreeNode next;
 
-        private FilteredEnumerationWrapper(final Enumeration<Object> enumeration,
+        private FilteredEnumerationWrapper(final Enumeration<TreeNode> enumeration,
                 final Pattern pattern)
         {
             this.enumeration = enumeration;
@@ -57,18 +57,18 @@ public class FilterableMutableTreeNode extends DefaultMutableTreeNode
         }
 
         @Override
-        public Object nextElement()
+        public TreeNode nextElement()
         {
             if (next == null)
             {
                 return enumeration.nextElement();
             }
-            final Object ret = next;
+            final TreeNode ret = next;
             next = null;
 
             while (enumeration.hasMoreElements())
             {
-                final Object tmp = enumeration.nextElement();
+                final TreeNode tmp = enumeration.nextElement();
                 if (UiUtilities.isMatchingNode(tmp, pattern))
                 {
                     next = tmp;
@@ -136,7 +136,7 @@ public class FilterableMutableTreeNode extends DefaultMutableTreeNode
         @SuppressWarnings("hiding")
         ArrayList<Object> filtered = new ArrayList<Object>();
         @SuppressWarnings("unchecked")
-        Enumeration<Object> enumeration = super.children();
+        Enumeration<TreeNode> enumeration = super.children();
         while (enumeration.hasMoreElements())
         {
             Object o = enumeration.nextElement();
@@ -201,7 +201,7 @@ public class FilterableMutableTreeNode extends DefaultMutableTreeNode
 
     @SuppressWarnings("unchecked")
     @Override
-    public Enumeration<Object> children()
+    public Enumeration<TreeNode> children()
     {
         return new FilteredEnumerationWrapper(super.children(), getPattern());
     }

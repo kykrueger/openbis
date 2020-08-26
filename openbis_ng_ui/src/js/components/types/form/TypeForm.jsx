@@ -54,7 +54,7 @@ class TypeForm extends React.PureComponent {
 
   renderMainPanel() {
     const { controller } = this
-    const { type, properties, sections, selection, mode } = this.state
+    const { type, properties, sections, preview, selection, mode } = this.state
 
     return (
       <TypeFormPreview
@@ -62,8 +62,10 @@ class TypeForm extends React.PureComponent {
         type={type}
         properties={properties}
         sections={sections}
+        preview={preview}
         selection={selection}
         mode={mode}
+        onChange={controller.handleChange}
         onOrderChange={controller.handleOrderChange}
         onSelectionChange={controller.handleSelectionChange}
       />

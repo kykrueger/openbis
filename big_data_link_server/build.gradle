@@ -1,12 +1,7 @@
 apply plugin: 'java'
 apply plugin: 'application'
 
-task wrapper(type: Wrapper) {
-    gradleVersion = '4.5'
-}
-
 repositories {
-    // mavenCentral()
     ivy {
         ivyPattern "http://svnsis.ethz.ch/repos/cisd/ivy-repository/trunk/[organisation]/[module]/[revision]/ivy.xml"
         artifactPattern "http://svnsis.ethz.ch/repos/cisd/ivy-repository/trunk/[organisation]/[module]/[revision]/[artifact]-[revision](-[classifier]).[ext]"
@@ -15,13 +10,15 @@ repositories {
 
 dependencies {
 	compile 'eclipse:jetty-all:9.4.30.v20200611',
-			'lombok:lombok:1.16.20',
+            'lombok:lombok:1.18.12',
 			'log4j:log4j-api:2.10.0',
 			'log4j:log4j-core:2.10.0',
 			'fasterxml:jackson-annotations:2.9.10',
 			'fasterxml:jackson-core:2.9.10',
 			'fasterxml:jackson-databind:2.9.10',
 			'openbis:openbis-v3-api-batteries-included:S269'
+
+    annotationProcessor 'lombok:lombok:1.18.12'
 }
 
 

@@ -13,7 +13,10 @@ module.exports = {
     ]
   ],
   setupFiles: ['<rootDir>/srcTest/js/setupUnderscore.js'],
-  setupFilesAfterEnv: ['<rootDir>/srcTest/js/setupEnzyme.js'],
+  setupFilesAfterEnv: [
+    '<rootDir>/srcTest/js/setupEnzyme.js',
+    '<rootDir>/srcTest/js/setupJestTimeout.js'
+  ],
   moduleDirectories: [
     '<rootDir>/src/js',
     '<rootDir>/srcTest/js',

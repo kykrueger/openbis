@@ -13,10 +13,6 @@ plugins {
 
 configure(allprojects) {
   apply plugin:'base'
-
-  task wrapper(type: Wrapper) {
-    gradleVersion = '4.10'
-  }
   
   repositories {
     mavenCentral()
@@ -25,7 +21,7 @@ configure(allprojects) {
 
 node {
   download = true
-  version = '10.1.0'
+  version = '10.22.0'
   workDir = file("${projectDir}/node/nodejs")
   nodeModulesDir = file("${projectDir}")
 }
@@ -44,8 +40,12 @@ task copyWebApp(type: Copy) {
   into file('build/core-plugins/openbis-ng-ui/1/as/webapps/openbis-ng-ui/html')
 }
 
+task test {
+  dependsOn npm_run_test
+}
+
 npm_run_build.dependsOn cleanBuild
 copyCorePlugins.dependsOn npm_run_build
 copyWebApp.dependsOn copyCorePlugins
 build.dependsOn copyWebApp
-build.dependsOn npm_run_test
+build.dependsOn test

@@ -126,31 +126,35 @@ def fixJarFile = { String jarFilePath ->
  
 }
 
-task(listVersions) << {
-    println "project: ${project.name} [${version}]"
-    for (p in project.subprojects) {
-        println "subproject: ${p.name} [${p.version}]"
+task(listVersions) {
+    doLast {
+        println "project: ${project.name} [${version}]"
+        for (p in project.subprojects) {
+            println "subproject: ${p.name} [${p.version}]"
+        }
     }
 }
-task(compileInstaller) << {
-    def compression = 'default'
-    def kind = 'standard'
-    def basedir = project.projectDir.path
-    def input = '../installation/resource/installer/install.xml'
-    def compressionLevel = -1
-    def compilerData = new com.izforge.izpack.compiler.data.CompilerData(compression, kind, input, 
-            null, basedir, izPackJar, compressionLevel)
-    def compilerContainer = new com.izforge.izpack.compiler.container.CompilerContainer()
-    compilerContainer.initBindings()
-    compilerContainer.addConfig('installFile', input)
-    compilerContainer.addComponent(compilerData.class, compilerData)
-    def compilerConfig = compilerContainer.getComponent(com.izforge.izpack.compiler.CompilerConfig.class)
-    def propertyManager = compilerContainer.getComponent(com.izforge.izpack.compiler.data.PropertyManager.class)
-    propertyManager.addProperty('installer.dist.dir', '../installation/' + installerDistDir)
-    propertyManager.addProperty('version.number', versionNumber)
-    propertyManager.addProperty('revision.number', Integer.toString(revisionNumber))
-    compilerConfig.executeCompiler()
-    fixJarFile(izPackJar)
+task(compileInstaller) {
+    doLast {
+        def compression = 'default'
+        def kind = 'standard'
+        def basedir = project.projectDir.path
+        def input = basedir + '/resource/installer/install.xml'
+        def compressionLevel = -1
+        def compilerData = new com.izforge.izpack.compiler.data.CompilerData(compression, kind, input,
+                null, basedir, izPackJar, compressionLevel)
+        def compilerContainer = new com.izforge.izpack.compiler.container.CompilerContainer()
+        compilerContainer.initBindings()
+        compilerContainer.addConfig('installFile', input)
+        compilerContainer.addComponent(compilerData.class, compilerData)
+        def compilerConfig = compilerContainer.getComponent(com.izforge.izpack.compiler.CompilerConfig.class)
+        def propertyManager = compilerContainer.getComponent(com.izforge.izpack.compiler.data.PropertyManager.class)
+        propertyManager.addProperty('installer.dist.dir', '../installation/' + installerDistDir)
+        propertyManager.addProperty('version.number', versionNumber)
+        propertyManager.addProperty('revision.number', Integer.toString(revisionNumber))
+        compilerConfig.executeCompiler()
+        fixJarFile(izPackJar)
+    }
 }
 compileInstaller.dependsOn copyResources
 

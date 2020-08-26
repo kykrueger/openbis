@@ -132,7 +132,6 @@ public class ProjectSampleTest extends BaseTest
         createSamples(systemSessionToken, space1, project1inSpace1, null, "SAMPLE3", "SAMPLE4");
         createSamples(systemSessionToken, space2, project2inSpace2, null, "SAMPLE5", "SAMPLE6");
         waitAtLeastASecond(); // to allow checks on modification time stamps
-        UpdateUtils.waitUntilIndexUpdaterIsIdle(applicationContext, operationLog);
         SessionBuilder session = aSession().withInstanceRole(RoleCode.ADMIN);
         adminUser = session.getUserID();
         adminSessionToken = create(session);

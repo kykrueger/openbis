@@ -48,23 +48,12 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Generated;
 import org.hibernate.annotations.GenerationTime;
-import org.hibernate.search.annotations.ClassBridge;
-import org.hibernate.search.annotations.DateBridge;
-import org.hibernate.search.annotations.DocumentId;
-import org.hibernate.search.annotations.Field;
-import org.hibernate.search.annotations.FieldBridge;
-import org.hibernate.search.annotations.Index;
-import org.hibernate.search.annotations.Indexed;
-import org.hibernate.search.annotations.IndexedEmbedded;
-import org.hibernate.search.annotations.Resolution;
-import org.hibernate.search.annotations.Store;
 import org.hibernate.validator.constraints.Length;
 
 import ch.systemsx.cisd.common.collection.UnmodifiableSetDecorator;
 import ch.systemsx.cisd.common.reflection.ModifiedShortPrefixToStringStyle;
 import ch.systemsx.cisd.openbis.generic.shared.IServer;
 import ch.systemsx.cisd.openbis.generic.shared.basic.IIdentityHolder;
-import ch.systemsx.cisd.openbis.generic.shared.dto.hibernate.SearchFieldConstants;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.util.EqualsHashUtils;
 import ch.systemsx.cisd.openbis.generic.shared.util.HibernateUtils;
@@ -77,8 +66,6 @@ import ch.systemsx.cisd.openbis.generic.shared.util.HibernateUtils;
 @Entity
 @Table(name = TableNames.MATERIALS_TABLE, uniqueConstraints = @UniqueConstraint(columnNames = { ColumnNames.CODE_COLUMN,
         ColumnNames.MATERIAL_TYPE_COLUMN }) )
-@Indexed(index = "MaterialPE")
-@ClassBridge(impl = MaterialGlobalSearchBridge.class)
 public class MaterialPE implements IIdAndCodeHolder, Comparable<MaterialPE>,
         IEntityInformationWithPropertiesHolder, Serializable, IMatchingEntity,
         IEntityWithMetaprojects, IIdentityHolder, IModificationDateBean
@@ -132,10 +119,6 @@ public class MaterialPE implements IIdAndCodeHolder, Comparable<MaterialPE>,
 
     @Column(name = ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, nullable = false, insertable = false, updatable = false)
     @Generated(GenerationTime.INSERT)
-    @Field(name = SearchFieldConstants.REGISTRATION_DATE, index = Index.YES, store = Store.NO)
-    @FieldBridge(impl = org.hibernate.search.bridge.builtin.StringEncodingDateBridge.class, params = {
-            @org.hibernate.search.annotations.Parameter(name = "resolution", value = "SECOND") })
-    @DateBridge(resolution = Resolution.SECOND)
     public Date getRegistrationDate()
     {
         return HibernateAbstractRegistrationHolder.getDate(registrationDate);
@@ -149,7 +132,6 @@ public class MaterialPE implements IIdAndCodeHolder, Comparable<MaterialPE>,
     @Override
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = ColumnNames.PERSON_REGISTERER_COLUMN, updatable = false)
-    @IndexedEmbedded(prefix = SearchFieldConstants.PREFIX_REGISTRATOR)
     public PersonPE getRegistrator()
     {
         return registrator;
@@ -164,7 +146,6 @@ public class MaterialPE implements IIdAndCodeHolder, Comparable<MaterialPE>,
     @Id
     @SequenceGenerator(name = SequenceNames.MATERIAL_SEQUENCE, sequenceName = SequenceNames.MATERIAL_SEQUENCE, allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = SequenceNames.MATERIAL_SEQUENCE)
-    @DocumentId(name = SearchFieldConstants.ID)
     public Long getId()
     {
         return id;
@@ -178,7 +159,6 @@ public class MaterialPE implements IIdAndCodeHolder, Comparable<MaterialPE>,
     @ManyToOne(fetch = FetchType.EAGER)
     @NotNull(message = ValidationMessages.MATERIAL_TYPE_NOT_NULL_MESSAGE)
     @JoinColumn(name = ColumnNames.MATERIAL_TYPE_COLUMN, updatable = false)
-    @IndexedEmbedded(prefix = SearchFieldConstants.PREFIX_ENTITY_TYPE)
     public MaterialTypePE getMaterialType()
     {
         return materialType;
@@ -193,7 +173,6 @@ public class MaterialPE implements IIdAndCodeHolder, Comparable<MaterialPE>,
     @Column(name = ColumnNames.CODE_COLUMN)
     @Length(min = 1, max = Code.CODE_LENGTH_MAX, message = ValidationMessages.CODE_LENGTH_MESSAGE)
     @NotNull(message = ValidationMessages.CODE_NOT_NULL_MESSAGE)
-    @Field(index = Index.YES, store = Store.YES, name = SearchFieldConstants.CODE)
     public String getCode()
     {
         return code;
@@ -206,7 +185,6 @@ public class MaterialPE implements IIdAndCodeHolder, Comparable<MaterialPE>,
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "entity", orphanRemoval = true)
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-    @IndexedEmbedded(/* includePaths = { "value" }, */prefix = SearchFieldConstants.PREFIX_PROPERTIES)
     @BatchSize(size = 100)
     private Set<MaterialPropertyPE> getMaterialProperties()
     {
@@ -319,10 +297,6 @@ public class MaterialPE implements IIdAndCodeHolder, Comparable<MaterialPE>,
     @Override
     @Version
     @Column(name = ColumnNames.MODIFICATION_TIMESTAMP_COLUMN, nullable = false)
-    @Field(name = SearchFieldConstants.MODIFICATION_DATE, index = Index.YES, store = Store.NO)
-    @FieldBridge(impl = org.hibernate.search.bridge.builtin.StringEncodingDateBridge.class, params = {
-            @org.hibernate.search.annotations.Parameter(name = "resolution", value = "SECOND") })
-    @DateBridge(resolution = Resolution.SECOND)
     public Date getModificationDate()
     {
         return modificationDate;
@@ -350,7 +324,6 @@ public class MaterialPE implements IIdAndCodeHolder, Comparable<MaterialPE>,
 
     @Override
     @Transient
-    @Field(index = Index.NO, store = Store.YES, name = SearchFieldConstants.IDENTIFIER)
     public final String getIdentifier()
     {
         return getCode();
@@ -409,7 +382,6 @@ public class MaterialPE implements IIdAndCodeHolder, Comparable<MaterialPE>,
 
     @Override
     @Transient
-    @IndexedEmbedded(prefix = SearchFieldConstants.PREFIX_METAPROJECT)
     public Set<MetaprojectPE> getMetaprojects()
     {
         Set<MetaprojectPE> metaprojects = new HashSet<MetaprojectPE>();

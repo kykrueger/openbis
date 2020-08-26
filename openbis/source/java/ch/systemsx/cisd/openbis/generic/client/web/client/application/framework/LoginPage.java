@@ -138,8 +138,6 @@ final class LoginPage extends com.google.gwt.user.client.ui.VerticalPanel
             return HTML.wrap(footerElement);
         }
         HorizontalPanel footer = new HorizontalPanel();
-        final HTML html = new HTML("Click <a href='./custom/help.html' target='_blank'>here</a> for help.");
-        footer.add(html);
         return footer;
     }
 

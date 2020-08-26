@@ -39,8 +39,6 @@ import org.hibernate.annotations.GenerationTime;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
-import org.hibernate.search.annotations.DateBridge;
-import org.hibernate.search.annotations.Resolution;
 import org.hibernate.type.DbTimestampType;
 
 import ch.systemsx.cisd.openbis.generic.shared.IServer;
@@ -237,7 +235,6 @@ public class SampleRelationshipPE implements Serializable
 
     @Column(name = ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, nullable = false, insertable = false, updatable = false)
     @Generated(GenerationTime.INSERT)
-    @DateBridge(resolution = Resolution.SECOND)
     public Date getRegistrationDate()
     {
         return HibernateAbstractRegistrationHolder.getDate(registrationDate);

@@ -52,30 +52,35 @@ class TypeSearch extends React.Component {
       this.searchObjectTypes(),
       this.searchCollectionTypes(),
       this.searchDataSetTypes(),
-      this.searchMaterialTypes()
+      this.searchMaterialTypes(),
+      this.searchVocabularyTypes()
     ])
-      .then(([objectTypes, collectionTypes, dataSetTypes, materialTypes]) => {
-        let allTypes = [].concat(
+      .then(
+        ([
           objectTypes,
           collectionTypes,
           dataSetTypes,
-          materialTypes
-        )
+          materialTypes,
+          vocabularyTypes
+        ]) => {
+          let allTypes = [].concat(
+            objectTypes,
+            collectionTypes,
+            dataSetTypes,
+            materialTypes,
+            vocabularyTypes
+          )
 
-        let query = this.props.objectId.toUpperCase()
+          let query = this.props.objectId.toUpperCase()
 
-        return allTypes
-          .filter(
+          return allTypes.filter(
             type =>
               (type.code && type.code.toUpperCase().includes(query)) ||
               (type.description &&
                 type.description.toUpperCase().includes(query))
           )
-          .map(type => ({
-            ...type,
-            id: type.permId.entityKind + '-' + type.permId.permId
-          }))
-      })
+        }
+      )
       .catch(error => {
         store.dispatch(actions.errorChange(error))
       })
@@ -85,7 +90,12 @@ class TypeSearch extends React.Component {
     let criteria = new openbis.SampleTypeSearchCriteria()
     let fo = new openbis.SampleTypeFetchOptions()
     return openbis.searchSampleTypes(criteria, fo).then(result => {
-      return result.objects
+      return result.objects.map(object => {
+        object.id = 'objectType-' + object.code
+        object.kind = 'Object Type'
+        object.object = { id: object.code, type: objectTypes.OBJECT_TYPE }
+        return object
+      })
     })
   }
 
@@ -93,7 +103,12 @@ class TypeSearch extends React.Component {
     let criteria = new openbis.ExperimentTypeSearchCriteria()
     let fo = new openbis.ExperimentTypeFetchOptions()
     return openbis.searchExperimentTypes(criteria, fo).then(result => {
-      return result.objects
+      return result.objects.map(object => {
+        object.id = 'collectionType-' + object.code
+        object.kind = 'Collection Type'
+        object.object = { id: object.code, type: objectTypes.COLLECTION_TYPE }
+        return object
+      })
     })
   }
 
@@ -101,7 +116,12 @@ class TypeSearch extends React.Component {
     let criteria = new openbis.DataSetTypeSearchCriteria()
     let fo = new openbis.DataSetTypeFetchOptions()
     return openbis.searchDataSetTypes(criteria, fo).then(result => {
-      return result.objects
+      return result.objects.map(object => {
+        object.id = 'dataSetType-' + object.code
+        object.kind = 'Data Set Type'
+        object.object = { id: object.code, type: objectTypes.DATA_SET_TYPE }
+        return object
+      })
     })
   }
 
@@ -109,22 +129,31 @@ class TypeSearch extends React.Component {
     let criteria = new openbis.MaterialTypeSearchCriteria()
     let fo = new openbis.MaterialTypeFetchOptions()
     return openbis.searchMaterialTypes(criteria, fo).then(result => {
-      return result.objects
+      return result.objects.map(object => {
+        object.id = 'materialType-' + object.code
+        object.kind = 'Material Type'
+        object.object = { id: object.code, type: objectTypes.MATERIAL_TYPE }
+        return object
+      })
     })
   }
 
-  handleLinkClick(permId) {
-    const entityKindToObjecType = {
-      SAMPLE: objectTypes.OBJECT_TYPE,
-      EXPERIMENT: objectTypes.COLLECTION_TYPE,
-      DATA_SET: objectTypes.DATA_SET_TYPE,
-      MATERIAL: objectTypes.MATERIAL_TYPE
-    }
+  searchVocabularyTypes() {
+    let criteria = new openbis.VocabularySearchCriteria()
+    let fo = new openbis.VocabularyFetchOptions()
+    return openbis.searchVocabularies(criteria, fo).then(result => {
+      return result.objects.map(object => {
+        object.id = 'vocabularyType-' + object.code
+        object.kind = 'Vocabulary Type'
+        object.object = { id: object.code, type: objectTypes.VOCABULARY_TYPE }
+        return object
+      })
+    })
+  }
+
+  handleLinkClick(row) {
     return () => {
-      this.props.objectOpen(
-        entityKindToObjecType[permId.entityKind],
-        permId.permId
-      )
+      this.props.objectOpen(row.object.type, row.object.id)
     }
   }
 
@@ -144,20 +173,21 @@ class TypeSearch extends React.Component {
           id={ids.TYPES_GRID_ID}
           columns={[
             {
-              field: 'permId.entityKind',
-              label: 'Kind'
-            },
-            {
               field: 'code',
               render: row => (
                 <Link
                   component='button'
                   classes={{ root: classes.tableLink }}
-                  onClick={this.handleLinkClick(row.permId)}
+                  onClick={this.handleLinkClick(row)}
                 >
                   {row.code}
                 </Link>
-              )
+              ),
+              sort: 'asc'
+            },
+            {
+              field: 'kind',
+              label: 'Kind'
             },
             {
               field: 'description'

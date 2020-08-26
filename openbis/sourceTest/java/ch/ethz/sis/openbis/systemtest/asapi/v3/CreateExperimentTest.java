@@ -48,7 +48,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.Tag;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.ITagId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagPermId;
-import ch.ethz.sis.openbis.systemtest.asapi.v3.index.ReindexingState;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewETPTAssignment;
@@ -73,11 +72,9 @@ public class CreateExperimentTest extends AbstractExperimentTest
         experiment.setProjectId(new ProjectPermId("20120814110011738-103"));
         experiment.setProperty("DESCRIPTION", "a description");
 
-        ReindexingState state = new ReindexingState();
-
         List<ExperimentPermId> permIds = v3api.createExperiments(sessionToken, Arrays.asList(experiment));
 
-        assertExperimentsReindexed(state, permIds.get(0).getPermId());
+        assertExperimentsExists(permIds.get(0).getPermId());
     }
 
     @Test

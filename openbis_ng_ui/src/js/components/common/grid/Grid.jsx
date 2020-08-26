@@ -12,8 +12,8 @@ import logger from '@src/js/common/logger.js'
 import GridController from './GridController.js'
 import GridHeader from './GridHeader.jsx'
 import GridRow from './GridRow.jsx'
+import GridPaging from './GridPaging.jsx'
 import ColumnConfig from './ColumnConfig.jsx'
-import PageConfig from './PageConfig.jsx'
 
 const styles = theme => ({
   table: {
@@ -92,7 +92,8 @@ class Grid extends React.PureComponent {
       pageSize,
       columns,
       currentRows,
-      sortedRows
+      sortedRows,
+      selectedRow
     } = this.state
 
     return (
@@ -113,7 +114,7 @@ class Grid extends React.PureComponent {
                   key={row.id}
                   columns={columns}
                   row={row}
-                  selected={row.id === this.props.selectedRowId}
+                  selected={selectedRow ? selectedRow.id === row.id : false}
                   selectable={onSelectedRowChange}
                   onClick={this.controller.handleRowSelect}
                 />
@@ -122,7 +123,7 @@ class Grid extends React.PureComponent {
           </TableBody>
         </Table>
         <div className={classes.tableFooter}>
-          <PageConfig
+          <GridPaging
             count={sortedRows.length}
             page={page}
             pageSize={pageSize}

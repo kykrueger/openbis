@@ -15,6 +15,11 @@ const styles = theme => ({
     fontSize: theme.typography.body2.fontSize,
     color: theme.palette.text.primary
   },
+  error: {
+    '& svg': {
+      color: theme.palette.error.main
+    }
+  },
   warning: {
     '& svg': {
       color: theme.palette.warning.main
@@ -35,7 +40,7 @@ class Message extends React.PureComponent {
 
     return (
       <Typography
-        variant='body2'
+        component='div'
         className={util.classNames(classes.message, classes[type])}
       >
         {this.renderIcon(type)}
@@ -45,7 +50,7 @@ class Message extends React.PureComponent {
   }
 
   renderIcon(type) {
-    if (type === 'info') {
+    if (type === 'info' || type === 'error') {
       return <InfoIcon fontSize='small' />
     } else if (type === 'warning') {
       return <WarningIcon fontSize='small' />

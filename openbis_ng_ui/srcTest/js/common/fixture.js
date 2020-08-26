@@ -97,21 +97,36 @@ ANOTHER_MATERIAL_TYPE_DTO.setCode('ANOTHER_MATERIAL_TYPE')
 
 const TEST_TERM_1_DTO = new openbis.VocabularyTerm()
 TEST_TERM_1_DTO.setCode('TERM_1')
+TEST_TERM_1_DTO.setLabel('Label 1')
+TEST_TERM_1_DTO.setDescription('Description 1')
+TEST_TERM_1_DTO.setOfficial(true)
 
 const TEST_TERM_2_DTO = new openbis.VocabularyTerm()
 TEST_TERM_2_DTO.setCode('TERM_2')
+TEST_TERM_2_DTO.setLabel('Label 2')
+TEST_TERM_2_DTO.setDescription('Description 2')
+TEST_TERM_2_DTO.setOfficial(true)
 
 const TEST_TERM_3_DTO = new openbis.VocabularyTerm()
 TEST_TERM_3_DTO.setCode('TERM_3')
+TEST_TERM_3_DTO.setLabel('Label 3')
+TEST_TERM_3_DTO.setDescription('Description 3')
+TEST_TERM_3_DTO.setOfficial(true)
 
 const TEST_TERM_4_DTO = new openbis.VocabularyTerm()
 TEST_TERM_4_DTO.setCode('TERM_4')
+TEST_TERM_4_DTO.setLabel('Label 4')
+TEST_TERM_4_DTO.setOfficial(false)
 
 const TEST_TERM_5_DTO = new openbis.VocabularyTerm()
 TEST_TERM_5_DTO.setCode('TERM_5')
+TEST_TERM_5_DTO.setLabel('Label 5')
+TEST_TERM_5_DTO.setOfficial(false)
 
 const TEST_TERM_6_DTO = new openbis.VocabularyTerm()
 TEST_TERM_6_DTO.setCode('TERM_6')
+TEST_TERM_6_DTO.setLabel('Label 6')
+TEST_TERM_6_DTO.setOfficial(false)
 
 const TEST_VOCABULARY_DTO = new openbis.Vocabulary()
 TEST_VOCABULARY_DTO.setCode('TEST_VOCABULARY')
@@ -151,5 +166,11 @@ export default {
   TEST_MATERIAL_TYPE_DTO,
   ANOTHER_MATERIAL_TYPE_DTO,
   TEST_VOCABULARY_DTO,
-  ANOTHER_VOCABULARY_DTO
+  ANOTHER_VOCABULARY_DTO,
+  TEST_TERM_1_DTO,
+  TEST_TERM_2_DTO,
+  TEST_TERM_3_DTO,
+  TEST_TERM_4_DTO,
+  TEST_TERM_5_DTO,
+  TEST_TERM_6_DTO
 }

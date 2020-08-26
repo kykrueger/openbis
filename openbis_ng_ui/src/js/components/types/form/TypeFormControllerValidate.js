@@ -5,15 +5,8 @@ export default class TypeFormControllerValidate extends PageControllerValidate {
   validate(validator) {
     const { type, properties } = this.context.getState()
 
-    const newType = {
-      ...type
-    }
-    const newProperties = properties.map(property => ({
-      ...property
-    }))
-
-    this._validateType(validator, newType)
-    this._validateProperties(validator, newProperties)
+    const newType = this._validateType(validator, type)
+    const newProperties = this._validateProperties(validator, properties)
 
     return {
       type: newType,
@@ -21,39 +14,45 @@ export default class TypeFormControllerValidate extends PageControllerValidate {
     }
   }
 
-  selection(newState, firstError) {
-    if (firstError.object === newState.type) {
-      return {
+  async select(firstError) {
+    const { type, properties } = this.context.getState()
+
+    if (firstError.object === type) {
+      await this.setSelection({
         type: 'type',
         params: {
           part: firstError.name
         }
-      }
-    } else if (newState.properties.includes(firstError.object)) {
-      return {
+      })
+    } else if (properties.includes(firstError.object)) {
+      await this.setSelection({
         type: 'property',
         params: {
           id: firstError.object.id,
           part: firstError.name
         }
-      }
+      })
     }
   }
 
   _validateType(validator, type) {
     const strategy = this._getStrategy()
     validator.validateNotEmpty(type, 'code', 'Code')
+    validator.validateCode(type, 'code', 'Code')
     strategy.validateTypeAttributes(validator, type)
+    return validator.withErrors(type)
   }
 
   _validateProperties(validator, properties) {
     properties.forEach(property => {
       this._validateProperty(validator, property)
     })
+    return validator.withErrors(properties)
   }
 
   _validateProperty(validator, property) {
     validator.validateNotEmpty(property, 'code', 'Code')
+    validator.validateCode(property, 'code', 'Code')
     validator.validateNotEmpty(property, 'label', 'Label')
     validator.validateNotEmpty(property, 'description', 'Description')
     validator.validateNotEmpty(property, 'dataType', 'Data Type')

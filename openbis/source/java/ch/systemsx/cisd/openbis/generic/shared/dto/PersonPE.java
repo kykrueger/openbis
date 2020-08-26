@@ -42,9 +42,6 @@ import javax.validation.constraints.Pattern;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.hibernate.search.annotations.Field;
-import org.hibernate.search.annotations.Index;
-import org.hibernate.search.annotations.Store;
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.Length;
 
@@ -108,7 +105,6 @@ public final class PersonPE extends HibernateAbstractRegistrationHolder implemen
 
     @Column(name = ColumnNames.FIRST_NAME_COLUMN)
     @Length(max = 30, message = ValidationMessages.FIRST_NAME_LENGTH_MESSAGE)
-    @Field(index = Index.YES, name = SearchFieldConstants.PERSON_FIRST_NAME, store = Store.YES)
     public final String getFirstName()
     {
         return firstName;
@@ -121,7 +117,6 @@ public final class PersonPE extends HibernateAbstractRegistrationHolder implemen
 
     @Column(name = ColumnNames.LAST_NAME_COLUMN)
     @Length(max = 30, message = ValidationMessages.LAST_NAME_LENGTH_MESSAGE)
-    @Field(index = Index.YES, name = SearchFieldConstants.PERSON_LAST_NAME, store = Store.YES)
     public final String getLastName()
     {
         return lastName;
@@ -134,7 +129,6 @@ public final class PersonPE extends HibernateAbstractRegistrationHolder implemen
 
     @Email(message = ValidationMessages.EMAIL_EMAIL_MESSAGE)
     @Length(max = 50, message = ValidationMessages.EMAIL_LENGTH_MESSAGE)
-    @Field(index = Index.YES, name = SearchFieldConstants.PERSON_EMAIL, store = Store.YES)
     public final String getEmail()
     {
         return email;
@@ -149,7 +143,6 @@ public final class PersonPE extends HibernateAbstractRegistrationHolder implemen
     @Length(max = 50, message = ValidationMessages.USER_ID_LENGTH_MESSAGE)
     @NotNull(message = ValidationMessages.USER_ID_NOT_NULL_MESSAGE)
     @Pattern(regexp = USER_CODE_REGEX, flags = Pattern.Flag.CASE_INSENSITIVE, message = ValidationMessages.VALID_USER_CODE_DESCRIPTION)
-    @Field(index = Index.YES, name = SearchFieldConstants.PERSON_USER_ID, store = Store.YES)
     public final String getUserId()
     {
         return userId;

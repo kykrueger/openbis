@@ -1,3 +1,4 @@
+import FormValidator from '@src/js/components/common/form/FormValidator.js'
 import actions from '@src/js/store/actions/actions.js'
 
 export default class PageControllerLoad {
@@ -17,7 +18,7 @@ export default class PageControllerLoad {
     try {
       await this.context.setState({
         loading: true,
-        validate: false
+        validate: FormValidator.MODE_BASIC
       })
 
       const isNew = this.object.type === this.controller.getNewObjectType()

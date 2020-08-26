@@ -46,9 +46,7 @@ export default class TypeFormControllerAddProperty {
       code: FormUtil.createField(),
       label: FormUtil.createField(),
       description: FormUtil.createField(),
-      dataType: FormUtil.createField({
-        value: 'VARCHAR'
-      }),
+      dataType: FormUtil.createField(),
       plugin: FormUtil.createField(),
       vocabulary: FormUtil.createField({
         visible: false

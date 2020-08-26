@@ -163,45 +163,47 @@ task dssClientZip(type: Zip, dependsOn: signWebStartJars) {
     }
 }
 
-task dssUploadGuiStandalone << {
-	ant.taskdef(name: 'bundle', classname: 'com.oracle.appbundler.AppBundlerTask', classpath: configurations.appbundler.asPath)
-    ant.bundle(outputdirectory: "${buildDir}", 
-    			name: 'DataSetUploader', 
-    			displayname: 'Data Set Uploader', 
-    			identifier: 'ch.systemsx.cisd.openbis.dss.client.api.gui.DataSetUploadClient', 
-    			mainclassname: 'ch.systemsx.cisd.openbis.dss.client.api.gui.DataSetUploadClient') {
-   		
-    	classpath(dir: "${signedJarsFolder}") {
-            include(name: "aopalliance.jar")
-        	include(name: "cglib-nodep.jar")
-        	include(name: "cisd-args4j.jar")
-        	include(name: "sis-base.jar")
-        	include(name: "commons-codec.jar")
-        	include(name: "httpclient.jar")
-            include(name: "httpcore.jar")
-        	include(name: "commons-io.jar")
-        	include(name: "commons-lang.jar")
-        	include(name: "commons-lang3.jar")
-        	include(name: "commons-text.jar")
-        	include(name: "commons-logging.jar")
-        	include(name: "dom4j-1.6.1.jar")
-        	include(name: "dss_upload_gui.jar")
-        	include(name: "geronimo-stax-api_1.0_spec-1.0.jar")
-        	include(name: "jython.jar")
-        	include(name: "log4j.jar")
-        	include(name: "poi-ooxml-schemas.jar")
-        	include(name: "poi-ooxml.jar")
-        	include(name: "poi.jar")
-            include(name: "spring-aop.jar")
-            include(name: "spring-beans.jar")
-            include(name: "spring-context.jar")
-            include(name: "spring-core.jar")
-            include(name: "spring-web.jar")
-            include(name: "spring-webmvc.jar")
-        	include(name: "spring-expression.jar")
-        	include(name: "stream-supporting-httpinvoker.jar")
-    	}
-    }	
+task dssUploadGuiStandalone {
+    doLast {
+        ant.taskdef(name: 'bundle', classname: 'com.oracle.appbundler.AppBundlerTask', classpath: configurations.appbundler.asPath)
+        ant.bundle(outputdirectory: "${buildDir}",
+                    name: 'DataSetUploader',
+                    displayname: 'Data Set Uploader',
+                    identifier: 'ch.systemsx.cisd.openbis.dss.client.api.gui.DataSetUploadClient',
+                    mainclassname: 'ch.systemsx.cisd.openbis.dss.client.api.gui.DataSetUploadClient') {
+
+            classpath(dir: "${signedJarsFolder}") {
+                include(name: "aopalliance.jar")
+                include(name: "cglib-nodep.jar")
+                include(name: "cisd-args4j.jar")
+                include(name: "sis-base.jar")
+                include(name: "commons-codec.jar")
+                include(name: "httpclient.jar")
+                include(name: "httpcore.jar")
+                include(name: "commons-io.jar")
+                include(name: "commons-lang.jar")
+                include(name: "commons-lang3.jar")
+                include(name: "commons-text.jar")
+                include(name: "commons-logging.jar")
+                include(name: "dom4j-1.6.1.jar")
+                include(name: "dss_upload_gui.jar")
+                include(name: "geronimo-stax-api_1.0_spec-1.0.jar")
+                include(name: "jython.jar")
+                include(name: "log4j.jar")
+                include(name: "poi-ooxml-schemas.jar")
+                include(name: "poi-ooxml.jar")
+                include(name: "poi.jar")
+                include(name: "spring-aop.jar")
+                include(name: "spring-beans.jar")
+                include(name: "spring-context.jar")
+                include(name: "spring-core.jar")
+                include(name: "spring-web.jar")
+                include(name: "spring-webmvc.jar")
+                include(name: "spring-expression.jar")
+                include(name: "stream-supporting-httpinvoker.jar")
+            }
+        }
+    }
 }
 dssUploadGuiStandalone.dependsOn signWebStartJars
 
