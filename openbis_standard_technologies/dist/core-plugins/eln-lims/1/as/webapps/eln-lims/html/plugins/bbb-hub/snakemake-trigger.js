@@ -6,9 +6,14 @@ var SnakemakeTrigger = new function() {
 
     this.paintTriggerContainers = function($container, model, experiment) {
         $model = model;
-        SnakemakeTrigger.paintFormContainers($container);
-        SnakemakeTrigger.paintProcessAll();
-        files = SnakemakeTrigger.getFiles(experiment);
+        BBBServerFacade.userIsAdmin(function(isAdmin) {
+            UiComponents.stopLoading();
+            if (isAdmin) {
+                SnakemakeTrigger.paintFormContainers($container);
+                SnakemakeTrigger.paintProcessAll();
+                files = SnakemakeTrigger.getFiles(experiment);
+            }
+        });
     }
 
     this.paintFormContainers = function($container) {

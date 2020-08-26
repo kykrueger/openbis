@@ -1,5 +1,12 @@
 var UiComponents = new function() {
 
+    this.addLabelInInput = function($input, label)
+    {
+        var $inputGroup = $("<div>", { class : "input-group" });
+        $inputGroup.append($("<span>", { class : "input-group-addon" }).text(label).css({ 'min-width' : '150px' }));
+        $input.append($inputGroup);
+    }
+
     this.getButton = function($html, action, size, icon) {
         var buttonSize = size ? size : 'md';
         var $button = $('<button>', {
