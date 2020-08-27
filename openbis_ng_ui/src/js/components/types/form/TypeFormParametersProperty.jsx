@@ -429,7 +429,6 @@ class TypeFormParametersProperty extends React.PureComponent {
           value: materialType.code
         }
       })
-      options.unshift({})
     }
 
     return (
@@ -438,11 +437,14 @@ class TypeFormParametersProperty extends React.PureComponent {
           reference={this.references.materialType}
           label='Material Type'
           name='materialType'
-          mandatory={true}
           error={error}
           disabled={!enabled}
           value={value}
           options={options}
+          emptyOption={{
+            label: '(all)',
+            selectable: true
+          }}
           mode={mode}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
@@ -471,7 +473,6 @@ class TypeFormParametersProperty extends React.PureComponent {
           value: sampleType.code
         }
       })
-      options.unshift({})
     }
 
     return (
@@ -480,11 +481,14 @@ class TypeFormParametersProperty extends React.PureComponent {
           reference={this.references.sampleType}
           label='Sample Type'
           name='sampleType'
-          mandatory={true}
           error={error}
           disabled={!enabled}
           value={value}
           options={options}
+          emptyOption={{
+            label: '(all)',
+            selectable: true
+          }}
           mode={mode}
           onChange={this.handleChange}
           onFocus={this.handleFocus}

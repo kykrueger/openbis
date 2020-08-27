@@ -119,10 +119,12 @@ export default class TypeFormFacade {
   }
 
   async loadVocabularyTerms(vocabulary) {
-    let criteria = new openbis.VocabularyTermSearchCriteria()
-    let fo = new openbis.VocabularyTermFetchOptions()
-
+    const criteria = new openbis.VocabularyTermSearchCriteria()
     criteria.withVocabulary().withCode().thatEquals(vocabulary)
+
+    const fo = new openbis.VocabularyTermFetchOptions()
+    fo.sortBy().code().asc()
+    fo.from(0).count(10)
 
     return openbis
       .searchVocabularyTerms(criteria, fo)
@@ -146,10 +148,12 @@ export default class TypeFormFacade {
   }
 
   async loadMaterials(materialType) {
-    let criteria = new openbis.MaterialSearchCriteria()
-    let fo = new openbis.MaterialFetchOptions()
-
+    const criteria = new openbis.MaterialSearchCriteria()
     criteria.withType().withCode().thatEquals(materialType)
+
+    const fo = new openbis.MaterialFetchOptions()
+    fo.sortBy().code().asc()
+    fo.from(0).count(10)
 
     return openbis.searchMaterials(criteria, fo).then(result => result.objects)
   }

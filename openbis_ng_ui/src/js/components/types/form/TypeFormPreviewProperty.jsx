@@ -362,7 +362,6 @@ class TypeFormPreviewProperty extends React.PureComponent {
         value: term.code,
         label: term.label
       }))
-      options.unshift({})
     }
 
     return (
@@ -373,6 +372,10 @@ class TypeFormPreviewProperty extends React.PureComponent {
         value={value}
         mandatory={this.getMandatory()}
         options={options}
+        emptyOption={{
+          label: '(vocabulary terms preview)',
+          selectable: false
+        }}
         metadata={this.getMetadata()}
         error={this.getError()}
         styles={this.getStyles()}
@@ -394,7 +397,6 @@ class TypeFormPreviewProperty extends React.PureComponent {
       options = materials.map(material => ({
         value: material.code
       }))
-      options.unshift({})
     }
 
     return (
@@ -405,6 +407,10 @@ class TypeFormPreviewProperty extends React.PureComponent {
         value={value}
         mandatory={this.getMandatory()}
         options={options}
+        emptyOption={{
+          label: '(materials preview)',
+          selectable: false
+        }}
         metadata={this.getMetadata()}
         error={this.getError()}
         styles={this.getStyles()}
@@ -426,7 +432,6 @@ class TypeFormPreviewProperty extends React.PureComponent {
       options = samples.map(sample => ({
         value: sample.identifier.identifier
       }))
-      options.unshift({})
     }
 
     return (
@@ -437,6 +442,10 @@ class TypeFormPreviewProperty extends React.PureComponent {
         value={value}
         mandatory={this.getMandatory()}
         options={options}
+        emptyOption={{
+          label: '(samples preview)',
+          selectable: false
+        }}
         metadata={this.getMetadata()}
         error={this.getError()}
         styles={this.getStyles()}

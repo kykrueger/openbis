@@ -27,7 +27,8 @@ const styles = theme => ({
 class SelectFormField extends React.PureComponent {
   static defaultProps = {
     mode: 'edit',
-    variant: 'filled'
+    variant: 'filled',
+    emptyOption: null
   }
 
   constructor(props) {
@@ -88,6 +89,7 @@ class SelectFormField extends React.PureComponent {
       mandatory,
       disabled,
       error,
+      emptyOption,
       metadata,
       styles,
       onChange,
@@ -126,8 +128,11 @@ class SelectFormField extends React.PureComponent {
           onFocus={this.handleFocus}
           onBlur={this.handleBlur}
           fullWidth={true}
-          InputLabelProps={{ shrink: !!value }}
+          InputLabelProps={{
+            shrink: !!value || this.getOptionSelectable(emptyOption)
+          }}
           SelectProps={{
+            displayEmpty: this.getOptionSelectable(emptyOption),
             MenuProps: {
               getContentAnchorEl: null,
               anchorOrigin: {
@@ -145,17 +150,27 @@ class SelectFormField extends React.PureComponent {
             root: classes.textField
           }}
         >
-          {this.getSortedOptions().map(option => (
-            <MenuItem
-              key={option.value || ''}
-              value={option.value || ''}
-              classes={{ root: classes.option }}
-            >
-              {this.getOptionText(option)}
-            </MenuItem>
-          ))}
+          {this.getOptions().map(option => this.renderOption(option))}
         </TextField>
       </FormFieldContainer>
+    )
+  }
+
+  renderOption(option) {
+    const { emptyOption, classes } = this.props
+
+    return (
+      <MenuItem
+        key={option.value || ''}
+        value={option.value || ''}
+        classes={{ root: classes.option }}
+      >
+        {option === emptyOption ? (
+          <em>{this.getOptionText(option)}</em>
+        ) : (
+          this.getOptionText(option)
+        )}
+      </MenuItem>
     )
   }
 
@@ -173,19 +188,25 @@ class SelectFormField extends React.PureComponent {
     }
   }
 
-  getSortedOptions() {
-    const { options, sort = true } = this.props
+  getOptions() {
+    const { options, emptyOption, sort = true } = this.props
 
     if (options) {
+      let result = Array.from(options)
+
       if (sort) {
-        return Array.from(options).sort((option1, option2) => {
+        result.sort((option1, option2) => {
           const text1 = this.getOptionText(option1)
           const text2 = this.getOptionText(option2)
           return compare(text1, text2)
         })
-      } else {
-        return options
       }
+
+      if (emptyOption) {
+        result.unshift(emptyOption)
+      }
+
+      return result
     } else {
       return []
     }
@@ -193,6 +214,14 @@ class SelectFormField extends React.PureComponent {
 
   getOptionText(option) {
     return option.label || option.value || ''
+  }
+
+  getOptionSelectable(option) {
+    if (option) {
+      return option.selectable === undefined || option.selectable
+    } else {
+      return false
+    }
   }
 }
 
