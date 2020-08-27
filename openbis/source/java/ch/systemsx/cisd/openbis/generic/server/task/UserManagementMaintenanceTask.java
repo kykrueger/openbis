@@ -137,22 +137,34 @@ public class UserManagementMaintenanceTask extends AbstractMaintenanceTask
             {
                 if (StringUtils.isBlank(ldapGroupKey))
                 {
-                    operationLog.warn("Group '" + key + "' skipped because of empty ldapGroupKey.");
-                    return;
-                }
-                try
+                    operationLog.warn("Group '" + key + "' has empty ldapGroupKey.");
+                } else
                 {
-                    for (Principal principal : getUsersOfGroup(ldapGroupKey))
+                    try
                     {
-                        principalsByUserId.put(principal.getUserId(), principal);
+                        List<Principal> principals = getUsersOfGroup(ldapGroupKey);
+                        if (group.isEnabled() && principals.isEmpty())
+                        {
+                            operationLog.warn("Group '" + key + "' has no users found for ldapGroupKey '" + ldapGroupKey + "'.");
+                        }
+                        for (Principal principal : principals)
+                        {
+                            principalsByUserId.put(principal.getUserId(), principal);
+                        }
+                    } catch (Throwable e)
+                    {
+                        operationLog.error("Group '" + key + "' leads to error for ldapGroupKey '" + ldapGroupKey + "': " + e, e);
                     }
-                } catch (Throwable e)
-                {
-                    operationLog.error("Group '" + key + "' skipped because of " + e, e);
                 }
             }
         }
-        userManager.addGroup(group, principalsByUserId);
+        if (principalsByUserId.isEmpty())
+        {
+            operationLog.warn("Group '" + key + "' skipped because no users specified or found.");
+        } else
+        {
+            userManager.addGroup(group, principalsByUserId);
+        }
     }
 
     private void handleReport(UserManagerReport report)

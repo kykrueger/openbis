@@ -199,8 +199,7 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
                 + "INFO  OPERATION.UserManagementMaintenanceTaskWithMocks - Common spaces: {}\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTaskWithMocks - Common samples: {}\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTaskWithMocks - Common experiments: {}\n"
-                + "INFO  OPERATION.UserManagementMaintenanceTaskWithMocks - Add group ABC[name:null, enabled:true, ldapGroupKeys:null, users:null, admins:null] with users []\n"
-                + "INFO  OPERATION.UserManagementMaintenanceTaskWithMocks - 0 users for group ABC\n"
+                + "WARN  OPERATION.UserManagementMaintenanceTaskWithMocks - Group 'ABC' skipped because no users specified or found.\n" 
                 + "INFO  OPERATION.UserManagementMaintenanceTaskWithMocks - finished",
                 logRecorder.getLogContent());
     }
@@ -255,7 +254,8 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
                 + "INFO  OPERATION.UserManagementMaintenanceTaskWithMocks - Common spaces: {}\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTaskWithMocks - Common samples: {}\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTaskWithMocks - Common experiments: {}\n"
-                + "WARN  OPERATION.UserManagementMaintenanceTaskWithMocks - Group 'ABC' skipped because of empty ldapGroupKey.\n"
+                + "WARN  OPERATION.UserManagementMaintenanceTaskWithMocks - Group 'ABC' has empty ldapGroupKey.\n"
+                + "WARN  OPERATION.UserManagementMaintenanceTaskWithMocks - Group 'ABC' skipped because no users specified or found.\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTaskWithMocks - finished",
                 logRecorder.getLogContent());
     }
@@ -282,8 +282,8 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
                 + "INFO  OPERATION.UserManagementMaintenanceTaskWithMocks - Common spaces: {}\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTaskWithMocks - Common samples: {}\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTaskWithMocks - Common experiments: {}\n"
-                + "INFO  OPERATION.UserManagementMaintenanceTaskWithMocks - Add group ABC[name:null, enabled:true, ldapGroupKeys:[a1], users:null, admins:null] with users []\n"
-                + "INFO  OPERATION.UserManagementMaintenanceTaskWithMocks - 0 users for group ABC\n"
+                + "WARN  OPERATION.UserManagementMaintenanceTaskWithMocks - Group 'ABC' has no users found for ldapGroupKey 'a1'.\n"
+                + "WARN  OPERATION.UserManagementMaintenanceTaskWithMocks - Group 'ABC' skipped because no users specified or found.\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTaskWithMocks - finished",
                 logRecorder.getLogContent());
     }
