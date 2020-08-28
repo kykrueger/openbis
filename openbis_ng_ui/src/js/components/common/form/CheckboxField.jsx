@@ -121,6 +121,7 @@ class CheckboxFormField extends React.PureComponent {
               label={label}
               mandatory={mandatory}
               styles={styles}
+              onClick={onClick}
             />
           </Typography>
         </div>

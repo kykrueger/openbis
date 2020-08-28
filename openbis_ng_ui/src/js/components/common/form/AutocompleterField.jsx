@@ -218,9 +218,14 @@ class AutocompleterFormField extends React.PureComponent {
   }
 
   renderLabel() {
-    const { label, mandatory, styles } = this.props
+    const { label, mandatory, styles, onClick } = this.props
     return (
-      <FormFieldLabel label={label} mandatory={mandatory} styles={styles} />
+      <FormFieldLabel
+        label={label}
+        mandatory={mandatory}
+        styles={styles}
+        onClick={onClick}
+      />
     )
   }
 

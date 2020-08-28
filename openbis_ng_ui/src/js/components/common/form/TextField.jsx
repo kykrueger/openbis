@@ -93,6 +93,7 @@ class TextFormField extends React.PureComponent {
               label={label}
               mandatory={mandatory}
               styles={styles}
+              onClick={onClick}
             />
           }
           InputProps={{

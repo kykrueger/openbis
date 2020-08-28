@@ -203,6 +203,7 @@ class VocabularyFormParametersTerm extends React.PureComponent {
           reference={this.references.official}
           label='Official'
           name='official'
+          description='Unofficial (aka ad-hoc) terms can be created by regular users from the non-admin UI. Once verified a term can be made official by an admin. WARNING: Official terms cannot be made unofficial again.'
           error={error}
           disabled={!enabled}
           value={value}

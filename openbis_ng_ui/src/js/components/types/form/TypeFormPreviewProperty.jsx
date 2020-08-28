@@ -40,8 +40,7 @@ const styles = theme => ({
     opacity: 0.4
   },
   partEmpty: {
-    fontStyle: 'italic',
-    opacity: 0.7
+    fontStyle: 'italic'
   },
   partSelected: {
     cursor: 'pointer',
@@ -58,11 +57,15 @@ const styles = theme => ({
     cursor: 'pointer',
     pointerEvents: 'initial',
     paddingBottom: '1px',
+    borderColor: 'transparent',
+    borderStyle: 'solid',
+    borderWidth: '0px 0px 2px 0px',
     '&:hover': {
-      borderStyle: 'solid',
-      borderWidth: '0px 0px 2px 0px',
       borderColor: theme.palette.border.primary
     }
+  },
+  property: {
+    marginTop: '-6px'
   }
 })
 
@@ -319,51 +322,55 @@ class TypeFormPreviewProperty extends React.PureComponent {
   }
 
   renderVarcharProperty() {
-    const { property, value, mode } = this.props
+    const { property, value, mode, classes } = this.props
     return (
-      <TextField
-        name={property.id}
-        label={this.getLabel()}
-        description={this.getDescription()}
-        value={value}
-        mandatory={this.getMandatory()}
-        multiline={this.getMultiline()}
-        metadata={this.getMetadata()}
-        error={this.getError()}
-        styles={this.getStyles()}
-        mode='edit'
-        disabled={mode !== 'edit'}
-        onClick={this.handlePropertyClick}
-        onChange={this.handleChange}
-      />
+      <div className={classes.property}>
+        <TextField
+          name={property.id}
+          label={this.getLabel()}
+          description={this.getDescription()}
+          value={value}
+          mandatory={this.getMandatory()}
+          multiline={this.getMultiline()}
+          metadata={this.getMetadata()}
+          error={this.getError()}
+          styles={this.getStyles()}
+          mode='edit'
+          disabled={mode !== 'edit'}
+          onClick={this.handlePropertyClick}
+          onChange={this.handleChange}
+        />
+      </div>
     )
   }
 
   renderNumberProperty() {
-    const { property, value, mode } = this.props
+    const { property, value, mode, classes } = this.props
     return (
-      <TextField
-        type='number'
-        name={property.id}
-        label={this.getLabel()}
-        description={this.getDescription()}
-        value={value}
-        mandatory={this.getMandatory()}
-        metadata={this.getMetadata()}
-        error={this.getError()}
-        styles={this.getStyles()}
-        mode='edit'
-        disabled={mode !== 'edit'}
-        onClick={this.handlePropertyClick}
-        onChange={this.handleChange}
-      />
+      <div className={classes.property}>
+        <TextField
+          type='number'
+          name={property.id}
+          label={this.getLabel()}
+          description={this.getDescription()}
+          value={value}
+          mandatory={this.getMandatory()}
+          metadata={this.getMetadata()}
+          error={this.getError()}
+          styles={this.getStyles()}
+          mode='edit'
+          disabled={mode !== 'edit'}
+          onClick={this.handlePropertyClick}
+          onChange={this.handleChange}
+        />
+      </div>
     )
   }
 
   renderBooleanProperty() {
-    const { property, value, mode } = this.props
+    const { property, value, mode, classes } = this.props
     return (
-      <div>
+      <div className={classes.property}>
         <CheckboxField
           name={property.id}
           label={this.getLabel()}
@@ -383,7 +390,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
   }
 
   renderVocabularyProperty() {
-    const { property, value, mode } = this.props
+    const { property, value, mode, classes } = this.props
     const { terms } = this.state
 
     let options = []
@@ -396,30 +403,32 @@ class TypeFormPreviewProperty extends React.PureComponent {
     }
 
     return (
-      <SelectField
-        name={property.id}
-        label={this.getLabel()}
-        description={this.getDescription()}
-        value={value}
-        mandatory={this.getMandatory()}
-        options={options}
-        emptyOption={{
-          label: '(vocabulary terms preview)',
-          selectable: false
-        }}
-        metadata={this.getMetadata()}
-        error={this.getError()}
-        styles={this.getStyles()}
-        mode='edit'
-        disabled={mode !== 'edit'}
-        onClick={this.handlePropertyClick}
-        onChange={this.handleChange}
-      />
+      <div className={classes.property}>
+        <SelectField
+          name={property.id}
+          label={this.getLabel()}
+          description={this.getDescription()}
+          value={value}
+          mandatory={this.getMandatory()}
+          options={options}
+          emptyOption={{
+            label: '(vocabulary terms preview)',
+            selectable: false
+          }}
+          metadata={this.getMetadata()}
+          error={this.getError()}
+          styles={this.getStyles()}
+          mode='edit'
+          disabled={mode !== 'edit'}
+          onClick={this.handlePropertyClick}
+          onChange={this.handleChange}
+        />
+      </div>
     )
   }
 
   renderMaterialProperty() {
-    const { property, value, mode } = this.props
+    const { property, value, mode, classes } = this.props
     const { materials } = this.state
 
     let options = []
@@ -431,30 +440,32 @@ class TypeFormPreviewProperty extends React.PureComponent {
     }
 
     return (
-      <SelectField
-        name={property.id}
-        label={this.getLabel()}
-        description={this.getDescription()}
-        value={value}
-        mandatory={this.getMandatory()}
-        options={options}
-        emptyOption={{
-          label: '(materials preview)',
-          selectable: false
-        }}
-        metadata={this.getMetadata()}
-        error={this.getError()}
-        styles={this.getStyles()}
-        mode='edit'
-        disabled={mode !== 'edit'}
-        onClick={this.handlePropertyClick}
-        onChange={this.handleChange}
-      />
+      <div className={classes.property}>
+        <SelectField
+          name={property.id}
+          label={this.getLabel()}
+          description={this.getDescription()}
+          value={value}
+          mandatory={this.getMandatory()}
+          options={options}
+          emptyOption={{
+            label: '(materials preview)',
+            selectable: false
+          }}
+          metadata={this.getMetadata()}
+          error={this.getError()}
+          styles={this.getStyles()}
+          mode='edit'
+          disabled={mode !== 'edit'}
+          onClick={this.handlePropertyClick}
+          onChange={this.handleChange}
+        />
+      </div>
     )
   }
 
   renderSampleProperty() {
-    const { property, value, mode } = this.props
+    const { property, value, mode, classes } = this.props
     const { samples } = this.state
 
     let options = []
@@ -466,25 +477,27 @@ class TypeFormPreviewProperty extends React.PureComponent {
     }
 
     return (
-      <SelectField
-        name={property.id}
-        label={this.getLabel()}
-        description={this.getDescription()}
-        value={value}
-        mandatory={this.getMandatory()}
-        options={options}
-        emptyOption={{
-          label: '(samples preview)',
-          selectable: false
-        }}
-        metadata={this.getMetadata()}
-        error={this.getError()}
-        styles={this.getStyles()}
-        mode='edit'
-        disabled={mode !== 'edit'}
-        onClick={this.handlePropertyClick}
-        onChange={this.handleChange}
-      />
+      <div className={classes.property}>
+        <SelectField
+          name={property.id}
+          label={this.getLabel()}
+          description={this.getDescription()}
+          value={value}
+          mandatory={this.getMandatory()}
+          options={options}
+          emptyOption={{
+            label: '(samples preview)',
+            selectable: false
+          }}
+          metadata={this.getMetadata()}
+          error={this.getError()}
+          styles={this.getStyles()}
+          mode='edit'
+          disabled={mode !== 'edit'}
+          onClick={this.handlePropertyClick}
+          onChange={this.handleChange}
+        />
+      </div>
     )
   }
 

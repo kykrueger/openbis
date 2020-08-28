@@ -14,6 +14,21 @@ const styles = theme => ({
 })
 
 class FormFieldLabel extends React.PureComponent {
+  constructor(props) {
+    super(props)
+    this.handleClick = this.handleClick.bind(this)
+  }
+
+  handleClick(event) {
+    const { onClick } = this.props
+    if (onClick) {
+      event.stopPropagation()
+      event.originalTarget = event.target
+      event.target = event.currentTarget
+      onClick(event)
+    }
+  }
+
   render() {
     logger.log(logger.DEBUG, 'FormFieldLabel.render')
 
@@ -24,6 +39,7 @@ class FormFieldLabel extends React.PureComponent {
         {label && (
           <span
             data-part='label'
+            onClick={this.handleClick}
             className={`${classes.labelDefault} ${styles.label}`}
           >
             {label}
@@ -32,6 +48,7 @@ class FormFieldLabel extends React.PureComponent {
         {mandatory && (
           <span
             data-part='mandatory'
+            onClick={this.handleClick}
             className={`${classes.mandatoryDefault} ${styles.mandatory}`}
           >
             *

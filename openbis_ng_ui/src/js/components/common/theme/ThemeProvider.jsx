@@ -24,6 +24,9 @@ const config = {
     warning: {
       main: '#ff9609'
     },
+    hint: {
+      main: '#bdbdbd'
+    },
     background: {
       primary: '#ebebeb',
       secondary: '#f5f5f5'
