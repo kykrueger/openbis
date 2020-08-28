@@ -1,15 +1,13 @@
 package ch.ethz.sis.benchmark.impl;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.rmi.server.UID;
+import java.util.*;
 
 import ch.ethz.sis.benchmark.Benchmark;
 import ch.ethz.sis.benchmark.impl.jdbc.ApplicationServerApiPostgresWrapper;
 import ch.ethz.sis.benchmark.util.RandomValueGenerator;
 import ch.ethz.sis.benchmark.util.RandomWord;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.CreationId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.create.ExperimentCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.create.ExperimentTypeCreation;
@@ -20,6 +18,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleTypeCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleTypeFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.create.SpaceCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
@@ -30,7 +29,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
 
 public class LoadBenchmark extends Benchmark {
 	
-	private enum Parameters { SPACES_TO_CREATE, SAMPLES_TO_CREATE, USE_DATABASE, DATABASE_URL, DATABASE_USER, DATABASE_PASS }
+	private enum Parameters { SPACES_TO_CREATE, SAMPLES_TO_CREATE, USE_DATABASE, DATABASE_URL, DATABASE_USER, DATABASE_PASS, SET_SAMPLES_RELATIONSHIPS }
 	private enum Prefix { SPACE_, COLLECTION_, PROJECT_, OBJECT_ }
 	
 	@Override
@@ -165,12 +164,16 @@ public class LoadBenchmark extends Benchmark {
         int sampleBatchSize = 5000;
         int samplesToCreate = Integer.parseInt(this.getConfiguration().getParameters().get(Parameters.SAMPLES_TO_CREATE.name()));
         List<SampleCreation> sampleCreations = new ArrayList<SampleCreation>();
+        boolean setSamplesRelationships = Boolean.parseBoolean(this.getConfiguration().getParameters().get(
+                Parameters.SET_SAMPLES_RELATIONSHIPS.name()));
+        int relationshipsIndex = 0;
         for(int i = 0; i < samplesToCreate; i++) {
         		SampleCreation sampleCreation = new SampleCreation();
         		String sampleCode = null;
         		while(sampleCode == null || sampleCodes.contains(sampleCode)) {
         			sampleCode = "SAMPLE_" + RandomWord.getRandomWord() + "_" + RandomWord.getRandomWord() + "_" + RandomWord.getRandomWord();
         		}
+                sampleCreation.setCreationId(new CreationId(UUID.randomUUID().toString()));
         		sampleCreation.setTypeId(sampleTypeCode);
         		sampleCreation.setCode(sampleCode);
         		sampleCreation.setProperty(propertyTypeCode1, RandomWord.getRandomWord() + " " + RandomWord.getRandomWord());
@@ -181,7 +184,23 @@ public class LoadBenchmark extends Benchmark {
         		sampleCreation.setProjectId(new ProjectIdentifier("/" + Prefix.SPACE_ + code + "/" + Prefix.PROJECT_ + code));
                 sampleCreation.setExperimentId(new ExperimentIdentifier("/" + Prefix.SPACE_ + code + "/" + Prefix.PROJECT_ + code + "/" + Prefix.COLLECTION_ + code));
         		sampleCreations.add(sampleCreation);
-        		if((i+1) % sampleBatchSize == 0) { // Every 5000, send to openBIS
+
+                if (setSamplesRelationships && relationshipsIndex % 5 == 4)
+                {
+                    SampleCreation sampleCreation1 = sampleCreations.get(relationshipsIndex - 1);
+                    SampleCreation sampleCreation2 = sampleCreations.get(relationshipsIndex - 2);
+                    SampleCreation sampleCreation3 = sampleCreations.get(relationshipsIndex - 3);
+                    SampleCreation sampleCreation4 = sampleCreations.get(relationshipsIndex - 4);
+
+                    sampleCreation2.setParentIds(Arrays.asList(sampleCreation1.getCreationId()));
+                    sampleCreation3.setParentIds(Arrays.asList(sampleCreation1.getCreationId()));
+                    sampleCreation4.setParentIds(Arrays.asList(sampleCreation2.getCreationId()));
+                }
+
+                relationshipsIndex++;
+
+        		if(samplesToCreate > sampleBatchSize && (i+1) % sampleBatchSize == 0 || // Every 5000, send to openBIS
+                    samplesToCreate < sampleBatchSize && samplesToCreate == sampleCreations.size()) { // If less than 5000, send to openBIS
                     // Use JDBC If requested
                     boolean useDatabase = Boolean.parseBoolean(this.getConfiguration().getParameters().get(Parameters.USE_DATABASE.name()));
                     if (useDatabase) {
@@ -199,6 +218,7 @@ public class LoadBenchmark extends Benchmark {
         			logout();
         			//logger.info("Create " + sampleCreations.size() + " Samples took: " + (lapEnd4 - lapStart4) + " millis - " + ((lapEnd4-lapStart4)/sampleCreations.size()) + " millis/sample");
         			sampleCreations.clear();
+                    relationshipsIndex = 0;
         		}
         }
         long end4 = System.currentTimeMillis();

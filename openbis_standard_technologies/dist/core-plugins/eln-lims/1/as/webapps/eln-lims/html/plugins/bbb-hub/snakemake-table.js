@@ -143,7 +143,7 @@ var SnakemakeTable = new function() {
             if (roles[i].project !== null) {
                 var value = projects[roles[i].project.code];
                 projects[roles[i].project.code] = SnakemakeTable.appendValue(value, user, group);
-            } else {
+            } else if (roles[i].space !== null) {
                 var value = spaces[roles[i].space.code];
                 spaces[roles[i].space.code] = SnakemakeTable.appendValue(value, user, group);
             }

@@ -239,6 +239,7 @@ test {
 }
 test.dependsOn checkRestrictions
 
+// Legacy Java 8 compiler from eclipse
 dependencies {
     ecj "eclipse:ecj:4.6.1"
 }
@@ -247,9 +248,16 @@ compileJava {
     options.encoding = 'utf-8'
     options.fork = true
     doFirst {
-        options.forkOptions.with {
-            executable = 'java'
-            jvmArgs = createJvmArgs()
+        // Use the legacy Java 8 compiler from eclipse for Java 8
+        if(System.getProperty("java.version").startsWith("1.8.")) {
+            options.forkOptions.with {
+                executable = 'java'
+                jvmArgs = createEclipseJDK8Args()
+            }
+        } else if(System.getProperty("java.version").startsWith("11.")) {
+            // Use modern openJDK 11 Compiler
+        } else {
+            throw new Exception("Unsupported Java version found: '" + System.getProperty("java.version") + "', please use JDK8 or JDK11");
         }
     }
 }
@@ -258,14 +266,21 @@ compileTestJava {
     options.encoding = 'utf-8'
     options.fork = true
     doFirst {
-        options.forkOptions.with {
-            executable = 'java'
-            jvmArgs = createJvmArgs()
+        // Use the legacy Java 8 compiler from eclipse for Java 8
+        if(System.getProperty("java.version").startsWith("1.8.")) {
+            options.forkOptions.with {
+                executable = 'java'
+                jvmArgs = createEclipseJDK8Args()
+            }
+        } else if(System.getProperty("java.version").startsWith("11.")) {
+            // Use modern openJDK 11 Compiler
+        } else {
+            throw new Exception("Unsupported Java version found: '" + System.getProperty("java.version") + "', please use JDK8 or JDK11");
         }
     }
 }
 
-def createJvmArgs() {
+def createEclipseJDK8Args() {
     def args = ['-cp', configurations.ecj.asPath, 'org.eclipse.jdt.internal.compiler.batch.Main', '-nowarn']
     return args
 }

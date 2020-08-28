@@ -30,5 +30,5 @@ public enum DataTypeCode implements Serializable
 {
     // Do not refactor names - they are stored in database.
     INTEGER, VARCHAR, MULTILINE_VARCHAR, REAL, TIMESTAMP, BOOLEAN, CONTROLLEDVOCABULARY, MATERIAL,
-    HYPERLINK, XML, SAMPLE;
+    HYPERLINK, XML, SAMPLE, DATE;
 }

@@ -10,7 +10,7 @@ repositories {
 
 dependencies {
 	compile 'eclipse:jetty-all:9.4.30.v20200611',
-			'lombok:lombok:1.16.20',
+            'lombok:lombok:1.18.12',
 			'log4j:log4j-api:2.10.0',
 			'log4j:log4j-core:2.10.0',
 			'fasterxml:jackson-annotations:2.9.10',
@@ -18,7 +18,7 @@ dependencies {
 			'fasterxml:jackson-databind:2.9.10',
 			'openbis:openbis-v3-api-batteries-included:S269'
 
-    annotationProcessor 'lombok:lombok:1.16.20'
+    annotationProcessor 'lombok:lombok:1.18.12'
 }
 
 
