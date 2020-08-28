@@ -149,7 +149,9 @@ export default class TypeFormFacade {
 
   async loadMaterials(materialType) {
     const criteria = new openbis.MaterialSearchCriteria()
-    criteria.withType().withCode().thatEquals(materialType)
+    if (materialType) {
+      criteria.withType().withCode().thatEquals(materialType)
+    }
 
     const fo = new openbis.MaterialFetchOptions()
     fo.sortBy().code().asc()
