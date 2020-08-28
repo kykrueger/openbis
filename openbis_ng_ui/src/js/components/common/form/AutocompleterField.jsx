@@ -24,6 +24,11 @@ const styles = theme => ({
   option: {
     fontSize: theme.typography.body2.fontSize
   },
+  disabled: {
+    '& $adornment': {
+      color: '#00000042'
+    }
+  },
   adornment: {
     marginRight: '-4px',
     marginTop: '-16px',
@@ -53,11 +58,13 @@ class AutocompleterFormField extends React.PureComponent {
   }
 
   handleClick(event) {
-    const { onClick } = this.props
+    const { onClick, disabled } = this.props
 
-    this.setState(state => ({
-      open: !state.open
-    }))
+    if (!disabled) {
+      this.setState(state => ({
+        open: !state.open
+      }))
+    }
 
     if (onClick) {
       onClick(event)
@@ -190,7 +197,8 @@ class AutocompleterFormField extends React.PureComponent {
                 endAdornment: this.renderAdornment(),
                 classes: {
                   ...params.InputProps.classes,
-                  input: classes.input
+                  input: classes.input,
+                  disabled: classes.disabled
                 }
               }}
               label={this.renderLabel()}
