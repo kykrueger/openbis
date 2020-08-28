@@ -74,9 +74,21 @@ class SelectFormField extends React.PureComponent {
   }
 
   renderView() {
-    const { label, value, options } = this.props
-    const option = options.find(option => option.value === value)
-    return <FormFieldView label={label} value={option ? option.label : null} />
+    const { label, value, options, emptyOption } = this.props
+
+    if (value) {
+      const option = options.find(option => option.value === value)
+      return <FormFieldView label={label} value={this.getOptionText(option)} />
+    } else if (
+      this.getOptionSelectable(emptyOption) &&
+      this.getOptionText(emptyOption)
+    ) {
+      return (
+        <FormFieldView label={label} value={this.getOptionText(emptyOption)} />
+      )
+    } else {
+      return <FormFieldView label={label} />
+    }
   }
 
   renderEdit() {
@@ -129,7 +141,10 @@ class SelectFormField extends React.PureComponent {
           onBlur={this.handleBlur}
           fullWidth={true}
           InputLabelProps={{
-            shrink: !!value || this.getOptionSelectable(emptyOption)
+            shrink:
+              !!value ||
+              (this.getOptionSelectable(emptyOption) &&
+                this.getOptionText(emptyOption))
           }}
           SelectProps={{
             displayEmpty: this.getOptionSelectable(emptyOption),
@@ -213,7 +228,11 @@ class SelectFormField extends React.PureComponent {
   }
 
   getOptionText(option) {
-    return option.label || option.value || ''
+    if (option) {
+      return option.label || option.value || ''
+    } else {
+      return ''
+    }
   }
 
   getOptionSelectable(option) {
