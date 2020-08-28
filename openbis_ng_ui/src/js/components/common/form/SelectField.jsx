@@ -144,7 +144,7 @@ class SelectFormField extends React.PureComponent {
             shrink:
               !!value ||
               (this.getOptionSelectable(emptyOption) &&
-                this.getOptionText(emptyOption))
+                !!this.getOptionText(emptyOption))
           }}
           SelectProps={{
             displayEmpty: this.getOptionSelectable(emptyOption),
