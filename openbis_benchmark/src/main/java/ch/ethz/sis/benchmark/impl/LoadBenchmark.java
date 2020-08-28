@@ -199,7 +199,8 @@ public class LoadBenchmark extends Benchmark {
 
                 relationshipsIndex++;
 
-        		if((i+1) % sampleBatchSize == 0) { // Every 5000, send to openBIS
+        		if(samplesToCreate > sampleBatchSize && (i+1) % sampleBatchSize == 0 || // Every 5000, send to openBIS
+                    samplesToCreate < sampleBatchSize && samplesToCreate == sampleCreations.size()) { // If less than 5000, send to openBIS
                     // Use JDBC If requested
                     boolean useDatabase = Boolean.parseBoolean(this.getConfiguration().getParameters().get(Parameters.USE_DATABASE.name()));
                     if (useDatabase) {
