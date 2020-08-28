@@ -196,18 +196,17 @@ class TypeFormParametersType extends React.PureComponent {
     }
 
     const { mode, classes, controller } = this.props
-    const { validationPlugins = [] } = controller.getDictionaries()
+    const { validationPlugins } = controller.getDictionaries()
 
     let options = []
 
-    if (validationPlugins.length > 0) {
+    if (validationPlugins) {
       options = validationPlugins.map(validationPlugin => {
         return {
           label: validationPlugin.name,
           value: validationPlugin.name
         }
       })
-      options.unshift({})
     }
 
     return (
@@ -220,6 +219,7 @@ class TypeFormParametersType extends React.PureComponent {
           disabled={!enabled}
           value={value}
           options={options}
+          emptyOption={{}}
           mode={mode}
           onChange={this.handleChange}
           onFocus={this.handleFocus}

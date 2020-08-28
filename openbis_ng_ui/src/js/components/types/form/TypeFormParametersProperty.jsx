@@ -345,7 +345,6 @@ class TypeFormParametersProperty extends React.PureComponent {
         value: dataType
       }
     })
-    options.unshift({})
 
     const { mode, classes } = this.props
     return (
@@ -376,18 +375,17 @@ class TypeFormParametersProperty extends React.PureComponent {
     }
 
     const { mode, classes, controller } = this.props
-    const { vocabularies = [] } = controller.getDictionaries()
+    const { vocabularies } = controller.getDictionaries()
 
     let options = []
 
-    if (vocabularies.length > 0) {
+    if (vocabularies) {
       options = vocabularies.map(vocabulary => {
         return {
           label: vocabulary.code,
           value: vocabulary.code
         }
       })
-      options.unshift({})
     }
 
     return (
@@ -418,11 +416,11 @@ class TypeFormParametersProperty extends React.PureComponent {
     }
 
     const { mode, classes, controller } = this.props
-    const { materialTypes = [] } = controller.getDictionaries()
+    const { materialTypes } = controller.getDictionaries()
 
     let options = []
 
-    if (materialTypes.length > 0) {
+    if (materialTypes) {
       options = materialTypes.map(materialType => {
         return {
           label: materialType.code,
@@ -462,11 +460,11 @@ class TypeFormParametersProperty extends React.PureComponent {
     }
 
     const { mode, classes, controller } = this.props
-    const { sampleTypes = [] } = controller.getDictionaries()
+    const { sampleTypes } = controller.getDictionaries()
 
     let options = []
 
-    if (sampleTypes.length > 0) {
+    if (sampleTypes) {
       options = sampleTypes.map(sampleType => {
         return {
           label: sampleType.code,
@@ -562,18 +560,17 @@ class TypeFormParametersProperty extends React.PureComponent {
     }
 
     const { mode, classes, controller } = this.props
-    const { dynamicPlugins = [] } = controller.getDictionaries()
+    const { dynamicPlugins } = controller.getDictionaries()
 
     let options = []
 
-    if (dynamicPlugins.length > 0) {
+    if (dynamicPlugins) {
       options = dynamicPlugins.map(dynamicPlugin => {
         return {
           label: dynamicPlugin.name,
           value: dynamicPlugin.name
         }
       })
-      options.unshift({})
     }
 
     return (
@@ -586,6 +583,7 @@ class TypeFormParametersProperty extends React.PureComponent {
           disabled={!enabled}
           value={value}
           options={options}
+          emptyOption={{}}
           mode={mode}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
