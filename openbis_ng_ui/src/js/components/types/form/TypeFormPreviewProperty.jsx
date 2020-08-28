@@ -78,50 +78,81 @@ class TypeFormPreviewProperty extends React.PureComponent {
   }
 
   componentDidMount() {
-    const { dataType } = this.props.property
+    this.load(null, this.props)
+  }
 
-    if (dataType.value === openbis.DataType.MATERIAL) {
+  componentDidUpdate(prevProps) {
+    this.load(prevProps, this.props)
+  }
+
+  load(prevProps, props) {
+    const prevProperty = prevProps ? prevProps.property : null
+    const property = props ? props.property : null
+
+    if (this.shouldLoadMaterials(prevProperty, property)) {
       this.loadMaterials()
-    } else if (dataType.value === openbis.DataType.SAMPLE) {
+    }
+    if (this.shouldLoadSamples(prevProperty, property)) {
       this.loadSamples()
-    } else if (dataType.value === openbis.DataType.CONTROLLEDVOCABULARY) {
+    }
+    if (this.shouldLoadVocabularyTerms(prevProperty, property)) {
       this.loadVocabularyTerms()
     }
   }
 
-  componentDidUpdate(prevProps) {
-    let { property: prevProperty } = prevProps
-    let { property } = this.props
+  shouldLoadMaterials(prevProperty, property) {
+    const dataType = _.get(property, 'dataType.value')
+    const prevDataType = _.get(prevProperty, 'dataType.value')
+    const materialType = _.get(property, 'materialType.value')
+    const prevMaterialType = _.get(prevProperty, 'materialType.value')
 
-    if (property.materialType.value !== prevProperty.materialType.value) {
-      this.loadMaterials()
-    } else if (property.sampleType.value !== prevProperty.sampleType.value) {
-      this.loadSamples()
-    } else if (property.vocabulary.value !== prevProperty.vocabulary.value) {
-      this.loadVocabularyTerms()
-    }
+    return (
+      dataType === openbis.DataType.MATERIAL &&
+      (prevDataType !== openbis.DataType.MATERIAL ||
+        prevMaterialType !== materialType)
+    )
+  }
+
+  shouldLoadSamples(prevProperty, property) {
+    const dataType = _.get(property, 'dataType.value')
+    const prevDataType = _.get(prevProperty, 'dataType.value')
+    const sampleType = _.get(property, 'sampleType.value')
+    const prevSampleType = _.get(prevProperty, 'sampleType.value')
+
+    return (
+      dataType === openbis.DataType.SAMPLE &&
+      (prevDataType !== openbis.DataType.SAMPLE ||
+        prevSampleType !== sampleType)
+    )
+  }
+
+  shouldLoadVocabularyTerms(prevProperty, property) {
+    const dataType = _.get(property, 'dataType.value')
+    const prevDataType = _.get(prevProperty, 'dataType.value')
+    const vocabulary = _.get(property, 'vocabulary.value')
+    const prevVocabulary = _.get(prevProperty, 'vocabulary.value')
+
+    return (
+      dataType === openbis.DataType.CONTROLLEDVOCABULARY &&
+      (prevDataType !== openbis.DataType.CONTROLLEDVOCABULARY ||
+        prevVocabulary !== vocabulary)
+    )
   }
 
   loadMaterials() {
     const { controller, property } = this.props
 
-    if (property.materialType.value) {
-      return controller
-        .getFacade()
-        .loadMaterials(property.materialType.value)
-        .then(materials => {
-          this.setState(() => ({
-            materials
-          }))
-        })
-        .catch(error => {
-          controller.getContext().dispatch(actions.errorChange(error))
-        })
-    } else {
-      this.setState(() => ({
-        materials: null
-      }))
-    }
+    return controller
+      .getFacade()
+      .loadMaterials(property.materialType.value)
+      .then(materials => {
+        this.setState(() => ({
+          materials
+        }))
+      })
+      .catch(error => {
+        controller.getContext().dispatch(actions.errorChange(error))
+      })
   }
 
   loadSamples() {
