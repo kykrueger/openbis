@@ -3,7 +3,6 @@ import { withStyles } from '@material-ui/core/styles'
 import Container from '@src/js/components/common/form/Container.jsx'
 import Header from '@src/js/components/common/form/Header.jsx'
 import TextField from '@src/js/components/common/form/TextField.jsx'
-import CheckboxField from '@src/js/components/common/form/CheckboxField.jsx'
 import Message from '@src/js/components/common/form/Message.jsx'
 import logger from '@src/js/common/logger.js'
 
@@ -20,8 +19,7 @@ class VocabularyFormParametersVocabulary extends React.PureComponent {
     this.references = {
       code: React.createRef(),
       description: React.createRef(),
-      urlTemplate: React.createRef(),
-      chosenFromList: React.createRef()
+      urlTemplate: React.createRef()
     }
     this.handleChange = this.handleChange.bind(this)
     this.handleFocus = this.handleFocus.bind(this)
@@ -86,7 +84,6 @@ class VocabularyFormParametersVocabulary extends React.PureComponent {
         {this.renderCode(vocabulary)}
         {this.renderDescription(vocabulary)}
         {this.renderUrlTemplate(vocabulary)}
-        {this.renderChosenFromList(vocabulary)}
       </Container>
     )
   }
@@ -172,32 +169,6 @@ class VocabularyFormParametersVocabulary extends React.PureComponent {
           reference={this.references.urlTemplate}
           label='URL template'
           name='urlTemplate'
-          error={error}
-          disabled={!enabled}
-          value={value}
-          mode={mode}
-          onChange={this.handleChange}
-          onFocus={this.handleFocus}
-          onBlur={this.handleBlur}
-        />
-      </div>
-    )
-  }
-
-  renderChosenFromList(vocabulary) {
-    const { visible, enabled, error, value } = { ...vocabulary.chosenFromList }
-
-    if (!visible) {
-      return null
-    }
-
-    const { mode, classes } = this.props
-    return (
-      <div className={classes.field}>
-        <CheckboxField
-          reference={this.references.chosenFromList}
-          label='Chosen from list'
-          name='chosenFromList'
           error={error}
           disabled={!enabled}
           value={value}

@@ -51,9 +51,6 @@ export default class VocabularyFormControllerLoad extends PageControllerLoad {
       urlTemplate: FormUtil.createField({
         value: _.get(loadedVocabulary, 'urlTemplate', null)
       }),
-      chosenFromList: FormUtil.createField({
-        value: _.get(loadedVocabulary, 'chosenFromList', true)
-      }),
       managedInternally: FormUtil.createField({
         value: _.get(loadedVocabulary, 'managedInternally', false)
       })
