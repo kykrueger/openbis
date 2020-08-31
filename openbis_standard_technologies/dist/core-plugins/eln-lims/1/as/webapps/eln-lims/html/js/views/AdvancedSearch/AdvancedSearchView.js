@@ -703,6 +703,45 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 					}
 				}
 			}, {
+                label : 'Name',
+                property : '$NAME',
+                isExportable: true,
+                sortable : !isGlobalSearch,
+                render : function(data) {
+                    if(data[profile.propertyReplacingCode]) {
+                        return _this._getLinkOnClick(data[profile.propertyReplacingCode], data);
+                    } else {
+                        return "";
+                    }
+                }
+            }, {
+                label : 'Identifier',
+                property : 'identifier',
+                isExportable: true,
+                sortable : !isGlobalSearch,
+                render : function(data, grid) {
+                    var paginationInfo = null;
+               	    if(!isGlobalSearch) {
+               		    var indexFound = null;
+               			for(var idx = 0; idx < grid.lastReceivedData.objects.length; idx++) {
+               			    if(grid.lastReceivedData.objects[idx].permId === data.permId) {
+               			        indexFound = idx + (grid.lastUsedOptions.pageIndex * grid.lastUsedOptions.pageSize);
+               				    break;
+               				}
+               			}
+
+               			if(indexFound !== null) {
+               			    paginationInfo = {
+               				    pagFunction : _this._advancedSearchController.searchWithPagination(_this._advancedSearchModel.criteria, false),
+               				    pagOptions : grid.lastUsedOptions,
+               				    currentIndex : indexFound,
+               				    totalCount : grid.lastReceivedData.totalCount
+               				}
+               		    }
+               	    }
+               		return _this._getLinkOnClick(data.identifier, data, paginationInfo);
+                }
+            }, {
 				label : 'Entity Type',
 				property : 'entityType',
 				isExportable: true,
@@ -734,45 +773,6 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 					}
 					var id = data.code.toLowerCase() + "-id";
 					return _this._getLinkOnClick(data.code, data, paginationInfo, id);
-				}
-			}, {
-				label : 'Name',
-				property : '$NAME',
-				isExportable: true,
-				sortable : !isGlobalSearch,
-				render : function(data) {
-					if(data[profile.propertyReplacingCode]) {
-						return _this._getLinkOnClick(data[profile.propertyReplacingCode], data);
-					} else {
-						return "";
-					}
-				}
-			}, {
-				label : 'Identifier',
-				property : 'identifier',
-				isExportable: true,
-				sortable : !isGlobalSearch,
-				render : function(data, grid) {
-					var paginationInfo = null;
-					if(!isGlobalSearch) {
-						var indexFound = null;
-						for(var idx = 0; idx < grid.lastReceivedData.objects.length; idx++) {
-							if(grid.lastReceivedData.objects[idx].permId === data.permId) {
-								indexFound = idx + (grid.lastUsedOptions.pageIndex * grid.lastUsedOptions.pageSize);
-								break;
-							}
-						}
-						
-						if(indexFound !== null) {
-							paginationInfo = {
-									pagFunction : _this._advancedSearchController.searchWithPagination(_this._advancedSearchModel.criteria, false),
-									pagOptions : grid.lastUsedOptions,
-									currentIndex : indexFound,
-									totalCount : grid.lastReceivedData.totalCount
-							}
-						}
-					}
-					return _this._getLinkOnClick(data.identifier, data, paginationInfo);
 				}
 			}, {
 				label : ELNDictionary.getExperimentDualName(),
