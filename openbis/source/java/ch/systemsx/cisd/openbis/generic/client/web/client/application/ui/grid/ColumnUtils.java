@@ -73,6 +73,9 @@ public class ColumnUtils
             case REAL:
                 editor = new StringBasedCellEditor(new RealField("", false));
                 break;
+            case DATE:
+                editor = new StringBasedCellEditor(new DateFormField("", false));
+                break;
             case TIMESTAMP:
                 editor = new StringBasedCellEditor(new DateFormField("", false));
                 break;

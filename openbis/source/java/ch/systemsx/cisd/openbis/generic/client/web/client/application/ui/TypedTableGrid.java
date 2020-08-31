@@ -2674,6 +2674,8 @@ public abstract class TypedTableGrid<T extends Serializable> extends LayoutConta
                 return new MultilineStringCellRenderer();
             case TIMESTAMP:
                 return new TimestampStringCellRenderer();
+            case DATE:
+                return new TimestampStringCellRenderer();
             case XML:
                 return new MultilineStringCellRenderer();
             default:

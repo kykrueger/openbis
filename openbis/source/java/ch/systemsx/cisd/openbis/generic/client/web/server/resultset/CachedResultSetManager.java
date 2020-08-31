@@ -173,7 +173,8 @@ public final class CachedResultSetManager<K> implements IResultSetManager<K>, Se
             final AlternativesStringFilter result = new AlternativesStringFilter();
             final String pattern = gridFilterInfo.tryGetFilterPattern().toLowerCase();
 
-            if (DataTypeCode.TIMESTAMP.equals(gridFilterInfo.getFilteredField().tryToGetDataType()))
+            DataTypeCode dataType = gridFilterInfo.getFilteredField().tryToGetDataType();
+            if (DataTypeCode.TIMESTAMP.equals(dataType) || DataTypeCode.DATE.equals(dataType))
             {
                 result.setDateFilterValue(pattern);
             } else
