@@ -62,6 +62,7 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v2.ISearchServic
 import ch.systemsx.cisd.openbis.dss.screening.server.plugins.jython.ScreeningJythonIngestionService;
 import ch.systemsx.cisd.openbis.dss.screening.server.plugins.jython.ScreeningPluginScriptRunnerFactory;
 import ch.systemsx.cisd.openbis.dss.shared.DssScreeningUtils;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ISerializableComparable;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IntegerTableCell;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.TableModel;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.TableModelColumnHeader;
@@ -193,7 +194,21 @@ public class MicroscopyThumbnailsCreationTask extends AbstractMaintenanceTaskWit
         DataSetProcessingContext context =
                 new DataSetProcessingContext(contentProvider, null, null, null, null, null, sessionToken);
         TableModel tableModel = ingestionService.createAggregationReport(new HashMap<String, Object>(), context);
-        return (int) ((IntegerTableCell) tableModel.getRows().get(0).getValues().get(0)).getNumber();
+        List<TableModelRow> rows = tableModel.getRows();
+        if (rows.isEmpty() == false)
+        {
+            List<ISerializableComparable> row = rows.get(0).getValues();
+            if (row.isEmpty() == false)
+            {
+                ISerializableComparable cell = row.get(0);
+                if (cell instanceof IntegerTableCell)
+                {
+                    return (int) ((IntegerTableCell) cell).getNumber();
+                }
+                operationLog.warn("Not an integer: " + cell);
+            }
+        }
+        return 0;
     }
 
     private int composeThumbnailDataSet(IDataSetRegistrationTransactionV2 transaction, DataSet containerDataSet,
