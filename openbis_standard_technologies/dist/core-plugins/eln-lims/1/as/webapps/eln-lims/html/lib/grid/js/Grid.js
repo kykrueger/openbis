@@ -178,7 +178,7 @@ $.extend(Grid.prototype, {
 			e.stopPropagation();
 		});
 		
-		var defaultNumColumns = 4; //Including last always
+		var defaultNumColumns = 5; //Including last always
 		
 		var currentColumns = this.getAllColumns();
 		
