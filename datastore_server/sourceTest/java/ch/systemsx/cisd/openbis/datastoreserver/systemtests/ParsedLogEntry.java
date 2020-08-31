@@ -23,7 +23,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.BasicConstant;
 
 public final class ParsedLogEntry
 {
-    private static final String FORMAT_TEMPLATE = "[{0,date," + BasicConstant.DATE_WITHOUT_TIMEZONE_PATTERN + "}][{1}][{2}][{3}]";
+    private static final String FORMAT_TEMPLATE = "[{0,date," + BasicConstant.DATE_HOURS_MINUTES_SECONDS_PATTERN + "}][{1}][{2}][{3}]";
 
     private int lineIndex;
 

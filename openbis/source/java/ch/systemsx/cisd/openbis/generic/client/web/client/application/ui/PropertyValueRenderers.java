@@ -242,7 +242,7 @@ public final class PropertyValueRenderers
                     Dict.DELETION_TEMPLATE,
                     rendererPerson(deletion.getRegistrator()),
                     DateRenderer.renderDate(deletion.getRegistrationDate(),
-                            BasicConstant.DATE_WITHOUT_TIMEZONE_PATTERN), deletion.getReason());
+                            BasicConstant.DATE_HOURS_MINUTES_SECONDS_PATTERN), deletion.getReason());
         }
     }
 

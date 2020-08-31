@@ -168,7 +168,7 @@ public class GroupingPolicy extends BaseGroupingPolicy
             return groups.get(0).getList();
         }
         GroupWithAge oldestGroup = sortGroupsByAge(groups).get(0);
-        String timestamp = new SimpleDateFormat(BasicConstant.DATE_WITHOUT_TIMEZONE_PATTERN).format(new Date(oldestGroup.age));
+        String timestamp = new SimpleDateFormat(BasicConstant.DATE_HOURS_MINUTES_SECONDS_PATTERN).format(new Date(oldestGroup.age));
         log(log, "All data sets of the selected group have been accessed at " + timestamp + " or before.");
         return oldestGroup.group.getList();
     }

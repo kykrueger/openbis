@@ -648,11 +648,15 @@ public class SearchExperimentTest extends AbstractExperimentTest
         experimentCreation.setProperty(propertyType.getPermId(), "/CISD/CL1");
         v3api.createExperiments(sessionToken, Arrays.asList(experimentCreation));
 
-        final ExperimentSearchCriteria criteria = new ExperimentSearchCriteria();
-        criteria.withOrOperator();
-        criteria.withAnyProperty().thatEquals("/CISD/CL1");
-
-        testSearch(TEST_USER, criteria, 1);
+//        final ExperimentSearchCriteria withAnyPropertySearchCriteria = new ExperimentSearchCriteria();
+//        withAnyPropertySearchCriteria.withOrOperator();
+//        withAnyPropertySearchCriteria.withAnyProperty().thatStartsWith("/CISD/CL");
+//        testSearch(TEST_USER, withAnyPropertySearchCriteria, "/CISD/DEFAULT/SAMPLE_PROPERTY_TEST");
+        
+        final ExperimentSearchCriteria withPropertySearchCriteria = new ExperimentSearchCriteria();
+        withPropertySearchCriteria.withOrOperator();
+        withPropertySearchCriteria.withProperty(propertyType.getPermId()).thatStartsWith("/CISD/CL");
+        testSearch(TEST_USER, withPropertySearchCriteria, "/CISD/DEFAULT/SAMPLE_PROPERTY_TEST");
 
         v3api.logout(sessionToken);
     }
@@ -951,6 +955,14 @@ public class SearchExperimentTest extends AbstractExperimentTest
 
         assertAccessLog(
                 "search-experiments  SEARCH_CRITERIA:\n'EXPERIMENT\n    with operator 'AND'\n    with attribute 'code' starts with 'EXP1'\n    with property 'DESCRIPTION' equal to 'abc'\n'\nFETCH_OPTIONS:\n'Experiment\n    with History\n    with Modifier\n'");
+    }
+
+    @Test
+    public void testSearchForExperimentWithDatePropertyUsingWithProperty()
+    {
+        final ExperimentSearchCriteria criteria = new ExperimentSearchCriteria();
+        criteria.withProperty("PURCHASE_DATE").thatEquals("2009-02-09 10:00:00 +0100");
+        testSearch(TEST_USER, criteria, 1);
     }
 
     private void testSearch(String user, ExperimentSearchCriteria criteria, String... expectedIdentifiers)

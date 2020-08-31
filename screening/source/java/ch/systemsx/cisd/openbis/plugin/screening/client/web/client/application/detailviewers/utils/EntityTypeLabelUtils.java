@@ -146,7 +146,7 @@ public class EntityTypeLabelUtils
     private static String renderDate(DatasetReference datasetReference)
     {
         return DateRenderer.renderDate(datasetReference.getRegistrationDate(),
-                BasicConstant.DATE_WITHOUT_TIME_FORMAT_PATTERN);
+                BasicConstant.DATE_PATTERN);
     }
 
     private static String getDatasetUserFriendlyTypeCode(DatasetReference datasetReference)

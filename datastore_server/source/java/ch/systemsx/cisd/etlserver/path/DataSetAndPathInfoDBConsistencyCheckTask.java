@@ -83,7 +83,7 @@ public class DataSetAndPathInfoDBConsistencyCheckTask extends AbstractMaintenanc
     static final String CONTINUING_TIME_POINT_KEY = "continuing-time-point";
 
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat(
-            BasicConstant.DATE_WITHOUT_TIMEZONE_PATTERN);
+            BasicConstant.DATE_HOURS_MINUTES_SECONDS_PATTERN);
 
     private static final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION,
             DataSetAndPathInfoDBConsistencyCheckTask.class);
