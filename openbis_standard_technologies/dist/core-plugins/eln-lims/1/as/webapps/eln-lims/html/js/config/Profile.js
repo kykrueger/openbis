@@ -81,6 +81,8 @@ $.extend(DefaultProfile.prototype, {
 		    Utilities : "Utilities"
 		}
 
+		this.defaultStartPage = "showBlancPage";
+
 		this.orderLabInfo = {
 				
 		}
