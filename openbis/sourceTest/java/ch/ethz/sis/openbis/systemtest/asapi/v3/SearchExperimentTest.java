@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.TimeZone;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.create.ExperimentCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.create.PropertyTypeCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
 import org.testng.annotations.Test;
 
@@ -648,10 +650,10 @@ public class SearchExperimentTest extends AbstractExperimentTest
         experimentCreation.setProperty(propertyType.getPermId(), "/CISD/CL1");
         v3api.createExperiments(sessionToken, Arrays.asList(experimentCreation));
 
-//        final ExperimentSearchCriteria withAnyPropertySearchCriteria = new ExperimentSearchCriteria();
-//        withAnyPropertySearchCriteria.withOrOperator();
-//        withAnyPropertySearchCriteria.withAnyProperty().thatStartsWith("/CISD/CL");
-//        testSearch(TEST_USER, withAnyPropertySearchCriteria, "/CISD/DEFAULT/SAMPLE_PROPERTY_TEST");
+        final ExperimentSearchCriteria withAnyPropertySearchCriteria = new ExperimentSearchCriteria();
+        withAnyPropertySearchCriteria.withOrOperator();
+        withAnyPropertySearchCriteria.withAnyProperty().thatStartsWith("/CISD/CL");
+        testSearch(TEST_USER, withAnyPropertySearchCriteria, "/CISD/DEFAULT/SAMPLE_PROPERTY_TEST");
         
         final ExperimentSearchCriteria withPropertySearchCriteria = new ExperimentSearchCriteria();
         withPropertySearchCriteria.withOrOperator();
@@ -963,6 +965,52 @@ public class SearchExperimentTest extends AbstractExperimentTest
         final ExperimentSearchCriteria criteria = new ExperimentSearchCriteria();
         criteria.withProperty("PURCHASE_DATE").thatEquals("2009-02-09 10:00:00 +0100");
         testSearch(TEST_USER, criteria, 1);
+    }
+
+    @Test
+    public void testSearchForExperimentWithBooleanPropertyUsingWithProperty()
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        final PropertyTypePermId propertyType1 = createABooleanPropertyType(sessionToken, "IS_TRUE");
+        final PropertyTypePermId propertyType2 = createAnIntegerPropertyType(sessionToken, "NUMBER");
+        final EntityTypePermId experimentType = createAnExperimentType(sessionToken, false, propertyType1,
+                propertyType2);
+
+        final ExperimentCreation experimentCreation = new ExperimentCreation();
+        experimentCreation.setCode("BOOLEAN_PROPERTY_TEST");
+        experimentCreation.setTypeId(experimentType);
+        experimentCreation.setProjectId(new ProjectIdentifier("/CISD/DEFAULT"));
+        experimentCreation.setProperty("NUMBER", "123");
+        experimentCreation.setProperty("IS_TRUE", "true");
+        v3api.createExperiments(sessionToken, Collections.singletonList(experimentCreation));
+
+        final ExperimentSearchCriteria booleanCriteria = new ExperimentSearchCriteria();
+        booleanCriteria.withProperty("IS_TRUE").thatEquals("true");
+        testSearch(TEST_USER, booleanCriteria, "/CISD/DEFAULT/BOOLEAN_PROPERTY_TEST");
+
+        final ExperimentSearchCriteria integerCriteria = new ExperimentSearchCriteria();
+        integerCriteria.withProperty("NUMBER").thatEquals("123");
+        testSearch(TEST_USER, integerCriteria, "/CISD/DEFAULT/BOOLEAN_PROPERTY_TEST");
+    }
+
+    protected PropertyTypePermId createABooleanPropertyType(final String sessionToken, final String code)
+    {
+        final PropertyTypeCreation creation = new PropertyTypeCreation();
+        creation.setCode(code);
+        creation.setDataType(DataType.BOOLEAN);
+        creation.setLabel("Boolean");
+        creation.setDescription("Boolean property type.");
+        return v3api.createPropertyTypes(sessionToken, Arrays.asList(creation)).get(0);
+    }
+
+    protected PropertyTypePermId createAnIntegerPropertyType(final String sessionToken, final String code)
+    {
+        final PropertyTypeCreation creation = new PropertyTypeCreation();
+        creation.setCode(code);
+        creation.setDataType(DataType.INTEGER);
+        creation.setLabel("Integer");
+        creation.setDescription("Integer property type.");
+        return v3api.createPropertyTypes(sessionToken, Arrays.asList(creation)).get(0);
     }
 
     private void testSearch(String user, ExperimentSearchCriteria criteria, String... expectedIdentifiers)
