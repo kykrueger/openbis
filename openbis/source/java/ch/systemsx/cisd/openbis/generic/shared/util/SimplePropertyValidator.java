@@ -33,16 +33,6 @@ import ch.systemsx.cisd.common.properties.PropertyUtils.Boolean;
 import ch.systemsx.cisd.openbis.generic.shared.basic.BasicConstant;
 import ch.systemsx.cisd.openbis.generic.shared.basic.ValidationUtilities.HyperlinkValidationHelper;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.time.DateFormatUtils;
-import org.apache.commons.lang3.time.DateUtils;
-
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * This is a refactoring of {@link ch.systemsx.cisd.openbis.generic.server.dataaccess.PropertyValidator} that takes some simple validations that do
@@ -103,6 +93,7 @@ public class SimplePropertyValidator
                 new EnumMap<DataTypeCode, IDataTypeValidator>(DataTypeCode.class);
         map.put(DataTypeCode.BOOLEAN, new BooleanValidator());
         map.put(DataTypeCode.VARCHAR, new VarcharValidator());
+        map.put(DataTypeCode.DATE, new DateValidator());
         map.put(DataTypeCode.TIMESTAMP, new TimestampValidator());
         map.put(DataTypeCode.INTEGER, new IntegerValidator());
         map.put(DataTypeCode.REAL, new RealValidator());
@@ -198,9 +189,32 @@ public class SimplePropertyValidator
         }
     }
 
-    public final static class TimestampValidator implements IDataTypeValidator
+    public final static class DateValidator extends AbstractDateAndTimestampValidator
     {
+        public DateValidator()
+        {
+            super(SupportedDatePattern.DAYS_DATE_PATTERN.getPattern(),
+                    SupportedDatePattern.US_DATE_PATTERN.getPattern());
+        }
+    }
 
+    public final static class TimestampValidator extends AbstractDateAndTimestampValidator
+    {
+        public TimestampValidator()
+        {
+            super(DATE_PATTERNS);
+        }
+    }
+    
+    private static class AbstractDateAndTimestampValidator implements IDataTypeValidator
+    {
+        private String[] patterns;
+
+        AbstractDateAndTimestampValidator(String... patterns)
+        {
+            this.patterns = patterns;
+
+        }
         //
         // IDataTypeValidator
         //
@@ -212,12 +226,14 @@ public class SimplePropertyValidator
             try
             {
                 validateHyphens(value);
-                Date date = DateUtils.parseDateStrictly(value, DATE_PATTERNS);
+                Date date = DateUtils.parseDateStrictly(value, patterns);
                 // we store date in CANONICAL_DATE_PATTERN
+                System.err.println("parse:"+value+" -> "+date);
                 return DateFormatUtils.format(date,
                         SupportedDatePattern.CANONICAL_DATE_PATTERN.getPattern());
             } catch (final ParseException | IllegalArgumentException ex)
             {
+                System.out.println(value+" -> "+ex);
                 throwUserFailureException(value);
                 return null;
             }
@@ -250,9 +266,9 @@ public class SimplePropertyValidator
          * @param value the value to use in the description of the exception.
          * @throws UserFailureException always thrown.
          */
-        private final static void throwUserFailureException(final String value) throws UserFailureException
+        private void throwUserFailureException(final String value) throws UserFailureException
         {
-            final String validValues = "[" + String.join("\n", DATE_PATTERNS) + "]";
+            final String validValues = "[" + String.join("\n", patterns) + "]";
             throw UserFailureException.fromTemplate(
                     "Date value '%s' has improper format. It must be one of '%s'.", value,
                     validValues);

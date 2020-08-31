@@ -311,10 +311,10 @@ public class CreatePropertyTypeTest extends AbstractTest
         creation.setDescription("only for testing");
         creation.setLabel("Test Sample Property");
         creation.setSampleTypeId(new EntityTypePermId("WELL", EntityKind.SAMPLE));
-        
+
         // When
         List<PropertyTypePermId> ids = v3api.createPropertyTypes(sessionToken, Arrays.asList(creation));
-        
+
         // Then
         assertEquals(ids.toString(), "[TEST-SAMPLE-PROPERTY]");
         PropertyTypeSearchCriteria searchCriteria = new PropertyTypeSearchCriteria();
@@ -332,6 +332,40 @@ public class CreatePropertyTypeTest extends AbstractTest
         assertEquals(propertyType.isManagedInternally().booleanValue(), false);
         assertEquals(propertyType.getSampleType().getCode(), "WELL");
         assertEquals(propertyType.getSampleType().getDescription(), "Plate Well");
+        assertEquals(types.size(), 1);
+
+        v3api.logout(sessionToken);
+    }
+
+    @Test
+    public void testCreateDatePropertyType()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypeCreation creation = new PropertyTypeCreation();
+        creation.setCode("test-date-property");
+        creation.setDataType(DataType.DATE);
+        creation.setDescription("only for testing");
+        creation.setLabel("Test Date Property");
+        
+        // When
+        List<PropertyTypePermId> ids = v3api.createPropertyTypes(sessionToken, Arrays.asList(creation));
+        
+        // Then
+        assertEquals(ids.toString(), "[TEST-DATE-PROPERTY]");
+        PropertyTypeSearchCriteria searchCriteria = new PropertyTypeSearchCriteria();
+        searchCriteria.withCode().thatEquals(creation.getCode().toUpperCase());
+        PropertyTypeFetchOptions fetchOptions = new PropertyTypeFetchOptions();
+        fetchOptions.withSampleType();
+        Map<IPropertyTypeId, PropertyType> types = v3api.getPropertyTypes(sessionToken, ids, fetchOptions);
+        PropertyType propertyType = types.get(ids.get(0));
+        assertEquals(propertyType.getCode(), creation.getCode().toUpperCase());
+        assertEquals(propertyType.getPermId(), ids.get(0));
+        assertEquals(propertyType.getDataType(), creation.getDataType());
+        assertEquals(propertyType.getDescription(), creation.getDescription());
+        assertEquals(propertyType.getLabel(), creation.getLabel());
+        assertEquals(propertyType.isInternalNameSpace().booleanValue(), false);
+        assertEquals(propertyType.isManagedInternally().booleanValue(), false);
         assertEquals(types.size(), 1);
         
         v3api.logout(sessionToken);

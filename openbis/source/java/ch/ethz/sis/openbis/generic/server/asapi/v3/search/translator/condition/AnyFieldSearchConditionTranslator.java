@@ -130,8 +130,7 @@ public class AnyFieldSearchConditionTranslator implements IConditionTranslator<A
 
                 final StringBuilder resultSqlBuilder = tableMapper.getFieldToSQLTypeMap().entrySet().stream().collect(
                         StringBuilder::new,
-                        (stringBuilder, fieldToSQLTypesEntry) ->
-                        {
+                        (stringBuilder, fieldToSQLTypesEntry) -> {
                             final String fieldName = fieldToSQLTypesEntry.getKey();
                             final PSQLTypes fieldSQLType = fieldToSQLTypesEntry.getValue();
                             final boolean includeColumn = compatiblePSQLTypesForValue.contains(fieldSQLType);
@@ -143,28 +142,25 @@ public class AnyFieldSearchConditionTranslator implements IConditionTranslator<A
                                     if (fieldSQLType == TIMESTAMP_WITH_TZ)
                                     {
                                         final Optional<Object[]> dateFormatWithResultOptional = DATE_FORMATS.stream()
-                                                .map(dateFormat ->
-                                                {
+                                                .map(dateFormat -> {
                                                     final Date formattedValue = formatValue(stringValue, dateFormat);
                                                     return (formattedValue == null) ? null
-                                                            : new Object[] {TRUNCATION_INTERVAL_BY_DATE_FORMAT.get(
-                                                                    dateFormat.getClass()), formattedValue};
+                                                            : new Object[] { TRUNCATION_INTERVAL_BY_DATE_FORMAT.get(
+                                                                    dateFormat.getClass()), formattedValue };
                                                 }).filter(Objects::nonNull).findFirst();
 
-                                        dateFormatWithResultOptional.ifPresent(dateFormatWithResult ->
-                                        {
+                                        dateFormatWithResultOptional.ifPresent(dateFormatWithResult -> {
                                             stringBuilder.append(separator).append(DATE_TRUNC).append(LP);
-                                            stringBuilder.append(SQ).append(dateFormatWithResult[0]).append(SQ).
-                                                    append(COMMA).append(SP).append(alias).append(PERIOD).
-                                                    append(fieldName);
+                                            stringBuilder.append(SQ).append(dateFormatWithResult[0]).append(SQ).append(COMMA).append(SP).append(alias)
+                                                    .append(PERIOD).append(fieldName);
                                             stringBuilder.append(RP).append(SP).append(EQ).append(SP).append(QU);
                                             args.add(dateFormatWithResult[1]);
                                         });
                                     } else
                                     {
                                         stringBuilder.append(separator).append(alias).append(PERIOD).append(fieldName);
-                                        stringBuilder.append(SP).append(EQ).append(SP).append(QU).append(DOUBLE_COLON).
-                                                append(fieldSQLType.toString());
+                                        stringBuilder.append(SP).append(EQ).append(SP).append(QU).append(DOUBLE_COLON)
+                                                .append(fieldSQLType.toString());
                                         args.add(stringValue);
                                     }
                                 }
@@ -175,8 +171,7 @@ public class AnyFieldSearchConditionTranslator implements IConditionTranslator<A
                                         stringBuilder, args);
                             }
                         },
-                        StringBuilder::append
-                );
+                        StringBuilder::append);
 
                 if (resultSqlBuilder.length() > separatorLength)
                 {
@@ -208,30 +203,37 @@ public class AnyFieldSearchConditionTranslator implements IConditionTranslator<A
         final SimplePropertyValidator validator = new SimplePropertyValidator();
         try
         {
-            validator.validatePropertyValue(DataTypeCode.TIMESTAMP, value);
-            return EnumSet.of(TIMESTAMP_WITH_TZ);
+            validator.validatePropertyValue(DataTypeCode.DATE, value);
+            return EnumSet.of(PSQLTypes.DATE);
         } catch (UserFailureException e1)
         {
             try
             {
-                validator.validatePropertyValue(DataTypeCode.BOOLEAN, value);
-                return EnumSet.of(BOOLEAN);
+                validator.validatePropertyValue(DataTypeCode.TIMESTAMP, value);
+                return EnumSet.of(TIMESTAMP_WITH_TZ);
             } catch (UserFailureException e2)
             {
                 try
                 {
-                    validator.validatePropertyValue(DataTypeCode.INTEGER, value);
-                    return EnumSet.of(INT8, INT4, INT2, FLOAT4, FLOAT8);
+                    validator.validatePropertyValue(DataTypeCode.BOOLEAN, value);
+                    return EnumSet.of(BOOLEAN);
                 } catch (UserFailureException e3)
                 {
                     try
                     {
-                        validator.validatePropertyValue(DataTypeCode.REAL, value);
-                        return EnumSet.of(FLOAT4, FLOAT8);
+                        validator.validatePropertyValue(DataTypeCode.INTEGER, value);
+                        return EnumSet.of(INT8, INT4, INT2, FLOAT4, FLOAT8);
                     } catch (UserFailureException e4)
                     {
-                        validator.validatePropertyValue(DataTypeCode.VARCHAR, value);
-                        return EnumSet.of(VARCHAR);
+                        try
+                        {
+                            validator.validatePropertyValue(DataTypeCode.REAL, value);
+                            return EnumSet.of(FLOAT4, FLOAT8);
+                        } catch (UserFailureException e5)
+                        {
+                            validator.validatePropertyValue(DataTypeCode.VARCHAR, value);
+                            return EnumSet.of(VARCHAR);
+                        }
                     }
                 }
             }
