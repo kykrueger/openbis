@@ -25,7 +25,7 @@ function StockView(stockController, stockView) {
 			
 		$form.append($formColumn);
 		
-		var $formTitle = $("<h2>").append("Stock");
+		var $formTitle = $("<h2>").append(profile.MainMenuNodeNames.Stock);
 		
 		//
 		// Toolbar

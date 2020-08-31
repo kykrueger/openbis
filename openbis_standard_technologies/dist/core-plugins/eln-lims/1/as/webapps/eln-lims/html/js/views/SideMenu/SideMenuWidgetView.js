@@ -235,18 +235,18 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
         var treeModel = [];
         
         if(profile.mainMenu.showLabNotebook) {
-            var labNotebookLink = _this.getLinkForNode("Lab Notebook", "LAB_NOTEBOOK", "showLabNotebookPage", null, null);
-            treeModel.push({ displayName: "Lab Notebook", title : labNotebookLink, entityType: "LAB_NOTEBOOK", key : "LAB_NOTEBOOK", folder : true, lazy : true, view : "showLabNotebookPage", icon : "glyphicon glyphicon-book" });
+            var labNotebookLink = _this.getLinkForNode(profile.MainMenuNodeNames.Lab_Notebook, "LAB_NOTEBOOK", "showLabNotebookPage", null, null);
+            treeModel.push({ displayName: profile.MainMenuNodeNames.Lab_Notebook, title : labNotebookLink, entityType: "LAB_NOTEBOOK", key : "LAB_NOTEBOOK", folder : true, lazy : true, view : "showLabNotebookPage", icon : "glyphicon glyphicon-book" });
         }
         
         if(profile.mainMenu.showInventory) {
-            var inventoryLink = _this.getLinkForNode("Inventory", "INVENTORY", "showInventoryPage", null, null);
-            treeModel.push({ displayName: "Inventory", title : inventoryLink, entityType: "INVENTORY", key : "INVENTORY", folder : true, lazy : true, view : "showInventoryPage", icon : "fa fa-cubes" });
+            var inventoryLink = _this.getLinkForNode(profile.MainMenuNodeNames.Inventory, "INVENTORY", "showInventoryPage", null, null);
+            treeModel.push({ displayName: profile.MainMenuNodeNames.Inventory, title : inventoryLink, entityType: "INVENTORY", key : "INVENTORY", folder : true, lazy : true, view : "showInventoryPage", icon : "fa fa-cubes" });
         }
         
         if(profile.mainMenu.showStock) {
-            var stockLink = _this.getLinkForNode("Stock", "STOCK", "showStockPage", null, null);
-            treeModel.push({ displayName: "Stock", title : stockLink, entityType: "STOCK", key : "STOCK", folder : true, lazy : true, view : "showStockPage", icon: "fa fa-shopping-cart" });
+            var stockLink = _this.getLinkForNode(profile.MainMenuNodeNames.Stock, "STOCK", "showStockPage", null, null);
+            treeModel.push({ displayName: profile.MainMenuNodeNames.Stock, title : stockLink, entityType: "STOCK", key : "STOCK", folder : true, lazy : true, view : "showStockPage", icon: "fa fa-shopping-cart" });
         }
         
         var treeModelUtils = [];
@@ -363,7 +363,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
                                     icon : extraPluginUtility.icon });
         }
 
-        treeModel.push({ displayName: "Utilities", title : "Utilities", entityType: "UTILITIES", key : "UTILITIES", folder : true, lazy : false, expanded : true, children : treeModelUtils, view: "showBlancPage", icon : "glyphicon glyphicon-wrench" });
+        treeModel.push({ displayName: profile.MainMenuNodeNames.Utilities, title : "Utilities", entityType: "UTILITIES", key : "UTILITIES", folder : true, lazy : false, expanded : true, children : treeModelUtils, view: "showBlancPage", icon : "glyphicon glyphicon-wrench" });
         treeModel.push({ displayName: "About", title : "About", entityType: "ABOUT", key : "ABOUT", folder : false, lazy : false, view : "showAbout", icon : "glyphicon glyphicon-info-sign" });
         
         var glyph_opts = {

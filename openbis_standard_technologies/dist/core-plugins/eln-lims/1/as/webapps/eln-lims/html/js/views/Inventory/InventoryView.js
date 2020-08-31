@@ -25,7 +25,7 @@ function InventoryView(inventoryController, inventoryView) {
 			
 		$form.append($formColumn);
 		
-		var $formTitle = $("<h2>").append("Inventory");
+		var $formTitle = $("<h2>").append(profile.MainMenuNodeNames.Inventory);
 		
 		//
 		// Toolbar
