@@ -119,7 +119,7 @@ public final class RevertDeletionConfirmationDialog extends AbstractDataConfirma
             String deletedBy = deletion.getRegistrator().toString();
             String deletionDate =
                     DateRenderer.renderDate(deletion.getRegistrationDate(),
-                            BasicConstant.DATE_WITHOUT_TIMEZONE_PATTERN);
+                            BasicConstant.DATE_HOURS_MINUTES_SECONDS_PATTERN);
             String deletionReason = StringEscapeUtils.unescapeHtml(deletion.getReason());
             return viewContext.getMessage(Dict.REVERT_ENTITY_DELETION_CONFIRMATION_MSG,
                     deletedEntity, deletedBy, deletionDate, deletionReason);

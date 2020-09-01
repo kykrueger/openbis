@@ -98,17 +98,17 @@ public class BasicConstant
     /**
      * Date format which does not include time zone.
      */
-    public static final String DATE_WITHOUT_TIMEZONE_PATTERN = "yyyy-MM-dd HH:mm:ss";
+    public static final String DATE_HOURS_MINUTES_SECONDS_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
     /**
      * Date format which does not include time and time zone.
      */
-    public static final String DATE_WITHOUT_TIME_FORMAT_PATTERN = "yyyy-MM-dd";
+    public static final String DATE_PATTERN = "yyyy-MM-dd";
 
     /**
      * Date format which does not include seconds & time zone.
      */
-    public static final String DATE_WITH_SHORT_TIME_PATTERN = "yyyy-MM-dd HH:mm";
+    public static final String DATE_HOURS_MINUTES_PATTERN = "yyyy-MM-dd HH:mm";
 
     // constants used for link creation and handling
 

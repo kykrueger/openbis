@@ -17,13 +17,12 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.*;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCriteriaTranslator.DATE_HOURS_MINUTES_SECONDS_FORMAT;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCriteriaTranslator.DATE_FORMAT;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCriteriaTranslator.DATE_WITHOUT_TIME_FORMAT;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCriteriaTranslator.DATE_WITH_SHORT_TIME_FORMAT;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCriteriaTranslator.DATE_HOURS_MINUTES_FORMAT;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCriteriaTranslator.MAIN_TABLE_ALIAS;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.*;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.CONTROLLED_VOCABULARY_TERM_TABLE;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.MATERIALS_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.PROJECTS_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.RELATIONSHIP_TYPES_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SPACES_TABLE;
@@ -70,7 +69,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringStartsWithVa
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.TimeZone;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.IAliasFactory;
 import ch.systemsx.cisd.openbis.generic.shared.basic.BasicConstant;
@@ -80,11 +78,11 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.TableNames;
 public class TranslatorUtils
 {
 
-    public static final DateTimeFormatter DATE_WITHOUT_TIME_FORMATTER = DateTimeFormatter.ofPattern(BasicConstant.DATE_WITHOUT_TIME_FORMAT_PATTERN);
+    public static final DateTimeFormatter DATE_WITHOUT_TIME_FORMATTER = DateTimeFormatter.ofPattern(BasicConstant.DATE_PATTERN);
 
-    public static final DateTimeFormatter DATE_WITH_SHORT_TIME_FORMATTER = DateTimeFormatter.ofPattern(BasicConstant.DATE_WITH_SHORT_TIME_PATTERN);
+    public static final DateTimeFormatter DATE_WITH_SHORT_TIME_FORMATTER = DateTimeFormatter.ofPattern(BasicConstant.DATE_HOURS_MINUTES_PATTERN);
 
-    public static final DateTimeFormatter DATE_WITHOUT_TIMEZONE_FORMATTER = DateTimeFormatter.ofPattern(BasicConstant.DATE_WITHOUT_TIMEZONE_PATTERN);
+    public static final DateTimeFormatter DATE_WITHOUT_TIMEZONE_FORMATTER = DateTimeFormatter.ofPattern(BasicConstant.DATE_HOURS_MINUTES_SECONDS_PATTERN);
 
     /** Indicator that the property is internal. */
     private static final String INTERNAL_PROPERTY_PREFIX = "$";
@@ -443,7 +441,7 @@ public class TranslatorUtils
         if (fieldValue instanceof AbstractDateValue)
         {
             // String type date value.
-            args.add(getDate((AbstractDateValue) fieldValue));
+            args.add(parseDate(((AbstractDateValue) fieldValue).getValue()));
         } else
         {
             // Date type date value.
@@ -451,22 +449,21 @@ public class TranslatorUtils
         }
     }
 
-    private static Date getDate(final AbstractDateValue fieldValue)
+    private static Date parseDate(final String dateString)
     {
-        final String dateString = fieldValue.getValue();
         try
         {
-            return DATE_FORMAT.parse(dateString);
+            return DATE_HOURS_MINUTES_SECONDS_FORMAT.parse(dateString);
         } catch (final ParseException e1)
         {
             try
             {
-                return DATE_WITH_SHORT_TIME_FORMAT.parse(dateString);
+                return DATE_HOURS_MINUTES_FORMAT.parse(dateString);
             } catch (ParseException e2)
             {
                 try
                 {
-                    return DATE_WITHOUT_TIME_FORMAT.parse(dateString);
+                    return DATE_FORMAT.parse(dateString);
                 } catch (final ParseException e3)
                 {
                     throw new IllegalArgumentException("Illegal date [dateString='" + dateString + "']", e3);
@@ -613,6 +610,10 @@ public class TranslatorUtils
         if (Double.class == klass)
         {
             return Double.parseDouble(value);
+        }
+        if (Date.class == klass)
+        {
+            return parseDate(value);
         }
 
         return value;
