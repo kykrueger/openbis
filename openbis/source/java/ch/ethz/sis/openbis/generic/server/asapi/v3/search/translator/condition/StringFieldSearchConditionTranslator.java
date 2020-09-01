@@ -85,6 +85,11 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
                 final boolean internalProperty = TranslatorUtils.isPropertyInternal(criterion.getFieldName());
                 final String entityTypesSubTableAlias = aliases.get(tableMapper.getAttributeTypesTable()).getSubTableAlias();
 
+                if (value.getClass() != AnyStringValue.class)
+                {
+                    sqlBuilder.append(CASE).append(SP).append(WHEN).append(SP);
+                }
+
                 TranslatorUtils.appendInternalExternalConstraint(sqlBuilder, args, entityTypesSubTableAlias, internalProperty);
 
                 sqlBuilder.append(SP).append(entityTypesSubTableAlias).append(PERIOD).append(CODE_COLUMN).append(SP).append(EQ).
@@ -93,7 +98,7 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
 
                 if (value.getClass() != AnyStringValue.class)
                 {
-                    sqlBuilder.append(SP).append(AND).append(SP).append(LP);
+                    sqlBuilder.append(SP).append(THEN).append(SP);
 
                     final String casting = dataTypeByPropertyName.get(propertyName);
                     if (casting != null)
@@ -136,7 +141,7 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
                                 SAMPLE_IDENTIFIER_COLUMN, value, null, sqlBuilder, args);
                     }
 
-                    sqlBuilder.append(RP);
+                    sqlBuilder.append(SP).append(END);
                 }
                 break;
             }
