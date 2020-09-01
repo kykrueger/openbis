@@ -60,6 +60,40 @@ async function testOpenClose() {
     ]
   })
 
+  browser.getNodes()[3].getIcon().click()
+  await browser.update()
+
+  browser.expectJSON({
+    filter: {
+      value: null
+    },
+    nodes: [
+      { level: 0, text: 'Users' },
+      { level: 1, text: fixture.ANOTHER_USER_DTO.userId },
+      { level: 1, text: fixture.TEST_USER_DTO.userId },
+      { level: 0, text: 'Groups' },
+      { level: 1, text: fixture.ALL_USERS_GROUP_DTO.code },
+      { level: 1, text: fixture.ANOTHER_GROUP_DTO.code },
+      { level: 1, text: fixture.TEST_GROUP_DTO.code }
+    ]
+  })
+
+  browser.getNodes()[0].getIcon().click()
+  await browser.update()
+
+  browser.expectJSON({
+    filter: {
+      value: null
+    },
+    nodes: [
+      { level: 0, text: 'Users' },
+      { level: 0, text: 'Groups' },
+      { level: 1, text: fixture.ALL_USERS_GROUP_DTO.code },
+      { level: 1, text: fixture.ANOTHER_GROUP_DTO.code },
+      { level: 1, text: fixture.TEST_GROUP_DTO.code }
+    ]
+  })
+
   browser.getNodes()[1].getIcon().click()
   await browser.update()
 
@@ -69,40 +103,6 @@ async function testOpenClose() {
     },
     nodes: [
       { level: 0, text: 'Users' },
-      { level: 1, text: fixture.ANOTHER_USER_DTO.userId },
-      { level: 2, text: fixture.ALL_USERS_GROUP_DTO.code },
-      { level: 2, text: fixture.ANOTHER_GROUP_DTO.code },
-      { level: 1, text: fixture.TEST_USER_DTO.userId },
-      { level: 0, text: 'Groups' }
-    ]
-  })
-
-  browser.getNodes()[0].getIcon().click()
-  await browser.update()
-
-  browser.expectJSON({
-    filter: {
-      value: null
-    },
-    nodes: [
-      { level: 0, text: 'Users' },
-      { level: 0, text: 'Groups' }
-    ]
-  })
-
-  browser.getNodes()[0].getIcon().click()
-  await browser.update()
-
-  browser.expectJSON({
-    filter: {
-      value: null
-    },
-    nodes: [
-      { level: 0, text: 'Users' },
-      { level: 1, text: fixture.ANOTHER_USER_DTO.userId },
-      { level: 2, text: fixture.ALL_USERS_GROUP_DTO.code },
-      { level: 2, text: fixture.ANOTHER_GROUP_DTO.code },
-      { level: 1, text: fixture.TEST_USER_DTO.userId },
       { level: 0, text: 'Groups' }
     ]
   })
@@ -119,12 +119,8 @@ async function testFilter() {
       value: fixture.ANOTHER_GROUP_DTO.code.toUpperCase()
     },
     nodes: [
-      { level: 0, text: 'Users' },
-      { level: 1, text: fixture.ANOTHER_USER_DTO.userId },
-      { level: 2, text: fixture.ANOTHER_GROUP_DTO.code },
       { level: 0, text: 'Groups' },
-      { level: 1, text: fixture.ANOTHER_GROUP_DTO.code },
-      { level: 2, text: fixture.ANOTHER_USER_DTO.userId }
+      { level: 1, text: fixture.ANOTHER_GROUP_DTO.code }
     ]
   })
 
@@ -138,19 +134,11 @@ async function testFilter() {
     nodes: [
       { level: 0, text: 'Users' },
       { level: 1, text: fixture.ANOTHER_USER_DTO.userId },
-      { level: 2, text: fixture.ALL_USERS_GROUP_DTO.code },
-      { level: 2, text: fixture.ANOTHER_GROUP_DTO.code },
       { level: 1, text: fixture.TEST_USER_DTO.userId },
-      { level: 2, text: fixture.ALL_USERS_GROUP_DTO.code },
-      { level: 2, text: fixture.TEST_GROUP_DTO.code },
       { level: 0, text: 'Groups' },
       { level: 1, text: fixture.ALL_USERS_GROUP_DTO.code },
-      { level: 2, text: fixture.ANOTHER_USER_DTO.userId },
-      { level: 2, text: fixture.TEST_USER_DTO.userId },
       { level: 1, text: fixture.ANOTHER_GROUP_DTO.code },
-      { level: 2, text: fixture.ANOTHER_USER_DTO.userId },
-      { level: 1, text: fixture.TEST_GROUP_DTO.code },
-      { level: 2, text: fixture.TEST_USER_DTO.userId }
+      { level: 1, text: fixture.TEST_GROUP_DTO.code }
     ]
   })
 }

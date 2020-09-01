@@ -1,4 +1,3 @@
-import _ from 'lodash'
 import openbis from '@src/js/services/openbis.js'
 import pages from '@src/js/common/consts/pages.js'
 import objectType from '@src/js/common/consts/objectType.js'
@@ -11,9 +10,6 @@ export default class UserBrowserController extends BrowserController {
   }
 
   async doLoadNodes() {
-    let groupFetchOptions = new openbis.AuthorizationGroupFetchOptions()
-    groupFetchOptions.withUsers()
-
     return Promise.all([
       openbis.searchPersons(
         new openbis.PersonSearchCriteria(),
@@ -21,64 +17,22 @@ export default class UserBrowserController extends BrowserController {
       ),
       openbis.searchAuthorizationGroups(
         new openbis.AuthorizationGroupSearchCriteria(),
-        groupFetchOptions
+        new openbis.AuthorizationGroupFetchOptions()
       )
-    ]).then(([usersResult, groupsResult]) => {
-      const users = {}
-      const groups = {}
-
-      usersResult.getObjects().forEach(user => {
-        users[user.userId] = {
-          userId: user.userId,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          groupIds: []
-        }
-      })
-
-      groupsResult.getObjects().forEach(group => {
-        groups[group.code] = {
-          code: group.code,
-          userIds: group.users.reduce((groupUserIds, groupUser) => {
-            let user = users[groupUser.userId]
-            if (user) {
-              user.groupIds.push(group.code)
-              groupUserIds.push(user.userId)
-            }
-            return groupUserIds
-          }, [])
-        }
-      })
-
-      const userNodes = _.map(users, user => {
+    ]).then(([users, groups]) => {
+      const userNodes = users.getObjects().map(user => {
         return {
           id: `users/${user.userId}`,
           text: user.userId,
-          object: { type: objectType.USER, id: user.userId },
-          children: user.groupIds.map(groupId => {
-            const group = groups[groupId]
-            return {
-              id: `users/${user.userId}/${group.code}`,
-              text: group.code,
-              object: { type: objectType.GROUP, id: group.code }
-            }
-          })
+          object: { type: objectType.USER, id: user.userId }
         }
       })
 
-      const groupNodes = _.map(groups, group => {
+      const groupNodes = groups.getObjects().map(group => {
         return {
           id: `groups/${group.code}`,
           text: group.code,
-          object: { type: objectType.GROUP, id: group.code },
-          children: group.userIds.map(userId => {
-            const user = users[userId]
-            return {
-              id: `groups/${group.code}/${user.userId}`,
-              text: user.userId,
-              object: { type: objectType.USER, id: user.userId }
-            }
-          })
+          object: { type: objectType.GROUP, id: group.code }
         }
       })
 
