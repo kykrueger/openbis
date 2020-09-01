@@ -87,7 +87,7 @@ public class DataTypeUtils
                 }
             }
         },
-        TIMESTAMP(DataTypeCode.TIMESTAMP)
+        DATE(DataTypeCode.DATE)
         {
             @Override
             public ISerializableComparable doConversion(String value)
@@ -100,9 +100,32 @@ public class DataTypeUtils
             {
                 try
                 {
-                    String pattern = SupportedDatePattern.CANONICAL_DATE_PATTERN.getPattern();
+                    String pattern = SupportedDatePattern.DAYS_DATE_PATTERN.getPattern();
                     return DateUtils.parseDate(value, new String[]
                     { pattern });
+                } catch (ParseException ex)
+                {
+                    throw new IllegalArgumentException("Is not a date in canonical format: "
+                            + value);
+                }
+            }
+        },
+        TIMESTAMP(DataTypeCode.TIMESTAMP)
+        {
+            @Override
+            public ISerializableComparable doConversion(String value)
+            {
+                return new DateTableCell(doSimpleConversion(value));
+            }
+            
+            @Override
+            public Date doSimpleConversion(String value)
+            {
+                try
+                {
+                    String pattern = SupportedDatePattern.CANONICAL_DATE_PATTERN.getPattern();
+                    return DateUtils.parseDate(value, new String[]
+                            { pattern });
                 } catch (ParseException ex)
                 {
                     throw new IllegalArgumentException("Is not a date in canonical format: "
