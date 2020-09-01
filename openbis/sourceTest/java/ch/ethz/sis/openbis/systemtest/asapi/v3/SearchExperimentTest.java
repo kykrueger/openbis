@@ -16,6 +16,7 @@
 
 package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
+import static org.junit.Assert.fail;
 import static org.testng.Assert.assertEquals;
 
 import java.text.SimpleDateFormat;
@@ -535,21 +536,48 @@ public class SearchExperimentTest extends AbstractExperimentTest
         PropertyTypePermId propertyType = createAPropertyType(sessionToken, DataType.DATE);
         EntityTypePermId experimentType = createAnExperimentType(sessionToken, true, propertyType);
         ExperimentCreation creation = new ExperimentCreation();
-        creation.setCode("EXPERIMENT_WITH_SAMPLE_PROPERTY");
+        creation.setCode("EXPERIMENT_WITH_DATE_PROPERTY");
         creation.setTypeId(experimentType);
         creation.setProjectId(new ProjectIdentifier("/CISD/NEMO"));
         creation.setProperty(propertyType.getPermId(), "2/17/20");
         v3api.createExperiments(sessionToken, Arrays.asList(creation));
 
         ExperimentSearchCriteria criteria = new ExperimentSearchCriteria();
-        criteria.withDateProperty(propertyType.getPermId()).thatEquals("2020-02-17");
+        criteria.withDateProperty(propertyType.getPermId()).thatEquals("20-2-17");
 
         // When
         List<Experiment> experiments = v3api.searchExperiments(sessionToken, criteria, new ExperimentFetchOptions()).getObjects();
 
         // Then
-        assertEquals(experiments.get(0).getIdentifier().getIdentifier(), "/CISD/NEMO/EXPERIMENT_WITH_SAMPLE_PROPERTY");
-        assertEquals(experiments.size(), 1);
+        assertExperimentIdentifiers(experiments, "/CISD/NEMO/EXPERIMENT_WITH_DATE_PROPERTY");
+    }
+
+    @Test
+    public void testSearchWithDateDatePropertyWithInvalidCriteria()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createAPropertyType(sessionToken, DataType.DATE);
+        EntityTypePermId experimentType = createAnExperimentType(sessionToken, true, propertyType);
+        ExperimentCreation creation = new ExperimentCreation();
+        creation.setCode("EXPERIMENT_WITH_DATE_PROPERTY");
+        creation.setTypeId(experimentType);
+        creation.setProjectId(new ProjectIdentifier("/CISD/NEMO"));
+        creation.setProperty(propertyType.getPermId(), "2/17/20");
+        v3api.createExperiments(sessionToken, Arrays.asList(creation));
+
+        ExperimentSearchCriteria criteria = new ExperimentSearchCriteria();
+        try
+        {
+            // When
+            criteria.withDateProperty(propertyType.getPermId()).thatIsLaterThanOrEqualTo("20-2-37");
+            fail("IllegalArgumentException expected");
+        } catch (IllegalArgumentException e)
+        {
+            // Then
+            assertEquals(e.getMessage(), "Date value: later than or equal to '20-2-37' "
+                    + "does not match any of the supported formats: [y-M-d HH:mm:ss, y-M-d HH:mm, y-M-d]");
+        }
     }
 
     @Test
@@ -560,7 +588,7 @@ public class SearchExperimentTest extends AbstractExperimentTest
         PropertyTypePermId propertyType = createAPropertyType(sessionToken, DataType.DATE);
         EntityTypePermId experimentType = createAnExperimentType(sessionToken, true, propertyType);
         ExperimentCreation creation = new ExperimentCreation();
-        creation.setCode("EXPERIMENT_WITH_SAMPLE_PROPERTY");
+        creation.setCode("EXPERIMENT_WITH_DATE_PROPERTY");
         creation.setTypeId(experimentType);
         creation.setProjectId(new ProjectIdentifier("/CISD/NEMO"));
         creation.setProperty(propertyType.getPermId(), "2/17/20");
@@ -573,8 +601,38 @@ public class SearchExperimentTest extends AbstractExperimentTest
         List<Experiment> experiments = v3api.searchExperiments(sessionToken, criteria, new ExperimentFetchOptions()).getObjects();
 
         // Then
-        assertEquals(experiments.get(0).getIdentifier().getIdentifier(), "/CISD/NEMO/EXPERIMENT_WITH_SAMPLE_PROPERTY");
+        assertEquals(experiments.get(0).getIdentifier().getIdentifier(), "/CISD/NEMO/EXPERIMENT_WITH_DATE_PROPERTY");
         assertEquals(experiments.size(), 1);
+    }
+
+    @Test
+    public void testSearchWithDateDatePropertyThatIsLaterOrEqual()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createAPropertyType(sessionToken, DataType.DATE);
+        EntityTypePermId experimentType = createAnExperimentType(sessionToken, true, propertyType);
+        ExperimentCreation creation1 = new ExperimentCreation();
+        creation1.setCode("EXPERIMENT_WITH_DATE_PROPERTY1");
+        creation1.setTypeId(experimentType);
+        creation1.setProjectId(new ProjectIdentifier("/CISD/NEMO"));
+        creation1.setProperty(propertyType.getPermId(), "2/17/20");
+        ExperimentCreation creation2 = new ExperimentCreation();
+        creation2.setCode("EXPERIMENT_WITH_DATE_PROPERTY2");
+        creation2.setTypeId(experimentType);
+        creation2.setProjectId(new ProjectIdentifier("/CISD/NEMO"));
+        creation2.setProperty(propertyType.getPermId(), "2020-02-16");
+        v3api.createExperiments(sessionToken, Arrays.asList(creation1, creation2));
+
+        ExperimentSearchCriteria criteria = new ExperimentSearchCriteria();
+        criteria.withDateProperty(propertyType.getPermId()).thatIsLaterThanOrEqualTo("2020-02-16");
+
+        // When
+        List<Experiment> experiments = v3api.searchExperiments(sessionToken, criteria, new ExperimentFetchOptions()).getObjects();
+
+        // Then
+        assertExperimentIdentifiers(experiments, "/CISD/NEMO/EXPERIMENT_WITH_DATE_PROPERTY1",
+                "/CISD/NEMO/EXPERIMENT_WITH_DATE_PROPERTY2");
     }
 
     @Test
@@ -585,7 +643,7 @@ public class SearchExperimentTest extends AbstractExperimentTest
         PropertyTypePermId propertyType = createAPropertyType(sessionToken, DataType.DATE);
         EntityTypePermId experimentType = createAnExperimentType(sessionToken, true, propertyType);
         ExperimentCreation creation = new ExperimentCreation();
-        creation.setCode("EXPERIMENT_WITH_SAMPLE_PROPERTY");
+        creation.setCode("EXPERIMENT_WITH_DATE_PROPERTY");
         creation.setTypeId(experimentType);
         creation.setProjectId(new ProjectIdentifier("/CISD/NEMO"));
         creation.setProperty(propertyType.getPermId(), "1990-11-09");
@@ -598,7 +656,7 @@ public class SearchExperimentTest extends AbstractExperimentTest
         List<Experiment> experiments = v3api.searchExperiments(sessionToken, criteria, new ExperimentFetchOptions()).getObjects();
 
         // Then
-        assertEquals(experiments.get(0).getIdentifier().getIdentifier(), "/CISD/NEMO/EXPERIMENT_WITH_SAMPLE_PROPERTY");
+        assertEquals(experiments.get(0).getIdentifier().getIdentifier(), "/CISD/NEMO/EXPERIMENT_WITH_DATE_PROPERTY");
         assertEquals(experiments.size(), 1);
     }
 
@@ -610,7 +668,7 @@ public class SearchExperimentTest extends AbstractExperimentTest
         PropertyTypePermId propertyType = createAPropertyType(sessionToken, DataType.DATE);
         EntityTypePermId experimentType = createAnExperimentType(sessionToken, true, propertyType);
         ExperimentCreation creation = new ExperimentCreation();
-        creation.setCode("EXPERIMENT_WITH_SAMPLE_PROPERTY");
+        creation.setCode("EXPERIMENT_WITH_DATE_PROPERTY");
         creation.setTypeId(experimentType);
         creation.setProjectId(new ProjectIdentifier("/CISD/NEMO"));
         creation.setProperty(propertyType.getPermId(), "1990-11-09");
@@ -619,14 +677,38 @@ public class SearchExperimentTest extends AbstractExperimentTest
         ExperimentSearchCriteria criteria = new ExperimentSearchCriteria();
         DatePropertySearchCriteria datePropertySearchCriteria = criteria.withDateProperty(propertyType.getPermId());
         datePropertySearchCriteria.withTimeZone(6);
+        datePropertySearchCriteria.thatIsEarlierThanOrEqualTo("1990-11-09");
+
+        // When
+        assertUserFailureException(Void -> v3api.searchExperiments(sessionToken, criteria, new ExperimentFetchOptions()),
+                // Then
+                "Search criteria with time zone doesn't make sense for property " + propertyType.getPermId()
+                        + " of data type " + DataType.DATE);
+    }
+
+    @Test
+    public void testSearchWithDateDatePropertyThatIsEarlierWithInvalidDate()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createAPropertyType(sessionToken, DataType.DATE);
+        EntityTypePermId experimentType = createAnExperimentType(sessionToken, true, propertyType);
+        ExperimentCreation creation = new ExperimentCreation();
+        creation.setCode("EXPERIMENT_WITH_DATE_PROPERTY");
+        creation.setTypeId(experimentType);
+        creation.setProjectId(new ProjectIdentifier("/CISD/NEMO"));
+        creation.setProperty(propertyType.getPermId(), "1990-11-09");
+        v3api.createExperiments(sessionToken, Arrays.asList(creation));
+
+        ExperimentSearchCriteria criteria = new ExperimentSearchCriteria();
+        DatePropertySearchCriteria datePropertySearchCriteria = criteria.withDateProperty(propertyType.getPermId());
         datePropertySearchCriteria.thatIsEarlierThanOrEqualTo("1990-11-09 01:22:33");
 
         // When
-        List<Experiment> experiments = v3api.searchExperiments(sessionToken, criteria, new ExperimentFetchOptions()).getObjects();
-
-        // Then
-        assertEquals(experiments.get(0).getIdentifier().getIdentifier(), "/CISD/NEMO/EXPERIMENT_WITH_SAMPLE_PROPERTY");
-        assertEquals(experiments.size(), 1);
+        assertUserFailureException(Void -> v3api.searchExperiments(sessionToken, criteria, new ExperimentFetchOptions()),
+                // Then
+                "Search criteria with time stamp doesn't make sense for property " + propertyType.getPermId()
+                        + " of data type " + DataType.DATE);
     }
 
     @Test
@@ -637,7 +719,7 @@ public class SearchExperimentTest extends AbstractExperimentTest
         PropertyTypePermId propertyType = createAPropertyType(sessionToken, DataType.DATE);
         EntityTypePermId experimentType = createAnExperimentType(sessionToken, true, propertyType);
         ExperimentCreation creation = new ExperimentCreation();
-        creation.setCode("EXPERIMENT_WITH_SAMPLE_PROPERTY");
+        creation.setCode("EXPERIMENT_WITH_DATE_PROPERTY");
         creation.setTypeId(experimentType);
         creation.setProjectId(new ProjectIdentifier("/CISD/NEMO"));
         creation.setProperty(propertyType.getPermId(), "1990-11-09");
@@ -650,19 +732,19 @@ public class SearchExperimentTest extends AbstractExperimentTest
         List<Experiment> experiments = v3api.searchExperiments(sessionToken, criteria, new ExperimentFetchOptions()).getObjects();
 
         // Then
-        assertExperimentIdentifiers(experiments, "/CISD/NEMO/EXPERIMENT_WITH_SAMPLE_PROPERTY", "/CISD/NEMO/EXP-TEST-2");
+        assertExperimentIdentifiers(experiments, "/CISD/NEMO/EXPERIMENT_WITH_DATE_PROPERTY", "/CISD/NEMO/EXP-TEST-2");
         assertEquals(experiments.size(), 2);
     }
 
     @Test
-    public void testSearchWithDateDatePropertyIgnoringTimezone()
+    public void testSearchWithDateDatePropertyWithTimezone()
     {
         // Given
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
         PropertyTypePermId propertyType = createAPropertyType(sessionToken, DataType.DATE);
         EntityTypePermId experimentType = createAnExperimentType(sessionToken, true, propertyType);
         ExperimentCreation creation = new ExperimentCreation();
-        creation.setCode("EXPERIMENT_WITH_SAMPLE_PROPERTY");
+        creation.setCode("EXPERIMENT_WITH_DATE_PROPERTY");
         creation.setTypeId(experimentType);
         creation.setProjectId(new ProjectIdentifier("/CISD/NEMO"));
         creation.setProperty(propertyType.getPermId(), "2/17/20");
@@ -674,11 +756,10 @@ public class SearchExperimentTest extends AbstractExperimentTest
         datePropertySearchCriteria.thatEquals("2020-02-17");
 
         // When
-        List<Experiment> experiments = v3api.searchExperiments(sessionToken, criteria, new ExperimentFetchOptions()).getObjects();
-
-        // Then
-        assertEquals(experiments.get(0).getIdentifier().getIdentifier(), "/CISD/NEMO/EXPERIMENT_WITH_SAMPLE_PROPERTY");
-        assertEquals(experiments.size(), 1);
+        assertUserFailureException(Void -> v3api.searchExperiments(sessionToken, criteria, new ExperimentFetchOptions()),
+                // Then
+                "Search criteria with time zone doesn't make sense for property " + propertyType.getPermId()
+                        + " of data type " + DataType.DATE);
     }
 
     @Test

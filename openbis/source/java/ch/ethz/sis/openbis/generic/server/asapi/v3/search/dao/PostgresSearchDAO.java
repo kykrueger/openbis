@@ -19,6 +19,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.*;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.relationship.IGetRelationshipIdExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.CriteriaMapper;
@@ -38,7 +39,14 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.RELATIONSHI
 
 public class PostgresSearchDAO implements ISQLSearchDAO
 {
-    private static final String[] POSTGRES_TYPES = new String[] {"INTEGER", "REAL", "BOOLEAN", "TIMESTAMP", "XML"};
+    private static final String[] POSTGRES_TYPES = Arrays.asList(
+            DataType.INTEGER,
+            DataType.REAL,
+            DataType.BOOLEAN,
+            DataType.DATE,
+            DataType.TIMESTAMP,
+            DataType.XML)
+            .stream().map(DataType::toString).collect(Collectors.toList()).toArray(new String[0]);
 
     private ISQLExecutor sqlExecutor;
 
@@ -112,13 +120,13 @@ public class PostgresSearchDAO implements ISQLSearchDAO
                 FROM + SP + tableMapper.getRelationshipsTable() + SP + rel + NL +
                 INNER_JOIN + SP + tableMapper.getEntitiesTable() + SP + child + SP +
                 ON + SP + rel + PERIOD + tableMapper.getRelationshipsTableChildIdField() + SP + EQ + SP + child +
-                        PERIOD + ID_COLUMN + NL +
+                PERIOD + ID_COLUMN + NL +
                 WHERE + SP + tableMapper.getRelationshipsTableParentIdField() + SP + IN + SP + LP +
                 SELECT + SP + UNNEST + LP + QU + RP + RP + SP +
                 AND + SP + RELATIONSHIP_COLUMN + SP + EQ + SP + LP +
-                    SELECT + SP + ID_COLUMN + SP +
-                    FROM + SP + RELATIONSHIP_TYPES_TABLE + SP +
-                    WHERE + SP + CODE_COLUMN + SP + EQ + SP + QU +
+                SELECT + SP + ID_COLUMN + SP +
+                FROM + SP + RELATIONSHIP_TYPES_TABLE + SP +
+                WHERE + SP + CODE_COLUMN + SP + EQ + SP + QU +
                 RP;
 
         final List<Object> args = new ArrayList<>(2);
@@ -143,9 +151,9 @@ public class PostgresSearchDAO implements ISQLSearchDAO
                 WHERE + SP + tableMapper.getRelationshipsTableChildIdField() + SP + IN + SP + LP +
                 SELECT + SP + UNNEST + LP + QU + RP + RP + SP +
                 AND + SP + RELATIONSHIP_COLUMN + SP + EQ + SP + LP +
-                    SELECT + SP + ID_COLUMN + SP +
-                    FROM + SP + RELATIONSHIP_TYPES_TABLE + SP +
-                    WHERE + SP + CODE_COLUMN + SP + EQ + SP + QU +
+                SELECT + SP + ID_COLUMN + SP +
+                FROM + SP + RELATIONSHIP_TYPES_TABLE + SP +
+                WHERE + SP + CODE_COLUMN + SP + EQ + SP + QU +
                 RP;
         final List<Object> args = new ArrayList<>(2);
         args.add(childIdSet.toArray(new Long[0]));
