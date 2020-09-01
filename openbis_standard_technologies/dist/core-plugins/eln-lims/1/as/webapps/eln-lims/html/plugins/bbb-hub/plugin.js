@@ -8,6 +8,14 @@ $.extend(BBBHubTechnology.prototype, ELNLIMSPlugin.prototype, {
     // Now it is a ELN plugin.
 
 	init: function() {
+	    //
+	    profile.MainMenuNodeNames.Lab_Notebook = "DataSets";
+	    profile.defaultStartView = {
+	        page : "EXTRA_PLUGIN_UTILITY",
+	        args : "HELP_VIEW"
+	    };
+	    //
+
         loadJSResorce("./plugins/bbb-hub/UiComponents.js");
         loadJSResorce("./plugins/bbb-hub/BBBServerFacade.js");
         loadJSResorce("./plugins/bbb-hub/snakemake-table.js");
@@ -17,11 +25,21 @@ $.extend(BBBHubTechnology.prototype, ELNLIMSPlugin.prototype, {
         this.setNewNameById("backwards-compatible-main-container-id", "Welcome to the BBBHub");
 	},
 
+    sampleTypeDefinitionsExtension : {
+        "FASTQ": {
+            "TOOLBAR": { CREATE: false, FREEZE: false, EDIT: false, MOVE: false, COPY: false, DELETE: false, PRINT: false, HIERARCHY_GRAPH: false, HIERARCHY_TABLE: false, UPLOAD_DATASET: false, UPLOAD_DATASET_HELPER: false, EXPORT_ALL: false, EXPORT_METADATA: true }
+        },
+        "FOLDER": {
+            "TOOLBAR": { CREATE: false, FREEZE: false, EDIT: false, MOVE: false, COPY: false, DELETE: false, PRINT: false, HIERARCHY_GRAPH: false, HIERARCHY_TABLE: false, UPLOAD_DATASET: false, UPLOAD_DATASET_HELPER: false, EXPORT_ALL: false, EXPORT_METADATA: true }
+        },
+    },
+
 	experimentFormTop : function($container, model) {
 	    BBBServerFacade.getExperiment($container, model);
     },
 
     experimentFormBottom : function($container, model) {
+
     },
 
     getExtraUtilities : function() {

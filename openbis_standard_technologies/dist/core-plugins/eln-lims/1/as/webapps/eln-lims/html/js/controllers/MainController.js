@@ -214,7 +214,7 @@ function MainController(profile) {
 														localReference.sideMenu.moveToNodeId(menuUniqueId);
 														localReference.changeView(viewName, viewData);
 													} else {
-														localReference.changeView(profile.defaultStartPage, null);
+														localReference.changeView(profile.defaultStartView.page, profile.defaultStartView.args);
 													}
 													
 													Util.unblockUI();
