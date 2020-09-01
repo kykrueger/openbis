@@ -62,7 +62,6 @@ import ch.systemsx.cisd.etlserver.ETLDaemon;
 import ch.systemsx.cisd.etlserver.registrator.api.v1.impl.DataSetRegistrationTransaction;
 import ch.systemsx.cisd.openbis.dss.generic.server.DataStoreServer;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.DssPropertyParametersUtil;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.util.UpdateUtils;
 import ch.systemsx.cisd.openbis.generic.server.util.TestInitializer;
 import ch.systemsx.cisd.openbis.generic.shared.Constants;
 import ch.systemsx.cisd.openbis.generic.shared.basic.BasicConstant;
@@ -342,7 +341,7 @@ public abstract class SystemTestCase extends AssertJUnit
         List<ParsedLogEntry> result = new ArrayList<ParsedLogEntry>();
         String[] logLines = getLogAppender().getLogContent().split("\n");
         Pattern pattern = Pattern.compile("^(\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}),\\d{3} ([^ ]*) \\[([^\\]]*)\\] (.*)$");
-        SimpleDateFormat dateFormat = new SimpleDateFormat(BasicConstant.DATE_WITHOUT_TIMEZONE_PATTERN);
+        SimpleDateFormat dateFormat = new SimpleDateFormat(BasicConstant.DATE_HOURS_MINUTES_SECONDS_PATTERN);
         ParsedLogEntry logEntry = null;
         for (int i = lineIndex; i < logLines.length; i++)
         {

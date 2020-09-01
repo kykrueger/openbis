@@ -516,7 +516,7 @@ public class GroupingPolicyTest extends AbstractAutoArchiverPolicyTestCase
     private String oldestLog(long timestamp)
     {
         return String.format("All data sets of the selected group have been accessed at %s or before.",
-                new SimpleDateFormat(BasicConstant.DATE_WITHOUT_TIMEZONE_PATTERN).format(new Date(timestamp)));
+                new SimpleDateFormat(BasicConstant.DATE_HOURS_MINUTES_SECONDS_PATTERN).format(new Date(timestamp)));
     }
 
     private String mergedLog(int groups)

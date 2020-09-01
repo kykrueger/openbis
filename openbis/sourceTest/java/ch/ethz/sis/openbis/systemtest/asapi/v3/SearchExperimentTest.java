@@ -24,25 +24,27 @@ import java.util.Collections;
 import java.util.List;
 import java.util.TimeZone;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.create.ExperimentCreation;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.attachment.Attachment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.attachment.fetchoptions.AttachmentFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DatePropertySearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.create.ExperimentCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.create.PropertyTypeCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagCode;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagPermId;
-import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.openbis.systemtest.authorization.ProjectAuthorizationUser;
 
 /**
@@ -526,6 +528,108 @@ public class SearchExperimentTest extends AbstractExperimentTest
     }
 
     @Test
+    public void testSearchWithDateDatePropertyThatEquals()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createAPropertyType(sessionToken, DataType.DATE);
+        EntityTypePermId experimentType = createAnExperimentType(sessionToken, true, propertyType);
+        ExperimentCreation creation = new ExperimentCreation();
+        creation.setCode("EXPERIMENT_WITH_SAMPLE_PROPERTY");
+        creation.setTypeId(experimentType);
+        creation.setProjectId(new ProjectIdentifier("/CISD/NEMO"));
+        creation.setProperty(propertyType.getPermId(), "2/17/20");
+        v3api.createExperiments(sessionToken, Arrays.asList(creation)).get(0);
+
+        ExperimentSearchCriteria criteria = new ExperimentSearchCriteria();
+        criteria.withDateProperty(propertyType.getPermId()).thatEquals("2020-02-17");
+
+        // When
+        List<Experiment> experiments = v3api.searchExperiments(sessionToken, criteria, new ExperimentFetchOptions()).getObjects();
+
+        // Then
+        assertEquals(experiments.get(0).getIdentifier().getIdentifier(), "/CISD/NEMO/EXPERIMENT_WITH_SAMPLE_PROPERTY");
+        assertEquals(experiments.size(), 1);
+    }
+
+    @Test
+    public void testSearchWithDateDatePropertyThatIsLater()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createAPropertyType(sessionToken, DataType.DATE);
+        EntityTypePermId experimentType = createAnExperimentType(sessionToken, true, propertyType);
+        ExperimentCreation creation = new ExperimentCreation();
+        creation.setCode("EXPERIMENT_WITH_SAMPLE_PROPERTY");
+        creation.setTypeId(experimentType);
+        creation.setProjectId(new ProjectIdentifier("/CISD/NEMO"));
+        creation.setProperty(propertyType.getPermId(), "2/17/20");
+        v3api.createExperiments(sessionToken, Arrays.asList(creation)).get(0);
+
+        ExperimentSearchCriteria criteria = new ExperimentSearchCriteria();
+        criteria.withDateProperty(propertyType.getPermId()).thatIsLaterThanOrEqualTo("2020-02-16");
+
+        // When
+        List<Experiment> experiments = v3api.searchExperiments(sessionToken, criteria, new ExperimentFetchOptions()).getObjects();
+
+        // Then
+        assertEquals(experiments.get(0).getIdentifier().getIdentifier(), "/CISD/NEMO/EXPERIMENT_WITH_SAMPLE_PROPERTY");
+        assertEquals(experiments.size(), 1);
+    }
+
+    @Test
+    public void testSearchWithDateDatePropertyThatIsEarlier()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createAPropertyType(sessionToken, DataType.DATE);
+        EntityTypePermId experimentType = createAnExperimentType(sessionToken, true, propertyType);
+        ExperimentCreation creation = new ExperimentCreation();
+        creation.setCode("EXPERIMENT_WITH_SAMPLE_PROPERTY");
+        creation.setTypeId(experimentType);
+        creation.setProjectId(new ProjectIdentifier("/CISD/NEMO"));
+        creation.setProperty(propertyType.getPermId(), "1990-11-09");
+        v3api.createExperiments(sessionToken, Arrays.asList(creation)).get(0);
+
+        ExperimentSearchCriteria criteria = new ExperimentSearchCriteria();
+        criteria.withDateProperty(propertyType.getPermId()).thatIsEarlierThanOrEqualTo("1990-11-10");
+
+        // When
+        List<Experiment> experiments = v3api.searchExperiments(sessionToken, criteria, new ExperimentFetchOptions()).getObjects();
+
+        // Then
+        assertEquals(experiments.get(0).getIdentifier().getIdentifier(), "/CISD/NEMO/EXPERIMENT_WITH_SAMPLE_PROPERTY");
+        assertEquals(experiments.size(), 1);
+    }
+
+    @Test
+    public void testSearchWithDateDatePropertyIgnoringTimezone()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createAPropertyType(sessionToken, DataType.DATE);
+        EntityTypePermId experimentType = createAnExperimentType(sessionToken, true, propertyType);
+        ExperimentCreation creation = new ExperimentCreation();
+        creation.setCode("EXPERIMENT_WITH_SAMPLE_PROPERTY");
+        creation.setTypeId(experimentType);
+        creation.setProjectId(new ProjectIdentifier("/CISD/NEMO"));
+        creation.setProperty(propertyType.getPermId(), "2/17/20");
+        v3api.createExperiments(sessionToken, Arrays.asList(creation)).get(0);
+
+        ExperimentSearchCriteria criteria = new ExperimentSearchCriteria();
+        DatePropertySearchCriteria datePropertySearchCriteria = criteria.withDateProperty(propertyType.getPermId());
+        datePropertySearchCriteria.withTimeZone(-4);
+        datePropertySearchCriteria.thatEquals("2020-02-17");
+
+        // When
+        List<Experiment> experiments = v3api.searchExperiments(sessionToken, criteria, new ExperimentFetchOptions()).getObjects();
+
+        // Then
+        assertEquals(experiments.get(0).getIdentifier().getIdentifier(), "/CISD/NEMO/EXPERIMENT_WITH_SAMPLE_PROPERTY");
+        assertEquals(experiments.size(), 1);
+    }
+
+    @Test
     public void testSearchWithAnyPropertyThatEquals()
     {
         ExperimentSearchCriteria criteria = new ExperimentSearchCriteria();
@@ -648,11 +752,15 @@ public class SearchExperimentTest extends AbstractExperimentTest
         experimentCreation.setProperty(propertyType.getPermId(), "/CISD/CL1");
         v3api.createExperiments(sessionToken, Arrays.asList(experimentCreation));
 
-        final ExperimentSearchCriteria criteria = new ExperimentSearchCriteria();
-        criteria.withOrOperator();
-        criteria.withAnyProperty().thatEquals("/CISD/CL1");
-
-        testSearch(TEST_USER, criteria, 1);
+        final ExperimentSearchCriteria withAnyPropertySearchCriteria = new ExperimentSearchCriteria();
+        withAnyPropertySearchCriteria.withOrOperator();
+        withAnyPropertySearchCriteria.withAnyProperty().thatStartsWith("/CISD/CL");
+        testSearch(TEST_USER, withAnyPropertySearchCriteria, "/CISD/DEFAULT/SAMPLE_PROPERTY_TEST");
+        
+        final ExperimentSearchCriteria withPropertySearchCriteria = new ExperimentSearchCriteria();
+        withPropertySearchCriteria.withOrOperator();
+        withPropertySearchCriteria.withProperty(propertyType.getPermId()).thatStartsWith("/CISD/CL");
+        testSearch(TEST_USER, withPropertySearchCriteria, "/CISD/DEFAULT/SAMPLE_PROPERTY_TEST");
 
         v3api.logout(sessionToken);
     }
@@ -951,6 +1059,60 @@ public class SearchExperimentTest extends AbstractExperimentTest
 
         assertAccessLog(
                 "search-experiments  SEARCH_CRITERIA:\n'EXPERIMENT\n    with operator 'AND'\n    with attribute 'code' starts with 'EXP1'\n    with property 'DESCRIPTION' equal to 'abc'\n'\nFETCH_OPTIONS:\n'Experiment\n    with History\n    with Modifier\n'");
+    }
+
+    @Test
+    public void testSearchForExperimentWithDatePropertyUsingWithProperty()
+    {
+        final ExperimentSearchCriteria criteria = new ExperimentSearchCriteria();
+        criteria.withProperty("PURCHASE_DATE").thatEquals("2009-02-09 10:00:00 +0100");
+        testSearch(TEST_USER, criteria, 1);
+    }
+
+    @Test
+    public void testSearchForExperimentWithBooleanPropertyUsingWithProperty()
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        final PropertyTypePermId propertyType1 = createABooleanPropertyType(sessionToken, "IS_TRUE");
+        final PropertyTypePermId propertyType2 = createAnIntegerPropertyType(sessionToken, "NUMBER");
+        final EntityTypePermId experimentType = createAnExperimentType(sessionToken, false, propertyType1,
+                propertyType2);
+
+        final ExperimentCreation experimentCreation = new ExperimentCreation();
+        experimentCreation.setCode("BOOLEAN_PROPERTY_TEST");
+        experimentCreation.setTypeId(experimentType);
+        experimentCreation.setProjectId(new ProjectIdentifier("/CISD/DEFAULT"));
+        experimentCreation.setProperty("NUMBER", "123");
+        experimentCreation.setProperty("IS_TRUE", "true");
+        v3api.createExperiments(sessionToken, Collections.singletonList(experimentCreation));
+
+        final ExperimentSearchCriteria booleanCriteria = new ExperimentSearchCriteria();
+        booleanCriteria.withProperty("IS_TRUE").thatEquals("true");
+        testSearch(TEST_USER, booleanCriteria, "/CISD/DEFAULT/BOOLEAN_PROPERTY_TEST");
+
+        final ExperimentSearchCriteria integerCriteria = new ExperimentSearchCriteria();
+        integerCriteria.withProperty("NUMBER").thatEquals("123");
+        testSearch(TEST_USER, integerCriteria, "/CISD/DEFAULT/BOOLEAN_PROPERTY_TEST");
+    }
+
+    protected PropertyTypePermId createABooleanPropertyType(final String sessionToken, final String code)
+    {
+        final PropertyTypeCreation creation = new PropertyTypeCreation();
+        creation.setCode(code);
+        creation.setDataType(DataType.BOOLEAN);
+        creation.setLabel("Boolean");
+        creation.setDescription("Boolean property type.");
+        return v3api.createPropertyTypes(sessionToken, Arrays.asList(creation)).get(0);
+    }
+
+    protected PropertyTypePermId createAnIntegerPropertyType(final String sessionToken, final String code)
+    {
+        final PropertyTypeCreation creation = new PropertyTypeCreation();
+        creation.setCode(code);
+        creation.setDataType(DataType.INTEGER);
+        creation.setLabel("Integer");
+        creation.setDescription("Integer property type.");
+        return v3api.createPropertyTypes(sessionToken, Arrays.asList(creation)).get(0);
     }
 
     private void testSearch(String user, ExperimentSearchCriteria criteria, String... expectedIdentifiers)

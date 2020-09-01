@@ -98,6 +98,7 @@ import ch.systemsx.cisd.openbis.generic.client.web.client.application.framework.
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.model.BaseEntityModel;
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.plugin.IClientPlugin;
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.plugin.IClientPluginFactory;
+import ch.systemsx.cisd.openbis.generic.client.web.client.application.renderer.DateStringCellRenderer;
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.renderer.LinkRenderer;
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.renderer.MaterialRenderer;
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.renderer.MultilineStringCellRenderer;
@@ -2674,6 +2675,8 @@ public abstract class TypedTableGrid<T extends Serializable> extends LayoutConta
                 return new MultilineStringCellRenderer();
             case TIMESTAMP:
                 return new TimestampStringCellRenderer();
+            case DATE:
+                return new DateStringCellRenderer();
             case XML:
                 return new MultilineStringCellRenderer();
             default:

@@ -39,6 +39,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.IExperimentId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleCreation;
@@ -1451,6 +1452,85 @@ public class CreateSampleTest extends AbstractSampleTest
         assertEquals(sample2.getSampleProperties().size(), 1);
         assertEquals(sample2.getProperties().get(PLATE_GEOMETRY.getPermId()), "384_WELLS_16X24");
         assertEquals(sample2.getProperties().get(propertyType.getPermId()), sampleProperty.getPermId().getPermId());
+        assertEquals(sample2.getProperties().size(), 2);
+    }
+
+    @Test
+    public void testCreateWithPropertyOfTypeDate()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createAPropertyType(sessionToken, DataType.DATE);
+        EntityTypePermId sampleType = createASampleType(sessionToken, true, propertyType, PLATE_GEOMETRY);
+
+        SampleCreation sample = new SampleCreation();
+        sample.setCode("SAMPLE_WITH_SAMPLE_PROPERTY");
+        sample.setTypeId(sampleType);
+        sample.setSpaceId(new SpacePermId("CISD"));
+        sample.setProperty(PLATE_GEOMETRY.getPermId(), "384_WELLS_16X24");
+        sample.setProperty(propertyType.getPermId(), "2008-11-05");
+
+        // When
+        List<SamplePermId> sampleIds = v3api.createSamples(sessionToken, Arrays.asList(sample));
+
+        // Then
+        assertEquals(sampleIds.size(), 1);
+        SampleFetchOptions fetchOptions = new SampleFetchOptions();
+        fetchOptions.withProperties();
+        fetchOptions.withSampleProperties();
+        Sample sample2 = v3api.getSamples(sessionToken, sampleIds, fetchOptions).get(sampleIds.get(0));
+        assertEquals(sample2.getProperties().get(PLATE_GEOMETRY.getPermId()), "384_WELLS_16X24");
+        assertEquals(sample2.getProperties().get(propertyType.getPermId()), "2008-11-05");
+        assertEquals(sample2.getProperties().size(), 2);
+    }
+
+    @Test
+    public void testCreateWithPropertyOfTypeDateWIthTimestampInput()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createAPropertyType(sessionToken, DataType.DATE);
+        EntityTypePermId sampleType = createASampleType(sessionToken, true, propertyType, PLATE_GEOMETRY);
+
+        SampleCreation sample = new SampleCreation();
+        sample.setCode("SAMPLE_WITH_SAMPLE_PROPERTY");
+        sample.setTypeId(sampleType);
+        sample.setSpaceId(new SpacePermId("CISD"));
+        sample.setProperty(PLATE_GEOMETRY.getPermId(), "384_WELLS_16X24");
+        sample.setProperty(propertyType.getPermId(), "2008-11-05 12:35:37");
+
+        // When
+        assertUserFailureException(Void -> v3api.createSamples(sessionToken, Arrays.asList(sample)),
+                // Then
+                "Date value '2008-11-05 12:35:37' has improper format.");
+    }
+
+    @Test
+    public void testCreateWithPropertyOfTypeTimestamp()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createAPropertyType(sessionToken, DataType.TIMESTAMP);
+        EntityTypePermId sampleType = createASampleType(sessionToken, true, propertyType, PLATE_GEOMETRY);
+
+        SampleCreation sample = new SampleCreation();
+        sample.setCode("SAMPLE_WITH_SAMPLE_PROPERTY");
+        sample.setTypeId(sampleType);
+        sample.setSpaceId(new SpacePermId("CISD"));
+        sample.setProperty(PLATE_GEOMETRY.getPermId(), "384_WELLS_16X24");
+        sample.setProperty(propertyType.getPermId(), "11/5/20 7:23 pm");
+
+        // When
+        List<SamplePermId> sampleIds = v3api.createSamples(sessionToken, Arrays.asList(sample));
+
+        // Then
+        assertEquals(sampleIds.size(), 1);
+        SampleFetchOptions fetchOptions = new SampleFetchOptions();
+        fetchOptions.withProperties();
+        fetchOptions.withSampleProperties();
+        Sample sample2 = v3api.getSamples(sessionToken, sampleIds, fetchOptions).get(sampleIds.get(0));
+        assertEquals(sample2.getProperties().get(PLATE_GEOMETRY.getPermId()), "384_WELLS_16X24");
+        assertEquals(sample2.getProperties().get(propertyType.getPermId()), "2020-11-05 19:23:00 +0100");
         assertEquals(sample2.getProperties().size(), 2);
     }
 

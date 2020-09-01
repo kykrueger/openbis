@@ -25,7 +25,7 @@ function LabNotebookView(labNotebookController, labNotebookView) {
 			
 		$form.append($formColumn);
 		
-		var $formTitle = $("<h2>").append("Lab Notebook");
+		var $formTitle = $("<h2>").append(profile.MainMenuNodeNames.Lab_Notebook);
 		
 		//
 		// Toolbar

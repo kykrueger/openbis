@@ -57,11 +57,13 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.METAPROJECT
 public class SearchCriteriaTranslator
 {
 
-    public static final DateFormat DATE_FORMAT = new SimpleDateFormat(BasicConstant.DATE_WITHOUT_TIMEZONE_PATTERN);
+    public static final DateFormat DATE_HOURS_MINUTES_SECONDS_FORMAT = new SimpleDateFormat(
+            BasicConstant.DATE_HOURS_MINUTES_SECONDS_PATTERN);
 
-    public static final DateFormat DATE_WITHOUT_TIME_FORMAT = new SimpleDateFormat(BasicConstant.DATE_WITHOUT_TIME_FORMAT_PATTERN);
+    public static final DateFormat DATE_HOURS_MINUTES_FORMAT = new SimpleDateFormat(
+            BasicConstant.DATE_HOURS_MINUTES_PATTERN);
 
-    public static final DateFormat DATE_WITH_SHORT_TIME_FORMAT = new SimpleDateFormat(BasicConstant.DATE_WITH_SHORT_TIME_PATTERN);
+    public static final DateFormat DATE_FORMAT = new SimpleDateFormat(BasicConstant.DATE_PATTERN);
 
     public static final String MAIN_TABLE_ALIAS = getAlias(new AtomicInteger(0));
 

@@ -417,7 +417,7 @@ public class HarvesterMaintenanceTask<T extends DataSetInformation> implements I
 
     private SimpleDateFormat createDateFormat()
     {
-        return new SimpleDateFormat(BasicConstant.DATE_WITHOUT_TIMEZONE_PATTERN);
+        return new SimpleDateFormat(BasicConstant.DATE_HOURS_MINUTES_SECONDS_PATTERN);
     }
 
 }

@@ -48,6 +48,7 @@ $.extend(DefaultProfile.prototype, {
 		//this.mainLogoTitle = "ETH RDH";
 		
 		this.serverFacade = serverFacade;
+
 		//
 		// DEFAULTS, TYPICALLY DON'T TOUCH IF YOU DON'T KNOW WHAT YOU DO
 		//
@@ -70,11 +71,22 @@ $.extend(DefaultProfile.prototype, {
 				showUserProfile : true,
 				showZenodoExportBuilder : false,
 				showBarcodes : false,
+				showDatasets : true
 		}
-		
+
+		this.MainMenuNodeNames = {
+		    Lab_Notebook : "Lab Notebook",
+		    Inventory : "Inventory",
+		    Stock : "Stock",
+		    Utilities : "Utilities"
+		}
+
+		this.defaultStartPage = "showBlancPage";
+
 		this.orderLabInfo = {
 				
 		}
+
 		this.orderLanguage = {
 				"ENGLISH" : {
 					"ORDER_FORM" : "Order Form",

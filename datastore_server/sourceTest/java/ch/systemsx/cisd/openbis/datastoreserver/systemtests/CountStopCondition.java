@@ -54,7 +54,7 @@ public class CountStopCondition implements ILogMonitoringStopCondition
         {
             count++;
             operationLog.info(count + " of " + n + " expected entry detected at line " + logEntry.getLineIndex() + " at "
-                    + new SimpleDateFormat(BasicConstant.DATE_WITHOUT_TIMEZONE_PATTERN).format(logEntry.getTimestamp()));
+                    + new SimpleDateFormat(BasicConstant.DATE_HOURS_MINUTES_SECONDS_PATTERN).format(logEntry.getTimestamp()));
             return count >= n;
         }
         return false;

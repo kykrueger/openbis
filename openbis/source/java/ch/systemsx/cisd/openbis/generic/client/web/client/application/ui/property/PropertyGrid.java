@@ -83,7 +83,7 @@ public final class PropertyGrid extends Grid
     private final void registerDefaultPropertyValueRenderers()
     {
         registerPropertyValueRenderer(Date.class, new DatePropertyValueRenderer(messageProvider,
-                BasicConstant.DATE_WITHOUT_TIMEZONE_PATTERN));
+                BasicConstant.DATE_HOURS_MINUTES_SECONDS_PATTERN));
         // Common
         registerPropertyValueRenderer(Person.class,
                 PropertyValueRenderers.createPersonPropertyValueRenderer(messageProvider));

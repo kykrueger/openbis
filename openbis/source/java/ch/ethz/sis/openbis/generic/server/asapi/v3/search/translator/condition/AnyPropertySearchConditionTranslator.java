@@ -92,9 +92,9 @@ public class AnyPropertySearchConditionTranslator implements IConditionTranslato
             if (tableMapper == TableMapper.SAMPLE || tableMapper == TableMapper.EXPERIMENT
                     || tableMapper == TableMapper.DATA_SET)
             {
-                appendSamplePropertyComparison(sqlBuilder, finalValue, aliases, CODE_COLUMN, args);
-                appendSamplePropertyComparison(sqlBuilder, finalValue, aliases, PERM_ID_COLUMN, args);
-                appendSamplePropertyComparison(sqlBuilder, finalValue, aliases, SAMPLE_IDENTIFIER_COLUMN, args);
+                appendSamplePropertyComparison(sqlBuilder, value, aliases, CODE_COLUMN, args);
+                appendSamplePropertyComparison(sqlBuilder, value, aliases, PERM_ID_COLUMN, args);
+                appendSamplePropertyComparison(sqlBuilder, value, aliases, SAMPLE_IDENTIFIER_COLUMN, args);
             }
         } else
         {
@@ -103,12 +103,13 @@ public class AnyPropertySearchConditionTranslator implements IConditionTranslato
     }
 
     private static void appendSamplePropertyComparison(final StringBuilder sqlBuilder,
-            final String finalValue, final Map<String, JoinInformation> aliases, final String columnName,
+            final AbstractStringValue value, final Map<String, JoinInformation> aliases, final String columnName,
             final List<Object> args)
     {
+        final String finalValue = value.getValue();
         sqlBuilder.append(SP).append(OR).append(SP).append(aliases.get(SAMPLE_PROP_COLUMN).getSubTableAlias())
-                .append(PERIOD).append(columnName).append(SP).append(EQ).append(SP).append(QU);
-        args.add(finalValue);
+                .append(PERIOD).append(columnName);
+        TranslatorUtils.appendStringComparatorOp(value.getClass(), finalValue, sqlBuilder, args);
     }
 
 }

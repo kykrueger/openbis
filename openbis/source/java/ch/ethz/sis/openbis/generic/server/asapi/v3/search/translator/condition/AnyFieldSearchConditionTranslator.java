@@ -204,7 +204,7 @@ public class AnyFieldSearchConditionTranslator implements IConditionTranslator<A
         try
         {
             validator.validatePropertyValue(DataTypeCode.DATE, value);
-            return EnumSet.of(PSQLTypes.DATE);
+            return EnumSet.of(PSQLTypes.DATE, TIMESTAMP_WITH_TZ);
         } catch (UserFailureException e1)
         {
             try

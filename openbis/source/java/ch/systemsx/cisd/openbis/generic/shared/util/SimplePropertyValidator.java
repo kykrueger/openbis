@@ -193,7 +193,7 @@ public class SimplePropertyValidator
     {
         public DateValidator()
         {
-            super(SupportedDatePattern.DAYS_DATE_PATTERN.getPattern(),
+            super(SupportedDatePattern.DAYS_DATE_PATTERN, SupportedDatePattern.DAYS_DATE_PATTERN.getPattern(),
                     SupportedDatePattern.US_DATE_PATTERN.getPattern());
         }
     }
@@ -202,16 +202,18 @@ public class SimplePropertyValidator
     {
         public TimestampValidator()
         {
-            super(DATE_PATTERNS);
+            super(SupportedDatePattern.CANONICAL_DATE_PATTERN, DATE_PATTERNS);
         }
     }
     
     private static class AbstractDateAndTimestampValidator implements IDataTypeValidator
     {
+        private SupportedDatePattern internalPattern;
         private String[] patterns;
 
-        AbstractDateAndTimestampValidator(String... patterns)
+        AbstractDateAndTimestampValidator(SupportedDatePattern internalPattern, String... patterns)
         {
+            this.internalPattern = internalPattern;
             this.patterns = patterns;
 
         }
@@ -227,13 +229,9 @@ public class SimplePropertyValidator
             {
                 validateHyphens(value);
                 Date date = DateUtils.parseDateStrictly(value, patterns);
-                // we store date in CANONICAL_DATE_PATTERN
-                System.err.println("parse:"+value+" -> "+date);
-                return DateFormatUtils.format(date,
-                        SupportedDatePattern.CANONICAL_DATE_PATTERN.getPattern());
+                return DateFormatUtils.format(date, internalPattern.getPattern());
             } catch (final ParseException | IllegalArgumentException ex)
             {
-                System.out.println(value+" -> "+ex);
                 throwUserFailureException(value);
                 return null;
             }

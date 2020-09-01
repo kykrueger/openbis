@@ -179,6 +179,8 @@ public class PropertyTypeProvider extends AbstractCommonTableModelProvider<Prope
                 return sampleTypeCode == null ? "Sample of Any Type" : "Sample of Type: " + sampleTypeCode;
             case REAL:
                 return "Float Number";
+            case DATE:
+                return "Date";
             case TIMESTAMP:
                 return "Date and Time";
             case VARCHAR:
