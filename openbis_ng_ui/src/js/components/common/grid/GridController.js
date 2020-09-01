@@ -140,11 +140,19 @@ export default class GridController {
   }
 
   async updateAllRows(rows) {
-    await this._recalculateCurrentRows(rows)
+    const { allRows } = this.context.getState()
+
+    if (allRows !== rows) {
+      await this._recalculateCurrentRows(rows)
+    }
   }
 
   async updateSelectedRowId(selectedRowId) {
-    await this._recalculateSelectedRow(selectedRowId)
+    const { selectedRow } = this.context.getState()
+
+    if (!selectedRow || selectedRow.id !== selectedRowId) {
+      await this._recalculateSelectedRow(selectedRowId)
+    }
   }
 
   async _recalculateCurrentRows(rows) {
@@ -340,13 +348,7 @@ export default class GridController {
   }
 
   handleRowSelect(row) {
-    const { selectedRow } = this.context.getState()
-
-    if (selectedRow && selectedRow.id === row.id) {
-      this.updateSelectedRowId(null)
-    } else {
-      this.updateSelectedRowId(row.id)
-    }
+    this.updateSelectedRowId(row ? row.id : null)
   }
 
   _filter(rows, columns, filters) {

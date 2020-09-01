@@ -43,9 +43,6 @@ class VocabularyForm extends React.PureComponent {
     super(props)
     autoBind(this)
 
-    this.handleSelectedRowChange = this.handleSelectedRowChange.bind(this)
-    this.handleGridControllerRef = this.handleGridControllerRef.bind(this)
-
     this.state = {}
 
     if (this.props.controller) {
@@ -59,6 +56,10 @@ class VocabularyForm extends React.PureComponent {
 
   componentDidMount() {
     this.controller.load()
+  }
+
+  handleClickContainer() {
+    this.controller.handleSelectionChange()
   }
 
   handleSelectedRowChange(row) {
@@ -95,7 +96,7 @@ class VocabularyForm extends React.PureComponent {
     const { terms, selection } = this.state
 
     return (
-      <GridContainer>
+      <GridContainer onClick={this.handleClickContainer}>
         <Header>Terms</Header>
         <Grid
           id={ids.VOCABULARY_TERMS_GRID_ID}
