@@ -5,12 +5,12 @@ import TableCell from '@material-ui/core/TableCell'
 import logger from '@src/js/common/logger.js'
 
 const styles = theme => ({
+  row: {
+    cursor: 'pointer'
+  },
   cell: {
     padding: `${theme.spacing(1)}px ${theme.spacing(2)}px`,
     borderColor: theme.palette.border.secondary
-  },
-  selectable: {
-    cursor: 'pointer'
   }
 })
 
@@ -30,7 +30,7 @@ class GridRow extends React.PureComponent {
   render() {
     logger.log(logger.DEBUG, 'GridRow.render')
 
-    const { columns, row, selected, selectable, classes } = this.props
+    const { columns, row, selected, classes } = this.props
 
     return (
       <TableRow
@@ -39,7 +39,7 @@ class GridRow extends React.PureComponent {
         hover={true}
         selected={selected}
         classes={{
-          root: selectable ? classes.selectable : null
+          root: classes.row
         }}
       >
         {columns.map(column => this.renderCell(column, row))}

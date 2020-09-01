@@ -1,5 +1,6 @@
 import _ from 'lodash'
 import React from 'react'
+import autoBind from 'auto-bind'
 import { connect } from 'react-redux'
 import { withStyles } from '@material-ui/core/styles'
 import Table from '@material-ui/core/Table'
@@ -47,6 +48,7 @@ function mapStateToProps(state) {
 class Grid extends React.PureComponent {
   constructor(props) {
     super(props)
+    autoBind(this)
 
     this.state = {}
 
@@ -76,6 +78,10 @@ class Grid extends React.PureComponent {
     }
   }
 
+  handleClickContainer(event) {
+    event.stopPropagation()
+  }
+
   render() {
     logger.log(logger.DEBUG, 'Grid.render')
 
@@ -83,7 +89,7 @@ class Grid extends React.PureComponent {
       return <React.Fragment />
     }
 
-    const { classes, onSelectedRowChange } = this.props
+    const { classes } = this.props
     const {
       filters,
       sort,
@@ -97,7 +103,7 @@ class Grid extends React.PureComponent {
     } = this.state
 
     return (
-      <div>
+      <div onClick={this.handleClickContainer}>
         <Table classes={{ root: classes.table }}>
           <GridHeader
             columns={columns}
@@ -115,7 +121,6 @@ class Grid extends React.PureComponent {
                   columns={columns}
                   row={row}
                   selected={selectedRow ? selectedRow.id === row.id : false}
-                  selectable={onSelectedRowChange}
                   onClick={this.controller.handleRowSelect}
                 />
               )

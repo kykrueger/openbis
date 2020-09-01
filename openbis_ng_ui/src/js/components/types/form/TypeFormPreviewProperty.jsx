@@ -220,15 +220,8 @@ class TypeFormPreviewProperty extends React.PureComponent {
   }
 
   handleClick(event, newSelection) {
-    const { selection } = this.props
-
     event.stopPropagation()
-
-    if (_.isEqual(selection, newSelection)) {
-      this.props.onSelectionChange()
-    } else {
-      this.props.onSelectionChange(newSelection.type, newSelection.params)
-    }
+    this.props.onSelectionChange(newSelection.type, newSelection.params)
   }
 
   handleChange(event) {
