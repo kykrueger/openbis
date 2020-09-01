@@ -61,6 +61,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.IExperimentId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.id.ExternalDmsPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.id.IExternalDmsId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleCreation;
@@ -82,7 +83,7 @@ import ch.systemsx.cisd.openbis.systemtest.authorization.ProjectAuthorizationUse
 public class CreateDataSetTest extends AbstractDataSetTest
 {
     private static final PropertyTypePermId PLATE_GEOMETRY = new PropertyTypePermId("$PLATE_GEOMETRY");
-    
+
     @Test
     public void testCreateLinkDataSetWithSpaceUser()
     {
@@ -2042,6 +2043,60 @@ public class CreateDataSetTest extends AbstractDataSetTest
         assertEquals(dataSet.getSampleProperties().size(), 1);
         assertEquals(dataSet.getProperties().get(PLATE_GEOMETRY.getPermId()), "384_WELLS_16X24");
         assertEquals(dataSet.getProperties().get(propertyType.getPermId()), sampleProperty.getPermId().getPermId());
+        assertEquals(dataSet.getProperties().size(), 2);
+    }
+
+    @Test
+    public void testCreateWithPropertyOfTypeDate()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createAPropertyType(sessionToken, DataType.DATE);
+        EntityTypePermId dataSetType = createADataSetType(sessionToken, true, propertyType, PLATE_GEOMETRY);
+
+        DataSetCreation creation = physicalDataSetCreation();
+        creation.setTypeId(dataSetType);
+        creation.setProperty(PLATE_GEOMETRY.getPermId(), "384_WELLS_16X24");
+        creation.setProperty(propertyType.getPermId(), "1999-12-19");
+
+        // When
+        List<DataSetPermId> dataSetIds = v3api.createDataSets(sessionToken, Arrays.asList(creation));
+
+        // Then
+        assertEquals(dataSetIds.size(), 1);
+        DataSetFetchOptions fetchOptions = new DataSetFetchOptions();
+        fetchOptions.withProperties();
+        fetchOptions.withSampleProperties();
+        DataSet dataSet = v3api.getDataSets(sessionToken, dataSetIds, fetchOptions).get(dataSetIds.get(0));
+        assertEquals(dataSet.getProperties().get(PLATE_GEOMETRY.getPermId()), "384_WELLS_16X24");
+        assertEquals(dataSet.getProperties().get(propertyType.getPermId()), "1999-12-19 00:00:00 +0100");
+        assertEquals(dataSet.getProperties().size(), 2);
+    }
+
+    @Test
+    public void testCreateWithPropertyOfTypeTimestamp()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createAPropertyType(sessionToken, DataType.TIMESTAMP);
+        EntityTypePermId dataSetType = createADataSetType(sessionToken, true, propertyType, PLATE_GEOMETRY);
+
+        DataSetCreation creation = physicalDataSetCreation();
+        creation.setTypeId(dataSetType);
+        creation.setProperty(PLATE_GEOMETRY.getPermId(), "384_WELLS_16X24");
+        creation.setProperty(propertyType.getPermId(), "12/24/08 3:4");
+
+        // When
+        List<DataSetPermId> dataSetIds = v3api.createDataSets(sessionToken, Arrays.asList(creation));
+
+        // Then
+        assertEquals(dataSetIds.size(), 1);
+        DataSetFetchOptions fetchOptions = new DataSetFetchOptions();
+        fetchOptions.withProperties();
+        fetchOptions.withSampleProperties();
+        DataSet dataSet = v3api.getDataSets(sessionToken, dataSetIds, fetchOptions).get(dataSetIds.get(0));
+        assertEquals(dataSet.getProperties().get(PLATE_GEOMETRY.getPermId()), "384_WELLS_16X24");
+        assertEquals(dataSet.getProperties().get(propertyType.getPermId()), "2008-12-24 03:04:00 +0100");
         assertEquals(dataSet.getProperties().size(), 2);
     }
 
