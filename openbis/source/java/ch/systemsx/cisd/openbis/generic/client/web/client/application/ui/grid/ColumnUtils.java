@@ -34,6 +34,7 @@ import ch.systemsx.cisd.common.shared.basic.string.StringUtils;
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.IViewContext;
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.model.VocabularyTermModel;
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.ui.columns.framework.IColumnDefinitionUI;
+import ch.systemsx.cisd.openbis.generic.client.web.client.application.ui.field.DateDateFormField;
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.ui.field.DateFormField;
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.ui.field.HyperlinkField;
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.ui.field.IChosenEntitiesListener;
@@ -74,7 +75,7 @@ public class ColumnUtils
                 editor = new StringBasedCellEditor(new RealField("", false));
                 break;
             case DATE:
-                editor = new StringBasedCellEditor(new DateFormField("", false));
+                editor = new StringBasedCellEditor(new DateDateFormField("", false));
                 break;
             case TIMESTAMP:
                 editor = new StringBasedCellEditor(new DateFormField("", false));

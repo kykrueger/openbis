@@ -68,7 +68,7 @@ public class PropertyFieldFactory
             case VARCHAR:
                 return wrapUnaware(setValue(new VarcharField(label, isMandatory), originalRawValue));
             case DATE:
-                return wrapUnaware(setValue(new DateFormField(label, isMandatory), originalRawValue));
+                return wrapUnaware(setValue(new DateDateFormField(label, isMandatory), originalRawValue));
             case TIMESTAMP:
                 return wrapUnaware(setValue(new DateFormField(label, isMandatory), originalRawValue));
             case CONTROLLEDVOCABULARY:
