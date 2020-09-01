@@ -8,6 +8,9 @@ $.extend(ELNLIMSPlugin.prototype, {
 	},
 	forcedDisableRTF : ["$NAME"],
 	forceMonospaceFont : [],
+	experimentTypeDefinitionsExtension : {
+
+    },
 	sampleTypeDefinitionsExtension : {
 	
 	},

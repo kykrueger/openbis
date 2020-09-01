@@ -65,7 +65,8 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		var toolbarModel = [];
 		var dropdownOptionsModel = [];
 		if(this._experimentFormModel.mode === FormMode.VIEW) {
-			if (_this._allowedToCreateSample()) {
+		    var toolbarConfig = profile.getExperimentTypeToolbarConfiguration(_this._experimentFormModel.experiment.experimentTypeCode);
+			if (_this._allowedToCreateSample() && toolbarConfig.CREATE) {
 				//Create Experiment Step
 				var sampleTypes = profile.getAllSampleTypes(true);
 				FormUtil.addCreationDropdown(toolbarModel, sampleTypes, ["ENTRY", "EXPERIMENTAL_STEP"], function(typeCode) {
@@ -81,14 +82,14 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 					}
 				});
 			}
-			if (_this._allowedToEdit()) {
+			if (_this._allowedToEdit() && toolbarConfig.EDIT) {
 				//Edit
 				var $editBtn = FormUtil.getButtonWithIcon("glyphicon-edit", function () {
 					mainController.changeView("showEditExperimentPageFromIdentifier", _this._experimentFormModel.experiment.identifier);
 				}, "Edit", null, "edit-btn");
 				toolbarModel.push({ component : $editBtn });
 			}
-			if (_this._allowedToMove()) {
+			if (_this._allowedToMove() && toolbarConfig.MOVE) {
 				//Move
 				dropdownOptionsModel.push({
                     label : "Move",
@@ -98,7 +99,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
                     }
                 });
 			}
-			if (_this._allowedToDelete()) {
+			if (_this._allowedToDelete() && toolbarConfig.DELETE) {
 				//Delete
 	            dropdownOptionsModel.push({
                     label : "Delete",
@@ -111,39 +112,47 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
                 });
 			}
 			if(_this._allowedToRegisterDataSet()) {
-				//Create Dataset
-				var $uploadBtn = FormUtil.getButtonWithIcon("glyphicon-upload", function () {
-					mainController.changeView('showCreateDataSetPageFromExpPermId',_this._experimentFormModel.experiment.permId);
-				}, "Upload");
-				toolbarModel.push({ component : $uploadBtn });
-	
-				//Get dropbox folder name
-                dropdownOptionsModel.push({
-                    label : "Dataset upload helper tool for eln-lims dropbox",
-                    action : function() {
-                        var space = IdentifierUtil.getSpaceCodeFromIdentifier(_this._experimentFormModel.experiment.identifier);
-                        var project = IdentifierUtil.getProjectCodeFromExperimentIdentifier(_this._experimentFormModel.experiment.identifier);
-                        var nameElements = [
-                            "E",
-                            space,
-                            project,
-                            _this._experimentFormModel.experiment.code,
-                        ];
-                	    FormUtil.showDropboxFolderNameDialog(nameElements);
-                    }
-                });
+			    if(toolbarConfig.UPLOAD_DATASET) {
+                    //Create Dataset
+                    var $uploadBtn = FormUtil.getButtonWithIcon("glyphicon-upload", function () {
+                        mainController.changeView('showCreateDataSetPageFromExpPermId',_this._experimentFormModel.experiment.permId);
+                    }, "Upload");
+                    toolbarModel.push({ component : $uploadBtn });
+	            }
+
+	            if(toolbarConfig.UPLOAD_DATASET_HELPER) {
+                    //Get dropbox folder name
+                    dropdownOptionsModel.push({
+                        label : "Dataset upload helper tool for eln-lims dropbox",
+                        action : function() {
+                            var space = IdentifierUtil.getSpaceCodeFromIdentifier(_this._experimentFormModel.experiment.identifier);
+                            var project = IdentifierUtil.getProjectCodeFromExperimentIdentifier(_this._experimentFormModel.experiment.identifier);
+                            var nameElements = [
+                                "E",
+                                space,
+                                project,
+                                _this._experimentFormModel.experiment.code,
+                            ];
+                            FormUtil.showDropboxFolderNameDialog(nameElements);
+                        }
+                    });
+                }
 			}
 			
 			//Export
-            dropdownOptionsModel.push({
-                label : "Export Metadata",
-                action : FormUtil.getExportAction([{ type: "EXPERIMENT", permId : _this._experimentFormModel.experiment.permId, expand : true }], true)
-            });
+			if(toolbarConfig.EXPORT_METADATA) {
+                dropdownOptionsModel.push({
+                    label : "Export Metadata",
+                    action : FormUtil.getExportAction([{ type: "EXPERIMENT", permId : _this._experimentFormModel.experiment.permId, expand : true }], true)
+                });
+            }
 
-            dropdownOptionsModel.push({
-                label : "Export Metadata & Data",
-                action : FormUtil.getExportAction([{ type: "EXPERIMENT", permId : _this._experimentFormModel.experiment.permId, expand : true }], false)
-            });
+            if(toolbarConfig.EXPORT_ALL) {
+                dropdownOptionsModel.push({
+                    label : "Export Metadata & Data",
+                    action : FormUtil.getExportAction([{ type: "EXPERIMENT", permId : _this._experimentFormModel.experiment.permId, expand : true }], false)
+                });
+            }
 
 			//Jupyter Button
 			if(profile.jupyterIntegrationServerEndpoint) {
@@ -157,7 +166,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 			}
 
             //Freeze
-            if(_this._experimentFormModel.v3_experiment && _this._experimentFormModel.v3_experiment.frozen !== undefined) { //Freezing available on the API
+            if(_this._experimentFormModel.v3_experiment && _this._experimentFormModel.v3_experiment.frozen !== undefined && toolbarConfig.FREEZE) { //Freezing available on the API
                 var isEntityFrozen = _this._experimentFormModel.v3_experiment.frozen;
                 if(isEntityFrozen) {
                     var $freezeButton = FormUtil.getFreezeButton("EXPERIMENT", this._experimentFormModel.v3_experiment.permId.permId, isEntityFrozen);

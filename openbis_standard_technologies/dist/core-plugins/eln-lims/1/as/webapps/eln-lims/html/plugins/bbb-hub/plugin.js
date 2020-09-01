@@ -24,7 +24,11 @@ $.extend(BBBHubTechnology.prototype, ELNLIMSPlugin.prototype, {
         this.setNewNameById("lab-notebook-id", "Datasets");
         this.setNewNameById("backwards-compatible-main-container-id", "Welcome to the BBBHub");
 	},
-
+    experimentTypeDefinitionsExtension : {
+        "BBB": {
+            "TOOLBAR": { CREATE: false, FREEZE: false, EDIT: false, MOVE: false, DELETE: false, UPLOAD_DATASET: false, UPLOAD_DATASET_HELPER: false, EXPORT_ALL: false, EXPORT_METADATA: true }
+        },
+    },
     sampleTypeDefinitionsExtension : {
         "FASTQ": {
             "TOOLBAR": { CREATE: false, FREEZE: false, EDIT: false, MOVE: false, COPY: false, DELETE: false, PRINT: false, HIERARCHY_GRAPH: false, HIERARCHY_TABLE: false, UPLOAD_DATASET: false, UPLOAD_DATASET_HELPER: false, EXPORT_ALL: false, EXPORT_METADATA: true }
@@ -33,11 +37,20 @@ $.extend(BBBHubTechnology.prototype, ELNLIMSPlugin.prototype, {
             "TOOLBAR": { CREATE: false, FREEZE: false, EDIT: false, MOVE: false, COPY: false, DELETE: false, PRINT: false, HIERARCHY_GRAPH: false, HIERARCHY_TABLE: false, UPLOAD_DATASET: false, UPLOAD_DATASET_HELPER: false, EXPORT_ALL: false, EXPORT_METADATA: true }
         },
     },
-
+    dataSetTypeDefinitionsExtension : {
+        "FASTQ": {
+            "TOOLBAR": { EDIT: false, FREEZE: false, MOVE: false, ARCHIVE: false, DELETE: false, HIERARCHY_TABLE: false, EXPORT_ALL: false, EXPORT_METADATA: true }
+        },
+        "METADATA": {
+            "TOOLBAR": { EDIT: false, FREEZE: false, MOVE: false, ARCHIVE: false, DELETE: false, HIERARCHY_TABLE: false, EXPORT_ALL: false, EXPORT_METADATA: true }
+        },
+        "RESULTS": {
+            "TOOLBAR": { EDIT: false, FREEZE: false, MOVE: false, ARCHIVE: false, DELETE: false, HIERARCHY_TABLE: false, EXPORT_ALL: false, EXPORT_METADATA: true }
+        },
+    },
 	experimentFormTop : function($container, model) {
 	    BBBServerFacade.getExperiment($container, model);
     },
-
     experimentFormBottom : function($container, model) {
 
     },
