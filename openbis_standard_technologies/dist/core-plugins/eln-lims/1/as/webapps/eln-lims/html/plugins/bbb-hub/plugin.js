@@ -12,7 +12,7 @@ $.extend(BBBHubTechnology.prototype, ELNLIMSPlugin.prototype, {
 	    profile.MainMenuNodeNames.Lab_Notebook = "DataSets";
 	    profile.defaultStartView = {
 	        page : "EXTRA_PLUGIN_UTILITY",
-	        args : "HELP_VIEW"
+	        args : "BBB_HUB_HELP"
 	    };
 	    //
 
@@ -65,15 +65,24 @@ $.extend(BBBHubTechnology.prototype, ELNLIMSPlugin.prototype, {
                     $header.append($("<h1>").append("Public Index Page"));
                     BBBServerFacade.getExperiments($content);
                 }
-            }, {
-                icon : "glyphicon glyphicon-list-alt",
-                uniqueViewName : "HELP_VIEW",
-                label : "Help",
+            },{
+                icon : "glyphicon glyphicon-info-sign",
+                uniqueViewName : "OPENBIS_DOCUMENTATION",
+                label : "openBIS Documentation",
                 paintView : function($header, $content) {
-                   $header.append($("<h1>").append("Help"));
+                   $header.append($("<h1>").append("openBIS Documentation"));
                    _this.paintContent($content);
+                }
+            },{
+                icon : "glyphicon glyphicon-info-sign",
+                uniqueViewName : "BBB_HUB_HELP",
+                label : "BBB-Hub Documentation",
+                paintView : function($header, $content) {
+                    $header.append($("<h1>").append("BBB-Hub Documentation"));
+                    $content.append($("<p>").append("TO-DO Documentation page"));
+                }
             }
-        }];
+        ];
     },
 
     paintContent : function($content) {
