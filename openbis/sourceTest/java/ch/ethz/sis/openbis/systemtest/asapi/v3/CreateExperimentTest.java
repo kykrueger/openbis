@@ -828,7 +828,7 @@ public class CreateExperimentTest extends AbstractExperimentTest
         fetchOptions.withSampleProperties();
         Experiment experiment2 = v3api.getExperiments(sessionToken, experimentIds, fetchOptions).get(experimentIds.get(0));
         assertEquals(experiment2.getProperties().get(PLATE_GEOMETRY.getPermId()), "384_WELLS_16X24");
-        assertEquals(experiment2.getProperties().get(propertyType.getPermId()), "2020-02-17 00:00:00 +0100");
+        assertEquals(experiment2.getProperties().get(propertyType.getPermId()), "2020-02-17");
         assertEquals(experiment2.getProperties().size(), 2);
     }
 

@@ -1480,7 +1480,7 @@ public class CreateSampleTest extends AbstractSampleTest
         fetchOptions.withSampleProperties();
         Sample sample2 = v3api.getSamples(sessionToken, sampleIds, fetchOptions).get(sampleIds.get(0));
         assertEquals(sample2.getProperties().get(PLATE_GEOMETRY.getPermId()), "384_WELLS_16X24");
-        assertEquals(sample2.getProperties().get(propertyType.getPermId()), "2008-11-05 00:00:00 +0100");
+        assertEquals(sample2.getProperties().get(propertyType.getPermId()), "2008-11-05");
         assertEquals(sample2.getProperties().size(), 2);
     }
 

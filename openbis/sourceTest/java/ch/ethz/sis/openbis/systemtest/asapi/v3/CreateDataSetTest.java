@@ -2069,7 +2069,7 @@ public class CreateDataSetTest extends AbstractDataSetTest
         fetchOptions.withSampleProperties();
         DataSet dataSet = v3api.getDataSets(sessionToken, dataSetIds, fetchOptions).get(dataSetIds.get(0));
         assertEquals(dataSet.getProperties().get(PLATE_GEOMETRY.getPermId()), "384_WELLS_16X24");
-        assertEquals(dataSet.getProperties().get(propertyType.getPermId()), "1999-12-19 00:00:00 +0100");
+        assertEquals(dataSet.getProperties().get(propertyType.getPermId()), "1999-12-19");
         assertEquals(dataSet.getProperties().size(), 2);
     }
 
