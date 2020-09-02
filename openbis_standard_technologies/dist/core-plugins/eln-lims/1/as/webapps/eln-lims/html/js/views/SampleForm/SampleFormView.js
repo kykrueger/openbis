@@ -523,7 +523,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
             var documentEditorEditable = $("<div>", { class : "document-editor__editable", id : "$DOCUMENT" });
 
 		    var value = Util.getEmptyIfNull(this._sampleFormModel.sample.properties[documentPropertyType.code]);
-		    if(this._sampleFormModel.mode === FormMode.CREATE) {
+		    if(this._sampleFormModel.mode === FormMode.CREATE && !value) {
                 value = "<h2>New Title</h2><br><p>new content</p>";
 		    }
             var documentEditorEditableFinal = FormUtil.activateRichTextProperties(documentEditorEditable, documentChangeEvent, documentPropertyType, value, isReadOnly, documentEditorEditableToolbar);
