@@ -87,29 +87,6 @@ public class DataTypeUtils
                 }
             }
         },
-        DATE(DataTypeCode.DATE)
-        {
-            @Override
-            public ISerializableComparable doConversion(String value)
-            {
-                return new DateTableCell(doSimpleConversion(value));
-            }
-
-            @Override
-            public Date doSimpleConversion(String value)
-            {
-                try
-                {
-                    String pattern = SupportedDatePattern.DAYS_DATE_PATTERN.getPattern();
-                    return DateUtils.parseDate(value, new String[]
-                    { pattern });
-                } catch (ParseException ex)
-                {
-                    throw new IllegalArgumentException("Is not a date in canonical format: "
-                            + value);
-                }
-            }
-        },
         TIMESTAMP(DataTypeCode.TIMESTAMP)
         {
             @Override
@@ -135,7 +112,7 @@ public class DataTypeUtils
         },
         STRING(DataTypeCode.VARCHAR, DataTypeCode.MULTILINE_VARCHAR, DataTypeCode.BOOLEAN,
                 DataTypeCode.XML, DataTypeCode.CONTROLLEDVOCABULARY, DataTypeCode.MATERIAL,
-                DataTypeCode.HYPERLINK, DataTypeCode.SAMPLE)
+                DataTypeCode.HYPERLINK, DataTypeCode.SAMPLE, DataTypeCode.DATE)
         {
             @Override
             public ISerializableComparable doConversion(String value)
