@@ -1,4 +1,5 @@
 import openbis from '@src/js/services/openbis.js'
+import actions from '@src/js/store/actions/actions.js'
 import pages from '@src/js/common/consts/pages.js'
 import objectType from '@src/js/common/consts/objectType.js'
 import objectOperation from '@src/js/common/consts/objectOperation.js'
@@ -32,7 +33,7 @@ export default class UserBrowserController extends BrowserController {
         return {
           id: `groups/${group.code}`,
           text: group.code,
-          object: { type: objectType.GROUP, id: group.code }
+          object: { type: objectType.USER_GROUP, id: group.code }
         }
       })
 
@@ -40,12 +41,14 @@ export default class UserBrowserController extends BrowserController {
         {
           id: 'users',
           text: 'Users',
-          children: userNodes
+          children: userNodes,
+          childrenType: objectType.NEW_USER
         },
         {
           id: 'groups',
           text: 'Groups',
-          children: groupNodes
+          children: groupNodes,
+          childrenType: objectType.NEW_USER_GROUP
         }
       ]
 
@@ -53,10 +56,18 @@ export default class UserBrowserController extends BrowserController {
     })
   }
 
+  doNodeAdd(node) {
+    if (node && node.childrenType) {
+      this.context.dispatch(
+        actions.objectNew(this.getPage(), node.childrenType)
+      )
+    }
+  }
+
   doGetObservedModifications() {
     return {
       [objectType.USER]: [objectOperation.CREATE, objectOperation.DELETE],
-      [objectType.GROUP]: [objectOperation.CREATE, objectOperation.DELETE]
+      [objectType.USER_GROUP]: [objectOperation.CREATE, objectOperation.DELETE]
     }
   }
 }

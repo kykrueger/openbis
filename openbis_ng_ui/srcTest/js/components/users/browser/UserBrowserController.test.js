@@ -29,8 +29,8 @@ describe('browser', () => {
 async function testLoad() {
   openbis.mockSearchPersons([fixture.TEST_USER_DTO, fixture.ANOTHER_USER_DTO])
   openbis.mockSearchGroups([
-    fixture.TEST_GROUP_DTO,
-    fixture.ANOTHER_GROUP_DTO,
+    fixture.TEST_USER_GROUP_DTO,
+    fixture.ANOTHER_USER_GROUP_DTO,
     fixture.ALL_USERS_GROUP_DTO
   ])
 
@@ -55,8 +55,8 @@ async function testLoad() {
 async function testFilter() {
   openbis.mockSearchPersons([fixture.TEST_USER_DTO, fixture.ANOTHER_USER_DTO])
   openbis.mockSearchGroups([
-    fixture.TEST_GROUP_DTO,
-    fixture.ANOTHER_GROUP_DTO,
+    fixture.TEST_USER_GROUP_DTO,
+    fixture.ANOTHER_USER_GROUP_DTO,
     fixture.ALL_USERS_GROUP_DTO
   ])
 
@@ -82,7 +82,7 @@ async function testFilter() {
       selected: false,
       children: [
         {
-          text: fixture.ANOTHER_GROUP_DTO.code,
+          text: fixture.ANOTHER_USER_GROUP_DTO.code,
           expanded: false,
           selected: false
         }
@@ -96,8 +96,8 @@ async function testFilter() {
 async function testSelectNode() {
   openbis.mockSearchPersons([fixture.TEST_USER_DTO, fixture.ANOTHER_USER_DTO])
   openbis.mockSearchGroups([
-    fixture.TEST_GROUP_DTO,
-    fixture.ANOTHER_GROUP_DTO,
+    fixture.TEST_USER_GROUP_DTO,
+    fixture.ANOTHER_USER_GROUP_DTO,
     fixture.ALL_USERS_GROUP_DTO
   ])
 
@@ -134,12 +134,12 @@ async function testSelectNode() {
           selected: false
         },
         {
-          text: fixture.ANOTHER_GROUP_DTO.code,
+          text: fixture.ANOTHER_USER_GROUP_DTO.code,
           expanded: false,
           selected: false
         },
         {
-          text: fixture.TEST_GROUP_DTO.code,
+          text: fixture.TEST_USER_GROUP_DTO.code,
           expanded: false,
           selected: false
         }
@@ -148,7 +148,7 @@ async function testSelectNode() {
   ])
   expectOpenUserAction(fixture.TEST_USER_DTO.userId)
 
-  controller.nodeSelect('groups/' + fixture.ANOTHER_GROUP_DTO.code)
+  controller.nodeSelect('groups/' + fixture.ANOTHER_USER_GROUP_DTO.code)
 
   expect(controller.getNodes()).toMatchObject([
     {
@@ -179,19 +179,19 @@ async function testSelectNode() {
           selected: false
         },
         {
-          text: fixture.ANOTHER_GROUP_DTO.code,
+          text: fixture.ANOTHER_USER_GROUP_DTO.code,
           expanded: false,
           selected: true
         },
         {
-          text: fixture.TEST_GROUP_DTO.code,
+          text: fixture.TEST_USER_GROUP_DTO.code,
           expanded: false,
           selected: false
         }
       ]
     }
   ])
-  expectOpenGroupAction(fixture.ANOTHER_GROUP_DTO.code)
+  expectOpenGroupAction(fixture.ANOTHER_USER_GROUP_DTO.code)
 }
 
 async function testSelectAnotherNode() {
@@ -257,7 +257,7 @@ async function testSelectVirtualNode() {
 
 async function testExpandAndCollapseNode() {
   openbis.mockSearchPersons([])
-  openbis.mockSearchGroups([fixture.TEST_GROUP_DTO])
+  openbis.mockSearchGroups([fixture.TEST_USER_GROUP_DTO])
 
   await controller.load()
   controller.nodeExpand('groups')
@@ -300,6 +300,6 @@ function expectOpenUserAction(userId) {
 
 function expectOpenGroupAction(groupId) {
   context.expectAction(
-    actions.objectOpen(pages.USERS, objectType.GROUP, groupId)
+    actions.objectOpen(pages.USERS, objectType.USER_GROUP, groupId)
   )
 }

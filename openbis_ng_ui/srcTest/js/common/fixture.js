@@ -18,13 +18,13 @@ const ALL_USERS_GROUP_DTO = new openbis.AuthorizationGroup()
 ALL_USERS_GROUP_DTO.setCode('all-users-group')
 ALL_USERS_GROUP_DTO.setUsers([TEST_USER_DTO, ANOTHER_USER_DTO])
 
-const TEST_GROUP_DTO = new openbis.AuthorizationGroup()
-TEST_GROUP_DTO.setCode('test-group')
-TEST_GROUP_DTO.setUsers([TEST_USER_DTO])
+const TEST_USER_GROUP_DTO = new openbis.AuthorizationGroup()
+TEST_USER_GROUP_DTO.setCode('test-group')
+TEST_USER_GROUP_DTO.setUsers([TEST_USER_DTO])
 
-const ANOTHER_GROUP_DTO = new openbis.AuthorizationGroup()
-ANOTHER_GROUP_DTO.setCode('another-group')
-ANOTHER_GROUP_DTO.setUsers([ANOTHER_USER_DTO])
+const ANOTHER_USER_GROUP_DTO = new openbis.AuthorizationGroup()
+ANOTHER_USER_GROUP_DTO.setCode('another-group')
+ANOTHER_USER_GROUP_DTO.setUsers([ANOTHER_USER_DTO])
 
 const TEST_PLUGIN_DTO = new openbis.Plugin()
 TEST_PLUGIN_DTO.setName('TEST_PLUGIN')
@@ -151,8 +151,8 @@ export default {
   TEST_USER_DTO,
   ANOTHER_USER_DTO,
   ALL_USERS_GROUP_DTO,
-  TEST_GROUP_DTO,
-  ANOTHER_GROUP_DTO,
+  TEST_USER_GROUP_DTO,
+  ANOTHER_USER_GROUP_DTO,
   TEST_PLUGIN_DTO,
   TEST_PROPERTY_TYPE_1_DTO,
   TEST_PROPERTY_TYPE_2_DTO,

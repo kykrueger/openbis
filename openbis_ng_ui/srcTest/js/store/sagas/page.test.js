@@ -16,7 +16,10 @@ describe('page', () => {
   test('objectOpen objectClose', () => {
     let object1 = { type: objectType.USER, id: fixture.TEST_USER_DTO.userId }
     let object2 = { type: objectType.USER, id: fixture.ANOTHER_USER_DTO.userId }
-    let object3 = { type: objectType.GROUP, id: fixture.TEST_GROUP_DTO.code }
+    let object3 = {
+      type: objectType.USER_GROUP,
+      id: fixture.TEST_USER_GROUP_DTO.code
+    }
 
     store.dispatch(actions.objectOpen(pages.USERS, object1.type, object1.id))
 

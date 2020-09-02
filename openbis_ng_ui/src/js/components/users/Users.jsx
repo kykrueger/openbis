@@ -39,10 +39,16 @@ class Users extends React.Component {
 
   renderComponent(tab) {
     const { object } = tab
-    if (object.type === objectType.USER) {
-      return <UserForm objectId={object.id} />
-    } else if (object.type === objectType.GROUP) {
-      return <UserGroupForm objectId={object.id} />
+    if (
+      object.type === objectType.USER ||
+      object.type === objectType.NEW_USER
+    ) {
+      return <UserForm object={object} />
+    } else if (
+      object.type === objectType.USER_GROUP ||
+      object.type === objectType.NEW_USER_GROUP
+    ) {
+      return <UserGroupForm object={object} />
     } else if (object.type === objectType.SEARCH) {
       return <UserSearch objectId={object.id} />
     }
@@ -53,7 +59,9 @@ class Users extends React.Component {
 
     const prefixes = {
       [objectType.USER]: 'User: ',
-      [objectType.GROUP]: 'Group: ',
+      [objectType.USER_GROUP]: 'Group: ',
+      [objectType.NEW_USER]: 'New User ',
+      [objectType.NEW_USER_GROUP]: 'New Group ',
       [objectType.SEARCH]: 'Search: '
     }
 
