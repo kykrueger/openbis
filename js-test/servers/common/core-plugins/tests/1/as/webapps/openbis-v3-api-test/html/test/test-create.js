@@ -163,12 +163,12 @@ define(
 						propertyTypeCreation1.setCode(propertyTypeCodeSample);
 						propertyTypeCreation1.setDescription("hello");
 						propertyTypeCreation1.setDataType(c.DataType.SAMPLE);
-						propertyTypeCreation1.setLabel("SAMPLE Property Type");
+						propertyTypeCreation1.setLabel("Test Property Type");
 						var propertyTypeCreation2 = new c.PropertyTypeCreation();
 						propertyTypeCreation2.setCode(propertyTypeCodeDate);
 						propertyTypeCreation2.setDescription("hello");
 						propertyTypeCreation2.setDataType(c.DataType.DATE);
-						propertyTypeCreation2.setLabel("DATE Property Type");
+						propertyTypeCreation2.setLabel("Test Property Type");
 						return facade.createPropertyTypes([ propertyTypeCreation1, propertyTypeCreation2 ]).then(function(results) {
 							var assignmentCreation1 = new c.PropertyAssignmentCreation();
 							assignmentCreation1.setPropertyTypeId(new c.PropertyTypePermId(propertyTypeCodeSample));
