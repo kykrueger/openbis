@@ -8,6 +8,8 @@ export default class UserFormControllerRemove {
     const { selection } = this.context.getState()
     if (selection.type === 'group') {
       this._handleRemoveGroup(selection.params.id)
+    } else if (selection.type === 'role') {
+      this._handleRemoveRole(selection.params.id)
     }
   }
 
@@ -22,6 +24,23 @@ export default class UserFormControllerRemove {
     this.context.setState(state => ({
       ...state,
       groups: newGroups,
+      selection: null
+    }))
+
+    this.controller.changed(true)
+  }
+
+  _handleRemoveRole(roleId) {
+    const { roles } = this.context.getState()
+
+    const roleIndex = roles.findIndex(role => role.id === roleId)
+
+    const newRoles = Array.from(roles)
+    newRoles.splice(roleIndex, 1)
+
+    this.context.setState(state => ({
+      ...state,
+      roles: newRoles,
       selection: null
     }))
 

@@ -1,6 +1,7 @@
 import PageController from '@src/js/components/common/page/PageController.js'
 import UserFormControllerLoad from './UserFormControllerLoad.js'
 import UserFormControllerAddGroup from './UserFormControllerAddGroup.js'
+import UserFormControllerAddRole from './UserFormControllerAddRole.js'
 import UserFormControllerRemove from './UserFormControllerRemove.js'
 import UserFormControllerValidate from './UserFormControllerValidate.js'
 import UserFormControllerChange from './UserFormControllerChange.js'
@@ -35,6 +36,10 @@ export default class UserFormController extends PageController {
 
   handleAddGroup() {
     return new UserFormControllerAddGroup(this).execute()
+  }
+
+  handleAddRole() {
+    return new UserFormControllerAddRole(this).execute()
   }
 
   handleRemove() {

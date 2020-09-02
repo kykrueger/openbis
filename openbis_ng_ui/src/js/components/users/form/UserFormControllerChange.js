@@ -1,11 +1,6 @@
 import PageControllerChange from '@src/js/components/common/page/PageControllerChange.js'
 
 export default class UserFormControllerChange extends PageControllerChange {
-  constructor(controller) {
-    super(controller)
-    this.gridController = controller.gridController
-  }
-
   async execute(type, params) {
     if (type === 'user') {
       const { field, value } = params
@@ -14,8 +9,15 @@ export default class UserFormControllerChange extends PageControllerChange {
       const { id, field, value } = params
       await this.changeCollectionItemField('groups', id, field, value)
 
-      if (this.gridController) {
-        this.gridController.showSelectedRow()
+      if (this.controller.groupsGridController) {
+        await this.controller.groupsGridController.showSelectedRow()
+      }
+    } else if (type === 'role') {
+      const { id, field, value } = params
+      await this.changeCollectionItemField('roles', id, field, value)
+
+      if (this.controller.rolesGridController) {
+        await this.controller.rolesGridController.showSelectedRow()
       }
     }
   }

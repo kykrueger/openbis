@@ -13,12 +13,14 @@ import logger from '@src/js/common/logger.js'
 
 import UserFormController from './UserFormController.js'
 import UserFormFacade from './UserFormFacade.js'
-import UserFormParameters from './UserFormParameters.jsx'
+import UserFormParametersUser from './UserFormParametersUser.jsx'
+import UserFormParametersGroup from './UserFormParametersGroup.jsx'
+import UserFormParametersRole from './UserFormParametersRole.jsx'
 import UserFormButtons from './UserFormButtons.jsx'
 
 const styles = () => ({})
 
-const columns = [
+const USER_GROUPS_GRID_COLUMNS = [
   {
     field: 'code.value',
     label: 'Code',
@@ -27,6 +29,22 @@ const columns = [
   {
     field: 'description.value',
     label: 'Description'
+  }
+]
+
+const USER_ROLES_GRID_COLUMNS = [
+  {
+    field: 'space.value',
+    label: 'Space',
+    sort: 'asc'
+  },
+  {
+    field: 'project.value',
+    label: 'Project'
+  },
+  {
+    field: 'role.value',
+    label: 'Role'
   }
 ]
 
@@ -54,7 +72,7 @@ class UserForm extends React.PureComponent {
     this.controller.handleSelectionChange()
   }
 
-  handleSelectedRowChange(row) {
+  handleSelectedGroupRowChange(row) {
     const { controller } = this
     if (row) {
       controller.handleSelectionChange('group', { id: row.id })
@@ -63,8 +81,21 @@ class UserForm extends React.PureComponent {
     }
   }
 
-  handleGridControllerRef(gridController) {
-    this.controller.gridController = gridController
+  handleSelectedRoleRowChange(row) {
+    const { controller } = this
+    if (row) {
+      controller.handleSelectionChange('role', { id: row.id })
+    } else {
+      controller.handleSelectionChange()
+    }
+  }
+
+  handleGroupsGridControllerRef(gridController) {
+    this.controller.groupsGridController = gridController
+  }
+
+  handleRolesGridControllerRef(gridController) {
+    this.controller.rolesGridController = gridController
   }
 
   render() {
@@ -85,20 +116,31 @@ class UserForm extends React.PureComponent {
   }
 
   renderMainPanel() {
-    const { groups, selection } = this.state
+    const { groups, roles, selection } = this.state
 
     return (
       <GridContainer onClick={this.handleClickContainer}>
         <Header>Groups</Header>
         <Grid
           id={ids.USER_GROUPS_GRID_ID}
-          controllerRef={this.handleGridControllerRef}
-          columns={columns}
+          controllerRef={this.handleGroupsGridControllerRef}
+          columns={USER_GROUPS_GRID_COLUMNS}
           rows={groups}
           selectedRowId={
             selection && selection.type === 'group' ? selection.params.id : null
           }
-          onSelectedRowChange={this.handleSelectedRowChange}
+          onSelectedRowChange={this.handleSelectedGroupRowChange}
+        />
+        <Header>Roles</Header>
+        <Grid
+          id={ids.USER_ROLES_GRID_ID}
+          controllerRef={this.handleRolesGridControllerRef}
+          columns={USER_ROLES_GRID_COLUMNS}
+          rows={roles}
+          selectedRowId={
+            selection && selection.type === 'role' ? selection.params.id : null
+          }
+          onSelectedRowChange={this.handleSelectedRoleRowChange}
         />
       </GridContainer>
     )
@@ -106,24 +148,44 @@ class UserForm extends React.PureComponent {
 
   renderAdditionalPanel() {
     const { controller } = this
-    const { user, groups, selection, mode } = this.state
+    const { user, groups, roles, selection, mode } = this.state
 
     const selectedRow = controller.gridController
       ? controller.gridController.getSelectedRow()
       : null
 
     return (
-      <UserFormParameters
-        controller={controller}
-        user={user}
-        groups={groups}
-        selection={selection}
-        selectedRow={selectedRow}
-        mode={mode}
-        onChange={controller.handleChange}
-        onSelectionChange={controller.handleSelectionChange}
-        onBlur={controller.handleBlur}
-      />
+      <div>
+        <UserFormParametersUser
+          controller={controller}
+          user={user}
+          selection={selection}
+          mode={mode}
+          onChange={controller.handleChange}
+          onSelectionChange={controller.handleSelectionChange}
+          onBlur={controller.handleBlur}
+        />
+        <UserFormParametersGroup
+          controller={controller}
+          groups={groups}
+          selection={selection}
+          selectedRow={selectedRow}
+          mode={mode}
+          onChange={controller.handleChange}
+          onSelectionChange={controller.handleSelectionChange}
+          onBlur={controller.handleBlur}
+        />
+        <UserFormParametersRole
+          controller={controller}
+          roles={roles}
+          selection={selection}
+          selectedRow={selectedRow}
+          mode={mode}
+          onChange={controller.handleChange}
+          onSelectionChange={controller.handleSelectionChange}
+          onBlur={controller.handleBlur}
+        />
+      </div>
     )
   }
 
@@ -137,6 +199,7 @@ class UserForm extends React.PureComponent {
         onSave={controller.handleSave}
         onCancel={controller.handleCancel}
         onAddGroup={controller.handleAddGroup}
+        onAddRole={controller.handleAddRole}
         onRemove={controller.handleRemove}
         user={user}
         selection={selection}

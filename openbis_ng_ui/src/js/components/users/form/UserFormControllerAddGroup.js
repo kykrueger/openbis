@@ -1,10 +1,9 @@
 import FormUtil from '@src/js/components/common/form/FormUtil.js'
 
-export default class UserFormControllerAdd {
+export default class UserFormControllerAddGroup {
   constructor(controller) {
     this.controller = controller
     this.context = controller.context
-    this.gridController = controller.gridController
   }
 
   async execute() {
@@ -35,8 +34,8 @@ export default class UserFormControllerAdd {
 
     await this.controller.changed(true)
 
-    if (this.gridController) {
-      await this.gridController.showSelectedRow()
+    if (this.controller.groupsGridController) {
+      await this.controller.groupsGridController.showSelectedRow()
     }
   }
 }

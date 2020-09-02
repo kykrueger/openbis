@@ -28,12 +28,25 @@ export default class UserFormControllerLoad extends PageControllerLoad {
       )
     }
 
-    const selection = this._createSelection(groups)
+    let rolesCounter = 0
+    let roles = []
+
+    if (loadedUser && loadedUser.getRoleAssignments()) {
+      roles = loadedUser
+        .getRoleAssignments()
+        .map(loadedRole =>
+          this._createRole('role-' + rolesCounter++, loadedRole)
+        )
+    }
+
+    const selection = this._createSelection(groups, roles)
 
     return this.context.setState({
       user,
       groups,
       groupsCounter,
+      roles,
+      rolesCounter,
       selection,
       original: {
         user: user.original,
@@ -79,6 +92,26 @@ export default class UserFormControllerLoad extends PageControllerLoad {
     return user
   }
 
+  _createRole(id, loadedRole) {
+    const role = {
+      id: id,
+      space: FormUtil.createField({
+        value: _.get(loadedRole, 'space.code', null),
+        enabled: false
+      }),
+      project: FormUtil.createField({
+        value: _.get(loadedRole, 'project.permId.permId', null),
+        enabled: false
+      }),
+      role: FormUtil.createField({
+        value: _.get(loadedRole, 'role', null),
+        enabled: false
+      })
+    }
+    role.original = _.cloneDeep(role)
+    return role
+  }
+
   _createGroup(id, loadedGroup) {
     const group = {
       id: id,
@@ -95,10 +128,11 @@ export default class UserFormControllerLoad extends PageControllerLoad {
     return group
   }
 
-  _createSelection(newGroups) {
+  _createSelection(newGroups, newRoles) {
     const {
       selection: oldSelection,
-      groups: oldGroups
+      groups: oldGroups,
+      roles: oldRoles
     } = this.context.getState()
 
     if (!oldSelection) {
@@ -118,6 +152,27 @@ export default class UserFormControllerLoad extends PageControllerLoad {
           type: 'group',
           params: {
             id: newGroup.id
+          }
+        }
+      }
+    } else if (oldSelection.type === 'role') {
+      const oldRole = _.find(
+        oldRoles,
+        oldRole => oldRole.id === oldSelection.params.id
+      )
+      const newRole = _.find(
+        newRoles,
+        newRole =>
+          newRole.space.value === oldRole.space.value &&
+          newRole.project.value === oldRole.project.value &&
+          newRole.role.value === oldRole.role.value
+      )
+
+      if (newRole) {
+        return {
+          type: 'role',
+          params: {
+            id: newRole.id
           }
         }
       }

@@ -28,7 +28,7 @@ class UserFormButtons extends React.PureComponent {
   }
 
   renderAdditionalButtons(classes) {
-    const { onAddGroup, onRemove } = this.props
+    const { onAddGroup, onAddRole, onRemove } = this.props
 
     return (
       <React.Fragment>
@@ -39,19 +39,27 @@ class UserFormButtons extends React.PureComponent {
           onClick={onAddGroup}
         />
         <Button
+          name='addRole'
+          label='Add Role'
+          styles={{ root: classes.button }}
+          onClick={onAddRole}
+        />
+        <Button
           name='remove'
           label='Remove'
           styles={{ root: classes.button }}
-          disabled={!this.isGroupSelected()}
+          disabled={!this.isGroupOrRoleSelected()}
           onClick={onRemove}
         />
       </React.Fragment>
     )
   }
 
-  isGroupSelected() {
+  isGroupOrRoleSelected() {
     const { selection } = this.props
-    return selection && selection.type === 'group'
+    return (
+      selection && (selection.type === 'group' || selection.type === 'role')
+    )
   }
 }
 
