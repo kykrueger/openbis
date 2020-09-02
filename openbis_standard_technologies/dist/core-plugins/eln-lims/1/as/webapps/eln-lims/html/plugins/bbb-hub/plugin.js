@@ -16,13 +16,14 @@ $.extend(BBBHubTechnology.prototype, ELNLIMSPlugin.prototype, {
 	    };
 	    //
 
+        // Setting help page and resize the login form
+        $("#login-form-div").attr("style", "width:500px !important; height:500px !important");
+        setHelp("./plugins/bbb-hub/www/help.html");
+
         loadJSResorce("./plugins/bbb-hub/UiComponents.js");
         loadJSResorce("./plugins/bbb-hub/BBBServerFacade.js");
         loadJSResorce("./plugins/bbb-hub/snakemake-table.js");
         loadJSResorce("./plugins/bbb-hub/snakemake-trigger.js");
-        this.setNewNameById("LAB_NOTEBOOK", "Datasets");
-        this.setNewNameById("lab-notebook-id", "Datasets");
-        this.setNewNameById("backwards-compatible-main-container-id", "Welcome to the BBBHub");
 	},
     experimentTypeDefinitionsExtension : {
         "BBB": {
@@ -79,7 +80,7 @@ $.extend(BBBHubTechnology.prototype, ELNLIMSPlugin.prototype, {
                 label : "BBB-Hub Documentation",
                 paintView : function($header, $content) {
                     $header.append($("<h1>").append("BBB-Hub Documentation"));
-                    $content.append($("<p>").append("TO-DO Documentation page"));
+                    $content.append($("<p>").append("Welcome to BBB-Hub"));
                 }
             }
         ];
