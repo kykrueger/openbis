@@ -17,6 +17,7 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.property;
 
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +32,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.ListUpdateValue.Li
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.ListUpdateValue.ListUpdateActionAdd;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.ListUpdateValue.ListUpdateActionRemove;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.ListUpdateValue.ListUpdateActionSet;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.IPropertyTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.update.PropertyTypeUpdate;
@@ -43,6 +45,8 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.entity.progress.Update
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.DataAccessExceptionTranslator;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
+import ch.systemsx.cisd.openbis.generic.shared.dto.DataTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PropertyTypePE;
 
 /**
@@ -55,12 +59,15 @@ public class UpdatePropertyTypeExecutor
 {
     @Autowired
     private IDAOFactory daoFactory;
-    
+
     @Autowired
     private IMapPropertyTypeByIdExecutor mapPropertyTypeByIdExecutor;
-    
+
     @Autowired
     private IPropertyTypeAuthorizationExecutor authorizationExecutor;
+
+    @Autowired
+    private IPropertiesConverter propertiesConverter;
 
     @Override
     protected IPropertyTypeId getId(PropertyTypeUpdate update)
@@ -108,11 +115,41 @@ public class UpdatePropertyTypeExecutor
                     propertyType.setDescription(getNewValue(update.getDescription(), propertyType.getDescription()));
                     propertyType.setLabel(getNewValue(update.getLabel(), propertyType.getLabel()));
                     String dataType = propertyType.getType().getCode().name();
+                    DataType dataTypeToBeConverted = update.getDataTypeToBeConverted();
+                    if (dataTypeToBeConverted != null && dataTypeToBeConverted.name().equals(dataType) == false)
+                    {
+                        DataType currentDataType = DataType.valueOf(dataType);
+                        assertConversionAllowed(currentDataType, dataTypeToBeConverted);
+                        DataTypePE newDataType = daoFactory.getPropertyTypeDAO()
+                                .getDataTypeByCode(DataTypeCode.valueOf(dataTypeToBeConverted.name()));
+                        propertyType.setType(newDataType);
+                        propertiesConverter.convertProperties(context, propertyType.getCode(), currentDataType, dataTypeToBeConverted);
+                    }
                     CreatePropertyTypeExecutor.validateSchemaAndDataType(dataType, update.getSchema().getValue());
                     propertyType.setSchema(getNewValue(update.getSchema(), propertyType.getSchema()));
                     CreatePropertyTypeExecutor.validateTransformationAndDataType(dataType, update.getTransformation().getValue());
                     propertyType.setTransformation(getNewValue(update.getTransformation(), propertyType.getTransformation()));
                     updateMetaData(propertyType, update);
+                }
+
+                private void assertConversionAllowed(DataType currentDataType, DataType newDataType)
+                {
+                    if (EnumSet.of(DataType.VARCHAR, DataType.MULTILINE_VARCHAR).contains(newDataType))
+                    {
+                        return;
+                    }
+                    assertConversionAllowed(currentDataType, newDataType, DataType.TIMESTAMP, DataType.DATE);
+                    assertConversionAllowed(currentDataType, newDataType, DataType.INTEGER, DataType.REAL);
+                }
+
+                private void assertConversionAllowed(DataType currentDataType, DataType newDataType,
+                        DataType matchingCurrentDataType, DataType matchingNewDataType)
+                {
+                    if (newDataType == matchingNewDataType && currentDataType != matchingCurrentDataType)
+                    {
+                        throw new UserFailureException("Only properties of type " + matchingCurrentDataType
+                                + " can be converted to " + newDataType + ", but not " + currentDataType + ".");
+                    }
                 }
 
                 @SuppressWarnings("unchecked")
@@ -146,7 +183,7 @@ public class UpdatePropertyTypeExecutor
                     {
                         metaData.clear();
                         addTo(metaData, lastSetAction, metaDataChanged);
-                        
+
                     }
                     if (metaDataChanged.get())
                     {

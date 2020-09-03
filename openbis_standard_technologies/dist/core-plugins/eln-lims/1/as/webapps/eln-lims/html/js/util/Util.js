@@ -482,6 +482,9 @@ var Util = new function() {
 		if(dateAsString) {
 			var yearTimeAndOffset = dateAsString.split(" ");
 			var yearParts = yearTimeAndOffset[0].split("-");
+			if (yearTimeAndOffset.length == 1) {
+				return new Date(yearParts[0],parseInt(yearParts[1])-1,yearParts[2]);
+			}
 			var timeParts = yearTimeAndOffset[1].split(":");
 			return new Date(yearParts[0],parseInt(yearParts[1])-1,yearParts[2], timeParts[0], timeParts[1], timeParts[2]);
 		}

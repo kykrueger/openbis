@@ -73,6 +73,9 @@ public abstract class AbstractEntityProperty implements IEntityProperty
             case SAMPLE:
                 Sample sample = getSample();
                 return (sample != null) ? sample.getPermId() : getValue();
+            case DATE:
+                String timestamp = getValue();
+                return timestamp != null ? timestamp.split(" ")[0] : null;
             default:
                 return getValue();
         }

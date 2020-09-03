@@ -151,30 +151,39 @@ define(
 					testCreate(c, fCreate, c.findExperiment, fCheck);
 				});
 
-				QUnit.test("createExperiment() with property of type SAMPLE", function(assert) {
+				QUnit.test("createExperiment() with properties of type SAMPLE and DATE", function(assert) {
 					var c = new common(assert, openbis);
-					var propertyTypeCode = c.generateId("PROPERTY_TYPE");
+					var propertyTypeCodeSample = c.generateId("PROPERTY_TYPE");
+					var propertyTypeCodeDate = c.generateId("PROPERTY_TYPE");
 					var experimentTypeCode = c.generateId("EXPERIMENT_TYPE");
 					var code = c.generateId("EXPERIMENT");
 					
 					var fCreate = function(facade) {
-						var propertyTypeCreation = new c.PropertyTypeCreation();
-						propertyTypeCreation.setCode(propertyTypeCode);
-						propertyTypeCreation.setDescription("hello");
-						propertyTypeCreation.setDataType(c.DataType.SAMPLE);
-						propertyTypeCreation.setLabel("Test Property Type");
-						return facade.createPropertyTypes([ propertyTypeCreation ]).then(function(results) {
-							var assignmentCreation = new c.PropertyAssignmentCreation();
-							assignmentCreation.setPropertyTypeId(new c.PropertyTypePermId(propertyTypeCode));
+						var propertyTypeCreation1 = new c.PropertyTypeCreation();
+						propertyTypeCreation1.setCode(propertyTypeCodeSample);
+						propertyTypeCreation1.setDescription("hello");
+						propertyTypeCreation1.setDataType(c.DataType.SAMPLE);
+						propertyTypeCreation1.setLabel("Test Property Type");
+						var propertyTypeCreation2 = new c.PropertyTypeCreation();
+						propertyTypeCreation2.setCode(propertyTypeCodeDate);
+						propertyTypeCreation2.setDescription("hello");
+						propertyTypeCreation2.setDataType(c.DataType.DATE);
+						propertyTypeCreation2.setLabel("Test Property Type");
+						return facade.createPropertyTypes([ propertyTypeCreation1, propertyTypeCreation2 ]).then(function(results) {
+							var assignmentCreation1 = new c.PropertyAssignmentCreation();
+							assignmentCreation1.setPropertyTypeId(new c.PropertyTypePermId(propertyTypeCodeSample));
+							var assignmentCreation2 = new c.PropertyAssignmentCreation();
+							assignmentCreation2.setPropertyTypeId(new c.PropertyTypePermId(propertyTypeCodeDate));
 							var experimentTypeCreation = new c.ExperimentTypeCreation();
 							experimentTypeCreation.setCode(experimentTypeCode);
-							experimentTypeCreation.setPropertyAssignments([ assignmentCreation ]);
+							experimentTypeCreation.setPropertyAssignments([ assignmentCreation1, assignmentCreation2 ]);
 							return facade.createExperimentTypes([ experimentTypeCreation ]).then(function(results) {
 								var creation = new c.ExperimentCreation();
 								creation.setTypeId(new c.EntityTypePermId(experimentTypeCode));
 								creation.setCode(code);
 								creation.setProjectId(new c.ProjectIdentifier("/TEST/TEST-PROJECT"));
-								creation.setProperty(propertyTypeCode, "20130412140147735-20");
+								creation.setProperty(propertyTypeCodeSample, "20130412140147735-20");
+								creation.setProperty(propertyTypeCodeDate, "2013-04-12");
 								return facade.createExperiments([ creation ]);
 							});
 						});
@@ -185,8 +194,9 @@ define(
 						c.assertEqual(experiment.getType().getCode(), experimentTypeCode, "Type code");
 						c.assertEqual(experiment.getProject().getCode(), "TEST-PROJECT", "Project code");
 						c.assertEqual(experiment.getProject().getSpace().getCode(), "TEST", "Space code");
-						c.assertEqual(experiment.getProperties()[propertyTypeCode], "20130412140147735-20", "Sample property id");
-						c.assertEqual(experiment.getSampleProperties()[propertyTypeCode].getIdentifier().getIdentifier(), "/PLATONIC/PLATE-1", "Sample property");
+						c.assertEqual(experiment.getProperties()[propertyTypeCodeSample], "20130412140147735-20", "Sample property id");
+						c.assertEqual(experiment.getProperties()[propertyTypeCodeDate], "2013-04-12", "Date property");
+						c.assertEqual(experiment.getSampleProperties()[propertyTypeCodeSample].getIdentifier().getIdentifier(), "/PLATONIC/PLATE-1", "Sample property");
 					}
 					
 					testCreate(c, fCreate, c.findExperiment, fCheck);

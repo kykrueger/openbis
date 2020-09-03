@@ -54,7 +54,8 @@ public abstract class SetSampleToSampleParentChildRelationExceutor extends SetSa
                         {
                             ISampleId relatedSampleId = entry.getKey();
                             SamplePE relatedSample = entry.getValue();
-                            Relationship relationship = sampleCreation.getRelationships().get(relatedSampleId);
+                            Map<? extends ISampleId, Relationship> relationships = sampleCreation.getRelationships();
+                            Relationship relationship = relationships == null ? null : relationships.get(relatedSampleId);
                             if (relationship != null)
                             {
                                 SamplePE child = getChild(sample, relatedSample);

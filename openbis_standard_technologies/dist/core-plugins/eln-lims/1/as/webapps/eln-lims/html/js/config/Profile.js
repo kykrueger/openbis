@@ -81,7 +81,10 @@ $.extend(DefaultProfile.prototype, {
 		    Utilities : "Utilities"
 		}
 
-		this.defaultStartPage = "showBlancPage";
+		this.defaultStartView = {
+		    page : "showBlancPage",
+            args : null
+		};
 
 		this.orderLabInfo = {
 				
@@ -401,7 +404,18 @@ $.extend(DefaultProfile.prototype, {
 		
 		this.searchSamplesUsingV3OnDropbox = false;
 		this.searchSamplesUsingV3OnDropboxRunCustom = false;
-		
+
+        this.getExperimentTypeToolbarConfiguration = function(experimentTypeCode) {
+			var defaultToolbar = { CREATE: true, FREEZE: true, EDIT: true, MOVE: true, DELETE: true, UPLOAD_DATASET: true, UPLOAD_DATASET_HELPER: true, EXPORT_ALL: true, EXPORT_METADATA: true };
+			if(this.experimentTypeDefinitionsExtension[experimentTypeCode] && this.experimentTypeDefinitionsExtension[experimentTypeCode]["TOOLBAR"]) {
+				var toolbarOptions = this.experimentTypeDefinitionsExtension[experimentTypeCode]["TOOLBAR"];
+				for(key in toolbarOptions) {
+					defaultToolbar[key] = toolbarOptions[key];
+				}
+			}
+			return defaultToolbar;
+		}
+
 		this.getDataSetTypeToolbarConfiguration = function(dataSetTypeCode) {
 			var defaultToolbar = { EDIT : true, FREEZE : true, MOVE : true, ARCHIVE : true, DELETE : true, HIERARCHY_TABLE : true, EXPORT_ALL : true, EXPORT_METADATA : true };
 			if(this.dataSetTypeDefinitionsExtension[dataSetTypeCode] && this.dataSetTypeDefinitionsExtension[dataSetTypeCode]["TOOLBAR"]) {
@@ -526,7 +540,11 @@ $.extend(DefaultProfile.prototype, {
 		}
 		
 		this.propertyReplacingCode = "$NAME";
-		
+
+		this.experimentTypeDefinitionsExtension = {
+
+        }
+
 		this.sampleTypeDefinitionsExtension = {
 		
 		}
@@ -1169,6 +1187,9 @@ $.extend(DefaultProfile.prototype, {
 		this.initSettings = function(callback) {
 			// sampleTypeDefinitionsExtension and  dataSetTypeDefinitionsExtension gets overwritten with plugins definitions
 			for(var i = 0; i < this.plugins.length; i++) {
+				for(key in this.plugins[i].experimentTypeDefinitionsExtension) {
+                    this.experimentTypeDefinitionsExtension[key] = this.plugins[i].experimentTypeDefinitionsExtension[key];
+                }
 				for(key in this.plugins[i].sampleTypeDefinitionsExtension) {
 					this.sampleTypeDefinitionsExtension[key] = this.plugins[i].sampleTypeDefinitionsExtension[key];
 				}

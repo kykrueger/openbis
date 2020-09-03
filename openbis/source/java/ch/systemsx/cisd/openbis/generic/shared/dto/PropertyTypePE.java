@@ -220,7 +220,7 @@ public final class PropertyTypePE extends HibernateAbstractRegistrationHolder im
 
     @NotNull(message = ValidationMessages.DATA_TYPE_NOT_NULL_MESSAGE)
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = ColumnNames.DATA_TYPE_COLUMN, updatable = false)
+    @JoinColumn(name = ColumnNames.DATA_TYPE_COLUMN)
     public final DataTypePE getType()
     {
         return type;

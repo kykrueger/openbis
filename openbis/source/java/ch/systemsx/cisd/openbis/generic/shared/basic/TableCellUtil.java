@@ -81,6 +81,7 @@ public class TableCellUtil
             case VARCHAR:
             case MULTILINE_VARCHAR:
             case BOOLEAN:
+            case DATE:
             case TIMESTAMP:
             case CONTROLLEDVOCABULARY:
             case MATERIAL:

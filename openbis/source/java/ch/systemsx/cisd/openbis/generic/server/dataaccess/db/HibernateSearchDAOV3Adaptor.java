@@ -595,7 +595,7 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
                 DateFieldSearchCriteria dateFieldSearchCriteria = (DateFieldSearchCriteria) criterionV3Criteria;
 
                 String timezone = v1Criterion.getTimeZone();
-                if (timezone != null) {
+                if (timezone != null && DetailedSearchCriterion.SERVER_TIMEZONE.equals(timezone) == false) {
                     int hourOffset = 0;
                     try {
                         hourOffset = Integer.parseInt(timezone);

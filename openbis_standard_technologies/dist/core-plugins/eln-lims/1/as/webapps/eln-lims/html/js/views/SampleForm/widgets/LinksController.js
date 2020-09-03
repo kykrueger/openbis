@@ -141,6 +141,8 @@ function LinksController(title, sampleTypeHints, isDisabled, samplesToEdit, show
 											break;
 										case "TIMESTAMP":
 											break;
+										case "DATE":
+											break;
 										case "VARCHAR":
 											break;
 										case "XML":

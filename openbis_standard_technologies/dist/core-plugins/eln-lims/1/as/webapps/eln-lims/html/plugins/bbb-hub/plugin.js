@@ -8,20 +8,52 @@ $.extend(BBBHubTechnology.prototype, ELNLIMSPlugin.prototype, {
     // Now it is a ELN plugin.
 
 	init: function() {
+	    //
+	    profile.MainMenuNodeNames.Lab_Notebook = "DataSets";
+	    profile.defaultStartView = {
+	        page : "EXTRA_PLUGIN_UTILITY",
+	        args : "BBB_HUB_HELP"
+	    };
+	    //
+
+        // Setting help page and resize the login form
+        $("#login-form-div").attr("style", "width:500px !important; height:500px !important");
+        setHelp("./plugins/bbb-hub/www/help.html");
+
         loadJSResorce("./plugins/bbb-hub/UiComponents.js");
         loadJSResorce("./plugins/bbb-hub/BBBServerFacade.js");
         loadJSResorce("./plugins/bbb-hub/snakemake-table.js");
         loadJSResorce("./plugins/bbb-hub/snakemake-trigger.js");
-        this.setNewNameById("LAB_NOTEBOOK", "Datasets");
-        this.setNewNameById("lab-notebook-id", "Datasets");
-        this.setNewNameById("backwards-compatible-main-container-id", "Welcome to the BBBHub");
 	},
-
+    experimentTypeDefinitionsExtension : {
+        "BBB": {
+            "TOOLBAR": { CREATE: false, FREEZE: false, EDIT: false, MOVE: false, DELETE: false, UPLOAD_DATASET: false, UPLOAD_DATASET_HELPER: false, EXPORT_ALL: false, EXPORT_METADATA: true }
+        },
+    },
+    sampleTypeDefinitionsExtension : {
+        "FASTQ": {
+            "TOOLBAR": { CREATE: false, FREEZE: false, EDIT: false, MOVE: false, COPY: false, DELETE: false, PRINT: false, HIERARCHY_GRAPH: false, HIERARCHY_TABLE: false, UPLOAD_DATASET: false, UPLOAD_DATASET_HELPER: false, EXPORT_ALL: false, EXPORT_METADATA: true }
+        },
+        "FOLDER": {
+            "TOOLBAR": { CREATE: false, FREEZE: false, EDIT: false, MOVE: false, COPY: false, DELETE: false, PRINT: false, HIERARCHY_GRAPH: false, HIERARCHY_TABLE: false, UPLOAD_DATASET: false, UPLOAD_DATASET_HELPER: false, EXPORT_ALL: false, EXPORT_METADATA: true }
+        },
+    },
+    dataSetTypeDefinitionsExtension : {
+        "FASTQ": {
+            "TOOLBAR": { EDIT: false, FREEZE: false, MOVE: false, ARCHIVE: false, DELETE: false, HIERARCHY_TABLE: false, EXPORT_ALL: false, EXPORT_METADATA: true }
+        },
+        "METADATA": {
+            "TOOLBAR": { EDIT: false, FREEZE: false, MOVE: false, ARCHIVE: false, DELETE: false, HIERARCHY_TABLE: false, EXPORT_ALL: false, EXPORT_METADATA: true }
+        },
+        "RESULTS": {
+            "TOOLBAR": { EDIT: false, FREEZE: false, MOVE: false, ARCHIVE: false, DELETE: false, HIERARCHY_TABLE: false, EXPORT_ALL: false, EXPORT_METADATA: true }
+        },
+    },
 	experimentFormTop : function($container, model) {
 	    BBBServerFacade.getExperiment($container, model);
     },
-
     experimentFormBottom : function($container, model) {
+
     },
 
     getExtraUtilities : function() {
@@ -34,15 +66,24 @@ $.extend(BBBHubTechnology.prototype, ELNLIMSPlugin.prototype, {
                     $header.append($("<h1>").append("Public Index Page"));
                     BBBServerFacade.getExperiments($content);
                 }
-            }, {
-                icon : "glyphicon glyphicon-list-alt",
-                uniqueViewName : "HELP_VIEW",
-                label : "Help",
+            },{
+                icon : "glyphicon glyphicon-info-sign",
+                uniqueViewName : "OPENBIS_DOCUMENTATION",
+                label : "openBIS Documentation",
                 paintView : function($header, $content) {
-                   $header.append($("<h1>").append("Help"));
+                   $header.append($("<h1>").append("openBIS Documentation"));
                    _this.paintContent($content);
+                }
+            },{
+                icon : "glyphicon glyphicon-info-sign",
+                uniqueViewName : "BBB_HUB_HELP",
+                label : "BBB-Hub Documentation",
+                paintView : function($header, $content) {
+                    $header.append($("<h1>").append("Welcome to BBB-Hub"));
+                    $content.load("./plugins/bbb-hub/www/help-upload.html");
+                }
             }
-        }];
+        ];
     },
 
     paintContent : function($content) {

@@ -20,6 +20,13 @@ var setFavicons = function(img) {
     head.appendChild(iconLink);
 };
 
+var setHelp = function(url) {
+    var $container = $("#help");
+    $container.append("Click ");
+    $container.append($("<a>", {href: url, text: "here", target : "_blank"}));
+    $container.append(" for help.");
+};
+
 var onLoadInstanceProfileResorceFunc = function() {
 	profile = new InstanceProfile();
 	//

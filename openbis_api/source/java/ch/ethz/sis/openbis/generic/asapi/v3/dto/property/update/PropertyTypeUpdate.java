@@ -27,6 +27,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IObjectUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.ListUpdateMapValues;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.ListUpdateValue.ListUpdateAction;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.IPropertyTypeId;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
@@ -41,6 +42,9 @@ public class PropertyTypeUpdate implements IUpdate, IObjectUpdate<IPropertyTypeI
     @JsonProperty
     private IPropertyTypeId typeId;
 
+    @JsonProperty
+    private DataType dataType;
+    
     @JsonProperty
     private FieldUpdateValue<String> label = new FieldUpdateValue<String>();
 
@@ -61,6 +65,18 @@ public class PropertyTypeUpdate implements IUpdate, IObjectUpdate<IPropertyTypeI
     public IPropertyTypeId getObjectId()
     {
         return getTypeId();
+    }
+
+    @JsonIgnore
+    public DataType getDataTypeToBeConverted()
+    {
+        return dataType;
+    }
+
+    @JsonIgnore
+    public void convertToDataType(DataType dataType)
+    {
+        this.dataType = dataType;
     }
 
     @JsonIgnore

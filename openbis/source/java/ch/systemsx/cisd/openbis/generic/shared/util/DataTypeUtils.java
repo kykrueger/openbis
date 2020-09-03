@@ -94,7 +94,7 @@ public class DataTypeUtils
             {
                 return new DateTableCell(doSimpleConversion(value));
             }
-
+            
             @Override
             public Date doSimpleConversion(String value)
             {
@@ -102,7 +102,7 @@ public class DataTypeUtils
                 {
                     String pattern = SupportedDatePattern.CANONICAL_DATE_PATTERN.getPattern();
                     return DateUtils.parseDate(value, new String[]
-                    { pattern });
+                            { pattern });
                 } catch (ParseException ex)
                 {
                     throw new IllegalArgumentException("Is not a date in canonical format: "
@@ -112,7 +112,7 @@ public class DataTypeUtils
         },
         STRING(DataTypeCode.VARCHAR, DataTypeCode.MULTILINE_VARCHAR, DataTypeCode.BOOLEAN,
                 DataTypeCode.XML, DataTypeCode.CONTROLLEDVOCABULARY, DataTypeCode.MATERIAL,
-                DataTypeCode.HYPERLINK, DataTypeCode.SAMPLE)
+                DataTypeCode.HYPERLINK, DataTypeCode.SAMPLE, DataTypeCode.DATE)
         {
             @Override
             public ISerializableComparable doConversion(String value)
