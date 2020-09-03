@@ -43,6 +43,10 @@ class Facade {
     return this.promise(this.v3.updatePersons(updates))
   }
 
+  searchSpaces(criteria, fo) {
+    return this.promise(this.v3.searchSpaces(criteria, fo))
+  }
+
   searchPropertyTypes(criteria, fo) {
     return this.promise(this.v3.searchPropertyTypes(criteria, fo))
   }

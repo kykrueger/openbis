@@ -79,6 +79,8 @@ import SearchExperimentsOperation from 'as/dto/experiment/search/SearchExperimen
 import SearchMaterialsOperation from 'as/dto/material/search/SearchMaterialsOperation'
 import SearchResult from 'as/dto/common/search/SearchResult'
 import SearchSamplesOperation from 'as/dto/sample/search/SearchSamplesOperation'
+import SpaceFetchOptions from 'as/dto/space/fetchoptions/SpaceFetchOptions'
+import SpaceSearchCriteria from 'as/dto/space/search/SpaceSearchCriteria'
 import SynchronousOperationExecutionOptions from 'as/dto/operation/SynchronousOperationExecutionOptions'
 import UpdateDataSetTypesOperation from 'as/dto/dataset/update/UpdateDataSetTypesOperation'
 import UpdateExperimentTypesOperation from 'as/dto/experiment/update/UpdateExperimentTypesOperation'
@@ -185,6 +187,8 @@ const dto = {
   SearchMaterialsOperation,
   SearchResult,
   SearchSamplesOperation,
+  SpaceFetchOptions,
+  SpaceSearchCriteria,
   SynchronousOperationExecutionOptions,
   UpdateDataSetTypesOperation,
   UpdateExperimentTypesOperation,

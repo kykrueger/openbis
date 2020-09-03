@@ -11,11 +11,15 @@ export default class UserFormControllerLoad extends PageControllerLoad {
   }
 
   async _loadDictionaries() {
-    const [groups] = await Promise.all([this.facade.loadGroups()])
+    const [groups, spaces] = await Promise.all([
+      this.facade.loadGroups(),
+      this.facade.loadSpaces()
+    ])
 
     await this.context.setState(() => ({
       dictionaries: {
-        groups
+        groups,
+        spaces
       }
     }))
   }

@@ -3,6 +3,7 @@ import { withStyles } from '@material-ui/core/styles'
 import Container from '@src/js/components/common/form/Container.jsx'
 import Header from '@src/js/components/common/form/Header.jsx'
 import TextField from '@src/js/components/common/form/TextField.jsx'
+import SelectField from '@src/js/components/common/form/SelectField.jsx'
 import CheckboxField from '@src/js/components/common/form/CheckboxField.jsx'
 import logger from '@src/js/common/logger.js'
 
@@ -87,6 +88,7 @@ class UserFormParametersUser extends React.PureComponent {
         {this.renderFirstName(user)}
         {this.renderLastName(user)}
         {this.renderEmail(user)}
+        {this.renderSpace(user)}
         {this.renderActive(user)}
       </Container>
     )
@@ -188,6 +190,47 @@ class UserFormParametersUser extends React.PureComponent {
           error={error}
           disabled={!enabled}
           value={value}
+          mode={mode}
+          onChange={this.handleChange}
+          onFocus={this.handleFocus}
+          onBlur={this.handleBlur}
+        />
+      </div>
+    )
+  }
+
+  renderSpace(user) {
+    const { visible, enabled, error, value } = { ...user.space }
+
+    if (!visible) {
+      return null
+    }
+
+    const { mode, classes, controller } = this.props
+    const { spaces } = controller.getDictionaries()
+
+    let options = []
+
+    if (spaces) {
+      options = spaces.map(space => {
+        return {
+          label: space.code,
+          value: space.code
+        }
+      })
+    }
+
+    return (
+      <div className={classes.field}>
+        <SelectField
+          reference={this.references.space}
+          label='Home Space'
+          name='space'
+          error={error}
+          disabled={!enabled}
+          value={value}
+          options={options}
+          emptyOption={{}}
           mode={mode}
           onChange={this.handleChange}
           onFocus={this.handleFocus}

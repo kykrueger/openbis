@@ -36,4 +36,12 @@ export default class UserFormFacade {
       return result.getObjects()
     })
   }
+
+  async loadSpaces() {
+    const criteria = new openbis.SpaceSearchCriteria()
+    const fo = new openbis.SpaceFetchOptions()
+    return openbis.searchSpaces(criteria, fo).then(result => {
+      return result.getObjects()
+    })
+  }
 }
