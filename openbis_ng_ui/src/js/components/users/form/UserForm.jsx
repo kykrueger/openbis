@@ -76,8 +76,6 @@ class UserForm extends React.PureComponent {
     const { controller } = this
     if (row) {
       controller.handleSelectionChange('group', { id: row.id })
-    } else {
-      controller.handleSelectionChange()
     }
   }
 
@@ -85,8 +83,6 @@ class UserForm extends React.PureComponent {
     const { controller } = this
     if (row) {
       controller.handleSelectionChange('role', { id: row.id })
-    } else {
-      controller.handleSelectionChange()
     }
   }
 
