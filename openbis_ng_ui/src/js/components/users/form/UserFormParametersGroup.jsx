@@ -3,6 +3,7 @@ import { withStyles } from '@material-ui/core/styles'
 import Container from '@src/js/components/common/form/Container.jsx'
 import Header from '@src/js/components/common/form/Header.jsx'
 import TextField from '@src/js/components/common/form/TextField.jsx'
+import Message from '@src/js/components/common/form/Message.jsx'
 import logger from '@src/js/common/logger.js'
 
 const styles = theme => ({
@@ -82,10 +83,28 @@ class UserFormParametersGroup extends React.PureComponent {
     return (
       <Container>
         <Header>Group</Header>
+        {this.renderMessageVisible()}
         {this.renderCode(group)}
         {this.renderDescription(group)}
       </Container>
     )
+  }
+
+  renderMessageVisible() {
+    const { classes, selectedRow } = this.props
+
+    if (selectedRow && !selectedRow.visible) {
+      return (
+        <div className={classes.field}>
+          <Message type='warning'>
+            The selected group is currently not visible in the group list due to
+            the chosen filtering and paging.
+          </Message>
+        </div>
+      )
+    } else {
+      return null
+    }
   }
 
   renderCode(group) {

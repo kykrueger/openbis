@@ -146,8 +146,12 @@ class UserForm extends React.PureComponent {
     const { controller } = this
     const { user, groups, roles, selection, mode } = this.state
 
-    const selectedRow = controller.gridController
-      ? controller.gridController.getSelectedRow()
+    const selectedGroupRow = controller.groupsGridController
+      ? controller.groupsGridController.getSelectedRow()
+      : null
+
+    const selectedRoleRow = controller.rolesGridController
+      ? controller.rolesGridController.getSelectedRow()
       : null
 
     return (
@@ -165,7 +169,7 @@ class UserForm extends React.PureComponent {
           controller={controller}
           groups={groups}
           selection={selection}
-          selectedRow={selectedRow}
+          selectedRow={selectedGroupRow}
           mode={mode}
           onChange={controller.handleChange}
           onSelectionChange={controller.handleSelectionChange}
@@ -175,7 +179,7 @@ class UserForm extends React.PureComponent {
           controller={controller}
           roles={roles}
           selection={selection}
-          selectedRow={selectedRow}
+          selectedRow={selectedRoleRow}
           mode={mode}
           onChange={controller.handleChange}
           onSelectionChange={controller.handleSelectionChange}

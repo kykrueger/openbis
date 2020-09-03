@@ -3,6 +3,7 @@ import { withStyles } from '@material-ui/core/styles'
 import Container from '@src/js/components/common/form/Container.jsx'
 import Header from '@src/js/components/common/form/Header.jsx'
 import TextField from '@src/js/components/common/form/TextField.jsx'
+import Message from '@src/js/components/common/form/Message.jsx'
 import logger from '@src/js/common/logger.js'
 
 const styles = theme => ({
@@ -83,11 +84,29 @@ class UserFormParametersRole extends React.PureComponent {
     return (
       <Container>
         <Header>Role</Header>
+        {this.renderMessageVisible()}
         {this.renderSpace(role)}
         {this.renderProject(role)}
         {this.renderRole(role)}
       </Container>
     )
+  }
+
+  renderMessageVisible() {
+    const { classes, selectedRow } = this.props
+
+    if (selectedRow && !selectedRow.visible) {
+      return (
+        <div className={classes.field}>
+          <Message type='warning'>
+            The selected role is currently not visible in the role list due to
+            the chosen filtering and paging.
+          </Message>
+        </div>
+      )
+    } else {
+      return null
+    }
   }
 
   renderSpace(role) {
