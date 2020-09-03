@@ -79,8 +79,8 @@ $.extend(BBBHubTechnology.prototype, ELNLIMSPlugin.prototype, {
                 uniqueViewName : "BBB_HUB_HELP",
                 label : "BBB-Hub Documentation",
                 paintView : function($header, $content) {
-                    $header.append($("<h1>").append("BBB-Hub Documentation"));
-                    $content.append($("<p>").append("Welcome to BBB-Hub"));
+                    $header.append($("<h1>").append("Welcome to BBB-Hub"));
+                    $content.load("./plugins/bbb-hub/www/help-upload.html");
                 }
             }
         ];
