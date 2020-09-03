@@ -512,7 +512,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 					if(this._experimentFormModel.mode === FormMode.EDIT) {
 						if(propertyType.dataType === "BOOLEAN") {
 							$($($component.children()[0]).children()[0]).prop('checked', value === "true");
-						} else if(propertyType.dataType === "TIMESTAMP") {
+						} else if(propertyType.dataType === "TIMESTAMP" || propertyType.dataType === "DATE") {
 						} else {
 							$component.val(value);
 						}
@@ -528,7 +528,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 							var field = $(this);
 							if(propertyType.dataType === "BOOLEAN") {
 								_this._experimentFormModel.experiment.properties[propertyTypeCode] = $(field.children()[0]).children()[0].checked;
-							} else if (propertyType.dataType === "TIMESTAMP") {
+							} else if (propertyType.dataType === "TIMESTAMP" || propertyType.dataType === "DATE") {
 								var timeValue = $($(field.children()[0]).children()[0]).val();
 								_this._experimentFormModel.experiment.properties[propertyTypeCode] = timeValue;
 							} else {
@@ -570,7 +570,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
                     		    }
                     		    break;
                         }
-                    } else if(propertyType.dataType === "TIMESTAMP") {
+                    } else if(propertyType.dataType === "TIMESTAMP" || propertyType.dataType === "DATE") {
 						$component.on("dp.change", changeEvent(propertyType));
 					} else {
 						$component.change(changeEvent(propertyType));

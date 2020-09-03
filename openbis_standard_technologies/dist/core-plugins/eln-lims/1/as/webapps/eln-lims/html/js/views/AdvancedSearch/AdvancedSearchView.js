@@ -509,7 +509,7 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 					                       { value : "thatIsGreaterThanNumber", 			label : "thatIsGreaterThan (Number)" },
 					                       { value : "thatIsGreaterThanOrEqualToNumber", 	label : "thatIsGreaterThanOrEqualTo (Number)" }
 					                       ];
-				} else if(dataType === "TIMESTAMP") {
+				} else if(dataType === "TIMESTAMP" || dataType === "DATE") {
 					operatorOptions = [
 					                       { value : "thatEqualsDate", 						label : "thatEquals (Date)", selected : true },
 					                       { value : "thatIsLaterThanOrEqualToDate", 		label : "thatIsLaterThanOrEqualTo (Date)" },

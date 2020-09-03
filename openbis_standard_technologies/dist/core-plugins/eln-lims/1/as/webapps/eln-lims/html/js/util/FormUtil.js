@@ -814,7 +814,9 @@ var FormUtil = new function() {
 		} else if (propertyType.dataType === "REAL") {
 			$component = this._getNumberInputField(propertyType.code, propertyType.description, 'any', propertyType.mandatory);
 		} else if (propertyType.dataType === "TIMESTAMP") {
-			$component = this._getDatePickerField(propertyType.code, propertyType.description, propertyType.mandatory, timestampValue);
+			$component = this._getDatePickerField(propertyType.code, propertyType.description, propertyType.mandatory, false, timestampValue);
+		} else if (propertyType.dataType === "DATE") {
+			$component = this._getDatePickerField(propertyType.code, propertyType.description, propertyType.mandatory, true, timestampValue);
 		} else if (propertyType.dataType === "VARCHAR") {
 			$component = this._getInputField("text", propertyType.code, propertyType.description, null, propertyType.mandatory);
 		} else if (propertyType.dataType === "XML") {
@@ -839,7 +841,7 @@ var FormUtil = new function() {
 	this.setFieldValue = function(propertyType, $field, value) {
 		if(propertyType.dataType === "BOOLEAN") {
 			$($($field.children()[0]).children()[0]).prop('checked', value === "true");
-		} else if(propertyType.dataType === "TIMESTAMP") {
+		} else if(propertyType.dataType === "TIMESTAMP" || propertyType.dataType === "DATE") {
 			$($($field.children()[0]).children()[0]).val(value);
 		} else {
 			$field.val(value);
@@ -948,10 +950,11 @@ var FormUtil = new function() {
         return $component;
     }
 
-	this._getDatePickerField = function(id, alt, isRequired, value) {
+	this._getDatePickerField = function(id, alt, isRequired, isDateOnly, value) {
 		var $component = $('<div>', {'class' : 'form-group', 'style' : 'margin-left: 0px;', 'placeholder' : alt });
 		var $subComponent = $('<div>', {'class' : 'input-group date', 'id' : 'datetimepicker_' + id });
-		var $input = $('<input>', {'class' : 'form-control', 'type' : 'text', 'id' : id, 'data-format' : 'yyyy-MM-dd HH:mm:ss'});
+		var $input = $('<input>', {'class' : 'form-control', 'type' : 'text', 'id' : id, 
+			'data-format' : isDateOnly ? 'yyyy-MM-dd' : 'yyyy-MM-dd HH:mm:ss'});
 		if (isRequired) {
 			$input.attr('required', '');
 		}
@@ -967,7 +970,7 @@ var FormUtil = new function() {
 		}
 
 		var datetimepicker = $subComponent.datetimepicker({
-			format : 'YYYY-MM-DD HH:mm:ss',
+			format : isDateOnly ? 'YYYY-MM-DD' : 'YYYY-MM-DD HH:mm:ss',
 			useCurrent : false,
 			defaultDate : date
 		});
