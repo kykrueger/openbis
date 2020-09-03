@@ -10,6 +10,7 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/
 		prototype['@type'] = 'as.dto.property.update.PropertyTypeUpdate';
 		constructor.serialVersionUID = 1;
 		prototype.typeId = null;
+		prototype.dataType = null;
 		prototype.label = null;
 		prototype.description = null;
 		prototype.schema = null;
@@ -18,6 +19,12 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/
 
 		prototype.getObjectId = function() {
 			return this.getTypeId();
+		};
+		prototype.getDataTypeToBeConverted = function() {
+			return this.dataType;
+		};
+		prototype.convertToDataType = function(dataType) {
+			this.dataType = dataType;
 		};
 		prototype.getTypeId = function() {
 			return this.typeId;
@@ -57,6 +64,7 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/
 		};
 	}, {
 		typeId : "IPropertyTypeId",
+		dataType : "DataType",
 		metaData : "ListUpdateMapValues"
 	});
 	return PropertyTypeUpdate;

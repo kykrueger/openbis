@@ -18,18 +18,44 @@ package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
 import static org.testng.Assert.assertEquals;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetKind;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetTypeCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.id.DataStorePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.create.ExperimentCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.create.ExperimentTypeCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.create.PropertyAssignmentCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.create.PropertyTypeCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.update.PropertyTypeUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleTypeCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.VocabularyPermId;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
 
 /**
@@ -37,6 +63,8 @@ import ch.systemsx.cisd.common.action.IDelegatedAction;
  */
 public class UpdatePropertyTypesTest extends AbstractTest
 {
+    private static final String ALL_DATA_TYPES = "ALL_DATA_TYPES";
+
     @Test
     public void testUpdatePropertyTypeFromInternalNamespace()
     {
@@ -149,6 +177,203 @@ public class UpdatePropertyTypesTest extends AbstractTest
         assertEquals(propertyType.getMetaData().toString(), "{new key=new value}");
 
         v3api.logout(sessionToken);
+    }
+
+    @Test
+    public void testConvertIntegerToVarchar()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId id = new PropertyTypePermId("OFFSET");
+        PropertyTypeUpdate update = new PropertyTypeUpdate();
+        update.setTypeId(id);
+        update.setDescription("as string");
+        update.convertToDataType(DataType.VARCHAR);
+        assertDataType(sessionToken, id, DataType.INTEGER);
+
+        // When
+        v3api.updatePropertyTypes(sessionToken, Arrays.asList(update));
+
+        // Then
+        assertDataType(sessionToken, id, DataType.VARCHAR);
+        SampleIdentifier sampleId = new SampleIdentifier("/CISD/3V-126");
+        SampleFetchOptions fetchOptions = new SampleFetchOptions();
+        fetchOptions.withProperties();
+        Sample sample = v3api.getSamples(sessionToken, Arrays.asList(sampleId), fetchOptions).get(sampleId);
+        assertEquals(sample.getProperties().get("OFFSET"), "42");
+        v3api.logout(sessionToken);
+    }
+
+    @Test
+    public void testConvertTimestampToDate()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        SampleTypeCreation sampleTypeCreation = new SampleTypeCreation();
+        sampleTypeCreation.setCode("SAMPLE_WITH_TIMESTAMP");
+        PropertyAssignmentCreation propertyAssignmentCreation = new PropertyAssignmentCreation();
+        PropertyTypePermId propertyTypeId = new PropertyTypePermId("PURCHASE_DATE");
+        propertyAssignmentCreation.setPropertyTypeId(propertyTypeId);
+        sampleTypeCreation.setPropertyAssignments(Arrays.asList(propertyAssignmentCreation));
+        EntityTypePermId sampleTypeId = v3api.createSampleTypes(sessionToken, Arrays.asList(sampleTypeCreation)).get(0);
+        SampleCreation sampleCreation = new SampleCreation();
+        sampleCreation.setTypeId(sampleTypeId);
+        sampleCreation.setAutoGeneratedCode(true);
+        sampleCreation.setProperty(propertyTypeId.getPermId(), "2020-09-02 18:29:44");
+        SamplePermId sampleId = v3api.createSamples(sessionToken, Arrays.asList(sampleCreation)).get(0);
+        PropertyTypeUpdate update = new PropertyTypeUpdate();
+        update.setTypeId(propertyTypeId);
+        update.convertToDataType(DataType.DATE);
+        assertDataType(sessionToken, propertyTypeId, DataType.TIMESTAMP);
+
+        // When
+        v3api.updatePropertyTypes(sessionToken, Arrays.asList(update));
+
+        // Then
+        assertDataType(sessionToken, propertyTypeId, DataType.DATE);
+        SampleFetchOptions fetchOptions = new SampleFetchOptions();
+        fetchOptions.withProperties();
+        Sample sample = v3api.getSamples(sessionToken, Arrays.asList(sampleId), fetchOptions).get(sampleId);
+        assertEquals(sample.getProperties().get(propertyTypeId.getPermId()), "2020-09-02");
+        v3api.logout(sessionToken);
+    }
+
+    @DataProvider
+    Object[][] dataTypeConversion()
+    {
+        return new Object[][] {
+                new Object[] { DataType.INTEGER, "1234", DataType.VARCHAR, "1234" },
+                new Object[] { DataType.INTEGER, "1234", DataType.MULTILINE_VARCHAR, "1234" },
+                new Object[] { DataType.REAL, "12.34", DataType.VARCHAR, "12.34" },
+                new Object[] { DataType.REAL, "12.34", DataType.MULTILINE_VARCHAR, "12.34" },
+                new Object[] { DataType.DATE, "2020-09-03", DataType.VARCHAR, "2020-09-03" },
+                new Object[] { DataType.DATE, "2020-09-03", DataType.MULTILINE_VARCHAR, "2020-09-03" },
+                new Object[] { DataType.TIMESTAMP, "2020-01-03 14:23:56", DataType.VARCHAR, "2020-01-03 14:23:56 +0100" },
+                new Object[] { DataType.TIMESTAMP, "2020-01-03 14:23:56", DataType.MULTILINE_VARCHAR, "2020-01-03 14:23:56 +0100" },
+
+                new Object[] { DataType.TIMESTAMP, "2020-09-03 14:23:56", DataType.DATE, "2020-09-03" },
+        };
+    }
+
+    @Test(dataProvider = "dataTypeConversion")
+    public void testDataTypeConversion(DataType dataType, String value, DataType newDataType, String convertedValue)
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        createEntityTypesWithAllDataTypeProperties(sessionToken);
+        EntityTypePermId entityTypePermId = new EntityTypePermId(ALL_DATA_TYPES);
+        SampleCreation sampleCreation = new SampleCreation();
+        sampleCreation.setTypeId(entityTypePermId);
+        sampleCreation.setAutoGeneratedCode(true);
+        sampleCreation.setSpaceId(new SpacePermId("CISD"));
+        String propertyTypeCode = createPropertyTypeCode(dataType);
+        sampleCreation.setProperty(propertyTypeCode, value);
+        SamplePermId sampleId = v3api.createSamples(sessionToken, Arrays.asList(sampleCreation)).get(0);
+        ExperimentCreation experimentCreation = new ExperimentCreation();
+        experimentCreation.setTypeId(entityTypePermId);
+        experimentCreation.setCode(dataType + "_EXP");
+        experimentCreation.setProjectId(new ProjectIdentifier("/CISD/NOE"));
+        experimentCreation.setProperty(propertyTypeCode, value);
+        ExperimentPermId experimentId = v3api.createExperiments(sessionToken, Arrays.asList(experimentCreation)).get(0);
+        DataSetCreation dataSetCreation = new DataSetCreation();
+        dataSetCreation.setTypeId(entityTypePermId);
+        dataSetCreation.setDataSetKind(DataSetKind.CONTAINER);
+        dataSetCreation.setDataStoreId(new DataStorePermId("STANDARD"));
+        dataSetCreation.setProperty(propertyTypeCode, value);
+        dataSetCreation.setAutoGeneratedCode(true);
+        dataSetCreation.setExperimentId(new ExperimentIdentifier("/CISD/NOE/EXP-TEST-2"));
+        DataSetPermId dataSetId = v3api.createDataSets(sessionToken, Arrays.asList(dataSetCreation)).get(0);
+        
+        PropertyTypeUpdate update = new PropertyTypeUpdate();
+        PropertyTypePermId propertyTypePermId = new PropertyTypePermId(propertyTypeCode);
+        update.setTypeId(propertyTypePermId);
+        update.convertToDataType(newDataType);
+        assertDataType(sessionToken, propertyTypePermId, dataType);
+
+        // When
+        v3api.updatePropertyTypes(sessionToken, Arrays.asList(update));
+
+        // Then
+        assertDataType(sessionToken, propertyTypePermId, newDataType);
+        SampleFetchOptions sampleFetchOptions = new SampleFetchOptions();
+        sampleFetchOptions.withProperties();
+        Sample sample = v3api.getSamples(sessionToken, Arrays.asList(sampleId), sampleFetchOptions).get(sampleId);
+        assertEquals(sample.getProperties().get(propertyTypeCode), convertedValue);
+        ExperimentFetchOptions experimentFetchOptions = new ExperimentFetchOptions();
+        experimentFetchOptions.withProperties();
+        Experiment experiment = v3api.getExperiments(sessionToken, Arrays.asList(experimentId), experimentFetchOptions).get(experimentId);
+        assertEquals(experiment.getProperties().get(propertyTypeCode), convertedValue);
+        DataSetFetchOptions dataSetFetchOptions = new DataSetFetchOptions();
+        dataSetFetchOptions.withProperties();
+        DataSet dataSet = v3api.getDataSets(sessionToken, Arrays.asList(dataSetId), dataSetFetchOptions).get(dataSetId);
+        assertEquals(dataSet.getProperties().get(propertyTypeCode), convertedValue);
+        v3api.logout(sessionToken);
+    }
+
+    private void assertDataType(String sessionToken, PropertyTypePermId id, DataType expectedDataType)
+    {
+        PropertyTypeFetchOptions fetchOptions = new PropertyTypeFetchOptions();
+        PropertyType propertyType = v3api.getPropertyTypes(sessionToken, Arrays.asList(id), fetchOptions).get(id);
+        assertEquals(propertyType.getDataType(), expectedDataType);
+    }
+
+    private void createEntityTypesWithAllDataTypeProperties(String sessionToken)
+    {
+        createPropertyTypesForAllDataTypes(sessionToken);
+        List<PropertyAssignmentCreation> propertyAssignments = createAllDataTypePropertyAssignments();
+
+        SampleTypeCreation sampleTypeCreation = new SampleTypeCreation();
+        sampleTypeCreation.setCode(ALL_DATA_TYPES);
+        sampleTypeCreation.setAutoGeneratedCode(true);
+        sampleTypeCreation.setGeneratedCodePrefix("ADT-");
+        sampleTypeCreation.setPropertyAssignments(propertyAssignments);
+        v3api.createSampleTypes(sessionToken, Arrays.asList(sampleTypeCreation));
+
+        ExperimentTypeCreation experimentTypeCreation = new ExperimentTypeCreation();
+        experimentTypeCreation.setCode(ALL_DATA_TYPES);
+        experimentTypeCreation.setPropertyAssignments(propertyAssignments);
+        v3api.createExperimentTypes(sessionToken, Arrays.asList(experimentTypeCreation));
+
+        DataSetTypeCreation dataSetTypeCreation = new DataSetTypeCreation();
+        dataSetTypeCreation.setCode(ALL_DATA_TYPES);
+        dataSetTypeCreation.setPropertyAssignments(propertyAssignments);
+        v3api.createDataSetTypes(sessionToken, Arrays.asList(dataSetTypeCreation));
+    }
+
+    private List<PropertyAssignmentCreation> createAllDataTypePropertyAssignments()
+    {
+        List<PropertyAssignmentCreation> propertyAssignments = new ArrayList<>();
+        for (DataType dataType : DataType.values())
+        {
+            PropertyAssignmentCreation assignmentCreation = new PropertyAssignmentCreation();
+            assignmentCreation.setPropertyTypeId(new PropertyTypePermId(createPropertyTypeCode(dataType)));
+            propertyAssignments.add(assignmentCreation);
+        }
+        return propertyAssignments;
+    }
+
+    private void createPropertyTypesForAllDataTypes(String sessionToken)
+    {
+        List<PropertyTypeCreation> propertyTypes = new ArrayList<>();
+        for (DataType dataType : DataType.values())
+        {
+            PropertyTypeCreation typeCreation = new PropertyTypeCreation();
+            typeCreation.setCode(createPropertyTypeCode(dataType));
+            typeCreation.setDataType(dataType);
+            typeCreation.setLabel("label");
+            typeCreation.setDescription("description");
+            if (dataType == DataType.CONTROLLEDVOCABULARY)
+            {
+                typeCreation.setVocabularyId(new VocabularyPermId("ORGANISM"));
+            }
+            propertyTypes.add(typeCreation);
+        }
+        v3api.createPropertyTypes(sessionToken, propertyTypes);
+    }
+
+    private String createPropertyTypeCode(DataType dataType)
+    {
+        return dataType + "_PROPERTY";
     }
 
     @Test
