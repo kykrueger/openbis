@@ -235,7 +235,7 @@ function AdvancedEntitySearchDropdown(isMultiple,
 	//
 	this.init = function($container) {
 		$select.attr("multiple", "multiple");
-		$select.attr("id", "advanced-entity-search-dropdown-id");
+		$select.attr("id", "advanced-entity-search-dropdown-id-" + Util.guid());
 		
 		if(isRequired) {
 			$select.attr("required", "required");
