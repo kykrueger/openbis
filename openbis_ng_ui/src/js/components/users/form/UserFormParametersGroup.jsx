@@ -2,7 +2,7 @@ import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import Container from '@src/js/components/common/form/Container.jsx'
 import Header from '@src/js/components/common/form/Header.jsx'
-import TextField from '@src/js/components/common/form/TextField.jsx'
+import SelectField from '@src/js/components/common/form/SelectField.jsx'
 import Message from '@src/js/components/common/form/Message.jsx'
 import logger from '@src/js/common/logger.js'
 
@@ -85,7 +85,6 @@ class UserFormParametersGroup extends React.PureComponent {
         <Header>Group</Header>
         {this.renderMessageVisible()}
         {this.renderCode(group)}
-        {this.renderDescription(group)}
       </Container>
     )
   }
@@ -114,43 +113,31 @@ class UserFormParametersGroup extends React.PureComponent {
       return null
     }
 
-    const { mode, classes } = this.props
+    const { mode, classes, controller } = this.props
+    const { groups } = controller.getDictionaries()
+
+    let options = []
+
+    if (groups) {
+      options = groups.map(group => {
+        return {
+          label: group.code,
+          value: group.code
+        }
+      })
+    }
+
     return (
       <div className={classes.field}>
-        <TextField
+        <SelectField
           reference={this.references.code}
           label='Code'
           name='code'
+          error={error}
+          disabled={!enabled}
           mandatory={true}
-          error={error}
-          disabled={!enabled}
           value={value}
-          mode={mode}
-          onChange={this.handleChange}
-          onFocus={this.handleFocus}
-          onBlur={this.handleBlur}
-        />
-      </div>
-    )
-  }
-
-  renderDescription(group) {
-    const { visible, enabled, error, value } = { ...group.description }
-
-    if (!visible) {
-      return null
-    }
-
-    const { mode, classes } = this.props
-    return (
-      <div className={classes.field}>
-        <TextField
-          reference={this.references.description}
-          label='Description'
-          name='description'
-          error={error}
-          disabled={!enabled}
-          value={value}
+          options={options}
           mode={mode}
           onChange={this.handleChange}
           onFocus={this.handleFocus}

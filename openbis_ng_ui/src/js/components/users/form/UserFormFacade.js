@@ -26,4 +26,14 @@ export default class UserFormFacade {
       })
     })
   }
+
+  async loadGroups() {
+    const criteria = new openbis.AuthorizationGroupSearchCriteria()
+    const fo = new openbis.AuthorizationGroupFetchOptions()
+    fo.withRoleAssignments().withSpace()
+    fo.withRoleAssignments().withProject()
+    return openbis.searchAuthorizationGroups(criteria, fo).then(result => {
+      return result.getObjects()
+    })
+  }
 }

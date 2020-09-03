@@ -4,6 +4,23 @@ import FormUtil from '@src/js/components/common/form/FormUtil.js'
 
 export default class UserFormControllerLoad extends PageControllerLoad {
   async load(object, isNew) {
+    return Promise.all([
+      this._loadDictionaries(),
+      this._loadUser(object, isNew)
+    ])
+  }
+
+  async _loadDictionaries() {
+    const [groups] = await Promise.all([this.facade.loadGroups()])
+
+    await this.context.setState(() => ({
+      dictionaries: {
+        groups
+      }
+    }))
+  }
+
+  async _loadUser(object, isNew) {
     let loadedUser = null
     let loadedGroups = null
 
@@ -116,12 +133,10 @@ export default class UserFormControllerLoad extends PageControllerLoad {
     const group = {
       id: id,
       code: FormUtil.createField({
-        value: _.get(loadedGroup, 'code', null),
-        enabled: false
+        value: _.get(loadedGroup, 'code', null)
       }),
       description: FormUtil.createField({
-        value: _.get(loadedGroup, 'description', null),
-        enabled: false
+        value: _.get(loadedGroup, 'description', null)
       })
     }
     group.original = _.cloneDeep(group)

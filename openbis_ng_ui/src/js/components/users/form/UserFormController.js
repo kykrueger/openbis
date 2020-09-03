@@ -53,4 +53,9 @@ export default class UserFormController extends PageController {
   handleSave() {
     return new UserFormControllerSave(this).execute()
   }
+
+  getDictionaries() {
+    const { dictionaries } = this.context.getState()
+    return dictionaries || {}
+  }
 }
