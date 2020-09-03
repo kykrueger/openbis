@@ -98,9 +98,8 @@ export default class UserFormControllerLoad extends PageControllerLoad {
         enabled: false
       }),
       active: FormUtil.createField({
-        value: _.get(loadedUser, 'active', null),
-        visible: loadedUser !== null,
-        enabled: true
+        value: _.get(loadedUser, 'active', true),
+        enabled: loadedUser !== null
       })
     }
     if (loadedUser) {
