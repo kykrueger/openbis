@@ -1,9 +1,12 @@
 import AuthorizationGroup from 'as/dto/authorizationgroup/AuthorizationGroup'
 import AuthorizationGroupFetchOptions from 'as/dto/authorizationgroup/fetchoptions/AuthorizationGroupFetchOptions'
+import AuthorizationGroupPermId from 'as/dto/authorizationgroup/id/AuthorizationGroupPermId'
 import AuthorizationGroupSearchCriteria from 'as/dto/authorizationgroup/search/AuthorizationGroupSearchCriteria'
+import AuthorizationGroupUpdate from 'as/dto/authorizationgroup/update/AuthorizationGroupUpdate'
 import CreateDataSetTypesOperation from 'as/dto/dataset/create/CreateDataSetTypesOperation'
 import CreateExperimentTypesOperation from 'as/dto/experiment/create/CreateExperimentTypesOperation'
 import CreateMaterialTypesOperation from 'as/dto/material/create/CreateMaterialTypesOperation'
+import CreatePersonsOperation from 'as/dto/person/create/CreatePersonsOperation'
 import CreatePropertyTypesOperation from 'as/dto/property/create/CreatePropertyTypesOperation'
 import CreateSampleTypesOperation from 'as/dto/sample/create/CreateSampleTypesOperation'
 import CreateVocabulariesOperation from 'as/dto/vocabulary/create/CreateVocabulariesOperation'
@@ -45,6 +48,7 @@ import MaterialTypeFetchOptions from 'as/dto/material/fetchoptions/MaterialTypeF
 import MaterialTypeSearchCriteria from 'as/dto/material/search/MaterialTypeSearchCriteria'
 import MaterialTypeUpdate from 'as/dto/material/update/MaterialTypeUpdate'
 import Person from 'as/dto/person/Person'
+import PersonCreation from 'as/dto/person/create/PersonCreation'
 import PersonFetchOptions from 'as/dto/person/fetchoptions/PersonFetchOptions'
 import PersonPermId from 'as/dto/person/id/PersonPermId'
 import PersonSearchCriteria from 'as/dto/person/search/PersonSearchCriteria'
@@ -79,12 +83,15 @@ import SearchExperimentsOperation from 'as/dto/experiment/search/SearchExperimen
 import SearchMaterialsOperation from 'as/dto/material/search/SearchMaterialsOperation'
 import SearchResult from 'as/dto/common/search/SearchResult'
 import SearchSamplesOperation from 'as/dto/sample/search/SearchSamplesOperation'
+import SpacePermId from 'as/dto/space/id/SpacePermId'
 import SpaceFetchOptions from 'as/dto/space/fetchoptions/SpaceFetchOptions'
 import SpaceSearchCriteria from 'as/dto/space/search/SpaceSearchCriteria'
 import SynchronousOperationExecutionOptions from 'as/dto/operation/SynchronousOperationExecutionOptions'
+import UpdateAuthorizationGroupsOperation from 'as/dto/authorizationgroup/update/UpdateAuthorizationGroupsOperation'
 import UpdateDataSetTypesOperation from 'as/dto/dataset/update/UpdateDataSetTypesOperation'
 import UpdateExperimentTypesOperation from 'as/dto/experiment/update/UpdateExperimentTypesOperation'
 import UpdateMaterialTypesOperation from 'as/dto/material/update/UpdateMaterialTypesOperation'
+import UpdatePersonsOperation from 'as/dto/person/update/UpdatePersonsOperation'
 import UpdatePropertyTypesOperation from 'as/dto/property/update/UpdatePropertyTypesOperation'
 import UpdateSampleTypesOperation from 'as/dto/sample/update/UpdateSampleTypesOperation'
 import UpdateVocabulariesOperation from 'as/dto/vocabulary/update/UpdateVocabulariesOperation'
@@ -108,10 +115,13 @@ import WebAppSettingCreation from 'as/dto/webapp/create/WebAppSettingCreation'
 const dto = {
   AuthorizationGroup,
   AuthorizationGroupFetchOptions,
+  AuthorizationGroupPermId,
   AuthorizationGroupSearchCriteria,
+  AuthorizationGroupUpdate,
   CreateDataSetTypesOperation,
   CreateExperimentTypesOperation,
   CreateMaterialTypesOperation,
+  CreatePersonsOperation,
   CreatePropertyTypesOperation,
   CreateSampleTypesOperation,
   CreateVocabulariesOperation,
@@ -153,6 +163,7 @@ const dto = {
   MaterialTypeSearchCriteria,
   MaterialTypeUpdate,
   Person,
+  PersonCreation,
   PersonFetchOptions,
   PersonPermId,
   PersonSearchCriteria,
@@ -187,12 +198,15 @@ const dto = {
   SearchMaterialsOperation,
   SearchResult,
   SearchSamplesOperation,
+  SpacePermId,
   SpaceFetchOptions,
   SpaceSearchCriteria,
   SynchronousOperationExecutionOptions,
+  UpdateAuthorizationGroupsOperation,
   UpdateDataSetTypesOperation,
   UpdateExperimentTypesOperation,
   UpdateMaterialTypesOperation,
+  UpdatePersonsOperation,
   UpdatePropertyTypesOperation,
   UpdateSampleTypesOperation,
   UpdateVocabulariesOperation,

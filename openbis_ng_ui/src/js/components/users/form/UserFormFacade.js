@@ -44,4 +44,8 @@ export default class UserFormFacade {
       return result.getObjects()
     })
   }
+
+  async executeOperations(operations, options) {
+    return openbis.executeOperations(operations, options)
+  }
 }
