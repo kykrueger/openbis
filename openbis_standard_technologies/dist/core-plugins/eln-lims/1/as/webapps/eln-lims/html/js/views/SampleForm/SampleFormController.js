@@ -484,18 +484,19 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 			}
 
 			if(profile.enableNewAnnotationsBackend) { // Branch for openBIS 20.X
-	            require([ "as/dto/sample/id/SamplePermId", "as/dto/sample/update/SampleUpdate" ],
-                    function(SamplePermId, SampleUpdate) {
+	            require([ "as/dto/sample/id/SamplePermId", "as/dto/sample/id/SampleIdentifier", "as/dto/sample/update/SampleUpdate" ],
+                    function(SamplePermId, SampleIdentifier, SampleUpdate) {
                         var sampleUpdate = new SampleUpdate();
                         sampleUpdate.setSampleId(new SamplePermId(permId));
                         if(parentsAnnotationsState) {
                             // Add annotations
                             for(var parentPermId in parentsAnnotationsState) {
                                 var parentAnnotation = parentsAnnotationsState[parentPermId];
+                                var parentIdentifier = parentAnnotation["identifier"]; // When creating new parents, annotations should be added by identifier
                                 delete parentAnnotation["identifier"];
                                 delete parentAnnotation["sampleType"];
                                 for(var annotationKey in parentAnnotation) {
-                                    sampleUpdate.relationship(new SamplePermId(parentPermId)).addParentAnnotation(annotationKey, parentAnnotation[annotationKey]);
+                                    sampleUpdate.relationship(new SampleIdentifier(parentIdentifier)).addParentAnnotation(annotationKey, parentAnnotation[annotationKey]);
                                 }
                             }
                             // Update annotations
