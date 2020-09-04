@@ -391,7 +391,7 @@ function StorageView(storageController, storageModel, gridViewRack, gridViewPosi
 	}
 	
 	this.showBoxSize = function() {
-		this._boxSizeDropDown.val(this._storageModel.boxSize);
+		this._boxSizeDropDown.val(this._storageModel.boxSize).trigger('change');
 		this._boxSizeDropDown.attr("disabled", "");
 		this._boxSizeDropDown.show();
 	}
