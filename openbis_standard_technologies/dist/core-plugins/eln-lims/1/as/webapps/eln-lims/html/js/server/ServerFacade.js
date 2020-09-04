@@ -1653,7 +1653,7 @@ function ServerFacade(openbisServer) {
                                 if (escapeToUnEscapeMap[value]) {
                                     value = escapeToUnEscapeMap[value];
                                 }
-                                console.log(searchCriteria.criteria[cIdx].fieldValue.value + " --> " + value);
+                                //console.log(searchCriteria.criteria[cIdx].fieldValue.value + " --> " + value);
                             }
 
                         }
