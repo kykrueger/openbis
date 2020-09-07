@@ -989,6 +989,54 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testUpdate(c, fCreate, fUpdate, c.findPropertyType, fCheck);
 		});
 
+		QUnit.test("updatePropertyTypes() convert data type ", function(assert) {
+			var c = new common(assert, openbis);
+			var propertyTypeCode = c.generateId("PROPERTY_TYPE");
+			var dataSetTypeCode = c.generateId("DATA_SET_TYPE");
+			var code = c.generateId("DATA_SET");
+			
+			var fCreate = function(facade) {
+				var propertyTypeCreation = new c.PropertyTypeCreation();
+				propertyTypeCreation.setCode(propertyTypeCode);
+				propertyTypeCreation.setDescription("hello");
+				propertyTypeCreation.setDataType(c.DataType.SAMPLE);
+				propertyTypeCreation.setLabel("Test Property Type");
+				return facade.createPropertyTypes([ propertyTypeCreation ]).then(function(results) {
+					var assignmentCreation = new c.PropertyAssignmentCreation();
+					assignmentCreation.setPropertyTypeId(new c.PropertyTypePermId(propertyTypeCode));
+					var dataSetTypeCreation = new c.DataSetTypeCreation();
+					dataSetTypeCreation.setCode(dataSetTypeCode);
+					dataSetTypeCreation.setPropertyAssignments([ assignmentCreation ]);
+					return facade.createDataSetTypes([ dataSetTypeCreation ]).then(function(results) {
+						var creation = new c.DataSetCreation();
+						creation.setTypeId(new c.EntityTypePermId(dataSetTypeCode));
+						creation.setCode(code);
+						creation.setDataSetKind(c.DataSetKind.CONTAINER);
+						creation.setDataStoreId(new c.DataStorePermId("DSS1"));
+						creation.setExperimentId(new c.ExperimentIdentifier("/TEST/TEST-PROJECT/TEST-EXPERIMENT"));
+						creation.setProperty(propertyTypeCode, "20130412140147735-20");
+						return facade.createDataSets([ creation ]);
+					});
+				});
+			}
+			
+			var fUpdate = function(facade, permId) {
+				var update = new c.PropertyTypeUpdate();
+				update.setTypeId(new c.PropertyTypePermId(propertyTypeCode));
+				update.convertToDataType(c.DataType.VARCHAR);
+				return facade.updatePropertyTypes([ update ]);
+			}
+			
+			var fCheck = function(dataSet) {
+				c.assertEqual(dataSet.getCode(), code, "Data set code");
+				c.assertEqual(dataSet.getType().getCode(), dataSetTypeCode, "Type code");
+				c.assertObjectsCount(Object.keys(dataSet.getSampleProperties()), 0);
+				c.assertEqual(dataSet.getProperties()[propertyTypeCode], "20130412140147735-20", "Property");
+			}
+			
+			testUpdate(c, fCreate, fUpdate, c.findDataSet, fCheck);
+		});
+		
 		QUnit.test("updatePlugins()", function(assert) {
 			var c = new common(assert, openbis);
 			var name = c.generateId("PLUGIN");
