@@ -43,24 +43,31 @@ export default class UserFormControllerLoad extends PageControllerLoad {
 
     const user = this._createUser(loadedUser)
 
-    let groupsCounter = 0
-    let groups = []
+    const groups = []
+    const roles = []
 
-    if (loadedGroups) {
-      groups = loadedGroups.map(loadedGroup =>
-        this._createGroup('group-' + groupsCounter++, loadedGroup)
-      )
+    let groupsCounter = 0
+    let rolesCounter = 0
+
+    if (loadedUser) {
+      loadedUser.getRoleAssignments().forEach(loadedRole => {
+        const role = this._createRole('role-' + rolesCounter++, loadedRole)
+        roles.push(role)
+      })
     }
 
-    let rolesCounter = 0
-    let roles = []
+    if (loadedGroups) {
+      loadedGroups.forEach(loadedGroup => {
+        const group = this._createGroup('group-' + groupsCounter++, loadedGroup)
+        groups.push(group)
 
-    if (loadedUser && loadedUser.getRoleAssignments()) {
-      roles = loadedUser
-        .getRoleAssignments()
-        .map(loadedRole =>
-          this._createRole('role-' + rolesCounter++, loadedRole)
-        )
+        if (loadedGroup.getRoleAssignments()) {
+          loadedGroup.getRoleAssignments().forEach(loadedRole => {
+            const role = this._createRole('role-' + rolesCounter++, loadedRole)
+            roles.push(role)
+          })
+        }
+      })
     }
 
     const selection = this._createSelection(groups, roles)
@@ -133,6 +140,9 @@ export default class UserFormControllerLoad extends PageControllerLoad {
       id: id,
       techId: FormUtil.createField({
         value: _.get(loadedRole, 'id.techId', null)
+      }),
+      inheritedFrom: FormUtil.createField({
+        value: _.get(loadedRole, 'authorizationGroup.code', null)
       }),
       level: FormUtil.createField({
         value: level

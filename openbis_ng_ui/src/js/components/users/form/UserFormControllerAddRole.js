@@ -11,6 +11,7 @@ export default class UserFormControllerAddRole {
 
     const newRole = {
       id: 'role-' + rolesCounter++,
+      inheritedFrom: FormUtil.createField({}),
       level: FormUtil.createField({}),
       space: FormUtil.createField({
         visible: false
