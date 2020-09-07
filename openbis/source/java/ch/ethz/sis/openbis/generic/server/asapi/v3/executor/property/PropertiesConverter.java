@@ -17,6 +17,7 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.property;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -44,104 +45,100 @@ public class PropertiesConverter implements IPropertiesConverter
     public void convertProperties(IOperationContext context, String propertyTypeCode, DataType currentDataType, DataType newDataType)
     {
         IPropertyQuery query = QueryTool.getManagedQuery(IPropertyQuery.class);
+        List<IPropertiesListerAndUpdater> listerUpdaters = Arrays.asList(new ExperimentPropertyUpdater(),
+                new SamplePropertyUpdater(), new DataSetPropertyUpdater());
         if (currentDataType == DataType.TIMESTAMP && newDataType == DataType.DATE)
         {
-            AbstractPropertyUpdater experimentPlainPropertyUpdater = new ExperimentPlainPropertyUpdater(query);
-            AbstractPropertyUpdater samplePlainPropertyUpdater = new SamplePlainPropertyUpdater(query);
-            AbstractPropertyUpdater dataSetPlainPropertyUpdater = new DataSetPlainPropertyUpdater(query);
-            AbstractPropertyConverter converter = new TimestampToDatePropertyConverter();
-            List<PropertyRecord> experimentProperties = query.listPlainExperimentProperties(propertyTypeCode);
-            convert(context, experimentProperties, experimentPlainPropertyUpdater, converter);
-            List<PropertyRecord> sampleProperties = query.listPlainSampleProperties(propertyTypeCode);
-            convert(context, sampleProperties, samplePlainPropertyUpdater, converter);
-            List<PropertyRecord> dataSetProperties = query.listPlainDataSetProperties(propertyTypeCode);
-            convert(context, dataSetProperties, dataSetPlainPropertyUpdater, converter);
-        } else if (currentDataType == DataType.CONTROLLEDVOCABULARY 
+            convert(context, query, listerUpdaters, new TimestampToDatePropertyConverter(), propertyTypeCode);
+        } else if (currentDataType == DataType.CONTROLLEDVOCABULARY
                 && EnumSet.of(DataType.VARCHAR, DataType.MULTILINE_VARCHAR).contains(newDataType))
         {
-            // TODO
+            convert(context, query, listerUpdaters, new VocabularyToVarcharPropertyConverter(), propertyTypeCode);
+        } else if (currentDataType == DataType.SAMPLE
+                && EnumSet.of(DataType.VARCHAR, DataType.MULTILINE_VARCHAR).contains(newDataType))
+        {
+            convert(context, query, listerUpdaters, new SampleToVarcharPropertyConverter(), propertyTypeCode);
         }
     }
 
-    private void convert(IOperationContext context, List<PropertyRecord> properties, AbstractPropertyUpdater updater,
-            AbstractPropertyConverter converter)
+    private void convert(IOperationContext context, IPropertyQuery query,
+            List<IPropertiesListerAndUpdater> listerUpdaters,
+            AbstractPropertyConverter converter, String propertyTypeCode)
     {
-        for (CollectionBatch<PropertyRecord> batch : Batch.createBatches(properties))
+        for (IPropertiesListerAndUpdater listerUpdater : listerUpdaters)
         {
-            List<PropertyRecord> convertedProperties = new ArrayList<>();
-            new CollectionBatchProcessor<PropertyRecord>(context, batch)
-                {
-                    @Override
-                    public void process(PropertyRecord property)
+            List<PropertyRecord> properties = listerUpdater.listProperties(query, propertyTypeCode);
+            for (CollectionBatch<PropertyRecord> batch : Batch.createBatches(properties))
+            {
+                List<PropertyRecord> convertedProperties = new ArrayList<>();
+                new CollectionBatchProcessor<PropertyRecord>(context, batch)
                     {
-                        PropertyRecord convertedProperty = new PropertyRecord();
-                        convertedProperty.objectId = property.objectId;
-                        convertedProperty.propertyValue = property.propertyValue.split(" ")[0];
-                        convertedProperties.add(converter.convertProperty(property));
-                    }
+                        @Override
+                        public void process(PropertyRecord property)
+                        {
+                            convertedProperties.add(converter.convertProperty(property));
+                        }
 
-                    @Override
-                    public IProgress createProgress(PropertyRecord property, int objectIndex, int totalObjectCount)
-                    {
-                        return new Progress(String.valueOf(property.objectId), objectIndex, totalObjectCount);
-                    }
-                };
-            updater.update(convertedProperties);
+                        @Override
+                        public IProgress createProgress(PropertyRecord property, int objectIndex, int totalObjectCount)
+                        {
+                            return new Progress(String.valueOf(property.objectId), objectIndex, totalObjectCount);
+                        }
+                    };
+                listerUpdater.updateProperties(query, convertedProperties);
+            }
         }
-
     }
 
-    private static abstract class AbstractPropertyUpdater
+    private static interface IPropertiesListerAndUpdater
     {
-        protected IPropertyQuery query;
+        List<PropertyRecord> listProperties(IPropertyQuery query, String propertyTypeCode);
 
-        public AbstractPropertyUpdater(IPropertyQuery query)
-        {
-            this.query = query;
-        }
-
-        abstract void update(List<PropertyRecord> convertedProperties);
+        void updateProperties(IPropertyQuery query, List<PropertyRecord> convertedProperties);
     }
 
-    private static class ExperimentPlainPropertyUpdater extends AbstractPropertyUpdater
+    private static class ExperimentPropertyUpdater implements IPropertiesListerAndUpdater
     {
-        public ExperimentPlainPropertyUpdater(IPropertyQuery query)
+        @Override
+        public List<PropertyRecord> listProperties(IPropertyQuery query, String propertyTypeCode)
         {
-            super(query);
+            return query.listExperimentProperties(propertyTypeCode);
         }
 
         @Override
-        void update(List<PropertyRecord> convertedProperties)
+        public void updateProperties(IPropertyQuery query, List<PropertyRecord> convertedProperties)
         {
-            query.updatePlainExperimentProperties(convertedProperties);
+            query.updateExperimentProperties(convertedProperties);
         }
     }
 
-    private static class SamplePlainPropertyUpdater extends AbstractPropertyUpdater
+    private static class SamplePropertyUpdater implements IPropertiesListerAndUpdater
     {
-        public SamplePlainPropertyUpdater(IPropertyQuery query)
+        @Override
+        public List<PropertyRecord> listProperties(IPropertyQuery query, String propertyTypeCode)
         {
-            super(query);
+            return query.listSampleProperties(propertyTypeCode);
         }
 
         @Override
-        void update(List<PropertyRecord> convertedProperties)
+        public void updateProperties(IPropertyQuery query, List<PropertyRecord> convertedProperties)
         {
-            query.updatePlainSampleProperties(convertedProperties);
+            query.updateSampleProperties(convertedProperties);
         }
     }
 
-    private static class DataSetPlainPropertyUpdater extends AbstractPropertyUpdater
+    private static class DataSetPropertyUpdater implements IPropertiesListerAndUpdater
     {
-        public DataSetPlainPropertyUpdater(IPropertyQuery query)
+        @Override
+        public List<PropertyRecord> listProperties(IPropertyQuery query, String propertyTypeCode)
         {
-            super(query);
+            return query.listDataSetProperties(propertyTypeCode);
         }
 
         @Override
-        void update(List<PropertyRecord> convertedProperties)
+        public void updateProperties(IPropertyQuery query, List<PropertyRecord> convertedProperties)
         {
-            query.updatePlainDataSetProperties(convertedProperties);
+            query.updateDataSetProperties(convertedProperties);
         }
     }
 
@@ -164,6 +161,24 @@ public class PropertiesConverter implements IPropertiesConverter
         void convert(PropertyRecord convertedProperty, PropertyRecord property)
         {
             convertedProperty.propertyValue = property.propertyValue.split(" ")[0];
+        }
+    }
+
+    private static class VocabularyToVarcharPropertyConverter extends AbstractPropertyConverter
+    {
+        @Override
+        void convert(PropertyRecord convertedProperty, PropertyRecord property)
+        {
+            convertedProperty.propertyValue = property.vocabularyPropertyValue;
+        }
+    }
+    
+    private static class SampleToVarcharPropertyConverter extends AbstractPropertyConverter
+    {
+        @Override
+        void convert(PropertyRecord convertedProperty, PropertyRecord property)
+        {
+            convertedProperty.propertyValue = property.sample_perm_id;
         }
     }
 }
