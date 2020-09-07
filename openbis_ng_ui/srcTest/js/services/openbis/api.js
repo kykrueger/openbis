@@ -21,6 +21,7 @@ const searchMaterialTypes = jest.fn()
 const searchMaterials = jest.fn()
 const searchPersons = jest.fn()
 const searchPlugins = jest.fn()
+const searchProjects = jest.fn()
 const searchPropertyAssignments = jest.fn()
 const searchPropertyTypes = jest.fn()
 const searchSamples = jest.fn()
@@ -105,6 +106,7 @@ export default {
   searchMaterials,
   searchPersons,
   searchPlugins,
+  searchProjects,
   searchPropertyAssignments,
   searchPropertyTypes,
   searchSamples,

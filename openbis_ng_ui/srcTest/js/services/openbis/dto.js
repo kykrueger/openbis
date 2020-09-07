@@ -58,6 +58,8 @@ import PluginFetchOptions from 'as/dto/plugin/fetchoptions/PluginFetchOptions'
 import PluginPermId from 'as/dto/plugin/id/PluginPermId'
 import PluginSearchCriteria from 'as/dto/plugin/search/PluginSearchCriteria'
 import PluginType from 'as/dto/plugin/PluginType'
+import ProjectFetchOptions from 'as/dto/project/fetchoptions/ProjectFetchOptions'
+import ProjectSearchCriteria from 'as/dto/project/search/ProjectSearchCriteria'
 import PropertyAssignment from 'as/dto/property/PropertyAssignment'
 import PropertyAssignmentCreation from 'as/dto/property/create/PropertyAssignmentCreation'
 import PropertyAssignmentFetchOptions from 'as/dto/property/fetchoptions/PropertyAssignmentFetchOptions'
@@ -70,6 +72,8 @@ import PropertyTypeFetchOptions from 'as/dto/property/fetchoptions/PropertyTypeF
 import PropertyTypePermId from 'as/dto/property/id/PropertyTypePermId'
 import PropertyTypeSearchCriteria from 'as/dto/property/search/PropertyTypeSearchCriteria'
 import PropertyTypeUpdate from 'as/dto/property/update/PropertyTypeUpdate'
+import Role from 'as/dto/roleassignment/Role'
+import RoleLevel from 'as/dto/roleassignment/RoleLevel'
 import SampleFetchOptions from 'as/dto/sample/fetchoptions/SampleFetchOptions'
 import SampleSearchCriteria from 'as/dto/sample/search/SampleSearchCriteria'
 import SampleType from 'as/dto/sample/SampleType'
@@ -173,6 +177,8 @@ const dto = {
   PluginPermId,
   PluginSearchCriteria,
   PluginType,
+  ProjectFetchOptions,
+  ProjectSearchCriteria,
   PropertyAssignment,
   PropertyAssignmentCreation,
   PropertyAssignmentFetchOptions,
@@ -185,6 +191,8 @@ const dto = {
   PropertyTypePermId,
   PropertyTypeSearchCriteria,
   PropertyTypeUpdate,
+  Role,
+  RoleLevel,
   SampleFetchOptions,
   SampleSearchCriteria,
   SampleType,

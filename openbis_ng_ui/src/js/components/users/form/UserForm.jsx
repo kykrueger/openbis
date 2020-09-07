@@ -34,9 +34,13 @@ const USER_GROUPS_GRID_COLUMNS = [
 
 const USER_ROLES_GRID_COLUMNS = [
   {
-    field: 'space.value',
-    label: 'Space',
+    field: 'level.value',
+    label: 'Level',
     sort: 'asc'
+  },
+  {
+    field: 'space.value',
+    label: 'Space'
   },
   {
     field: 'project.value',

@@ -1,6 +1,7 @@
 import _ from 'lodash'
 import PageControllerLoad from '@src/js/components/common/page/PageControllerLoad.js'
 import FormUtil from '@src/js/components/common/form/FormUtil.js'
+import openbis from '@src/js/services/openbis.js'
 
 export default class UserFormControllerLoad extends PageControllerLoad {
   async load(object, isNew) {
@@ -11,15 +12,17 @@ export default class UserFormControllerLoad extends PageControllerLoad {
   }
 
   async _loadDictionaries() {
-    const [groups, spaces] = await Promise.all([
+    const [groups, spaces, projects] = await Promise.all([
       this.facade.loadGroups(),
-      this.facade.loadSpaces()
+      this.facade.loadSpaces(),
+      this.facade.loadProjects()
     ])
 
     await this.context.setState(() => ({
       dictionaries: {
         groups,
-        spaces
+        spaces,
+        projects
       }
     }))
   }
@@ -113,19 +116,33 @@ export default class UserFormControllerLoad extends PageControllerLoad {
   }
 
   _createRole(id, loadedRole) {
+    const level = _.get(loadedRole, 'roleLevel', null)
+
+    let space = null
+    let project = null
+
+    if (level === openbis.RoleLevel.SPACE) {
+      space = _.get(loadedRole, 'space.code')
+    } else if (level === openbis.RoleLevel.PROJECT) {
+      space = _.get(loadedRole, 'project.space.code')
+      project = _.get(loadedRole, 'project.identifier.identifier')
+    }
+
     const role = {
       id: id,
+      level: FormUtil.createField({
+        value: level
+      }),
       space: FormUtil.createField({
-        value: _.get(loadedRole, 'space.code', null),
-        enabled: false
+        value: space,
+        visible: space !== null
       }),
       project: FormUtil.createField({
-        value: _.get(loadedRole, 'project.permId.permId', null),
-        enabled: false
+        value: project,
+        visible: project !== null
       }),
       role: FormUtil.createField({
-        value: _.get(loadedRole, 'role', null),
-        enabled: false
+        value: _.get(loadedRole, 'role', null)
       })
     }
     role.original = _.cloneDeep(role)

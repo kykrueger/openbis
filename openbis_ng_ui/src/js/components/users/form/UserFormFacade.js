@@ -6,7 +6,7 @@ export default class UserFormFacade {
     const fo = new openbis.PersonFetchOptions()
     fo.withSpace()
     fo.withRoleAssignments().withSpace()
-    fo.withRoleAssignments().withProject()
+    fo.withRoleAssignments().withProject().withSpace()
     return openbis.getPersons([id], fo).then(map => {
       return map[userId]
     })
@@ -17,7 +17,7 @@ export default class UserFormFacade {
     const fo = new openbis.AuthorizationGroupFetchOptions()
     fo.withUsers()
     fo.withRoleAssignments().withSpace()
-    fo.withRoleAssignments().withProject()
+    fo.withRoleAssignments().withProject().withSpace()
     return openbis.searchAuthorizationGroups(criteria, fo).then(result => {
       return result.getObjects().filter(group => {
         return group.getUsers().some(user => {
@@ -31,7 +31,7 @@ export default class UserFormFacade {
     const criteria = new openbis.AuthorizationGroupSearchCriteria()
     const fo = new openbis.AuthorizationGroupFetchOptions()
     fo.withRoleAssignments().withSpace()
-    fo.withRoleAssignments().withProject()
+    fo.withRoleAssignments().withProject().withSpace()
     return openbis.searchAuthorizationGroups(criteria, fo).then(result => {
       return result.getObjects()
     })
@@ -41,6 +41,15 @@ export default class UserFormFacade {
     const criteria = new openbis.SpaceSearchCriteria()
     const fo = new openbis.SpaceFetchOptions()
     return openbis.searchSpaces(criteria, fo).then(result => {
+      return result.getObjects()
+    })
+  }
+
+  async loadProjects() {
+    const criteria = new openbis.ProjectSearchCriteria()
+    const fo = new openbis.ProjectFetchOptions()
+    fo.withSpace()
+    return openbis.searchProjects(criteria, fo).then(result => {
       return result.getObjects()
     })
   }
