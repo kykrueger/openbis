@@ -1,4 +1,4 @@
-from parsers import ScriptDefinitionToCreationType, SampleDefinitionToCreationType, VocabularyTermDefinitionToCreationType, ProjectDefinitionToCreationType
+from parsers import ScriptDefinitionToCreationType, SampleDefinitionToCreationType, VocabularyTermDefinitionToCreationType, ProjectDefinitionToCreationType, ExperimentDefinitionToCreationType
 from utils.openbis_utils import create_project_identifier_string
 
 class DuplicatesHandler(object):
@@ -13,7 +13,7 @@ class DuplicatesHandler(object):
                 distinct_creations[creation_type] = dict(((creation.code, str(creation.vocabularyId)), creation) for creation in creations).values()
             elif creation_type == ProjectDefinitionToCreationType:
                 distinct_creations[creation_type] = dict((create_project_identifier_string(creation), creation) for creation in creations).values()
-            elif creation_type not in [SampleDefinitionToCreationType]:
+            elif creation_type not in [SampleDefinitionToCreationType, ExperimentDefinitionToCreationType]:
                 distinct_creations[creation_type] = dict((creation.code, creation) for creation in creations).values()
             else:
                 distinct_creations[creation_type] = list(creations)
