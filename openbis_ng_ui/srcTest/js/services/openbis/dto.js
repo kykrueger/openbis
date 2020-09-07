@@ -8,6 +8,7 @@ import CreateExperimentTypesOperation from 'as/dto/experiment/create/CreateExper
 import CreateMaterialTypesOperation from 'as/dto/material/create/CreateMaterialTypesOperation'
 import CreatePersonsOperation from 'as/dto/person/create/CreatePersonsOperation'
 import CreatePropertyTypesOperation from 'as/dto/property/create/CreatePropertyTypesOperation'
+import CreateRoleAssignmentsOperation from 'as/dto/roleassignment/create/CreateRoleAssignmentsOperation'
 import CreateSampleTypesOperation from 'as/dto/sample/create/CreateSampleTypesOperation'
 import CreateVocabulariesOperation from 'as/dto/vocabulary/create/CreateVocabulariesOperation'
 import CreateVocabularyTermsOperation from 'as/dto/vocabulary/create/CreateVocabularyTermsOperation'
@@ -26,6 +27,7 @@ import DeleteDataSetTypesOperation from 'as/dto/dataset/delete/DeleteDataSetType
 import DeleteExperimentTypesOperation from 'as/dto/experiment/delete/DeleteExperimentTypesOperation'
 import DeleteMaterialTypesOperation from 'as/dto/material/delete/DeleteMaterialTypesOperation'
 import DeletePropertyTypesOperation from 'as/dto/property/delete/DeletePropertyTypesOperation'
+import DeleteRoleAssignmentsOperation from 'as/dto/roleassignment/delete/DeleteRoleAssignmentsOperation'
 import DeleteSampleTypesOperation from 'as/dto/sample/delete/DeleteSampleTypesOperation'
 import DeleteVocabulariesOperation from 'as/dto/vocabulary/delete/DeleteVocabulariesOperation'
 import DeleteVocabularyTermsOperation from 'as/dto/vocabulary/delete/DeleteVocabularyTermsOperation'
@@ -59,6 +61,7 @@ import PluginPermId from 'as/dto/plugin/id/PluginPermId'
 import PluginSearchCriteria from 'as/dto/plugin/search/PluginSearchCriteria'
 import PluginType from 'as/dto/plugin/PluginType'
 import ProjectFetchOptions from 'as/dto/project/fetchoptions/ProjectFetchOptions'
+import ProjectIdentifier from 'as/dto/project/id/ProjectIdentifier'
 import ProjectSearchCriteria from 'as/dto/project/search/ProjectSearchCriteria'
 import PropertyAssignment from 'as/dto/property/PropertyAssignment'
 import PropertyAssignmentCreation from 'as/dto/property/create/PropertyAssignmentCreation'
@@ -73,6 +76,9 @@ import PropertyTypePermId from 'as/dto/property/id/PropertyTypePermId'
 import PropertyTypeSearchCriteria from 'as/dto/property/search/PropertyTypeSearchCriteria'
 import PropertyTypeUpdate from 'as/dto/property/update/PropertyTypeUpdate'
 import Role from 'as/dto/roleassignment/Role'
+import RoleAssignmentCreation from 'as/dto/roleassignment/create/RoleAssignmentCreation'
+import RoleAssignmentDeletionOptions from 'as/dto/roleassignment/delete/RoleAssignmentDeletionOptions'
+import RoleAssignmentTechId from 'as/dto/roleassignment/id/RoleAssignmentTechId'
 import RoleLevel from 'as/dto/roleassignment/RoleLevel'
 import SampleFetchOptions from 'as/dto/sample/fetchoptions/SampleFetchOptions'
 import SampleSearchCriteria from 'as/dto/sample/search/SampleSearchCriteria'
@@ -87,8 +93,8 @@ import SearchExperimentsOperation from 'as/dto/experiment/search/SearchExperimen
 import SearchMaterialsOperation from 'as/dto/material/search/SearchMaterialsOperation'
 import SearchResult from 'as/dto/common/search/SearchResult'
 import SearchSamplesOperation from 'as/dto/sample/search/SearchSamplesOperation'
-import SpacePermId from 'as/dto/space/id/SpacePermId'
 import SpaceFetchOptions from 'as/dto/space/fetchoptions/SpaceFetchOptions'
+import SpacePermId from 'as/dto/space/id/SpacePermId'
 import SpaceSearchCriteria from 'as/dto/space/search/SpaceSearchCriteria'
 import SynchronousOperationExecutionOptions from 'as/dto/operation/SynchronousOperationExecutionOptions'
 import UpdateAuthorizationGroupsOperation from 'as/dto/authorizationgroup/update/UpdateAuthorizationGroupsOperation'
@@ -127,6 +133,7 @@ const dto = {
   CreateMaterialTypesOperation,
   CreatePersonsOperation,
   CreatePropertyTypesOperation,
+  CreateRoleAssignmentsOperation,
   CreateSampleTypesOperation,
   CreateVocabulariesOperation,
   CreateVocabularyTermsOperation,
@@ -145,6 +152,7 @@ const dto = {
   DeleteExperimentTypesOperation,
   DeleteMaterialTypesOperation,
   DeletePropertyTypesOperation,
+  DeleteRoleAssignmentsOperation,
   DeleteSampleTypesOperation,
   DeleteVocabulariesOperation,
   DeleteVocabularyTermsOperation,
@@ -178,6 +186,7 @@ const dto = {
   PluginSearchCriteria,
   PluginType,
   ProjectFetchOptions,
+  ProjectIdentifier,
   ProjectSearchCriteria,
   PropertyAssignment,
   PropertyAssignmentCreation,
@@ -192,6 +201,9 @@ const dto = {
   PropertyTypeSearchCriteria,
   PropertyTypeUpdate,
   Role,
+  RoleAssignmentCreation,
+  RoleAssignmentDeletionOptions,
+  RoleAssignmentTechId,
   RoleLevel,
   SampleFetchOptions,
   SampleSearchCriteria,
@@ -206,8 +218,8 @@ const dto = {
   SearchMaterialsOperation,
   SearchResult,
   SearchSamplesOperation,
-  SpacePermId,
   SpaceFetchOptions,
+  SpacePermId,
   SpaceSearchCriteria,
   SynchronousOperationExecutionOptions,
   UpdateAuthorizationGroupsOperation,
@@ -220,12 +232,12 @@ const dto = {
   UpdateVocabulariesOperation,
   UpdateVocabularyTermsOperation,
   Vocabulary,
-  VocabularyTerm,
   VocabularyCreation,
   VocabularyDeletionOptions,
   VocabularyFetchOptions,
   VocabularyPermId,
   VocabularySearchCriteria,
+  VocabularyTerm,
   VocabularyTermCreation,
   VocabularyTermDeletionOptions,
   VocabularyTermFetchOptions,

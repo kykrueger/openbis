@@ -9,6 +9,7 @@ export default class UserFormControllerSave extends PageControllerSave {
 
     const user = FormUtil.trimFields({ ...state.user })
     const groups = state.groups
+    const roles = state.roles
 
     const operations = []
 
@@ -42,6 +43,26 @@ export default class UserFormControllerSave extends PageControllerSave {
       }
     })
 
+    state.original.roles.forEach(originalRole => {
+      const role = _.find(roles, ['id', originalRole.id])
+      if (!role) {
+        operations.push(this._deleteRoleAssignmentOperation(user, originalRole))
+      }
+    })
+
+    roles.forEach(role => {
+      if (role.original) {
+        if (this._isRoleAssignmentUpdateNeeded(role)) {
+          operations.push(
+            this._deleteRoleAssignmentOperation(user, role.original)
+          )
+          operations.push(this._createRoleAssignmentOperation(user, role))
+        }
+      } else {
+        operations.push(this._createRoleAssignmentOperation(user, role))
+      }
+    })
+
     const options = new openbis.SynchronousOperationExecutionOptions()
     options.setExecuteInOrder(true)
     await this.facade.executeOperations(operations, options)
@@ -55,6 +76,15 @@ export default class UserFormControllerSave extends PageControllerSave {
 
   _isGroupAssignmentUpdateNeeded(group) {
     return FormUtil.haveFieldsChanged(group, group.original, ['code'])
+  }
+
+  _isRoleAssignmentUpdateNeeded(role) {
+    return FormUtil.haveFieldsChanged(role, role.original, [
+      'level',
+      'space',
+      'project',
+      'role'
+    ])
   }
 
   _createUserOperation(user) {
@@ -92,5 +122,31 @@ export default class UserFormControllerSave extends PageControllerSave {
     )
     update.getUserIds().remove(new openbis.PersonPermId(user.userId.value))
     return new openbis.UpdateAuthorizationGroupsOperation([update])
+  }
+
+  _createRoleAssignmentOperation(user, role) {
+    const creation = new openbis.RoleAssignmentCreation()
+    creation.setUserId(new openbis.PersonPermId(user.userId.value))
+    creation.setRole(role.role.value)
+
+    const level = role.level.value
+    if (level === openbis.RoleLevel.SPACE) {
+      creation.setSpaceId(new openbis.SpacePermId(role.space.value))
+    } else if (level === openbis.RoleLevel.PROJECT) {
+      creation.setProjectId(
+        new openbis.ProjectIdentifier(
+          '/' + role.space.value + '/' + role.project.value
+        )
+      )
+    }
+
+    return new openbis.CreateRoleAssignmentsOperation([creation])
+  }
+
+  _deleteRoleAssignmentOperation(user, role) {
+    const id = new openbis.RoleAssignmentTechId(role.techId.value)
+    const options = new openbis.RoleAssignmentDeletionOptions()
+    options.setReason('deleted via ng_ui')
+    return new openbis.DeleteRoleAssignmentsOperation([id], options)
   }
 }

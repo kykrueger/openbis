@@ -205,8 +205,8 @@ class UserFormParametersRole extends React.PureComponent {
       projects.forEach(project => {
         if (project.space.code === role.space.value) {
           options.push({
-            label: project.identifier.identifier,
-            value: project.identifier.identifier
+            label: project.code,
+            value: project.code
           })
         }
       })

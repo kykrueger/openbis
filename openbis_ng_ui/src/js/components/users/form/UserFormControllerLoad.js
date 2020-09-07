@@ -74,7 +74,8 @@ export default class UserFormControllerLoad extends PageControllerLoad {
       selection,
       original: {
         user: user.original,
-        groups: groups.map(group => group.original)
+        groups: groups.map(group => group.original),
+        roles: roles.map(role => role.original)
       }
     })
   }
@@ -125,11 +126,14 @@ export default class UserFormControllerLoad extends PageControllerLoad {
       space = _.get(loadedRole, 'space.code')
     } else if (level === openbis.RoleLevel.PROJECT) {
       space = _.get(loadedRole, 'project.space.code')
-      project = _.get(loadedRole, 'project.identifier.identifier')
+      project = _.get(loadedRole, 'project.code')
     }
 
     const role = {
       id: id,
+      techId: FormUtil.createField({
+        value: _.get(loadedRole, 'id.techId', null)
+      }),
       level: FormUtil.createField({
         value: level
       }),
