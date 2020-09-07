@@ -21,6 +21,7 @@ import java.util.Map;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractStringValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AnyStringValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringEqualToValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringFieldSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.AttributesMapper;
@@ -29,6 +30,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCrite
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinType;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes.VARCHAR;
@@ -103,6 +105,22 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
                     final String casting = dataTypeByPropertyName.get(propertyName);
                     if (casting != null)
                     {
+                        if (!(criterion.getFieldValue() instanceof StringEqualToValue))
+                        {
+                            if (casting.equals(DataTypeCode.INTEGER.toString())
+                                    || casting.equals(DataTypeCode.REAL.toString()))
+                            {
+                                throw new IllegalArgumentException("Can't be computed we suggest you use " +
+                                        "withNumberProperty to see operators available");
+                            }
+                            if (casting.equals(DataTypeCode.TIMESTAMP.toString())
+                                    || casting.equals(DataTypeCode.DATE.toString()))
+                            {
+                                throw new IllegalArgumentException("Can't be computed we suggest you use " +
+                                        "withDateProperty to see operators available");
+                            }
+                        }
+
                         sqlBuilder.append(aliases.get(tableMapper.getValuesTable()).getSubTableAlias())
                                 .append(PERIOD).append(VALUE_COLUMN);
 

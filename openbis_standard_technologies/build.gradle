@@ -85,7 +85,7 @@ dependencies {
 					 project(':screening'),
 					 project(':rtd_phosphonetx'),
 					 project(':plasmid'),
-					 'bioformats:bioformats:6.5.0',
+					 'bioformats:bioformats:6.5.1',
 					 'imagej:ij:1.43u',
 					 'cisd:cisd-openbis-knime-server:13.6.0.r29301',
 					 'apache:xml-apis:1.3.03',
@@ -301,15 +301,15 @@ task zipCorePlugins(type: SymZip) {
   includeEmptyDirs = false
   archiveName 'core-plugins.zip'
   
-  downloadCorePlugin('https://github.com/aarpon/obit_flow_core_technology/archive/release/19.x.zip', 'flow')
-  downloadCorePlugin('https://github.com/aarpon/obit_microscopy_core_technology/archive/release/19.x.zip', 'microscopy')
-  downloadCorePlugin('https://github.com/aarpon/obit_shared_core_technology/archive/release/19.x.zip', 'shared')
+  downloadCorePlugin('https://github.com/aarpon/obit_flow_core_technology/archive/release/20.x.zip', 'flow')
+  downloadCorePlugin('https://github.com/aarpon/obit_microscopy_core_technology/archive/release/20.x.zip', 'microscopy')
+  downloadCorePlugin('https://github.com/aarpon/obit_shared_core_technology/archive/release/20.x.zip', 'shared')
   from project(':rtd_phosphonetx').fileTree(dir: 'source/core-plugins', includes:['proteomics/**', 'proteomics-optional/**'], excludes:['**/dss/**', '**/package-to-dist'])
   from project(':screening').fileTree(dir: 'source/core-plugins', includes:['screening/**', 'screening-optional/**'], excludes:['**/dss/**', '**/package-to-dist'])
   from project(':deep_sequencing_unit').fileTree(dir: 'source/core-plugins', includes:['illumina-ngs/**'], excludes:['**/dss/**', '**/package-to-dist'])
-  from fileTree(dir: 'targets/downloads/obit_flow_core_technology-release-19.x/core-plugins', includes:['flow/**'])
-  from fileTree(dir: 'targets/downloads/obit_microscopy_core_technology-release-19.x/core-plugins', includes:['microscopy/**'])
-  from fileTree(dir: 'targets/downloads/obit_shared_core_technology-release-19.x/core-plugins', includes:['shared/**'])
+  from fileTree(dir: 'targets/downloads/obit_flow_core_technology-release-20.x/core-plugins', includes:['flow/**'])
+  from fileTree(dir: 'targets/downloads/obit_microscopy_core_technology-release-20.x/core-plugins', includes:['microscopy/**'])
+  from fileTree(dir: 'targets/downloads/obit_shared_core_technology-release-20.x/core-plugins', includes:['shared/**'])
   from 'dist/core-plugins'
   from 'dist/server/core-plugins.properties'
   into 'core-plugins'

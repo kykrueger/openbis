@@ -1655,7 +1655,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			}
 
 			var fCheck = function(facade, objects) {
-				c.assertEqual(objects.length, 10);
+				c.assertEqual(objects.length, 12);
 				var prepopulatedExperimentsCount = 0;
 				var prepopulatedSamplesCount = 0;
                 for (var oIdx = 0; oIdx < objects.length; oIdx++) {

@@ -1228,6 +1228,72 @@ public class SearchExperimentTest extends AbstractExperimentTest
         testSearch(TEST_USER, integerCriteria, "/CISD/DEFAULT/BOOLEAN_PROPERTY_TEST");
     }
 
+    @Test(expectedExceptions = {RuntimeException.class})
+    public void testSearchForExperimentWithIntegerPropertyThatStartsWith()
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        final PropertyTypePermId propertyType = createAnIntegerPropertyType(sessionToken, "NUMBER");
+        final EntityTypePermId experimentType = createAnExperimentType(sessionToken, false, propertyType);
+
+        final ExperimentCreation experimentCreation = new ExperimentCreation();
+        experimentCreation.setCode("INTEGER_PROPERTY_TEST");
+        experimentCreation.setTypeId(experimentType);
+        experimentCreation.setProjectId(new ProjectIdentifier("/CISD/DEFAULT"));
+        experimentCreation.setProperty("NUMBER", "123");
+
+        v3api.createExperiments(sessionToken, Collections.singletonList(experimentCreation));
+
+        final ExperimentSearchCriteria criteriaPrefixMatch = new ExperimentSearchCriteria();
+        criteriaPrefixMatch.withProperty("NUMBER").thatStartsWith("12");
+
+        searchExperiments(sessionToken, criteriaPrefixMatch, new ExperimentFetchOptions());
+    }
+
+    @Test(expectedExceptions = {RuntimeException.class})
+    public void testSearchForExperimentWithDatePropertyThatContains()
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        final PropertyTypePermId propertyType = createADatePropertyType(sessionToken, "DATE");
+        final EntityTypePermId experimentType = createAnExperimentType(sessionToken, false, propertyType);
+
+        final ExperimentCreation experimentCreation = new ExperimentCreation();
+        experimentCreation.setCode("DATE_PROPERTY_TEST");
+        experimentCreation.setTypeId(experimentType);
+        experimentCreation.setProjectId(new ProjectIdentifier("/CISD/DEFAULT"));
+        experimentCreation.setProperty("DATE", "2020-02-09");
+
+        v3api.createExperiments(sessionToken, Collections.singletonList(experimentCreation));
+
+        final ExperimentSearchCriteria criteriaPrefixMatch = new ExperimentSearchCriteria();
+        criteriaPrefixMatch.withProperty("DATE").thatContains("2020");
+
+        searchExperiments(sessionToken, criteriaPrefixMatch, new ExperimentFetchOptions());
+    }
+
+    @Test(expectedExceptions = {RuntimeException.class})
+    public void testSearchForExperimentWithTimestampPropertyThatContains()
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        final PropertyTypePermId propertyType = createATimestampPropertyType(sessionToken, "TIMESTAMP");
+        final EntityTypePermId experimentType = createAnExperimentType(sessionToken, false, propertyType);
+
+        final ExperimentCreation experimentCreation = new ExperimentCreation();
+        experimentCreation.setCode("TIMESTAMP_PROPERTY_TEST");
+        experimentCreation.setTypeId(experimentType);
+        experimentCreation.setProjectId(new ProjectIdentifier("/CISD/DEFAULT"));
+        experimentCreation.setProperty("TIMESTAMP", "2020-02-09 10:00:00 +0100");
+
+        v3api.createExperiments(sessionToken, Collections.singletonList(experimentCreation));
+
+        final ExperimentSearchCriteria criteriaPrefixMatch = new ExperimentSearchCriteria();
+        criteriaPrefixMatch.withProperty("TIMESTAMP").thatContains("2020");
+
+        searchExperiments(sessionToken, criteriaPrefixMatch, new ExperimentFetchOptions());
+    }
+
     protected PropertyTypePermId createABooleanPropertyType(final String sessionToken, final String code)
     {
         final PropertyTypeCreation creation = new PropertyTypeCreation();
@@ -1235,7 +1301,7 @@ public class SearchExperimentTest extends AbstractExperimentTest
         creation.setDataType(DataType.BOOLEAN);
         creation.setLabel("Boolean");
         creation.setDescription("Boolean property type.");
-        return v3api.createPropertyTypes(sessionToken, Arrays.asList(creation)).get(0);
+        return v3api.createPropertyTypes(sessionToken, Collections.singletonList(creation)).get(0);
     }
 
     protected PropertyTypePermId createAnIntegerPropertyType(final String sessionToken, final String code)
@@ -1245,7 +1311,27 @@ public class SearchExperimentTest extends AbstractExperimentTest
         creation.setDataType(DataType.INTEGER);
         creation.setLabel("Integer");
         creation.setDescription("Integer property type.");
-        return v3api.createPropertyTypes(sessionToken, Arrays.asList(creation)).get(0);
+        return v3api.createPropertyTypes(sessionToken, Collections.singletonList(creation)).get(0);
+    }
+
+    protected PropertyTypePermId createADatePropertyType(final String sessionToken, final String code)
+    {
+        final PropertyTypeCreation creation = new PropertyTypeCreation();
+        creation.setCode(code);
+        creation.setDataType(DataType.DATE);
+        creation.setLabel("Date");
+        creation.setDescription("Date property type.");
+        return v3api.createPropertyTypes(sessionToken, Collections.singletonList(creation)).get(0);
+    }
+
+    protected PropertyTypePermId createATimestampPropertyType(final String sessionToken, final String code)
+    {
+        final PropertyTypeCreation creation = new PropertyTypeCreation();
+        creation.setCode(code);
+        creation.setDataType(DataType.TIMESTAMP);
+        creation.setLabel("Timestamp");
+        creation.setDescription("Timestamp property type.");
+        return v3api.createPropertyTypes(sessionToken, Collections.singletonList(creation)).get(0);
     }
 
     private void testSearch(String user, ExperimentSearchCriteria criteria, String... expectedIdentifiers)
