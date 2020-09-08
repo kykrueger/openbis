@@ -109,9 +109,13 @@ class AutocompleterFormField extends React.PureComponent {
 
     if (event.target.value !== this.props.value) {
       this.handleEvent(event, event.target.value, this.props.onChange)
-    } else {
-      this.handleEvent(event, null, this.props.onBlur)
     }
+
+    event.persist()
+
+    setTimeout(() => {
+      this.handleEvent(event, null, this.props.onBlur)
+    }, 0)
   }
 
   handleEvent(event, value, handler) {
