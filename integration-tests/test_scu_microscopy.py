@@ -68,6 +68,7 @@ class TestCase(systemtest.testcase.TestCase):
         print("numberOfPhysicalDataSets equals " + str(expectations.numberOfPhysicalDataSets))
         try:
             openbisController.waitUntilDataSetRegistrationFinished(expectations.numberOfPhysicalDataSets, timeOutInMinutes = expectations.registrationTimeout)
+            self.waitUntilThumbnailGenerationTaskFinished(openbisController, expectations.numberOfThumbnailDataSets, timeOutInMinutes = expectations.registrationTimeout)
             logInfo = self.getLogInfo(openbisController, exampleName)
             print("Number of experiments created equals " + str(expectations.numberOfExperiments) + " " + str(logInfo.numberOfExperiments))
             print("Number of samples created equals " + str(expectations.numberOfSamples) + " " + str(logInfo.numberOfSamples))
@@ -88,7 +89,12 @@ class TestCase(systemtest.testcase.TestCase):
         self.assertEquals("Number of data sets created", expectations.numberOfDataSets, logInfo.numberOfDataSets)
         self.assertSmaller("Thumbnail generation time", expectations.thumbnailGenerationTime, logInfo.thumbnailTime)
         self.assertSmaller("Registration time", expectations.registrationTime, logInfo.jobTime)
-            
+
+    def waitUntilThumbnailGenerationTaskFinished(self, openbisController, numberOfExpectedThumbnailDataSets, timeOutInMinutes):
+        monitor = openbisController.createLogMonior(timeOutInMinutes)
+        monitor.addNotificationCondition(util.RegexCondition('microscopy_thumbnails_creation'))
+        monitor.waitUntilEvent(util.RegexCondition("%s thumbnail data sets have been created" % numberOfExpectedThumbnailDataSets))
+
     def getLogInfo(self, openbisController, exampleName):
         logFolder = "%s/servers/datastore_server/log-registrations/succeeded" % openbisController.installPath
         logFile = self.getLogFile(logFolder, exampleName)
@@ -139,7 +145,8 @@ class Expectations(object):
         properties = util.readProperties(openbisController.dataFile("%s.properties" % exampleName))
         self.numberOfSeries = int(properties['number-of-series'])
         numberOfAdditinalDataSets = int(properties['number-of-additional-data-sets'])
-        self.numberOfPhysicalDataSets = self.numberOfSeries + 1 + numberOfAdditinalDataSets
+        self.numberOfThumbnailDataSets = int(properties['number-of-thumbnail-data-sets'])
+        self.numberOfPhysicalDataSets = self.numberOfSeries - self.numberOfThumbnailDataSets + 1 + numberOfAdditinalDataSets
         self.numberOfDataSets = self.numberOfPhysicalDataSets + self.numberOfSeries
         self.numberOfExperiments = int(properties['number-of-experiments'])
         self.numberOfSamples = int(properties['number-of-samples'])
@@ -156,5 +163,5 @@ class LogInfo(object):
         self.jobTime = 0
         self.thumbnailTime = 0
 
-    
+
 TestCase(settings, __file__).runTest()

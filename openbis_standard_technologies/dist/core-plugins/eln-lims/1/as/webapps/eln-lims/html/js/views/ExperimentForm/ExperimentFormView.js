@@ -21,6 +21,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 	this.repaint = function(views) {
 		var $container = views.content;
 		var _this = this;
+	    var experimentTypeDefinitionsExtension = profile.experimentTypeDefinitionsExtension[_this._experimentFormModel.experiment.experimentTypeCode];
 		
 		var $form = $("<span>");
 		
@@ -296,6 +297,15 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		//
 		// INIT
 		//
+
+		// Toolbar extension
+		if(experimentTypeDefinitionsExtension && experimentTypeDefinitionsExtension.extraToolbar) {
+		    toolbarModel = toolbarModel.concat(experimentTypeDefinitionsExtension.extraToolbar(_this._experimentFormModel.mode, _this._experimentFormModel.experiment));
+		}
+		if(experimentTypeDefinitionsExtension && experimentTypeDefinitionsExtension.extraToolbarDropdown) {
+		    dropdownOptionsModel = dropdownOptionsModel.concat(experimentTypeDefinitionsExtension.extraToolbarDropdown(_this._experimentFormModel.mode, _this._experimentFormModel.experiment));
+		}
+
 		FormUtil.addOptionsToToolbar(toolbarModel, dropdownOptionsModel, hideShowOptionsModel, 
 				"EXPERIMENT-VIEW-" + this._experimentFormModel.experiment.experimentTypeCode);
 		$header.append(FormUtil.getToolbar(toolbarModel));

@@ -20,10 +20,12 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 	
 	this.repaint = function(views, loadFromTemplate) {
 		var $container = views.content;
+		var _this = this;
+        var sampleTypeDefinitionsExtension = profile.sampleTypeDefinitionsExtension[_this._sampleFormModel.sample.sampleTypeCode];
+
 		//
 		// Form setup
 		//
-		var _this = this;
 
 		var $form = $("<span>");
 		
@@ -452,10 +454,6 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		var $header = views.header;
 		
 		$header.append($formTitle);
-		var sampleTypeDefinitionsExtension = profile.sampleTypeDefinitionsExtension[_this._sampleFormModel.sample.sampleTypeCode];
-		if(sampleTypeDefinitionsExtension && sampleTypeDefinitionsExtension.extraToolbar) {
-		    toolbarModel = toolbarModel.concat(sampleTypeDefinitionsExtension.extraToolbar(_this._sampleFormModel.mode, _this._sampleFormModel.sample));
-		}
 
 		var hideShowOptionsModel = [];
 
@@ -659,6 +657,15 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		//
 		// INIT
 		//
+
+        // Toolbar extension
+		if(sampleTypeDefinitionsExtension && sampleTypeDefinitionsExtension.extraToolbar) {
+		    toolbarModel = toolbarModel.concat(sampleTypeDefinitionsExtension.extraToolbar(_this._sampleFormModel.mode, _this._sampleFormModel.sample));
+		}
+		if(sampleTypeDefinitionsExtension && sampleTypeDefinitionsExtension.extraToolbarDropdown) {
+		    dropdownOptionsModel = dropdownOptionsModel.concat(sampleTypeDefinitionsExtension.extraToolbarDropdown(_this._sampleFormModel.mode, _this._sampleFormModel.sample));
+		}
+
 		FormUtil.addOptionsToToolbar(toolbarModel, dropdownOptionsModel, hideShowOptionsModel,
 				"SAMPLE-VIEW-" + _this._sampleFormModel.sample.sampleTypeCode);
 		$header.append(FormUtil.getToolbar(toolbarModel));

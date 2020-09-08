@@ -17,7 +17,7 @@ dependencies {
             'openhms:jackcess:1.2.2',
             'reveregroup:gwt-image-loader:1.1.4',
             'imagej:ij:1.43u',
-            'bioformats:bioformats:6.5.0'
+            'bioformats:bioformats:6.5.1'
 
     devRuntime project(path: ':openbis', configuration: 'devRuntime')
     testCompile project(path: ':datastore_server', configuration: 'tests')
