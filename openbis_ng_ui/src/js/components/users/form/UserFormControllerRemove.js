@@ -1,3 +1,5 @@
+import UserFormControllerRecalculateInheritedRoles from '@src/js/components/users/form/UserFormControllerRecalculateInheritedRoles.js'
+
 export default class UserFormControllerRemove {
   constructor(controller) {
     this.controller = controller
@@ -21,11 +23,13 @@ export default class UserFormControllerRemove {
     const newGroups = Array.from(groups)
     newGroups.splice(groupIndex, 1)
 
-    this.context.setState(state => ({
-      ...state,
-      groups: newGroups,
-      selection: null
-    }))
+    this.context.setState(state => {
+      const newState = { ...state, groups: newGroups, selection: null }
+      new UserFormControllerRecalculateInheritedRoles(this.controller).execute(
+        newState
+      )
+      return newState
+    })
 
     this.controller.changed(true)
   }

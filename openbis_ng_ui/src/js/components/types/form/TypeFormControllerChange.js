@@ -1,43 +1,73 @@
 import _ from 'lodash'
 import openbis from '@src/js/services/openbis.js'
 import PageControllerChange from '@src/js/components/common/page/PageControllerChange.js'
-import TypeFormUtil from './TypeFormUtil.js'
+import TypeFormUtil from '@src/js/components/types/form/TypeFormUtil.js'
+import FormUtil from '@src/js/components/common/form/FormUtil.js'
 
 export default class TypeFormControllerChange extends PageControllerChange {
-  execute(type, params) {
+  async execute(type, params) {
     if (type === 'type') {
-      const { field, value } = params
-      this.changeObjectField('type', field, value)
+      await this._handleChangeType(params)
     } else if (type === 'section') {
-      const { id, field, value } = params
-      this.changeCollectionItemField('sections', id, field, value)
+      await this._handleChangeSection(params)
     } else if (type === 'property') {
-      const { id, field, value } = params
-      this.changeCollectionItemField(
-        'properties',
-        id,
-        field,
-        value,
-        (oldProperty, newProperty) => {
-          newProperty = this._handleChangePropertyScope(
-            oldProperty,
-            newProperty
-          )
-          newProperty = this._handleChangePropertyDataType(
-            oldProperty,
-            newProperty
-          )
-          newProperty = this._handleChangePropertyMandatory(
-            oldProperty,
-            newProperty
-          )
-          return newProperty
-        }
-      )
+      await this._handleChangeProperty(params)
     } else if (type === 'preview') {
-      const { field, value } = params
-      this.changeObjectField('preview', field, value)
+      await this._handleChangePreview(params)
     }
+  }
+
+  async _handleChangeType(params) {
+    await this.context.setState(state => {
+      const { newObject } = FormUtil.changeObjectField(
+        state.type,
+        params.field,
+        params.value
+      )
+      return {
+        type: newObject
+      }
+    })
+    await this.controller.changed(true)
+  }
+
+  async _handleChangeSection(params) {
+    await this.context.setState(state => {
+      const { newCollection } = FormUtil.changeCollectionItemField(
+        state.sections,
+        params.id,
+        params.field,
+        params.value
+      )
+      return {
+        sections: newCollection
+      }
+    })
+    await this.controller.changed(true)
+  }
+
+  async _handleChangeProperty(params) {
+    await this.context.setState(state => {
+      const {
+        newCollection,
+        oldObject,
+        newObject
+      } = FormUtil.changeCollectionItemField(
+        state.properties,
+        params.id,
+        params.field,
+        params.value
+      )
+
+      this._handleChangePropertyScope(oldObject, newObject)
+      this._handleChangePropertyDataType(oldObject, newObject)
+      this._handleChangePropertyMandatory(oldObject, newObject)
+
+      return {
+        properties: newCollection
+      }
+    })
+    await this.controller.changed(true)
   }
 
   _handleChangePropertyScope(oldProperty, newProperty) {
@@ -53,8 +83,7 @@ export default class TypeFormControllerChange extends PageControllerChange {
       let globalPropertyType = null
 
       if (oldScope !== newScope) {
-        newProperty = {
-          ...newProperty,
+        _.assign(newProperty, {
           code: {
             ...newProperty.code,
             value: null
@@ -95,7 +124,7 @@ export default class TypeFormControllerChange extends PageControllerChange {
             ...newProperty.transformation,
             value: null
           }
-        }
+        })
       }
 
       if (oldCode !== newCode && newScope === 'global') {
@@ -109,8 +138,7 @@ export default class TypeFormControllerChange extends PageControllerChange {
         )
 
         if (oldExisting && !newExisting) {
-          newProperty = {
-            ...newProperty,
+          _.assign(newProperty, {
             label: {
               ...newProperty.label,
               value: null
@@ -147,7 +175,7 @@ export default class TypeFormControllerChange extends PageControllerChange {
               ...newProperty.transformation,
               value: null
             }
-          }
+          })
         } else if (newExisting) {
           newExisting = {
             label: {
@@ -176,8 +204,7 @@ export default class TypeFormControllerChange extends PageControllerChange {
             }
           }
 
-          newProperty = {
-            ...newProperty,
+          _.assign(newProperty, {
             label: {
               ...newProperty.label,
               value: newExisting.label.value
@@ -210,7 +237,7 @@ export default class TypeFormControllerChange extends PageControllerChange {
               ...newProperty.transformation,
               value: newExisting.transformation.value
             }
-          }
+          })
 
           globalPropertyType = newExisting
         }
@@ -239,8 +266,7 @@ export default class TypeFormControllerChange extends PageControllerChange {
         ? propertyUsagesGlobal === 0 && propertyAssignments <= 1
         : propertyUsagesGlobal === 0 && propertyAssignments === 0
 
-      newProperty = {
-        ...newProperty,
+      _.assign(newProperty, {
         scope: {
           ...newProperty.scope,
           globalPropertyType: globalPropertyType
@@ -268,10 +294,8 @@ export default class TypeFormControllerChange extends PageControllerChange {
         assignments: propertyAssignments,
         usagesLocal: propertyUsagesLocal,
         usagesGlobal: propertyUsagesGlobal
-      }
+      })
     }
-
-    return newProperty
   }
 
   _handleChangePropertyDataType(oldProperty, newProperty) {
@@ -279,8 +303,7 @@ export default class TypeFormControllerChange extends PageControllerChange {
     const newDataType = newProperty.dataType.value
 
     if (oldDataType !== newDataType) {
-      newProperty = {
-        ...newProperty,
+      _.assign(newProperty, {
         vocabulary: {
           ...newProperty.vocabulary,
           visible: newDataType === openbis.DataType.CONTROLLEDVOCABULARY
@@ -301,9 +324,8 @@ export default class TypeFormControllerChange extends PageControllerChange {
           ...newProperty.transformation,
           visible: newDataType === openbis.DataType.XML
         }
-      }
+      })
     }
-    return newProperty
   }
 
   _handleChangePropertyMandatory(oldProperty, newProperty) {
@@ -319,8 +341,7 @@ export default class TypeFormControllerChange extends PageControllerChange {
         ? newProperty.original.mandatory.value
         : false
 
-      newProperty = {
-        ...newProperty,
+      _.assign(newProperty, {
         initialValueForExistingEntities: {
           ...newProperty.initialValueForExistingEntities,
           visible:
@@ -328,8 +349,21 @@ export default class TypeFormControllerChange extends PageControllerChange {
             propertyIsMandatory &&
             (propertyIsNew || !propertyWasMandatory)
         }
-      }
+      })
     }
-    return newProperty
+  }
+
+  async _handleChangePreview(params) {
+    await this.context.setState(state => {
+      const { newObject } = FormUtil.changeObjectField(
+        state.preview,
+        params.field,
+        params.value
+      )
+      return {
+        preview: newObject
+      }
+    })
+    await this.controller.changed(true)
   }
 }

@@ -1,66 +1,112 @@
+import _ from 'lodash'
 import PageControllerChange from '@src/js/components/common/page/PageControllerChange.js'
+import UserFormControllerRecalculateInheritedRoles from '@src/js/components/users/form/UserFormControllerRecalculateInheritedRoles.js'
+import FormUtil from '@src/js/components/common/form/FormUtil.js'
 import openbis from '@src/js/services/openbis.js'
 
 export default class UserFormControllerChange extends PageControllerChange {
   async execute(type, params) {
     if (type === 'user') {
-      const { field, value } = params
-      this.changeObjectField('user', field, value)
+      await this._handleChangeUser(params)
     } else if (type === 'group') {
-      const { id, field, value } = params
-      await this.changeCollectionItemField(
-        'groups',
-        id,
-        field,
-        value,
-        (oldGroup, newGroup) => {
-          newGroup = this._handleChangeGroupCode(oldGroup, newGroup)
-          return newGroup
-        }
-      )
-
-      if (this.controller.groupsGridController) {
-        await this.controller.groupsGridController.showSelectedRow()
-      }
+      await this._handleChangeGroup(params)
     } else if (type === 'role') {
-      const { id, field, value } = params
-      await this.changeCollectionItemField(
-        'roles',
-        id,
-        field,
-        value,
-        (oldRole, newRole) => {
-          newRole = this._handleChangeRoleLevel(oldRole, newRole)
-          newRole = this._handleChangeRoleSpace(oldRole, newRole)
-          return newRole
-        }
-      )
-
-      if (this.controller.rolesGridController) {
-        await this.controller.rolesGridController.showSelectedRow()
-      }
+      await this._handleChangeRole(params)
     }
   }
 
-  _handleChangeGroupCode(oldGroup, newGroup) {
+  async _handleChangeUser(params) {
+    await this.context.setState(state => {
+      const { newObject } = FormUtil.changeObjectField(
+        state.user,
+        params.field,
+        params.value
+      )
+      return {
+        user: newObject
+      }
+    })
+    await this.controller.changed(true)
+  }
+
+  async _handleChangeGroup(params) {
+    await this.context.setState(state => {
+      const newState = { ...state }
+
+      const {
+        newCollection,
+        oldObject,
+        newObject
+      } = FormUtil.changeCollectionItemField(
+        state.groups,
+        params.id,
+        params.field,
+        params.value
+      )
+      newState.groups = newCollection
+
+      this._handleChangeGroupCode(oldObject, newObject, newState)
+
+      return newState
+    })
+
+    if (this.controller.groupsGridController) {
+      await this.controller.groupsGridController.showSelectedRow()
+    }
+
+    await this.controller.changed(true)
+  }
+
+  _handleChangeGroupCode(oldGroup, newGroup, newState) {
     const oldCode = oldGroup.code.value
     const newCode = newGroup.code.value
 
     if (oldCode !== newCode) {
-      const { groups } = this.controller.getDictionaries()
+      const { groups: groupDefinitions } = this.controller.getDictionaries()
 
-      const group = groups.find(group => group.code === newCode)
+      const groupDefinition = groupDefinitions.find(
+        groupDefinition => groupDefinition.code === newCode
+      )
 
-      newGroup = {
-        ...newGroup,
+      _.assign(newGroup, {
         description: {
           ...newGroup.description,
-          value: group !== null ? group.description : null
+          value: groupDefinition.description
         }
+      })
+
+      new UserFormControllerRecalculateInheritedRoles(this.controller).execute(
+        newState
+      )
+    }
+  }
+
+  async _handleChangeRole(params) {
+    await this.context.setState(state => {
+      const {
+        newCollection,
+        oldObject,
+        newObject
+      } = FormUtil.changeCollectionItemField(
+        state.roles,
+        params.id,
+        params.field,
+        params.value
+      )
+
+      this._handleChangeRoleLevel(oldObject, newObject)
+      this._handleChangeRoleSpace(oldObject, newObject)
+
+      return {
+        roles: newCollection
       }
+    })
+
+    if (this.controller.rolesGridController) {
+      await this.controller.rolesGridController.showSelectedRow()
     }
 
-    return newGroup
+    await this.controller.changed(true)
   }
 
   _handleChangeRoleLevel(oldRole, newRole) {
@@ -68,8 +114,7 @@ export default class UserFormControllerChange extends PageControllerChange {
     const newLevel = newRole.level.value
 
     if (oldLevel !== newLevel) {
-      newRole = {
-        ...newRole,
+      _.assign(newRole, {
         space: {
           ...newRole.space,
           visible:
@@ -87,10 +132,8 @@ export default class UserFormControllerChange extends PageControllerChange {
           visible: newLevel !== null,
           value: null
         }
-      }
+      })
     }
-
-    return newRole
   }
 
   _handleChangeRoleSpace(oldRole, newRole) {
@@ -98,8 +141,7 @@ export default class UserFormControllerChange extends PageControllerChange {
     const newSpace = newRole.space.value
 
     if (oldSpace !== newSpace) {
-      newRole = {
-        ...newRole,
+      _.assign(newRole, {
         project: {
           ...newRole.project,
           value: null
@@ -108,9 +150,7 @@ export default class UserFormControllerChange extends PageControllerChange {
           ...newRole.role,
           value: null
         }
-      }
+      })
     }
-
-    return newRole
   }
 }

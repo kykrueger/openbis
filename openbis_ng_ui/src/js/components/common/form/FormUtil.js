@@ -10,39 +10,38 @@ class FormUtil {
     }
   }
 
-  changeObjectField(state, stateKey, field, value, processFn) {
-    const oldObject = state[stateKey]
+  changeObjectField(object, field, value) {
     const newObject = {
-      ...oldObject,
+      ...object,
       [field]: {
-        ...oldObject[field],
+        ...object[field],
         value
       }
     }
     return {
-      [stateKey]: processFn ? processFn(oldObject, newObject) : newObject
+      oldObject: object,
+      newObject
     }
   }
 
-  changeCollectionItemField(state, stateKey, itemId, field, value, processFn) {
-    const oldCollection = state[stateKey]
-    const newCollection = Array.from(oldCollection)
+  changeCollectionItemField(collection, itemId, field, value) {
+    const index = collection.findIndex(item => item.id === itemId)
 
-    const index = oldCollection.findIndex(item => item.id === itemId)
+    const { oldObject, newObject } = this.changeObjectField(
+      collection[index],
+      field,
+      value
+    )
 
-    const oldItem = oldCollection[index]
-    const newItem = {
-      ...oldItem,
-      [field]: {
-        ...oldItem[field],
-        value
-      }
-    }
-
-    newCollection[index] = processFn ? processFn(oldItem, newItem) : newItem
+    const newCollection = Array.from(collection)
+    newCollection[index] = newObject
 
     return {
-      [stateKey]: newCollection
+      oldCollection: collection,
+      newCollection,
+      oldObject,
+      newObject,
+      index
     }
   }
 
