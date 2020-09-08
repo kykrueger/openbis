@@ -1228,7 +1228,7 @@ public class SearchExperimentTest extends AbstractExperimentTest
         testSearch(TEST_USER, integerCriteria, "/CISD/DEFAULT/BOOLEAN_PROPERTY_TEST");
     }
 
-    @Test(expectedExceptions = {RuntimeException.class})
+    @Test
     public void testSearchForExperimentWithIntegerPropertyThatStartsWith()
     {
         final String sessionToken = v3api.login(TEST_USER, PASSWORD);
@@ -1247,10 +1247,12 @@ public class SearchExperimentTest extends AbstractExperimentTest
         final ExperimentSearchCriteria criteriaPrefixMatch = new ExperimentSearchCriteria();
         criteriaPrefixMatch.withProperty("NUMBER").thatStartsWith("12");
 
-        searchExperiments(sessionToken, criteriaPrefixMatch, new ExperimentFetchOptions());
+        assertUserFailureException(
+                Void -> searchExperiments(sessionToken, criteriaPrefixMatch, new ExperimentFetchOptions()),
+                "Can't be computed we suggest you use withNumberProperty to see operators available");
     }
 
-    @Test(expectedExceptions = {RuntimeException.class})
+    @Test
     public void testSearchForExperimentWithDatePropertyThatContains()
     {
         final String sessionToken = v3api.login(TEST_USER, PASSWORD);
@@ -1269,10 +1271,12 @@ public class SearchExperimentTest extends AbstractExperimentTest
         final ExperimentSearchCriteria criteriaPrefixMatch = new ExperimentSearchCriteria();
         criteriaPrefixMatch.withProperty("DATE").thatContains("2020");
 
-        searchExperiments(sessionToken, criteriaPrefixMatch, new ExperimentFetchOptions());
+        assertUserFailureException(
+                Void -> searchExperiments(sessionToken, criteriaPrefixMatch, new ExperimentFetchOptions()),
+                "Can't be computed we suggest you use withDateProperty to see operators available");
     }
 
-    @Test(expectedExceptions = {RuntimeException.class})
+    @Test
     public void testSearchForExperimentWithTimestampPropertyThatContains()
     {
         final String sessionToken = v3api.login(TEST_USER, PASSWORD);
@@ -1291,7 +1295,9 @@ public class SearchExperimentTest extends AbstractExperimentTest
         final ExperimentSearchCriteria criteriaPrefixMatch = new ExperimentSearchCriteria();
         criteriaPrefixMatch.withProperty("TIMESTAMP").thatContains("2020");
 
-        searchExperiments(sessionToken, criteriaPrefixMatch, new ExperimentFetchOptions());
+        assertUserFailureException(
+                Void -> searchExperiments(sessionToken, criteriaPrefixMatch, new ExperimentFetchOptions()),
+                "Can't be computed we suggest you use withDateProperty to see operators available");
     }
 
     protected PropertyTypePermId createABooleanPropertyType(final String sessionToken, final String code)
