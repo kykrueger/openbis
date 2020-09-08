@@ -44,6 +44,9 @@ export default class UserFormControllerSave extends PageControllerSave {
     })
 
     state.original.roles.forEach(originalRole => {
+      if (originalRole.inheritedFrom.value) {
+        return
+      }
       const role = _.find(roles, ['id', originalRole.id])
       if (!role) {
         operations.push(this._deleteRoleAssignmentOperation(user, originalRole))
@@ -51,6 +54,9 @@ export default class UserFormControllerSave extends PageControllerSave {
     })
 
     roles.forEach(role => {
+      if (role.inheritedFrom.value) {
+        return
+      }
       if (role.original) {
         if (this._isRoleAssignmentUpdateNeeded(role)) {
           operations.push(

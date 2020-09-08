@@ -119,6 +119,7 @@ export default class UserFormControllerLoad extends PageControllerLoad {
   }
 
   _createRole(loadedRole) {
+    const inheritedFrom = _.get(loadedRole, 'authorizationGroup.code', null)
     const level = _.get(loadedRole, 'roleLevel', null)
 
     let space = null
@@ -137,21 +138,25 @@ export default class UserFormControllerLoad extends PageControllerLoad {
         value: _.get(loadedRole, 'id.techId', null)
       }),
       inheritedFrom: FormUtil.createField({
-        value: _.get(loadedRole, 'authorizationGroup.code', null)
+        value: inheritedFrom
       }),
       level: FormUtil.createField({
-        value: level
+        value: level,
+        enabled: inheritedFrom === null
       }),
       space: FormUtil.createField({
         value: space,
-        visible: space !== null
+        visible: space !== null,
+        enabled: inheritedFrom === null
       }),
       project: FormUtil.createField({
         value: project,
-        visible: project !== null
+        visible: project !== null,
+        enabled: inheritedFrom === null
       }),
       role: FormUtil.createField({
-        value: _.get(loadedRole, 'role', null)
+        value: _.get(loadedRole, 'role', null),
+        enabled: inheritedFrom === null
       })
     }
     role.original = _.cloneDeep(role)
