@@ -1228,7 +1228,7 @@ public class SearchExperimentTest extends AbstractExperimentTest
         testSearch(TEST_USER, integerCriteria, "/CISD/DEFAULT/BOOLEAN_PROPERTY_TEST");
     }
 
-    @Test(expectedExceptions = {RuntimeException.class})
+    @Test
     public void testSearchForExperimentWithIntegerPropertyThatStartsWith()
     {
         final String sessionToken = v3api.login(TEST_USER, PASSWORD);
@@ -1244,13 +1244,26 @@ public class SearchExperimentTest extends AbstractExperimentTest
 
         v3api.createExperiments(sessionToken, Collections.singletonList(experimentCreation));
 
-        final ExperimentSearchCriteria criteriaPrefixMatch = new ExperimentSearchCriteria();
-        criteriaPrefixMatch.withProperty("NUMBER").thatStartsWith("12");
+        final ExperimentSearchCriteria criteriaStartsWithMatch = new ExperimentSearchCriteria();
+        criteriaStartsWithMatch.withProperty("NUMBER").thatStartsWith("12");
+        assertUserFailureException(
+                Void -> searchExperiments(sessionToken, criteriaStartsWithMatch, new ExperimentFetchOptions()),
+                "Can't be computed we suggest you use withNumberProperty to see operators available");
 
-        searchExperiments(sessionToken, criteriaPrefixMatch, new ExperimentFetchOptions());
+        final ExperimentSearchCriteria criteriaEndsWithMatch = new ExperimentSearchCriteria();
+        criteriaEndsWithMatch.withProperty("NUMBER").thatEndsWith("23");
+        assertUserFailureException(
+                Void -> searchExperiments(sessionToken, criteriaEndsWithMatch, new ExperimentFetchOptions()),
+                "Can't be computed we suggest you use withNumberProperty to see operators available");
+
+        final ExperimentSearchCriteria criteriaContainsMatch = new ExperimentSearchCriteria();
+        criteriaContainsMatch.withProperty("NUMBER").thatContains("23");
+        assertUserFailureException(
+                Void -> searchExperiments(sessionToken, criteriaContainsMatch, new ExperimentFetchOptions()),
+                "Can't be computed we suggest you use withNumberProperty to see operators available");
     }
 
-    @Test(expectedExceptions = {RuntimeException.class})
+    @Test
     public void testSearchForExperimentWithDatePropertyThatContains()
     {
         final String sessionToken = v3api.login(TEST_USER, PASSWORD);
@@ -1266,13 +1279,26 @@ public class SearchExperimentTest extends AbstractExperimentTest
 
         v3api.createExperiments(sessionToken, Collections.singletonList(experimentCreation));
 
-        final ExperimentSearchCriteria criteriaPrefixMatch = new ExperimentSearchCriteria();
-        criteriaPrefixMatch.withProperty("DATE").thatContains("2020");
+        final ExperimentSearchCriteria criteriaContainsMatch = new ExperimentSearchCriteria();
+        criteriaContainsMatch.withProperty("DATE").thatContains("02");
+        assertUserFailureException(
+                Void -> searchExperiments(sessionToken, criteriaContainsMatch, new ExperimentFetchOptions()),
+                "Can't be computed we suggest you use withDateProperty to see operators available");
 
-        searchExperiments(sessionToken, criteriaPrefixMatch, new ExperimentFetchOptions());
+        final ExperimentSearchCriteria criteriaStartsWithMatch = new ExperimentSearchCriteria();
+        criteriaStartsWithMatch.withProperty("DATE").thatStartsWith("2020");
+        assertUserFailureException(
+                Void -> searchExperiments(sessionToken, criteriaStartsWithMatch, new ExperimentFetchOptions()),
+                "Can't be computed we suggest you use withDateProperty to see operators available");
+
+        final ExperimentSearchCriteria criteriaEndsWithMatch = new ExperimentSearchCriteria();
+        criteriaEndsWithMatch.withProperty("DATE").thatEndsWith("09");
+        assertUserFailureException(
+                Void -> searchExperiments(sessionToken, criteriaEndsWithMatch, new ExperimentFetchOptions()),
+                "Can't be computed we suggest you use withDateProperty to see operators available");
     }
 
-    @Test(expectedExceptions = {RuntimeException.class})
+    @Test
     public void testSearchForExperimentWithTimestampPropertyThatContains()
     {
         final String sessionToken = v3api.login(TEST_USER, PASSWORD);
@@ -1288,10 +1314,23 @@ public class SearchExperimentTest extends AbstractExperimentTest
 
         v3api.createExperiments(sessionToken, Collections.singletonList(experimentCreation));
 
-        final ExperimentSearchCriteria criteriaPrefixMatch = new ExperimentSearchCriteria();
-        criteriaPrefixMatch.withProperty("TIMESTAMP").thatContains("2020");
+        final ExperimentSearchCriteria criteriaContainsMatch = new ExperimentSearchCriteria();
+        criteriaContainsMatch.withProperty("TIMESTAMP").thatContains("20");
+        assertUserFailureException(
+                Void -> searchExperiments(sessionToken, criteriaContainsMatch, new ExperimentFetchOptions()),
+                "Can't be computed we suggest you use withDateProperty to see operators available");
 
-        searchExperiments(sessionToken, criteriaPrefixMatch, new ExperimentFetchOptions());
+        final ExperimentSearchCriteria criteriaStartsWithMatch = new ExperimentSearchCriteria();
+        criteriaStartsWithMatch.withProperty("TIMESTAMP").thatStartsWith("2020");
+        assertUserFailureException(
+                Void -> searchExperiments(sessionToken, criteriaStartsWithMatch, new ExperimentFetchOptions()),
+                "Can't be computed we suggest you use withDateProperty to see operators available");
+
+        final ExperimentSearchCriteria criteriaEndsWithMatch = new ExperimentSearchCriteria();
+        criteriaEndsWithMatch.withProperty("TIMESTAMP").thatEndsWith("0100");
+        assertUserFailureException(
+                Void -> searchExperiments(sessionToken, criteriaEndsWithMatch, new ExperimentFetchOptions()),
+                "Can't be computed we suggest you use withDateProperty to see operators available");
     }
 
     protected PropertyTypePermId createABooleanPropertyType(final String sessionToken, final String code)

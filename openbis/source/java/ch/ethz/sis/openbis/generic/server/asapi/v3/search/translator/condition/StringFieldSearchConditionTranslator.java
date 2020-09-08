@@ -30,6 +30,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCrite
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinType;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils;
+import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
 
@@ -110,14 +111,20 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
                             if (casting.equals(DataTypeCode.INTEGER.toString())
                                     || casting.equals(DataTypeCode.REAL.toString()))
                             {
-                                throw new IllegalArgumentException("Can't be computed we suggest you use " +
+                                throw new UserFailureException("Can't be computed we suggest you use " +
                                         "withNumberProperty to see operators available");
                             }
                             if (casting.equals(DataTypeCode.TIMESTAMP.toString())
                                     || casting.equals(DataTypeCode.DATE.toString()))
                             {
-                                throw new IllegalArgumentException("Can't be computed we suggest you use " +
+                                throw new UserFailureException("Can't be computed we suggest you use " +
                                         "withDateProperty to see operators available");
+                            }
+                            if (casting.equals(DataTypeCode.BOOLEAN.toString())
+                                    || casting.equals(DataTypeCode.MATERIAL.toString())
+                                    || casting.equals(DataTypeCode.SAMPLE.toString()))
+                            {
+                                throw new UserFailureException("Can't be computed for " + casting + " type.");
                             }
                         }
 
