@@ -72,9 +72,7 @@ export default class UserFormControllerLoad extends PageControllerLoad {
     return this.context.setState({
       user,
       groups,
-      groupsCounter,
       roles,
-      rolesCounter,
       selection,
       original: {
         user: user.original,
