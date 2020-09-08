@@ -16,30 +16,31 @@
 
 package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.testng.Assert.assertEquals;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetCreation;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
 import org.testng.annotations.Test;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DatePropertySearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.ArchivingStatus;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.Complete;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetKind;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagPermId;
-import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.openbis.systemtest.authorization.ProjectAuthorizationUser;
 
 /**
@@ -1046,6 +1047,240 @@ public class SearchDataSetTest extends AbstractDataSetTest
         assertEquals(dataSets.get(2).getKind(), DataSetKind.CONTAINER);
 
         v3api.logout(sessionToken);
+    }
+
+    // TODO
+
+    @Test
+    public void testSearchWithDateDatePropertyThatEquals()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createAPropertyType(sessionToken, DataType.DATE);
+        EntityTypePermId dataSetType = createADataSetType(sessionToken, true, propertyType);
+        DataSetCreation creation = physicalDataSetCreation();
+        creation.setCode("DATA_SET_WITH_DATE_PROPERTY");
+        creation.setTypeId(dataSetType);
+        creation.setExperimentId(new ExperimentIdentifier("/CISD/NEMO/EXP1"));
+        creation.setProperty(propertyType.getPermId(), "2/17/20");
+        v3api.createDataSets(sessionToken, Arrays.asList(creation));
+
+        DataSetSearchCriteria criteria = new DataSetSearchCriteria();
+        criteria.withDateProperty(propertyType.getPermId()).thatEquals("20-2-17");
+
+        // When
+        List<DataSet> dataSets = v3api.searchDataSets(sessionToken, criteria, new DataSetFetchOptions()).getObjects();
+
+        // Then
+        assertDataSetCodesInOrder(dataSets, "DATA_SET_WITH_DATE_PROPERTY");
+    }
+
+    @Test
+    public void testSearchWithDateDatePropertyWithInvalidCriteria()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createAPropertyType(sessionToken, DataType.DATE);
+        EntityTypePermId dataSetType = createADataSetType(sessionToken, true, propertyType);
+        DataSetCreation creation = physicalDataSetCreation();
+        creation.setCode("DATA_SET_WITH_DATE_PROPERTY");
+        creation.setTypeId(dataSetType);
+        creation.setExperimentId(new ExperimentIdentifier("/CISD/NEMO/EXP1"));
+        creation.setProperty(propertyType.getPermId(), "2/17/20");
+        v3api.createDataSets(sessionToken, Arrays.asList(creation));
+
+        DataSetSearchCriteria criteria = new DataSetSearchCriteria();
+        try
+        {
+            // When
+            criteria.withDateProperty(propertyType.getPermId()).thatIsLaterThanOrEqualTo("20-2-37");
+            fail("IllegalArgumentException expected");
+        } catch (IllegalArgumentException e)
+        {
+            // Then
+            assertEquals(e.getMessage(), "Date value: later than or equal to '20-2-37' "
+                    + "does not match any of the supported formats: [y-M-d HH:mm:ss, y-M-d HH:mm, y-M-d]");
+        }
+    }
+
+    @Test
+    public void testSearchWithDateDatePropertyThatIsLater()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createAPropertyType(sessionToken, DataType.DATE);
+        EntityTypePermId dataSetType = createADataSetType(sessionToken, true, propertyType);
+        DataSetCreation creation = physicalDataSetCreation();
+        creation.setCode("DATA_SET_WITH_DATE_PROPERTY");
+        creation.setTypeId(dataSetType);
+        creation.setExperimentId(new ExperimentIdentifier("/CISD/NEMO/EXP1"));
+        creation.setProperty(propertyType.getPermId(), "2/17/20");
+        v3api.createDataSets(sessionToken, Arrays.asList(creation));
+
+        DataSetSearchCriteria criteria = new DataSetSearchCriteria();
+        criteria.withDateProperty(propertyType.getPermId()).thatIsLaterThanOrEqualTo("2020-02-16");
+
+        // When
+        List<DataSet> dataSets = v3api.searchDataSets(sessionToken, criteria, new DataSetFetchOptions()).getObjects();
+
+        // Then
+        assertEquals(dataSets.get(0).getCode(), "DATA_SET_WITH_DATE_PROPERTY");
+        assertEquals(dataSets.size(), 1);
+    }
+
+    @Test
+    public void testSearchWithDateDatePropertyThatIsLaterOrEqual()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createAPropertyType(sessionToken, DataType.DATE);
+        EntityTypePermId dataSetType = createADataSetType(sessionToken, true, propertyType);
+        DataSetCreation creation1 = physicalDataSetCreation();
+        creation1.setCode("DATA_SET_WITH_DATE_PROPERTY1");
+        creation1.setTypeId(dataSetType);
+        creation1.setExperimentId(new ExperimentIdentifier("/CISD/NEMO/EXP1"));
+        creation1.setProperty(propertyType.getPermId(), "2/17/20");
+        DataSetCreation creation2 = physicalDataSetCreation();
+        creation2.setCode("DATA_SET_WITH_DATE_PROPERTY2");
+        creation2.setTypeId(dataSetType);
+        creation2.setExperimentId(new ExperimentIdentifier("/CISD/NEMO/EXP1"));
+        creation2.setProperty(propertyType.getPermId(), "2020-02-16");
+        v3api.createDataSets(sessionToken, Arrays.asList(creation1, creation2));
+
+        DataSetSearchCriteria criteria = new DataSetSearchCriteria();
+        criteria.withDateProperty(propertyType.getPermId()).thatIsLaterThanOrEqualTo("2020-02-16");
+
+        // When
+        List<DataSet> dataSets = v3api.searchDataSets(sessionToken, criteria, new DataSetFetchOptions()).getObjects();
+
+        // Then
+        assertDataSetCodesInOrder(dataSets, "DATA_SET_WITH_DATE_PROPERTY1", "DATA_SET_WITH_DATE_PROPERTY2");
+    }
+
+    @Test
+    public void testSearchWithDateDatePropertyThatIsEarlier()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createAPropertyType(sessionToken, DataType.DATE);
+        EntityTypePermId dataSetType = createADataSetType(sessionToken, true, propertyType);
+        DataSetCreation creation = physicalDataSetCreation();
+        creation.setCode("DATA_SET_WITH_DATE_PROPERTY");
+        creation.setTypeId(dataSetType);
+        creation.setExperimentId(new ExperimentIdentifier("/CISD/NEMO/EXP1"));
+        creation.setProperty(propertyType.getPermId(), "1990-11-09");
+        v3api.createDataSets(sessionToken, Arrays.asList(creation));
+
+        DataSetSearchCriteria criteria = new DataSetSearchCriteria();
+        criteria.withDateProperty(propertyType.getPermId()).thatIsEarlierThanOrEqualTo("1990-11-10");
+
+        // When
+        List<DataSet> dataSets = v3api.searchDataSets(sessionToken, criteria, new DataSetFetchOptions()).getObjects();
+
+        // Then
+        assertEquals(dataSets.get(0).getCode(), "DATA_SET_WITH_DATE_PROPERTY");
+        assertEquals(dataSets.size(), 1);
+    }
+
+    @Test
+    public void testSearchWithDateDatePropertyThatIsEarlierWithTimezone()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createAPropertyType(sessionToken, DataType.DATE);
+        EntityTypePermId dataSetType = createADataSetType(sessionToken, true, propertyType);
+        DataSetCreation creation = physicalDataSetCreation();
+        creation.setCode("DATA_SET_WITH_DATE_PROPERTY");
+        creation.setTypeId(dataSetType);
+        creation.setExperimentId(new ExperimentIdentifier("/CISD/NEMO/EXP1"));
+        creation.setProperty(propertyType.getPermId(), "1990-11-09");
+        v3api.createDataSets(sessionToken, Arrays.asList(creation));
+
+        DataSetSearchCriteria criteria = new DataSetSearchCriteria();
+        DatePropertySearchCriteria datePropertySearchCriteria = criteria.withDateProperty(propertyType.getPermId());
+        datePropertySearchCriteria.withTimeZone(6);
+        datePropertySearchCriteria.thatIsEarlierThanOrEqualTo("1990-11-09");
+
+        // When
+        assertUserFailureException(Void -> v3api.searchDataSets(sessionToken, criteria, new DataSetFetchOptions()),
+                // Then
+                "Search criteria with time zone doesn't make sense for property " + propertyType.getPermId()
+                        + " of data type " + DataType.DATE);
+    }
+
+    @Test
+    public void testSearchWithDateDatePropertyThatIsEarlierWithInvalidDate()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createAPropertyType(sessionToken, DataType.DATE);
+        EntityTypePermId dataSetType = createADataSetType(sessionToken, true, propertyType);
+        DataSetCreation creation = physicalDataSetCreation();
+        creation.setCode("DATA_SET_WITH_DATE_PROPERTY");
+        creation.setTypeId(dataSetType);
+        creation.setExperimentId(new ExperimentIdentifier("/CISD/NEMO/EXP1"));
+        creation.setProperty(propertyType.getPermId(), "1990-11-09");
+        v3api.createDataSets(sessionToken, Arrays.asList(creation));
+
+        DataSetSearchCriteria criteria = new DataSetSearchCriteria();
+        DatePropertySearchCriteria datePropertySearchCriteria = criteria.withDateProperty(propertyType.getPermId());
+        datePropertySearchCriteria.thatIsEarlierThanOrEqualTo("1990-11-09 01:22:33");
+
+        // When
+        assertUserFailureException(Void -> v3api.searchDataSets(sessionToken, criteria, new DataSetFetchOptions()),
+                // Then
+                "Search criteria with time stamp doesn't make sense for property " + propertyType.getPermId()
+                        + " of data type " + DataType.DATE);
+    }
+
+    @Test
+    public void testSearchWithAnyPropertyThatIsEarlier()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createAPropertyType(sessionToken, DataType.DATE);
+        EntityTypePermId dataSetType = createADataSetType(sessionToken, true, propertyType);
+        DataSetCreation creation = physicalDataSetCreation();
+        creation.setCode("DATA_SET_WITH_DATE_PROPERTY");
+        creation.setTypeId(dataSetType);
+        creation.setExperimentId(new ExperimentIdentifier("/CISD/NEMO/EXP1"));
+        creation.setProperty(propertyType.getPermId(), "1990-11-09");
+        v3api.createDataSets(sessionToken, Arrays.asList(creation));
+
+        DataSetSearchCriteria criteria = new DataSetSearchCriteria();
+        criteria.withAnyProperty().thatIsLessThanOrEqualTo("2009-02-10");
+
+        // When
+        List<DataSet> dataSets = v3api.searchDataSets(sessionToken, criteria, new DataSetFetchOptions()).getObjects();
+
+        // Then
+        assertDataSetCodesInOrder(dataSets, "DATA_SET_WITH_DATE_PROPERTY");
+    }
+
+    @Test
+    public void testSearchWithDateDatePropertyWithTimezone()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createAPropertyType(sessionToken, DataType.DATE);
+        EntityTypePermId dataSetType = createADataSetType(sessionToken, true, propertyType);
+        DataSetCreation creation = physicalDataSetCreation();
+        creation.setCode("DATA_SET_WITH_DATE_PROPERTY");
+        creation.setTypeId(dataSetType);
+        creation.setExperimentId(new ExperimentIdentifier("/CISD/NEMO/EXP1"));
+        creation.setProperty(propertyType.getPermId(), "2/17/20");
+        v3api.createDataSets(sessionToken, Arrays.asList(creation));
+
+        DataSetSearchCriteria criteria = new DataSetSearchCriteria();
+        DatePropertySearchCriteria datePropertySearchCriteria = criteria.withDateProperty(propertyType.getPermId());
+        datePropertySearchCriteria.withTimeZone(-4);
+        datePropertySearchCriteria.thatEquals("2020-02-17");
+
+        // When
+        assertUserFailureException(Void -> v3api.searchDataSets(sessionToken, criteria, new DataSetFetchOptions()),
+                // Then
+                "Search criteria with time zone doesn't make sense for property " + propertyType.getPermId()
+                        + " of data type " + DataType.DATE);
     }
 
     @Test

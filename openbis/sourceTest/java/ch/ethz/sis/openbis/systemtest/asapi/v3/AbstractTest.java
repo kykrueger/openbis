@@ -1508,6 +1508,26 @@ public class AbstractTest extends SystemTestCase
         }
     }
 
+    protected PropertyTypePermId createADatePropertyType(final String sessionToken, final String code)
+    {
+        final PropertyTypeCreation creation = new PropertyTypeCreation();
+        creation.setCode(code);
+        creation.setDataType(DataType.DATE);
+        creation.setLabel("Date");
+        creation.setDescription("Date property type.");
+        return v3api.createPropertyTypes(sessionToken, Collections.singletonList(creation)).get(0);
+    }
+
+    protected PropertyTypePermId createATimestampPropertyType(final String sessionToken, final String code)
+    {
+        final PropertyTypeCreation creation = new PropertyTypeCreation();
+        creation.setCode(code);
+        creation.setDataType(DataType.TIMESTAMP);
+        creation.setLabel("Timestamp");
+        creation.setDescription("Timestamp property type.");
+        return v3api.createPropertyTypes(sessionToken, Collections.singletonList(creation)).get(0);
+    }
+
     protected static List<MethodWrapper> getFreezingMethods(Class<?> clazz)
     {
         return Arrays.asList(clazz.getMethods()).stream()
