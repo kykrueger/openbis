@@ -10,10 +10,9 @@ export default class UserFormControllerRecalculateInheritedRoles {
 
   execute(state) {
     const { groups: groupsDefinitions } = this.controller.getDictionaries()
-    const { groups, roles, rolesCounter } = state
+    const { groups, roles } = state
 
     let newRoles = []
-    let newRolesCounter = rolesCounter
 
     groups.forEach(group => {
       const groupDefinition = groupsDefinitions.find(
@@ -34,7 +33,7 @@ export default class UserFormControllerRecalculateInheritedRoles {
         }
 
         const newRole = {
-          id: 'role-' + newRolesCounter++,
+          id: _.uniqueId('role-'),
           inheritedFrom: FormUtil.createField({
             value: groupDefinition.code
           }),
@@ -71,8 +70,7 @@ export default class UserFormControllerRecalculateInheritedRoles {
     })
 
     _.assign(state, {
-      roles: newRoles,
-      rolesCounter: newRolesCounter
+      roles: newRoles
     })
   }
 }

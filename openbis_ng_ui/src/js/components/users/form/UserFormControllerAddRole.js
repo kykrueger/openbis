@@ -1,3 +1,4 @@
+import _ from 'lodash'
 import FormUtil from '@src/js/components/common/form/FormUtil.js'
 
 export default class UserFormControllerAddRole {
@@ -7,10 +8,10 @@ export default class UserFormControllerAddRole {
   }
 
   async execute() {
-    let { roles, rolesCounter } = this.context.getState()
+    let { roles } = this.context.getState()
 
     const newRole = {
-      id: 'role-' + rolesCounter++,
+      id: _.uniqueId('role-'),
       inheritedFrom: FormUtil.createField({}),
       level: FormUtil.createField({}),
       space: FormUtil.createField({
@@ -31,7 +32,6 @@ export default class UserFormControllerAddRole {
     await this.context.setState(state => ({
       ...state,
       roles: newRoles,
-      rolesCounter,
       selection: {
         type: 'role',
         params: {

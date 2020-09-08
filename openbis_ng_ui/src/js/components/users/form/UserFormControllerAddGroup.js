@@ -1,3 +1,4 @@
+import _ from 'lodash'
 import FormUtil from '@src/js/components/common/form/FormUtil.js'
 
 export default class UserFormControllerAddGroup {
@@ -7,10 +8,10 @@ export default class UserFormControllerAddGroup {
   }
 
   async execute() {
-    let { groups, groupsCounter } = this.context.getState()
+    let { groups } = this.context.getState()
 
     const newGroup = {
-      id: 'group-' + groupsCounter++,
+      id: _.uniqueId('group-'),
       code: FormUtil.createField({}),
       description: FormUtil.createField({}),
       original: null
@@ -22,7 +23,6 @@ export default class UserFormControllerAddGroup {
     await this.context.setState(state => ({
       ...state,
       groups: newGroups,
-      groupsCounter,
       selection: {
         type: 'group',
         params: {

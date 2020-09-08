@@ -46,24 +46,21 @@ export default class UserFormControllerLoad extends PageControllerLoad {
     const groups = []
     const roles = []
 
-    let groupsCounter = 0
-    let rolesCounter = 0
-
     if (loadedUser) {
       loadedUser.getRoleAssignments().forEach(loadedRole => {
-        const role = this._createRole('role-' + rolesCounter++, loadedRole)
+        const role = this._createRole(loadedRole)
         roles.push(role)
       })
     }
 
     if (loadedGroups) {
       loadedGroups.forEach(loadedGroup => {
-        const group = this._createGroup('group-' + groupsCounter++, loadedGroup)
+        const group = this._createGroup(loadedGroup)
         groups.push(group)
 
         if (loadedGroup.getRoleAssignments()) {
           loadedGroup.getRoleAssignments().forEach(loadedRole => {
-            const role = this._createRole('role-' + rolesCounter++, loadedRole)
+            const role = this._createRole(loadedRole)
             roles.push(role)
           })
         }
@@ -123,7 +120,7 @@ export default class UserFormControllerLoad extends PageControllerLoad {
     return user
   }
 
-  _createRole(id, loadedRole) {
+  _createRole(loadedRole) {
     const level = _.get(loadedRole, 'roleLevel', null)
 
     let space = null
@@ -137,7 +134,7 @@ export default class UserFormControllerLoad extends PageControllerLoad {
     }
 
     const role = {
-      id: id,
+      id: _.uniqueId('role-'),
       techId: FormUtil.createField({
         value: _.get(loadedRole, 'id.techId', null)
       }),
@@ -163,9 +160,9 @@ export default class UserFormControllerLoad extends PageControllerLoad {
     return role
   }
 
-  _createGroup(id, loadedGroup) {
+  _createGroup(loadedGroup) {
     const group = {
-      id: id,
+      id: _.uniqueId('group-'),
       code: FormUtil.createField({
         value: _.get(loadedGroup, 'code', null)
       }),
