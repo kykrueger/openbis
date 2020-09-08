@@ -88,6 +88,10 @@ export default class TypeFormControllerChange extends PageControllerChange {
             ...newProperty.code,
             value: null
           },
+          internalNameSpace: {
+            ...newProperty.internalNameSpace,
+            value: null
+          },
           label: {
             ...newProperty.label,
             value: null
@@ -139,6 +143,10 @@ export default class TypeFormControllerChange extends PageControllerChange {
 
         if (oldExisting && !newExisting) {
           _.assign(newProperty, {
+            internalNameSpace: {
+              ...newProperty.internalNameSpace,
+              value: null
+            },
             label: {
               ...newProperty.label,
               value: null
@@ -178,6 +186,9 @@ export default class TypeFormControllerChange extends PageControllerChange {
           })
         } else if (newExisting) {
           newExisting = {
+            internalNameSpace: {
+              value: _.get(newExisting, 'internalNameSpace', null)
+            },
             label: {
               value: _.get(newExisting, 'label', null)
             },
@@ -205,6 +216,10 @@ export default class TypeFormControllerChange extends PageControllerChange {
           }
 
           _.assign(newProperty, {
+            internalNameSpace: {
+              ...newProperty.internalNameSpace,
+              value: newExisting.internalNameSpace.value
+            },
             label: {
               ...newProperty.label,
               value: newExisting.label.value

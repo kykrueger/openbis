@@ -193,6 +193,9 @@ export default class TypeFormControllerLoad extends PageControllerLoad {
         value: code,
         enabled: false
       }),
+      internalNameSpace: FormUtil.createField({
+        value: _.get(propertyType, 'internalNameSpace', false)
+      }),
       label: FormUtil.createField({
         value: _.get(propertyType, 'label', null)
       }),

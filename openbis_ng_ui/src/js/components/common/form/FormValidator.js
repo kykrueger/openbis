@@ -1,6 +1,7 @@
 import _ from 'lodash'
 
 const CODE_PATTERN = /^[A-Z0-9_\-.]+$/i
+const INTERNAL_CODE_PATTERN = /^\$[A-Z0-9_\-.]+$/i
 const TERM_CODE_PATTERN = /^[A-Z0-9_\-.:]+$/i
 
 class FormValidator {
@@ -50,6 +51,16 @@ class FormValidator {
       name,
       label + ' can only contain A-Z, a-z, 0-9 and _, -, .',
       CODE_PATTERN
+    )
+  }
+
+  validateInternalCode(object, name, label) {
+    this.validatePattern(
+      object,
+      name,
+      label +
+        ' has to start with $ and can only contain A-Z, a-z, 0-9 and _, -, .',
+      INTERNAL_CODE_PATTERN
     )
   }
 

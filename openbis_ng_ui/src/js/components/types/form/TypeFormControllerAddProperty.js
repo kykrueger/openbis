@@ -44,6 +44,7 @@ export default class TypeFormControllerAddProperty {
         value: 'local'
       }),
       code: FormUtil.createField(),
+      internalNameSpace: FormUtil.createField(),
       label: FormUtil.createField(),
       description: FormUtil.createField(),
       dataType: FormUtil.createField(),
