@@ -212,6 +212,7 @@ export default class UserFormControllerLoad extends PageControllerLoad {
       const newRole = _.find(
         newRoles,
         newRole =>
+          newRole.inheritedFrom.value === oldRole.inheritedFrom.value &&
           newRole.space.value === oldRole.space.value &&
           newRole.project.value === oldRole.project.value &&
           newRole.role.value === oldRole.role.value
