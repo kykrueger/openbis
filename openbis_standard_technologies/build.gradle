@@ -123,9 +123,15 @@ sourceSets {
 	}
 }
 
-task compileGwt (dependsOn: classes, type: JavaExec) {
+def gwtBuildDir = "${project.buildDir}/gwt"
+def gwtCacheBuildDir = "${project.buildDir}/gwt-unitCache"
+def gwtModuleName = 'ch.systemsx.cisd.openbis.OpenBIS'
+def gwtModuleBuildDir = "${gwtBuildDir}/${gwtModuleName}"
+def gwtArchivePath = 'resource'
+def gwtArchiveFileName = 'gwt.tar.gz'
 
-	ext.buildDir = "${project.buildDir}/gwt"
+task compileGwt (dependsOn: classes, type: JavaExec) {
+	ext.buildDir = gwtBuildDir
 	def extraDir = "${project.buildDir}/extra"
      
 	// inputs.source
@@ -159,7 +165,7 @@ task compileGwt (dependsOn: classes, type: JavaExec) {
      
 	args =
 		[
-			'ch.systemsx.cisd.openbis.OpenBIS',
+			gwtModuleName,
 			'-war', buildDir,
 			'-logLevel', 'INFO',
 			'-localWorkers', '2',
@@ -172,6 +178,26 @@ task compileGwt (dependsOn: classes, type: JavaExec) {
 	systemProperty "javax.xml.parsers.SAXParserFactory", "org.apache.xerces.jaxp.SAXParserFactoryImpl"
 }
 
+task buildCoreUIPackageUsingJDK8(type: Tar, dependsOn: compileGwt) {
+	from gwtBuildDir
+	destinationDirectory = file(gwtArchivePath)
+	archiveFileName = gwtArchiveFileName
+	compression = Compression.GZIP
+	doLast { // Cleanup, the rest of the build should not use these
+		delete gwtBuildDir
+		delete gwtCacheBuildDir
+	}
+}
+
+task untarGwt(type: Copy) {
+	from tarTree(resources.gzip("${gwtArchivePath}/${gwtArchiveFileName}"))
+	into gwtBuildDir
+}
+
+task copyOpenbisStaticResources(type: Copy, dependsOn: untarGwt) {
+	from "${project(':openbis').projectDir}/source/java/ch/systemsx/cisd/openbis/public"
+	into gwtModuleBuildDir
+}
 
 ext.classpathEntries = files(
 	project(':openbis').file('source/java/applicationContext.xml'),
@@ -226,7 +252,8 @@ task checkFilesExist {
 }
 
 
-war.dependsOn compileGwt
+war.dependsOn untarGwt
+war.dependsOn copyOpenbisStaticResources
 war.dependsOn checkFilesExist
 war.dependsOn signWebStartJars
 war {
@@ -240,11 +267,11 @@ war {
         }
     }
 
-    from "${compileGwt.buildDir}/ch.systemsx.cisd.openbis.OpenBIS"
+    from "${project.buildDir}/gwt/ch.systemsx.cisd.openbis.OpenBIS"
     from signedJarsFolder
     webXml = file('resource/server/web.xml')
     webInf {
-        from "${compileGwt.buildDir}/WEB-INF",
+        from "${project.buildDir}/gwt/WEB-INF",
         project(':openbis').file('resource/server/bis-common.xml'),
         file('resource/server/spring-servlet.xml'),
         file('resource/server/jetty-web.xml'),

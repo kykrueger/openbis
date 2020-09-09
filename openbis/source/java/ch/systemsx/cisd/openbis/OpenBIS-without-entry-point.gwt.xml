@@ -40,7 +40,6 @@
     <exclude name="**/*Test.java" />
   </source>
 
-  <public path="public" />
   <public path="generic/client/web/public" />
 
   <!-- Automatically generated part - START -->
