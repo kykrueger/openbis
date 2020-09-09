@@ -450,6 +450,134 @@ public class SearchMaterialTest extends AbstractTest
                 "search-materials  SEARCH_CRITERIA:\n'MATERIAL\n    with attribute 'code' equal to 'VIRUS'\n'\nFETCH_OPTIONS:\n'Material\n    with Registrator\n    with Properties\n'");
     }
 
+    @Test
+    public void testSearchNumeric()
+    {
+        // VOLUME: 99.99 CODE: GFP
+        // VOLUME: 123 CODE: SCRAM
+        // VOLUME: 3.0 CODE: X-NO-DESC
+        // VOLUME: 22.22 CODE: X-NO-SIZE
+        // VOLUME: 2.2 CODE: XXXXX-ALL
+        
+        // OFFSET: 123 CODE: 913_A
+        // OFFSET: 321 CODE: 913_B
+        // OFFSET: 111111 CODE: 913_C
+        // OFFSET: 4711 CODE: OLI_1
+        // OFFSET: 3 CODE: XX333_B
+        // OFFSET: 123 CODE: XX444_A
+
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        final MaterialFetchOptions sortByCodeFO = new MaterialFetchOptions();
+        sortByCodeFO.sortBy().code().asc();
+        sortByCodeFO.withProperties();
+
+        // Greater or Equals
+        final MaterialSearchCriteria criteriaGOE = new MaterialSearchCriteria();
+        criteriaGOE.withNumberProperty("VOLUME").thatIsGreaterThanOrEqualTo(99.99);
+        final List<Material> materialsGOE = search(sessionToken, criteriaGOE, sortByCodeFO);
+        assertMaterialIdentifiersInOrder(materialsGOE, "GFP (CONTROL)", "SCRAM (CONTROL)");
+
+        // Greater or Equals - Providing integer as real
+        final MaterialSearchCriteria criteriaGOEIR = new MaterialSearchCriteria();
+        criteriaGOEIR.withNumberProperty("OFFSET").thatIsGreaterThanOrEqualTo(321.0);
+        final List<Material> materialsGOEIR = search(sessionToken, criteriaGOEIR, sortByCodeFO);
+        assertMaterialIdentifiersInOrder(materialsGOEIR, "913_B (SIRNA)", "913_C (SIRNA)", "OLI_1 (SIRNA)");
+
+        // Greater or Equals - Providing integer
+        final MaterialSearchCriteria criteriaGOEI = new MaterialSearchCriteria();
+        criteriaGOEI.withNumberProperty("OFFSET").thatIsGreaterThanOrEqualTo(321);
+        final List<Material> materialsGOEI = search(sessionToken, criteriaGOEI, sortByCodeFO);
+        assertMaterialIdentifiersInOrder(materialsGOEI, "913_B (SIRNA)", "913_C (SIRNA)", "OLI_1 (SIRNA)");
+
+        // Greater
+        final MaterialSearchCriteria criteriaG = new MaterialSearchCriteria();
+        criteriaG.withNumberProperty("VOLUME").thatIsGreaterThan(99.99);
+        final List<Material> materialsG = search(sessionToken, criteriaG, sortByCodeFO);
+        assertMaterialIdentifiersInOrder(materialsG, "SCRAM (CONTROL)");
+
+        // Greater - Providing integer as real
+        final MaterialSearchCriteria criteriaGIR = new MaterialSearchCriteria();
+        criteriaGIR.withNumberProperty("OFFSET").thatIsGreaterThan(321.0);
+        final List<Material> materialsGIR = search(sessionToken, criteriaGIR, sortByCodeFO);
+        assertMaterialIdentifiersInOrder(materialsGIR, "913_C (SIRNA)", "OLI_1 (SIRNA)");
+
+        // Greater - Providing integer
+        final MaterialSearchCriteria criteriaGI = new MaterialSearchCriteria();
+        criteriaGI.withNumberProperty("OFFSET").thatIsGreaterThan(321);
+        final List<Material> materialsGI = search(sessionToken, criteriaGI, sortByCodeFO);
+        assertMaterialIdentifiersInOrder(materialsGI, "913_C (SIRNA)", "OLI_1 (SIRNA)");
+
+        // Equals As Text - Real
+        final MaterialSearchCriteria criteriaETxt2 = new MaterialSearchCriteria();
+        criteriaETxt2.withProperty("OFFSET").thatEquals("123.0");
+        final List<Material> materialsETxt2 = search(sessionToken, criteriaETxt2, sortByCodeFO);
+        assertMaterialIdentifiersInOrder(materialsETxt2, "913_A (SIRNA)", "XX444_A (SIRNA)");
+
+        // Equals As Text - Integer
+        MaterialSearchCriteria criteriaETxt = new MaterialSearchCriteria();
+        criteriaETxt.withProperty("OFFSET").thatEquals("123");
+        List<Material> materialsETxt = search(sessionToken, criteriaETxt, sortByCodeFO);
+        assertMaterialIdentifiersInOrder(materialsETxt, "913_A (SIRNA)", "XX444_A (SIRNA)");
+
+        // Equals
+        MaterialSearchCriteria criteriaE = new MaterialSearchCriteria();
+        criteriaE.withNumberProperty("OFFSET").thatEquals(123);
+        List<Material> materialsE = search(sessionToken, criteriaE, sortByCodeFO);
+        assertMaterialIdentifiersInOrder(materialsE, "913_A (SIRNA)", "XX444_A (SIRNA)");
+
+        // Less or Equals
+        final MaterialSearchCriteria criteriaLOE = new MaterialSearchCriteria();
+        criteriaLOE.withNumberProperty("VOLUME").thatIsLessThanOrEqualTo(99.99);
+        final List<Material> materialsLOE = search(sessionToken, criteriaLOE, sortByCodeFO);
+        assertMaterialIdentifiersInOrder(materialsLOE, "GFP (CONTROL)", "X-NO-DESC (CONTROL)",  "X-NO-SIZE (CONTROL)",
+                "XXXXX-ALL (CONTROL)");
+
+        // Less or Equals - Providing integer as real
+        final MaterialSearchCriteria criteriaLOEIR = new MaterialSearchCriteria().withAndOperator();
+        criteriaLOEIR.withNumberProperty("OFFSET").thatIsLessThanOrEqualTo(321.0);
+        criteriaLOEIR.withNumberProperty("OFFSET").thatIsGreaterThan(1.0);
+        final List<Material> materialsLOEIR = search(sessionToken, criteriaLOEIR, sortByCodeFO);
+        assertMaterialIdentifiersInOrder(materialsLOEIR, "913_A (SIRNA)", "913_B (SIRNA)", "XX333_B (SIRNA)",
+                "XX444_A (SIRNA)");
+
+        // Less or Equals - Providing integer
+        final MaterialSearchCriteria criteriaLOEI = new MaterialSearchCriteria().withAndOperator();
+        criteriaLOEI.withNumberProperty("OFFSET").thatIsLessThanOrEqualTo(321);
+        criteriaLOEI.withNumberProperty("OFFSET").thatIsGreaterThan(1);
+        final List<Material> materialsLOEI = search(sessionToken, criteriaLOEI, sortByCodeFO);
+        assertMaterialIdentifiersInOrder(materialsLOEI, "913_A (SIRNA)", "913_B (SIRNA)", "XX333_B (SIRNA)",
+                "XX444_A (SIRNA)");
+
+        // Less
+        final MaterialSearchCriteria criteriaL = new MaterialSearchCriteria();
+        criteriaL.withNumberProperty("VOLUME").thatIsLessThan(99.99);
+        final List<Material> materialsL = search(sessionToken, criteriaL, sortByCodeFO);
+        assertMaterialIdentifiersInOrder(materialsL, "X-NO-DESC (CONTROL)",  "X-NO-SIZE (CONTROL)",
+                "XXXXX-ALL (CONTROL)");
+
+        // Less - Providing integer as real
+        final MaterialSearchCriteria criteriaLIR = new MaterialSearchCriteria().withAndOperator();
+        criteriaLIR.withNumberProperty("OFFSET").thatIsLessThan(321.0);
+        criteriaLIR.withNumberProperty("OFFSET").thatIsGreaterThan(1.0);
+        final List<Material> materialsLIR = search(sessionToken, criteriaLIR, sortByCodeFO);
+        assertMaterialIdentifiersInOrder(materialsLIR, "913_A (SIRNA)", "XX333_B (SIRNA)", "XX444_A (SIRNA)");
+
+        // Greater - Providing integer
+        final MaterialSearchCriteria criteriaLI = new MaterialSearchCriteria();
+        criteriaLI.withNumberProperty("OFFSET").thatIsLessThan(321);
+        criteriaLI.withNumberProperty("OFFSET").thatIsGreaterThan(1);
+        final List<Material> materialsLI = search(sessionToken, criteriaLI, sortByCodeFO);
+        assertMaterialIdentifiersInOrder(materialsLI, "913_A (SIRNA)", "XX333_B (SIRNA)", "XX444_A (SIRNA)");
+
+        v3api.logout(sessionToken);
+    }
+
+    private List<Material> search(final String sessionToken, final MaterialSearchCriteria criteria,
+            final MaterialFetchOptions options)
+    {
+        return v3api.searchMaterials(sessionToken, criteria, options).getObjects();
+    }
+
     private void testSearch(String user, MaterialSearchCriteria criteria, MaterialFetchOptions options, MaterialPermId... expectedPermIds)
     {
         String sessionToken = v3api.login(user, PASSWORD);

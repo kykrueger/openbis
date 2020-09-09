@@ -1160,6 +1160,13 @@ public class AbstractTest extends SystemTestCase
         assertEquals(identifiers, Arrays.asList(expectedIdentifiers));
     }
 
+    protected static void assertMaterialIdentifiersInOrder(final Collection<Material> materials,
+            final String... expectedIdentifiers)
+    {
+        assertEquals(materials.stream().map(material -> material.getPermId().toString())
+                .collect(Collectors.toList()), Arrays.asList(expectedIdentifiers));
+    }
+
     protected static void assertMaterialPermIds(Collection<Material> materials, MaterialPermId... expectedPermIds)
     {
         Set<MaterialPermId> actualSet = new HashSet<MaterialPermId>();
