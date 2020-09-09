@@ -19,6 +19,10 @@ export default class UserFormControllerRecalculateInheritedRoles {
         groupDefinition => groupDefinition.code === group.code.value
       )
 
+      if (!groupDefinition) {
+        return
+      }
+
       groupDefinition.roleAssignments.forEach(roleDefinition => {
         const level = _.get(roleDefinition, 'roleLevel', null)
 
