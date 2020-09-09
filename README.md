@@ -1,7 +1,7 @@
 # Building openBIS
 
 ## Requirements
-# JDK8 or JDK11
+- JDK8 or JDK11
 
 ## Step By Step:
 ```
@@ -30,8 +30,8 @@ cd openbis_standard_technologies/
 # Developing openBIS
 
 ## Requirements
-# Postgres 11
-# IntelliJ IDEA CE
+- Postgres 11
+- IntelliJ IDEA CE
 
 ## Step By Step:
 ```
