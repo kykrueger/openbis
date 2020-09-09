@@ -148,6 +148,23 @@ public class PostgreSQLAdminDAO extends AbstractDatabaseAdminDAO
             }
         }
     }
+    
+    
+
+    @Override
+    public String getDatabaseServerVersion()
+    {
+        try
+        {
+            String version = getJdbcTemplate().queryForMap("select version()").get("version").toString().split(" ")[1];
+            operationLog.info("Databaser server version: " + version);
+            return version;
+        } catch (RuntimeException ex)
+        {
+            operationLog.error("Failed to get the version of the database server.", ex);
+            throw ex;
+        }
+    }
 
     @Override
     public void createDatabase()
