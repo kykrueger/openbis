@@ -1198,7 +1198,7 @@ public class SearchSampleTest extends AbstractSampleTest
     public void testSearchWithAnyProperty()
     {
         SampleSearchCriteria criteria = new SampleSearchCriteria();
-        criteria.withAnyProperty().thatStartsWith("\"very advanced\"");
+        criteria.withAnyProperty().thatStartsWith("HUM");
         testSearch(TEST_USER, criteria, "/CISD/CP-TEST-1");
     }
 
@@ -1995,6 +1995,36 @@ public class SearchSampleTest extends AbstractSampleTest
         // Then
         assertSampleIdentifiers(samples, "/CISD/CP-TEST-1", "/CISD/SAMPLE_WITH_DATE_PROPERTY");
         assertEquals(samples.size(), 2);
+    }
+
+    @Test
+    public void testSearchWithAnyPropertyThatIsLater()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createAPropertyType(sessionToken, DataType.DATE);
+        EntityTypePermId sampleType = createASampleType(sessionToken, true, propertyType);
+        SampleCreation creation = new SampleCreation();
+        creation.setCode("SAMPLE_WITH_DATE_PROPERTY");
+        creation.setTypeId(sampleType);
+        creation.setSpaceId(new SpacePermId("CISD"));
+        creation.setProperty(propertyType.getPermId(), "4009-02-10");
+        v3api.createSamples(sessionToken, Arrays.asList(creation));
+
+        SampleSearchCriteria criteria = new SampleSearchCriteria();
+        criteria.withAndOperator();
+        criteria.withAnyProperty().thatIsGreaterThanOrEqualTo("4009-02-10");
+        criteria.withSpace().withCode().thatEquals("CISD");
+
+        // When
+        List<Sample> samples = v3api.searchSamples(sessionToken, criteria, new SampleFetchOptions()).getObjects();
+
+        // Then
+        List<String> identifiers = extractIndentifiers(samples);
+        Collections.sort(identifiers);
+        assertEquals(identifiers.toString(), "[/CISD/3V-125, /CISD/3V-126, /CISD/3VCP7, /CISD/CL1, /CISD/CP-TEST-1, "
+                + "/CISD/CP-TEST-2, /CISD/CP-TEST-3, /CISD/DP1-A, /CISD/DP1-B, /CISD/DP2-A, "
+                + "/CISD/SAMPLE_WITH_DATE_PROPERTY]");
     }
 
     @Test

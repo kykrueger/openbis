@@ -164,8 +164,9 @@ public class SearchCriteriaTranslator
                     StringBuilder::new,
                     (sqlBuilder, criterion) ->
                     {
-                        sqlBuilder.append(separator);
+                        sqlBuilder.append(separator).append(LP);
                         appendCriterionCondition(vo, vo.getAuthorisationInformation(), sqlBuilder, criterion);
+                        sqlBuilder.append(RP);
                     },
                     StringBuilder::append
             );
