@@ -83,7 +83,7 @@ public class PostgreSQLDAOFactory implements IDAOFactory
                                 .getReadWriteGroup(),
                         context.getDatabaseName(), context
                                 .getDatabaseURL());
-//        assertValidVersion(databaseDAO.getDatabaseServerVersion(), context.getValidVersions());
+        assertValidVersion(databaseDAO.getDatabaseServerVersion(), context.getValidVersions());
     }
 
     private void assertValidVersion(String databaseServerVersion, String validVersions)
