@@ -84,10 +84,6 @@ public abstract class DeletionTest extends AbstractTest
 
     private static final String TIMESTAMP_OK = "timestamp ok";
 
-    {
-        System.setProperty("rebuild-index", "false");
-    }
-
     public static void newTx()
     {
         TestTransaction.end();
