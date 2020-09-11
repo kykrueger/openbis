@@ -1440,49 +1440,19 @@ public class SearchExperimentTest extends AbstractExperimentTest
     public ExperimentCreation getExperimentCreation(final EntityTypePermId experimentType, final int intValue,
             final double realValue)
     {
-        final ExperimentCreation experimentCreation1 = new ExperimentCreation();
-        experimentCreation1.setCode("TEST_" + intValue);
-        experimentCreation1.setTypeId(experimentType);
-        experimentCreation1.setProjectId(new ProjectIdentifier("/CISD/DEFAULT"));
-        experimentCreation1.setProperty("INT_NUMBER", String.valueOf(intValue));
-        experimentCreation1.setProperty("REAL_NUMBER", String.valueOf(realValue));
-        return experimentCreation1;
+        final ExperimentCreation experimentCreation = new ExperimentCreation();
+        experimentCreation.setCode("TEST_" + intValue);
+        experimentCreation.setTypeId(experimentType);
+        experimentCreation.setProjectId(new ProjectIdentifier("/CISD/DEFAULT"));
+        experimentCreation.setProperty("INT_NUMBER", String.valueOf(intValue));
+        experimentCreation.setProperty("REAL_NUMBER", String.valueOf(realValue));
+        return experimentCreation;
     }
 
     private List<Experiment> search(final String sessionToken, final ExperimentSearchCriteria criteria,
             final ExperimentFetchOptions options)
     {
         return v3api.searchExperiments(sessionToken, criteria, options).getObjects();
-    }
-
-    protected PropertyTypePermId createABooleanPropertyType(final String sessionToken, final String code)
-    {
-        final PropertyTypeCreation creation = new PropertyTypeCreation();
-        creation.setCode(code);
-        creation.setDataType(DataType.BOOLEAN);
-        creation.setLabel("Boolean");
-        creation.setDescription("Boolean property type.");
-        return v3api.createPropertyTypes(sessionToken, Collections.singletonList(creation)).get(0);
-    }
-
-    protected PropertyTypePermId createAnIntegerPropertyType(final String sessionToken, final String code)
-    {
-        final PropertyTypeCreation creation = new PropertyTypeCreation();
-        creation.setCode(code);
-        creation.setDataType(DataType.INTEGER);
-        creation.setLabel("Integer");
-        creation.setDescription("Integer property type.");
-        return v3api.createPropertyTypes(sessionToken, Collections.singletonList(creation)).get(0);
-    }
-
-    protected PropertyTypePermId createARealPropertyType(final String sessionToken, final String code)
-    {
-        final PropertyTypeCreation creation = new PropertyTypeCreation();
-        creation.setCode(code);
-        creation.setDataType(DataType.REAL);
-        creation.setLabel("Real");
-        creation.setDescription("Real property type.");
-        return v3api.createPropertyTypes(sessionToken, Collections.singletonList(creation)).get(0);
     }
 
     private void testSearch(String user, ExperimentSearchCriteria criteria, String... expectedIdentifiers)

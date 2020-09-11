@@ -1541,4 +1541,34 @@ public class AbstractTest extends SystemTestCase
                 .filter(m -> m.getName().startsWith("freeze")).map(MethodWrapper::new).collect(Collectors.toList());
     }
 
+    protected PropertyTypePermId createABooleanPropertyType(final String sessionToken, final String code)
+    {
+        final PropertyTypeCreation creation = new PropertyTypeCreation();
+        creation.setCode(code);
+        creation.setDataType(DataType.BOOLEAN);
+        creation.setLabel("Boolean");
+        creation.setDescription("Boolean property type.");
+        return v3api.createPropertyTypes(sessionToken, Collections.singletonList(creation)).get(0);
+    }
+
+    protected PropertyTypePermId createAnIntegerPropertyType(final String sessionToken, final String code)
+    {
+        final PropertyTypeCreation creation = new PropertyTypeCreation();
+        creation.setCode(code);
+        creation.setDataType(DataType.INTEGER);
+        creation.setLabel("Integer");
+        creation.setDescription("Integer property type.");
+        return v3api.createPropertyTypes(sessionToken, Collections.singletonList(creation)).get(0);
+    }
+
+    protected PropertyTypePermId createARealPropertyType(final String sessionToken, final String code)
+    {
+        final PropertyTypeCreation creation = new PropertyTypeCreation();
+        creation.setCode(code);
+        creation.setDataType(DataType.REAL);
+        creation.setLabel("Real");
+        creation.setDescription("Real property type.");
+        return v3api.createPropertyTypes(sessionToken, Collections.singletonList(creation)).get(0);
+    }
+
 }
