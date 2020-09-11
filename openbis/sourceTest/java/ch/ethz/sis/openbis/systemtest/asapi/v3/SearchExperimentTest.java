@@ -1330,6 +1330,12 @@ public class SearchExperimentTest extends AbstractExperimentTest
         final List<Experiment> experimentsES = search(sessionToken, criteriaES, emptyFetchOptions);
         assertExperimentIdentifiersInOrder(experimentsES, "/CISD/DEFAULT/TEST_2");
 
+        // Equal - Integer as Real as String
+        final ExperimentSearchCriteria criteriaERS = new ExperimentSearchCriteria();
+        criteriaERS.withProperty("INT_NUMBER").thatEquals("2.0");
+        final List<Experiment> experimentsERS = search(sessionToken, criteriaERS, emptyFetchOptions);
+        assertExperimentIdentifiersInOrder(experimentsERS, "/CISD/DEFAULT/TEST_2");
+
         // Greater or Equal - Integer
         final ExperimentSearchCriteria criteriaLE = new ExperimentSearchCriteria();
         criteriaLE.withNumberProperty("INT_NUMBER").thatIsLessThanOrEqualTo(2);
