@@ -1264,6 +1264,41 @@ public class SearchExperimentTest extends AbstractExperimentTest
     }
 
     @Test
+    public void testSearchForExperimentWithRealPropertyMatchingSubstring()
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        final PropertyTypePermId propertyType = createARealPropertyType(sessionToken, "REAL_NUMBER");
+        final EntityTypePermId experimentType = createAnExperimentType(sessionToken, false, propertyType);
+
+        final ExperimentCreation experimentCreation = new ExperimentCreation();
+        experimentCreation.setCode("REAL_PROPERTY_TEST");
+        experimentCreation.setTypeId(experimentType);
+        experimentCreation.setProjectId(new ProjectIdentifier("/CISD/DEFAULT"));
+        experimentCreation.setProperty("REAL_NUMBER", "1.23");
+
+        v3api.createExperiments(sessionToken, Collections.singletonList(experimentCreation));
+
+        final ExperimentSearchCriteria criteriaStartsWithMatch = new ExperimentSearchCriteria();
+        criteriaStartsWithMatch.withProperty("REAL_NUMBER").thatStartsWith("1.2");
+        assertUserFailureException(
+                Void -> searchExperiments(sessionToken, criteriaStartsWithMatch, new ExperimentFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "StartsWith", "REAL"));
+
+        final ExperimentSearchCriteria criteriaEndsWithMatch = new ExperimentSearchCriteria();
+        criteriaEndsWithMatch.withProperty("REAL_NUMBER").thatEndsWith("23");
+        assertUserFailureException(
+                Void -> searchExperiments(sessionToken, criteriaEndsWithMatch, new ExperimentFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "EndsWith", "REAL"));
+
+        final ExperimentSearchCriteria criteriaContainsMatch = new ExperimentSearchCriteria();
+        criteriaContainsMatch.withProperty("REAL_NUMBER").thatContains(".2");
+        assertUserFailureException(
+                Void -> searchExperiments(sessionToken, criteriaContainsMatch, new ExperimentFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "Contains", "REAL"));
+    }
+
+    @Test
     public void testSearchNumeric()
     {
         final String sessionToken = v3api.login(TEST_USER, PASSWORD);
