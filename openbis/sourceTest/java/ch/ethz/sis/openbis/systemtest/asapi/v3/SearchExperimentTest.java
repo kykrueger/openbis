@@ -1264,6 +1264,98 @@ public class SearchExperimentTest extends AbstractExperimentTest
     }
 
     @Test
+    public void testSearchNumeric()
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        final PropertyTypePermId integerPropertyType = createAnIntegerPropertyType(sessionToken, "INT_NUMBER");
+        final PropertyTypePermId realPropertyType = createARealPropertyType(sessionToken, "REAL_NUMBER");
+        final EntityTypePermId experimentType = createAnExperimentType(sessionToken, false, integerPropertyType,
+                realPropertyType);
+
+        final ExperimentCreation experimentCreation1 = getExperimentCreation(experimentType, 1, 0.01);
+        final ExperimentCreation experimentCreation2 = getExperimentCreation(experimentType, 2, 0.02);
+        final ExperimentCreation experimentCreation3 = getExperimentCreation(experimentType, 3, 0.03);
+
+        v3api.createExperiments(sessionToken, Arrays.asList(experimentCreation1, experimentCreation2,
+                experimentCreation3));
+
+        final ExperimentFetchOptions emptyFetchOptions = new ExperimentFetchOptions();
+        
+        // Greater or Equal - Integer
+        final ExperimentSearchCriteria criteriaGE = new ExperimentSearchCriteria();
+        criteriaGE.withNumberProperty("INT_NUMBER").thatIsGreaterThanOrEqualTo(2);
+        final List<Experiment> experimentsGE = search(sessionToken, criteriaGE, emptyFetchOptions);
+        assertExperimentIdentifiersInOrder(experimentsGE, "/CISD/DEFAULT/TEST_2", "/CISD/DEFAULT/TEST_3");
+
+        // Greater or Equal - Integer as Real
+        final ExperimentSearchCriteria criteriaGEIR = new ExperimentSearchCriteria();
+        criteriaGEIR.withNumberProperty("INT_NUMBER").thatIsGreaterThanOrEqualTo(2.0);
+        final List<Experiment> experimentsGEIR = search(sessionToken, criteriaGEIR, emptyFetchOptions);
+        assertExperimentIdentifiersInOrder(experimentsGEIR, "/CISD/DEFAULT/TEST_2", "/CISD/DEFAULT/TEST_3");
+
+        // Greater or Equal - Real
+        final ExperimentSearchCriteria criteriaGER = new ExperimentSearchCriteria();
+        criteriaGER.withNumberProperty("REAL_NUMBER").thatIsGreaterThanOrEqualTo(0.02);
+        final List<Experiment> experimentsGER = search(sessionToken, criteriaGER, emptyFetchOptions);
+        assertExperimentIdentifiersInOrder(experimentsGER, "/CISD/DEFAULT/TEST_2", "/CISD/DEFAULT/TEST_3");
+
+        // Greater - Integer
+        final ExperimentSearchCriteria criteriaG = new ExperimentSearchCriteria();
+        criteriaG.withNumberProperty("INT_NUMBER").thatIsGreaterThan(2);
+        final List<Experiment> experimentsG = search(sessionToken, criteriaG, emptyFetchOptions);
+        assertExperimentIdentifiersInOrder(experimentsG, "/CISD/DEFAULT/TEST_3");
+
+        // Greater - Integer as Real
+        final ExperimentSearchCriteria criteriaGIR = new ExperimentSearchCriteria();
+        criteriaGIR.withNumberProperty("INT_NUMBER").thatIsGreaterThan(2.0);
+        final List<Experiment> experimentsGIR = search(sessionToken, criteriaGIR, emptyFetchOptions);
+        assertExperimentIdentifiersInOrder(experimentsGIR, "/CISD/DEFAULT/TEST_3");
+
+        // Greater - Real
+        final ExperimentSearchCriteria criteriaGR = new ExperimentSearchCriteria();
+        criteriaGR.withNumberProperty("REAL_NUMBER").thatIsGreaterThan(0.02);
+        final List<Experiment> experimentsGR = search(sessionToken, criteriaGR, emptyFetchOptions);
+        assertExperimentIdentifiersInOrder(experimentsGR, "/CISD/DEFAULT/TEST_3");
+
+        // Equal - Integer
+        final ExperimentSearchCriteria criteriaE = new ExperimentSearchCriteria();
+        criteriaE.withNumberProperty("INT_NUMBER").thatEquals(2);
+        final List<Experiment> experimentsE = search(sessionToken, criteriaE, emptyFetchOptions);
+        assertExperimentIdentifiersInOrder(experimentsE, "/CISD/DEFAULT/TEST_2");
+
+        // Greater or Equal - Integer
+        final ExperimentSearchCriteria criteriaLE = new ExperimentSearchCriteria();
+        criteriaLE.withNumberProperty("INT_NUMBER").thatIsLessThanOrEqualTo(2);
+        final List<Experiment> experimentsLE = search(sessionToken, criteriaLE, emptyFetchOptions);
+        assertExperimentIdentifiersInOrder(experimentsLE, "/CISD/DEFAULT/TEST_1", "/CISD/DEFAULT/TEST_2");
+
+        // Less or Equal - Real
+        final ExperimentSearchCriteria criteriaLER = new ExperimentSearchCriteria();
+        criteriaLER.withNumberProperty("REAL_NUMBER").thatIsLessThanOrEqualTo(0.02);
+        final List<Experiment> experimentsLER = search(sessionToken, criteriaLER, emptyFetchOptions);
+        assertExperimentIdentifiersInOrder(experimentsLER, "/CISD/DEFAULT/TEST_1", "/CISD/DEFAULT/TEST_2");
+
+        // Less - Integer
+        final ExperimentSearchCriteria criteriaL = new ExperimentSearchCriteria();
+        criteriaL.withNumberProperty("INT_NUMBER").thatIsLessThan(2);
+        final List<Experiment> experimentsL = search(sessionToken, criteriaL, emptyFetchOptions);
+        assertExperimentIdentifiersInOrder(experimentsL, "/CISD/DEFAULT/TEST_1");
+
+        // Less - Integer as Real
+        final ExperimentSearchCriteria criteriaLIR = new ExperimentSearchCriteria();
+        criteriaLIR.withNumberProperty("INT_NUMBER").thatIsLessThan(2.0);
+        final List<Experiment> experimentsLIR = search(sessionToken, criteriaLIR, emptyFetchOptions);
+        assertExperimentIdentifiersInOrder(experimentsLIR, "/CISD/DEFAULT/TEST_1");
+
+        // Less - Real
+        final ExperimentSearchCriteria criteriaLR = new ExperimentSearchCriteria();
+        criteriaLR.withNumberProperty("REAL_NUMBER").thatIsLessThan(0.02);
+        final List<Experiment> experimentsLR = search(sessionToken, criteriaLR, emptyFetchOptions);
+        assertExperimentIdentifiersInOrder(experimentsLR, "/CISD/DEFAULT/TEST_1");
+    }
+
+    @Test
     public void testSearchForExperimentWithDatePropertyMatchingSubstring()
     {
         final String sessionToken = v3api.login(TEST_USER, PASSWORD);
@@ -1333,6 +1425,24 @@ public class SearchExperimentTest extends AbstractExperimentTest
                 "Can't be computed we suggest you use withDateProperty to see operators available");
     }
 
+    public ExperimentCreation getExperimentCreation(final EntityTypePermId experimentType, final int intValue,
+            final double realValue)
+    {
+        final ExperimentCreation experimentCreation1 = new ExperimentCreation();
+        experimentCreation1.setCode("TEST_" + intValue);
+        experimentCreation1.setTypeId(experimentType);
+        experimentCreation1.setProjectId(new ProjectIdentifier("/CISD/DEFAULT"));
+        experimentCreation1.setProperty("INT_NUMBER", String.valueOf(intValue));
+        experimentCreation1.setProperty("REAL_NUMBER", String.valueOf(realValue));
+        return experimentCreation1;
+    }
+
+    private List<Experiment> search(final String sessionToken, final ExperimentSearchCriteria criteria,
+            final ExperimentFetchOptions options)
+    {
+        return v3api.searchExperiments(sessionToken, criteria, options).getObjects();
+    }
+
     protected PropertyTypePermId createABooleanPropertyType(final String sessionToken, final String code)
     {
         final PropertyTypeCreation creation = new PropertyTypeCreation();
@@ -1350,6 +1460,16 @@ public class SearchExperimentTest extends AbstractExperimentTest
         creation.setDataType(DataType.INTEGER);
         creation.setLabel("Integer");
         creation.setDescription("Integer property type.");
+        return v3api.createPropertyTypes(sessionToken, Collections.singletonList(creation)).get(0);
+    }
+
+    protected PropertyTypePermId createARealPropertyType(final String sessionToken, final String code)
+    {
+        final PropertyTypeCreation creation = new PropertyTypeCreation();
+        creation.setCode(code);
+        creation.setDataType(DataType.REAL);
+        creation.setLabel("Real");
+        creation.setDescription("Real property type.");
         return v3api.createPropertyTypes(sessionToken, Collections.singletonList(creation)).get(0);
     }
 
