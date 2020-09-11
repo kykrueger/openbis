@@ -1233,34 +1233,34 @@ public class SearchExperimentTest extends AbstractExperimentTest
     {
         final String sessionToken = v3api.login(TEST_USER, PASSWORD);
 
-        final PropertyTypePermId propertyType = createAnIntegerPropertyType(sessionToken, "NUMBER");
+        final PropertyTypePermId propertyType = createAnIntegerPropertyType(sessionToken, "INT_NUMBER");
         final EntityTypePermId experimentType = createAnExperimentType(sessionToken, false, propertyType);
 
         final ExperimentCreation experimentCreation = new ExperimentCreation();
         experimentCreation.setCode("INTEGER_PROPERTY_TEST");
         experimentCreation.setTypeId(experimentType);
         experimentCreation.setProjectId(new ProjectIdentifier("/CISD/DEFAULT"));
-        experimentCreation.setProperty("NUMBER", "123");
+        experimentCreation.setProperty("INT_NUMBER", "123");
 
         v3api.createExperiments(sessionToken, Collections.singletonList(experimentCreation));
 
         final ExperimentSearchCriteria criteriaStartsWithMatch = new ExperimentSearchCriteria();
-        criteriaStartsWithMatch.withProperty("NUMBER").thatStartsWith("12");
+        criteriaStartsWithMatch.withProperty("INT_NUMBER").thatStartsWith("12");
         assertUserFailureException(
                 Void -> searchExperiments(sessionToken, criteriaStartsWithMatch, new ExperimentFetchOptions()),
-                "Can't be computed we suggest you use withNumberProperty to see operators available");
+                String.format("Operator %s undefined for datatype %s.", "StartsWith", "INTEGER"));
 
         final ExperimentSearchCriteria criteriaEndsWithMatch = new ExperimentSearchCriteria();
-        criteriaEndsWithMatch.withProperty("NUMBER").thatEndsWith("23");
+        criteriaEndsWithMatch.withProperty("INT_NUMBER").thatEndsWith("23");
         assertUserFailureException(
                 Void -> searchExperiments(sessionToken, criteriaEndsWithMatch, new ExperimentFetchOptions()),
-                "Can't be computed we suggest you use withNumberProperty to see operators available");
+                String.format("Operator %s undefined for datatype %s.", "EndsWith", "INTEGER"));
 
         final ExperimentSearchCriteria criteriaContainsMatch = new ExperimentSearchCriteria();
-        criteriaContainsMatch.withProperty("NUMBER").thatContains("23");
+        criteriaContainsMatch.withProperty("INT_NUMBER").thatContains("23");
         assertUserFailureException(
                 Void -> searchExperiments(sessionToken, criteriaContainsMatch, new ExperimentFetchOptions()),
-                "Can't be computed we suggest you use withNumberProperty to see operators available");
+                String.format("Operator %s undefined for datatype %s.", "Contains", "INTEGER"));
     }
 
     @Test

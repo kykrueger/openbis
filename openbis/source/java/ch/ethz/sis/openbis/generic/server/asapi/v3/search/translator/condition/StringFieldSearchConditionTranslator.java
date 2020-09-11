@@ -16,13 +16,11 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractStringValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AnyStringValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringEqualToValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringFieldSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.*;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.AttributesMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
@@ -42,6 +40,21 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.MATERIALS_T
 
 public class StringFieldSearchConditionTranslator implements IConditionTranslator<StringFieldSearchCriteria>
 {
+
+    private static final Map<Class<? extends AbstractStringValue>, String> OPERATOR_NAME_BY_CLASS = new HashMap<>();
+
+    static
+    {
+        OPERATOR_NAME_BY_CLASS.put(StringContainsExactlyValue.class, "ContainsExactly");
+        OPERATOR_NAME_BY_CLASS.put(StringContainsValue.class, "Contains");
+        OPERATOR_NAME_BY_CLASS.put(StringEndsWithValue.class, "EndsWith");
+        OPERATOR_NAME_BY_CLASS.put(StringEqualToValue.class, "EqualTo");
+        OPERATOR_NAME_BY_CLASS.put(StringGreaterThanOrEqualToValue.class, "GreaterThanOrEqualTo");
+        OPERATOR_NAME_BY_CLASS.put(StringGreaterThanValue.class, "GreaterThan");
+        OPERATOR_NAME_BY_CLASS.put(StringLessThanOrEqualToValue.class, "LessThanOrEqualTo");
+        OPERATOR_NAME_BY_CLASS.put(StringLessThanValue.class, "LessThan");
+        OPERATOR_NAME_BY_CLASS.put(StringStartsWithValue.class, "StartsWith");
+    }
 
     @Override
     public Map<String, JoinInformation> getJoinInformationMap(final StringFieldSearchCriteria criterion, final TableMapper tableMapper,
@@ -111,8 +124,8 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
                             if (casting.equals(DataTypeCode.INTEGER.toString())
                                     || casting.equals(DataTypeCode.REAL.toString()))
                             {
-                                throw new UserFailureException("Can't be computed we suggest you use " +
-                                        "withNumberProperty to see operators available");
+                                throw new UserFailureException(String.format("Operator %s undefined for datatype %s.",
+                                        OPERATOR_NAME_BY_CLASS.get(value.getClass()), casting));
                             }
                             if (casting.equals(DataTypeCode.TIMESTAMP.toString())
                                     || casting.equals(DataTypeCode.DATE.toString()))
