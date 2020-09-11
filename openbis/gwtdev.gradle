@@ -46,7 +46,7 @@ task prepareGWT(type:Copy, dependsOn: [deleteGWT, compileJava]) {
     }
 }
 
-task compileGWTToTemp(type: JavaExec, dependsOn: prepareGWT) {
+task compileGWTToTempJDK8(type: JavaExec, dependsOn: prepareGWT) {
     // inputs.source
     sourceSets.main.java.srcDirs
     inputs.dir sourceSets.main.output.resourcesDir
@@ -74,7 +74,22 @@ task compileGWTToTemp(type: JavaExec, dependsOn: prepareGWT) {
              '-logLevel', 'INFO']
 }
 
-task compileGWT(type: Copy, dependsOn: compileGWTToTemp) {
+task compileGWT(type: Copy, dependsOn: compileGWTToTempJDK8) {
+    from "targets/www/gwt-temp/ch.systemsx.cisd.openbis.OpenBIS"
+    into "targets/www/openbis-test"
+}
+
+task untarGwt(type: Copy, dependsOn: prepareGWT) {
+    from tarTree(resources.gzip("../openbis_standard_technologies/resource/gwt.tar.gz"))
+    into "${project.projectDir.absolutePath}/targets/www/gwt-temp"
+}
+
+task compileGWTToTempJDK11(type: Copy, dependsOn: untarGwt) {
+    from "${project.projectDir.absolutePath}/source/java/ch/systemsx/cisd/openbis/public"
+    into "${project.projectDir.absolutePath}/targets/www/gwt-temp/ch.systemsx.cisd.openbis.OpenBIS"
+}
+
+task openBISDevelopementEnvironmentASPrepare(type: Copy, dependsOn: compileGWTToTempJDK11) {
     from "targets/www/gwt-temp/ch.systemsx.cisd.openbis.OpenBIS"
     into "targets/www/openbis-test"
 }

@@ -62,6 +62,8 @@ public class DatabaseConfigurationContext implements DisposableBean
     private String databaseKind;
 
     private DatabaseEngine databaseEngine;
+    
+    private String validVersions;
 
     private boolean createFromScratch;
 
@@ -652,6 +654,19 @@ public class DatabaseConfigurationContext implements DisposableBean
         } else
         {
             this.databaseEngine = DatabaseEngine.POSTGRESQL;
+        }
+    }
+    
+    public final String getValidVersions()
+    {
+        return validVersions;
+    }
+
+    public final void setValidVersions(String validVersions)
+    {
+        if (isSet(validVersions))
+        {
+            this.validVersions = validVersions;
         }
     }
 

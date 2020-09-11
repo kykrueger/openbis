@@ -91,6 +91,12 @@ public class H2AdminDAO extends AbstractDatabaseAdminDAO
     }
 
     @Override
+    public String getDatabaseServerVersion()
+    {
+        return null;
+    }
+
+    @Override
     public void createOwner()
     {
         // Creation of the user happens "on the fly" with H2

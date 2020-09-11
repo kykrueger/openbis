@@ -26,6 +26,11 @@ import java.io.File;
 public interface IDatabaseAdminDAO
 {
     /**
+     * Returns the version of the database server.
+     */
+    public String getDatabaseServerVersion();
+
+    /**
      * Returns the name of the database to be created / dropped.
      */
     public String getDatabaseName();

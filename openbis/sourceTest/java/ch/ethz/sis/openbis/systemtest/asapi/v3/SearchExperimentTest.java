@@ -1229,7 +1229,7 @@ public class SearchExperimentTest extends AbstractExperimentTest
     }
 
     @Test
-    public void testSearchForExperimentWithIntegerPropertyThatStartsWith()
+    public void testSearchForExperimentWithIntegerPropertyMatchingSubstring()
     {
         final String sessionToken = v3api.login(TEST_USER, PASSWORD);
 
@@ -1264,7 +1264,7 @@ public class SearchExperimentTest extends AbstractExperimentTest
     }
 
     @Test
-    public void testSearchForExperimentWithDatePropertyThatContains()
+    public void testSearchForExperimentWithDatePropertyMatchingSubstring()
     {
         final String sessionToken = v3api.login(TEST_USER, PASSWORD);
 
@@ -1299,7 +1299,7 @@ public class SearchExperimentTest extends AbstractExperimentTest
     }
 
     @Test
-    public void testSearchForExperimentWithTimestampPropertyThatContains()
+    public void testSearchForExperimentWithTimestampPropertyMatchingSubstring()
     {
         final String sessionToken = v3api.login(TEST_USER, PASSWORD);
 

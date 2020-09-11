@@ -17,12 +17,16 @@
 package ch.systemsx.cisd.dbmigration.postgresql;
 
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.sql.DataSource;
 
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.common.db.ISequenceNameMapper;
 import ch.systemsx.cisd.common.db.ISqlScriptExecutor;
+import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
+import ch.systemsx.cisd.common.utilities.VersionUtils;
 import ch.systemsx.cisd.dbmigration.DatabaseConfigurationContext;
 import ch.systemsx.cisd.dbmigration.DatabaseVersionLogDAO;
 import ch.systemsx.cisd.dbmigration.IDAOFactory;
@@ -40,6 +44,8 @@ import ch.systemsx.cisd.dbmigration.java.MigrationStepExecutor;
  */
 public class PostgreSQLDAOFactory implements IDAOFactory
 {
+    private static final String DEFAULT_VALID_VERSIONS = "11";
+
     private final IDatabaseAdminDAO databaseDAO;
 
     private final ISqlScriptExecutor sqlScriptExecutor;
@@ -74,8 +80,24 @@ public class PostgreSQLDAOFactory implements IDAOFactory
         databaseDAO =
                 new PostgreSQLAdminDAO(context.getAdminDataSource(), sqlScriptExecutor,
                         massUploader, context.getOwner(), context.getReadOnlyGroup(), context
-                                .getReadWriteGroup(), context.getDatabaseName(), context
+                                .getReadWriteGroup(),
+                        context.getDatabaseName(), context
                                 .getDatabaseURL());
+//        assertValidVersion(databaseDAO.getDatabaseServerVersion(), context.getValidVersions());
+    }
+
+    private void assertValidVersion(String databaseServerVersion, String validVersions)
+    {
+        List<String> validVersionsList = Arrays.asList((validVersions != null ? validVersions : DEFAULT_VALID_VERSIONS).split(" "));
+        for (String validVersion : validVersionsList)
+        {
+            if (VersionUtils.isCompatible(validVersion, databaseServerVersion, false))
+            {
+                return;
+            }
+        }
+        throw new ConfigurationFailureException("The database server version " + databaseServerVersion
+                + " is not a valid version. Valid versions are " + validVersionsList);
     }
 
     @Override
