@@ -1422,19 +1422,19 @@ public class SearchExperimentTest extends AbstractExperimentTest
         criteriaContainsMatch.withProperty("DATE").thatContains("02");
         assertUserFailureException(
                 Void -> searchExperiments(sessionToken, criteriaContainsMatch, new ExperimentFetchOptions()),
-                "Can't be computed we suggest you use withDateProperty to see operators available");
+                String.format("Operator %s undefined for datatype %s.", "Contains", "DATE"));
 
         final ExperimentSearchCriteria criteriaStartsWithMatch = new ExperimentSearchCriteria();
         criteriaStartsWithMatch.withProperty("DATE").thatStartsWith("2020");
         assertUserFailureException(
                 Void -> searchExperiments(sessionToken, criteriaStartsWithMatch, new ExperimentFetchOptions()),
-                "Can't be computed we suggest you use withDateProperty to see operators available");
+                String.format("Operator %s undefined for datatype %s.", "StartsWith", "DATE"));
 
         final ExperimentSearchCriteria criteriaEndsWithMatch = new ExperimentSearchCriteria();
         criteriaEndsWithMatch.withProperty("DATE").thatEndsWith("09");
         assertUserFailureException(
                 Void -> searchExperiments(sessionToken, criteriaEndsWithMatch, new ExperimentFetchOptions()),
-                "Can't be computed we suggest you use withDateProperty to see operators available");
+                String.format("Operator %s undefined for datatype %s.", "EndsWith", "DATE"));
     }
 
     @Test
@@ -1457,19 +1457,19 @@ public class SearchExperimentTest extends AbstractExperimentTest
         criteriaContainsMatch.withProperty("TIMESTAMP").thatContains("20");
         assertUserFailureException(
                 Void -> searchExperiments(sessionToken, criteriaContainsMatch, new ExperimentFetchOptions()),
-                "Can't be computed we suggest you use withDateProperty to see operators available");
+                String.format("Operator %s undefined for datatype %s.", "Contains", "TIMESTAMP"));
 
         final ExperimentSearchCriteria criteriaStartsWithMatch = new ExperimentSearchCriteria();
         criteriaStartsWithMatch.withProperty("TIMESTAMP").thatStartsWith("2020");
         assertUserFailureException(
                 Void -> searchExperiments(sessionToken, criteriaStartsWithMatch, new ExperimentFetchOptions()),
-                "Can't be computed we suggest you use withDateProperty to see operators available");
+                String.format("Operator %s undefined for datatype %s.", "StartsWith", "TIMESTAMP"));
 
         final ExperimentSearchCriteria criteriaEndsWithMatch = new ExperimentSearchCriteria();
         criteriaEndsWithMatch.withProperty("TIMESTAMP").thatEndsWith("0100");
         assertUserFailureException(
                 Void -> searchExperiments(sessionToken, criteriaEndsWithMatch, new ExperimentFetchOptions()),
-                "Can't be computed we suggest you use withDateProperty to see operators available");
+                String.format("Operator %s undefined for datatype %s.", "EndsWith", "TIMESTAMP"));
     }
 
     public ExperimentCreation getExperimentCreation(final EntityTypePermId experimentType, final int intValue,

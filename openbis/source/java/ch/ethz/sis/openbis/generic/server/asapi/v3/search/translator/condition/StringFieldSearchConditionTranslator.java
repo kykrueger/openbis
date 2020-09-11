@@ -119,26 +119,17 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
                     final String casting = dataTypeByPropertyName.get(propertyName);
                     if (casting != null)
                     {
-                        if (!(criterion.getFieldValue() instanceof StringEqualToValue))
+                        if (!(criterion.getFieldValue() instanceof StringEqualToValue) &&
+                                (casting.equals(DataTypeCode.INTEGER.toString())
+                                        || casting.equals(DataTypeCode.REAL.toString())
+                                        || casting.equals(DataTypeCode.TIMESTAMP.toString())
+                                        || casting.equals(DataTypeCode.DATE.toString())
+                                        || casting.equals(DataTypeCode.BOOLEAN.toString())
+                                        || casting.equals(DataTypeCode.MATERIAL.toString())
+                                        || casting.equals(DataTypeCode.SAMPLE.toString())))
                         {
-                            if (casting.equals(DataTypeCode.INTEGER.toString())
-                                    || casting.equals(DataTypeCode.REAL.toString()))
-                            {
-                                throw new UserFailureException(String.format("Operator %s undefined for datatype %s.",
-                                        OPERATOR_NAME_BY_CLASS.get(value.getClass()), casting));
-                            }
-                            if (casting.equals(DataTypeCode.TIMESTAMP.toString())
-                                    || casting.equals(DataTypeCode.DATE.toString()))
-                            {
-                                throw new UserFailureException("Can't be computed we suggest you use " +
-                                        "withDateProperty to see operators available");
-                            }
-                            if (casting.equals(DataTypeCode.BOOLEAN.toString())
-                                    || casting.equals(DataTypeCode.MATERIAL.toString())
-                                    || casting.equals(DataTypeCode.SAMPLE.toString()))
-                            {
-                                throw new UserFailureException("Can't be computed for " + casting + " type.");
-                            }
+                            throw new UserFailureException(String.format("Operator %s undefined for datatype %s.",
+                                    OPERATOR_NAME_BY_CLASS.get(value.getClass()), casting));
                         }
 
                         sqlBuilder.append(aliases.get(tableMapper.getValuesTable()).getSubTableAlias())
