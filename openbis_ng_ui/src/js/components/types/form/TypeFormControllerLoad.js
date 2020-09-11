@@ -203,8 +203,7 @@ export default class TypeFormControllerLoad extends PageControllerLoad {
         value: _.get(propertyType, 'description', null)
       }),
       dataType: FormUtil.createField({
-        value: dataType,
-        enabled
+        value: dataType
       }),
       plugin: FormUtil.createField({
         value: _.get(loadedAssignment, 'plugin.name', null),

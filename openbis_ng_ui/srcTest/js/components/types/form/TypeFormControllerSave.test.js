@@ -254,11 +254,11 @@ describe('TypeFormController.handleSave', () => {
       scope === 'local' ? 'TEST_TYPE.NEW_CODE' : 'NEW_CODE'
 
     expectExecuteOperations([
-      createPropertyTypeOperation(
-        propertyTypeCode,
-        openbis.DataType.VARCHAR,
-        'NEW_LABEL'
-      ),
+      createPropertyTypeOperation({
+        code: propertyTypeCode,
+        dataType: openbis.DataType.VARCHAR,
+        label: 'NEW_LABEL'
+      }),
       setPropertyAssignmentOperation(
         SAMPLE_TYPE.getCode(),
         propertyTypeCode,
@@ -334,7 +334,12 @@ describe('TypeFormController.handleSave', () => {
     controller.handleChange('property', {
       id: 'property-0',
       field: 'dataType',
-      value: openbis.DataType.BOOLEAN
+      value: openbis.DataType.CONTROLLEDVOCABULARY
+    })
+    controller.handleChange('property', {
+      id: 'property-0',
+      field: 'vocabulary',
+      value: 'TEST_VOCABULARY'
     })
 
     await controller.handleSave()
@@ -346,11 +351,12 @@ describe('TypeFormController.handleSave', () => {
         false
       ),
       deletePropertyTypeOperation(propertyType.getCode()),
-      createPropertyTypeOperation(
-        propertyType.getCode(),
-        openbis.DataType.BOOLEAN,
-        propertyType.getLabel()
-      ),
+      createPropertyTypeOperation({
+        code: propertyType.getCode(),
+        label: propertyType.getLabel(),
+        dataType: openbis.DataType.CONTROLLEDVOCABULARY,
+        vocabulary: 'TEST_VOCABULARY'
+      }),
       setPropertyAssignmentOperation(
         type.getCode(),
         propertyType.getCode(),
@@ -409,14 +415,20 @@ describe('TypeFormController.handleSave', () => {
     ])
   }
 
-  function createPropertyTypeOperation(
-    propertyTypeCode,
-    propertyDataType,
-    propertyTypeLabel
-  ) {
+  function createPropertyTypeOperation({
+    code: propertyTypeCode,
+    dataType: propertyDataType,
+    vocabulary: propertyTypeVocabulary,
+    label: propertyTypeLabel
+  }) {
     const creation = new openbis.PropertyTypeCreation()
     creation.setCode(propertyTypeCode)
     creation.setDataType(propertyDataType)
+    if (propertyTypeVocabulary) {
+      creation.setVocabularyId(
+        new openbis.VocabularyPermId(propertyTypeVocabulary)
+      )
+    }
     creation.setLabel(propertyTypeLabel)
     return new openbis.CreatePropertyTypesOperation([creation])
   }

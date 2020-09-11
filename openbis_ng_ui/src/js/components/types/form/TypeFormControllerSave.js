@@ -133,7 +133,6 @@ export default class TypeFormControllerSave extends PageControllerSave {
 
   _isPropertyTypeUpdatePossible(property, original) {
     return !FormUtil.haveFieldsChanged(property, original, [
-      'dataType',
       'vocabulary',
       'materialType',
       'sampleType'
@@ -211,6 +210,7 @@ export default class TypeFormControllerSave extends PageControllerSave {
     update.setDescription(property.description.value)
     update.setSchema(property.schema.value)
     update.setTransformation(property.transformation.value)
+    update.convertToDataType(property.dataType.value)
     return new openbis.UpdatePropertyTypesOperation([update])
   }
 

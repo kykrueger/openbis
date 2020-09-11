@@ -29,6 +29,7 @@ beforeEach(() => {
   facade.loadDynamicPlugins.mockReturnValue(Promise.resolve([]))
   facade.loadValidationPlugins.mockReturnValue(Promise.resolve([]))
   facade.loadMaterials.mockReturnValue(Promise.resolve([]))
+  facade.loadSamples.mockReturnValue(Promise.resolve([]))
   facade.loadVocabularyTerms.mockReturnValue(Promise.resolve([]))
   facade.loadGlobalPropertyTypes.mockReturnValue(Promise.resolve([]))
 })
@@ -45,6 +46,7 @@ describe('TypeFormComponent', () => {
   test('add property', testAddProperty)
   test('change type', testChangeType)
   test('change property', testChangeProperty)
+  test('convert property', testConvertProperty)
   test('change section', testChangeSection)
   test('remove property', testRemoveProperty)
   test('remove section', testRemoveSection)
@@ -327,8 +329,23 @@ async function doTestSelectProperty(scope, used) {
         dataType: {
           label: 'Data Type',
           value: propertyType.getDataType(),
-          enabled: !used,
-          mode: 'edit'
+          enabled: true,
+          mode: 'edit',
+          options: used
+            ? [
+                {
+                  label: openbis.DataType.VARCHAR,
+                  value: openbis.DataType.VARCHAR
+                },
+                {
+                  label: openbis.DataType.MULTILINE_VARCHAR + ' (converted)',
+                  value: openbis.DataType.MULTILINE_VARCHAR
+                }
+              ]
+            : openbis.DataType.values.map(dataType => ({
+                label: dataType,
+                value: dataType
+              }))
         },
         label: {
           label: 'Label',
@@ -912,6 +929,283 @@ async function testChangeProperty() {
       message: {
         text: 'You have unsaved changes.',
         type: 'warning'
+      }
+    }
+  })
+}
+
+async function testConvertProperty() {
+  const properties = [
+    openbis.DataType.INTEGER,
+    openbis.DataType.REAL,
+    openbis.DataType.VARCHAR,
+    openbis.DataType.MULTILINE_VARCHAR,
+    openbis.DataType.XML,
+    openbis.DataType.HYPERLINK,
+    openbis.DataType.TIMESTAMP,
+    openbis.DataType.DATE,
+    openbis.DataType.BOOLEAN,
+    openbis.DataType.CONTROLLEDVOCABULARY,
+    openbis.DataType.MATERIAL,
+    openbis.DataType.SAMPLE
+  ].map(dataType => {
+    const propertyType = new openbis.PropertyType()
+    propertyType.setCode(dataType)
+    propertyType.setDataType(dataType)
+    const property = new openbis.PropertyAssignment()
+    property.setPropertyType(propertyType)
+    return property
+  })
+
+  const type = new openbis.SampleType()
+  type.setCode('TEST_TYPE')
+  type.setPropertyAssignments(properties)
+
+  facade.loadType.mockReturnValue(Promise.resolve(type))
+  facade.loadUsages.mockReturnValue(
+    Promise.resolve({
+      propertyGlobal: properties.reduce((map, property) => {
+        map[property.propertyType.code] = 1
+        return map
+      }, {})
+    })
+  )
+
+  const suffix = ' (converted)'
+  let index = 0
+
+  const form = await common.mount({
+    id: type.getCode(),
+    type: objectTypes.OBJECT_TYPE
+  })
+
+  form.getButtons().getEdit().click()
+  await form.update()
+
+  form.getPreview().getSections()[0].getProperties()[index++].click()
+  await form.update()
+
+  form.expectJSON({
+    parameters: {
+      property: {
+        dataType: {
+          value: 'INTEGER',
+          enabled: true,
+          options: [
+            { label: openbis.DataType.INTEGER },
+            { label: openbis.DataType.VARCHAR + suffix },
+            { label: openbis.DataType.MULTILINE_VARCHAR + suffix },
+            { label: openbis.DataType.REAL + suffix }
+          ]
+        }
+      }
+    }
+  })
+
+  form.getPreview().getSections()[0].getProperties()[index++].click()
+  await form.update()
+
+  form.expectJSON({
+    parameters: {
+      property: {
+        dataType: {
+          value: 'REAL',
+          enabled: true,
+          options: [
+            { label: openbis.DataType.REAL },
+            { label: openbis.DataType.VARCHAR + suffix },
+            { label: openbis.DataType.MULTILINE_VARCHAR + suffix }
+          ]
+        }
+      }
+    }
+  })
+
+  form.getPreview().getSections()[0].getProperties()[index++].click()
+  await form.update()
+
+  form.expectJSON({
+    parameters: {
+      property: {
+        dataType: {
+          value: 'VARCHAR',
+          enabled: true,
+          options: [
+            { label: openbis.DataType.VARCHAR },
+            { label: openbis.DataType.MULTILINE_VARCHAR + suffix }
+          ]
+        }
+      }
+    }
+  })
+
+  form.getPreview().getSections()[0].getProperties()[index++].click()
+  await form.update()
+
+  form.expectJSON({
+    parameters: {
+      property: {
+        dataType: {
+          value: 'MULTILINE_VARCHAR',
+          enabled: true,
+          options: [
+            { label: openbis.DataType.MULTILINE_VARCHAR },
+            { label: openbis.DataType.VARCHAR + suffix }
+          ]
+        }
+      }
+    }
+  })
+
+  form.getPreview().getSections()[0].getProperties()[index++].click()
+  await form.update()
+
+  form.expectJSON({
+    parameters: {
+      property: {
+        dataType: {
+          value: 'XML',
+          enabled: true,
+          options: [
+            { label: openbis.DataType.XML },
+            { label: openbis.DataType.VARCHAR + suffix },
+            { label: openbis.DataType.MULTILINE_VARCHAR + suffix }
+          ]
+        }
+      }
+    }
+  })
+
+  form.getPreview().getSections()[0].getProperties()[index++].click()
+  await form.update()
+
+  form.expectJSON({
+    parameters: {
+      property: {
+        dataType: {
+          value: 'HYPERLINK',
+          enabled: true,
+          options: [
+            { label: openbis.DataType.HYPERLINK },
+            { label: openbis.DataType.VARCHAR + suffix },
+            { label: openbis.DataType.MULTILINE_VARCHAR + suffix }
+          ]
+        }
+      }
+    }
+  })
+
+  form.getPreview().getSections()[0].getProperties()[index++].click()
+  await form.update()
+
+  form.expectJSON({
+    parameters: {
+      property: {
+        dataType: {
+          value: 'TIMESTAMP',
+          enabled: true,
+          options: [
+            { label: openbis.DataType.TIMESTAMP },
+            { label: openbis.DataType.VARCHAR + suffix },
+            { label: openbis.DataType.MULTILINE_VARCHAR + suffix },
+            { label: openbis.DataType.DATE + suffix }
+          ]
+        }
+      }
+    }
+  })
+
+  form.getPreview().getSections()[0].getProperties()[index++].click()
+  await form.update()
+
+  form.expectJSON({
+    parameters: {
+      property: {
+        dataType: {
+          value: 'DATE',
+          enabled: true,
+          options: [
+            { label: openbis.DataType.DATE },
+            { label: openbis.DataType.VARCHAR + suffix },
+            { label: openbis.DataType.MULTILINE_VARCHAR + suffix }
+          ]
+        }
+      }
+    }
+  })
+
+  form.getPreview().getSections()[0].getProperties()[index++].click()
+  await form.update()
+
+  form.expectJSON({
+    parameters: {
+      property: {
+        dataType: {
+          value: 'BOOLEAN',
+          enabled: true,
+          options: [
+            { label: openbis.DataType.BOOLEAN },
+            { label: openbis.DataType.VARCHAR + suffix },
+            { label: openbis.DataType.MULTILINE_VARCHAR + suffix }
+          ]
+        }
+      }
+    }
+  })
+
+  form.getPreview().getSections()[0].getProperties()[index++].click()
+  await form.update()
+
+  form.expectJSON({
+    parameters: {
+      property: {
+        dataType: {
+          value: 'CONTROLLEDVOCABULARY',
+          enabled: true,
+          options: [
+            { label: openbis.DataType.CONTROLLEDVOCABULARY },
+            { label: openbis.DataType.VARCHAR + suffix },
+            { label: openbis.DataType.MULTILINE_VARCHAR + suffix }
+          ]
+        }
+      }
+    }
+  })
+
+  form.getPreview().getSections()[0].getProperties()[index++].click()
+  await form.update()
+
+  form.expectJSON({
+    parameters: {
+      property: {
+        dataType: {
+          value: 'MATERIAL',
+          enabled: true,
+          options: [
+            { label: openbis.DataType.MATERIAL },
+            { label: openbis.DataType.VARCHAR + suffix },
+            { label: openbis.DataType.MULTILINE_VARCHAR + suffix }
+          ]
+        }
+      }
+    }
+  })
+
+  form.getPreview().getSections()[0].getProperties()[index++].click()
+  await form.update()
+
+  form.expectJSON({
+    parameters: {
+      property: {
+        dataType: {
+          value: 'SAMPLE',
+          enabled: true,
+          options: [
+            { label: openbis.DataType.SAMPLE },
+            { label: openbis.DataType.VARCHAR + suffix },
+            { label: openbis.DataType.MULTILINE_VARCHAR + suffix }
+          ]
+        }
       }
     }
   })

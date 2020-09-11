@@ -287,8 +287,7 @@ export default class TypeFormControllerChange extends PageControllerChange {
           globalPropertyType: globalPropertyType
         },
         dataType: {
-          ...newProperty.dataType,
-          enabled
+          ...newProperty.dataType
         },
         vocabulary: {
           ...newProperty.vocabulary,

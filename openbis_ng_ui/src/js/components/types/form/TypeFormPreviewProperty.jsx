@@ -273,6 +273,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
       dataType === openbis.DataType.MULTILINE_VARCHAR ||
       dataType === openbis.DataType.HYPERLINK ||
       dataType === openbis.DataType.TIMESTAMP ||
+      dataType === openbis.DataType.DATE ||
       dataType === openbis.DataType.XML
     ) {
       return this.renderVarcharProperty()

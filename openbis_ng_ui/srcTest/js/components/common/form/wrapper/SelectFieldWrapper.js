@@ -12,4 +12,18 @@ export default class SelectFieldWrapper extends FieldWrapper {
       return false
     }
   }
+  getOptions() {
+    return this.wrapper.prop('options')
+  }
+
+  toJSON() {
+    if (this.wrapper.exists()) {
+      return {
+        ...super.toJSON(),
+        options: this.getOptions()
+      }
+    } else {
+      return null
+    }
+  }
 }
