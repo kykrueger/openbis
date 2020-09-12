@@ -23,6 +23,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DatePropertySearchCriteria;
@@ -1388,6 +1391,78 @@ public class SearchDataSetTest extends AbstractDataSetTest
     }
 
     @Test
+    public void testSearchForDataSetWithDatePropertyMatchingSubstring()
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        final PropertyTypePermId propertyType = createADatePropertyType(sessionToken, "DATE");
+        final EntityTypePermId dataSetType = createADataSetType(sessionToken, false, propertyType);
+
+        final DataSetCreation dataSetCreation = physicalDataSetCreation();
+        dataSetCreation.setCode("DATE_PROPERTY_TEST");
+        dataSetCreation.setTypeId(dataSetType);
+        dataSetCreation.setProperty("DATE", "2020-02-09");
+
+        v3api.createDataSets(sessionToken, Collections.singletonList(dataSetCreation));
+
+        final DataSetSearchCriteria criteriaContainsMatch = new DataSetSearchCriteria();
+        criteriaContainsMatch.withProperty("DATE").thatContains("02");
+        assertUserFailureException(
+                Void -> searchDataSets(sessionToken, criteriaContainsMatch, new DataSetFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "Contains", "DATE"));
+
+        final DataSetSearchCriteria criteriaStartsWithMatch = new DataSetSearchCriteria();
+        criteriaStartsWithMatch.withProperty("DATE").thatStartsWith("2020");
+        assertUserFailureException(
+                Void -> searchDataSets(sessionToken, criteriaStartsWithMatch, new DataSetFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "StartsWith", "DATE"));
+
+        final DataSetSearchCriteria criteriaEndsWithMatch = new DataSetSearchCriteria();
+        criteriaEndsWithMatch.withProperty("DATE").thatEndsWith("09");
+        assertUserFailureException(
+                Void -> searchDataSets(sessionToken, criteriaEndsWithMatch, new DataSetFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "EndsWith", "DATE"));
+
+        v3api.logout(sessionToken);
+    }
+
+    @Test
+    public void testSearchForDataSetWithTimestampPropertyMatchingSubstring()
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        final PropertyTypePermId propertyType = createATimestampPropertyType(sessionToken, "TIMESTAMP");
+        final EntityTypePermId dataSetType = createADataSetType(sessionToken, false, propertyType);
+
+        final DataSetCreation dataSetCreation = physicalDataSetCreation();
+        dataSetCreation.setCode("TIMESTAMP_PROPERTY_TEST");
+        dataSetCreation.setTypeId(dataSetType);
+        dataSetCreation.setProperty("TIMESTAMP", "2020-02-09 10:00:00 +0100");
+
+        v3api.createDataSets(sessionToken, Collections.singletonList(dataSetCreation));
+
+        final DataSetSearchCriteria criteriaContainsMatch = new DataSetSearchCriteria();
+        criteriaContainsMatch.withProperty("TIMESTAMP").thatContains("20");
+        assertUserFailureException(
+                Void -> searchDataSets(sessionToken, criteriaContainsMatch, new DataSetFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "Contains", "TIMESTAMP"));
+
+        final DataSetSearchCriteria criteriaStartsWithMatch = new DataSetSearchCriteria();
+        criteriaStartsWithMatch.withProperty("TIMESTAMP").thatStartsWith("2020");
+        assertUserFailureException(
+                Void -> searchDataSets(sessionToken, criteriaStartsWithMatch, new DataSetFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "StartsWith", "TIMESTAMP"));
+
+        final DataSetSearchCriteria criteriaEndsWithMatch = new DataSetSearchCriteria();
+        criteriaEndsWithMatch.withProperty("TIMESTAMP").thatEndsWith("0100");
+        assertUserFailureException(
+                Void -> searchDataSets(sessionToken, criteriaEndsWithMatch, new DataSetFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "EndsWith", "TIMESTAMP"));
+
+        v3api.logout(sessionToken);
+    }
+
+    @Test
     public void testLogging()
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
@@ -1424,22 +1499,23 @@ public class SearchDataSetTest extends AbstractDataSetTest
 
     private void testSearch(String user, DataSetSearchCriteria criteria, String... expectedIdentifiers)
     {
-        List<DataSet> dataSets = searchDataSets(user, criteria, new DataSetFetchOptions());
-
+        final String sessionToken = v3api.login(user, PASSWORD);
+        List<DataSet> dataSets = searchDataSets(sessionToken, criteria, new DataSetFetchOptions());
         assertIdentifiers(dataSets, expectedIdentifiers);
     }
 
     private void testSearch(String user, DataSetSearchCriteria criteria, int expectedCount)
     {
-        List<DataSet> dataSets = searchDataSets(user, criteria, new DataSetFetchOptions());
+        final String sessionToken = v3api.login(user, PASSWORD);
+        List<DataSet> dataSets = searchDataSets(sessionToken, criteria, new DataSetFetchOptions());
         assertEquals(dataSets.size(), expectedCount);
     }
 
-    private List<DataSet> searchDataSets(String user, DataSetSearchCriteria criteria, DataSetFetchOptions fetchOptions)
+    private List<DataSet> searchDataSets(final String sessionToken, final DataSetSearchCriteria criteria,
+            final DataSetFetchOptions fetchOptions)
     {
-        String sessionToken = v3api.login(user, PASSWORD);
-        SearchResult<DataSet> searchResult = v3api.searchDataSets(sessionToken, criteria, fetchOptions);
-        List<DataSet> dataSets = searchResult.getObjects();
+        final SearchResult<DataSet> searchResult = v3api.searchDataSets(sessionToken, criteria, fetchOptions);
+        final List<DataSet> dataSets = searchResult.getObjects();
         v3api.logout(sessionToken);
         return dataSets;
     }
