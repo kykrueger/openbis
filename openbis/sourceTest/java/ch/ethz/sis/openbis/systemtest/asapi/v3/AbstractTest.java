@@ -41,6 +41,7 @@ import java.util.function.Consumer;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.create.MaterialTypeCreation;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.hibernate.Session;
@@ -1471,6 +1472,22 @@ public class AbstractTest extends SystemTestCase
         }
         creation.setPropertyAssignments(assignments);
         return v3api.createDataSetTypes(sessionToken, Arrays.asList(creation)).get(0);
+    }
+
+    protected EntityTypePermId createAMaterialType(final String sessionToken, final boolean mandatory,
+            final PropertyTypePermId... propertyTypes)
+    {
+        final MaterialTypeCreation creation = new MaterialTypeCreation();
+        creation.setCode("MATERIAL-TYPE-" + System.currentTimeMillis());
+        final List<PropertyAssignmentCreation> assignments = Arrays.stream(propertyTypes).map(propertyTypeId ->
+        {
+            final PropertyAssignmentCreation propertyAssignmentCreation = new PropertyAssignmentCreation();
+            propertyAssignmentCreation.setPropertyTypeId(propertyTypeId);
+            propertyAssignmentCreation.setMandatory(mandatory);
+            return propertyAssignmentCreation;
+        }).collect(Collectors.toList());
+        creation.setPropertyAssignments(assignments);
+        return v3api.createMaterialTypes(sessionToken, Collections.singletonList(creation)).get(0);
     }
 
     protected DataSetCreation physicalDataSetCreation()
