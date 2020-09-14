@@ -166,7 +166,8 @@ public class DateFieldSearchConditionTranslator implements IConditionTranslator<
         }
     }
 
-    private void appendWhenForDateOrTimestampProperties(final StringBuilder sqlBuilder, final List<Object> args, DataType dataType,
+    static void appendWhenForDateOrTimestampProperties(final StringBuilder sqlBuilder, final List<Object> args,
+            final DataType dataType,
             final TableMapper tableMapper, final IDate value, final Map<String, JoinInformation> aliases, final ITimeZone timeZone,
             final boolean bareDateValue, final String propertyName, final boolean internalProperty, final String entityTypesSubTableAlias)
     {

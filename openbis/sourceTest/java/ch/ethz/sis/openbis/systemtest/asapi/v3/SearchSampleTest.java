@@ -1807,14 +1807,25 @@ public class SearchSampleTest extends AbstractSampleTest
         creation.setProperty(propertyType.getPermId(), "2/17/20");
         v3api.createSamples(sessionToken, Arrays.asList(creation));
 
-        SampleSearchCriteria criteria = new SampleSearchCriteria();
-        criteria.withDateProperty(propertyType.getPermId()).thatEquals("20-2-17");
+        final SampleSearchCriteria criteria1 = new SampleSearchCriteria();
+        criteria1.withDateProperty(propertyType.getPermId()).thatEquals("20-2-17");
 
         // When
-        List<Sample> samples = v3api.searchSamples(sessionToken, criteria, new SampleFetchOptions()).getObjects();
+        final List<Sample> samples1 = v3api.searchSamples(sessionToken, criteria1, new SampleFetchOptions())
+                .getObjects();
 
         // Then
-        assertSampleIdentifiers(samples, "/CISD/SAMPLE_WITH_DATE_PROPERTY");
+        assertSampleIdentifiers(samples1, "/CISD/SAMPLE_WITH_DATE_PROPERTY");
+
+        final SampleSearchCriteria criteria2 = new SampleSearchCriteria();
+        criteria2.withProperty(propertyType.getPermId()).thatEquals("20-2-17");
+
+        // When
+        final List<Sample> samples2 = v3api.searchSamples(sessionToken, criteria2, new SampleFetchOptions())
+                .getObjects();
+
+        // Then
+        assertSampleIdentifiers(samples2, "/CISD/SAMPLE_WITH_DATE_PROPERTY");
     }
 
     @Test
@@ -1859,15 +1870,27 @@ public class SearchSampleTest extends AbstractSampleTest
         creation.setProperty(propertyType.getPermId(), "2/17/20");
         v3api.createSamples(sessionToken, Arrays.asList(creation));
 
-        SampleSearchCriteria criteria = new SampleSearchCriteria();
-        criteria.withDateProperty(propertyType.getPermId()).thatIsLaterThanOrEqualTo("2020-02-16");
+        final SampleSearchCriteria criteria1 = new SampleSearchCriteria();
+        criteria1.withDateProperty(propertyType.getPermId()).thatIsLaterThanOrEqualTo("2020-02-16");
 
         // When
-        List<Sample> samples = v3api.searchSamples(sessionToken, criteria, new SampleFetchOptions()).getObjects();
+        final List<Sample> samples1 = v3api.searchSamples(sessionToken, criteria1, new SampleFetchOptions())
+                .getObjects();
 
         // Then
-        assertEquals(samples.get(0).getIdentifier().getIdentifier(), "/CISD/SAMPLE_WITH_DATE_PROPERTY");
-        assertEquals(samples.size(), 1);
+        assertEquals(samples1.get(0).getIdentifier().getIdentifier(), "/CISD/SAMPLE_WITH_DATE_PROPERTY");
+        assertEquals(samples1.size(), 1);
+
+        final SampleSearchCriteria criteria2 = new SampleSearchCriteria();
+        criteria2.withDateProperty(propertyType.getPermId()).thatIsLaterThanOrEqualTo("2020-02-16");
+
+        // When
+        final List<Sample> samples2 = v3api.searchSamples(sessionToken, criteria2, new SampleFetchOptions())
+                .getObjects();
+
+        // Then
+        assertEquals(samples2.get(0).getIdentifier().getIdentifier(), "/CISD/SAMPLE_WITH_DATE_PROPERTY");
+        assertEquals(samples2.size(), 1);
     }
 
     @Test
@@ -1889,14 +1912,25 @@ public class SearchSampleTest extends AbstractSampleTest
         creation2.setProperty(propertyType.getPermId(), "2020-02-16");
         v3api.createSamples(sessionToken, Arrays.asList(creation1, creation2));
 
-        SampleSearchCriteria criteria = new SampleSearchCriteria();
-        criteria.withDateProperty(propertyType.getPermId()).thatIsLaterThanOrEqualTo("2020-02-16");
+        final SampleSearchCriteria criteria1 = new SampleSearchCriteria();
+        criteria1.withDateProperty(propertyType.getPermId()).thatIsLaterThanOrEqualTo("2020-02-16");
 
         // When
-        List<Sample> samples = v3api.searchSamples(sessionToken, criteria, new SampleFetchOptions()).getObjects();
+        final List<Sample> samples1 = v3api.searchSamples(sessionToken, criteria1, new SampleFetchOptions())
+                .getObjects();
 
         // Then
-        assertSampleIdentifiers(samples, "/CISD/SAMPLE_WITH_DATE_PROPERTY1", "/CISD/SAMPLE_WITH_DATE_PROPERTY2");
+        assertSampleIdentifiers(samples1, "/CISD/SAMPLE_WITH_DATE_PROPERTY1", "/CISD/SAMPLE_WITH_DATE_PROPERTY2");
+
+        final SampleSearchCriteria criteria2 = new SampleSearchCriteria();
+        criteria2.withProperty(propertyType.getPermId()).thatIsGreaterThanOrEqualTo("2020-02-16");
+
+        // When
+        final List<Sample> samples2 = v3api.searchSamples(sessionToken, criteria2, new SampleFetchOptions())
+                .getObjects();
+
+        // Then
+        assertSampleIdentifiers(samples2, "/CISD/SAMPLE_WITH_DATE_PROPERTY1", "/CISD/SAMPLE_WITH_DATE_PROPERTY2");
     }
 
     @Test
@@ -1913,15 +1947,27 @@ public class SearchSampleTest extends AbstractSampleTest
         creation.setProperty(propertyType.getPermId(), "1990-11-09");
         v3api.createSamples(sessionToken, Arrays.asList(creation));
 
-        SampleSearchCriteria criteria = new SampleSearchCriteria();
-        criteria.withDateProperty(propertyType.getPermId()).thatIsEarlierThanOrEqualTo("1990-11-10");
+        final SampleSearchCriteria criteria1 = new SampleSearchCriteria();
+        criteria1.withDateProperty(propertyType.getPermId()).thatIsEarlierThanOrEqualTo("1990-11-10");
 
         // When
-        List<Sample> samples = v3api.searchSamples(sessionToken, criteria, new SampleFetchOptions()).getObjects();
+        final List<Sample> samples1 = v3api.searchSamples(sessionToken, criteria1, new SampleFetchOptions())
+                .getObjects();
 
         // Then
-        assertEquals(samples.get(0).getIdentifier().getIdentifier(), "/CISD/SAMPLE_WITH_DATE_PROPERTY");
-        assertEquals(samples.size(), 1);
+        assertEquals(samples1.get(0).getIdentifier().getIdentifier(), "/CISD/SAMPLE_WITH_DATE_PROPERTY");
+        assertEquals(samples1.size(), 1);
+
+        final SampleSearchCriteria criteria2 = new SampleSearchCriteria();
+        criteria2.withProperty(propertyType.getPermId()).thatIsLessThanOrEqualTo("1990-11-10");
+
+        // When
+        final List<Sample> samples2 = v3api.searchSamples(sessionToken, criteria2, new SampleFetchOptions())
+                .getObjects();
+
+        // Then
+        assertEquals(samples2.get(0).getIdentifier().getIdentifier(), "/CISD/SAMPLE_WITH_DATE_PROPERTY");
+        assertEquals(samples2.size(), 1);
     }
 
     @Test
@@ -1964,12 +2010,24 @@ public class SearchSampleTest extends AbstractSampleTest
         creation.setProperty(propertyType.getPermId(), "1990-11-09");
         v3api.createSamples(sessionToken, Arrays.asList(creation));
 
-        SampleSearchCriteria criteria = new SampleSearchCriteria();
-        DatePropertySearchCriteria datePropertySearchCriteria = criteria.withDateProperty(propertyType.getPermId());
-        datePropertySearchCriteria.thatIsEarlierThanOrEqualTo("1990-11-09 01:22:33");
+        final SampleSearchCriteria criteria1 = new SampleSearchCriteria();
+        final DatePropertySearchCriteria datePropertySearchCriteria1 = criteria1.withDateProperty(
+                propertyType.getPermId());
+        datePropertySearchCriteria1.thatIsEarlierThanOrEqualTo("1990-11-09 01:22:33");
 
         // When
-        assertUserFailureException(Void -> v3api.searchSamples(sessionToken, criteria, new SampleFetchOptions()),
+        assertUserFailureException(Void -> v3api.searchSamples(sessionToken, criteria1, new SampleFetchOptions()),
+                // Then
+                "Search criteria with time stamp doesn't make sense for property " + propertyType.getPermId()
+                        + " of data type " + DataType.DATE);
+
+        final SampleSearchCriteria criteria2 = new SampleSearchCriteria();
+        final DatePropertySearchCriteria datePropertySearchCriteria2 = criteria2.withDateProperty(
+                propertyType.getPermId());
+        datePropertySearchCriteria2.thatIsEarlierThanOrEqualTo("1990-11-09 01:22:33");
+
+        // When
+        assertUserFailureException(Void -> v3api.searchSamples(sessionToken, criteria2, new SampleFetchOptions()),
                 // Then
                 "Search criteria with time stamp doesn't make sense for property " + propertyType.getPermId()
                         + " of data type " + DataType.DATE);

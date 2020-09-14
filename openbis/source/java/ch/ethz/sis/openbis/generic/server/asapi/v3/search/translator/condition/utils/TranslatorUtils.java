@@ -149,8 +149,8 @@ public class TranslatorUtils
             sqlBuilder.append(DOUBLE_COLON).append(casting);
         }
 
-        final String strippedValue = TranslatorUtils.stripQuotationMarks(value.getValue().trim());
-        appendStringComparatorOp(value.getClass(), strippedValue.toLowerCase(), sqlBuilder, args);
+        final String strippedValue = TranslatorUtils.stripQuotationMarks(value.getValue().trim()).toLowerCase();
+        appendStringComparatorOp(value.getClass(), strippedValue, sqlBuilder, args);
     }
 
     public static void appendStringComparatorOp(final AbstractStringValue value, final StringBuilder sqlBuilder, final List<Object> args)
@@ -487,7 +487,7 @@ public class TranslatorUtils
         }
     }
 
-    private static Date parseDate(final String dateString)
+    public static Date parseDate(final String dateString)
     {
         try
         {
