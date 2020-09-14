@@ -117,7 +117,7 @@ public class PropertyAssignmentTranslator implements IPropertyAssignmentTranslat
             EntityKind entityKind = EntityKind.valueOf(assignmentRecord.kind_code);
             IEntityTypeId entityTypeId = new EntityTypePermId(assignmentRecord.type_code, entityKind);
             IPropertyTypeId propertyTypeId =
-                    new PropertyTypePermId(CodeConverter.tryToBusinessLayer(assignmentRecord.prty_code, assignmentRecord.prty_is_internal_namespace));
+                    new PropertyTypePermId(CodeConverter.tryToBusinessLayer(assignmentRecord.prty_code, assignmentRecord.prty_is_managed_internally));
 
             PropertyAssignment assignment = new PropertyAssignment();
             assignment.setPermId(new PropertyAssignmentPermId(entityTypeId, propertyTypeId));
