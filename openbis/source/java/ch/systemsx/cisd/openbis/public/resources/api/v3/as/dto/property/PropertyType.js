@@ -57,6 +57,12 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		prototype.setManagedInternally = function(managedInternally) {
 			this.managedInternally = managedInternally;
 		};
+		prototype.isInternalNameSpace = function() {
+			return this.isManagedInternally();
+		};
+		prototype.setInternalNameSpace = function(internalNameSpace) {
+			this.setManagedInternally(internalNameSpace);
+		};
 		prototype.getDataType = function() {
 			return this.dataType;
 		};

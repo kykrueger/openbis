@@ -69,6 +69,12 @@ define([ "stjs", "util/Exceptions", "as/dto/vocabulary/id/VocabularyPermId" ], f
 		prototype.setManagedInternally = function(managedInternally) {
 			this.managedInternally = managedInternally;
 		};
+		prototype.isInternalNameSpace = function() {
+			return this.isManagedInternally();
+		};
+		prototype.setInternalNameSpace = function(internalNameSpace) {
+			this.setManagedInternally(internalNameSpace);
+		};
 		prototype.isChosenFromList = function() {
 			return this.chosenFromList;
 		};
