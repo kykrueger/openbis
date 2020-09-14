@@ -1,10 +1,10 @@
 import _ from 'lodash'
 import PageControllerSave from '@src/js/components/common/page/PageControllerSave.js'
+import TypeFormControllerStrategies from '@src/js/components/types/form/TypeFormControllerStrategies.js'
+import TypeFormPropertyScope from '@src/js/components/types/form/TypeFormPropertyScope.js'
+import TypeFormUtil from '@src/js/components/types/form/TypeFormUtil.js'
 import FormUtil from '@src/js/components/common/form/FormUtil.js'
 import openbis from '@src/js/services/openbis.js'
-
-import TypeFormControllerStrategies from './TypeFormControllerStrategies.js'
-import TypeFormUtil from './TypeFormUtil.js'
 
 export default class TypeFormControllerSave extends PageControllerSave {
   async save() {
@@ -52,7 +52,7 @@ export default class TypeFormControllerSave extends PageControllerSave {
         }
         assignments.push(this._propertyAssignmentCreation(property, index))
       } else {
-        if (property.scope.value === 'local') {
+        if (property.scope.value === TypeFormPropertyScope.LOCAL) {
           property = this._addTypePrefix(type, property)
         }
         operations.push(this._createPropertyTypeOperation(property))

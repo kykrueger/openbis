@@ -2,10 +2,12 @@ import _ from 'lodash'
 import React from 'react'
 import { Draggable } from 'react-beautiful-dnd'
 import { withStyles } from '@material-ui/core/styles'
+import PageMode from '@src/js/components/common/page/PageMode.js'
 import Message from '@src/js/components/common/form/Message.jsx'
 import CheckboxField from '@src/js/components/common/form/CheckboxField.jsx'
 import TextField from '@src/js/components/common/form/TextField.jsx'
 import SelectField from '@src/js/components/common/form/SelectField.jsx'
+import TypeFormSelectionType from '@src/js/components/types/form/TypeFormSelectionType.js'
 import openbis from '@src/js/services/openbis.js'
 import actions from '@src/js/store/actions/actions.js'
 import logger from '@src/js/common/logger.js'
@@ -198,7 +200,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
 
   handleDraggableClick(event) {
     let newSelection = {
-      type: 'property',
+      type: TypeFormSelectionType.PROPERTY,
       params: {
         id: this.props.property.id
       }
@@ -208,7 +210,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
 
   handlePropertyClick(event) {
     let newSelection = {
-      type: 'property',
+      type: TypeFormSelectionType.PROPERTY,
       params: {
         id: this.props.property.id
       }
@@ -225,7 +227,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
   }
 
   handleChange(event) {
-    this.props.onChange('preview', {
+    this.props.onChange(TypeFormSelectionType.PREVIEW, {
       field: this.props.property.id,
       value: event.target.value
     })
@@ -238,14 +240,14 @@ class TypeFormPreviewProperty extends React.PureComponent {
 
     const selected =
       selection &&
-      selection.type === 'property' &&
+      selection.type === TypeFormSelectionType.PROPERTY &&
       selection.params.id === property.id
 
     return (
       <Draggable
         draggableId={property.id}
         index={index}
-        isDragDisabled={mode !== 'edit'}
+        isDragDisabled={mode !== PageMode.EDIT}
       >
         {provided => (
           <div
@@ -329,8 +331,8 @@ class TypeFormPreviewProperty extends React.PureComponent {
           metadata={this.getMetadata()}
           error={this.getError()}
           styles={this.getStyles()}
-          mode='edit'
-          disabled={mode !== 'edit'}
+          mode={PageMode.EDIT}
+          disabled={mode !== PageMode.EDIT}
           onClick={this.handlePropertyClick}
           onChange={this.handleChange}
         />
@@ -352,8 +354,8 @@ class TypeFormPreviewProperty extends React.PureComponent {
           metadata={this.getMetadata()}
           error={this.getError()}
           styles={this.getStyles()}
-          mode='edit'
-          disabled={mode !== 'edit'}
+          mode={PageMode.EDIT}
+          disabled={mode !== PageMode.EDIT}
           onClick={this.handlePropertyClick}
           onChange={this.handleChange}
         />
@@ -374,8 +376,8 @@ class TypeFormPreviewProperty extends React.PureComponent {
           metadata={this.getMetadata()}
           error={this.getError()}
           styles={this.getStyles()}
-          mode='edit'
-          disabled={mode !== 'edit'}
+          mode={PageMode.EDIT}
+          disabled={mode !== PageMode.EDIT}
           onClick={this.handlePropertyClick}
           onChange={this.handleChange}
         />
@@ -412,8 +414,8 @@ class TypeFormPreviewProperty extends React.PureComponent {
           metadata={this.getMetadata()}
           error={this.getError()}
           styles={this.getStyles()}
-          mode='edit'
-          disabled={mode !== 'edit'}
+          mode={PageMode.EDIT}
+          disabled={mode !== PageMode.EDIT}
           onClick={this.handlePropertyClick}
           onChange={this.handleChange}
         />
@@ -449,8 +451,8 @@ class TypeFormPreviewProperty extends React.PureComponent {
           metadata={this.getMetadata()}
           error={this.getError()}
           styles={this.getStyles()}
-          mode='edit'
-          disabled={mode !== 'edit'}
+          mode={PageMode.EDIT}
+          disabled={mode !== PageMode.EDIT}
           onClick={this.handlePropertyClick}
           onChange={this.handleChange}
         />
@@ -486,8 +488,8 @@ class TypeFormPreviewProperty extends React.PureComponent {
           metadata={this.getMetadata()}
           error={this.getError()}
           styles={this.getStyles()}
-          mode='edit'
-          disabled={mode !== 'edit'}
+          mode={PageMode.EDIT}
+          disabled={mode !== PageMode.EDIT}
           onClick={this.handlePropertyClick}
           onChange={this.handleChange}
         />
@@ -565,7 +567,7 @@ class TypeFormPreviewProperty extends React.PureComponent {
     const parts = ['code', 'label', 'dataType', 'mandatory', 'description']
     const selectedPart =
       selection &&
-      selection.type === 'property' &&
+      selection.type === TypeFormSelectionType.PROPERTY &&
       selection.params.id === property.id &&
       selection.params.part
 

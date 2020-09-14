@@ -1,5 +1,6 @@
 import ComponentContext from '@srcTest/js/components/common/ComponentContext.js'
 import TypeFormControler from '@src/js/components/types/form/TypeFormController.js'
+import TypeFormSelectionType from '@src/js/components/types/form/TypeFormSelectionType.js'
 import TypeFormFacade from '@src/js/components/types/form/TypeFormFacade'
 import objectTypes from '@src/js/common/consts/objectType.js'
 import openbis from '@srcTest/js/services/openbis.js'
@@ -74,7 +75,7 @@ describe('TypeFormController.handleSave', () => {
 
     expect(context.getState()).toMatchObject({
       selection: {
-        type: 'property',
+        type: TypeFormSelectionType.PROPERTY,
         params: {
           id: 'property-0'
         }
@@ -98,7 +99,7 @@ describe('TypeFormController.handleSave', () => {
 
     expect(context.getState()).toMatchObject({
       selection: {
-        type: 'type',
+        type: TypeFormSelectionType.TYPE,
         params: {
           part: 'code'
         }
@@ -222,27 +223,27 @@ describe('TypeFormController.handleSave', () => {
     controller.handleAddSection()
     controller.handleAddProperty()
 
-    controller.handleChange('property', {
+    controller.handleChange(TypeFormSelectionType.PROPERTY, {
       id: 'property-0',
       field: 'scope',
       value: scope
     })
-    controller.handleChange('property', {
+    controller.handleChange(TypeFormSelectionType.PROPERTY, {
       id: 'property-0',
       field: 'code',
       value: 'NEW_CODE'
     })
-    controller.handleChange('property', {
+    controller.handleChange(TypeFormSelectionType.PROPERTY, {
       id: 'property-0',
       field: 'dataType',
       value: 'VARCHAR'
     })
-    controller.handleChange('property', {
+    controller.handleChange(TypeFormSelectionType.PROPERTY, {
       id: 'property-0',
       field: 'label',
       value: 'NEW_LABEL'
     })
-    controller.handleChange('property', {
+    controller.handleChange(TypeFormSelectionType.PROPERTY, {
       id: 'property-0',
       field: 'description',
       value: 'NEW_DESCRIPTION'
@@ -274,7 +275,7 @@ describe('TypeFormController.handleSave', () => {
 
     await controller.load()
 
-    controller.handleChange('property', {
+    controller.handleChange(TypeFormSelectionType.PROPERTY, {
       id: 'property-0',
       field: 'mandatory',
       value: true
@@ -302,7 +303,7 @@ describe('TypeFormController.handleSave', () => {
 
     await controller.load()
 
-    controller.handleChange('property', {
+    controller.handleChange(TypeFormSelectionType.PROPERTY, {
       id: 'property-0',
       field: 'label',
       value: 'Updated label'
@@ -331,12 +332,12 @@ describe('TypeFormController.handleSave', () => {
 
     await controller.load()
 
-    controller.handleChange('property', {
+    controller.handleChange(TypeFormSelectionType.PROPERTY, {
       id: 'property-0',
       field: 'dataType',
       value: openbis.DataType.CONTROLLEDVOCABULARY
     })
-    controller.handleChange('property', {
+    controller.handleChange(TypeFormSelectionType.PROPERTY, {
       id: 'property-0',
       field: 'vocabulary',
       value: 'TEST_VOCABULARY'
@@ -372,7 +373,9 @@ describe('TypeFormController.handleSave', () => {
 
     await controller.load()
 
-    controller.handleSelectionChange('property', { id: 'property-0' })
+    controller.handleSelectionChange(TypeFormSelectionType.PROPERTY, {
+      id: 'property-0'
+    })
     controller.handleRemove()
 
     await controller.handleSave()
@@ -399,7 +402,9 @@ describe('TypeFormController.handleSave', () => {
 
     await controller.load()
 
-    controller.handleSelectionChange('property', { id: 'property-0' })
+    controller.handleSelectionChange(TypeFormSelectionType.PROPERTY, {
+      id: 'property-0'
+    })
     controller.handleRemove()
 
     await controller.handleSave()

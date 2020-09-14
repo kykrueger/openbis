@@ -1,5 +1,6 @@
 import PageControllerValidate from '@src/js/components/common/page/PageConrollerValidate.js'
-import TypeFormControllerStrategies from './TypeFormControllerStrategies.js'
+import TypeFormControllerStrategies from '@src/js/components/types/form/TypeFormControllerStrategies.js'
+import TypeFormSelectionType from '@src/js/components/types/form/TypeFormSelectionType.js'
 
 export default class TypeFormControllerValidate extends PageControllerValidate {
   validate(validator) {
@@ -19,14 +20,14 @@ export default class TypeFormControllerValidate extends PageControllerValidate {
 
     if (firstError.object === type) {
       await this.setSelection({
-        type: 'type',
+        type: TypeFormSelectionType.TYPE,
         params: {
           part: firstError.name
         }
       })
     } else if (properties.includes(firstError.object)) {
       await this.setSelection({
-        type: 'property',
+        type: TypeFormSelectionType.PROPERTY,
         params: {
           id: firstError.object.id,
           part: firstError.name

@@ -4,6 +4,7 @@ import Container from '@src/js/components/common/form/Container.jsx'
 import Header from '@src/js/components/common/form/Header.jsx'
 import SelectField from '@src/js/components/common/form/SelectField.jsx'
 import Message from '@src/js/components/common/form/Message.jsx'
+import UserFormSelectionType from '@src/js/components/users/form/UserFormSelectionType.js'
 import openbis from '@src/js/services/openbis.js'
 import logger from '@src/js/common/logger.js'
 
@@ -56,7 +57,7 @@ class UserFormParametersRole extends React.PureComponent {
 
   handleChange(event) {
     const role = this.getRole(this.props)
-    this.props.onChange('role', {
+    this.props.onChange(UserFormSelectionType.ROLE, {
       id: role.id,
       field: event.target.name,
       value: event.target.value
@@ -65,7 +66,7 @@ class UserFormParametersRole extends React.PureComponent {
 
   handleFocus(event) {
     const role = this.getRole(this.props)
-    this.props.onSelectionChange('role', {
+    this.props.onSelectionChange(UserFormSelectionType.ROLE, {
       id: role.id,
       part: event.target.name
     })
@@ -280,7 +281,7 @@ class UserFormParametersRole extends React.PureComponent {
   getRole(props) {
     let { roles, selection } = props
 
-    if (selection && selection.type === 'role') {
+    if (selection && selection.type === UserFormSelectionType.ROLE) {
       let [role] = roles.filter(role => role.id === selection.params.id)
       return role
     } else {

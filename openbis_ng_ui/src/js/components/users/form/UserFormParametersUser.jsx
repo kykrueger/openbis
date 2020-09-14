@@ -5,6 +5,7 @@ import Header from '@src/js/components/common/form/Header.jsx'
 import TextField from '@src/js/components/common/form/TextField.jsx'
 import SelectField from '@src/js/components/common/form/SelectField.jsx'
 import CheckboxField from '@src/js/components/common/form/CheckboxField.jsx'
+import UserFormSelectionType from '@src/js/components/users/form/UserFormSelectionType.js'
 import logger from '@src/js/common/logger.js'
 
 const styles = theme => ({
@@ -57,14 +58,14 @@ class UserFormParametersUser extends React.PureComponent {
   }
 
   handleChange(event) {
-    this.props.onChange('user', {
+    this.props.onChange(UserFormSelectionType.USER, {
       field: event.target.name,
       value: event.target.value
     })
   }
 
   handleFocus(event) {
-    this.props.onSelectionChange('user', {
+    this.props.onSelectionChange(UserFormSelectionType.USER, {
       part: event.target.name
     })
   }
@@ -269,7 +270,7 @@ class UserFormParametersUser extends React.PureComponent {
   getUser(props) {
     let { user, selection } = props
 
-    if (!selection || selection.type === 'user') {
+    if (!selection || selection.type === UserFormSelectionType.USER) {
       return user
     } else {
       return null

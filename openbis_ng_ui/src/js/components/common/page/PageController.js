@@ -1,9 +1,8 @@
 import autoBind from 'auto-bind'
-
-import PageControllerChanged from './PageControllerChanged.js'
-import PageControllerEdit from './PageControllerEdit.js'
-import PageControllerCancel from './PageControllerCancel.js'
-import PageControllerSelectionChange from './PageControllerSelectionChange.js'
+import PageControllerChanged from '@src/js/components/common/page/PageControllerChanged.js'
+import PageControllerEdit from '@src/js/components/common/page/PageControllerEdit.js'
+import PageControllerCancel from '@src/js/components/common/page/PageControllerCancel.js'
+import PageControllerSelectionChange from '@src/js/components/common/page/PageControllerSelectionChange.js'
 
 export default class PageController {
   constructor(facade) {

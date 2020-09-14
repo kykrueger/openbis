@@ -3,11 +3,11 @@ import React from 'react'
 import { DragDropContext, Droppable } from 'react-beautiful-dnd'
 import { withStyles } from '@material-ui/core/styles'
 import Container from '@src/js/components/common/form/Container.jsx'
+import TypeFormSelectionType from '@src/js/components/types/form/TypeFormSelectionType.js'
+import TypeFormPreviewHeader from '@src/js/components/types/form/TypeFormPreviewHeader.jsx'
+import TypeFormPreviewProperty from '@src/js/components/types/form/TypeFormPreviewProperty.jsx'
+import TypeFormPreviewSection from '@src/js/components/types/form/TypeFormPreviewSection.jsx'
 import logger from '@src/js/common/logger.js'
-
-import TypeFormPreviewHeader from './TypeFormPreviewHeader.jsx'
-import TypeFormPreviewProperty from './TypeFormPreviewProperty.jsx'
-import TypeFormPreviewSection from './TypeFormPreviewSection.jsx'
 
 const styles = () => ({
   container: {
@@ -56,13 +56,13 @@ class TypeFormPreview extends React.PureComponent {
       return
     }
 
-    if (result.type === 'section') {
-      this.props.onOrderChange('section', {
+    if (result.type === TypeFormSelectionType.SECTION) {
+      this.props.onOrderChange(TypeFormSelectionType.SECTION, {
         fromIndex: result.source.index,
         toIndex: result.destination.index
       })
-    } else if (result.type === 'property') {
-      this.props.onOrderChange('property', {
+    } else if (result.type === TypeFormSelectionType.PROPERTY) {
+      this.props.onOrderChange(TypeFormSelectionType.PROPERTY, {
         fromSectionId: result.source.droppableId,
         fromIndex: result.source.index,
         toSectionId: result.destination.droppableId,
@@ -89,7 +89,7 @@ class TypeFormPreview extends React.PureComponent {
             onDragStart={this.handleDragStart}
             onDragEnd={this.handleDragEnd}
           >
-            <Droppable droppableId='root' type='section'>
+            <Droppable droppableId='root' type={TypeFormSelectionType.SECTION}>
               {provided => (
                 <div
                   ref={provided.innerRef}

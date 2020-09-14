@@ -7,10 +7,10 @@ import objectType from '@src/js/common/consts/objectType.js'
 import Content from '@src/js/components/common/content/Content.jsx'
 import ContentTab from '@src/js/components/common/content/ContentTab.jsx'
 
-import UserBrowser from './browser/UserBrowser.jsx'
-import UserSearch from './search/UserSearch.jsx'
-import UserForm from './form/UserForm.jsx'
-import UserGroupForm from './form/UserGroupForm.jsx'
+import UserBrowser from '@src/js/components/users/browser/UserBrowser.jsx'
+import UserSearch from '@src/js/components/users/search/UserSearch.jsx'
+import UserForm from '@src/js/components/users/form/UserForm.jsx'
+import UserGroupForm from '@src/js/components/users/form/UserGroupForm.jsx'
 
 const styles = () => ({
   container: {

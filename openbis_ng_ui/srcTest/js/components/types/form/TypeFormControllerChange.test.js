@@ -1,5 +1,6 @@
 import ComponentContext from '@srcTest/js/components/common/ComponentContext.js'
 import TypeFormControler from '@src/js/components/types/form/TypeFormController.js'
+import TypeFormSelectionType from '@src/js/components/types/form/TypeFormSelectionType.js'
 import TypeFormFacade from '@src/js/components/types/form/TypeFormFacade'
 import objectTypes from '@src/js/common/consts/objectType.js'
 import fixture from '@srcTest/js/common/fixture.js'
@@ -44,7 +45,7 @@ describe('TypeFormController.handleChange', () => {
       }
     })
 
-    controller.handleChange('type', {
+    controller.handleChange(TypeFormSelectionType.TYPE, {
       field: 'description',
       value: 'NEW_DESCRIPTION'
     })
@@ -79,7 +80,7 @@ describe('TypeFormController.handleChange', () => {
       ]
     })
 
-    controller.handleChange('section', {
+    controller.handleChange(TypeFormSelectionType.SECTION, {
       id: 'section-1',
       field: 'name',
       value: 'TEST_NAME'
@@ -127,7 +128,7 @@ describe('TypeFormController.handleChange', () => {
       ]
     })
 
-    controller.handleChange('property', {
+    controller.handleChange(TypeFormSelectionType.PROPERTY, {
       id: 'property-1',
       field: 'description',
       value: 'TEST_DESCRIPTION'

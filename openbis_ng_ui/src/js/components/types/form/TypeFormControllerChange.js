@@ -1,18 +1,21 @@
 import _ from 'lodash'
 import openbis from '@src/js/services/openbis.js'
 import PageControllerChange from '@src/js/components/common/page/PageControllerChange.js'
+import TypeFormSelectionType from '@src/js/components/types/form/TypeFormSelectionType.js'
+import TypeFormPropertyScope from '@src/js/components/types/form/TypeFormPropertyScope.js'
 import TypeFormUtil from '@src/js/components/types/form/TypeFormUtil.js'
 import FormUtil from '@src/js/components/common/form/FormUtil.js'
+import users from '@src/js/common/consts/users.js'
 
 export default class TypeFormControllerChange extends PageControllerChange {
   async execute(type, params) {
-    if (type === 'type') {
+    if (type === TypeFormSelectionType.TYPE) {
       await this._handleChangeType(params)
-    } else if (type === 'section') {
+    } else if (type === TypeFormSelectionType.SECTION) {
       await this._handleChangeSection(params)
-    } else if (type === 'property') {
+    } else if (type === TypeFormSelectionType.PROPERTY) {
       await this._handleChangeProperty(params)
-    } else if (type === 'preview') {
+    } else if (type === TypeFormSelectionType.PREVIEW) {
       await this._handleChangePreview(params)
     }
   }
@@ -91,7 +94,7 @@ export default class TypeFormControllerChange extends PageControllerChange {
         )
       }
 
-      if (oldCode !== newCode && newScope === 'global') {
+      if (oldCode !== newCode && newScope === TypeFormPropertyScope.GLOBAL) {
         const { globalPropertyTypes } = this.controller.getDictionaries()
 
         let oldExisting = globalPropertyTypes.find(
@@ -157,7 +160,7 @@ export default class TypeFormControllerChange extends PageControllerChange {
       }
 
       const propertyCode =
-        newScope === 'local'
+        newScope === TypeFormPropertyScope.LOCAL
           ? TypeFormUtil.addTypePrefix(type.code.value, newProperty.code.value)
           : newProperty.code.value
 
@@ -177,7 +180,8 @@ export default class TypeFormControllerChange extends PageControllerChange {
 
       const unused = propertyUsagesGlobal === 0 && propertyAssignments === 0
       const systemInternal =
-        newProperty.internal.value && newProperty.registrator.value === 'system'
+        newProperty.internal.value &&
+        newProperty.registrator.value === users.SYSTEM
 
       _.assign(newProperty, {
         label: {

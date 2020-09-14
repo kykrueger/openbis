@@ -1,3 +1,4 @@
+import TypeFormSelectionType from '@src/js/components/types/form/TypeFormSelectionType.js'
 import FormUtil from '@src/js/components/common/form/FormUtil.js'
 
 export default class TypeFormControllerAddSection {
@@ -16,19 +17,19 @@ export default class TypeFormControllerAddSection {
       properties: []
     }
     let newSelection = {
-      type: 'section',
+      type: TypeFormSelectionType.SECTION,
       params: {
         id: newSection.id
       }
     }
 
     if (selection) {
-      if (selection.type === 'section') {
+      if (selection.type === TypeFormSelectionType.SECTION) {
         let index = sections.findIndex(
           section => section.id === selection.params.id
         )
         newSections.splice(index + 1, 0, newSection)
-      } else if (selection.type === 'property') {
+      } else if (selection.type === TypeFormSelectionType.PROPERTY) {
         let index = sections.findIndex(
           section => section.properties.indexOf(selection.params.id) !== -1
         )

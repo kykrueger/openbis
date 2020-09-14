@@ -3,6 +3,8 @@ import React from 'react'
 import Typography from '@material-ui/core/Typography'
 import { Draggable, Droppable } from 'react-beautiful-dnd'
 import { withStyles } from '@material-ui/core/styles'
+import PageMode from '@src/js/components/common/page/PageMode.js'
+import TypeFormSelectionType from '@src/js/components/types/form/TypeFormSelectionType.js'
 import logger from '@src/js/common/logger.js'
 import util from '@src/js/common/util.js'
 
@@ -47,7 +49,7 @@ class TypeFormPreviewSection extends React.PureComponent {
     event.stopPropagation()
 
     const newSelection = {
-      type: 'section',
+      type: TypeFormSelectionType.SECTION,
       params: {
         id: this.props.section.id,
         part: 'name'
@@ -65,14 +67,14 @@ class TypeFormPreviewSection extends React.PureComponent {
 
     const selected =
       selection &&
-      selection.type === 'section' &&
+      selection.type === TypeFormSelectionType.SECTION &&
       selection.params.id === section.id
 
     return (
       <Draggable
         draggableId={id}
         index={index}
-        isDragDisabled={mode !== 'edit'}
+        isDragDisabled={mode !== PageMode.EDIT}
       >
         {provided => (
           <div
@@ -86,7 +88,7 @@ class TypeFormPreviewSection extends React.PureComponent {
             )}
             onClick={this.handleClick}
           >
-            <Droppable droppableId={id} type='property'>
+            <Droppable droppableId={id} type={TypeFormSelectionType.PROPERTY}>
               {provided => (
                 <div>
                   <Typography variant='body2' data-part='name'>

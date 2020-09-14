@@ -7,6 +7,8 @@ import CheckboxField from '@src/js/components/common/form/CheckboxField.jsx'
 import TextField from '@src/js/components/common/form/TextField.jsx'
 import SelectField from '@src/js/components/common/form/SelectField.jsx'
 import Message from '@src/js/components/common/form/Message.jsx'
+import TypeFormSelectionType from '@src/js/components/types/form/TypeFormSelectionType.js'
+import TypeFormPropertyScope from '@src/js/components/types/form/TypeFormPropertyScope.js'
 import openbis from '@src/js/services/openbis.js'
 import logger from '@src/js/common/logger.js'
 
@@ -68,7 +70,7 @@ class TypeFormParametersProperty extends React.PureComponent {
 
   handleChange(event) {
     const property = this.getProperty(this.props)
-    this.props.onChange('property', {
+    this.props.onChange(TypeFormSelectionType.PROPERTY, {
       id: property.id,
       field: event.target.name,
       value: event.target.value
@@ -77,7 +79,7 @@ class TypeFormParametersProperty extends React.PureComponent {
 
   handleFocus(event) {
     const property = this.getProperty(this.props)
-    this.props.onSelectionChange('property', {
+    this.props.onSelectionChange(TypeFormSelectionType.PROPERTY, {
       id: property.id,
       part: event.target.name
     })
@@ -120,7 +122,7 @@ class TypeFormParametersProperty extends React.PureComponent {
   }
 
   renderMessageGlobal(property) {
-    if (property.scope.value === 'global') {
+    if (property.scope.value === TypeFormPropertyScope.GLOBAL) {
       const { classes } = this.props
       return (
         <div className={classes.field}>
@@ -198,8 +200,8 @@ class TypeFormParametersProperty extends React.PureComponent {
     }
 
     const options = [
-      { label: 'Local', value: 'local' },
-      { label: 'Global', value: 'global' }
+      { label: 'Local', value: TypeFormPropertyScope.LOCAL },
+      { label: 'Global', value: TypeFormPropertyScope.GLOBAL }
     ]
 
     const { mode, classes } = this.props
@@ -259,7 +261,7 @@ class TypeFormParametersProperty extends React.PureComponent {
 
     const { mode, classes, controller } = this.props
 
-    if (property.scope.value === 'local') {
+    if (property.scope.value === TypeFormPropertyScope.LOCAL) {
       return (
         <div className={classes.field}>
           <TextField
@@ -277,7 +279,7 @@ class TypeFormParametersProperty extends React.PureComponent {
           />
         </div>
       )
-    } else if (property.scope.value === 'global') {
+    } else if (property.scope.value === TypeFormPropertyScope.GLOBAL) {
       const { globalPropertyTypes = [] } = controller.getDictionaries()
 
       const options = globalPropertyTypes.map(globalPropertyType => {
@@ -731,7 +733,7 @@ class TypeFormParametersProperty extends React.PureComponent {
   getProperty(props) {
     let { properties, selection } = props
 
-    if (selection && selection.type === 'property') {
+    if (selection && selection.type === TypeFormSelectionType.PROPERTY) {
       let [property] = properties.filter(
         property => property.id === selection.params.id
       )

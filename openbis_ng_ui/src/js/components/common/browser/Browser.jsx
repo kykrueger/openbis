@@ -5,12 +5,11 @@ import { Resizable } from 're-resizable'
 import { withStyles } from '@material-ui/core/styles'
 import FilterField from '@src/js/components/common/form/FilterField.jsx'
 import ComponentContext from '@src/js/components/common/ComponentContext.js'
+import BrowserNodes from '@src/js/components/common/browser/BrowserNodes.jsx'
+import BrowserButtons from '@src/js/components/common/browser/BrowserButtons.jsx'
+import BrowserDialogRemoveNode from '@src/js/components/common/browser/BrowserDialogRemoveNode.jsx'
 import selectors from '@src/js/store/selectors/selectors.js'
 import logger from '@src/js/common/logger.js'
-
-import BrowserNodes from './BrowserNodes.jsx'
-import BrowserButtons from './BrowserButtons.jsx'
-import BrowserDialogRemoveNode from './BrowserDialogRemoveNode.jsx'
 
 const styles = theme => ({
   resizable: {

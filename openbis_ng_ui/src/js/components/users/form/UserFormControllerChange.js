@@ -1,16 +1,17 @@
 import _ from 'lodash'
 import PageControllerChange from '@src/js/components/common/page/PageControllerChange.js'
 import UserFormControllerRecalculateInheritedRoles from '@src/js/components/users/form/UserFormControllerRecalculateInheritedRoles.js'
+import UserFormSelectionType from '@src/js/components/users/form/UserFormSelectionType.js'
 import FormUtil from '@src/js/components/common/form/FormUtil.js'
 import openbis from '@src/js/services/openbis.js'
 
 export default class UserFormControllerChange extends PageControllerChange {
   async execute(type, params) {
-    if (type === 'user') {
+    if (type === UserFormSelectionType.USER) {
       await this._handleChangeUser(params)
-    } else if (type === 'group') {
+    } else if (type === UserFormSelectionType.GROUP) {
       await this._handleChangeGroup(params)
-    } else if (type === 'role') {
+    } else if (type === UserFormSelectionType.ROLE) {
       await this._handleChangeRole(params)
     }
   }

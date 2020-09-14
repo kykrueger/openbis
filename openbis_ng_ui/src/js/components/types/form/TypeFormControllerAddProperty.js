@@ -1,3 +1,5 @@
+import TypeFormSelectionType from '@src/js/components/types/form/TypeFormSelectionType.js'
+import TypeFormPropertyScope from '@src/js/components/types/form/TypeFormPropertyScope.js'
 import FormUtil from '@src/js/components/common/form/FormUtil.js'
 
 export default class TypeFormControllerAddProperty {
@@ -18,12 +20,12 @@ export default class TypeFormControllerAddProperty {
     let sectionPropertyIndex = null
 
     if (selection) {
-      if (selection.type === 'section') {
+      if (selection.type === TypeFormSelectionType.SECTION) {
         sectionIndex = sections.findIndex(
           section => section.id === selection.params.id
         )
         sectionPropertyIndex = sections[sectionIndex].properties.length
-      } else if (selection.type === 'property') {
+      } else if (selection.type === TypeFormSelectionType.PROPERTY) {
         sections.forEach((section, i) => {
           section.properties.forEach((property, j) => {
             if (property === selection.params.id) {
@@ -41,7 +43,7 @@ export default class TypeFormControllerAddProperty {
     let newProperty = {
       id: 'property-' + propertiesCounter++,
       scope: FormUtil.createField({
-        value: 'local'
+        value: TypeFormPropertyScope.LOCAL
       }),
       code: FormUtil.createField(),
       internal: FormUtil.createField(),
@@ -94,7 +96,7 @@ export default class TypeFormControllerAddProperty {
     newSections[sectionIndex] = newSection
 
     let newSelection = {
-      type: 'property',
+      type: TypeFormSelectionType.PROPERTY,
       params: {
         id: newProperty.id,
         part: 'code'

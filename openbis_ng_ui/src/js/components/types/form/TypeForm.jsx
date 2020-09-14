@@ -4,15 +4,14 @@ import { connect } from 'react-redux'
 import { withStyles } from '@material-ui/core/styles'
 import ComponentContext from '@src/js/components/common/ComponentContext.js'
 import PageWithTwoPanels from '@src/js/components/common/page/PageWithTwoPanels.jsx'
+import TypeFormController from '@src/js/components/types/form/TypeFormController.js'
+import TypeFormFacade from '@src/js/components/types/form/TypeFormFacade.js'
+import TypeFormButtons from '@src/js/components/types/form/TypeFormButtons.jsx'
+import TypeFormParameters from '@src/js/components/types/form/TypeFormParameters.jsx'
+import TypeFormPreview from '@src/js/components/types/form/TypeFormPreview.jsx'
+import TypeFormDialogRemoveSection from '@src/js/components/types/form/TypeFormDialogRemoveSection.jsx'
+import TypeFormDialogRemoveProperty from '@src/js/components/types/form/TypeFormDialogRemoveProperty.jsx'
 import logger from '@src/js/common/logger.js'
-
-import TypeFormController from './TypeFormController.js'
-import TypeFormFacade from './TypeFormFacade.js'
-import TypeFormButtons from './TypeFormButtons.jsx'
-import TypeFormParameters from './TypeFormParameters.jsx'
-import TypeFormPreview from './TypeFormPreview.jsx'
-import TypeFormDialogRemoveSection from './TypeFormDialogRemoveSection.jsx'
-import TypeFormDialogRemoveProperty from './TypeFormDialogRemoveProperty.jsx'
 
 const styles = () => ({})
 

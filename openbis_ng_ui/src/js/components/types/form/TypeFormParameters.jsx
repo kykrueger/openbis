@@ -1,10 +1,9 @@
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
+import TypeFormParametersType from '@src/js/components/types/form/TypeFormParametersType.jsx'
+import TypeFormParametersProperty from '@src/js/components/types/form/TypeFormParametersProperty.jsx'
+import TypeFormParametersSection from '@src/js/components/types/form/TypeFormParametersSection.jsx'
 import logger from '@src/js/common/logger.js'
-
-import TypeFormParametersType from './TypeFormParametersType.jsx'
-import TypeFormParametersProperty from './TypeFormParametersProperty.jsx'
-import TypeFormParametersSection from './TypeFormParametersSection.jsx'
 
 const styles = () => ({})
 

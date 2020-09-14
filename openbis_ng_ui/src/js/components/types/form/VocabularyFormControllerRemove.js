@@ -1,3 +1,5 @@
+import VocabularyFormSelectionType from '@src/js/components/types/form/VocabularyFormSelectionType.js'
+
 export default class VocabularyFormControllerRemove {
   constructor(controller) {
     this.controller = controller
@@ -6,7 +8,7 @@ export default class VocabularyFormControllerRemove {
 
   execute() {
     const { selection } = this.context.getState()
-    if (selection.type === 'term') {
+    if (selection.type === VocabularyFormSelectionType.TERM) {
       this._handleRemoveTerm(selection.params.id)
     }
   }

@@ -1,5 +1,6 @@
 import ComponentContext from '@srcTest/js/components/common/ComponentContext.js'
 import TypeFormControler from '@src/js/components/types/form/TypeFormController.js'
+import TypeFormSelectionType from '@src/js/components/types/form/TypeFormSelectionType.js'
 import TypeFormFacade from '@src/js/components/types/form/TypeFormFacade'
 import objectTypes from '@src/js/common/consts/objectType.js'
 import fixture from '@srcTest/js/common/fixture.js'
@@ -37,11 +38,13 @@ describe('TypeFormController.handleRemove', () => {
     facade.loadUsages.mockReturnValue(Promise.resolve({}))
 
     await controller.load()
-    controller.handleSelectionChange('section', { id: 'section-0' })
+    controller.handleSelectionChange(TypeFormSelectionType.SECTION, {
+      id: 'section-0'
+    })
 
     expect(context.getState()).toMatchObject({
       selection: {
-        type: 'section',
+        type: TypeFormSelectionType.SECTION,
         params: {
           id: 'section-0'
         }
@@ -114,11 +117,13 @@ describe('TypeFormController.handleRemove', () => {
     )
 
     await controller.load()
-    controller.handleSelectionChange('section', { id: 'section-0' })
+    controller.handleSelectionChange(TypeFormSelectionType.SECTION, {
+      id: 'section-0'
+    })
 
     expect(context.getState()).toMatchObject({
       selection: {
-        type: 'section',
+        type: TypeFormSelectionType.SECTION,
         params: {
           id: 'section-0'
         }
@@ -158,7 +163,7 @@ describe('TypeFormController.handleRemove', () => {
     expect(context.getState()).toMatchObject({
       removeSectionDialogOpen: true,
       selection: {
-        type: 'section',
+        type: TypeFormSelectionType.SECTION,
         params: {
           id: 'section-0'
         }
@@ -234,11 +239,13 @@ describe('TypeFormController.handleRemove', () => {
     )
 
     await controller.load()
-    controller.handleSelectionChange('section', { id: 'section-0' })
+    controller.handleSelectionChange(TypeFormSelectionType.SECTION, {
+      id: 'section-0'
+    })
 
     expect(context.getState()).toMatchObject({
       selection: {
-        type: 'section',
+        type: TypeFormSelectionType.SECTION,
         params: {
           id: 'section-0'
         }
@@ -278,7 +285,7 @@ describe('TypeFormController.handleRemove', () => {
     expect(context.getState()).toMatchObject({
       removeSectionDialogOpen: true,
       selection: {
-        type: 'section',
+        type: TypeFormSelectionType.SECTION,
         params: {
           id: 'section-0'
         }
@@ -318,7 +325,7 @@ describe('TypeFormController.handleRemove', () => {
     expect(context.getState()).toMatchObject({
       removeSectionDialogOpen: false,
       selection: {
-        type: 'section',
+        type: TypeFormSelectionType.SECTION,
         params: {
           id: 'section-0'
         }
@@ -361,11 +368,13 @@ describe('TypeFormController.handleRemove', () => {
     facade.loadUsages.mockReturnValue(Promise.resolve({}))
 
     await controller.load()
-    controller.handleSelectionChange('property', { id: 'property-1' })
+    controller.handleSelectionChange(TypeFormSelectionType.PROPERTY, {
+      id: 'property-1'
+    })
 
     expect(context.getState()).toMatchObject({
       selection: {
-        type: 'property',
+        type: TypeFormSelectionType.PROPERTY,
         params: {
           id: 'property-1'
         }
@@ -443,11 +452,13 @@ describe('TypeFormController.handleRemove', () => {
     )
 
     await controller.load()
-    controller.handleSelectionChange('property', { id: 'property-1' })
+    controller.handleSelectionChange(TypeFormSelectionType.PROPERTY, {
+      id: 'property-1'
+    })
 
     expect(context.getState()).toMatchObject({
       selection: {
-        type: 'property',
+        type: TypeFormSelectionType.PROPERTY,
         params: {
           id: 'property-1'
         }
@@ -487,7 +498,7 @@ describe('TypeFormController.handleRemove', () => {
     expect(context.getState()).toMatchObject({
       removePropertyDialogOpen: true,
       selection: {
-        type: 'property',
+        type: TypeFormSelectionType.PROPERTY,
         params: {
           id: 'property-1'
         }
@@ -568,11 +579,13 @@ describe('TypeFormController.handleRemove', () => {
     )
 
     await controller.load()
-    controller.handleSelectionChange('property', { id: 'property-1' })
+    controller.handleSelectionChange(TypeFormSelectionType.PROPERTY, {
+      id: 'property-1'
+    })
 
     expect(context.getState()).toMatchObject({
       selection: {
-        type: 'property',
+        type: TypeFormSelectionType.PROPERTY,
         params: {
           id: 'property-1'
         }
@@ -612,7 +625,7 @@ describe('TypeFormController.handleRemove', () => {
     expect(context.getState()).toMatchObject({
       removePropertyDialogOpen: true,
       selection: {
-        type: 'property',
+        type: TypeFormSelectionType.PROPERTY,
         params: {
           id: 'property-1'
         }
@@ -652,7 +665,7 @@ describe('TypeFormController.handleRemove', () => {
     expect(context.getState()).toMatchObject({
       removePropertyDialogOpen: false,
       selection: {
-        type: 'property',
+        type: TypeFormSelectionType.PROPERTY,
         params: {
           id: 'property-1'
         }

@@ -1,4 +1,5 @@
 import _ from 'lodash'
+import UserFormSelectionType from '@src/js/components/users/form/UserFormSelectionType.js'
 import FormUtil from '@src/js/components/common/form/FormUtil.js'
 
 export default class UserFormControllerAddGroup {
@@ -24,7 +25,7 @@ export default class UserFormControllerAddGroup {
       ...state,
       groups: newGroups,
       selection: {
-        type: 'group',
+        type: UserFormSelectionType.GROUP,
         params: {
           id: newGroup.id,
           part: 'code'

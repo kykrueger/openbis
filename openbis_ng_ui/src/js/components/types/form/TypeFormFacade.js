@@ -1,6 +1,5 @@
 import openbis from '@src/js/services/openbis.js'
-
-import TypeFormControllerStrategies from './TypeFormControllerStrategies.js'
+import TypeFormControllerStrategies from '@src/js/components/types/form/TypeFormControllerStrategies.js'
 
 export default class TypeFormFacade {
   async loadType(object) {

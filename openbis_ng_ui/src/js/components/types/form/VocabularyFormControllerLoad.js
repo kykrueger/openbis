@@ -1,5 +1,6 @@
 import _ from 'lodash'
 import PageControllerLoad from '@src/js/components/common/page/PageControllerLoad.js'
+import VocabularyFormSelectionType from '@src/js/components/types/form/VocabularyFormSelectionType.js'
 import FormUtil from '@src/js/components/common/form/FormUtil.js'
 
 export default class VocabularyFormControllerLoad extends PageControllerLoad {
@@ -90,7 +91,7 @@ export default class VocabularyFormControllerLoad extends PageControllerLoad {
 
     if (!oldSelection) {
       return null
-    } else if (oldSelection.type === 'term') {
+    } else if (oldSelection.type === VocabularyFormSelectionType.TERM) {
       const oldTerm = _.find(
         oldTerms,
         oldTerm => oldTerm.id === oldSelection.params.id
@@ -102,7 +103,7 @@ export default class VocabularyFormControllerLoad extends PageControllerLoad {
 
       if (newTerm) {
         return {
-          type: 'term',
+          type: VocabularyFormSelectionType.TERM,
           params: {
             id: newTerm.id
           }

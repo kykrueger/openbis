@@ -1,3 +1,4 @@
+import PageMode from '@src/js/components/common/page/PageMode.js'
 import FormValidator from '@src/js/components/common/form/FormValidator.js'
 import actions from '@src/js/store/actions/actions.js'
 
@@ -25,11 +26,11 @@ export default class PageControllerLoad {
 
       if (isNew) {
         await this.context.setState({
-          mode: 'edit'
+          mode: PageMode.EDIT
         })
       } else {
         await this.context.setState({
-          mode: 'view'
+          mode: PageMode.VIEW
         })
       }
 
