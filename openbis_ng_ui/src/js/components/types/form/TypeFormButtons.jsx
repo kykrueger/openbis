@@ -54,7 +54,12 @@ class TypeFormButtons extends React.PureComponent {
           name='remove'
           label='Remove'
           styles={{ root: classes.button }}
-          disabled={!this.isSectionOrPropertySelected()}
+          disabled={
+            !(
+              this.isNonSystemInternalSectionSelected() ||
+              this.isNonSystemInternalPropertySelected()
+            )
+          }
           onClick={onRemove}
         />
       </React.Fragment>
@@ -67,6 +72,39 @@ class TypeFormButtons extends React.PureComponent {
       selection &&
       (selection.type === 'property' || selection.type === 'section')
     )
+  }
+
+  isNonSystemInternalSectionSelected() {
+    const { selection, sections, properties } = this.props
+
+    if (selection && selection.type === 'section') {
+      const section = sections.find(
+        section => section.id === selection.params.id
+      )
+      return !section.properties.some(propertyId => {
+        const property = properties.find(property => property.id === propertyId)
+        return (
+          property.internal.value && property.registrator.value === 'system'
+        )
+      })
+    } else {
+      return false
+    }
+  }
+
+  isNonSystemInternalPropertySelected() {
+    const { selection, properties } = this.props
+
+    if (selection && selection.type === 'property') {
+      const property = properties.find(
+        property => property.id === selection.params.id
+      )
+      return !(
+        property.internal.value && property.registrator.value === 'system'
+      )
+    } else {
+      return false
+    }
   }
 }
 

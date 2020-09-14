@@ -115,6 +115,8 @@ class TypeForm extends React.PureComponent {
           onCancel={controller.handleCancel}
           object={object}
           selection={selection}
+          sections={sections}
+          properties={properties}
           changed={changed}
           mode={mode}
         />
