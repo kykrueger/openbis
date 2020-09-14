@@ -239,7 +239,7 @@ public interface IScreeningQuery extends BaseQuery
             + "         join property_types pt on pt.id = stpt.prty_id "
             + "         join spaces space on pl.space_id = space.id"
             + "      where pt.code = 'PLATE_GEOMETRY' "
-            + "         and pt.is_internal_namespace = true and pl.perm_id = ?{1}")
+            + "         and pt.is_managed_internally = true and pl.perm_id = ?{1}")
     public PlateGeometryContainer tryGetPlateGeometry(String platePermId);
 
     /**
@@ -254,7 +254,7 @@ public interface IScreeningQuery extends BaseQuery
             + "         join property_types pt on pt.id = stpt.prty_id "
             + "         join spaces space on pl.space_id = space.id"
             + "      where pt.code = 'PLATE_GEOMETRY' "
-            + "         and pt.is_internal_namespace = true and space.code = ?{1} and pl.code = ?{2}")
+            + "         and pt.is_managed_internally = true and space.code = ?{1} and pl.code = ?{2}")
     public PlateGeometryContainer tryGetPlateGeometry(String spaceCode, String plateCode);
 
     /**
@@ -309,7 +309,7 @@ public interface IScreeningQuery extends BaseQuery
                     + "       join data_set_type_property_types  dst_pt on dst_pt.dsty_id = ds_type.id "
                     + "       left outer join data_set_properties ds_props on ds_props.ds_id = ds.id and ds_props.dstpt_id = dst_pt.id"
                     + "  where "
-                    + "       dst_pt.prty_id = (select id from property_types where code='ANALYSIS_PROCEDURE' and is_internal_namespace=true)";
+                    + "       dst_pt.prty_id = (select id from property_types where code='ANALYSIS_PROCEDURE' and is_managed_internally=true)";
 
     @Select(sql = ANALYSIS_PROCEDURE_SELECT)
     public List<AnalysisProcedureResult> listAllAnalysisProcedures();
