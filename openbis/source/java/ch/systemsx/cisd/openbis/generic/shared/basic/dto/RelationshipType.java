@@ -38,8 +38,6 @@ public class RelationshipType extends Code<PropertyType> implements Serializable
      */
     private String simpleCode;
 
-    private boolean internalNamespace;
-
     private boolean managedInternally;
 
     private String description;
@@ -66,16 +64,6 @@ public class RelationshipType extends Code<PropertyType> implements Serializable
     public void setSimpleCode(String simpleCode)
     {
         this.simpleCode = simpleCode;
-    }
-
-    public boolean isInternalNamespace()
-    {
-        return internalNamespace;
-    }
-
-    public void setInternalNamespace(boolean internalNamespace)
-    {
-        this.internalNamespace = internalNamespace;
     }
 
     public boolean isManagedInternally()

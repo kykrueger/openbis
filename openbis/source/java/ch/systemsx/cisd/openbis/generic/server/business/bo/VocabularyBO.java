@@ -126,7 +126,6 @@ public class VocabularyBO extends AbstractBusinessObject implements IVocabularyB
         vocabularyPE.setChosenFromList(vocabulary.isChosenFromList());
         vocabularyPE.setURLTemplate(vocabulary.getURLTemplate());
         vocabularyPE.setManagedInternally(vocabulary.isManagedInternally());
-        vocabularyPE.setInternalNamespace(vocabulary.isInternalNamespace());
         Long currentTermOrdinal = 1L;
         for (final VocabularyTerm term : vocabulary.getTerms())
         {
@@ -375,7 +374,6 @@ public class VocabularyBO extends AbstractBusinessObject implements IVocabularyB
         vocabularyPE.setDescription(updates.getDescription());
         vocabularyPE.setURLTemplate(updates.getUrlTemplate());
         vocabularyPE.setChosenFromList(updates.isChosenFromList());
-        vocabularyPE.setInternalNamespace(updates.isInternalNamespace());
         vocabularyPE.setManagedInternally(updates.isManagedInternally());
 
         for (NewVocabularyTerm t : updates.getNewTerms())

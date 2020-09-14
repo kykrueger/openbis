@@ -66,10 +66,14 @@ public class Vocabulary extends VocabularyImmutable implements IVocabulary
         getVocabulary().setManagedInternally(isManagedInternally);
     }
 
+    /**
+     * @deprecated use {@link #setManagedInternally(boolean)}
+     */
     @Override
+    @Deprecated
     public void setInternalNamespace(boolean isInternalNamespace)
     {
-        getVocabulary().setInternalNamespace(isInternalNamespace);
+        setManagedInternally(isInternalNamespace);
     }
 
     @Override

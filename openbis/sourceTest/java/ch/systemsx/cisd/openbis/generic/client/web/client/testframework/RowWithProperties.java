@@ -49,10 +49,10 @@ public class RowWithProperties extends Row
     }
 
     private final RowWithProperties property(final String propertyCode, final Object value,
-            boolean internalNamespace)
+            boolean managedInternally)
     {
         final String propertyIdentifier =
-                GridTestUtils.getPropertyColumnIdentifier(propertyCode, internalNamespace);
+                GridTestUtils.getPropertyColumnIdentifier(propertyCode, managedInternally);
         withCell(propertyIdentifier, value);
         return this;
     }

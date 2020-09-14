@@ -61,7 +61,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.IIdentityHolder;
 @Entity
 @Table(name = TableNames.CONTROLLED_VOCABULARY_TABLE, uniqueConstraints =
 { @UniqueConstraint(columnNames =
-{ ColumnNames.CODE_COLUMN, ColumnNames.IS_INTERNAL_NAMESPACE }) })
+{ ColumnNames.CODE_COLUMN, ColumnNames.IS_MANAGED_INTERNALLY }) })
 public class VocabularyPE extends HibernateAbstractRegistrationHolder implements IIdAndCodeHolder, IIdentityHolder,
         Comparable<VocabularyPE>, Serializable
 {
@@ -79,8 +79,6 @@ public class VocabularyPE extends HibernateAbstractRegistrationHolder implements
     private Set<VocabularyTermPE> terms = new LinkedHashSet<VocabularyTermPE>();
 
     private boolean managedInternally;
-
-    private boolean internalNamespace;
 
     private boolean chosenFromList;
 
@@ -223,18 +221,6 @@ public class VocabularyPE extends HibernateAbstractRegistrationHolder implements
         this.managedInternally = managedInternally;
     }
 
-    @Column(name = ColumnNames.IS_INTERNAL_NAMESPACE, nullable = false)
-    // @InternalNamespace(message = ValidationMessages.CODE_IN_INTERNAL_NAMESPACE)
-    public boolean isInternalNamespace()
-    {
-        return internalNamespace;
-    }
-
-    public void setInternalNamespace(final boolean internalNamespace)
-    {
-        this.internalNamespace = internalNamespace;
-    }
-
     public void setId(final long id)
     {
         this.id = id;
@@ -243,7 +229,7 @@ public class VocabularyPE extends HibernateAbstractRegistrationHolder implements
 
     public void setCode(final String fullCode)
     {
-        setInternalNamespace(CodeConverter.isInternalNamespace(fullCode));
+        setManagedInternally(CodeConverter.isInternalNamespace(fullCode));
         setSimpleCode(CodeConverter.tryToDatabase(fullCode));
     }
 
@@ -251,7 +237,7 @@ public class VocabularyPE extends HibernateAbstractRegistrationHolder implements
     @Transient
     public String getCode()
     {
-        return CodeConverter.tryToBusinessLayer(getSimpleCode(), isInternalNamespace());
+        return CodeConverter.tryToBusinessLayer(getSimpleCode(), isManagedInternally());
     }
 
     @Override
@@ -304,7 +290,7 @@ public class VocabularyPE extends HibernateAbstractRegistrationHolder implements
         final VocabularyPE that = (VocabularyPE) obj;
         final EqualsBuilder builder = new EqualsBuilder();
         builder.append(getCode(), that.getCode());
-        builder.append(isInternalNamespace(), that.isInternalNamespace());
+        builder.append(isManagedInternally(), that.isManagedInternally());
         return builder.isEquals();
     }
 
@@ -313,7 +299,7 @@ public class VocabularyPE extends HibernateAbstractRegistrationHolder implements
     {
         final HashCodeBuilder builder = new HashCodeBuilder();
         builder.append(getCode());
-        builder.append(isInternalNamespace());
+        builder.append(isManagedInternally());
         return builder.toHashCode();
     }
 
@@ -324,7 +310,6 @@ public class VocabularyPE extends HibernateAbstractRegistrationHolder implements
                 new ToStringBuilder(this,
                         ModifiedShortPrefixToStringStyle.MODIFIED_SHORT_PREFIX_STYLE);
         builder.append("simpleCode", getSimpleCode());
-        builder.append("internalNamespace", isInternalNamespace());
         builder.append("managedInternally", isManagedInternally());
         return builder.toString();
     }

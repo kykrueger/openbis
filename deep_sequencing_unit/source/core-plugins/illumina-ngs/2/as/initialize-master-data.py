@@ -14,7 +14,6 @@ vocabulary_AGILENT_KIT = tr.getOrCreateNewVocabulary('AGILENT_KIT')
 vocabulary_AGILENT_KIT.setDescription(None)
 vocabulary_AGILENT_KIT.setUrlTemplate(None)
 vocabulary_AGILENT_KIT.setManagedInternally(False)
-vocabulary_AGILENT_KIT.setInternalNamespace(False)
 vocabulary_AGILENT_KIT.setChosenFromList(True)
           
 vocabulary_term_AGILENT_KIT_AGILENT_DNA_KIT_1000 = tr.createNewVocabularyTerm('AGILENT_DNA_KIT_1000')
@@ -33,7 +32,6 @@ vocabulary_ALIGNMENT_SOFTWARE = tr.getOrCreateNewVocabulary('ALIGNMENT_SOFTWARE'
 vocabulary_ALIGNMENT_SOFTWARE.setDescription('If an alignment is requested, which software package should be use?')
 vocabulary_ALIGNMENT_SOFTWARE.setUrlTemplate(None)
 vocabulary_ALIGNMENT_SOFTWARE.setManagedInternally(False)
-vocabulary_ALIGNMENT_SOFTWARE.setInternalNamespace(False)
 vocabulary_ALIGNMENT_SOFTWARE.setChosenFromList(True)
           
 vocabulary_term_ALIGNMENT_SOFTWARE_NOT_NEEDED = tr.createNewVocabularyTerm('NOT_NEEDED')
@@ -76,7 +74,6 @@ vocabulary_CASAVA_VERSION = tr.getOrCreateNewVocabulary('CASAVA_VERSION')
 vocabulary_CASAVA_VERSION.setDescription('Post analyzing software')
 vocabulary_CASAVA_VERSION.setUrlTemplate(None)
 vocabulary_CASAVA_VERSION.setManagedInternally(False)
-vocabulary_CASAVA_VERSION.setInternalNamespace(False)
 vocabulary_CASAVA_VERSION.setChosenFromList(True)
           
 vocabulary_term_CASAVA_VERSION_18 = tr.createNewVocabularyTerm('1.8')
@@ -95,7 +92,6 @@ vocabulary_CLUSTER_GENERATION_KIT_VERSION = tr.getOrCreateNewVocabulary('CLUSTER
 vocabulary_CLUSTER_GENERATION_KIT_VERSION.setDescription('Version of the Cluster Generation Kit')
 vocabulary_CLUSTER_GENERATION_KIT_VERSION.setUrlTemplate(None)
 vocabulary_CLUSTER_GENERATION_KIT_VERSION.setManagedInternally(False)
-vocabulary_CLUSTER_GENERATION_KIT_VERSION.setInternalNamespace(False)
 vocabulary_CLUSTER_GENERATION_KIT_VERSION.setChosenFromList(True)
           
 vocabulary_term_CLUSTER_GENERATION_KIT_VERSION_TRUSEQ_CBOT_HS_V3 = tr.createNewVocabularyTerm('TRUSEQ_CBOT_HS_V3')
@@ -144,7 +140,6 @@ vocabulary_CLUSTER_STATION = tr.getOrCreateNewVocabulary('CLUSTER_STATION')
 vocabulary_CLUSTER_STATION.setDescription('Cluster Station')
 vocabulary_CLUSTER_STATION.setUrlTemplate(None)
 vocabulary_CLUSTER_STATION.setManagedInternally(False)
-vocabulary_CLUSTER_STATION.setInternalNamespace(False)
 vocabulary_CLUSTER_STATION.setChosenFromList(True)
           
 vocabulary_term_CLUSTER_STATION_CBOT = tr.createNewVocabularyTerm('CBOT')
@@ -163,7 +158,6 @@ vocabulary_CONTROL_LANE = tr.getOrCreateNewVocabulary('CONTROL_LANE')
 vocabulary_CONTROL_LANE.setDescription(None)
 vocabulary_CONTROL_LANE.setUrlTemplate(None)
 vocabulary_CONTROL_LANE.setManagedInternally(False)
-vocabulary_CONTROL_LANE.setInternalNamespace(False)
 vocabulary_CONTROL_LANE.setChosenFromList(True)
           
 vocabulary_term_CONTROL_LANE_1 = tr.createNewVocabularyTerm('1')
@@ -230,7 +224,6 @@ vocabulary_END_TYPE = tr.getOrCreateNewVocabulary('END_TYPE')
 vocabulary_END_TYPE.setDescription('Sequencing method')
 vocabulary_END_TYPE.setUrlTemplate(None)
 vocabulary_END_TYPE.setManagedInternally(False)
-vocabulary_END_TYPE.setInternalNamespace(False)
 vocabulary_END_TYPE.setChosenFromList(True)
           
 vocabulary_term_END_TYPE_SINGLE_READ = tr.createNewVocabularyTerm('SINGLE_READ')
@@ -249,7 +242,6 @@ vocabulary_EXPERIMENT_DESIGN = tr.getOrCreateNewVocabulary('EXPERIMENT_DESIGN')
 vocabulary_EXPERIMENT_DESIGN.setDescription('General Intent')
 vocabulary_EXPERIMENT_DESIGN.setUrlTemplate(None)
 vocabulary_EXPERIMENT_DESIGN.setManagedInternally(False)
-vocabulary_EXPERIMENT_DESIGN.setInternalNamespace(False)
 vocabulary_EXPERIMENT_DESIGN.setChosenFromList(True)
           
 vocabulary_term_EXPERIMENT_DESIGN_BINDING_SITE_IDENTIFICATION = tr.createNewVocabularyTerm('BINDING_SITE_IDENTIFICATION')
@@ -310,7 +302,6 @@ vocabulary_INDEX1 = tr.getOrCreateNewVocabulary('INDEX1')
 vocabulary_INDEX1.setDescription('Index 1 for Illumina Indexing')
 vocabulary_INDEX1.setUrlTemplate(None)
 vocabulary_INDEX1.setManagedInternally(False)
-vocabulary_INDEX1.setInternalNamespace(False)
 vocabulary_INDEX1.setChosenFromList(True)
           
 vocabulary_term_INDEX1_NONE = tr.createNewVocabularyTerm('NONE')
@@ -875,7 +866,6 @@ vocabulary_INDEX2 = tr.getOrCreateNewVocabulary('INDEX2')
 vocabulary_INDEX2.setDescription('Index 2 for Illumina Dual Indexing')
 vocabulary_INDEX2.setUrlTemplate(None)
 vocabulary_INDEX2.setManagedInternally(False)
-vocabulary_INDEX2.setInternalNamespace(False)
 vocabulary_INDEX2.setChosenFromList(True)
           
 vocabulary_term_INDEX2_NONE = tr.createNewVocabularyTerm('NONE')
@@ -942,7 +932,6 @@ vocabulary_KIT = tr.getOrCreateNewVocabulary('KIT')
 vocabulary_KIT.setDescription('Illumina Kit used for preparation')
 vocabulary_KIT.setUrlTemplate(None)
 vocabulary_KIT.setManagedInternally(False)
-vocabulary_KIT.setInternalNamespace(False)
 vocabulary_KIT.setChosenFromList(True)
           
 vocabulary_term_KIT_CHIP_SEQ_SAMPLE_PREP = tr.createNewVocabularyTerm('CHIP_SEQ_SAMPLE_PREP')
@@ -1039,7 +1028,6 @@ vocabulary_MACS_VERSION = tr.getOrCreateNewVocabulary('MACS_VERSION')
 vocabulary_MACS_VERSION.setDescription('Used MACS version for Peak Calling')
 vocabulary_MACS_VERSION.setUrlTemplate(None)
 vocabulary_MACS_VERSION.setManagedInternally(False)
-vocabulary_MACS_VERSION.setInternalNamespace(False)
 vocabulary_MACS_VERSION.setChosenFromList(True)
           
 vocabulary_term_MACS_VERSION_140RC2 = tr.createNewVocabularyTerm('1.4.0RC2')
@@ -1058,7 +1046,6 @@ vocabulary_MISMATCH_IN_INDEX = tr.getOrCreateNewVocabulary('MISMATCH_IN_INDEX')
 vocabulary_MISMATCH_IN_INDEX.setDescription('Mismatch in Index allowed')
 vocabulary_MISMATCH_IN_INDEX.setUrlTemplate(None)
 vocabulary_MISMATCH_IN_INDEX.setManagedInternally(False)
-vocabulary_MISMATCH_IN_INDEX.setInternalNamespace(False)
 vocabulary_MISMATCH_IN_INDEX.setChosenFromList(True)
           
 vocabulary_term_MISMATCH_IN_INDEX_NONE = tr.createNewVocabularyTerm('NONE')
@@ -1077,7 +1064,6 @@ vocabulary_NANO_DROP = tr.getOrCreateNewVocabulary('NANO_DROP')
 vocabulary_NANO_DROP.setDescription('Device for measuring the total amount of genetic material contained in the probe')
 vocabulary_NANO_DROP.setUrlTemplate(None)
 vocabulary_NANO_DROP.setManagedInternally(False)
-vocabulary_NANO_DROP.setInternalNamespace(False)
 vocabulary_NANO_DROP.setChosenFromList(True)
           
 vocabulary_term_NANO_DROP_CONCND3300 = tr.createNewVocabularyTerm('CONCND3300')
@@ -1102,7 +1088,6 @@ vocabulary_NCBI_TAXONOMY = tr.getOrCreateNewVocabulary('NCBI_TAXONOMY')
 vocabulary_NCBI_TAXONOMY.setDescription(None)
 vocabulary_NCBI_TAXONOMY.setUrlTemplate('http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=$term$')
 vocabulary_NCBI_TAXONOMY.setManagedInternally(False)
-vocabulary_NCBI_TAXONOMY.setInternalNamespace(False)
 vocabulary_NCBI_TAXONOMY.setChosenFromList(True)
           
 vocabulary_term_NCBI_TAXONOMY_10090 = tr.createNewVocabularyTerm('10090')
@@ -1307,7 +1292,6 @@ vocabulary_PIPELINE_VERSION = tr.getOrCreateNewVocabulary('PIPELINE_VERSION')
 vocabulary_PIPELINE_VERSION.setDescription('With which pipeline version has the data been analyzed?')
 vocabulary_PIPELINE_VERSION.setUrlTemplate(None)
 vocabulary_PIPELINE_VERSION.setManagedInternally(False)
-vocabulary_PIPELINE_VERSION.setInternalNamespace(False)
 vocabulary_PIPELINE_VERSION.setChosenFromList(True)
           
 vocabulary_term_PIPELINE_VERSION_11348 = tr.createNewVocabularyTerm('1.13.48')
@@ -1398,7 +1382,6 @@ vocabulary_SAMPLE_TYPE = tr.getOrCreateNewVocabulary('SAMPLE_TYPE')
 vocabulary_SAMPLE_TYPE.setDescription('Type of sample delivered by the customer')
 vocabulary_SAMPLE_TYPE.setUrlTemplate(None)
 vocabulary_SAMPLE_TYPE.setManagedInternally(False)
-vocabulary_SAMPLE_TYPE.setInternalNamespace(False)
 vocabulary_SAMPLE_TYPE.setChosenFromList(True)
           
 vocabulary_term_SAMPLE_TYPE_PROCESSED_DNA_LIBRARY = tr.createNewVocabularyTerm('PROCESSED_DNA_LIBRARY')
@@ -1489,7 +1472,6 @@ vocabulary_SBS_SEQUENCING_KIT_VERSION = tr.getOrCreateNewVocabulary('SBS_SEQUENC
 vocabulary_SBS_SEQUENCING_KIT_VERSION.setDescription('Version of the Sequencing by Synthesis (SBS) Kit')
 vocabulary_SBS_SEQUENCING_KIT_VERSION.setUrlTemplate(None)
 vocabulary_SBS_SEQUENCING_KIT_VERSION.setManagedInternally(False)
-vocabulary_SBS_SEQUENCING_KIT_VERSION.setInternalNamespace(False)
 vocabulary_SBS_SEQUENCING_KIT_VERSION.setChosenFromList(True)
           
 vocabulary_term_SBS_SEQUENCING_KIT_VERSION_TRUSEQ_V5 = tr.createNewVocabularyTerm('TRUSEQ_V5')
@@ -1526,7 +1508,6 @@ vocabulary_SEQUENCER = tr.getOrCreateNewVocabulary('SEQUENCER')
 vocabulary_SEQUENCER.setDescription('Which Sequencer was used?')
 vocabulary_SEQUENCER.setUrlTemplate(None)
 vocabulary_SEQUENCER.setManagedInternally(False)
-vocabulary_SEQUENCER.setInternalNamespace(False)
 vocabulary_SEQUENCER.setChosenFromList(True)
           
 vocabulary_term_SEQUENCER_M00721 = tr.createNewVocabularyTerm('M00721')
@@ -1545,7 +1526,6 @@ vocabulary_SEQUENCING_APPLICATION = tr.getOrCreateNewVocabulary('SEQUENCING_APPL
 vocabulary_SEQUENCING_APPLICATION.setDescription('Type of experiment of the High Throughput Sequencing applications')
 vocabulary_SEQUENCING_APPLICATION.setUrlTemplate(None)
 vocabulary_SEQUENCING_APPLICATION.setManagedInternally(False)
-vocabulary_SEQUENCING_APPLICATION.setInternalNamespace(False)
 vocabulary_SEQUENCING_APPLICATION.setChosenFromList(True)
           
 vocabulary_term_SEQUENCING_APPLICATION_SMALL_RNA_SEQ = tr.createNewVocabularyTerm('SMALL_RNA_SEQ')
@@ -1576,7 +1556,6 @@ vocabulary_YES_NO = tr.getOrCreateNewVocabulary('YES_NO')
 vocabulary_YES_NO.setDescription('Just offers YES or NO')
 vocabulary_YES_NO.setUrlTemplate(None)
 vocabulary_YES_NO.setManagedInternally(False)
-vocabulary_YES_NO.setInternalNamespace(False)
 vocabulary_YES_NO.setChosenFromList(True)
           
 vocabulary_term_YES_NO_YES = tr.createNewVocabularyTerm('YES')
@@ -1804,575 +1783,483 @@ print "Imported 0 Material Types"
 prop_type_AGILENT_KIT = tr.getOrCreateNewPropertyType('AGILENT_KIT', DataType.CONTROLLEDVOCABULARY)
 prop_type_AGILENT_KIT.setLabel('Agilent Kit')
 prop_type_AGILENT_KIT.setManagedInternally(False)
-prop_type_AGILENT_KIT.setInternalNamespace(False)
 
 prop_type_AGILENT_KIT.setVocabulary(vocabulary_AGILENT_KIT)
 
 prop_type_ALIGNMENT_SOFTWARE = tr.getOrCreateNewPropertyType('ALIGNMENT_SOFTWARE', DataType.CONTROLLEDVOCABULARY)
 prop_type_ALIGNMENT_SOFTWARE.setLabel('Alignment software')
 prop_type_ALIGNMENT_SOFTWARE.setManagedInternally(False)
-prop_type_ALIGNMENT_SOFTWARE.setInternalNamespace(False)
 
 prop_type_ALIGNMENT_SOFTWARE.setVocabulary(vocabulary_ALIGNMENT_SOFTWARE)
 
 prop_type_ANALYSIS_FINISHED = tr.getOrCreateNewPropertyType('ANALYSIS_FINISHED', DataType.TIMESTAMP)
 prop_type_ANALYSIS_FINISHED.setLabel('Analysis finished')
 prop_type_ANALYSIS_FINISHED.setManagedInternally(False)
-prop_type_ANALYSIS_FINISHED.setInternalNamespace(False)
 
 
 prop_type_BARCODE_COMPLEXITY_CHECKER = tr.getOrCreateNewPropertyType('BARCODE_COMPLEXITY_CHECKER', DataType.MULTILINE_VARCHAR)
 prop_type_BARCODE_COMPLEXITY_CHECKER.setLabel('Barcode_Complexity_Checker')
 prop_type_BARCODE_COMPLEXITY_CHECKER.setManagedInternally(False)
-prop_type_BARCODE_COMPLEXITY_CHECKER.setInternalNamespace(False)
 
 
 prop_type_BASESCOVERED = tr.getOrCreateNewPropertyType('BASESCOVERED', DataType.INTEGER)
 prop_type_BASESCOVERED.setLabel('bases Covered')
 prop_type_BASESCOVERED.setManagedInternally(False)
-prop_type_BASESCOVERED.setInternalNamespace(False)
 
 
 prop_type_BIOLOGICAL_SAMPLE_ARRIVED = tr.getOrCreateNewPropertyType('BIOLOGICAL_SAMPLE_ARRIVED', DataType.TIMESTAMP)
 prop_type_BIOLOGICAL_SAMPLE_ARRIVED.setLabel('Arrival Date of Biological Sample')
 prop_type_BIOLOGICAL_SAMPLE_ARRIVED.setManagedInternally(False)
-prop_type_BIOLOGICAL_SAMPLE_ARRIVED.setInternalNamespace(False)
 
 
 prop_type_CASAVA_VERSION = tr.getOrCreateNewPropertyType('CASAVA_VERSION', DataType.CONTROLLEDVOCABULARY)
 prop_type_CASAVA_VERSION.setLabel('Casava Version')
 prop_type_CASAVA_VERSION.setManagedInternally(False)
-prop_type_CASAVA_VERSION.setInternalNamespace(False)
 
 prop_type_CASAVA_VERSION.setVocabulary(vocabulary_CASAVA_VERSION)
 
 prop_type_CELL_PLASTICITY_SYSTEMSX = tr.getOrCreateNewPropertyType('CELL_PLASTICITY_SYSTEMSX', DataType.BOOLEAN)
 prop_type_CELL_PLASTICITY_SYSTEMSX.setLabel('Cell Plasticity (SystemsX)')
 prop_type_CELL_PLASTICITY_SYSTEMSX.setManagedInternally(False)
-prop_type_CELL_PLASTICITY_SYSTEMSX.setInternalNamespace(False)
 
 
 prop_type_CHROMCOUNT = tr.getOrCreateNewPropertyType('CHROMCOUNT', DataType.INTEGER)
 prop_type_CHROMCOUNT.setLabel('chrom Count')
 prop_type_CHROMCOUNT.setManagedInternally(False)
-prop_type_CHROMCOUNT.setInternalNamespace(False)
 
 
 prop_type_CLUSTER_GENERATION_KIT_VERSION = tr.getOrCreateNewPropertyType('CLUSTER_GENERATION_KIT_VERSION', DataType.CONTROLLEDVOCABULARY)
 prop_type_CLUSTER_GENERATION_KIT_VERSION.setLabel('CS Generation Kit Version')
 prop_type_CLUSTER_GENERATION_KIT_VERSION.setManagedInternally(False)
-prop_type_CLUSTER_GENERATION_KIT_VERSION.setInternalNamespace(False)
 
 prop_type_CLUSTER_GENERATION_KIT_VERSION.setVocabulary(vocabulary_CLUSTER_GENERATION_KIT_VERSION)
 
 prop_type_CLUSTER_STATION = tr.getOrCreateNewPropertyType('CLUSTER_STATION', DataType.CONTROLLEDVOCABULARY)
 prop_type_CLUSTER_STATION.setLabel('Cluster Station')
 prop_type_CLUSTER_STATION.setManagedInternally(False)
-prop_type_CLUSTER_STATION.setInternalNamespace(False)
 
 prop_type_CLUSTER_STATION.setVocabulary(vocabulary_CLUSTER_STATION)
 
 prop_type_CONCENTRATION = tr.getOrCreateNewPropertyType('CONCENTRATION', DataType.REAL)
 prop_type_CONCENTRATION.setLabel(u'Conc. [ng/\u03bcl]')
 prop_type_CONCENTRATION.setManagedInternally(False)
-prop_type_CONCENTRATION.setInternalNamespace(False)
 
 
 prop_type_CONCENTRATION_FLOWLANE = tr.getOrCreateNewPropertyType('CONCENTRATION_FLOWLANE', DataType.REAL)
 prop_type_CONCENTRATION_FLOWLANE.setLabel('Concentration in flow lane [pM]')
 prop_type_CONCENTRATION_FLOWLANE.setManagedInternally(False)
-prop_type_CONCENTRATION_FLOWLANE.setInternalNamespace(False)
 
 
 prop_type_CONCENTRATION_ORIGINAL_ILLUMINA = tr.getOrCreateNewPropertyType('CONCENTRATION_ORIGINAL_ILLUMINA', DataType.REAL)
 prop_type_CONCENTRATION_ORIGINAL_ILLUMINA.setLabel(u'Concentration (original) [ng/\u03bcl]')
 prop_type_CONCENTRATION_ORIGINAL_ILLUMINA.setManagedInternally(False)
-prop_type_CONCENTRATION_ORIGINAL_ILLUMINA.setInternalNamespace(False)
 
 
 prop_type_CONCENTRATION_PREPARED_ILLUMINA = tr.getOrCreateNewPropertyType('CONCENTRATION_PREPARED_ILLUMINA', DataType.REAL)
 prop_type_CONCENTRATION_PREPARED_ILLUMINA.setLabel(u'Concentration (prepared) [ng/\u03bcl]')
 prop_type_CONCENTRATION_PREPARED_ILLUMINA.setManagedInternally(False)
-prop_type_CONCENTRATION_PREPARED_ILLUMINA.setInternalNamespace(False)
 
 
 prop_type_CONTACT_PERSON_EMAIL = tr.getOrCreateNewPropertyType('CONTACT_PERSON_EMAIL', DataType.VARCHAR)
 prop_type_CONTACT_PERSON_EMAIL.setLabel('Email of Contact Person')
 prop_type_CONTACT_PERSON_EMAIL.setManagedInternally(False)
-prop_type_CONTACT_PERSON_EMAIL.setInternalNamespace(False)
 
 
 prop_type_CONTACT_PERSON_NAME = tr.getOrCreateNewPropertyType('CONTACT_PERSON_NAME', DataType.VARCHAR)
 prop_type_CONTACT_PERSON_NAME.setLabel('Name of Contact Person')
 prop_type_CONTACT_PERSON_NAME.setManagedInternally(False)
-prop_type_CONTACT_PERSON_NAME.setInternalNamespace(False)
 
 
 prop_type_CONTROL_LANE = tr.getOrCreateNewPropertyType('CONTROL_LANE', DataType.CONTROLLEDVOCABULARY)
 prop_type_CONTROL_LANE.setLabel('Control Lane')
 prop_type_CONTROL_LANE.setManagedInternally(False)
-prop_type_CONTROL_LANE.setInternalNamespace(False)
 
 prop_type_CONTROL_LANE.setVocabulary(vocabulary_CONTROL_LANE)
 
 prop_type_CREATED_ON_CS = tr.getOrCreateNewPropertyType('CREATED_ON_CS', DataType.TIMESTAMP)
 prop_type_CREATED_ON_CS.setLabel('Clustering date')
 prop_type_CREATED_ON_CS.setManagedInternally(False)
-prop_type_CREATED_ON_CS.setInternalNamespace(False)
 
 
 prop_type_CS_PROTOCOL_VERSION = tr.getOrCreateNewPropertyType('CS_PROTOCOL_VERSION', DataType.VARCHAR)
 prop_type_CS_PROTOCOL_VERSION.setLabel('CS Protocol Version')
 prop_type_CS_PROTOCOL_VERSION.setManagedInternally(False)
-prop_type_CS_PROTOCOL_VERSION.setInternalNamespace(False)
 
 
 prop_type_CYCLES = tr.getOrCreateNewPropertyType('CYCLES', DataType.INTEGER)
 prop_type_CYCLES.setLabel('Cycles')
 prop_type_CYCLES.setManagedInternally(False)
-prop_type_CYCLES.setInternalNamespace(False)
 
 
 prop_type_DATA_TRANSFERRED = tr.getOrCreateNewPropertyType('DATA_TRANSFERRED', DataType.TIMESTAMP)
 prop_type_DATA_TRANSFERRED.setLabel('Data transferred')
 prop_type_DATA_TRANSFERRED.setManagedInternally(False)
-prop_type_DATA_TRANSFERRED.setInternalNamespace(False)
 
 
 prop_type_DNA_CONCENTRATION_OF_LIBRARY = tr.getOrCreateNewPropertyType('DNA_CONCENTRATION_OF_LIBRARY', DataType.INTEGER)
 prop_type_DNA_CONCENTRATION_OF_LIBRARY.setLabel('DNA concentration of library (nM)')
 prop_type_DNA_CONCENTRATION_OF_LIBRARY.setManagedInternally(False)
-prop_type_DNA_CONCENTRATION_OF_LIBRARY.setInternalNamespace(False)
 
 
 prop_type_DNA_CONCENTRATION_POOL = tr.getOrCreateNewPropertyType('DNA_CONCENTRATION_POOL', DataType.REAL)
 prop_type_DNA_CONCENTRATION_POOL.setLabel('DNA conc. [nM] - customer value')
 prop_type_DNA_CONCENTRATION_POOL.setManagedInternally(False)
-prop_type_DNA_CONCENTRATION_POOL.setInternalNamespace(False)
 
 
 prop_type_DNA_CONCENTRATION_QGF = tr.getOrCreateNewPropertyType('DNA_CONCENTRATION_QGF', DataType.REAL)
 prop_type_DNA_CONCENTRATION_QGF.setLabel('DNA concentration of Pool [nM]')
 prop_type_DNA_CONCENTRATION_QGF.setManagedInternally(False)
-prop_type_DNA_CONCENTRATION_QGF.setInternalNamespace(False)
 
 
 prop_type_END_TYPE = tr.getOrCreateNewPropertyType('END_TYPE', DataType.CONTROLLEDVOCABULARY)
 prop_type_END_TYPE.setLabel('Paired End / Single Read')
 prop_type_END_TYPE.setManagedInternally(False)
-prop_type_END_TYPE.setInternalNamespace(False)
 
 prop_type_END_TYPE.setVocabulary(vocabulary_END_TYPE)
 
 prop_type_EXPERIMENT_DESIGN = tr.getOrCreateNewPropertyType('EXPERIMENT_DESIGN', DataType.CONTROLLEDVOCABULARY)
 prop_type_EXPERIMENT_DESIGN.setLabel('Experiment Design')
 prop_type_EXPERIMENT_DESIGN.setManagedInternally(False)
-prop_type_EXPERIMENT_DESIGN.setInternalNamespace(False)
 
 prop_type_EXPERIMENT_DESIGN.setVocabulary(vocabulary_EXPERIMENT_DESIGN)
 
 prop_type_EXTERNAL_SAMPLE_NAME = tr.getOrCreateNewPropertyType('EXTERNAL_SAMPLE_NAME', DataType.VARCHAR)
 prop_type_EXTERNAL_SAMPLE_NAME.setLabel('External Sample Name')
 prop_type_EXTERNAL_SAMPLE_NAME.setManagedInternally(False)
-prop_type_EXTERNAL_SAMPLE_NAME.setInternalNamespace(False)
 
 
 prop_type_FLOWCELLTYPE = tr.getOrCreateNewPropertyType('FLOWCELLTYPE', DataType.VARCHAR)
 prop_type_FLOWCELLTYPE.setLabel('Flow Cell Type')
 prop_type_FLOWCELLTYPE.setManagedInternally(False)
-prop_type_FLOWCELLTYPE.setInternalNamespace(False)
 
 
 prop_type_FLOW_CELL_SEQUENCED_ON = tr.getOrCreateNewPropertyType('FLOW_CELL_SEQUENCED_ON', DataType.TIMESTAMP)
 prop_type_FLOW_CELL_SEQUENCED_ON.setLabel('Sequencing started')
 prop_type_FLOW_CELL_SEQUENCED_ON.setManagedInternally(False)
-prop_type_FLOW_CELL_SEQUENCED_ON.setInternalNamespace(False)
 
 
 prop_type_FRAGMENT_SIZE_BASE_PAIRS = tr.getOrCreateNewPropertyType('FRAGMENT_SIZE_BASE_PAIRS', DataType.INTEGER)
 prop_type_FRAGMENT_SIZE_BASE_PAIRS.setLabel('Fragment Size [base pairs]')
 prop_type_FRAGMENT_SIZE_BASE_PAIRS.setManagedInternally(False)
-prop_type_FRAGMENT_SIZE_BASE_PAIRS.setInternalNamespace(False)
 
 
 prop_type_FRAGMENT_SIZE_PREPARED_ILLUMINA = tr.getOrCreateNewPropertyType('FRAGMENT_SIZE_PREPARED_ILLUMINA', DataType.INTEGER)
 prop_type_FRAGMENT_SIZE_PREPARED_ILLUMINA.setLabel('Fragment Size (prepared) [base (pairs)]')
 prop_type_FRAGMENT_SIZE_PREPARED_ILLUMINA.setManagedInternally(False)
-prop_type_FRAGMENT_SIZE_PREPARED_ILLUMINA.setInternalNamespace(False)
 
 
 prop_type_ILLUMINA_PIPELINE_VERSION = tr.getOrCreateNewPropertyType('ILLUMINA_PIPELINE_VERSION', DataType.CONTROLLEDVOCABULARY)
 prop_type_ILLUMINA_PIPELINE_VERSION.setLabel('Pipeline Version')
 prop_type_ILLUMINA_PIPELINE_VERSION.setManagedInternally(False)
-prop_type_ILLUMINA_PIPELINE_VERSION.setInternalNamespace(False)
 
 prop_type_ILLUMINA_PIPELINE_VERSION.setVocabulary(vocabulary_PIPELINE_VERSION)
 
 prop_type_INDEX1 = tr.getOrCreateNewPropertyType('INDEX1', DataType.CONTROLLEDVOCABULARY)
 prop_type_INDEX1.setLabel('Index 1')
 prop_type_INDEX1.setManagedInternally(False)
-prop_type_INDEX1.setInternalNamespace(False)
 
 prop_type_INDEX1.setVocabulary(vocabulary_INDEX1)
 
 prop_type_INDEX2 = tr.getOrCreateNewPropertyType('INDEX2', DataType.CONTROLLEDVOCABULARY)
 prop_type_INDEX2.setLabel('Index 2')
 prop_type_INDEX2.setManagedInternally(False)
-prop_type_INDEX2.setInternalNamespace(False)
 
 prop_type_INDEX2.setVocabulary(vocabulary_INDEX2)
 
 prop_type_INDEXREAD = tr.getOrCreateNewPropertyType('INDEXREAD', DataType.INTEGER)
 prop_type_INDEXREAD.setLabel('Length of Index Read1')
 prop_type_INDEXREAD.setManagedInternally(False)
-prop_type_INDEXREAD.setInternalNamespace(False)
 
 
 prop_type_INDEXREAD2 = tr.getOrCreateNewPropertyType('INDEXREAD2', DataType.INTEGER)
 prop_type_INDEXREAD2.setLabel('Length of Index Read2')
 prop_type_INDEXREAD2.setManagedInternally(False)
-prop_type_INDEXREAD2.setInternalNamespace(False)
 
 
 prop_type_INVOICE = tr.getOrCreateNewPropertyType('INVOICE', DataType.BOOLEAN)
 prop_type_INVOICE.setLabel('Invoice sent?')
 prop_type_INVOICE.setManagedInternally(False)
-prop_type_INVOICE.setInternalNamespace(False)
 
 
 prop_type_ISCOMPRESSED = tr.getOrCreateNewPropertyType('ISCOMPRESSED', DataType.BOOLEAN)
 prop_type_ISCOMPRESSED.setLabel('Is Compressed')
 prop_type_ISCOMPRESSED.setManagedInternally(False)
-prop_type_ISCOMPRESSED.setInternalNamespace(False)
 
 
 prop_type_ISSUED_COMMAND = tr.getOrCreateNewPropertyType('ISSUED_COMMAND', DataType.MULTILINE_VARCHAR)
 prop_type_ISSUED_COMMAND.setLabel('Issued Command')
 prop_type_ISSUED_COMMAND.setManagedInternally(False)
-prop_type_ISSUED_COMMAND.setInternalNamespace(False)
 
 
 prop_type_ISSWAPPED = tr.getOrCreateNewPropertyType('ISSWAPPED', DataType.INTEGER)
 prop_type_ISSWAPPED.setLabel('Is byte swapped')
 prop_type_ISSWAPPED.setManagedInternally(False)
-prop_type_ISSWAPPED.setInternalNamespace(False)
 
 
 prop_type_KIT = tr.getOrCreateNewPropertyType('KIT', DataType.CONTROLLEDVOCABULARY)
 prop_type_KIT.setLabel('Library preparation kit')
 prop_type_KIT.setManagedInternally(False)
-prop_type_KIT.setInternalNamespace(False)
 
 prop_type_KIT.setVocabulary(vocabulary_KIT)
 
 prop_type_KIT_PREPARED = tr.getOrCreateNewPropertyType('KIT_PREPARED', DataType.TIMESTAMP)
 prop_type_KIT_PREPARED.setLabel('Sample processed')
 prop_type_KIT_PREPARED.setManagedInternally(False)
-prop_type_KIT_PREPARED.setInternalNamespace(False)
 
 
 prop_type_LANECOUNT = tr.getOrCreateNewPropertyType('LANECOUNT', DataType.INTEGER)
 prop_type_LANECOUNT.setLabel('Lane Count')
 prop_type_LANECOUNT.setManagedInternally(False)
-prop_type_LANECOUNT.setInternalNamespace(False)
 
 
 prop_type_LIBRARY_PROCESSING_FAILED = tr.getOrCreateNewPropertyType('LIBRARY_PROCESSING_FAILED', DataType.BOOLEAN)
 prop_type_LIBRARY_PROCESSING_FAILED.setLabel('Library processing failed')
 prop_type_LIBRARY_PROCESSING_FAILED.setManagedInternally(False)
-prop_type_LIBRARY_PROCESSING_FAILED.setInternalNamespace(False)
 
 
 prop_type_LIBRARY_PROCESSING_POSSIBLE_YES_NO = tr.getOrCreateNewPropertyType('LIBRARY_PROCESSING_POSSIBLE_YES_NO', DataType.CONTROLLEDVOCABULARY)
 prop_type_LIBRARY_PROCESSING_POSSIBLE_YES_NO.setLabel('Library processing possible')
 prop_type_LIBRARY_PROCESSING_POSSIBLE_YES_NO.setManagedInternally(False)
-prop_type_LIBRARY_PROCESSING_POSSIBLE_YES_NO.setInternalNamespace(False)
 
 prop_type_LIBRARY_PROCESSING_POSSIBLE_YES_NO.setVocabulary(vocabulary_YES_NO)
 
 prop_type_LIBRARY_PROCESSING_SUCCESSFUL = tr.getOrCreateNewPropertyType('LIBRARY_PROCESSING_SUCCESSFUL', DataType.BOOLEAN)
 prop_type_LIBRARY_PROCESSING_SUCCESSFUL.setLabel('Library processing successful')
 prop_type_LIBRARY_PROCESSING_SUCCESSFUL.setManagedInternally(False)
-prop_type_LIBRARY_PROCESSING_SUCCESSFUL.setInternalNamespace(False)
 
 
 prop_type_LOT = tr.getOrCreateNewPropertyType('LOT', DataType.INTEGER)
 prop_type_LOT.setLabel('Kit Lot #')
 prop_type_LOT.setManagedInternally(False)
-prop_type_LOT.setInternalNamespace(False)
 
 
 prop_type_MACS_VERSION = tr.getOrCreateNewPropertyType('MACS_VERSION', DataType.CONTROLLEDVOCABULARY)
 prop_type_MACS_VERSION.setLabel('MACS VERSION')
 prop_type_MACS_VERSION.setManagedInternally(False)
-prop_type_MACS_VERSION.setInternalNamespace(False)
 
 prop_type_MACS_VERSION.setVocabulary(vocabulary_MACS_VERSION)
 
 prop_type_MAPPED_READS = tr.getOrCreateNewPropertyType('MAPPED_READS', DataType.INTEGER)
 prop_type_MAPPED_READS.setLabel('Mapped reads')
 prop_type_MAPPED_READS.setManagedInternally(False)
-prop_type_MAPPED_READS.setInternalNamespace(False)
 
 
 prop_type_MAX = tr.getOrCreateNewPropertyType('MAX', DataType.REAL)
 prop_type_MAX.setLabel('Maximum')
 prop_type_MAX.setManagedInternally(False)
-prop_type_MAX.setInternalNamespace(False)
 
 
 prop_type_MEAN = tr.getOrCreateNewPropertyType('MEAN', DataType.REAL)
 prop_type_MEAN.setLabel('Mean')
 prop_type_MEAN.setManagedInternally(False)
-prop_type_MEAN.setInternalNamespace(False)
 
 
 prop_type_MIN = tr.getOrCreateNewPropertyType('MIN', DataType.REAL)
 prop_type_MIN.setLabel('Minimum')
 prop_type_MIN.setManagedInternally(False)
-prop_type_MIN.setInternalNamespace(False)
 
 
 prop_type_MISMATCH_IN_INDEX = tr.getOrCreateNewPropertyType('MISMATCH_IN_INDEX', DataType.CONTROLLEDVOCABULARY)
 prop_type_MISMATCH_IN_INDEX.setLabel('Mismatch in Index')
 prop_type_MISMATCH_IN_INDEX.setManagedInternally(False)
-prop_type_MISMATCH_IN_INDEX.setInternalNamespace(False)
 
 prop_type_MISMATCH_IN_INDEX.setVocabulary(vocabulary_MISMATCH_IN_INDEX)
 
 prop_type_NANO_DROP = tr.getOrCreateNewPropertyType('NANO_DROP', DataType.CONTROLLEDVOCABULARY)
 prop_type_NANO_DROP.setLabel('Nano Drop')
 prop_type_NANO_DROP.setManagedInternally(False)
-prop_type_NANO_DROP.setInternalNamespace(False)
 
 prop_type_NANO_DROP.setVocabulary(vocabulary_NANO_DROP)
 
 prop_type_NCBI_ORGANISM_TAXONOMY = tr.getOrCreateNewPropertyType('NCBI_ORGANISM_TAXONOMY', DataType.CONTROLLEDVOCABULARY)
 prop_type_NCBI_ORGANISM_TAXONOMY.setLabel('Organism (NCBI Taxonomy)')
 prop_type_NCBI_ORGANISM_TAXONOMY.setManagedInternally(False)
-prop_type_NCBI_ORGANISM_TAXONOMY.setInternalNamespace(False)
 
 prop_type_NCBI_ORGANISM_TAXONOMY.setVocabulary(vocabulary_NCBI_TAXONOMY)
 
 prop_type_NM_DNA = tr.getOrCreateNewPropertyType('NM_DNA', DataType.REAL)
 prop_type_NM_DNA.setLabel('Calculated DNA concentration of library (nM)')
 prop_type_NM_DNA.setManagedInternally(False)
-prop_type_NM_DNA.setInternalNamespace(False)
 
 
 prop_type_NOTES = tr.getOrCreateNewPropertyType('NOTES', DataType.MULTILINE_VARCHAR)
 prop_type_NOTES.setLabel('Notes')
 prop_type_NOTES.setManagedInternally(False)
-prop_type_NOTES.setInternalNamespace(False)
 
 
 prop_type_NUMBER_OF_ATTACHMENTS = tr.getOrCreateNewPropertyType('NUMBER_OF_ATTACHMENTS', DataType.INTEGER)
 prop_type_NUMBER_OF_ATTACHMENTS.setLabel('Number of Attachments')
 prop_type_NUMBER_OF_ATTACHMENTS.setManagedInternally(False)
-prop_type_NUMBER_OF_ATTACHMENTS.setInternalNamespace(False)
 
 
 prop_type_PAIRED_END_KIT = tr.getOrCreateNewPropertyType('PAIRED_END_KIT', DataType.VARCHAR)
 prop_type_PAIRED_END_KIT.setLabel('Paired End Kit')
 prop_type_PAIRED_END_KIT.setManagedInternally(False)
-prop_type_PAIRED_END_KIT.setInternalNamespace(False)
 
 
 prop_type_PERCENTAGE_ONE_MISMATCH_READS_INDEX = tr.getOrCreateNewPropertyType('PERCENTAGE_ONE_MISMATCH_READS_INDEX', DataType.REAL)
 prop_type_PERCENTAGE_ONE_MISMATCH_READS_INDEX.setLabel('% One Mismatch Reads (Index)')
 prop_type_PERCENTAGE_ONE_MISMATCH_READS_INDEX.setManagedInternally(False)
-prop_type_PERCENTAGE_ONE_MISMATCH_READS_INDEX.setInternalNamespace(False)
 
 
 prop_type_PERCENTAGE_PASSED_FILTERING = tr.getOrCreateNewPropertyType('PERCENTAGE_PASSED_FILTERING', DataType.REAL)
 prop_type_PERCENTAGE_PASSED_FILTERING.setLabel('% Passes Illumina Filtering (PF)')
 prop_type_PERCENTAGE_PASSED_FILTERING.setManagedInternally(False)
-prop_type_PERCENTAGE_PASSED_FILTERING.setInternalNamespace(False)
 
 
 prop_type_PERCENTAGE_PERFECT_INDEX_READS = tr.getOrCreateNewPropertyType('PERCENTAGE_PERFECT_INDEX_READS', DataType.REAL)
 prop_type_PERCENTAGE_PERFECT_INDEX_READS.setLabel('% Perfect Index Reads')
 prop_type_PERCENTAGE_PERFECT_INDEX_READS.setManagedInternally(False)
-prop_type_PERCENTAGE_PERFECT_INDEX_READS.setInternalNamespace(False)
 
 
 prop_type_PERCENTAGE_RAW_CLUSTERS_PER_LANE = tr.getOrCreateNewPropertyType('PERCENTAGE_RAW_CLUSTERS_PER_LANE', DataType.REAL)
 prop_type_PERCENTAGE_RAW_CLUSTERS_PER_LANE.setLabel('% of raw clusters per lane')
 prop_type_PERCENTAGE_RAW_CLUSTERS_PER_LANE.setManagedInternally(False)
-prop_type_PERCENTAGE_RAW_CLUSTERS_PER_LANE.setInternalNamespace(False)
 
 
 prop_type_PREPARED_BY = tr.getOrCreateNewPropertyType('PREPARED_BY', DataType.VARCHAR)
 prop_type_PREPARED_BY.setLabel('Prepared by')
 prop_type_PREPARED_BY.setManagedInternally(False)
-prop_type_PREPARED_BY.setInternalNamespace(False)
 
 
 prop_type_PRIMARYDATASIZE = tr.getOrCreateNewPropertyType('PRIMARYDATASIZE', DataType.INTEGER)
 prop_type_PRIMARYDATASIZE.setLabel('primary Data Size')
 prop_type_PRIMARYDATASIZE.setManagedInternally(False)
-prop_type_PRIMARYDATASIZE.setInternalNamespace(False)
 
 
 prop_type_PRIMARYINDEXSIZE = tr.getOrCreateNewPropertyType('PRIMARYINDEXSIZE', DataType.INTEGER)
 prop_type_PRIMARYINDEXSIZE.setLabel('primary Index Size')
 prop_type_PRIMARYINDEXSIZE.setManagedInternally(False)
-prop_type_PRIMARYINDEXSIZE.setInternalNamespace(False)
 
 
 prop_type_PRINCIPAL_INVESTIGATOR_EMAIL = tr.getOrCreateNewPropertyType('PRINCIPAL_INVESTIGATOR_EMAIL', DataType.VARCHAR)
 prop_type_PRINCIPAL_INVESTIGATOR_EMAIL.setLabel('Email of Principal Investigator')
 prop_type_PRINCIPAL_INVESTIGATOR_EMAIL.setManagedInternally(False)
-prop_type_PRINCIPAL_INVESTIGATOR_EMAIL.setInternalNamespace(False)
 
 
 prop_type_PRINCIPAL_INVESTIGATOR_NAME = tr.getOrCreateNewPropertyType('PRINCIPAL_INVESTIGATOR_NAME', DataType.VARCHAR)
 prop_type_PRINCIPAL_INVESTIGATOR_NAME.setLabel('Name of Principal Investigator')
 prop_type_PRINCIPAL_INVESTIGATOR_NAME.setManagedInternally(False)
-prop_type_PRINCIPAL_INVESTIGATOR_NAME.setInternalNamespace(False)
 
 
 prop_type_QC_AT_DBSSE = tr.getOrCreateNewPropertyType('QC_AT_DBSSE', DataType.CONTROLLEDVOCABULARY)
 prop_type_QC_AT_DBSSE.setLabel('QC at D-BSSE')
 prop_type_QC_AT_DBSSE.setManagedInternally(False)
-prop_type_QC_AT_DBSSE.setInternalNamespace(False)
 
 prop_type_QC_AT_DBSSE.setVocabulary(vocabulary_YES_NO)
 
 prop_type_QC_REQUIRED = tr.getOrCreateNewPropertyType('QC_REQUIRED', DataType.CONTROLLEDVOCABULARY)
 prop_type_QC_REQUIRED.setLabel('QC required')
 prop_type_QC_REQUIRED.setManagedInternally(False)
-prop_type_QC_REQUIRED.setInternalNamespace(False)
 
 prop_type_QC_REQUIRED.setVocabulary(vocabulary_YES_NO)
 
 prop_type_RUNNINGTIME = tr.getOrCreateNewPropertyType('RUNNINGTIME', DataType.VARCHAR)
 prop_type_RUNNINGTIME.setLabel('Running Time')
 prop_type_RUNNINGTIME.setManagedInternally(False)
-prop_type_RUNNINGTIME.setInternalNamespace(False)
 
 
 prop_type_RUN_FOLDER_NAME = tr.getOrCreateNewPropertyType('RUN_FOLDER_NAME', DataType.VARCHAR)
 prop_type_RUN_FOLDER_NAME.setLabel('Run Folder Name')
 prop_type_RUN_FOLDER_NAME.setManagedInternally(False)
-prop_type_RUN_FOLDER_NAME.setInternalNamespace(False)
 
 
 prop_type_SAMPLE_KIND = tr.getOrCreateNewPropertyType('SAMPLE_KIND', DataType.CONTROLLEDVOCABULARY)
 prop_type_SAMPLE_KIND.setLabel('Sample Kind')
 prop_type_SAMPLE_KIND.setManagedInternally(False)
-prop_type_SAMPLE_KIND.setInternalNamespace(False)
 
 prop_type_SAMPLE_KIND.setVocabulary(vocabulary_SAMPLE_TYPE)
 
 prop_type_SAMTOOLS_FLAGSTAT = tr.getOrCreateNewPropertyType('SAMTOOLS_FLAGSTAT', DataType.MULTILINE_VARCHAR)
 prop_type_SAMTOOLS_FLAGSTAT.setLabel('Samtools Flagstat Output')
 prop_type_SAMTOOLS_FLAGSTAT.setManagedInternally(False)
-prop_type_SAMTOOLS_FLAGSTAT.setInternalNamespace(False)
 
 
 prop_type_SBS_KIT = tr.getOrCreateNewPropertyType('SBS_KIT', DataType.VARCHAR)
 prop_type_SBS_KIT.setLabel('SBS Kit')
 prop_type_SBS_KIT.setManagedInternally(False)
-prop_type_SBS_KIT.setInternalNamespace(False)
 
 
 prop_type_SBS_SEQUENCING_KIT_VERSION = tr.getOrCreateNewPropertyType('SBS_SEQUENCING_KIT_VERSION', DataType.CONTROLLEDVOCABULARY)
 prop_type_SBS_SEQUENCING_KIT_VERSION.setLabel('SBS Sequencing Kit Version')
 prop_type_SBS_SEQUENCING_KIT_VERSION.setManagedInternally(False)
-prop_type_SBS_SEQUENCING_KIT_VERSION.setInternalNamespace(False)
 
 prop_type_SBS_SEQUENCING_KIT_VERSION.setVocabulary(vocabulary_SBS_SEQUENCING_KIT_VERSION)
 
 prop_type_SEQUENCER = tr.getOrCreateNewPropertyType('SEQUENCER', DataType.CONTROLLEDVOCABULARY)
 prop_type_SEQUENCER.setLabel('Sequencer')
 prop_type_SEQUENCER.setManagedInternally(False)
-prop_type_SEQUENCER.setInternalNamespace(False)
 
 prop_type_SEQUENCER.setVocabulary(vocabulary_SEQUENCER)
 
 prop_type_SEQUENCER_FINISHED = tr.getOrCreateNewPropertyType('SEQUENCER_FINISHED', DataType.TIMESTAMP)
 prop_type_SEQUENCER_FINISHED.setLabel('Sequencer finished')
 prop_type_SEQUENCER_FINISHED.setManagedInternally(False)
-prop_type_SEQUENCER_FINISHED.setInternalNamespace(False)
 
 
 prop_type_STARTING_AMOUNT_OF_SAMPLE_IN_NG = tr.getOrCreateNewPropertyType('STARTING_AMOUNT_OF_SAMPLE_IN_NG', DataType.REAL)
 prop_type_STARTING_AMOUNT_OF_SAMPLE_IN_NG.setLabel('Starting amount of sample (ng)')
 prop_type_STARTING_AMOUNT_OF_SAMPLE_IN_NG.setManagedInternally(False)
-prop_type_STARTING_AMOUNT_OF_SAMPLE_IN_NG.setInternalNamespace(False)
 
 
 prop_type_STD = tr.getOrCreateNewPropertyType('STD', DataType.REAL)
 prop_type_STD.setLabel('Standard deviation')
 prop_type_STD.setManagedInternally(False)
-prop_type_STD.setInternalNamespace(False)
 
 
 prop_type_SURFACECOUNT = tr.getOrCreateNewPropertyType('SURFACECOUNT', DataType.INTEGER)
 prop_type_SURFACECOUNT.setLabel('Surface Count')
 prop_type_SURFACECOUNT.setManagedInternally(False)
-prop_type_SURFACECOUNT.setInternalNamespace(False)
 
 
 prop_type_SWATHCOUNT = tr.getOrCreateNewPropertyType('SWATHCOUNT', DataType.INTEGER)
 prop_type_SWATHCOUNT.setLabel('Swath Count')
 prop_type_SWATHCOUNT.setManagedInternally(False)
-prop_type_SWATHCOUNT.setInternalNamespace(False)
 
 
 prop_type_TILECOUNT = tr.getOrCreateNewPropertyType('TILECOUNT', DataType.INTEGER)
 prop_type_TILECOUNT.setLabel('Tile Count')
 prop_type_TILECOUNT.setManagedInternally(False)
-prop_type_TILECOUNT.setInternalNamespace(False)
 
 
 prop_type_TOTAL_READS = tr.getOrCreateNewPropertyType('TOTAL_READS', DataType.INTEGER)
 prop_type_TOTAL_READS.setLabel('Total reads')
 prop_type_TOTAL_READS.setManagedInternally(False)
-prop_type_TOTAL_READS.setInternalNamespace(False)
 
 
 prop_type_UL_DNA = tr.getOrCreateNewPropertyType('UL_DNA', DataType.REAL)
 prop_type_UL_DNA.setLabel('Calculated ul DNA for 2nM stock')
 prop_type_UL_DNA.setManagedInternally(False)
-prop_type_UL_DNA.setInternalNamespace(False)
 
 
 prop_type_UL_EB = tr.getOrCreateNewPropertyType('UL_EB', DataType.REAL)
 prop_type_UL_EB.setLabel('Calculated ul EB for 2nM stock ')
 prop_type_UL_EB.setManagedInternally(False)
-prop_type_UL_EB.setInternalNamespace(False)
 
 
 prop_type_UL_STOCK = tr.getOrCreateNewPropertyType('UL_STOCK', DataType.INTEGER)
 prop_type_UL_STOCK.setLabel('ul of 2nM stock')
 prop_type_UL_STOCK.setManagedInternally(False)
-prop_type_UL_STOCK.setInternalNamespace(False)
 
 
 prop_type_UNIQUE_BARCODES = tr.getOrCreateNewPropertyType('UNIQUE_BARCODES', DataType.VARCHAR)
 prop_type_UNIQUE_BARCODES.setLabel('Unique Barcodes in Pool?')
 prop_type_UNIQUE_BARCODES.setManagedInternally(False)
-prop_type_UNIQUE_BARCODES.setInternalNamespace(False)
 
 
 prop_type_VERSION = tr.getOrCreateNewPropertyType('VERSION', DataType.VARCHAR)
 prop_type_VERSION.setLabel('Version')
 prop_type_VERSION.setManagedInternally(False)
-prop_type_VERSION.setInternalNamespace(False)
 
 
 prop_type_YIELD_MBASES = tr.getOrCreateNewPropertyType('YIELD_MBASES', DataType.INTEGER)
 prop_type_YIELD_MBASES.setLabel('Yield(Mbases)')
 prop_type_YIELD_MBASES.setManagedInternally(False)
-prop_type_YIELD_MBASES.setInternalNamespace(False)
 
 
 prop_type_ZOOMLEVELS = tr.getOrCreateNewPropertyType('ZOOMLEVELS', DataType.INTEGER)
 prop_type_ZOOMLEVELS.setLabel('zoom Levels')
 prop_type_ZOOMLEVELS.setManagedInternally(False)
-prop_type_ZOOMLEVELS.setInternalNamespace(False)
 
 
 print "Imported 92 Property Types" 

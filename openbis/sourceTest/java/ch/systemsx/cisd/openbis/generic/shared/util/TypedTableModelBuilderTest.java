@@ -171,15 +171,15 @@ public class TypedTableModelBuilderTest extends AssertJUnit
         assertEquals(1, rows.size());
     }
 
-    private IEntityProperty property(String key, String value, boolean internalNamespace,
+    private IEntityProperty property(String key, String value, boolean managedInternally,
             DataTypeCode type)
     {
         EntityProperty property = new EntityProperty();
         PropertyType propertyType = new PropertyType();
         String normalizedKey = key.toUpperCase();
         propertyType.setSimpleCode(normalizedKey);
-        propertyType.setInternalNamespace(internalNamespace);
-        propertyType.setCode((internalNamespace ? "$" : "") + normalizedKey);
+        propertyType.setManagedInternally(managedInternally);
+        propertyType.setCode((managedInternally ? "$" : "") + normalizedKey);
         propertyType.setLabel(key);
         propertyType.setDataType(new DataType(type));
         property.setPropertyType(propertyType);

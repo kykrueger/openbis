@@ -149,7 +149,7 @@ public class SampleDAO extends AbstractGenericEntityWithPropertiesDAO<SamplePE> 
                 "from " + SamplePropertyPE.class.getSimpleName()
                         + " where %s = ? and entity.space = ? "
                         + " and entityTypePropertyType.propertyTypeInternal.simpleCode = ?"
-                        + " and entityTypePropertyType.propertyTypeInternal.internalNamespace = ?";
+                        + " and entityTypePropertyType.propertyTypeInternal.managedInternally = ?";
         List<SamplePE> entities =
                 listByPropertyValue(queryFormat, propertyCode, propertyValue, space);
         if (operationLog.isDebugEnabled())

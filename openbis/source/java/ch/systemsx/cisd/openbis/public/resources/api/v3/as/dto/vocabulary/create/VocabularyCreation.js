@@ -7,7 +7,6 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		prototype.code = null;
 		prototype.description = null;
 		prototype.managedInternally = null;
-		prototype.internalNameSpace = null;
 		prototype.chosenFromList = null;
 		prototype.urlTemplate = null;
 		prototype.terms = null;
@@ -28,12 +27,6 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		};
 		prototype.setManagedInternally = function(managedInternally) {
 			this.managedInternally = managedInternally;
-		};
-		prototype.isInternalNameSpace = function() {
-			return this.internalNameSpace;
-		};
-		prototype.setInternalNameSpace = function(internalNameSpace) {
-			this.internalNameSpace = internalNameSpace;
 		};
 		prototype.isChosenFromList = function() {
 			return this.chosenFromList;

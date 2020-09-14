@@ -756,7 +756,6 @@ define(
 						vocabularyCreation.setCode(code);
 						vocabularyCreation.setDescription("test description");
 						vocabularyCreation.setManagedInternally(true);
-						vocabularyCreation.setInternalNameSpace(true);
 						vocabularyCreation.setChosenFromList(true);
 						vocabularyCreation.setUrlTemplate("https://www.ethz.ch");
 						var termCreation = new c.VocabularyTermCreation();
@@ -769,7 +768,6 @@ define(
 						c.assertEqual(vocabulary.getCode(), "$" + code, "Code");
 						c.assertEqual(vocabulary.getDescription(), "test description", "Description");
 						c.assertEqual(vocabulary.isManagedInternally(), true, "Managed internally");
-						c.assertEqual(vocabulary.isInternalNameSpace(), true, "Internal name space");
 						c.assertEqual(vocabulary.isChosenFromList(), true, "Chosen from list");
 						c.assertEqual(vocabulary.getUrlTemplate(), "https://www.ethz.ch", "URL template");
 					}

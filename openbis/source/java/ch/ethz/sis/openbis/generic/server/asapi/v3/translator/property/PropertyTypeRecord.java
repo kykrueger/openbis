@@ -35,8 +35,6 @@ public class PropertyTypeRecord extends ObjectBaseRecord
 
     public Boolean is_managed_internally;
 
-    public Boolean is_internal_namespace;
-
     public String schema;
 
     public String transformation;

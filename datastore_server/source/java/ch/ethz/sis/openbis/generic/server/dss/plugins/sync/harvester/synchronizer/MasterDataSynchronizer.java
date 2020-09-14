@@ -255,7 +255,7 @@ public class MasterDataSynchronizer
         for (String code : vocabulariesToProcess.keySet())
         {
             NewVocabulary newVocabulary = vocabulariesToProcess.get(code);
-            String vocabCode = CodeConverter.tryToBusinessLayer(newVocabulary.getCode(), newVocabulary.isInternalNamespace());
+            String vocabCode = CodeConverter.tryToBusinessLayer(newVocabulary.getCode(), newVocabulary.isManagedInternally());
             Vocabulary existingVocabulary = existingVocabularyMap.get(vocabCode);
             if (existingVocabulary != null)
             {
@@ -280,7 +280,6 @@ public class MasterDataSynchronizer
                 .append("description", existingVocabulary.getDescription(), newVocabulary.getDescription())
                 .append("urlTemplate", existingVocabulary.getURLTemplate(), newVocabulary.getURLTemplate())
                 .append("managedInternally", existingVocabulary.isManagedInternally(), newVocabulary.isManagedInternally())
-                .append("internalNamespace", existingVocabulary.isInternalNamespace(), newVocabulary.isInternalNamespace())
                 .append("chosenFromList", existingVocabulary.isChosenFromList(), newVocabulary.isChosenFromList());
         DiffResult diffResult = diffBuilder.build();
         return render(diffResult, existingVocabulary, newVocabulary);
@@ -639,7 +638,6 @@ public class MasterDataSynchronizer
                 .append("label", existingPropertyType.getLabel(), incomingPropertyType.getLabel())
                 .append("dataType", existingPropertyType.getDataType().getCode(), incomingPropertyType.getDataType().getCode())
                 .append("description", existingPropertyType.getDescription(), incomingPropertyType.getDescription())
-                .append("internalNamespace", existingPropertyType.isInternalNamespace(), incomingPropertyType.isInternalNamespace())
                 .append("managedInternally", existingPropertyType.isManagedInternally(), incomingPropertyType.isManagedInternally())
                 .append("vocabulary", getCode(existingPropertyType.getVocabulary()),
                         getCode(incomingPropertyType.getVocabulary()))
@@ -656,7 +654,7 @@ public class MasterDataSynchronizer
             return null;
         }
         String code = vocabulary.getCode();
-        if (vocabulary.isInternalNamespace() && code.startsWith("$") == false)
+        if (vocabulary.isManagedInternally() && code.startsWith("$") == false)
         {
             code = "$" + code;
         }

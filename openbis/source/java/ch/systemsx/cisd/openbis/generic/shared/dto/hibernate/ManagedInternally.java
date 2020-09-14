@@ -36,8 +36,8 @@ import javax.validation.Payload;
 { METHOD, FIELD })
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@Constraint(validatedBy = InternalNamespaceValidator.class)
-public @interface InternalNamespace
+@Constraint(validatedBy = ManagedInternallyValidator.class)
+public @interface ManagedInternally
 {
 
     /**

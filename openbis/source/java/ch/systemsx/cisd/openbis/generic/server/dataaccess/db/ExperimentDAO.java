@@ -268,7 +268,7 @@ public class ExperimentDAO extends AbstractGenericEntityWithPropertiesDAO<Experi
                 "from " + ExperimentPropertyPE.class.getSimpleName()
                         + " where %s = ? and entity.projectInternal = ? "
                         + " and entityTypePropertyType.propertyTypeInternal.simpleCode = ?"
-                        + " and entityTypePropertyType.propertyTypeInternal.internalNamespace = ?";
+                        + " and entityTypePropertyType.propertyTypeInternal.managedInternally = ?";
 
         List<ExperimentPE> entities =
                 listByPropertyValue(queryFormat, propertyCode, propertyValue, project);

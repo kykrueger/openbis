@@ -196,7 +196,7 @@ public class GetMaterialTest extends AbstractDataSetTest
         assertEquals(propertyAssignment.getPropertyType().getCode(), "VOLUME");
         assertEquals(propertyAssignment.getPropertyType().getLabel(), "Volume");
         assertEquals(propertyAssignment.getPropertyType().getDescription(), "The volume of this person");
-        assertEquals(propertyAssignment.getPropertyType().isInternalNameSpace(), Boolean.FALSE);
+        assertEquals(propertyAssignment.getPropertyType().isManagedInternally(), Boolean.FALSE);
         assertEquals(propertyAssignment.getPropertyType().getDataType(), DataType.REAL);
         assertEquals(propertyAssignment.isMandatory(), Boolean.FALSE);
         assertOrder(propertyAssignments, "VOLUME", "IS_VALID", "SIZE", "PURCHASE_DATE", "EYE_COLOR", "DESCRIPTION");

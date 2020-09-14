@@ -234,17 +234,16 @@ public class MasterDataExtractor
 
         for (PropertyType propertyType : propertyTypes)
         {
-            Boolean internalNameSpace = propertyType.isInternalNameSpace();
+            Boolean managedInternally = propertyType.isManagedInternally();
             String code =
-                    (internalNameSpace && propertyType.getCode().startsWith(INTERNAL_NAMESPACE_PREFIX))
+                    (managedInternally && propertyType.getCode().startsWith(INTERNAL_NAMESPACE_PREFIX))
                             ? CodeConverter.tryToDatabase(propertyType.getCode())
                             : propertyType.getCode();
             out.writeStartElement("xmd:propertyType");
             writeAttributeIfNotNull(out, "code", code);
             writeAttributeIfNotNull(out, "label", propertyType.getLabel());
             writeAttributeIfNotNull(out, "dataType", propertyType.getDataType().name());
-            writeAttributeIfNotNull(out, "internalNamespace", String.valueOf(internalNameSpace));
-            writeAttributeIfNotNull(out, "managedInternally", String.valueOf(propertyType.isManagedInternally()));
+            writeAttributeIfNotNull(out, "managedInternally", String.valueOf(managedInternally));
             writeAttributeIfNotNull(out, "description", propertyType.getDescription());
             if (propertyType.getDataType().name().equals(DataType.CONTROLLEDVOCABULARY.name()))
             {
@@ -278,7 +277,7 @@ public class MasterDataExtractor
         for (Vocabulary vocabulary : vocabularies)
         {
             out.writeStartElement("xmd:controlledVocabulary");
-            String code = vocabulary.isInternalNameSpace()
+            String code = vocabulary.isManagedInternally()
                     && vocabulary.getCode().startsWith(INTERNAL_NAMESPACE_PREFIX) ? CodeConverter.tryToDatabase(vocabulary.getCode())
                             : vocabulary.getCode();
             writeAttributeIfNotNull(out, "code", code);
@@ -286,7 +285,6 @@ public class MasterDataExtractor
             String urlTemplate = vocabulary.getUrlTemplate();
             writeAttributeIfNotNull(out, "urlTemplate", urlTemplate);
             writeAttributeIfNotNull(out, "managedInternally", String.valueOf(vocabulary.isManagedInternally()));
-            writeAttributeIfNotNull(out, "internalNamespace", String.valueOf(vocabulary.isInternalNameSpace()));
             writeAttributeIfNotNull(out, "chosenFromList", String.valueOf(vocabulary.isChosenFromList()));
 
             for (VocabularyTerm term : vocabulary.getTerms())

@@ -574,7 +574,7 @@ public class MasterDataRegistrationTransactionTest extends AssertJUnit
 
         IVocabulary voca = transaction.getOrCreateNewVocabulary(UNKNOWN);
         voca.setDescription("Hello new vocabulary");
-        voca.setInternalNamespace(true);
+        voca.setManagedInternally(true);
         voca.setChosenFromList(true);
         voca.setManagedInternally(true);
         voca.setUrlTemplate("url-template");
@@ -596,7 +596,6 @@ public class MasterDataRegistrationTransactionTest extends AssertJUnit
         assertEquals("Hello new vocabulary", newVoca.getDescription());
         assertEquals("url-template", newVoca.getURLTemplate());
         assertEquals(true, newVoca.isChosenFromList());
-        assertEquals(true, newVoca.isInternalNamespace());
         assertEquals(true, newVoca.isManagedInternally());
         List<VocabularyTerm> terms = newVoca.getTerms();
         assertEquals("[Beta [B], Alpha [A]]", terms.toString());

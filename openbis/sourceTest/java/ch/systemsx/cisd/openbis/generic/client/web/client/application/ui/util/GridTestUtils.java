@@ -123,25 +123,25 @@ public class GridTestUtils
     }
 
     public static String getPropertyColumnIdentifier(final String propertyCode,
-            boolean internalNamespace)
+            boolean managedInternally)
     {
-        final PropertyType propertyType = createPropertyType(propertyCode, internalNamespace);
-        return "property-" + (internalNamespace ? "INTERN" : "USER") + "-"
+        final PropertyType propertyType = createPropertyType(propertyCode, managedInternally);
+        return "property-" + (managedInternally ? "INTERN" : "USER") + "-"
                 + propertyType.getSimpleCode();
     }
 
     public final static PropertyType createPropertyType(final String propertyCode,
-            final boolean internalNamespace)
+            final boolean managedInternally)
     {
         final PropertyType propertyType = new PropertyType();
-        propertyType.setInternalNamespace(internalNamespace);
+        propertyType.setManagedInternally(managedInternally);
         propertyType.setSimpleCode(propertyCode.toUpperCase());
         return propertyType;
     }
 
     public static String getDataSetPropertyColumnIdentifier(final String propertyCode,
-            boolean internalNamespace)
+            boolean managedInternally)
     {
-        return getPropertyColumnIdentifier(propertyCode, internalNamespace);
+        return getPropertyColumnIdentifier(propertyCode, managedInternally);
     }
 }

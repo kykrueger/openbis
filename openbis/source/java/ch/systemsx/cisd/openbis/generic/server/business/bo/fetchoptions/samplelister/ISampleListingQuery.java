@@ -36,8 +36,8 @@ public interface ISampleListingQuery extends BaseQuery
 {
     public int FETCH_SIZE = 1000;
 
-    @Select(sql = "select * from relationship_types where code=?{1} and is_internal_namespace=?{2}")
-    public long getRelationshipTypeId(String code, boolean internalNamespace);
+    @Select(sql = "select * from relationship_types where code=?{1} and is_managed_internally=?{2}")
+    public long getRelationshipTypeId(String code, boolean managedInternally);
 
     @Select(sql = "Select s.id as s_id, s.perm_id as s_perm_id, s.code as s_code, "
             + "cs.code as container_code, s.registration_timestamp as s_registration_timestamp, "

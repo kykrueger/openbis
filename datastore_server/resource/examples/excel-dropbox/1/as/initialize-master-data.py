@@ -19,7 +19,6 @@ print "Imported 1 Experiment Type"
 prop_type_DESC = tr.getOrCreateNewPropertyType('DESC', DataType.VARCHAR)
 prop_type_DESC.setLabel('Description')
 prop_type_DESC.setManagedInternally(False)
-prop_type_DESC.setInternalNamespace(False)
 
 print "Imported 1 Property Type" 
 

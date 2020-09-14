@@ -67,7 +67,7 @@ public class TableCellUtil
      */
     public static String getPropertyTypeCode(PropertyType propertyType)
     {
-        return (propertyType.isInternalNamespace() ? INTERN_PREFIX : USER_PREFIX)
+        return (propertyType.isManagedInternally() ? INTERN_PREFIX : USER_PREFIX)
                 + propertyType.getSimpleCode();
     }
 

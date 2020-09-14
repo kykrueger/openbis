@@ -708,7 +708,6 @@ public class Generator extends AbstractGenerator
         gen.addStringField("label");
         addDescription(gen);
         gen.addBooleanField("managedInternally");
-        gen.addBooleanField("internalNameSpace");
         gen.addSimpleField(DataType.class, "dataType");
         gen.addFetchedField(Vocabulary.class, "vocabulary", "Vocabulary", VocabularyFetchOptions.class);
         gen.addFetchedField(MaterialType.class, "materialType", "Material type", MaterialTypeFetchOptions.class);

@@ -110,7 +110,6 @@ public class PropertyTypeAssignmentGridAssignmentsHolder
         copy.setCode(original.getCode());
         copy.setDataType(copy(original.getDataType()));
         copy.setDescription(original.getDescription());
-        copy.setInternalNamespace(original.isInternalNamespace());
         copy.setLabel(original.getLabel());
         copy.setManagedInternally(original.isManagedInternally());
         copy.setMaterialType(copy(original.getMaterialType()));
@@ -232,7 +231,7 @@ public class PropertyTypeAssignmentGridAssignmentsHolder
         }
 
         return equal(o1.getCode(), o2.getCode()) && equal(o1.getDataType(), o2.getDataType()) && equal(o1.getDescription(), o2.getDescription())
-                && equal(o1.isInternalNamespace(), o2.isInternalNamespace()) && equal(o1.getLabel(), o2.getLabel())
+                && equal(o1.getLabel(), o2.getLabel())
                 && equal(o1.isManagedInternally(), o2.isManagedInternally()) && equal(o1.getMaterialType(), o2.getMaterialType())
                 && equal(o1.getSchema(), o2.getSchema())
                 && equal(o1.getSimpleCode(), o2.getSimpleCode()) && equal(o1.getTransformation(), o2.getTransformation())

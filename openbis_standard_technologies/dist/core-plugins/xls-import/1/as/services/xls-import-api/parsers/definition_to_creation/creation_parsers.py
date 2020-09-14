@@ -78,7 +78,7 @@ class PropertyTypeDefinitionToCreationParser(object):
             property_type_creation.label = prop.get(u'property label')
             property_type_creation.description = prop.get(u'description')
             property_type_creation.dataType = DataType.valueOf(prop.get(u'data type'))
-            property_type_creation.internalNameSpace = is_internal_namespace(upper_case_code(prop.get(u'code')))
+            property_type_creation.managedInternally = is_internal_namespace(upper_case_code(prop.get(u'code')))
             property_type_creation.vocabularyId = VocabularyPermId(prop.get(u'vocabulary code')) if prop.get(
                 u'vocabulary code') is not None else None
             metadata = json.loads(prop.get(u'metadata')) if prop.get(u'metadata') is not None else None
@@ -86,7 +86,7 @@ class PropertyTypeDefinitionToCreationParser(object):
             property_creations.append(property_type_creation)
 
         return property_creations
-
+    
     def get_type(self):
         return PropertyTypeDefinitionToCreationType
 
@@ -97,7 +97,7 @@ class VocabularyDefinitionToCreationParser(object):
         code = upper_case_code(definition.attributes.get(u'code'))
         vocabulary_creation = VocabularyCreation()
         vocabulary_creation.code = code
-        vocabulary_creation.internalNameSpace = is_internal_namespace(code)
+        vocabulary_creation.managedInternally = is_internal_namespace(code)
         vocabulary_creation.description = definition.attributes.get(u'description')
 
         return vocabulary_creation

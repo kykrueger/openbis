@@ -18,6 +18,8 @@ package ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.create;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.create.ICreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.create.IObjectCreation;
@@ -36,8 +38,6 @@ public class VocabularyCreation implements ICreation, IObjectCreation
     private String description;
 
     private boolean managedInternally;
-
-    private boolean internalNameSpace;
 
     private boolean chosenFromList;
 
@@ -75,14 +75,24 @@ public class VocabularyCreation implements ICreation, IObjectCreation
         this.managedInternally = managedInternally;
     }
 
+    /**
+     * @deprecated use {@link #isManagedInternally()}
+     */
+    @JsonIgnore
+    @Deprecated()
     public boolean isInternalNameSpace()
     {
-        return internalNameSpace;
+        return isManagedInternally();
     }
 
+    /**
+     * @deprecated use {@link #setManagedInternally(boolean)}
+     */
+    @JsonIgnore
+    @Deprecated()
     public void setInternalNameSpace(boolean internalNameSpace)
     {
-        this.internalNameSpace = internalNameSpace;
+        setManagedInternally(internalNameSpace);
     }
 
     public boolean isChosenFromList()

@@ -1166,13 +1166,13 @@ public class GetSampleTest extends AbstractSampleTest
         assertEquals(propertyAssignments.get(0).getPropertyType().getCode(), "$PLATE_GEOMETRY");
         assertEquals(propertyAssignments.get(0).getPropertyType().getLabel(), "Plate Geometry");
         assertEquals(propertyAssignments.get(0).getPropertyType().getDescription(), "Plate Geometry");
-        assertEquals(propertyAssignments.get(0).getPropertyType().isInternalNameSpace(), Boolean.TRUE);
+        assertEquals(propertyAssignments.get(0).getPropertyType().isManagedInternally(), Boolean.TRUE);
         assertEquals(propertyAssignments.get(0).getPropertyType().getDataType(), DataType.CONTROLLEDVOCABULARY);
         assertEquals(propertyAssignments.get(0).isMandatory(), Boolean.TRUE);
         assertEquals(propertyAssignments.get(1).getPropertyType().getCode(), "DESCRIPTION");
         assertEquals(propertyAssignments.get(1).getPropertyType().getLabel(), "Description");
         assertEquals(propertyAssignments.get(1).getPropertyType().getDescription(), "A Description");
-        assertEquals(propertyAssignments.get(1).getPropertyType().isInternalNameSpace(), Boolean.FALSE);
+        assertEquals(propertyAssignments.get(1).getPropertyType().isManagedInternally(), Boolean.FALSE);
         assertEquals(propertyAssignments.get(1).getPropertyType().getDataType(), DataType.VARCHAR);
         assertEquals(propertyAssignments.get(1).isMandatory(), Boolean.FALSE);
         assertEquals(propertyAssignments.size(), 2);
@@ -1180,7 +1180,7 @@ public class GetSampleTest extends AbstractSampleTest
     }
 
     @Test
-    public void testGetWithPropertyWithInternalNamespace()
+    public void testGetWithPropertyWhichIsManagedInternally()
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
 

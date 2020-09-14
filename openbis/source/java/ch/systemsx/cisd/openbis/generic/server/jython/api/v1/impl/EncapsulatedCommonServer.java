@@ -260,7 +260,6 @@ public class EncapsulatedCommonServer
         result.setCode(vocabulary.getCode());
         result.setDescription(vocabulary.getDescription());
         result.setChosenFromList(vocabulary.isChosenFromList());
-        result.setInternalNamespace(vocabulary.isInternalNamespace());
         result.setManagedInternally(vocabulary.isManagedInternally());
         result.setURLTemplate(vocabulary.getURLTemplate());
         result.setRegistrationDate(vocabulary.getRegistrationDate());

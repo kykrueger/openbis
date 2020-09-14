@@ -94,15 +94,15 @@ public class CreatePropertyTypeExecutor
         {
             throw new UserFailureException("Code cannot be empty.");
         }
-        if (creation.isInternalNameSpace() && false == CodeConverter.isInternalNamespace(creation.getCode()))
+        if (creation.isManagedInternally() && false == CodeConverter.isInternalNamespace(creation.getCode()))
         {
             throw new UserFailureException(
-                    "Code of an internal namespace property type has to start with '" + BasicConstant.INTERNAL_NAMESPACE_PREFIX + "' prefix.");
+                    "Code of an internally managed property type has to start with '" + BasicConstant.INTERNAL_NAMESPACE_PREFIX + "' prefix.");
         }
-        if (false == creation.isInternalNameSpace() && CodeConverter.isInternalNamespace(creation.getCode()))
+        if (false == creation.isManagedInternally() && CodeConverter.isInternalNamespace(creation.getCode()))
         {
             throw new UserFailureException(
-                    "'" + BasicConstant.INTERNAL_NAMESPACE_PREFIX + "' code prefix can be only used for the internal namespace property types.");
+                    "'" + BasicConstant.INTERNAL_NAMESPACE_PREFIX + "' code prefix can be only used for the internally managed property types.");
         }
         if (StringUtils.isEmpty(creation.getLabel()))
         {
@@ -203,7 +203,6 @@ public class CreatePropertyTypeExecutor
                     propertyType.setDescription(creation.getDescription());
                     propertyType.setLabel(creation.getLabel());
                     propertyType.setType(map.get(creation.getDataType().toString()));
-                    propertyType.setInternalNamespace(creation.isInternalNameSpace());
                     propertyType.setManagedInternally(creation.isManagedInternally());
                     propertyType.setRegistrator(person);
                     propertyType.setSchema(creation.getSchema());

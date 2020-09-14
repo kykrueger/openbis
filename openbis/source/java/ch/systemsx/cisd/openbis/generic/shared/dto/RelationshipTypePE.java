@@ -35,7 +35,7 @@ import org.hibernate.validator.constraints.Length;
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.GenericConstants;
 import ch.systemsx.cisd.openbis.generic.shared.IServer;
 import ch.systemsx.cisd.openbis.generic.shared.basic.CodeConverter;
-import ch.systemsx.cisd.openbis.generic.shared.dto.hibernate.InternalNamespace;
+import ch.systemsx.cisd.openbis.generic.shared.dto.hibernate.ManagedInternally;
 
 /**
  * <i>Persistent Entity</i> object representing relationship type.
@@ -56,8 +56,6 @@ public class RelationshipTypePE extends HibernateAbstractRegistrationHolder impl
     private String description;
 
     private String label;
-
-    private boolean internalNamespace;
 
     private boolean managedInternally;
 
@@ -86,7 +84,7 @@ public class RelationshipTypePE extends HibernateAbstractRegistrationHolder impl
 
     public void setCode(final String fullCode)
     {
-        setInternalNamespace(CodeConverter.isInternalNamespace(fullCode));
+        setManagedInternally(CodeConverter.isInternalNamespace(fullCode));
         setSimpleCode(CodeConverter.tryToDatabase(fullCode));
     }
 
@@ -94,20 +92,7 @@ public class RelationshipTypePE extends HibernateAbstractRegistrationHolder impl
     @Transient
     public String getCode()
     {
-        return CodeConverter.tryToBusinessLayer(getSimpleCode(), isInternalNamespace());
-    }
-
-    @NotNull
-    @Column(name = ColumnNames.IS_INTERNAL_NAMESPACE)
-    @InternalNamespace(message = ValidationMessages.CODE_IN_INTERNAL_NAMESPACE)
-    public boolean isInternalNamespace()
-    {
-        return internalNamespace;
-    }
-
-    public void setInternalNamespace(final boolean internalNamespace)
-    {
-        this.internalNamespace = internalNamespace;
+        return CodeConverter.tryToBusinessLayer(getSimpleCode(), isManagedInternally());
     }
 
     @NotNull(message = ValidationMessages.DESCRIPTION_NOT_NULL_MESSAGE)
@@ -138,6 +123,7 @@ public class RelationshipTypePE extends HibernateAbstractRegistrationHolder impl
 
     @NotNull
     @Column(name = ColumnNames.IS_MANAGED_INTERNALLY)
+    @ManagedInternally(message = ValidationMessages.CODE_IN_INTERNAL_NAMESPACE)
     public boolean isManagedInternally()
     {
         return managedInternally;
@@ -202,7 +188,7 @@ public class RelationshipTypePE extends HibernateAbstractRegistrationHolder impl
         final RelationshipTypePE that = (RelationshipTypePE) obj;
         final EqualsBuilder builder = new EqualsBuilder();
         builder.append(getSimpleCode(), that.getSimpleCode());
-        builder.append(isInternalNamespace(), that.isInternalNamespace());
+        builder.append(isManagedInternally(), that.isManagedInternally());
         return builder.isEquals();
     }
 
@@ -211,7 +197,7 @@ public class RelationshipTypePE extends HibernateAbstractRegistrationHolder impl
     {
         final HashCodeBuilder builder = new HashCodeBuilder();
         builder.append(getSimpleCode());
-        builder.append(isInternalNamespace());
+        builder.append(isManagedInternally());
         return builder.toHashCode();
     }
 

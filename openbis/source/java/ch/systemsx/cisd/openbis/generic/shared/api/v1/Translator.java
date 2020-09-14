@@ -683,7 +683,6 @@ public class Translator
         initializer.setCode(privateVocabulary.getCode());
         initializer.setDescription(privateVocabulary.getDescription());
         initializer.setChosenFromList(privateVocabulary.isChosenFromList());
-        initializer.setInternalNamespace(privateVocabulary.isInternalNamespace());
         initializer.setManagedInternally(privateVocabulary.isManagedInternally());
         initializer.setUrlTemplate(privateVocabulary.getURLTemplate());
         initializer.setTerms(translate(privateVocabulary.getTerms()));

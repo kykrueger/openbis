@@ -37,8 +37,6 @@ public class VocabularyUpdatesDTO implements IIdHolder, Serializable
 
     private final boolean isManagedInternally;
 
-    private final boolean isInternalNamespace;
-
     private final boolean isChosenFromList;
 
     private final String urlTemplate;
@@ -46,14 +44,13 @@ public class VocabularyUpdatesDTO implements IIdHolder, Serializable
     private final List<NewVocabularyTerm> newTerms;
 
     public VocabularyUpdatesDTO(Long id, String code, String description,
-            boolean isManagedInternally, boolean isInternalNamespace, boolean isChosenFromList,
+            boolean isManagedInternally, boolean isChosenFromList,
             String urlTemplate, List<NewVocabularyTerm> newTerms)
     {
         this.id = id;
         this.code = code;
         this.description = description;
         this.isManagedInternally = isManagedInternally;
-        this.isInternalNamespace = isInternalNamespace;
         this.isChosenFromList = isChosenFromList;
         this.urlTemplate = urlTemplate;
         this.newTerms = newTerms;
@@ -80,11 +77,6 @@ public class VocabularyUpdatesDTO implements IIdHolder, Serializable
         return isManagedInternally;
     }
 
-    public boolean isInternalNamespace()
-    {
-        return isInternalNamespace;
-    }
-
     public boolean isChosenFromList()
     {
         return isChosenFromList;
@@ -104,8 +96,8 @@ public class VocabularyUpdatesDTO implements IIdHolder, Serializable
     public String toString()
     {
         return "VocabularyUpdatesDTO [id=" + id + ", code=" + code + ", description=" + description
-                + ", isManagedInternally=" + isManagedInternally + ", isInternalNamespace="
-                + isInternalNamespace + ", isChosenFromList=" + isChosenFromList + ", urlTemplate="
+                + ", isManagedInternally=" + isManagedInternally
+                + ", isChosenFromList=" + isChosenFromList + ", urlTemplate="
                 + urlTemplate + ", newTerms=" + newTerms + "]";
     }
 

@@ -106,7 +106,6 @@ public class CreateVocabularyExecutor
                     vocabulary.setCode(vocabularyCreation.getCode());
                     vocabulary.setDescription(vocabularyCreation.getDescription());
                     vocabulary.setManagedInternally(vocabularyCreation.isManagedInternally());
-                    vocabulary.setInternalNamespace(vocabularyCreation.isInternalNameSpace());
                     vocabulary.setChosenFromList(vocabularyCreation.isChosenFromList());
                     vocabulary.setURLTemplate(vocabularyCreation.getUrlTemplate());
                     vocabulary.setRegistrator(person);

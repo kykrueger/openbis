@@ -50,7 +50,6 @@ public class GetVocabulariesTest extends AbstractTest
         Vocabulary v1 = result.get(id1);
         assertEquals(v1.getCode(), id1.getPermId());
         assertEquals(v1.getDescription(), "available-organism");
-        assertEquals(v1.isInternalNameSpace(), false);
         assertEquals(v1.isManagedInternally(), false);
         assertEquals(v1.isChosenFromList(), true);
         assertEquals(v1.getUrlTemplate(), null);
@@ -59,7 +58,6 @@ public class GetVocabulariesTest extends AbstractTest
         Vocabulary v2 = result.get(id2);
         assertEquals(v2.getCode(), id2.getPermId());
         assertEquals(v2.getDescription(), "The on-disk storage format of a data set");
-        assertEquals(v2.isInternalNameSpace(), true);
         assertEquals(v2.isManagedInternally(), true);
         assertEquals(v2.isChosenFromList(), true);
         assertEquals(v2.getUrlTemplate(), null);

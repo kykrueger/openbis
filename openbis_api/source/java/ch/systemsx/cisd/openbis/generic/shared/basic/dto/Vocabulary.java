@@ -44,8 +44,6 @@ public class Vocabulary extends CodeWithRegistration<Vocabulary> implements IVoc
 
     private boolean managedInternally;
 
-    private boolean internalNamespace;
-
     private boolean chosenFromList;
 
     private String urlTemplate;
@@ -94,12 +92,12 @@ public class Vocabulary extends CodeWithRegistration<Vocabulary> implements IVoc
 
     public final boolean isInternalNamespace()
     {
-        return internalNamespace;
+        return isManagedInternally();
     }
 
     public final void setInternalNamespace(final boolean internalNamespace)
     {
-        this.internalNamespace = internalNamespace;
+        setManagedInternally(internalNamespace);
     }
 
     @Override

@@ -142,12 +142,12 @@ public class SampleListingQueryTest extends AbstractDAOTest
         assertRelationshipTypeNotExists("FAKE_RELATIONSHIP", false);
     }
 
-    private void assertRelationshipTypeNotExists(String code, boolean internalNamespace)
+    private void assertRelationshipTypeNotExists(String code, boolean managedInternally)
     {
         try
         {
-            long id = query.getRelationshipTypeId(code, internalNamespace);
-            fail("unexpected " + (internalNamespace ? "internal" : "user defined")
+            long id = query.getRelationshipTypeId(code, managedInternally);
+            fail("unexpected " + (managedInternally ? "internal" : "user defined")
                     + " relationship found with code " + code + " and id " + id);
         } catch (NullPointerException e)
         {

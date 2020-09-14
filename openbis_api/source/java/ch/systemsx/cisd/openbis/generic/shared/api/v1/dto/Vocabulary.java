@@ -54,8 +54,6 @@ public class Vocabulary implements Serializable
 
         private boolean managedInternally;
 
-        private boolean internalNamespace;
-
         private boolean chosenFromList;
 
         private String urlTemplate;
@@ -80,11 +78,6 @@ public class Vocabulary implements Serializable
         public void setManagedInternally(boolean managedInternally)
         {
             this.managedInternally = managedInternally;
-        }
-
-        public void setInternalNamespace(boolean internalNamespace)
-        {
-            this.internalNamespace = internalNamespace;
         }
 
         public void setChosenFromList(boolean chosenFromList)
@@ -112,8 +105,6 @@ public class Vocabulary implements Serializable
 
     private boolean managedInternally;
 
-    private boolean internalNamespace;
-
     private boolean chosenFromList;
 
     private String urlTemplate;
@@ -136,7 +127,6 @@ public class Vocabulary implements Serializable
         this.description = initializer.description;
 
         this.chosenFromList = initializer.chosenFromList;
-        this.internalNamespace = initializer.internalNamespace;
         this.managedInternally = initializer.managedInternally;
         this.urlTemplate = initializer.urlTemplate;
         this.terms =
@@ -180,10 +170,11 @@ public class Vocabulary implements Serializable
 
     /**
      * Returns <code>true</code> if the vocabulary is in the internal openBIS namespace.
+     * @deprecated use {@link #isManagedInternally()}
      */
     public boolean isInternalNamespace()
     {
-        return internalNamespace;
+        return isManagedInternally();
     }
 
     /**
@@ -287,7 +278,7 @@ public class Vocabulary implements Serializable
 
     private void setInternalNamespace(boolean internalNamespace)
     {
-        this.internalNamespace = internalNamespace;
+        setManagedInternally(internalNamespace);
     }
 
     private void setChosenFromList(boolean chosenFromList)

@@ -65,10 +65,14 @@ public class VocabularyImmutable implements IVocabularyImmutable
         return getVocabulary().isManagedInternally();
     }
 
+    /**
+     * @deprecated use {@link #isManagedInternally()}
+     */
     @Override
+    @Deprecated
     public boolean isInternalNamespace()
     {
-        return getVocabulary().isInternalNamespace();
+        return isManagedInternally();
     }
 
     @Override

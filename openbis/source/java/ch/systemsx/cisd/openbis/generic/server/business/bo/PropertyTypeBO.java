@@ -87,7 +87,6 @@ public final class PropertyTypeBO extends VocabularyBO implements IPropertyTypeB
         propertyTypePE.setSampleType(tryGetSampleType(propertyType.getSampleType()));
         propertyTypePE.setRegistrator(findPerson());
         propertyTypePE.setManagedInternally(propertyType.isManagedInternally());
-        propertyTypePE.setInternalNamespace(propertyType.isInternalNamespace());
 
         if (DataTypeCode.CONTROLLEDVOCABULARY.equals(dataTypePE.getCode()))
         {
@@ -98,7 +97,7 @@ public final class PropertyTypeBO extends VocabularyBO implements IPropertyTypeB
                 {
                     String vocabularyCode =
                             CodeConverter.tryToBusinessLayer(vocabulary.getCode(),
-                                    vocabulary.isInternalNamespace());
+                                    vocabulary.isManagedInternally());
                     tryLoad(vocabularyCode);
                 }
             } else

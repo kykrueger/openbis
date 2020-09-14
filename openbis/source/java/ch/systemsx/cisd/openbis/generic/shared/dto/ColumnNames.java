@@ -148,8 +148,6 @@ public final class ColumnNames
 
     public static final String IS_OFFICIAL = "is_official";
 
-    public static final String IS_INTERNAL_NAMESPACE = "is_internal_namespace";
-
     public static final String IS_LISTABLE = "IS_LISTABLE";
 
     public static final String IS_MANAGED_INTERNALLY = "is_managed_internally";

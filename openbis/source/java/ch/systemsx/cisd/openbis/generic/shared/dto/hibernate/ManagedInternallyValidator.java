@@ -24,32 +24,32 @@ import javax.validation.ConstraintValidatorContext;
 import ch.systemsx.cisd.openbis.generic.shared.IServer;
 
 /**
- * Checks a field annotated with {@link InternalNamespace}.
+ * Checks a field annotated with {@link ManagedInternally}.
  * 
  * @author Christian Ribeaud
  */
-public final class InternalNamespaceValidator implements
-        ConstraintValidator<InternalNamespace, Boolean>, Serializable
+public final class ManagedInternallyValidator implements
+        ConstraintValidator<ManagedInternally, Boolean>, Serializable
 {
 
     private static final long serialVersionUID = IServer.VERSION;
 
-    private boolean internalNamespace;
+    private boolean managedInternally;
 
     //
     // Validator
     //
 
     @Override
-    public final void initialize(final InternalNamespace annotation)
+    public final void initialize(final ManagedInternally annotation)
     {
-        this.internalNamespace = annotation.value();
+        this.managedInternally = annotation.value();
     }
 
     @Override
     public final boolean isValid(final Boolean value, ConstraintValidatorContext constraintContext)
     {
-        return value == internalNamespace;
+        return value == managedInternally;
     }
 
 }

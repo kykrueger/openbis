@@ -36,7 +36,9 @@ public interface IVocabulary extends IVocabularyImmutable
 
     /**
      * Set to <code>true</code> if the vocabulary is in the internal openBIS namespace.
+     * @deprecated use {@link #setManagedInternally(boolean)}
      */
+    @Deprecated
     void setInternalNamespace(boolean isInternalNamespace);
 
     void setChosenFromList(boolean isChosenFromList);
