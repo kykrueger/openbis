@@ -343,11 +343,11 @@ class TypeFormParametersProperty extends React.PureComponent {
 
     const options = []
 
-    if (property.original) {
+    if (property.originalGlobal || property.original) {
       const {
         dataType: { value: originalValue },
         usagesGlobal: originalUsagesGlobal
-      } = property.original
+      } = property.originalGlobal || property.original
 
       if (originalUsagesGlobal === 0) {
         openbis.DataType.values.map(dataType => {

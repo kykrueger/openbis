@@ -80,55 +80,15 @@ export default class TypeFormControllerChange extends PageControllerChange {
     const newCode = newProperty.code.value
 
     if (oldScope !== newScope || oldCode !== newCode) {
-      let globalPropertyType = null
+      let isGlobal = null
 
       if (oldScope !== newScope) {
-        _.assign(newProperty, {
-          code: {
-            ...newProperty.code,
-            value: null
+        this._copyPropertyFieldValues(
+          {
+            scope: newProperty.scope
           },
-          internalNameSpace: {
-            ...newProperty.internalNameSpace,
-            value: null
-          },
-          label: {
-            ...newProperty.label,
-            value: null
-          },
-          description: {
-            ...newProperty.description,
-            value: null
-          },
-          dataType: {
-            ...newProperty.dataType,
-            value: null
-          },
-          plugin: {
-            ...newProperty.plugin,
-            value: null
-          },
-          vocabulary: {
-            ...newProperty.vocabulary,
-            value: null
-          },
-          materialType: {
-            ...newProperty.materialType,
-            value: null
-          },
-          sampleType: {
-            ...newProperty.sampleType,
-            value: null
-          },
-          schema: {
-            ...newProperty.schema,
-            value: null
-          },
-          transformation: {
-            ...newProperty.transformation,
-            value: null
-          }
-        })
+          newProperty
+        )
       }
 
       if (oldCode !== newCode && newScope === 'global') {
@@ -142,52 +102,17 @@ export default class TypeFormControllerChange extends PageControllerChange {
         )
 
         if (oldExisting && !newExisting) {
-          _.assign(newProperty, {
-            internalNameSpace: {
-              ...newProperty.internalNameSpace,
-              value: null
+          this._copyPropertyFieldValues(
+            {
+              scope: newProperty.scope,
+              code: newProperty.code
             },
-            label: {
-              ...newProperty.label,
-              value: null
-            },
-            description: {
-              ...newProperty.description,
-              value: null
-            },
-            dataType: {
-              ...newProperty.dataType,
-              value: null
-            },
-            plugin: {
-              ...newProperty.plugin,
-              value: null
-            },
-            vocabulary: {
-              ...newProperty.vocabulary,
-              value: null
-            },
-            materialType: {
-              ...newProperty.materialType,
-              value: null
-            },
-            sampleType: {
-              ...newProperty.sampleType,
-              value: null
-            },
-            schema: {
-              ...newProperty.schema,
-              value: null
-            },
-            transformation: {
-              ...newProperty.transformation,
-              value: null
-            }
-          })
+            newProperty
+          )
         } else if (newExisting) {
           newExisting = {
-            internalNameSpace: {
-              value: _.get(newExisting, 'internalNameSpace', null)
+            internal: {
+              value: _.get(newExisting, 'managedInternally', false)
             },
             label: {
               value: _.get(newExisting, 'label', null)
@@ -198,6 +123,12 @@ export default class TypeFormControllerChange extends PageControllerChange {
             dataType: {
               value: _.get(newExisting, 'dataType', null)
             },
+            schema: {
+              value: _.get(newExisting, 'schema', null)
+            },
+            transformation: {
+              value: _.get(newExisting, 'transformation', null)
+            },
             vocabulary: {
               value: _.get(newExisting, 'vocabulary.code', null)
             },
@@ -207,54 +138,21 @@ export default class TypeFormControllerChange extends PageControllerChange {
             sampleType: {
               value: _.get(newExisting, 'sampleType.code', null)
             },
-            schema: {
-              value: _.get(newExisting, 'schema', null)
-            },
-            transformation: {
-              value: _.get(newExisting, 'transformation', null)
+            registrator: {
+              value: _.get(newExisting, 'registrator.userId', null)
             }
           }
 
-          _.assign(newProperty, {
-            internalNameSpace: {
-              ...newProperty.internalNameSpace,
-              value: newExisting.internalNameSpace.value
+          this._copyPropertyFieldValues(
+            {
+              scope: newProperty.scope,
+              code: newProperty.code,
+              ...newExisting
             },
-            label: {
-              ...newProperty.label,
-              value: newExisting.label.value
-            },
-            description: {
-              ...newProperty.description,
-              value: newExisting.description.value
-            },
-            dataType: {
-              ...newProperty.dataType,
-              value: newExisting.dataType.value
-            },
-            vocabulary: {
-              ...newProperty.vocabulary,
-              value: newExisting.vocabulary.value
-            },
-            materialType: {
-              ...newProperty.materialType,
-              value: newExisting.materialType.value
-            },
-            sampleType: {
-              ...newProperty.sampleType,
-              value: newExisting.sampleType.value
-            },
-            schema: {
-              ...newProperty.schema,
-              value: newExisting.schema.value
-            },
-            transformation: {
-              ...newProperty.transformation,
-              value: newExisting.transformation.value
-            }
-          })
+            newProperty
+          )
 
-          globalPropertyType = newExisting
+          isGlobal = true
         }
       }
 
@@ -277,38 +175,65 @@ export default class TypeFormControllerChange extends PageControllerChange {
           usages.propertyGlobal[propertyCode]) ||
         0
 
-      const enabled = newProperty.original
-        ? propertyUsagesGlobal === 0 && propertyAssignments <= 1
-        : propertyUsagesGlobal === 0 && propertyAssignments === 0
+      const unused = propertyUsagesGlobal === 0 && propertyAssignments === 0
+      const systemInternal =
+        newProperty.internal.value && newProperty.registrator.value === 'system'
 
       _.assign(newProperty, {
-        scope: {
-          ...newProperty.scope,
-          globalPropertyType: globalPropertyType
+        label: {
+          ...newProperty.label,
+          enabled: !systemInternal
+        },
+        description: {
+          ...newProperty.description,
+          enabled: !systemInternal
         },
         dataType: {
-          ...newProperty.dataType
+          ...newProperty.dataType,
+          enabled: !systemInternal
+        },
+        schema: {
+          ...newProperty.schema,
+          enabled: !systemInternal
+        },
+        transformation: {
+          ...newProperty.transformation,
+          enabled: !systemInternal
         },
         vocabulary: {
           ...newProperty.vocabulary,
-          enabled
+          enabled: unused && !systemInternal
         },
         materialType: {
           ...newProperty.materialType,
-          enabled
+          enabled: unused && !systemInternal
         },
         sampleType: {
           ...newProperty.sampleType,
-          enabled
+          enabled: unused && !systemInternal
         },
         plugin: {
           ...newProperty.plugin,
-          enabled
+          enabled: newProperty.plugin.value || unused
+        },
+        mandatory: {
+          ...newProperty.mandatory
+        },
+        showInEditView: {
+          ...newProperty.showInEditView
+        },
+        showRawValueInForms: {
+          ...newProperty.showRawValueInForms
+        },
+        initialValueForExistingEntities: {
+          ...newProperty.initialValueForExistingEntities
         },
         assignments: propertyAssignments,
         usagesLocal: propertyUsagesLocal,
         usagesGlobal: propertyUsagesGlobal
       })
+
+      newProperty.originalGlobal = isGlobal ? _.cloneDeep(newProperty) : null
     }
   }
 
@@ -379,5 +304,78 @@ export default class TypeFormControllerChange extends PageControllerChange {
       }
     })
     await this.controller.changed(true)
+  }
+
+  _copyPropertyFieldValues(src, dest) {
+    _.assign(dest, {
+      scope: {
+        ...dest.scope,
+        value: _.get(src, 'scope.value', null)
+      },
+      code: {
+        ...dest.code,
+        value: _.get(src, 'code.value', null)
+      },
+      internal: {
+        ...dest.internal,
+        value: _.get(src, 'internal.value', false)
+      },
+      label: {
+        ...dest.label,
+        value: _.get(src, 'label.value', null)
+      },
+      description: {
+        ...dest.description,
+        value: _.get(src, 'description.value', null)
+      },
+      dataType: {
+        ...dest.dataType,
+        value: _.get(src, 'dataType.value', null)
+      },
+      schema: {
+        ...dest.schema,
+        value: _.get(src, 'schema.value', null)
+      },
+      transformation: {
+        ...dest.transformation,
+        value: _.get(src, 'transformation.value', null)
+      },
+      vocabulary: {
+        ...dest.vocabulary,
+        value: _.get(src, 'vocabulary.value', null)
+      },
+      materialType: {
+        ...dest.materialType,
+        value: _.get(src, 'materialType.value', null)
+      },
+      sampleType: {
+        ...dest.sampleType,
+        value: _.get(src, 'sampleType.value', null)
+      },
+      plugin: {
+        ...dest.plugin,
+        value: _.get(src, 'plugin.value', null)
+      },
+      mandatory: {
+        ...dest.mandatory,
+        value: _.get(src, 'mandatory.value', false)
+      },
+      showInEditView: {
+        ...dest.showInEditView,
+        value: _.get(src, 'showInEditView.value', true)
+      },
+      showRawValueInForms: {
+        ...dest.showRawValueInForms,
+        value: _.get(src, 'showRawValueInForms.value', false)
+      },
+      initialValueForExistingEntities: {
+        ...dest.initialValueForExistingEntities,
+        value: _.get(src, 'initialValueForExistingEntities.value', null)
+      },
+      registrator: {
+        ...dest.registrator,
+        value: _.get(src, 'registrator.value', null)
+      }
+    })
   }
 }

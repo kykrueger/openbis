@@ -362,7 +362,7 @@ async function doTestSelectProperty(scope, used) {
         plugin: {
           label: 'Dynamic Plugin',
           value: plugin.getName(),
-          enabled: !used,
+          enabled: true,
           mode: 'edit'
         }
       }

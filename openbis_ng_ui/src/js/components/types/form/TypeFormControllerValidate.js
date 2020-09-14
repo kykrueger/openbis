@@ -53,7 +53,7 @@ export default class TypeFormControllerValidate extends PageControllerValidate {
   _validateProperty(validator, property) {
     validator.validateNotEmpty(property, 'code', 'Code')
 
-    if (property.internalNameSpace.value) {
+    if (property.internal.value) {
       validator.validateInternalCode(property, 'code', 'Code')
     } else {
       validator.validateCode(property, 'code', 'Code')

@@ -9,6 +9,7 @@ export default class TypeFormFacade {
     const fo = strategy.createTypeFetchOptions()
     fo.withValidationPlugin()
     fo.withPropertyAssignments().withPlugin()
+    fo.withPropertyAssignments().withPropertyType().withRegistrator()
     fo.withPropertyAssignments().withPropertyType().withMaterialType()
     fo.withPropertyAssignments().withPropertyType().withSampleType()
     fo.withPropertyAssignments().withPropertyType().withVocabulary()
@@ -69,7 +70,7 @@ export default class TypeFormFacade {
 
     const id = new openbis.EntityTypePermId(object.id)
     const fo = strategy.createTypeFetchOptions()
-    fo.withPropertyAssignments().withPropertyType()
+    fo.withPropertyAssignments().withPropertyType().withRegistrator()
 
     return strategy.getTypes([id], fo).then(map => {
       const type = map[object.id]
@@ -89,6 +90,7 @@ export default class TypeFormFacade {
     const fo = new openbis.PropertyTypeFetchOptions()
     fo.withMaterialType()
     fo.withVocabulary()
+    fo.withRegistrator()
     return openbis.searchPropertyTypes(criteria, fo).then(results => {
       return results.getObjects().filter(propertyType => {
         return !propertyType.getCode().includes('.')

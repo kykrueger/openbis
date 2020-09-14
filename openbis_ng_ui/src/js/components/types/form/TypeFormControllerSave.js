@@ -27,7 +27,7 @@ export default class TypeFormControllerSave extends PageControllerSave {
           )
           if (
             originalProperty.assignments === 1 &&
-            !originalProperty.internalNameSpace.value
+            !originalProperty.internal.value
           ) {
             operations.push(this._deletePropertyTypeOperation(originalProperty))
           }
@@ -36,7 +36,7 @@ export default class TypeFormControllerSave extends PageControllerSave {
     }
 
     properties.forEach((property, index) => {
-      const original = property.scope.globalPropertyType || property.original
+      const original = property.originalGlobal || property.original
 
       if (original) {
         if (this._isPropertyTypeUpdateNeeded(property, original)) {
@@ -161,7 +161,7 @@ export default class TypeFormControllerSave extends PageControllerSave {
   _createPropertyTypeOperation(property) {
     const creation = new openbis.PropertyTypeCreation()
     creation.setCode(property.code.value)
-    creation.setInternalNameSpace(property.internalNameSpace.value)
+    creation.setManagedInternally(property.internal.value)
     creation.setLabel(property.label.value)
     creation.setDescription(property.description.value)
     creation.setDataType(property.dataType.value)

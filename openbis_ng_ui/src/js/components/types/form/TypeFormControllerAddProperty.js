@@ -44,11 +44,16 @@ export default class TypeFormControllerAddProperty {
         value: 'local'
       }),
       code: FormUtil.createField(),
-      internalNameSpace: FormUtil.createField(),
+      internal: FormUtil.createField(),
       label: FormUtil.createField(),
       description: FormUtil.createField(),
       dataType: FormUtil.createField(),
-      plugin: FormUtil.createField(),
+      schema: FormUtil.createField({
+        visible: false
+      }),
+      transformation: FormUtil.createField({
+        visible: false
+      }),
       vocabulary: FormUtil.createField({
         visible: false
       }),
@@ -58,12 +63,7 @@ export default class TypeFormControllerAddProperty {
       sampleType: FormUtil.createField({
         visible: false
       }),
-      schema: FormUtil.createField({
-        visible: false
-      }),
-      transformation: FormUtil.createField({
-        visible: false
-      }),
+      plugin: FormUtil.createField(),
       mandatory: FormUtil.createField({
         value: false
       }),
