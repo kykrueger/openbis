@@ -197,8 +197,6 @@ export default class TypeFormControllerLoad extends PageControllerLoad {
         loadedUsages.propertyGlobal[propertyType.code]) ||
       0
 
-    const unused = usagesGlobal === 0 && assignments <= 1
-
     const systemInternalAssignment =
       internal && registratorOfAssignment === users.SYSTEM
     const systemInternalPropertyType =
@@ -244,17 +242,17 @@ export default class TypeFormControllerLoad extends PageControllerLoad {
       vocabulary: FormUtil.createField({
         value: _.get(propertyType, 'vocabulary.code', null),
         visible: dataType === openbis.DataType.CONTROLLEDVOCABULARY,
-        enabled: unused && !systemInternalPropertyType
+        enabled: false
       }),
       materialType: FormUtil.createField({
         value: _.get(propertyType, 'materialType.code', null),
         visible: dataType === openbis.DataType.MATERIAL,
-        enabled: unused && !systemInternalPropertyType
+        enabled: false
       }),
       sampleType: FormUtil.createField({
         value: _.get(propertyType, 'sampleType.code', null),
         visible: dataType === openbis.DataType.SAMPLE,
-        enabled: unused && !systemInternalPropertyType
+        enabled: false
       }),
       plugin: FormUtil.createField({
         value: plugin,

@@ -347,48 +347,37 @@ class TypeFormParametersProperty extends React.PureComponent {
 
     if (property.originalGlobal || property.original) {
       const {
-        dataType: { value: originalValue },
-        usagesGlobal: originalUsagesGlobal,
-        assignments: originalAssignments
+        dataType: { value: originalValue }
       } = property.originalGlobal || property.original
 
-      if (originalUsagesGlobal === 0 && originalAssignments <= 1) {
-        openbis.DataType.values.map(dataType => {
-          options.push({
-            label: dataType,
-            value: dataType
-          })
-        })
-      } else {
-        const SUFFIX = ' (converted)'
+      const SUFFIX = ' (converted)'
+      options.push({
+        label: originalValue,
+        value: originalValue
+      })
+      if (originalValue !== openbis.DataType.VARCHAR) {
         options.push({
-          label: originalValue,
-          value: originalValue
+          label: openbis.DataType.VARCHAR + SUFFIX,
+          value: openbis.DataType.VARCHAR
         })
-        if (originalValue !== openbis.DataType.VARCHAR) {
-          options.push({
-            label: openbis.DataType.VARCHAR + SUFFIX,
-            value: openbis.DataType.VARCHAR
-          })
-        }
-        if (originalValue !== openbis.DataType.MULTILINE_VARCHAR) {
-          options.push({
-            label: openbis.DataType.MULTILINE_VARCHAR + SUFFIX,
-            value: openbis.DataType.MULTILINE_VARCHAR
-          })
-        }
-        if (originalValue === openbis.DataType.TIMESTAMP) {
-          options.push({
-            label: openbis.DataType.DATE + SUFFIX,
-            value: openbis.DataType.DATE
-          })
-        }
-        if (originalValue === openbis.DataType.INTEGER) {
-          options.push({
-            label: openbis.DataType.REAL + SUFFIX,
-            value: openbis.DataType.REAL
-          })
-        }
+      }
+      if (originalValue !== openbis.DataType.MULTILINE_VARCHAR) {
+        options.push({
+          label: openbis.DataType.MULTILINE_VARCHAR + SUFFIX,
+          value: openbis.DataType.MULTILINE_VARCHAR
+        })
+      }
+      if (originalValue === openbis.DataType.TIMESTAMP) {
+        options.push({
+          label: openbis.DataType.DATE + SUFFIX,
+          value: openbis.DataType.DATE
+        })
+      }
+      if (originalValue === openbis.DataType.INTEGER) {
+        options.push({
+          label: openbis.DataType.REAL + SUFFIX,
+          value: openbis.DataType.REAL
+        })
       }
     } else {
       openbis.DataType.values.map(dataType => {

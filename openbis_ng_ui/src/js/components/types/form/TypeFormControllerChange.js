@@ -178,8 +178,6 @@ export default class TypeFormControllerChange extends PageControllerChange {
           usages.propertyGlobal[propertyCode]) ||
         0
 
-      const unused = propertyUsagesGlobal === 0 && propertyAssignments === 0
-
       const systemInternalAssignment =
         newProperty.internal.value &&
         newProperty.registratorOfAssignment.value === users.SYSTEM
@@ -211,19 +209,19 @@ export default class TypeFormControllerChange extends PageControllerChange {
         },
         vocabulary: {
           ...newProperty.vocabulary,
-          enabled: unused && !systemInternalPropertyType
+          enabled: !systemInternalPropertyType
         },
         materialType: {
           ...newProperty.materialType,
-          enabled: unused && !systemInternalPropertyType
+          enabled: !systemInternalPropertyType
         },
         sampleType: {
           ...newProperty.sampleType,
-          enabled: unused && !systemInternalPropertyType
+          enabled: !systemInternalPropertyType
         },
         plugin: {
           ...newProperty.plugin,
-          enabled: newProperty.plugin.value && !systemInternalAssignment
+          enabled: !systemInternalAssignment
         },
         mandatory: {
           ...newProperty.mandatory,

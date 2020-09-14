@@ -331,21 +331,16 @@ async function doTestSelectProperty(scope, used) {
           value: propertyType.getDataType(),
           enabled: true,
           mode: 'edit',
-          options: used
-            ? [
-                {
-                  label: openbis.DataType.VARCHAR,
-                  value: openbis.DataType.VARCHAR
-                },
-                {
-                  label: openbis.DataType.MULTILINE_VARCHAR + ' (converted)',
-                  value: openbis.DataType.MULTILINE_VARCHAR
-                }
-              ]
-            : openbis.DataType.values.map(dataType => ({
-                label: dataType,
-                value: dataType
-              }))
+          options: [
+            {
+              label: openbis.DataType.VARCHAR,
+              value: openbis.DataType.VARCHAR
+            },
+            {
+              label: openbis.DataType.MULTILINE_VARCHAR + ' (converted)',
+              value: openbis.DataType.MULTILINE_VARCHAR
+            }
+          ]
         },
         label: {
           label: 'Label',
@@ -703,30 +698,26 @@ async function testChangeType() {
 }
 
 async function testChangeProperty() {
-  const form = await mountExisting()
+  const form = await mountNew()
 
-  form.getButtons().getEdit().click()
+  form.getButtons().getAddSection().click()
   await form.update()
 
-  form.getPreview().getSections()[1].getProperties()[1].click()
+  form.getButtons().getAddProperty().click()
+  await form.update()
+
+  form.getParameters().getProperty().getCode().change('TEST_CODE')
+  await form.update()
+
+  form.getParameters().getProperty().getDataType().change('VARCHAR')
   await form.update()
 
   form.expectJSON({
     preview: {
       sections: [
         {
-          name: 'TEST_SECTION_1',
-          properties: [{ code: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode() }]
-        },
-        {
-          name: 'TEST_SECTION_2',
-          properties: [
-            { code: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode() },
-            {
-              code: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode(),
-              dataType: 'VARCHAR'
-            }
-          ]
+          name: null,
+          properties: [{ code: 'TEST_CODE', dataType: 'VARCHAR' }]
         }
       ]
     },
@@ -735,8 +726,8 @@ async function testChangeProperty() {
         title: 'Property',
         code: {
           label: 'Code',
-          value: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode(),
-          enabled: false,
+          value: 'TEST_CODE',
+          enabled: true,
           mode: 'edit'
         },
         dataType: {
@@ -752,7 +743,10 @@ async function testChangeProperty() {
       }
     },
     buttons: {
-      message: null
+      message: {
+        text: 'You have unsaved changes.',
+        type: 'warning'
+      }
     }
   })
 
@@ -767,18 +761,8 @@ async function testChangeProperty() {
     preview: {
       sections: [
         {
-          name: 'TEST_SECTION_1',
-          properties: [{ code: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode() }]
-        },
-        {
-          name: 'TEST_SECTION_2',
-          properties: [
-            { code: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode() },
-            {
-              code: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode(),
-              dataType: 'CONTROLLEDVOCABULARY'
-            }
-          ]
+          name: null,
+          properties: [{ code: 'TEST_CODE', dataType: 'CONTROLLEDVOCABULARY' }]
         }
       ]
     },
@@ -787,8 +771,8 @@ async function testChangeProperty() {
         title: 'Property',
         code: {
           label: 'Code',
-          value: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode(),
-          enabled: false,
+          value: 'TEST_CODE',
+          enabled: true,
           mode: 'edit'
         },
         dataType: {
@@ -823,18 +807,8 @@ async function testChangeProperty() {
     preview: {
       sections: [
         {
-          name: 'TEST_SECTION_1',
-          properties: [{ code: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode() }]
-        },
-        {
-          name: 'TEST_SECTION_2',
-          properties: [
-            { code: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode() },
-            {
-              code: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode(),
-              dataType: 'MATERIAL'
-            }
-          ]
+          name: null,
+          properties: [{ code: 'TEST_CODE', dataType: 'MATERIAL' }]
         }
       ]
     },
@@ -843,8 +817,8 @@ async function testChangeProperty() {
         title: 'Property',
         code: {
           label: 'Code',
-          value: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode(),
-          enabled: false,
+          value: 'TEST_CODE',
+          enabled: true,
           mode: 'edit'
         },
         dataType: {
@@ -879,18 +853,8 @@ async function testChangeProperty() {
     preview: {
       sections: [
         {
-          name: 'TEST_SECTION_1',
-          properties: [{ code: fixture.TEST_PROPERTY_TYPE_1_DTO.getCode() }]
-        },
-        {
-          name: 'TEST_SECTION_2',
-          properties: [
-            { code: fixture.TEST_PROPERTY_TYPE_2_DTO.getCode() },
-            {
-              code: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode(),
-              dataType: 'XML'
-            }
-          ]
+          name: null,
+          properties: [{ code: 'TEST_CODE', dataType: 'XML' }]
         }
       ]
     },
@@ -899,8 +863,8 @@ async function testChangeProperty() {
         title: 'Property',
         code: {
           label: 'Code',
-          value: fixture.TEST_PROPERTY_TYPE_3_DTO.getCode(),
-          enabled: false,
+          value: 'TEST_CODE',
+          enabled: true,
           mode: 'edit'
         },
         dataType: {

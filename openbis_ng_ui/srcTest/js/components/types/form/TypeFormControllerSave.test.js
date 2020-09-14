@@ -164,22 +164,6 @@ describe('TypeFormController.handleSave', () => {
     )
   })
 
-  test('update local property type if not possible', async () => {
-    await testUpdatePropertyTypeIfNotPossible(
-      SAMPLE_TYPE_WITH_LOCAL_PROPERTY,
-      LOCAL_PROPERTY_TYPE,
-      LOCAL_PROPERTY_ASSIGNMENT
-    )
-  })
-
-  test('update global property type if not possible', async () => {
-    await testUpdatePropertyTypeIfNotPossible(
-      SAMPLE_TYPE_WITH_GLOBAL_PROPERTY,
-      GLOBAL_PROPERTY_TYPE,
-      GLOBAL_PROPERTY_ASSIGNMENT
-    )
-  })
-
   test('delete local property', async () => {
     await testDeleteProperty(
       SAMPLE_TYPE_WITH_LOCAL_PROPERTY,
@@ -313,51 +297,6 @@ describe('TypeFormController.handleSave', () => {
 
     expectExecuteOperations([
       updatePropertyTypeOperation(propertyType.getCode(), 'Updated label'),
-      setPropertyAssignmentOperation(
-        type.getCode(),
-        propertyType.getCode(),
-        propertyAssignment.isMandatory()
-      )
-    ])
-  }
-
-  async function testUpdatePropertyTypeIfNotPossible(
-    type,
-    propertyType,
-    propertyAssignment
-  ) {
-    facade.loadType.mockReturnValue(Promise.resolve(type))
-    facade.loadUsages.mockReturnValue(Promise.resolve({}))
-    facade.executeOperations.mockReturnValue(Promise.resolve({}))
-
-    await controller.load()
-
-    controller.handleChange(TypeFormSelectionType.PROPERTY, {
-      id: 'property-0',
-      field: 'dataType',
-      value: openbis.DataType.CONTROLLEDVOCABULARY
-    })
-    controller.handleChange(TypeFormSelectionType.PROPERTY, {
-      id: 'property-0',
-      field: 'vocabulary',
-      value: 'TEST_VOCABULARY'
-    })
-
-    await controller.handleSave()
-
-    expectExecuteOperations([
-      deletePropertyAssignmentOperation(
-        type.getCode(),
-        propertyType.getCode(),
-        false
-      ),
-      deletePropertyTypeOperation(propertyType.getCode()),
-      createPropertyTypeOperation({
-        code: propertyType.getCode(),
-        label: propertyType.getLabel(),
-        dataType: openbis.DataType.CONTROLLEDVOCABULARY,
-        vocabulary: 'TEST_VOCABULARY'
-      }),
       setPropertyAssignmentOperation(
         type.getCode(),
         propertyType.getCode(),

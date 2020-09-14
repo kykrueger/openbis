@@ -40,15 +40,7 @@ export default class TypeFormControllerSave extends PageControllerSave {
 
       if (original) {
         if (this._isPropertyTypeUpdateNeeded(property, original)) {
-          if (this._isPropertyTypeUpdatePossible(property, original)) {
-            operations.push(this._updatePropertyTypeOperation(property))
-          } else {
-            operations.push(
-              this._deletePropertyAssignmentOperation(type, property)
-            )
-            operations.push(this._deletePropertyTypeOperation(property))
-            operations.push(this._createPropertyTypeOperation(property))
-          }
+          operations.push(this._updatePropertyTypeOperation(property))
         }
         assignments.push(this._propertyAssignmentCreation(property, index))
       } else {
@@ -121,21 +113,10 @@ export default class TypeFormControllerSave extends PageControllerSave {
   _isPropertyTypeUpdateNeeded(property, original) {
     return FormUtil.haveFieldsChanged(property, original, [
       'dataType',
-      'vocabulary',
-      'materialType',
-      'sampleType',
       'label',
       'description',
       'schema',
       'transformation'
-    ])
-  }
-
-  _isPropertyTypeUpdatePossible(property, original) {
-    return !FormUtil.haveFieldsChanged(property, original, [
-      'vocabulary',
-      'materialType',
-      'sampleType'
     ])
   }
 
