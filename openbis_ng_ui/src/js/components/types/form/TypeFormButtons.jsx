@@ -86,7 +86,8 @@ class TypeFormButtons extends React.PureComponent {
       return !section.properties.some(propertyId => {
         const property = properties.find(property => property.id === propertyId)
         return (
-          property.internal.value && property.registrator.value === users.SYSTEM
+          property.internal.value &&
+          property.registratorOfAssignment.value === users.SYSTEM
         )
       })
     } else {
@@ -102,7 +103,8 @@ class TypeFormButtons extends React.PureComponent {
         property => property.id === selection.params.id
       )
       return !(
-        property.internal.value && property.registrator.value === users.SYSTEM
+        property.internal.value &&
+        property.registratorOfAssignment.value === users.SYSTEM
       )
     } else {
       return false

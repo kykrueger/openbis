@@ -8,6 +8,7 @@ export default class TypeFormFacade {
     const fo = strategy.createTypeFetchOptions()
     fo.withValidationPlugin()
     fo.withPropertyAssignments().withPlugin()
+    fo.withPropertyAssignments().withRegistrator()
     fo.withPropertyAssignments().withPropertyType().withRegistrator()
     fo.withPropertyAssignments().withPropertyType().withMaterialType()
     fo.withPropertyAssignments().withPropertyType().withSampleType()

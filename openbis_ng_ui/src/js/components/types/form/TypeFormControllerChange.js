@@ -141,7 +141,7 @@ export default class TypeFormControllerChange extends PageControllerChange {
             sampleType: {
               value: _.get(newExisting, 'sampleType.code', null)
             },
-            registrator: {
+            registratorOfPropertyType: {
               value: _.get(newExisting, 'registrator.userId', null)
             }
           }
@@ -179,58 +179,67 @@ export default class TypeFormControllerChange extends PageControllerChange {
         0
 
       const unused = propertyUsagesGlobal === 0 && propertyAssignments === 0
-      const systemInternal =
+
+      const systemInternalAssignment =
         newProperty.internal.value &&
-        newProperty.registrator.value === users.SYSTEM
+        newProperty.registratorOfAssignment.value === users.SYSTEM
+
+      const systemInternalPropertyType =
+        newProperty.internal.value &&
+        newProperty.registratorOfPropertyType.value === users.SYSTEM
 
       _.assign(newProperty, {
         label: {
           ...newProperty.label,
-          enabled: !systemInternal
+          enabled: !systemInternalPropertyType
         },
         description: {
           ...newProperty.description,
-          enabled: !systemInternal
+          enabled: !systemInternalPropertyType
         },
         dataType: {
           ...newProperty.dataType,
-          enabled: !systemInternal
+          enabled: !systemInternalPropertyType
         },
         schema: {
           ...newProperty.schema,
-          enabled: !systemInternal
+          enabled: !systemInternalPropertyType
         },
         transformation: {
           ...newProperty.transformation,
-          enabled: !systemInternal
+          enabled: !systemInternalPropertyType
         },
         vocabulary: {
           ...newProperty.vocabulary,
-          enabled: unused && !systemInternal
+          enabled: unused && !systemInternalPropertyType
         },
         materialType: {
           ...newProperty.materialType,
-          enabled: unused && !systemInternal
+          enabled: unused && !systemInternalPropertyType
         },
         sampleType: {
           ...newProperty.sampleType,
-          enabled: unused && !systemInternal
+          enabled: unused && !systemInternalPropertyType
         },
         plugin: {
           ...newProperty.plugin,
-          enabled: newProperty.plugin.value || unused
+          enabled: newProperty.plugin.value && !systemInternalAssignment
         },
         mandatory: {
-          ...newProperty.mandatory
+          ...newProperty.mandatory,
+          enabled: !systemInternalAssignment
         },
         showInEditView: {
-          ...newProperty.showInEditView
+          ...newProperty.showInEditView,
+          enabled: !systemInternalAssignment
         },
         showRawValueInForms: {
-          ...newProperty.showRawValueInForms
+          ...newProperty.showRawValueInForms,
+          enabled: !systemInternalAssignment
         },
         initialValueForExistingEntities: {
-          ...newProperty.initialValueForExistingEntities
+          ...newProperty.initialValueForExistingEntities,
+          enabled: !systemInternalAssignment
         },
         assignments: propertyAssignments,
         usagesLocal: propertyUsagesLocal,
@@ -376,9 +385,13 @@ export default class TypeFormControllerChange extends PageControllerChange {
         ...dest.initialValueForExistingEntities,
         value: _.get(src, 'initialValueForExistingEntities.value', null)
       },
-      registrator: {
-        ...dest.registrator,
-        value: _.get(src, 'registrator.value', null)
+      registratorOfAssignment: {
+        ...dest.registratorOfAssignment,
+        value: _.get(src, 'registratorOfAssignment.value', null)
+      },
+      registratorOfPropertyType: {
+        ...dest.registratorOfPropertyType,
+        value: _.get(src, 'registratorOfPropertyType.value', null)
       }
     })
   }

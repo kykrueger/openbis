@@ -167,10 +167,21 @@ export default class TypeFormControllerLoad extends PageControllerLoad {
     const dataType = _.get(propertyType, 'dataType', null)
     const internal = _.get(propertyType, 'managedInternally', false)
     const plugin = _.get(loadedAssignment, 'plugin.name', null)
-    const registrator = _.get(propertyType, 'registrator.userId', null)
+
     const scope = code.startsWith(loadedType.code + '.')
       ? TypeFormPropertyScope.LOCAL
       : TypeFormPropertyScope.GLOBAL
+
+    const registratorOfAssignment = _.get(
+      loadedAssignment,
+      'registrator.userId',
+      null
+    )
+    const registratorOfPropertyType = _.get(
+      propertyType,
+      'registrator.userId',
+      null
+    )
 
     const assignments =
       (loadedAssignments && loadedAssignments[propertyType.code]) || 0
@@ -187,7 +198,11 @@ export default class TypeFormControllerLoad extends PageControllerLoad {
       0
 
     const unused = usagesGlobal === 0 && assignments <= 1
-    const systemInternal = internal && registrator === users.SYSTEM
+
+    const systemInternalAssignment =
+      internal && registratorOfAssignment === users.SYSTEM
+    const systemInternalPropertyType =
+      internal && registratorOfPropertyType === users.SYSTEM
 
     return {
       id: id,
@@ -206,59 +221,68 @@ export default class TypeFormControllerLoad extends PageControllerLoad {
       }),
       label: FormUtil.createField({
         value: _.get(propertyType, 'label', null),
-        enabled: !systemInternal
+        enabled: !systemInternalPropertyType
       }),
       description: FormUtil.createField({
         value: _.get(propertyType, 'description', null),
-        enabled: !systemInternal
+        enabled: !systemInternalPropertyType
       }),
       dataType: FormUtil.createField({
         value: dataType,
-        enabled: !systemInternal
+        enabled: !systemInternalPropertyType
       }),
       schema: FormUtil.createField({
         value: _.get(propertyType, 'schema', null),
         visible: dataType === openbis.DataType.XML,
-        enabled: !systemInternal
+        enabled: !systemInternalPropertyType
       }),
       transformation: FormUtil.createField({
         value: _.get(propertyType, 'transformation', null),
         visible: dataType === openbis.DataType.XML,
-        enabled: !systemInternal
+        enabled: !systemInternalPropertyType
       }),
       vocabulary: FormUtil.createField({
         value: _.get(propertyType, 'vocabulary.code', null),
         visible: dataType === openbis.DataType.CONTROLLEDVOCABULARY,
-        enabled: unused && !systemInternal
+        enabled: unused && !systemInternalPropertyType
       }),
       materialType: FormUtil.createField({
         value: _.get(propertyType, 'materialType.code', null),
         visible: dataType === openbis.DataType.MATERIAL,
-        enabled: unused && !systemInternal
+        enabled: unused && !systemInternalPropertyType
       }),
       sampleType: FormUtil.createField({
         value: _.get(propertyType, 'sampleType.code', null),
         visible: dataType === openbis.DataType.SAMPLE,
-        enabled: unused && !systemInternal
+        enabled: unused && !systemInternalPropertyType
       }),
       plugin: FormUtil.createField({
         value: plugin,
-        enabled: plugin
+        enabled: plugin && !systemInternalAssignment
       }),
       mandatory: FormUtil.createField({
-        value: _.get(loadedAssignment, 'mandatory', false)
+        value: _.get(loadedAssignment, 'mandatory', false),
+        enabled: !systemInternalAssignment
       }),
       showInEditView: FormUtil.createField({
-        value: _.get(loadedAssignment, 'showInEditView', true)
+        value: _.get(loadedAssignment, 'showInEditView', true),
+        enabled: !systemInternalAssignment
       }),
       showRawValueInForms: FormUtil.createField({
-        value: _.get(loadedAssignment, 'showRawValueInForms', false)
+        value: _.get(loadedAssignment, 'showRawValueInForms', false),
+        enabled: !systemInternalAssignment
       }),
       initialValueForExistingEntities: FormUtil.createField({
-        visible: false
+        visible: false,
+        enabled: !systemInternalAssignment
       }),
-      registrator: FormUtil.createField({
-        value: registrator,
+      registratorOfAssignment: FormUtil.createField({
+        value: registratorOfAssignment,
+        visible: false,
+        enabled: false
+      }),
+      registratorOfPropertyType: FormUtil.createField({
+        value: registratorOfPropertyType,
         visible: false,
         enabled: false
       }),
