@@ -61,7 +61,7 @@ public class VocabularyDropboxApiSystemTest extends SystemTestCase
 
         assertEquals("RAT", property.getVocabularyTerm().getCode());
 
-        Vocabulary vocabulary = openBISService.tryGetVocabulary("TEST_VOCABULARY");
+        Vocabulary vocabulary = openBISService.tryGetVocabulary("$TEST_VOCABULARY");
 
         assertNotNull(vocabulary);
         assertEquals("modified description", vocabulary.getDescription());
