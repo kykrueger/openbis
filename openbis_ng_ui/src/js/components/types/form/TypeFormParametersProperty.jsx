@@ -635,7 +635,9 @@ class TypeFormParametersProperty extends React.PureComponent {
           disabled={!enabled}
           value={value}
           options={options}
-          emptyOption={{}}
+          emptyOption={
+            property.original && property.original.plugin.value ? null : {}
+          }
           mode={mode}
           onChange={this.handleChange}
           onFocus={this.handleFocus}

@@ -243,7 +243,7 @@ export default class TypeFormControllerLoad extends PageControllerLoad {
       }),
       plugin: FormUtil.createField({
         value: plugin,
-        enabled: plugin || unused
+        enabled: plugin
       }),
       mandatory: FormUtil.createField({
         value: _.get(loadedAssignment, 'mandatory', false)
