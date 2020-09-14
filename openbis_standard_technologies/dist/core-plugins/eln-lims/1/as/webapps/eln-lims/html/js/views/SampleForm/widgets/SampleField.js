@@ -16,7 +16,9 @@
 
 function SampleField(isRequired,
 					 placeholder,
-					 sampleTypeCode) {
+					 sampleTypeCode,
+					 initialValue,
+					 isDisabled) {
     var _this = this;
 	var isRequired = isRequired;
 	var placeholder = placeholder;
@@ -26,7 +28,7 @@ function SampleField(isRequired,
     var initialised = false;
 	var storedParams = null;
 	var changeListener = null;
-    var initialValue = null;
+    var initialValue = initialValue;
 
 	//
 	// Form API
@@ -91,7 +93,7 @@ function SampleField(isRequired,
 						logicalOperator : "OR",
 						rules : {
 							"UUIDv4-1": { type: "Property/Attribute", 	name: "PROP.$NAME", operator : "thatContainsString", value: storedParams.data.q },
-							"UUIDv4-2": { type: "Property/Attribute", 	name: "ATTR.CODE", operator : "thatContains", 		value: storedParams.data.q }
+							"UUIDv4-2": { type: "Property/Attribute", 	name: "ATTR.CODE", operator : "thatContains", value: storedParams.data.q }
 						}
 	    };
 
@@ -115,6 +117,9 @@ function SampleField(isRequired,
     $plainSelect.attr("multiple", "multiple");
     if(isRequired) {
         $plainSelect.attr("required", "required");
+    }
+    if(isDisabled) {
+        $plainSelect.attr("disabled", "disabled");
     }
 
     Util.onIsInPage($plainSelect[0], function() {
