@@ -25,7 +25,8 @@ export default class UserBrowserController extends BrowserController {
         return {
           id: `users/${user.userId}`,
           text: user.userId,
-          object: { type: objectType.USER, id: user.userId }
+          object: { type: objectType.USER, id: user.userId },
+          canRemove: true
         }
       })
 
@@ -33,7 +34,8 @@ export default class UserBrowserController extends BrowserController {
         return {
           id: `groups/${group.code}`,
           text: group.code,
-          object: { type: objectType.USER_GROUP, id: group.code }
+          object: { type: objectType.USER_GROUP, id: group.code },
+          canRemove: true
         }
       })
 
@@ -42,13 +44,15 @@ export default class UserBrowserController extends BrowserController {
           id: 'users',
           text: 'Users',
           children: userNodes,
-          childrenType: objectType.NEW_USER
+          childrenType: objectType.NEW_USER,
+          canAdd: true
         },
         {
           id: 'groups',
           text: 'Groups',
           children: groupNodes,
-          childrenType: objectType.NEW_USER_GROUP
+          childrenType: objectType.NEW_USER_GROUP,
+          canAdd: true
         }
       ]
 

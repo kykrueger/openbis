@@ -288,20 +288,12 @@ export default class BrowserController {
 
   isAddNodeEnabled() {
     const selectedNode = this.getSelectedNode()
-    if (selectedNode && !selectedNode.object) {
-      return true
-    } else {
-      return false
-    }
+    return selectedNode && selectedNode.canAdd
   }
 
   isRemoveNodeEnabled() {
     const selectedNode = this.getSelectedNode()
-    if (selectedNode && selectedNode.object) {
-      return true
-    } else {
-      return false
-    }
+    return selectedNode && selectedNode.canRemove
   }
 
   isRemoveNodeDialogOpen() {

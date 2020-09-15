@@ -5,6 +5,7 @@ import pages from '@src/js/common/consts/pages.js'
 import objectType from '@src/js/common/consts/objectType.js'
 import objectOperation from '@src/js/common/consts/objectOperation.js'
 import BrowserController from '@src/js/components/common/browser/BrowserController.js'
+import users from '@src/js/common/consts/users'
 
 export default class TypeBrowserController extends BrowserController {
   doGetPage() {
@@ -12,6 +13,9 @@ export default class TypeBrowserController extends BrowserController {
   }
 
   async doLoadNodes() {
+    const vocabularyFetchOptions = new openbis.VocabularyFetchOptions()
+    vocabularyFetchOptions.withRegistrator()
+
     return Promise.all([
       openbis.searchSampleTypes(
         new openbis.SampleTypeSearchCriteria(),
@@ -31,7 +35,7 @@ export default class TypeBrowserController extends BrowserController {
       ),
       openbis.searchVocabularies(
         new openbis.VocabularySearchCriteria(),
-        new openbis.VocabularyFetchOptions()
+        vocabularyFetchOptions
       )
     ]).then(
       ([
@@ -41,13 +45,18 @@ export default class TypeBrowserController extends BrowserController {
         materialTypes,
         vocabularyTypes
       ]) => {
-        const _createNodes = (types, typeName) => {
+        const _createNodes = (types, typeName, callback) => {
           return _.map(types, type => {
-            return {
+            const node = {
               id: `${typeName}s/${type.code}`,
               text: type.code,
-              object: { type: typeName, id: type.code }
+              object: { type: typeName, id: type.code },
+              canRemove: true
             }
+            if (callback) {
+              callback(type, node)
+            }
+            return node
           })
         }
 
@@ -69,7 +78,12 @@ export default class TypeBrowserController extends BrowserController {
         )
         let vocabularyTypeNodes = _createNodes(
           vocabularyTypes.getObjects(),
-          objectType.VOCABULARY_TYPE
+          objectType.VOCABULARY_TYPE,
+          (type, node) => {
+            node.canRemove = !(
+              type.managedInternally && type.registrator.userId === users.SYSTEM
+            )
+          }
         )
 
         let nodes = [
@@ -77,31 +91,36 @@ export default class TypeBrowserController extends BrowserController {
             id: 'objectTypes',
             text: 'Object Types',
             children: objectTypeNodes,
-            childrenType: objectType.NEW_OBJECT_TYPE
+            childrenType: objectType.NEW_OBJECT_TYPE,
+            canAdd: true
           },
           {
             id: 'collectionTypes',
             text: 'Collection Types',
             children: collectionTypeNodes,
-            childrenType: objectType.NEW_COLLECTION_TYPE
+            childrenType: objectType.NEW_COLLECTION_TYPE,
+            canAdd: true
           },
           {
             id: 'dataSetTypes',
             text: 'Data Set Types',
             children: dataSetTypeNodes,
-            childrenType: objectType.NEW_DATA_SET_TYPE
+            childrenType: objectType.NEW_DATA_SET_TYPE,
+            canAdd: true
           },
           {
             id: 'materialTypes',
             text: 'Material Types',
             children: materialTypeNodes,
-            childrenType: objectType.NEW_MATERIAL_TYPE
+            childrenType: objectType.NEW_MATERIAL_TYPE,
+            canAdd: true
           },
           {
             id: 'vocabularyTypes',
             text: 'Vocabulary Types',
             children: vocabularyTypeNodes,
-            childrenType: objectType.NEW_VOCABULARY_TYPE
+            childrenType: objectType.NEW_VOCABULARY_TYPE,
+            canAdd: true
           }
         ]
 
