@@ -571,7 +571,7 @@ public class TranslatorUtils
     public static void appendInternalExternalConstraint(final StringBuilder sqlBuilder, final List<Object> args,
             final String entityTypesSubTableAlias, final boolean internalProperty)
     {
-        sqlBuilder.append(entityTypesSubTableAlias).append(PERIOD).append(ColumnNames.IS_INTERNAL_NAMESPACE).append(SP)
+        sqlBuilder.append(entityTypesSubTableAlias).append(PERIOD).append(ColumnNames.IS_MANAGED_INTERNALLY).append(SP)
                 .append(EQ).append(SP).append(QU).append(SP).append(AND);
         args.add(internalProperty);
     }

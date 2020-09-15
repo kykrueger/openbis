@@ -235,7 +235,7 @@ public abstract class CreateEntityTypeTest<CREATION extends IEntityTypeCreation,
     }
 
     @Test
-    public void testCreateWithPropertyTypeWithInternalNamespace()
+    public void testCreateWithPropertyTypeWithManagedInternally()
     {
         final String sessionToken = v3api.login(TEST_USER, PASSWORD);
 

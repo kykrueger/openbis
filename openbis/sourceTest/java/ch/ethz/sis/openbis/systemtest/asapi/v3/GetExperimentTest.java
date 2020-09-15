@@ -457,7 +457,6 @@ public class GetExperimentTest extends AbstractExperimentTest
         assertEquals(propertyType0.getCode(), "DESCRIPTION");
         assertEquals(propertyType0.getLabel(), "Description");
         assertEquals(propertyType0.getDescription(), "A Description");
-        assertEquals(propertyType0.isInternalNameSpace(), Boolean.FALSE);
         assertEquals(propertyType0.isManagedInternally(), Boolean.FALSE);
         assertEquals(propertyType0.getDataType(), DataType.VARCHAR);
         assertEqualsDate(propertyType0.getRegistrationDate(), "2008-11-05 09:18:00");
@@ -466,7 +465,6 @@ public class GetExperimentTest extends AbstractExperimentTest
         assertEquals(propertyType1.getCode(), "PURCHASE_DATE");
         assertEquals(propertyType1.getLabel(), "Purchased");
         assertEquals(propertyType1.getDescription(), "When material has been bought");
-        assertEquals(propertyType1.isInternalNameSpace(), Boolean.FALSE);
         assertEquals(propertyType1.isManagedInternally(), Boolean.FALSE);
         assertEquals(propertyType1.getDataType(), DataType.TIMESTAMP);
         assertEqualsDate(propertyType1.getRegistrationDate(), "2008-11-05 09:18:16");
@@ -475,7 +473,6 @@ public class GetExperimentTest extends AbstractExperimentTest
         assertEquals(propertyType2.getCode(), "GENDER");
         assertEquals(propertyType2.getLabel(), "Gender");
         assertEquals(propertyType2.getDescription(), "The gender of the living organism");
-        assertEquals(propertyType2.isInternalNameSpace(), Boolean.FALSE);
         assertEquals(propertyType2.isManagedInternally(), Boolean.FALSE);
         assertEquals(propertyType2.getDataType(), DataType.CONTROLLEDVOCABULARY);
         assertEqualsDate(propertyType2.getRegistrationDate(), "2008-11-05 09:18:31");

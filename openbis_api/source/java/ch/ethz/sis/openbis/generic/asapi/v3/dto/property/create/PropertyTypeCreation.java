@@ -50,9 +50,6 @@ public class PropertyTypeCreation implements ICreation, IObjectCreation
     private boolean managedInternally;
 
     @JsonProperty
-    private boolean internalNameSpace;
-
-    @JsonProperty
     private DataType dataType;
 
     @JsonProperty
@@ -117,15 +114,23 @@ public class PropertyTypeCreation implements ICreation, IObjectCreation
         this.managedInternally = managedInternally;
     }
 
+    /**
+     * @deprecated use {@link #isManagedInternally()}
+     */
     @JsonIgnore
+    @Deprecated()
     public boolean isInternalNameSpace()
     {
-        return internalNameSpace;
+        return isManagedInternally();
     }
 
+    /**
+     * @deprecated use {@link #setManagedInternally(boolean)}
+     */
+    @Deprecated()
     public void setInternalNameSpace(boolean internalNameSpace)
     {
-        this.internalNameSpace = internalNameSpace;
+        setManagedInternally(internalNameSpace);
     }
 
     @JsonIgnore

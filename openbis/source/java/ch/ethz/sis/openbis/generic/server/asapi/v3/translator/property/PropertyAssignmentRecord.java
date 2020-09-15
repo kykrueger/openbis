@@ -34,7 +34,7 @@ public class PropertyAssignmentRecord extends ObjectBaseRecord
 
     public String prty_code;
 
-    public boolean prty_is_internal_namespace;
+    public boolean prty_is_managed_internally;
 
     public Long type_id;
 

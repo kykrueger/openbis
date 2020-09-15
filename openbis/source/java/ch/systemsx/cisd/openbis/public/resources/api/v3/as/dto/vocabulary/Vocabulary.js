@@ -15,7 +15,6 @@ define([ "stjs", "util/Exceptions", "as/dto/vocabulary/id/VocabularyPermId" ], f
 		prototype.registrator = null;
 		prototype.modificationDate = null;
 		prototype.managedInternally = null;
-		prototype.internalNameSpace = null;
 		prototype.chosenFromList = null;
 		prototype.urlTemplate = null;
 		prototype.terms = null;
@@ -71,10 +70,10 @@ define([ "stjs", "util/Exceptions", "as/dto/vocabulary/id/VocabularyPermId" ], f
 			this.managedInternally = managedInternally;
 		};
 		prototype.isInternalNameSpace = function() {
-			return this.internalNameSpace;
+			return this.isManagedInternally();
 		};
 		prototype.setInternalNameSpace = function(internalNameSpace) {
-			this.internalNameSpace = internalNameSpace;
+			this.setManagedInternally(internalNameSpace);
 		};
 		prototype.isChosenFromList = function() {
 			return this.chosenFromList;

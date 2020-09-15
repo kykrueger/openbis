@@ -74,10 +74,14 @@ public class PropertyType extends PropertyTypeImmutable implements IPropertyType
         getPropertyType().setManagedInternally(isManagedInternally);
     }
 
+    /**
+     * @deprecated use {@link #setManagedInternally(boolean)}
+     */
     @Override
+    @Deprecated
     public void setInternalNamespace(boolean isInternalNamespace)
     {
-        getPropertyType().setInternalNamespace(isInternalNamespace);
+        setManagedInternally(isInternalNamespace);
     }
 
     @Override

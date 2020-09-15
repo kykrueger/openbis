@@ -731,6 +731,10 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
                                     $controlGroup = FormUtil.getFieldForComponentWithLabel($component, propertyType.label);
                                     $fieldset.append($controlGroup);
                                 }
+                            } else if(propertyType.dataType === "SAMPLE") {
+                                var $component = new SampleField(false, '', false, value, true);
+                                $controlGroup = FormUtil.getFieldForComponentWithLabel($component, propertyType.label);
+                                $fieldset.append($controlGroup);
                             } else {
                                 $controlGroup = FormUtil.createPropertyField(propertyType, value);
                                 $fieldset.append($controlGroup);

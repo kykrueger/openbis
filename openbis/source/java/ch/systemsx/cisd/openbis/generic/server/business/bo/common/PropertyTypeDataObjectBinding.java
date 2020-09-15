@@ -20,10 +20,10 @@ public class PropertyTypeDataObjectBinding extends NonUpdateCapableDataObjectBin
     public void unmarshall(ResultSet row, PropertyType into) throws SQLException, EoDException
     {
         into.setId(row.getLong("pt_id"));
-        into.setInternalNamespace(row.getBoolean("is_internal_namespace"));
+        into.setManagedInternally(row.getBoolean("is_managed_internally"));
         into.setSimpleCode(row.getString("pt_code"));
         into.setCode(CodeConverter.tryToBusinessLayer(into.getSimpleCode(),
-                into.isInternalNamespace()));
+                into.isManagedInternally()));
         into.setLabel(row.getString("pt_label"));
         into.setTransformation(row.getString("transformation"));
         final DataType dataType = new DataType();

@@ -65,7 +65,7 @@ public class UpdatePropertyTypesTest extends AbstractTest
     private static final String ALL_DATA_TYPES = "ALL_DATA_TYPES";
 
     @Test
-    public void testUpdatePropertyTypeFromInternalNamespace()
+    public void testUpdatePropertyTypeWhichIsManagedInternally()
     {
         // Given
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
@@ -82,7 +82,7 @@ public class UpdatePropertyTypesTest extends AbstractTest
         PropertyType propertyType = v3api.getPropertyTypes(sessionToken, Arrays.asList(id), fetchOptions).get(id);
         assertEquals(propertyType.getDescription(), update.getDescription().getValue());
         assertEquals(propertyType.getLabel(), "Plate Geometry");
-        assertEquals(propertyType.isInternalNameSpace().booleanValue(), true);
+        assertEquals(propertyType.isManagedInternally().booleanValue(), true);
 
         v3api.logout(sessionToken);
     }
@@ -105,7 +105,7 @@ public class UpdatePropertyTypesTest extends AbstractTest
         PropertyType propertyType = v3api.getPropertyTypes(sessionToken, Arrays.asList(id), fetchOptions).get(id);
         assertEquals(propertyType.getDescription(), "Any other comments");
         assertEquals(propertyType.getLabel(), update.getLabel().getValue());
-        assertEquals(propertyType.isInternalNameSpace().booleanValue(), false);
+        assertEquals(propertyType.isManagedInternally().booleanValue(), false);
 
         v3api.logout(sessionToken);
     }
@@ -128,7 +128,7 @@ public class UpdatePropertyTypesTest extends AbstractTest
         PropertyType propertyType = v3api.getPropertyTypes(sessionToken, Arrays.asList(id), fetchOptions).get(id);
         assertEquals(propertyType.getDescription(), "Any other comments");
         assertEquals(propertyType.getLabel(), "Comment");
-        assertEquals(propertyType.isInternalNameSpace().booleanValue(), false);
+        assertEquals(propertyType.isManagedInternally().booleanValue(), false);
         assertEquals(propertyType.getMetaData().toString(), "{greetings=hello world}");
 
         v3api.logout(sessionToken);

@@ -80,7 +80,6 @@ public class ImportPropertyTypesTest extends AbstractImportTest {
         assertEquals(notes.getLabel(), "Notes");
         assertEquals(notes.getDataType(), DataType.MULTILINE_VARCHAR);
         assertEquals(notes.getDescription(), "Notes Descripton");
-        assertFalse(notes.isInternalNameSpace());
         assertFalse(notes.isManagedInternally());
         assertNull(notes.getVocabulary());
     }
@@ -97,8 +96,7 @@ public class ImportPropertyTypesTest extends AbstractImportTest {
         assertEquals(notes.getLabel(), "Name");
         assertEquals(notes.getDataType(), DataType.VARCHAR);
         assertEquals(notes.getDescription(), "Name");
-        assertTrue(notes.isInternalNameSpace());
-        assertFalse(notes.isManagedInternally());
+        assertTrue(notes.isManagedInternally());
         assertNull(notes.getVocabulary());
     }
 

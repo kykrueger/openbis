@@ -74,7 +74,7 @@ final class PropertyTypeDAO extends AbstractGenericEntityDAO<PropertyTypePE> imp
         final List<PropertyTypePE> list =
                 cast(getHibernateTemplate().find(
                         String.format("select pt from %s pt where pt.simpleCode = ? "
-                                + "and pt.internalNamespace = ?",
+                                + "and pt.managedInternally = ?",
                                 PropertyTypePE.class.getSimpleName()),
                         toArray(mangledCode, internalNamespace)));
         final PropertyTypePE entity = tryFindEntity(list, "property type", code);

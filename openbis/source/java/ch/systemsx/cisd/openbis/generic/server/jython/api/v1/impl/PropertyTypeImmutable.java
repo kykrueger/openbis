@@ -106,10 +106,13 @@ public class PropertyTypeImmutable implements IPropertyTypeImmutable
         return getPropertyType().isManagedInternally();
     }
 
+    /**
+     * @deprecated use {@link #isManagedInternally()}
+     */
     @Override
     public boolean isInternalNamespace()
     {
-        return getPropertyType().isInternalNamespace();
+        return isManagedInternally();
     }
 
     @Override

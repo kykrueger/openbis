@@ -191,13 +191,12 @@ public class MasterDataDeliverer extends AbstractEntityDeliverer<Object>
         for (Vocabulary vocabulary : vocabularies)
         {
             writer.writeStartElement("xmd:controlledVocabulary");
-            String code = vocabulary.isInternalNameSpace()
+            String code = vocabulary.isManagedInternally()
                     && vocabulary.getCode().startsWith(INTERNAL_NAMESPACE_PREFIX) ? CodeConverter.tryToDatabase(vocabulary.getCode())
                             : vocabulary.getCode();
             addAttribute(writer, "chosenFromList", String.valueOf(vocabulary.isChosenFromList()));
             addAttribute(writer, "code", code);
             addAttribute(writer, "description", vocabulary.getDescription());
-            addAttribute(writer, "internalNamespace", String.valueOf(vocabulary.isInternalNameSpace()));
             addAttribute(writer, "managedInternally", String.valueOf(vocabulary.isManagedInternally()));
             addAttribute(writer, "urlTemplate", vocabulary.getUrlTemplate());
             addAttribute(writer, "registration-timestamp", vocabulary.getRegistrationDate(), h -> DataSourceUtils.convertToW3CDate(h));
@@ -237,18 +236,17 @@ public class MasterDataDeliverer extends AbstractEntityDeliverer<Object>
 
         for (PropertyType propertyType : propertyTypes)
         {
-            Boolean internalNameSpace = propertyType.isInternalNameSpace();
+            Boolean managedInternally = propertyType.isManagedInternally();
             String code =
-                    (internalNameSpace && propertyType.getCode().startsWith(INTERNAL_NAMESPACE_PREFIX))
+                    (managedInternally && propertyType.getCode().startsWith(INTERNAL_NAMESPACE_PREFIX))
                             ? CodeConverter.tryToDatabase(propertyType.getCode())
                             : propertyType.getCode();
             writer.writeStartElement("xmd:propertyType");
             addAttribute(writer, "code", code);
             addAttribute(writer, "dataType", propertyType.getDataType(), t -> t.name());
             addAttributeAndExtractFilePaths(executionContext, writer, "description", propertyType.getDescription());
-            addAttribute(writer, "internalNamespace", internalNameSpace);
             addAttribute(writer, "label", propertyType.getLabel());
-            addAttribute(writer, "managedInternally", propertyType.isManagedInternally());
+            addAttribute(writer, "managedInternally", managedInternally);
             addAttribute(writer, "registration-timestamp", propertyType.getRegistrationDate(), h -> DataSourceUtils.convertToW3CDate(h));
             if (propertyType.getDataType().name().equals(DataType.CONTROLLEDVOCABULARY.name()))
             {

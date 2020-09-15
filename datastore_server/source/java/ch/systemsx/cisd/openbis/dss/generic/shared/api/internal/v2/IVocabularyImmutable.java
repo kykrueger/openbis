@@ -43,7 +43,9 @@ public interface IVocabularyImmutable
 
     /**
      * Return <code>true</code> if the vocabulary is in the internal openBIS namespace.
+     * @deprecated use {@link #isManagedInternally()}
      */
+    @Deprecated
     boolean isInternalNamespace();
 
     boolean isChosenFromList();

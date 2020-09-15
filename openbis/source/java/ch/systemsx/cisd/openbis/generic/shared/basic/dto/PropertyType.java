@@ -43,8 +43,6 @@ public class PropertyType extends Code<PropertyType> implements IPropertyTypeUpd
 
     private Date modificationDate;
 
-    private boolean internalNamespace;
-
     private boolean managedInternally;
 
     private DataType dataType;
@@ -116,12 +114,12 @@ public class PropertyType extends Code<PropertyType> implements IPropertyTypeUpd
 
     public boolean isInternalNamespace()
     {
-        return internalNamespace;
+        return isManagedInternally();
     }
 
     public void setInternalNamespace(final boolean internalNamespace)
     {
-        this.internalNamespace = internalNamespace;
+        setManagedInternally(internalNamespace);
     }
 
     public DataType getDataType()

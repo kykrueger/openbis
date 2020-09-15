@@ -51,7 +51,6 @@ public final class VocabularyTranslator
         result.setId(HibernateUtils.getId(vocabulary));
         result.setCode(vocabulary.getCode());
         result.setDescription(vocabulary.getDescription());
-        result.setInternalNamespace(vocabulary.isInternalNamespace());
         result.setManagedInternally(vocabulary.isManagedInternally());
         result.setChosenFromList(vocabulary.isChosenFromList());
         result.setURLTemplate(vocabulary.getURLTemplate());

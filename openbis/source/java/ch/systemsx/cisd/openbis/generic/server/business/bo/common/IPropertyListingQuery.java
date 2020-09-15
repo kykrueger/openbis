@@ -38,7 +38,7 @@ public interface IPropertyListingQuery
      * label are already HTML escaped.
      */
     @Select(sql = "select pt.id as pt_id, pt.code as pt_code, dt.code as dt_code,"
-            + "      pt.label as pt_label, pt.is_internal_namespace, pt.schema, pt.transformation"
+            + "      pt.label as pt_label, pt.is_managed_internally, pt.schema, pt.transformation"
             + "    from property_types pt join data_types dt on pt.daty_id=dt.id", resultSetBinding = PropertyTypeDataObjectBinding.class)
     public PropertyType[] getPropertyTypes();
 

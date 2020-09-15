@@ -61,9 +61,6 @@ public class Vocabulary implements Serializable, ICodeHolder, IDescriptionHolder
     private boolean managedInternally;
     
     @JsonProperty
-    private boolean internalNameSpace;
-    
-    @JsonProperty
     private boolean chosenFromList;
     
     @JsonProperty
@@ -179,15 +176,23 @@ public class Vocabulary implements Serializable, ICodeHolder, IDescriptionHolder
         this.managedInternally = managedInternally;
     }
 
+    /**
+     * @deprecated use {@link #isManagedInternally()}
+     */
     @JsonIgnore
+    @Deprecated
     public boolean isInternalNameSpace()
     {
-        return internalNameSpace;
+        return isManagedInternally();
     }
 
+    /**
+     * @deprecated use {@link #setManagedInternally(boolean)}
+     */
+    @Deprecated
     public void setInternalNameSpace(boolean internalNameSpace)
     {
-        this.internalNameSpace = internalNameSpace;
+        setManagedInternally(internalNameSpace);
     }
 
     @JsonIgnore

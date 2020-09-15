@@ -83,7 +83,7 @@ public class CreatePropertyTypeTest extends AbstractTest
             "xsl:styleshet");
 
     @Test
-    public void testCreateInternalNamespacePropertyTypeWithCodeWithDolarSign()
+    public void testCreateManagedInternallyPropertyTypeWithCodeWithDolarSign()
     {
         // Given
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
@@ -92,7 +92,6 @@ public class CreatePropertyTypeTest extends AbstractTest
         creation.setDataType(DataType.REAL);
         creation.setDescription("only for testing");
         creation.setLabel("Test Property");
-        creation.setInternalNameSpace(true);
         creation.setManagedInternally(true);
 
         // When
@@ -110,7 +109,6 @@ public class CreatePropertyTypeTest extends AbstractTest
         assertEquals(propertyType.getDataType(), creation.getDataType());
         assertEquals(propertyType.getDescription(), creation.getDescription());
         assertEquals(propertyType.getLabel(), creation.getLabel());
-        assertEquals(propertyType.isInternalNameSpace().booleanValue(), creation.isInternalNameSpace());
         assertEquals(propertyType.isManagedInternally().booleanValue(), creation.isManagedInternally());
         assertEquals(propertyType.getMetaData().toString(), "{}");
         assertEquals(types.size(), 1);
@@ -119,7 +117,7 @@ public class CreatePropertyTypeTest extends AbstractTest
     }
 
     @Test
-    public void testCreateInternalNamespacePropertyTypeWithCodeWithoutDolarSign()
+    public void testCreateManagedInternallyPropertyTypeWithCodeWithoutDollarSign()
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
         PropertyTypeCreation creation = new PropertyTypeCreation();
@@ -127,7 +125,7 @@ public class CreatePropertyTypeTest extends AbstractTest
         creation.setLabel("Test Property");
         creation.setDescription("only for testing");
         creation.setDataType(DataType.REAL);
-        creation.setInternalNameSpace(true);
+        creation.setManagedInternally(true);
 
         assertUserFailureException(new IDelegatedAction()
             {
@@ -136,11 +134,11 @@ public class CreatePropertyTypeTest extends AbstractTest
                 {
                     v3api.createPropertyTypes(sessionToken, Arrays.asList(creation));
                 }
-            }, "Code of an internal namespace property type has to start with '$' prefix");
+            }, "Code of an internally managed property type has to start with '$' prefix");
     }
 
     @Test
-    public void testCreateNonInternalNamespacePropertyTypeWithCodeWithDolarSign()
+    public void testCreateNonManagedInternallyPropertyTypeWithCodeWithDolarSign()
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
         PropertyTypeCreation creation = new PropertyTypeCreation();
@@ -148,7 +146,7 @@ public class CreatePropertyTypeTest extends AbstractTest
         creation.setLabel("Test Property");
         creation.setDescription("only for testing");
         creation.setDataType(DataType.REAL);
-        creation.setInternalNameSpace(false);
+        creation.setManagedInternally(false);
 
         assertUserFailureException(new IDelegatedAction()
             {
@@ -157,11 +155,11 @@ public class CreatePropertyTypeTest extends AbstractTest
                 {
                     v3api.createPropertyTypes(sessionToken, Arrays.asList(creation));
                 }
-            }, "'$' code prefix can be only used for the internal namespace property types");
+            }, "'$' code prefix can be only used for the internally managed property types");
     }
 
     @Test
-    public void testCreateNonInternalNamespacePropertyTypeWithCodeWithoutDolarSign()
+    public void testCreateNonManagedInternallyPropertyTypeWithCodeWithoutDolarSign()
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
         PropertyTypeCreation creation = new PropertyTypeCreation();
@@ -169,7 +167,7 @@ public class CreatePropertyTypeTest extends AbstractTest
         creation.setLabel("Test Property");
         creation.setDescription("only for testing");
         creation.setDataType(DataType.REAL);
-        creation.setInternalNameSpace(false);
+        creation.setManagedInternally(false);
         HashMap<String, String> metaData = new HashMap<>();
         metaData.put("greeting", "hello { meta data }");
         creation.setMetaData(metaData);
@@ -185,7 +183,7 @@ public class CreatePropertyTypeTest extends AbstractTest
         PropertyType propertyType = types.get(ids.get(0));
         assertEquals(propertyType.getCode(), creation.getCode().toUpperCase());
         assertEquals(propertyType.getDataType(), creation.getDataType());
-        assertEquals(propertyType.isInternalNameSpace(), (Boolean) creation.isInternalNameSpace());
+        assertEquals(propertyType.isManagedInternally(), (Boolean) creation.isManagedInternally());
         assertEquals(propertyType.getMetaData().toString(), "{greeting=hello { meta data }}");
     }
 
@@ -217,7 +215,6 @@ public class CreatePropertyTypeTest extends AbstractTest
         assertEquals(propertyType.getDataType(), creation.getDataType());
         assertEquals(propertyType.getDescription(), creation.getDescription());
         assertEquals(propertyType.getLabel(), creation.getLabel());
-        assertEquals(propertyType.isInternalNameSpace().booleanValue(), false);
         assertEquals(propertyType.isManagedInternally().booleanValue(), false);
         assertEquals(propertyType.getSchema(), creation.getSchema());
         assertEquals(propertyType.getTransformation(), creation.getTransformation());
@@ -254,7 +251,6 @@ public class CreatePropertyTypeTest extends AbstractTest
         assertEquals(propertyType.getDataType(), creation.getDataType());
         assertEquals(propertyType.getDescription(), creation.getDescription());
         assertEquals(propertyType.getLabel(), creation.getLabel());
-        assertEquals(propertyType.isInternalNameSpace().booleanValue(), false);
         assertEquals(propertyType.isManagedInternally().booleanValue(), false);
         assertEquals(propertyType.getVocabulary().getCode(), "TEST_VOCABULARY");
         assertEquals(propertyType.getVocabulary().getDescription(), "Test vocabulary");
@@ -291,7 +287,6 @@ public class CreatePropertyTypeTest extends AbstractTest
         assertEquals(propertyType.getDataType(), creation.getDataType());
         assertEquals(propertyType.getDescription(), creation.getDescription());
         assertEquals(propertyType.getLabel(), creation.getLabel());
-        assertEquals(propertyType.isInternalNameSpace().booleanValue(), false);
         assertEquals(propertyType.isManagedInternally().booleanValue(), false);
         assertEquals(propertyType.getMaterialType().getCode(), "SIRNA");
         assertEquals(propertyType.getMaterialType().getDescription(), "Oligo nucleotide");
@@ -328,7 +323,6 @@ public class CreatePropertyTypeTest extends AbstractTest
         assertEquals(propertyType.getDataType(), creation.getDataType());
         assertEquals(propertyType.getDescription(), creation.getDescription());
         assertEquals(propertyType.getLabel(), creation.getLabel());
-        assertEquals(propertyType.isInternalNameSpace().booleanValue(), false);
         assertEquals(propertyType.isManagedInternally().booleanValue(), false);
         assertEquals(propertyType.getSampleType().getCode(), "WELL");
         assertEquals(propertyType.getSampleType().getDescription(), "Plate Well");
@@ -364,7 +358,6 @@ public class CreatePropertyTypeTest extends AbstractTest
         assertEquals(propertyType.getDataType(), creation.getDataType());
         assertEquals(propertyType.getDescription(), creation.getDescription());
         assertEquals(propertyType.getLabel(), creation.getLabel());
-        assertEquals(propertyType.isInternalNameSpace().booleanValue(), false);
         assertEquals(propertyType.isManagedInternally().booleanValue(), false);
         assertEquals(types.size(), 1);
         

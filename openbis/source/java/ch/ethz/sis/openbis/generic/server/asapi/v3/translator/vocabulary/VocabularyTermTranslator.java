@@ -84,7 +84,7 @@ public class VocabularyTermTranslator extends AbstractCachingTranslator<Long, Vo
         VocabularyTermBaseRecord baseRecord = relations.get(IVocabularyTermBaseTranslator.class, termId);
 
         result.setPermId(new VocabularyTermPermId(baseRecord.code,
-                CodeConverter.tryToBusinessLayer(baseRecord.vocabularyCode, baseRecord.isInternalNamespace)));
+                CodeConverter.tryToBusinessLayer(baseRecord.vocabularyCode, baseRecord.isManagedInternally)));
         result.setCode(baseRecord.code);
         result.setLabel(baseRecord.label);
         result.setDescription(baseRecord.description);
