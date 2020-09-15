@@ -19,6 +19,16 @@ export default class VocabularyFormControllerAdd {
       official: FormUtil.createField({
         value: true
       }),
+      internal: FormUtil.createField({
+        value: false,
+        visible: false,
+        enabled: false
+      }),
+      registrator: FormUtil.createField({
+        value: null,
+        visible: false,
+        enabled: false
+      }),
       original: null
     }
 

@@ -2,6 +2,7 @@ import React from 'react'
 import PageButtons from '@src/js/components/common/page/PageButtons.jsx'
 import Button from '@src/js/components/common/form/Button.jsx'
 import VocabularyFormSelectionType from '@src/js/components/types/form/VocabularyFormSelectionType.js'
+import users from '@src/js/common/consts/users.js'
 import logger from '@src/js/common/logger.js'
 
 class VocabularyFormButtons extends React.PureComponent {
@@ -18,7 +19,7 @@ class VocabularyFormButtons extends React.PureComponent {
       <PageButtons
         mode={mode}
         changed={changed}
-        onEdit={vocabulary.managedInternally.value ? null : onEdit}
+        onEdit={onEdit}
         onSave={onSave}
         onCancel={vocabulary.id ? onCancel : null}
         renderAdditionalButtons={classes =>
@@ -43,16 +44,24 @@ class VocabularyFormButtons extends React.PureComponent {
           name='removeTerm'
           label='Remove Term'
           styles={{ root: classes.button }}
-          disabled={!this.isTermSelected()}
+          disabled={!this.isNonSystemInternalTermSelected()}
           onClick={onRemove}
         />
       </React.Fragment>
     )
   }
 
-  isTermSelected() {
-    const { selection } = this.props
-    return selection && selection.type === VocabularyFormSelectionType.TERM
+  isNonSystemInternalTermSelected() {
+    const { selection, vocabulary, terms } = this.props
+
+    if (selection && selection.type === VocabularyFormSelectionType.TERM) {
+      const term = terms.find(term => term.id === selection.params.id)
+      return !(
+        vocabulary.internal.value && term.registrator.value === users.SYSTEM
+      )
+    } else {
+      return false
+    }
   }
 }
 

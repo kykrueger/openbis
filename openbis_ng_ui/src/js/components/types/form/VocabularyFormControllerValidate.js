@@ -41,7 +41,13 @@ export default class VocabularyFormControllerValidate extends PageControllerVali
 
   _validateVocabulary(validator, vocabulary) {
     validator.validateNotEmpty(vocabulary, 'code', 'Code')
-    validator.validateCode(vocabulary, 'code', 'Code')
+
+    if (vocabulary.internal.value) {
+      validator.validateInternalCode(vocabulary, 'code', 'Code')
+    } else {
+      validator.validateCode(vocabulary, 'code', 'Code')
+    }
+
     return validator.withErrors(vocabulary)
   }
 

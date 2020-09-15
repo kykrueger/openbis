@@ -5,6 +5,7 @@ import Header from '@src/js/components/common/form/Header.jsx'
 import TextField from '@src/js/components/common/form/TextField.jsx'
 import Message from '@src/js/components/common/form/Message.jsx'
 import VocabularyFormSelectionType from '@src/js/components/types/form/VocabularyFormSelectionType.js'
+import users from '@src/js/common/consts/users.js'
 import logger from '@src/js/common/logger.js'
 
 const styles = theme => ({
@@ -81,7 +82,7 @@ class VocabularyFormParametersVocabulary extends React.PureComponent {
     return (
       <Container>
         <Header>Vocabulary</Header>
-        {this.renderMessageManagedInternally(vocabulary)}
+        {this.renderMessageSystemInternal(vocabulary)}
         {this.renderCode(vocabulary)}
         {this.renderDescription(vocabulary)}
         {this.renderUrlTemplate(vocabulary)}
@@ -89,13 +90,19 @@ class VocabularyFormParametersVocabulary extends React.PureComponent {
     )
   }
 
-  renderMessageManagedInternally(vocabulary) {
+  renderMessageSystemInternal(vocabulary) {
     const { classes } = this.props
 
-    if (vocabulary.managedInternally.value) {
+    if (
+      vocabulary.internal.value &&
+      vocabulary.registrator.value === users.SYSTEM
+    ) {
       return (
         <div className={classes.field}>
-          <Message type='lock'>This vocabulary is managed internally.</Message>
+          <Message type='lock'>
+            This is a system internal vocabulary. The vocabulary parameters
+            cannot be changed.
+          </Message>
         </div>
       )
     } else {

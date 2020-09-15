@@ -39,6 +39,7 @@ class VocabularyFormParameters extends React.PureComponent {
         />
         <VocabularyFormParametersTerm
           controller={controller}
+          vocabulary={vocabulary}
           terms={terms}
           selection={selection}
           selectedRow={selectedRow}

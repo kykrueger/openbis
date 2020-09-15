@@ -207,9 +207,9 @@ class TypeFormParametersProperty extends React.PureComponent {
       return (
         <div className={classes.field}>
           <Message type='lock'>
-            This is an internal system property.
+            This is a system internal property.
             {systemInternalPropertyType
-              ? ' The property definition cannot be changed.'
+              ? ' The property parameters cannot be changed.'
               : ''}
             {systemInternalAssignment
               ? ' The property assignment cannot be removed.'

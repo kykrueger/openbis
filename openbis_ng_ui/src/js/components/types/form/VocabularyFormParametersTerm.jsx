@@ -6,6 +6,7 @@ import TextField from '@src/js/components/common/form/TextField.jsx'
 import CheckboxField from '@src/js/components/common/form/CheckboxField.jsx'
 import Message from '@src/js/components/common/form/Message.jsx'
 import VocabularyFormSelectionType from '@src/js/components/types/form/VocabularyFormSelectionType.js'
+import users from '@src/js/common/consts/users.js'
 import logger from '@src/js/common/logger.js'
 
 const styles = theme => ({
@@ -86,6 +87,7 @@ class VocabularyFormParametersTerm extends React.PureComponent {
       <Container>
         <Header>Term</Header>
         {this.renderMessageVisible(term)}
+        {this.renderMessageSystemInternal(term)}
         {this.renderCode(term)}
         {this.renderLabel(term)}
         {this.renderDescription(term)}
@@ -103,6 +105,23 @@ class VocabularyFormParametersTerm extends React.PureComponent {
           <Message type='warning'>
             The selected term is currently not visible in the term list due to
             the chosen filtering and paging.
+          </Message>
+        </div>
+      )
+    } else {
+      return null
+    }
+  }
+
+  renderMessageSystemInternal(term) {
+    const { classes, vocabulary } = this.props
+
+    if (vocabulary.internal.value && term.registrator.value === users.SYSTEM) {
+      return (
+        <div className={classes.field}>
+          <Message type='lock'>
+            This is a system internal term. The term parameters cannot be
+            changed. The term cannot be removed.
           </Message>
         </div>
       )

@@ -2,6 +2,7 @@ import _ from 'lodash'
 import PageControllerLoad from '@src/js/components/common/page/PageControllerLoad.js'
 import VocabularyFormSelectionType from '@src/js/components/types/form/VocabularyFormSelectionType.js'
 import FormUtil from '@src/js/components/common/form/FormUtil.js'
+import users from '@src/js/common/consts/users.js'
 
 export default class VocabularyFormControllerLoad extends PageControllerLoad {
   async load(object, isNew) {
@@ -21,7 +22,7 @@ export default class VocabularyFormControllerLoad extends PageControllerLoad {
 
     if (loadedVocabulary && loadedVocabulary.terms) {
       terms = loadedVocabulary.terms.map(loadedTerm =>
-        this._createTerm('term-' + termsCounter++, loadedTerm)
+        this._createTerm('term-' + termsCounter++, loadedVocabulary, loadedTerm)
       )
     }
 
@@ -40,6 +41,10 @@ export default class VocabularyFormControllerLoad extends PageControllerLoad {
   }
 
   _createVocabulary(loadedVocabulary) {
+    const registrator = _.get(loadedVocabulary, 'registrator.userId', null)
+    const internal = _.get(loadedVocabulary, 'managedInternally', false)
+    const systemInternal = internal && registrator === users.SYSTEM
+
     const vocabulary = {
       id: _.get(loadedVocabulary, 'code', null),
       code: FormUtil.createField({
@@ -47,13 +52,22 @@ export default class VocabularyFormControllerLoad extends PageControllerLoad {
         enabled: loadedVocabulary === null
       }),
       description: FormUtil.createField({
-        value: _.get(loadedVocabulary, 'description', null)
+        value: _.get(loadedVocabulary, 'description', null),
+        enabled: !systemInternal
       }),
       urlTemplate: FormUtil.createField({
-        value: _.get(loadedVocabulary, 'urlTemplate', null)
+        value: _.get(loadedVocabulary, 'urlTemplate', null),
+        enabled: !systemInternal
       }),
-      managedInternally: FormUtil.createField({
-        value: _.get(loadedVocabulary, 'managedInternally', false)
+      internal: FormUtil.createField({
+        value: internal,
+        visible: false,
+        enabled: false
+      }),
+      registrator: FormUtil.createField({
+        value: registrator,
+        visible: false,
+        enabled: false
       })
     }
     if (loadedVocabulary) {
@@ -62,8 +76,11 @@ export default class VocabularyFormControllerLoad extends PageControllerLoad {
     return vocabulary
   }
 
-  _createTerm(id, loadedTerm) {
+  _createTerm(id, loadedVocabulary, loadedTerm) {
     const official = _.get(loadedTerm, 'official', false)
+    const registrator = _.get(loadedTerm, 'registrator.userId', null)
+    const internal = _.get(loadedVocabulary, 'managedInternally', false)
+    const systemInternal = internal && registrator === users.SYSTEM
 
     const term = {
       id: id,
@@ -72,14 +89,26 @@ export default class VocabularyFormControllerLoad extends PageControllerLoad {
         enabled: false
       }),
       label: FormUtil.createField({
-        value: _.get(loadedTerm, 'label', null)
+        value: _.get(loadedTerm, 'label', null),
+        enabled: !systemInternal
       }),
       description: FormUtil.createField({
-        value: _.get(loadedTerm, 'description', null)
+        value: _.get(loadedTerm, 'description', null),
+        enabled: !systemInternal
       }),
       official: FormUtil.createField({
         value: official,
-        enabled: !official
+        enabled: !official && !systemInternal
+      }),
+      internal: FormUtil.createField({
+        value: internal,
+        visible: false,
+        enabled: false
+      }),
+      registrator: FormUtil.createField({
+        value: registrator,
+        visible: false,
+        enabled: false
       })
     }
     term.original = _.cloneDeep(term)
