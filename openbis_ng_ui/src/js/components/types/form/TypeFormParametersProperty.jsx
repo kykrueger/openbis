@@ -9,6 +9,7 @@ import SelectField from '@src/js/components/common/form/SelectField.jsx'
 import Message from '@src/js/components/common/form/Message.jsx'
 import TypeFormSelectionType from '@src/js/components/types/form/TypeFormSelectionType.js'
 import TypeFormPropertyScope from '@src/js/components/types/form/TypeFormPropertyScope.js'
+import users from '@src/js/common/consts/users.js'
 import openbis from '@src/js/services/openbis.js'
 import logger from '@src/js/common/logger.js'
 
@@ -103,6 +104,7 @@ class TypeFormParametersProperty extends React.PureComponent {
         {this.renderMessageGlobal(property)}
         {this.renderMessageAssignments(property)}
         {this.renderMessageUsage(property)}
+        {this.renderMessageSystemInternal(property)}
         {this.renderScope(property)}
         {this.renderCode(property)}
         {this.renderDataType(property)}
@@ -185,6 +187,34 @@ class TypeFormParametersProperty extends React.PureComponent {
       return (
         <div className={classes.field}>
           <Message type='info'>{message(property)}</Message>
+        </div>
+      )
+    } else {
+      return null
+    }
+  }
+
+  renderMessageSystemInternal(property) {
+    const systemInternalAssignment =
+      property.internal.value &&
+      property.registratorOfAssignment.value === users.SYSTEM
+    const systemInternalPropertyType =
+      property.internal.value &&
+      property.registratorOfPropertyType.value === users.SYSTEM
+
+    if (systemInternalAssignment || systemInternalPropertyType) {
+      const { classes } = this.props
+      return (
+        <div className={classes.field}>
+          <Message type='lock'>
+            This is an internal system property.
+            {systemInternalPropertyType
+              ? ' The property definition cannot be changed.'
+              : ''}
+            {systemInternalAssignment
+              ? ' The property assignment cannot be removed.'
+              : ''}
+          </Message>
         </div>
       )
     } else {

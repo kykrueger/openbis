@@ -95,7 +95,7 @@ class VocabularyFormParametersVocabulary extends React.PureComponent {
     if (vocabulary.managedInternally.value) {
       return (
         <div className={classes.field}>
-          <Message type='info'>This vocabulary is managed internally.</Message>
+          <Message type='lock'>This vocabulary is managed internally.</Message>
         </div>
       )
     } else {
