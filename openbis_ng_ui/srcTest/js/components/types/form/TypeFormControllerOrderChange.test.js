@@ -1,5 +1,6 @@
 import ComponentContext from '@srcTest/js/components/common/ComponentContext.js'
 import TypeFormControler from '@src/js/components/types/form/TypeFormController.js'
+import TypeFormSelectionType from '@src/js/components/types/form/TypeFormSelectionType.js'
 import TypeFormFacade from '@src/js/components/types/form/TypeFormFacade'
 import objectTypes from '@src/js/common/consts/objectType.js'
 import fixture from '@srcTest/js/common/fixture.js'
@@ -53,7 +54,7 @@ describe('TypeFormController.handleOrderChange', () => {
       ]
     })
 
-    controller.handleOrderChange('section', {
+    controller.handleOrderChange(TypeFormSelectionType.SECTION, {
       fromIndex: 0,
       toIndex: 1
     })
@@ -97,7 +98,7 @@ describe('TypeFormController.handleOrderChange', () => {
       ]
     })
 
-    controller.handleOrderChange('property', {
+    controller.handleOrderChange(TypeFormSelectionType.PROPERTY, {
       fromSectionId: 'section-1',
       toSectionId: 'section-1',
       fromIndex: 0,
@@ -143,7 +144,7 @@ describe('TypeFormController.handleOrderChange', () => {
       ]
     })
 
-    controller.handleOrderChange('property', {
+    controller.handleOrderChange(TypeFormSelectionType.PROPERTY, {
       fromSectionId: 'section-1',
       toSectionId: 'section-0',
       fromIndex: 1,

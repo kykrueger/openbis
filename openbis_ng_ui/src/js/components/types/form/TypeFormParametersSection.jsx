@@ -3,6 +3,7 @@ import { withStyles } from '@material-ui/core/styles'
 import Container from '@src/js/components/common/form/Container.jsx'
 import Header from '@src/js/components/common/form/Header.jsx'
 import TextField from '@src/js/components/common/form/TextField.jsx'
+import TypeFormSelectionType from '@src/js/components/types/form/TypeFormSelectionType.js'
 import logger from '@src/js/common/logger.js'
 
 const styles = theme => ({
@@ -41,7 +42,7 @@ class TypeFormParametersSection extends React.PureComponent {
 
   handleChange(event) {
     const section = this.getSection(this.props)
-    this.props.onChange('section', {
+    this.props.onChange(TypeFormSelectionType.SECTION, {
       id: section.id,
       field: event.target.name,
       value: event.target.value
@@ -96,7 +97,7 @@ class TypeFormParametersSection extends React.PureComponent {
   getSection(props) {
     let { sections, selection } = props
 
-    if (selection && selection.type === 'section') {
+    if (selection && selection.type === TypeFormSelectionType.SECTION) {
       let [section] = sections.filter(
         section => section.id === selection.params.id
       )

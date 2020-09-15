@@ -49,7 +49,6 @@ public class GetPropertyTypeTest extends AbstractTest
         assertEquals(propertyType.getDescription(), "A Description");
         assertEquals(propertyType.getDataType().toString(), DataType.VARCHAR.toString());
         assertEquals(propertyType.getLabel(), "Description");
-        assertEquals(propertyType.isInternalNameSpace().booleanValue(), false);
         assertEquals(propertyType.isManagedInternally().booleanValue(), false);
         assertEquals(propertyType.getSchema(), null);
         assertEquals(propertyType.getTransformation(), null);
@@ -58,7 +57,7 @@ public class GetPropertyTypeTest extends AbstractTest
     }
 
     @Test
-    public void testGetInternalNameSpacePropertyTypeWithAll()
+    public void testGetManagedInternallyPropertyTypeWithAll()
     {
         // Given
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
@@ -77,7 +76,6 @@ public class GetPropertyTypeTest extends AbstractTest
         assertEquals(propertyType.getDescription(), "Plate Geometry");
         assertEquals(propertyType.getDataType().toString(), DataType.CONTROLLEDVOCABULARY.toString());
         assertEquals(propertyType.getLabel(), "Plate Geometry");
-        assertEquals(propertyType.isInternalNameSpace().booleanValue(), true);
         assertEquals(propertyType.isManagedInternally().booleanValue(), true);
         assertEquals(propertyType.getSchema(), null);
         assertEquals(propertyType.getTransformation(), null);

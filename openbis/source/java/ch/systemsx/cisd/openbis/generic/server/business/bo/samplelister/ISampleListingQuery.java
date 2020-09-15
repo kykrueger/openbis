@@ -69,8 +69,8 @@ public interface ISampleListingQuery extends BaseQuery, IPropertyListingQuery
     /**
      * Returns the relationship type with given <var>code</var> and namespace.
      */
-    @Select(sql = "select * from relationship_types where code=?{1} and is_internal_namespace=?{2}")
-    public long getRelationshipTypeId(String code, boolean internalNamespace);
+    @Select(sql = "select * from relationship_types where code=?{1} and is_managed_internally=?{2}")
+    public long getRelationshipTypeId(String code, boolean managedInternally);
 
     /**
      * Returns the children sample ids of the specified samples in specified relationship.

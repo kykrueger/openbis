@@ -1,5 +1,6 @@
 import ComponentContext from '@srcTest/js/components/common/ComponentContext.js'
 import TypeFormControler from '@src/js/components/types/form/TypeFormController.js'
+import TypeFormSelectionType from '@src/js/components/types/form/TypeFormSelectionType.js'
 import TypeFormFacade from '@src/js/components/types/form/TypeFormFacade'
 import objectTypes from '@src/js/common/consts/objectType.js'
 import fixture from '@srcTest/js/common/fixture.js'
@@ -42,11 +43,13 @@ describe('TypeFormController.handleSelectionChange', () => {
       selection: null
     })
 
-    controller.handleSelectionChange('section', { id: 'section-0' })
+    controller.handleSelectionChange(TypeFormSelectionType.SECTION, {
+      id: 'section-0'
+    })
 
     expect(context.getState()).toMatchObject({
       selection: {
-        type: 'section',
+        type: TypeFormSelectionType.SECTION,
         params: {
           id: 'section-0'
         }
@@ -72,11 +75,13 @@ describe('TypeFormController.handleSelectionChange', () => {
       selection: null
     })
 
-    controller.handleSelectionChange('property', { id: 'property-0' })
+    controller.handleSelectionChange(TypeFormSelectionType.PROPERTY, {
+      id: 'property-0'
+    })
 
     expect(context.getState()).toMatchObject({
       selection: {
-        type: 'property',
+        type: TypeFormSelectionType.PROPERTY,
         params: {
           id: 'property-0'
         }

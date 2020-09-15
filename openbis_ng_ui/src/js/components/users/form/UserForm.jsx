@@ -8,15 +8,15 @@ import PageWithTwoPanels from '@src/js/components/common/page/PageWithTwoPanels.
 import Header from '@src/js/components/common/form/Header.jsx'
 import Grid from '@src/js/components/common/grid/Grid.jsx'
 import GridContainer from '@src/js/components/common/grid/GridContainer.jsx'
+import UserFormController from '@src/js/components/users/form/UserFormController.js'
+import UserFormFacade from '@src/js/components/users/form/UserFormFacade.js'
+import UserFormSelectionType from '@src/js/components/users/form/UserFormSelectionType.js'
+import UserFormParametersUser from '@src/js/components/users/form/UserFormParametersUser.jsx'
+import UserFormParametersGroup from '@src/js/components/users/form/UserFormParametersGroup.jsx'
+import UserFormParametersRole from '@src/js/components/users/form/UserFormParametersRole.jsx'
+import UserFormButtons from '@src/js/components/users/form/UserFormButtons.jsx'
 import ids from '@src/js/common/consts/ids.js'
 import logger from '@src/js/common/logger.js'
-
-import UserFormController from './UserFormController.js'
-import UserFormFacade from './UserFormFacade.js'
-import UserFormParametersUser from './UserFormParametersUser.jsx'
-import UserFormParametersGroup from './UserFormParametersGroup.jsx'
-import UserFormParametersRole from './UserFormParametersRole.jsx'
-import UserFormButtons from './UserFormButtons.jsx'
 
 const styles = () => ({})
 
@@ -83,14 +83,18 @@ class UserForm extends React.PureComponent {
   handleSelectedGroupRowChange(row) {
     const { controller } = this
     if (row) {
-      controller.handleSelectionChange('group', { id: row.id })
+      controller.handleSelectionChange(UserFormSelectionType.GROUP, {
+        id: row.id
+      })
     }
   }
 
   handleSelectedRoleRowChange(row) {
     const { controller } = this
     if (row) {
-      controller.handleSelectionChange('role', { id: row.id })
+      controller.handleSelectionChange(UserFormSelectionType.ROLE, {
+        id: row.id
+      })
     }
   }
 
@@ -131,7 +135,9 @@ class UserForm extends React.PureComponent {
           columns={USER_GROUPS_GRID_COLUMNS}
           rows={groups}
           selectedRowId={
-            selection && selection.type === 'group' ? selection.params.id : null
+            selection && selection.type === UserFormSelectionType.GROUP
+              ? selection.params.id
+              : null
           }
           onSelectedRowChange={this.handleSelectedGroupRowChange}
         />
@@ -142,7 +148,9 @@ class UserForm extends React.PureComponent {
           columns={USER_ROLES_GRID_COLUMNS}
           rows={roles}
           selectedRowId={
-            selection && selection.type === 'role' ? selection.params.id : null
+            selection && selection.type === UserFormSelectionType.ROLE
+              ? selection.params.id
+              : null
           }
           onSelectedRowChange={this.handleSelectedRoleRowChange}
         />

@@ -16,22 +16,11 @@
 
 package ch.systemsx.cisd.openbis.generic.server.util;
 
-import java.io.File;
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.IndexCreationUtil;
 import org.apache.log4j.Logger;
 
-import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
-import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.common.logging.LogInitializer;
-import ch.systemsx.cisd.common.process.ProcessExecutionHelper;
-import ch.systemsx.cisd.dbmigration.postgresql.DumpPreparator;
 
 /**
  * @author Franz-Josef Elmer
@@ -41,13 +30,7 @@ public class TestInitializer
     static final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION,
             TestInitializer.class);
 
-    private static final String LUCENE_INDEX_TEMPLATE_PATH = "targets/tempLuceneIndices";
-
-    private static final String LUCENE_INDEX_PATH = "targets/lucene/indices";
-
     private static String dbKind = "test";
-
-    private static String dbKindForIndexing;
 
     private static boolean createDBFromScratch = true;
 
@@ -80,71 +63,9 @@ public class TestInitializer
         initEmptyDbNoIndex();
     }
 
-    private static boolean firstTry = true;
-
     private static void init(String scriptFolder)
     {
         LogInitializer.init();
-
-        if (firstTry && System.getProperty("rebuild-index", "true").equals("true"))
-        {
-            String databaseKind = null;
-
-            if (getDBKindForIndexing() != null)
-            {
-                databaseKind = getDBKindForIndexing();
-            } else
-            {
-                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmssS");
-                String timestamp = dateFormat.format(new Date());
-                databaseKind = "indexing_" + timestamp;
-            }
-
-            try
-            {
-                File temporaryFile = new File(LUCENE_INDEX_TEMPLATE_PATH);
-                FileUtilities.deleteRecursively(temporaryFile);
-                temporaryFile.mkdirs();
-
-                System.setProperty("script-folder", scriptFolder);
-
-                IndexCreationUtil.main(databaseKind, temporaryFile.getAbsolutePath(), String.valueOf(getCreateDBFromScratch()));
-
-                operationLog.info("Created Lucene index in '" + temporaryFile.getAbsolutePath() + "'. The index is based on data from '"
-                        + scriptFolder + "' script folder.");
-
-            } catch (Exception ex)
-            {
-                operationLog.error("Couldn't create Lucene index", ex);
-                throw CheckedExceptionTunnel.wrapIfNecessary(ex);
-            } finally
-            {
-                String psql = DumpPreparator.getPSQLExecutable();
-                final String databaseName = "openbis_" + databaseKind;
-                String sql = "drop database if exists " + databaseName;
-                final List<String> cmd = Arrays.asList(psql, "-U", "postgres", "-c", sql);
-                boolean result = ProcessExecutionHelper.runAndLog(cmd, operationLog, operationLog);
-                if (result == false)
-                {
-                    operationLog.error("Couldn't drop database created for indexing: "
-                            + databaseName);
-                    Runtime.getRuntime().addShutdownHook(new Thread(new Runnable()
-                        {
-                            @Override
-                            public void run()
-                            {
-                                operationLog.info("Try to drop indexing database " + databaseName);
-                                boolean ok =
-                                        ProcessExecutionHelper.runAndLog(cmd, operationLog,
-                                                operationLog);
-                                operationLog.info("Dropping indexing database " + databaseName
-                                        + (ok ? "was" : "wasn't") + " successful.");
-                            }
-                        }, "dropping-indexing-database-shutdown"));
-                }
-            }
-            firstTry = false;
-        }
 
         System.setProperty("database.create-from-scratch", String.valueOf(getCreateDBFromScratch()));
         System.setProperty("database.kind", getDBKind());
@@ -171,14 +92,8 @@ public class TestInitializer
         TestInitializer.dbKind = dbKind;
     }
 
-    public static String getDBKindForIndexing()
-    {
-        return dbKindForIndexing;
-    }
-
     public static void setDBKindForIndexing(String dbKindForIndexing)
     {
-        TestInitializer.dbKindForIndexing = dbKindForIndexing;
     }
 
     public static String getScriptFolderTestDB()

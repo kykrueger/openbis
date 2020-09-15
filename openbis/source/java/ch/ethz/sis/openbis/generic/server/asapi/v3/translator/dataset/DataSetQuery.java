@@ -96,7 +96,7 @@ public interface DataSetQuery extends ObjectQuery
     public List<DataSetTypeBaseRecord> getTypes(LongSet dataSetTypeIds);
 
     // PropertyQueryGenerator was used to generate this query
-    @Select(sql = "select p.ds_id as objectId, case pt.is_internal_namespace when FALSE then pt.code else '$' || pt.code end as propertyCode, "
+    @Select(sql = "select p.ds_id as objectId, case pt.is_managed_internally when FALSE then pt.code else '$' || pt.code end as propertyCode, "
             + "p.value as propertyValue, m.code as materialPropertyValueCode, mt.code as materialPropertyValueTypeCode, "
             + "s.perm_id as sample_perm_id, s.id as sample_id, "
             + "cvt.code as vocabularyPropertyValue "
@@ -111,14 +111,14 @@ public interface DataSetQuery extends ObjectQuery
     public List<PropertyRecord> getProperties(LongSet dataSetIds);
 
     // PropertyQueryGenerator was used to generate this query
-    @Select(sql = "select p.ds_id as objectId, case pt.is_internal_namespace when FALSE then pt.code else '$' || pt.code end as propertyCode, p.mate_prop_id as propertyValue "
+    @Select(sql = "select p.ds_id as objectId, case pt.is_managed_internally when FALSE then pt.code else '$' || pt.code end as propertyCode, p.mate_prop_id as propertyValue "
             + "from data_set_properties p "
             + "join data_set_type_property_types etpt on p.dstpt_id = etpt.id "
             + "join property_types pt on etpt.prty_id = pt.id "
             + "where p.mate_prop_id is not null and p.ds_id = any(?{1})", parameterBindings = { LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<MaterialPropertyRecord> getMaterialProperties(LongSet dataSetIds);
 
-    @Select(sql = "select p.ds_id as objectId, case pt.is_internal_namespace when FALSE then pt.code else '$' || pt.code end as propertyCode, p.samp_prop_id as propertyValue "
+    @Select(sql = "select p.ds_id as objectId, case pt.is_managed_internally when FALSE then pt.code else '$' || pt.code end as propertyCode, p.samp_prop_id as propertyValue "
             + "from data_set_properties p "
             + "join data_set_type_property_types etpt on p.dstpt_id = etpt.id "
             + "join property_types pt on etpt.prty_id = pt.id "
@@ -126,7 +126,7 @@ public interface DataSetQuery extends ObjectQuery
     public List<SamplePropertyRecord> getSampleProperties(LongSet dataSetIds);
 
     // PropertyQueryGenerator was used to generate this query
-    @Select(sql = "select ph.ds_id as objectId, ph.pers_id_author as authorId, case pt.is_internal_namespace when FALSE then pt.code else '$' || pt.code end as propertyCode, ph.value as propertyValue, ph.material as materialPropertyValue, ph.sample as samplePropertyValue, ph.vocabulary_term as vocabularyPropertyValue, ph.valid_from_timestamp as validFrom, ph.valid_until_timestamp as validTo "
+    @Select(sql = "select ph.ds_id as objectId, ph.pers_id_author as authorId, case pt.is_managed_internally when FALSE then pt.code else '$' || pt.code end as propertyCode, ph.value as propertyValue, ph.material as materialPropertyValue, ph.sample as samplePropertyValue, ph.vocabulary_term as vocabularyPropertyValue, ph.valid_from_timestamp as validFrom, ph.valid_until_timestamp as validTo "
             + "from data_set_properties_history ph "
             + "join data_set_type_property_types etpt on ph.dstpt_id = etpt.id "
             + "join property_types pt on etpt.prty_id = pt.id "
@@ -205,7 +205,7 @@ public interface DataSetQuery extends ObjectQuery
             LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<ObjectRelationRecord> getPropertyAssignmentIds(LongSet dataSetTypeIds);
 
-    @Select(sql = "select pt.code as prty_code, pt.is_internal_namespace as prty_is_internal_namespace, 'DATA_SET' as kind_code, dt.id as type_id, dt.code as type_code, dtpt.* from data_set_type_property_types dtpt, property_types pt, data_set_types dt where dtpt.id = any(?{1}) and dtpt.prty_id = pt.id and dtpt.dsty_id = dt.id", parameterBindings = {
+    @Select(sql = "select pt.code as prty_code, pt.is_managed_internally as prty_is_managed_internally, 'DATA_SET' as kind_code, dt.id as type_id, dt.code as type_code, dtpt.* from data_set_type_property_types dtpt, property_types pt, data_set_types dt where dtpt.id = any(?{1}) and dtpt.prty_id = pt.id and dtpt.dsty_id = dt.id", parameterBindings = {
             LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<PropertyAssignmentRecord> getPropertyAssignments(LongSet dataSetTypePropertyTypeIds);
 

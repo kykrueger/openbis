@@ -447,7 +447,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				c.assertEqual(propertyType.getLabel(), "Experiment Design", "Property type label");
 				c.assertEqual(propertyType.getDescription(), "", "Property type description");
 				c.assertEqual(propertyType.getDataType(), "CONTROLLEDVOCABULARY", "Property data type");
-				c.assertEqual(propertyType.isInternalNameSpace(), false, "Property type internal name space?");
+				c.assertEqual(propertyType.isManagedInternally(), false, "Property type managed internally?");
 			}
 
 			testSearch(c, fSearch, fCheck);
@@ -499,7 +499,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				c.assertEqual(propertyType.getDescription(), "", "Property type description");
 				c.assertEqual(propertyType.getDataType(), "CONTROLLEDVOCABULARY", "Property data type");
 				c.assertEqual(propertyType.getVocabulary().getCode(), "EXPERIMENT_DESIGN", "Vocabulary code");
-				c.assertEqual(propertyType.isInternalNameSpace(), false, "Property type internal name space?");
+				c.assertEqual(propertyType.isManagedInternally(), false, "Property type managed internally?");
 			}
 
 			testSearch(c, fSearch, fCheck);
@@ -968,7 +968,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				c.assertEqual(propertyType.getDescription(), "", "Property type description");
 				c.assertEqual(propertyType.getDataType(), "CONTROLLEDVOCABULARY", "Property data type");
 				c.assertEqual(propertyType.isManagedInternally(), false, "Property type managed internally?");
-				c.assertEqual(propertyType.isInternalNameSpace(), false, "Property type internal name space?");
+				c.assertEqual(propertyType.isManagedInternally(), false, "Property type managed internally?");
 				c.assertEqual(propertyType.getVocabulary().getCode(), "SAMPLE_TYPE", "Property type vocabulary code");
 				c.assertEqual(propertyType.getMaterialType(), null, "Property type vocabulary code");
 				c.assertEqual(propertyType.getSchema(), null, "Property type schema");
@@ -1408,7 +1408,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				c.assertEqual(propertyType.getLabel(), "MACS VERSION", "Property type label");
 				c.assertEqual(propertyType.getDescription(), "", "Property type description");
 				c.assertEqual(propertyType.getDataType(), "CONTROLLEDVOCABULARY", "Property data type");
-				c.assertEqual(propertyType.isInternalNameSpace(), false, "Property type internal name space?");
+				c.assertEqual(propertyType.isManagedInternally(), false, "Property type managed internally?");
 				c.assertEqual(assignments[1].getPropertyType().getCode(), "NOTES", "Second property type code");
 				c.assertEqual(assignments[1].getPropertyType().getDataType(), "MULTILINE_VARCHAR", "Second property data type");
 			}
@@ -1596,7 +1596,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				c.assertEqual(propertyType.getLabel(), "Gene symbols", "Property type label");
 				c.assertEqual(propertyType.getDescription(), "", "Property type description");
 				c.assertEqual(propertyType.getDataType(), "VARCHAR", "Property data type");
-				c.assertEqual(propertyType.isInternalNameSpace(), false, "Property type internal name space?");
+				c.assertEqual(propertyType.isManagedInternally(), false, "Property type managed internally?");
 				c.assertEqual(assignments[1].getPropertyType().getCode(), "DESCRIPTION", "Second property type code");
 				c.assertEqual(assignments[1].getPropertyType().getDescription(), "A Description", "Second property type description");
 			}
@@ -1883,7 +1883,6 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				c.assertEqual(vocabulary.getCode(), "$STORAGE_FORMAT", "Code");
 				c.assertEqual(vocabulary.getDescription(), "The on-disk storage format of a data set", "Description");
 				c.assertEqual(vocabulary.isManagedInternally(), true, "Managed internally");
-				c.assertEqual(vocabulary.isInternalNameSpace(), true, "Internal namespace");
 				c.assertEqual(vocabulary.getTerms().length, 2, "# of terms");
 			}
 			
@@ -2194,6 +2193,38 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testSearch(c, fSearch, fCheck);
 		});
 
+		QUnit.test("searchRoleAssignments() with group with user", function(assert) {
+			var c = new common(assert, openbis);
+			var code;
+			
+			var fSearch = function(facade) {
+				return c.createAuthorizationGroup(facade).then(function(permId) {
+					var creation = new c.RoleAssignmentCreation();
+					creation.setRole(c.Role.POWER_USER);
+					creation.setAuthorizationGroupId(permId);
+					creation.setSpaceId(new c.SpacePermId("TEST"));
+					return facade.createRoleAssignments([ creation ]).then(function(permIds) {
+						var criteria = new c.RoleAssignmentSearchCriteria();
+						criteria.withSpace().withCode().thatEquals("TEST");
+						criteria.withAuthorizationGroup().withUser().withUserId().thatEquals("power_user");
+						var fo = c.createRoleAssignmentFetchOptions();
+						fo.withAuthorizationGroup().withUsers();
+						return facade.searchRoleAssignments(criteria, fo);
+					});
+				});
+			}
+			
+			var fCheck = function(facade, assignments) {
+				c.assertEqual(assignments.length, 1, "# Role Assignments");
+				var assignment = assignments[0];
+				c.assertEqual(assignment.getRole(), "POWER_USER", "Role");
+				c.assertEqual(assignment.getRoleLevel(), "SPACE", "Role level");
+				c.assertEqual(assignment.getSpace().getCode(), "TEST", "Space");
+			}
+			
+			testSearch(c, fSearch, fCheck);
+		});
+		
 		QUnit.test("searchPersons()", function(assert) {
 			var c = new common(assert, openbis);
 			var code;

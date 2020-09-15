@@ -1,4 +1,5 @@
 import FormUtil from '@src/js/components/common/form/FormUtil.js'
+import VocabularyFormSelectionType from '@src/js/components/types/form/VocabularyFormSelectionType.js'
 
 export default class VocabularyFormControllerAdd {
   constructor(controller) {
@@ -29,7 +30,7 @@ export default class VocabularyFormControllerAdd {
       terms: newTerms,
       termsCounter,
       selection: {
-        type: 'term',
+        type: VocabularyFormSelectionType.TERM,
         params: {
           id: newTerm.id,
           part: 'code'

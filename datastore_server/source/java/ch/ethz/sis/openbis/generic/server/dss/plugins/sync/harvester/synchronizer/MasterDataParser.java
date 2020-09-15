@@ -304,12 +304,11 @@ public class MasterDataParser
             newVocabulary.setDescription(getAttribute(vocabElement, "description"));
             newVocabulary.setURLTemplate(getAttribute(vocabElement, "urlTemplate"));
             newVocabulary.setManagedInternally(Boolean.valueOf(getAttribute(vocabElement, "managedInternally")));
-            newVocabulary.setInternalNamespace(Boolean.valueOf(getAttribute(vocabElement, "internalNamespace")));
             newVocabulary.setChosenFromList(Boolean.valueOf(getAttribute(vocabElement, "chosenFromList")));
             newVocabulary.setRegistrationDate(DSPropertyUtils.convertFromW3CDate(getAttribute(vocabElement, "registration-timestamp")));
             newVocabulary.setModificationDate(DSPropertyUtils.convertFromW3CDate(getAttribute(vocabElement, "modification-timestamp")));
 
-            vocabularies.put(CodeConverter.tryToBusinessLayer(newVocabulary.getCode(), newVocabulary.isInternalNamespace()), newVocabulary);
+            vocabularies.put(CodeConverter.tryToBusinessLayer(newVocabulary.getCode(), newVocabulary.isManagedInternally()), newVocabulary);
             parseVocabularyTerms(vocabElement, newVocabulary);
         }
     }
@@ -521,15 +520,14 @@ public class MasterDataParser
             Element propertyTypeElement = (Element) propertyTypeNodes.item(i);
 
             PropertyType newPropertyType = new PropertyType();
-            Boolean isInternalNameSpace = Boolean.valueOf(getAttribute(propertyTypeElement, "internalNamespace"));
+            Boolean managedInternally = Boolean.valueOf(getAttribute(propertyTypeElement, "managedInternally"));
             String code = nameTranslator.translate(getAttribute(propertyTypeElement, "code"));
-            newPropertyType.setCode(CodeConverter.tryToBusinessLayer(code, isInternalNameSpace));
+            newPropertyType.setCode(CodeConverter.tryToBusinessLayer(code, managedInternally));
             newPropertyType.setLabel(getAttribute(propertyTypeElement, "label"));
             DataTypeCode dataTypeCode = DataTypeCode.valueOf(getAttribute(propertyTypeElement, "dataType"));
             newPropertyType.setDataType(new DataType(dataTypeCode));
             newPropertyType.setDescription(getAttribute(propertyTypeElement, "description"));
-            newPropertyType.setInternalNamespace(isInternalNameSpace);
-            newPropertyType.setManagedInternally(Boolean.valueOf(getAttribute(propertyTypeElement, "managedInternally")));
+            newPropertyType.setManagedInternally(managedInternally);
             newPropertyType.setModificationDate(DSPropertyUtils.convertFromW3CDate(getAttribute(propertyTypeElement, "registration-timestamp")));
 
             propertyTypes.put(newPropertyType.getCode(), newPropertyType);

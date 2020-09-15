@@ -5,16 +5,14 @@ import { connect } from 'react-redux'
 import { withStyles } from '@material-ui/core/styles'
 import Table from '@material-ui/core/Table'
 import TableBody from '@material-ui/core/TableBody'
-
+import GridController from '@src/js/components/common/grid/GridController.js'
+import GridHeader from '@src/js/components/common/grid/GridHeader.jsx'
+import GridRow from '@src/js/components/common/grid/GridRow.jsx'
+import GridPaging from '@src/js/components/common/grid/GridPaging.jsx'
+import ColumnConfig from '@src/js/components/common/grid/ColumnConfig.jsx'
 import ComponentContext from '@src/js/components/common/ComponentContext.js'
 import selectors from '@src/js/store/selectors/selectors.js'
 import logger from '@src/js/common/logger.js'
-
-import GridController from './GridController.js'
-import GridHeader from './GridHeader.jsx'
-import GridRow from './GridRow.jsx'
-import GridPaging from './GridPaging.jsx'
-import ColumnConfig from './ColumnConfig.jsx'
 
 const styles = theme => ({
   table: {

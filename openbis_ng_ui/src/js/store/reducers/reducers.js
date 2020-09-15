@@ -1,9 +1,9 @@
 import { combineReducers } from 'redux'
 import actions from '@src/js/store/actions/actions.js'
-import db from './db/db.js'
-import ui from './ui/ui.js'
-import session from './session/session.js'
-import route from './route/route.js'
+import db from '@src/js/store/reducers/db/db.js'
+import ui from '@src/js/store/reducers/ui/ui.js'
+import session from '@src/js/store/reducers/session/session.js'
+import route from '@src/js/store/reducers/route/route.js'
 
 export default function root(state = {}, action) {
   if (action.type === actions.CLEAR) {

@@ -505,6 +505,9 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
                                 $component = FormUtil.activateRichTextProperties($component, undefined, propertyType, value, true);
                                 $controlGroup = FormUtil.getFieldForComponentWithLabel($component, propertyType.label);
                             }
+                        } else if(propertyType.dataType === "SAMPLE") {
+                            var $component = new SampleField(false, '', false, value, true);
+                            $controlGroup = FormUtil.getFieldForComponentWithLabel($component, propertyType.label);
                         } else {
                     	    $controlGroup = FormUtil.createPropertyField(propertyType, value);
                         }

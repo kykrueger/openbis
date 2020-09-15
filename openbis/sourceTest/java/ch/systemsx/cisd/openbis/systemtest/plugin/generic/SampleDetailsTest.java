@@ -308,10 +308,10 @@ public class SampleDetailsTest extends GenericSystemTestCase
         checkProperty(properties, true, propertyCode, propertyValue);
     }
 
-    private void checkProperty(List<IEntityProperty> properties, boolean internalNamespace,
+    private void checkProperty(List<IEntityProperty> properties, boolean managedInternally,
             String propertyCode, String propertyValue)
     {
-        String fullPropertyCode = internalNamespace ? "$" + propertyCode : propertyCode;
+        String fullPropertyCode = managedInternally ? "$" + propertyCode : propertyCode;
         for (IEntityProperty property : properties)
         {
             if (property.getPropertyType().getCode().equals(fullPropertyCode))

@@ -7,6 +7,9 @@ import CheckboxField from '@src/js/components/common/form/CheckboxField.jsx'
 import TextField from '@src/js/components/common/form/TextField.jsx'
 import SelectField from '@src/js/components/common/form/SelectField.jsx'
 import Message from '@src/js/components/common/form/Message.jsx'
+import TypeFormSelectionType from '@src/js/components/types/form/TypeFormSelectionType.js'
+import TypeFormPropertyScope from '@src/js/components/types/form/TypeFormPropertyScope.js'
+import users from '@src/js/common/consts/users.js'
 import openbis from '@src/js/services/openbis.js'
 import logger from '@src/js/common/logger.js'
 
@@ -68,7 +71,7 @@ class TypeFormParametersProperty extends React.PureComponent {
 
   handleChange(event) {
     const property = this.getProperty(this.props)
-    this.props.onChange('property', {
+    this.props.onChange(TypeFormSelectionType.PROPERTY, {
       id: property.id,
       field: event.target.name,
       value: event.target.value
@@ -77,7 +80,7 @@ class TypeFormParametersProperty extends React.PureComponent {
 
   handleFocus(event) {
     const property = this.getProperty(this.props)
-    this.props.onSelectionChange('property', {
+    this.props.onSelectionChange(TypeFormSelectionType.PROPERTY, {
       id: property.id,
       part: event.target.name
     })
@@ -101,6 +104,7 @@ class TypeFormParametersProperty extends React.PureComponent {
         {this.renderMessageGlobal(property)}
         {this.renderMessageAssignments(property)}
         {this.renderMessageUsage(property)}
+        {this.renderMessageSystemInternal(property)}
         {this.renderScope(property)}
         {this.renderCode(property)}
         {this.renderDataType(property)}
@@ -120,7 +124,7 @@ class TypeFormParametersProperty extends React.PureComponent {
   }
 
   renderMessageGlobal(property) {
-    if (property.scope.value === 'global') {
+    if (property.scope.value === TypeFormPropertyScope.GLOBAL) {
       const { classes } = this.props
       return (
         <div className={classes.field}>
@@ -190,6 +194,34 @@ class TypeFormParametersProperty extends React.PureComponent {
     }
   }
 
+  renderMessageSystemInternal(property) {
+    const systemInternalAssignment =
+      property.internal.value &&
+      property.registratorOfAssignment.value === users.SYSTEM
+    const systemInternalPropertyType =
+      property.internal.value &&
+      property.registratorOfPropertyType.value === users.SYSTEM
+
+    if (systemInternalAssignment || systemInternalPropertyType) {
+      const { classes } = this.props
+      return (
+        <div className={classes.field}>
+          <Message type='lock'>
+            This is an internal system property.
+            {systemInternalPropertyType
+              ? ' The property definition cannot be changed.'
+              : ''}
+            {systemInternalAssignment
+              ? ' The property assignment cannot be removed.'
+              : ''}
+          </Message>
+        </div>
+      )
+    } else {
+      return null
+    }
+  }
+
   renderScope(property) {
     const { visible, enabled, error, value } = { ...property.scope }
 
@@ -198,8 +230,8 @@ class TypeFormParametersProperty extends React.PureComponent {
     }
 
     const options = [
-      { label: 'Local', value: 'local' },
-      { label: 'Global', value: 'global' }
+      { label: 'Local', value: TypeFormPropertyScope.LOCAL },
+      { label: 'Global', value: TypeFormPropertyScope.GLOBAL }
     ]
 
     const { mode, classes } = this.props
@@ -259,7 +291,7 @@ class TypeFormParametersProperty extends React.PureComponent {
 
     const { mode, classes, controller } = this.props
 
-    if (property.scope.value === 'local') {
+    if (property.scope.value === TypeFormPropertyScope.LOCAL) {
       return (
         <div className={classes.field}>
           <TextField
@@ -277,7 +309,7 @@ class TypeFormParametersProperty extends React.PureComponent {
           />
         </div>
       )
-    } else if (property.scope.value === 'global') {
+    } else if (property.scope.value === TypeFormPropertyScope.GLOBAL) {
       const { globalPropertyTypes = [] } = controller.getDictionaries()
 
       const options = globalPropertyTypes.map(globalPropertyType => {
@@ -333,18 +365,58 @@ class TypeFormParametersProperty extends React.PureComponent {
   }
 
   renderDataType(property) {
-    const { visible, enabled, error, value } = { ...property.dataType }
+    const { visible, enabled, error, value } = {
+      ...property.dataType
+    }
 
     if (!visible) {
       return null
     }
 
-    const options = openbis.DataType.values.map(dataType => {
-      return {
-        label: dataType,
-        value: dataType
+    const options = []
+
+    if (property.originalGlobal || property.original) {
+      const {
+        dataType: { value: originalValue }
+      } = property.originalGlobal || property.original
+
+      const SUFFIX = ' (converted)'
+      options.push({
+        label: originalValue,
+        value: originalValue
+      })
+      if (originalValue !== openbis.DataType.VARCHAR) {
+        options.push({
+          label: openbis.DataType.VARCHAR + SUFFIX,
+          value: openbis.DataType.VARCHAR
+        })
       }
-    })
+      if (originalValue !== openbis.DataType.MULTILINE_VARCHAR) {
+        options.push({
+          label: openbis.DataType.MULTILINE_VARCHAR + SUFFIX,
+          value: openbis.DataType.MULTILINE_VARCHAR
+        })
+      }
+      if (originalValue === openbis.DataType.TIMESTAMP) {
+        options.push({
+          label: openbis.DataType.DATE + SUFFIX,
+          value: openbis.DataType.DATE
+        })
+      }
+      if (originalValue === openbis.DataType.INTEGER) {
+        options.push({
+          label: openbis.DataType.REAL + SUFFIX,
+          value: openbis.DataType.REAL
+        })
+      }
+    } else {
+      openbis.DataType.values.map(dataType => {
+        options.push({
+          label: dataType,
+          value: dataType
+        })
+      })
+    }
 
     const { mode, classes } = this.props
     return (
@@ -583,7 +655,9 @@ class TypeFormParametersProperty extends React.PureComponent {
           disabled={!enabled}
           value={value}
           options={options}
-          emptyOption={{}}
+          emptyOption={
+            property.original && property.original.plugin.value ? null : {}
+          }
           mode={mode}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
@@ -681,7 +755,7 @@ class TypeFormParametersProperty extends React.PureComponent {
   getProperty(props) {
     let { properties, selection } = props
 
-    if (selection && selection.type === 'property') {
+    if (selection && selection.type === TypeFormSelectionType.PROPERTY) {
       let [property] = properties.filter(
         property => property.id === selection.params.id
       )

@@ -8,13 +8,13 @@ import PageWithTwoPanels from '@src/js/components/common/page/PageWithTwoPanels.
 import Header from '@src/js/components/common/form/Header.jsx'
 import Grid from '@src/js/components/common/grid/Grid.jsx'
 import GridContainer from '@src/js/components/common/grid/GridContainer.jsx'
+import VocabularyFormSelectionType from '@src/js/components/types/form/VocabularyFormSelectionType.js'
+import VocabularyFormController from '@src/js/components/types/form/VocabularyFormController.js'
+import VocabularyFormFacade from '@src/js/components/types/form/VocabularyFormFacade.js'
+import VocabularyFormParameters from '@src/js/components/types/form/VocabularyFormParameters.jsx'
+import VocabularyFormButtons from '@src/js/components/types/form/VocabularyFormButtons.jsx'
 import ids from '@src/js/common/consts/ids.js'
 import logger from '@src/js/common/logger.js'
-
-import VocabularyFormController from './VocabularyFormController.js'
-import VocabularyFormFacade from './VocabularyFormFacade.js'
-import VocabularyFormParameters from './VocabularyFormParameters.jsx'
-import VocabularyFormButtons from './VocabularyFormButtons.jsx'
 
 const styles = () => ({})
 
@@ -65,7 +65,9 @@ class VocabularyForm extends React.PureComponent {
   handleSelectedRowChange(row) {
     const { controller } = this
     if (row) {
-      controller.handleSelectionChange('term', { id: row.id })
+      controller.handleSelectionChange(VocabularyFormSelectionType.TERM, {
+        id: row.id
+      })
     } else {
       controller.handleSelectionChange()
     }
@@ -104,7 +106,9 @@ class VocabularyForm extends React.PureComponent {
           columns={columns}
           rows={terms}
           selectedRowId={
-            selection && selection.type === 'term' ? selection.params.id : null
+            selection && selection.type === VocabularyFormSelectionType.TERM
+              ? selection.params.id
+              : null
           }
           onSelectedRowChange={this.handleSelectedRowChange}
         />

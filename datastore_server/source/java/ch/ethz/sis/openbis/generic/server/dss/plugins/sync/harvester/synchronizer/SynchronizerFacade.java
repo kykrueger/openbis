@@ -221,7 +221,7 @@ public class SynchronizerFacade implements ISynchronizerFacade
     @Override
     public void registerVocabulary(NewVocabulary vocab)
     {
-        String vocabCode = CodeConverter.tryToBusinessLayer(vocab.getCode(), vocab.isInternalNamespace());
+        String vocabCode = CodeConverter.tryToBusinessLayer(vocab.getCode(), vocab.isManagedInternally());
         vocabulariesToAdd.add(vocabCode);
         if (dryRun == false)
         {
@@ -232,7 +232,7 @@ public class SynchronizerFacade implements ISynchronizerFacade
     @Override
     public void updateVocabulary(Vocabulary vocab, String diff)
     {
-        String vocabCode = CodeConverter.tryToBusinessLayer(vocab.getCode(), vocab.isInternalNamespace());
+        String vocabCode = CodeConverter.tryToBusinessLayer(vocab.getCode(), vocab.isManagedInternally());
         getVocabularySummary(vocabCode).update(diff);
         if (dryRun == false)
         {

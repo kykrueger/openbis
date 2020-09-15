@@ -1,5 +1,5 @@
-import app from './app.js'
-import page from './page.js'
+import app from '@src/js/store/selectors/app.js'
+import page from '@src/js/store/selectors/page.js'
 
 export default {
   ...app,

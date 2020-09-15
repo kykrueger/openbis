@@ -1,9 +1,10 @@
 import React from 'react'
 import PageButtons from '@src/js/components/common/page/PageButtons.jsx'
 import Button from '@src/js/components/common/form/Button.jsx'
+import TypeFormControllerStrategies from '@src/js/components/types/form/TypeFormControllerStrategies.js'
+import TypeFormSelectionType from '@src/js/components/types/form/TypeFormSelectionType.js'
+import users from '@src/js/common/consts/users.js'
 import logger from '@src/js/common/logger.js'
-
-import TypeFormControllerStrategies from './TypeFormControllerStrategies.js'
 
 class TypeFormButtons extends React.PureComponent {
   constructor(props) {
@@ -54,7 +55,12 @@ class TypeFormButtons extends React.PureComponent {
           name='remove'
           label='Remove'
           styles={{ root: classes.button }}
-          disabled={!this.isSectionOrPropertySelected()}
+          disabled={
+            !(
+              this.isNonSystemInternalSectionSelected() ||
+              this.isNonSystemInternalPropertySelected()
+            )
+          }
           onClick={onRemove}
         />
       </React.Fragment>
@@ -65,8 +71,44 @@ class TypeFormButtons extends React.PureComponent {
     const { selection } = this.props
     return (
       selection &&
-      (selection.type === 'property' || selection.type === 'section')
+      (selection.type === TypeFormSelectionType.PROPERTY ||
+        selection.type === TypeFormSelectionType.SECTION)
     )
+  }
+
+  isNonSystemInternalSectionSelected() {
+    const { selection, sections, properties } = this.props
+
+    if (selection && selection.type === TypeFormSelectionType.SECTION) {
+      const section = sections.find(
+        section => section.id === selection.params.id
+      )
+      return !section.properties.some(propertyId => {
+        const property = properties.find(property => property.id === propertyId)
+        return (
+          property.internal.value &&
+          property.registratorOfAssignment.value === users.SYSTEM
+        )
+      })
+    } else {
+      return false
+    }
+  }
+
+  isNonSystemInternalPropertySelected() {
+    const { selection, properties } = this.props
+
+    if (selection && selection.type === TypeFormSelectionType.PROPERTY) {
+      const property = properties.find(
+        property => property.id === selection.params.id
+      )
+      return !(
+        property.internal.value &&
+        property.registratorOfAssignment.value === users.SYSTEM
+      )
+    } else {
+      return false
+    }
   }
 }
 

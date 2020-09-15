@@ -1,7 +1,7 @@
 import { combineReducers } from 'redux'
-import login from './login/login.js'
-import types from './types/types.js'
-import users from './users/users.js'
+import login from '@src/js/store/reducers/ui/pages/login/login.js'
+import types from '@src/js/store/reducers/ui/pages/types/types.js'
+import users from '@src/js/store/reducers/ui/pages/users/users.js'
 
 export default combineReducers({
   login,

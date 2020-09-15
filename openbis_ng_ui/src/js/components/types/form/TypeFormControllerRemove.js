@@ -1,4 +1,5 @@
 import _ from 'lodash'
+import TypeFormSelectionType from '@src/js/components/types/form/TypeFormSelectionType.js'
 
 export default class TypeFormControllerRemove {
   constructor(controller) {
@@ -8,20 +9,20 @@ export default class TypeFormControllerRemove {
 
   executeRemove(confirmed = false) {
     const { selection } = this.context.getState()
-    if (selection.type === 'section') {
+    if (selection.type === TypeFormSelectionType.SECTION) {
       this._handleRemoveSection(selection.params.id, confirmed)
-    } else if (selection.type === 'property') {
+    } else if (selection.type === TypeFormSelectionType.PROPERTY) {
       this._handleRemoveProperty(selection.params.id, confirmed)
     }
   }
 
   executeCancel() {
     const { selection } = this.context.getState()
-    if (selection.type === 'section') {
+    if (selection.type === TypeFormSelectionType.SECTION) {
       this.context.setState({
         removeSectionDialogOpen: false
       })
-    } else if (selection.type === 'property') {
+    } else if (selection.type === TypeFormSelectionType.PROPERTY) {
       this.context.setState({
         removePropertyDialogOpen: false
       })

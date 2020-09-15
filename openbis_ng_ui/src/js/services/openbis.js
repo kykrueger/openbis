@@ -1,5 +1,5 @@
-import dto from './openbis/dto.js'
-import api from './openbis/api.js'
+import dto from '@src/js/services/openbis/dto.js'
+import api from '@src/js/services/openbis/api.js'
 
 class Openbis {
   async init() {

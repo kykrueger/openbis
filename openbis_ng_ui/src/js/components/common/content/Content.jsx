@@ -3,12 +3,11 @@ import React from 'react'
 import { connect } from 'react-redux'
 import { withStyles } from '@material-ui/core/styles'
 import ErrorBoundary from '@src/js/components/common/error/ErrorBoundary.jsx'
+import ContentTabs from '@src/js/components/common/content/ContentTabs.jsx'
 import selectors from '@src/js/store/selectors/selectors.js'
 import actions from '@src/js/store/actions/actions.js'
 import util from '@src/js/common/util.js'
 import logger from '@src/js/common/logger.js'
-
-import ContentTabs from './ContentTabs.jsx'
 
 const styles = {
   container: {

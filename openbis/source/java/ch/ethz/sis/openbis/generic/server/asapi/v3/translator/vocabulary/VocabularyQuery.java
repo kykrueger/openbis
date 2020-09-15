@@ -33,7 +33,7 @@ import ch.systemsx.cisd.common.db.mapper.LongSetMapper;
 public interface VocabularyQuery extends ObjectQuery
 {
 
-    @Select(sql = "select v.id, v.code, v.description, v.is_internal_namespace as isInternalNamespace, "
+    @Select(sql = "select v.id, v.code, v.description, "
             + "v.is_managed_internally as isManagedInternally, v.is_chosen_from_list as isChosenFromList,"
             + "v.source_uri as urlTemplate, v.modification_timestamp as modificationDate, v.registration_timestamp as registrationDate "
             + "from controlled_vocabularies v where v.id = any(?{1})", parameterBindings = { LongSetMapper.class }, fetchSize = FETCH_SIZE)
@@ -43,7 +43,7 @@ public interface VocabularyQuery extends ObjectQuery
             + "from controlled_vocabularies v where v.id = any(?{1})", parameterBindings = { LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<ObjectRelationRecord> getRegistratorIds(LongSet vocabularyIds);
 
-    @Select(sql = "select v.code as vocabularyCode, v.is_internal_namespace as isInternalNamespace, t.id, t.code, t.label, t.description, t.ordinal, t.is_official as isOfficial, t.registration_timestamp as registrationDate "
+    @Select(sql = "select v.code as vocabularyCode, v.is_managed_internally as isManagedInternally, t.id, t.code, t.label, t.description, t.ordinal, t.is_official as isOfficial, t.registration_timestamp as registrationDate "
             + "from controlled_vocabulary_terms t, controlled_vocabularies v where t.id = any(?{1}) and t.covo_id = v.id", parameterBindings = {
             LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<VocabularyTermBaseRecord> getTerms(LongSet termIds);

@@ -305,7 +305,7 @@ public class GetDataSetTest extends AbstractDataSetTest
         assertEquals(propertyAssignments.get(0).getPropertyType().getCode(), "GENDER");
         assertEquals(propertyAssignments.get(0).getPropertyType().getLabel(), "Gender");
         assertEquals(propertyAssignments.get(0).getPropertyType().getDescription(), "The gender of the living organism");
-        assertEquals(propertyAssignments.get(0).getPropertyType().isInternalNameSpace(), Boolean.FALSE);
+        assertEquals(propertyAssignments.get(0).getPropertyType().isManagedInternally(), Boolean.FALSE);
         assertEquals(propertyAssignments.get(0).getPropertyType().getDataType(), DataType.CONTROLLEDVOCABULARY);
         assertEquals(propertyAssignments.get(0).isMandatory(), Boolean.FALSE);
         assertEquals(propertyAssignments.get(1).getPropertyType().getCode(), "COMMENT");

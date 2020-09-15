@@ -63,7 +63,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.hibernate.JsonMapUserType;
  */
 @Entity
 @Table(name = TableNames.PROPERTY_TYPES_TABLE, uniqueConstraints = {
-        @UniqueConstraint(columnNames = { ColumnNames.CODE_COLUMN, ColumnNames.IS_INTERNAL_NAMESPACE }) })
+        @UniqueConstraint(columnNames = { ColumnNames.CODE_COLUMN, ColumnNames.IS_MANAGED_INTERNALLY }) })
 @TypeDefs({ @TypeDef(name = "JsonMap", typeClass = JsonMapUserType.class) })
 public final class PropertyTypePE extends HibernateAbstractRegistrationHolder implements
         Comparable<PropertyTypePE>, IIdAndCodeHolder, IIdentityHolder
@@ -97,8 +97,6 @@ public final class PropertyTypePE extends HibernateAbstractRegistrationHolder im
      * Note that this field can be null and the data type can be still SAMPLE, it means that, that sample of any type can be a valid property value.
      */
     private SampleTypePE sampleType;
-
-    private boolean internalNamespace;
 
     private boolean managedInternally;
 
@@ -193,7 +191,7 @@ public final class PropertyTypePE extends HibernateAbstractRegistrationHolder im
 
     public void setCode(final String fullCode)
     {
-        setInternalNamespace(CodeConverter.isInternalNamespace(fullCode));
+        setManagedInternally(CodeConverter.isInternalNamespace(fullCode));
         setSimpleCode(CodeConverter.tryToDatabase(fullCode));
     }
 
@@ -201,7 +199,7 @@ public final class PropertyTypePE extends HibernateAbstractRegistrationHolder im
     @Transient
     public String getCode()
     {
-        return CodeConverter.tryToBusinessLayer(getSimpleCode(), isInternalNamespace());
+        return CodeConverter.tryToBusinessLayer(getSimpleCode(), isManagedInternally());
     }
 
     @Override
@@ -317,19 +315,6 @@ public final class PropertyTypePE extends HibernateAbstractRegistrationHolder im
         this.managedInternally = managedInternally;
     }
 
-    @NotNull
-    @Column(name = ColumnNames.IS_INTERNAL_NAMESPACE)
-    // @InternalNamespace(message = ValidationMessages.CODE_IN_INTERNAL_NAMESPACE)
-    public boolean isInternalNamespace()
-    {
-        return internalNamespace;
-    }
-
-    public void setInternalNamespace(final boolean internalNamespace)
-    {
-        this.internalNamespace = internalNamespace;
-    }
-
     @Override
     @SequenceGenerator(name = SequenceNames.PROPERTY_TYPES_SEQUENCE, sequenceName = SequenceNames.PROPERTY_TYPES_SEQUENCE, allocationSize = 1)
     @Id
@@ -375,7 +360,7 @@ public final class PropertyTypePE extends HibernateAbstractRegistrationHolder im
         final PropertyTypePE that = (PropertyTypePE) obj;
         final EqualsBuilder builder = new EqualsBuilder();
         builder.append(getSimpleCode(), that.getSimpleCode());
-        builder.append(isInternalNamespace(), that.isInternalNamespace());
+        builder.append(isManagedInternally(), that.isManagedInternally());
         return builder.isEquals();
     }
 
@@ -384,7 +369,7 @@ public final class PropertyTypePE extends HibernateAbstractRegistrationHolder im
     {
         final HashCodeBuilder builder = new HashCodeBuilder();
         builder.append(getSimpleCode());
-        builder.append(isInternalNamespace());
+        builder.append(isManagedInternally());
         return builder.toHashCode();
     }
 

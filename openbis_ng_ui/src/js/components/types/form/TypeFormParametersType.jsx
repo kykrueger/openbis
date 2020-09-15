@@ -6,6 +6,7 @@ import CheckboxField from '@src/js/components/common/form/CheckboxField.jsx'
 import TextField from '@src/js/components/common/form/TextField.jsx'
 import SelectField from '@src/js/components/common/form/SelectField.jsx'
 import Message from '@src/js/components/common/form/Message.jsx'
+import TypeFormSelectionType from '@src/js/components/types/form/TypeFormSelectionType.js'
 import logger from '@src/js/common/logger.js'
 
 const styles = theme => ({
@@ -62,14 +63,14 @@ class TypeFormParametersType extends React.PureComponent {
   }
 
   handleChange(event) {
-    this.props.onChange('type', {
+    this.props.onChange(TypeFormSelectionType.TYPE, {
       field: event.target.name,
       value: event.target.value
     })
   }
 
   handleFocus(event) {
-    this.props.onSelectionChange('type', {
+    this.props.onSelectionChange(TypeFormSelectionType.TYPE, {
       part: event.target.name
     })
   }
@@ -493,7 +494,7 @@ class TypeFormParametersType extends React.PureComponent {
   getType(props) {
     let { type, selection } = props
 
-    if (!selection || selection.type === 'type') {
+    if (!selection || selection.type === TypeFormSelectionType.TYPE) {
       return type
     } else {
       return null

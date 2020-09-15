@@ -1,5 +1,6 @@
 import ComponentContext from '@srcTest/js/components/common/ComponentContext.js'
 import TypeFormControler from '@src/js/components/types/form/TypeFormController.js'
+import TypeFormSelectionType from '@src/js/components/types/form/TypeFormSelectionType.js'
 import TypeFormFacade from '@src/js/components/types/form/TypeFormFacade'
 import objectTypes from '@src/js/common/consts/objectType.js'
 import openbis from '@srcTest/js/services/openbis.js'
@@ -74,7 +75,7 @@ describe('TypeFormController.handleSave', () => {
 
     expect(context.getState()).toMatchObject({
       selection: {
-        type: 'property',
+        type: TypeFormSelectionType.PROPERTY,
         params: {
           id: 'property-0'
         }
@@ -98,7 +99,7 @@ describe('TypeFormController.handleSave', () => {
 
     expect(context.getState()).toMatchObject({
       selection: {
-        type: 'type',
+        type: TypeFormSelectionType.TYPE,
         params: {
           part: 'code'
         }
@@ -163,22 +164,6 @@ describe('TypeFormController.handleSave', () => {
     )
   })
 
-  test('update local property type if not possible', async () => {
-    await testUpdatePropertyTypeIfNotPossible(
-      SAMPLE_TYPE_WITH_LOCAL_PROPERTY,
-      LOCAL_PROPERTY_TYPE,
-      LOCAL_PROPERTY_ASSIGNMENT
-    )
-  })
-
-  test('update global property type if not possible', async () => {
-    await testUpdatePropertyTypeIfNotPossible(
-      SAMPLE_TYPE_WITH_GLOBAL_PROPERTY,
-      GLOBAL_PROPERTY_TYPE,
-      GLOBAL_PROPERTY_ASSIGNMENT
-    )
-  })
-
   test('delete local property', async () => {
     await testDeleteProperty(
       SAMPLE_TYPE_WITH_LOCAL_PROPERTY,
@@ -222,27 +207,27 @@ describe('TypeFormController.handleSave', () => {
     controller.handleAddSection()
     controller.handleAddProperty()
 
-    controller.handleChange('property', {
+    controller.handleChange(TypeFormSelectionType.PROPERTY, {
       id: 'property-0',
       field: 'scope',
       value: scope
     })
-    controller.handleChange('property', {
+    controller.handleChange(TypeFormSelectionType.PROPERTY, {
       id: 'property-0',
       field: 'code',
       value: 'NEW_CODE'
     })
-    controller.handleChange('property', {
+    controller.handleChange(TypeFormSelectionType.PROPERTY, {
       id: 'property-0',
       field: 'dataType',
       value: 'VARCHAR'
     })
-    controller.handleChange('property', {
+    controller.handleChange(TypeFormSelectionType.PROPERTY, {
       id: 'property-0',
       field: 'label',
       value: 'NEW_LABEL'
     })
-    controller.handleChange('property', {
+    controller.handleChange(TypeFormSelectionType.PROPERTY, {
       id: 'property-0',
       field: 'description',
       value: 'NEW_DESCRIPTION'
@@ -254,11 +239,11 @@ describe('TypeFormController.handleSave', () => {
       scope === 'local' ? 'TEST_TYPE.NEW_CODE' : 'NEW_CODE'
 
     expectExecuteOperations([
-      createPropertyTypeOperation(
-        propertyTypeCode,
-        openbis.DataType.VARCHAR,
-        'NEW_LABEL'
-      ),
+      createPropertyTypeOperation({
+        code: propertyTypeCode,
+        dataType: openbis.DataType.VARCHAR,
+        label: 'NEW_LABEL'
+      }),
       setPropertyAssignmentOperation(
         SAMPLE_TYPE.getCode(),
         propertyTypeCode,
@@ -274,7 +259,7 @@ describe('TypeFormController.handleSave', () => {
 
     await controller.load()
 
-    controller.handleChange('property', {
+    controller.handleChange(TypeFormSelectionType.PROPERTY, {
       id: 'property-0',
       field: 'mandatory',
       value: true
@@ -302,7 +287,7 @@ describe('TypeFormController.handleSave', () => {
 
     await controller.load()
 
-    controller.handleChange('property', {
+    controller.handleChange(TypeFormSelectionType.PROPERTY, {
       id: 'property-0',
       field: 'label',
       value: 'Updated label'
@@ -320,45 +305,6 @@ describe('TypeFormController.handleSave', () => {
     ])
   }
 
-  async function testUpdatePropertyTypeIfNotPossible(
-    type,
-    propertyType,
-    propertyAssignment
-  ) {
-    facade.loadType.mockReturnValue(Promise.resolve(type))
-    facade.loadUsages.mockReturnValue(Promise.resolve({}))
-    facade.executeOperations.mockReturnValue(Promise.resolve({}))
-
-    await controller.load()
-
-    controller.handleChange('property', {
-      id: 'property-0',
-      field: 'dataType',
-      value: openbis.DataType.BOOLEAN
-    })
-
-    await controller.handleSave()
-
-    expectExecuteOperations([
-      deletePropertyAssignmentOperation(
-        type.getCode(),
-        propertyType.getCode(),
-        false
-      ),
-      deletePropertyTypeOperation(propertyType.getCode()),
-      createPropertyTypeOperation(
-        propertyType.getCode(),
-        openbis.DataType.BOOLEAN,
-        propertyType.getLabel()
-      ),
-      setPropertyAssignmentOperation(
-        type.getCode(),
-        propertyType.getCode(),
-        propertyAssignment.isMandatory()
-      )
-    ])
-  }
-
   async function testDeleteProperty(type, propertyType) {
     facade.loadType.mockReturnValue(Promise.resolve(type))
     facade.loadUsages.mockReturnValue(Promise.resolve({}))
@@ -366,7 +312,9 @@ describe('TypeFormController.handleSave', () => {
 
     await controller.load()
 
-    controller.handleSelectionChange('property', { id: 'property-0' })
+    controller.handleSelectionChange(TypeFormSelectionType.PROPERTY, {
+      id: 'property-0'
+    })
     controller.handleRemove()
 
     await controller.handleSave()
@@ -393,7 +341,9 @@ describe('TypeFormController.handleSave', () => {
 
     await controller.load()
 
-    controller.handleSelectionChange('property', { id: 'property-0' })
+    controller.handleSelectionChange(TypeFormSelectionType.PROPERTY, {
+      id: 'property-0'
+    })
     controller.handleRemove()
 
     await controller.handleSave()
@@ -409,14 +359,20 @@ describe('TypeFormController.handleSave', () => {
     ])
   }
 
-  function createPropertyTypeOperation(
-    propertyTypeCode,
-    propertyDataType,
-    propertyTypeLabel
-  ) {
+  function createPropertyTypeOperation({
+    code: propertyTypeCode,
+    dataType: propertyDataType,
+    vocabulary: propertyTypeVocabulary,
+    label: propertyTypeLabel
+  }) {
     const creation = new openbis.PropertyTypeCreation()
     creation.setCode(propertyTypeCode)
     creation.setDataType(propertyDataType)
+    if (propertyTypeVocabulary) {
+      creation.setVocabularyId(
+        new openbis.VocabularyPermId(propertyTypeVocabulary)
+      )
+    }
     creation.setLabel(propertyTypeLabel)
     return new openbis.CreatePropertyTypesOperation([creation])
   }

@@ -1,5 +1,6 @@
 import _ from 'lodash'
 import PageControllerLoad from '@src/js/components/common/page/PageControllerLoad.js'
+import UserFormSelectionType from '@src/js/components/users/form/UserFormSelectionType.js'
 import FormUtil from '@src/js/components/common/form/FormUtil.js'
 import openbis from '@src/js/services/openbis.js'
 
@@ -155,7 +156,7 @@ export default class UserFormControllerLoad extends PageControllerLoad {
         enabled: inheritedFrom === null
       }),
       role: FormUtil.createField({
-        value: _.get(loadedRole, 'role', null),
+        value: _.get(loadedRole, UserFormSelectionType.ROLE, null),
         enabled: inheritedFrom === null
       })
     }
@@ -186,7 +187,7 @@ export default class UserFormControllerLoad extends PageControllerLoad {
 
     if (!oldSelection) {
       return null
-    } else if (oldSelection.type === 'group') {
+    } else if (oldSelection.type === UserFormSelectionType.GROUP) {
       const oldGroup = _.find(
         oldGroups,
         oldGroup => oldGroup.id === oldSelection.params.id
@@ -198,13 +199,13 @@ export default class UserFormControllerLoad extends PageControllerLoad {
 
       if (newGroup) {
         return {
-          type: 'group',
+          type: UserFormSelectionType.GROUP,
           params: {
             id: newGroup.id
           }
         }
       }
-    } else if (oldSelection.type === 'role') {
+    } else if (oldSelection.type === UserFormSelectionType.ROLE) {
       const oldRole = _.find(
         oldRoles,
         oldRole => oldRole.id === oldSelection.params.id
@@ -212,6 +213,7 @@ export default class UserFormControllerLoad extends PageControllerLoad {
       const newRole = _.find(
         newRoles,
         newRole =>
+          newRole.inheritedFrom.value === oldRole.inheritedFrom.value &&
           newRole.space.value === oldRole.space.value &&
           newRole.project.value === oldRole.project.value &&
           newRole.role.value === oldRole.role.value
@@ -219,7 +221,7 @@ export default class UserFormControllerLoad extends PageControllerLoad {
 
       if (newRole) {
         return {
-          type: 'role',
+          type: UserFormSelectionType.ROLE,
           params: {
             id: newRole.id
           }

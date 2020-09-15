@@ -1,10 +1,10 @@
 import _ from 'lodash'
 import PageControllerSave from '@src/js/components/common/page/PageControllerSave.js'
+import TypeFormControllerStrategies from '@src/js/components/types/form/TypeFormControllerStrategies.js'
+import TypeFormPropertyScope from '@src/js/components/types/form/TypeFormPropertyScope.js'
+import TypeFormUtil from '@src/js/components/types/form/TypeFormUtil.js'
 import FormUtil from '@src/js/components/common/form/FormUtil.js'
 import openbis from '@src/js/services/openbis.js'
-
-import TypeFormControllerStrategies from './TypeFormControllerStrategies.js'
-import TypeFormUtil from './TypeFormUtil.js'
 
 export default class TypeFormControllerSave extends PageControllerSave {
   async save() {
@@ -27,7 +27,7 @@ export default class TypeFormControllerSave extends PageControllerSave {
           )
           if (
             originalProperty.assignments === 1 &&
-            !originalProperty.internalNameSpace.value
+            !originalProperty.internal.value
           ) {
             operations.push(this._deletePropertyTypeOperation(originalProperty))
           }
@@ -36,23 +36,15 @@ export default class TypeFormControllerSave extends PageControllerSave {
     }
 
     properties.forEach((property, index) => {
-      const original = property.scope.globalPropertyType || property.original
+      const original = property.originalGlobal || property.original
 
       if (original) {
         if (this._isPropertyTypeUpdateNeeded(property, original)) {
-          if (this._isPropertyTypeUpdatePossible(property, original)) {
-            operations.push(this._updatePropertyTypeOperation(property))
-          } else {
-            operations.push(
-              this._deletePropertyAssignmentOperation(type, property)
-            )
-            operations.push(this._deletePropertyTypeOperation(property))
-            operations.push(this._createPropertyTypeOperation(property))
-          }
+          operations.push(this._updatePropertyTypeOperation(property))
         }
         assignments.push(this._propertyAssignmentCreation(property, index))
       } else {
-        if (property.scope.value === 'local') {
+        if (property.scope.value === TypeFormPropertyScope.LOCAL) {
           property = this._addTypePrefix(type, property)
         }
         operations.push(this._createPropertyTypeOperation(property))
@@ -121,22 +113,10 @@ export default class TypeFormControllerSave extends PageControllerSave {
   _isPropertyTypeUpdateNeeded(property, original) {
     return FormUtil.haveFieldsChanged(property, original, [
       'dataType',
-      'vocabulary',
-      'materialType',
-      'sampleType',
       'label',
       'description',
       'schema',
       'transformation'
-    ])
-  }
-
-  _isPropertyTypeUpdatePossible(property, original) {
-    return !FormUtil.haveFieldsChanged(property, original, [
-      'dataType',
-      'vocabulary',
-      'materialType',
-      'sampleType'
     ])
   }
 
@@ -162,7 +142,7 @@ export default class TypeFormControllerSave extends PageControllerSave {
   _createPropertyTypeOperation(property) {
     const creation = new openbis.PropertyTypeCreation()
     creation.setCode(property.code.value)
-    creation.setInternalNameSpace(property.internalNameSpace.value)
+    creation.setManagedInternally(property.internal.value)
     creation.setLabel(property.label.value)
     creation.setDescription(property.description.value)
     creation.setDataType(property.dataType.value)
@@ -211,6 +191,7 @@ export default class TypeFormControllerSave extends PageControllerSave {
     update.setDescription(property.description.value)
     update.setSchema(property.schema.value)
     update.setTransformation(property.transformation.value)
+    update.convertToDataType(property.dataType.value)
     return new openbis.UpdatePropertyTypesOperation([update])
   }
 

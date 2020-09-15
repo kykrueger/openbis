@@ -66,7 +66,7 @@ public interface ExperimentQuery extends ObjectQuery
     public List<ObjectRelationRecord> getDataSetIds(LongSet experimentIds);
 
     // PropertyQueryGenerator was used to generate this query
-    @Select(sql = "select p.expe_id as objectId, case pt.is_internal_namespace when FALSE then pt.code else '$' || pt.code end as propertyCode, "
+    @Select(sql = "select p.expe_id as objectId, case pt.is_managed_internally when FALSE then pt.code else '$' || pt.code end as propertyCode, "
             + "p.value as propertyValue, m.code as materialPropertyValueCode, mt.code as materialPropertyValueTypeCode, "
             + "s.perm_id as sample_perm_id, s.id as sample_id, "
             + "cvt.code as vocabularyPropertyValue "
@@ -81,14 +81,14 @@ public interface ExperimentQuery extends ObjectQuery
     public List<PropertyRecord> getProperties(LongSet experimentIds);
 
     // PropertyQueryGenerator was used to generate this query
-    @Select(sql = "select p.expe_id as objectId, case pt.is_internal_namespace when FALSE then pt.code else '$' || pt.code end as propertyCode, p.mate_prop_id as propertyValue "
+    @Select(sql = "select p.expe_id as objectId, case pt.is_managed_internally when FALSE then pt.code else '$' || pt.code end as propertyCode, p.mate_prop_id as propertyValue "
             + "from experiment_properties p "
             + "join experiment_type_property_types etpt on p.etpt_id = etpt.id "
             + "join property_types pt on etpt.prty_id = pt.id "
             + "where p.mate_prop_id is not null and p.expe_id = any(?{1})", parameterBindings = { LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<MaterialPropertyRecord> getMaterialProperties(LongSet experimentIds);
 
-    @Select(sql = "select p.expe_id as objectId, case pt.is_internal_namespace when FALSE then pt.code else '$' || pt.code end as propertyCode, p.samp_prop_id as propertyValue "
+    @Select(sql = "select p.expe_id as objectId, case pt.is_managed_internally when FALSE then pt.code else '$' || pt.code end as propertyCode, p.samp_prop_id as propertyValue "
             + "from experiment_properties p "
             + "join experiment_type_property_types etpt on p.etpt_id = etpt.id "
             + "join property_types pt on etpt.prty_id = pt.id "
@@ -96,7 +96,7 @@ public interface ExperimentQuery extends ObjectQuery
     public List<SamplePropertyRecord> getSampleProperties(LongSet experimentIds);
 
     // PropertyQueryGenerator was used to generate this query
-    @Select(sql = "select ph.expe_id as objectId, ph.pers_id_author as authorId, case pt.is_internal_namespace when FALSE then pt.code else '$' || pt.code end as propertyCode, ph.value as propertyValue, ph.material as materialPropertyValue, ph.sample as samplePropertyValue, ph.vocabulary_term as vocabularyPropertyValue, ph.valid_from_timestamp as validFrom, ph.valid_until_timestamp as validTo "
+    @Select(sql = "select ph.expe_id as objectId, ph.pers_id_author as authorId, case pt.is_managed_internally when FALSE then pt.code else '$' || pt.code end as propertyCode, ph.value as propertyValue, ph.material as materialPropertyValue, ph.sample as samplePropertyValue, ph.vocabulary_term as vocabularyPropertyValue, ph.valid_from_timestamp as validFrom, ph.valid_until_timestamp as validTo "
             + "from experiment_properties_history ph "
             + "join experiment_type_property_types etpt on ph.etpt_id = etpt.id "
             + "join property_types pt on etpt.prty_id = pt.id "
@@ -130,7 +130,7 @@ public interface ExperimentQuery extends ObjectQuery
             LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<ObjectRelationRecord> getValidationPluginIds(LongSet experimentTypeIds);
 
-    @Select(sql = "select pt.code as prty_code, pt.is_internal_namespace as prty_is_internal_namespace, 'EXPERIMENT' as kind_code, et.id as type_id, et.code as type_code, etpt.* from experiment_type_property_types etpt, property_types pt, experiment_types et where etpt.id = any(?{1}) and etpt.prty_id = pt.id and etpt.exty_id = et.id", parameterBindings = {
+    @Select(sql = "select pt.code as prty_code, pt.is_managed_internally as prty_is_managed_internally, 'EXPERIMENT' as kind_code, et.id as type_id, et.code as type_code, etpt.* from experiment_type_property_types etpt, property_types pt, experiment_types et where etpt.id = any(?{1}) and etpt.prty_id = pt.id and etpt.exty_id = et.id", parameterBindings = {
             LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<PropertyAssignmentRecord> getPropertyAssignments(LongSet experimentTypePropertyTypeIds);
 }

@@ -1,15 +1,14 @@
 import PageController from '@src/js/components/common/page/PageController.js'
+import TypeFormControllerLoad from '@src/js/components/types/form/TypeFormControllerLoad.js'
+import TypeFormControllerValidate from '@src/js/components/types/form/TypeFormControllerValidate.js'
+import TypeFormControllerSave from '@src/js/components/types/form/TypeFormControllerSave.js'
+import TypeFormControllerRemove from '@src/js/components/types/form/TypeFormControllerRemove.js'
+import TypeFormControllerAddSection from '@src/js/components/types/form/TypeFormControllerAddSection.js'
+import TypeFormControllerAddProperty from '@src/js/components/types/form/TypeFormControllerAddProperty.js'
+import TypeFormControllerChange from '@src/js/components/types/form/TypeFormControllerChange.js'
+import TypeFormControllerOrderChange from '@src/js/components/types/form/TypeFormControllerOrderChange.js'
+import TypeFormControllerStrategies from '@src/js/components/types/form/TypeFormControllerStrategies.js'
 import pages from '@src/js/common/consts/pages.js'
-
-import TypeFormControllerLoad from './TypeFormControllerLoad.js'
-import TypeFormControllerValidate from './TypeFormControllerValidate.js'
-import TypeFormControllerSave from './TypeFormControllerSave.js'
-import TypeFormControllerRemove from './TypeFormControllerRemove.js'
-import TypeFormControllerAddSection from './TypeFormControllerAddSection.js'
-import TypeFormControllerAddProperty from './TypeFormControllerAddProperty.js'
-import TypeFormControllerChange from './TypeFormControllerChange.js'
-import TypeFormControllerOrderChange from './TypeFormControllerOrderChange.js'
-import TypeFormControllerStrategies from './TypeFormControllerStrategies.js'
 
 export default class TypeFormController extends PageController {
   getPage() {

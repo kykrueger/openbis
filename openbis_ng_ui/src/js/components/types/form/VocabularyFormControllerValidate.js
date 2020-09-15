@@ -1,4 +1,5 @@
 import PageControllerValidate from '@src/js/components/common/page/PageConrollerValidate.js'
+import VocabularyFormSelectionType from '@src/js/components/types/form/VocabularyFormSelectionType.js'
 
 export default class VocabularyFormControllerValidate extends PageControllerValidate {
   validate(validator) {
@@ -18,14 +19,14 @@ export default class VocabularyFormControllerValidate extends PageControllerVali
 
     if (firstError.object === vocabulary) {
       await this.setSelection({
-        type: 'vocabulary',
+        type: VocabularyFormSelectionType.VOCABULARY,
         params: {
           part: firstError.name
         }
       })
     } else if (terms.includes(firstError.object)) {
       await this.setSelection({
-        type: 'term',
+        type: VocabularyFormSelectionType.TERM,
         params: {
           id: firstError.object.id,
           part: firstError.name

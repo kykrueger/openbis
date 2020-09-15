@@ -88,7 +88,7 @@ final class VocabularyDAO extends AbstractGenericEntityDAO<VocabularyPE> impleme
         final List<VocabularyPE> list =
                 cast(getHibernateTemplate().find(
                         String.format("select v from %s v where v.simpleCode = ? "
-                                + "and v.internalNamespace = ?",
+                                + "and v.managedInternally = ?",
                                 TABLE_NAME),
                         toArray(mangledVocabularyCode, internalNamespace)));
         final VocabularyPE entity = tryFindEntity(list, "vocabulary", vocabularyCode);
@@ -103,7 +103,7 @@ final class VocabularyDAO extends AbstractGenericEntityDAO<VocabularyPE> impleme
     @Override
     public final List<VocabularyPE> listVocabularies(boolean excludeInternal)
     {
-        String excludeInternalQuery = " where v.internalNamespace = false";
+        String excludeInternalQuery = " where v.managedInternally = false";
         final List<VocabularyPE> list =
                 cast(getHibernateTemplate().find(
                         String.format("from %s v "

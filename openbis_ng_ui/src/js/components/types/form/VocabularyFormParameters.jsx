@@ -1,9 +1,8 @@
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
+import VocabularyFormParametersVocabulary from '@src/js/components/types/form/VocabularyFormParametersVocabulary.jsx'
+import VocabularyFormParametersTerm from '@src/js/components/types/form/VocabularyFormParametersTerm.jsx'
 import logger from '@src/js/common/logger.js'
-
-import VocabularyFormParametersVocabulary from './VocabularyFormParametersVocabulary.jsx'
-import VocabularyFormParametersTerm from './VocabularyFormParametersTerm.jsx'
 
 const styles = () => ({})
 

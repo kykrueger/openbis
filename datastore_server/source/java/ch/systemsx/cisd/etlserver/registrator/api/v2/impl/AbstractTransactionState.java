@@ -1461,7 +1461,7 @@ public abstract class AbstractTransactionState<T extends DataSetInformation>
                 VocabularyUpdatesDTO updates =
                         new VocabularyUpdatesDTO(v.getVocabulary().getId(), v.getCode(),
                                 v.getDescription(), v.isManagedInternally(),
-                                v.isInternalNamespace(), v.isChosenFromList(), v.getUrlTemplate(),
+                                v.isChosenFromList(), v.getUrlTemplate(),
                                 newTerms);
 
                 result.add(updates);

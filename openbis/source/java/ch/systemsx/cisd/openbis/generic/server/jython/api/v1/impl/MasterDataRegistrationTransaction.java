@@ -302,7 +302,7 @@ public class MasterDataRegistrationTransaction implements IMasterDataRegistratio
         List<IPropertyTypeImmutable> propertyTypes = commonServer.listPropertyTypes();
         for (IPropertyTypeImmutable propertyType : propertyTypes)
         {
-            String fullCode = (propertyType.isInternalNamespace() ? "$" : "") + code;
+            String fullCode = (propertyType.isManagedInternally() ? "$" : "") + code;
             if (propertyType.getCode().equalsIgnoreCase(fullCode))
             {
                 return propertyType;
@@ -373,7 +373,7 @@ public class MasterDataRegistrationTransaction implements IMasterDataRegistratio
     {
         for (IVocabularyImmutable vocabulary : vocabularies)
         {
-            String fullCode = (vocabulary.isInternalNamespace() ? "$" : "") + code;
+            String fullCode = (vocabulary.isManagedInternally() ? "$" : "") + code;
             if (vocabulary.getCode().equalsIgnoreCase(fullCode))
             {
                 return vocabulary;
@@ -387,7 +387,7 @@ public class MasterDataRegistrationTransaction implements IMasterDataRegistratio
     {
         String propTypeCode = propertyType.getCode();
         if (false == CodeConverter.isInternalNamespace(propTypeCode)
-                && propertyType.isInternalNamespace())
+                && propertyType.isManagedInternally())
         {
             propTypeCode = CodeConverter.tryToBusinessLayer(propTypeCode, true);
         }

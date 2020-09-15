@@ -288,8 +288,8 @@ public class TranslatorUtils
         sqlBuilder.append(SP).append(QU);
     }
 
-    public static Map<String, JoinInformation> getPropertyJoinInformationMap(final TableMapper tableMapper, final IAliasFactory aliasFactory,
-            final JoinType joinType)
+    public static Map<String, JoinInformation> getPropertyJoinInformationMap(final TableMapper tableMapper,
+            final IAliasFactory aliasFactory)
     {
         final Map<String, JoinInformation> result = new LinkedHashMap<>();
         final String valuesTableAlias = aliasFactory.createAlias();
@@ -297,7 +297,7 @@ public class TranslatorUtils
         final String attributeTypesTableAlias = aliasFactory.createAlias();
 
         final JoinInformation joinInformation1 = new JoinInformation();
-        joinInformation1.setJoinType(joinType);
+        joinInformation1.setJoinType(JoinType.LEFT);
         joinInformation1.setMainTable(tableMapper.getEntitiesTable());
         joinInformation1.setMainTableAlias(SearchCriteriaTranslator.MAIN_TABLE_ALIAS);
         joinInformation1.setMainTableIdField(ID_COLUMN);
@@ -307,7 +307,7 @@ public class TranslatorUtils
         result.put(tableMapper.getValuesTable(), joinInformation1);
 
         final JoinInformation joinInformation2 = new JoinInformation();
-        joinInformation2.setJoinType(joinType);
+        joinInformation2.setJoinType(JoinType.LEFT);
         joinInformation2.setMainTable(tableMapper.getValuesTable());
         joinInformation2.setMainTableAlias(valuesTableAlias);
         joinInformation2.setMainTableIdField(tableMapper.getValuesTableEntityTypeAttributeTypeIdField());
@@ -317,7 +317,7 @@ public class TranslatorUtils
         result.put(tableMapper.getEntityTypesAttributeTypesTable(), joinInformation2);
 
         final JoinInformation joinInformation3 = new JoinInformation();
-        joinInformation3.setJoinType(joinType);
+        joinInformation3.setJoinType(JoinType.LEFT);
         joinInformation3.setMainTable(tableMapper.getEntityTypesAttributeTypesTable());
         joinInformation3.setMainTableAlias(entityTypesAttributeTypesTableAlias);
         joinInformation3.setMainTableIdField(tableMapper.getEntityTypesAttributeTypesTableAttributeTypeIdField());
@@ -327,7 +327,6 @@ public class TranslatorUtils
         result.put(tableMapper.getAttributeTypesTable(), joinInformation3);
 
         final JoinInformation joinInformation4 = new JoinInformation();
-        // Workaroung for the issue with Postgres 12, where inner join causes problems.
         joinInformation4.setJoinType(JoinType.LEFT);
         joinInformation4.setMainTable(tableMapper.getAttributeTypesTable());
         joinInformation4.setMainTableAlias(attributeTypesTableAlias);
@@ -571,7 +570,7 @@ public class TranslatorUtils
     public static void appendInternalExternalConstraint(final StringBuilder sqlBuilder, final List<Object> args,
             final String entityTypesSubTableAlias, final boolean internalProperty)
     {
-        sqlBuilder.append(entityTypesSubTableAlias).append(PERIOD).append(ColumnNames.IS_INTERNAL_NAMESPACE).append(SP)
+        sqlBuilder.append(entityTypesSubTableAlias).append(PERIOD).append(ColumnNames.IS_MANAGED_INTERNALLY).append(SP)
                 .append(EQ).append(SP).append(QU).append(SP).append(AND);
         args.add(internalProperty);
     }

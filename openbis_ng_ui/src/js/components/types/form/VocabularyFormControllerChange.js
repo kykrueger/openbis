@@ -1,4 +1,5 @@
 import PageControllerChange from '@src/js/components/common/page/PageControllerChange.js'
+import VocabularyFormSelectionType from '@src/js/components/types/form/VocabularyFormSelectionType.js'
 import FormUtil from '@src/js/components/common/form/FormUtil.js'
 
 export default class VocabularyFormControllerChange extends PageControllerChange {
@@ -8,9 +9,9 @@ export default class VocabularyFormControllerChange extends PageControllerChange
   }
 
   async execute(type, params) {
-    if (type === 'vocabulary') {
+    if (type === VocabularyFormSelectionType.VOCABULARY) {
       await this._handleChangeVocabulary(params)
-    } else if (type === 'term') {
+    } else if (type === VocabularyFormSelectionType.TERM) {
       await this._handleChangeTerm(params)
     }
   }

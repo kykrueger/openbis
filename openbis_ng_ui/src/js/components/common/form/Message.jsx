@@ -2,6 +2,7 @@ import React from 'react'
 import Typography from '@material-ui/core/Typography'
 import InfoIcon from '@material-ui/icons/Info'
 import WarningIcon from '@material-ui/icons/Warning'
+import LockIcon from '@material-ui/icons/Lock'
 import { withStyles } from '@material-ui/core/styles'
 import util from '@src/js/common/util.js'
 import logger from '@src/js/common/logger.js'
@@ -14,6 +15,11 @@ const styles = theme => ({
     },
     fontSize: theme.typography.body2.fontSize,
     color: theme.palette.text.primary
+  },
+  lock: {
+    '& svg': {
+      color: theme.palette.hint.main
+    }
   },
   error: {
     '& svg': {
@@ -54,6 +60,8 @@ class Message extends React.PureComponent {
       return <InfoIcon fontSize='small' />
     } else if (type === 'warning') {
       return <WarningIcon fontSize='small' />
+    } else if (type === 'lock') {
+      return <LockIcon fontSize='small' />
     } else {
       return null
     }

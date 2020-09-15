@@ -1,4 +1,5 @@
 import _ from 'lodash'
+import UserFormSelectionType from '@src/js/components/users/form/UserFormSelectionType.js'
 import FormUtil from '@src/js/components/common/form/FormUtil.js'
 
 export default class UserFormControllerAddRole {
@@ -33,7 +34,7 @@ export default class UserFormControllerAddRole {
       ...state,
       roles: newRoles,
       selection: {
-        type: 'role',
+        type: UserFormSelectionType.ROLE,
         params: {
           id: newRole.id,
           part: 'space'

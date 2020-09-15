@@ -1,6 +1,7 @@
 import React from 'react'
 import PageButtons from '@src/js/components/common/page/PageButtons.jsx'
 import Button from '@src/js/components/common/form/Button.jsx'
+import VocabularyFormSelectionType from '@src/js/components/types/form/VocabularyFormSelectionType.js'
 import logger from '@src/js/common/logger.js'
 
 class VocabularyFormButtons extends React.PureComponent {
@@ -51,7 +52,7 @@ class VocabularyFormButtons extends React.PureComponent {
 
   isTermSelected() {
     const { selection } = this.props
-    return selection && selection.type === 'term'
+    return selection && selection.type === VocabularyFormSelectionType.TERM
   }
 }
 

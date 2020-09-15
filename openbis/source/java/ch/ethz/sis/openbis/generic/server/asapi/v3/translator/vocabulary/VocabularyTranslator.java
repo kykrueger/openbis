@@ -81,11 +81,10 @@ public class VocabularyTranslator extends AbstractCachingTranslator<Long, Vocabu
         TranslationResults relations = (TranslationResults) objectRelations;
         VocabularyBaseRecord baseRecord = relations.get(IVocabularyBaseTranslator.class, vocabularyId);
 
-        result.setCode(CodeConverter.tryToBusinessLayer(baseRecord.code, baseRecord.isInternalNamespace));
+        result.setCode(CodeConverter.tryToBusinessLayer(baseRecord.code, baseRecord.isManagedInternally));
         result.setDescription(baseRecord.description);
         result.setModificationDate(baseRecord.modificationDate);
         result.setRegistrationDate(baseRecord.registrationDate);
-        result.setInternalNameSpace(baseRecord.isInternalNamespace);
         result.setManagedInternally(baseRecord.isManagedInternally);
         result.setChosenFromList(baseRecord.isChosenFromList);
         result.setUrlTemplate(baseRecord.urlTemplate);

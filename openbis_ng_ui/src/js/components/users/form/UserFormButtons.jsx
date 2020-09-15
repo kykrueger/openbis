@@ -1,6 +1,7 @@
 import React from 'react'
 import PageButtons from '@src/js/components/common/page/PageButtons.jsx'
 import Button from '@src/js/components/common/form/Button.jsx'
+import UserFormSelectionType from '@src/js/components/users/form/UserFormSelectionType.js'
 import logger from '@src/js/common/logger.js'
 
 class UserFormButtons extends React.PureComponent {
@@ -58,7 +59,9 @@ class UserFormButtons extends React.PureComponent {
   isGroupOrRoleSelected() {
     const { selection } = this.props
     return (
-      selection && (selection.type === 'group' || selection.type === 'role')
+      selection &&
+      (selection.type === UserFormSelectionType.GROUP ||
+        selection.type === UserFormSelectionType.ROLE)
     )
   }
 }

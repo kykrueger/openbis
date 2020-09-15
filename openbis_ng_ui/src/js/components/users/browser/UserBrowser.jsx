@@ -1,8 +1,7 @@
 import React from 'react'
 import Browser from '@src/js/components/common/browser/Browser.jsx'
+import UserBrowserController from '@src/js/components/users/browser/UserBrowserController.js'
 import logger from '@src/js/common/logger.js'
-
-import UserBrowserController from './UserBrowserController'
 
 class UserBrowser extends React.Component {
   constructor(props) {

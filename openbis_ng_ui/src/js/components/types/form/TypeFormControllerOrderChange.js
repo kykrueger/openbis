@@ -1,4 +1,5 @@
 import _ from 'lodash'
+import TypeFormSelectionType from '@src/js/components/types/form/TypeFormSelectionType.js'
 
 export default class TypeFormControllerOrderChange {
   constructor(controller) {
@@ -7,10 +8,10 @@ export default class TypeFormControllerOrderChange {
   }
 
   execute(type, params) {
-    if (type === 'section') {
+    if (type === TypeFormSelectionType.SECTION) {
       let { fromIndex, toIndex } = params
       this._handleOrderChangeSection(fromIndex, toIndex)
-    } else if (type === 'property') {
+    } else if (type === TypeFormSelectionType.PROPERTY) {
       let { fromSectionId, toSectionId, fromIndex, toIndex } = params
       this._handleOrderChangeProperty(
         fromSectionId,

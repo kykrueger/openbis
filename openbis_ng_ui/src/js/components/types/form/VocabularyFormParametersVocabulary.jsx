@@ -4,6 +4,7 @@ import Container from '@src/js/components/common/form/Container.jsx'
 import Header from '@src/js/components/common/form/Header.jsx'
 import TextField from '@src/js/components/common/form/TextField.jsx'
 import Message from '@src/js/components/common/form/Message.jsx'
+import VocabularyFormSelectionType from '@src/js/components/types/form/VocabularyFormSelectionType.js'
 import logger from '@src/js/common/logger.js'
 
 const styles = theme => ({
@@ -53,14 +54,14 @@ class VocabularyFormParametersVocabulary extends React.PureComponent {
   }
 
   handleChange(event) {
-    this.props.onChange('vocabulary', {
+    this.props.onChange(VocabularyFormSelectionType.VOCABULARY, {
       field: event.target.name,
       value: event.target.value
     })
   }
 
   handleFocus(event) {
-    this.props.onSelectionChange('vocabulary', {
+    this.props.onSelectionChange(VocabularyFormSelectionType.VOCABULARY, {
       part: event.target.name
     })
   }
@@ -94,7 +95,7 @@ class VocabularyFormParametersVocabulary extends React.PureComponent {
     if (vocabulary.managedInternally.value) {
       return (
         <div className={classes.field}>
-          <Message type='info'>This vocabulary is managed internally.</Message>
+          <Message type='lock'>This vocabulary is managed internally.</Message>
         </div>
       )
     } else {
@@ -184,7 +185,10 @@ class VocabularyFormParametersVocabulary extends React.PureComponent {
   getVocabulary(props) {
     let { vocabulary, selection } = props
 
-    if (!selection || selection.type === 'vocabulary') {
+    if (
+      !selection ||
+      selection.type === VocabularyFormSelectionType.VOCABULARY
+    ) {
       return vocabulary
     } else {
       return null

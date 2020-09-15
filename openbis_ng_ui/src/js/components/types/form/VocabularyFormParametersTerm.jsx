@@ -5,6 +5,7 @@ import Header from '@src/js/components/common/form/Header.jsx'
 import TextField from '@src/js/components/common/form/TextField.jsx'
 import CheckboxField from '@src/js/components/common/form/CheckboxField.jsx'
 import Message from '@src/js/components/common/form/Message.jsx'
+import VocabularyFormSelectionType from '@src/js/components/types/form/VocabularyFormSelectionType.js'
 import logger from '@src/js/common/logger.js'
 
 const styles = theme => ({
@@ -54,7 +55,7 @@ class VocabularyFormParametersTerm extends React.PureComponent {
 
   handleChange(event) {
     const term = this.getTerm(this.props)
-    this.props.onChange('term', {
+    this.props.onChange(VocabularyFormSelectionType.TERM, {
       id: term.id,
       field: event.target.name,
       value: event.target.value
@@ -63,7 +64,7 @@ class VocabularyFormParametersTerm extends React.PureComponent {
 
   handleFocus(event) {
     const term = this.getTerm(this.props)
-    this.props.onSelectionChange('term', {
+    this.props.onSelectionChange(VocabularyFormSelectionType.TERM, {
       id: term.id,
       part: event.target.name
     })
@@ -219,7 +220,7 @@ class VocabularyFormParametersTerm extends React.PureComponent {
   getTerm(props) {
     let { terms, selection } = props
 
-    if (selection && selection.type === 'term') {
+    if (selection && selection.type === VocabularyFormSelectionType.TERM) {
       let [term] = terms.filter(term => term.id === selection.params.id)
       return term
     } else {

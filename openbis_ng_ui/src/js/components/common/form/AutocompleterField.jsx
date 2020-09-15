@@ -5,11 +5,10 @@ import TextField from '@material-ui/core/TextField'
 import InputAdornment from '@material-ui/core/InputAdornment'
 import ArrowDropUpIcon from '@material-ui/icons/ArrowDropUp'
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown'
+import FormFieldContainer from '@src/js/components/common/form/FormFieldContainer.jsx'
+import FormFieldLabel from '@src/js/components/common/form/FormFieldLabel.jsx'
+import FormFieldView from '@src/js/components/common/form/FormFieldView.jsx'
 import logger from '@src/js/common/logger.js'
-
-import FormFieldContainer from './FormFieldContainer.jsx'
-import FormFieldLabel from './FormFieldLabel.jsx'
-import FormFieldView from './FormFieldView.jsx'
 
 const styles = theme => ({
   paper: {

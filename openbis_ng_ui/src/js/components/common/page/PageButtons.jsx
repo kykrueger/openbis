@@ -1,6 +1,7 @@
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import autoBind from 'auto-bind'
+import PageMode from '@src/js/components/common/page/PageMode.js'
 import Container from '@src/js/components/common/form/Container.jsx'
 import Button from '@src/js/components/common/form/Button.jsx'
 import Message from '@src/js/components/common/form/Message.jsx'
@@ -76,9 +77,9 @@ class PageButtons extends React.PureComponent {
 
     const { mode } = this.props
 
-    if (mode === 'view') {
+    if (mode === PageMode.VIEW) {
       return this.renderView()
-    } else if (mode === 'edit') {
+    } else if (mode === PageMode.EDIT) {
       return this.renderEdit()
     } else {
       throw 'Unsupported mode: ' + mode

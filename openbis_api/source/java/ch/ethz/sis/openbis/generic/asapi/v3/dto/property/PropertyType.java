@@ -67,9 +67,6 @@ public class PropertyType implements Serializable, ICodeHolder, IDescriptionHold
     private Boolean managedInternally;
 
     @JsonProperty
-    private Boolean internalNameSpace;
-
-    @JsonProperty
     private DataType dataType;
 
     @JsonProperty
@@ -181,16 +178,24 @@ public class PropertyType implements Serializable, ICodeHolder, IDescriptionHold
     }
 
     // Method automatically generated with DtoGenerator
+    /**
+     * @deprecated use {@link #isManagedInternally()}
+     */
     @JsonIgnore
+    @Deprecated
     public Boolean isInternalNameSpace()
     {
-        return internalNameSpace;
+        return isManagedInternally();
     }
 
     // Method automatically generated with DtoGenerator
+    /**
+     * @deprecated use {@link #setManagedInternally(Boolean)()}
+     */
+    @Deprecated
     public void setInternalNameSpace(Boolean internalNameSpace)
     {
-        this.internalNameSpace = internalNameSpace;
+        setManagedInternally(internalNameSpace);
     }
 
     // Method automatically generated with DtoGenerator

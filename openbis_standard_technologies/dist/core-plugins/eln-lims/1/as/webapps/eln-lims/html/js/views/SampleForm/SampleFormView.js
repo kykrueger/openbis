@@ -756,7 +756,10 @@ function SampleFormView(sampleFormController, sampleFormModel) {
                                 $component = FormUtil.activateRichTextProperties($component, undefined, propertyType, value, true);
                                 $controlGroup = FormUtil.getFieldForComponentWithLabel($component, propertyType.label);
                             }
-                        } else {
+                        } else if(propertyType.dataType === "SAMPLE") {
+                            var $component = new SampleField(false, '', false, value, true);
+                            $controlGroup = FormUtil.getFieldForComponentWithLabel($component, propertyType.label);
+                        } else { // The base case paints the property value as a label
                             $controlGroup = FormUtil.createPropertyField(propertyType, value);
                         }
 					} else {

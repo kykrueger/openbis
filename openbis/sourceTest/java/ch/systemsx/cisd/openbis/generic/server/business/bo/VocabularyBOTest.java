@@ -164,7 +164,7 @@ public final class VocabularyBOTest extends AbstractBOTest
         vocabularyBO.define(vocabulary);
         final VocabularyPE vocabularyPE = vocabularyBO.getVocabulary();
         assertVocabularyEquals(vocabulary, vocabularyPE);
-        assertFalse(vocabularyPE.isInternalNamespace());
+        assertFalse(vocabularyPE.isManagedInternally());
         context.assertIsSatisfied();
     }
 

@@ -30,7 +30,7 @@ public class VocabularyTermBaseRecord extends ObjectBaseRecord
 
     public String vocabularyCode;
 
-    public boolean isInternalNamespace;
+    public boolean isManagedInternally;
 
     public String label;
 

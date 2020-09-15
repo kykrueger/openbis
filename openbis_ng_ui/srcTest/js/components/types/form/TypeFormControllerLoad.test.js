@@ -1,5 +1,6 @@
 import ComponentContext from '@srcTest/js/components/common/ComponentContext.js'
 import TypeFormControler from '@src/js/components/types/form/TypeFormController.js'
+import TypeFormSelectionType from '@src/js/components/types/form/TypeFormSelectionType.js'
 import TypeFormFacade from '@src/js/components/types/form/TypeFormFacade'
 import objectTypes from '@src/js/common/consts/objectType.js'
 import openbis from '@srcTest/js/services/openbis.js'
@@ -245,15 +246,17 @@ describe('TypeFormController.load', () => {
     controller.handleAddProperty()
     controller.handleAddSection()
     controller.handleAddProperty()
-    controller.handleOrderChange('section', {
+    controller.handleOrderChange(TypeFormSelectionType.SECTION, {
       fromIndex: 0,
       toIndex: 1
     })
-    controller.handleSelectionChange('section', { id: 'section-0' })
+    controller.handleSelectionChange(TypeFormSelectionType.SECTION, {
+      id: 'section-0'
+    })
 
     expect(context.getState()).toMatchObject({
       selection: {
-        type: 'section',
+        type: TypeFormSelectionType.SECTION,
         params: { id: 'section-0' }
       },
       sections: [
@@ -274,7 +277,7 @@ describe('TypeFormController.load', () => {
 
     expect(context.getState()).toMatchObject({
       selection: {
-        type: 'section',
+        type: TypeFormSelectionType.SECTION,
         params: { id: 'section-1' }
       },
       sections: [
@@ -310,15 +313,17 @@ describe('TypeFormController.load', () => {
     controller.handleAddProperty()
     controller.handleAddSection()
     controller.handleAddProperty()
-    controller.handleOrderChange('section', {
+    controller.handleOrderChange(TypeFormSelectionType.SECTION, {
       fromIndex: 0,
       toIndex: 1
     })
-    controller.handleSelectionChange('property', { id: 'property-1' })
+    controller.handleSelectionChange(TypeFormSelectionType.PROPERTY, {
+      id: 'property-1'
+    })
 
     expect(context.getState()).toMatchObject({
       selection: {
-        type: 'property',
+        type: TypeFormSelectionType.PROPERTY,
         params: { id: 'property-1' }
       },
       sections: [
@@ -339,7 +344,7 @@ describe('TypeFormController.load', () => {
 
     expect(context.getState()).toMatchObject({
       selection: {
-        type: 'property',
+        type: TypeFormSelectionType.PROPERTY,
         params: { id: 'property-2' }
       },
       sections: [

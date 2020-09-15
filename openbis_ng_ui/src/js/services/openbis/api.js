@@ -1,5 +1,5 @@
 import autoBind from 'auto-bind'
-import dto from './dto.js'
+import dto from '@src/js/services/openbis/dto.js'
 
 class Facade {
   constructor() {

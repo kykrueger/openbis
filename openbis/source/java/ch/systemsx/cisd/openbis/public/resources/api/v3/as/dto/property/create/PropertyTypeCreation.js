@@ -8,7 +8,6 @@ define([ "stjs" ], function(stjs) {
 		prototype.label = null;
 		prototype.description = null;
 		prototype.managedInternally = null;
-		prototype.internalNameSpace = null;
 		prototype.dataType = null;
 		prototype.vocabularyId = null;
 		prototype.materialTypeId = null;
@@ -42,10 +41,10 @@ define([ "stjs" ], function(stjs) {
 			this.managedInternally = managedInternally;
 		};
 		prototype.isInternalNameSpace = function() {
-			return this.internalNameSpace;
+			return this.isManagedInternally();
 		};
 		prototype.setInternalNameSpace = function(internalNameSpace) {
-			this.internalNameSpace = internalNameSpace;
+			this.setManagedInternally(internalNameSpace);
 		};
 		prototype.getDataType = function() {
 			return this.dataType;

@@ -39,19 +39,9 @@ public class DSUTestInitializer
         return dbKind;
     }
 
-    private static String getDBKindForIndexing()
-    {
-        return getDBKind() + "_indexing";
-    }
-
     private static String getDBName()
     {
         return "openbis_" + getDBKind();
-    }
-
-    private static String getDBNameForIndexing()
-    {
-        return "openbis_" + getDBKindForIndexing();
     }
 
     public static void init()
@@ -72,12 +62,10 @@ public class DSUTestInitializer
         }
 
         TestDatabase.restoreDump(dumpFile, getDBName());
-        TestDatabase.restoreDump(dumpFile, getDBNameForIndexing());
 
         TestInitializer.setScriptFolderForEmptyDB("../openbis/source");
         TestInitializer.setScriptFolderForTestDB("../openbis/source");
         TestInitializer.setDBKind(getDBKind());
-        TestInitializer.setDBKindForIndexing(getDBKindForIndexing());
         TestInitializer.setCreateDBFromScratch(false);
     }
 

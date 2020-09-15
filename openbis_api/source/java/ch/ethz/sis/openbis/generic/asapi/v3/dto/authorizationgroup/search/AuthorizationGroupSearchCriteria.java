@@ -23,6 +23,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CodesSearchCriteri
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.PermIdSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchCriteriaToStringBuilder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.PersonSearchCriteria;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
@@ -47,6 +48,11 @@ public class AuthorizationGroupSearchCriteria extends AbstractObjectSearchCriter
     public PermIdSearchCriteria withPermId()
     {
         return with(new PermIdSearchCriteria());
+    }
+
+    public PersonSearchCriteria withUser()
+    {
+        return with(new PersonSearchCriteria());
     }
 
     public AuthorizationGroupSearchCriteria withOrOperator()

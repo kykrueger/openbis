@@ -1,4 +1,5 @@
 import PageControllerValidate from '@src/js/components/common/page/PageConrollerValidate.js'
+import UserFormSelectionType from '@src/js/components/users/form/UserFormSelectionType.js'
 
 export default class UserFormControllerValidate extends PageControllerValidate {
   validate(validator) {
@@ -20,14 +21,14 @@ export default class UserFormControllerValidate extends PageControllerValidate {
 
     if (firstError.object === user) {
       await this.setSelection({
-        type: 'user',
+        type: UserFormSelectionType.USER,
         params: {
           part: firstError.name
         }
       })
     } else if (groups.includes(firstError.object)) {
       await this.setSelection({
-        type: 'group',
+        type: UserFormSelectionType.GROUP,
         params: {
           id: firstError.object.id,
           part: firstError.name
@@ -39,7 +40,7 @@ export default class UserFormControllerValidate extends PageControllerValidate {
       }
     } else if (roles.includes(firstError.object)) {
       await this.setSelection({
-        type: 'role',
+        type: UserFormSelectionType.ROLE,
         params: {
           id: firstError.object.id,
           part: firstError.name

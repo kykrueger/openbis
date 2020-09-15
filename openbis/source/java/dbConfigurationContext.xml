@@ -35,6 +35,7 @@
         <property name="adminPassword" value="${database.admin-password}" />
         <property name="databaseKind" value="${database.kind}" />
         <property name="databaseEngineCode" value="${database.engine}" />
+        <property name="validVersions" value="${database.validVersions}" />
         <property name="scriptFolder" value="${script-folder}/sql" />
         <property name="scriptFolders" value="${script-folders}" />
         <property name="databaseInstance" value="${database-instance}" />

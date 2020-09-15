@@ -26,7 +26,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchFieldType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringFieldSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinInformation;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinType;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
 
@@ -43,7 +42,7 @@ public class AnyPropertySearchConditionTranslator implements IConditionTranslato
     {
         if (criterion.getFieldType() == SearchFieldType.ANY_PROPERTY)
         {
-            return TranslatorUtils.getPropertyJoinInformationMap(tableMapper, aliasFactory, JoinType.LEFT);
+            return TranslatorUtils.getPropertyJoinInformationMap(tableMapper, aliasFactory);
         } else {
             throw new IllegalArgumentException();
         }

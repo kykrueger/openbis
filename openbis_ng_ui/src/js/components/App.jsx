@@ -12,9 +12,9 @@ import Loading from '@src/js/components/common/loading/Loading.jsx'
 import Error from '@src/js/components/common/error/Error.jsx'
 import Menu from '@src/js/components/common/menu/Menu.jsx'
 
-import Login from './login/Login.jsx'
-import Users from './users/Users.jsx'
-import Types from './types/Types.jsx'
+import Login from '@src/js/components/login/Login.jsx'
+import Users from '@src/js/components/users/Users.jsx'
+import Types from '@src/js/components/types/Types.jsx'
 
 const styles = {
   container: {

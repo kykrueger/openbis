@@ -1,4 +1,5 @@
 import UserFormControllerRecalculateInheritedRoles from '@src/js/components/users/form/UserFormControllerRecalculateInheritedRoles.js'
+import UserFormSelectionType from '@src/js/components/users/form/UserFormSelectionType.js'
 
 export default class UserFormControllerRemove {
   constructor(controller) {
@@ -8,9 +9,9 @@ export default class UserFormControllerRemove {
 
   execute() {
     const { selection } = this.context.getState()
-    if (selection.type === 'group') {
+    if (selection.type === UserFormSelectionType.GROUP) {
       this._handleRemoveGroup(selection.params.id)
-    } else if (selection.type === 'role') {
+    } else if (selection.type === UserFormSelectionType.ROLE) {
       this._handleRemoveRole(selection.params.id)
     }
   }

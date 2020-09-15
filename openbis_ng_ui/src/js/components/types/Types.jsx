@@ -7,10 +7,10 @@ import objectType from '@src/js/common/consts/objectType.js'
 import Content from '@src/js/components/common/content/Content.jsx'
 import ContentTab from '@src/js/components/common/content/ContentTab.jsx'
 
-import TypeBrowser from './browser/TypeBrowser.jsx'
-import TypeSearch from './search/TypeSearch.jsx'
-import TypeForm from './form/TypeForm.jsx'
-import VocabularyForm from './form/VocabularyForm.jsx'
+import TypeBrowser from '@src/js/components/types/browser/TypeBrowser.jsx'
+import TypeSearch from '@src/js/components/types/search/TypeSearch.jsx'
+import TypeForm from '@src/js/components/types/form/TypeForm.jsx'
+import VocabularyForm from '@src/js/components/types/form/VocabularyForm.jsx'
 
 const styles = () => ({
   container: {

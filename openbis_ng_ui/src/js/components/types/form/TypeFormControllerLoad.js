@@ -1,10 +1,12 @@
 import _ from 'lodash'
 import openbis from '@src/js/services/openbis.js'
 import PageControllerLoad from '@src/js/components/common/page/PageControllerLoad.js'
+import TypeFormControllerStrategies from '@src/js/components/types/form/TypeFormControllerStrategies.js'
+import TypeFormSelectionType from '@src/js/components/types/form/TypeFormSelectionType.js'
+import TypeFormPropertyScope from '@src/js/components/types/form/TypeFormPropertyScope.js'
 import FormUtil from '@src/js/components/common/form/FormUtil.js'
+import users from '@src/js/common/consts/users.js'
 import util from '@src/js/common/util.js'
-
-import TypeFormControllerStrategies from './TypeFormControllerStrategies.js'
 
 export default class TypeFormControllerLoad extends PageControllerLoad {
   async load(object, isNew) {
@@ -89,19 +91,17 @@ export default class TypeFormControllerLoad extends PageControllerLoad {
 
         section.properties.push(property.id)
         property.section = section.id
-        property.original = {
-          ...property
-        }
+        property.original = _.cloneDeep(property)
       })
     }
 
     const type = this._createType(loadedType, loadedUsages)
 
     if (loadedType) {
-      type.original = {
+      type.original = _.cloneDeep({
         ...type,
         properties
-      }
+      })
     }
 
     const selection = this._createSelection(sections)
@@ -165,7 +165,23 @@ export default class TypeFormControllerLoad extends PageControllerLoad {
 
     const code = _.get(propertyType, 'code', null)
     const dataType = _.get(propertyType, 'dataType', null)
-    const scope = code.startsWith(loadedType.code + '.') ? 'local' : 'global'
+    const internal = _.get(propertyType, 'managedInternally', false)
+    const plugin = _.get(loadedAssignment, 'plugin.name', null)
+
+    const scope = code.startsWith(loadedType.code + '.')
+      ? TypeFormPropertyScope.LOCAL
+      : TypeFormPropertyScope.GLOBAL
+
+    const registratorOfAssignment = _.get(
+      loadedAssignment,
+      'registrator.userId',
+      null
+    )
+    const registratorOfPropertyType = _.get(
+      propertyType,
+      'registrator.userId',
+      null
+    )
 
     const assignments =
       (loadedAssignments && loadedAssignments[propertyType.code]) || 0
@@ -181,7 +197,10 @@ export default class TypeFormControllerLoad extends PageControllerLoad {
         loadedUsages.propertyGlobal[propertyType.code]) ||
       0
 
-    const enabled = usagesGlobal === 0 && assignments <= 1
+    const systemInternalAssignment =
+      internal && registratorOfAssignment === users.SYSTEM
+    const systemInternalPropertyType =
+      internal && registratorOfPropertyType === users.SYSTEM
 
     return {
       id: id,
@@ -193,57 +212,77 @@ export default class TypeFormControllerLoad extends PageControllerLoad {
         value: code,
         enabled: false
       }),
-      internalNameSpace: FormUtil.createField({
-        value: _.get(propertyType, 'internalNameSpace', false)
+      internal: FormUtil.createField({
+        value: internal,
+        visible: false,
+        enabled: false
       }),
       label: FormUtil.createField({
-        value: _.get(propertyType, 'label', null)
+        value: _.get(propertyType, 'label', null),
+        enabled: !systemInternalPropertyType
       }),
       description: FormUtil.createField({
-        value: _.get(propertyType, 'description', null)
+        value: _.get(propertyType, 'description', null),
+        enabled: !systemInternalPropertyType
       }),
       dataType: FormUtil.createField({
         value: dataType,
-        enabled
+        enabled: !systemInternalPropertyType
       }),
-      plugin: FormUtil.createField({
-        value: _.get(loadedAssignment, 'plugin.name', null),
-        enabled
+      schema: FormUtil.createField({
+        value: _.get(propertyType, 'schema', null),
+        visible: dataType === openbis.DataType.XML,
+        enabled: !systemInternalPropertyType
+      }),
+      transformation: FormUtil.createField({
+        value: _.get(propertyType, 'transformation', null),
+        visible: dataType === openbis.DataType.XML,
+        enabled: !systemInternalPropertyType
       }),
       vocabulary: FormUtil.createField({
         value: _.get(propertyType, 'vocabulary.code', null),
         visible: dataType === openbis.DataType.CONTROLLEDVOCABULARY,
-        enabled
+        enabled: false
       }),
       materialType: FormUtil.createField({
         value: _.get(propertyType, 'materialType.code', null),
         visible: dataType === openbis.DataType.MATERIAL,
-        enabled
+        enabled: false
       }),
       sampleType: FormUtil.createField({
         value: _.get(propertyType, 'sampleType.code', null),
         visible: dataType === openbis.DataType.SAMPLE,
-        enabled
+        enabled: false
       }),
-      schema: FormUtil.createField({
-        value: _.get(propertyType, 'schema', null),
-        visible: dataType === openbis.DataType.XML
-      }),
-      transformation: FormUtil.createField({
-        value: _.get(propertyType, 'transformation', null),
-        visible: dataType === openbis.DataType.XML
+      plugin: FormUtil.createField({
+        value: plugin,
+        enabled: plugin && !systemInternalAssignment
       }),
       mandatory: FormUtil.createField({
-        value: _.get(loadedAssignment, 'mandatory', false)
+        value: _.get(loadedAssignment, 'mandatory', false),
+        enabled: !systemInternalAssignment
       }),
       showInEditView: FormUtil.createField({
-        value: _.get(loadedAssignment, 'showInEditView', false)
+        value: _.get(loadedAssignment, 'showInEditView', true),
+        enabled: !systemInternalAssignment
       }),
       showRawValueInForms: FormUtil.createField({
-        value: _.get(loadedAssignment, 'showRawValueInForms', false)
+        value: _.get(loadedAssignment, 'showRawValueInForms', false),
+        enabled: !systemInternalAssignment
       }),
       initialValueForExistingEntities: FormUtil.createField({
-        visible: false
+        visible: false,
+        enabled: !systemInternalAssignment
+      }),
+      registratorOfAssignment: FormUtil.createField({
+        value: registratorOfAssignment,
+        visible: false,
+        enabled: false
+      }),
+      registratorOfPropertyType: FormUtil.createField({
+        value: registratorOfPropertyType,
+        visible: false,
+        enabled: false
       }),
       assignments,
       usagesLocal,
@@ -260,7 +299,7 @@ export default class TypeFormControllerLoad extends PageControllerLoad {
 
     if (!oldSelection) {
       return null
-    } else if (oldSelection.type === 'section') {
+    } else if (oldSelection.type === TypeFormSelectionType.SECTION) {
       let sectionIndex = -1
 
       oldSections.forEach((oldSection, i) => {
@@ -272,14 +311,14 @@ export default class TypeFormControllerLoad extends PageControllerLoad {
       if (sectionIndex >= 0 && sectionIndex < newSections.length) {
         const newSection = newSections[sectionIndex]
         return {
-          type: 'section',
+          type: TypeFormSelectionType.SECTION,
           params: {
             id: newSection.id,
             part: oldSelection.params.part
           }
         }
       }
-    } else if (oldSelection.type === 'property') {
+    } else if (oldSelection.type === TypeFormSelectionType.PROPERTY) {
       let sectionIndex = -1
       let propertyIndex = -1
 
@@ -300,7 +339,7 @@ export default class TypeFormControllerLoad extends PageControllerLoad {
         ) {
           const newProperty = newSection.properties[propertyIndex]
           return {
-            type: 'property',
+            type: TypeFormSelectionType.PROPERTY,
             params: {
               id: newProperty,
               part: oldSelection.params.part

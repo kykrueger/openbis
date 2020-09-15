@@ -2,9 +2,8 @@ import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import Message from '@src/js/components/common/form/Message.jsx'
 import Button from '@src/js/components/common/form/Button.jsx'
+import Dialog from '@src/js/components/common/dialog/Dialog.jsx'
 import logger from '@src/js/common/logger.js'
-
-import Dialog from './Dialog.jsx'
 
 const styles = theme => ({
   button: {

@@ -4,6 +4,7 @@ import Container from '@src/js/components/common/form/Container.jsx'
 import Header from '@src/js/components/common/form/Header.jsx'
 import SelectField from '@src/js/components/common/form/SelectField.jsx'
 import Message from '@src/js/components/common/form/Message.jsx'
+import UserFormSelectionType from '@src/js/components/users/form/UserFormSelectionType.js'
 import logger from '@src/js/common/logger.js'
 
 const styles = theme => ({
@@ -53,7 +54,7 @@ class UserFormParametersGroup extends React.PureComponent {
 
   handleChange(event) {
     const group = this.getGroup(this.props)
-    this.props.onChange('group', {
+    this.props.onChange(UserFormSelectionType.GROUP, {
       id: group.id,
       field: event.target.name,
       value: event.target.value
@@ -62,7 +63,7 @@ class UserFormParametersGroup extends React.PureComponent {
 
   handleFocus(event) {
     const group = this.getGroup(this.props)
-    this.props.onSelectionChange('group', {
+    this.props.onSelectionChange(UserFormSelectionType.GROUP, {
       id: group.id,
       part: event.target.name
     })
@@ -150,7 +151,7 @@ class UserFormParametersGroup extends React.PureComponent {
   getGroup(props) {
     let { groups, selection } = props
 
-    if (selection && selection.type === 'group') {
+    if (selection && selection.type === UserFormSelectionType.GROUP) {
       let [group] = groups.filter(group => group.id === selection.params.id)
       return group
     } else {

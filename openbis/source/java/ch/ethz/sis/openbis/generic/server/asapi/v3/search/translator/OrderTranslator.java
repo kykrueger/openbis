@@ -22,7 +22,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.Sorting;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.AttributesMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinInformation;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinType;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils;
 import ch.systemsx.cisd.openbis.generic.shared.dto.TableNames;
 
@@ -107,7 +106,7 @@ public class OrderTranslator
             if (TranslatorUtils.isPropertySearchFieldName(sortingCriterionFieldName))
             {
                 final String propertyName = sortingCriterionFieldName.substring(EntityWithPropertiesSortOptions.PROPERTY.length()).toLowerCase();
-                joinInformationMap = TranslatorUtils.getPropertyJoinInformationMap(tableMapper, () -> getOrderingAlias(indexCounter), JoinType.LEFT);
+                joinInformationMap = TranslatorUtils.getPropertyJoinInformationMap(tableMapper, () -> getOrderingAlias(indexCounter));
                 aliasesMapKey = propertyName;
             } else if (isTypeSearchCriterion(sortingCriterionFieldName) || isSortingByMaterialPermId(vo, sortingCriterionFieldName))
             {
@@ -252,6 +251,7 @@ public class OrderTranslator
     {
         return sortingCriteriaFieldName.equals(IDENTIFIER);
     }
+
     private static boolean isTypeSearchCriterion(final String sortingCriteriaFieldName)
     {
         return sortingCriteriaFieldName.equals(EntityWithPropertiesSortOptions.TYPE);
@@ -260,7 +260,7 @@ public class OrderTranslator
     public static SelectQuery translateToSearchTypeQuery(final TranslationVo vo)
     {
         final TableMapper tableMapper = vo.getTableMapper();
-        final String result = SELECT + SP + DISTINCT + SP + "o3" + PERIOD + CODE_COLUMN + SP + PROPERTY_CODE_ALIAS + COMMA + SP +
+        final String queryString = SELECT + SP + DISTINCT + SP + "o3" + PERIOD + CODE_COLUMN + SP + PROPERTY_CODE_ALIAS + COMMA + SP +
                 "o4" + PERIOD + CODE_COLUMN + SP + TYPE_CODE_ALIAS + NL +
                 FROM + SP + tableMapper.getEntitiesTable() + SP + SearchCriteriaTranslator.MAIN_TABLE_ALIAS + NL +
                 INNER_JOIN + SP + tableMapper.getValuesTable() + SP + "o1" + SP +
@@ -274,7 +274,7 @@ public class OrderTranslator
                 ON + SP + "o3" + PERIOD + tableMapper.getAttributeTypesTableDataTypeIdField() + SP + EQ + SP + "o4" + PERIOD + ID_COLUMN + NL +
                 WHERE + SP + "o4" + PERIOD + CODE_COLUMN + SP + IN + SP + LP + SELECT + SP + UNNEST + LP + QU + RP + RP;
 
-        return new SelectQuery(result, Collections.singletonList(vo.getTypesToFilter()));
+        return new SelectQuery(queryString, Collections.singletonList(vo.getTypesToFilter()));
     }
 
 }

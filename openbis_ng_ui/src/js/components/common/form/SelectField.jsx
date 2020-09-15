@@ -2,12 +2,11 @@ import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import TextField from '@material-ui/core/TextField'
 import MenuItem from '@material-ui/core/MenuItem'
+import FormFieldContainer from '@src/js/components/common/form/FormFieldContainer.jsx'
+import FormFieldLabel from '@src/js/components/common/form/FormFieldLabel.jsx'
+import FormFieldView from '@src/js/components/common/form/FormFieldView.jsx'
 import compare from '@src/js/common/compare.js'
 import logger from '@src/js/common/logger.js'
-
-import FormFieldContainer from './FormFieldContainer.jsx'
-import FormFieldLabel from './FormFieldLabel.jsx'
-import FormFieldView from './FormFieldView.jsx'
 
 const styles = theme => ({
   textField: {

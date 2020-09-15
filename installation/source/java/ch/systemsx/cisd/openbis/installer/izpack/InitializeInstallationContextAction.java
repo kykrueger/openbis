@@ -62,7 +62,7 @@ public class InitializeInstallationContextAction implements PanelAction
     private static final String ROOT_USERNAME = "root";
 
     @Override
-    public void executeAction(AutomatedInstallData data, AbstractUIHandler arg1)
+    public void executeAction(AutomatedInstallData data, AbstractUIHandler handler)
     {
         abortIfRunningAsRoot();
         List<DynamicInstallerRequirementValidator> reqs = data.getDynamicinstallerrequirements();
@@ -78,7 +78,8 @@ public class InitializeInstallationContextAction implements PanelAction
 
         if (GlobalInstallationContext.isUpdateInstallation)
         {
-            new PrepareInstallationBackupAction().executeAction(data, arg1);
+            new UnsupportedModulesCheckAction().executeAction(data, handler);
+            new PrepareInstallationBackupAction().executeAction(data, handler);
         }
     }
 
