@@ -194,7 +194,6 @@ pt_int = o.new_property_type(
     code        = '$DEFAULT_OBJECT_TYPE', 
     label       = 'default object type for ELN-LIMS', 
     dataType    = 'VARCHAR',
-    internalNameSpace = True,
 )
 
 pt_voc = o.new_property_type(
@@ -219,7 +218,7 @@ The `dataType` attribute can contain any of these values:
 * `CONTROLLEDVOCABULARY`
 * `MATERIAL`
 
-When choosing `CONTROLLEDVOCABULARY`, you must specify a `vocabulary` attribute (see example). Likewise, when choosing `MATERIAL`, a `materialType` attribute must be provided. PropertyTypes that start with a \$ belong by definition to the `internalNameSpace` and therefore this attribute must be set to True.
+When choosing `CONTROLLEDVOCABULARY`, you must specify a `vocabulary` attribute (see example). Likewise, when choosing `MATERIAL`, a `materialType` attribute must be provided.
 
 
 ## create sample types / object types
