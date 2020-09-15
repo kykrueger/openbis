@@ -161,43 +161,42 @@ class TestCase(systemtest.testcase.TestCase):
     
     def _checkData(self, openbis_data_source, openbis_harvester):
         self._compareDataBases("Vocabularies", openbis_data_source, openbis_harvester, "openbis",
-                               "select '{0}' || code as code, description, source_uri, is_managed_internally, "
-                               + "  is_internal_namespace, is_chosen_from_list "
+                               "select '{0}' || code as code, description, source_uri, is_managed_internally, is_chosen_from_list "
                                + "from controlled_vocabularies where code like '{1}%' order by code")
         self._compareDataBases("Property types", openbis_data_source, openbis_harvester, "openbis", 
                                "select '{0}' || t.code as code,dt.code as data_type, '{0}' || v.code as vocabulary, "
                                + "  '{0}' || mt.code as material, t.label, t.description, "
-                               + "  t.is_managed_internally, t.is_internal_namespace, t.schema, t.transformation "
+                               + "  t.is_managed_internally, t.schema, t.transformation "
                                + "from property_types t join data_types dt on t.daty_id = dt.id "
                                + "left join controlled_vocabularies v on t.covo_id = v.id "
                                + "left join material_types mt on t.maty_prop_id = mt.id "
-                               + "where t.code like '{1}%' order by t.code, t.is_internal_namespace")
+                               + "where t.code like '{1}%' order by t.code, t.is_managed_internally")
         self._compareDataBases("Material types", openbis_data_source, openbis_harvester, "openbis", 
                                "select '{0}' || t.code as code, t.description, '{0}' || s.name as validation_script "
                                + "from material_types t left join scripts s on t.validation_script_id = s.id "
                                + "where t.code like '{1}%' order by t.code")
         self._compareDataBases("Material type property assignments", openbis_data_source, openbis_harvester, "openbis",
-                                "select '{0}' || et.code as material_type, '{0}' || pt.code as property_type, pt.is_internal_namespace, "
-                                + "etpt.is_mandatory, etpt. is_managed_internally, etpt.ordinal, etpt.section, "
+                                "select '{0}' || et.code as material_type, '{0}' || pt.code as property_type, pt.is_managed_internally, "
+                                + "etpt.is_mandatory, etpt.is_managed_internally, etpt.ordinal, etpt.section, "
                                 + "etpt.is_shown_edit, etpt.show_raw_value, '{0}' || s.name as script "
                                 + "from material_type_property_types etpt "
                                 + "join material_types et on etpt.maty_id = et.id "
                                 + "join property_types pt on etpt.prty_id = pt.id "
                                 + "left join scripts s on etpt.script_id = s.id "
-                                + "where et.code like '{1}%' order by et.code, pt.code, pt.is_internal_namespace")
+                                + "where et.code like '{1}%' order by et.code, pt.code, pt.is_managed_internally")
         self._compareDataBases("Experiment types", openbis_data_source, openbis_harvester, "openbis", 
                                "select '{0}' || t.code as code, t.description, '{0}' || s.name as validation_script "
                                + "from experiment_types t left join scripts s on t.validation_script_id = s.id "
                                + "where t.code like '{1}%' order by t.code")
         self._compareDataBases("Experiment type property assignments", openbis_data_source, openbis_harvester, "openbis",
-                                "select '{0}' || et.code as experiment_type, '{0}' || pt.code as property_type, pt.is_internal_namespace, "
+                                "select '{0}' || et.code as experiment_type, '{0}' || pt.code as property_type, pt.is_managed_internally, "
                                 + "etpt.is_mandatory, etpt.is_managed_internally, etpt.ordinal, etpt.section, "
                                 + "etpt.is_shown_edit, etpt.show_raw_value, '{0}' || s.name as script "
                                 + "from experiment_type_property_types etpt "
                                 + "join experiment_types et on etpt.exty_id = et.id "
                                 + "join property_types pt on etpt.prty_id = pt.id "
                                 + "left join scripts s on etpt.script_id = s.id "
-                                + "where et.code like '{1}%' order by et.code, pt.code, pt.is_internal_namespace")
+                                + "where et.code like '{1}%' order by et.code, pt.code, pt.is_managed_internally")
         self._compareDataBases("Sample types", openbis_data_source, openbis_harvester, "openbis", 
                                "select '{0}' || code as code, t.description, is_listable, generated_from_depth, part_of_depth "
                                + "  is_auto_generated_code, generated_code_prefix, is_subcode_unique, inherit_properties, "
@@ -205,28 +204,28 @@ class TestCase(systemtest.testcase.TestCase):
                                + "from sample_types t left join scripts s on t.validation_script_id = s.id "
                                + "where code like '{1}%' order by code")
         self._compareDataBases("Sample type property assignments", openbis_data_source, openbis_harvester, "openbis",
-                                "select '{0}' || et.code as sample_type, '{0}' || pt.code as property_type, pt.is_internal_namespace, "
+                                "select '{0}' || et.code as sample_type, '{0}' || pt.code as property_type, pt.is_managed_internally, "
                                 + "etpt.is_mandatory, etpt. is_managed_internally, etpt.ordinal, etpt.section, "
                                 + "etpt.is_shown_edit, etpt.show_raw_value, '{0}' || s.name as script "
                                 + "from sample_type_property_types etpt "
                                 + "join sample_types et on etpt.saty_id = et.id "
                                 + "join property_types pt on etpt.prty_id = pt.id "
                                 + "left join scripts s on etpt.script_id = s.id "
-                                + "where et.code like '{1}%' order by et.code, pt.code, pt.is_internal_namespace")
+                                + "where et.code like '{1}%' order by et.code, pt.code, pt.is_managed_internally")
         self._compareDataBases("Data set types", openbis_data_source, openbis_harvester, "openbis", 
                                "select '{0}' || code as code, t.description, main_ds_pattern, main_ds_path, "
                                + "  deletion_disallow, '{0}' || s.name as validation_script "
                                + "from data_set_types t left join scripts s on t.validation_script_id = s.id "
                                + "where code like '{1}%' order by code")
         self._compareDataBases("Data set type property assignments", openbis_data_source, openbis_harvester, "openbis",
-                                "select '{0}' || et.code as data_set_type, '{0}' || pt.code as property_type, pt.is_internal_namespace, "
+                                "select '{0}' || et.code as data_set_type, '{0}' || pt.code as property_type, pt.is_managed_internally, "
                                 + "etpt.is_mandatory, etpt. is_managed_internally, etpt.ordinal, etpt.section, "
                                 + "etpt.is_shown_edit, etpt.show_raw_value, '{0}' || s.name as script "
                                 + "from data_set_type_property_types etpt "
                                 + "join data_set_types et on etpt.dsty_id = et.id "
                                 + "join property_types pt on etpt.prty_id = pt.id "
                                 + "left join scripts s on etpt.script_id = s.id "
-                                + "where et.code like '{1}%' order by et.code, pt.code, pt.is_internal_namespace")
+                                + "where et.code like '{1}%' order by et.code, pt.code, pt.is_managed_internally")
         self._compareDataBases("Plugins", openbis_data_source, openbis_harvester, "openbis", 
                                "select '{0}' || name as name, description, script_type, plugin_type, entity_kind, is_available, "
                                + "  length(script) as script_length, md5(script) as script_hash "
