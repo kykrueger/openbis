@@ -16,7 +16,11 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.authorizationgroup;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -28,6 +32,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CodesSearchCriteri
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.IdSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.PermIdSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.PersonSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.AbstractSearchObjectManuallyExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.CodeMatcher;
@@ -35,7 +40,9 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.CodesM
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.Matcher;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.SimpleFieldMatcher;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.StringFieldMatcher;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.person.ISearchPersonExecutor;
 import ch.systemsx.cisd.openbis.generic.shared.dto.AuthorizationGroupPE;
+import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 
 /**
  * 
@@ -78,6 +85,9 @@ public class SearchAuthorizationGroupExecutor
         } else if (criteria instanceof PermIdSearchCriteria)
         {
             return new PermIdMatcher();
+        } else if (criteria instanceof PersonSearchCriteria)
+        {
+            return new UserMatcher();
         } else
         {
             throw new IllegalArgumentException("Unknown search criteria: " + criteria.getClass());
@@ -110,6 +120,30 @@ public class SearchAuthorizationGroupExecutor
         protected String getFieldValue(AuthorizationGroupPE object)
         {
             return object.getCode();
+        }
+    }
+
+    @Autowired
+    private ISearchPersonExecutor searchPersonExecutor;
+    
+    private class UserMatcher extends Matcher<AuthorizationGroupPE>
+    {
+
+        @Override
+        public List<AuthorizationGroupPE> getMatching(IOperationContext context, List<AuthorizationGroupPE> groups, ISearchCriteria criteria)
+        {
+            Set<AuthorizationGroupPE> matchingGroups = new LinkedHashSet<>();
+            for (PersonPE user : searchPersonExecutor.search(context, (PersonSearchCriteria) criteria))
+            {
+                for (AuthorizationGroupPE group : groups)
+                {
+                    if (group.getPersons().contains(user))
+                    {
+                        matchingGroups.add(group);
+                    }
+                }
+            }
+            return new ArrayList<>(matchingGroups);
         }
     }
 

@@ -2193,6 +2193,38 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testSearch(c, fSearch, fCheck);
 		});
 
+		QUnit.test("searchRoleAssignments() with group with user", function(assert) {
+			var c = new common(assert, openbis);
+			var code;
+			
+			var fSearch = function(facade) {
+				return c.createAuthorizationGroup(facade).then(function(permId) {
+					var creation = new c.RoleAssignmentCreation();
+					creation.setRole(c.Role.POWER_USER);
+					creation.setAuthorizationGroupId(permId);
+					creation.setSpaceId(new c.SpacePermId("TEST"));
+					return facade.createRoleAssignments([ creation ]).then(function(permIds) {
+						var criteria = new c.RoleAssignmentSearchCriteria();
+						criteria.withSpace().withCode().thatEquals("TEST");
+						criteria.withAuthorizationGroup().withUser().withUserId().thatEquals("power_user");
+						var fo = c.createRoleAssignmentFetchOptions();
+						fo.withAuthorizationGroup().withUsers();
+						return facade.searchRoleAssignments(criteria, fo);
+					});
+				});
+			}
+			
+			var fCheck = function(facade, assignments) {
+				c.assertEqual(assignments.length, 1, "# Role Assignments");
+				var assignment = assignments[0];
+				c.assertEqual(assignment.getRole(), "POWER_USER", "Role");
+				c.assertEqual(assignment.getRoleLevel(), "SPACE", "Role level");
+				c.assertEqual(assignment.getSpace().getCode(), "TEST", "Space");
+			}
+			
+			testSearch(c, fSearch, fCheck);
+		});
+		
 		QUnit.test("searchPersons()", function(assert) {
 			var c = new common(assert, openbis);
 			var code;
