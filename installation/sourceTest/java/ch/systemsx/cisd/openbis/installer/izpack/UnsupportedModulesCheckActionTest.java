@@ -96,8 +96,8 @@ public class UnsupportedModulesCheckActionTest extends AbstractFileSystemTestCas
         assertEquals("Unsupported Module", titleMatcher.recordedObject());
         assertEquals("The following modules are no longer supported: [screening, proteomics]\n"
                 + "They were deprecated and have been removed.\n"
-                + "Please follow up evaluating if you need these modules and take a inform decision\n"
-                + "before disabling them because you may loose access to date and functionality.",
+                + "Please follow up evaluating if you need these modules and take an informed decision\n"
+                + "before disabling them because you may loose access to data and functionality.",
                 contentMatcher.recordedObject());
     }
 
