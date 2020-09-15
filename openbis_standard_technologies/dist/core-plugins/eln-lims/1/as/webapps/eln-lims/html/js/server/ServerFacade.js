@@ -2856,9 +2856,10 @@ function ServerFacade(openbisServer) {
 					}
 				} else if (criteriaParams.space) {
 					criteria.withSpace().withCode().thatEquals(criteriaParams.space);
-				}
-				if (criteriaParams.user) {
+				} else if (criteriaParams.user) {
+					criteria.withOrOperator();
 					criteria.withUser().withUserId().thatEquals(criteriaParams.user);
+					criteria.withAuthorizationGroup().withUser().withUserId().thatEquals(criteriaParams.user);
 				}
 				var fetchOptions = new RoleAssignmentFetchOptions();
 				fetchOptions.withSpace();
