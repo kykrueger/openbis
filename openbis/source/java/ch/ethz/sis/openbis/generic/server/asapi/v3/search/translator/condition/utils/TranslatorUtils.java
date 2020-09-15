@@ -75,37 +75,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.EntityWithPropertiesSortOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractDateObjectValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractDateValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractNumberValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractStringValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AnyStringValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateEarlierThanOrEqualToValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateEqualToValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateLaterThanOrEqualToValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateObjectEarlierThanOrEqualToValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateObjectEqualToValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateObjectLaterThanOrEqualToValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.IDate;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ITimeZone;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.LongDateFormat;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.NormalDateFormat;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.NumberEqualToValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.NumberGreaterThanOrEqualToValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.NumberGreaterThanValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.NumberLessThanOrEqualToValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.NumberLessThanValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ShortDateFormat;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringContainsExactlyValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringContainsValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringEndsWithValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringEqualToValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringGreaterThanOrEqualToValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringGreaterThanValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringLessThanOrEqualToValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringLessThanValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringStartsWithValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.TimeZone;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.*;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCriteriaTranslator;
@@ -527,12 +497,22 @@ public class TranslatorUtils
         if (fieldValue instanceof DateEqualToValue || fieldValue instanceof DateObjectEqualToValue)
         {
             sqlBuilder.append(EQ);
-        } else if (fieldValue instanceof DateEarlierThanOrEqualToValue || fieldValue instanceof DateObjectEarlierThanOrEqualToValue)
+        } else if (fieldValue instanceof DateEarlierThanOrEqualToValue
+                || fieldValue instanceof DateObjectEarlierThanOrEqualToValue)
         {
             sqlBuilder.append(LE);
-        } else if (fieldValue instanceof DateLaterThanOrEqualToValue || fieldValue instanceof DateObjectLaterThanOrEqualToValue)
+        } else if (fieldValue instanceof DateLaterThanOrEqualToValue
+                || fieldValue instanceof DateObjectLaterThanOrEqualToValue)
         {
             sqlBuilder.append(GE);
+        } else if (fieldValue instanceof DateEarlierThanValue
+                || fieldValue instanceof DateObjectEarlierThanValue)
+        {
+            sqlBuilder.append(LT);
+        } else if (fieldValue instanceof DateLaterThanValue
+                || fieldValue instanceof DateObjectLaterThanValue)
+        {
+            sqlBuilder.append(GT);
         } else
         {
             throw new IllegalArgumentException("Unsupported field value: " + fieldValue.getClass().getSimpleName());

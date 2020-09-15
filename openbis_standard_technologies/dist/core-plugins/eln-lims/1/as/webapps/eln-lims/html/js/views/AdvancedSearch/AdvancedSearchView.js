@@ -513,7 +513,9 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 					operatorOptions = [
 					                       { value : "thatEqualsDate", 						label : "thatEquals (Date)", selected : true },
 					                       { value : "thatIsLaterThanOrEqualToDate", 		label : "thatIsLaterThanOrEqualTo (Date)" },
-					                       { value : "thatIsEarlierThanOrEqualToDate", 		label : "thatIsEarlierThanOrEqualTo (Date)" }
+					                       { value : "thatIsLaterThanDate", 				label : "thatIsLaterThan (Date)" },
+					                       { value : "thatIsEarlierThanOrEqualToDate", 		label : "thatIsEarlierThanOrEqualTo (Date)" },
+					                       { value : "thatIsEarlierThanDate", 				label : "thatIsEarlierThan (Date)" }
 					                       ];
 				} else if(dataType === "PERSON") {
 					operatorOptions = [

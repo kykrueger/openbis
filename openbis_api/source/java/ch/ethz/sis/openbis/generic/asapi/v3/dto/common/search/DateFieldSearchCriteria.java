@@ -76,6 +76,16 @@ public abstract class DateFieldSearchCriteria extends AbstractFieldSearchCriteri
         setFieldValue(new DateLaterThanOrEqualToValue(date));
     }
 
+    public void thatIsLaterThan(final Date date)
+    {
+        setFieldValue(new DateObjectLaterThanValue(date));
+    }
+
+    public void thatIsLaterThan(final String date)
+    {
+        setFieldValue(new DateLaterThanValue(date));
+    }
+
     public void thatIsEarlierThanOrEqualTo(Date date)
     {
         setFieldValue(new DateObjectEarlierThanOrEqualToValue(date));
@@ -84,6 +94,16 @@ public abstract class DateFieldSearchCriteria extends AbstractFieldSearchCriteri
     public void thatIsEarlierThanOrEqualTo(String date)
     {
         setFieldValue(new DateEarlierThanOrEqualToValue(date));
+    }
+
+    public void thatIsEarlierThan(final Date date)
+    {
+        setFieldValue(new DateObjectEarlierThanValue(date));
+    }
+
+    public void thatIsEarlierThan(final String date)
+    {
+        setFieldValue(new DateEarlierThanValue(date));
     }
 
     public DateFieldSearchCriteria withServerTimeZone()

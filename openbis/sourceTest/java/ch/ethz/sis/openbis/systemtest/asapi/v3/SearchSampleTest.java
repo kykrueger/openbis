@@ -1860,37 +1860,62 @@ public class SearchSampleTest extends AbstractSampleTest
     public void testSearchWithDateDatePropertyThatIsLater()
     {
         // Given
-        String sessionToken = v3api.login(TEST_USER, PASSWORD);
-        PropertyTypePermId propertyType = createAPropertyType(sessionToken, DataType.DATE);
-        EntityTypePermId sampleType = createASampleType(sessionToken, true, propertyType);
-        SampleCreation creation = new SampleCreation();
-        creation.setCode("SAMPLE_WITH_DATE_PROPERTY");
-        creation.setTypeId(sampleType);
-        creation.setSpaceId(new SpacePermId("CISD"));
-        creation.setProperty(propertyType.getPermId(), "2/17/20");
-        v3api.createSamples(sessionToken, Arrays.asList(creation));
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        final PropertyTypePermId propertyType = createAPropertyType(sessionToken, DataType.DATE);
+        final EntityTypePermId sampleType = createASampleType(sessionToken, true, propertyType);
+        final SampleCreation creation1 = new SampleCreation();
+        creation1.setCode("SAMPLE_WITH_DATE_PROPERTY1");
+        creation1.setTypeId(sampleType);
+        creation1.setSpaceId(new SpacePermId("CISD"));
+        creation1.setProperty(propertyType.getPermId(), "2/17/20");
+        final SampleCreation creation2 = new SampleCreation();
+        creation2.setCode("SAMPLE_WITH_DATE_PROPERTY2");
+        creation2.setTypeId(sampleType);
+        creation2.setSpaceId(new SpacePermId("CISD"));
+        creation2.setProperty(propertyType.getPermId(), "2020-02-16");
+        v3api.createSamples(sessionToken, Arrays.asList(creation1, creation2));
 
         final SampleSearchCriteria criteria1 = new SampleSearchCriteria();
-        criteria1.withDateProperty(propertyType.getPermId()).thatIsLaterThanOrEqualTo("2020-02-16");
+        criteria1.withDateProperty(propertyType.getPermId()).thatIsLaterThan("2020-02-16");
 
         // When
         final List<Sample> samples1 = v3api.searchSamples(sessionToken, criteria1, new SampleFetchOptions())
                 .getObjects();
 
         // Then
-        assertEquals(samples1.get(0).getIdentifier().getIdentifier(), "/CISD/SAMPLE_WITH_DATE_PROPERTY");
+        assertEquals(samples1.get(0).getIdentifier().getIdentifier(), "/CISD/SAMPLE_WITH_DATE_PROPERTY1");
         assertEquals(samples1.size(), 1);
 
         final SampleSearchCriteria criteria2 = new SampleSearchCriteria();
-        criteria2.withDateProperty(propertyType.getPermId()).thatIsLaterThanOrEqualTo("2020-02-16");
+        criteria2.withDateProperty(propertyType.getPermId()).thatIsLaterThan("2020-02-16");
 
         // When
         final List<Sample> samples2 = v3api.searchSamples(sessionToken, criteria2, new SampleFetchOptions())
                 .getObjects();
 
         // Then
-        assertEquals(samples2.get(0).getIdentifier().getIdentifier(), "/CISD/SAMPLE_WITH_DATE_PROPERTY");
+        assertEquals(samples2.get(0).getIdentifier().getIdentifier(), "/CISD/SAMPLE_WITH_DATE_PROPERTY1");
         assertEquals(samples2.size(), 1);
+
+        final SampleSearchCriteria criteria3 = new SampleSearchCriteria();
+        criteria3.withDateProperty(propertyType.getPermId()).thatIsLaterThan("2020-02-17");
+
+        // When
+        final List<Sample> samples3 = v3api.searchSamples(sessionToken, criteria3, new SampleFetchOptions())
+                .getObjects();
+
+        // Then
+        assertEquals(samples3.size(), 0);
+
+        final SampleSearchCriteria criteria4 = new SampleSearchCriteria();
+        criteria4.withDateProperty(propertyType.getPermId()).thatIsLaterThan("2020-02-17");
+
+        // When
+        final List<Sample> samples4 = v3api.searchSamples(sessionToken, criteria4, new SampleFetchOptions())
+                .getObjects();
+
+        // Then
+        assertEquals(samples4.size(), 0);
     }
 
     @Test
@@ -1935,6 +1960,63 @@ public class SearchSampleTest extends AbstractSampleTest
 
     @Test
     public void testSearchWithDateDatePropertyThatIsEarlier()
+    {
+        // Given
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        final PropertyTypePermId propertyType = createAPropertyType(sessionToken, DataType.DATE);
+        final EntityTypePermId sampleType = createASampleType(sessionToken, true, propertyType);
+        final SampleCreation creation = new SampleCreation();
+        creation.setCode("SAMPLE_WITH_DATE_PROPERTY");
+        creation.setTypeId(sampleType);
+        creation.setSpaceId(new SpacePermId("CISD"));
+        creation.setProperty(propertyType.getPermId(), "1990-11-09");
+        v3api.createSamples(sessionToken, Collections.singletonList(creation));
+
+        final SampleSearchCriteria criteria1 = new SampleSearchCriteria();
+        criteria1.withDateProperty(propertyType.getPermId()).thatIsEarlierThan("1990-11-10");
+
+        // When
+        final List<Sample> samples1 = v3api.searchSamples(sessionToken, criteria1, new SampleFetchOptions())
+                .getObjects();
+
+        // Then
+        assertEquals(samples1.get(0).getIdentifier().getIdentifier(), "/CISD/SAMPLE_WITH_DATE_PROPERTY");
+        assertEquals(samples1.size(), 1);
+
+        final SampleSearchCriteria criteria2 = new SampleSearchCriteria();
+        criteria2.withDateProperty(propertyType.getPermId()).thatIsEarlierThan("1990-11-10");
+
+        // When
+        final List<Sample> samples2 = v3api.searchSamples(sessionToken, criteria2, new SampleFetchOptions())
+                .getObjects();
+
+        // Then
+        assertEquals(samples2.get(0).getIdentifier().getIdentifier(), "/CISD/SAMPLE_WITH_DATE_PROPERTY");
+        assertEquals(samples2.size(), 1);
+
+        final SampleSearchCriteria criteria3 = new SampleSearchCriteria();
+        criteria3.withDateProperty(propertyType.getPermId()).thatIsEarlierThan("1990-11-09");
+
+        // When
+        final List<Sample> samples3 = v3api.searchSamples(sessionToken, criteria3, new SampleFetchOptions())
+                .getObjects();
+
+        // Then
+        assertEquals(samples3.size(), 0);
+
+        final SampleSearchCriteria criteria4 = new SampleSearchCriteria();
+        criteria4.withDateProperty(propertyType.getPermId()).thatIsEarlierThan("1990-11-09");
+
+        // When
+        final List<Sample> samples4 = v3api.searchSamples(sessionToken, criteria4, new SampleFetchOptions())
+                .getObjects();
+
+        // Then
+        assertEquals(samples4.size(), 0);
+    }
+
+    @Test
+    public void testSearchWithDateDatePropertyThatIsEarlierOrEqual()
     {
         // Given
         String sessionToken = v3api.login(TEST_USER, PASSWORD);

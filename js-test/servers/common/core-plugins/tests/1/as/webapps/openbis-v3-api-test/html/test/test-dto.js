@@ -129,6 +129,8 @@ define([ 'underscore', 'test/common' ], function(_, common) {
 				checkDateFieldSearchCriteriaMethod(assert, criteria, "thatEquals", "EqualToValue", "equal", name, type);
 				checkDateFieldSearchCriteriaMethod(assert, criteria, "thatIsLaterThanOrEqualTo", "LaterThanOrEqualToValue", "later than or equal", name, type);
 				checkDateFieldSearchCriteriaMethod(assert, criteria, "thatIsEarlierThanOrEqualTo", "EarlierThanOrEqualToValue", "earlier than or equal", name, type);
+				checkDateFieldSearchCriteriaMethod(assert, criteria, "thatIsLaterThan", "LaterThanValue", "later than", name, type);
+				checkDateFieldSearchCriteriaMethod(assert, criteria, "thatIsEarlierThan", "EarlierThanValue", "earlier than", name, type);
 				done();
 			});
 		}
