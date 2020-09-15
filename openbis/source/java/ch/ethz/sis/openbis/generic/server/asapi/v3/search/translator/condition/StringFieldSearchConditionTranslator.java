@@ -105,10 +105,19 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
                 {
                     casting = dataTypeByPropertyName.get(propertyName);
 
-                    sqlBuilder.append(CASE);
                     if (casting != null)
                     {
                         verifyCriterionValidity(criterion, value, casting);
+
+                        // Delegating translation for number properties
+                        if (casting.equals(DataTypeCode.INTEGER.toString())
+                                || casting.equals(DataTypeCode.REAL.toString()))
+                        {
+
+                            NumberFieldSearchConditionTranslator.translateNumberProperty(tableMapper, args, sqlBuilder,
+                                    aliases, convertStringValueToNumberValue(value), propertyName, internalProperty);
+                            return;
+                        }
 
                         // Building separate case for timestamps and dates
                         if (casting.equals(DataTypeCode.TIMESTAMP.toString())
@@ -117,6 +126,8 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
                             final DataType dataType = casting.equals(DataTypeCode.TIMESTAMP.toString())
                                     ? DataType.TIMESTAMP : DataType.DATE;
                             final boolean bareDateValue = TranslatorUtils.isDateWithoutTime(value.getValue());
+
+                            sqlBuilder.append(CASE);
                             DateFieldSearchConditionTranslator.appendWhenForDateOrTimestampProperties(sqlBuilder, args,
                                     dataType, tableMapper, convertStringValueToDateValue(value), aliases, null,
                                     bareDateValue, propertyName, internalProperty, entityTypesSubTableAlias);
@@ -125,7 +136,7 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
                         }
                     }
 
-                    sqlBuilder.append(SP).append(WHEN).append(SP);
+                    sqlBuilder.append(CASE).append(SP).append(WHEN).append(SP);
                 } else
                 {
                     casting = null;
@@ -266,6 +277,40 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
         } else
         {
             throw new IllegalArgumentException(String.format("Cannot convert string value of class %s to date value",
+                    stringValue.getClass()));
+        }
+    }
+
+    private static AbstractNumberValue convertStringValueToNumberValue(final AbstractStringValue stringValue)
+    {
+        final String value = stringValue.getValue();
+        Number numberValue;
+        try
+        {
+            numberValue = Long.parseLong(value);
+        } catch (final NumberFormatException e)
+        {
+            numberValue = Double.parseDouble(value);
+        }
+
+        if (stringValue instanceof StringEqualToValue)
+        {
+            return new NumberEqualToValue(numberValue);
+        } else if (stringValue instanceof StringLessThanOrEqualToValue)
+        {
+            return new NumberLessThanOrEqualToValue(numberValue);
+        } else if (stringValue instanceof StringGreaterThanOrEqualToValue)
+        {
+            return new NumberGreaterThanOrEqualToValue(numberValue);
+        } else if (stringValue instanceof StringLessThanValue)
+        {
+            return new NumberLessThanValue(numberValue);
+        } else if (stringValue instanceof StringGreaterThanValue)
+        {
+            return new NumberGreaterThanValue(numberValue);
+        } else
+        {
+            throw new IllegalArgumentException(String.format("Cannot convert string value of class %s to number value",
                     stringValue.getClass()));
         }
     }

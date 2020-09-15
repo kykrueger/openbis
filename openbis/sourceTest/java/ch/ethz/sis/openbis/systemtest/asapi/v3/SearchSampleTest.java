@@ -2252,6 +2252,85 @@ public class SearchSampleTest extends AbstractSampleTest
         assertUserFailureException(
                 Void -> searchSamples(sessionToken, criteriaEndsWithMatch, new SampleFetchOptions()),
                 String.format("Operator %s undefined for datatype %s.", "EndsWith", "TIMESTAMP"));
+
+//        final SampleSearchCriteria criteriaLTMatch = new SampleSearchCriteria();
+//        criteriaLTMatch.withProperty("TIMESTAMP").thatIsLessThan("2020-02-09 11:00:00 +0100");
+//        final List<Sample> samplesLT = searchSamples(sessionToken, criteriaLTMatch, new SampleFetchOptions());
+//        assertSampleIdentifiers(samplesLT, "/CISD/TIMESTAMP_PROPERTY_TEST");
+//
+//        final SampleSearchCriteria criteriaLEMatch = new SampleSearchCriteria();
+//        criteriaLEMatch.withProperty("TIMESTAMP").thatIsLessThanOrEqualTo("2020-02-09 11:00:00 +0100");
+//        final List<Sample> samplesLE = searchSamples(sessionToken, criteriaLEMatch, new SampleFetchOptions());
+//        assertSampleIdentifiers(samplesLE, "/CISD/TIMESTAMP_PROPERTY_TEST");
+//
+//        final SampleSearchCriteria criteriaGTMatch = new SampleSearchCriteria();
+//        criteriaGTMatch.withProperty("TIMESTAMP").thatIsGreaterThan("2020-02-09 10:00:00 +0100");
+//        final List<Sample> samplesGT = searchSamples(sessionToken, criteriaGTMatch, new SampleFetchOptions());
+//        assertSampleIdentifiers(samplesGT);
+//
+//        final SampleSearchCriteria criteriaGEMatch = new SampleSearchCriteria();
+//        criteriaGEMatch.withProperty("TIMESTAMP").thatIsGreaterThanOrEqualTo("2020-02-09 10:00:00 +0100");
+//        final List<Sample> samplesGE = searchSamples(sessionToken, criteriaGEMatch, new SampleFetchOptions());
+//        assertSampleIdentifiers(samplesGE, "/CISD/TIMESTAMP_PROPERTY_TEST");
+    }
+
+    @Test
+    public void testSearchForSampleWithBooleanPropertyUnsupportedMatching()
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        final PropertyTypePermId propertyType = createABooleanPropertyType(sessionToken, "BOOLEAN");
+        final EntityTypePermId sampleType = createASampleType(sessionToken, false, propertyType);
+
+        final SampleCreation sampleCreation = new SampleCreation();
+        sampleCreation.setCode("BOOLEAN_PROPERTY_TEST");
+        sampleCreation.setTypeId(sampleType);
+        sampleCreation.setSpaceId(new SpacePermId("CISD"));
+        sampleCreation.setProperty("BOOLEAN", "false");
+
+        v3api.createSamples(sessionToken, Collections.singletonList(sampleCreation));
+
+        final SampleSearchCriteria criteriaStartsWithMatch = new SampleSearchCriteria();
+        criteriaStartsWithMatch.withProperty("BOOLEAN").thatStartsWith("fa");
+        assertUserFailureException(
+                Void -> searchSamples(sessionToken, criteriaStartsWithMatch, new SampleFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "StartsWith", "BOOLEAN"));
+
+        final SampleSearchCriteria criteriaEndsWithMatch = new SampleSearchCriteria();
+        criteriaEndsWithMatch.withProperty("BOOLEAN").thatEndsWith("se");
+        assertUserFailureException(
+                Void -> searchSamples(sessionToken, criteriaEndsWithMatch, new SampleFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "EndsWith", "BOOLEAN"));
+
+        final SampleSearchCriteria criteriaContainsMatch = new SampleSearchCriteria();
+        criteriaContainsMatch.withProperty("BOOLEAN").thatContains("ls");
+        assertUserFailureException(
+                Void -> searchSamples(sessionToken, criteriaContainsMatch, new SampleFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "Contains", "BOOLEAN"));
+
+        final SampleSearchCriteria criteriaGTMatch = new SampleSearchCriteria();
+        criteriaGTMatch.withProperty("BOOLEAN").thatIsGreaterThan("false");
+        assertUserFailureException(
+                Void -> searchSamples(sessionToken, criteriaGTMatch, new SampleFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "GreaterThan", "BOOLEAN"));
+
+        final SampleSearchCriteria criteriaGEMatch = new SampleSearchCriteria();
+        criteriaGEMatch.withProperty("BOOLEAN").thatIsGreaterThanOrEqualTo("false");
+        assertUserFailureException(
+                Void -> searchSamples(sessionToken, criteriaGEMatch, new SampleFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "GreaterThanOrEqualTo", "BOOLEAN"));
+
+        final SampleSearchCriteria criteriaLTMatch = new SampleSearchCriteria();
+        criteriaLTMatch.withProperty("BOOLEAN").thatIsLessThan("true");
+        assertUserFailureException(
+                Void -> searchSamples(sessionToken, criteriaLTMatch, new SampleFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "LessThan", "BOOLEAN"));
+
+        final SampleSearchCriteria criteriaLEMatch = new SampleSearchCriteria();
+        criteriaLEMatch.withProperty("BOOLEAN").thatIsLessThanOrEqualTo("true");
+        assertUserFailureException(
+                Void -> searchSamples(sessionToken, criteriaLEMatch, new SampleFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "LessThanOrEqualTo", "BOOLEAN"));
     }
 
     @Test
