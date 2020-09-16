@@ -153,8 +153,8 @@ def openbis_definitions(entity):
             "identifier": "typeId",
         },
         "propertyType": {
-            "attrs": "code label description managedInternally internalNameSpace dataType vocabulary materialType schema transformation semanticAnnotations registrator registrationDate".split(),
-            "attrs_new": "code label description managedInternally internalNameSpace dataType vocabulary materialType schema transformation metaData".split(),
+            "attrs": "code label description managedInternally dataType vocabulary materialType schema transformation semanticAnnotations registrator registrationDate".split(),
+            "attrs_new": "code label description managedInternally dataType vocabulary materialType schema transformation metaData".split(),
             "attrs_up": "label description schema transformation metaData".split(),
             "search": {
                 "@type": "as.dto.property.search.PropertyTypeSearchCriteria"
@@ -220,9 +220,9 @@ def openbis_definitions(entity):
             "identifier": "tagId",
         },
         "vocabulary": {
-            "attrs_new": "code description managedInternally internalNameSpace chosenFromList urlTemplate terms".split(),
-            "attrs_up": "description managedInternally internalNameSpace chosenFromList urlTemplate".split(),
-            "attrs": "code description managedInternally internalNameSpace chosenFromList urlTemplate registrator registrationDate modifier modificationDate".split(),
+            "attrs_new": "code description managedInternally chosenFromList urlTemplate terms".split(),
+            "attrs_up": "description managedInternally chosenFromList urlTemplate".split(),
+            "attrs": "code description managedInternally chosenFromList urlTemplate registrator registrationDate modifier modificationDate".split(),
             "multi": "".split(),
             "identifier": "vocabularyId",
             "search": { "@type": "as.dto.vocabulary.search.VocabularySearchCriteria" },

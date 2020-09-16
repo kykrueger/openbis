@@ -41,6 +41,7 @@ import java.util.function.Consumer;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.create.MaterialTypeCreation;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.hibernate.Session;
@@ -1473,6 +1474,22 @@ public class AbstractTest extends SystemTestCase
         return v3api.createDataSetTypes(sessionToken, Arrays.asList(creation)).get(0);
     }
 
+    protected EntityTypePermId createAMaterialType(final String sessionToken, final boolean mandatory,
+            final PropertyTypePermId... propertyTypes)
+    {
+        final MaterialTypeCreation creation = new MaterialTypeCreation();
+        creation.setCode("MATERIAL-TYPE-" + System.currentTimeMillis());
+        final List<PropertyAssignmentCreation> assignments = Arrays.stream(propertyTypes).map(propertyTypeId ->
+        {
+            final PropertyAssignmentCreation propertyAssignmentCreation = new PropertyAssignmentCreation();
+            propertyAssignmentCreation.setPropertyTypeId(propertyTypeId);
+            propertyAssignmentCreation.setMandatory(mandatory);
+            return propertyAssignmentCreation;
+        }).collect(Collectors.toList());
+        creation.setPropertyAssignments(assignments);
+        return v3api.createMaterialTypes(sessionToken, Collections.singletonList(creation)).get(0);
+    }
+
     protected DataSetCreation physicalDataSetCreation()
     {
         String code = UUID.randomUUID().toString();
@@ -1539,6 +1556,36 @@ public class AbstractTest extends SystemTestCase
     {
         return Arrays.asList(clazz.getMethods()).stream()
                 .filter(m -> m.getName().startsWith("freeze")).map(MethodWrapper::new).collect(Collectors.toList());
+    }
+
+    protected PropertyTypePermId createABooleanPropertyType(final String sessionToken, final String code)
+    {
+        final PropertyTypeCreation creation = new PropertyTypeCreation();
+        creation.setCode(code);
+        creation.setDataType(DataType.BOOLEAN);
+        creation.setLabel("Boolean");
+        creation.setDescription("Boolean property type.");
+        return v3api.createPropertyTypes(sessionToken, Collections.singletonList(creation)).get(0);
+    }
+
+    protected PropertyTypePermId createAnIntegerPropertyType(final String sessionToken, final String code)
+    {
+        final PropertyTypeCreation creation = new PropertyTypeCreation();
+        creation.setCode(code);
+        creation.setDataType(DataType.INTEGER);
+        creation.setLabel("Integer");
+        creation.setDescription("Integer property type.");
+        return v3api.createPropertyTypes(sessionToken, Collections.singletonList(creation)).get(0);
+    }
+
+    protected PropertyTypePermId createARealPropertyType(final String sessionToken, final String code)
+    {
+        final PropertyTypeCreation creation = new PropertyTypeCreation();
+        creation.setCode(code);
+        creation.setDataType(DataType.REAL);
+        creation.setLabel("Real");
+        creation.setDescription("Real property type.");
+        return v3api.createPropertyTypes(sessionToken, Collections.singletonList(creation)).get(0);
     }
 
 }

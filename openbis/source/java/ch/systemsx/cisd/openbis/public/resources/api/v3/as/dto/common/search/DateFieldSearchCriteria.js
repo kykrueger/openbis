@@ -31,6 +31,16 @@ define([ "require", "stjs", "util/Exceptions", "as/dto/common/search/AbstractFie
 			var DateObjectLaterThanOrEqualToValue = require("as/dto/common/search/DateObjectLaterThanOrEqualToValue");
 			this.setFieldValue(value(DateLaterThanOrEqualToValue, DateObjectLaterThanOrEqualToValue, date));
 		};
+		prototype.thatIsEarlierThan = function(date) {
+			var DateEarlierThanValue = require("as/dto/common/search/DateEarlierThanValue");
+			var DateObjectEarlierThanValue = require("as/dto/common/search/DateObjectEarlierThanValue");
+			this.setFieldValue(value(DateEarlierThanValue, DateObjectEarlierThanValue, date));
+		};
+		prototype.thatIsLaterThan = function(date) {
+			var DateLaterThanValue = require("as/dto/common/search/DateLaterThanValue");
+			var DateObjectLaterThanValue = require("as/dto/common/search/DateObjectLaterThanValue");
+			this.setFieldValue(value(DateLaterThanValue, DateObjectLaterThanValue, date));
+		};
 		prototype.thatIsEarlierThanOrEqualTo = function(date) {
 			var DateEarlierThanOrEqualToValue = require("as/dto/common/search/DateEarlierThanOrEqualToValue");
 			var DateObjectEarlierThanOrEqualToValue = require("as/dto/common/search/DateObjectEarlierThanOrEqualToValue");

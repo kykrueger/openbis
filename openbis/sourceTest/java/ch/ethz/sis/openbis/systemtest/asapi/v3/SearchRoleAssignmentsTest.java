@@ -162,6 +162,30 @@ public class SearchRoleAssignmentsTest extends AbstractTest
     }
 
     @Test
+    public void testSearchForAUserAlsoViaGroups()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        RoleAssignmentSearchCriteria searchCriteria = new RoleAssignmentSearchCriteria();
+        searchCriteria.withOrOperator();
+        searchCriteria.withUser().withUserId().thatContains("p_");
+        searchCriteria.withAuthorizationGroup().withUser().withUserId().thatContains("p_");
+        RoleAssignmentFetchOptions fetchOptions = new RoleAssignmentFetchOptions();
+        fetchOptions.withUser();
+        fetchOptions.withAuthorizationGroup();
+        fetchOptions.withSpace();
+        fetchOptions.withProject();
+
+        // When
+        List<RoleAssignment> assignments = v3api.searchRoleAssignments(sessionToken, searchCriteria, fetchOptions).getObjects();
+
+        // Then
+        assertRoleAssignments(assignments, "ADMIN SPACE[TESTGROUP] for group AGROUP\n"
+                + "ETL_SERVER SPACE[TESTGROUP] for user test_group_etl_server\n"
+                + "USER PROJECT[/CISD/DEFAULT] for group AGROUP\n");
+    }
+
+    @Test
     public void testSearchForSomeUsers()
     {
         // Given

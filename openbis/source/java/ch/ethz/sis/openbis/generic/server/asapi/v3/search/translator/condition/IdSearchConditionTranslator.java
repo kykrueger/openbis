@@ -200,7 +200,7 @@ public class IdSearchConditionTranslator implements IConditionTranslator<IdSearc
         sqlBuilder.append(SearchCriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(PROJECT_COLUMN).append(SP).append(IN).append(SP).append(LP).
                 append(SELECT).append(SP).append(p).append(PERIOD).append(ID_COLUMN).append(SP).
                 append(FROM).append(SP).append(PROJECTS_TABLE).append(SP).append(p).append(SP).
-                append(INNER_JOIN).append(SP).append(SPACES_TABLE).append(SP).append(s).append(SP).
+                append(LEFT_JOIN).append(SP).append(SPACES_TABLE).append(SP).append(s).append(SP).
                 append(ON).append(SP).append(s).append(PERIOD).append(ID_COLUMN).append(SP).append(EQ).
                 append(SP).append(p).append(PERIOD).append(SPACE_COLUMN).append(SP).
                 append(WHERE).append(SP).append(s).append(PERIOD).append(CODE_COLUMN).append(SP).append(EQ).append(SP).append(QU).

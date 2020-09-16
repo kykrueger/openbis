@@ -1439,8 +1439,14 @@ function ServerFacade(openbisServer) {
 									case "thatIsGreaterThanOrEqualToNumber":
 										criteria.withNumberProperty(propertyName).thatIsGreaterThanOrEqualTo(parseFloat(propertyValue));
 										break;
+									case "thatIsLaterThanDate":
+										criteria.withDateProperty(propertyName).thatIsLaterThan(propertyValue);
+										break;
 									case "thatIsLaterThanOrEqualToDate":
 										criteria.withDateProperty(propertyName).thatIsLaterThanOrEqualTo(propertyValue);
+										break;
+									case "thatIsEarlierThanDate":
+										criteria.withDateProperty(propertyName).thatIsEarlierThan(propertyValue);
 										break;
 									case "thatIsEarlierThanOrEqualToDate":
 										criteria.withDateProperty(propertyName).thatIsEarlierThanOrEqualTo(propertyValue);
@@ -1498,8 +1504,14 @@ function ServerFacade(openbisServer) {
 										case "thatEqualsDate":
 											criteria.withRegistrationDate().thatEquals(attributeValue);
 											break;
+										case "thatIsLaterThanDate":
+											criteria.withRegistrationDate().thatIsLaterThan(attributeValue);
+											break;
 										case "thatIsLaterThanOrEqualToDate":
 											criteria.withRegistrationDate().thatIsLaterThanOrEqualTo(attributeValue);
+											break;
+										case "thatIsEarlierThanDate":
+											criteria.withRegistrationDate().thatIsEarlierThan(attributeValue);
 											break;
 										case "thatIsEarlierThanOrEqualToDate":
 											criteria.withRegistrationDate().thatIsEarlierThanOrEqualTo(attributeValue);
@@ -1530,8 +1542,14 @@ function ServerFacade(openbisServer) {
 										case "thatEqualsDate":
 											criteria.withModificationDate().thatEquals(attributeValue);
 											break;
+										case "thatIsLaterThanDate":
+											criteria.withModificationDate().thatIsLaterThan(attributeValue);
+											break;
 										case "thatIsLaterThanOrEqualToDate":
 											criteria.withModificationDate().thatIsLaterThanOrEqualTo(attributeValue);
+											break;
+										case "thatIsEarlierThan":
+											criteria.withModificationDate().thatIsEarlierThan(attributeValue);
 											break;
 										case "thatIsEarlierThanOrEqualToDate":
 											criteria.withModificationDate().thatIsEarlierThanOrEqualTo(attributeValue);
@@ -2856,9 +2874,10 @@ function ServerFacade(openbisServer) {
 					}
 				} else if (criteriaParams.space) {
 					criteria.withSpace().withCode().thatEquals(criteriaParams.space);
-				}
-				if (criteriaParams.user) {
+				} else if (criteriaParams.user) {
+					criteria.withOrOperator();
 					criteria.withUser().withUserId().thatEquals(criteriaParams.user);
+					criteria.withAuthorizationGroup().withUser().withUserId().thatEquals(criteriaParams.user);
 				}
 				var fetchOptions = new RoleAssignmentFetchOptions();
 				fetchOptions.withSpace();

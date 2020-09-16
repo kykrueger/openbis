@@ -23,6 +23,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DatePropertySearchCriteria;
@@ -1284,6 +1287,182 @@ public class SearchDataSetTest extends AbstractDataSetTest
     }
 
     @Test
+    public void testSearchNumeric()
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        final PropertyTypePermId integerPropertyType = createAnIntegerPropertyType(sessionToken, "INT_NUMBER");
+        final PropertyTypePermId realPropertyType = createARealPropertyType(sessionToken, "REAL_NUMBER");
+        final EntityTypePermId dataSetType = createADataSetType(sessionToken, false, integerPropertyType,
+                realPropertyType);
+
+        final DataSetCreation dataSetCreation1 = getDataSetCreation(dataSetType, 1, 0.01);
+        final DataSetCreation dataSetCreation2 = getDataSetCreation(dataSetType, 2, 0.02);
+        final DataSetCreation dataSetCreation3 = getDataSetCreation(dataSetType, 3, 0.03);
+
+        v3api.createDataSets(sessionToken, Arrays.asList(dataSetCreation1, dataSetCreation2,
+                dataSetCreation3));
+
+        final DataSetFetchOptions emptyFetchOptions = new DataSetFetchOptions();
+
+        // Greater or Equal - Integer
+        final DataSetSearchCriteria criteriaGE = new DataSetSearchCriteria();
+        criteriaGE.withNumberProperty("INT_NUMBER").thatIsGreaterThanOrEqualTo(2);
+        final List<DataSet> dataSetsGE = search(sessionToken, criteriaGE, emptyFetchOptions);
+        assertDataSetCodesInOrder(dataSetsGE, "TEST_2", "TEST_3");
+
+        // Greater or Equal - Integer as Real
+        final DataSetSearchCriteria criteriaGEIR = new DataSetSearchCriteria();
+        criteriaGEIR.withNumberProperty("INT_NUMBER").thatIsGreaterThanOrEqualTo(2.0);
+        final List<DataSet> dataSetsGEIR = search(sessionToken, criteriaGEIR, emptyFetchOptions);
+        assertDataSetCodesInOrder(dataSetsGEIR, "TEST_2", "TEST_3");
+
+        // Greater or Equal - Real
+        final DataSetSearchCriteria criteriaGER = new DataSetSearchCriteria();
+        criteriaGER.withNumberProperty("REAL_NUMBER").thatIsGreaterThanOrEqualTo(0.02);
+        final List<DataSet> dataSetsGER = search(sessionToken, criteriaGER, emptyFetchOptions);
+        assertDataSetCodesInOrder(dataSetsGER, "TEST_2", "TEST_3");
+
+        // Greater - Integer
+        final DataSetSearchCriteria criteriaG = new DataSetSearchCriteria();
+        criteriaG.withNumberProperty("INT_NUMBER").thatIsGreaterThan(2);
+        final List<DataSet> dataSetsG = search(sessionToken, criteriaG, emptyFetchOptions);
+        assertDataSetCodesInOrder(dataSetsG, "TEST_3");
+
+        // Greater - Integer as Real
+        final DataSetSearchCriteria criteriaGIR = new DataSetSearchCriteria();
+        criteriaGIR.withNumberProperty("INT_NUMBER").thatIsGreaterThan(2.0);
+        final List<DataSet> dataSetsGIR = search(sessionToken, criteriaGIR, emptyFetchOptions);
+        assertDataSetCodesInOrder(dataSetsGIR, "TEST_3");
+
+        // Greater - Real
+        final DataSetSearchCriteria criteriaGR = new DataSetSearchCriteria();
+        criteriaGR.withNumberProperty("REAL_NUMBER").thatIsGreaterThan(0.02);
+        final List<DataSet> dataSetsGR = search(sessionToken, criteriaGR, emptyFetchOptions);
+        assertDataSetCodesInOrder(dataSetsGR, "TEST_3");
+
+        // Equal - Integer
+        final DataSetSearchCriteria criteriaE = new DataSetSearchCriteria();
+        criteriaE.withNumberProperty("INT_NUMBER").thatEquals(2);
+        final List<DataSet> dataSetsE = search(sessionToken, criteriaE, emptyFetchOptions);
+        assertDataSetCodesInOrder(dataSetsE, "TEST_2");
+
+        // Equal - Integer as String
+        final DataSetSearchCriteria criteriaES = new DataSetSearchCriteria();
+        criteriaES.withProperty("INT_NUMBER").thatEquals("2");
+        final List<DataSet> dataSetsES = search(sessionToken, criteriaES, emptyFetchOptions);
+        assertDataSetCodesInOrder(dataSetsES, "TEST_2");
+
+        // Equal - Integer as Real as String
+        final DataSetSearchCriteria criteriaERS = new DataSetSearchCriteria();
+        criteriaERS.withProperty("INT_NUMBER").thatEquals("2.0");
+        final List<DataSet> dataSetsERS = search(sessionToken, criteriaERS, emptyFetchOptions);
+        assertDataSetCodesInOrder(dataSetsERS, "TEST_2");
+
+        // Greater or Equal - Integer
+        final DataSetSearchCriteria criteriaLE = new DataSetSearchCriteria();
+        criteriaLE.withNumberProperty("INT_NUMBER").thatIsLessThanOrEqualTo(2);
+        final List<DataSet> dataSetsLE = search(sessionToken, criteriaLE, emptyFetchOptions);
+        assertDataSetCodesInOrder(dataSetsLE, "TEST_1", "TEST_2");
+
+        // Less or Equal - Real
+        final DataSetSearchCriteria criteriaLER = new DataSetSearchCriteria();
+        criteriaLER.withNumberProperty("REAL_NUMBER").thatIsLessThanOrEqualTo(0.02);
+        final List<DataSet> dataSetsLER = search(sessionToken, criteriaLER, emptyFetchOptions);
+        assertDataSetCodesInOrder(dataSetsLER, "TEST_1", "TEST_2");
+
+        // Less - Integer
+        final DataSetSearchCriteria criteriaL = new DataSetSearchCriteria();
+        criteriaL.withNumberProperty("INT_NUMBER").thatIsLessThan(2);
+        final List<DataSet> dataSetsL = search(sessionToken, criteriaL, emptyFetchOptions);
+        assertDataSetCodesInOrder(dataSetsL, "TEST_1");
+
+        // Less - Integer as Real
+        final DataSetSearchCriteria criteriaLIR = new DataSetSearchCriteria();
+        criteriaLIR.withNumberProperty("INT_NUMBER").thatIsLessThan(2.0);
+        final List<DataSet> dataSetsLIR = search(sessionToken, criteriaLIR, emptyFetchOptions);
+        assertDataSetCodesInOrder(dataSetsLIR, "TEST_1");
+
+        // Less - Real
+        final DataSetSearchCriteria criteriaLR = new DataSetSearchCriteria();
+        criteriaLR.withNumberProperty("REAL_NUMBER").thatIsLessThan(0.02);
+        final List<DataSet> dataSetsLR = search(sessionToken, criteriaLR, emptyFetchOptions);
+        assertDataSetCodesInOrder(dataSetsLR, "TEST_1");
+    }
+
+    @Test
+    public void testSearchForDataSetWithDatePropertyMatchingSubstring()
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        final PropertyTypePermId propertyType = createADatePropertyType(sessionToken, "DATE");
+        final EntityTypePermId dataSetType = createADataSetType(sessionToken, false, propertyType);
+
+        final DataSetCreation dataSetCreation = physicalDataSetCreation();
+        dataSetCreation.setCode("DATE_PROPERTY_TEST");
+        dataSetCreation.setTypeId(dataSetType);
+        dataSetCreation.setProperty("DATE", "2020-02-09");
+
+        v3api.createDataSets(sessionToken, Collections.singletonList(dataSetCreation));
+
+        final DataSetSearchCriteria criteriaContainsMatch = new DataSetSearchCriteria();
+        criteriaContainsMatch.withProperty("DATE").thatContains("02");
+        assertUserFailureException(
+                Void -> searchDataSets(sessionToken, criteriaContainsMatch, new DataSetFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "Contains", "DATE"));
+
+        final DataSetSearchCriteria criteriaStartsWithMatch = new DataSetSearchCriteria();
+        criteriaStartsWithMatch.withProperty("DATE").thatStartsWith("2020");
+        assertUserFailureException(
+                Void -> searchDataSets(sessionToken, criteriaStartsWithMatch, new DataSetFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "StartsWith", "DATE"));
+
+        final DataSetSearchCriteria criteriaEndsWithMatch = new DataSetSearchCriteria();
+        criteriaEndsWithMatch.withProperty("DATE").thatEndsWith("09");
+        assertUserFailureException(
+                Void -> searchDataSets(sessionToken, criteriaEndsWithMatch, new DataSetFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "EndsWith", "DATE"));
+
+        v3api.logout(sessionToken);
+    }
+
+    @Test
+    public void testSearchForDataSetWithTimestampPropertyMatchingSubstring()
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        final PropertyTypePermId propertyType = createATimestampPropertyType(sessionToken, "TIMESTAMP");
+        final EntityTypePermId dataSetType = createADataSetType(sessionToken, false, propertyType);
+
+        final DataSetCreation dataSetCreation = physicalDataSetCreation();
+        dataSetCreation.setCode("TIMESTAMP_PROPERTY_TEST");
+        dataSetCreation.setTypeId(dataSetType);
+        dataSetCreation.setProperty("TIMESTAMP", "2020-02-09 10:00:00 +0100");
+
+        v3api.createDataSets(sessionToken, Collections.singletonList(dataSetCreation));
+
+        final DataSetSearchCriteria criteriaContainsMatch = new DataSetSearchCriteria();
+        criteriaContainsMatch.withProperty("TIMESTAMP").thatContains("20");
+        assertUserFailureException(
+                Void -> searchDataSets(sessionToken, criteriaContainsMatch, new DataSetFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "Contains", "TIMESTAMP"));
+
+        final DataSetSearchCriteria criteriaStartsWithMatch = new DataSetSearchCriteria();
+        criteriaStartsWithMatch.withProperty("TIMESTAMP").thatStartsWith("2020");
+        assertUserFailureException(
+                Void -> searchDataSets(sessionToken, criteriaStartsWithMatch, new DataSetFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "StartsWith", "TIMESTAMP"));
+
+        final DataSetSearchCriteria criteriaEndsWithMatch = new DataSetSearchCriteria();
+        criteriaEndsWithMatch.withProperty("TIMESTAMP").thatEndsWith("0100");
+        assertUserFailureException(
+                Void -> searchDataSets(sessionToken, criteriaEndsWithMatch, new DataSetFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "EndsWith", "TIMESTAMP"));
+
+        v3api.logout(sessionToken);
+    }
+
+    @Test
     public void testLogging()
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
@@ -1301,24 +1480,42 @@ public class SearchDataSetTest extends AbstractDataSetTest
                 "search-data-sets  SEARCH_CRITERIA:\n'DATASET\n    with attribute 'code' equal to '20081105092259000-18'\n'\nFETCH_OPTIONS:\n'DataSet\n    with Experiment\n    with Sample\n'");
     }
 
+    private List<DataSet> search(final String sessionToken, final DataSetSearchCriteria criteria,
+            final DataSetFetchOptions options)
+    {
+        return v3api.searchDataSets(sessionToken, criteria, options).getObjects();
+    }
+
+    public DataSetCreation getDataSetCreation(final EntityTypePermId dataSetType, final int intValue,
+            final double realValue)
+    {
+        final DataSetCreation dataSetCreation = physicalDataSetCreation();
+        dataSetCreation.setCode("TEST_" + intValue);
+        dataSetCreation.setTypeId(dataSetType);
+        dataSetCreation.setProperty("INT_NUMBER", String.valueOf(intValue));
+        dataSetCreation.setProperty("REAL_NUMBER", String.valueOf(realValue));
+        return dataSetCreation;
+    }
+
     private void testSearch(String user, DataSetSearchCriteria criteria, String... expectedIdentifiers)
     {
-        List<DataSet> dataSets = searchDataSets(user, criteria, new DataSetFetchOptions());
-
+        final String sessionToken = v3api.login(user, PASSWORD);
+        List<DataSet> dataSets = searchDataSets(sessionToken, criteria, new DataSetFetchOptions());
         assertIdentifiers(dataSets, expectedIdentifiers);
     }
 
     private void testSearch(String user, DataSetSearchCriteria criteria, int expectedCount)
     {
-        List<DataSet> dataSets = searchDataSets(user, criteria, new DataSetFetchOptions());
+        final String sessionToken = v3api.login(user, PASSWORD);
+        List<DataSet> dataSets = searchDataSets(sessionToken, criteria, new DataSetFetchOptions());
         assertEquals(dataSets.size(), expectedCount);
     }
 
-    private List<DataSet> searchDataSets(String user, DataSetSearchCriteria criteria, DataSetFetchOptions fetchOptions)
+    private List<DataSet> searchDataSets(final String sessionToken, final DataSetSearchCriteria criteria,
+            final DataSetFetchOptions fetchOptions)
     {
-        String sessionToken = v3api.login(user, PASSWORD);
-        SearchResult<DataSet> searchResult = v3api.searchDataSets(sessionToken, criteria, fetchOptions);
-        List<DataSet> dataSets = searchResult.getObjects();
+        final SearchResult<DataSet> searchResult = v3api.searchDataSets(sessionToken, criteria, fetchOptions);
+        final List<DataSet> dataSets = searchResult.getObjects();
         v3api.logout(sessionToken);
         return dataSets;
     }

@@ -32,7 +32,7 @@ public class DateLaterThanOrEqualToValue extends AbstractDateValue
         super(null);
     }
 
-    DateLaterThanOrEqualToValue(String value)
+    public DateLaterThanOrEqualToValue(String value)
     {
         super(value);
     }

@@ -30,6 +30,9 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.create.ExperimentCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
@@ -583,7 +586,7 @@ public class SearchSampleTest extends AbstractSampleTest
         SampleFetchOptions fo = new SampleFetchOptions();
         fo.withType();
 
-        List<Sample> samples = search(sessionToken, criteria, fo);
+        List<Sample> samples = searchSamples(sessionToken, criteria, fo);
 
         assertEquals(samples.size(), 6, samples.toString());
         for (Sample sample : samples)
@@ -608,7 +611,7 @@ public class SearchSampleTest extends AbstractSampleTest
         SampleFetchOptions fo = new SampleFetchOptions();
         fo.withType();
 
-        List<Sample> samples = search(sessionToken, criteria, fo);
+        List<Sample> samples = searchSamples(sessionToken, criteria, fo);
 
         assertEquals(samples.size(), 2, samples.toString());
         for (Sample sample : samples)
@@ -630,7 +633,7 @@ public class SearchSampleTest extends AbstractSampleTest
         SampleFetchOptions fo = new SampleFetchOptions();
         fo.withType();
 
-        List<Sample> samples = search(sessionToken, criteria, fo);
+        List<Sample> samples = searchSamples(sessionToken, criteria, fo);
 
         assertEquals(samples.size(), 14, samples.toString());
         for (Sample sample : samples)
@@ -651,7 +654,7 @@ public class SearchSampleTest extends AbstractSampleTest
         SampleFetchOptions fo = new SampleFetchOptions();
         fo.withType();
 
-        List<Sample> samples = search(sessionToken, criteria, fo);
+        List<Sample> samples = searchSamples(sessionToken, criteria, fo);
 
         assertEquals(samples.size(), 2, samples.toString());
         for (Sample sample : samples)
@@ -672,7 +675,7 @@ public class SearchSampleTest extends AbstractSampleTest
         SampleFetchOptions fo = new SampleFetchOptions();
         fo.withType();
 
-        List<Sample> samples = search(sessionToken, criteria, fo);
+        List<Sample> samples = searchSamples(sessionToken, criteria, fo);
 
         assertEquals(samples.size(), 11, samples.toString());
         for (Sample sample : samples)
@@ -834,7 +837,7 @@ public class SearchSampleTest extends AbstractSampleTest
         criteria.withParents();
 
         final String sessionToken = v3api.login(TEST_USER, PASSWORD);
-        final List<Sample> samples = search(sessionToken, criteria, new SampleFetchOptions());
+        final List<Sample> samples = searchSamples(sessionToken, criteria, new SampleFetchOptions());
         final Set<String> actualSet = samples.stream().map(sample -> sample.getIdentifier().getIdentifier()).collect(Collectors.toSet());
 
         assertCollectionContainsAtLeast(actualSet, "/CISD/3V-125", "/CISD/3V-126", "/CISD/3VCP5", "/CISD/3VCP6",
@@ -853,7 +856,7 @@ public class SearchSampleTest extends AbstractSampleTest
         criteria.withChildren();
 
         final String sessionToken = v3api.login(TEST_USER, PASSWORD);
-        final List<Sample> samples = search(sessionToken, criteria, new SampleFetchOptions());
+        final List<Sample> samples = searchSamples(sessionToken, criteria, new SampleFetchOptions());
         final Set<String> actualSet = samples.stream().map(sample -> sample.getIdentifier().getIdentifier()).collect(Collectors.toSet());
 
         assertCollectionContainsAtLeast(actualSet, "/CISD/3V-125", "/CISD/CL-3V:A02", "/CISD/CL1:A03",
@@ -1213,7 +1216,7 @@ public class SearchSampleTest extends AbstractSampleTest
         SampleFetchOptions fo = new SampleFetchOptions();
         fo.withProperties();
 
-        List<Sample> samples = search(sessionToken, criteria, fo);
+        List<Sample> samples = searchSamples(sessionToken, criteria, fo);
 
         for (Sample sample : samples)
         {
@@ -1263,8 +1266,8 @@ public class SearchSampleTest extends AbstractSampleTest
         fo.cacheMode(CacheMode.NO_CACHE);
 
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
-        List<Sample> samples1 = search(sessionToken, criteria, fo);
-        List<Sample> samples2 = search(sessionToken, criteria, fo);
+        List<Sample> samples1 = searchSamples(sessionToken, criteria, fo);
+        List<Sample> samples2 = searchSamples(sessionToken, criteria, fo);
         v3api.logout(sessionToken);
 
         assertEquals(samples1.get(0).getPermId(), samples2.get(0).getPermId());
@@ -1288,11 +1291,11 @@ public class SearchSampleTest extends AbstractSampleTest
         SampleFetchOptions fo = new SampleFetchOptions();
 
         fo.sortBy().code().asc();
-        List<Sample> samples1 = search(sessionToken, criteria, fo);
+        List<Sample> samples1 = searchSamples(sessionToken, criteria, fo);
         assertSampleIdentifiersInOrder(samples1, "/CISD/CP-TEST-1", "/CISD/CP-TEST-2", "/CISD/CP-TEST-3");
 
         fo.sortBy().code().desc();
-        List<Sample> samples2 = search(sessionToken, criteria, fo);
+        List<Sample> samples2 = searchSamples(sessionToken, criteria, fo);
         assertSampleIdentifiersInOrder(samples2, "/CISD/CP-TEST-3", "/CISD/CP-TEST-2", "/CISD/CP-TEST-1");
 
         v3api.logout(sessionToken);
@@ -1312,11 +1315,11 @@ public class SearchSampleTest extends AbstractSampleTest
         SampleFetchOptions fo = new SampleFetchOptions();
 
         fo.sortBy().identifier().asc();
-        List<Sample> samples1 = search(sessionToken, criteria, fo);
+        List<Sample> samples1 = searchSamples(sessionToken, criteria, fo);
         assertSampleIdentifiersInOrder(samples1, "/CISD/3V-125", "/CISD/CP-TEST-1", "/TEST-SPACE/CP-TEST-4");
 
         fo.sortBy().identifier().desc();
-        List<Sample> samples2 = search(sessionToken, criteria, fo);
+        List<Sample> samples2 = searchSamples(sessionToken, criteria, fo);
         assertSampleIdentifiersInOrder(samples2, "/TEST-SPACE/CP-TEST-4", "/CISD/CP-TEST-1", "/CISD/3V-125");
 
         v3api.logout(sessionToken);
@@ -1338,12 +1341,12 @@ public class SearchSampleTest extends AbstractSampleTest
 
         fo.sortBy().type().asc();
         fo.sortBy().code().asc();
-        List<Sample> samples1 = search(sessionToken, criteria, fo);
+        List<Sample> samples1 = searchSamples(sessionToken, criteria, fo);
         assertSampleIdentifiersInOrder(samples1, "/CISD/CP-TEST-1", "/TEST-SPACE/CP-TEST-4", "/CISD/3V-125");
 
         fo.sortBy().type().desc();
         fo.sortBy().code().desc();
-        List<Sample> samples2 = search(sessionToken, criteria, fo);
+        List<Sample> samples2 = searchSamples(sessionToken, criteria, fo);
         assertSampleIdentifiersInOrder(samples2, "/CISD/3V-125", "/TEST-SPACE/CP-TEST-4", "/CISD/CP-TEST-1");
 
         v3api.logout(sessionToken);
@@ -1364,13 +1367,13 @@ public class SearchSampleTest extends AbstractSampleTest
         fo.withProperties();
 
         fo.sortBy().property("COMMENT").asc();
-        List<Sample> samples1 = search(sessionToken, criteria, fo);
+        List<Sample> samples1 = searchSamples(sessionToken, criteria, fo);
         assertEquals(samples1.get(0).getProperty("COMMENT"), "extremely simple stuff");
         assertEquals(samples1.get(1).getProperty("COMMENT"), "stuff like others");
         assertEquals(samples1.get(2).getProperty("COMMENT"), "very advanced stuff");
 
         fo.sortBy().property("COMMENT").desc();
-        List<Sample> samples2 = search(sessionToken, criteria, fo);
+        List<Sample> samples2 = searchSamples(sessionToken, criteria, fo);
         assertEquals(samples2.get(0).getProperty("COMMENT"), "very advanced stuff");
         assertEquals(samples2.get(1).getProperty("COMMENT"), "stuff like others");
         assertEquals(samples2.get(2).getProperty("COMMENT"), "extremely simple stuff");
@@ -1394,14 +1397,14 @@ public class SearchSampleTest extends AbstractSampleTest
         fo.withProperties();
 
         fo.sortBy().property("SIZE").asc();
-        List<Sample> samples1 = search(sessionToken, criteria, fo);
+        List<Sample> samples1 = searchSamples(sessionToken, criteria, fo);
         assertEquals(samples1.get(0).getProperty("SIZE"), "123");
         assertEquals(samples1.get(1).getProperty("SIZE"), "321");
         assertEquals(samples1.get(2).getProperty("SIZE"), "666");
         assertEquals(samples1.get(3).getProperty("SIZE"), "4711");
 
         fo.sortBy().property("SIZE").desc();
-        List<Sample> samples2 = search(sessionToken, criteria, fo);
+        List<Sample> samples2 = searchSamples(sessionToken, criteria, fo);
         assertEquals(samples2.get(0).getProperty("SIZE"), "4711");
         assertEquals(samples2.get(1).getProperty("SIZE"), "666");
         assertEquals(samples2.get(2).getProperty("SIZE"), "321");
@@ -1423,11 +1426,11 @@ public class SearchSampleTest extends AbstractSampleTest
         SampleFetchOptions fo = new SampleFetchOptions();
 
         fo.sortBy().registrationDate().asc();
-        List<Sample> samples1 = search(sessionToken, criteria, fo);
+        List<Sample> samples1 = searchSamples(sessionToken, criteria, fo);
         assertSampleIdentifiersInOrder(samples1, "/CISD/B1B3:B01", "/CISD/MP1-MIXED:A01");
 
         fo.sortBy().registrationDate().desc();
-        List<Sample> samples2 = search(sessionToken, criteria, fo);
+        List<Sample> samples2 = searchSamples(sessionToken, criteria, fo);
         assertSampleIdentifiersInOrder(samples2, "/CISD/MP1-MIXED:A01", "/CISD/B1B3:B01");
 
         v3api.logout(sessionToken);
@@ -1446,11 +1449,11 @@ public class SearchSampleTest extends AbstractSampleTest
         SampleFetchOptions fo = new SampleFetchOptions();
 
         fo.sortBy().modificationDate().asc();
-        List<Sample> samples1 = search(sessionToken, criteria, fo);
+        List<Sample> samples1 = searchSamples(sessionToken, criteria, fo);
         assertSampleIdentifiersInOrder(samples1, "/CISD/MP2-NO-CL:B02", "/CISD/DYNA-TEST-1");
 
         fo.sortBy().modificationDate().desc();
-        List<Sample> samples2 = search(sessionToken, criteria, fo);
+        List<Sample> samples2 = searchSamples(sessionToken, criteria, fo);
         assertSampleIdentifiersInOrder(samples2, "/CISD/DYNA-TEST-1", "/CISD/MP2-NO-CL:B02");
 
         v3api.logout(sessionToken);
@@ -1471,12 +1474,12 @@ public class SearchSampleTest extends AbstractSampleTest
 
         fo.sortBy().code().asc();
         fo.sortBy().registrationDate().asc();
-        List<Sample> samples1 = search(sessionToken, criteria, fo);
+        List<Sample> samples1 = searchSamples(sessionToken, criteria, fo);
         assertSampleIdentifiersInOrder(samples1, "/CISD/CL1:A01", "/CISD/CL-3V:A01", "/CISD/B1B3:B01");
 
         fo.sortBy().code().asc();
         fo.sortBy().registrationDate().desc();
-        List<Sample> samples2 = search(sessionToken, criteria, fo);
+        List<Sample> samples2 = searchSamples(sessionToken, criteria, fo);
         assertSampleIdentifiersInOrder(samples2, "/CISD/CL-3V:A01", "/CISD/CL1:A01", "/CISD/B1B3:B01");
 
         v3api.logout(sessionToken);
@@ -1496,12 +1499,12 @@ public class SearchSampleTest extends AbstractSampleTest
         SampleFetchOptions fo = new SampleFetchOptions();
 
         fo.sortBy().code().asc();
-        List<Sample> samples1 = search(sessionToken, criteria, fo);
+        List<Sample> samples1 = searchSamples(sessionToken, criteria, fo);
 
         assertSampleIdentifiersInOrder(samples1, "/CISD/CP-TEST-1", "/CISD/CP-TEST-2", "/CISD/CP-TEST-3");
 
         fo.sortBy().code().desc();
-        List<Sample> samples2 = search(sessionToken, criteria, fo);
+        List<Sample> samples2 = searchSamples(sessionToken, criteria, fo);
 
         assertSampleIdentifiersInOrder(samples2, "/CISD/CP-TEST-3", "/CISD/CP-TEST-2", "/CISD/CP-TEST-1");
 
@@ -1522,14 +1525,14 @@ public class SearchSampleTest extends AbstractSampleTest
         fo.sortBy().code().asc();
         fo.withChildren().sortBy().code().asc();
 
-        List<Sample> samples1 = search(sessionToken, criteria, fo);
+        List<Sample> samples1 = searchSamples(sessionToken, criteria, fo);
 
         assertSampleIdentifiersInOrder(samples1, "/CISD/3V-125", "/CISD/MP1-MIXED");
         assertSampleIdentifiersInOrder(samples1.get(0).getChildren(), "/CISD/3VCP5", "/CISD/3VCP6", "/CISD/3VCP7", "/CISD/3VCP8");
         assertSampleIdentifiersInOrder(samples1.get(1).getChildren(), "/CISD/DP1-A", "/CISD/DP1-B");
 
         fo.withChildren().sortBy().code().desc();
-        List<Sample> samples2 = search(sessionToken, criteria, fo);
+        List<Sample> samples2 = searchSamples(sessionToken, criteria, fo);
 
         assertSampleIdentifiersInOrder(samples2, "/CISD/3V-125", "/CISD/MP1-MIXED");
         assertSampleIdentifiersInOrder(samples2.get(0).getChildren(), "/CISD/3VCP8", "/CISD/3VCP7", "/CISD/3VCP6", "/CISD/3VCP5");
@@ -1585,14 +1588,14 @@ public class SearchSampleTest extends AbstractSampleTest
         fo.withChildren().sortBy().code().asc();
 
         fo.withChildren().from(0).count(1);
-        List<Sample> samples1 = search(sessionToken, criteria, fo);
+        List<Sample> samples1 = searchSamples(sessionToken, criteria, fo);
 
         assertSampleIdentifiersInOrder(samples1, "/CISD/3V-125", "/CISD/MP1-MIXED");
         assertSampleIdentifiersInOrder(samples1.get(0).getChildren(), "/CISD/3VCP5");
         assertSampleIdentifiersInOrder(samples1.get(1).getChildren(), "/CISD/DP1-A");
 
         fo.withChildren().from(1).count(1);
-        List<Sample> samples2 = search(sessionToken, criteria, fo);
+        List<Sample> samples2 = searchSamples(sessionToken, criteria, fo);
 
         assertSampleIdentifiersInOrder(samples2, "/CISD/3V-125", "/CISD/MP1-MIXED");
         assertSampleIdentifiersInOrder(samples2.get(0).getChildren(), "/CISD/3VCP6");
@@ -1617,14 +1620,14 @@ public class SearchSampleTest extends AbstractSampleTest
 
         fo.from(0).count(1);
         fo.withChildren().from(0).count(1);
-        List<Sample> samples1 = search(sessionToken, criteria, fo);
+        List<Sample> samples1 = searchSamples(sessionToken, criteria, fo);
 
         assertSampleIdentifiersInOrder(samples1, "/CISD/3V-125");
         assertSampleIdentifiersInOrder(samples1.get(0).getChildren(), "/CISD/3VCP5");
 
         fo.from(1).count(1);
         fo.withChildren().from(1).count(1);
-        List<Sample> samples2 = search(sessionToken, criteria, fo);
+        List<Sample> samples2 = searchSamples(sessionToken, criteria, fo);
 
         assertSampleIdentifiersInOrder(samples2, "/CISD/MP1-MIXED");
         assertSampleIdentifiersInOrder(samples2.get(0).getChildren(), "/CISD/DP1-B");
@@ -1648,43 +1651,43 @@ public class SearchSampleTest extends AbstractSampleTest
         // Greater or Equals - Giving integer as real
         SampleSearchCriteria criteriaGOE = new SampleSearchCriteria();
         criteriaGOE.withNumberProperty("SIZE").thatIsGreaterThanOrEqualTo(321.0);
-        List<Sample> samplesGOE = search(sessionToken, criteriaGOE, sortByCodeFO);
+        List<Sample> samplesGOE = searchSamples(sessionToken, criteriaGOE, sortByCodeFO);
         assertSampleIdentifiersInOrder(samplesGOE, "/CISD/3VCP7", "/CISD/CP-TEST-2", "/CISD/CP-TEST-3");
 
         // Greater - Giving integer as real
         SampleSearchCriteria criteriaG = new SampleSearchCriteria();
         criteriaG.withNumberProperty("SIZE").thatIsGreaterThan(321.0);
-        List<Sample> samplesG = search(sessionToken, criteriaG, sortByCodeFO);
+        List<Sample> samplesG = searchSamples(sessionToken, criteriaG, sortByCodeFO);
         assertSampleIdentifiersInOrder(samplesG, "/CISD/3VCP7", "/CISD/CP-TEST-3");
 
         // Equals As Text - Real
         SampleSearchCriteria criteriaETxt2 = new SampleSearchCriteria();
         criteriaETxt2.withProperty("SIZE").thatEquals("666.0");
-        List<Sample> samplesETxt2 = search(sessionToken, criteriaETxt2, sortByCodeFO);
+        List<Sample> samplesETxt2 = searchSamples(sessionToken, criteriaETxt2, sortByCodeFO);
         assertSampleIdentifiersInOrder(samplesETxt2, "/CISD/CP-TEST-3");
 
         // Equals As Text - Integer
         SampleSearchCriteria criteriaETxt = new SampleSearchCriteria();
         criteriaETxt.withProperty("SIZE").thatEquals("666");
-        List<Sample> samplesETxt = search(sessionToken, criteriaETxt, sortByCodeFO);
+        List<Sample> samplesETxt = searchSamples(sessionToken, criteriaETxt, sortByCodeFO);
         assertSampleIdentifiersInOrder(samplesETxt, "/CISD/CP-TEST-3");
 
         // Equals
         SampleSearchCriteria criteriaE = new SampleSearchCriteria();
         criteriaE.withNumberProperty("SIZE").thatEquals(666);
-        List<Sample> samplesE = search(sessionToken, criteriaE, sortByCodeFO);
+        List<Sample> samplesE = searchSamples(sessionToken, criteriaE, sortByCodeFO);
         assertSampleIdentifiersInOrder(samplesE, "/CISD/CP-TEST-3");
 
         // Less
         SampleSearchCriteria criteriaL = new SampleSearchCriteria();
         criteriaL.withNumberProperty("SIZE").thatIsLessThan(666);
-        List<Sample> samplesL = search(sessionToken, criteriaL, sortByCodeFO);
+        List<Sample> samplesL = searchSamples(sessionToken, criteriaL, sortByCodeFO);
         assertSampleIdentifiersInOrder(samplesL, "/CISD/CP-TEST-1", "/CISD/CP-TEST-2");
 
         // Less or Equals
         SampleSearchCriteria criteriaLOE = new SampleSearchCriteria();
         criteriaLOE.withNumberProperty("SIZE").thatIsLessThanOrEqualTo(321);
-        List<Sample> samplesLOE = search(sessionToken, criteriaLOE, sortByCodeFO);
+        List<Sample> samplesLOE = searchSamples(sessionToken, criteriaLOE, sortByCodeFO);
         assertSampleIdentifiersInOrder(samplesLOE, "/CISD/CP-TEST-1", "/CISD/CP-TEST-2");
 
         v3api.logout(sessionToken);
@@ -1697,14 +1700,14 @@ public class SearchSampleTest extends AbstractSampleTest
         SampleFetchOptions fo = new SampleFetchOptions();
         SampleSearchCriteria criteria = new SampleSearchCriteria();
         criteria.withCode().thatStartsWith("EV");
-        List<Sample> samples = search(sessionToken, criteria, fo);
+        List<Sample> samples = searchSamples(sessionToken, criteria, fo);
         List<String> identifiers = extractIndentifiers(samples);
         Collections.sort(identifiers);
         assertEquals(identifiers.toString(), "[/TEST-SPACE/EV-INVALID, /TEST-SPACE/EV-NOT_INVALID, "
                 + "/TEST-SPACE/EV-PARENT, /TEST-SPACE/EV-PARENT-NORMAL, /TEST-SPACE/EV-TEST]");
         criteria.withType().withListable().thatEquals(true);
 
-        samples = search(sessionToken, criteria, fo);
+        samples = searchSamples(sessionToken, criteria, fo);
 
         identifiers = extractIndentifiers(samples);
         Collections.sort(identifiers);
@@ -1719,14 +1722,14 @@ public class SearchSampleTest extends AbstractSampleTest
         SampleFetchOptions fo = new SampleFetchOptions();
         SampleSearchCriteria criteria = new SampleSearchCriteria();
         criteria.withCode().thatStartsWith("EV");
-        List<Sample> samples = search(sessionToken, criteria, fo);
+        List<Sample> samples = searchSamples(sessionToken, criteria, fo);
         List<String> identifiers = extractIndentifiers(samples);
         Collections.sort(identifiers);
         assertEquals(identifiers.toString(), "[/TEST-SPACE/EV-INVALID, /TEST-SPACE/EV-NOT_INVALID, "
                 + "/TEST-SPACE/EV-PARENT, /TEST-SPACE/EV-PARENT-NORMAL, /TEST-SPACE/EV-TEST]");
         criteria.withType().withListable().thatEquals(false);
 
-        samples = search(sessionToken, criteria, fo);
+        samples = searchSamples(sessionToken, criteria, fo);
 
         identifiers = extractIndentifiers(samples);
         Collections.sort(identifiers);
@@ -1804,14 +1807,25 @@ public class SearchSampleTest extends AbstractSampleTest
         creation.setProperty(propertyType.getPermId(), "2/17/20");
         v3api.createSamples(sessionToken, Arrays.asList(creation));
 
-        SampleSearchCriteria criteria = new SampleSearchCriteria();
-        criteria.withDateProperty(propertyType.getPermId()).thatEquals("20-2-17");
+        final SampleSearchCriteria criteria1 = new SampleSearchCriteria();
+        criteria1.withDateProperty(propertyType.getPermId()).thatEquals("20-2-17");
 
         // When
-        List<Sample> samples = v3api.searchSamples(sessionToken, criteria, new SampleFetchOptions()).getObjects();
+        final List<Sample> samples1 = v3api.searchSamples(sessionToken, criteria1, new SampleFetchOptions())
+                .getObjects();
 
         // Then
-        assertSampleIdentifiers(samples, "/CISD/SAMPLE_WITH_DATE_PROPERTY");
+        assertSampleIdentifiers(samples1, "/CISD/SAMPLE_WITH_DATE_PROPERTY");
+
+        final SampleSearchCriteria criteria2 = new SampleSearchCriteria();
+        criteria2.withProperty(propertyType.getPermId()).thatEquals("20-2-17");
+
+        // When
+        final List<Sample> samples2 = v3api.searchSamples(sessionToken, criteria2, new SampleFetchOptions())
+                .getObjects();
+
+        // Then
+        assertSampleIdentifiers(samples2, "/CISD/SAMPLE_WITH_DATE_PROPERTY");
     }
 
     @Test
@@ -1846,25 +1860,62 @@ public class SearchSampleTest extends AbstractSampleTest
     public void testSearchWithDateDatePropertyThatIsLater()
     {
         // Given
-        String sessionToken = v3api.login(TEST_USER, PASSWORD);
-        PropertyTypePermId propertyType = createAPropertyType(sessionToken, DataType.DATE);
-        EntityTypePermId sampleType = createASampleType(sessionToken, true, propertyType);
-        SampleCreation creation = new SampleCreation();
-        creation.setCode("SAMPLE_WITH_DATE_PROPERTY");
-        creation.setTypeId(sampleType);
-        creation.setSpaceId(new SpacePermId("CISD"));
-        creation.setProperty(propertyType.getPermId(), "2/17/20");
-        v3api.createSamples(sessionToken, Arrays.asList(creation));
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        final PropertyTypePermId propertyType = createAPropertyType(sessionToken, DataType.DATE);
+        final EntityTypePermId sampleType = createASampleType(sessionToken, true, propertyType);
+        final SampleCreation creation1 = new SampleCreation();
+        creation1.setCode("SAMPLE_WITH_DATE_PROPERTY1");
+        creation1.setTypeId(sampleType);
+        creation1.setSpaceId(new SpacePermId("CISD"));
+        creation1.setProperty(propertyType.getPermId(), "2/17/20");
+        final SampleCreation creation2 = new SampleCreation();
+        creation2.setCode("SAMPLE_WITH_DATE_PROPERTY2");
+        creation2.setTypeId(sampleType);
+        creation2.setSpaceId(new SpacePermId("CISD"));
+        creation2.setProperty(propertyType.getPermId(), "2020-02-16");
+        v3api.createSamples(sessionToken, Arrays.asList(creation1, creation2));
 
-        SampleSearchCriteria criteria = new SampleSearchCriteria();
-        criteria.withDateProperty(propertyType.getPermId()).thatIsLaterThanOrEqualTo("2020-02-16");
+        final SampleSearchCriteria criteria1 = new SampleSearchCriteria();
+        criteria1.withDateProperty(propertyType.getPermId()).thatIsLaterThan("2020-02-16");
 
         // When
-        List<Sample> samples = v3api.searchSamples(sessionToken, criteria, new SampleFetchOptions()).getObjects();
+        final List<Sample> samples1 = v3api.searchSamples(sessionToken, criteria1, new SampleFetchOptions())
+                .getObjects();
 
         // Then
-        assertEquals(samples.get(0).getIdentifier().getIdentifier(), "/CISD/SAMPLE_WITH_DATE_PROPERTY");
-        assertEquals(samples.size(), 1);
+        assertEquals(samples1.get(0).getIdentifier().getIdentifier(), "/CISD/SAMPLE_WITH_DATE_PROPERTY1");
+        assertEquals(samples1.size(), 1);
+
+        final SampleSearchCriteria criteria2 = new SampleSearchCriteria();
+        criteria2.withDateProperty(propertyType.getPermId()).thatIsLaterThan("2020-02-16");
+
+        // When
+        final List<Sample> samples2 = v3api.searchSamples(sessionToken, criteria2, new SampleFetchOptions())
+                .getObjects();
+
+        // Then
+        assertEquals(samples2.get(0).getIdentifier().getIdentifier(), "/CISD/SAMPLE_WITH_DATE_PROPERTY1");
+        assertEquals(samples2.size(), 1);
+
+        final SampleSearchCriteria criteria3 = new SampleSearchCriteria();
+        criteria3.withDateProperty(propertyType.getPermId()).thatIsLaterThan("2020-02-17");
+
+        // When
+        final List<Sample> samples3 = v3api.searchSamples(sessionToken, criteria3, new SampleFetchOptions())
+                .getObjects();
+
+        // Then
+        assertEquals(samples3.size(), 0);
+
+        final SampleSearchCriteria criteria4 = new SampleSearchCriteria();
+        criteria4.withDateProperty(propertyType.getPermId()).thatIsLaterThan("2020-02-17");
+
+        // When
+        final List<Sample> samples4 = v3api.searchSamples(sessionToken, criteria4, new SampleFetchOptions())
+                .getObjects();
+
+        // Then
+        assertEquals(samples4.size(), 0);
     }
 
     @Test
@@ -1886,18 +1937,86 @@ public class SearchSampleTest extends AbstractSampleTest
         creation2.setProperty(propertyType.getPermId(), "2020-02-16");
         v3api.createSamples(sessionToken, Arrays.asList(creation1, creation2));
 
-        SampleSearchCriteria criteria = new SampleSearchCriteria();
-        criteria.withDateProperty(propertyType.getPermId()).thatIsLaterThanOrEqualTo("2020-02-16");
+        final SampleSearchCriteria criteria1 = new SampleSearchCriteria();
+        criteria1.withDateProperty(propertyType.getPermId()).thatIsLaterThanOrEqualTo("2020-02-16");
 
         // When
-        List<Sample> samples = v3api.searchSamples(sessionToken, criteria, new SampleFetchOptions()).getObjects();
+        final List<Sample> samples1 = v3api.searchSamples(sessionToken, criteria1, new SampleFetchOptions())
+                .getObjects();
 
         // Then
-        assertSampleIdentifiers(samples, "/CISD/SAMPLE_WITH_DATE_PROPERTY1", "/CISD/SAMPLE_WITH_DATE_PROPERTY2");
+        assertSampleIdentifiers(samples1, "/CISD/SAMPLE_WITH_DATE_PROPERTY1", "/CISD/SAMPLE_WITH_DATE_PROPERTY2");
+
+        final SampleSearchCriteria criteria2 = new SampleSearchCriteria();
+        criteria2.withProperty(propertyType.getPermId()).thatIsGreaterThanOrEqualTo("2020-02-16");
+
+        // When
+        final List<Sample> samples2 = v3api.searchSamples(sessionToken, criteria2, new SampleFetchOptions())
+                .getObjects();
+
+        // Then
+        assertSampleIdentifiers(samples2, "/CISD/SAMPLE_WITH_DATE_PROPERTY1", "/CISD/SAMPLE_WITH_DATE_PROPERTY2");
     }
 
     @Test
     public void testSearchWithDateDatePropertyThatIsEarlier()
+    {
+        // Given
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        final PropertyTypePermId propertyType = createAPropertyType(sessionToken, DataType.DATE);
+        final EntityTypePermId sampleType = createASampleType(sessionToken, true, propertyType);
+        final SampleCreation creation = new SampleCreation();
+        creation.setCode("SAMPLE_WITH_DATE_PROPERTY");
+        creation.setTypeId(sampleType);
+        creation.setSpaceId(new SpacePermId("CISD"));
+        creation.setProperty(propertyType.getPermId(), "1990-11-09");
+        v3api.createSamples(sessionToken, Collections.singletonList(creation));
+
+        final SampleSearchCriteria criteria1 = new SampleSearchCriteria();
+        criteria1.withDateProperty(propertyType.getPermId()).thatIsEarlierThan("1990-11-10");
+
+        // When
+        final List<Sample> samples1 = v3api.searchSamples(sessionToken, criteria1, new SampleFetchOptions())
+                .getObjects();
+
+        // Then
+        assertEquals(samples1.get(0).getIdentifier().getIdentifier(), "/CISD/SAMPLE_WITH_DATE_PROPERTY");
+        assertEquals(samples1.size(), 1);
+
+        final SampleSearchCriteria criteria2 = new SampleSearchCriteria();
+        criteria2.withDateProperty(propertyType.getPermId()).thatIsEarlierThan("1990-11-10");
+
+        // When
+        final List<Sample> samples2 = v3api.searchSamples(sessionToken, criteria2, new SampleFetchOptions())
+                .getObjects();
+
+        // Then
+        assertEquals(samples2.get(0).getIdentifier().getIdentifier(), "/CISD/SAMPLE_WITH_DATE_PROPERTY");
+        assertEquals(samples2.size(), 1);
+
+        final SampleSearchCriteria criteria3 = new SampleSearchCriteria();
+        criteria3.withDateProperty(propertyType.getPermId()).thatIsEarlierThan("1990-11-09");
+
+        // When
+        final List<Sample> samples3 = v3api.searchSamples(sessionToken, criteria3, new SampleFetchOptions())
+                .getObjects();
+
+        // Then
+        assertEquals(samples3.size(), 0);
+
+        final SampleSearchCriteria criteria4 = new SampleSearchCriteria();
+        criteria4.withDateProperty(propertyType.getPermId()).thatIsEarlierThan("1990-11-09");
+
+        // When
+        final List<Sample> samples4 = v3api.searchSamples(sessionToken, criteria4, new SampleFetchOptions())
+                .getObjects();
+
+        // Then
+        assertEquals(samples4.size(), 0);
+    }
+
+    @Test
+    public void testSearchWithDateDatePropertyThatIsEarlierOrEqual()
     {
         // Given
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
@@ -1910,15 +2029,27 @@ public class SearchSampleTest extends AbstractSampleTest
         creation.setProperty(propertyType.getPermId(), "1990-11-09");
         v3api.createSamples(sessionToken, Arrays.asList(creation));
 
-        SampleSearchCriteria criteria = new SampleSearchCriteria();
-        criteria.withDateProperty(propertyType.getPermId()).thatIsEarlierThanOrEqualTo("1990-11-10");
+        final SampleSearchCriteria criteria1 = new SampleSearchCriteria();
+        criteria1.withDateProperty(propertyType.getPermId()).thatIsEarlierThanOrEqualTo("1990-11-10");
 
         // When
-        List<Sample> samples = v3api.searchSamples(sessionToken, criteria, new SampleFetchOptions()).getObjects();
+        final List<Sample> samples1 = v3api.searchSamples(sessionToken, criteria1, new SampleFetchOptions())
+                .getObjects();
 
         // Then
-        assertEquals(samples.get(0).getIdentifier().getIdentifier(), "/CISD/SAMPLE_WITH_DATE_PROPERTY");
-        assertEquals(samples.size(), 1);
+        assertEquals(samples1.get(0).getIdentifier().getIdentifier(), "/CISD/SAMPLE_WITH_DATE_PROPERTY");
+        assertEquals(samples1.size(), 1);
+
+        final SampleSearchCriteria criteria2 = new SampleSearchCriteria();
+        criteria2.withProperty(propertyType.getPermId()).thatIsLessThanOrEqualTo("1990-11-10");
+
+        // When
+        final List<Sample> samples2 = v3api.searchSamples(sessionToken, criteria2, new SampleFetchOptions())
+                .getObjects();
+
+        // Then
+        assertEquals(samples2.get(0).getIdentifier().getIdentifier(), "/CISD/SAMPLE_WITH_DATE_PROPERTY");
+        assertEquals(samples2.size(), 1);
     }
 
     @Test
@@ -1961,12 +2092,24 @@ public class SearchSampleTest extends AbstractSampleTest
         creation.setProperty(propertyType.getPermId(), "1990-11-09");
         v3api.createSamples(sessionToken, Arrays.asList(creation));
 
-        SampleSearchCriteria criteria = new SampleSearchCriteria();
-        DatePropertySearchCriteria datePropertySearchCriteria = criteria.withDateProperty(propertyType.getPermId());
-        datePropertySearchCriteria.thatIsEarlierThanOrEqualTo("1990-11-09 01:22:33");
+        final SampleSearchCriteria criteria1 = new SampleSearchCriteria();
+        final DatePropertySearchCriteria datePropertySearchCriteria1 = criteria1.withDateProperty(
+                propertyType.getPermId());
+        datePropertySearchCriteria1.thatIsEarlierThanOrEqualTo("1990-11-09 01:22:33");
 
         // When
-        assertUserFailureException(Void -> v3api.searchSamples(sessionToken, criteria, new SampleFetchOptions()),
+        assertUserFailureException(Void -> v3api.searchSamples(sessionToken, criteria1, new SampleFetchOptions()),
+                // Then
+                "Search criteria with time stamp doesn't make sense for property " + propertyType.getPermId()
+                        + " of data type " + DataType.DATE);
+
+        final SampleSearchCriteria criteria2 = new SampleSearchCriteria();
+        final DatePropertySearchCriteria datePropertySearchCriteria2 = criteria2.withDateProperty(
+                propertyType.getPermId());
+        datePropertySearchCriteria2.thatIsEarlierThanOrEqualTo("1990-11-09 01:22:33");
+
+        // When
+        assertUserFailureException(Void -> v3api.searchSamples(sessionToken, criteria2, new SampleFetchOptions()),
                 // Then
                 "Search criteria with time stamp doesn't make sense for property " + propertyType.getPermId()
                         + " of data type " + DataType.DATE);
@@ -2054,6 +2197,247 @@ public class SearchSampleTest extends AbstractSampleTest
     }
 
     @Test
+    public void testSearchForSampleWithIntegerPropertyMatchingSubstring()
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        final PropertyTypePermId propertyType = createAnIntegerPropertyType(sessionToken, "INT_NUMBER");
+        final EntityTypePermId sampleType = createASampleType(sessionToken, false, propertyType);
+
+        final SampleCreation sampleCreation = new SampleCreation();
+        sampleCreation.setCode("INTEGER_PROPERTY_TEST");
+        sampleCreation.setTypeId(sampleType);
+        sampleCreation.setSpaceId(new SpacePermId("CISD"));
+        sampleCreation.setProperty("INT_NUMBER", "123");
+
+        v3api.createSamples(sessionToken, Collections.singletonList(sampleCreation));
+
+        final SampleSearchCriteria criteriaStartsWithMatch = new SampleSearchCriteria();
+        criteriaStartsWithMatch.withProperty("INT_NUMBER").thatStartsWith("12");
+        assertUserFailureException(
+                Void -> searchSamples(sessionToken, criteriaStartsWithMatch, new SampleFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "StartsWith", "INTEGER"));
+
+        final SampleSearchCriteria criteriaEndsWithMatch = new SampleSearchCriteria();
+        criteriaEndsWithMatch.withProperty("INT_NUMBER").thatEndsWith("23");
+        assertUserFailureException(
+                Void -> searchSamples(sessionToken, criteriaEndsWithMatch, new SampleFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "EndsWith", "INTEGER"));
+
+        final SampleSearchCriteria criteriaContainsMatch = new SampleSearchCriteria();
+        criteriaContainsMatch.withProperty("INT_NUMBER").thatContains("23");
+        assertUserFailureException(
+                Void -> searchSamples(sessionToken, criteriaContainsMatch, new SampleFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "Contains", "INTEGER"));
+    }
+
+    @Test
+    public void testSearchForSampleWithRealPropertyMatchingSubstring()
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        final PropertyTypePermId propertyType = createARealPropertyType(sessionToken, "REAL_NUMBER");
+        final EntityTypePermId sampleType = createASampleType(sessionToken, false, propertyType);
+
+        final SampleCreation sampleCreation = new SampleCreation();
+        sampleCreation.setCode("REAL_PROPERTY_TEST");
+        sampleCreation.setTypeId(sampleType);
+        sampleCreation.setSpaceId(new SpacePermId("CISD"));
+        sampleCreation.setProperty("REAL_NUMBER", "1.23");
+
+        v3api.createSamples(sessionToken, Collections.singletonList(sampleCreation));
+
+        final SampleSearchCriteria criteriaStartsWithMatch = new SampleSearchCriteria();
+        criteriaStartsWithMatch.withProperty("REAL_NUMBER").thatStartsWith("1.2");
+        assertUserFailureException(
+                Void -> searchSamples(sessionToken, criteriaStartsWithMatch, new SampleFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "StartsWith", "REAL"));
+
+        final SampleSearchCriteria criteriaEndsWithMatch = new SampleSearchCriteria();
+        criteriaEndsWithMatch.withProperty("REAL_NUMBER").thatEndsWith("23");
+        assertUserFailureException(
+                Void -> searchSamples(sessionToken, criteriaEndsWithMatch, new SampleFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "EndsWith", "REAL"));
+
+        final SampleSearchCriteria criteriaContainsMatch = new SampleSearchCriteria();
+        criteriaContainsMatch.withProperty("REAL_NUMBER").thatContains(".2");
+        assertUserFailureException(
+                Void -> searchSamples(sessionToken, criteriaContainsMatch, new SampleFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "Contains", "REAL"));
+    }
+
+    @Test
+    public void testSearchForSampleWithDatePropertyMatchingSubstring()
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        final PropertyTypePermId propertyType = createADatePropertyType(sessionToken, "DATE");
+        final EntityTypePermId sampleType = createASampleType(sessionToken, false, propertyType);
+
+        final SampleCreation sampleCreation = new SampleCreation();
+        sampleCreation.setCode("DATE_PROPERTY_TEST");
+        sampleCreation.setTypeId(sampleType);
+        sampleCreation.setSpaceId(new SpacePermId("CISD"));
+        sampleCreation.setProperty("DATE", "2020-02-09");
+
+        v3api.createSamples(sessionToken, Collections.singletonList(sampleCreation));
+
+        final SampleSearchCriteria criteriaContainsMatch = new SampleSearchCriteria();
+        criteriaContainsMatch.withProperty("DATE").thatContains("02");
+        assertUserFailureException(
+                Void -> searchSamples(sessionToken, criteriaContainsMatch, new SampleFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "Contains", "DATE"));
+
+        final SampleSearchCriteria criteriaStartsWithMatch = new SampleSearchCriteria();
+        criteriaStartsWithMatch.withProperty("DATE").thatStartsWith("2020");
+        assertUserFailureException(
+                Void -> searchSamples(sessionToken, criteriaStartsWithMatch, new SampleFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "StartsWith", "DATE"));
+
+        final SampleSearchCriteria criteriaEndsWithMatch = new SampleSearchCriteria();
+        criteriaEndsWithMatch.withProperty("DATE").thatEndsWith("09");
+        assertUserFailureException(
+                Void -> searchSamples(sessionToken, criteriaEndsWithMatch, new SampleFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "EndsWith", "DATE"));
+    }
+
+    @Test
+    public void testSearchForSampleWithTimestampPropertyMatchingSubstring()
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        final PropertyTypePermId propertyType = createATimestampPropertyType(sessionToken, "TIMESTAMP");
+        final EntityTypePermId sampleType = createASampleType(sessionToken, false, propertyType);
+
+        final SampleCreation sampleCreation = new SampleCreation();
+        sampleCreation.setCode("TIMESTAMP_PROPERTY_TEST");
+        sampleCreation.setTypeId(sampleType);
+        sampleCreation.setSpaceId(new SpacePermId("CISD"));
+        sampleCreation.setProperty("TIMESTAMP", "2020-02-09 10:00:00 +0100");
+
+        v3api.createSamples(sessionToken, Collections.singletonList(sampleCreation));
+
+        final SampleSearchCriteria criteriaContainsMatch = new SampleSearchCriteria();
+        criteriaContainsMatch.withProperty("TIMESTAMP").thatContains("20");
+        assertUserFailureException(
+                Void -> searchSamples(sessionToken, criteriaContainsMatch, new SampleFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "Contains", "TIMESTAMP"));
+
+        final SampleSearchCriteria criteriaStartsWithMatch = new SampleSearchCriteria();
+        criteriaStartsWithMatch.withProperty("TIMESTAMP").thatStartsWith("2020");
+        assertUserFailureException(
+                Void -> searchSamples(sessionToken, criteriaStartsWithMatch, new SampleFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "StartsWith", "TIMESTAMP"));
+
+        final SampleSearchCriteria criteriaEndsWithMatch = new SampleSearchCriteria();
+        criteriaEndsWithMatch.withProperty("TIMESTAMP").thatEndsWith("0100");
+        assertUserFailureException(
+                Void -> searchSamples(sessionToken, criteriaEndsWithMatch, new SampleFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "EndsWith", "TIMESTAMP"));
+
+        final SampleSearchCriteria criteriaLTMatch = new SampleSearchCriteria();
+        criteriaLTMatch.withProperty("TIMESTAMP").thatIsLessThan("2020-02-09 11:00:00 +0100");
+        final List<Sample> samplesLT = searchSamples(sessionToken, criteriaLTMatch, new SampleFetchOptions());
+        assertSampleIdentifiers(samplesLT, "/CISD/TIMESTAMP_PROPERTY_TEST");
+
+        final SampleSearchCriteria criteriaLEMatch = new SampleSearchCriteria();
+        criteriaLEMatch.withProperty("TIMESTAMP").thatIsLessThanOrEqualTo("2020-02-09 11:00:00 +0100");
+        final List<Sample> samplesLE = searchSamples(sessionToken, criteriaLEMatch, new SampleFetchOptions());
+        assertSampleIdentifiers(samplesLE, "/CISD/TIMESTAMP_PROPERTY_TEST");
+
+        final SampleSearchCriteria criteriaGTMatch = new SampleSearchCriteria();
+        criteriaGTMatch.withProperty("TIMESTAMP").thatIsGreaterThan("2020-02-09 10:00:00 +0100");
+        final List<Sample> samplesGT = searchSamples(sessionToken, criteriaGTMatch, new SampleFetchOptions());
+        assertSampleIdentifiers(samplesGT);
+
+        final SampleSearchCriteria criteriaGEMatch = new SampleSearchCriteria();
+        criteriaGEMatch.withProperty("TIMESTAMP").thatIsGreaterThanOrEqualTo("2020-02-09 10:00:00 +0100");
+        final List<Sample> samplesGE = searchSamples(sessionToken, criteriaGEMatch, new SampleFetchOptions());
+        assertSampleIdentifiers(samplesGE, "/CISD/TIMESTAMP_PROPERTY_TEST");
+    }
+
+    @Test
+    public void testSearchForSampleWithBooleanPropertyUnsupportedMatching()
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        final PropertyTypePermId propertyType = createABooleanPropertyType(sessionToken, "BOOLEAN");
+        final EntityTypePermId sampleType = createASampleType(sessionToken, false, propertyType);
+
+        final SampleCreation sampleCreation = new SampleCreation();
+        sampleCreation.setCode("BOOLEAN_PROPERTY_TEST");
+        sampleCreation.setTypeId(sampleType);
+        sampleCreation.setSpaceId(new SpacePermId("CISD"));
+        sampleCreation.setProperty("BOOLEAN", "false");
+
+        v3api.createSamples(sessionToken, Collections.singletonList(sampleCreation));
+
+        final SampleSearchCriteria criteriaStartsWithMatch = new SampleSearchCriteria();
+        criteriaStartsWithMatch.withProperty("BOOLEAN").thatStartsWith("fa");
+        assertUserFailureException(
+                Void -> searchSamples(sessionToken, criteriaStartsWithMatch, new SampleFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "StartsWith", "BOOLEAN"));
+
+        final SampleSearchCriteria criteriaEndsWithMatch = new SampleSearchCriteria();
+        criteriaEndsWithMatch.withProperty("BOOLEAN").thatEndsWith("se");
+        assertUserFailureException(
+                Void -> searchSamples(sessionToken, criteriaEndsWithMatch, new SampleFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "EndsWith", "BOOLEAN"));
+
+        final SampleSearchCriteria criteriaContainsMatch = new SampleSearchCriteria();
+        criteriaContainsMatch.withProperty("BOOLEAN").thatContains("ls");
+        assertUserFailureException(
+                Void -> searchSamples(sessionToken, criteriaContainsMatch, new SampleFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "Contains", "BOOLEAN"));
+
+        final SampleSearchCriteria criteriaGTMatch = new SampleSearchCriteria();
+        criteriaGTMatch.withProperty("BOOLEAN").thatIsGreaterThan("false");
+        assertUserFailureException(
+                Void -> searchSamples(sessionToken, criteriaGTMatch, new SampleFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "GreaterThan", "BOOLEAN"));
+
+        final SampleSearchCriteria criteriaGEMatch = new SampleSearchCriteria();
+        criteriaGEMatch.withProperty("BOOLEAN").thatIsGreaterThanOrEqualTo("false");
+        assertUserFailureException(
+                Void -> searchSamples(sessionToken, criteriaGEMatch, new SampleFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "GreaterThanOrEqualTo", "BOOLEAN"));
+
+        final SampleSearchCriteria criteriaLTMatch = new SampleSearchCriteria();
+        criteriaLTMatch.withProperty("BOOLEAN").thatIsLessThan("true");
+        assertUserFailureException(
+                Void -> searchSamples(sessionToken, criteriaLTMatch, new SampleFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "LessThan", "BOOLEAN"));
+
+        final SampleSearchCriteria criteriaLEMatch = new SampleSearchCriteria();
+        criteriaLEMatch.withProperty("BOOLEAN").thatIsLessThanOrEqualTo("true");
+        assertUserFailureException(
+                Void -> searchSamples(sessionToken, criteriaLEMatch, new SampleFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "LessThanOrEqualTo", "BOOLEAN"));
+    }
+
+    @Test
+    public void testSearchWithPropertyAndAttribute()
+    {
+        // Given
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        final SampleSearchCriteria criteria = new SampleSearchCriteria().withOrOperator();
+        criteria.withProperty("$NAME").thatContains("P1-A2");
+        criteria.withCode().thatContains("P1-A2");
+
+        final SampleFetchOptions fetchOptions = new SampleFetchOptions();
+        fetchOptions.withType();
+        fetchOptions.withExperiment().withProperties();
+        fetchOptions.withProperties();
+
+        // When
+        final List<Sample> samples = v3api.searchSamples(sessionToken, criteria, fetchOptions).getObjects();
+
+        // Then
+        assertSampleIdentifiers(samples, "/CISD/CP1-A2", "/CISD/RP1-A2X");
+    }
+
+    @Test
     public void testLogging()
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
@@ -2074,7 +2458,7 @@ public class SearchSampleTest extends AbstractSampleTest
     private void testSearch(String user, SampleSearchCriteria criteria, String... expectedIdentifiers)
     {
         String sessionToken = v3api.login(user, PASSWORD);
-        List<Sample> samples = search(sessionToken, criteria, new SampleFetchOptions());
+        List<Sample> samples = searchSamples(sessionToken, criteria, new SampleFetchOptions());
         assertSampleIdentifiers(samples, expectedIdentifiers);
         v3api.logout(sessionToken);
     }
@@ -2082,12 +2466,12 @@ public class SearchSampleTest extends AbstractSampleTest
     private void testSearch(String user, SampleSearchCriteria criteria, int expectedCount)
     {
         String sessionToken = v3api.login(user, PASSWORD);
-        List<Sample> samples = search(sessionToken, criteria, new SampleFetchOptions());
+        List<Sample> samples = searchSamples(sessionToken, criteria, new SampleFetchOptions());
         assertEquals(samples.size(), expectedCount);
         v3api.logout(sessionToken);
     }
 
-    private List<Sample> search(String sessionToken, SampleSearchCriteria criteria, SampleFetchOptions fetchOptions)
+    private List<Sample> searchSamples(String sessionToken, SampleSearchCriteria criteria, SampleFetchOptions fetchOptions)
     {
         SearchResult<Sample> searchResult =
                 v3api.searchSamples(sessionToken, criteria, fetchOptions);

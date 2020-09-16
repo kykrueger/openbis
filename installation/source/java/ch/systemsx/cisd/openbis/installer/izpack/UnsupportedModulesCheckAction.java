@@ -26,6 +26,8 @@ import com.izforge.izpack.api.data.PanelActionConfiguration;
 import com.izforge.izpack.api.handler.AbstractUIHandler;
 import com.izforge.izpack.data.PanelAction;
 
+import ch.systemsx.cisd.common.exceptions.EnvironmentFailureException;
+
 /**
  * @author Franz-Josef Elmer
  */
@@ -47,10 +49,15 @@ public class UnsupportedModulesCheckAction implements PanelAction
         }
         if (enabledUnsupportedModules.isEmpty() == false)
         {
-            handler.emitErrorAndBlockNext("Unsupported Module", "The following modules are no longer supported: "
+            String message = "The following modules are no longer supported: "
                     + enabledUnsupportedModules + "\nThey were deprecated and have been removed.\n"
-                    + "Please follow up evaluating if you need these modules and take a inform decision\n"
-                    + "before disabling them because you may loose access to date and functionality.");
+                    + "Please follow up evaluating if you need these modules and take an informed decision\n"
+                    + "before disabling them because you may loose access to data and functionality.";
+            if (handler == null)
+            {
+                throw new EnvironmentFailureException(message);
+            }
+            handler.emitErrorAndBlockNext("Unsupported Module", message);
         }
     }
 

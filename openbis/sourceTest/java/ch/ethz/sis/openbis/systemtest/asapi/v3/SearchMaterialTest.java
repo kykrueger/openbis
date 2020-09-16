@@ -19,8 +19,11 @@ package ch.ethz.sis.openbis.systemtest.asapi.v3;
 import static org.testng.Assert.assertEquals;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.create.MaterialCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
@@ -474,61 +477,61 @@ public class SearchMaterialTest extends AbstractTest
         // Greater or Equals
         final MaterialSearchCriteria criteriaGOE = new MaterialSearchCriteria();
         criteriaGOE.withNumberProperty("VOLUME").thatIsGreaterThanOrEqualTo(99.99);
-        final List<Material> materialsGOE = search(sessionToken, criteriaGOE, sortByCodeFO);
+        final List<Material> materialsGOE = searchMaterials(sessionToken, criteriaGOE, sortByCodeFO);
         assertMaterialIdentifiersInOrder(materialsGOE, "GFP (CONTROL)", "SCRAM (CONTROL)");
 
         // Greater or Equals - Providing integer as real
         final MaterialSearchCriteria criteriaGOEIR = new MaterialSearchCriteria();
         criteriaGOEIR.withNumberProperty("OFFSET").thatIsGreaterThanOrEqualTo(321.0);
-        final List<Material> materialsGOEIR = search(sessionToken, criteriaGOEIR, sortByCodeFO);
+        final List<Material> materialsGOEIR = searchMaterials(sessionToken, criteriaGOEIR, sortByCodeFO);
         assertMaterialIdentifiersInOrder(materialsGOEIR, "913_B (SIRNA)", "913_C (SIRNA)", "OLI_1 (SIRNA)");
 
         // Greater or Equals - Providing integer
         final MaterialSearchCriteria criteriaGOEI = new MaterialSearchCriteria();
         criteriaGOEI.withNumberProperty("OFFSET").thatIsGreaterThanOrEqualTo(321);
-        final List<Material> materialsGOEI = search(sessionToken, criteriaGOEI, sortByCodeFO);
+        final List<Material> materialsGOEI = searchMaterials(sessionToken, criteriaGOEI, sortByCodeFO);
         assertMaterialIdentifiersInOrder(materialsGOEI, "913_B (SIRNA)", "913_C (SIRNA)", "OLI_1 (SIRNA)");
 
         // Greater
         final MaterialSearchCriteria criteriaG = new MaterialSearchCriteria();
         criteriaG.withNumberProperty("VOLUME").thatIsGreaterThan(99.99);
-        final List<Material> materialsG = search(sessionToken, criteriaG, sortByCodeFO);
+        final List<Material> materialsG = searchMaterials(sessionToken, criteriaG, sortByCodeFO);
         assertMaterialIdentifiersInOrder(materialsG, "SCRAM (CONTROL)");
 
         // Greater - Providing integer as real
         final MaterialSearchCriteria criteriaGIR = new MaterialSearchCriteria();
         criteriaGIR.withNumberProperty("OFFSET").thatIsGreaterThan(321.0);
-        final List<Material> materialsGIR = search(sessionToken, criteriaGIR, sortByCodeFO);
+        final List<Material> materialsGIR = searchMaterials(sessionToken, criteriaGIR, sortByCodeFO);
         assertMaterialIdentifiersInOrder(materialsGIR, "913_C (SIRNA)", "OLI_1 (SIRNA)");
 
         // Greater - Providing integer
         final MaterialSearchCriteria criteriaGI = new MaterialSearchCriteria();
         criteriaGI.withNumberProperty("OFFSET").thatIsGreaterThan(321);
-        final List<Material> materialsGI = search(sessionToken, criteriaGI, sortByCodeFO);
+        final List<Material> materialsGI = searchMaterials(sessionToken, criteriaGI, sortByCodeFO);
         assertMaterialIdentifiersInOrder(materialsGI, "913_C (SIRNA)", "OLI_1 (SIRNA)");
 
         // Equals As Text - Real
         final MaterialSearchCriteria criteriaETxt2 = new MaterialSearchCriteria();
         criteriaETxt2.withProperty("OFFSET").thatEquals("123.0");
-        final List<Material> materialsETxt2 = search(sessionToken, criteriaETxt2, sortByCodeFO);
+        final List<Material> materialsETxt2 = searchMaterials(sessionToken, criteriaETxt2, sortByCodeFO);
         assertMaterialIdentifiersInOrder(materialsETxt2, "913_A (SIRNA)", "XX444_A (SIRNA)");
 
         // Equals As Text - Integer
         MaterialSearchCriteria criteriaETxt = new MaterialSearchCriteria();
         criteriaETxt.withProperty("OFFSET").thatEquals("123");
-        List<Material> materialsETxt = search(sessionToken, criteriaETxt, sortByCodeFO);
+        List<Material> materialsETxt = searchMaterials(sessionToken, criteriaETxt, sortByCodeFO);
         assertMaterialIdentifiersInOrder(materialsETxt, "913_A (SIRNA)", "XX444_A (SIRNA)");
 
         // Equals
         MaterialSearchCriteria criteriaE = new MaterialSearchCriteria();
         criteriaE.withNumberProperty("OFFSET").thatEquals(123);
-        List<Material> materialsE = search(sessionToken, criteriaE, sortByCodeFO);
+        List<Material> materialsE = searchMaterials(sessionToken, criteriaE, sortByCodeFO);
         assertMaterialIdentifiersInOrder(materialsE, "913_A (SIRNA)", "XX444_A (SIRNA)");
 
         // Less or Equals
         final MaterialSearchCriteria criteriaLOE = new MaterialSearchCriteria();
         criteriaLOE.withNumberProperty("VOLUME").thatIsLessThanOrEqualTo(99.99);
-        final List<Material> materialsLOE = search(sessionToken, criteriaLOE, sortByCodeFO);
+        final List<Material> materialsLOE = searchMaterials(sessionToken, criteriaLOE, sortByCodeFO);
         assertMaterialIdentifiersInOrder(materialsLOE, "GFP (CONTROL)", "X-NO-DESC (CONTROL)",  "X-NO-SIZE (CONTROL)",
                 "XXXXX-ALL (CONTROL)");
 
@@ -536,7 +539,7 @@ public class SearchMaterialTest extends AbstractTest
         final MaterialSearchCriteria criteriaLOEIR = new MaterialSearchCriteria().withAndOperator();
         criteriaLOEIR.withNumberProperty("OFFSET").thatIsLessThanOrEqualTo(321.0);
         criteriaLOEIR.withNumberProperty("OFFSET").thatIsGreaterThan(1.0);
-        final List<Material> materialsLOEIR = search(sessionToken, criteriaLOEIR, sortByCodeFO);
+        final List<Material> materialsLOEIR = searchMaterials(sessionToken, criteriaLOEIR, sortByCodeFO);
         assertMaterialIdentifiersInOrder(materialsLOEIR, "913_A (SIRNA)", "913_B (SIRNA)", "XX333_B (SIRNA)",
                 "XX444_A (SIRNA)");
 
@@ -544,14 +547,14 @@ public class SearchMaterialTest extends AbstractTest
         final MaterialSearchCriteria criteriaLOEI = new MaterialSearchCriteria().withAndOperator();
         criteriaLOEI.withNumberProperty("OFFSET").thatIsLessThanOrEqualTo(321);
         criteriaLOEI.withNumberProperty("OFFSET").thatIsGreaterThan(1);
-        final List<Material> materialsLOEI = search(sessionToken, criteriaLOEI, sortByCodeFO);
+        final List<Material> materialsLOEI = searchMaterials(sessionToken, criteriaLOEI, sortByCodeFO);
         assertMaterialIdentifiersInOrder(materialsLOEI, "913_A (SIRNA)", "913_B (SIRNA)", "XX333_B (SIRNA)",
                 "XX444_A (SIRNA)");
 
         // Less
         final MaterialSearchCriteria criteriaL = new MaterialSearchCriteria();
         criteriaL.withNumberProperty("VOLUME").thatIsLessThan(99.99);
-        final List<Material> materialsL = search(sessionToken, criteriaL, sortByCodeFO);
+        final List<Material> materialsL = searchMaterials(sessionToken, criteriaL, sortByCodeFO);
         assertMaterialIdentifiersInOrder(materialsL, "X-NO-DESC (CONTROL)",  "X-NO-SIZE (CONTROL)",
                 "XXXXX-ALL (CONTROL)");
 
@@ -559,20 +562,88 @@ public class SearchMaterialTest extends AbstractTest
         final MaterialSearchCriteria criteriaLIR = new MaterialSearchCriteria().withAndOperator();
         criteriaLIR.withNumberProperty("OFFSET").thatIsLessThan(321.0);
         criteriaLIR.withNumberProperty("OFFSET").thatIsGreaterThan(1.0);
-        final List<Material> materialsLIR = search(sessionToken, criteriaLIR, sortByCodeFO);
+        final List<Material> materialsLIR = searchMaterials(sessionToken, criteriaLIR, sortByCodeFO);
         assertMaterialIdentifiersInOrder(materialsLIR, "913_A (SIRNA)", "XX333_B (SIRNA)", "XX444_A (SIRNA)");
 
         // Greater - Providing integer
         final MaterialSearchCriteria criteriaLI = new MaterialSearchCriteria();
         criteriaLI.withNumberProperty("OFFSET").thatIsLessThan(321);
         criteriaLI.withNumberProperty("OFFSET").thatIsGreaterThan(1);
-        final List<Material> materialsLI = search(sessionToken, criteriaLI, sortByCodeFO);
+        final List<Material> materialsLI = searchMaterials(sessionToken, criteriaLI, sortByCodeFO);
         assertMaterialIdentifiersInOrder(materialsLI, "913_A (SIRNA)", "XX333_B (SIRNA)", "XX444_A (SIRNA)");
 
         v3api.logout(sessionToken);
     }
 
-    private List<Material> search(final String sessionToken, final MaterialSearchCriteria criteria,
+    @Test
+    public void testSearchForMaterialWithDatePropertyMatchingSubstring()
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        final PropertyTypePermId propertyType = createADatePropertyType(sessionToken, "DATE");
+        final EntityTypePermId materialType = createAMaterialType(sessionToken, false, propertyType);
+
+        final MaterialCreation materialCreation = new MaterialCreation();
+        materialCreation.setCode("DATE_PROPERTY_TEST");
+        materialCreation.setTypeId(materialType);
+        materialCreation.setProperty("DATE", "2020-02-09");
+
+        v3api.createMaterials(sessionToken, Collections.singletonList(materialCreation));
+
+        final MaterialSearchCriteria criteriaContainsMatch = new MaterialSearchCriteria();
+        criteriaContainsMatch.withProperty("DATE").thatContains("02");
+        assertUserFailureException(
+                Void -> searchMaterials(sessionToken, criteriaContainsMatch, new MaterialFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "Contains", "DATE"));
+
+        final MaterialSearchCriteria criteriaStartsWithMatch = new MaterialSearchCriteria();
+        criteriaStartsWithMatch.withProperty("DATE").thatStartsWith("2020");
+        assertUserFailureException(
+                Void -> searchMaterials(sessionToken, criteriaStartsWithMatch, new MaterialFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "StartsWith", "DATE"));
+
+        final MaterialSearchCriteria criteriaEndsWithMatch = new MaterialSearchCriteria();
+        criteriaEndsWithMatch.withProperty("DATE").thatEndsWith("09");
+        assertUserFailureException(
+                Void -> searchMaterials(sessionToken, criteriaEndsWithMatch, new MaterialFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "EndsWith", "DATE"));
+    }
+
+    @Test
+    public void testSearchForMaterialWithTimestampPropertyMatchingSubstring()
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        final PropertyTypePermId propertyType = createATimestampPropertyType(sessionToken, "TIMESTAMP");
+        final EntityTypePermId materialType = createAMaterialType(sessionToken, false, propertyType);
+
+        final MaterialCreation materialCreation = new MaterialCreation();
+        materialCreation.setCode("TIMESTAMP_PROPERTY_TEST");
+        materialCreation.setTypeId(materialType);
+        materialCreation.setProperty("TIMESTAMP", "2020-02-09 10:00:00 +0100");
+
+        v3api.createMaterials(sessionToken, Collections.singletonList(materialCreation));
+
+        final MaterialSearchCriteria criteriaContainsMatch = new MaterialSearchCriteria();
+        criteriaContainsMatch.withProperty("TIMESTAMP").thatContains("20");
+        assertUserFailureException(
+                Void -> searchMaterials(sessionToken, criteriaContainsMatch, new MaterialFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "Contains", "TIMESTAMP"));
+
+        final MaterialSearchCriteria criteriaStartsWithMatch = new MaterialSearchCriteria();
+        criteriaStartsWithMatch.withProperty("TIMESTAMP").thatStartsWith("2020");
+        assertUserFailureException(
+                Void -> searchMaterials(sessionToken, criteriaStartsWithMatch, new MaterialFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "StartsWith", "TIMESTAMP"));
+
+        final MaterialSearchCriteria criteriaEndsWithMatch = new MaterialSearchCriteria();
+        criteriaEndsWithMatch.withProperty("TIMESTAMP").thatEndsWith("0100");
+        assertUserFailureException(
+                Void -> searchMaterials(sessionToken, criteriaEndsWithMatch, new MaterialFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "EndsWith", "TIMESTAMP"));
+    }
+
+    private List<Material> searchMaterials(final String sessionToken, final MaterialSearchCriteria criteria,
             final MaterialFetchOptions options)
     {
         return v3api.searchMaterials(sessionToken, criteria, options).getObjects();

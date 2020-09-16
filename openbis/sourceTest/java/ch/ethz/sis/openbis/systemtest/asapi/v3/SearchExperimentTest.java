@@ -1233,34 +1233,173 @@ public class SearchExperimentTest extends AbstractExperimentTest
     {
         final String sessionToken = v3api.login(TEST_USER, PASSWORD);
 
-        final PropertyTypePermId propertyType = createAnIntegerPropertyType(sessionToken, "NUMBER");
+        final PropertyTypePermId propertyType = createAnIntegerPropertyType(sessionToken, "INT_NUMBER");
         final EntityTypePermId experimentType = createAnExperimentType(sessionToken, false, propertyType);
 
         final ExperimentCreation experimentCreation = new ExperimentCreation();
         experimentCreation.setCode("INTEGER_PROPERTY_TEST");
         experimentCreation.setTypeId(experimentType);
         experimentCreation.setProjectId(new ProjectIdentifier("/CISD/DEFAULT"));
-        experimentCreation.setProperty("NUMBER", "123");
+        experimentCreation.setProperty("INT_NUMBER", "123");
 
         v3api.createExperiments(sessionToken, Collections.singletonList(experimentCreation));
 
         final ExperimentSearchCriteria criteriaStartsWithMatch = new ExperimentSearchCriteria();
-        criteriaStartsWithMatch.withProperty("NUMBER").thatStartsWith("12");
+        criteriaStartsWithMatch.withProperty("INT_NUMBER").thatStartsWith("12");
         assertUserFailureException(
                 Void -> searchExperiments(sessionToken, criteriaStartsWithMatch, new ExperimentFetchOptions()),
-                "Can't be computed we suggest you use withNumberProperty to see operators available");
+                String.format("Operator %s undefined for datatype %s.", "StartsWith", "INTEGER"));
 
         final ExperimentSearchCriteria criteriaEndsWithMatch = new ExperimentSearchCriteria();
-        criteriaEndsWithMatch.withProperty("NUMBER").thatEndsWith("23");
+        criteriaEndsWithMatch.withProperty("INT_NUMBER").thatEndsWith("23");
         assertUserFailureException(
                 Void -> searchExperiments(sessionToken, criteriaEndsWithMatch, new ExperimentFetchOptions()),
-                "Can't be computed we suggest you use withNumberProperty to see operators available");
+                String.format("Operator %s undefined for datatype %s.", "EndsWith", "INTEGER"));
 
         final ExperimentSearchCriteria criteriaContainsMatch = new ExperimentSearchCriteria();
-        criteriaContainsMatch.withProperty("NUMBER").thatContains("23");
+        criteriaContainsMatch.withProperty("INT_NUMBER").thatContains("23");
         assertUserFailureException(
                 Void -> searchExperiments(sessionToken, criteriaContainsMatch, new ExperimentFetchOptions()),
-                "Can't be computed we suggest you use withNumberProperty to see operators available");
+                String.format("Operator %s undefined for datatype %s.", "Contains", "INTEGER"));
+    }
+
+    @Test
+    public void testSearchForExperimentWithRealPropertyMatchingSubstring()
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        final PropertyTypePermId propertyType = createARealPropertyType(sessionToken, "REAL_NUMBER");
+        final EntityTypePermId experimentType = createAnExperimentType(sessionToken, false, propertyType);
+
+        final ExperimentCreation experimentCreation = new ExperimentCreation();
+        experimentCreation.setCode("REAL_PROPERTY_TEST");
+        experimentCreation.setTypeId(experimentType);
+        experimentCreation.setProjectId(new ProjectIdentifier("/CISD/DEFAULT"));
+        experimentCreation.setProperty("REAL_NUMBER", "1.23");
+
+        v3api.createExperiments(sessionToken, Collections.singletonList(experimentCreation));
+
+        final ExperimentSearchCriteria criteriaStartsWithMatch = new ExperimentSearchCriteria();
+        criteriaStartsWithMatch.withProperty("REAL_NUMBER").thatStartsWith("1.2");
+        assertUserFailureException(
+                Void -> searchExperiments(sessionToken, criteriaStartsWithMatch, new ExperimentFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "StartsWith", "REAL"));
+
+        final ExperimentSearchCriteria criteriaEndsWithMatch = new ExperimentSearchCriteria();
+        criteriaEndsWithMatch.withProperty("REAL_NUMBER").thatEndsWith("23");
+        assertUserFailureException(
+                Void -> searchExperiments(sessionToken, criteriaEndsWithMatch, new ExperimentFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "EndsWith", "REAL"));
+
+        final ExperimentSearchCriteria criteriaContainsMatch = new ExperimentSearchCriteria();
+        criteriaContainsMatch.withProperty("REAL_NUMBER").thatContains(".2");
+        assertUserFailureException(
+                Void -> searchExperiments(sessionToken, criteriaContainsMatch, new ExperimentFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "Contains", "REAL"));
+    }
+
+    @Test
+    public void testSearchNumeric()
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        final PropertyTypePermId integerPropertyType = createAnIntegerPropertyType(sessionToken, "INT_NUMBER");
+        final PropertyTypePermId realPropertyType = createARealPropertyType(sessionToken, "REAL_NUMBER");
+        final EntityTypePermId experimentType = createAnExperimentType(sessionToken, false, integerPropertyType,
+                realPropertyType);
+
+        final ExperimentCreation experimentCreation1 = getExperimentCreation(experimentType, 1, 0.01);
+        final ExperimentCreation experimentCreation2 = getExperimentCreation(experimentType, 2, 0.02);
+        final ExperimentCreation experimentCreation3 = getExperimentCreation(experimentType, 3, 0.03);
+
+        v3api.createExperiments(sessionToken, Arrays.asList(experimentCreation1, experimentCreation2,
+                experimentCreation3));
+
+        final ExperimentFetchOptions emptyFetchOptions = new ExperimentFetchOptions();
+        
+        // Greater or Equal - Integer
+        final ExperimentSearchCriteria criteriaGE = new ExperimentSearchCriteria();
+        criteriaGE.withNumberProperty("INT_NUMBER").thatIsGreaterThanOrEqualTo(2);
+        final List<Experiment> experimentsGE = search(sessionToken, criteriaGE, emptyFetchOptions);
+        assertExperimentIdentifiersInOrder(experimentsGE, "/CISD/DEFAULT/TEST_2", "/CISD/DEFAULT/TEST_3");
+
+        // Greater or Equal - Integer as Real
+        final ExperimentSearchCriteria criteriaGEIR = new ExperimentSearchCriteria();
+        criteriaGEIR.withNumberProperty("INT_NUMBER").thatIsGreaterThanOrEqualTo(2.0);
+        final List<Experiment> experimentsGEIR = search(sessionToken, criteriaGEIR, emptyFetchOptions);
+        assertExperimentIdentifiersInOrder(experimentsGEIR, "/CISD/DEFAULT/TEST_2", "/CISD/DEFAULT/TEST_3");
+
+        // Greater or Equal - Real
+        final ExperimentSearchCriteria criteriaGER = new ExperimentSearchCriteria();
+        criteriaGER.withNumberProperty("REAL_NUMBER").thatIsGreaterThanOrEqualTo(0.02);
+        final List<Experiment> experimentsGER = search(sessionToken, criteriaGER, emptyFetchOptions);
+        assertExperimentIdentifiersInOrder(experimentsGER, "/CISD/DEFAULT/TEST_2", "/CISD/DEFAULT/TEST_3");
+
+        // Greater - Integer
+        final ExperimentSearchCriteria criteriaG = new ExperimentSearchCriteria();
+        criteriaG.withNumberProperty("INT_NUMBER").thatIsGreaterThan(2);
+        final List<Experiment> experimentsG = search(sessionToken, criteriaG, emptyFetchOptions);
+        assertExperimentIdentifiersInOrder(experimentsG, "/CISD/DEFAULT/TEST_3");
+
+        // Greater - Integer as Real
+        final ExperimentSearchCriteria criteriaGIR = new ExperimentSearchCriteria();
+        criteriaGIR.withNumberProperty("INT_NUMBER").thatIsGreaterThan(2.0);
+        final List<Experiment> experimentsGIR = search(sessionToken, criteriaGIR, emptyFetchOptions);
+        assertExperimentIdentifiersInOrder(experimentsGIR, "/CISD/DEFAULT/TEST_3");
+
+        // Greater - Real
+        final ExperimentSearchCriteria criteriaGR = new ExperimentSearchCriteria();
+        criteriaGR.withNumberProperty("REAL_NUMBER").thatIsGreaterThan(0.02);
+        final List<Experiment> experimentsGR = search(sessionToken, criteriaGR, emptyFetchOptions);
+        assertExperimentIdentifiersInOrder(experimentsGR, "/CISD/DEFAULT/TEST_3");
+
+        // Equal - Integer
+        final ExperimentSearchCriteria criteriaE = new ExperimentSearchCriteria();
+        criteriaE.withNumberProperty("INT_NUMBER").thatEquals(2);
+        final List<Experiment> experimentsE = search(sessionToken, criteriaE, emptyFetchOptions);
+        assertExperimentIdentifiersInOrder(experimentsE, "/CISD/DEFAULT/TEST_2");
+
+        // Equal - Integer as String
+        final ExperimentSearchCriteria criteriaES = new ExperimentSearchCriteria();
+        criteriaES.withProperty("INT_NUMBER").thatEquals("2");
+        final List<Experiment> experimentsES = search(sessionToken, criteriaES, emptyFetchOptions);
+        assertExperimentIdentifiersInOrder(experimentsES, "/CISD/DEFAULT/TEST_2");
+
+        // Equal - Integer as Real as String
+        final ExperimentSearchCriteria criteriaERS = new ExperimentSearchCriteria();
+        criteriaERS.withProperty("INT_NUMBER").thatEquals("2.0");
+        final List<Experiment> experimentsERS = search(sessionToken, criteriaERS, emptyFetchOptions);
+        assertExperimentIdentifiersInOrder(experimentsERS, "/CISD/DEFAULT/TEST_2");
+
+        // Greater or Equal - Integer
+        final ExperimentSearchCriteria criteriaLE = new ExperimentSearchCriteria();
+        criteriaLE.withNumberProperty("INT_NUMBER").thatIsLessThanOrEqualTo(2);
+        final List<Experiment> experimentsLE = search(sessionToken, criteriaLE, emptyFetchOptions);
+        assertExperimentIdentifiersInOrder(experimentsLE, "/CISD/DEFAULT/TEST_1", "/CISD/DEFAULT/TEST_2");
+
+        // Less or Equal - Real
+        final ExperimentSearchCriteria criteriaLER = new ExperimentSearchCriteria();
+        criteriaLER.withNumberProperty("REAL_NUMBER").thatIsLessThanOrEqualTo(0.02);
+        final List<Experiment> experimentsLER = search(sessionToken, criteriaLER, emptyFetchOptions);
+        assertExperimentIdentifiersInOrder(experimentsLER, "/CISD/DEFAULT/TEST_1", "/CISD/DEFAULT/TEST_2");
+
+        // Less - Integer
+        final ExperimentSearchCriteria criteriaL = new ExperimentSearchCriteria();
+        criteriaL.withNumberProperty("INT_NUMBER").thatIsLessThan(2);
+        final List<Experiment> experimentsL = search(sessionToken, criteriaL, emptyFetchOptions);
+        assertExperimentIdentifiersInOrder(experimentsL, "/CISD/DEFAULT/TEST_1");
+
+        // Less - Integer as Real
+        final ExperimentSearchCriteria criteriaLIR = new ExperimentSearchCriteria();
+        criteriaLIR.withNumberProperty("INT_NUMBER").thatIsLessThan(2.0);
+        final List<Experiment> experimentsLIR = search(sessionToken, criteriaLIR, emptyFetchOptions);
+        assertExperimentIdentifiersInOrder(experimentsLIR, "/CISD/DEFAULT/TEST_1");
+
+        // Less - Real
+        final ExperimentSearchCriteria criteriaLR = new ExperimentSearchCriteria();
+        criteriaLR.withNumberProperty("REAL_NUMBER").thatIsLessThan(0.02);
+        final List<Experiment> experimentsLR = search(sessionToken, criteriaLR, emptyFetchOptions);
+        assertExperimentIdentifiersInOrder(experimentsLR, "/CISD/DEFAULT/TEST_1");
     }
 
     @Test
@@ -1283,19 +1422,19 @@ public class SearchExperimentTest extends AbstractExperimentTest
         criteriaContainsMatch.withProperty("DATE").thatContains("02");
         assertUserFailureException(
                 Void -> searchExperiments(sessionToken, criteriaContainsMatch, new ExperimentFetchOptions()),
-                "Can't be computed we suggest you use withDateProperty to see operators available");
+                String.format("Operator %s undefined for datatype %s.", "Contains", "DATE"));
 
         final ExperimentSearchCriteria criteriaStartsWithMatch = new ExperimentSearchCriteria();
         criteriaStartsWithMatch.withProperty("DATE").thatStartsWith("2020");
         assertUserFailureException(
                 Void -> searchExperiments(sessionToken, criteriaStartsWithMatch, new ExperimentFetchOptions()),
-                "Can't be computed we suggest you use withDateProperty to see operators available");
+                String.format("Operator %s undefined for datatype %s.", "StartsWith", "DATE"));
 
         final ExperimentSearchCriteria criteriaEndsWithMatch = new ExperimentSearchCriteria();
         criteriaEndsWithMatch.withProperty("DATE").thatEndsWith("09");
         assertUserFailureException(
                 Void -> searchExperiments(sessionToken, criteriaEndsWithMatch, new ExperimentFetchOptions()),
-                "Can't be computed we suggest you use withDateProperty to see operators available");
+                String.format("Operator %s undefined for datatype %s.", "EndsWith", "DATE"));
     }
 
     @Test
@@ -1318,39 +1457,37 @@ public class SearchExperimentTest extends AbstractExperimentTest
         criteriaContainsMatch.withProperty("TIMESTAMP").thatContains("20");
         assertUserFailureException(
                 Void -> searchExperiments(sessionToken, criteriaContainsMatch, new ExperimentFetchOptions()),
-                "Can't be computed we suggest you use withDateProperty to see operators available");
+                String.format("Operator %s undefined for datatype %s.", "Contains", "TIMESTAMP"));
 
         final ExperimentSearchCriteria criteriaStartsWithMatch = new ExperimentSearchCriteria();
         criteriaStartsWithMatch.withProperty("TIMESTAMP").thatStartsWith("2020");
         assertUserFailureException(
                 Void -> searchExperiments(sessionToken, criteriaStartsWithMatch, new ExperimentFetchOptions()),
-                "Can't be computed we suggest you use withDateProperty to see operators available");
+                String.format("Operator %s undefined for datatype %s.", "StartsWith", "TIMESTAMP"));
 
         final ExperimentSearchCriteria criteriaEndsWithMatch = new ExperimentSearchCriteria();
         criteriaEndsWithMatch.withProperty("TIMESTAMP").thatEndsWith("0100");
         assertUserFailureException(
                 Void -> searchExperiments(sessionToken, criteriaEndsWithMatch, new ExperimentFetchOptions()),
-                "Can't be computed we suggest you use withDateProperty to see operators available");
+                String.format("Operator %s undefined for datatype %s.", "EndsWith", "TIMESTAMP"));
     }
 
-    protected PropertyTypePermId createABooleanPropertyType(final String sessionToken, final String code)
+    public ExperimentCreation getExperimentCreation(final EntityTypePermId experimentType, final int intValue,
+            final double realValue)
     {
-        final PropertyTypeCreation creation = new PropertyTypeCreation();
-        creation.setCode(code);
-        creation.setDataType(DataType.BOOLEAN);
-        creation.setLabel("Boolean");
-        creation.setDescription("Boolean property type.");
-        return v3api.createPropertyTypes(sessionToken, Collections.singletonList(creation)).get(0);
+        final ExperimentCreation experimentCreation = new ExperimentCreation();
+        experimentCreation.setCode("TEST_" + intValue);
+        experimentCreation.setTypeId(experimentType);
+        experimentCreation.setProjectId(new ProjectIdentifier("/CISD/DEFAULT"));
+        experimentCreation.setProperty("INT_NUMBER", String.valueOf(intValue));
+        experimentCreation.setProperty("REAL_NUMBER", String.valueOf(realValue));
+        return experimentCreation;
     }
 
-    protected PropertyTypePermId createAnIntegerPropertyType(final String sessionToken, final String code)
+    private List<Experiment> search(final String sessionToken, final ExperimentSearchCriteria criteria,
+            final ExperimentFetchOptions options)
     {
-        final PropertyTypeCreation creation = new PropertyTypeCreation();
-        creation.setCode(code);
-        creation.setDataType(DataType.INTEGER);
-        creation.setLabel("Integer");
-        creation.setDescription("Integer property type.");
-        return v3api.createPropertyTypes(sessionToken, Collections.singletonList(creation)).get(0);
+        return v3api.searchExperiments(sessionToken, criteria, options).getObjects();
     }
 
     private void testSearch(String user, ExperimentSearchCriteria criteria, String... expectedIdentifiers)

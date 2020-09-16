@@ -48,7 +48,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinInformation;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinType;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
@@ -70,7 +69,7 @@ public class DateFieldSearchConditionTranslator implements IConditionTranslator<
 
             case PROPERTY:
             {
-                return TranslatorUtils.getPropertyJoinInformationMap(tableMapper, aliasFactory, JoinType.INNER);
+                return TranslatorUtils.getPropertyJoinInformationMap(tableMapper, aliasFactory);
             }
         }
 
@@ -166,7 +165,8 @@ public class DateFieldSearchConditionTranslator implements IConditionTranslator<
         }
     }
 
-    private void appendWhenForDateOrTimestampProperties(final StringBuilder sqlBuilder, final List<Object> args, DataType dataType,
+    static void appendWhenForDateOrTimestampProperties(final StringBuilder sqlBuilder, final List<Object> args,
+            final DataType dataType,
             final TableMapper tableMapper, final IDate value, final Map<String, JoinInformation> aliases, final ITimeZone timeZone,
             final boolean bareDateValue, final String propertyName, final boolean internalProperty, final String entityTypesSubTableAlias)
     {

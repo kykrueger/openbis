@@ -75,37 +75,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.EntityWithPropertiesSortOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractDateObjectValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractDateValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractNumberValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractStringValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AnyStringValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateEarlierThanOrEqualToValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateEqualToValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateLaterThanOrEqualToValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateObjectEarlierThanOrEqualToValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateObjectEqualToValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateObjectLaterThanOrEqualToValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.IDate;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ITimeZone;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.LongDateFormat;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.NormalDateFormat;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.NumberEqualToValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.NumberGreaterThanOrEqualToValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.NumberGreaterThanValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.NumberLessThanOrEqualToValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.NumberLessThanValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ShortDateFormat;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringContainsExactlyValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringContainsValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringEndsWithValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringEqualToValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringGreaterThanOrEqualToValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringGreaterThanValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringLessThanOrEqualToValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringLessThanValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringStartsWithValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.TimeZone;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.*;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCriteriaTranslator;
@@ -149,8 +119,8 @@ public class TranslatorUtils
             sqlBuilder.append(DOUBLE_COLON).append(casting);
         }
 
-        final String strippedValue = TranslatorUtils.stripQuotationMarks(value.getValue().trim());
-        appendStringComparatorOp(value.getClass(), strippedValue.toLowerCase(), sqlBuilder, args);
+        final String strippedValue = TranslatorUtils.stripQuotationMarks(value.getValue().trim()).toLowerCase();
+        appendStringComparatorOp(value.getClass(), strippedValue, sqlBuilder, args);
     }
 
     public static void appendStringComparatorOp(final AbstractStringValue value, final StringBuilder sqlBuilder, final List<Object> args)
@@ -288,8 +258,8 @@ public class TranslatorUtils
         sqlBuilder.append(SP).append(QU);
     }
 
-    public static Map<String, JoinInformation> getPropertyJoinInformationMap(final TableMapper tableMapper, final IAliasFactory aliasFactory,
-            final JoinType joinType)
+    public static Map<String, JoinInformation> getPropertyJoinInformationMap(final TableMapper tableMapper,
+            final IAliasFactory aliasFactory)
     {
         final Map<String, JoinInformation> result = new LinkedHashMap<>();
         final String valuesTableAlias = aliasFactory.createAlias();
@@ -297,7 +267,7 @@ public class TranslatorUtils
         final String attributeTypesTableAlias = aliasFactory.createAlias();
 
         final JoinInformation joinInformation1 = new JoinInformation();
-        joinInformation1.setJoinType(joinType);
+        joinInformation1.setJoinType(JoinType.LEFT);
         joinInformation1.setMainTable(tableMapper.getEntitiesTable());
         joinInformation1.setMainTableAlias(SearchCriteriaTranslator.MAIN_TABLE_ALIAS);
         joinInformation1.setMainTableIdField(ID_COLUMN);
@@ -307,7 +277,7 @@ public class TranslatorUtils
         result.put(tableMapper.getValuesTable(), joinInformation1);
 
         final JoinInformation joinInformation2 = new JoinInformation();
-        joinInformation2.setJoinType(joinType);
+        joinInformation2.setJoinType(JoinType.LEFT);
         joinInformation2.setMainTable(tableMapper.getValuesTable());
         joinInformation2.setMainTableAlias(valuesTableAlias);
         joinInformation2.setMainTableIdField(tableMapper.getValuesTableEntityTypeAttributeTypeIdField());
@@ -317,7 +287,7 @@ public class TranslatorUtils
         result.put(tableMapper.getEntityTypesAttributeTypesTable(), joinInformation2);
 
         final JoinInformation joinInformation3 = new JoinInformation();
-        joinInformation3.setJoinType(joinType);
+        joinInformation3.setJoinType(JoinType.LEFT);
         joinInformation3.setMainTable(tableMapper.getEntityTypesAttributeTypesTable());
         joinInformation3.setMainTableAlias(entityTypesAttributeTypesTableAlias);
         joinInformation3.setMainTableIdField(tableMapper.getEntityTypesAttributeTypesTableAttributeTypeIdField());
@@ -327,7 +297,6 @@ public class TranslatorUtils
         result.put(tableMapper.getAttributeTypesTable(), joinInformation3);
 
         final JoinInformation joinInformation4 = new JoinInformation();
-        // Workaroung for the issue with Postgres 12, where inner join causes problems.
         joinInformation4.setJoinType(JoinType.LEFT);
         joinInformation4.setMainTable(tableMapper.getAttributeTypesTable());
         joinInformation4.setMainTableAlias(attributeTypesTableAlias);
@@ -487,7 +456,7 @@ public class TranslatorUtils
         }
     }
 
-    private static Date parseDate(final String dateString)
+    public static Date parseDate(final String dateString)
     {
         try
         {
@@ -528,12 +497,22 @@ public class TranslatorUtils
         if (fieldValue instanceof DateEqualToValue || fieldValue instanceof DateObjectEqualToValue)
         {
             sqlBuilder.append(EQ);
-        } else if (fieldValue instanceof DateEarlierThanOrEqualToValue || fieldValue instanceof DateObjectEarlierThanOrEqualToValue)
+        } else if (fieldValue instanceof DateEarlierThanOrEqualToValue
+                || fieldValue instanceof DateObjectEarlierThanOrEqualToValue)
         {
             sqlBuilder.append(LE);
-        } else if (fieldValue instanceof DateLaterThanOrEqualToValue || fieldValue instanceof DateObjectLaterThanOrEqualToValue)
+        } else if (fieldValue instanceof DateLaterThanOrEqualToValue
+                || fieldValue instanceof DateObjectLaterThanOrEqualToValue)
         {
             sqlBuilder.append(GE);
+        } else if (fieldValue instanceof DateEarlierThanValue
+                || fieldValue instanceof DateObjectEarlierThanValue)
+        {
+            sqlBuilder.append(LT);
+        } else if (fieldValue instanceof DateLaterThanValue
+                || fieldValue instanceof DateObjectLaterThanValue)
+        {
+            sqlBuilder.append(GT);
         } else
         {
             throw new IllegalArgumentException("Unsupported field value: " + fieldValue.getClass().getSimpleName());
