@@ -1084,6 +1084,64 @@ public class SearchDataSetTest extends AbstractDataSetTest
     }
 
     @Test
+    public void testSearchForDataSetWithBooleanPropertyMatchingSubstring()
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        final PropertyTypePermId propertyType = createABooleanPropertyType(sessionToken, "BOOLEAN");
+        final EntityTypePermId dataSetType = createADataSetType(sessionToken, false, propertyType);
+
+        final DataSetCreation dataSetCreation = physicalDataSetCreation();
+        dataSetCreation.setCode("BOOLEAN_PROPERTY_TEST");
+        dataSetCreation.setTypeId(dataSetType);
+        dataSetCreation.setProperty("BOOLEAN", "false");
+
+        v3api.createDataSets(sessionToken, Collections.singletonList(dataSetCreation));
+
+        final DataSetSearchCriteria criteriaStartsWithMatch = new DataSetSearchCriteria();
+        criteriaStartsWithMatch.withProperty("BOOLEAN").thatStartsWith("fa");
+        assertUserFailureException(
+                Void -> searchDataSets(sessionToken, criteriaStartsWithMatch, new DataSetFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "StartsWith", "BOOLEAN"));
+
+        final DataSetSearchCriteria criteriaEndsWithMatch = new DataSetSearchCriteria();
+        criteriaEndsWithMatch.withProperty("BOOLEAN").thatEndsWith("lse");
+        assertUserFailureException(
+                Void -> searchDataSets(sessionToken, criteriaEndsWithMatch, new DataSetFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "EndsWith", "BOOLEAN"));
+
+        final DataSetSearchCriteria criteriaContainsMatch = new DataSetSearchCriteria();
+        criteriaContainsMatch.withProperty("BOOLEAN").thatContains("als");
+        assertUserFailureException(
+                Void -> searchDataSets(sessionToken, criteriaContainsMatch, new DataSetFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "Contains", "BOOLEAN"));
+
+        final DataSetSearchCriteria criteriaLTMatch = new DataSetSearchCriteria();
+        criteriaLTMatch.withProperty("BOOLEAN").thatIsLessThan("true");
+        assertUserFailureException(
+                Void -> searchDataSets(sessionToken, criteriaLTMatch, new DataSetFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "LessThan", "BOOLEAN"));
+
+        final DataSetSearchCriteria criteriaLEMatch = new DataSetSearchCriteria();
+        criteriaLEMatch.withProperty("BOOLEAN").thatIsLessThanOrEqualTo("true");
+        assertUserFailureException(
+                Void -> searchDataSets(sessionToken, criteriaLEMatch, new DataSetFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "LessThanOrEqualTo", "BOOLEAN"));
+
+        final DataSetSearchCriteria criteriaGTMatch = new DataSetSearchCriteria();
+        criteriaGTMatch.withProperty("BOOLEAN").thatIsGreaterThan("true");
+        assertUserFailureException(
+                Void -> searchDataSets(sessionToken, criteriaGTMatch, new DataSetFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "GreaterThan", "BOOLEAN"));
+
+        final DataSetSearchCriteria criteriaGEMatch = new DataSetSearchCriteria();
+        criteriaGEMatch.withProperty("BOOLEAN").thatIsGreaterThanOrEqualTo("true");
+        assertUserFailureException(
+                Void -> searchDataSets(sessionToken, criteriaGEMatch, new DataSetFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "GreaterThanOrEqualTo", "BOOLEAN"));
+    }
+
+    @Test
     public void testSearchForDataSetWithRealPropertyMatchingSubstring()
     {
         final String sessionToken = v3api.login(TEST_USER, PASSWORD);

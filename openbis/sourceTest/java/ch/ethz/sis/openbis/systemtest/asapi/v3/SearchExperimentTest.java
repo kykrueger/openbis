@@ -1299,6 +1299,65 @@ public class SearchExperimentTest extends AbstractExperimentTest
     }
 
     @Test
+    public void testSearchForExperimentWithBooleanPropertyMatchingSubstring()
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        final PropertyTypePermId propertyType = createABooleanPropertyType(sessionToken, "BOOLEAN");
+        final EntityTypePermId experimentType = createAnExperimentType(sessionToken, false, propertyType);
+
+        final ExperimentCreation experimentCreation = new ExperimentCreation();
+        experimentCreation.setCode("BOOLEAN_PROPERTY_TEST");
+        experimentCreation.setTypeId(experimentType);
+        experimentCreation.setProjectId(new ProjectIdentifier("/CISD/DEFAULT"));
+        experimentCreation.setProperty("BOOLEAN", "false");
+
+        v3api.createExperiments(sessionToken, Collections.singletonList(experimentCreation));
+
+        final ExperimentSearchCriteria criteriaStartsWithMatch = new ExperimentSearchCriteria();
+        criteriaStartsWithMatch.withProperty("BOOLEAN").thatStartsWith("fa");
+        assertUserFailureException(
+                Void -> searchExperiments(sessionToken, criteriaStartsWithMatch, new ExperimentFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "StartsWith", "BOOLEAN"));
+
+        final ExperimentSearchCriteria criteriaEndsWithMatch = new ExperimentSearchCriteria();
+        criteriaEndsWithMatch.withProperty("BOOLEAN").thatEndsWith("lse");
+        assertUserFailureException(
+                Void -> searchExperiments(sessionToken, criteriaEndsWithMatch, new ExperimentFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "EndsWith", "BOOLEAN"));
+
+        final ExperimentSearchCriteria criteriaContainsMatch = new ExperimentSearchCriteria();
+        criteriaContainsMatch.withProperty("BOOLEAN").thatContains("als");
+        assertUserFailureException(
+                Void -> searchExperiments(sessionToken, criteriaContainsMatch, new ExperimentFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "Contains", "BOOLEAN"));
+
+        final ExperimentSearchCriteria criteriaLTMatch = new ExperimentSearchCriteria();
+        criteriaLTMatch.withProperty("BOOLEAN").thatIsLessThan("true");
+        assertUserFailureException(
+                Void -> searchExperiments(sessionToken, criteriaLTMatch, new ExperimentFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "LessThan", "BOOLEAN"));
+
+        final ExperimentSearchCriteria criteriaLEMatch = new ExperimentSearchCriteria();
+        criteriaLEMatch.withProperty("BOOLEAN").thatIsLessThanOrEqualTo("true");
+        assertUserFailureException(
+                Void -> searchExperiments(sessionToken, criteriaLEMatch, new ExperimentFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "LessThanOrEqualTo", "BOOLEAN"));
+
+        final ExperimentSearchCriteria criteriaGTMatch = new ExperimentSearchCriteria();
+        criteriaGTMatch.withProperty("BOOLEAN").thatIsGreaterThan("true");
+        assertUserFailureException(
+                Void -> searchExperiments(sessionToken, criteriaGTMatch, new ExperimentFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "GreaterThan", "BOOLEAN"));
+
+        final ExperimentSearchCriteria criteriaGEMatch = new ExperimentSearchCriteria();
+        criteriaGEMatch.withProperty("BOOLEAN").thatIsGreaterThanOrEqualTo("true");
+        assertUserFailureException(
+                Void -> searchExperiments(sessionToken, criteriaGEMatch, new ExperimentFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "GreaterThanOrEqualTo", "BOOLEAN"));
+    }
+
+    @Test
     public void testSearchNumeric()
     {
         final String sessionToken = v3api.login(TEST_USER, PASSWORD);

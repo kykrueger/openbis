@@ -240,6 +240,64 @@ public class SearchMaterialTest extends AbstractTest
     }
 
     @Test
+    public void testSearchForMaterialWithBooleanPropertyMatchingSubstring()
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        final PropertyTypePermId propertyType = createABooleanPropertyType(sessionToken, "BOOLEAN");
+        final EntityTypePermId materialType = createAMaterialType(sessionToken, false, propertyType);
+
+        final MaterialCreation materialCreation = new MaterialCreation();
+        materialCreation.setCode("BOOLEAN_PROPERTY_TEST");
+        materialCreation.setTypeId(materialType);
+        materialCreation.setProperty("BOOLEAN", "false");
+
+        v3api.createMaterials(sessionToken, Collections.singletonList(materialCreation));
+
+        final MaterialSearchCriteria criteriaStartsWithMatch = new MaterialSearchCriteria();
+        criteriaStartsWithMatch.withProperty("BOOLEAN").thatStartsWith("fa");
+        assertUserFailureException(
+                Void -> searchMaterials(sessionToken, criteriaStartsWithMatch, new MaterialFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "StartsWith", "BOOLEAN"));
+
+        final MaterialSearchCriteria criteriaEndsWithMatch = new MaterialSearchCriteria();
+        criteriaEndsWithMatch.withProperty("BOOLEAN").thatEndsWith("lse");
+        assertUserFailureException(
+                Void -> searchMaterials(sessionToken, criteriaEndsWithMatch, new MaterialFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "EndsWith", "BOOLEAN"));
+
+        final MaterialSearchCriteria criteriaContainsMatch = new MaterialSearchCriteria();
+        criteriaContainsMatch.withProperty("BOOLEAN").thatContains("als");
+        assertUserFailureException(
+                Void -> searchMaterials(sessionToken, criteriaContainsMatch, new MaterialFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "Contains", "BOOLEAN"));
+
+        final MaterialSearchCriteria criteriaLTMatch = new MaterialSearchCriteria();
+        criteriaLTMatch.withProperty("BOOLEAN").thatIsLessThan("true");
+        assertUserFailureException(
+                Void -> searchMaterials(sessionToken, criteriaLTMatch, new MaterialFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "LessThan", "BOOLEAN"));
+
+        final MaterialSearchCriteria criteriaLEMatch = new MaterialSearchCriteria();
+        criteriaLEMatch.withProperty("BOOLEAN").thatIsLessThanOrEqualTo("true");
+        assertUserFailureException(
+                Void -> searchMaterials(sessionToken, criteriaLEMatch, new MaterialFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "LessThanOrEqualTo", "BOOLEAN"));
+
+        final MaterialSearchCriteria criteriaGTMatch = new MaterialSearchCriteria();
+        criteriaGTMatch.withProperty("BOOLEAN").thatIsGreaterThan("true");
+        assertUserFailureException(
+                Void -> searchMaterials(sessionToken, criteriaGTMatch, new MaterialFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "GreaterThan", "BOOLEAN"));
+
+        final MaterialSearchCriteria criteriaGEMatch = new MaterialSearchCriteria();
+        criteriaGEMatch.withProperty("BOOLEAN").thatIsGreaterThanOrEqualTo("true");
+        assertUserFailureException(
+                Void -> searchMaterials(sessionToken, criteriaGEMatch, new MaterialFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "GreaterThanOrEqualTo", "BOOLEAN"));
+    }
+
+    @Test
     public void testSearchForMaterialWithRealPropertyMatchingSubstring()
     {
         final String sessionToken = v3api.login(TEST_USER, PASSWORD);
