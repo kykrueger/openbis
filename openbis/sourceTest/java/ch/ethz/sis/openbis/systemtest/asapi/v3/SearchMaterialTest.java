@@ -206,6 +206,74 @@ public class SearchMaterialTest extends AbstractTest
     }
 
     @Test
+    public void testSearchForMaterialWithIntegerPropertyMatchingSubstring()
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        final PropertyTypePermId propertyType = createAnIntegerPropertyType(sessionToken, "INT_NUMBER");
+        final EntityTypePermId materialType = createAMaterialType(sessionToken, false, propertyType);
+
+        final MaterialCreation materialCreation = new MaterialCreation();
+        materialCreation.setCode("INTEGER_PROPERTY_TEST");
+        materialCreation.setTypeId(materialType);
+        materialCreation.setProperty("INT_NUMBER", "123");
+
+        v3api.createMaterials(sessionToken, Collections.singletonList(materialCreation));
+
+        final MaterialSearchCriteria criteriaStartsWithMatch = new MaterialSearchCriteria();
+        criteriaStartsWithMatch.withProperty("INT_NUMBER").thatStartsWith("12");
+        assertUserFailureException(
+                Void -> searchMaterials(sessionToken, criteriaStartsWithMatch, new MaterialFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "StartsWith", "INTEGER"));
+
+        final MaterialSearchCriteria criteriaEndsWithMatch = new MaterialSearchCriteria();
+        criteriaEndsWithMatch.withProperty("INT_NUMBER").thatEndsWith("23");
+        assertUserFailureException(
+                Void -> searchMaterials(sessionToken, criteriaEndsWithMatch, new MaterialFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "EndsWith", "INTEGER"));
+
+        final MaterialSearchCriteria criteriaContainsMatch = new MaterialSearchCriteria();
+        criteriaContainsMatch.withProperty("INT_NUMBER").thatContains("23");
+        assertUserFailureException(
+                Void -> searchMaterials(sessionToken, criteriaContainsMatch, new MaterialFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "Contains", "INTEGER"));
+    }
+
+    @Test
+    public void testSearchForMaterialWithRealPropertyMatchingSubstring()
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        final PropertyTypePermId propertyType = createARealPropertyType(sessionToken, "REAL_NUMBER");
+        final EntityTypePermId materialType = createAMaterialType(sessionToken, false, propertyType);
+
+        final MaterialCreation materialCreation = new MaterialCreation();
+        materialCreation.setCode("REAL_PROPERTY_TEST");
+        materialCreation.setTypeId(materialType);
+        materialCreation.setProperty("REAL_NUMBER", "1.23");
+
+        v3api.createMaterials(sessionToken, Collections.singletonList(materialCreation));
+
+        final MaterialSearchCriteria criteriaStartsWithMatch = new MaterialSearchCriteria();
+        criteriaStartsWithMatch.withProperty("REAL_NUMBER").thatStartsWith("1.2");
+        assertUserFailureException(
+                Void -> searchMaterials(sessionToken, criteriaStartsWithMatch, new MaterialFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "StartsWith", "REAL"));
+
+        final MaterialSearchCriteria criteriaEndsWithMatch = new MaterialSearchCriteria();
+        criteriaEndsWithMatch.withProperty("REAL_NUMBER").thatEndsWith("23");
+        assertUserFailureException(
+                Void -> searchMaterials(sessionToken, criteriaEndsWithMatch, new MaterialFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "EndsWith", "REAL"));
+
+        final MaterialSearchCriteria criteriaContainsMatch = new MaterialSearchCriteria();
+        criteriaContainsMatch.withProperty("REAL_NUMBER").thatContains(".2");
+        assertUserFailureException(
+                Void -> searchMaterials(sessionToken, criteriaContainsMatch, new MaterialFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "Contains", "REAL"));
+    }
+
+    @Test
     public void testSearchWithAnyProperty()
     {
         MaterialSearchCriteria criteria = new MaterialSearchCriteria();
