@@ -273,6 +273,12 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
         } else if (stringValue instanceof StringGreaterThanOrEqualToValue)
         {
             return new DateLaterThanOrEqualToValue(value);
+        } else if (stringValue instanceof StringLessThanValue)
+        {
+            return new DateEarlierThanValue(value);
+        } else if (stringValue instanceof StringGreaterThanValue)
+        {
+            return new DateLaterThanValue(value);
         } else
         {
             throw new IllegalArgumentException(String.format("Cannot convert string value of class %s to date value",
