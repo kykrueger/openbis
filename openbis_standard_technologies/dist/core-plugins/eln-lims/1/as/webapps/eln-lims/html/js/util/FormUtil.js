@@ -133,7 +133,7 @@ var FormUtil = new function() {
 	}
 
 	//
-	// Sample Relationship Annotations 19.X
+	// Sample Relationship Annotations 20.X
 	//
 
     this.getAnnotationsFromSampleV3 = function(sample, type) {
