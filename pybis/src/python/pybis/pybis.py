@@ -2637,7 +2637,7 @@ class Openbis:
         }
         resp = self._post_request(self.as_v3, request)
 
-        attrs = 'code description managedInternally internalNameSpace chosenFromList urlTemplate registrator registrationDate modificationDate'.split()
+        attrs = 'code description managedInternally chosenFromList urlTemplate registrator registrationDate modificationDate'.split()
 
         if len(resp['objects']) == 0:
             vocs = DataFrame(columns=attrs)
@@ -3026,7 +3026,6 @@ class Openbis:
         description,
         dataType,
         managedInternally = False,
-        internalNameSpace= False,
         vocabulary = None,
         materialType = None,
         schema = None,
@@ -3035,7 +3034,7 @@ class Openbis:
         """ Creates a new property type.
 
         code               -- name of the property type
-        internalNameSpace  -- must be set to True if code starts with a $
+        managedInternally  -- must be set to True if code starts with a $
         label              -- displayed label of that property
         description        --
         dataType           -- must contain any of these values:
@@ -3044,7 +3043,6 @@ class Openbis:
                               XML CONTROLLEDVOCABULARY MATERIAL
         vocabulary         -- if dataType is CONTROLLEDVOCABULARY, this attribute
                               must contain the code of the vocabulary object.
-        managedInternally  -- default: False
         materialType       --
         schema             --
         transformation     --
@@ -3063,7 +3061,6 @@ class Openbis:
             description=description,
             dataType=dataType,
             managedInternally = managedInternally,
-            internalNameSpace= internalNameSpace,
             vocabulary = vocabulary,
             materialType = materialType,
             schema = schema,
@@ -4138,7 +4135,7 @@ class Openbis:
             entityType=entityType, propertyType=propertyType, **kwargs
         )    
 
-    def new_vocabulary(self, code, terms, managedInternally=False, internalNameSpace=False, chosenFromList=True, **kwargs):
+    def new_vocabulary(self, code, terms, managedInternally=False, chosenFromList=True, **kwargs):
         """ Creates a new vocabulary
         Usage::
             new_vocabulary(
@@ -4152,7 +4149,6 @@ class Openbis:
         """
         kwargs['code'] = code
         kwargs['managedInternally'] = managedInternally
-        kwargs['internalNameSpace'] = internalNameSpace
         kwargs['chosenFromList'] = chosenFromList
         return Vocabulary(self, data=None, terms=terms, **kwargs)
 

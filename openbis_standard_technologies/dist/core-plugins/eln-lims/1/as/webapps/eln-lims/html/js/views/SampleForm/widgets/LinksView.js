@@ -121,10 +121,10 @@ function LinksView(linksController, linksModel) {
 		
 		var customAnnotationColumnsByType = {};
 		for(var sIdx = 0; sIdx < samplesOnGrid.length; sIdx++) {
-			var sample = samplesOnGrid[sIdx];
-			if(!customAnnotationColumnsByType[sample.sampleTypeCode]) {
-				var customACols = linksView.getCustomAnnotationColumns(sample.sampleTypeCode);
-				customAnnotationColumnsByType[sample.sampleTypeCode] = customACols;
+			var sampleOnGrid = samplesOnGrid[sIdx];
+			if(!customAnnotationColumnsByType[sampleOnGrid.sampleTypeCode]) {
+				var customACols = linksView.getCustomAnnotationColumns(sampleOnGrid.sampleTypeCode);
+				customAnnotationColumnsByType[sampleOnGrid.sampleTypeCode] = customACols;
 			}
 		}
 		
@@ -155,7 +155,13 @@ function LinksView(linksController, linksModel) {
 		
 		var dataGrid = SampleDataGridUtil.getSampleDataGrid(containerCode, samplesOnGrid, null, linksView.getCustomOperationsForGrid(), allCustomAnnotations, postFix, linksModel.isDisabled, false, false, false, 100);
 		dataGrid.init($dataGridContainer);
-		linksModel.writeState(sample, null, null, false);
+		if(isInit) {
+		    for(var sIdx = 0; sIdx < sample.length; sIdx++) {
+		        linksModel.writeState(sample[sIdx], null, null, false);
+            }
+		} else {
+		    linksModel.writeState(sample, null, null, false);
+		}
 		dataGrids.push(dataGrid);
 	}
 	

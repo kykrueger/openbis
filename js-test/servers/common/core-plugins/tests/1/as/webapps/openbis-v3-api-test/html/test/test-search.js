@@ -2215,7 +2215,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			}
 			
 			var fCheck = function(facade, assignments) {
-				c.assertEqual(assignments.length, 1, "# Role Assignments");
+				c.assertEqual(assignments.length > 0, true, "At least one Role Assignment?");
 				var assignment = assignments[0];
 				c.assertEqual(assignment.getRole(), "POWER_USER", "Role");
 				c.assertEqual(assignment.getRoleLevel(), "SPACE", "Role level");
