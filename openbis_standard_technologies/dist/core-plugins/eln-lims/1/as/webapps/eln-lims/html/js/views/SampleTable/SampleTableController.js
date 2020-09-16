@@ -62,7 +62,7 @@ function SampleTableController(parentController, title, experimentIdentifier, pr
 		}
 		
 		if(this._sampleTableModel.showInProjectOverview) {
-			advancedSampleSearchCriteria.rules["2"] = { type : "Property", name : "$SHOW_IN_PROJECT_OVERVIEW", value : "true" };
+			advancedSampleSearchCriteria.rules["2"] = { type : "Property", name : "$SHOW_IN_PROJECT_OVERVIEW", value : "true", operator : "thatEqualsString" };
 		}
 		//
 		require(["as/dto/sample/id/SampleIdentifier"], function(SampleIdentifier) {

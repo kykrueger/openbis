@@ -121,38 +121,38 @@ public class GlobalSearchCriteriaTranslator
         throw new UnsupportedOperationException();
     }
 
-    public static SelectQuery translate(final TranslationVo vo)
+    public static SelectQuery translate(final TranslationContext translationContext)
     {
-        if (vo.getCriteria() == null)
+        if (translationContext.getCriteria() == null)
         {
             throw new IllegalArgumentException("Null criteria provided.");
         }
 
-        final boolean withWildcards = vo.getCriteria().stream().anyMatch((criterion) -> criterion instanceof GlobalSearchWildCardsCriteria);
+        final boolean withWildcards = translationContext.getCriteria().stream().anyMatch((criterion) -> criterion instanceof GlobalSearchWildCardsCriteria);
         if (withWildcards)
         {
             LOG.warn("Full text search with wildcards is not supported.");
         }
 
         final StringBuilder sqlBuilder = new StringBuilder(LP);
-        final Spliterator<ISearchCriteria> spliterator = vo.getCriteria().stream()
+        final Spliterator<ISearchCriteria> spliterator = translationContext.getCriteria().stream()
                 .filter((criterion) -> !(criterion instanceof GlobalSearchWildCardsCriteria)
                         && !(criterion instanceof GlobalSearchObjectKindCriteria)).spliterator();
 
-        if (spliterator.tryAdvance((criterion) -> translateCriterion(sqlBuilder, vo, criterion)))
+        if (spliterator.tryAdvance((criterion) -> translateCriterion(sqlBuilder, translationContext, criterion)))
         {
             StreamSupport.stream(spliterator, false).forEach((criterion) ->
             {
                 sqlBuilder.append(RP).append(NL).append(UNION).append(NL).append(LP).append(NL);
-                translateCriterion(sqlBuilder, vo, criterion);
+                translateCriterion(sqlBuilder, translationContext, criterion);
             });
         }
         sqlBuilder.append(RP);
 
-        return new SelectQuery(sqlBuilder.toString(), vo.getArgs());
+        return new SelectQuery(sqlBuilder.toString(), translationContext.getArgs());
     }
 
-    private static void translateCriterion(final StringBuilder sqlBuilder, final TranslationVo vo,
+    private static void translateCriterion(final StringBuilder sqlBuilder, final TranslationContext translationContext,
             final ISearchCriteria criterion)
     {
         if (criterion instanceof GlobalSearchTextCriteria)
@@ -160,25 +160,25 @@ public class GlobalSearchCriteriaTranslator
             final GlobalSearchTextCriteria globalSearchTextCriterion = (GlobalSearchTextCriteria) criterion;
 
             // Fields
-            buildSelect(sqlBuilder, vo, globalSearchTextCriterion, true);
-            buildFrom(sqlBuilder, vo, globalSearchTextCriterion, true);
-            buildWhere(sqlBuilder, vo, globalSearchTextCriterion, true);
+            buildSelect(sqlBuilder, translationContext, globalSearchTextCriterion, true);
+            buildFrom(sqlBuilder, translationContext, globalSearchTextCriterion, true);
+            buildWhere(sqlBuilder, translationContext, globalSearchTextCriterion, true);
 
             sqlBuilder.append(UNION).append(NL);
 
             // Properties
-            buildSelect(sqlBuilder, vo, globalSearchTextCriterion, false);
-            buildFrom(sqlBuilder, vo, globalSearchTextCriterion, false);
-            buildWhere(sqlBuilder, vo, globalSearchTextCriterion, false);
+            buildSelect(sqlBuilder, translationContext, globalSearchTextCriterion, false);
+            buildFrom(sqlBuilder, translationContext, globalSearchTextCriterion, false);
+            buildWhere(sqlBuilder, translationContext, globalSearchTextCriterion, false);
         }
     }
 
-    private static void buildSelect(final StringBuilder sqlBuilder, final TranslationVo vo, final GlobalSearchTextCriteria criterion,
+    private static void buildSelect(final StringBuilder sqlBuilder, final TranslationContext translationContext, final GlobalSearchTextCriteria criterion,
             final boolean forAttributes)
     {
-        final TableMapper tableMapper = vo.getTableMapper();
+        final TableMapper tableMapper = translationContext.getTableMapper();
         final AbstractStringValue stringValue = criterion.getFieldValue();
-        final List<Object> args = vo.getArgs();
+        final List<Object> args = translationContext.getArgs();
 
         final boolean hasSpaces = hasSpaces(tableMapper);
         final boolean hasProjects = hasProjects(tableMapper);
@@ -244,7 +244,7 @@ public class GlobalSearchCriteriaTranslator
             buildCaseWhenIn(sqlBuilder, args, criterionValues, matchingColumns, thenValue, elseValue);
             sqlBuilder.append(SP).append(RANK_ALIAS).append(COMMA).append(NL);
 
-            buildAttributesMatchSelection(sqlBuilder, criterionValues, vo.getTableMapper(), args);
+            buildAttributesMatchSelection(sqlBuilder, criterionValues, translationContext.getTableMapper(), args);
             sqlBuilder.append(COMMA).append(NL);
 
             if (tableMapper == SAMPLE)
@@ -323,7 +323,7 @@ public class GlobalSearchCriteriaTranslator
             sqlBuilder.append(CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS).append(PERIOD).append(DESCRIPTION_COLUMN)
                     .append(SP).append(CV_DESCRIPTION_ALIAS).append(COMMA).append(NL);
 
-            final boolean useHeadline = vo.isUseHeadline();
+            final boolean useHeadline = translationContext.isUseHeadline();
             buildTsHeadline(sqlBuilder, stringValue, args, PROPERTIES_TABLE_ALIAS + PERIOD + VALUE_COLUMN,
                     VALUE_HEADLINE_ALIAS, useHeadline);
             sqlBuilder.append(COMMA).append(NL);
@@ -568,10 +568,10 @@ public class GlobalSearchCriteriaTranslator
         args.add(criterionValues);
     }
 
-    private static void buildFrom(final StringBuilder sqlBuilder, final TranslationVo vo, final GlobalSearchTextCriteria criterion,
+    private static void buildFrom(final StringBuilder sqlBuilder, final TranslationContext translationContext, final GlobalSearchTextCriteria criterion,
             final boolean forAttributes)
     {
-        final TableMapper tableMapper = vo.getTableMapper();
+        final TableMapper tableMapper = translationContext.getTableMapper();
 
         final String entitiesTable = tableMapper.getEntitiesTable();
         final String projectsTableName = PROJECT.getEntitiesTable();
@@ -666,10 +666,10 @@ public class GlobalSearchCriteriaTranslator
         return SAMPLE.getEntitiesTable().equals(entitiesTable) || PROJECT.getEntitiesTable().equals(entitiesTable);
     }
 
-    private static void buildWhere(final StringBuilder sqlBuilder, final TranslationVo vo,
+    private static void buildWhere(final StringBuilder sqlBuilder, final TranslationContext translationContext,
             final GlobalSearchTextCriteria criterion, final boolean forAttributes)
     {
-        final List<Object> args = vo.getArgs();
+        final List<Object> args = translationContext.getArgs();
 
         sqlBuilder.append(WHERE).append(SP);
         if (forAttributes)
@@ -677,7 +677,7 @@ public class GlobalSearchCriteriaTranslator
             buildAttributesMatchCondition(sqlBuilder, criterion, args);
         } else
         {
-            buildTsVectorMatch(sqlBuilder, criterion.getFieldValue(), vo.getTableMapper(), args);
+            buildTsVectorMatch(sqlBuilder, criterion.getFieldValue(), translationContext.getTableMapper(), args);
         }
         sqlBuilder.append(NL);
     }

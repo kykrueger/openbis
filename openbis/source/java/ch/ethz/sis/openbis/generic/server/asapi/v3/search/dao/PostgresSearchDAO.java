@@ -63,21 +63,21 @@ public class PostgresSearchDAO implements ISQLSearchDAO
 
         final String finalIdColumnName = (idsColumnName == null) ? ID_COLUMN : idsColumnName;
 
-        final TranslationVo translationVo = new TranslationVo();
-        translationVo.setUserId(userId);
-        translationVo.setTableMapper(tableMapper);
-        translationVo.setParentCriterion(criterion);
-        translationVo.setCriteria(criteria);
-        translationVo.setOperator(operator);
-        translationVo.setIdColumnName(finalIdColumnName);
-        translationVo.setAuthorisationInformation(authorisationInformation);
+        final TranslationContext translationContext = new TranslationContext();
+        translationContext.setUserId(userId);
+        translationContext.setTableMapper(tableMapper);
+        translationContext.setParentCriterion(criterion);
+        translationContext.setCriteria(criteria);
+        translationContext.setOperator(operator);
+        translationContext.setIdColumnName(finalIdColumnName);
+        translationContext.setAuthorisationInformation(authorisationInformation);
 
         final boolean containsProperties = criteria.stream().anyMatch(
                 (subcriterion) -> subcriterion instanceof AbstractFieldSearchCriteria &&
                         ((AbstractFieldSearchCriteria) subcriterion).getFieldType().equals(SearchFieldType.PROPERTY));
-        updateWithDataTypes(translationVo, containsProperties);
+        updateWithDataTypes(translationContext, containsProperties);
 
-        final SelectQuery selectQuery = SearchCriteriaTranslator.translate(translationVo);
+        final SelectQuery selectQuery = SearchCriteriaTranslator.translate(translationContext);
         final List<Map<String, Object>> result = sqlExecutor.execute(selectQuery.getQuery(), selectQuery.getArgs());
         return result.stream().map(stringLongMap -> (Long) stringLongMap.get(finalIdColumnName))
                 .collect(Collectors.toSet());
@@ -93,17 +93,17 @@ public class PostgresSearchDAO implements ISQLSearchDAO
 
         final String finalIdColumnName = (idsColumnName == null) ? ID_COLUMN : idsColumnName;
 
-        final TranslationVo translationVo = new TranslationVo();
-        translationVo.setUserId(userId);
-        translationVo.setTableMapper(tableMapper);
-        translationVo.setParentCriterion(criterion);
-        translationVo.setCriteria(criteria);
-        translationVo.setOperator(operator);
-        translationVo.setIdColumnName(finalIdColumnName);
-        translationVo.setAuthorisationInformation(authorisationInformation);
-        translationVo.setUseHeadline(useHeadline);
+        final TranslationContext translationContext = new TranslationContext();
+        translationContext.setUserId(userId);
+        translationContext.setTableMapper(tableMapper);
+        translationContext.setParentCriterion(criterion);
+        translationContext.setCriteria(criteria);
+        translationContext.setOperator(operator);
+        translationContext.setIdColumnName(finalIdColumnName);
+        translationContext.setAuthorisationInformation(authorisationInformation);
+        translationContext.setUseHeadline(useHeadline);
 
-        final SelectQuery selectQuery = GlobalSearchCriteriaTranslator.translate(translationVo);
+        final SelectQuery selectQuery = GlobalSearchCriteriaTranslator.translate(translationContext);
         final List<Map<String, Object>> result = sqlExecutor.execute(selectQuery.getQuery(), selectQuery.getArgs());
 
         return new LinkedHashSet<>(result);
@@ -166,30 +166,30 @@ public class PostgresSearchDAO implements ISQLSearchDAO
     @Override
     public List<Long> sortIDs(final TableMapper tableMapper, final Collection<Long> filteredIDs, final SortOptions<?> sortOptions)
     {
-        final TranslationVo translationVo = new TranslationVo();
-        translationVo.setTableMapper(tableMapper);
-        translationVo.setIds(filteredIDs);
-        translationVo.setSortOptions(sortOptions);
+        final TranslationContext translationContext = new TranslationContext();
+        translationContext.setTableMapper(tableMapper);
+        translationContext.setIds(filteredIDs);
+        translationContext.setSortOptions(sortOptions);
 
         final boolean containsProperties = sortOptions.getSortings().stream().anyMatch(
                 (sorting) -> TranslatorUtils.isPropertySearchFieldName(sorting.getField()));
 
-        updateWithDataTypes(translationVo, containsProperties);
+        updateWithDataTypes(translationContext, containsProperties);
 
-        final SelectQuery orderQuery = OrderTranslator.translateToOrderQuery(translationVo);
+        final SelectQuery orderQuery = OrderTranslator.translateToOrderQuery(translationContext);
         final List<Map<String, Object>> orderQueryResultList = sqlExecutor.execute(orderQuery.getQuery(), orderQuery.getArgs());
         return orderQueryResultList.stream().map((valueByColumnName) -> (Long) valueByColumnName.get(ID_COLUMN))
                 .collect(Collectors.toList());
     }
 
-    private void updateWithDataTypes(final TranslationVo translationVo, final boolean containsProperties)
+    private void updateWithDataTypes(final TranslationContext translationContext, final boolean containsProperties)
     {
-        translationVo.setTypesToFilter(POSTGRES_TYPES);
+        translationContext.setTypesToFilter(POSTGRES_TYPES);
         final Map<String, String> typeByPropertyName;
         if (containsProperties)
         {
             // Making property types query only when it is needed.
-            final SelectQuery dataTypesQuery = OrderTranslator.translateToSearchTypeQuery(translationVo);
+            final SelectQuery dataTypesQuery = OrderTranslator.translateToSearchTypeQuery(translationContext);
             final List<Map<String, Object>> dataTypesQueryResultList = sqlExecutor.execute(dataTypesQuery.getQuery(), dataTypesQuery.getArgs());
             typeByPropertyName = dataTypesQueryResultList.stream().collect(Collectors.toMap(
                     (valueByColumnName) -> (String) valueByColumnName.get(OrderTranslator.PROPERTY_CODE_ALIAS),
@@ -199,7 +199,7 @@ public class PostgresSearchDAO implements ISQLSearchDAO
             typeByPropertyName = Collections.emptyMap();
         }
 
-        translationVo.setDataTypeByPropertyName(typeByPropertyName);
+        translationContext.setDataTypeByPropertyName(typeByPropertyName);
     }
 
     @Autowired
