@@ -2340,20 +2340,40 @@ public class SearchSampleTest extends AbstractSampleTest
         final List<Sample> samplesLT = searchSamples(sessionToken, criteriaLTMatch, new SampleFetchOptions());
         assertSampleIdentifiers(samplesLT, "/CISD/TIMESTAMP_PROPERTY_TEST");
 
+        final SampleSearchCriteria criteriaLTDMatch = new SampleSearchCriteria();
+        criteriaLTDMatch.withDateProperty("TIMESTAMP").thatIsEarlierThan("2020-02-09 11:00:00 +0100");
+        final List<Sample> samplesLTD = searchSamples(sessionToken, criteriaLTDMatch, new SampleFetchOptions());
+        assertSampleIdentifiers(samplesLTD, "/CISD/TIMESTAMP_PROPERTY_TEST");
+
         final SampleSearchCriteria criteriaLEMatch = new SampleSearchCriteria();
         criteriaLEMatch.withProperty("TIMESTAMP").thatIsLessThanOrEqualTo("2020-02-09 11:00:00 +0100");
         final List<Sample> samplesLE = searchSamples(sessionToken, criteriaLEMatch, new SampleFetchOptions());
         assertSampleIdentifiers(samplesLE, "/CISD/TIMESTAMP_PROPERTY_TEST");
+
+        final SampleSearchCriteria criteriaLEDMatch = new SampleSearchCriteria();
+        criteriaLEDMatch.withDateProperty("TIMESTAMP").thatIsEarlierThanOrEqualTo("2020-02-09 11:00:00 +0100");
+        final List<Sample> samplesLED = searchSamples(sessionToken, criteriaLEDMatch, new SampleFetchOptions());
+        assertSampleIdentifiers(samplesLED, "/CISD/TIMESTAMP_PROPERTY_TEST");
 
         final SampleSearchCriteria criteriaGTMatch = new SampleSearchCriteria();
         criteriaGTMatch.withProperty("TIMESTAMP").thatIsGreaterThan("2020-02-09 10:00:00 +0100");
         final List<Sample> samplesGT = searchSamples(sessionToken, criteriaGTMatch, new SampleFetchOptions());
         assertSampleIdentifiers(samplesGT);
 
+        final SampleSearchCriteria criteriaGTDMatch = new SampleSearchCriteria();
+        criteriaGTDMatch.withDateProperty("TIMESTAMP").thatIsLaterThan("2020-02-09 10:00:00 +0100");
+        final List<Sample> samplesGTD = searchSamples(sessionToken, criteriaGTDMatch, new SampleFetchOptions());
+        assertSampleIdentifiers(samplesGTD);
+
         final SampleSearchCriteria criteriaGEMatch = new SampleSearchCriteria();
         criteriaGEMatch.withProperty("TIMESTAMP").thatIsGreaterThanOrEqualTo("2020-02-09 10:00:00 +0100");
         final List<Sample> samplesGE = searchSamples(sessionToken, criteriaGEMatch, new SampleFetchOptions());
         assertSampleIdentifiers(samplesGE, "/CISD/TIMESTAMP_PROPERTY_TEST");
+
+        final SampleSearchCriteria criteriaGEDMatch = new SampleSearchCriteria();
+        criteriaGEDMatch.withDateProperty("TIMESTAMP").thatIsLaterThanOrEqualTo("2020-02-09 10:00:00 +0100");
+        final List<Sample> samplesGED = searchSamples(sessionToken, criteriaGEDMatch, new SampleFetchOptions());
+        assertSampleIdentifiers(samplesGED, "/CISD/TIMESTAMP_PROPERTY_TEST");
     }
 
     @Test
