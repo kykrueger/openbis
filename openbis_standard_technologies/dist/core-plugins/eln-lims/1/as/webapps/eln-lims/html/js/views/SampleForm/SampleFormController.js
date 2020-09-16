@@ -421,7 +421,7 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 			if(profile.getDefaultDataStoreCode()) {
 				
 				mainController.serverFacade.createReportFromAggregationService(profile.getDefaultDataStoreCode(), parameters, function(response) {
-					_this._createUpdateCopySampleCallback(_this, isCopyWithNewCode, response, samplesToDelete, parentsAnnotationsState, childrenAnnotationsState);
+					_this._createUpdateCopySampleCallback(_this, isCopyWithNewCode, response, samplesToDelete, parentsAnnotationsState, childrenAnnotationsState, parameters["copyChildrenOnCopy"]);
 				});
 				
 			} else {
@@ -433,7 +433,7 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 		return false;
 	}
 	
-	this._createUpdateCopySampleCallback = function(_this, isCopyWithNewCode, response, samplesToDelete, parentsAnnotationsState, childrenAnnotationsState) {
+	this._createUpdateCopySampleCallback = function(_this, isCopyWithNewCode, response, samplesToDelete, parentsAnnotationsState, childrenAnnotationsState, copyChildrenOnCopy) {
 		if(response.error) { //Error Case 1
 			Util.showError(response.error.message, function() {Util.unblockUI();});
 		} else if (response.result.columns[1].title === "Error") { //Error Case 2
@@ -492,7 +492,7 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
                             // Add annotations
                             for(var parentPermId in parentsAnnotationsState) {
                                 var parentAnnotation = parentsAnnotationsState[parentPermId];
-                                var parentIdentifier = parentAnnotation["identifier"]; // When creating new parents, annotations should be added by identifier
+                                var parentIdentifier = parentAnnotation["identifier"]; // When creating new parents, annotations should be added by identifier, permIds are not easily obtainable
                                 delete parentAnnotation["identifier"];
                                 delete parentAnnotation["sampleType"];
                                 for(var annotationKey in parentAnnotation) {
@@ -504,14 +504,28 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
                             // Remove annotations
                             // Adding an emtpy string on exiting annotation, effectively deletes the value.
                         }
-                        if(childrenAnnotationsState) {
+                        if(
+                            (childrenAnnotationsState && !isCopyWithNewCode) // Standard Sample Case
+                            ||
+                            (childrenAnnotationsState && isCopyWithNewCode && copyChildrenOnCopy) // Copy Children Case
+                        ) {
                             // Add annotations
                             for(var childPermId in childrenAnnotationsState) {
                                 var childAnnotation = childrenAnnotationsState[childPermId];
+                                var childIdentifier = childAnnotation["identifier"]; // When creating new children (copy function), annotations should be added by identifier, permIds are not easily obtainable
+                                if(isCopyWithNewCode) {
+                                    // The copied children identifier follow the pattern /<PARENT_SPACE>/<PARENT_PROJECT>/<COPYED_SAMPLE_CODE>_<ORIGINAL_CHILDREN_CODE>
+                                    var originalSampleIdentifier = _this._sampleFormModel.sample.identifier;
+                                    var parentSampleSpaceCode = IdentifierUtil.getSpaceCodeFromIdentifier(originalSampleIdentifier);
+                                    var parentSampleProjectCode = IdentifierUtil.getProjectCodeFromSampleIdentifier(originalSampleIdentifier);
+                                    var copiedParentSampleCode = isCopyWithNewCode;
+                                    var childrenToCopyCode = IdentifierUtil.getCodeFromIdentifier(childIdentifier);
+                                    childIdentifier = IdentifierUtil.getSampleIdentifier(parentSampleSpaceCode, parentSampleProjectCode, copiedParentSampleCode + "_" + childrenToCopyCode);
+                                }
                                 delete childAnnotation["identifier"];
                                 delete childAnnotation["sampleType"];
                                 for(var annotationKey in childAnnotation) {
-                                    sampleUpdate.relationship(new SamplePermId(childPermId)).addChildAnnotation(annotationKey, childAnnotation[annotationKey]);
+                                    sampleUpdate.relationship(new SampleIdentifier(childIdentifier)).addChildAnnotation(annotationKey, childAnnotation[annotationKey]);
                                 }
                             }
                             // Update annotations
