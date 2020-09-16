@@ -13,7 +13,6 @@ import Error from '@src/js/components/common/error/Error.jsx'
 import Menu from '@src/js/components/common/menu/Menu.jsx'
 
 import Login from '@src/js/components/login/Login.jsx'
-import Users from '@src/js/components/users/Users.jsx'
 import Types from '@src/js/components/types/Types.jsx'
 
 const styles = {
@@ -36,8 +35,7 @@ const styles = {
 }
 
 const pageToComponent = {
-  [pages.TYPES]: Types,
-  [pages.USERS]: Users
+  [pages.TYPES]: Types
 }
 
 function mapStateToProps(state) {

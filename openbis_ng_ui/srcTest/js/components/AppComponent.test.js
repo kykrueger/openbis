@@ -60,10 +60,6 @@ async function testLogin() {
         {
           label: 'Types',
           selected: true
-        },
-        {
-          label: 'Users',
-          selected: false
         }
       ]
     },
@@ -84,20 +80,7 @@ async function testLogin() {
         tabs: []
       }
     },
-    users: {
-      browser: {
-        filter: {
-          value: null
-        },
-        nodes: [
-          { level: 0, text: 'Users' },
-          { level: 0, text: 'Groups' }
-        ]
-      },
-      content: {
-        tabs: []
-      }
-    }
+    users: null
   })
 }
 
