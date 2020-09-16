@@ -19,6 +19,9 @@ const styles = theme => ({
   },
   input: {
     fontSize: theme.typography.body2.fontSize
+  },
+  inputDisabled: {
+    pointerEvents: 'none'
   }
 })
 
@@ -113,7 +116,8 @@ class TextFormField extends React.PureComponent {
               </InputAdornment>
             ) : null,
             classes: {
-              input: classes.input
+              input: classes.input,
+              disabled: classes.inputDisabled
             }
           }}
           name={name}
