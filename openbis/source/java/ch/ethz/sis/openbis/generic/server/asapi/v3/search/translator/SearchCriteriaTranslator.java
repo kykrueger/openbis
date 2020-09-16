@@ -90,23 +90,23 @@ public class SearchCriteriaTranslator
         throw new UnsupportedOperationException();
     }
 
-    public static SelectQuery translate(final TranslationVo vo)
+    public static SelectQuery translate(final TranslationContext translationContext)
     {
-        if (vo.getCriteria() == null)
+        if (translationContext.getCriteria() == null)
         {
             throw new IllegalArgumentException("Null criteria provided.");
         }
 
-        final String from = buildFrom(vo);
-        final String where = buildWhere(vo);
-        final String select = buildSelect(vo);
+        final String from = buildFrom(translationContext);
+        final String where = buildWhere(translationContext);
+        final String select = buildSelect(translationContext);
 
-        return new SelectQuery(select  + NL + from + NL + where, vo.getArgs());
+        return new SelectQuery(select  + NL + from + NL + where, translationContext.getArgs());
     }
 
-    private static String buildSelect(final TranslationVo vo)
+    private static String buildSelect(final TranslationContext translationContext)
     {
-        return SELECT + SP + DISTINCT + SP + MAIN_TABLE_ALIAS + PERIOD + vo.getIdColumnName();
+        return SELECT + SP + DISTINCT + SP + MAIN_TABLE_ALIAS + PERIOD + translationContext.getIdColumnName();
     }
 
     private static String getAlias(final AtomicInteger num)
@@ -114,16 +114,16 @@ public class SearchCriteriaTranslator
         return "t" + num.getAndIncrement();
     }
 
-    private static String buildFrom(final TranslationVo vo)
+    private static String buildFrom(final TranslationContext translationContext)
     {
         final StringBuilder sqlBuilder = new StringBuilder();
 
-        final TableMapper tableMapper = vo.getTableMapper();
+        final TableMapper tableMapper = translationContext.getTableMapper();
         final String entitiesTableName = tableMapper.getEntitiesTable();
         sqlBuilder.append(FROM).append(SP).append(entitiesTableName).append(SP).append(MAIN_TABLE_ALIAS);
 
         final AtomicInteger indexCounter = new AtomicInteger(1);
-        vo.getCriteria().forEach(criterion ->
+        translationContext.getCriteria().forEach(criterion ->
         {
             if (!(CriteriaMapper.getCriteriaToManagerMap().containsKey(criterion.getClass()) || criterion instanceof EntityTypeSearchCriteria))
             {
@@ -138,7 +138,7 @@ public class SearchCriteriaTranslator
                     {
                         joinInformationMap.values().forEach((joinInformation) ->
                                 TranslatorUtils.appendJoin(sqlBuilder, joinInformation));
-                        vo.getAliases().put(criterion, joinInformationMap);
+                        translationContext.getAliases().put(criterion, joinInformationMap);
                     }
                 } else
                 {
@@ -149,15 +149,15 @@ public class SearchCriteriaTranslator
         return sqlBuilder.toString();
     }
 
-    private static String buildWhere(final TranslationVo vo)
+    private static String buildWhere(final TranslationContext translationContext)
     {
-        final Collection<ISearchCriteria> criteria = vo.getCriteria();
+        final Collection<ISearchCriteria> criteria = translationContext.getCriteria();
         if (isSearchAllCriteria(criteria))
         {
             return WHERE + SP + TRUE;
         } else
         {
-            final String logicalOperator = vo.getOperator().toString();
+            final String logicalOperator = translationContext.getOperator().toString();
             final String separator = SP + logicalOperator + SP;
 
             final StringBuilder resultSqlBuilder = criteria.stream().collect(
@@ -165,7 +165,7 @@ public class SearchCriteriaTranslator
                     (sqlBuilder, criterion) ->
                     {
                         sqlBuilder.append(separator).append(LP);
-                        appendCriterionCondition(vo, vo.getAuthorisationInformation(), sqlBuilder, criterion);
+                        appendCriterionCondition(translationContext, translationContext.getAuthorisationInformation(), sqlBuilder, criterion);
                         sqlBuilder.append(RP);
                     },
                     StringBuilder::append
@@ -177,19 +177,19 @@ public class SearchCriteriaTranslator
 
     /**
      * Appends condition translated from a criterion.
-     * @param vo value object with miscellaneous information.
+     * @param translationContext context with miscellaneous information.
      * @param authorisationInformation authorisation information to be used to filter final results.
      * @param sqlBuilder string builder to append the condition to.
      * @param criterion criterion to be translated.
      */
-    private static void appendCriterionCondition(final TranslationVo vo, final AuthorisationInformation authorisationInformation,
+    private static void appendCriterionCondition(final TranslationContext translationContext, final AuthorisationInformation authorisationInformation,
             final StringBuilder sqlBuilder, ISearchCriteria criterion)
     {
-        final TableMapper tableMapper = vo.getTableMapper();
+        final TableMapper tableMapper = translationContext.getTableMapper();
         final ISearchManager subqueryManager = (criterion instanceof EntityTypeSearchCriteria)
                 ? CriteriaMapper.getEntityKindToManagerMap().get(tableMapper.getEntityKind())
                 : CriteriaMapper.getCriteriaToManagerMap().get(criterion.getClass());
-        final AbstractCompositeSearchCriteria parentCriterion = vo.getParentCriterion();
+        final AbstractCompositeSearchCriteria parentCriterion = translationContext.getParentCriterion();
 
         if (tableMapper == null || isCriterionConsistentWithEntityKind(criterion, tableMapper.getEntityKind()))
         {
@@ -211,7 +211,7 @@ public class SearchCriteriaTranslator
                     {
                         final ILocalSearchManager<ISearchCriteria, ?, ?> localSearchManager =
                                 (ILocalSearchManager<ISearchCriteria, ?, ?>) subqueryManager;
-                        ids = localSearchManager.searchForIDs(vo.getUserId(), authorisationInformation, criterion, parentCriterion,
+                        ids = localSearchManager.searchForIDs(translationContext.getUserId(), authorisationInformation, criterion, parentCriterion,
                                 CriteriaMapper.getParentChildCriteriaToChildSelectIdMap().getOrDefault(
                                         Arrays.asList(parentCriterion.getClass(), criterion.getClass()), ID_COLUMN));
                     } else {
@@ -219,7 +219,7 @@ public class SearchCriteriaTranslator
                     }
 
                     appendInStatement(sqlBuilder, criterion, column, tableMapper);
-                    vo.getArgs().add(ids.toArray(new Long[0]));
+                    translationContext.getArgs().add(ids.toArray(new Long[0]));
                 } else
                 {
                     throw new NullPointerException("tableMapper = " + tableMapper + ", column = " + column + ", criterion.getClass() = " +
@@ -232,8 +232,8 @@ public class SearchCriteriaTranslator
                         (IConditionTranslator<ISearchCriteria>) CriteriaMapper.getCriteriaToConditionTranslatorMap().get(criterion.getClass());
                 if (conditionTranslator != null)
                 {
-                    conditionTranslator.translate(criterion, tableMapper, vo.getArgs(), sqlBuilder, vo.getAliases().get(criterion),
-                            vo.getDataTypeByPropertyName());
+                    conditionTranslator.translate(criterion, tableMapper, translationContext.getArgs(), sqlBuilder, translationContext.getAliases().get(criterion),
+                            translationContext.getDataTypeByPropertyName());
                 } else
                 {
                     throw new IllegalArgumentException("Unsupported criterion type: " + criterion.getClass().getSimpleName());
