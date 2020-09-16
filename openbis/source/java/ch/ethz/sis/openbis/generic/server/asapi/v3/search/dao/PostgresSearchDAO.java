@@ -27,6 +27,8 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.ISQLExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.*;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils;
+import ch.systemsx.cisd.common.exceptions.UserFailureException;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
@@ -35,7 +37,7 @@ import java.util.stream.Collectors;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.*;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.*;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.RELATIONSHIP_TYPES_TABLE;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.*;
 
 public class PostgresSearchDAO implements ISQLSearchDAO
 {
@@ -72,6 +74,8 @@ public class PostgresSearchDAO implements ISQLSearchDAO
         translationVo.setIdColumnName(finalIdColumnName);
         translationVo.setAuthorisationInformation(authorisationInformation);
 
+        assertPropertyTypesConsistent(translationVo);
+
         final boolean containsProperties = criteria.stream().anyMatch(
                 (subcriterion) -> subcriterion instanceof AbstractFieldSearchCriteria &&
                         ((AbstractFieldSearchCriteria) subcriterion).getFieldType().equals(SearchFieldType.PROPERTY));
@@ -81,6 +85,53 @@ public class PostgresSearchDAO implements ISQLSearchDAO
         final List<Map<String, Object>> result = sqlExecutor.execute(selectQuery.getQuery(), selectQuery.getArgs());
         return result.stream().map(stringLongMap -> (Long) stringLongMap.get(finalIdColumnName))
                 .collect(Collectors.toSet());
+    }
+
+    private void assertPropertyTypesConsistent(final TranslationVo translationVo)
+    {
+        final String pt = "pt";
+        final String dt = "dt";
+        final String propertyTypeAlias = "propertytype";
+        final String dataTypeAlias = "datatype";
+        final String sql = SELECT + SP + pt + PERIOD + CODE_COLUMN + SP + propertyTypeAlias + COMMA
+                + SP + dt + PERIOD + CODE_COLUMN + SP + dataTypeAlias + NL
+                + FROM + SP + PROPERTY_TYPES_TABLE + SP + pt + NL
+                + INNER_JOIN + SP + DATA_TYPES_TABLE + SP + dt + SP
+                + ON + SP + pt + PERIOD + DATA_TYPE_COLUMN + SP + EQ + SP + dt + PERIOD + ID_COLUMN;
+
+        final List<Map<String, Object>> queryResultList = sqlExecutor.execute(sql, Collections.emptyList());
+        final Map<String, String> dataTypesOfPropertyTypes = queryResultList.stream().collect(Collectors.toMap(
+                (valueByColumnName) -> (String) valueByColumnName.get(propertyTypeAlias),
+                (valueByColumnName) -> (String) valueByColumnName.get(dataTypeAlias)));
+
+        translationVo.getCriteria().forEach(criterion ->
+        {
+            if (criterion instanceof NumberPropertySearchCriteria)
+            {
+                final String dataType = dataTypesOfPropertyTypes.get(((NumberPropertySearchCriteria) criterion)
+                        .getFieldName());
+                if (!dataType.equals(DataTypeCode.INTEGER.toString())
+                        && !dataType.equals(DataTypeCode.REAL.toString()))
+                {
+                    throwInconsistencyException(criterion, dataType);
+                }
+            } else if (criterion instanceof DatePropertySearchCriteria)
+            {
+                final String dataType = dataTypesOfPropertyTypes.get(((DatePropertySearchCriteria) criterion)
+                        .getFieldName());
+                if (!dataType.equals(DataTypeCode.TIMESTAMP.toString())
+                        && !dataType.equals(DataTypeCode.DATE.toString()))
+                {
+                    throwInconsistencyException(criterion, dataType);
+                }
+            }
+        });
+    }
+
+    private void throwInconsistencyException(final ISearchCriteria criterion, final String dataType)
+    {
+        throw new UserFailureException(String.format("Criterion of type %s cannot be applied to the data type %s.",
+                criterion.getClass().getSimpleName(), dataType));
     }
 
     @Override

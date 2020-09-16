@@ -769,6 +769,36 @@ public class SearchMaterialTest extends AbstractTest
                 String.format("Operator %s undefined for datatype %s.", "EndsWith", "TIMESTAMP"));
     }
 
+    @Test
+    public void testSearchForMaterialWithStringPropertyQueriedAsIntegerOrDate()
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        final PropertyTypePermId propertyType = createAVarcharPropertyType(sessionToken, "SHORT_TEXT");
+        final EntityTypePermId materialType = createAMaterialType(sessionToken, false, propertyType);
+
+        final MaterialCreation materialCreation = new MaterialCreation();
+        materialCreation.setCode("SHORT_TEXT_PROPERTY_TEST");
+        materialCreation.setTypeId(materialType);
+        materialCreation.setProperty("SHORT_TEXT", "123");
+
+        v3api.createMaterials(sessionToken, Collections.singletonList(materialCreation));
+
+        final MaterialSearchCriteria criteriaWithNumberProperty = new MaterialSearchCriteria();
+        criteriaWithNumberProperty.withNumberProperty("SHORT_TEXT").thatEquals(123);
+        assertUserFailureException(
+                Void -> searchMaterials(sessionToken, criteriaWithNumberProperty, new MaterialFetchOptions()),
+                String.format("Criterion of type %s cannot be applied to the data type %s.",
+                        "NumberPropertySearchCriteria", "VARCHAR"));
+
+        final MaterialSearchCriteria criteriaWithDateProperty = new MaterialSearchCriteria();
+        criteriaWithDateProperty.withDateProperty("SHORT_TEXT").thatEquals("1990-11-09");
+        assertUserFailureException(
+                Void -> searchMaterials(sessionToken, criteriaWithDateProperty, new MaterialFetchOptions()),
+                String.format("Criterion of type %s cannot be applied to the data type %s.",
+                        "DatePropertySearchCriteria", "VARCHAR"));
+    }
+
     private List<Material> searchMaterials(final String sessionToken, final MaterialSearchCriteria criteria,
             final MaterialFetchOptions options)
     {

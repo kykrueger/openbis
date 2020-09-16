@@ -1585,6 +1585,36 @@ public class SearchDataSetTest extends AbstractDataSetTest
     }
 
     @Test
+    public void testSearchForDataSetWithStringPropertyQueriedAsIntegerOrDate()
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        final PropertyTypePermId propertyType = createAVarcharPropertyType(sessionToken, "SHORT_TEXT");
+        final EntityTypePermId dataSetType = createADataSetType(sessionToken, false, propertyType);
+
+        final DataSetCreation dataSetCreation = physicalDataSetCreation();
+        dataSetCreation.setCode("SHORT_TEXT_PROPERTY_TEST");
+        dataSetCreation.setTypeId(dataSetType);
+        dataSetCreation.setProperty("SHORT_TEXT", "123");
+
+        v3api.createDataSets(sessionToken, Collections.singletonList(dataSetCreation));
+
+        final DataSetSearchCriteria criteriaWithNumberProperty = new DataSetSearchCriteria();
+        criteriaWithNumberProperty.withNumberProperty("SHORT_TEXT").thatEquals(123);
+        assertUserFailureException(
+                Void -> searchDataSets(sessionToken, criteriaWithNumberProperty, new DataSetFetchOptions()),
+                String.format("Criterion of type %s cannot be applied to the data type %s.",
+                        "NumberPropertySearchCriteria", "VARCHAR"));
+
+        final DataSetSearchCriteria criteriaWithDateProperty = new DataSetSearchCriteria();
+        criteriaWithDateProperty.withDateProperty("SHORT_TEXT").thatEquals("1990-11-09");
+        assertUserFailureException(
+                Void -> searchDataSets(sessionToken, criteriaWithDateProperty, new DataSetFetchOptions()),
+                String.format("Criterion of type %s cannot be applied to the data type %s.",
+                        "DatePropertySearchCriteria", "VARCHAR"));
+    }
+
+    @Test
     public void testLogging()
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);

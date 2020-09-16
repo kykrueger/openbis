@@ -1531,6 +1531,37 @@ public class SearchExperimentTest extends AbstractExperimentTest
                 String.format("Operator %s undefined for datatype %s.", "EndsWith", "TIMESTAMP"));
     }
 
+    @Test
+    public void testSearchForExperimentWithStringPropertyQueriedAsIntegerOrDate()
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        final PropertyTypePermId propertyType = createAVarcharPropertyType(sessionToken, "SHORT_TEXT");
+        final EntityTypePermId experimentType = createAnExperimentType(sessionToken, false, propertyType);
+
+        final ExperimentCreation experimentCreation = new ExperimentCreation();
+        experimentCreation.setCode("SHORT_TEXT_PROPERTY_TEST");
+        experimentCreation.setTypeId(experimentType);
+        experimentCreation.setProjectId(new ProjectIdentifier("/CISD/DEFAULT"));
+        experimentCreation.setProperty("SHORT_TEXT", "123");
+
+        v3api.createExperiments(sessionToken, Collections.singletonList(experimentCreation));
+
+        final ExperimentSearchCriteria criteriaWithNumberProperty = new ExperimentSearchCriteria();
+        criteriaWithNumberProperty.withNumberProperty("SHORT_TEXT").thatEquals(123);
+        assertUserFailureException(
+                Void -> searchExperiments(sessionToken, criteriaWithNumberProperty, new ExperimentFetchOptions()),
+                String.format("Criterion of type %s cannot be applied to the data type %s.",
+                        "NumberPropertySearchCriteria", "VARCHAR"));
+
+        final ExperimentSearchCriteria criteriaWithDateProperty = new ExperimentSearchCriteria();
+        criteriaWithDateProperty.withDateProperty("SHORT_TEXT").thatEquals("1990-11-09");
+        assertUserFailureException(
+                Void -> searchExperiments(sessionToken, criteriaWithDateProperty, new ExperimentFetchOptions()),
+                String.format("Criterion of type %s cannot be applied to the data type %s.",
+                        "DatePropertySearchCriteria", "VARCHAR"));
+    }
+
     public ExperimentCreation getExperimentCreation(final EntityTypePermId experimentType, final int intValue,
             final double realValue)
     {
