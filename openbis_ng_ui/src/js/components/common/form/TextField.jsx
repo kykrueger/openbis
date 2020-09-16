@@ -15,7 +15,10 @@ const styles = theme => ({
     marginLeft: 0
   },
   textField: {
-    margin: 0
+    margin: 0,
+    '& textarea': {
+      minHeight: '19px !important'
+    }
   },
   input: {
     fontSize: theme.typography.body2.fontSize
