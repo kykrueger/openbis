@@ -26,6 +26,7 @@ export default class UserBrowserController extends BrowserController {
           id: `users/${user.userId}`,
           text: user.userId,
           object: { type: objectType.USER, id: user.userId },
+          canMatchFilter: true,
           canRemove: true
         }
       })
@@ -35,6 +36,7 @@ export default class UserBrowserController extends BrowserController {
           id: `groups/${group.code}`,
           text: group.code,
           object: { type: objectType.USER_GROUP, id: group.code },
+          canMatchFilter: true,
           canRemove: true
         }
       })

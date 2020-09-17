@@ -51,6 +51,7 @@ export default class TypeBrowserController extends BrowserController {
               id: `${typeName}s/${type.code}`,
               text: type.code,
               object: { type: typeName, id: type.code },
+              canMatchFilter: true,
               canRemove: true
             }
             if (callback) {

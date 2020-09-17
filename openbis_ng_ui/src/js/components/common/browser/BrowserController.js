@@ -415,6 +415,7 @@ export default class BrowserController {
 
     nodes.forEach(node => {
       const nodeMatches =
+        node.canMatchFilter &&
         node.text &&
         node.text.toLowerCase().indexOf(filter.trim().toLowerCase()) !== -1
 
