@@ -284,7 +284,7 @@ public class SearchDataSetTest extends AbstractDataSetTest
     {
         DataSetSearchCriteria criteria = new DataSetSearchCriteria();
         SampleSearchCriteria sampleSearchCriteria = criteria.withSample().withOrOperator();
-        sampleSearchCriteria.withProperty("BACTERIUM").thatContains("M-X");
+        sampleSearchCriteria.withProperty("BACTERIUM").thatContains("x");
         sampleSearchCriteria.withProperty("ORGANISM").thatContains("LY");
         testSearch(TEST_USER, criteria, "20081105092159111-1", "20081105092159333-3", "20110805092359990-17", "20120628092259000-41");
     }
