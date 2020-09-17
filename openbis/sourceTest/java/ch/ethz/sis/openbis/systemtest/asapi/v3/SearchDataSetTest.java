@@ -23,9 +23,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleCreation;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DatePropertySearchCriteria;
@@ -1052,7 +1049,131 @@ public class SearchDataSetTest extends AbstractDataSetTest
         v3api.logout(sessionToken);
     }
 
-    // TODO
+    @Test
+    public void testSearchForDataSetWithIntegerPropertyMatchingSubstring()
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        final PropertyTypePermId propertyType = createAnIntegerPropertyType(sessionToken, "INT_NUMBER");
+        final EntityTypePermId dataSetType = createADataSetType(sessionToken, false, propertyType);
+
+        final DataSetCreation dataSetCreation = physicalDataSetCreation();
+        dataSetCreation.setCode("INTEGER_PROPERTY_TEST");
+        dataSetCreation.setTypeId(dataSetType);
+        dataSetCreation.setProperty("INT_NUMBER", "123");
+
+        v3api.createDataSets(sessionToken, Collections.singletonList(dataSetCreation));
+
+        final DataSetSearchCriteria criteriaStartsWithMatch = new DataSetSearchCriteria();
+        criteriaStartsWithMatch.withProperty("INT_NUMBER").thatStartsWith("12");
+        assertUserFailureException(
+                Void -> searchDataSets(sessionToken, criteriaStartsWithMatch, new DataSetFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "StartsWith", "INTEGER"));
+
+        final DataSetSearchCriteria criteriaEndsWithMatch = new DataSetSearchCriteria();
+        criteriaEndsWithMatch.withProperty("INT_NUMBER").thatEndsWith("23");
+        assertUserFailureException(
+                Void -> searchDataSets(sessionToken, criteriaEndsWithMatch, new DataSetFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "EndsWith", "INTEGER"));
+
+        final DataSetSearchCriteria criteriaContainsMatch = new DataSetSearchCriteria();
+        criteriaContainsMatch.withProperty("INT_NUMBER").thatContains("23");
+        assertUserFailureException(
+                Void -> searchDataSets(sessionToken, criteriaContainsMatch, new DataSetFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "Contains", "INTEGER"));
+    }
+
+    @Test
+    public void testSearchForDataSetWithBooleanPropertyMatchingSubstring()
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        final PropertyTypePermId propertyType = createABooleanPropertyType(sessionToken, "BOOLEAN");
+        final EntityTypePermId dataSetType = createADataSetType(sessionToken, false, propertyType);
+
+        final DataSetCreation dataSetCreation = physicalDataSetCreation();
+        dataSetCreation.setCode("BOOLEAN_PROPERTY_TEST");
+        dataSetCreation.setTypeId(dataSetType);
+        dataSetCreation.setProperty("BOOLEAN", "false");
+
+        v3api.createDataSets(sessionToken, Collections.singletonList(dataSetCreation));
+
+        final DataSetSearchCriteria criteriaStartsWithMatch = new DataSetSearchCriteria();
+        criteriaStartsWithMatch.withProperty("BOOLEAN").thatStartsWith("fa");
+        assertUserFailureException(
+                Void -> searchDataSets(sessionToken, criteriaStartsWithMatch, new DataSetFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "StartsWith", "BOOLEAN"));
+
+        final DataSetSearchCriteria criteriaEndsWithMatch = new DataSetSearchCriteria();
+        criteriaEndsWithMatch.withProperty("BOOLEAN").thatEndsWith("lse");
+        assertUserFailureException(
+                Void -> searchDataSets(sessionToken, criteriaEndsWithMatch, new DataSetFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "EndsWith", "BOOLEAN"));
+
+        final DataSetSearchCriteria criteriaContainsMatch = new DataSetSearchCriteria();
+        criteriaContainsMatch.withProperty("BOOLEAN").thatContains("als");
+        assertUserFailureException(
+                Void -> searchDataSets(sessionToken, criteriaContainsMatch, new DataSetFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "Contains", "BOOLEAN"));
+
+        final DataSetSearchCriteria criteriaLTMatch = new DataSetSearchCriteria();
+        criteriaLTMatch.withProperty("BOOLEAN").thatIsLessThan("true");
+        assertUserFailureException(
+                Void -> searchDataSets(sessionToken, criteriaLTMatch, new DataSetFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "LessThan", "BOOLEAN"));
+
+        final DataSetSearchCriteria criteriaLEMatch = new DataSetSearchCriteria();
+        criteriaLEMatch.withProperty("BOOLEAN").thatIsLessThanOrEqualTo("true");
+        assertUserFailureException(
+                Void -> searchDataSets(sessionToken, criteriaLEMatch, new DataSetFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "LessThanOrEqualTo", "BOOLEAN"));
+
+        final DataSetSearchCriteria criteriaGTMatch = new DataSetSearchCriteria();
+        criteriaGTMatch.withProperty("BOOLEAN").thatIsGreaterThan("true");
+        assertUserFailureException(
+                Void -> searchDataSets(sessionToken, criteriaGTMatch, new DataSetFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "GreaterThan", "BOOLEAN"));
+
+        final DataSetSearchCriteria criteriaGEMatch = new DataSetSearchCriteria();
+        criteriaGEMatch.withProperty("BOOLEAN").thatIsGreaterThanOrEqualTo("true");
+        assertUserFailureException(
+                Void -> searchDataSets(sessionToken, criteriaGEMatch, new DataSetFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "GreaterThanOrEqualTo", "BOOLEAN"));
+    }
+
+    @Test
+    public void testSearchForDataSetWithRealPropertyMatchingSubstring()
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        final PropertyTypePermId propertyType = createARealPropertyType(sessionToken, "REAL_NUMBER");
+        final EntityTypePermId dataSetType = createADataSetType(sessionToken, false, propertyType);
+
+        final DataSetCreation dataSetCreation = physicalDataSetCreation();
+        dataSetCreation.setCode("REAL_PROPERTY_TEST");
+        dataSetCreation.setTypeId(dataSetType);
+        dataSetCreation.setProperty("REAL_NUMBER", "1.23");
+
+        v3api.createDataSets(sessionToken, Collections.singletonList(dataSetCreation));
+
+        final DataSetSearchCriteria criteriaStartsWithMatch = new DataSetSearchCriteria();
+        criteriaStartsWithMatch.withProperty("REAL_NUMBER").thatStartsWith("1.2");
+        assertUserFailureException(
+                Void -> searchDataSets(sessionToken, criteriaStartsWithMatch, new DataSetFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "StartsWith", "REAL"));
+
+        final DataSetSearchCriteria criteriaEndsWithMatch = new DataSetSearchCriteria();
+        criteriaEndsWithMatch.withProperty("REAL_NUMBER").thatEndsWith("23");
+        assertUserFailureException(
+                Void -> searchDataSets(sessionToken, criteriaEndsWithMatch, new DataSetFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "EndsWith", "REAL"));
+
+        final DataSetSearchCriteria criteriaContainsMatch = new DataSetSearchCriteria();
+        criteriaContainsMatch.withProperty("REAL_NUMBER").thatContains(".2");
+        assertUserFailureException(
+                Void -> searchDataSets(sessionToken, criteriaContainsMatch, new DataSetFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "Contains", "REAL"));
+    }
 
     @Test
     public void testSearchWithDateDatePropertyThatEquals()
@@ -1304,6 +1425,7 @@ public class SearchDataSetTest extends AbstractDataSetTest
                 dataSetCreation3));
 
         final DataSetFetchOptions emptyFetchOptions = new DataSetFetchOptions();
+        emptyFetchOptions.sortBy().code();
 
         // Greater or Equal - Integer
         final DataSetSearchCriteria criteriaGE = new DataSetSearchCriteria();
@@ -1460,6 +1582,36 @@ public class SearchDataSetTest extends AbstractDataSetTest
                 String.format("Operator %s undefined for datatype %s.", "EndsWith", "TIMESTAMP"));
 
         v3api.logout(sessionToken);
+    }
+
+    @Test
+    public void testSearchForDataSetWithStringPropertyQueriedAsIntegerOrDate()
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        final PropertyTypePermId propertyType = createAVarcharPropertyType(sessionToken, "SHORT_TEXT");
+        final EntityTypePermId dataSetType = createADataSetType(sessionToken, false, propertyType);
+
+        final DataSetCreation dataSetCreation = physicalDataSetCreation();
+        dataSetCreation.setCode("SHORT_TEXT_PROPERTY_TEST");
+        dataSetCreation.setTypeId(dataSetType);
+        dataSetCreation.setProperty("SHORT_TEXT", "123");
+
+        v3api.createDataSets(sessionToken, Collections.singletonList(dataSetCreation));
+
+        final DataSetSearchCriteria criteriaWithNumberProperty = new DataSetSearchCriteria();
+        criteriaWithNumberProperty.withNumberProperty("SHORT_TEXT").thatEquals(123);
+        assertUserFailureException(
+                Void -> searchDataSets(sessionToken, criteriaWithNumberProperty, new DataSetFetchOptions()),
+                String.format("Criterion of type %s cannot be applied to the data type %s.",
+                        "NumberPropertySearchCriteria", "VARCHAR"));
+
+        final DataSetSearchCriteria criteriaWithDateProperty = new DataSetSearchCriteria();
+        criteriaWithDateProperty.withDateProperty("SHORT_TEXT").thatEquals("1990-11-09");
+        assertUserFailureException(
+                Void -> searchDataSets(sessionToken, criteriaWithDateProperty, new DataSetFetchOptions()),
+                String.format("Criterion of type %s cannot be applied to the data type %s.",
+                        "DatePropertySearchCriteria", "VARCHAR"));
     }
 
     @Test

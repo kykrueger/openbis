@@ -26,6 +26,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCrite
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.AttributesMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
 import ch.systemsx.cisd.openbis.generic.shared.dto.TableNames;
 
@@ -48,10 +49,6 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLL
 
 public class NumberFieldSearchConditionTranslator implements IConditionTranslator<NumberFieldSearchCriteria>
 {
-
-    private static final String INTEGER_DATA_TYPE_CODE = "INTEGER";
-
-    private static final String REAL_DATA_TYPE_CODE = "REAL";
 
     @Override
     public Map<String, JoinInformation> getJoinInformationMap(final NumberFieldSearchCriteria criterion, final TableMapper tableMapper,
@@ -127,13 +124,13 @@ public class NumberFieldSearchConditionTranslator implements IConditionTranslato
 
         sqlBuilder.append(aliases.get(TableNames.DATA_TYPES_TABLE).getSubTableAlias())
                 .append(PERIOD).append(ColumnNames.CODE_COLUMN).append(SP).append(EQ).append(SP).append(QU);
-        args.add(INTEGER_DATA_TYPE_CODE);
+        args.add(DataTypeCode.INTEGER.toString());
 
         sqlBuilder.append(SP).append(OR).append(SP);
 
         sqlBuilder.append(aliases.get(TableNames.DATA_TYPES_TABLE).getSubTableAlias())
                 .append(PERIOD).append(ColumnNames.CODE_COLUMN).append(SP).append(EQ).append(SP).append(QU);
-        args.add(REAL_DATA_TYPE_CODE);
+        args.add(DataTypeCode.REAL.toString());
 
         sqlBuilder.append(RP);
 
