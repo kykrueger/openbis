@@ -82,7 +82,7 @@ class PageWithTwoPanels extends React.PureComponent {
             <Resizable
               defaultSize={{
                 width: 400,
-                height: 'auto'
+                height: '100%'
               }}
               enable={{
                 left: true,
