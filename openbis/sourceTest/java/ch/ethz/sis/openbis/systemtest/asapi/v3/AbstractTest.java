@@ -1593,4 +1593,14 @@ public class AbstractTest extends SystemTestCase
         return v3api.createPropertyTypes(sessionToken, Collections.singletonList(creation)).get(0);
     }
 
+    protected PropertyTypePermId createAVarcharPropertyType(final String sessionToken, final String code)
+    {
+        final PropertyTypeCreation creation = new PropertyTypeCreation();
+        creation.setCode(code);
+        creation.setDataType(DataType.VARCHAR);
+        creation.setLabel("Varchar");
+        creation.setDescription("Varchar property type.");
+        return v3api.createPropertyTypes(sessionToken, Collections.singletonList(creation)).get(0);
+    }
+
 }

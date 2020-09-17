@@ -30,6 +30,8 @@ public enum PSQLTypes
 
     VARCHAR("varchar"),
 
+    TIMESTAMP_WITHOUT_TZ("timestamp"),
+
     TIMESTAMP_WITH_TZ("timestamptz"),
 
     DATE("date"),
@@ -46,7 +48,9 @@ public enum PSQLTypes
 
     INT4("int4"),
 
-    INT8("int8");
+    INT8("int8"),
+
+    NUMERIC("numeric");
 
     private static final Map<Class<?>, PSQLTypes> JAVA_TO_SQL_TYPE_MAP = new HashMap<>();
 

@@ -27,8 +27,8 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
 import java.util.List;
 import java.util.Map;
 
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes.BOOLEAN;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.*;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.CONTROLLED_VOCABULARY_TERM_TABLE;
 
 public class BooleanFieldSearchConditionTranslator implements IConditionTranslator<BooleanFieldSearchCriteria>
 {
@@ -76,27 +76,8 @@ public class BooleanFieldSearchConditionTranslator implements IConditionTranslat
                 final Boolean value = criterion.getFieldValue();
                 final String propertyName = TranslatorUtils.normalisePropertyName(criterion.getFieldName());
                 final boolean internalProperty = TranslatorUtils.isPropertyInternal(criterion.getFieldName());
-                final String entityTypesSubTableAlias = aliases.get(tableMapper.getAttributeTypesTable()).getSubTableAlias();
 
-                TranslatorUtils.appendInternalExternalConstraint(sqlBuilder, args, entityTypesSubTableAlias, internalProperty);
-
-                sqlBuilder.append(SP).append(entityTypesSubTableAlias).append(PERIOD).append(ColumnNames.CODE_COLUMN).append(SP).append(EQ).
-                        append(SP).append(QU);
-                args.add(propertyName);
-
-                if (value != null)
-                {
-                    sqlBuilder.append(SP).append(AND).append(SP).append(LP).append(aliases.get(tableMapper.getValuesTable()).getSubTableAlias())
-                            .append(PERIOD).append(ColumnNames.VALUE_COLUMN);
-
-                    sqlBuilder.append(SP).append(EQ).append(SP).append(QU);
-                    args.add(value);
-
-                    sqlBuilder.append(SP).append(OR).append(SP).append(aliases.get(CONTROLLED_VOCABULARY_TERM_TABLE).getSubTableAlias())
-                            .append(PERIOD).append(ColumnNames.CODE_COLUMN).append(SP).append(QU).append(SP).append(QU);
-                    args.add(value);
-                    sqlBuilder.append(RP);
-                }
+                translateBooleanProperty(tableMapper, args, sqlBuilder, aliases, value, propertyName, internalProperty);
                 break;
             }
 
@@ -105,6 +86,33 @@ public class BooleanFieldSearchConditionTranslator implements IConditionTranslat
             {
                 throw new IllegalArgumentException();
             }
+        }
+    }
+
+    static void translateBooleanProperty(final TableMapper tableMapper, final List<Object> args,
+            final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases, final Boolean value,
+            final String propertyName, final boolean internalProperty)
+    {
+        final String entityTypesSubTableAlias = aliases.get(tableMapper.getAttributeTypesTable()).getSubTableAlias();
+
+        if (value != null)
+        {
+            sqlBuilder.append(CASE).append(SP).append(WHEN).append(SP);
+        }
+
+        TranslatorUtils.appendInternalExternalConstraint(sqlBuilder, args, entityTypesSubTableAlias, internalProperty);
+
+        sqlBuilder.append(SP).append(entityTypesSubTableAlias).append(PERIOD).append(ColumnNames.CODE_COLUMN).append(SP)
+                .append(EQ).append(SP).append(QU);
+        args.add(propertyName);
+
+        if (value != null)
+        {
+            sqlBuilder.append(SP).append(THEN).append(SP);
+            sqlBuilder.append(aliases.get(tableMapper.getValuesTable())
+                    .getSubTableAlias()).append(PERIOD).append(ColumnNames.VALUE_COLUMN).append(DOUBLE_COLON)
+                    .append(BOOLEAN).append(SP).append(EQ).append(SP).append(QU).append(SP).append(END);
+            args.add(value);
         }
     }
 

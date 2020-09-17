@@ -2277,6 +2277,96 @@ public class SearchSampleTest extends AbstractSampleTest
     }
 
     @Test
+    public void testSearchForSampleWithStringPropertyQueriedAsIntegerOrDate()
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        final PropertyTypePermId propertyType = createAVarcharPropertyType(sessionToken, "SHORT_TEXT");
+        final EntityTypePermId sampleType = createASampleType(sessionToken, false, propertyType);
+
+        final SampleCreation sampleCreation = new SampleCreation();
+        sampleCreation.setCode("SHORT_TEXT_PROPERTY_TEST");
+        sampleCreation.setTypeId(sampleType);
+        sampleCreation.setSpaceId(new SpacePermId("CISD"));
+        sampleCreation.setProperty("SHORT_TEXT", "123");
+
+        v3api.createSamples(sessionToken, Collections.singletonList(sampleCreation));
+
+        final SampleSearchCriteria criteriaWithNumberProperty = new SampleSearchCriteria();
+        criteriaWithNumberProperty.withNumberProperty("SHORT_TEXT").thatEquals(123);
+        assertUserFailureException(
+                Void -> searchSamples(sessionToken, criteriaWithNumberProperty, new SampleFetchOptions()),
+                String.format("Criterion of type %s cannot be applied to the data type %s.",
+                        "NumberPropertySearchCriteria", "VARCHAR"));
+
+        final SampleSearchCriteria criteriaWithDateProperty = new SampleSearchCriteria();
+        criteriaWithDateProperty.withDateProperty("SHORT_TEXT").thatEquals("1990-11-09");
+        assertUserFailureException(
+                Void -> searchSamples(sessionToken, criteriaWithDateProperty, new SampleFetchOptions()),
+                String.format("Criterion of type %s cannot be applied to the data type %s.",
+                        "DatePropertySearchCriteria", "VARCHAR"));
+    }
+
+    @Test
+    public void testSearchForSampleWithBooleanPropertyMatchingSubstring()
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        final PropertyTypePermId propertyType = createABooleanPropertyType(sessionToken, "BOOLEAN");
+        final EntityTypePermId sampleType = createASampleType(sessionToken, false, propertyType);
+
+        final SampleCreation sampleCreation = new SampleCreation();
+        sampleCreation.setCode("BOOLEAN_PROPERTY_TEST");
+        sampleCreation.setTypeId(sampleType);
+        sampleCreation.setSpaceId(new SpacePermId("CISD"));
+        sampleCreation.setProperty("BOOLEAN", "false");
+
+        v3api.createSamples(sessionToken, Collections.singletonList(sampleCreation));
+
+        final SampleSearchCriteria criteriaStartsWithMatch = new SampleSearchCriteria();
+        criteriaStartsWithMatch.withProperty("BOOLEAN").thatStartsWith("fa");
+        assertUserFailureException(
+                Void -> searchSamples(sessionToken, criteriaStartsWithMatch, new SampleFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "StartsWith", "BOOLEAN"));
+
+        final SampleSearchCriteria criteriaEndsWithMatch = new SampleSearchCriteria();
+        criteriaEndsWithMatch.withProperty("BOOLEAN").thatEndsWith("lse");
+        assertUserFailureException(
+                Void -> searchSamples(sessionToken, criteriaEndsWithMatch, new SampleFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "EndsWith", "BOOLEAN"));
+
+        final SampleSearchCriteria criteriaContainsMatch = new SampleSearchCriteria();
+        criteriaContainsMatch.withProperty("BOOLEAN").thatContains("als");
+        assertUserFailureException(
+                Void -> searchSamples(sessionToken, criteriaContainsMatch, new SampleFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "Contains", "BOOLEAN"));
+
+        final SampleSearchCriteria criteriaLTMatch = new SampleSearchCriteria();
+        criteriaLTMatch.withProperty("BOOLEAN").thatIsLessThan("true");
+        assertUserFailureException(
+                Void -> searchSamples(sessionToken, criteriaLTMatch, new SampleFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "LessThan", "BOOLEAN"));
+
+        final SampleSearchCriteria criteriaLEMatch = new SampleSearchCriteria();
+        criteriaLEMatch.withProperty("BOOLEAN").thatIsLessThanOrEqualTo("true");
+        assertUserFailureException(
+                Void -> searchSamples(sessionToken, criteriaLEMatch, new SampleFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "LessThanOrEqualTo", "BOOLEAN"));
+
+        final SampleSearchCriteria criteriaGTMatch = new SampleSearchCriteria();
+        criteriaGTMatch.withProperty("BOOLEAN").thatIsGreaterThan("true");
+        assertUserFailureException(
+                Void -> searchSamples(sessionToken, criteriaGTMatch, new SampleFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "GreaterThan", "BOOLEAN"));
+
+        final SampleSearchCriteria criteriaGEMatch = new SampleSearchCriteria();
+        criteriaGEMatch.withProperty("BOOLEAN").thatIsGreaterThanOrEqualTo("true");
+        assertUserFailureException(
+                Void -> searchSamples(sessionToken, criteriaGEMatch, new SampleFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "GreaterThanOrEqualTo", "BOOLEAN"));
+    }
+
+    @Test
     public void testSearchForSampleWithDatePropertyMatchingSubstring()
     {
         final String sessionToken = v3api.login(TEST_USER, PASSWORD);
@@ -2350,20 +2440,40 @@ public class SearchSampleTest extends AbstractSampleTest
         final List<Sample> samplesLT = searchSamples(sessionToken, criteriaLTMatch, new SampleFetchOptions());
         assertSampleIdentifiers(samplesLT, "/CISD/TIMESTAMP_PROPERTY_TEST");
 
+        final SampleSearchCriteria criteriaLTDMatch = new SampleSearchCriteria();
+        criteriaLTDMatch.withDateProperty("TIMESTAMP").thatIsEarlierThan("2020-02-09 11:00:00 +0100");
+        final List<Sample> samplesLTD = searchSamples(sessionToken, criteriaLTDMatch, new SampleFetchOptions());
+        assertSampleIdentifiers(samplesLTD, "/CISD/TIMESTAMP_PROPERTY_TEST");
+
         final SampleSearchCriteria criteriaLEMatch = new SampleSearchCriteria();
         criteriaLEMatch.withProperty("TIMESTAMP").thatIsLessThanOrEqualTo("2020-02-09 11:00:00 +0100");
         final List<Sample> samplesLE = searchSamples(sessionToken, criteriaLEMatch, new SampleFetchOptions());
         assertSampleIdentifiers(samplesLE, "/CISD/TIMESTAMP_PROPERTY_TEST");
+
+        final SampleSearchCriteria criteriaLEDMatch = new SampleSearchCriteria();
+        criteriaLEDMatch.withDateProperty("TIMESTAMP").thatIsEarlierThanOrEqualTo("2020-02-09 11:00:00 +0100");
+        final List<Sample> samplesLED = searchSamples(sessionToken, criteriaLEDMatch, new SampleFetchOptions());
+        assertSampleIdentifiers(samplesLED, "/CISD/TIMESTAMP_PROPERTY_TEST");
 
         final SampleSearchCriteria criteriaGTMatch = new SampleSearchCriteria();
         criteriaGTMatch.withProperty("TIMESTAMP").thatIsGreaterThan("2020-02-09 10:00:00 +0100");
         final List<Sample> samplesGT = searchSamples(sessionToken, criteriaGTMatch, new SampleFetchOptions());
         assertSampleIdentifiers(samplesGT);
 
+        final SampleSearchCriteria criteriaGTDMatch = new SampleSearchCriteria();
+        criteriaGTDMatch.withDateProperty("TIMESTAMP").thatIsLaterThan("2020-02-09 10:00:00 +0100");
+        final List<Sample> samplesGTD = searchSamples(sessionToken, criteriaGTDMatch, new SampleFetchOptions());
+        assertSampleIdentifiers(samplesGTD);
+
         final SampleSearchCriteria criteriaGEMatch = new SampleSearchCriteria();
         criteriaGEMatch.withProperty("TIMESTAMP").thatIsGreaterThanOrEqualTo("2020-02-09 10:00:00 +0100");
         final List<Sample> samplesGE = searchSamples(sessionToken, criteriaGEMatch, new SampleFetchOptions());
         assertSampleIdentifiers(samplesGE, "/CISD/TIMESTAMP_PROPERTY_TEST");
+
+        final SampleSearchCriteria criteriaGEDMatch = new SampleSearchCriteria();
+        criteriaGEDMatch.withDateProperty("TIMESTAMP").thatIsLaterThanOrEqualTo("2020-02-09 10:00:00 +0100");
+        final List<Sample> samplesGED = searchSamples(sessionToken, criteriaGEDMatch, new SampleFetchOptions());
+        assertSampleIdentifiers(samplesGED, "/CISD/TIMESTAMP_PROPERTY_TEST");
     }
 
     @Test
