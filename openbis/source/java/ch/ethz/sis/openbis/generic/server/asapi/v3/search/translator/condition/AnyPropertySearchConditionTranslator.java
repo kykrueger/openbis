@@ -74,6 +74,11 @@ public class AnyPropertySearchConditionTranslator implements IConditionTranslato
             final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases)
     {
         final AbstractStringValue value = criterion.getFieldValue();
+        final JoinInformation joinInformation = aliases.get(tableMapper.getAttributeTypesTable());
+        final String entityTypesSubTableAlias = joinInformation.getSubTableAlias();
+
+        sqlBuilder.append(entityTypesSubTableAlias).append(PERIOD).append(joinInformation.getSubTableIdField())
+                .append(SP).append(IS_NOT_NULL).append(SP).append(AND).append(SP);
 
         if (value.getClass() != AnyStringValue.class)
         {
