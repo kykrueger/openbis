@@ -16,8 +16,11 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractNumberValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.NumberFieldSearchCriteria;
@@ -26,6 +29,8 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCrite
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.AttributesMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils;
+import ch.systemsx.cisd.common.exceptions.UserFailureException;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
 import ch.systemsx.cisd.openbis.generic.shared.dto.TableNames;
 
@@ -49,9 +54,12 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLL
 public class NumberFieldSearchConditionTranslator implements IConditionTranslator<NumberFieldSearchCriteria>
 {
 
-    private static final String INTEGER_DATA_TYPE_CODE = "INTEGER";
+    private static final String INTEGER_DATA_TYPE_CODE = DataTypeCode.INTEGER.toString();
 
-    private static final String REAL_DATA_TYPE_CODE = "REAL";
+    private static final String REAL_DATA_TYPE_CODE = DataTypeCode.REAL.toString();
+
+    private static final Set<String> VALID_DATA_TYPES = new HashSet<>(Arrays.asList(
+            INTEGER_DATA_TYPE_CODE, REAL_DATA_TYPE_CODE));
 
     @Override
     public Map<String, JoinInformation> getJoinInformationMap(final NumberFieldSearchCriteria criterion, final TableMapper tableMapper,
@@ -78,7 +86,8 @@ public class NumberFieldSearchConditionTranslator implements IConditionTranslato
             final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases,
             final Map<String, String> dataTypeByPropertyName)
     {
-        switch (criterion.getFieldType()) {
+        switch (criterion.getFieldType())
+        {
             case ATTRIBUTE:
             {
                 final String criterionFieldName = criterion.getFieldName();
@@ -96,6 +105,12 @@ public class NumberFieldSearchConditionTranslator implements IConditionTranslato
             {
                 final AbstractNumberValue value = criterion.getFieldValue();
                 final String propertyName = TranslatorUtils.normalisePropertyName(criterion.getFieldName());
+                String casting = dataTypeByPropertyName.get(propertyName);
+                if (VALID_DATA_TYPES.contains(casting) == false)
+                {
+//                    throw new UserFailureException("The data type of property " + propertyName + " has to be one of "
+//                            + VALID_DATA_TYPES + " instead of " + casting + ".");
+                }
                 final boolean internalProperty = TranslatorUtils.isPropertyInternal(criterion.getFieldName());
                 translateNumberProperty(tableMapper, args, sqlBuilder, aliases, value, propertyName, internalProperty);
                 break;

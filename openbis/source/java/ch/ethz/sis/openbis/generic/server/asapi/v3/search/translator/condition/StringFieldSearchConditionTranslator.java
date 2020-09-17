@@ -229,13 +229,14 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
         }
     }
 
-    public void verifyCriterionValidity(final StringFieldSearchCriteria criterion, final AbstractStringValue value,
+    private void verifyCriterionValidity(final StringFieldSearchCriteria criterion, final AbstractStringValue value,
             final String casting)
     {
-        if ((criterion.getFieldValue() instanceof StringStartsWithValue ||
-                criterion.getFieldValue() instanceof StringEndsWithValue ||
-                criterion.getFieldValue() instanceof StringContainsValue ||
-                criterion.getFieldValue() instanceof StringContainsExactlyValue) &&
+        AbstractStringValue fieldValue = criterion.getFieldValue();
+        if ((fieldValue instanceof StringStartsWithValue ||
+                fieldValue instanceof StringEndsWithValue ||
+                fieldValue instanceof StringContainsValue ||
+                fieldValue instanceof StringContainsExactlyValue) &&
                 (casting.equals(DataTypeCode.INTEGER.toString())
                         || casting.equals(DataTypeCode.REAL.toString())
                         || casting.equals(DataTypeCode.TIMESTAMP.toString())
@@ -248,10 +249,10 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
                     OPERATOR_NAME_BY_CLASS.get(value.getClass()), casting));
         }
 
-        if ((criterion.getFieldValue() instanceof StringLessThanValue ||
-                criterion.getFieldValue() instanceof StringLessThanOrEqualToValue ||
-                criterion.getFieldValue() instanceof StringGreaterThanOrEqualToValue ||
-                criterion.getFieldValue() instanceof StringGreaterThanValue) &&
+        if ((fieldValue instanceof StringLessThanValue ||
+                fieldValue instanceof StringLessThanOrEqualToValue ||
+                fieldValue instanceof StringGreaterThanOrEqualToValue ||
+                fieldValue instanceof StringGreaterThanValue) &&
                 (casting.equals(DataTypeCode.BOOLEAN.toString())
                         || casting.equals(DataTypeCode.MATERIAL.toString())
                         || casting.equals(DataTypeCode.SAMPLE.toString())))

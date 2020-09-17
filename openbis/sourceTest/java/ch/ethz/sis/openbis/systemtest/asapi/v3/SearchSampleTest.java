@@ -1654,12 +1654,22 @@ public class SearchSampleTest extends AbstractSampleTest
         List<Sample> samplesGOE = searchSamples(sessionToken, criteriaGOE, sortByCodeFO);
         assertSampleIdentifiersInOrder(samplesGOE, "/CISD/3VCP7", "/CISD/CP-TEST-2", "/CISD/CP-TEST-3");
 
+        criteriaGOE = new SampleSearchCriteria();
+        criteriaGOE.withProperty("SIZE").thatIsGreaterThanOrEqualTo("321.0");
+        samplesGOE = searchSamples(sessionToken, criteriaGOE, sortByCodeFO);
+        assertSampleIdentifiersInOrder(samplesGOE, "/CISD/3VCP7", "/CISD/CP-TEST-2", "/CISD/CP-TEST-3");
+
         // Greater - Giving integer as real
         SampleSearchCriteria criteriaG = new SampleSearchCriteria();
         criteriaG.withNumberProperty("SIZE").thatIsGreaterThan(321.0);
         List<Sample> samplesG = searchSamples(sessionToken, criteriaG, sortByCodeFO);
         assertSampleIdentifiersInOrder(samplesG, "/CISD/3VCP7", "/CISD/CP-TEST-3");
 
+        criteriaG = new SampleSearchCriteria();
+        criteriaG.withProperty("SIZE").thatIsGreaterThan("321.0");
+        samplesG = searchSamples(sessionToken, criteriaG, sortByCodeFO);
+        assertSampleIdentifiersInOrder(samplesG, "/CISD/3VCP7", "/CISD/CP-TEST-3");
+        
         // Equals As Text - Real
         SampleSearchCriteria criteriaETxt2 = new SampleSearchCriteria();
         criteriaETxt2.withProperty("SIZE").thatEquals("666.0");
