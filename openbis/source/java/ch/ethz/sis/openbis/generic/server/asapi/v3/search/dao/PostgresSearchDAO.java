@@ -74,7 +74,7 @@ public class PostgresSearchDAO implements ISQLSearchDAO
         translationContext.setIdColumnName(finalIdColumnName);
         translationContext.setAuthorisationInformation(authorisationInformation);
 
-        assertPropertyTypesConsistent(translationVo);
+        assertPropertyTypesConsistent(translationContext);
 
         final boolean containsProperties = criteria.stream().anyMatch(
                 (subcriterion) -> subcriterion instanceof AbstractFieldSearchCriteria &&
@@ -87,7 +87,7 @@ public class PostgresSearchDAO implements ISQLSearchDAO
                 .collect(Collectors.toSet());
     }
 
-    private void assertPropertyTypesConsistent(final TranslationVo translationVo)
+    private void assertPropertyTypesConsistent(final TranslationContext translationContext)
     {
         final String pt = "pt";
         final String dt = "dt";
@@ -104,7 +104,7 @@ public class PostgresSearchDAO implements ISQLSearchDAO
                 (valueByColumnName) -> (String) valueByColumnName.get(propertyTypeAlias),
                 (valueByColumnName) -> (String) valueByColumnName.get(dataTypeAlias)));
 
-        translationVo.getCriteria().forEach(criterion ->
+        translationContext.getCriteria().forEach(criterion ->
         {
             if (criterion instanceof NumberPropertySearchCriteria)
             {
