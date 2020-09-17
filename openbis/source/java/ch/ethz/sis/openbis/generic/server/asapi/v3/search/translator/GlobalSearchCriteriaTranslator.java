@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Spliterator;
 import java.util.stream.StreamSupport;
 
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes.FLOAT4;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper.*;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.*;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCriteriaTranslator.MAIN_TABLE_ALIAS;
@@ -235,8 +236,8 @@ public class GlobalSearchCriteriaTranslator
         final String[] criterionValues = criterion.getFieldValue().getValue().toLowerCase().trim().split("\\s+");
         if (forAttributes)
         {
-            final String thenValue = ID_RANK + DOUBLE_COLON + FLOAT_4;
-            final String elseValue = ATTRIBUTE_RANK + DOUBLE_COLON + FLOAT_4;
+            final String thenValue = ID_RANK + DOUBLE_COLON + FLOAT4;
+            final String elseValue = ATTRIBUTE_RANK + DOUBLE_COLON + FLOAT4;
             final String[] matchingColumns = (tableMapper == SAMPLE || tableMapper == EXPERIMENT)
                     ? new String[] { MAIN_TABLE_ALIAS + PERIOD + CODE_COLUMN,
                             MAIN_TABLE_ALIAS + PERIOD + PERM_ID_COLUMN }
@@ -273,13 +274,13 @@ public class GlobalSearchCriteriaTranslator
             sqlBuilder.append(NULL).append(SP).append(LABEL_HEADLINE_ALIAS).append(COMMA).append(NL);
             sqlBuilder.append(NULL).append(SP).append(DESCRIPTION_HEADLINE_ALIAS).append(COMMA).append(NL);
 
-            sqlBuilder.append(0.0f).append(DOUBLE_COLON).append(FLOAT_4).append(SP).append(VALUE_MATCH_RANK_ALIAS)
+            sqlBuilder.append(0.0f).append(DOUBLE_COLON).append(FLOAT4).append(SP).append(VALUE_MATCH_RANK_ALIAS)
                     .append(COMMA).append(NL);
-            sqlBuilder.append(0.0f).append(DOUBLE_COLON).append(FLOAT_4).append(SP).append(CODE_MATCH_RANK_ALIAS)
+            sqlBuilder.append(0.0f).append(DOUBLE_COLON).append(FLOAT4).append(SP).append(CODE_MATCH_RANK_ALIAS)
                     .append(COMMA).append(NL);
-            sqlBuilder.append(0.0f).append(DOUBLE_COLON).append(FLOAT_4).append(SP).append(LABEL_MATCH_RANK_ALIAS)
+            sqlBuilder.append(0.0f).append(DOUBLE_COLON).append(FLOAT4).append(SP).append(LABEL_MATCH_RANK_ALIAS)
                     .append(COMMA).append(NL);
-            sqlBuilder.append(0.0f).append(DOUBLE_COLON).append(FLOAT_4).append(SP).append(DESCRIPTION_MATCH_RANK_ALIAS);
+            sqlBuilder.append(0.0f).append(DOUBLE_COLON).append(FLOAT4).append(SP).append(DESCRIPTION_MATCH_RANK_ALIAS);
         } else
         {
             buildPropertyMatchRank(sqlBuilder, stringValue, criterionValues, args);
@@ -397,17 +398,17 @@ public class GlobalSearchCriteriaTranslator
                 .append(SAMPLE.name()).append(SQ).append(RP);
         args.add(splitValues);
         sqlBuilder.append(SP).append(THEN).append(SP).append(ID_PROPERTY_RANK).append(DOUBLE_COLON)
-                .append(FLOAT_4).append(SP);
+                .append(FLOAT4).append(SP);
         sqlBuilder.append(ELSE).append(SP);
         buildHeadlineTsRank(sqlBuilder, stringValue, args, PROPERTIES_TABLE_ALIAS + PERIOD + VALUE_COLUMN, "");
         sqlBuilder.append(PLUS).append(NL);
         buildHeadlineTsRank(sqlBuilder, stringValue, args,
                 CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS + PERIOD + CODE_COLUMN, "");
-        sqlBuilder.append(ASTERISK).append(SP).append(IMPORTANCE_MULTIPLIER).append(DOUBLE_COLON).append(FLOAT_4)
+        sqlBuilder.append(ASTERISK).append(SP).append(IMPORTANCE_MULTIPLIER).append(DOUBLE_COLON).append(FLOAT4)
                 .append(SP).append(PLUS).append(NL);
         buildHeadlineTsRank(sqlBuilder, stringValue, args,
                 CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS + PERIOD + LABEL_COLUMN, "");
-        sqlBuilder.append(ASTERISK).append(SP).append(IMPORTANCE_MULTIPLIER).append(DOUBLE_COLON).append(FLOAT_4)
+        sqlBuilder.append(ASTERISK).append(SP).append(IMPORTANCE_MULTIPLIER).append(DOUBLE_COLON).append(FLOAT4)
                 .append(NL);
 
         sqlBuilder.append(END).append(SP).append(RANK_ALIAS).append(COMMA).append(NL);
@@ -421,7 +422,7 @@ public class GlobalSearchCriteriaTranslator
                 .append(field).append(RP).append(COMMA).append(SP)
                 .append(TO_TSQUERY).append(LP).append(SQ).append(REG_CONFIG).append(SQ).append(COMMA).append(SP)
                 .append(QU).append(RP).append(RP).append(COMMA).append(SP)
-                .append(0.0f).append(DOUBLE_COLON).append(FLOAT_4).append(RP)
+                .append(0.0f).append(DOUBLE_COLON).append(FLOAT4).append(RP)
                 .append(SP).append(alias);
         args.add(toTsQueryText(stringValue));
     }

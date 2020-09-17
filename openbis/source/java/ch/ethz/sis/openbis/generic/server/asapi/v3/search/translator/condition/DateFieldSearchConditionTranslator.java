@@ -16,34 +16,7 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.AND;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.CASE;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.DATE;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.DOUBLE_COLON;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.ELSE;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.END;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.EQ;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.LP;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.PERIOD;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.QU;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.RP;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SP;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.THEN;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.TIMESTAMPTZ;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.WHEN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.MODIFICATION_TIMESTAMP_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.REGISTRATION_TIMESTAMP_COLUMN;
-
-import java.util.List;
-import java.util.Map;
-
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractDateValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateFieldSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.IDate;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ITimeZone;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ModificationDateSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.RegistrationDateSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.TimeZone;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.*;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCriteriaTranslator;
@@ -52,6 +25,15 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.u
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
 import ch.systemsx.cisd.openbis.generic.shared.dto.TableNames;
+
+import java.util.List;
+import java.util.Map;
+
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes.DATE;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes.TIMESTAMP_WITH_TZ;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.*;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.MODIFICATION_TIMESTAMP_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.REGISTRATION_TIMESTAMP_COLUMN;
 
 public class DateFieldSearchConditionTranslator implements IConditionTranslator<DateFieldSearchCriteria>
 {
@@ -192,8 +174,8 @@ public class DateFieldSearchConditionTranslator implements IConditionTranslator<
         }
 
         sqlBuilder.append(aliases.get(tableMapper.getValuesTable()).getSubTableAlias())
-                .append(PERIOD).append(ColumnNames.VALUE_COLUMN).append(DOUBLE_COLON).append(TIMESTAMPTZ)
-                .append(SP);
+                .append(PERIOD).append(ColumnNames.VALUE_COLUMN).append(DOUBLE_COLON)
+                .append(TIMESTAMP_WITH_TZ.toString()).append(SP);
         TranslatorUtils.appendTimeZoneConversion(value, sqlBuilder, timeZone);
 
         if (bareDateValue)

@@ -107,6 +107,14 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
                     {
                         verifyCriterionValidity(criterion, value, casting);
 
+                        // Delegating translation for boolean properties
+                        if (casting.equals(DataTypeCode.BOOLEAN.toString()))
+                        {
+                            BooleanFieldSearchConditionTranslator.translateBooleanProperty(tableMapper, args, sqlBuilder,
+                                    aliases, Boolean.parseBoolean(value.getValue()), propertyName, internalProperty);
+                            return;
+                        }
+
                         // Delegating translation for number properties
                         if (casting.equals(DataTypeCode.INTEGER.toString())
                                 || casting.equals(DataTypeCode.REAL.toString()))
@@ -232,9 +240,7 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
                 criterion.getFieldValue() instanceof StringLessThanOrEqualToValue ||
                 criterion.getFieldValue() instanceof StringGreaterThanOrEqualToValue ||
                 criterion.getFieldValue() instanceof StringGreaterThanValue) &&
-                (casting.equals(DataTypeCode.BOOLEAN.toString())
-                        || casting.equals(DataTypeCode.MATERIAL.toString())
-                        || casting.equals(DataTypeCode.SAMPLE.toString())))
+                (casting.equals(DataTypeCode.BOOLEAN.toString())))
         {
             throw new UserFailureException(String.format("Operator %s undefined for datatype %s.",
                     OPERATOR_NAME_BY_CLASS.get(value.getClass()), casting));
