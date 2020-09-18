@@ -180,10 +180,7 @@ public class PostgresSearchDAO implements ISQLSearchDAO
                 WHERE + SP + CODE_COLUMN + SP + EQ + SP + QU +
                 RP;
 
-        final List<Object> args = new ArrayList<>(2);
-        args.add(parentIdSet.toArray(new Long[0]));
-        args.add(relationshipType.toString());
-
+        final List<Object> args = Arrays.asList(parentIdSet.toArray(new Long[0]), relationshipType.toString());
         final List<Map<String, Object>> queryResultList = sqlExecutor.execute(sql, args);
         return queryResultList.stream().map(stringObjectMap -> (Long) stringObjectMap.get(ID_COLUMN)).collect(Collectors.toSet());
     }
