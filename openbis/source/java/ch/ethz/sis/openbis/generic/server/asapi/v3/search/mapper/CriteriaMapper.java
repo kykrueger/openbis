@@ -142,7 +142,6 @@ public class CriteriaMapper {
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(PermIdSearchCriteria.class, stringFieldSearchConditionTranslator);
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(PresentInArchiveSearchCriteria.class, booleanFieldSearchConditionTranslator);
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(RegistrationDateSearchCriteria.class, dateFieldSearchConditionTranslator);
-        CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(SampleSearchCriteria.class, new SampleSearchConditionTranslator());
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(ShareIdSearchCriteria.class, stringFieldSearchConditionTranslator);
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(SizeSearchCriteria.class, numberFieldSearchConditionTranslator);
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(SpeedHintSearchCriteria.class, numberFieldSearchConditionTranslator);
