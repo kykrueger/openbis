@@ -34,7 +34,7 @@ final class FieldSetter implements Setter<Object>
         try
         {
             f.set(bean, value);
-        } catch (IllegalAccessException _)
+        } catch (IllegalAccessException _e)
         {
             // try again
             f.setAccessible(true);

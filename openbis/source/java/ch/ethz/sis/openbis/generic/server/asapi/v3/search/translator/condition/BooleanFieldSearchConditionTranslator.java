@@ -93,7 +93,11 @@ public class BooleanFieldSearchConditionTranslator implements IConditionTranslat
             final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases, final Boolean value,
             final String propertyName, final boolean internalProperty)
     {
-        final String entityTypesSubTableAlias = aliases.get(tableMapper.getAttributeTypesTable()).getSubTableAlias();
+        final JoinInformation joinInformation = aliases.get(tableMapper.getAttributeTypesTable());
+        final String entityTypesSubTableAlias = joinInformation.getSubTableAlias();
+
+        sqlBuilder.append(entityTypesSubTableAlias).append(PERIOD).append(joinInformation.getSubTableIdField())
+                .append(SP).append(IS_NOT_NULL).append(SP).append(AND).append(SP);
 
         if (value != null)
         {

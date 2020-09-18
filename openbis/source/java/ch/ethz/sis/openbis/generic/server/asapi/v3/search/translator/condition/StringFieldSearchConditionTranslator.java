@@ -96,7 +96,11 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
                 final AbstractStringValue value = criterion.getFieldValue();
                 final String propertyName = TranslatorUtils.normalisePropertyName(criterion.getFieldName());
                 final boolean internalProperty = TranslatorUtils.isPropertyInternal(criterion.getFieldName());
-                final String entityTypesSubTableAlias = aliases.get(tableMapper.getAttributeTypesTable()).getSubTableAlias();
+                final JoinInformation joinInformation = aliases.get(tableMapper.getAttributeTypesTable());
+                final String entityTypesSubTableAlias = joinInformation.getSubTableAlias();
+
+                sqlBuilder.append(entityTypesSubTableAlias).append(PERIOD).append(joinInformation.getSubTableIdField())
+                        .append(SP).append(IS_NOT_NULL).append(SP).append(AND).append(SP);
 
                 final String casting;
                 if (value.getClass() != AnyStringValue.class)
