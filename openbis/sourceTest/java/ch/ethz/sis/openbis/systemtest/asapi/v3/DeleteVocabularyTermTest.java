@@ -17,10 +17,14 @@
 package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.fail;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
@@ -31,6 +35,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.VocabularyTerm;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.create.VocabularyCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.create.VocabularyTermCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.delete.VocabularyTermDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.fetchoptions.VocabularyTermFetchOptions;
@@ -108,6 +113,66 @@ public class DeleteVocabularyTermTest extends AbstractVocabularyTermTest
 
         terms = searchTerms(vocabularyCode);
         assertVocabularyTermPermIds(terms, termIdA, termIdB);
+    }
+
+    @DataProvider(name = "testDeleteTermFromInternallyManagedVocabulary")
+    public Object[][] providerTestDeleteTermFromInternallyManagedVocabulary()
+    {
+        return new Object[][] {
+                { TEST_USER, true },
+                { TEST_INSTANCE_ETLSERVER, true },
+                { TEST_INSTANCE_OBSERVER, false },
+                { TEST_SPACE_USER, false },
+                { TEST_SPACE_ETLSERVER_TESTSPACE, true },
+        };
+    }
+
+    @Test(dataProvider = "testDeleteTermFromInternallyManagedVocabulary")
+    public void testDeleteTermFromInternallyManagedVocabulary(String user, boolean allowed)
+    {
+        String adminSessionToken = v3api.login(TEST_USER, PASSWORD);
+        String userSessionToken = v3api.login(user, PASSWORD);
+
+        VocabularyTermCreation term1Creation = new VocabularyTermCreation();
+        term1Creation.setCode("I_WANT_TO_STAY");
+
+        VocabularyTermCreation term2Creation = new VocabularyTermCreation();
+        term2Creation.setCode("DELETE_ME");
+
+        VocabularyCreation vocabularyCreation = new VocabularyCreation();
+        vocabularyCreation.setCode("$INTERNALLY_MANAGED_" + UUID.randomUUID());
+        vocabularyCreation.setManagedInternally(true);
+        vocabularyCreation.setTerms(Arrays.asList(term1Creation, term2Creation));
+
+        VocabularyTermPermId term1Id = new VocabularyTermPermId(term1Creation.getCode(), vocabularyCreation.getCode());
+        VocabularyTermPermId term2Id = new VocabularyTermPermId(term2Creation.getCode(), vocabularyCreation.getCode());
+
+        v3api.createVocabularies(adminSessionToken, Arrays.asList(vocabularyCreation));
+
+        List<VocabularyTerm> termsBefore = searchTerms(vocabularyCreation.getCode());
+        assertVocabularyTermPermIds(termsBefore, term1Id, term2Id);
+
+        VocabularyTermDeletionOptions options = new VocabularyTermDeletionOptions();
+        options.setReason("Just for testing");
+
+        if (allowed)
+        {
+            v3api.deleteVocabularyTerms(userSessionToken, Arrays.asList(term2Id), options);
+
+            List<VocabularyTerm> termsAfter = searchTerms(vocabularyCreation.getCode());
+            assertVocabularyTermPermIds(termsAfter, term1Id);
+        } else
+        {
+            try
+            {
+                v3api.deleteVocabularyTerms(userSessionToken, Arrays.asList(term2Id), options);
+                fail();
+            } catch (UserFailureException e)
+            {
+                assertTrue(e.getMessage().contains("Not allowed to delete terms from an internally managed vocabulary.")
+                        || e.getMessage().contains("Access denied"), e.getMessage());
+            }
+        }
     }
 
     @Test(expectedExceptions = UserFailureException.class, expectedExceptionsMessageRegExp = "Vocabulary 'GENDER'. is being used. Delete all connected data  first.*")
