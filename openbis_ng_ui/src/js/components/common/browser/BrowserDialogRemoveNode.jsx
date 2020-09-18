@@ -20,9 +20,9 @@ class BrowserDialogRemoveNode extends React.Component {
   }
 
   getTitle() {
-    const { open, node } = this.props
+    const { node } = this.props
 
-    if (open && node) {
+    if (node) {
       return `Do you want to remove "${node.text}"?`
     } else {
       return null
@@ -30,8 +30,9 @@ class BrowserDialogRemoveNode extends React.Component {
   }
 
   getContent() {
-    const { open, node } = this.props
-    if (open && node) {
+    const { node } = this.props
+
+    if (node) {
       return `Are you sure you want to remove "${node.text}"? Some data will be lost!`
     } else {
       return null

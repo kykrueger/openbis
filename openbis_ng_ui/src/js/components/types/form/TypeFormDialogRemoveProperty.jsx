@@ -21,10 +21,9 @@ class TypeFormDialogRemoveProperty extends React.Component {
   }
 
   getTitle() {
-    const { open } = this.props
+    const property = this.getProperty()
 
-    if (open) {
-      const property = this.getProperty()
+    if (property) {
       if (property.code.value) {
         return `Do you want to remove "${property.code.value}" property? Some data will be lost!`
       } else {
@@ -36,10 +35,9 @@ class TypeFormDialogRemoveProperty extends React.Component {
   }
 
   getContent() {
-    const { open } = this.props
+    const property = this.getProperty()
 
-    if (open) {
-      const property = this.getProperty()
+    if (property) {
       return `This property is already used by ${property.usagesLocal} ${
         property.usagesLocal > 1 ? 'entities' : 'entity'
       } of this type. Removing the property assignment is going to remove the existing property values as well - data will be lost! Are you sure you want to proceed?`

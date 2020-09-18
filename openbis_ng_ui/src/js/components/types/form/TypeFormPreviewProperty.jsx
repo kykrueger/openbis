@@ -30,6 +30,9 @@ const styles = theme => ({
     },
     '&:hover': {
       borderColor: theme.palette.border.primary
+    },
+    '& .MuiInputBase-root.Mui-disabled': {
+      cursor: 'pointer'
     }
   },
   selected: {

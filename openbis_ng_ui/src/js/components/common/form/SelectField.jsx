@@ -15,6 +15,9 @@ const styles = theme => ({
   select: {
     fontSize: theme.typography.body2.fontSize
   },
+  selectDisabled: {
+    pointerEvents: 'none'
+  },
   option: {
     '&:after': {
       content: '"\\00a0"'
@@ -156,7 +159,8 @@ class SelectFormField extends React.PureComponent {
               }
             },
             classes: {
-              root: classes.select
+              root: classes.select,
+              disabled: classes.selectDisabled
             }
           }}
           variant={variant}
