@@ -6,14 +6,14 @@ dependencies {
             'knime:knime:+',
             'openbis:dss:+',
             'openbis:query:+',
-            'rinn:restrictions:+'
-            
+            'rinn:restrictions:+',
+            'javax.activation:activation:1.1.1' // TODO: Add to ivy repository and remove mavenCentral() from repository.gradle
     
     testCompile 'testng:testng:+',
             'hamcrest:hamcrest-integration:+',
             'hamcrest:hamcrest-library:+'
 
-    testCompile ('jmock:jmock:+') {
+    testCompile ('jmock:jmock:2.5.1') {
             exclude group: 'hamcrest', module: 'hamcrest-core'
         }
 }
