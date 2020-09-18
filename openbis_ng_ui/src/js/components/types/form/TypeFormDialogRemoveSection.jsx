@@ -21,18 +21,20 @@ class TypeFormDialogRemoveSection extends React.Component {
   }
 
   getTitle() {
-    const { open, selection, sections } = this.props
+    const { selection, sections } = this.props
 
-    if (open) {
+    if (selection && sections) {
       const section = _.find(sections, ['id', selection.params.id])
-      if (section.name.value) {
-        return `Do you want to remove "${section.name.value}" section? Some data will be lost!`
-      } else {
-        return 'Do you want to remove the section? Some data will be lost!'
+      if (section) {
+        if (section.name.value) {
+          return `Do you want to remove "${section.name.value}" section? Some data will be lost!`
+        } else {
+          return 'Do you want to remove the section? Some data will be lost!'
+        }
       }
-    } else {
-      return null
     }
+
+    return null
   }
 }
 
