@@ -309,7 +309,7 @@ public class TranslatorUtils
         final Map<String, JoinInformation> result = new LinkedHashMap<>();
 
         final JoinInformation joinInformation = new JoinInformation();
-        joinInformation.setJoinType(JoinType.INNER);
+        joinInformation.setJoinType(JoinType.LEFT);
         joinInformation.setMainTable(tableMapper.getEntitiesTable());
         joinInformation.setMainTableAlias(SearchCriteriaTranslator.MAIN_TABLE_ALIAS);
         joinInformation.setMainTableIdField(tableMapper.getEntitiesTableEntityTypeIdField());
@@ -327,7 +327,7 @@ public class TranslatorUtils
         final String relationshipsTableAlias = aliasFactory.createAlias();
 
         final JoinInformation joinInformation1 = new JoinInformation();
-        joinInformation1.setJoinType(JoinType.INNER);
+        joinInformation1.setJoinType(JoinType.LEFT);
         joinInformation1.setMainTable(tableMapper.getEntitiesTable());
         joinInformation1.setMainTableAlias(SearchCriteriaTranslator.MAIN_TABLE_ALIAS);
         joinInformation1.setMainTableIdField(ID_COLUMN);
@@ -337,7 +337,7 @@ public class TranslatorUtils
         result.put(tableMapper.getRelationshipsTable(), joinInformation1);
 
         final JoinInformation joinInformation2 = new JoinInformation();
-        joinInformation2.setJoinType(JoinType.INNER);
+        joinInformation2.setJoinType(JoinType.LEFT);
         joinInformation2.setMainTable(tableMapper.getRelationshipsTable());
         joinInformation2.setMainTableAlias(relationshipsTableAlias);
         joinInformation2.setMainTableIdField(tableMapper.getRelationshipsTableChildIdField());
@@ -347,7 +347,7 @@ public class TranslatorUtils
         result.put(tableMapper.getEntitiesTable(), joinInformation2);
 
         final JoinInformation joinInformation3 = new JoinInformation();
-        joinInformation3.setJoinType(JoinType.INNER);
+        joinInformation3.setJoinType(JoinType.LEFT);
         joinInformation3.setMainTable(tableMapper.getRelationshipsTable());
         joinInformation3.setMainTableAlias(relationshipsTableAlias);
         joinInformation3.setMainTableIdField(RELATIONSHIP_COLUMN);
