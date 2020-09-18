@@ -88,7 +88,13 @@ public final class FilteredListTest
             fail("IndexOutOfBoundsException not thrown.");
         } catch (IndexOutOfBoundsException ex)
         {
-            assertEquals("Index: 5, Size: 3", ex.getMessage());
+            String errorMessage = null;
+            if(System.getProperty("java.version").startsWith("1.8.")) {
+                errorMessage = "Index: 5, Size: 3";
+            } else {
+                errorMessage = "Index 5 out of bounds for length 3";
+            }
+            assertEquals(errorMessage, ex.getMessage());
         }
         String old = list.set(2, "new2");
         assertEquals("2", old);

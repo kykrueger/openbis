@@ -94,7 +94,6 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
             case PROPERTY:
             {
                 final AbstractStringValue value = criterion.getFieldValue();
-                final String stringValue = (value.getValue() != null) ? TranslatorUtils.stripQuotationMarks(value.getValue().trim()) : null;
                 final String propertyName = TranslatorUtils.normalisePropertyName(criterion.getFieldName());
                 final boolean internalProperty = TranslatorUtils.isPropertyInternal(criterion.getFieldName());
                 final String entityTypesSubTableAlias = aliases.get(tableMapper.getAttributeTypesTable()).getSubTableAlias();
@@ -107,6 +106,14 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
                     if (casting != null)
                     {
                         verifyCriterionValidity(criterion, value, casting);
+
+                        // Delegating translation for boolean properties
+                        if (casting.equals(DataTypeCode.BOOLEAN.toString()))
+                        {
+                            BooleanFieldSearchConditionTranslator.translateBooleanProperty(tableMapper, args, sqlBuilder,
+                                    aliases, Boolean.parseBoolean(value.getValue()), propertyName, internalProperty);
+                            return;
+                        }
 
                         // Delegating translation for number properties
                         if (casting.equals(DataTypeCode.INTEGER.toString())
@@ -153,11 +160,6 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
 
                     if (casting != null)
                     {
-//                        final Map<String, PSQLTypes> castingToPsqlCasting = new HashMap<>(2);
-//                        castingToPsqlCasting.put(DataTypeCode.TIMESTAMP.toString(), TIMESTAMP_WITH_TZ);
-//                        castingToPsqlCasting.put(DataTypeCode.DATE.toString(), PSQLTypes.DATE);
-
-//                        final PSQLTypes psqlCasting = castingToPsqlCasting.get(casting);
                         final boolean equalsToComparison = (value.getClass() == StringEqualToValue.class);
                         if (equalsToComparison)
                         {
@@ -168,25 +170,11 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
                         {
                             sqlBuilder.append(RP);
                         }
-//                        if (psqlCasting != null)
-//                        {
-//                            sqlBuilder.append(DOUBLE_COLON).append(psqlCasting);
-//                        }
 
                         final String strippedValue = TranslatorUtils.stripQuotationMarks(value.getValue().trim())
                                 .toLowerCase();
 
                         TranslatorUtils.appendStringComparatorOp(value.getClass(), strippedValue, sqlBuilder, args);
-
-//                        sqlBuilder.append(aliases.get(tableMapper.getValuesTable()).getSubTableAlias())
-//                                .append(PERIOD).append(VALUE_COLUMN);
-//
-//                        final String lowerCaseCasting = casting.toLowerCase();
-//                        sqlBuilder.append(DOUBLE_COLON).append(lowerCaseCasting).append(SP).append(EQ).append(SP).append(QU);
-//
-//                        final Object convertedValue = TranslatorUtils.convertStringToType(stringValue,
-//                                PSQLTypes.sqlTypeToJavaClass(lowerCaseCasting));
-//                        args.add(convertedValue);
                     } else
                     {
                         TranslatorUtils.translateStringComparison(aliases.get(tableMapper.getValuesTable()).getSubTableAlias(),
@@ -229,13 +217,14 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
         }
     }
 
-    public void verifyCriterionValidity(final StringFieldSearchCriteria criterion, final AbstractStringValue value,
+    private void verifyCriterionValidity(final StringFieldSearchCriteria criterion, final AbstractStringValue value,
             final String casting)
     {
-        if ((criterion.getFieldValue() instanceof StringStartsWithValue ||
-                criterion.getFieldValue() instanceof StringEndsWithValue ||
-                criterion.getFieldValue() instanceof StringContainsValue ||
-                criterion.getFieldValue() instanceof StringContainsExactlyValue) &&
+        AbstractStringValue fieldValue = criterion.getFieldValue();
+        if ((fieldValue instanceof StringStartsWithValue ||
+                fieldValue instanceof StringEndsWithValue ||
+                fieldValue instanceof StringContainsValue ||
+                fieldValue instanceof StringContainsExactlyValue) &&
                 (casting.equals(DataTypeCode.INTEGER.toString())
                         || casting.equals(DataTypeCode.REAL.toString())
                         || casting.equals(DataTypeCode.TIMESTAMP.toString())
@@ -248,13 +237,11 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
                     OPERATOR_NAME_BY_CLASS.get(value.getClass()), casting));
         }
 
-        if ((criterion.getFieldValue() instanceof StringLessThanValue ||
-                criterion.getFieldValue() instanceof StringLessThanOrEqualToValue ||
-                criterion.getFieldValue() instanceof StringGreaterThanOrEqualToValue ||
-                criterion.getFieldValue() instanceof StringGreaterThanValue) &&
-                (casting.equals(DataTypeCode.BOOLEAN.toString())
-                        || casting.equals(DataTypeCode.MATERIAL.toString())
-                        || casting.equals(DataTypeCode.SAMPLE.toString())))
+        if ((fieldValue instanceof StringLessThanValue ||
+                fieldValue instanceof StringLessThanOrEqualToValue ||
+                fieldValue instanceof StringGreaterThanOrEqualToValue ||
+                fieldValue instanceof StringGreaterThanValue) &&
+                (casting.equals(DataTypeCode.BOOLEAN.toString())))
         {
             throw new UserFailureException(String.format("Operator %s undefined for datatype %s.",
                     OPERATOR_NAME_BY_CLASS.get(value.getClass()), casting));

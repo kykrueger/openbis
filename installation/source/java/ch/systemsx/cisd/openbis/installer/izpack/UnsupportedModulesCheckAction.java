@@ -26,8 +26,6 @@ import com.izforge.izpack.api.data.PanelActionConfiguration;
 import com.izforge.izpack.api.handler.AbstractUIHandler;
 import com.izforge.izpack.data.PanelAction;
 
-import ch.systemsx.cisd.common.exceptions.EnvironmentFailureException;
-
 /**
  * @author Franz-Josef Elmer
  */
@@ -55,7 +53,8 @@ public class UnsupportedModulesCheckAction implements PanelAction
                     + "before disabling them because you may loose access to data and functionality.";
             if (handler == null)
             {
-                throw new EnvironmentFailureException(message);
+                System.err.println(message);
+                System.exit(1);
             }
             handler.emitErrorAndBlockNext("Unsupported Module", message);
         }

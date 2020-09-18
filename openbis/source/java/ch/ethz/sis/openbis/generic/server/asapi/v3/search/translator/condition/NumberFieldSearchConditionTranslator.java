@@ -16,19 +16,6 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 
-import java.util.List;
-import java.util.Map;
-
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractNumberValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.NumberFieldSearchCriteria;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCriteriaTranslator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.AttributesMapper;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinInformation;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils;
-import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
-import ch.systemsx.cisd.openbis.generic.shared.dto.TableNames;
-
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.AND;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.CASE;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.DOUBLE_COLON;
@@ -37,7 +24,6 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLL
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.EQ;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.LP;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.NL;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.NUMERIC;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.OR;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.PERIOD;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.QU;
@@ -46,12 +32,33 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLL
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.THEN;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.WHEN;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractNumberValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.NumberFieldSearchCriteria;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.AttributesMapper;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCriteriaTranslator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinInformation;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
+import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
+import ch.systemsx.cisd.openbis.generic.shared.dto.TableNames;
+
 public class NumberFieldSearchConditionTranslator implements IConditionTranslator<NumberFieldSearchCriteria>
 {
 
-    private static final String INTEGER_DATA_TYPE_CODE = "INTEGER";
+    private static final String INTEGER_DATA_TYPE_CODE = DataTypeCode.INTEGER.toString();
 
-    private static final String REAL_DATA_TYPE_CODE = "REAL";
+    private static final String REAL_DATA_TYPE_CODE = DataTypeCode.REAL.toString();
+
+    private static final Set<String> VALID_DATA_TYPES = new HashSet<>(Arrays.asList(
+            INTEGER_DATA_TYPE_CODE, REAL_DATA_TYPE_CODE));
 
     @Override
     public Map<String, JoinInformation> getJoinInformationMap(final NumberFieldSearchCriteria criterion, final TableMapper tableMapper,
@@ -78,7 +85,8 @@ public class NumberFieldSearchConditionTranslator implements IConditionTranslato
             final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases,
             final Map<String, String> dataTypeByPropertyName)
     {
-        switch (criterion.getFieldType()) {
+        switch (criterion.getFieldType())
+        {
             case ATTRIBUTE:
             {
                 final String criterionFieldName = criterion.getFieldName();
@@ -96,6 +104,12 @@ public class NumberFieldSearchConditionTranslator implements IConditionTranslato
             {
                 final AbstractNumberValue value = criterion.getFieldValue();
                 final String propertyName = TranslatorUtils.normalisePropertyName(criterion.getFieldName());
+                String casting = dataTypeByPropertyName.get(propertyName);
+                if (VALID_DATA_TYPES.contains(casting) == false)
+                {
+//                    throw new UserFailureException("The data type of property " + propertyName + " has to be one of "
+//                            + VALID_DATA_TYPES + " instead of " + casting + ".");
+                }
                 final boolean internalProperty = TranslatorUtils.isPropertyInternal(criterion.getFieldName());
                 translateNumberProperty(tableMapper, args, sqlBuilder, aliases, value, propertyName, internalProperty);
                 break;
@@ -109,13 +123,16 @@ public class NumberFieldSearchConditionTranslator implements IConditionTranslato
         }
     }
 
-    public static void translateNumberProperty(final TableMapper tableMapper, final List<Object> args,
+    static void translateNumberProperty(final TableMapper tableMapper, final List<Object> args,
             final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases, final AbstractNumberValue value,
             final String propertyName, final boolean internalProperty)
     {
         final String entityTypesSubTableAlias = aliases.get(tableMapper.getAttributeTypesTable()).getSubTableAlias();
 
-        sqlBuilder.append(CASE).append(SP).append(WHEN).append(SP);
+        if (value != null)
+        {
+            sqlBuilder.append(CASE).append(SP).append(WHEN).append(SP);
+        }
 
         TranslatorUtils.appendInternalExternalConstraint(sqlBuilder, args, entityTypesSubTableAlias, internalProperty);
 
@@ -127,23 +144,27 @@ public class NumberFieldSearchConditionTranslator implements IConditionTranslato
 
         sqlBuilder.append(aliases.get(TableNames.DATA_TYPES_TABLE).getSubTableAlias())
                 .append(PERIOD).append(ColumnNames.CODE_COLUMN).append(SP).append(EQ).append(SP).append(QU);
-        args.add(INTEGER_DATA_TYPE_CODE);
+        args.add(DataTypeCode.INTEGER.toString());
 
         sqlBuilder.append(SP).append(OR).append(SP);
 
         sqlBuilder.append(aliases.get(TableNames.DATA_TYPES_TABLE).getSubTableAlias())
                 .append(PERIOD).append(ColumnNames.CODE_COLUMN).append(SP).append(EQ).append(SP).append(QU);
-        args.add(REAL_DATA_TYPE_CODE);
+        args.add(DataTypeCode.REAL.toString());
 
         sqlBuilder.append(RP);
 
-        sqlBuilder.append(SP).append(THEN).append(SP);
-        sqlBuilder.append(aliases.get(tableMapper.getValuesTable()).getSubTableAlias())
-                .append(PERIOD).append(ColumnNames.VALUE_COLUMN).append(DOUBLE_COLON).append(NUMERIC).append(SP);
-        TranslatorUtils.appendNumberComparatorOp(value, sqlBuilder);
-        args.add(value.getValue());
+        if (value != null)
+        {
+            sqlBuilder.append(SP).append(THEN).append(SP);
+            sqlBuilder.append(aliases.get(tableMapper.getValuesTable()).getSubTableAlias())
+                    .append(PERIOD).append(ColumnNames.VALUE_COLUMN).append(DOUBLE_COLON)
+                    .append(PSQLTypes.NUMERIC.toString()).append(SP);
+            TranslatorUtils.appendNumberComparatorOp(value, sqlBuilder);
+            args.add(value.getValue());
 
-        sqlBuilder.append(SP).append(ELSE).append(SP).append(false).append(SP).append(END);
+            sqlBuilder.append(SP).append(ELSE).append(SP).append(false).append(SP).append(END);
+        }
     }
 
 }
