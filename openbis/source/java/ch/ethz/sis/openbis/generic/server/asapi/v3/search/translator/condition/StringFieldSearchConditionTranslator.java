@@ -256,6 +256,16 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
     private static IDate convertStringValueToDateValue(final AbstractStringValue stringValue)
     {
         final String value = stringValue.getValue();
+
+        // String validity check.
+        try
+        {
+            TranslatorUtils.parseDate(value);
+        } catch (final IllegalArgumentException e)
+        {
+            throw new UserFailureException("String does not represent a date.");
+        }
+
         if (stringValue instanceof StringEqualToValue)
         {
             return new DateEqualToValue(value);
