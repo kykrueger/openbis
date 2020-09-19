@@ -391,15 +391,12 @@ public class TranslatorUtils
 
     public static void appendTimeZoneConversion(final IDate fieldValue, final StringBuilder sqlBuilder, final ITimeZone timeZone)
     {
-        if (fieldValue instanceof AbstractDateValue)
+        if (fieldValue instanceof AbstractDateValue && timeZone instanceof TimeZone)
         {
-            if (timeZone instanceof TimeZone)
-            {
-                final TimeZone timeZoneImpl = (TimeZone) timeZone;
-                final ZoneId zoneId = ZoneId.ofOffset("UTC", ZoneOffset.ofHours(-timeZoneImpl.getHourOffset()));
+            final TimeZone timeZoneImpl = (TimeZone) timeZone;
+            final ZoneId zoneId = ZoneId.ofOffset("UTC", ZoneOffset.ofHours(-timeZoneImpl.getHourOffset()));
 
-                sqlBuilder.append(SP).append(AT_TIME_ZONE).append(SP).append(SQ).append(zoneId.getId()).append(SQ);
-            }
+            sqlBuilder.append(SP).append(AT_TIME_ZONE).append(SP).append(SQ).append(zoneId.getId()).append(SQ);
         }
     }
 

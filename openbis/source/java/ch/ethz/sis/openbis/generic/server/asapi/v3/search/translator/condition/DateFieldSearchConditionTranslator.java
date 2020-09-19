@@ -132,8 +132,13 @@ public class DateFieldSearchConditionTranslator implements IConditionTranslator<
                             null, bareDateValue, propertyName, internalProperty, entityTypesSubTableAlias);
                 } else if (DataType.TIMESTAMP.toString().equals(casting))
                 {
-                    appendWhenForDateOrTimestampProperties(sqlBuilder, args, DataType.TIMESTAMP, tableMapper, value, aliases,
-                            timeZone, bareDateValue, propertyName, internalProperty, entityTypesSubTableAlias);
+                    if (bareDateValue)
+                    {
+                        throw new UserFailureException("Search criteria with date doesn't make sense for property "
+                                + propertyName + " of data type " + DataType.TIMESTAMP + ".");
+                    }
+                    appendWhenForDateOrTimestampProperties(sqlBuilder, args, DataType.TIMESTAMP, tableMapper, value,
+                            aliases, timeZone, bareDateValue, propertyName, internalProperty, entityTypesSubTableAlias);
                 } else
                 {
                     throw new UserFailureException("Property " + propertyName + " is neither of data type "
@@ -179,7 +184,7 @@ public class DateFieldSearchConditionTranslator implements IConditionTranslator<
 
         sqlBuilder.append(aliases.get(tableMapper.getValuesTable()).getSubTableAlias())
                 .append(PERIOD).append(ColumnNames.VALUE_COLUMN).append(DOUBLE_COLON)
-                .append(TIMESTAMP_WITH_TZ.toString()).append(SP);
+                .append(TIMESTAMP_WITH_TZ.toString());
         TranslatorUtils.appendTimeZoneConversion(value, sqlBuilder, timeZone);
 
         if (bareDateValue)
