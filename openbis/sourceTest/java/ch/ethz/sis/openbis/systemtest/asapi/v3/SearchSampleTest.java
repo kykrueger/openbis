@@ -2430,10 +2430,16 @@ public class SearchSampleTest extends AbstractSampleTest
         assertUserFailureException(
                 Void -> searchSamples(sessionToken, criteriaEndsWithMatch, new SampleFetchOptions()),
                 String.format("Operator %s undefined for datatype %s.", "EndsWith", "DATE"));
+
+        final SampleSearchCriteria criteriaMatchNotDate = new SampleSearchCriteria();
+        criteriaMatchNotDate.withProperty("DATE").thatEquals("blabla");
+        assertUserFailureException(
+                Void -> searchSamples(sessionToken, criteriaMatchNotDate, new SampleFetchOptions()),
+                "String does not represent a date.");
     }
 
     @Test
-    public void testSearchForSampleWithTimestampPropertyMatchingSubstring()
+    public void testSearchForSampleWithTimestampProperty()
     {
         final String sessionToken = v3api.login(TEST_USER, PASSWORD);
 
@@ -2447,24 +2453,6 @@ public class SearchSampleTest extends AbstractSampleTest
         sampleCreation.setProperty("TIMESTAMP", "2020-02-09 10:00:00 +0100");
 
         v3api.createSamples(sessionToken, Collections.singletonList(sampleCreation));
-
-        final SampleSearchCriteria criteriaContainsMatch = new SampleSearchCriteria();
-        criteriaContainsMatch.withProperty("TIMESTAMP").thatContains("20");
-        assertUserFailureException(
-                Void -> searchSamples(sessionToken, criteriaContainsMatch, new SampleFetchOptions()),
-                String.format("Operator %s undefined for datatype %s.", "Contains", "TIMESTAMP"));
-
-        final SampleSearchCriteria criteriaStartsWithMatch = new SampleSearchCriteria();
-        criteriaStartsWithMatch.withProperty("TIMESTAMP").thatStartsWith("2020");
-        assertUserFailureException(
-                Void -> searchSamples(sessionToken, criteriaStartsWithMatch, new SampleFetchOptions()),
-                String.format("Operator %s undefined for datatype %s.", "StartsWith", "TIMESTAMP"));
-
-        final SampleSearchCriteria criteriaEndsWithMatch = new SampleSearchCriteria();
-        criteriaEndsWithMatch.withProperty("TIMESTAMP").thatEndsWith("0100");
-        assertUserFailureException(
-                Void -> searchSamples(sessionToken, criteriaEndsWithMatch, new SampleFetchOptions()),
-                String.format("Operator %s undefined for datatype %s.", "EndsWith", "TIMESTAMP"));
 
         final SampleSearchCriteria criteriaLTMatch = new SampleSearchCriteria();
         criteriaLTMatch.withProperty("TIMESTAMP").thatIsLessThan("2020-02-09 11:00:00 +0100");
@@ -2505,6 +2493,52 @@ public class SearchSampleTest extends AbstractSampleTest
         criteriaGEDMatch.withDateProperty("TIMESTAMP").thatIsLaterThanOrEqualTo("2020-02-09 10:00:00 +0100");
         final List<Sample> samplesGED = searchSamples(sessionToken, criteriaGEDMatch, new SampleFetchOptions());
         assertSampleIdentifiers(samplesGED, "/CISD/TIMESTAMP_PROPERTY_TEST");
+
+        final SampleSearchCriteria criteriaDateMatch = new SampleSearchCriteria();
+        criteriaDateMatch.withDateProperty("TIMESTAMP").thatIsLaterThanOrEqualTo("2020-02-08");
+        final List<Sample> samplesDate = searchSamples(sessionToken, criteriaDateMatch, new SampleFetchOptions());
+        assertSampleIdentifiers(samplesDate, "/CISD/TIMESTAMP_PROPERTY_TEST");
+    }
+
+    @Test
+    public void testSearchForSampleWithTimestampPropertyMatchingSubstring()
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        final PropertyTypePermId propertyType = createATimestampPropertyType(sessionToken, "TIMESTAMP");
+        final EntityTypePermId sampleType = createASampleType(sessionToken, false, propertyType);
+
+        final SampleCreation sampleCreation = new SampleCreation();
+        sampleCreation.setCode("TIMESTAMP_PROPERTY_TEST");
+        sampleCreation.setTypeId(sampleType);
+        sampleCreation.setSpaceId(new SpacePermId("CISD"));
+        sampleCreation.setProperty("TIMESTAMP", "2020-02-09 10:00:00 +0100");
+
+        v3api.createSamples(sessionToken, Collections.singletonList(sampleCreation));
+
+        final SampleSearchCriteria criteriaContainsMatch = new SampleSearchCriteria();
+        criteriaContainsMatch.withProperty("TIMESTAMP").thatContains("20");
+        assertUserFailureException(
+                Void -> searchSamples(sessionToken, criteriaContainsMatch, new SampleFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "Contains", "TIMESTAMP"));
+
+        final SampleSearchCriteria criteriaStartsWithMatch = new SampleSearchCriteria();
+        criteriaStartsWithMatch.withProperty("TIMESTAMP").thatStartsWith("2020");
+        assertUserFailureException(
+                Void -> searchSamples(sessionToken, criteriaStartsWithMatch, new SampleFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "StartsWith", "TIMESTAMP"));
+
+        final SampleSearchCriteria criteriaEndsWithMatch = new SampleSearchCriteria();
+        criteriaEndsWithMatch.withProperty("TIMESTAMP").thatEndsWith("0100");
+        assertUserFailureException(
+                Void -> searchSamples(sessionToken, criteriaEndsWithMatch, new SampleFetchOptions()),
+                String.format("Operator %s undefined for datatype %s.", "EndsWith", "TIMESTAMP"));
+
+        final SampleSearchCriteria criteriaMatchNotDate = new SampleSearchCriteria();
+        criteriaMatchNotDate.withProperty("TIMESTAMP").thatEquals("blabla");
+        assertUserFailureException(
+                Void -> searchSamples(sessionToken, criteriaMatchNotDate, new SampleFetchOptions()),
+                "String does not represent a date.");
     }
 
     @Test
