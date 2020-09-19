@@ -114,8 +114,9 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
                         // Delegating translation for boolean properties
                         if (casting.equals(DataTypeCode.BOOLEAN.toString()))
                         {
-                            BooleanFieldSearchConditionTranslator.translateBooleanProperty(tableMapper, args, sqlBuilder,
-                                    aliases, Boolean.parseBoolean(value.getValue()), propertyName, internalProperty);
+                            BooleanFieldSearchConditionTranslator.translateBooleanProperty(tableMapper, args,
+                                    sqlBuilder, aliases, convertStringValueToBooleanValue(value), propertyName,
+                                    internalProperty);
                             return;
                         }
 
@@ -275,6 +276,21 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
             throw new IllegalArgumentException(String.format("Cannot convert string value of class %s to date value",
                     stringValue.getClass()));
         }
+    }
+
+    private static boolean convertStringValueToBooleanValue(final AbstractStringValue stringValue)
+    {
+        final String value = stringValue.getValue();
+        if ("true".equals(value))
+        {
+            return true;
+        }
+        if ("false".equals(value))
+        {
+            return false;
+        }
+
+        throw new UserFailureException("String does not represent a boolean.");
     }
 
     private static AbstractNumberValue convertStringValueToNumberValue(final AbstractStringValue stringValue)
