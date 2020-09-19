@@ -2308,6 +2308,37 @@ public class SearchSampleTest extends AbstractSampleTest
     }
 
     @Test
+    public void testSearchForSampleWithBooleanProperty()
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        final PropertyTypePermId propertyType = createABooleanPropertyType(sessionToken, "BOOLEAN");
+        final EntityTypePermId sampleType = createASampleType(sessionToken, false, propertyType);
+
+        final SampleCreation sampleCreation = new SampleCreation();
+        sampleCreation.setCode("BOOLEAN_PROPERTY_TEST");
+        sampleCreation.setTypeId(sampleType);
+        sampleCreation.setSpaceId(new SpacePermId("CISD"));
+        sampleCreation.setProperty("BOOLEAN", "false");
+
+        v3api.createSamples(sessionToken, Collections.singletonList(sampleCreation));
+
+        final SampleSearchCriteria criteriaEqualsFalse = new SampleSearchCriteria();
+        criteriaEqualsFalse.withProperty("BOOLEAN").thatEquals("false");
+        assertEquals(searchSamples(sessionToken, criteriaEqualsFalse, new SampleFetchOptions()).size(), 1);
+
+        final SampleSearchCriteria criteriaEqualsTrue = new SampleSearchCriteria();
+        criteriaEqualsTrue.withProperty("BOOLEAN").thatEquals("true");
+        assertEquals(searchSamples(sessionToken, criteriaEqualsTrue, new SampleFetchOptions()).size(), 0);
+
+        final SampleSearchCriteria criteriaEndsWithMatch = new SampleSearchCriteria();
+        criteriaEndsWithMatch.withProperty("BOOLEAN").thatEquals("bla");
+        assertUserFailureException(
+                Void -> searchSamples(sessionToken, criteriaEndsWithMatch, new SampleFetchOptions()),
+                "String does not represent a boolean.");
+    }
+
+    @Test
     public void testSearchForSampleWithBooleanPropertyMatchingSubstring()
     {
         final String sessionToken = v3api.login(TEST_USER, PASSWORD);
