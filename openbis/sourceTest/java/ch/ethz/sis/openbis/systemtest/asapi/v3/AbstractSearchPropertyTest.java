@@ -21,7 +21,6 @@ import static org.testng.Assert.fail;
 
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -30,15 +29,61 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IPermIdHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractEntitySearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.NumberPropertySearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringPropertySearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
+import ch.ethz.sis.openbis.systemtest.asapi.v3.util.Operator;
 
 /**
  * @author Franz-Josef Elmer
  */
 public abstract class AbstractSearchPropertyTest extends AbstractTest
 {
+    @DataProvider
+    protected Object[][] withPropertyExamples()
+    {
+        return new Object[][] {
+                { DataType.VARCHAR, "12", "== 12", true },
+                { DataType.VARCHAR, "ab", "<= abc", true },
+                { DataType.VARCHAR, "12", "> 100", true },
+                { DataType.VARCHAR, "ac3", "contains bc and endsWith 4", false },
+                { DataType.VARCHAR, "abc3", "contains bc and endsWith 4", false },
+                { DataType.VARCHAR, "ab34", "contains bc and endsWith 4", false },
+                { DataType.VARCHAR, "abc34", "contains bc and endsWith 4", true },
+                { DataType.MULTILINE_VARCHAR, "ac3", "contains bc or endsWith 4", false },
+                { DataType.MULTILINE_VARCHAR, "abc3", "contains bc or endsWith 4", true },
+                { DataType.MULTILINE_VARCHAR, "ab34", "contains bc or endsWith 4", true },
+                { DataType.MULTILINE_VARCHAR, "abc34", "contains bc or endsWith 4", true },
+                { DataType.MULTILINE_VARCHAR, "12", "> 100 and <= 13", true },
+                { DataType.BOOLEAN, "true", "== true", true },
+                { DataType.BOOLEAN, "true", "== false", false },
+                { DataType.BOOLEAN, "false", "== true", false },
+                { DataType.BOOLEAN, "false", "== false", true },
+        };
+    }
+
+    @Test(dataProvider = "withPropertyExamples")
+    public void testWithProperty(DataType dataType, String value, String queryString, boolean found)
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyTypeId = createAPropertyType(sessionToken, dataType);
+        ObjectPermId entityPermId = createEntity(sessionToken, propertyTypeId, value);
+        AbstractEntitySearchCriteria<?> searchCriteria = createSearchCriteria();
+        new StringQueryInjector(searchCriteria, propertyTypeId).buildCriteria(queryString);
+
+        // When
+        List<? extends IPermIdHolder> entities = search(sessionToken, searchCriteria);
+
+        // Then
+        assertEquals(entities.size(), found ? 1 : 0);
+        if (found)
+        {
+            assertEquals(entities.get(0).getPermId().toString(), entityPermId.getPermId());
+        }
+    }
+
     @DataProvider
     protected Object[][] withNumberPropertyExamples()
     {
@@ -95,16 +140,16 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
     protected Object[][] withNumberPropertyThrowingExceptionExamples()
     {
         return new Object[][] {
-            { DataType.DATE },
-            { DataType.TIMESTAMP },
-            { DataType.BOOLEAN },
-            { DataType.VARCHAR },
-            { DataType.MULTILINE_VARCHAR },
-            { DataType.XML },
-            { DataType.HYPERLINK },
-            { DataType.CONTROLLEDVOCABULARY },
-            { DataType.SAMPLE },
-            { DataType.MATERIAL },
+                { DataType.DATE },
+                { DataType.TIMESTAMP },
+                { DataType.BOOLEAN },
+                { DataType.VARCHAR },
+                { DataType.MULTILINE_VARCHAR },
+                { DataType.XML },
+                { DataType.HYPERLINK },
+                { DataType.CONTROLLEDVOCABULARY },
+                { DataType.SAMPLE },
+                { DataType.MATERIAL },
         };
     }
 
@@ -118,10 +163,10 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
         searchCriteria.withNumberProperty(propertyTypeId.getPermId()).thatEquals(42);
 
         // When
-        assertUserFailureException(Void -> search(sessionToken, searchCriteria), 
+        assertUserFailureException(Void -> search(sessionToken, searchCriteria),
                 // Then
                 "cannot be applied to the data type " + dataType);
-        
+
     }
 
     private ObjectPermId createEntity(String sessionToken, PropertyTypePermId propertyTypeId, Object value)
@@ -139,37 +184,6 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
 
     protected abstract List<? extends IPermIdHolder> search(String sessionToken,
             AbstractEntitySearchCriteria<?> searchCriteria);
-
-    private static enum Operator
-    {
-        EQUAL("=="),
-        LESS("<"),
-        LESS_OR_EQUAL("<="),
-        GREATER(">"),
-        GREATER_OR_EQUAL(">="),
-        ;
-        private String symbol;
-
-        private Operator(String symbol)
-        {
-            this.symbol = symbol;
-        }
-
-        public String getSymbol()
-        {
-            return symbol;
-        }
-
-        public static Map<String, Operator> asMap()
-        {
-            Map<String, Operator> map = new TreeMap<>();
-            for (Operator operator : Operator.values())
-            {
-                map.put(operator.getSymbol(), operator);
-            }
-            return map;
-        }
-    }
 
     private abstract static class AbstractQueryInjector
     {
@@ -231,13 +245,56 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
         protected abstract void injectQuery(Operator operator, String operand);
     }
 
+    private static final class StringQueryInjector extends AbstractQueryInjector
+    {
+        StringQueryInjector(AbstractEntitySearchCriteria<?> searchCriteria, PropertyTypePermId propertyTypeId)
+        {
+            super(searchCriteria, propertyTypeId);
+        }
+
+        @Override
+        protected void injectQuery(Operator operator, String operand)
+        {
+            StringPropertySearchCriteria criteria = searchCriteria.withProperty(propertyTypeId.getPermId());
+            switch (operator)
+            {
+                case CONTAINS:
+                    criteria.thatContains(operand);
+                    break;
+                case STARTS_WITH:
+                    criteria.thatStartsWith(operand);
+                    break;
+                case ENDS_WITH:
+                    criteria.thatEndsWith(operand);
+                    break;
+                case EQUAL:
+                    criteria.thatEquals(operand);
+                    break;
+                case GREATER:
+                    criteria.thatIsGreaterThan(operand);
+                    break;
+                case GREATER_OR_EQUAL:
+                    criteria.thatIsGreaterThanOrEqualTo(operand);
+                    break;
+                case LESS:
+                    criteria.thatIsLessThan(operand);
+                    break;
+                case LESS_OR_EQUAL:
+                    criteria.thatIsLessThanOrEqualTo(operand);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unsupported operator " + operator);
+            }
+        }
+    }
+
     private static final class NumberQueryInjector extends AbstractQueryInjector
     {
         NumberQueryInjector(AbstractEntitySearchCriteria<?> searchCriteria, PropertyTypePermId propertyTypeId)
         {
             super(searchCriteria, propertyTypeId);
         }
-
+        
         @Override
         protected void injectQuery(Operator operator, String operand)
         {
@@ -265,5 +322,5 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
             }
         }
     }
-
+    
 }
