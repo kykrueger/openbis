@@ -262,14 +262,7 @@ public class OrderTranslator
         final TableMapper tableMapper = translationContext.getTableMapper();
         final String queryString = SELECT + SP + DISTINCT + SP + "o3" + PERIOD + CODE_COLUMN + SP + PROPERTY_CODE_ALIAS + COMMA + SP +
                 "o4" + PERIOD + CODE_COLUMN + SP + TYPE_CODE_ALIAS + NL +
-                FROM + SP + tableMapper.getEntitiesTable() + SP + SearchCriteriaTranslator.MAIN_TABLE_ALIAS + NL +
-                INNER_JOIN + SP + tableMapper.getValuesTable() + SP + "o1" + SP +
-                ON + SP + SearchCriteriaTranslator.MAIN_TABLE_ALIAS + PERIOD + ID_COLUMN + SP + EQ + SP + "o1" + PERIOD + tableMapper.getValuesTableEntityIdField() + NL +
-                INNER_JOIN + SP + tableMapper.getEntityTypesAttributeTypesTable() + SP + "o2" + SP +
-                ON + SP + "o1" + PERIOD + tableMapper.getValuesTableEntityTypeAttributeTypeIdField() + SP + EQ + SP + "o2" + PERIOD + ID_COLUMN + NL +
-                INNER_JOIN + SP + tableMapper.getAttributeTypesTable() + SP + "o3" + SP +
-                ON + SP + "o2" + PERIOD + tableMapper.getEntityTypesAttributeTypesTableAttributeTypeIdField() + SP + EQ + SP + "o3" + PERIOD +
-                ID_COLUMN + NL +
+                FROM + SP + tableMapper.getAttributeTypesTable() + SP + "o3" + SP + NL +
                 INNER_JOIN + SP + DATA_TYPES_TABLE + SP + "o4" + SP +
                 ON + SP + "o3" + PERIOD + tableMapper.getAttributeTypesTableDataTypeIdField() + SP + EQ + SP + "o4" + PERIOD + ID_COLUMN + NL +
                 WHERE + SP + "o4" + PERIOD + CODE_COLUMN + SP + IN + SP + LP + SELECT + SP + UNNEST + LP + QU + RP + RP;

@@ -95,34 +95,33 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
     protected Object[][] withNumberPropertyThrowingExceptionExamples()
     {
         return new Object[][] {
-            { DataType.DATE, "2012-1-1" },
-            { DataType.TIMESTAMP, "2012-1-1 10:11:12" },
-            { DataType.BOOLEAN, "true" },
-            { DataType.VARCHAR, "abc" },
-            { DataType.MULTILINE_VARCHAR, "abc" },
-            { DataType.XML, "3" },
-            { DataType.HYPERLINK, "3" },
-            { DataType.CONTROLLEDVOCABULARY, "3" },
-            { DataType.SAMPLE, "3" },
-            { DataType.MATERIAL, "3" },
+            { DataType.DATE },
+            { DataType.TIMESTAMP },
+            { DataType.BOOLEAN },
+            { DataType.VARCHAR },
+            { DataType.MULTILINE_VARCHAR },
+            { DataType.XML },
+            { DataType.HYPERLINK },
+            { DataType.CONTROLLEDVOCABULARY },
+            { DataType.SAMPLE },
+            { DataType.MATERIAL },
         };
     }
 
-//    @Test(dataProvider = "withNumberPropertyThrowingExceptionExamples")
-    public void testWithNumberPropertyThrowingException(DataType dataType, String value)
+    @Test(dataProvider = "withNumberPropertyThrowingExceptionExamples")
+    public void testWithNumberPropertyThrowingException(DataType dataType)
     {
         // Given
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
         PropertyTypePermId propertyTypeId = createAPropertyType(sessionToken, dataType);
         AbstractEntitySearchCriteria<?> searchCriteria = createSearchCriteria();
-//        ObjectPermId entityPermId = createEntity(sessionToken, propertyTypeId, value);
         searchCriteria.withNumberProperty(propertyTypeId.getPermId()).thatEquals(42);
 
         // When
         assertUserFailureException(Void -> search(sessionToken, searchCriteria), 
                 // Then
-                "The data type of property " + propertyTypeId + " has to be one of [REAL, INTEGER");
-
+                "cannot be applied to the data type " + dataType);
+        
     }
 
     private ObjectPermId createEntity(String sessionToken, PropertyTypePermId propertyTypeId, Object value)
