@@ -583,9 +583,9 @@ public class DefaultFileBasedHierarchicalContentTest extends AbstractFileSystemT
         long expectedChecksum = IOUtilities.getChecksumCRC32(new FileInputStream(expectedFile));
         assertEquals("File: " + expectedFile, expectedChecksum, fileNode.getChecksumCRC32());
         assertTrue("File: " + expectedFile,
-                fileNode.getLastModified() >= expectedFile.lastModified());
+                (fileNode.getLastModified() / 1000) >= (expectedFile.lastModified() / 1000));
         assertTrue("File: " + expectedFile,
-                fileNode.getLastModified() - expectedFile.lastModified() <= 1000);
+                (fileNode.getLastModified() / 1000) - (expectedFile.lastModified() / 1000) <= 2);
 
         final String expectedFileData = expectedFile.getName() + " data";
         // check random access to file content
