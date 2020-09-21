@@ -263,7 +263,7 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
             TranslatorUtils.parseDate(value);
         } catch (final IllegalArgumentException e)
         {
-            throw new UserFailureException("String does not represent a date.");
+            throw new IllegalArgumentException(String.format("Cannot parse string value %s to date value", value));
         }
 
         if (stringValue instanceof StringEqualToValue)
@@ -300,7 +300,7 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
             return false;
         }
 
-        throw new UserFailureException("String does not represent a boolean.");
+        throw new IllegalArgumentException(String.format("Cannot parse string value %s to boolean value", value));
     }
 
     private static AbstractNumberValue convertStringValueToNumberValue(final AbstractStringValue stringValue)
@@ -310,9 +310,13 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
         try
         {
             numberValue = Long.parseLong(value);
-        } catch (final NumberFormatException e)
+        } catch (final NumberFormatException e1)
         {
-            numberValue = Double.parseDouble(value);
+            try {
+                numberValue = Double.parseDouble(value);
+            } catch (final NumberFormatException e2) {
+                throw new IllegalArgumentException(String.format("Cannot parse string value %s to number value", value));
+            }
         }
 
         if (stringValue instanceof StringEqualToValue)
