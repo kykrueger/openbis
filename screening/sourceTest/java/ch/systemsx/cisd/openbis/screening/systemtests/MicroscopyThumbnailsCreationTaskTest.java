@@ -105,11 +105,11 @@ public class MicroscopyThumbnailsCreationTaskTest extends AbstractMicroscopyImag
                 Collections.sort(paths);
                 assertEquals("Data set " + i, "[, thumbnail.png]", paths.toString());
                 List<Long> sizes = files.stream().map(DataSetFile::getFileLength).collect(Collectors.toList());
-                Collections.sort(sizes);
+                System.err.println(sizes);
                 assertTrue("Size of thumbnail " + i + " is of unexpected size " + sizes.get(1)
                         + ". Should be > 40000.", sizes.get(1) > 40000);
                 assertTrue("Size of thumbnail " + i + " is of unexpected size " + sizes.get(1)
-                        + ". Should be < 50000.", sizes.get(1) < 50000);
+                        + ". Should be < 55000.", sizes.get(1) < 55000);
             }
         }
         assertEquals(9, dataSets.size());
