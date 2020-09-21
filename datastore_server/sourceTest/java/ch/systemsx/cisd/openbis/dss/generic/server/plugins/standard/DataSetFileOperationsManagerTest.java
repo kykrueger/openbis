@@ -1196,8 +1196,8 @@ public class DataSetFileOperationsManagerTest extends AbstractFileSystemTestCase
     private void assertDs1InArchive()
     {
         assertEquals(true, ds1ArchivedLocationFile.isDirectory());
-        assertEquals(ds1Data1.lastModified(), ds1ArchivedDataFile1.lastModified());
-        assertEquals(ds1Data2.lastModified(), ds1ArchivedDataFile2.lastModified());
+        assertEqualsOnSecondsLevel(ds1Data1.lastModified(), ds1ArchivedDataFile1.lastModified());
+        assertEqualsOnSecondsLevel(ds1Data2.lastModified(), ds1ArchivedDataFile2.lastModified());
         assertEquals(DATA1_1, FileUtilities.loadToString(ds1ArchivedDataFile1).trim());
         assertEquals(DATA1_2, FileUtilities.loadToString(ds1ArchivedDataFile2).trim());
     }
@@ -1205,8 +1205,13 @@ public class DataSetFileOperationsManagerTest extends AbstractFileSystemTestCase
     private void assertDs2InArchive()
     {
         assertEquals(true, ds2ArchivedLocationFile.isDirectory());
-        assertEquals(ds2Data.lastModified(), ds2ArchivedDataFile.lastModified());
+        assertEqualsOnSecondsLevel(ds2Data.lastModified(), ds2ArchivedDataFile.lastModified());
         assertEquals(DATA2, FileUtilities.loadToString(ds2ArchivedDataFile).trim());
+    }
+
+    private void assertEqualsOnSecondsLevel(long expectedTime, long actualTime)
+    {
+        assertEquals(expectedTime / 1000, actualTime / 1000);
     }
 
     private void assertDs1NotInArchive()
