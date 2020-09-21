@@ -132,11 +132,6 @@ public class DateFieldSearchConditionTranslator implements IConditionTranslator<
                             null, bareDateValue, propertyName, internalProperty, entityTypesSubTableAlias);
                 } else if (DataType.TIMESTAMP.toString().equals(casting))
                 {
-                    if (bareDateValue)
-                    {
-                        throw new UserFailureException("Search criteria with date doesn't make sense for property "
-                                + propertyName + " of data type " + DataType.TIMESTAMP + ".");
-                    }
                     appendWhenForDateOrTimestampProperties(sqlBuilder, args, DataType.TIMESTAMP, tableMapper, value,
                             aliases, timeZone, bareDateValue, propertyName, internalProperty, entityTypesSubTableAlias);
                 } else
