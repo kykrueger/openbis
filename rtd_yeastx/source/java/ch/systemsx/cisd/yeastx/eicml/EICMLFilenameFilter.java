@@ -19,8 +19,6 @@ package ch.systemsx.cisd.yeastx.eicml;
 import java.io.File;
 import java.io.FilenameFilter;
 
-import ch.systemsx.cisd.yeastx.etl.ConstantsYeastX;
-
 /**
  * A {@link FilenameFilter} for <code>eicML</code> files.
  * 
@@ -31,6 +29,6 @@ final class EICMLFilenameFilter implements FilenameFilter
     @Override
     public boolean accept(File myDir, String name)
     {
-        return name.endsWith("." + ConstantsYeastX.EICML_EXT);
+        return name.endsWith(".eicML");
     }
 }

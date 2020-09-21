@@ -24,8 +24,6 @@ import java.util.List;
 import java.util.Properties;
 
 import net.lemnik.eodsql.DataIterator;
-
-import ch.systemsx.cisd.openbis.dss.yeastx.server.EICMLChromatogramGeneratorServlet;
 import ch.systemsx.cisd.openbis.generic.shared.basic.GenericSharedConstants;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.GeneratedImageTableCell;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ISerializableComparable;
@@ -41,6 +39,10 @@ import ch.systemsx.cisd.openbis.generic.shared.util.SimpleTableModelBuilder;
  */
 public class EICMLChromatogramImagesReporter extends AbstractEICMLDatastoreReportingPlugin
 {
+    public static final String CHROMATOGRAM_CODE_PARAM = "chromatogram";
+
+    public static final String DATASET_CODE_PARAM = "dataset";
+
     private static final String CHROMATOGRAM_SERVLET = "chromatogram";
 
     private static final int MZ_1_COLUMN_INDEX = 1;
@@ -161,12 +163,12 @@ public class EICMLChromatogramImagesReporter extends AbstractEICMLDatastoreRepor
         GeneratedImageTableCell imageCell =
                 new GeneratedImageTableCell(
                         GenericSharedConstants.DATA_STORE_SERVER_WEB_APPLICATION_NAME + "/"
-                                + CHROMATOGRAM_SERVLET, IMAGE_WIDTH, IMAGE_HEIGHT, THUMBNAIL_WIDTH,
+                                + CHROMATOGRAM_SERVLET,
+                        IMAGE_WIDTH, IMAGE_HEIGHT, THUMBNAIL_WIDTH,
                         THUMBNAIL_HEIGHT);
 
-        imageCell.addParameter(EICMLChromatogramGeneratorServlet.DATASET_CODE_PARAM, datasetCode);
-        imageCell.addParameter(EICMLChromatogramGeneratorServlet.CHROMATOGRAM_CODE_PARAM,
-                chromatogram.getId());
+        imageCell.addParameter(DATASET_CODE_PARAM, datasetCode);
+        imageCell.addParameter(CHROMATOGRAM_CODE_PARAM, chromatogram.getId());
 
         String chromatogramLabel = chromatogram.getLabel();
         row.add(SimpleTableModelBuilder.asText(chromatogramLabel));
