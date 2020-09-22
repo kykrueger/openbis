@@ -2565,6 +2565,16 @@ public class SearchSampleTest extends AbstractSampleTest
 
         v3api.createSamples(sessionToken, Collections.singletonList(sampleCreation));
 
+        final SampleSearchCriteria criteriaEMatch = new SampleSearchCriteria();
+        criteriaEMatch.withProperty("TIMESTAMP").thatEquals("2020-02-09 10:00:00 +0100");
+        final List<Sample> samplesE = searchSamples(sessionToken, criteriaEMatch, new SampleFetchOptions());
+        assertSampleIdentifiers(samplesE, "/CISD/TIMESTAMP_PROPERTY_TEST");
+
+        final SampleSearchCriteria criteriaNEMatch = new SampleSearchCriteria();
+        criteriaNEMatch.withProperty("TIMESTAMP").thatEquals("2020-02-09 10:00:01 +0100");
+        final List<Sample> samplesNE = searchSamples(sessionToken, criteriaNEMatch, new SampleFetchOptions());
+        assertSampleIdentifiers(samplesNE);
+
         final SampleSearchCriteria criteriaLTMatch = new SampleSearchCriteria();
         criteriaLTMatch.withProperty("TIMESTAMP").thatIsLessThan("2020-02-09 11:00:00 +0100");
         final List<Sample> samplesLT = searchSamples(sessionToken, criteriaLTMatch, new SampleFetchOptions());

@@ -22,6 +22,7 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.cond
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.fail;
 
+import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -174,69 +175,22 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
                 "cannot be applied to the data type " + dataType);
     }
 
-    @DataProvider
-    protected Object[][] withDatePropertyExamples()
-    {
-        return new Object[][] {
-                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "== 2020-02-15", true },
-                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "== 2020-02-14", false },
-                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), ">= 2020-02-16", false },
-                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), ">= 2020-02-15", true },
-                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), ">= 2020-02-14", true },
-                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "<= 2020-02-16", true },
-                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "<= 2020-02-15", true },
-                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "<= 2020-02-14", false },
-                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "> 2020-02-16", false },
-                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "> 2020-02-15", false },
-                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "> 2020-02-14", true },
-                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "< 2020-02-16", true },
-                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "< 2020-02-15", false },
-                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "< 2020-02-14", false },
-        };
-    }
-
-    @Test(dataProvider = "withDatePropertyExamples")
-    public void testWithDateProperty(final DataType dataType, final Date value, final String queryString,
-            final boolean found)
+    @Test
+    public void testWithDatePropertyComparedToJavaDateThrowingException()
     {
         // Given
         final String sessionToken = v3api.login(TEST_USER, PASSWORD);
-        final PropertyTypePermId propertyTypeId = createAPropertyType(sessionToken, dataType);
-        final String formattedDate = dataType == DataType.DATE ? DATE_FORMAT.format(value)
-                : DATE_HOURS_MINUTES_SECONDS_FORMAT.format(value);
-        final ObjectPermId entityPermId = createEntity(sessionToken, propertyTypeId, formattedDate);
-        final AbstractEntitySearchCriteria<?> searchCriteria = createSearchCriteria();
-        new DateQueryInjector(searchCriteria, propertyTypeId, true).buildCriteria(queryString);
-
-        // When
-        final List<? extends IPermIdHolder> entities = search(sessionToken, searchCriteria);
-
-        // Then
-        assertEquals(entities.size(), found ? 1 : 0);
-        if (found)
-        {
-            assertEquals(entities.get(0).getPermId().toString(), entityPermId.getPermId());
-        }
-    }
-
-    @Test(dataProvider = "withDatePropertyExamples")
-    public void testWithDatePropertyComparedToJavaDateThrowingException(final DataType dataType, final Date value,
-            final String queryString, final boolean found)
-    {
-        // Given
-        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
-        final PropertyTypePermId propertyTypeId = createAPropertyType(sessionToken, dataType);
-        final String formattedDate = dataType == DataType.DATE ? DATE_FORMAT.format(value)
-                : DATE_HOURS_MINUTES_SECONDS_FORMAT.format(value);
+        final PropertyTypePermId propertyTypeId = createAPropertyType(sessionToken, DataType.DATE);
+        final String formattedDate = DATE_FORMAT.format(createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0));
         createEntity(sessionToken, propertyTypeId, formattedDate);
         final AbstractEntitySearchCriteria<?> searchCriteria = createSearchCriteria();
-        new DateQueryInjector(searchCriteria, propertyTypeId, false).buildCriteria(queryString);
+        new DateQueryInjector(searchCriteria, propertyTypeId, null).buildCriteria("== 2020-02-15");
 
         // When
         assertUserFailureException(aVoid -> search(sessionToken, searchCriteria),
                 // Then
                 String.format("Search criteria with time stamp doesn't make sense for property %s of data type %s.",
-                        propertyTypeId, dataType));
+                        propertyTypeId, DataType.DATE));
     }
 
     @DataProvider
@@ -262,13 +216,100 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
         // Given
         final String sessionToken = v3api.login(TEST_USER, PASSWORD);
         final PropertyTypePermId propertyTypeId = createAPropertyType(sessionToken, dataType);
-        final AbstractEntitySearchCriteria<?> searchCriteria = createSearchCriteria();
-        searchCriteria.withDateProperty(propertyTypeId.getPermId()).thatEquals("2020-02-15");
+        final AbstractEntitySearchCriteria<?> searchCriteria1 = createSearchCriteria();
+        searchCriteria1.withDateProperty(propertyTypeId.getPermId()).thatEquals("2020-02-15");
 
         // When
-        assertUserFailureException(aVoid -> search(sessionToken, searchCriteria),
+        assertUserFailureException(aVoid -> search(sessionToken, searchCriteria1),
                 // Then
                 "cannot be applied to the data type " + dataType);
+
+        // Given
+        final AbstractEntitySearchCriteria<?> searchCriteria2 = createSearchCriteria();
+        searchCriteria2.withDateProperty(propertyTypeId.getPermId()).thatEquals("2020-02-15 10:00:00");
+
+        // When
+        assertUserFailureException(aVoid -> search(sessionToken, searchCriteria2),
+                // Then
+                "cannot be applied to the data type " + dataType);
+    }
+
+    @DataProvider
+    protected Object[][] withDateOrTimestampPropertyExamples()
+    {
+        return new Object[][] {
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "== 2020-02-15", true },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "== 2020-02-14", false },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), ">= 2020-02-16", false },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), ">= 2020-02-15", true },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), ">= 2020-02-14", true },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "<= 2020-02-16", true },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "<= 2020-02-15", true },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "<= 2020-02-14", false },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "> 2020-02-16", false },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "> 2020-02-15", false },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "> 2020-02-14", true },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "< 2020-02-16", true },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "< 2020-02-15", false },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "< 2020-02-14", false },
+
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "== 2020-02-15 10:00:01", true },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "== 2020-02-15 10:00:00", false },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), ">= 2020-02-15 10:00:02", false },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), ">= 2020-02-15 10:00:01", true },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), ">= 2020-02-15 10:00:00", true },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "<= 2020-02-15 10:00:02", true },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "<= 2020-02-15 10:00:01", true },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "<= 2020-02-15 10:00:00", false },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "> 2020-02-15 10:00:02", false },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "> 2020-02-15 10:00:01", false },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "> 2020-02-15 10:00:00", true },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "< 2020-02-15 10:00:02", true },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "< 2020-02-15 10:00:01", false },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "< 2020-02-15 10:00:00", false },
+        };
+    }
+
+    @Test(dataProvider = "withDateOrTimestampPropertyExamples")
+    public void testWithDateOrTimestampProperty(final DataType dataType, final Date value, final String queryString,
+            final boolean found)
+    {
+        // Given
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        final PropertyTypePermId propertyTypeId = createAPropertyType(sessionToken, dataType);
+        final DateFormat dateFormat = dataType == DataType.DATE ? DATE_FORMAT : DATE_HOURS_MINUTES_SECONDS_FORMAT;
+        final String formattedValue = dateFormat.format(value);
+
+        final ObjectPermId entityPermId = createEntity(sessionToken, propertyTypeId, formattedValue);
+        final AbstractEntitySearchCriteria<?> searchCriteria1 = createSearchCriteria();
+        new DateQueryInjector(searchCriteria1, propertyTypeId, dateFormat).buildCriteria(queryString);
+
+        // When
+        final List<? extends IPermIdHolder> entities1 = search(sessionToken, searchCriteria1);
+
+        // Then
+        assertEquals(entities1.size(), found ? 1 : 0);
+        if (found)
+        {
+            assertEquals(entities1.get(0).getPermId().toString(), entityPermId.getPermId());
+        }
+
+        if (dataType == DataType.TIMESTAMP)
+        {
+            // Given
+            final AbstractEntitySearchCriteria<?> searchCriteria2 = createSearchCriteria();
+            new DateQueryInjector(searchCriteria2, propertyTypeId, null).buildCriteria(queryString);
+
+            // When
+            final List<? extends IPermIdHolder> entities2 = search(sessionToken, searchCriteria2);
+
+            // Then
+            assertEquals(entities2.size(), found ? 1 : 0);
+            if (found)
+            {
+                assertEquals(entities2.get(0).getPermId().toString(), entityPermId.getPermId());
+            }
+        }
     }
 
     private Date createDate(final int year, final int month, final int date, final int hrs, final int min,
@@ -327,7 +368,7 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
             Map<String, Operator> operators = Operator.asMap();
             for (String term : terms)
             {
-                String[] termParts = term.trim().split(" ");
+                String[] termParts = term.trim().split(" ", 2);
                 if (termParts.length != 2)
                 {
                     failQuery(queryString, "Invalid term '" + term.trim() + "'.");
@@ -401,13 +442,13 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
     private static final class DateQueryInjector extends AbstractQueryInjector
     {
 
-        private final boolean asString;
+        private final DateFormat dateFormat;
 
         DateQueryInjector(final AbstractEntitySearchCriteria<?> searchCriteria,
-                final PropertyTypePermId propertyTypeId, final boolean asString)
+                final PropertyTypePermId propertyTypeId, final DateFormat dateFormat)
         {
             super(searchCriteria, propertyTypeId);
-            this.asString = asString;
+            this.dateFormat = dateFormat;
         }
 
         @Override
@@ -416,9 +457,9 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
             final Date date = parseDate(operand);
             final DatePropertySearchCriteria criteria = searchCriteria.withDateProperty(propertyTypeId.getPermId());
 
-            if (asString)
+            if (dateFormat != null)
             {
-                final String dateStr = DATE_FORMAT.format(date);
+                final String dateStr = dateFormat.format(date);
                 switch (operator)
                 {
                     case EQUAL:
