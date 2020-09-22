@@ -494,7 +494,7 @@ public class DataStoreServerBasedDataSourceProviderTest extends AbstractFileSyst
             fail("ConfigurationFailureException expected");
         } catch (ConfigurationFailureException e)
         {
-            assertEquals(HEADER_LINE_OF_ERROR_MESSAGE + expectedErrorMessage, e.getMessage());
+            assertTrue(e.getMessage(), (HEADER_LINE_OF_ERROR_MESSAGE + expectedErrorMessage).startsWith(e.getMessage()));
         }
         context.assertIsSatisfied();
     }
