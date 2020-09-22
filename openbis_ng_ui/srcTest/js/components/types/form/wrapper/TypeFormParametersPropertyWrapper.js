@@ -1,9 +1,11 @@
 import AutocompleterField from '@src/js/components/common/form/AutocompleterField.jsx'
 import SelectField from '@src/js/components/common/form/SelectField.jsx'
 import TextField from '@src/js/components/common/form/TextField.jsx'
+import CheckboxField from '@src/js/components/common/form/CheckboxField.jsx'
 import Message from '@src/js/components/common/form/Message.jsx'
 import TextFieldWrapper from '@srcTest/js/components/common/form/wrapper/TextFieldWrapper.js'
 import SelectFieldWrapper from '@srcTest/js/components/common/form/wrapper/SelectFieldWrapper.js'
+import CheckboxFieldWrapper from '@srcTest/js/components/common/form/wrapper/CheckboxFieldWrapper.js'
 import AutocompleterFieldWrapper from '@srcTest/js/components/common/form/wrapper/AutocompleterFieldWrapper.js'
 import MessageWrapper from '@srcTest/js/components/common/form/wrapper/MessageWrapper.js'
 import TypeFormParametersCommonWrapper from './TypeFormParametersCommonWrapper.js'
@@ -91,6 +93,18 @@ export default class TypeFormParametersPropertyWrapper extends TypeFormParameter
     )
   }
 
+  getMandatory() {
+    return new CheckboxFieldWrapper(
+      this.findComponent(CheckboxField).filter({ name: 'mandatory' })
+    )
+  }
+
+  getVisible() {
+    return new CheckboxFieldWrapper(
+      this.findComponent(CheckboxField).filter({ name: 'showInEditView' })
+    )
+  }
+
   toJSON() {
     return {
       ...super.toJSON(),
@@ -104,7 +118,9 @@ export default class TypeFormParametersPropertyWrapper extends TypeFormParameter
       vocabulary: this.getVocabulary().toJSON(),
       materialType: this.getMaterialType().toJSON(),
       schema: this.getSchema().toJSON(),
-      transformation: this.getTransformation().toJSON()
+      transformation: this.getTransformation().toJSON(),
+      mandatory: this.getMandatory().toJSON(),
+      visible: this.getVisible().toJSON()
     }
   }
 }
