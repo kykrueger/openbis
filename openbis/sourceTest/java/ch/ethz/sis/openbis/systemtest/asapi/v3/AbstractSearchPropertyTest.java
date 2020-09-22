@@ -233,10 +233,42 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
         new DateQueryInjector(searchCriteria, propertyTypeId, false).buildCriteria(queryString);
 
         // When
-        assertUserFailureException(Void -> search(sessionToken, searchCriteria),
+        assertUserFailureException(aVoid -> search(sessionToken, searchCriteria),
                 // Then
                 String.format("Search criteria with time stamp doesn't make sense for property %s of data type %s.",
                         propertyTypeId, dataType));
+    }
+
+    @DataProvider
+    protected Object[][] withDatePropertyThrowingExceptionExamples()
+    {
+        return new Object[][] {
+                { DataType.REAL },
+                { DataType.INTEGER },
+                { DataType.BOOLEAN },
+                { DataType.VARCHAR },
+                { DataType.MULTILINE_VARCHAR },
+                { DataType.XML },
+                { DataType.HYPERLINK },
+                { DataType.CONTROLLEDVOCABULARY },
+                { DataType.SAMPLE },
+                { DataType.MATERIAL },
+        };
+    }
+
+    @Test(dataProvider = "withDatePropertyThrowingExceptionExamples")
+    public void testWithDatePropertyThrowingException(final DataType dataType)
+    {
+        // Given
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        final PropertyTypePermId propertyTypeId = createAPropertyType(sessionToken, dataType);
+        final AbstractEntitySearchCriteria<?> searchCriteria = createSearchCriteria();
+        searchCriteria.withDateProperty(propertyTypeId.getPermId()).thatEquals("2020-02-15");
+
+        // When
+        assertUserFailureException(aVoid -> search(sessionToken, searchCriteria),
+                // Then
+                "cannot be applied to the data type " + dataType);
     }
 
     private Date createDate(final int year, final int month, final int date, final int hrs, final int min,
