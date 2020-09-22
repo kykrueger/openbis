@@ -183,8 +183,8 @@ public class RsyncArchiverTest extends AbstractArchiverTestCase
         AssertionUtil.assertContainsLines("INFO  OPERATION.AbstractDatastorePlugin - "
                 + "Unarchiving of the following datasets has been requested: [Dataset 'ds1']", logRecorder.getLogContent());
         assertEquals("[]", status.getErrorStatuses().toString());
-        assertEquals("{class=" + ShareFinder.class.getName() + "\np1=property 1}",
-                ShareFinder.properties.toString());
+        assertEquals(ShareFinder.class.getName(), ShareFinder.properties.getProperty("class"));
+        assertEquals("property 1", ShareFinder.properties.getProperty("p1"));
         assertEquals("ds1", ShareFinder.recordedDataSet.getDataSetCode());
         assertEquals("loc1", ShareFinder.recordedDataSet.getDataSetLocation());
         assertEquals(null, ShareFinder.recordedDataSet.getDataSetShareId());

@@ -22,8 +22,7 @@ public class ExceptionUtils
 {
     public static RuntimeException create(IOperationContext context, Throwable t)
     {
-        if (    t instanceof UserFailureException ||
-                t instanceof IllegalArgumentException)
+        if (t instanceof UserFailureException)
         {
             return new UserFailureException(createMessage(context, t), t);
         }
