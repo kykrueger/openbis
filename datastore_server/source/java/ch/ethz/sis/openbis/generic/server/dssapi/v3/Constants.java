@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 ETH Zuerich, CISD
+ * Copyright 2020 ETH Zuerich, SIS
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-package ch.systemsx.cisd.imagereaders;
+package ch.ethz.sis.openbis.generic.server.dssapi.v3;
 
 /**
- * Constants to be used when working with the image readers API.
- * 
- * @author Kaloyan Enimanev
+ * @author Franz-Josef Elmer
+ *
  */
-public final class ImageReaderConstants
+public class Constants
 {
 
-    public static final String BIOFORMATS_LIBRARY = "BioFormats";
+    /**
+     * Name of this service for which it is registered as Spring bean
+     */
+    public static final String INTERNAL_SERVICE_NAME = "data-store-server_INTERNAL";
+    public static final String INTERNAL_BEAN_NAME = "v3-exporter";
 
-    public static final String IMAGEIO_LIBRARY = "ImageIO";
-
-    public static final String IMAGEJ_LIBRARY = "IJ";
 }

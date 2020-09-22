@@ -28,7 +28,6 @@ import ch.systemsx.cisd.common.shared.basic.string.StringUtils;
 import ch.systemsx.cisd.imagereaders.bioformats.BioFormatsReaderLibrary;
 import ch.systemsx.cisd.imagereaders.ij.ImageJReaderLibrary;
 import ch.systemsx.cisd.imagereaders.imageio.ImageIOReaderLibrary;
-import ch.systemsx.cisd.imagereaders.jai.JAIReaderLibrary;
 
 /**
  * A class that facilitates unit testing with JDK 1.5.
@@ -52,8 +51,6 @@ public class ImageReadersTestHelper
                 "ch.systemsx.cisd.imagereaders.imageio.ImageIOReaderLibrary");
         librariesByName.put(ImageReaderConstants.IMAGEJ_LIBRARY,
                 "ch.systemsx.cisd.imagereaders.ij.ImageJReaderLibrary");
-        librariesByName.put(ImageReaderConstants.JAI_LIBRARY,
-                "ch.systemsx.cisd.imagereaders.jai.JAIReaderLibrary");
         librariesByName.put(ImageReaderConstants.BIOFORMATS_LIBRARY,
                 "ch.systemsx.cisd.imagereaders.bioformats.BioFormatsReaderLibrary");
     }
@@ -132,7 +129,6 @@ public class ImageReadersTestHelper
     {
         printReaders(new ImageJReaderLibrary());
         printReaders(new ImageIOReaderLibrary());
-        printReaders(new JAIReaderLibrary());
         printReaders(new BioFormatsReaderLibrary());
     }
 

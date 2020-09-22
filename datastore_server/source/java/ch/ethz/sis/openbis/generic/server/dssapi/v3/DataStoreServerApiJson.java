@@ -47,7 +47,7 @@ public class DataStoreServerApiJson implements IDataStoreServerApi
      */
     public static final String INTERNAL_SERVICE_NAME = "data-store-server-json_INTERNAL";
 
-    @Resource(name = DataStoreServerApi.INTERNAL_SERVICE_NAME)
+    @Resource(name = Constants.INTERNAL_SERVICE_NAME)
     private IDataStoreServerApi api;
 
     @Override

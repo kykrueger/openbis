@@ -30,9 +30,8 @@ import com.marathon.util.spring.StreamSupportingHttpInvokerServiceExporter;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.openbis.generic.dssapi.v3.IDataStoreServerApi;
-import ch.ethz.sis.openbis.generic.server.dssapi.v3.DataStoreServerApi;
+import ch.ethz.sis.openbis.generic.server.dssapi.v3.Constants;
 import ch.ethz.sis.openbis.generic.server.dssapi.v3.DataStoreServerApiJsonServer;
-import ch.ethz.sis.openbis.generic.server.dssapi.v3.DataStoreServerApiServer;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.content.IContentCache;
@@ -140,7 +139,7 @@ public class ServiceProvider
 
     public static IDataStoreServerApi getV3DataStoreService()
     {
-        return ((IDataStoreServerApi) getApplicationContext().getBean(DataStoreServerApi.INTERNAL_SERVICE_NAME));
+        return ((IDataStoreServerApi) getApplicationContext().getBean(Constants.INTERNAL_SERVICE_NAME));
     }
 
     public static IGeneralInformationService getGeneralInformationService()
@@ -197,12 +196,12 @@ public class ServiceProvider
 
     public static IDataStoreServerApi getDssServiceInternalV3()
     {
-        return ((IDataStoreServerApi) getApplicationContext().getBean(DataStoreServerApi.INTERNAL_SERVICE_NAME));
+        return ((IDataStoreServerApi) getApplicationContext().getBean(Constants.INTERNAL_SERVICE_NAME));
     }
 
     public static HttpInvokerServiceExporter getDssServiceV3()
     {
-        return ((HttpInvokerServiceExporter) getApplicationContext().getBean(DataStoreServerApiServer.INTERNAL_BEAN_NAME));
+        return ((HttpInvokerServiceExporter) getApplicationContext().getBean(Constants.INTERNAL_BEAN_NAME));
     }
 
     public static JsonServiceExporter getDssServiceJsonV3()
