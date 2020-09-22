@@ -2507,13 +2507,6 @@ public class SearchSampleTest extends AbstractSampleTest
                 String.format("Search criteria with time stamp doesn't make sense for property %s of data type %s.",
                         "DATE", DataType.DATE));
 
-//        final SampleSearchCriteria criteriaTimestampMatch2 = new SampleSearchCriteria();
-//        criteriaTimestampMatch2.withProperty("DATE").thatIsGreaterThanOrEqualTo("2020-02-08 10:00:00 +0100");
-//        assertUserFailureException(
-//                Void -> searchSamples(sessionToken, criteriaTimestampMatch2, emptyFetchOptions),
-//                String.format("Search criteria with time stamp doesn't make sense for property %s of data type %s.",
-//                        "DATE", DataType.DATE));
-
         final SampleSearchCriteria criteriaMatchNotDate = new SampleSearchCriteria();
         criteriaMatchNotDate.withProperty("DATE").thatEquals("blabla");
         assertUserFailureException(
