@@ -131,6 +131,7 @@ public class ConvertToolImageTransformer implements IStreamingImageTransformer
         {
             byte[] input = ImageUtil.imageToPngFast(image);
             byte[] output = transform(input);
+            operationLog.info("transformed " + input.length + " input bytes to " + output.length + " output bytes.");
             return toBufferedImage(output);
         } catch (IOException ioex)
         {
@@ -200,7 +201,8 @@ public class ConvertToolImageTransformer implements IStreamingImageTransformer
                     String.format(
                             "Error calling '%s'. Exit value: %d, I/O status: %s\nError output: %s",
                             getCommandLine().toString(), result.getExitValue(), result
-                                    .getProcessIOResult().getStatus(), errorLines.toString());
+                                    .getProcessIOResult().getStatus(),
+                            errorLines.toString());
             operationLog.warn(msg);
             throw new IOException(msg);
         }
@@ -213,7 +215,7 @@ public class ConvertToolImageTransformer implements IStreamingImageTransformer
             {
 
                 @Override
-                public void handle(AtomicBoolean processRunning, IActivityObserver activityObserver, 
+                public void handle(AtomicBoolean processRunning, IActivityObserver activityObserver,
                         OutputStream stdin, InputStream stdout, InputStream stderr) throws IOException
                 {
                     int n = 0;

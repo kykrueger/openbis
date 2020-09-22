@@ -1651,6 +1651,11 @@ public class SearchSampleTest extends AbstractSampleTest
         // Greater or Equals - Giving integer as real
         SampleSearchCriteria criteriaGOE = new SampleSearchCriteria();
         criteriaGOE.withNumberProperty("SIZE").thatIsGreaterThanOrEqualTo(321.0);
+        List<Sample> samplesGOE1 = searchSamples(sessionToken, criteriaGOE, sortByCodeFO);
+        assertSampleIdentifiersInOrder(samplesGOE1, "/CISD/3VCP7", "/CISD/CP-TEST-2", "/CISD/CP-TEST-3");
+
+        criteriaGOE = new SampleSearchCriteria();
+        criteriaGOE.withNumberProperty("SIZE").thatIsGreaterThanOrEqualTo(320.9);
         List<Sample> samplesGOE = searchSamples(sessionToken, criteriaGOE, sortByCodeFO);
         assertSampleIdentifiersInOrder(samplesGOE, "/CISD/3VCP7", "/CISD/CP-TEST-2", "/CISD/CP-TEST-3");
 

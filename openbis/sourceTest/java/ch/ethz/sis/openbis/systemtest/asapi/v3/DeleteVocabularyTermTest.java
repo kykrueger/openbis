@@ -115,7 +115,7 @@ public class DeleteVocabularyTermTest extends AbstractVocabularyTermTest
         assertVocabularyTermPermIds(terms, termIdA, termIdB);
     }
 
-    @DataProvider(name = "testDeleteTermFromInternallyManagedVocabulary")
+    @DataProvider
     public Object[][] providerTestDeleteTermFromInternallyManagedVocabulary()
     {
         return new Object[][] {
@@ -123,11 +123,11 @@ public class DeleteVocabularyTermTest extends AbstractVocabularyTermTest
                 { TEST_INSTANCE_ETLSERVER, true },
                 { TEST_INSTANCE_OBSERVER, false },
                 { TEST_SPACE_USER, false },
-                { TEST_SPACE_ETLSERVER_TESTSPACE, true },
+                { TEST_SPACE_ETLSERVER_TESTSPACE, false }
         };
     }
 
-    @Test(dataProvider = "testDeleteTermFromInternallyManagedVocabulary")
+    @Test(dataProvider = "providerTestDeleteTermFromInternallyManagedVocabulary")
     public void testDeleteTermFromInternallyManagedVocabulary(String user, boolean allowed)
     {
         String adminSessionToken = v3api.login(TEST_USER, PASSWORD);

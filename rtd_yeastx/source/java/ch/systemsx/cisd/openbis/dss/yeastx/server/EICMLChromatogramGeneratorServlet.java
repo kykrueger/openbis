@@ -35,6 +35,7 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
 import ch.systemsx.cisd.yeastx.db.DBUtils;
 import ch.systemsx.cisd.yeastx.eicml.ChromatogramDTO;
 import ch.systemsx.cisd.yeastx.eicml.EICMLChromatogramImageGenerator;
+import ch.systemsx.cisd.yeastx.eicml.EICMLChromatogramImagesReporter;
 import ch.systemsx.cisd.yeastx.eicml.IEICMSRunDAO;
 
 /**
@@ -47,9 +48,9 @@ public class EICMLChromatogramGeneratorServlet extends AbstractDatasetDownloadSe
 
     // Required servlet parameters
 
-    public final static String DATASET_CODE_PARAM = "dataset";
+    public final static String DATASET_CODE_PARAM = EICMLChromatogramImagesReporter.DATASET_CODE_PARAM;
 
-    public final static String CHROMATOGRAM_CODE_PARAM = "chromatogram";
+    public final static String CHROMATOGRAM_CODE_PARAM = EICMLChromatogramImagesReporter.CHROMATOGRAM_CODE_PARAM;
 
     // Optional, but recommended servlet parameters
 

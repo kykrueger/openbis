@@ -20,12 +20,11 @@ import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
@@ -33,7 +32,6 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.reflections.ReflectionUtils;
 import org.reflections.Reflections;
-import org.reflections.scanners.ResourcesScanner;
 import org.reflections.scanners.SubTypesScanner;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
@@ -61,31 +59,29 @@ public class ApiClassesProvider
             "ch.ethz.sis.openbis.generic.asapi.v3"
     };
 
-    private static final Set<Class<?>> NON_SERIALIZABLE_CLASSES = 
-            new HashSet<>(Arrays.asList(FastDownloader.class, FastDownloadResult.class, FastDownloadUtils.class, 
+    private static final Set<Class<?>> NON_SERIALIZABLE_CLASSES =
+            new HashSet<>(Arrays.asList(FastDownloader.class, FastDownloadResult.class, FastDownloadUtils.class,
                     SampleIdDeserializer.class));
 
     public static Collection<Class<?>> getPublicClasses()
     {
-        List<ClassLoader> classLoadersList = new LinkedList<ClassLoader>();
-        classLoadersList.add(ClasspathHelper.contextClassLoader());
-        classLoadersList.add(ClasspathHelper.staticClassLoader());
-
-        SubTypesScanner subTypesScanner = new SubTypesScanner();
-        subTypesScanner.filterResultsBy(new FilterBuilder().include(".*"));
-
         FilterBuilder filterBuilder = new FilterBuilder();
-        for (String v3PublicPackage : PUBLIC_PACKAGES)
+        Set<URL> urls = new HashSet<URL>();
+
+        for (String prefix : PUBLIC_PACKAGES)
         {
-            filterBuilder.include(FilterBuilder.prefix(v3PublicPackage));
+            urls.addAll(ClasspathHelper.forPackage(prefix));
+            filterBuilder.include(FilterBuilder.prefix(prefix));
         }
 
-        Reflections reflections = new Reflections(new ConfigurationBuilder()
-                .setScanners(subTypesScanner, new ResourcesScanner())
-                .setUrls(ClasspathHelper.forClassLoader(classLoadersList.toArray(new ClassLoader[0])))
-                .filterInputsBy(filterBuilder));
+        ConfigurationBuilder configBuilder = new ConfigurationBuilder();
+        configBuilder.setScanners(new SubTypesScanner(false));
+        configBuilder.addUrls(urls);
+        configBuilder.filterInputsBy(filterBuilder);
 
-        Multimap<String, String> map = reflections.getStore().get(subTypesScanner.getClass().getSimpleName());
+        Reflections reflections = new Reflections(configBuilder);
+
+        Multimap<String, String> map = reflections.getStore().get(SubTypesScanner.class.getSimpleName());
 
         Collection<String> nonInnerClassesAndTestClasses = Collections2.filter(map.values(), new Predicate<String>()
             {

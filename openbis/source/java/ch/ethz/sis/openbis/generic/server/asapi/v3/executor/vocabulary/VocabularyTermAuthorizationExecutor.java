@@ -48,7 +48,7 @@ public class VocabularyTermAuthorizationExecutor implements IVocabularyTermAutho
     }
 
     @Override
-    @RolesAllowed({ RoleWithHierarchy.PROJECT_POWER_USER, RoleWithHierarchy.SPACE_ETL_SERVER })
+    @RolesAllowed({ RoleWithHierarchy.INSTANCE_ADMIN, RoleWithHierarchy.INSTANCE_ETL_SERVER })
     @Capability("CREATE_OFFICIAL_VOCABULARY_TERM")
     public void canCreateOfficial(IOperationContext context)
     {
@@ -70,7 +70,7 @@ public class VocabularyTermAuthorizationExecutor implements IVocabularyTermAutho
     }
 
     @Override
-    @RolesAllowed({ RoleWithHierarchy.PROJECT_POWER_USER, RoleWithHierarchy.SPACE_ETL_SERVER })
+    @RolesAllowed({ RoleWithHierarchy.INSTANCE_ADMIN, RoleWithHierarchy.INSTANCE_ETL_SERVER })
     @Capability("UPDATE_OFFICIAL_VOCABULARY_TERM")
     public void canUpdateOfficial(IOperationContext context)
     {
@@ -90,8 +90,8 @@ public class VocabularyTermAuthorizationExecutor implements IVocabularyTermAutho
 
         for (RoleAssignmentPE role : roles)
         {
-            if (RoleCode.ETL_SERVER.equals(role.getRole())
-                    || (RoleCode.ADMIN.equals(role.getRole()) && role.getRoleWithHierarchy().isInstanceLevel()))
+            if ((RoleCode.ETL_SERVER.equals(role.getRole()) || RoleCode.ADMIN.equals(role.getRole()))
+                    && role.getRoleWithHierarchy().isInstanceLevel())
             {
                 return true;
             }
@@ -102,7 +102,7 @@ public class VocabularyTermAuthorizationExecutor implements IVocabularyTermAutho
 
     @Override
     @DatabaseCreateOrDeleteModification(value = { ObjectKind.VOCABULARY_TERM, ObjectKind.DELETION })
-    @RolesAllowed({ RoleWithHierarchy.PROJECT_POWER_USER, RoleWithHierarchy.SPACE_ETL_SERVER })
+    @RolesAllowed({ RoleWithHierarchy.INSTANCE_ADMIN, RoleWithHierarchy.INSTANCE_ETL_SERVER })
     @Capability("DELETE_VOCABULARY_TERM")
     public void canDelete(IOperationContext context, IVocabularyTermId id, VocabularyTermPE term)
     {
