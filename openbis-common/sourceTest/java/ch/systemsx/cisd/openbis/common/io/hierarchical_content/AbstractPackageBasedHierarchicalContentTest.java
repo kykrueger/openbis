@@ -110,12 +110,11 @@ public abstract class AbstractPackageBasedHierarchicalContentTest extends Abstra
         assertEquals(-2098219814, hdf5Node.getChecksumCRC32());
         assertEquals(537641, hdf5Node.getFileLength());
 
-        // allow 1 second difference as de.schlichtherle.util.zip.ZipEntry.setTime()
+        // allow 2 second difference as de.schlichtherle.util.zip.ZipEntry.setTime()
         // method may cause such a side effect due to some OS compatibility conversion
         File dataRoot = new File(workingDirectory, "data");
         File originalHdf5ContainerFile = new File(dataRoot, "my-container.h5");
-        System.out.println(originalHdf5ContainerFile.lastModified() +" "+ hdf5Node.getLastModified());
-        assertTrue(Math.abs(originalHdf5ContainerFile.lastModified() - hdf5Node.getLastModified()) <= 1000);
+        assertTrue(Math.abs(originalHdf5ContainerFile.lastModified() - hdf5Node.getLastModified()) <= 2000);
     }
 
     private void assertDirectoryNode(String expectedPath, String expectedName, IHierarchicalContentNode node)
