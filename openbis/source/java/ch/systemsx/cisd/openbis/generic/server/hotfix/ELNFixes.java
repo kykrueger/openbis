@@ -23,6 +23,7 @@ public class ELNFixes {
         IApplicationServerInternalApi api = CommonServiceProvider.getApplicationServerApi();
         String sessionToken = api.loginAsSystem();
         storageValidationLevelFix(sessionToken, api);
+        operationLog.info("ELNFixes beforeUpgrade FINISH");
     }
 
     private static final String STORAGE_VALIDATION_LEVEL_PROPERTY_CODE = "$STORAGE.STORAGE_VALIDATION_LEVEL";
@@ -48,6 +49,9 @@ public class ELNFixes {
             }
         }
 
-        api.updateSamples(sessionToken, storageUpdates);
+        if (!storageUpdates.isEmpty()) {
+            api.updateSamples(sessionToken, storageUpdates);
+        }
+        operationLog.info("ELNFixes storageValidationLevelFix: " + storageUpdates.size());
     }
 }
