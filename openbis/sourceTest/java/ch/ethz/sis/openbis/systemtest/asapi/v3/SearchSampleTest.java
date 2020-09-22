@@ -2613,11 +2613,9 @@ public class SearchSampleTest extends AbstractSampleTest
         assertSampleIdentifiers(samplesGED, "/CISD/TIMESTAMP_PROPERTY_TEST");
 
         final SampleSearchCriteria criteriaDateMatch = new SampleSearchCriteria();
-        criteriaDateMatch.withDateProperty("TIMESTAMP").thatIsLaterThanOrEqualTo("2020-02-08");
-        assertUserFailureException(
-                Void -> searchSamples(sessionToken, criteriaDateMatch, new SampleFetchOptions()),
-                String.format("Search criteria with date doesn't make sense for property %s of data type %s.",
-                        "TIMESTAMP", DataType.TIMESTAMP));
+        criteriaDateMatch.withDateProperty("TIMESTAMP").thatIsLaterThanOrEqualTo("2020-02-09");
+        final List<Sample> samplesGEDD = searchSamples(sessionToken, criteriaDateMatch, new SampleFetchOptions());
+        assertSampleIdentifiers(samplesGEDD, "/CISD/TIMESTAMP_PROPERTY_TEST");
     }
 
     @Test
