@@ -97,7 +97,7 @@ public class BooleanFieldSearchConditionTranslator implements IConditionTranslat
         final String entityTypesSubTableAlias = joinInformation.getSubTableAlias();
 
         sqlBuilder.append(entityTypesSubTableAlias).append(PERIOD).append(joinInformation.getSubTableIdField())
-                .append(SP).append(IS_NOT_NULL).append(SP).append(AND).append(SP);
+                .append(SP).append(IS_NOT_NULL).append(SP).append(AND).append(SP).append(LP);
 
         if (value != null)
         {
@@ -118,6 +118,8 @@ public class BooleanFieldSearchConditionTranslator implements IConditionTranslat
                     .append(BOOLEAN).append(SP).append(EQ).append(SP).append(QU).append(SP).append(END);
             args.add(value);
         }
+
+        sqlBuilder.append(RP);
     }
 
 }
