@@ -16,12 +16,18 @@
 
 package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCriteriaTranslator.DATE_FORMAT;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCriteriaTranslator.DATE_HOURS_MINUTES_SECONDS_FORMAT;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils.parseDate;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.fail;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DatePropertySearchCriteria;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -121,7 +127,7 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
         // Given
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
         PropertyTypePermId propertyTypeId = createAPropertyType(sessionToken, dataType);
-        ObjectPermId entityPermId = createEntity(sessionToken, propertyTypeId, value);
+        ObjectPermId entityPermId = createEntity(sessionToken, propertyTypeId, value.toString());
         AbstractEntitySearchCriteria<?> searchCriteria = createSearchCriteria();
         new NumberQueryInjector(searchCriteria, propertyTypeId).buildCriteria(queryString);
 
@@ -166,13 +172,73 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
         assertUserFailureException(Void -> search(sessionToken, searchCriteria),
                 // Then
                 "cannot be applied to the data type " + dataType);
-
     }
 
-    private ObjectPermId createEntity(String sessionToken, PropertyTypePermId propertyTypeId, Object value)
+    @DataProvider
+    protected Object[][] withDatePropertyExamples()
+    {
+        return new Object[][] {
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "== 2020-02-15", true },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "== 2020-02-14", false },
+        };
+    }
+
+    @Test(dataProvider = "withDatePropertyExamples")
+    public void testWithDateProperty(final DataType dataType, final Date value, final String queryString,
+            final boolean found)
+    {
+        // Given
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        final PropertyTypePermId propertyTypeId = createAPropertyType(sessionToken, dataType);
+        final String formattedDate = dataType == DataType.DATE ? DATE_FORMAT.format(value)
+                : DATE_HOURS_MINUTES_SECONDS_FORMAT.format(value);
+        final ObjectPermId entityPermId = createEntity(sessionToken, propertyTypeId, formattedDate);
+        final AbstractEntitySearchCriteria<?> searchCriteria = createSearchCriteria();
+        new DateQueryInjector(searchCriteria, propertyTypeId, true).buildCriteria(queryString);
+
+        // When
+        final List<? extends IPermIdHolder> entities = search(sessionToken, searchCriteria);
+
+        // Then
+        assertEquals(entities.size(), found ? 1 : 0);
+        if (found)
+        {
+            assertEquals(entities.get(0).getPermId().toString(), entityPermId.getPermId());
+        }
+    }
+
+    @Test(dataProvider = "withDatePropertyExamples")
+    public void testWithDatePropertyComparedToJavaDateThrowingException(final DataType dataType, final Date value,
+            final String queryString, final boolean found)
+    {
+        // Given
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        final PropertyTypePermId propertyTypeId = createAPropertyType(sessionToken, dataType);
+        final String formattedDate = dataType == DataType.DATE ? DATE_FORMAT.format(value)
+                : DATE_HOURS_MINUTES_SECONDS_FORMAT.format(value);
+        createEntity(sessionToken, propertyTypeId, formattedDate);
+        final AbstractEntitySearchCriteria<?> searchCriteria = createSearchCriteria();
+        new DateQueryInjector(searchCriteria, propertyTypeId, false).buildCriteria(queryString);
+
+        // When
+        assertUserFailureException(Void -> search(sessionToken, searchCriteria),
+                // Then
+                String.format("Search criteria with time stamp doesn't make sense for property %s of data type %s.",
+                        propertyTypeId, dataType));
+    }
+
+    private Date createDate(final int year, final int month, final int date, final int hrs, final int min,
+            final int sec)
+    {
+        final Calendar calendar = Calendar.getInstance();
+        calendar.set(year, month, date, hrs, min, sec);
+        return calendar.getTime();
+    }
+
+    private ObjectPermId createEntity(String sessionToken, PropertyTypePermId propertyTypeId, String value)
     {
         EntityTypePermId entityTypeId = createEntityType(sessionToken, propertyTypeId);
-        return createEntity(sessionToken, "ENTITY_TO_BE_DELETED", entityTypeId, propertyTypeId.getPermId(), value.toString());
+        return createEntity(sessionToken, "ENTITY_TO_BE_DELETED", entityTypeId, propertyTypeId.getPermId(), value);
     }
 
     protected abstract EntityTypePermId createEntityType(String sessionToken, PropertyTypePermId propertyTypeId);
@@ -286,6 +352,98 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
                     throw new IllegalArgumentException("Unsupported operator " + operator);
             }
         }
+    }
+
+    private static final class DateQueryInjector extends AbstractQueryInjector
+    {
+
+        private final boolean asString;
+
+        DateQueryInjector(final AbstractEntitySearchCriteria<?> searchCriteria,
+                final PropertyTypePermId propertyTypeId, final boolean asString)
+        {
+            super(searchCriteria, propertyTypeId);
+            this.asString = asString;
+        }
+
+        @Override
+        protected void injectQuery(final Operator operator, final String operand)
+        {
+            final Date date = parseDate(operand);
+            final DatePropertySearchCriteria criteria = searchCriteria.withDateProperty(propertyTypeId.getPermId());
+
+            if (asString)
+            {
+                final String dateStr = DATE_FORMAT.format(date);
+                switch (operator)
+                {
+                    case EQUAL:
+                    {
+                        criteria.thatEquals(dateStr);
+                        break;
+                    }
+                    case GREATER:
+                    {
+                        criteria.thatIsLaterThan(dateStr);
+                        break;
+                    }
+                    case GREATER_OR_EQUAL:
+                    {
+                        criteria.thatIsLaterThanOrEqualTo(dateStr);
+                        break;
+                    }
+                    case LESS:
+                    {
+                        criteria.thatIsEarlierThan(dateStr);
+                        break;
+                    }
+                    case LESS_OR_EQUAL:
+                    {
+                        criteria.thatIsEarlierThanOrEqualTo(dateStr);
+                        break;
+                    }
+                    default:
+                    {
+                        throw new IllegalArgumentException("Unsupported operator " + operator);
+                    }
+                }
+            } else
+            {
+                switch (operator)
+                {
+                    case EQUAL:
+                    {
+                        criteria.thatEquals(date);
+                        break;
+                    }
+                    case GREATER:
+                    {
+                        criteria.thatIsLaterThan(date);
+                        break;
+                    }
+                    case GREATER_OR_EQUAL:
+                    {
+                        criteria.thatIsLaterThanOrEqualTo(date);
+                        break;
+                    }
+                    case LESS:
+                    {
+                        criteria.thatIsEarlierThan(date);
+                        break;
+                    }
+                    case LESS_OR_EQUAL:
+                    {
+                        criteria.thatIsEarlierThanOrEqualTo(date);
+                        break;
+                    }
+                    default:
+                    {
+                        throw new IllegalArgumentException("Unsupported operator " + operator);
+                    }
+                }
+            }
+        }
+
     }
 
     private static final class NumberQueryInjector extends AbstractQueryInjector
