@@ -76,7 +76,7 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.SegmentedStoreUtils;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.SegmentedStoreUtils.FilterOptions;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.Share;
-import ch.systemsx.cisd.openbis.generic.server.task.ArchivingByRequestTask;
+import ch.systemsx.cisd.openbis.generic.shared.Constants;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetArchivingStatus;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IDatasetLocation;
@@ -418,7 +418,7 @@ public class MultiDataSetArchiver extends AbstractArchiverProcessingPlugin
     private String tryGetSubDirectory(ArchiverTaskContext context)
     {
         Map<String, String> options = context.getOptions();
-        return options != null ? options.get(ArchivingByRequestTask.SUB_DIR_KEY) : null;
+        return options != null ? options.get(Constants.SUB_DIR_KEY) : null;
     }
 
     private long establishContainerDataSetMapping(List<DatasetDescription> dataSets, String containerPath,
@@ -451,7 +451,7 @@ public class MultiDataSetArchiver extends AbstractArchiverProcessingPlugin
         String groupKey = tryGetSubDirectory(archiverContext);
         if (groupKey != null)
         {
-            parameterBindings.put(ArchivingByRequestTask.SUB_DIR_KEY, groupKey);
+            parameterBindings.put(Constants.SUB_DIR_KEY, groupKey);
         }
         parameterBindings.put(MultiDataSetArchivingFinalizer.CONTAINER_ID_KEY, Long.toString(containerId));
         parameterBindings.put(MultiDataSetArchivingFinalizer.ORIGINAL_FILE_PATH_KEY,

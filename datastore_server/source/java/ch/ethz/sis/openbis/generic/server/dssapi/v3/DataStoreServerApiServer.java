@@ -32,13 +32,11 @@ import ch.systemsx.cisd.openbis.common.api.server.AbstractStreamSupportingApiSer
 /**
  * @author Jakub Straszewski
  */
-@Controller(value = DataStoreServerApiServer.INTERNAL_BEAN_NAME)
+@Controller(value = Constants.INTERNAL_BEAN_NAME)
 public class DataStoreServerApiServer extends AbstractStreamSupportingApiServiceExporter
 {
 
-    public static final String INTERNAL_BEAN_NAME = "v3-exporter";
-
-    @Resource(name = DataStoreServerApi.INTERNAL_SERVICE_NAME)
+    @Resource(name = Constants.INTERNAL_SERVICE_NAME)
     private IDataStoreServerApi service;
 
     @Override

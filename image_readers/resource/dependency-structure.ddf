@@ -5,12 +5,11 @@
 [bioformats] = ${root}.bioformats.*
 [ij] = ${root}.ij.*
 [imageio] = ${root}.imageio.*
-[jai] = ${root}.jai.*
-[generic] = ${root}.* excluding *TestHelper *TestCase *Test [bioformats] [ij] [imageio] [jai]
+[generic] = ${root}.* excluding *TestHelper *TestCase *Test [bioformats] [ij] [imageio]
 
-check sets [generic] [bioformats] [ij] [imageio] [jai] 
+check sets [generic] [bioformats] [ij] [imageio] 
 
 layer generic = [generic]
-layer libs = [bioformats] [ij] [imageio] [jai] 
+layer libs = [bioformats] [ij] [imageio] 
 check layeringOf generic libs
 

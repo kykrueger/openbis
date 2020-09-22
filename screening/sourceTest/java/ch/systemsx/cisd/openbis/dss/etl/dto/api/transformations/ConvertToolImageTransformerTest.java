@@ -34,7 +34,7 @@ public class ConvertToolImageTransformerTest extends AssertJUnit
     private final String IMAGE_FOLDER = "./resource/test-data/" + getClass().getSimpleName();
 
     private final String CONVERT_PARAMS =
-            " -contrast-stretch 0 -edge 1 -threshold 1 -transparent black ";
+            " -contrast-stretch 0 -edge 1 -threshold 1 -transparent white ";
 
     @Test(groups = "slow")
     public void testTransformation()

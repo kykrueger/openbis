@@ -53,7 +53,7 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.IEncapsulatedOpenBISService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ProcessingStatus;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProviderTestWrapper;
 import ch.systemsx.cisd.openbis.dss.generic.shared.dto.DataSetCodesWithStatus;
-import ch.systemsx.cisd.openbis.generic.server.task.ArchivingByRequestTask;
+import ch.systemsx.cisd.openbis.generic.shared.Constants;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetArchivingStatus;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DatasetDescription;
 import ch.systemsx.cisd.openbis.generic.shared.dto.builders.DatasetDescriptionBuilder;
@@ -132,7 +132,7 @@ public class MultiDataSetArchivingFinalizerTest extends AbstractFileSystemTestCa
         parameterBindings.put(MultiDataSetArchivingFinalizer.START_TIME_KEY, START_TIME_AS_STRING);
         parameterBindings.put(MultiDataSetArchivingFinalizer.FINALIZER_MAX_WAITING_TIME_KEY, "300000");
         parameterBindings.put(MultiDataSetArchivingFinalizer.STATUS_KEY, DataSetArchivingStatus.ARCHIVED.toString());
-        parameterBindings.put(ArchivingByRequestTask.SUB_DIR_KEY, MY_GROUP);
+        parameterBindings.put(Constants.SUB_DIR_KEY, MY_GROUP);
         processingContext = new DataSetProcessingContext(null, null,
                 parameterBindings, null, USER_ID, USER_EMAIL);
         updatedStatus = new ArrayList<DataSetCodesWithStatus>();
@@ -195,7 +195,7 @@ public class MultiDataSetArchivingFinalizerTest extends AbstractFileSystemTestCa
         assertEquals("[[ds1] - AVAILABLE]", updatedStatus.toString());
         assertEquals(false, updatedStatus.get(0).isPresentInArchive());
         assertEquals(Arrays.asList(dataFileInArchive, dataFileReplicated).toString(), cleaner.toString());
-        assertEquals("{" + ArchivingByRequestTask.SUB_DIR_KEY + "=" + MY_GROUP + "}", optionsMatcher.recordedObject().toString());
+        assertEquals("{" + Constants.SUB_DIR_KEY + "=" + MY_GROUP + "}", optionsMatcher.recordedObject().toString());
         context.assertIsSatisfied();
     }
 
@@ -315,7 +315,7 @@ public class MultiDataSetArchivingFinalizerTest extends AbstractFileSystemTestCa
         assertEquals("[[ds1, ds2] - AVAILABLE]", updatedStatus.toString());
         assertEquals(false, updatedStatus.get(0).isPresentInArchive());
         assertEquals(Arrays.asList(dataFileInArchive, dataFilePartiallyReplicated).toString(), cleaner.toString());
-        assertEquals("{" + ArchivingByRequestTask.SUB_DIR_KEY + "=" + MY_GROUP + "}", optionsMatcher.recordedObject().toString());
+        assertEquals("{" + Constants.SUB_DIR_KEY + "=" + MY_GROUP + "}", optionsMatcher.recordedObject().toString());
         context.assertIsSatisfied();
     }
 
@@ -362,7 +362,7 @@ public class MultiDataSetArchivingFinalizerTest extends AbstractFileSystemTestCa
         assertEquals("[[ds1, ds2] - AVAILABLE]", updatedStatus.toString());
         assertEquals(false, updatedStatus.get(0).isPresentInArchive());
         assertEquals(Arrays.asList(dataFileInArchive, dataFilePartiallyReplicated).toString(), cleaner.toString());
-        assertEquals("{" + ArchivingByRequestTask.SUB_DIR_KEY + "=" + MY_GROUP + "}", optionsMatcher.recordedObject().toString());
+        assertEquals("{" + Constants.SUB_DIR_KEY + "=" + MY_GROUP + "}", optionsMatcher.recordedObject().toString());
         context.assertIsSatisfied();
     }
 

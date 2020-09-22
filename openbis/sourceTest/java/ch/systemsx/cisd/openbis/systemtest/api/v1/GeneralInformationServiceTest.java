@@ -33,6 +33,8 @@ import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.AfterMethod;
@@ -2804,8 +2806,10 @@ public class GeneralInformationServiceTest extends SystemTestCase
                 "2009-03-19", "+1"));
 
         List<Material> materials =
-                generalInformationService.searchForMaterials(sessionToken, searchCriteria);
-        assertEquals(3732, materials.size());
+                generalInformationService.searchForMaterials(sessionToken, searchCriteria)
+                        .stream().filter(m -> m.getMaterialTypeIdentifier().getMaterialTypeCode().equals("BACTERIUM") == false)
+                        .collect(Collectors.toList());
+        assertEquals(3728, materials.size());
 
         searchCriteria = new SearchCriteria();
         searchCriteria.addMatchClause(MatchClause.createTimeAttributeMatch(

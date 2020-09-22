@@ -21,9 +21,11 @@ from ch.ethz.sis.openbis.generic.asapi.v3.dto.service import CustomASServiceExec
 from ch.systemsx.cisd.openbis.generic.server.jython.api.v1.impl import MasterDataRegistrationHelper
 import sys
 
+from ch.systemsx.cisd.openbis.generic.server.hotfix import ELNFixes
 from ch.systemsx.cisd.openbis.generic.server.hotfix import ELNAnnotationsMigration
 from ch.systemsx.cisd.openbis.generic.server.hotfix import ELNCollectionTypeMigration
 
+ELNFixes.beforeUpgrade()
 ELNAnnotationsMigration.beforeUpgrade()
 ELNCollectionTypeMigration.beforeUpgrade()
 

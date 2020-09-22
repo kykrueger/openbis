@@ -179,7 +179,7 @@ public class DateFieldSearchConditionTranslator implements IConditionTranslator<
 
         sqlBuilder.append(aliases.get(tableMapper.getValuesTable()).getSubTableAlias())
                 .append(PERIOD).append(ColumnNames.VALUE_COLUMN).append(DOUBLE_COLON)
-                .append(TIMESTAMP_WITH_TZ.toString());
+                .append(TIMESTAMP_WITH_TZ.toString()).append(SP);
         TranslatorUtils.appendTimeZoneConversion(value, sqlBuilder, timeZone);
 
         if (bareDateValue)

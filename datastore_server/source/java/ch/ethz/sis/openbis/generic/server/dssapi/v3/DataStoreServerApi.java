@@ -91,17 +91,10 @@ import net.lemnik.eodsql.QueryTool;
 /**
  * @author Jakub Straszewski
  */
-@Component(DataStoreServerApi.INTERNAL_SERVICE_NAME)
+@Component(Constants.INTERNAL_SERVICE_NAME)
 public class DataStoreServerApi extends AbstractDssServiceRpc<IDataStoreServerApi>
         implements IDataStoreServerApi
 {
-    /**
-     * Name of this service for which it is registered as Spring bean
-     */
-    public static final String INTERNAL_SERVICE_NAME = "data-store-server_INTERNAL";
-
-    public String DSS_SERVICE_NAME = "DSS Service";
-
     @Autowired
     private IConfigProvider configProvider;
 

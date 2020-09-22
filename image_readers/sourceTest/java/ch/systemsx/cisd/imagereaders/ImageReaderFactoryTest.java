@@ -49,7 +49,6 @@ public class ImageReaderFactoryTest extends ImageReaderTestCase
         return new Object[][]
             {
                 { ImageReaderConstants.IMAGEIO_LIBRARY.toLowerCase() },
-                { ImageReaderConstants.JAI_LIBRARY.toLowerCase() },
                 { ImageReaderConstants.IMAGEJ_LIBRARY.toLowerCase() },
                 { ImageReaderConstants.BIOFORMATS_LIBRARY.toLowerCase() } };
     }
@@ -72,14 +71,9 @@ public class ImageReaderFactoryTest extends ImageReaderTestCase
     public void testFindWithoutLibraryName() throws Exception
     {
         String tiffFileName = "./demo.tiff";
-        ImageReadersTestHelper.setUpLibraries(ImageReaderConstants.IMAGEIO_LIBRARY);
+        ImageReadersTestHelper.setUpLibraries(ImageReaderConstants.BIOFORMATS_LIBRARY);
 
-        assertNull("ImageIO library should not return TIFF readers",
-                ImageReaderFactory.tryGetReaderForFile(tiffFileName));
-
-        ImageReadersTestHelper.setUpLibraries(ImageReaderConstants.JAI_LIBRARY);
-
-        assertNotNull("JAI library should return TIFF readers",
+        assertNotNull("BioFormats library should return TIFF readers",
                 ImageReaderFactory.tryGetReaderForFile(tiffFileName));
 
     }

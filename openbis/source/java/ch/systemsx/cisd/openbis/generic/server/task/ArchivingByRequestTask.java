@@ -44,14 +44,13 @@ import ch.systemsx.cisd.common.collection.SimpleComparator;
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
 import ch.systemsx.cisd.common.properties.PropertyUtils;
 import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
+import ch.systemsx.cisd.openbis.generic.shared.Constants;
 
 /**
  * @author Franz-Josef Elmer
  */
 public class ArchivingByRequestTask extends AbstractMaintenanceTask
 {
-    public static final String SUB_DIR_KEY = "sub-directory";
-
     static final String KEEP_IN_STORE = "keep-in-store";
 
     static final String MINIMUM_CONTAINER_SIZE_IN_BYTES = "minimum-container-size-in-bytes";
@@ -121,7 +120,7 @@ public class ArchivingByRequestTask extends AbstractMaintenanceTask
                     archiveOptions.setRemoveFromDataStore(keepInStore == false);
                     if (StringUtils.isNotBlank(groupKey))
                     {
-                        archiveOptions.withOption(SUB_DIR_KEY, groupKey.toLowerCase());
+                        archiveOptions.withOption(Constants.SUB_DIR_KEY, groupKey.toLowerCase());
                     }
                     service.archiveDataSets(sessionToken, ids, archiveOptions);
                 }
