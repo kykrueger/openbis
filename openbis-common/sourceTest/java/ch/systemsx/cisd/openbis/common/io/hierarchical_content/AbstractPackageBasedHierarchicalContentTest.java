@@ -114,6 +114,7 @@ public abstract class AbstractPackageBasedHierarchicalContentTest extends Abstra
         // method may cause such a side effect due to some OS compatibility conversion
         File dataRoot = new File(workingDirectory, "data");
         File originalHdf5ContainerFile = new File(dataRoot, "my-container.h5");
+        System.out.println(originalHdf5ContainerFile.lastModified() +" "+ hdf5Node.getLastModified());
         assertTrue(Math.abs(originalHdf5ContainerFile.lastModified() - hdf5Node.getLastModified()) <= 1000);
     }
 
