@@ -2340,7 +2340,7 @@ public class SearchSampleTest extends AbstractSampleTest
         criteriaEndsWithMatch.withProperty("BOOLEAN").thatEquals("bla");
         assertUserFailureException(
                 Void -> searchSamples(sessionToken, criteriaEndsWithMatch, new SampleFetchOptions()),
-                "String does not represent a boolean.");
+                "String does not represent a boolean: [bla]");
     }
 
     @Test
@@ -2518,7 +2518,7 @@ public class SearchSampleTest extends AbstractSampleTest
         criteriaMatchNotDate.withProperty("DATE").thatEquals("blabla");
         assertUserFailureException(
                 Void -> searchSamples(sessionToken, criteriaMatchNotDate, new SampleFetchOptions()),
-                "String does not represent a date.");
+                "String does not represent a date: [blabla]");
     }
 
     @Test
@@ -2658,7 +2658,7 @@ public class SearchSampleTest extends AbstractSampleTest
         criteriaMatchNotDate.withProperty("TIMESTAMP").thatEquals("blabla");
         assertUserFailureException(
                 Void -> searchSamples(sessionToken, criteriaMatchNotDate, new SampleFetchOptions()),
-                "String does not represent a date.");
+                "String does not represent a date: [blabla]");
     }
 
     @Test
