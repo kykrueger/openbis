@@ -75,6 +75,7 @@ public class CustomImportTest extends ObjectsImportTest
             if (async)
             {
                 assertEquals("When the import is complete the confirmation or failure report will be sent by email.", message);
+                getTimestampAndWaitASecond();
                 assertEmail(timestamp, TEST_EMAIL, "Custom import successfully performed");
             } else
             {
