@@ -26,8 +26,6 @@ public final class ImageReaderConstants
 
     public static final String BIOFORMATS_LIBRARY = "BioFormats";
 
-    public static final String JAI_LIBRARY = "JAI";
-
     public static final String IMAGEIO_LIBRARY = "ImageIO";
 
     public static final String IMAGEJ_LIBRARY = "IJ";

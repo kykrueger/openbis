@@ -76,11 +76,6 @@ public class ImageReaderFactory
         {
             readers.add(reader);
         }
-        reader = tryCreateReader("ch.systemsx.cisd.imagereaders.jai.JAIReaderLibrary");
-        if (reader != null)
-        {
-            readers.add(reader);
-        }
         reader =
                 tryCreateReader("ch.systemsx.cisd.imagereaders.bioformats.BioFormatsReaderLibrary");
         if (reader != null)
