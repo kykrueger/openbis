@@ -4,6 +4,9 @@ const TEST_USER = 'test-user'
 const TEST_PASSWORD = 'test-password'
 const TEST_SESSION_TOKEN = 'test-session-token'
 
+const SYSTEM_USER_DTO = new openbis.Person()
+SYSTEM_USER_DTO.setUserId('system')
+
 const TEST_USER_DTO = new openbis.Person()
 TEST_USER_DTO.setUserId('test-user')
 TEST_USER_DTO.setFirstName('test-first-name')
@@ -145,6 +148,7 @@ const ANOTHER_VOCABULARY_DTO = new openbis.Vocabulary()
 ANOTHER_VOCABULARY_DTO.setCode('ANOTHER_VOCABULARY')
 
 export default {
+  SYSTEM_USER_DTO,
   TEST_USER,
   TEST_PASSWORD,
   TEST_SESSION_TOKEN,
