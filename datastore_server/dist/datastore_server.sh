@@ -160,7 +160,7 @@ CP=`echo $LIB_FOLDER/slf4j-log4j12-1.6.2.jar $LIB_FOLDER/datastore_server.jar $L
     | sed 's/ /:/g'`
 
 CMD="${JAVA_BIN}"
-COMMON_OPTIONS="${JAVA_OPTS} ${JAVA_MEM_OPTS} -Dnative.libpath=$LIB_FOLDER/native -classpath $CP ch.systemsx.cisd.openbis.dss.generic.DataStoreServer"
+COMMON_OPTIONS="${JAVA_OPTS} ${JAVA_MEM_OPTS} --add-exports java.xml/jdk.xml.internal=ALL-UNNAMED -Dnative.libpath=$LIB_FOLDER/native -classpath $CP ch.systemsx.cisd.openbis.dss.generic.DataStoreServer"
 
 # ensure that we ignore a possible prefix "--" for any command 
 command="${command#--*}"
