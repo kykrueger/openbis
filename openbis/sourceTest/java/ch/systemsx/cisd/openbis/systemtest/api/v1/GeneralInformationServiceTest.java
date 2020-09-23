@@ -2807,9 +2807,9 @@ public class GeneralInformationServiceTest extends SystemTestCase
 
         List<Material> materials =
                 generalInformationService.searchForMaterials(sessionToken, searchCriteria)
-                        .stream().filter(m -> m.getMaterialTypeIdentifier().getMaterialTypeCode().equals("BACTERIUM") == false)
+                        .stream().filter(m -> m.getMaterialTypeIdentifier().getMaterialTypeCode().equals("SIRNA"))
                         .collect(Collectors.toList());
-        assertEquals(3728, materials.size());
+        assertEquals(2774, materials.size());
 
         searchCriteria = new SearchCriteria();
         searchCriteria.addMatchClause(MatchClause.createTimeAttributeMatch(
