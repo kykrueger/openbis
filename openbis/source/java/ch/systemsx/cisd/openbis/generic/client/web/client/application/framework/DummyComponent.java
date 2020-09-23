@@ -19,7 +19,7 @@ package ch.systemsx.cisd.openbis.generic.client.web.client.application.framework
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.layout.CenterLayout;
 
-import ch.systemsx.cisd.openbis.generic.client.web.client.application.GenericConstants;
+import ch.systemsx.cisd.openbis.generic.client.web.client.dto.GenericConstants;
 
 /**
  * Component of the gui displayed when some functionality has not been implemented yet.

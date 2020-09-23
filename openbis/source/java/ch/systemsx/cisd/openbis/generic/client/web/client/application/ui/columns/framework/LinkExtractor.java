@@ -16,16 +16,11 @@
 
 package ch.systemsx.cisd.openbis.generic.client.web.client.application.ui.columns.framework;
 
-import ch.systemsx.cisd.openbis.generic.client.web.client.application.locator.BrowserLocatorResolver;
-import ch.systemsx.cisd.openbis.generic.client.web.client.application.locator.MaterialLocatorResolver;
-import ch.systemsx.cisd.openbis.generic.client.web.client.application.locator.MetaprojectBrowserLocatorResolver;
-import ch.systemsx.cisd.openbis.generic.client.web.client.application.locator.MetaprojectLocatorResolver;
-import ch.systemsx.cisd.openbis.generic.client.web.client.application.locator.ProjectLocatorResolver;
-import ch.systemsx.cisd.openbis.generic.client.web.client.application.locator.SearchLocatorResolver;
-import ch.systemsx.cisd.openbis.generic.client.web.client.application.locator.ViewLocator;
+import ch.systemsx.cisd.openbis.generic.shared.basic.BasicConstant;
 import ch.systemsx.cisd.openbis.generic.shared.basic.IEntityInformationHolder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.IEntityInformationHolderWithPermId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.PermlinkUtilities;
+import ch.systemsx.cisd.openbis.generic.shared.basic.SearchlinkUtilities;
 import ch.systemsx.cisd.openbis.generic.shared.basic.URLMethodWithParameters;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialIdentifier;
@@ -44,15 +39,15 @@ public class LinkExtractor
     public static final String createSampleBrowserLink(String spaceOrNull, String sampleTypeOrNull)
     {
         URLMethodWithParameters url = new URLMethodWithParameters("");
-        url.addParameter(ViewLocator.ACTION_PARAMETER, BrowserLocatorResolver.BROWSE_ACTION);
-        url.addParameter(ViewLocator.ENTITY_PARAMETER, EntityKind.SAMPLE.name());
+        url.addParameter(BasicConstant.LOCATOR_ACTION_PARAMETER, PermlinkUtilities.BROWSE_ACTION);
+        url.addParameter(PermlinkUtilities.ENTITY_KIND_PARAMETER_KEY, EntityKind.SAMPLE.name());
         if (spaceOrNull != null)
         {
-            url.addParameter(BrowserLocatorResolver.SPACE_PARAMETER_KEY, spaceOrNull);
+            url.addParameter(PermlinkUtilities.SPACE_PARAMETER_KEY, spaceOrNull);
         }
         if (sampleTypeOrNull != null)
         {
-            url.addParameter(BrowserLocatorResolver.TYPE_PARAMETER_KEY, sampleTypeOrNull);
+            url.addParameter(PermlinkUtilities.TYPE_PARAMETER_KEY, sampleTypeOrNull);
         }
         return tryPrint(url);
     }
@@ -60,11 +55,11 @@ public class LinkExtractor
     public static final String createMaterialBrowserLink(String materialTypeOrNull)
     {
         URLMethodWithParameters url = new URLMethodWithParameters("");
-        url.addParameter(ViewLocator.ACTION_PARAMETER, BrowserLocatorResolver.BROWSE_ACTION);
-        url.addParameter(ViewLocator.ENTITY_PARAMETER, EntityKind.MATERIAL.name());
+        url.addParameter(BasicConstant.LOCATOR_ACTION_PARAMETER, PermlinkUtilities.BROWSE_ACTION);
+        url.addParameter(PermlinkUtilities.ENTITY_KIND_PARAMETER_KEY, EntityKind.MATERIAL.name());
         if (materialTypeOrNull != null)
         {
-            url.addParameter(BrowserLocatorResolver.TYPE_PARAMETER_KEY, materialTypeOrNull);
+            url.addParameter(PermlinkUtilities.TYPE_PARAMETER_KEY, materialTypeOrNull);
         }
         return tryPrint(url);
     }
@@ -73,19 +68,19 @@ public class LinkExtractor
             String projectOrNull, String experimentTypeOrNull)
     {
         URLMethodWithParameters url = new URLMethodWithParameters("");
-        url.addParameter(ViewLocator.ACTION_PARAMETER, BrowserLocatorResolver.BROWSE_ACTION);
-        url.addParameter(ViewLocator.ENTITY_PARAMETER, EntityKind.EXPERIMENT.name());
+        url.addParameter(BasicConstant.LOCATOR_ACTION_PARAMETER, PermlinkUtilities.BROWSE_ACTION);
+        url.addParameter(PermlinkUtilities.ENTITY_KIND_PARAMETER_KEY, EntityKind.EXPERIMENT.name());
         if (spaceOrNull != null)
         {
-            url.addParameter(BrowserLocatorResolver.SPACE_PARAMETER_KEY, spaceOrNull);
+            url.addParameter(PermlinkUtilities.SPACE_PARAMETER_KEY, spaceOrNull);
         }
         if (projectOrNull != null)
         {
-            url.addParameter(BrowserLocatorResolver.PROJECT_PARAMETER_KEY, projectOrNull);
+            url.addParameter("project", projectOrNull);
         }
         if (experimentTypeOrNull != null)
         {
-            url.addParameter(BrowserLocatorResolver.TYPE_PARAMETER_KEY, experimentTypeOrNull);
+            url.addParameter(PermlinkUtilities.TYPE_PARAMETER_KEY, experimentTypeOrNull);
         }
         return tryPrint(url);
     }
@@ -93,27 +88,27 @@ public class LinkExtractor
     public static final String createMetaprojectLink(String metaprojectName)
     {
         URLMethodWithParameters url = new URLMethodWithParameters("");
-        url.addParameter(ViewLocator.ACTION_PARAMETER, MetaprojectLocatorResolver.VIEW_ACTION);
-        url.addParameter(ViewLocator.ENTITY_PARAMETER, MetaprojectLocatorResolver.METAPROJECT);
-        url.addParameter(MetaprojectLocatorResolver.NAME_PARAMETER_KEY, metaprojectName);
+        url.addParameter(BasicConstant.LOCATOR_ACTION_PARAMETER, PermlinkUtilities.PERMLINK_ACTION);
+        url.addParameter(PermlinkUtilities.ENTITY_KIND_PARAMETER_KEY, PermlinkUtilities.METAPROJECT);
+        url.addParameter(PermlinkUtilities.NAME_PARAMETER_KEY, metaprojectName);
         return tryPrint(url);
     }
 
     public static final String createMetaprojectBrowserLink()
     {
         URLMethodWithParameters url = new URLMethodWithParameters("");
-        url.addParameter(ViewLocator.ACTION_PARAMETER,
-                MetaprojectBrowserLocatorResolver.BROWSE_ACTION);
-        url.addParameter(ViewLocator.ENTITY_PARAMETER,
-                MetaprojectBrowserLocatorResolver.METAPROJECT);
+        url.addParameter(BasicConstant.LOCATOR_ACTION_PARAMETER,
+                PermlinkUtilities.BROWSE_ACTION);
+        url.addParameter(PermlinkUtilities.ENTITY_KIND_PARAMETER_KEY,
+                PermlinkUtilities.METAPROJECT);
         return tryPrint(url);
     }
 
     public static final String createSearchLink(EntityKind entityKind)
     {
         URLMethodWithParameters url = new URLMethodWithParameters("");
-        url.addParameter(ViewLocator.ACTION_PARAMETER, SearchLocatorResolver.SEARCH_ACTION);
-        url.addParameter(ViewLocator.ENTITY_PARAMETER, entityKind.name());
+        url.addParameter(BasicConstant.LOCATOR_ACTION_PARAMETER, SearchlinkUtilities.SEARCH_ACTION);
+        url.addParameter(PermlinkUtilities.ENTITY_KIND_PARAMETER_KEY, entityKind.name());
         return tryPrint(url);
     }
 
@@ -152,9 +147,9 @@ public class LinkExtractor
         }
         URLMethodWithParameters url = new URLMethodWithParameters("");
         url.addParameter(PermlinkUtilities.ENTITY_KIND_PARAMETER_KEY,
-                ProjectLocatorResolver.PROJECT);
-        url.addParameter(ProjectLocatorResolver.CODE_PARAMETER_KEY, p.getCode());
-        url.addParameter(ProjectLocatorResolver.SPACE_PARAMETER_KEY, p.getSpace().getCode());
+                PermlinkUtilities.PROJECT);
+        url.addParameter(PermlinkUtilities.CODE_PARAMETER_KEY, p.getCode());
+        url.addParameter(PermlinkUtilities.SPACE_PARAMETER_KEY, p.getSpace().getCode());
         return tryPrint(url);
     }
 
@@ -186,8 +181,8 @@ public class LinkExtractor
         }
         URLMethodWithParameters url = new URLMethodWithParameters("");
         url.addParameter(PermlinkUtilities.ENTITY_KIND_PARAMETER_KEY, EntityKind.MATERIAL.name());
-        url.addParameter(MaterialLocatorResolver.CODE_PARAMETER_KEY, materialCode);
-        url.addParameter(MaterialLocatorResolver.TYPE_PARAMETER_KEY, materialTypeCode);
+        url.addParameter(PermlinkUtilities.CODE_PARAMETER_KEY, materialCode);
+        url.addParameter(PermlinkUtilities.TYPE_PARAMETER_KEY, materialTypeCode);
         return url;
     }
 

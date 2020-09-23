@@ -31,13 +31,14 @@ import ch.systemsx.cisd.common.shared.basic.string.StringUtils;
 import ch.systemsx.cisd.openbis.generic.client.web.client.ICommonClientServiceAsync;
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.framework.AppEvents;
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.locator.GlobalSearchLocatorResolver;
-import ch.systemsx.cisd.openbis.generic.client.web.client.application.locator.ViewLocator;
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.model.SearchableEntityModel;
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.ui.EnterKeyListener;
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.ui.widget.ButtonWithLoadingMask;
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.util.GWTUtils;
+import ch.systemsx.cisd.openbis.generic.client.web.client.dto.GenericConstants;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.SearchableEntity;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.Type;
+import ch.systemsx.cisd.openbis.generic.shared.basic.BasicConstant;
 import ch.systemsx.cisd.openbis.generic.shared.basic.URLMethodWithParameters;
 
 /**
@@ -225,7 +226,7 @@ public final class SearchWidget extends LayoutContainer
     {
         // forward to a new url
         URLMethodWithParameters url = new URLMethodWithParameters("");
-        url.addParameter(ViewLocator.ACTION_PARAMETER,
+        url.addParameter(BasicConstant.LOCATOR_ACTION_PARAMETER,
                 GlobalSearchLocatorResolver.GLOBAL_SEARCH_ACTION);
         if (searchableEntity != null)
         {

@@ -34,7 +34,7 @@ public class AttachmentDownloadLocatorResolver extends AbstractViewLocatorResolv
     public void resolve(ViewLocator locator) throws UserFailureException
     {
         String entityKindValueOrNull = locator.tryGetEntity();
-        checkRequiredParameter(entityKindValueOrNull, ViewLocator.ENTITY_PARAMETER);
+        checkRequiredParameter(entityKindValueOrNull, PermlinkUtilities.ENTITY_KIND_PARAMETER_KEY);
         AttachmentHolderKind attachmentHolderKind = getAttachmentHolderKind(entityKindValueOrNull);
 
         String fileNameOrNull = locator.getParameters().get(PermlinkUtilities.FILE_NAME_KEY);
@@ -96,7 +96,7 @@ public class AttachmentDownloadLocatorResolver extends AbstractViewLocatorResolv
             return AttachmentHolderKind.valueOf(entityKind);
         } catch (IllegalArgumentException exception)
         {
-            throw new UserFailureException("Invalid '" + ViewLocator.ENTITY_PARAMETER
+            throw new UserFailureException("Invalid '" + PermlinkUtilities.ENTITY_KIND_PARAMETER_KEY
                     + "' URL parameter value.");
         }
     }

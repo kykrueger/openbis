@@ -28,8 +28,8 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.AbstractController;
 
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
-import ch.systemsx.cisd.openbis.generic.server.SessionConstants;
 import ch.systemsx.cisd.openbis.generic.shared.basic.GenericSharedConstants;
+import ch.systemsx.cisd.openbis.generic.shared.basic.SessionConstants;
 
 /**
  * @author Franz-Josef Elmer

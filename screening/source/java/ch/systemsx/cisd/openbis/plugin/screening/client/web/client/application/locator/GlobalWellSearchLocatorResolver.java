@@ -11,6 +11,7 @@ import ch.systemsx.cisd.openbis.generic.client.web.client.application.locator.Ab
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.locator.MaterialCodeUtils;
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.locator.ViewLocator;
 import ch.systemsx.cisd.openbis.generic.client.web.client.exception.UserFailureException;
+import ch.systemsx.cisd.openbis.generic.shared.basic.BasicConstant;
 import ch.systemsx.cisd.openbis.generic.shared.basic.URLMethodWithParameters;
 import ch.systemsx.cisd.openbis.plugin.screening.client.web.client.IScreeningClientServiceAsync;
 import ch.systemsx.cisd.openbis.plugin.screening.client.web.client.application.ScreeningModule;
@@ -92,7 +93,7 @@ public class GlobalWellSearchLocatorResolver extends AbstractViewLocatorResolver
     public static String createQueryBrowserLink()
     {
         URLMethodWithParameters url = new URLMethodWithParameters("");
-        url.addParameter(ViewLocator.ACTION_PARAMETER,
+        url.addParameter(BasicConstant.LOCATOR_ACTION_PARAMETER,
                 ScreeningLinkExtractor.GLOBAL_WELL_SEARCH_ACTION);
         return url.toStringWithoutDelimiterPrefix();
     }

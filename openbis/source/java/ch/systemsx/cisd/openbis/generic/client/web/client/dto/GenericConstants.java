@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package ch.systemsx.cisd.openbis.generic.client.web.client.application;
+package ch.systemsx.cisd.openbis.generic.client.web.client.dto;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.i18n.client.Dictionary;
@@ -41,9 +41,9 @@ public final class GenericConstants
      */
     public static final String ID_PREFIX = "openbis_";
 
-    private static final String DEPLOYED_APPLICATION_NAME = Dictionary.getDictionary("common").get(Dict.DEPLOYED_APPLICATION_NAME);
+    private static final String DEPLOYED_APPLICATION_NAME = Dictionary.getDictionary("common").get("deployedAppName");
 
-    private static final String SPRING_APPLICATION_NAME = Dictionary.getDictionary("common").get(Dict.SPRING_APPLICATION_NAME);
+    private static final String SPRING_APPLICATION_NAME = Dictionary.getDictionary("common").get("springApplicationName");
 
     public static final String COMMON_SERVER_NAME = createServicePath("common");
 

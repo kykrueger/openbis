@@ -55,11 +55,11 @@ import ch.systemsx.cisd.openbis.generic.client.web.client.application.ui.widget.
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.ui.widget.MultilineHTML;
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.util.IDelegatedAction;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.DefaultResultSetConfig;
+import ch.systemsx.cisd.openbis.generic.client.web.client.dto.GenericConstants;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.MatchingEntitiesPanelColumnIDs;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.SearchableEntity;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.TableExportCriteria;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.TypedTableResultSet;
-import ch.systemsx.cisd.openbis.generic.client.web.server.resultset.MatchingEntitiesProvider;
 import ch.systemsx.cisd.openbis.generic.shared.basic.IEntityInformationHolderWithPermId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.BasicEntityType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DatabaseModificationKind;
@@ -216,8 +216,8 @@ public final class MatchingEntitiesPanel extends TypedTableGrid<MatchingEntity>
                         {
                             html += code + ": ";
                         }
-                        html += match.getValue().replace(MatchingEntitiesProvider.START_HIGHLIGHT, "<span style=\"background-color:#cce9fc\">")
-                                        .replace(MatchingEntitiesProvider.END_HIGHLIGHT, "</span>")
+                        html += match.getValue().replace(MatchingEntitiesPanelColumnIDs.START_HIGHLIGHT, "<span style=\"background-color:#cce9fc\">")
+                                        .replace(MatchingEntitiesPanelColumnIDs.END_HIGHLIGHT, "</span>")
                                 + "\n";
                     }
 

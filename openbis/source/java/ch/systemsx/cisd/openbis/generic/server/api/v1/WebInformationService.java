@@ -23,8 +23,8 @@ import org.springframework.stereotype.Component;
 
 import ch.rinn.restrictions.Private;
 import ch.systemsx.cisd.common.servlet.IRequestContextProvider;
-import ch.systemsx.cisd.openbis.generic.server.SessionConstants;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.IWebInformationService;
+import ch.systemsx.cisd.openbis.generic.shared.basic.SessionConstants;
 
 /**
  * @author Piotr Kupczyk

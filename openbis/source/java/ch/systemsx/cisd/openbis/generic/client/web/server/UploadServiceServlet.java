@@ -44,9 +44,9 @@ import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.openbis.generic.server.ComponentNames;
-import ch.systemsx.cisd.openbis.generic.server.SessionConstants;
 import ch.systemsx.cisd.openbis.generic.shared.IOpenBisSessionManager;
 import ch.systemsx.cisd.openbis.generic.shared.ISessionWorkspaceProvider;
+import ch.systemsx.cisd.openbis.generic.shared.basic.SessionConstants;
 import ch.systemsx.cisd.openbis.generic.shared.dto.Session;
 
 /**

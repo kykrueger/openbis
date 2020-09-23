@@ -23,8 +23,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SearchCriteriaConnectio
  */
 public class SearchLocatorResolver extends AbstractViewLocatorResolver
 {
-    public static final String SEARCH_ACTION = SearchlinkUtilities.SEARCH_ACTION;
-
     protected static final String DEFAULT_SEARCH_STRING = "*";
 
     private final IViewContext<ICommonClientServiceAsync> viewContext;
@@ -42,7 +40,7 @@ public class SearchLocatorResolver extends AbstractViewLocatorResolver
 
     public SearchLocatorResolver(IViewContext<ICommonClientServiceAsync> viewContext)
     {
-        super(SEARCH_ACTION);
+        super(SearchlinkUtilities.SEARCH_ACTION);
         this.viewContext = viewContext;
     }
 

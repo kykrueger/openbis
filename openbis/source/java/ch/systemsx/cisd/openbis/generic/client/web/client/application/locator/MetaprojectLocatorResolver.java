@@ -7,6 +7,7 @@ import ch.systemsx.cisd.openbis.generic.client.web.client.application.AbstractAs
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.IViewContext;
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.ui.listener.OpenEntityDetailsTabHelper;
 import ch.systemsx.cisd.openbis.generic.client.web.client.exception.UserFailureException;
+import ch.systemsx.cisd.openbis.generic.shared.basic.PermlinkUtilities;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Metaproject;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MetaprojectIdentifier;
 
@@ -19,15 +20,9 @@ public class MetaprojectLocatorResolver extends AbstractViewLocatorResolver
 {
     private final IViewContext<ICommonClientServiceAsync> viewContext;
 
-    public final static String VIEW_ACTION = ViewLocator.PERMLINK_ACTION;
-
-    public final static String METAPROJECT = "METAPROJECT";
-
-    public final static String NAME_PARAMETER_KEY = "name";
-
     public MetaprojectLocatorResolver(IViewContext<ICommonClientServiceAsync> viewContext)
     {
-        super(VIEW_ACTION);
+        super(PermlinkUtilities.PERMLINK_ACTION);
         this.viewContext = viewContext;
     }
 
@@ -35,7 +30,7 @@ public class MetaprojectLocatorResolver extends AbstractViewLocatorResolver
     public boolean canHandleLocator(ViewLocator locator)
     {
         String entityKindValueOrNull = locator.tryGetEntity();
-        return super.canHandleLocator(locator) && METAPROJECT.equals(entityKindValueOrNull);
+        return super.canHandleLocator(locator) && PermlinkUtilities.METAPROJECT.equals(entityKindValueOrNull);
     }
 
     @Override
@@ -63,7 +58,7 @@ public class MetaprojectLocatorResolver extends AbstractViewLocatorResolver
     private MetaprojectIdentifier extractMetaprojectIdentifier(ViewLocator locator)
     {
         String owner = viewContext.getModel().getLoggedInPerson().getUserId();
-        String name = getMandatoryParameter(locator, NAME_PARAMETER_KEY);
+        String name = getMandatoryParameter(locator, PermlinkUtilities.NAME_PARAMETER_KEY);
         return new MetaprojectIdentifier(owner, name);
     }
 

@@ -24,7 +24,7 @@ public class PermlinkLocatorResolver extends AbstractViewLocatorResolver
 
     public PermlinkLocatorResolver(IViewContext<ICommonClientServiceAsync> viewContext)
     {
-        this(ViewLocator.PERMLINK_ACTION, viewContext);
+        this(PermlinkUtilities.PERMLINK_ACTION, viewContext);
     }
 
     protected PermlinkLocatorResolver(String action, IViewContext<ICommonClientServiceAsync> viewContext)
