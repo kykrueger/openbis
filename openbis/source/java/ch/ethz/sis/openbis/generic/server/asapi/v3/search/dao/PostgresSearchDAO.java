@@ -93,7 +93,9 @@ public class PostgresSearchDAO implements ISQLSearchDAO
         final String dt = "dt";
         final String propertyTypeAlias = "propertytype";
         final String dataTypeAlias = "datatype";
+        final String isManagedInternallyAlias = "ismanagedinternally";
         final String sql = SELECT + SP + pt + PERIOD + CODE_COLUMN + SP + propertyTypeAlias + COMMA
+                + SP + pt + PERIOD + IS_MANAGED_INTERNALLY + SP + isManagedInternallyAlias + COMMA
                 + SP + dt + PERIOD + CODE_COLUMN + SP + dataTypeAlias + NL
                 + FROM + SP + PROPERTY_TYPES_TABLE + SP + pt + NL
                 + INNER_JOIN + SP + DATA_TYPES_TABLE + SP + dt + SP
@@ -101,7 +103,7 @@ public class PostgresSearchDAO implements ISQLSearchDAO
 
         final List<Map<String, Object>> queryResultList = sqlExecutor.execute(sql, Collections.emptyList());
         final Map<String, String> dataTypesOfPropertyTypes = queryResultList.stream().collect(Collectors.toMap(
-                (valueByColumnName) -> (String) valueByColumnName.get(propertyTypeAlias),
+                (valueByColumnName) -> ((((Boolean)valueByColumnName.get(isManagedInternallyAlias))?"$":"") + ((String)valueByColumnName.get(propertyTypeAlias))),
                 (valueByColumnName) -> (String) valueByColumnName.get(dataTypeAlias)));
 
         translationContext.getCriteria().forEach(criterion ->
