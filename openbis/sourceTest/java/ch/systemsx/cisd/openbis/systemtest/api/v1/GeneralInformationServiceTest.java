@@ -2805,10 +2805,7 @@ public class GeneralInformationServiceTest extends SystemTestCase
                 MatchClauseTimeAttribute.MODIFICATION_DATE, CompareMode.LESS_THAN_OR_EQUAL,
                 "2009-03-19", "+1"));
 
-        List<Material> materials =
-                generalInformationService.searchForMaterials(sessionToken, searchCriteria)
-                        .stream().filter(m -> m.getMaterialTypeIdentifier().getMaterialTypeCode().equals("SIRNA"))
-                        .collect(Collectors.toList());
+        List<Material> materials = filter(generalInformationService.searchForMaterials(sessionToken, searchCriteria));
         assertEquals(2774, materials.size());
 
         searchCriteria = new SearchCriteria();
@@ -2816,8 +2813,15 @@ public class GeneralInformationServiceTest extends SystemTestCase
                 MatchClauseTimeAttribute.MODIFICATION_DATE, CompareMode.GREATER_THAN_OR_EQUAL,
                 "2009-03-19", "+1"));
 
-        materials = generalInformationService.searchForMaterials(sessionToken, searchCriteria);
-        assertEquals(2, materials.size());
+        materials = filter(generalInformationService.searchForMaterials(sessionToken, searchCriteria));
+        assertEquals(0, materials.size());
+    }
+
+    private List<Material> filter(List<Material> materials)
+    {
+        return materials
+                .stream().filter(m -> m.getMaterialTypeIdentifier().getMaterialTypeCode().equals("SIRNA"))
+                .collect(Collectors.toList());
     }
 
     @Test
