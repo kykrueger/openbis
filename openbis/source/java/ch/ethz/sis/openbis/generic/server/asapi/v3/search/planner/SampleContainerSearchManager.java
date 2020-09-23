@@ -49,7 +49,7 @@ public class SampleContainerSearchManager extends AbstractCompositeEntitySearchM
     @Override
     protected Class<? extends AbstractCompositeSearchCriteria> getParentsSearchCriteriaClass()
     {
-        return SampleParentsSearchCriteria.class;
+        return null;
     }
 
     public Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation,
@@ -67,7 +67,7 @@ public class SampleContainerSearchManager extends AbstractCompositeEntitySearchM
     @Override
     protected Class<? extends AbstractCompositeSearchCriteria> getChildrenSearchCriteriaClass()
     {
-        return SampleChildrenSearchCriteria.class;
+        return null;
     }
 
     @Override
