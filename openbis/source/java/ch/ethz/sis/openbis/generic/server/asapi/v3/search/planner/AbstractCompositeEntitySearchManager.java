@@ -75,10 +75,16 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
                 authorisationInformation);
     }
 
-    protected Set<Long> doSearchForIDs(final Long userId, final Collection<ISearchCriteria> parentsCriteria,
-            final Collection<ISearchCriteria> childrenCriteria, final Collection<ISearchCriteria> mainCriteria,
-            final SearchOperator finalSearchOperator, final String idsColumnName, final TableMapper tableMapper, final AuthorisationInformation authorisationInformation)
+    protected Set<Long> doSearchForIDs(final Long userId,
+            final Collection<ISearchCriteria> upstreamRelationshipsCriteria,
+            final Collection<ISearchCriteria> downstreamRelationshipsCriteria,
+            final Collection<ISearchCriteria> mainCriteria,
+            final SearchOperator finalSearchOperator, final String idsColumnName, final TableMapper tableMapper,
+            final AuthorisationInformation authorisationInformation)
     {
+        // upstreamRelationshipsCriteria & downstreamRelationshipsCriteria are relationships from the relationships
+        // table, for datasets it is both the parent-child relationships and containers but for samples it is only the
+        // parent-child ones.
         final Set<Long> mainCriteriaIntermediateResults;
         if (!mainCriteria.isEmpty())
         {
@@ -93,10 +99,10 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
 
         final Set<Long> parentCriteriaIntermediateResults;
         final Set<Long> containerCriteriaIntermediateResults;
-        if (!parentsCriteria.isEmpty())
+        if (!upstreamRelationshipsCriteria.isEmpty())
         {
             final Collection<ISearchCriteria> filteredParentsCriteria =
-                    getCriteriaByRelationshipType(parentsCriteria,
+                    getCriteriaByRelationshipType(upstreamRelationshipsCriteria,
                             IGetRelationshipIdExecutor.RelationshipType.PARENT_CHILD);
 
             if (!filteredParentsCriteria.isEmpty())
@@ -113,7 +119,7 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
             }
 
             final Collection<ISearchCriteria> filteredContainersCriteria =
-                    getCriteriaByRelationshipType(parentsCriteria,
+                    getCriteriaByRelationshipType(upstreamRelationshipsCriteria,
                             IGetRelationshipIdExecutor.RelationshipType.CONTAINER_COMPONENT);
 
             if (!filteredContainersCriteria.isEmpty())
@@ -135,10 +141,10 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
         }
 
         final Set<Long> childrenCriteriaIntermediateResults;
-        if (!childrenCriteria.isEmpty())
+        if (!downstreamRelationshipsCriteria.isEmpty())
         {
             final Collection<ISearchCriteria> filteredChildrenCriteria =
-                    getCriteriaByRelationshipType(childrenCriteria,
+                    getCriteriaByRelationshipType(downstreamRelationshipsCriteria,
                             IGetRelationshipIdExecutor.RelationshipType.PARENT_CHILD);
 
             final Set<Long> finalChildrenIds = findFinalRelationshipIds(userId, authorisationInformation,
@@ -168,7 +174,7 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
                             ? Collections.singleton(parentCriteriaIntermediateResults) : Collections.emptySet(),
                     containerCriteriaIntermediateResults != null
                             ? Collections.singleton(containerCriteriaIntermediateResults) : Collections.emptySet());
-        } else if (mainCriteria.isEmpty() && parentsCriteria.isEmpty() && childrenCriteria.isEmpty())
+        } else if (mainCriteria.isEmpty() && upstreamRelationshipsCriteria.isEmpty() && downstreamRelationshipsCriteria.isEmpty())
         {
             // If we don't have results and criteria are empty, return all.
             results = getAllIds(userId, authorisationInformation, idsColumnName, tableMapper);
