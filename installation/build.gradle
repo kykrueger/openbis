@@ -167,9 +167,6 @@ task createInstallerJar(type: Jar, dependsOn: [compileInstaller, jar]) {
     for (f in configurations.archives.files) {
         from zipTree(f)
     }
-    manifest {
-        attributes('Main-Class' : 'com.izforge.izpack.installer.bootstrap.Installer')
-    }
 }
 
 task createInstallerZip(type: Tar, dependsOn: createInstallerJar) {
