@@ -74,7 +74,7 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
         PropertyTypePermId propertyTypeId = createAPropertyType(sessionToken, dataType);
         ObjectPermId entityPermId = createEntity(sessionToken, propertyTypeId, value);
         AbstractEntitySearchCriteria<?> searchCriteria = createSearchCriteria();
-        new StringQueryInjector(searchCriteria, propertyTypeId).buildCriteria(queryString);
+        new StringQueryInjector(searchCriteria, propertyTypeId, false).buildCriteria(queryString);
 
         // When
         List<? extends IPermIdHolder> entities = search(sessionToken, searchCriteria);
@@ -312,15 +312,16 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
     protected Object[][] withAnyPropertyExamples()
     {
         final String formattedDate = DATE_FORMAT.format(createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0));
-        final String formattedTimestamp = DATE_HOURS_MINUTES_SECONDS_FORMAT.format(createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1));
+        final String formattedTimestamp = DATE_HOURS_MINUTES_SECONDS_FORMAT.format(
+                createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1));
         return new Object[][] {
                 { DataType.VARCHAR, "12", "== 12", true },
                 { DataType.VARCHAR, "ab", "<= abc", true },
                 { DataType.VARCHAR, "12", "> 100", true },
-                { DataType.VARCHAR, "ac3", "contains bc and endsWith 4", false },
-                { DataType.VARCHAR, "abc3", "contains bc and endsWith 4", false },
-                { DataType.VARCHAR, "ab34", "contains bc and endsWith 4", false },
-                { DataType.VARCHAR, "abc34", "contains bc and endsWith 4", true },
+                { DataType.VARCHAR, "acd3", "contains bcd and endsWith 34", false },
+                { DataType.VARCHAR, "abcd3", "contains bcd and endsWith 34", false },
+                { DataType.VARCHAR, "abd34", "contains bcd and endsWith 34", false },
+                { DataType.VARCHAR, "abcd34", "contains bcd and endsWith 34", true },
                 { DataType.MULTILINE_VARCHAR, "ac3", "contains bc or endsWith 4", false },
                 { DataType.MULTILINE_VARCHAR, "abc3", "contains bc or endsWith 4", true },
                 { DataType.MULTILINE_VARCHAR, "ab4", "contains bc or endsWith 4", true },
@@ -335,23 +336,14 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
 
                 { DataType.INTEGER, "12", "== 12", true },
                 { DataType.REAL, "12.5", "== 12.5", true },
-                { DataType.INTEGER, "13", "> 13", false },
-                { DataType.INTEGER, "13", ">= 13", true },
-                { DataType.INTEGER, "13", "< 13", false },
-                { DataType.INTEGER, "13", "<= 13", true },
-                { DataType.INTEGER, "13", "<= 13.0", true },
-                { DataType.INTEGER, "13", "< 13.001", true },
-                { DataType.INTEGER, "999999999999", "< 999999999999.001", true },
-                { DataType.INTEGER, "999999999999", "> 999999999999.001", false },
-                { DataType.REAL, "999999999999", "> 999999999999", false },
-                { DataType.REAL, "1", "< 1", false },
-                { DataType.REAL, "0.999", "< 1", true },
-                { DataType.INTEGER, "12", "> 13", false },
+                { DataType.INTEGER, "13333", "<= 13333 and > 13332", true },
+                { DataType.INTEGER, "13333", "<= 13333.0 and > 13332", true },
+                { DataType.INTEGER, "13333", "< 13333.001 and > 13332", true },
+                { DataType.INTEGER, "999999999999", "< 999999999999.001 and >= 999999999999", true },
                 { DataType.INTEGER, "14", "> 13 and <= 19.5", true },
                 { DataType.INTEGER, "19", "> 13 and <= 19.5", true },
                 { DataType.REAL, "19", "> 13 and <= 19.5", true },
                 { DataType.REAL, "19.5", "> 13 and <= 19.5", true },
-                { DataType.REAL, "19.6", ">= 23.5 or <= 19.5", false },
                 { DataType.REAL, "19", ">= 23.5 or <= 19.5", true },
                 { DataType.REAL, "23.5", ">= 23.5 or <= 19.5", true },
                 { DataType.INTEGER, "19", ">= 23.5 or <= 19.5", true },
@@ -366,44 +358,17 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
                 { DataType.INTEGER, "12345", "startsWith 13 or endsWith 45", true },
                 { DataType.INTEGER, "12345", "startsWith 12 or endsWith 55", true },
                 { DataType.INTEGER, "12345", "startsWith 11 or endsWith 55", false },
-                { DataType.INTEGER, "12345", "contains 23", true },
-                { DataType.INTEGER, "12345", "contains 43", false },
+                { DataType.INTEGER, "12345", "contains 234", true },
+                { DataType.INTEGER, "12345", "contains 437", false },
                 { DataType.REAL, "12.345", "startsWith 12. and endsWith 45", true },
-                { DataType.REAL, "12.345", "startsWith 13. and endsWith 45", false },
-                { DataType.REAL, "12.345", "startsWith 12. and endsWith 55", false },
-                { DataType.REAL, "12.345", "startsWith 11. and endsWith 55", false },
                 { DataType.REAL, "12.345", "startsWith 12. or endsWith 45", true },
-                { DataType.REAL, "12.345", "startsWith 13. or endsWith 45", true },
-                { DataType.REAL, "12.345", "startsWith 12. or endsWith 55", true },
-                { DataType.REAL, "12.345", "startsWith 11. or endsWith 55", false },
-                { DataType.REAL, "12.345", "contains .", true },
-                { DataType.REAL, "12.345", "contains 9", false },
+                { DataType.REAL, "12.345", "contains .34", true },
+                { DataType.REAL, "12.345", "contains 9876", false },
 
                 { DataType.DATE, formattedDate, "== 2020-02-15", true },
                 { DataType.DATE, formattedDate, "== 2020-02-14", false },
-                { DataType.DATE, formattedDate, ">= 2020-02-16", false },
-                { DataType.DATE, formattedDate, ">= 2020-02-15", true },
-                { DataType.DATE, formattedDate, ">= 2020-02-14", true },
-                { DataType.DATE, formattedDate, "<= 2020-02-16", true },
-                { DataType.DATE, formattedDate, "<= 2020-02-15", true },
-                { DataType.DATE, formattedDate, "<= 2020-02-14", false },
-                { DataType.DATE, formattedDate, "> 2020-02-16", false },
-                { DataType.DATE, formattedDate, "> 2020-02-15", false },
-                { DataType.DATE, formattedDate, "> 2020-02-14", true },
-                { DataType.DATE, formattedDate, "< 2020-02-16", true },
-                { DataType.DATE, formattedDate, "< 2020-02-15", false },
-                { DataType.DATE, formattedDate, "< 2020-02-14", false },
-
                 { DataType.TIMESTAMP, formattedTimestamp, "startsWith 2020-02-15 10:00:01", true },
                 { DataType.TIMESTAMP, formattedTimestamp, "startsWith 2020-02-15 10:00:00", false },
-                { DataType.TIMESTAMP, formattedTimestamp, ">= 2020-02-15 10:00:02 +0100", false },
-                { DataType.TIMESTAMP, formattedTimestamp, ">= 2020-02-15 10:00:00 +0100", true },
-                { DataType.TIMESTAMP, formattedTimestamp, "<= 2020-02-15 10:00:02 +0100", true },
-                { DataType.TIMESTAMP, formattedTimestamp, "<= 2020-02-15 10:00:00 +0100", false },
-                { DataType.TIMESTAMP, formattedTimestamp, "> 2020-02-15 10:00:02 +0100", false },
-                { DataType.TIMESTAMP, formattedTimestamp, "> 2020-02-15 10:00:00 +0100", true },
-                { DataType.TIMESTAMP, formattedTimestamp, "< 2020-02-15 10:00:02 +0100", true },
-                { DataType.TIMESTAMP, formattedTimestamp, "< 2020-02-15 10:00:00 +0100", false },
         };
     }
 
@@ -416,7 +381,27 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
         final PropertyTypePermId propertyTypeId = createAPropertyType(sessionToken, dataType);
         final ObjectPermId entityPermId = createEntity(sessionToken, propertyTypeId, value);
         final AbstractEntitySearchCriteria<?> searchCriteria = createSearchCriteria();
-        new AnyPropertyQueryInjector(searchCriteria).buildCriteria(queryString);
+        new StringQueryInjector(searchCriteria, null, false).buildCriteria(queryString);
+
+        // When
+        final List<? extends IPermIdHolder> entities = search(sessionToken, searchCriteria);
+
+        // Then
+        final boolean hasMatch = entities.stream().anyMatch(
+                entity -> entity.getPermId().toString().equals(entityPermId.getPermId()));
+        assertEquals(hasMatch, found);
+    }
+
+    @Test(dataProvider = "withAnyPropertyExamples")
+    public void testWithAnyField(final DataType dataType, final String value, final String queryString,
+            final boolean found)
+    {
+        // Given
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        final PropertyTypePermId propertyTypeId = createAPropertyType(sessionToken, dataType);
+        final ObjectPermId entityPermId = createEntity(sessionToken, propertyTypeId, value);
+        final AbstractEntitySearchCriteria<?> searchCriteria = createSearchCriteria();
+        new StringQueryInjector(searchCriteria, null, true).buildCriteria(queryString);
 
         // When
         final List<? extends IPermIdHolder> entities = search(sessionToken, searchCriteria);
@@ -513,15 +498,30 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
 
     private static final class StringQueryInjector extends AbstractQueryInjector
     {
-        StringQueryInjector(AbstractEntitySearchCriteria<?> searchCriteria, PropertyTypePermId propertyTypeId)
+        private boolean anyField;
+
+        StringQueryInjector(final AbstractEntitySearchCriteria<?> searchCriteria,
+                final PropertyTypePermId propertyTypeId, final boolean anyField)
         {
             super(searchCriteria, propertyTypeId);
+            this.anyField = anyField;
         }
 
         @Override
         protected void injectQuery(Operator operator, String operand)
         {
-            StringPropertySearchCriteria criteria = searchCriteria.withProperty(propertyTypeId.getPermId());
+            final StringFieldSearchCriteria criteria;
+            if (anyField)
+            {
+                criteria = searchCriteria.withAnyField();
+            } else if (propertyTypeId == null)
+            {
+                criteria = searchCriteria.withAnyProperty();
+            } else
+            {
+                criteria = searchCriteria.withProperty(propertyTypeId.getPermId());
+            }
+
             switch (operator)
             {
                 case CONTAINS:
@@ -681,47 +681,4 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
         }
     }
 
-    private static final class AnyPropertyQueryInjector extends AbstractQueryInjector
-    {
-        AnyPropertyQueryInjector(final AbstractEntitySearchCriteria<?> searchCriteria)
-        {
-            super(searchCriteria, null);
-        }
-
-        @Override
-        protected void injectQuery(final Operator operator, final String operand)
-        {
-            final AnyPropertySearchCriteria criteria = searchCriteria.withAnyProperty();
-            switch (operator)
-            {
-                case CONTAINS:
-                    criteria.thatContains(operand);
-                    break;
-                case STARTS_WITH:
-                    criteria.thatStartsWith(operand);
-                    break;
-                case ENDS_WITH:
-                    criteria.thatEndsWith(operand);
-                    break;
-                case EQUAL:
-                    criteria.thatEquals(operand);
-                    break;
-                case GREATER:
-                    criteria.thatIsGreaterThan(operand);
-                    break;
-                case GREATER_OR_EQUAL:
-                    criteria.thatIsGreaterThanOrEqualTo(operand);
-                    break;
-                case LESS:
-                    criteria.thatIsLessThan(operand);
-                    break;
-                case LESS_OR_EQUAL:
-                    criteria.thatIsLessThanOrEqualTo(operand);
-                    break;
-                default:
-                    throw new IllegalArgumentException("Unsupported operator " + operator);
-            }
-        }
-    }
-    
 }
