@@ -16,14 +16,18 @@
 
 package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCriteriaTranslator.DATE_FORMAT;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCriteriaTranslator.DATE_HOURS_MINUTES_SECONDS_FORMAT;
 import static org.testng.Assert.assertEquals;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.text.DateFormat;
+import java.util.*;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IPermIdHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.create.MaterialCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
@@ -822,6 +826,182 @@ public class SearchMaterialTest extends AbstractTest
                 Void -> searchMaterials(sessionToken, criteriaWithDateProperty, new MaterialFetchOptions()),
                 String.format("Criterion of type %s cannot be applied to the data type %s.",
                         "DatePropertySearchCriteria", "VARCHAR"));
+    }
+
+    @DataProvider
+    protected Object[][] withDateOrTimestampPropertyExamples()
+    {
+        return new Object[][] {
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "== 2020-02-15", true },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "== 2020-02-14", false },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), ">= 2020-02-16", false },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), ">= 2020-02-15", true },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), ">= 2020-02-14", true },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "<= 2020-02-16", true },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "<= 2020-02-15", true },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "<= 2020-02-14", false },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "> 2020-02-16", false },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "> 2020-02-15", false },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "> 2020-02-14", true },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "< 2020-02-16", true },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "< 2020-02-15", false },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "< 2020-02-14", false },
+
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "== 2020-02-15 10:00:01", true },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "== 2020-02-15 10:00:00", false },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), ">= 2020-02-15 10:00:02", false },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), ">= 2020-02-15 10:00:01", true },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), ">= 2020-02-15 10:00:00", true },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "<= 2020-02-15 10:00:02", true },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "<= 2020-02-15 10:00:01", true },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "<= 2020-02-15 10:00:00", false },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "> 2020-02-15 10:00:02", false },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "> 2020-02-15 10:00:01", false },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "> 2020-02-15 10:00:00", true },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "< 2020-02-15 10:00:02", true },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "< 2020-02-15 10:00:01", false },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "< 2020-02-15 10:00:00", false },
+        };
+    }
+
+    @Test(dataProvider = "withDateOrTimestampPropertyExamples")
+    public void testWithDateOrTimestampProperty(final DataType dataType, final Date value, final String queryString,
+            final boolean found)
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        final PropertyTypePermId propertyTypeId = createAPropertyType(sessionToken, dataType);
+        final DateFormat dateFormat = dataType == DataType.DATE ? DATE_FORMAT : DATE_HOURS_MINUTES_SECONDS_FORMAT;
+        final String formattedValue = dateFormat.format(value);
+        final MaterialPermId entityPermId = createMaterial(sessionToken, propertyTypeId, formattedValue);
+        final MaterialFetchOptions emptyFetchOptions = new MaterialFetchOptions();
+
+        // Given
+        final MaterialSearchCriteria dateSearchCriteria = new MaterialSearchCriteria();
+        new AbstractSearchPropertyTest.DateQueryInjector(dateSearchCriteria, propertyTypeId, dateFormat)
+                .buildCriteria(queryString);
+
+        // When
+        final List<? extends IPermIdHolder> dateEntities = searchMaterials(sessionToken, dateSearchCriteria,
+                emptyFetchOptions);
+
+        // Then
+        assertEquals(dateEntities.size(), found ? 1 : 0);
+        if (found)
+        {
+            assertEquals(dateEntities.get(0).getPermId().toString(), entityPermId.toString());
+        }
+
+        // Given
+        final MaterialSearchCriteria dateSearchStringPropertyCriteria = new MaterialSearchCriteria();
+        new AbstractSearchPropertyTest.StringQueryInjector(dateSearchStringPropertyCriteria, propertyTypeId, false)
+                .buildCriteria(queryString);
+
+        // When
+        final List<? extends IPermIdHolder> dateEntitiesFromStringPropertyCriteria = searchMaterials(sessionToken,
+                dateSearchStringPropertyCriteria, emptyFetchOptions);
+
+        // Then
+        assertEquals(dateEntitiesFromStringPropertyCriteria.size(), found ? 1 : 0);
+        if (found)
+        {
+            assertEquals(dateEntitiesFromStringPropertyCriteria.get(0).getPermId().toString(), entityPermId.toString());
+        }
+
+        if (dataType == DataType.TIMESTAMP)
+        {
+            // Given
+            final MaterialSearchCriteria timestampSearchCriteria = new MaterialSearchCriteria();
+            new AbstractSearchPropertyTest.DateQueryInjector(timestampSearchCriteria, propertyTypeId, null)
+                    .buildCriteria(queryString);
+
+            // When
+            final List<? extends IPermIdHolder> timestampEntities = searchMaterials(sessionToken,
+                    timestampSearchCriteria, emptyFetchOptions);
+
+            // Then
+            assertEquals(timestampEntities.size(), found ? 1 : 0);
+            if (found)
+            {
+                assertEquals(timestampEntities.get(0).getPermId().toString(), entityPermId.toString());
+            }
+
+            // Given
+            final MaterialSearchCriteria timestampSearchStringPropertyCriteria = new MaterialSearchCriteria();
+            new AbstractSearchPropertyTest.StringQueryInjector(timestampSearchStringPropertyCriteria, propertyTypeId,
+                    false).buildCriteria(queryString);
+
+            // When
+            final List<? extends IPermIdHolder> timestampEntitiesFromStringPropertyCriteria =
+                    searchMaterials(sessionToken, timestampSearchStringPropertyCriteria, emptyFetchOptions);
+
+            // Then
+            assertEquals(timestampEntitiesFromStringPropertyCriteria.size(), found ? 1 : 0);
+            if (found)
+            {
+                assertEquals(timestampEntitiesFromStringPropertyCriteria.get(0).getPermId().toString(),
+                        entityPermId.toString());
+            }
+        }
+    }
+
+//    @Test(dataProvider = "withDateOrTimestampPropertyExamples")
+//    public void testWithDateOrTimestampPropertyUsingWithProperty(final DataType dataType, final Date value, final String queryString,
+//            final boolean found)
+//    {
+//        // Given
+//        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+//        final PropertyTypePermId propertyTypeId = createAPropertyType(sessionToken, dataType);
+//        final DateFormat dateFormat = dataType == DataType.DATE ? DATE_FORMAT : DATE_HOURS_MINUTES_SECONDS_FORMAT;
+//        final String formattedValue = dateFormat.format(value);
+//
+//        final MaterialPermId entityPermId = createMaterial(sessionToken, propertyTypeId, formattedValue);
+//        final MaterialSearchCriteria searchCriteria1 = new MaterialSearchCriteria();
+//        new AbstractSearchPropertyTest.DateQueryInjector(searchCriteria1, propertyTypeId, dateFormat)
+//                .buildCriteria(queryString);
+//        final MaterialFetchOptions emptyFetchOptions = new MaterialFetchOptions();
+//
+//        // When
+//        final List<? extends IPermIdHolder> entities1 = searchMaterials(sessionToken, searchCriteria1,
+//                emptyFetchOptions);
+//
+//        // Then
+//        assertEquals(entities1.size(), found ? 1 : 0);
+//        if (found)
+//        {
+//            assertEquals(entities1.get(0).getPermId().toString(), entityPermId.toString());
+//        }
+//
+//        if (dataType == DataType.TIMESTAMP)
+//        {
+//            // Given
+//            final MaterialSearchCriteria searchCriteria2 = new MaterialSearchCriteria();
+//            new AbstractSearchPropertyTest.DateQueryInjector(searchCriteria2, propertyTypeId, null)
+//                    .buildCriteria(queryString);
+//
+//            // When
+//            final List<? extends IPermIdHolder> entities2 = searchMaterials(sessionToken, searchCriteria2,
+//                    emptyFetchOptions);
+//
+//            // Then
+//            assertEquals(entities2.size(), found ? 1 : 0);
+//            if (found)
+//            {
+//                assertEquals(entities2.get(0).getPermId().toString(), entityPermId.toString());
+//            }
+//        }
+//    }
+
+    private MaterialPermId createMaterial(final String sessionToken, final PropertyTypePermId propertyType,
+            final String formattedValue)
+    {
+        final EntityTypePermId materialType = createAMaterialType(sessionToken, false, propertyType);
+
+        final MaterialCreation materialCreation = new MaterialCreation();
+        materialCreation.setCode("TEST-MATERIAL-" + System.currentTimeMillis());
+        materialCreation.setTypeId(materialType);
+        materialCreation.setProperty(propertyType.getPermId(), formattedValue);
+
+        return v3api.createMaterials(sessionToken, Collections.singletonList(materialCreation)).get(0);
     }
 
     private List<Material> searchMaterials(final String sessionToken, final MaterialSearchCriteria criteria,
