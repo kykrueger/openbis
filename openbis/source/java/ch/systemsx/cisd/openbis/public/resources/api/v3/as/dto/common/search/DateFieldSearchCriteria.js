@@ -1,6 +1,6 @@
 define([ "require", "stjs", "util/Exceptions", "as/dto/common/search/AbstractFieldSearchCriteria", "as/dto/common/search/ServerTimeZone", "as/dto/common/search/ShortDateFormat",
 		"as/dto/common/search/NormalDateFormat", "as/dto/common/search/LongDateFormat", "as/dto/common/search/DateEqualToValue", "as/dto/common/search/DateObjectEqualToValue",
-		"as/dto/common/search/DateLaterThanOrEqualToValue", "as/dto/common/search/DateObjectLaterThanOrEqualToValue", "as/dto/common/search/DateEarlierThanOrEqualToValue",
+		"as/dto/common/search/DateLaterThanValue", "as/dto/common/search/DateLaterThanOrEqualToValue", "as/dto/common/search/DateObjectLaterThanOrEqualToValue", "as/dto/common/search/DateEarlierThanValue", "as/dto/common/search/DateEarlierThanOrEqualToValue",
 		"as/dto/common/search/DateObjectEarlierThanOrEqualToValue", "as/dto/common/search/TimeZone", "as/dto/common/search/AbstractDateValue", "util/DateFormat" ], function(require, stjs, exceptions,
 		AbstractFieldSearchCriteria, ServerTimeZone) {
 	var DateFieldSearchCriteria = function(fieldName, fieldType) {
