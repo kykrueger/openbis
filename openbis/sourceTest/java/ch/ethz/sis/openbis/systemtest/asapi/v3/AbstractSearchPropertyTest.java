@@ -270,40 +270,72 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
     public void testWithDateOrTimestampProperty(final DataType dataType, final Date value, final String queryString,
             final boolean found)
     {
-        // Given
         final String sessionToken = v3api.login(TEST_USER, PASSWORD);
         final PropertyTypePermId propertyTypeId = createAPropertyType(sessionToken, dataType);
         final DateFormat dateFormat = dataType == DataType.DATE ? DATE_FORMAT : DATE_HOURS_MINUTES_SECONDS_FORMAT;
         final String formattedValue = dateFormat.format(value);
-
         final ObjectPermId entityPermId = createEntity(sessionToken, propertyTypeId, formattedValue);
-        final AbstractEntitySearchCriteria<?> searchCriteria1 = createSearchCriteria();
-        new DateQueryInjector(searchCriteria1, propertyTypeId, dateFormat).buildCriteria(queryString);
+
+        // Given
+        final AbstractEntitySearchCriteria<?> dateSearchCriteria = createSearchCriteria();
+        new DateQueryInjector(dateSearchCriteria, propertyTypeId, dateFormat).buildCriteria(queryString);
 
         // When
-        final List<? extends IPermIdHolder> entities1 = search(sessionToken, searchCriteria1);
+        final List<? extends IPermIdHolder> dateEntities = search(sessionToken, dateSearchCriteria);
 
         // Then
-        assertEquals(entities1.size(), found ? 1 : 0);
+        assertEquals(dateEntities.size(), found ? 1 : 0);
         if (found)
         {
-            assertEquals(entities1.get(0).getPermId().toString(), entityPermId.getPermId());
+            assertEquals(dateEntities.get(0).getPermId().toString(), entityPermId.getPermId());
+        }
+
+        // Given
+        final AbstractEntitySearchCriteria<?> dateSearchStringPropertyCriteria = createSearchCriteria();
+        new StringQueryInjector(dateSearchStringPropertyCriteria, propertyTypeId, false).buildCriteria(queryString);
+
+        // When
+        final List<? extends IPermIdHolder> dateEntitiesFromStringPropertyCriteria = search(sessionToken,
+                dateSearchStringPropertyCriteria);
+
+        // Then
+        assertEquals(dateEntitiesFromStringPropertyCriteria.size(), found ? 1 : 0);
+        if (found)
+        {
+            assertEquals(dateEntitiesFromStringPropertyCriteria.get(0).getPermId().toString(), entityPermId.getPermId());
         }
 
         if (dataType == DataType.TIMESTAMP)
         {
             // Given
-            final AbstractEntitySearchCriteria<?> searchCriteria2 = createSearchCriteria();
-            new DateQueryInjector(searchCriteria2, propertyTypeId, null).buildCriteria(queryString);
+            final AbstractEntitySearchCriteria<?> timestampSearchCriteria = createSearchCriteria();
+            new DateQueryInjector(timestampSearchCriteria, propertyTypeId, null).buildCriteria(queryString);
 
             // When
-            final List<? extends IPermIdHolder> entities2 = search(sessionToken, searchCriteria2);
+            final List<? extends IPermIdHolder> timestampEntities = search(sessionToken, timestampSearchCriteria);
 
             // Then
-            assertEquals(entities2.size(), found ? 1 : 0);
+            assertEquals(timestampEntities.size(), found ? 1 : 0);
             if (found)
             {
-                assertEquals(entities2.get(0).getPermId().toString(), entityPermId.getPermId());
+                assertEquals(timestampEntities.get(0).getPermId().toString(), entityPermId.getPermId());
+            }
+
+            // Given
+            final AbstractEntitySearchCriteria<?> timestampSearchStringPropertyCriteria = createSearchCriteria();
+            new StringQueryInjector(timestampSearchStringPropertyCriteria, propertyTypeId, false)
+                    .buildCriteria(queryString);
+
+            // When
+            final List<? extends IPermIdHolder> timestampEntitiesFromStringPropertyCriteria = search(sessionToken,
+                    timestampSearchStringPropertyCriteria);
+
+            // Then
+            assertEquals(timestampEntitiesFromStringPropertyCriteria.size(), found ? 1 : 0);
+            if (found)
+            {
+                assertEquals(timestampEntitiesFromStringPropertyCriteria.get(0).getPermId().toString(),
+                        entityPermId.getPermId());
             }
         }
     }
@@ -412,14 +444,6 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
         assertEquals(hasMatch, found);
     }
 
-    private Date createDate(final int year, final int month, final int date, final int hrs, final int min,
-            final int sec)
-    {
-        final Calendar calendar = Calendar.getInstance();
-        calendar.set(year, month, date, hrs, min, sec);
-        return calendar.getTime();
-    }
-
     private ObjectPermId createEntity(String sessionToken, PropertyTypePermId propertyTypeId, String value)
     {
         EntityTypePermId entityTypeId = createEntityType(sessionToken, propertyTypeId);
@@ -496,7 +520,7 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
         protected abstract void injectQuery(Operator operator, String operand);
     }
 
-    private static final class StringQueryInjector extends AbstractQueryInjector
+    static final class StringQueryInjector extends AbstractQueryInjector
     {
         private boolean anyField;
 
@@ -554,7 +578,7 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
         }
     }
 
-    private static final class DateQueryInjector extends AbstractQueryInjector
+    static final class DateQueryInjector extends AbstractQueryInjector
     {
 
         private final DateFormat dateFormat;

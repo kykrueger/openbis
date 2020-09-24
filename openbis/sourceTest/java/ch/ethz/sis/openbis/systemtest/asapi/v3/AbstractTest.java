@@ -23,20 +23,7 @@ import static org.testng.Assert.fail;
 import java.lang.reflect.Method;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -171,6 +158,14 @@ public class AbstractTest extends SystemTestCase
 
     @Autowired
     protected IGeneralInformationService generalInformationService;
+
+    protected static Date createDate(final int year, final int month, final int date, final int hrs, final int min,
+            final int sec)
+    {
+        final Calendar calendar = Calendar.getInstance();
+        calendar.set(year, month, date, hrs, min, sec);
+        return calendar.getTime();
+    }
 
     @BeforeClass
     public void beforeClass()
