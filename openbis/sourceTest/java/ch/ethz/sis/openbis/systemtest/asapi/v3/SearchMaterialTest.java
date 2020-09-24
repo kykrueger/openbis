@@ -240,6 +240,31 @@ public class SearchMaterialTest extends AbstractTest
     }
 
     @Test
+    public void testSearchForMaterialWithBooleanProperty()
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        final PropertyTypePermId propertyType = createABooleanPropertyType(sessionToken, "BOOLEAN");
+        final EntityTypePermId materialType = createAMaterialType(sessionToken, false, propertyType);
+
+        final MaterialCreation materialCreation = new MaterialCreation();
+        materialCreation.setCode("BOOLEAN_PROPERTY_TEST");
+        materialCreation.setTypeId(materialType);
+        materialCreation.setProperty("BOOLEAN", "false");
+
+        final MaterialPermId createdMaterialPermId = v3api.createMaterials(sessionToken,
+                Collections.singletonList(materialCreation)).get(0);
+
+        final MaterialSearchCriteria falseValueCriterion = new MaterialSearchCriteria();
+        falseValueCriterion.withProperty("BOOLEAN").thatEquals("false");
+        testSearch(TEST_USER, falseValueCriterion, createdMaterialPermId);
+        
+        final MaterialSearchCriteria trueValueCriterion = new MaterialSearchCriteria();
+        trueValueCriterion.withProperty("BOOLEAN").thatEquals("true");
+        testSearch(TEST_USER, trueValueCriterion);
+    }
+
+    @Test
     public void testSearchForMaterialWithBooleanPropertyMatchingSubstring()
     {
         final String sessionToken = v3api.login(TEST_USER, PASSWORD);
