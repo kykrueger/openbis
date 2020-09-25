@@ -209,15 +209,15 @@ export default class TypeFormControllerChange extends PageControllerChange {
         },
         vocabulary: {
           ...newProperty.vocabulary,
-          enabled: !systemInternalPropertyType
+          enabled: !systemInternalPropertyType && !isGlobal
         },
         materialType: {
           ...newProperty.materialType,
-          enabled: !systemInternalPropertyType
+          enabled: !systemInternalPropertyType && !isGlobal
         },
         sampleType: {
           ...newProperty.sampleType,
-          enabled: !systemInternalPropertyType
+          enabled: !systemInternalPropertyType && !isGlobal
         },
         plugin: {
           ...newProperty.plugin,

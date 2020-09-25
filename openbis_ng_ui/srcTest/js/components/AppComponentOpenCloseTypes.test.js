@@ -1,88 +1,17 @@
-import React from 'react'
-import ComponentTest from '@srcTest/js/components/common/ComponentTest.js'
-import AppWrapper from '@srcTest/js/components/wrapper/AppWrapper.js'
-import App from '@src/js/components/App.jsx'
+import AppComponentTest from '@srcTest/js/components/AppComponentTest.js'
 import openbis from '@srcTest/js/services/openbis.js'
 import fixture from '@srcTest/js/common/fixture.js'
 
 let common = null
 
 beforeEach(() => {
-  common = new ComponentTest(
-    () => <App />,
-    wrapper => new AppWrapper(wrapper)
-  )
+  common = new AppComponentTest()
   common.beforeEach()
-
-  openbis.login.mockReturnValue(Promise.resolve('testSession'))
-  openbis.mockSearchSampleTypes([])
-  openbis.mockSearchExperimentTypes([])
-  openbis.mockSearchDataSetTypes([])
-  openbis.mockSearchMaterialTypes([])
-  openbis.mockSearchVocabularies([])
-  openbis.mockSearchPersons([])
-  openbis.mockSearchGroups([])
 })
 
-describe('app', () => {
-  test('login', testLogin)
+describe(AppComponentTest.SUITE, () => {
   test('open/close types', testOpenCloseTypes)
 })
-
-async function testLogin() {
-  const app = await common.mount()
-
-  app.expectJSON({
-    login: {
-      user: {
-        value: null,
-        enabled: true
-      },
-      password: {
-        value: null,
-        enabled: true
-      },
-      button: {
-        enabled: true
-      }
-    },
-    menu: null,
-    types: null,
-    users: null
-  })
-
-  await login(app)
-
-  app.expectJSON({
-    login: null,
-    menu: {
-      tabs: [
-        {
-          label: 'Types',
-          selected: true
-        }
-      ]
-    },
-    types: {
-      browser: {
-        filter: {
-          value: null
-        },
-        nodes: [
-          { level: 0, text: 'Object Types' },
-          { level: 0, text: 'Collection Types' },
-          { level: 0, text: 'Data Set Types' },
-          { level: 0, text: 'Material Types' },
-          { level: 0, text: 'Vocabulary Types' }
-        ]
-      },
-      content: {
-        tabs: []
-      }
-    },
-    users: null
-  })
-}
 
 async function testOpenCloseTypes() {
   openbis.mockSearchSampleTypes([
@@ -92,7 +21,7 @@ async function testOpenCloseTypes() {
 
   const app = await common.mount()
 
-  await login(app)
+  await common.login(app)
 
   app.getTypes().getBrowser().getNodes()[0].getIcon().click()
   await app.update()
@@ -171,11 +100,4 @@ async function testOpenCloseTypes() {
       }
     }
   })
-}
-
-async function login(app) {
-  app.getLogin().getUser().change('testUser')
-  app.getLogin().getPassword().change('testPassword')
-  app.getLogin().getButton().click()
-  await app.update()
 }

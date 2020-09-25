@@ -7,6 +7,7 @@ import ch.systemsx.cisd.openbis.generic.client.web.client.application.IViewConte
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.ui.listener.OpenEntityDetailsTabHelper;
 import ch.systemsx.cisd.openbis.generic.client.web.client.exception.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.shared.basic.IEntityInformationHolderWithPermId;
+import ch.systemsx.cisd.openbis.generic.shared.basic.PermlinkUtilities;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialIdentifier;
 
@@ -20,13 +21,9 @@ public class MaterialLocatorResolver extends AbstractViewLocatorResolver
 {
     private final IViewContext<ICommonClientServiceAsync> viewContext;
 
-    public final static String CODE_PARAMETER_KEY = "code";
-
-    public final static String TYPE_PARAMETER_KEY = "type";
-
     public MaterialLocatorResolver(IViewContext<ICommonClientServiceAsync> viewContext)
     {
-        super(ViewLocator.PERMLINK_ACTION);
+        super(PermlinkUtilities.PERMLINK_ACTION);
         this.viewContext = viewContext;
     }
 
@@ -64,10 +61,10 @@ public class MaterialLocatorResolver extends AbstractViewLocatorResolver
 
     protected MaterialIdentifier extractMaterialIdentifier(ViewLocator locator)
     {
-        String codeValueOrNull = locator.getParameters().get(CODE_PARAMETER_KEY);
-        String materialTypeValueOrNull = locator.getParameters().get(TYPE_PARAMETER_KEY);
-        checkRequiredParameter(codeValueOrNull, CODE_PARAMETER_KEY);
-        checkRequiredParameter(materialTypeValueOrNull, TYPE_PARAMETER_KEY);
+        String codeValueOrNull = locator.getParameters().get(PermlinkUtilities.CODE_PARAMETER_KEY);
+        String materialTypeValueOrNull = locator.getParameters().get(PermlinkUtilities.TYPE_PARAMETER_KEY);
+        checkRequiredParameter(codeValueOrNull, PermlinkUtilities.CODE_PARAMETER_KEY);
+        checkRequiredParameter(materialTypeValueOrNull, PermlinkUtilities.TYPE_PARAMETER_KEY);
 
         String decodedMaterialCode = MaterialCodeUtils.decode(codeValueOrNull);
         return new MaterialIdentifier(decodedMaterialCode, materialTypeValueOrNull);

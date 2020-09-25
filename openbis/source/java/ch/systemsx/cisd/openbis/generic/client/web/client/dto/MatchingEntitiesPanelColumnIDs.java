@@ -39,4 +39,8 @@ public class MatchingEntitiesPanelColumnIDs
 
     public static final String RANK = "RANK";
 
+    public static final String START_HIGHLIGHT = "|||startHighlight|||";
+
+    public static final String END_HIGHLIGHT = "|||endHighlight|||";
+
 }

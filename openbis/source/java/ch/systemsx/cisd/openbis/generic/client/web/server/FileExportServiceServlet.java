@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import ch.systemsx.cisd.common.string.UnicodeUtils;
 import ch.systemsx.cisd.openbis.generic.client.web.client.ICommonClientService;
-import ch.systemsx.cisd.openbis.generic.client.web.client.application.GenericConstants;
+import ch.systemsx.cisd.openbis.generic.client.web.client.dto.GenericConstants;
 import ch.systemsx.cisd.openbis.generic.client.web.server.util.HttpUtils;
 import ch.systemsx.cisd.openbis.generic.client.web.server.util.OSKind;
 import ch.systemsx.cisd.openbis.generic.shared.ResourceNames;

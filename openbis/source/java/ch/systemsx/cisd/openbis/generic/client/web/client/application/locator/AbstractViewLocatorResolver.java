@@ -3,6 +3,7 @@ package ch.systemsx.cisd.openbis.generic.client.web.client.application.locator;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 import ch.systemsx.cisd.openbis.generic.client.web.client.exception.UserFailureException;
+import ch.systemsx.cisd.openbis.generic.shared.basic.PermlinkUtilities;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind;
 
 /**
@@ -102,7 +103,7 @@ public abstract class AbstractViewLocatorResolver implements IViewLocatorResolve
     protected static final EntityKind getEntityKind(ViewLocator locator)
     {
         String entityKindValueOrNull = locator.tryGetEntity();
-        checkRequiredParameter(entityKindValueOrNull, ViewLocator.ENTITY_PARAMETER);
+        checkRequiredParameter(entityKindValueOrNull, PermlinkUtilities.ENTITY_KIND_PARAMETER_KEY);
         return getEntityKind(entityKindValueOrNull);
     }
 
@@ -113,7 +114,7 @@ public abstract class AbstractViewLocatorResolver implements IViewLocatorResolve
             return EntityKind.valueOf(entityKindValueOrNull);
         } catch (IllegalArgumentException exception)
         {
-            throw new UserFailureException("Invalid '" + ViewLocator.ENTITY_PARAMETER
+            throw new UserFailureException("Invalid '" + PermlinkUtilities.ENTITY_KIND_PARAMETER_KEY
                     + "' URL parameter value.");
         }
     }

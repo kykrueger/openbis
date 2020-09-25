@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import ch.systemsx.cisd.common.collection.SimpleComparator;
+import ch.systemsx.cisd.openbis.generic.client.web.client.dto.MatchingEntitiesPanelColumnIDs;
 import ch.systemsx.cisd.openbis.generic.client.web.server.translator.SearchableEntityTranslator;
 import ch.systemsx.cisd.openbis.generic.shared.ICommonServer;
 import ch.systemsx.cisd.openbis.generic.shared.WebClientConfigurationProvider;
@@ -51,10 +52,6 @@ import ch.systemsx.cisd.openbis.generic.shared.util.WebClientConfigUtils;
  */
 public class MatchingEntitiesProvider implements ITableModelProvider<MatchingEntity>
 {
-    public static final String START_HIGHLIGHT = "|||startHighlight|||";
-
-    public static final String END_HIGHLIGHT = "|||endHighlight|||";
-
     private final ICommonServer commonServer;
 
     private final String sessionToken;
@@ -189,14 +186,14 @@ public class MatchingEntitiesProvider implements ITableModelProvider<MatchingEnt
 
                 if (block.isHighlighted())
                 {
-                    highlighted += START_HIGHLIGHT;
+                    highlighted += MatchingEntitiesPanelColumnIDs.START_HIGHLIGHT;
                 }
 
                 highlighted += rawValue.substring(0, Math.min(block.getLength(), rawValue.length()));
 
                 if (block.isHighlighted())
                 {
-                    highlighted += END_HIGHLIGHT;
+                    highlighted += MatchingEntitiesPanelColumnIDs.END_HIGHLIGHT;
                 }
 
                 rawValue = rawValue.substring(Math.min(block.getLength(), rawValue.length()));

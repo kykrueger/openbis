@@ -23,6 +23,7 @@ import static org.testng.Assert.fail;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -34,10 +35,12 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.MaterialPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.Vocabulary;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.VocabularyTerm;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.create.VocabularyCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.create.VocabularyTermCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.delete.VocabularyTermDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.fetchoptions.VocabularyFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.fetchoptions.VocabularyTermFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.IVocabularyTermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.VocabularyPermId;
@@ -113,6 +116,39 @@ public class DeleteVocabularyTermTest extends AbstractVocabularyTermTest
 
         terms = searchTerms(vocabularyCode);
         assertVocabularyTermPermIds(terms, termIdA, termIdB);
+    }
+
+    @Test
+    public void testDeleteAllTerms()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        VocabularyTermCreation term1Creation = new VocabularyTermCreation();
+        term1Creation.setCode("TERM_TO_DELETE_1");
+
+        VocabularyTermCreation term2Creation = new VocabularyTermCreation();
+        term2Creation.setCode("TERM_TO_DELETE_2");
+
+        VocabularyCreation vocabularyCreation = new VocabularyCreation();
+        vocabularyCreation.setCode("VOCABULARY_WITH_ALL_TERMS_TO_DELETE");
+        vocabularyCreation.setTerms(Arrays.asList(term1Creation, term2Creation));
+
+        VocabularyPermId vocabularyId = v3api.createVocabularies(sessionToken, Arrays.asList(vocabularyCreation)).get(0);
+
+        VocabularyFetchOptions fo = new VocabularyFetchOptions();
+        fo.withTerms();
+
+        Vocabulary vocabularyBefore = v3api.getVocabularies(sessionToken, Arrays.asList(vocabularyId), fo).get(vocabularyId);
+        assertEquals(vocabularyBefore.getTerms().size(), 2);
+
+        VocabularyTermDeletionOptions deletionOptions = new VocabularyTermDeletionOptions();
+        deletionOptions.setReason("deleting all terms");
+
+        v3api.deleteVocabularyTerms(sessionToken, vocabularyBefore.getTerms().stream().map(term -> term.getPermId()).collect(Collectors.toList()),
+                deletionOptions);
+
+        Vocabulary vocabularyAfter = v3api.getVocabularies(sessionToken, Arrays.asList(vocabularyId), fo).get(vocabularyId);
+        assertEquals(vocabularyAfter.getTerms().size(), 0);
     }
 
     @DataProvider

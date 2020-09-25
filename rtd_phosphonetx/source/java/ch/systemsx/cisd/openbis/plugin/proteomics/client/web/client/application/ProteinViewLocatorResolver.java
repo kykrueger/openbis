@@ -23,6 +23,7 @@ import ch.systemsx.cisd.openbis.generic.client.web.client.application.framework.
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.locator.AbstractViewLocatorResolver;
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.locator.ViewLocator;
 import ch.systemsx.cisd.openbis.generic.client.web.client.exception.UserFailureException;
+import ch.systemsx.cisd.openbis.generic.shared.basic.BasicConstant;
 import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.URLMethodWithParameters;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Experiment;
@@ -88,7 +89,7 @@ public class ProteinViewLocatorResolver extends AbstractViewLocatorResolver
     static String createLink(final Experiment experiment, ProteinInfo entity)
     {
         URLMethodWithParameters url = new URLMethodWithParameters("");
-        url.addParameter(ViewLocator.ACTION_PARAMETER, ACTION);
+        url.addParameter((String) BasicConstant.LOCATOR_ACTION_PARAMETER, ACTION);
         url.addParameter(ProteinViewLocatorResolver.EXPERIMENT_PERM_ID,
                 experiment.getPermId());
         url.addParameter(ProteinViewLocatorResolver.PROTEIN_ID,

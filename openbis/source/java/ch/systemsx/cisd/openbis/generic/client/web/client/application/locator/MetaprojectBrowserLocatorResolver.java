@@ -5,6 +5,7 @@ import ch.systemsx.cisd.openbis.generic.client.web.client.application.IViewConte
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.framework.ComponentProvider;
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.framework.DispatcherHelper;
 import ch.systemsx.cisd.openbis.generic.client.web.client.exception.UserFailureException;
+import ch.systemsx.cisd.openbis.generic.shared.basic.PermlinkUtilities;
 
 /**
  * {@link IViewLocatorResolver} for metaproject browser.
@@ -15,13 +16,9 @@ public class MetaprojectBrowserLocatorResolver extends AbstractViewLocatorResolv
 {
     private final IViewContext<ICommonClientServiceAsync> viewContext;
 
-    public final static String BROWSE_ACTION = "BROWSE";
-
-    public final static String METAPROJECT = "METAPROJECT";
-
     public MetaprojectBrowserLocatorResolver(IViewContext<ICommonClientServiceAsync> viewContext)
     {
-        super(BROWSE_ACTION);
+        super(PermlinkUtilities.BROWSE_ACTION);
         this.viewContext = viewContext;
     }
 
@@ -29,7 +26,7 @@ public class MetaprojectBrowserLocatorResolver extends AbstractViewLocatorResolv
     public boolean canHandleLocator(ViewLocator locator)
     {
         String entityKindValueOrNull = locator.tryGetEntity();
-        return super.canHandleLocator(locator) && METAPROJECT.equals(entityKindValueOrNull);
+        return super.canHandleLocator(locator) && PermlinkUtilities.METAPROJECT.equals(entityKindValueOrNull);
     }
 
     @Override

@@ -369,16 +369,11 @@ public final class VocabularyBOTest extends AbstractBOTest
 
         VocabularyBO vocabularyBO = createVocabularyBO();
         vocabularyBO.load("voc-code");
-        try
-        {
-            vocabularyBO.delete(Arrays.asList(term1),
-                    Collections.<VocabularyTermReplacement> emptyList());
-        } catch (IllegalArgumentException e)
-        {
-            assertEquals("Deletion of all 1 terms are not allowed.", e.getMessage());
-        }
 
-        assertEquals(1, vocabulary.getTerms().size());
+        vocabularyBO.delete(Arrays.asList(term1),
+                Collections.<VocabularyTermReplacement> emptyList());
+
+        assertEquals(0, vocabulary.getTerms().size());
         context.assertIsSatisfied();
     }
 

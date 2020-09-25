@@ -5,8 +5,8 @@ import sys
 import os.path
 import time
 
-# Base URL of the CI server which hosts the artifacts.
-CI_BASE_URL = 'http://bs-ci01.ethz.ch:8090'
+# Default base URL of the CI server which hosts the artifacts.
+ci_base_url = 'http://bs-ci01.ethz.ch:8090'
 
 reuseRepository = False
 devMode = False
@@ -20,9 +20,12 @@ if len(sys.argv) > 1:
         devMode = True
     elif firstArgument == '-d':
         devMode = True
+    elif firstArgument == '-s':
+        ci_base_url = sys.argv[2]
     elif firstArgument == '-h':
-        print("Usage: %s [-h|-r|-d|-rd]\n-h: prints this help\n-r: reuses artifact repository\n"
-            + "-d: developing mode\n-rd: both options" % os.path.basename(cmd))
+        print(("Usage: %s [-h|-r|-d|-rd|-s <ci server>]\n-h: prints this help\n-r: reuses artifact repository\n"
+            + "-d: developing mode\n-rd: both options\n"
+            + "-s <ci server>: option for CI server host name") % os.path.basename(cmd))
         exit(1)
     else:
         print("Unknown option: %s. Use option '-h' to see usage." % firstArgument)
@@ -34,6 +37,6 @@ sys.path.append("%s/sourceTest" % dirname)
 
 from systemtest.artifactrepository import JenkinsArtifactRepository 
 
-REPOSITORY = JenkinsArtifactRepository(CI_BASE_URL, "%s/targets/artifact-repository" % dirname)
+REPOSITORY = JenkinsArtifactRepository(ci_base_url, "%s/targets/artifact-repository" % dirname)
 if not reuseRepository:
     REPOSITORY.clear()

@@ -25,7 +25,6 @@ import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
 import com.google.gwt.user.client.Element;
 
 import ch.systemsx.cisd.openbis.generic.client.web.client.ICommonClientServiceAsync;
-import ch.systemsx.cisd.openbis.generic.client.web.client.application.GenericConstants;
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.IViewContext;
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.SearchWidget;
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.framework.ComponentProvider;
@@ -36,6 +35,7 @@ import ch.systemsx.cisd.openbis.generic.client.web.client.application.menu.top.I
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.menu.top.NewMenu;
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.menu.user.LoggedUserMenu;
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.util.IMessageProvider;
+import ch.systemsx.cisd.openbis.generic.client.web.client.dto.GenericConstants;
 
 /**
  * Implements functionality of the top menu.

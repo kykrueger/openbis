@@ -31,7 +31,7 @@ import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Timer;
 
 import ch.systemsx.cisd.common.shared.basic.string.StringUtils;
-import ch.systemsx.cisd.openbis.generic.client.web.client.application.GenericConstants;
+import ch.systemsx.cisd.openbis.generic.client.web.client.dto.GenericConstants;
 
 /**
  * A {@link MultilineVarcharField} extension with support of handling list of items (Strings).

@@ -6,7 +6,6 @@ evaluationDependsOn(':authentication')
 evaluationDependsOn(':dbmigration')
 evaluationDependsOn(':openbis')
 evaluationDependsOn(':datastore_server')
-evaluationDependsOn(':rtd_phosphonetx')
 evaluationDependsOn(':screening')
 evaluationDependsOn(':rtd_yeastx')
 evaluationDependsOn(':deep_sequencing_unit')
@@ -166,9 +165,6 @@ task createInstallerJar(type: Jar, dependsOn: [compileInstaller, jar]) {
     from zipTree(project(':commonbase').jar.archivePath)
     for (f in configurations.archives.files) {
         from zipTree(f)
-    }
-    manifest {
-        attributes('Main-Class' : 'com.izforge.izpack.installer.bootstrap.Installer')
     }
 }
 

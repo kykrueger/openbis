@@ -42,16 +42,6 @@ public class ViewLocator
 
     private static final String PARAMETER_SEPARATOR = "&";
 
-    public static final String SESSION_ID_PARAMETER = GenericSharedConstants.SESSION_ID_PARAMETER;
-
-    public static final String ACTION_PARAMETER = BasicConstant.LOCATOR_ACTION_PARAMETER;
-
-    public static final String ENTITY_PARAMETER = PermlinkUtilities.ENTITY_KIND_PARAMETER_KEY;
-
-    public static final String PERM_ID_PARAMETER = PermlinkUtilities.PERM_ID_PARAMETER_KEY;
-
-    public static final String PERMLINK_ACTION = "VIEW";
-
     private static final String GWT_PARAMETER = "gwt.codesvr";
 
     // Instance Variables
@@ -160,21 +150,21 @@ public class ViewLocator
             if (GWT_PARAMETER.equals(paramName))
             {
                 // skip GWT parameters -- only relevant during testing
-            } else if (SESSION_ID_PARAMETER.equalsIgnoreCase(paramName))
+            } else if (GenericSharedConstants.SESSION_ID_PARAMETER.equalsIgnoreCase(paramName))
             {
                 sessionIdOrNull = paramValue;
-            } else if (ACTION_PARAMETER.equalsIgnoreCase(paramName))
+            } else if (BasicConstant.LOCATOR_ACTION_PARAMETER.equalsIgnoreCase(paramName))
             {
                 actionOrNull = paramValue;
-            } else if (ENTITY_PARAMETER.equalsIgnoreCase(paramName))
+            } else if (PermlinkUtilities.ENTITY_KIND_PARAMETER_KEY.equalsIgnoreCase(paramName))
             {
                 entityOrNull = paramValue;
-            } else if (PERM_ID_PARAMETER.equalsIgnoreCase(paramName))
+            } else if (PermlinkUtilities.PERM_ID_PARAMETER_KEY.equalsIgnoreCase(paramName))
             {
                 // Permlink URLs have an implied action
                 if (actionOrNull == null)
                 {
-                    actionOrNull = PERMLINK_ACTION;
+                    actionOrNull = PermlinkUtilities.PERMLINK_ACTION;
                 }
                 parameters.put(paramName, paramValue);
             } else
@@ -186,7 +176,7 @@ public class ViewLocator
         // If the entity is specified, but no action, default the action to Permlink
         if (entityOrNull != null && actionOrNull == null)
         {
-            actionOrNull = PERMLINK_ACTION;
+            actionOrNull = PermlinkUtilities.PERMLINK_ACTION;
         }
     }
 }
