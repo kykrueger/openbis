@@ -510,6 +510,22 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
         }
     }
 
+    @Test
+    public void testSearchWithPropertyMatchingSampleProperty()
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        final PropertyTypePermId propertyTypeId = createASamplePropertyType(sessionToken, null);
+
+        createEntity(sessionToken, propertyTypeId, "/CISD/CL1");
+
+        final AbstractEntitySearchCriteria<?> searchCriteria = createSearchCriteria();
+        searchCriteria.withOrOperator();
+        searchCriteria.withProperty(propertyTypeId.getPermId()).thatEquals("/CISD/CL1");
+
+        final List<? extends IPermIdHolder> entities = search(sessionToken, searchCriteria);
+        assertEquals(entities.size(), 1);
+    }
+
     private ObjectPermId createEntity(String sessionToken, PropertyTypePermId propertyTypeId, String value)
     {
         EntityTypePermId entityTypeId = createEntityType(sessionToken, propertyTypeId);
