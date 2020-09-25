@@ -22,12 +22,12 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.cond
 import static org.testng.Assert.*;
 
 import java.text.DateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.*;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.create.VocabularyCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.create.VocabularyTermCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.VocabularyPermId;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -442,6 +442,72 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
         final boolean hasMatch = entities.stream().anyMatch(
                 entity -> entity.getPermId().toString().equals(entityPermId.getPermId()));
         assertEquals(hasMatch, found);
+    }
+
+    @DataProvider
+    protected Object[][] withControlledVocabularyPropertyExamples()
+    {
+        return new Object[][] {
+                { "WINTER", "== WINTER", true },
+                { "WINTER", "== SUMMER", false },
+                { "WINTER", "<= WINTER", true },
+                { "SUMMER", "<= WINTER", true },
+                { "WINTER", "<= SUMMER", false },
+                { "WINTER", "< WINTER", false },
+                { "SUMMER", "< WINTER", true },
+                { "WINTER", "< SUMMER", false },
+                { "WINTER", ">= WINTER", true },
+                { "WINTER", ">= SUMMER", true },
+                { "SUMMER", ">= WINTER", false },
+                { "WINTER", "> WINTER", false },
+                { "WINTER", "> SUMMER", true },
+                { "SUMMER", "> WINTER", false },
+
+                { "WINTER", "contains I and endsWith ER", true },
+                { "SUMMER", "contains I and endsWith ER", false },
+                { "SPRING", "contains I and endsWith ER", false },
+                { "SUMMER", "startsWith SU", true },
+                { "SPRING", "startsWith SU", false },
+        };
+    }
+
+    @Test(dataProvider = "withControlledVocabularyPropertyExamples")
+    public void testWithControlledVocabularyProperty(final String value, final String queryString, final boolean found)
+    {
+        // Given
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        final VocabularyTermCreation vocabularyTermCreation1 = new VocabularyTermCreation();
+        vocabularyTermCreation1.setCode("WINTER");
+        final VocabularyTermCreation vocabularyTermCreation2 = new VocabularyTermCreation();
+        vocabularyTermCreation2.setCode("SPRING");
+        final VocabularyTermCreation vocabularyTermCreation3 = new VocabularyTermCreation();
+        vocabularyTermCreation3.setCode("SUMMER");
+        final VocabularyTermCreation vocabularyTermCreation4 = new VocabularyTermCreation();
+        vocabularyTermCreation4.setCode("AUTUMN");
+
+        final VocabularyCreation vocabularyCreation = new VocabularyCreation();
+        vocabularyCreation.setCode("SEASONS");
+        vocabularyCreation.setTerms(Arrays.asList(vocabularyTermCreation1, vocabularyTermCreation2,
+                vocabularyTermCreation3, vocabularyTermCreation4));
+        final VocabularyPermId vocabularyPermId =
+                v3api.createVocabularies(sessionToken, Collections.singletonList(vocabularyCreation)).get(0);
+
+        final PropertyTypePermId propertyTypeId = createAPropertyType(sessionToken, DataType.CONTROLLEDVOCABULARY,
+                vocabularyPermId);
+        final ObjectPermId entityPermId = createEntity(sessionToken, propertyTypeId, value);
+        final AbstractEntitySearchCriteria<?> searchCriteria = createSearchCriteria();
+        new StringQueryInjector(searchCriteria, propertyTypeId, false).buildCriteria(queryString);
+
+        // When
+        final List<? extends IPermIdHolder> entities = search(sessionToken, searchCriteria);
+
+        // Then
+        assertEquals(entities.size(), found ? 1 : 0);
+        if (found)
+        {
+            assertEquals(entities.get(0).getPermId().toString(), entityPermId.getPermId());
+        }
     }
 
     private ObjectPermId createEntity(String sessionToken, PropertyTypePermId propertyTypeId, String value)

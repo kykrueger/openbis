@@ -1401,18 +1401,24 @@ public class AbstractTest extends SystemTestCase
         }
     }
 
-    protected PropertyTypePermId createAPropertyType(String sessionToken, DataType dataType)
+    protected PropertyTypePermId createAPropertyType(final String sessionToken, final DataType dataType)
     {
-        PropertyTypeCreation creation = new PropertyTypeCreation();
+        return createAPropertyType(sessionToken, dataType, new VocabularyPermId("ORGANISM"));
+    }
+
+    protected PropertyTypePermId createAPropertyType(final String sessionToken, final DataType dataType,
+            final VocabularyPermId vocabularyPermId)
+    {
+        final PropertyTypeCreation creation = new PropertyTypeCreation();
         creation.setCode("TYPE-" + System.currentTimeMillis());
         creation.setDataType(dataType);
         creation.setLabel("label");
         creation.setDescription("description");
         if (dataType == DataType.CONTROLLEDVOCABULARY)
         {
-            creation.setVocabularyId(new VocabularyPermId("ORGANISM"));
+            creation.setVocabularyId(vocabularyPermId);
         }
-        return v3api.createPropertyTypes(sessionToken, Arrays.asList(creation)).get(0);
+        return v3api.createPropertyTypes(sessionToken, Collections.singletonList(creation)).get(0);
     }
 
     protected PropertyTypePermId createASamplePropertyType(String sessionToken, IEntityTypeId sampleTypeId)
