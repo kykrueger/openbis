@@ -29,6 +29,7 @@ import org.apache.log4j.Logger;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.openbis.generic.shared.IServer;
+import ch.systemsx.cisd.openbis.generic.shared.basic.SessionConstants;
 import ch.systemsx.cisd.openbis.generic.shared.dto.Session;
 
 /**

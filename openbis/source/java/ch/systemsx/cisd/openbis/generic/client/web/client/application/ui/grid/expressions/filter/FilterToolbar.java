@@ -20,7 +20,6 @@ import com.google.gwt.user.client.ui.Widget;
 
 import ch.systemsx.cisd.openbis.generic.client.web.client.ICommonClientServiceAsync;
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.Dict;
-import ch.systemsx.cisd.openbis.generic.client.web.client.application.GenericConstants;
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.IViewContext;
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.framework.IDatabaseModificationObserver;
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.ui.field.IParameterField;
@@ -34,6 +33,7 @@ import ch.systemsx.cisd.openbis.generic.client.web.client.application.util.IMess
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.util.TextToolItem;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.ColumnDistinctValues;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.CustomFilterInfo;
+import ch.systemsx.cisd.openbis.generic.client.web.client.dto.GenericConstants;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.GridColumnFilterInfo;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.GridFilters;
 import ch.systemsx.cisd.openbis.generic.shared.basic.IColumnDefinition;

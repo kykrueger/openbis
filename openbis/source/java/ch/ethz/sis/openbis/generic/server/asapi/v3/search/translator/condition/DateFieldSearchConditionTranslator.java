@@ -112,7 +112,7 @@ public class DateFieldSearchConditionTranslator implements IConditionTranslator<
                 final String entityTypesSubTableAlias = joinInformation.getSubTableAlias();
 
                 sqlBuilder.append(entityTypesSubTableAlias).append(PERIOD).append(joinInformation.getSubTableIdField())
-                        .append(SP).append(IS_NOT_NULL).append(SP).append(AND).append(SP);
+                        .append(SP).append(IS_NOT_NULL).append(SP).append(AND).append(SP).append(LP);
 
                 sqlBuilder.append(CASE);
                 String casting = dataTypeByPropertyName.get(propertyName);
@@ -139,7 +139,7 @@ public class DateFieldSearchConditionTranslator implements IConditionTranslator<
                     throw new UserFailureException("Property " + propertyName + " is neither of data type "
                             + DataType.DATE + " nor " + DataType.TIMESTAMP + ".");
                 }
-                sqlBuilder.append(SP).append(ELSE).append(SP).append(false).append(SP).append(END);
+                sqlBuilder.append(SP).append(ELSE).append(SP).append(false).append(SP).append(END).append(RP);
 
                 break;
             }

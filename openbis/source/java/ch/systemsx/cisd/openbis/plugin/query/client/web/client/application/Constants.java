@@ -16,7 +16,7 @@
 
 package ch.systemsx.cisd.openbis.plugin.query.client.web.client.application;
 
-import ch.systemsx.cisd.openbis.generic.client.web.client.application.GenericConstants;
+import ch.systemsx.cisd.openbis.generic.client.web.client.dto.GenericConstants;
 
 /**
  * @author Franz-Josef Elmer

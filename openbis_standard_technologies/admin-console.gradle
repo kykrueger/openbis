@@ -31,8 +31,7 @@ task adminConsole(type: Jar) {
          project(':openbis').compileJava.outputs.getFiles().getAsFileTree().plus(
          project(':openbis_api').compileJava.outputs.getFiles().getAsFileTree().plus(
          project(':screening').compileJava.outputs.getFiles().getAsFileTree().plus(
-         project(':rtd_phosphonetx').compileJava.outputs.getFiles().getAsFileTree().plus(
-         project(':datastore_server').compileJava.outputs.getFiles().getAsFileTree()))))))).matching {
+         project(':datastore_server').compileJava.outputs.getFiles().getAsFileTree())))))).matching {
 
 			include 'ch/systemsx/cisd/common/spring/HttpInvokerUtils.class'
 			include 'ch/systemsx/cisd/common/**/*.class'

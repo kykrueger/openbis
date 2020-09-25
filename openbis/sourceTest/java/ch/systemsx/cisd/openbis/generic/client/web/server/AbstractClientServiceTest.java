@@ -28,7 +28,7 @@ import org.testng.annotations.BeforeMethod;
 import ch.systemsx.cisd.common.servlet.IRequestContextProvider;
 import ch.systemsx.cisd.openbis.generic.client.web.client.IClientService;
 import ch.systemsx.cisd.openbis.generic.client.web.server.resultset.IResultSetManager;
-import ch.systemsx.cisd.openbis.generic.server.SessionConstants;
+import ch.systemsx.cisd.openbis.generic.shared.basic.SessionConstants;
 
 /**
  * An <i>abstract</i> test class for all {@link IClientService} implementations.

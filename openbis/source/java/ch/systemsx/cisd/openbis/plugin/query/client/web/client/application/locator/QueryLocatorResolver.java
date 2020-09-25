@@ -15,6 +15,7 @@ import ch.systemsx.cisd.openbis.generic.client.web.client.application.locator.IV
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.locator.ViewLocator;
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.menu.ITabActionMenuItemDefinition;
 import ch.systemsx.cisd.openbis.generic.client.web.client.exception.UserFailureException;
+import ch.systemsx.cisd.openbis.generic.shared.basic.BasicConstant;
 import ch.systemsx.cisd.openbis.generic.shared.basic.URLMethodWithParameters;
 import ch.systemsx.cisd.openbis.plugin.query.client.web.client.IQueryClientServiceAsync;
 import ch.systemsx.cisd.openbis.plugin.query.client.web.client.application.QueryParameterValue;
@@ -101,7 +102,7 @@ public class QueryLocatorResolver extends AbstractViewLocatorResolver
     public static String createQueryBrowserLink()
     {
         URLMethodWithParameters url = new URLMethodWithParameters("");
-        url.addParameter(ViewLocator.ACTION_PARAMETER, QUERY_ACTION);
+        url.addParameter(BasicConstant.LOCATOR_ACTION_PARAMETER, QUERY_ACTION);
         return url.toString().substring(1);
     }
 

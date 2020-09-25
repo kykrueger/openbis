@@ -100,7 +100,7 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
                 final String entityTypesSubTableAlias = joinInformation.getSubTableAlias();
 
                 sqlBuilder.append(entityTypesSubTableAlias).append(PERIOD).append(joinInformation.getSubTableIdField())
-                        .append(SP).append(IS_NOT_NULL).append(SP).append(AND).append(SP);
+                        .append(SP).append(IS_NOT_NULL).append(SP).append(AND).append(SP).append(LP);
 
                 final String casting;
                 if (value.getClass() != AnyStringValue.class)
@@ -117,6 +117,7 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
                             BooleanFieldSearchConditionTranslator.translateBooleanProperty(tableMapper, args,
                                     sqlBuilder, aliases, convertStringValueToBooleanValue(value), propertyName,
                                     internalProperty);
+                            sqlBuilder.append(RP);
                             return;
                         }
 
@@ -127,6 +128,7 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
 
                             NumberFieldSearchConditionTranslator.translateNumberProperty(tableMapper, args, sqlBuilder,
                                     aliases, convertStringValueToNumberValue(value), propertyName, internalProperty);
+                            sqlBuilder.append(RP);
                             return;
                         }
 
@@ -143,6 +145,7 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
                                     dataType, tableMapper, convertStringValueToDateValue(value), aliases, null,
                                     bareDateValue, propertyName, internalProperty, entityTypesSubTableAlias);
                             sqlBuilder.append(SP).append(END);
+                            sqlBuilder.append(RP);
                             return;
                         }
                     }
@@ -211,6 +214,7 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
 
                     sqlBuilder.append(SP).append(END);
                 }
+                sqlBuilder.append(RP);
                 break;
             }
 

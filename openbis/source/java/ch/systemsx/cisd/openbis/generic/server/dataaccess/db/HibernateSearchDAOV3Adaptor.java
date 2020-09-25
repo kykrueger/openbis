@@ -1,6 +1,29 @@
 package ch.systemsx.cisd.openbis.generic.server.dataaccess.db;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.*;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.GlobalSearchCriteriaTranslator.IDENTIFIER_ALIAS;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PERSON_REGISTERER_COLUMN;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
+import org.hibernate.Session;
+import org.hibernate.query.NativeQuery;
+import org.springframework.dao.DataAccessException;
+
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractEntitySearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.BooleanFieldSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateFieldSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.NumberFieldSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.NumberPropertySearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringFieldSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.ArchivingStatus;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.Complete;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.AbstractDataSetSearchCriteria;
@@ -17,27 +40,32 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.AbstractSampleSear
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.*;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DataSetSearchManager;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ExperimentSearchManager;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.GlobalSearchManager;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.IGlobalSearchManager;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ILocalSearchManager;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.MaterialSearchManager;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SampleSearchManager;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
-import ch.systemsx.cisd.openbis.generic.server.ComponentNames;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IHibernateSearchDAO;
 import ch.systemsx.cisd.openbis.generic.shared.authorization.AuthorizationConfig;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.*;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.CompareType;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetAttributeSearchFieldKind;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchCriteria;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchCriterion;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchSubCriteria;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentAttributeSearchFieldKind;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IAssociationCriteria;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MatchingEntity;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialAttributeSearchFieldKind;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Person;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleAttributeSearchFieldKind;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SearchableEntity;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
-import org.hibernate.Session;
-import org.hibernate.query.NativeQuery;
-import org.springframework.dao.DataAccessException;
-
-import java.util.*;
-
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.GlobalSearchCriteriaTranslator.IDENTIFIER_ALIAS;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PERSON_REGISTERER_COLUMN;
 
 /*
  * The goal of this class is to replace HibernateSearchDAO
@@ -45,6 +73,7 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PERSON_REG
  */
 public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
 
+    private static final String DAO_FACTORY = "dao-factory";
     private final static Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION,
             HibernateSearchDAOV3Adaptor.class);
 
@@ -80,7 +109,7 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
         // alreadyFoundEntities is an ignored parameter
 
         // Obtain PersonPE
-        DAOFactory daoFactory = (DAOFactory) CommonServiceProvider.getApplicationContext().getBean(ComponentNames.DAO_FACTORY);
+        DAOFactory daoFactory = (DAOFactory) CommonServiceProvider.getApplicationContext().getBean(DAO_FACTORY);
         PersonPE personPE = daoFactory.getPersonDAO().tryFindPersonByUserId(userId);
 
         if(personPE == null) {
@@ -213,7 +242,7 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
         operationLog.info("TO ADAPT [QUERY] : " + entityKind + " [" + mainV1Criteria + "] " + v1Associations);
 
         // Obtain PersonPE
-        DAOFactory daoFactory = (DAOFactory) CommonServiceProvider.getApplicationContext().getBean(ComponentNames.DAO_FACTORY);
+        DAOFactory daoFactory = (DAOFactory) CommonServiceProvider.getApplicationContext().getBean(DAO_FACTORY);
         PersonPE personPE = daoFactory.getPersonDAO().tryFindPersonByUserId(userId);
 
         if(personPE == null) {
@@ -1130,7 +1159,7 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
     private static String IS_NUMBER = "SELECT COUNT(*) > 0 FROM property_types WHERE code = :code AND (daty_id = (SELECT id FROM data_types WHERE code = 'INTEGER') OR daty_id = (SELECT id FROM data_types WHERE code = 'REAL'))";
 
     private boolean isNumberProperty(String propertyCode) {
-        DAOFactory daoFactory = (DAOFactory) CommonServiceProvider.getApplicationContext().getBean(ComponentNames.DAO_FACTORY);
+        DAOFactory daoFactory = (DAOFactory) CommonServiceProvider.getApplicationContext().getBean(DAO_FACTORY);
         Session currentSession = daoFactory.getSessionFactory().getCurrentSession();
         NativeQuery nativeQuery = currentSession.createNativeQuery(IS_NUMBER);
         nativeQuery.setParameter("code", propertyCode);
@@ -1141,7 +1170,7 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
     private static String IS_DATE = "SELECT COUNT(*) > 0 FROM property_types WHERE code = :code AND (daty_id = (SELECT id FROM data_types WHERE code = 'TIMESTAMP'))";
 
     private boolean isDateProperty(String propertyCode) {
-        DAOFactory daoFactory = (DAOFactory) CommonServiceProvider.getApplicationContext().getBean(ComponentNames.DAO_FACTORY);
+        DAOFactory daoFactory = (DAOFactory) CommonServiceProvider.getApplicationContext().getBean(DAO_FACTORY);
         Session currentSession = daoFactory.getSessionFactory().getCurrentSession();
         NativeQuery nativeQuery = currentSession.createNativeQuery(IS_DATE);
         nativeQuery.setParameter("code", propertyCode);

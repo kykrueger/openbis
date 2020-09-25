@@ -78,7 +78,7 @@ public class AnyPropertySearchConditionTranslator implements IConditionTranslato
         final String entityTypesSubTableAlias = joinInformation.getSubTableAlias();
 
         sqlBuilder.append(entityTypesSubTableAlias).append(PERIOD).append(joinInformation.getSubTableIdField())
-                .append(SP).append(IS_NOT_NULL).append(SP).append(AND).append(SP);
+                .append(SP).append(IS_NOT_NULL).append(SP).append(AND).append(SP).append(LP);
 
         if (value.getClass() != AnyStringValue.class)
         {
@@ -104,6 +104,8 @@ public class AnyPropertySearchConditionTranslator implements IConditionTranslato
         {
             sqlBuilder.append(TRUE);
         }
+
+        sqlBuilder.append(RP);
     }
 
     private static void appendSamplePropertyComparison(final StringBuilder sqlBuilder,

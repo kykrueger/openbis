@@ -28,10 +28,10 @@ import org.testng.annotations.Test;
 
 import ch.rinn.restrictions.Friend;
 import ch.systemsx.cisd.openbis.generic.client.web.server.AbstractFileDownloadServlet.FileContent;
-import ch.systemsx.cisd.openbis.generic.server.SessionConstants;
 import ch.systemsx.cisd.openbis.generic.shared.CommonTestUtils;
 import ch.systemsx.cisd.openbis.generic.shared.basic.AttachmentDownloadConstants;
 import ch.systemsx.cisd.openbis.generic.shared.basic.GenericSharedConstants;
+import ch.systemsx.cisd.openbis.generic.shared.basic.SessionConstants;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AttachmentHolderKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AttachmentWithContent;
 import ch.systemsx.cisd.openbis.generic.shared.dto.AttachmentPE;

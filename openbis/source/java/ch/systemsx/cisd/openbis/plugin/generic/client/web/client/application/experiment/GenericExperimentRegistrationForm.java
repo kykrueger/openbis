@@ -38,7 +38,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewExperiment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Project;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.api.IManagedInputWidgetDescription;
 import ch.systemsx.cisd.openbis.plugin.generic.client.web.client.IGenericClientServiceAsync;
-import ch.systemsx.cisd.openbis.plugin.query.client.web.client.application.Dict;
 
 /**
  * The <i>generic</i> experiment registration form.
@@ -95,7 +94,7 @@ public final class GenericExperimentRegistrationForm extends
         protected List<IMessageElement> createSuccessfullRegistrationInfo(Experiment experiment)
         {
             List<IMessageElement> message = new ArrayList<IMessageElement>();
-            message.add(new HtmlMessageElement(viewContext.getMessage(Dict.EXPERIMENT)));
+            message.add(new HtmlMessageElement(viewContext.getMessage("experiment")));
             message.add(new EntityLinkMessageElement(viewContext, createExperimentIdentifier(), EntityKind.EXPERIMENT, experiment.getPermId()));
             message.add(new HtmlMessageElement("successfully registered"));
             return message;

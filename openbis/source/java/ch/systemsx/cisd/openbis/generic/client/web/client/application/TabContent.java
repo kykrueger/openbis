@@ -22,6 +22,7 @@ import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.framework.IDisplayTypeIDGenerator;
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.ui.widget.SectionsPanel;
+import ch.systemsx.cisd.openbis.generic.client.web.client.dto.GenericConstants;
 import ch.systemsx.cisd.openbis.generic.shared.basic.IIdHolder;
 
 /**

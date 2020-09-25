@@ -83,7 +83,6 @@ import ch.systemsx.cisd.common.shared.basic.string.StringUtils;
 import ch.systemsx.cisd.openbis.generic.client.web.client.ICommonClientServiceAsync;
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.AbstractAsyncCallback;
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.Dict;
-import ch.systemsx.cisd.openbis.generic.client.web.client.application.GenericConstants;
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.IGenericImageBundle;
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.IViewContext;
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.ShowRelatedDatasetsDialog;
@@ -141,6 +140,7 @@ import ch.systemsx.cisd.openbis.generic.client.web.client.application.util.Windo
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.CommonGridColumnIDs;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.Constants;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.DefaultResultSetConfig;
+import ch.systemsx.cisd.openbis.generic.client.web.client.dto.GenericConstants;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.GridCustomColumnInfo;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.GridFilters;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.GridRowModels;

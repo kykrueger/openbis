@@ -19,7 +19,7 @@ package ch.systemsx.cisd.openbis.generic.client.web.client.application.ui.webapp
 import com.extjs.gxt.ui.client.widget.WidgetComponent;
 import com.google.gwt.user.client.ui.Frame;
 
-import ch.systemsx.cisd.openbis.generic.client.web.client.application.GenericConstants;
+import ch.systemsx.cisd.openbis.generic.client.web.client.dto.GenericConstants;
 
 /**
  * Component that displays a web application in an IFRAME.

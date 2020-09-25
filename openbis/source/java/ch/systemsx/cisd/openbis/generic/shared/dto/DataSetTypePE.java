@@ -35,7 +35,7 @@ import javax.persistence.UniqueConstraint;
 
 import org.hibernate.validator.constraints.Length;
 
-import ch.systemsx.cisd.openbis.generic.client.web.client.application.GenericConstants;
+import ch.systemsx.cisd.openbis.generic.client.web.client.dto.GenericConstants;
 import ch.systemsx.cisd.openbis.generic.shared.IServer;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
 

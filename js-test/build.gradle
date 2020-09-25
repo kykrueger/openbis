@@ -8,7 +8,6 @@ evaluationDependsOn(':openbis')
 evaluationDependsOn(':datastore_server')
 evaluationDependsOn(':ui-test')
 evaluationDependsOn(':screening')
-evaluationDependsOn(':rtd_phosphonetx')
 
 
 apply from: '../gradle/javaproject.gradle'
@@ -43,13 +42,11 @@ dependencies {
 
 	testCompile project(path: ':ui-test', configuration: 'tests')
 	
-	testRuntime project(':screening'), project(':rtd_phosphonetx')
-	
 	testRuntimeFirst 'javax:servlet-api:3.1.0', 'reflections:reflections:0.9.10', 'apache:commons-lang3:3.7'
 	
 	testRuntimeSecond 'google:gwt-user:2.4'
 
-	externalDss project(':screening'), project(':rtd_phosphonetx')
+	externalDss project(':screening')
 } 
 
 sourceSets.test.runtimeClasspath = configurations.testRuntimeFirst + configurations.testRuntimeSecond + sourceSets.test.runtimeClasspath
@@ -62,7 +59,7 @@ task copyWar(type: Copy, dependsOn: project(':openbis_standard_technologies').wa
 
 test {
     useTestNG()
-    options.suites('source/java/tests.xml')    
+    options.suites('source/java/tests-dev.xml')    
 
     jvmArgs '-Xmx2048m', '-XX:MaxPermSize=256m', '-Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.StrErrLog', '-Duser.timezone=Europe/Zurich', '-Xdebug', '-Xrunjdwp:transport=dt_socket,address=20010,server=y,suspend=n'
     
