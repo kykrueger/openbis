@@ -10,7 +10,7 @@ beforeEach(() => {
   common.beforeEach()
 })
 
-describe('TypeFormComponentAddProperty', () => {
+describe(TypeFormComponentTest.SUITE, () => {
   test('add local property', testAddLocalProperty)
   test('add new global property', testAddNewGlobalProperty)
   test('add existing global property', testAddExistingGlobalProperty)

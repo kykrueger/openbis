@@ -10,7 +10,7 @@ beforeEach(() => {
   common.beforeEach()
 })
 
-describe('VocabularyFormComponentInternal', () => {
+describe(VocabularyFormComponentTest.SUITE, () => {
   test('internal', testInternal)
 })
 

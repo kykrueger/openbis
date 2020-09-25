@@ -9,6 +9,8 @@ import objectTypes from '@src/js/common/consts/objectType.js'
 jest.mock('@src/js/components/types/form/TypeFormFacade')
 
 export default class TypeFormComponentTest extends ComponentTest {
+  static SUITE = 'TypeFormComponent'
+
   constructor() {
     super(
       object => <TypeForm object={object} controller={this.controller} />,

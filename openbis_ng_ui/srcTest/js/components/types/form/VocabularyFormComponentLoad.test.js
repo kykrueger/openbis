@@ -8,7 +8,7 @@ beforeEach(() => {
   common.beforeEach()
 })
 
-describe('VocabularyFormComponentLoad', () => {
+describe(VocabularyFormComponentTest.SUITE, () => {
   test('load new', testLoadNew)
   test('load existing', testLoadExisting)
 })

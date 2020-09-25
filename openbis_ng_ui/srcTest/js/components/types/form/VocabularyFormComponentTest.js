@@ -9,6 +9,8 @@ import objectTypes from '@src/js/common/consts/objectType.js'
 jest.mock('@src/js/components/types/form/VocabularyFormFacade')
 
 export default class VocabularyFormComponentTest extends ComponentTest {
+  static SUITE = 'VocabularyFormComponent'
+
   constructor() {
     super(
       object => <VocabularyForm object={object} controller={this.controller} />,

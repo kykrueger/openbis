@@ -8,7 +8,7 @@ beforeEach(() => {
   common.beforeEach()
 })
 
-describe('TypeFormComponentSelectSection', () => {
+describe(TypeFormComponentTest.SUITE, () => {
   test('select section', testSelectSection)
 })
 

@@ -10,7 +10,7 @@ beforeEach(() => {
   common.beforeEach()
 })
 
-describe('TypeFormComponentSelectProperty', () => {
+describe(TypeFormComponentTest.SUITE, () => {
   test('select property local unused', testSelectPropertyLocalUnused)
   test('select property local used', testSelectPropertyLocalUsed)
   test('select property global unused', testSelectPropertyGlobalUnused)

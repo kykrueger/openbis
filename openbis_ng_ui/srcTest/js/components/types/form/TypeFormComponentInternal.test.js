@@ -10,7 +10,7 @@ beforeEach(() => {
   common.beforeEach()
 })
 
-describe('TypeFormComponentInternal', () => {
+describe(TypeFormComponentTest.SUITE, () => {
   test('internal', testInternal)
 })
 

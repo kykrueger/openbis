@@ -8,7 +8,7 @@ beforeEach(() => {
   common.beforeEach()
 })
 
-describe('VocabularyFormComponentSelectTerm', () => {
+describe(VocabularyFormComponentTest.SUITE, () => {
   test('select term', testSelectTerm)
   test('follow selected term', testFollowSelectedTerm)
 })

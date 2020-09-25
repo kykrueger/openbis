@@ -9,7 +9,7 @@ beforeEach(() => {
   common.beforeEach()
 })
 
-describe('TypeFormComponentChangeProperty', () => {
+describe(TypeFormComponentTest.SUITE, () => {
   test('change property', testChangeProperty)
   test('convert property', testConvertProperty)
 })

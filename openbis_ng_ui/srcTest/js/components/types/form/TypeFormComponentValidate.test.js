@@ -7,7 +7,7 @@ beforeEach(() => {
   common.beforeEach()
 })
 
-describe('TypeFormComponentValidate', () => {
+describe(TypeFormComponentTest.SUITE, () => {
   test('validate type', testValidateType)
   test('validate property', testValidateProperty)
   test('validate type and property', testValidateTypeAndProperty)

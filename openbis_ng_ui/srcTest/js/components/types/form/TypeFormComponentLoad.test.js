@@ -8,7 +8,7 @@ beforeEach(() => {
   common.beforeEach()
 })
 
-describe('TypeFormComponentLoad', () => {
+describe(TypeFormComponentTest.SUITE, () => {
   test('load new', testLoadNew)
   test('load existing', testLoadExisting)
 })
