@@ -23,10 +23,15 @@ import static org.testng.Assert.assertEquals;
 import java.text.DateFormat;
 import java.util.*;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IPermIdHolder;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractEntitySearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.create.MaterialCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.create.VocabularyCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.create.VocabularyTermCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.VocabularyPermId;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -944,52 +949,73 @@ public class SearchMaterialTest extends AbstractTest
         }
     }
 
-//    @Test(dataProvider = "withDateOrTimestampPropertyExamples")
-//    public void testWithDateOrTimestampPropertyUsingWithProperty(final DataType dataType, final Date value, final String queryString,
-//            final boolean found)
-//    {
-//        // Given
-//        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
-//        final PropertyTypePermId propertyTypeId = createAPropertyType(sessionToken, dataType);
-//        final DateFormat dateFormat = dataType == DataType.DATE ? DATE_FORMAT : DATE_HOURS_MINUTES_SECONDS_FORMAT;
-//        final String formattedValue = dateFormat.format(value);
-//
-//        final MaterialPermId entityPermId = createMaterial(sessionToken, propertyTypeId, formattedValue);
-//        final MaterialSearchCriteria searchCriteria1 = new MaterialSearchCriteria();
-//        new AbstractSearchPropertyTest.DateQueryInjector(searchCriteria1, propertyTypeId, dateFormat)
-//                .buildCriteria(queryString);
-//        final MaterialFetchOptions emptyFetchOptions = new MaterialFetchOptions();
-//
-//        // When
-//        final List<? extends IPermIdHolder> entities1 = searchMaterials(sessionToken, searchCriteria1,
-//                emptyFetchOptions);
-//
-//        // Then
-//        assertEquals(entities1.size(), found ? 1 : 0);
-//        if (found)
-//        {
-//            assertEquals(entities1.get(0).getPermId().toString(), entityPermId.toString());
-//        }
-//
-//        if (dataType == DataType.TIMESTAMP)
-//        {
-//            // Given
-//            final MaterialSearchCriteria searchCriteria2 = new MaterialSearchCriteria();
-//            new AbstractSearchPropertyTest.DateQueryInjector(searchCriteria2, propertyTypeId, null)
-//                    .buildCriteria(queryString);
-//
-//            // When
-//            final List<? extends IPermIdHolder> entities2 = searchMaterials(sessionToken, searchCriteria2,
-//                    emptyFetchOptions);
-//
-//            // Then
-//            assertEquals(entities2.size(), found ? 1 : 0);
-//            if (found)
-//            {
-//                assertEquals(entities2.get(0).getPermId().toString(), entityPermId.toString());
-//            }
-//        }
-//    }
+    @DataProvider
+    protected Object[][] withControlledVocabularyPropertyExamples()
+    {
+        return new Object[][] {
+                { "WINTER", "== WINTER", true },
+                { "WINTER", "== SUMMER", false },
+                { "WINTER", "<= WINTER", true },
+                { "SUMMER", "<= WINTER", true },
+                { "WINTER", "<= SUMMER", false },
+                { "WINTER", "< WINTER", false },
+                { "SUMMER", "< WINTER", true },
+                { "WINTER", "< SUMMER", false },
+                { "WINTER", ">= WINTER", true },
+                { "WINTER", ">= SUMMER", true },
+                { "SUMMER", ">= WINTER", false },
+                { "WINTER", "> WINTER", false },
+                { "WINTER", "> SUMMER", true },
+                { "SUMMER", "> WINTER", false },
+
+                { "WINTER", "contains I and endsWith ER", true },
+                { "SUMMER", "contains I and endsWith ER", false },
+                { "SPRING", "contains I and endsWith ER", false },
+                { "SUMMER", "startsWith SU", true },
+                { "SPRING", "startsWith SU", false },
+        };
+    }
+
+    @Test(dataProvider = "withControlledVocabularyPropertyExamples")
+    public void testWithControlledVocabularyProperty(final String value, final String queryString, final boolean found)
+    {
+        // Given
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        final VocabularyTermCreation vocabularyTermCreation1 = new VocabularyTermCreation();
+        vocabularyTermCreation1.setCode("WINTER");
+        final VocabularyTermCreation vocabularyTermCreation2 = new VocabularyTermCreation();
+        vocabularyTermCreation2.setCode("SPRING");
+        final VocabularyTermCreation vocabularyTermCreation3 = new VocabularyTermCreation();
+        vocabularyTermCreation3.setCode("SUMMER");
+        final VocabularyTermCreation vocabularyTermCreation4 = new VocabularyTermCreation();
+        vocabularyTermCreation4.setCode("AUTUMN");
+
+        final VocabularyCreation vocabularyCreation = new VocabularyCreation();
+        vocabularyCreation.setCode("SEASONS");
+        vocabularyCreation.setTerms(Arrays.asList(vocabularyTermCreation1, vocabularyTermCreation2,
+                vocabularyTermCreation3, vocabularyTermCreation4));
+        final VocabularyPermId vocabularyPermId =
+                v3api.createVocabularies(sessionToken, Collections.singletonList(vocabularyCreation)).get(0);
+
+        final PropertyTypePermId propertyTypeId = createAPropertyType(sessionToken, DataType.CONTROLLEDVOCABULARY,
+                vocabularyPermId);
+        final MaterialPermId entityPermId = createMaterial(sessionToken, propertyTypeId, value);
+        final MaterialSearchCriteria searchCriteria = new MaterialSearchCriteria();
+        new AbstractSearchPropertyTest.StringQueryInjector(searchCriteria, propertyTypeId, false)
+                .buildCriteria(queryString);
+
+        // When
+        final List<? extends IPermIdHolder> entities = searchMaterials(sessionToken, searchCriteria,
+                new MaterialFetchOptions());
+
+        // Then
+        assertEquals(entities.size(), found ? 1 : 0);
+        if (found)
+        {
+            assertEquals(entities.get(0).getPermId().toString(), entityPermId.toString());
+        }
+    }
 
     private MaterialPermId createMaterial(final String sessionToken, final PropertyTypePermId propertyType,
             final String formattedValue)
