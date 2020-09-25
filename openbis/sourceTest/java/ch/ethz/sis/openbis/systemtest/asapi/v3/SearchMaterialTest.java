@@ -834,6 +834,53 @@ public class SearchMaterialTest extends AbstractTest
     }
 
     @DataProvider
+    protected Object[][] withPropertyExamples()
+    {
+        return new Object[][] {
+                { DataType.VARCHAR, "12", "== 12", true },
+                { DataType.VARCHAR, "ab", "<= abc", true },
+                { DataType.VARCHAR, "12", "> 100", true },
+                { DataType.VARCHAR, "ac3", "contains bc and endsWith 4", false },
+                { DataType.VARCHAR, "abc3", "contains bc and endsWith 4", false },
+                { DataType.VARCHAR, "ab34", "contains bc and endsWith 4", false },
+                { DataType.VARCHAR, "abc34", "contains bc and endsWith 4", true },
+                { DataType.MULTILINE_VARCHAR, "ac3", "contains bc or endsWith 4", false },
+                { DataType.MULTILINE_VARCHAR, "abc3", "contains bc or endsWith 4", true },
+                { DataType.MULTILINE_VARCHAR, "ab34", "contains bc or endsWith 4", true },
+                { DataType.MULTILINE_VARCHAR, "abc34", "contains bc or endsWith 4", true },
+                { DataType.MULTILINE_VARCHAR, "12", "> 100 and <= 13", true },
+                { DataType.BOOLEAN, "true", "== true", true },
+                { DataType.BOOLEAN, "true", "== false", false },
+                { DataType.BOOLEAN, "false", "== true", false },
+                { DataType.BOOLEAN, "false", "== false", true },
+        };
+    }
+
+    @Test(dataProvider = "withPropertyExamples")
+    public void testWithProperty(final DataType dataType, final String value, final String queryString,
+            final boolean found)
+    {
+        // Given
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        final PropertyTypePermId propertyTypeId = createAPropertyType(sessionToken, dataType);
+        final MaterialPermId entityPermId = createMaterial(sessionToken, propertyTypeId, value);
+        final MaterialSearchCriteria searchCriteria = new MaterialSearchCriteria();
+        new AbstractSearchPropertyTest.StringQueryInjector(searchCriteria, propertyTypeId, false)
+                .buildCriteria(queryString);
+
+        // When
+        final List<? extends IPermIdHolder> entities = searchMaterials(sessionToken, searchCriteria,
+                new MaterialFetchOptions());
+
+        // Then
+        assertEquals(entities.size(), found ? 1 : 0);
+        if (found)
+        {
+            assertEquals(entities.get(0).getPermId().toString(), entityPermId.toString());
+        }
+    }
+
+    @DataProvider
     protected Object[][] withDateOrTimestampPropertyExamples()
     {
         return new Object[][] {
