@@ -23,9 +23,8 @@ import static org.testng.Assert.assertEquals;
 import java.text.DateFormat;
 import java.util.*;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IPermIdHolder;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractEntitySearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.create.MaterialCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
@@ -1062,6 +1061,35 @@ public class SearchMaterialTest extends AbstractTest
         {
             assertEquals(entities.get(0).getPermId().toString(), entityPermId.toString());
         }
+    }
+
+    @Test
+    public void testSearchWithPropertyMatchingMaterialProperty()
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        final EntityTypePermId materialType = createAMaterialType(sessionToken, false);
+
+        final MaterialCreation materialCreation = new MaterialCreation();
+        materialCreation.setCode("MATERIAL_PROPERTY_TEST");
+        materialCreation.setTypeId(materialType);
+
+        final MaterialPermId materialPermId = v3api.createMaterials(sessionToken,
+                Collections.singletonList(materialCreation)).get(0);
+
+        final String materialTypePermId = materialType.getPermId();
+        final PropertyTypePermId propertyTypeId = createAMaterialPropertyType(sessionToken,
+                new EntityTypePermId(materialTypePermId, EntityKind.MATERIAL));
+
+        final MaterialPermId entityPermId = createMaterial(sessionToken, propertyTypeId, materialPermId.toString());
+
+        final MaterialSearchCriteria searchCriteria = new MaterialSearchCriteria();
+        searchCriteria.withOrOperator();
+        searchCriteria.withProperty(propertyTypeId.getPermId()).thatEquals(materialPermId.getCode());
+
+        final List<? extends IPermIdHolder> entities = searchMaterials(sessionToken, searchCriteria,
+                new MaterialFetchOptions());
+        assertEquals(entities.size(), 1);
+        assertEquals(entities.get(0).getPermId(), entityPermId);
     }
 
     private MaterialPermId createMaterial(final String sessionToken, final PropertyTypePermId propertyType,
