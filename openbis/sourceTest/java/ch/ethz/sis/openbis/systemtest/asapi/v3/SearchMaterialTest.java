@@ -1092,6 +1092,104 @@ public class SearchMaterialTest extends AbstractTest
         assertEquals(entities.get(0).getPermId(), entityPermId);
     }
 
+    @DataProvider
+    protected Object[][] withAnyPropertyExamples()
+    {
+        final String formattedDate = DATE_FORMAT.format(createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0));
+        final String formattedTimestamp = DATE_HOURS_MINUTES_SECONDS_FORMAT.format(
+                createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1));
+        return new Object[][] {
+                { DataType.VARCHAR, "12", "== 12", true },
+                { DataType.VARCHAR, "ab", "<= abc", true },
+                { DataType.VARCHAR, "12", "> 100", true },
+                { DataType.VARCHAR, "acd3", "contains bcd and endsWith 34", false },
+                { DataType.VARCHAR, "abcd3", "contains bcd and endsWith 34", false },
+                { DataType.VARCHAR, "abd34", "contains bcd and endsWith 34", false },
+                { DataType.VARCHAR, "abcd34", "contains bcd and endsWith 34", true },
+                { DataType.MULTILINE_VARCHAR, "ac3", "contains bc or endsWith 4", false },
+                { DataType.MULTILINE_VARCHAR, "abc3", "contains bc or endsWith 4", true },
+                { DataType.MULTILINE_VARCHAR, "ab4", "contains bc or endsWith 4", true },
+                { DataType.MULTILINE_VARCHAR, "abc4", "contains bc or endsWith 4", true },
+                { DataType.MULTILINE_VARCHAR, "12", "> 100 and <= 13", true },
+                { DataType.BOOLEAN, "true", "== true", true },
+                { DataType.BOOLEAN, "true", "== false", false },
+                { DataType.BOOLEAN, "false", "contains rue", false },
+                { DataType.BOOLEAN, "true", "contains rue", true },
+                { DataType.BOOLEAN, "false", "contains als", true },
+                { DataType.BOOLEAN, "true", "contains als", false },
+
+                { DataType.INTEGER, "12", "== 12", true },
+                { DataType.REAL, "12.5", "== 12.5", true },
+                { DataType.INTEGER, "13333", "<= 13333 and > 13332", true },
+                { DataType.INTEGER, "13333", "<= 13333.0 and > 13332", true },
+                { DataType.INTEGER, "13333", "< 13333.001 and > 13332", true },
+                { DataType.INTEGER, "999999999999", "< 999999999999.001 and >= 999999999999", true },
+                { DataType.INTEGER, "14", "> 13 and <= 19.5", true },
+                { DataType.INTEGER, "19", "> 13 and <= 19.5", true },
+                { DataType.REAL, "19", "> 13 and <= 19.5", true },
+                { DataType.REAL, "19.5", "> 13 and <= 19.5", true },
+                { DataType.REAL, "19", ">= 23.5 or <= 19.5", true },
+                { DataType.REAL, "23.5", ">= 23.5 or <= 19.5", true },
+                { DataType.INTEGER, "19", ">= 23.5 or <= 19.5", true },
+                { DataType.INTEGER, "24", ">= 23.5 or <= 19.5", true },
+                { DataType.INTEGER, "19", ">= 24 or <= 19", true },
+                { DataType.INTEGER, "24", ">= 24 or <= 19", true },
+                { DataType.INTEGER, "12345", "startsWith 12 and endsWith 45", true },
+                { DataType.INTEGER, "12345", "startsWith 13 and endsWith 45", false },
+                { DataType.INTEGER, "12345", "startsWith 12 and endsWith 55", false },
+                { DataType.INTEGER, "12345", "startsWith 11 and endsWith 55", false },
+                { DataType.INTEGER, "12345", "startsWith 12 or endsWith 45", true },
+                { DataType.INTEGER, "12345", "startsWith 13 or endsWith 45", true },
+                { DataType.INTEGER, "12345", "startsWith 12 or endsWith 55", true },
+                { DataType.INTEGER, "12345", "startsWith 11 or endsWith 55", false },
+                { DataType.INTEGER, "12345", "contains 234", true },
+                { DataType.INTEGER, "12345", "contains 437", false },
+                { DataType.REAL, "12.345", "startsWith 12. and endsWith 45", true },
+                { DataType.REAL, "12.345", "startsWith 12. or endsWith 45", true },
+                { DataType.REAL, "12.345", "contains .34", true },
+                { DataType.REAL, "12.345", "contains 9876", false },
+
+                { DataType.DATE, formattedDate, "== 2020-02-15", true },
+                { DataType.DATE, formattedDate, "== 2020-02-14", false },
+                { DataType.TIMESTAMP, formattedTimestamp, "startsWith 2020-02-15 10:00:01", true },
+                { DataType.TIMESTAMP, formattedTimestamp, "startsWith 2020-02-15 10:00:00", false },
+        };
+    }
+
+    @Test(dataProvider = "withAnyPropertyExamples")
+    public void testWithAnyProperty(final DataType dataType, final String value, final String queryString,
+            final boolean found)
+    {
+        testWithAny(dataType, value, queryString, found, false);
+    }
+
+    @Test(dataProvider = "withAnyPropertyExamples")
+    public void testWithAnyField(final DataType dataType, final String value, final String queryString,
+            final boolean found)
+    {
+        testWithAny(dataType, value, queryString, found, true);
+    }
+
+    public void testWithAny(final DataType dataType, final String value, final String queryString,
+            final boolean found, final boolean anyField)
+    {
+        // Given
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        final PropertyTypePermId propertyTypeId = createAPropertyType(sessionToken, dataType);
+        final MaterialPermId entityPermId = createMaterial(sessionToken, propertyTypeId, value);
+        final MaterialSearchCriteria searchCriteria = new MaterialSearchCriteria();
+        new AbstractSearchPropertyTest.StringQueryInjector(searchCriteria, null, anyField).buildCriteria(queryString);
+
+        // When
+        final List<? extends IPermIdHolder> entities = searchMaterials(sessionToken, searchCriteria,
+                new MaterialFetchOptions());
+
+        // Then
+        final boolean hasMatch = entities.stream().anyMatch(
+                entity -> entity.getPermId().toString().equals(entityPermId.toString()));
+        assertEquals(hasMatch, found);
+    }
+
     private MaterialPermId createMaterial(final String sessionToken, final PropertyTypePermId propertyType,
             final String formattedValue)
     {

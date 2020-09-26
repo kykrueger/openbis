@@ -411,32 +411,25 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
     public void testWithAnyProperty(final DataType dataType, final String value, final String queryString,
             final boolean found)
     {
-        // Given
-        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
-        final PropertyTypePermId propertyTypeId = createAPropertyType(sessionToken, dataType);
-        final ObjectPermId entityPermId = createEntity(sessionToken, propertyTypeId, value);
-        final AbstractEntitySearchCriteria<?> searchCriteria = createSearchCriteria();
-        new StringQueryInjector(searchCriteria, null, false).buildCriteria(queryString);
-
-        // When
-        final List<? extends IPermIdHolder> entities = search(sessionToken, searchCriteria);
-
-        // Then
-        final boolean hasMatch = entities.stream().anyMatch(
-                entity -> entity.getPermId().toString().equals(entityPermId.getPermId()));
-        assertEquals(hasMatch, found);
+        testWithAny(dataType, value, queryString, found, false);
     }
 
     @Test(dataProvider = "withAnyPropertyExamples")
     public void testWithAnyField(final DataType dataType, final String value, final String queryString,
             final boolean found)
     {
+        testWithAny(dataType, value, queryString, found, true);
+    }
+
+    public void testWithAny(final DataType dataType, final String value, final String queryString,
+            final boolean found, final boolean anyField)
+    {
         // Given
         final String sessionToken = v3api.login(TEST_USER, PASSWORD);
         final PropertyTypePermId propertyTypeId = createAPropertyType(sessionToken, dataType);
         final ObjectPermId entityPermId = createEntity(sessionToken, propertyTypeId, value);
         final AbstractEntitySearchCriteria<?> searchCriteria = createSearchCriteria();
-        new StringQueryInjector(searchCriteria, null, true).buildCriteria(queryString);
+        new StringQueryInjector(searchCriteria, null, anyField).buildCriteria(queryString);
 
         // When
         final List<? extends IPermIdHolder> entities = search(sessionToken, searchCriteria);
