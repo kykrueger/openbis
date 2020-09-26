@@ -546,7 +546,7 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
         final PropertyTypePermId propertyTypeId = createAMaterialPropertyType(sessionToken,
                 new EntityTypePermId(materialTypePermId, EntityKind.MATERIAL));
 
-        createEntity(sessionToken, propertyTypeId, materialPermId.toString());
+        final ObjectPermId entityPermId = createEntity(sessionToken, propertyTypeId, materialPermId.toString());
 
         final AbstractEntitySearchCriteria<?> searchCriteria = createSearchCriteria();
         searchCriteria.withOrOperator();
@@ -554,6 +554,7 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
 
         final List<? extends IPermIdHolder> entities = search(sessionToken, searchCriteria);
         assertEquals(entities.size(), 1);
+        assertEquals(entities.get(0).getPermId(), entityPermId);
     }
 
     private ObjectPermId createEntity(String sessionToken, PropertyTypePermId propertyTypeId, String value)
