@@ -25,6 +25,9 @@ import java.text.DateFormat;
 import java.util.*;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.*;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.create.MaterialCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.MaterialPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.create.VocabularyCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.create.VocabularyTermCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.VocabularyPermId;
@@ -521,6 +524,33 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
         final AbstractEntitySearchCriteria<?> searchCriteria = createSearchCriteria();
         searchCriteria.withOrOperator();
         searchCriteria.withProperty(propertyTypeId.getPermId()).thatEquals("/CISD/CL1");
+
+        final List<? extends IPermIdHolder> entities = search(sessionToken, searchCriteria);
+        assertEquals(entities.size(), 1);
+    }
+
+    @Test
+    public void testSearchWithPropertyMatchingMaterialProperty()
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        final EntityTypePermId materialType = createAMaterialType(sessionToken, false);
+
+        final MaterialCreation materialCreation = new MaterialCreation();
+        materialCreation.setCode("MATERIAL_PROPERTY_TEST");
+        materialCreation.setTypeId(materialType);
+
+        final MaterialPermId materialPermId = v3api.createMaterials(sessionToken,
+                Collections.singletonList(materialCreation)).get(0);
+
+        final String materialTypePermId = materialType.getPermId();
+        final PropertyTypePermId propertyTypeId = createAMaterialPropertyType(sessionToken,
+                new EntityTypePermId(materialTypePermId, EntityKind.MATERIAL));
+
+        createEntity(sessionToken, propertyTypeId, materialPermId.toString());
+
+        final AbstractEntitySearchCriteria<?> searchCriteria = createSearchCriteria();
+        searchCriteria.withOrOperator();
+        searchCriteria.withProperty(propertyTypeId.getPermId()).thatEquals(materialPermId.getCode());
 
         final List<? extends IPermIdHolder> entities = search(sessionToken, searchCriteria);
         assertEquals(entities.size(), 1);

@@ -1429,7 +1429,19 @@ public class AbstractTest extends SystemTestCase
         creation.setSampleTypeId(sampleTypeId);
         creation.setLabel("label");
         creation.setDescription("description");
-        return v3api.createPropertyTypes(sessionToken, Arrays.asList(creation)).get(0);
+        return v3api.createPropertyTypes(sessionToken, Collections.singletonList(creation)).get(0);
+    }
+
+    protected PropertyTypePermId createAMaterialPropertyType(final String sessionToken,
+            final IEntityTypeId materialTypeId)
+    {
+        final PropertyTypeCreation creation = new PropertyTypeCreation();
+        creation.setCode("TYPE-" + System.currentTimeMillis());
+        creation.setDataType(DataType.MATERIAL);
+        creation.setMaterialTypeId(materialTypeId);
+        creation.setLabel("label");
+        creation.setDescription("description");
+        return v3api.createPropertyTypes(sessionToken, Collections.singletonList(creation)).get(0);
     }
 
     protected EntityTypePermId createASampleType(String sessionToken, boolean mandatory, PropertyTypePermId... propertyTypes)
@@ -1522,7 +1534,7 @@ public class AbstractTest extends SystemTestCase
     private String getSampleIdentifier(String permId)
     {
         Session session = sessionFactory.getCurrentSession();
-        NativeQuery query = session.createSQLQuery("select sample_identifier from samples where perm_id = :permId")
+        NativeQuery query = session.createNativeQuery("select sample_identifier from samples where perm_id = :permId")
                 .setParameter("permId", permId);
         List<?> result = query.getResultList();
         try
