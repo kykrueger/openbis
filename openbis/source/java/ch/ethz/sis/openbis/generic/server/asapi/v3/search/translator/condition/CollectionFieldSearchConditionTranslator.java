@@ -55,7 +55,7 @@ public class CollectionFieldSearchConditionTranslator implements IConditionTrans
 
     @Override
     public void translate(final CollectionFieldSearchCriteria<?> criterion, final TableMapper tableMapper, final List<Object> args,
-            final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases, final Map<String, String> dataTypeByPropertyName)
+            final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases, final Map<String, String> dataTypeByPropertyName, final Map<String, String> dataTypeByPropertyCode)
     {
         if (!ARRAY_CASTING.containsKey(criterion.getClass()))
         {

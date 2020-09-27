@@ -49,6 +49,10 @@ define([ "require", "stjs", "as/dto/common/search/AbstractObjectSearchCriteria",
 			var NumberPropertySearchCriteria = require("as/dto/common/search/NumberPropertySearchCriteria");
 			return this.addCriteria(new NumberPropertySearchCriteria(propertyName));
 		};
+		prototype.withBooleanProperty = function(propertyName) {
+			var BooleanPropertySearchCriteria = require("as/dto/common/search/BooleanPropertySearchCriteria");
+			return this.addCriteria(new BooleanPropertySearchCriteria(propertyName));
+		};
 		prototype.withTag = function() {
 			var TagSearchCriteria = require("as/dto/tag/search/TagSearchCriteria");
 			return this.addCriteria(new TagSearchCriteria());

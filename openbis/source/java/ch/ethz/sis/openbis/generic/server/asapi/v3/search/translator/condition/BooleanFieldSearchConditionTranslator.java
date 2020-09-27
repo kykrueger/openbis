@@ -22,6 +22,8 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCrite
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.AttributesMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils;
+import ch.systemsx.cisd.common.exceptions.UserFailureException;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
 
 import java.util.List;
@@ -56,7 +58,7 @@ public class BooleanFieldSearchConditionTranslator implements IConditionTranslat
     @Override
     public void translate(final BooleanFieldSearchCriteria criterion, final TableMapper tableMapper, final List<Object> args,
             final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases,
-            final Map<String, String> dataTypeByPropertyName)
+            final Map<String, String> dataTypeByPropertyName, final Map<String, String> dataTypeByPropertyCode)
     {
         switch (criterion.getFieldType())
         {
@@ -75,6 +77,15 @@ public class BooleanFieldSearchConditionTranslator implements IConditionTranslat
             {
                 final Boolean value = criterion.getFieldValue();
                 final String propertyName = TranslatorUtils.normalisePropertyName(criterion.getFieldName());
+                final String casting = dataTypeByPropertyCode.get(propertyName);
+
+                if (!DataTypeCode.BOOLEAN.toString().equals(casting))
+                {
+                    throw new UserFailureException(String.format(
+                            "The data type of property %s has to be %s instead of %s.", propertyName,
+                            DataTypeCode.BOOLEAN, casting));
+                }
+
                 final boolean internalProperty = TranslatorUtils.isPropertyInternal(criterion.getFieldName());
 
                 translateBooleanProperty(tableMapper, args, sqlBuilder, aliases, value, propertyName, internalProperty);

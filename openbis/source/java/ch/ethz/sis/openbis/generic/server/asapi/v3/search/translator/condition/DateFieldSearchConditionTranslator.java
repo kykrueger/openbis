@@ -61,7 +61,7 @@ public class DateFieldSearchConditionTranslator implements IConditionTranslator<
     @Override
     public void translate(final DateFieldSearchCriteria criterion, final TableMapper tableMapper, final List<Object> args,
             final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases,
-            final Map<String, String> dataTypeByPropertyName)
+            final Map<String, String> dataTypeByPropertyName, final Map<String, String> dataTypeByPropertyCode)
     {
         final IDate value = criterion.getFieldValue();
         final ITimeZone timeZone = criterion.getTimeZone();

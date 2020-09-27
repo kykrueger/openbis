@@ -173,6 +173,71 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
                 // Then
                 "cannot be applied to the data type " + dataType);
     }
+    
+    @DataProvider
+    protected Object[][] withBooleanPropertyExamples()
+    {
+        return new Object[][] {
+                { true, "== true", true },
+                { true, "== false", false },
+                { false, "== true", false },
+                { false, "== false", true },
+        };
+    }
+
+    @Test(dataProvider = "withBooleanPropertyExamples")
+    public void testWithBooleanProperty(final boolean value, final String queryString, final boolean found)
+    {
+        // Given
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        final PropertyTypePermId propertyTypeId = createAPropertyType(sessionToken, DataType.BOOLEAN);
+        final ObjectPermId entityPermId = createEntity(sessionToken, propertyTypeId, String.valueOf(value));
+        final AbstractEntitySearchCriteria<?> searchCriteria = createSearchCriteria();
+        new BooleanQueryInjector(searchCriteria, propertyTypeId).buildCriteria(queryString);
+
+        // When
+        final List<? extends IPermIdHolder> entities = search(sessionToken, searchCriteria);
+
+        // Then
+        assertEquals(entities.size(), found ? 1 : 0);
+        if (found)
+        {
+            assertEquals(entities.get(0).getPermId().toString(), entityPermId.getPermId());
+        }
+    }
+
+    @DataProvider
+    protected Object[][] withBooleanPropertyThrowingExceptionExamples()
+    {
+        return new Object[][] {
+                { DataType.CONTROLLEDVOCABULARY },
+                { DataType.DATE },
+                { DataType.HYPERLINK },
+                { DataType.INTEGER },
+                { DataType.MATERIAL },
+                { DataType.MULTILINE_VARCHAR },
+                { DataType.TIMESTAMP },
+                { DataType.REAL },
+                { DataType.SAMPLE },
+                { DataType.VARCHAR },
+                { DataType.XML },
+        };
+    }
+
+    @Test(dataProvider = "withBooleanPropertyThrowingExceptionExamples")
+    public void testWithBooleanPropertyThrowingException(final DataType dataType)
+    {
+        // Given
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        final PropertyTypePermId propertyTypeId = createAPropertyType(sessionToken, dataType);
+        final AbstractEntitySearchCriteria<?> searchCriteria = createSearchCriteria();
+        searchCriteria.withBooleanProperty(propertyTypeId.getPermId()).thatEquals(true);
+
+        // When
+        assertUserFailureException(aVoid -> search(sessionToken, searchCriteria),
+                // Then
+                "cannot be applied to the data type " + dataType);
+    }
 
     @Test
     public void testWithDatePropertyComparedToJavaDateThrowingException()
@@ -807,6 +872,30 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
                     break;
                 default:
                     throw new IllegalArgumentException("Unsupported operator " + operator);
+            }
+        }
+    }
+
+    private static final class BooleanQueryInjector extends AbstractQueryInjector
+    {
+        BooleanQueryInjector(final AbstractEntitySearchCriteria<?> searchCriteria,
+                final PropertyTypePermId propertyTypeId)
+        {
+            super(searchCriteria, propertyTypeId);
+        }
+
+        @Override
+        protected void injectQuery(final Operator operator, final String operand)
+        {
+            final boolean value = Boolean.parseBoolean(operand);
+            final BooleanPropertySearchCriteria criteria = searchCriteria.withBooleanProperty(
+                    propertyTypeId.getPermId());
+            if (operator == Operator.EQUAL)
+            {
+                criteria.thatEquals(value);
+            } else
+            {
+                throw new IllegalArgumentException("Unsupported operator " + operator);
             }
         }
     }

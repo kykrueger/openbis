@@ -110,6 +110,7 @@ public class CriteriaMapper {
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(AnyFieldSearchCriteria.class, new AnyFieldSearchConditionTranslator());
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(AnyPropertySearchCriteria.class, new AnyPropertySearchConditionTranslator());
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(ArchivingRequestedSearchCriteria.class, booleanFieldSearchConditionTranslator);
+        CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(BooleanPropertySearchCriteria.class, booleanFieldSearchConditionTranslator);
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(CodeSearchCriteria.class, codeSearchConditionTranslator);
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(CodesSearchCriteria.class, collectionFieldSearchConditionTranslator);
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(CollectionFieldSearchCriteria.class, collectionFieldSearchConditionTranslator);

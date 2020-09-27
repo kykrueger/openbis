@@ -85,7 +85,7 @@ public class NumberFieldSearchConditionTranslator implements IConditionTranslato
     @Override
     public void translate(final NumberFieldSearchCriteria criterion, final TableMapper tableMapper, final List<Object> args,
             final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases,
-            final Map<String, String> dataTypeByPropertyName)
+            final Map<String, String> dataTypeByPropertyName, final Map<String, String> dataTypeByPropertyCode)
     {
         switch (criterion.getFieldType())
         {

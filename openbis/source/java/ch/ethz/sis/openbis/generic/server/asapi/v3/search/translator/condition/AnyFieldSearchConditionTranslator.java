@@ -97,7 +97,7 @@ public class AnyFieldSearchConditionTranslator implements IConditionTranslator<A
     @Override
     public void translate(final AnyFieldSearchCriteria criterion, final TableMapper tableMapper, final List<Object> args,
             final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases,
-            final Map<String, String> dataTypeByPropertyName)
+            final Map<String, String> dataTypeByPropertyName, final Map<String, String> dataTypeByPropertyCode)
     {
         switch (criterion.getFieldType())
         {

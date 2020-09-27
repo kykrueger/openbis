@@ -1190,6 +1190,39 @@ public class SearchMaterialTest extends AbstractTest
         assertEquals(hasMatch, found);
     }
 
+    @DataProvider
+    protected Object[][] withBooleanPropertyThrowingExceptionExamples()
+    {
+        return new Object[][] {
+                { DataType.CONTROLLEDVOCABULARY },
+                { DataType.DATE },
+                { DataType.HYPERLINK },
+                { DataType.INTEGER },
+                { DataType.MATERIAL },
+                { DataType.MULTILINE_VARCHAR },
+                { DataType.TIMESTAMP },
+                { DataType.REAL },
+                { DataType.SAMPLE },
+                { DataType.VARCHAR },
+                { DataType.XML },
+        };
+    }
+
+    @Test(dataProvider = "withBooleanPropertyThrowingExceptionExamples")
+    public void testWithBooleanPropertyThrowingException(final DataType dataType)
+    {
+        // Given
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        final PropertyTypePermId propertyTypeId = createAPropertyType(sessionToken, dataType);
+        final MaterialSearchCriteria searchCriteria = new MaterialSearchCriteria();
+        searchCriteria.withBooleanProperty(propertyTypeId.getPermId()).thatEquals(true);
+
+        // When
+        assertUserFailureException(aVoid -> searchMaterials(sessionToken, searchCriteria, new MaterialFetchOptions()),
+                // Then
+                "cannot be applied to the data type " + dataType);
+    }
+
     private MaterialPermId createMaterial(final String sessionToken, final PropertyTypePermId propertyType,
             final String formattedValue)
     {
