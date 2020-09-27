@@ -96,6 +96,11 @@ public abstract class AbstractEntitySearchCriteria<ID extends IObjectId> extends
         return with(new AnyPropertySearchCriteria());
     }
 
+    public AnyNumberPropertySearchCriteria withAnyNumberProperty()
+    {
+        return with(new AnyNumberPropertySearchCriteria());
+    }
+
     public AnyFieldSearchCriteria withAnyField()
     {
         return with(new AnyFieldSearchCriteria());

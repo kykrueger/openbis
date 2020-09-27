@@ -506,6 +506,53 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
     }
 
     @DataProvider
+    protected Object[][] withAnyNumberPropertyExamples()
+    {
+        return new Object[][] {
+                { DataType.VARCHAR, 12, "== 12", false },
+                { DataType.VARCHAR, 12, "> 100", false },
+                { DataType.MULTILINE_VARCHAR, 12, "> 100 and <= 13", false },
+
+                { DataType.INTEGER, 12, "== 12", true },
+                { DataType.REAL, 12.5, "== 12.5", true },
+                { DataType.INTEGER, 13333, "<= 13333 and > 13332", true },
+                { DataType.INTEGER, 13333, "<= 13333.0 and > 13332", true },
+                { DataType.INTEGER, 13333, "< 13333.001 and > 13332", true },
+                { DataType.INTEGER, 13333, "< 13333.001 and >= 13333", true },
+                { DataType.INTEGER, 14, "> 13 and <= 19.5", true },
+                { DataType.INTEGER, 19, "> 13 and <= 19.5", true },
+                { DataType.REAL, 19, "> 13 and <= 19.5", true },
+                { DataType.REAL, 19.5, "> 13 and <= 19.5", true },
+                { DataType.REAL, 19, ">= 23.5 or <= 19.5", true },
+                { DataType.REAL, 23.5, ">= 23.5 or <= 19.5", true },
+                { DataType.INTEGER, 19, ">= 23.5 or <= 19.5", true },
+                { DataType.INTEGER, 24, ">= 23.5 or <= 19.5", true },
+                { DataType.INTEGER, 19, ">= 24 or <= 19", true },
+                { DataType.INTEGER, 24, ">= 24 or <= 19", true },
+        };
+    }
+
+    @Test(dataProvider = "withAnyNumberPropertyExamples")
+    public void testWithAnyNumber(final DataType dataType, final Number value, final String queryString,
+            final boolean found)
+    {
+        // Given
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        final PropertyTypePermId propertyTypeId = createAPropertyType(sessionToken, dataType);
+        final ObjectPermId entityPermId = createEntity(sessionToken, propertyTypeId, value.toString());
+        final AbstractEntitySearchCriteria<?> searchCriteria = createSearchCriteria();
+        new NumberQueryInjector(searchCriteria, null).buildCriteria(queryString);
+
+        // When
+        final List<? extends IPermIdHolder> entities = search(sessionToken, searchCriteria);
+
+        // Then
+        final boolean hasMatch = entities.stream().anyMatch(
+                entity -> entity.getPermId().toString().equals(entityPermId.getPermId()));
+        assertEquals(hasMatch, found);
+    }
+
+    @DataProvider
     protected Object[][] withControlledVocabularyPropertyExamples()
     {
         return new Object[][] {
@@ -852,7 +899,9 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
         protected void injectQuery(Operator operator, String operand)
         {
             Number number = new Double(operand);
-            NumberPropertySearchCriteria criteria = searchCriteria.withNumberProperty(propertyTypeId.getPermId());
+            NumberFieldSearchCriteria criteria = propertyTypeId != null
+                    ? searchCriteria.withNumberProperty(propertyTypeId.getPermId())
+                    : searchCriteria.withAnyNumberProperty();
             switch (operator)
             {
                 case EQUAL:

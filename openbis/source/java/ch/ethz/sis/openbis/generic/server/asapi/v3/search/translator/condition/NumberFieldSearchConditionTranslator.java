@@ -142,11 +142,15 @@ public class NumberFieldSearchConditionTranslator implements IConditionTranslato
 
         TranslatorUtils.appendInternalExternalConstraint(sqlBuilder, args, entityTypesSubTableAlias, internalProperty);
 
-        sqlBuilder.append(SP).append(joinInformation.getSubTableAlias())
-                .append(PERIOD).append(ColumnNames.CODE_COLUMN).append(SP).append(EQ).append(SP).append(QU);
-        args.add(propertyName);
+        if (propertyName != null)
+        {
+            sqlBuilder.append(SP).append(joinInformation.getSubTableAlias())
+                    .append(PERIOD).append(ColumnNames.CODE_COLUMN).append(SP).append(EQ).append(SP).append(QU);
+            args.add(propertyName);
 
-        sqlBuilder.append(SP).append(AND).append(SP).append(LP);
+            sqlBuilder.append(SP).append(AND);
+        }
+        sqlBuilder.append(SP).append(LP);
 
         sqlBuilder.append(aliases.get(TableNames.DATA_TYPES_TABLE).getSubTableAlias())
                 .append(PERIOD).append(ColumnNames.CODE_COLUMN).append(SP).append(EQ).append(SP).append(QU);
