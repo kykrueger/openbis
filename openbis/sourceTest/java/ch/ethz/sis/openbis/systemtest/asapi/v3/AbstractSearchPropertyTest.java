@@ -925,7 +925,7 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
         }
     }
 
-    private static final class BooleanQueryInjector extends AbstractQueryInjector
+    static final class BooleanQueryInjector extends AbstractQueryInjector
     {
         BooleanQueryInjector(final AbstractEntitySearchCriteria<?> searchCriteria,
                 final PropertyTypePermId propertyTypeId)

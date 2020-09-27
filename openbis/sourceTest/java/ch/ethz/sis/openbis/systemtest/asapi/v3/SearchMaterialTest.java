@@ -1191,6 +1191,39 @@ public class SearchMaterialTest extends AbstractTest
     }
 
     @DataProvider
+    protected Object[][] withBooleanPropertyExamples()
+    {
+        return new Object[][] {
+                { true, "== true", true },
+                { true, "== false", false },
+                { false, "== true", false },
+                { false, "== false", true },
+        };
+    }
+
+    @Test(dataProvider = "withBooleanPropertyExamples")
+    public void testWithBooleanProperty(final boolean value, final String queryString, final boolean found)
+    {
+        // Given
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        final PropertyTypePermId propertyTypeId = createAPropertyType(sessionToken, DataType.BOOLEAN);
+        final MaterialPermId entityPermId = createMaterial(sessionToken, propertyTypeId, String.valueOf(value));
+        final MaterialSearchCriteria searchCriteria = new MaterialSearchCriteria();
+        new AbstractSearchPropertyTest.BooleanQueryInjector(searchCriteria, propertyTypeId).buildCriteria(queryString);
+
+        // When
+        final List<? extends IPermIdHolder> entities = searchMaterials(sessionToken, searchCriteria,
+                new MaterialFetchOptions());
+
+        // Then
+        assertEquals(entities.size(), found ? 1 : 0);
+        if (found)
+        {
+            assertEquals(entities.get(0).getPermId().toString(), entityPermId.toString());
+        }
+    }
+
+    @DataProvider
     protected Object[][] withBooleanPropertyThrowingExceptionExamples()
     {
         return new Object[][] {
