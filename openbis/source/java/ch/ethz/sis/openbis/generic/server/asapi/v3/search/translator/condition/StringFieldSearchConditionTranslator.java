@@ -75,7 +75,8 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
 
     @Override
     public void translate(final StringFieldSearchCriteria criterion, final TableMapper tableMapper, final List<Object> args,
-            final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases, final Map<String, String> dataTypeByPropertyName, final Map<String, String> dataTypeByPropertyCode)
+            final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases,
+            final Map<String, String> dataTypeByPropertyCode)
     {
         switch (criterion.getFieldType())
         {
@@ -104,7 +105,7 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
                 final String casting;
                 if (value.getClass() != AnyStringValue.class)
                 {
-                    casting = dataTypeByPropertyName.get(propertyName);
+                    casting = dataTypeByPropertyCode.get(propertyName);
 
                     if (casting != null)
                     {
@@ -251,9 +252,7 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
                         || casting.equals(DataTypeCode.REAL.toString())
                         || casting.equals(DataTypeCode.TIMESTAMP.toString())
                         || casting.equals(DataTypeCode.DATE.toString())
-                        || casting.equals(DataTypeCode.BOOLEAN.toString())
-                        || casting.equals(DataTypeCode.MATERIAL.toString())
-                        || casting.equals(DataTypeCode.SAMPLE.toString())))
+                        || casting.equals(DataTypeCode.BOOLEAN.toString())))
         {
             throw new UserFailureException(String.format("Operator %s undefined for datatype %s.",
                     OPERATOR_NAME_BY_CLASS.get(value.getClass()), casting));

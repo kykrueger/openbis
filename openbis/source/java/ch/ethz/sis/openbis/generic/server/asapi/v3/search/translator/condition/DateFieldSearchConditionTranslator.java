@@ -61,7 +61,7 @@ public class DateFieldSearchConditionTranslator implements IConditionTranslator<
     @Override
     public void translate(final DateFieldSearchCriteria criterion, final TableMapper tableMapper, final List<Object> args,
             final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases,
-            final Map<String, String> dataTypeByPropertyName, final Map<String, String> dataTypeByPropertyCode)
+            final Map<String, String> dataTypeByPropertyCode)
     {
         final IDate value = criterion.getFieldValue();
         final ITimeZone timeZone = criterion.getTimeZone();
@@ -115,7 +115,7 @@ public class DateFieldSearchConditionTranslator implements IConditionTranslator<
                         .append(SP).append(IS_NOT_NULL).append(SP).append(AND).append(SP).append(LP);
 
                 sqlBuilder.append(CASE);
-                String casting = dataTypeByPropertyName.get(propertyName);
+                String casting = dataTypeByPropertyCode.get(propertyName);
                 if (DataType.DATE.toString().equals(casting))
                 {
                     if (bareDateValue == false)

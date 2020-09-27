@@ -43,7 +43,7 @@ public class ContainerRelationshipSearchConditionTranslator implements IConditio
 
     @Override
     public void translate(final ISearchCriteria criterion, final TableMapper tableMapper, final List<Object> args,
-            final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases, final Map<String, String> dataTypeByPropertyName, final Map<String, String> dataTypeByPropertyCode)
+            final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases, final Map<String, String> dataTypeByPropertyCode)
     {
         sqlBuilder.append(aliases.get(RELATIONSHIP_TYPES_TABLE).getSubTableAlias()).append(PERIOD).append(CODE_COLUMN).append(SP).append(EQ).append(SP).
                 append(QU);

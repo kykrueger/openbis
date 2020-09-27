@@ -41,7 +41,7 @@ public class ListableSampleTypeSearchConditionTranslator implements IConditionTr
     @Override
     public void translate(final ListableSampleTypeSearchCriteria criterion, final TableMapper tableMapper, final List<Object> args,
             final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases,
-            final Map<String, String> dataTypeByPropertyName, final Map<String, String> dataTypeByPropertyCode)
+            final Map<String, String> dataTypeByPropertyCode)
     {
         sqlBuilder.append(ColumnNames.IS_LISTABLE).append(SP).append(EQ).append(QU);
         args.add(criterion.isListable());

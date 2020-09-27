@@ -85,7 +85,7 @@ public class NumberFieldSearchConditionTranslator implements IConditionTranslato
     @Override
     public void translate(final NumberFieldSearchCriteria criterion, final TableMapper tableMapper, final List<Object> args,
             final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases,
-            final Map<String, String> dataTypeByPropertyName, final Map<String, String> dataTypeByPropertyCode)
+            final Map<String, String> dataTypeByPropertyCode)
     {
         switch (criterion.getFieldType())
         {
@@ -106,7 +106,7 @@ public class NumberFieldSearchConditionTranslator implements IConditionTranslato
             {
                 final AbstractNumberValue value = criterion.getFieldValue();
                 final String propertyName = TranslatorUtils.normalisePropertyName(criterion.getFieldName());
-                String casting = dataTypeByPropertyName.get(propertyName);
+                String casting = dataTypeByPropertyCode.get(propertyName);
                 if (VALID_DATA_TYPES.contains(casting) == false)
                 {
                     throw new UserFailureException("The data type of property " + propertyName + " has to be one of "

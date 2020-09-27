@@ -42,7 +42,7 @@ public class LastNameSearchConditionTranslator implements IConditionTranslator<L
     @Override
     public void translate(final LastNameSearchCriteria criterion, final TableMapper tableMapper, final List<Object> args,
             final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases,
-            final Map<String, String> dataTypeByPropertyName, final Map<String, String> dataTypeByPropertyCode)
+            final Map<String, String> dataTypeByPropertyCode)
     {
         if (criterion.getFieldType() == ATTRIBUTE)
         {

@@ -234,7 +234,6 @@ public class SearchCriteriaTranslator
                 {
                     conditionTranslator.translate(criterion, tableMapper, translationContext.getArgs(), sqlBuilder,
                             translationContext.getAliases().get(criterion),
-                            translationContext.getDataTypeByPropertyName(),
                             translationContext.getDataTypeByPropertyCode());
                 } else
                 {

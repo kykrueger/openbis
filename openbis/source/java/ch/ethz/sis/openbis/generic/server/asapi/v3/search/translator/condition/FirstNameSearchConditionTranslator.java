@@ -42,7 +42,7 @@ public class FirstNameSearchConditionTranslator implements IConditionTranslator<
     @Override
     public void translate(final FirstNameSearchCriteria criterion, final TableMapper tableMapper, final List<Object> args,
             final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases,
-            final Map<String, String> dataTypeByPropertyName, final Map<String, String> dataTypeByPropertyCode)
+            final Map<String, String> dataTypeByPropertyCode)
     {
         if (criterion.getFieldType() == ATTRIBUTE)
         {
