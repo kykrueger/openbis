@@ -26,7 +26,6 @@
         <property name="configLocation" value="classpath:applicationContext.xml" />
         <property name="conditionalConfigLocations">
         <list>
-            <value>${proteomics-application-context-required}:classpath:proteomics-plugin-applicationContext.xml</value>
             <value>${screening-application-context-required}:classpath:screening-plugin-applicationContext.xml</value>
         </list>
         </property>
