@@ -32,8 +32,7 @@ def sslwrap(func):
 
 ssl.wrap_socket = sslwrap(ssl.wrap_socket)
 
-#ALL_TECHNOLOGIES = ['screening', 'proteomics', 'illumina-ngs', 'eln-lims', 'microscopy', 'flow']
-ALL_TECHNOLOGIES = ['screening', 'proteomics', 'illumina-ngs', 'microscopy', 'flow']
+ALL_TECHNOLOGIES = ['screening', 'illumina-ngs', 'microscopy', 'flow']
 DATA_SOURCE_AS_PORT = '9000'
 DATA_SOURCE_DSS_PORT = '9001'
 HARVESTER_AS_PORT = '9002'
@@ -415,7 +414,6 @@ class TestCase(systemtest.testcase.TestCase):
         openbis_data_source.createTestDatabase('openbis')
         openbis_data_source.createTestDatabase('pathinfo')
         openbis_data_source.createTestDatabase('imaging')
-        openbis_data_source.createTestDatabase('proteomics')
         openbis_data_source.enableCorePlugin('openbis-sync')
         return openbis_data_source
 

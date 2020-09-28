@@ -35,8 +35,6 @@ public class StandardClient extends Client
         ClientPluginFactoryProvider(IViewContext<ICommonClientServiceAsync> originalViewContext)
         {
             super(originalViewContext);
-            registerPluginFactory(new ch.systemsx.cisd.openbis.plugin.proteomics.client.web.client.application.ClientPluginFactory(
-                    originalViewContext));
             registerPluginFactory(new ch.systemsx.cisd.openbis.plugin.screening.client.web.client.application.ClientPluginFactory(
                     originalViewContext));
         }
