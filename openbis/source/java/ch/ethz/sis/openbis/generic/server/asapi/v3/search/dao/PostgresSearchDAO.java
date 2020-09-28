@@ -117,7 +117,18 @@ public class PostgresSearchDAO implements ISQLSearchDAO
 
         translationContext.getCriteria().forEach(criterion ->
         {
-            if (criterion instanceof NumberPropertySearchCriteria)
+            if (criterion instanceof StrictlyStringPropertySearchCriteria)
+            {
+                final String dataType = dataTypeByPropertyCode.get(((StrictlyStringPropertySearchCriteria) criterion)
+                        .getFieldName());
+                if (!dataType.equals(DataTypeCode.VARCHAR.toString())
+                        && !dataType.equals(DataTypeCode.MULTILINE_VARCHAR.toString())
+                        && !dataType.equals(DataTypeCode.HYPERLINK.toString())
+                        && !dataType.equals(DataTypeCode.XML.toString()))
+                {
+                    throwInconsistencyException(criterion, dataType);
+                }
+            } if (criterion instanceof NumberPropertySearchCriteria)
             {
                 final String dataType = dataTypeByPropertyCode.get(((NumberPropertySearchCriteria) criterion)
                         .getFieldName());

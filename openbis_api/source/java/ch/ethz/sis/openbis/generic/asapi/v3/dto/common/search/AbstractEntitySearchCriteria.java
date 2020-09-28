@@ -81,6 +81,11 @@ public abstract class AbstractEntitySearchCriteria<ID extends IObjectId> extends
         return with(new StringPropertySearchCriteria(propertyName));
     }
 
+    public StrictlyStringPropertySearchCriteria withStringProperty(final String propertyName)
+    {
+        return with(new StrictlyStringPropertySearchCriteria(propertyName));
+    }
+
     public DatePropertySearchCriteria withDateProperty(String propertyName)
     {
         return with(new DatePropertySearchCriteria(propertyName));

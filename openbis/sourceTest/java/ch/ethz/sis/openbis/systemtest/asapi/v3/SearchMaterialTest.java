@@ -1258,6 +1258,79 @@ public class SearchMaterialTest extends AbstractTest
                 "cannot be applied to the data type " + dataType);
     }
 
+    @DataProvider
+    protected Object[][] withStringPropertyExamples()
+    {
+        return new Object[][] {
+                { DataType.VARCHAR, "12", "== 12", true },
+                { DataType.VARCHAR, "ab", "<= abc", true },
+                { DataType.VARCHAR, "12", "> 100", true },
+                { DataType.VARCHAR, "ac3", "contains bc and endsWith 4", false },
+                { DataType.VARCHAR, "abc3", "contains bc and endsWith 4", false },
+                { DataType.VARCHAR, "ab34", "contains bc and endsWith 4", false },
+                { DataType.VARCHAR, "abc34", "contains bc and endsWith 4", true },
+                { DataType.MULTILINE_VARCHAR, "ac3", "contains bc or endsWith 4", false },
+                { DataType.MULTILINE_VARCHAR, "abc3", "contains bc or endsWith 4", true },
+                { DataType.MULTILINE_VARCHAR, "ab34", "contains bc or endsWith 4", true },
+                { DataType.MULTILINE_VARCHAR, "abc34", "contains bc or endsWith 4", true },
+                { DataType.MULTILINE_VARCHAR, "12", "> 100 and <= 13", true },
+        };
+    }
+
+    @Test(dataProvider = "withStringPropertyExamples")
+    public void testWithStringProperty(final DataType dataType, final String value, final String queryString,
+            final boolean found)
+    {
+        // Given
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        final PropertyTypePermId propertyTypeId = createAPropertyType(sessionToken, dataType);
+        final MaterialPermId entityPermId = createMaterial(sessionToken, propertyTypeId, value);
+        final MaterialSearchCriteria searchCriteria = new MaterialSearchCriteria();
+        new AbstractSearchPropertyTest.StringPropertyQueryInjector(searchCriteria, propertyTypeId)
+                .buildCriteria(queryString);
+
+        // When
+        final List<? extends IPermIdHolder> entities = searchMaterials(sessionToken, searchCriteria,
+                new MaterialFetchOptions());
+
+        // Then
+        assertEquals(entities.size(), found ? 1 : 0);
+        if (found)
+        {
+            assertEquals(entities.get(0).getPermId().toString(), entityPermId.toString());
+        }
+    }
+
+    @DataProvider
+    protected Object[][] withStringPropertyThrowingExceptionExamples()
+    {
+        return new Object[][] {
+                { DataType.BOOLEAN },
+                { DataType.CONTROLLEDVOCABULARY },
+                { DataType.DATE },
+                { DataType.INTEGER },
+                { DataType.MATERIAL },
+                { DataType.REAL },
+                { DataType.SAMPLE },
+                { DataType.TIMESTAMP },
+        };
+    }
+
+    @Test(dataProvider = "withStringPropertyThrowingExceptionExamples")
+    public void testWithStringPropertyThrowingException(final DataType dataType)
+    {
+        // Given
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        final PropertyTypePermId propertyTypeId = createAPropertyType(sessionToken, dataType);
+        final MaterialSearchCriteria searchCriteria = new MaterialSearchCriteria();
+        searchCriteria.withStringProperty(propertyTypeId.getPermId()).thatEquals("true");
+
+        // When
+        assertUserFailureException(aVoid -> searchMaterials(sessionToken, searchCriteria, new MaterialFetchOptions()),
+                // Then
+                "cannot be applied to the data type " + dataType);
+    }
+
     private MaterialPermId createMaterial(final String sessionToken, final PropertyTypePermId propertyType,
             final String formattedValue)
     {

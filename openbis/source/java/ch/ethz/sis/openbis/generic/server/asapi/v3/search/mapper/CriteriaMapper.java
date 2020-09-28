@@ -150,6 +150,8 @@ public class CriteriaMapper {
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(SpeedHintSearchCriteria.class, numberFieldSearchConditionTranslator);
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(StatusSearchCriteria.class, enumFieldConditionTranslator);
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(StorageConfirmationSearchCriteria.class, booleanFieldSearchConditionTranslator);
+        CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(StrictlyStringPropertySearchCriteria.class,
+                stringFieldSearchConditionTranslator);
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(StringFieldSearchCriteria.class, stringFieldSearchConditionTranslator);
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(StringPropertySearchCriteria.class, stringFieldSearchConditionTranslator);
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(UserIdSearchCriteria.class, new UserIdSearchConditionTranslator());
