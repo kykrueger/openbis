@@ -25,20 +25,12 @@ public class UtilitiesMenu
     @Locate("openbis_top-menu_openbis-test")
     private Link openbisJsWebapp;
 
-    @Locate("openbis_top-menu_openbis-screening-test")
-    private Link openbisScreeningJsWebapp;
-
     @Locate("openbis_top-menu_openbis-v3-api-test")
     private Link openbisV3JsWebapp;
 
     public void openbisJsWebapp()
     {
         openbisJsWebapp.click();
-    }
-
-    public void openbisScreeningJsWebapp()
-    {
-        openbisScreeningJsWebapp.click();
     }
 
     public void openbisV3JsWebapp()
