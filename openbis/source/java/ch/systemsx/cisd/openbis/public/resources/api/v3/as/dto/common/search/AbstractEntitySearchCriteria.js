@@ -61,6 +61,11 @@ define([ "require", "stjs", "as/dto/common/search/AbstractObjectSearchCriteria",
 			var StringPropertySearchCriteria = require("as/dto/common/search/StringPropertySearchCriteria");
 			return this.addCriteria(new StringPropertySearchCriteria(propertyName));
 		};
+		prototype.withStringProperty = function(propertyName) {
+			var StrictlyStringPropertySearchCriteria =
+				require("as/dto/common/search/StrictlyStringPropertySearchCriteria");
+			return this.addCriteria(new StrictlyStringPropertySearchCriteria(propertyName));
+		};
 		prototype.withDateProperty = function(propertyName) {
 			var DatePropertySearchCriteria = require("as/dto/common/search/DatePropertySearchCriteria");
 			return this.addCriteria(new DatePropertySearchCriteria(propertyName));
