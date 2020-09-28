@@ -1102,14 +1102,14 @@ public class SearchMaterialTest extends AbstractTest
                 { DataType.VARCHAR, "12", "== 12", true },
                 { DataType.VARCHAR, "ab", "<= abc", true },
                 { DataType.VARCHAR, "12", "> 100", true },
-                { DataType.VARCHAR, "acd3", "contains bcd and endsWith 34", false },
-                { DataType.VARCHAR, "abcd3", "contains bcd and endsWith 34", false },
-                { DataType.VARCHAR, "abd34", "contains bcd and endsWith 34", false },
-                { DataType.VARCHAR, "abcd34", "contains bcd and endsWith 34", true },
-                { DataType.MULTILINE_VARCHAR, "ac3", "contains bc or endsWith 4", false },
-                { DataType.MULTILINE_VARCHAR, "abc3", "contains bc or endsWith 4", true },
-                { DataType.MULTILINE_VARCHAR, "ab4", "contains bc or endsWith 4", true },
-                { DataType.MULTILINE_VARCHAR, "abc4", "contains bc or endsWith 4", true },
+                { DataType.VARCHAR, "acd3", "contains bcd and endsWith d34", false },
+                { DataType.VARCHAR, "abcd3", "contains bcd and endsWith d34", false },
+                { DataType.VARCHAR, "abd34", "contains bcd and endsWith d34", false },
+                { DataType.VARCHAR, "abcd34", "contains bcd and endsWith d34", true },
+                { DataType.MULTILINE_VARCHAR, "acd3", "contains bcd or endsWith cd4", false },
+                { DataType.MULTILINE_VARCHAR, "abcd3", "contains bcd or endsWith cd4", true },
+                { DataType.MULTILINE_VARCHAR, "abd4", "contains bcd or endsWith bd4", true },
+                { DataType.MULTILINE_VARCHAR, "abcd4", "contains bcd or endsWith cd4", true },
                 { DataType.MULTILINE_VARCHAR, "12", "> 100 and <= 13", true },
                 { DataType.BOOLEAN, "true", "== true", true },
                 { DataType.BOOLEAN, "true", "== false", false },
@@ -1134,14 +1134,14 @@ public class SearchMaterialTest extends AbstractTest
                 { DataType.INTEGER, "24", ">= 23.5 or <= 19.5", true },
                 { DataType.INTEGER, "19", ">= 24 or <= 19", true },
                 { DataType.INTEGER, "24", ">= 24 or <= 19", true },
-                { DataType.INTEGER, "12345", "startsWith 12 and endsWith 45", true },
-                { DataType.INTEGER, "12345", "startsWith 13 and endsWith 45", false },
-                { DataType.INTEGER, "12345", "startsWith 12 and endsWith 55", false },
-                { DataType.INTEGER, "12345", "startsWith 11 and endsWith 55", false },
-                { DataType.INTEGER, "12345", "startsWith 12 or endsWith 45", true },
-                { DataType.INTEGER, "12345", "startsWith 13 or endsWith 45", true },
-                { DataType.INTEGER, "12345", "startsWith 12 or endsWith 55", true },
-                { DataType.INTEGER, "12345", "startsWith 11 or endsWith 55", false },
+                { DataType.INTEGER, "12345", "startsWith 123 and endsWith 345", true },
+                { DataType.INTEGER, "12345", "startsWith 133 and endsWith 345", false },
+                { DataType.INTEGER, "12345", "startsWith 123 and endsWith 355", false },
+                { DataType.INTEGER, "12345", "startsWith 113 and endsWith 355", false },
+                { DataType.INTEGER, "12345", "startsWith 123 or endsWith 345", true },
+                { DataType.INTEGER, "12345", "startsWith 133 or endsWith 345", true },
+                { DataType.INTEGER, "12345", "startsWith 123 or endsWith 355", true },
+                { DataType.INTEGER, "12345", "startsWith 113 or endsWith 355", false },
                 { DataType.INTEGER, "12345", "contains 234", true },
                 { DataType.INTEGER, "12345", "contains 437", false },
                 { DataType.REAL, "12.345", "startsWith 12. and endsWith 45", true },
@@ -1188,6 +1188,72 @@ public class SearchMaterialTest extends AbstractTest
         final boolean hasMatch = entities.stream().anyMatch(
                 entity -> entity.getPermId().toString().equals(entityPermId.toString()));
         assertEquals(hasMatch, found);
+    }
+
+    @DataProvider
+    protected Object[][] withBooleanPropertyExamples()
+    {
+        return new Object[][] {
+                { true, "== true", true },
+                { true, "== false", false },
+                { false, "== true", false },
+                { false, "== false", true },
+        };
+    }
+
+    @Test(dataProvider = "withBooleanPropertyExamples")
+    public void testWithBooleanProperty(final boolean value, final String queryString, final boolean found)
+    {
+        // Given
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        final PropertyTypePermId propertyTypeId = createAPropertyType(sessionToken, DataType.BOOLEAN);
+        final MaterialPermId entityPermId = createMaterial(sessionToken, propertyTypeId, String.valueOf(value));
+        final MaterialSearchCriteria searchCriteria = new MaterialSearchCriteria();
+        new AbstractSearchPropertyTest.BooleanQueryInjector(searchCriteria, propertyTypeId).buildCriteria(queryString);
+
+        // When
+        final List<? extends IPermIdHolder> entities = searchMaterials(sessionToken, searchCriteria,
+                new MaterialFetchOptions());
+
+        // Then
+        assertEquals(entities.size(), found ? 1 : 0);
+        if (found)
+        {
+            assertEquals(entities.get(0).getPermId().toString(), entityPermId.toString());
+        }
+    }
+
+    @DataProvider
+    protected Object[][] withBooleanPropertyThrowingExceptionExamples()
+    {
+        return new Object[][] {
+                { DataType.CONTROLLEDVOCABULARY },
+                { DataType.DATE },
+                { DataType.HYPERLINK },
+                { DataType.INTEGER },
+                { DataType.MATERIAL },
+                { DataType.MULTILINE_VARCHAR },
+                { DataType.TIMESTAMP },
+                { DataType.REAL },
+                { DataType.SAMPLE },
+                { DataType.VARCHAR },
+                { DataType.XML },
+        };
+    }
+
+    @Test(dataProvider = "withBooleanPropertyThrowingExceptionExamples")
+    public void testWithBooleanPropertyThrowingException(final DataType dataType)
+    {
+        // Given
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        final PropertyTypePermId propertyTypeId = createAPropertyType(sessionToken, dataType);
+        final MaterialSearchCriteria searchCriteria = new MaterialSearchCriteria();
+        searchCriteria.withBooleanProperty(propertyTypeId.getPermId()).thatEquals(true);
+
+        // When
+        assertUserFailureException(aVoid -> searchMaterials(sessionToken, searchCriteria, new MaterialFetchOptions()),
+                // Then
+                "cannot be applied to the data type " + dataType);
     }
 
     private MaterialPermId createMaterial(final String sessionToken, final PropertyTypePermId propertyType,
