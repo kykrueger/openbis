@@ -266,7 +266,7 @@ public class SearchMaterialTest extends AbstractTest
         final MaterialSearchCriteria falseValueCriterion = new MaterialSearchCriteria();
         falseValueCriterion.withProperty("BOOLEAN").thatEquals("false");
         testSearch(TEST_USER, falseValueCriterion, createdMaterialPermId);
-        
+
         final MaterialSearchCriteria trueValueCriterion = new MaterialSearchCriteria();
         trueValueCriterion.withProperty("BOOLEAN").thatEquals("true");
         testSearch(TEST_USER, trueValueCriterion);
@@ -1188,72 +1188,6 @@ public class SearchMaterialTest extends AbstractTest
         final boolean hasMatch = entities.stream().anyMatch(
                 entity -> entity.getPermId().toString().equals(entityPermId.toString()));
         assertEquals(hasMatch, found);
-    }
-
-    @DataProvider
-    protected Object[][] withBooleanPropertyExamples()
-    {
-        return new Object[][] {
-                { true, "== true", true },
-                { true, "== false", false },
-                { false, "== true", false },
-                { false, "== false", true },
-        };
-    }
-
-    @Test(dataProvider = "withBooleanPropertyExamples")
-    public void testWithBooleanProperty(final boolean value, final String queryString, final boolean found)
-    {
-        // Given
-        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
-        final PropertyTypePermId propertyTypeId = createAPropertyType(sessionToken, DataType.BOOLEAN);
-        final MaterialPermId entityPermId = createMaterial(sessionToken, propertyTypeId, String.valueOf(value));
-        final MaterialSearchCriteria searchCriteria = new MaterialSearchCriteria();
-        new AbstractSearchPropertyTest.BooleanQueryInjector(searchCriteria, propertyTypeId).buildCriteria(queryString);
-
-        // When
-        final List<? extends IPermIdHolder> entities = searchMaterials(sessionToken, searchCriteria,
-                new MaterialFetchOptions());
-
-        // Then
-        assertEquals(entities.size(), found ? 1 : 0);
-        if (found)
-        {
-            assertEquals(entities.get(0).getPermId().toString(), entityPermId.toString());
-        }
-    }
-
-    @DataProvider
-    protected Object[][] withBooleanPropertyThrowingExceptionExamples()
-    {
-        return new Object[][] {
-                { DataType.CONTROLLEDVOCABULARY },
-                { DataType.DATE },
-                { DataType.HYPERLINK },
-                { DataType.INTEGER },
-                { DataType.MATERIAL },
-                { DataType.MULTILINE_VARCHAR },
-                { DataType.TIMESTAMP },
-                { DataType.REAL },
-                { DataType.SAMPLE },
-                { DataType.VARCHAR },
-                { DataType.XML },
-        };
-    }
-
-    @Test(dataProvider = "withBooleanPropertyThrowingExceptionExamples")
-    public void testWithBooleanPropertyThrowingException(final DataType dataType)
-    {
-        // Given
-        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
-        final PropertyTypePermId propertyTypeId = createAPropertyType(sessionToken, dataType);
-        final MaterialSearchCriteria searchCriteria = new MaterialSearchCriteria();
-        searchCriteria.withBooleanProperty(propertyTypeId.getPermId()).thatEquals(true);
-
-        // When
-        assertUserFailureException(aVoid -> searchMaterials(sessionToken, searchCriteria, new MaterialFetchOptions()),
-                // Then
-                "cannot be applied to the data type " + dataType);
     }
 
     private MaterialPermId createMaterial(final String sessionToken, final PropertyTypePermId propertyType,

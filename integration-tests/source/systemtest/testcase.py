@@ -501,13 +501,11 @@ class OpenbisController(_Controller):
         if os.path.exists(self.asServicePropertiesFile):
             self.asProperties = util.readProperties(self.asServicePropertiesFile)
             self.asProperties['database.kind'] = self.databaseKind
-            self.asProperties['proteomics-database-kind'] = self.databaseKind
             self.asPropertiesModified = True
         self.dssServicePropertiesFile = "%s/servers/datastore_server/etc/service.properties" % installPath
         self.dssProperties = util.readProperties(self.dssServicePropertiesFile)
         self.dssProperties['path-info-db.databaseKind'] = self.databaseKind
         self.dssProperties['imaging-database.kind'] = self.databaseKind
-        self.dssProperties['proteomics-database-kind'] = self.databaseKind
         self.dssPropertiesModified = True
         self.passwdScript = "%s/servers/openBIS-server/jetty/bin/passwd.sh" % installPath
         if port != '8443':
@@ -520,7 +518,6 @@ class OpenbisController(_Controller):
             util.dropDatabase(PSQL_EXE, "openbis_%s" % self.databaseKind)
             util.dropDatabase(PSQL_EXE, "pathinfo_%s" % self.databaseKind)
             util.dropDatabase(PSQL_EXE, "imaging_%s" % self.databaseKind)
-            util.dropDatabase(PSQL_EXE, "proteomics_%s" % self.databaseKind)
             self._setUpStore()
             self._setUpFileServer()
         for databaseToDrop in databasesToDrop:

@@ -173,7 +173,7 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
                 // Then
                 "cannot be applied to the data type " + dataType);
     }
-    
+
     @DataProvider
     protected Object[][] withBooleanPropertyExamples()
     {
@@ -740,7 +740,7 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
 
     static final class StringQueryInjector extends AbstractQueryInjector
     {
-        private boolean anyField;
+        private final boolean anyField;
 
         StringQueryInjector(final AbstractEntitySearchCriteria<?> searchCriteria,
                 final PropertyTypePermId propertyTypeId, final boolean anyField)
@@ -948,5 +948,4 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
             }
         }
     }
-
 }
