@@ -18,8 +18,6 @@ package ch.systemsx.cisd.openbis.jstest.suite.common;
 
 import java.io.File;
 
-import junit.framework.Assert;
-
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
@@ -27,11 +25,11 @@ import org.testng.annotations.Test;
 import ch.systemsx.cisd.base.unix.Unix;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.openbis.jstest.layout.OpenbisJsWebappLocation;
-import ch.systemsx.cisd.openbis.jstest.layout.OpenbisScreeningJsWebappLocation;
 import ch.systemsx.cisd.openbis.jstest.layout.OpenbisV3JsWebappLocation;
 import ch.systemsx.cisd.openbis.jstest.page.OpenbisJsCommonWebapp;
 import ch.systemsx.cisd.openbis.uitest.dsl.SeleniumTest;
 import ch.systemsx.cisd.openbis.uitest.layout.Location;
+import junit.framework.Assert;
 
 /**
  * @author pkupczyk
@@ -116,12 +114,6 @@ public class JsTestCommonSelenium extends SeleniumTest
     public void runOpenbisJsTests()
     {
         runTests("runOpenbisJsTests", new OpenbisJsWebappLocation());
-    }
-
-    @Test
-    public void runOpenbisScreeningJsTests()
-    {
-        runTests("runOpenbisScreeningJsTests", new OpenbisScreeningJsWebappLocation());
     }
 
     @Test
