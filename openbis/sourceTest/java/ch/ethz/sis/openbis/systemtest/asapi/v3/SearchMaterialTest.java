@@ -864,8 +864,7 @@ public class SearchMaterialTest extends AbstractTest
         final PropertyTypePermId propertyTypeId = createAPropertyType(sessionToken, dataType);
         final MaterialPermId entityPermId = createMaterial(sessionToken, propertyTypeId, value);
         final MaterialSearchCriteria searchCriteria = new MaterialSearchCriteria();
-        new AbstractSearchPropertyTest.StringQueryInjector(searchCriteria, propertyTypeId, false)
-                .buildCriteria(queryString);
+        new AbstractSearchPropertyTest.StringQueryInjector(searchCriteria, propertyTypeId).buildCriteria(queryString);
 
         // When
         final List<? extends IPermIdHolder> entities = searchMaterials(sessionToken, searchCriteria,
@@ -944,7 +943,7 @@ public class SearchMaterialTest extends AbstractTest
 
         // Given
         final MaterialSearchCriteria dateSearchStringPropertyCriteria = new MaterialSearchCriteria();
-        new AbstractSearchPropertyTest.StringQueryInjector(dateSearchStringPropertyCriteria, propertyTypeId, false)
+        new AbstractSearchPropertyTest.StringQueryInjector(dateSearchStringPropertyCriteria, propertyTypeId)
                 .buildCriteria(queryString);
 
         // When
@@ -978,8 +977,8 @@ public class SearchMaterialTest extends AbstractTest
 
             // Given
             final MaterialSearchCriteria timestampSearchStringPropertyCriteria = new MaterialSearchCriteria();
-            new AbstractSearchPropertyTest.StringQueryInjector(timestampSearchStringPropertyCriteria, propertyTypeId,
-                    false).buildCriteria(queryString);
+            new AbstractSearchPropertyTest.StringQueryInjector(timestampSearchStringPropertyCriteria, propertyTypeId)
+                    .buildCriteria(queryString);
 
             // When
             final List<? extends IPermIdHolder> timestampEntitiesFromStringPropertyCriteria =
@@ -1048,8 +1047,7 @@ public class SearchMaterialTest extends AbstractTest
                 vocabularyPermId);
         final MaterialPermId entityPermId = createMaterial(sessionToken, propertyTypeId, value);
         final MaterialSearchCriteria searchCriteria = new MaterialSearchCriteria();
-        new AbstractSearchPropertyTest.StringQueryInjector(searchCriteria, propertyTypeId, false)
-                .buildCriteria(queryString);
+        new AbstractSearchPropertyTest.StringQueryInjector(searchCriteria, propertyTypeId).buildCriteria(queryString);
 
         // When
         final List<? extends IPermIdHolder> entities = searchMaterials(sessionToken, searchCriteria,
@@ -1178,7 +1176,11 @@ public class SearchMaterialTest extends AbstractTest
         final PropertyTypePermId propertyTypeId = createAPropertyType(sessionToken, dataType);
         final MaterialPermId entityPermId = createMaterial(sessionToken, propertyTypeId, value);
         final MaterialSearchCriteria searchCriteria = new MaterialSearchCriteria();
-        new AbstractSearchPropertyTest.StringQueryInjector(searchCriteria, null, anyField).buildCriteria(queryString);
+        
+        final AbstractSearchPropertyTest.StringQueryInjector queryInjector = anyField
+                ? new AbstractSearchPropertyTest.AnyFieldQueryInjector(searchCriteria, null)
+                : new AbstractSearchPropertyTest.AnyPropertyQueryInjector(searchCriteria, null);
+        queryInjector.buildCriteria(queryString);
 
         // When
         final List<? extends IPermIdHolder> entities = searchMaterials(sessionToken, searchCriteria,

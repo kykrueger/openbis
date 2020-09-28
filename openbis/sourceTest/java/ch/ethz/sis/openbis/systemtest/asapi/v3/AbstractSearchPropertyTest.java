@@ -77,7 +77,7 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
         PropertyTypePermId propertyTypeId = createAPropertyType(sessionToken, dataType);
         ObjectPermId entityPermId = createEntity(sessionToken, propertyTypeId, value);
         AbstractEntitySearchCriteria<?> searchCriteria = createSearchCriteria();
-        new StringQueryInjector(searchCriteria, propertyTypeId, false).buildCriteria(queryString);
+        new StringQueryInjector(searchCriteria, propertyTypeId).buildCriteria(queryString);
 
         // When
         List<? extends IPermIdHolder> entities = search(sessionToken, searchCriteria);
@@ -360,7 +360,7 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
 
         // Given
         final AbstractEntitySearchCriteria<?> dateSearchStringPropertyCriteria = createSearchCriteria();
-        new StringQueryInjector(dateSearchStringPropertyCriteria, propertyTypeId, false).buildCriteria(queryString);
+        new StringQueryInjector(dateSearchStringPropertyCriteria, propertyTypeId).buildCriteria(queryString);
 
         // When
         final List<? extends IPermIdHolder> dateEntitiesFromStringPropertyCriteria = search(sessionToken,
@@ -391,8 +391,7 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
 
             // Given
             final AbstractEntitySearchCriteria<?> timestampSearchStringPropertyCriteria = createSearchCriteria();
-            new StringQueryInjector(timestampSearchStringPropertyCriteria, propertyTypeId, false)
-                    .buildCriteria(queryString);
+            new StringQueryInjector(timestampSearchStringPropertyCriteria, propertyTypeId).buildCriteria(queryString);
 
             // When
             final List<? extends IPermIdHolder> timestampEntitiesFromStringPropertyCriteria = search(sessionToken,
@@ -494,7 +493,10 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
         final PropertyTypePermId propertyTypeId = createAPropertyType(sessionToken, dataType);
         final ObjectPermId entityPermId = createEntity(sessionToken, propertyTypeId, value);
         final AbstractEntitySearchCriteria<?> searchCriteria = createSearchCriteria();
-        new StringQueryInjector(searchCriteria, null, anyField).buildCriteria(queryString);
+
+        final StringQueryInjector queryInjector = anyField ? new AnyFieldQueryInjector(searchCriteria, null)
+                : new AnyPropertyQueryInjector(searchCriteria, null);
+        queryInjector.buildCriteria(queryString);
 
         // When
         final List<? extends IPermIdHolder> entities = search(sessionToken, searchCriteria);
@@ -605,7 +607,7 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
                 vocabularyPermId);
         final ObjectPermId entityPermId = createEntity(sessionToken, propertyTypeId, value);
         final AbstractEntitySearchCriteria<?> searchCriteria = createSearchCriteria();
-        new StringQueryInjector(searchCriteria, propertyTypeId, false).buildCriteria(queryString);
+        new StringQueryInjector(searchCriteria, propertyTypeId).buildCriteria(queryString);
 
         // When
         final List<? extends IPermIdHolder> entities = search(sessionToken, searchCriteria);
@@ -725,7 +727,7 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
                     injectQuery(operator, termParts[1]);
                 } catch (RuntimeException e)
                 {
-                    failQuery(queryString, e.toString());
+                    failQuery(queryString, e.toString(), e);
                 }
             }
         }
@@ -735,34 +737,26 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
             fail("Invalid query '" + queryString + "':" + message);
         }
 
+        private void failQuery(final String queryString, final String message, final Throwable realCause)
+        {
+            fail("Invalid query '" + queryString + "':" + message, realCause);
+        }
+
         protected abstract void injectQuery(Operator operator, String operand);
     }
 
-    static final class StringQueryInjector extends AbstractQueryInjector
+    static class StringQueryInjector extends AbstractQueryInjector
     {
-        private final boolean anyField;
-
         StringQueryInjector(final AbstractEntitySearchCriteria<?> searchCriteria,
-                final PropertyTypePermId propertyTypeId, final boolean anyField)
+                final PropertyTypePermId propertyTypeId)
         {
             super(searchCriteria, propertyTypeId);
-            this.anyField = anyField;
         }
 
         @Override
-        protected void injectQuery(Operator operator, String operand)
+        protected final void injectQuery(Operator operator, String operand)
         {
-            final StringFieldSearchCriteria criteria;
-            if (anyField)
-            {
-                criteria = searchCriteria.withAnyField();
-            } else if (propertyTypeId == null)
-            {
-                criteria = searchCriteria.withAnyProperty();
-            } else
-            {
-                criteria = searchCriteria.withProperty(propertyTypeId.getPermId());
-            }
+            final StringFieldSearchCriteria criteria = getStringFieldSearchCriteria();
 
             switch (operator)
             {
@@ -793,6 +787,56 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
                 default:
                     throw new IllegalArgumentException("Unsupported operator " + operator);
             }
+        }
+
+        protected StringFieldSearchCriteria getStringFieldSearchCriteria()
+        {
+            return searchCriteria.withProperty(propertyTypeId.getPermId());
+        }
+    }
+
+    static final class AnyFieldQueryInjector extends StringQueryInjector
+    {
+        AnyFieldQueryInjector(final AbstractEntitySearchCriteria<?> searchCriteria,
+                final PropertyTypePermId propertyTypeId)
+        {
+            super(searchCriteria, propertyTypeId);
+        }
+
+        @Override
+        protected StringFieldSearchCriteria getStringFieldSearchCriteria()
+        {
+            return searchCriteria.withAnyField();
+        }
+    }
+
+    static final class AnyPropertyQueryInjector extends StringQueryInjector
+    {
+        AnyPropertyQueryInjector(final AbstractEntitySearchCriteria<?> searchCriteria,
+                final PropertyTypePermId propertyTypeId)
+        {
+            super(searchCriteria, propertyTypeId);
+        }
+
+        @Override
+        protected StringFieldSearchCriteria getStringFieldSearchCriteria()
+        {
+            return searchCriteria.withAnyProperty();
+        }
+    }
+
+    static final class StringPropertyQueryInjector extends StringQueryInjector
+    {
+        StringPropertyQueryInjector(final AbstractEntitySearchCriteria<?> searchCriteria,
+                final PropertyTypePermId propertyTypeId)
+        {
+            super(searchCriteria, propertyTypeId);
+        }
+
+        @Override
+        protected StringFieldSearchCriteria getStringFieldSearchCriteria()
+        {
+            return searchCriteria.withStringProperty(propertyTypeId.getPermId());
         }
     }
 
