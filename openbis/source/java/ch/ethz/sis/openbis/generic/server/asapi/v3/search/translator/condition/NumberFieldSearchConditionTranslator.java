@@ -74,6 +74,7 @@ public class NumberFieldSearchConditionTranslator implements IConditionTranslato
             }
 
             case PROPERTY:
+            case ANY_PROPERTY:
             {
                 return TranslatorUtils.getPropertyJoinInformationMap(tableMapper, aliasFactory);
             }
@@ -118,6 +119,14 @@ public class NumberFieldSearchConditionTranslator implements IConditionTranslato
             }
 
             case ANY_PROPERTY:
+            {
+                final AbstractNumberValue value = criterion.getFieldValue();
+                final boolean internalProperty = TranslatorUtils.isPropertyInternal(criterion.getFieldName());
+                NumberFieldSearchConditionTranslator.translateNumberProperty(tableMapper, args, sqlBuilder, aliases,
+                        value, null, internalProperty);
+                break;
+            }
+            
             case ANY_FIELD:
             {
                 throw new IllegalArgumentException();

@@ -1003,7 +1003,7 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
 
     }
 
-    private static final class NumberQueryInjector extends AbstractQueryInjector
+    static final class NumberQueryInjector extends AbstractQueryInjector
     {
         NumberQueryInjector(AbstractEntitySearchCriteria<?> searchCriteria, PropertyTypePermId propertyTypeId)
         {
