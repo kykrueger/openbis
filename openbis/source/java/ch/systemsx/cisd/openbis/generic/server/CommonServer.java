@@ -1069,7 +1069,7 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
     }
 
     @Override
-    @RolesAllowed(RoleWithHierarchy.PROJECT_OBSERVER)
+    @RolesAllowed({ RoleWithHierarchy.PROJECT_OBSERVER, RoleWithHierarchy.SPACE_ETL_SERVER })
     public List<Vocabulary> listVocabularies(final String sessionToken, final boolean withTerms,
             boolean excludeInternal)
     {
@@ -1387,7 +1387,7 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
     }
 
     @Override
-    @RolesAllowed(RoleWithHierarchy.INSTANCE_ADMIN)
+    @RolesAllowed({ RoleWithHierarchy.INSTANCE_ADMIN, RoleWithHierarchy.INSTANCE_ETL_SERVER })
     @Capability("REGISTER_VOCABULARY")
     public void registerVocabulary(final String sessionToken, final NewVocabulary vocabulary)
     {
@@ -1401,7 +1401,7 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
     }
 
     @Override
-    @RolesAllowed(RoleWithHierarchy.INSTANCE_ADMIN)
+    @RolesAllowed({ RoleWithHierarchy.INSTANCE_ADMIN, RoleWithHierarchy.INSTANCE_ETL_SERVER })
     @Capability("WRITE_VOCABULARY")
     public void updateVocabulary(String sessionToken, IVocabularyUpdates updates)
     {
@@ -1414,7 +1414,7 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
     }
 
     @Override
-    @RolesAllowed(RoleWithHierarchy.PROJECT_POWER_USER)
+    @RolesAllowed({ RoleWithHierarchy.INSTANCE_ADMIN, RoleWithHierarchy.INSTANCE_ETL_SERVER })
     @Capability("WRITE_VOCABULARY_TERM")
     public void addVocabularyTerms(String sessionToken, TechId vocabularyId,
             List<VocabularyTerm> vocabularyTerms, Long previousTermOrdinal,
@@ -1435,7 +1435,7 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
     }
 
     @Override
-    @RolesAllowed(RoleWithHierarchy.PROJECT_USER)
+    @RolesAllowed({ RoleWithHierarchy.PROJECT_USER, RoleWithHierarchy.SPACE_ETL_SERVER })
     @Capability("WRITE_UNOFFICIAL_VOCABULARY_TERM")
     public void addUnofficialVocabularyTerm(String sessionToken, TechId vocabularyId, String code,
             String label, String description, Long previousTermOrdinal)
@@ -1453,7 +1453,7 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
     }
 
     @Override
-    @RolesAllowed(RoleWithHierarchy.PROJECT_POWER_USER)
+    @RolesAllowed({ RoleWithHierarchy.INSTANCE_ADMIN, RoleWithHierarchy.INSTANCE_ETL_SERVER })
     @Capability("WRITE_VOCABULARY_TERM")
     public void updateVocabularyTerm(final String sessionToken, final IVocabularyTermUpdates updates)
     {
@@ -1467,7 +1467,7 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
     }
 
     @Override
-    @RolesAllowed(RoleWithHierarchy.PROJECT_POWER_USER)
+    @RolesAllowed({ RoleWithHierarchy.INSTANCE_ADMIN, RoleWithHierarchy.INSTANCE_ETL_SERVER })
     @Capability("WRITE_VOCABULARY_TERM")
     public void deleteVocabularyTerms(String sessionToken, TechId vocabularyId,
             List<VocabularyTerm> termsToBeDeleted, List<VocabularyTermReplacement> termsToBeReplaced)
@@ -1483,7 +1483,7 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
     }
 
     @Override
-    @RolesAllowed(RoleWithHierarchy.PROJECT_POWER_USER)
+    @RolesAllowed({ RoleWithHierarchy.INSTANCE_ADMIN, RoleWithHierarchy.INSTANCE_ETL_SERVER })
     @Capability("WRITE_VOCABULARY")
     public void makeVocabularyTermsOfficial(String sessionToken, TechId vocabularyId,
             List<VocabularyTerm> termsToBeOfficial)
@@ -2110,7 +2110,7 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
     }
 
     @Override
-    @RolesAllowed(RoleWithHierarchy.INSTANCE_ADMIN)
+    @RolesAllowed({ RoleWithHierarchy.INSTANCE_ADMIN, RoleWithHierarchy.INSTANCE_ETL_SERVER })
     @Capability("DELETE_VOCABULARY")
     public void deleteVocabularies(String sessionToken, List<TechId> vocabularyIds, String reason)
     {
@@ -2322,7 +2322,7 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
     }
 
     @Override
-    @RolesAllowed(RoleWithHierarchy.PROJECT_OBSERVER)
+    @RolesAllowed({ RoleWithHierarchy.PROJECT_OBSERVER, RoleWithHierarchy.SPACE_ETL_SERVER })
     public List<VocabularyTermWithStats> listVocabularyTermsWithStatistics(String sessionToken,
             Vocabulary vocabulary)
     {
@@ -2333,7 +2333,7 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
     }
 
     @Override
-    @RolesAllowed(RoleWithHierarchy.PROJECT_OBSERVER)
+    @RolesAllowed({ RoleWithHierarchy.PROJECT_OBSERVER, RoleWithHierarchy.SPACE_ETL_SERVER })
     public Set<VocabularyTerm> listVocabularyTerms(String sessionToken, Vocabulary vocabulary)
     {
         final Session session = getSession(sessionToken);
@@ -3369,7 +3369,7 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
     }
 
     @Override
-    @RolesAllowed(RoleWithHierarchy.INSTANCE_ADMIN)
+    @RolesAllowed({ RoleWithHierarchy.INSTANCE_ADMIN, RoleWithHierarchy.INSTANCE_ETL_SERVER })
     @Capability("WRITE_VOCABULARY")
     public void updateVocabularyTerms(String sessionToken, TechId vocabularyId,
             List<VocabularyTerm> terms)

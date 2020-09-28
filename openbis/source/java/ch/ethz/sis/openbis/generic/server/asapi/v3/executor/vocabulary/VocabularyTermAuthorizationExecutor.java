@@ -77,7 +77,7 @@ public class VocabularyTermAuthorizationExecutor implements IVocabularyTermAutho
     }
 
     @Override
-    @RolesAllowed({ RoleWithHierarchy.PROJECT_USER, RoleWithHierarchy.SPACE_ETL_SERVER })
+    @RolesAllowed({ RoleWithHierarchy.INSTANCE_ADMIN, RoleWithHierarchy.INSTANCE_ETL_SERVER })
     @Capability("UPDATE_UNOFFICIAL_VOCABULARY_TERM")
     public void canUpdateUnofficial(IOperationContext context)
     {

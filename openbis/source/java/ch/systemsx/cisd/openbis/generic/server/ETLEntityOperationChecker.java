@@ -122,4 +122,10 @@ public class ETLEntityOperationChecker implements IETLEntityOperationChecker
     {
 
     }
+
+    @Override
+    public void assertVocabularyUpdateAllowed(IAuthSession session)
+    {
+
+    }
 }

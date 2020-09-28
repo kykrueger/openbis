@@ -109,7 +109,7 @@ public class UpdateVocabularyTermTest extends AbstractVocabularyTermTest
         assertEquals(terms.get(0).getDescription(), update.getDescription().getValue());
     }
 
-    @Test(expectedExceptions = UserFailureException.class, expectedExceptionsMessageRegExp = ".*None of method roles '\\[PROJECT_USER, PROJECT_POWER_USER, PROJECT_ADMIN, SPACE_ADMIN, INSTANCE_ADMIN, SPACE_POWER_USER, SPACE_USER, SPACE_ETL_SERVER, INSTANCE_ETL_SERVER\\]' could be found in roles of user 'observer'.*")
+    @Test(expectedExceptions = UserFailureException.class, expectedExceptionsMessageRegExp = ".*None of method roles '\\[INSTANCE_ADMIN, INSTANCE_ETL_SERVER\\]' could be found in roles of user 'observer'.*")
     public void testUpdateWithUnofficalTermAndUnauthorizedUser()
     {
         VocabularyTermUpdate update = new VocabularyTermUpdate();

@@ -2021,12 +2021,18 @@ public class ServiceForDataStoreServer extends AbstractCommonServer<IServiceForD
     private long updateVocabularies(Session session, AtomicEntityOperationDetails operationDetails,
             IServiceConversationProgressListener progress, boolean authorize)
     {
-
         List<VocabularyUpdatesDTO> updates = operationDetails.getVocabularyUpdates();
 
-        for (VocabularyUpdatesDTO update : updates)
+        if (updates != null && updates.isEmpty() == false)
         {
-            updateVocabulary(session, update);
+            if (authorize)
+            {
+                entityOperationChecker.assertVocabularyUpdateAllowed(session);
+            }
+            for (VocabularyUpdatesDTO update : updates)
+            {
+                updateVocabulary(session, update);
+            }
         }
 
         return updates.size();
