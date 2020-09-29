@@ -262,19 +262,19 @@ public class UpdateVocabularyTermTest extends AbstractVocabularyTermTest
         update.setVocabularyTermId(getInternallyManagedTermId());
         update.setDescription("a brand new description");
 
-        List<VocabularyTerm> terms = updateTerms(TEST_USER, PASSWORD, update);
+        List<VocabularyTerm> terms = updateTerms(SYSTEM_USER, PASSWORD, update);
 
         assertEquals(terms.get(0).getDescription(), update.getDescription().getValue());
     }
 
-    @Test(expectedExceptions = UserFailureException.class, expectedExceptionsMessageRegExp = ".*Not allowed to update terms of an internally managed vocabulary.*")
+    @Test(expectedExceptions = UserFailureException.class, expectedExceptionsMessageRegExp = ".*Terms created by the system user that belong to internal vocabularies can be managed only by the system user.*")
     public void testUpdateWithInternallyManagedVocabularyAndUnauthorized()
     {
         VocabularyTermUpdate update = new VocabularyTermUpdate();
         update.setVocabularyTermId(getInternallyManagedTermId());
         update.setDescription("a brand new description");
 
-        updateTerms(TEST_GROUP_OBSERVER, PASSWORD, update);
+        updateTerms(TEST_USER, PASSWORD, update);
     }
 
     @Test
@@ -302,7 +302,15 @@ public class UpdateVocabularyTermTest extends AbstractVocabularyTermTest
 
     private List<VocabularyTerm> updateTerms(String user, String password, VocabularyTermUpdate... updates)
     {
-        String sessionToken = v3api.login(user, password);
+        String sessionToken = null;
+
+        if (SYSTEM_USER.equals(user))
+        {
+            sessionToken = v3api.loginAsSystem();
+        } else
+        {
+            sessionToken = v3api.login(user, password);
+        }
 
         List<IVocabularyTermId> ids = new ArrayList<IVocabularyTermId>();
         for (VocabularyTermUpdate update : updates)

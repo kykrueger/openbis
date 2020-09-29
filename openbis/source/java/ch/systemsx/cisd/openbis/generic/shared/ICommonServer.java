@@ -626,8 +626,7 @@ public interface ICommonServer extends IServer
     @Transactional
     @DatabaseCreateOrDeleteModification(value = ObjectKind.VOCABULARY_TERM)
     public void addVocabularyTerms(String sessionToken, TechId vocabularyId,
-            List<VocabularyTerm> vocabularyTerms, Long previousTermOrdinal,
-            boolean allowChangingInternallyManaged);
+            List<VocabularyTerm> vocabularyTerms, Long previousTermOrdinal);
 
     /**
      * Adds new unofficial terms to a vocabulary starting from specified ordinal + 1.

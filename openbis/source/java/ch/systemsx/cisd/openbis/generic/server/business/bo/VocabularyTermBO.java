@@ -56,10 +56,13 @@ public final class VocabularyTermBO extends AbstractBusinessObject implements IV
     public void update(IVocabularyTermUpdates updates)
     {
         loadDataByTechId(TechId.create(updates));
+
         if (vocabularyTermPE.getModificationDate().equals(updates.getModificationDate()) == false)
         {
             throwModifiedEntityException("Vocabulary term");
         }
+
+        new InternalVocabularyAuthorization().canUpdateTerm(session, vocabularyTermPE.getVocabulary(), vocabularyTermPE);
 
         vocabularyTermPE.setDescription(updates.getDescription());
         vocabularyTermPE.setLabel(updates.getLabel());
@@ -113,6 +116,8 @@ public final class VocabularyTermBO extends AbstractBusinessObject implements IV
     private void makeOfficial(VocabularyTerm term)
     {
         loadDataByTechId(TechId.create(term));
+
+        new InternalVocabularyAuthorization().canUpdateTerm(session, vocabularyTermPE.getVocabulary(), vocabularyTermPE);
 
         vocabularyTermPE.setOfficial(true);
 

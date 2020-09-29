@@ -68,8 +68,6 @@ public class UpdateVocabularyTermExecutor implements IUpdateVocabularyTermExecut
         final Map<IVocabularyTermId, VocabularyTermPE> terms = getTermsMap(context, updates);
         final Map<IVocabularyTermId, VocabularyTermPE> previousTerms = getPreviousTermsMap(context, updates);
 
-        checkAccess(context, updates, terms);
-
         IVocabularyTermBO termBO = businessObjectFactory.createVocabularyTermBO(context.getSession());
         List<VocabularyTermPermId> permIds = new ArrayList<VocabularyTermPermId>();
 
@@ -177,40 +175,6 @@ public class UpdateVocabularyTermExecutor implements IUpdateVocabularyTermExecut
             {
                 throw new UserFailureException("Vocabulary term id cannot be null");
             }
-        }
-    }
-
-    private void checkAccess(IOperationContext context, Collection<VocabularyTermUpdate> updates, Map<IVocabularyTermId, VocabularyTermPE> terms)
-    {
-        boolean allowedToChangeInternallyManaged = authorizationExecutor.canUpdateInternallyManaged(context);
-        boolean hasOfficial = false;
-        boolean hasUnofficial = false;
-
-        for (VocabularyTermUpdate update : updates)
-        {
-            VocabularyTermPE term = terms.get(update.getVocabularyTermId());
-
-            if (term.getVocabulary().isManagedInternally() && false == allowedToChangeInternallyManaged)
-            {
-                throw new UserFailureException("Not allowed to update terms of an internally managed vocabulary");
-            }
-
-            if (term.isOfficial() || (update.isOfficial().isModified() && Boolean.TRUE.equals(update.isOfficial().getValue())))
-            {
-                hasOfficial = true;
-            } else
-            {
-                hasUnofficial = true;
-            }
-        }
-
-        if (hasOfficial)
-        {
-            authorizationExecutor.canUpdateOfficial(context);
-        }
-        if (hasUnofficial)
-        {
-            authorizationExecutor.canUpdateUnofficial(context);
         }
     }
 

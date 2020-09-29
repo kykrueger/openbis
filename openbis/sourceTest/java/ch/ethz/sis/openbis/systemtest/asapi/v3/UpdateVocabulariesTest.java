@@ -151,7 +151,7 @@ public class UpdateVocabulariesTest extends AbstractTest
     @Test
     public void testLogging()
     {
-        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        String sessionToken = v3api.loginAsSystem();
 
         VocabularyUpdate update = new VocabularyUpdate();
         update.setVocabularyId(new VocabularyPermId("$PLATE_GEOMETRY"));

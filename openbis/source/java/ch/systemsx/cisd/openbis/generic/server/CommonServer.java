@@ -1417,18 +1417,13 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
     @RolesAllowed({ RoleWithHierarchy.INSTANCE_ADMIN, RoleWithHierarchy.INSTANCE_ETL_SERVER })
     @Capability("WRITE_VOCABULARY_TERM")
     public void addVocabularyTerms(String sessionToken, TechId vocabularyId,
-            List<VocabularyTerm> vocabularyTerms, Long previousTermOrdinal,
-            boolean allowChangingInternallyManaged)
+            List<VocabularyTerm> vocabularyTerms, Long previousTermOrdinal)
     {
         assert sessionToken != null : "Unspecified session token";
         assert vocabularyId != null : "Unspecified vocabulary id";
 
         final Session session = getSession(sessionToken);
         final IVocabularyBO vocabularyBO = businessObjectFactory.createVocabularyBO(session);
-        if (allowChangingInternallyManaged)
-        {
-            vocabularyBO.setAllowChangingInternallyManaged(true);
-        }
         vocabularyBO.loadDataByTechId(vocabularyId);
         vocabularyBO.addNewTerms(vocabularyTerms, previousTermOrdinal);
         vocabularyBO.save();

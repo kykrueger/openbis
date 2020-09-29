@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DataRetrievalFailureException;
@@ -77,17 +78,11 @@ import ch.systemsx.cisd.openbis.generic.shared.util.HibernateUtils;
  */
 public class VocabularyBO extends AbstractBusinessObject implements IVocabularyBO
 {
-    @Private
-    static final String UPDATING_CONTENT_OF_INTERNALLY_MANAGED_VOCABULARIES_IS_NOT_ALLOWED =
-            "Updating content of internally managed vocabularies is not allowed.";
-
     private static final String UNSPECIFIED_VOCABULARY = "Unspecified vocabulary";
 
     private static final int MAX_NUMBER_OF_INVAID_TERMS_IN_ERROR_MESSAGE = 10;
 
     private VocabularyPE vocabularyPE;
-
-    private boolean allowChangingInternallyManaged = false;
 
     private Map<Class<? extends IEntityInformationWithPropertiesHolder>, List<Long>> changedEntitiesMap =
             new HashMap<Class<? extends IEntityInformationWithPropertiesHolder>, List<Long>>();
@@ -119,6 +114,7 @@ public class VocabularyBO extends AbstractBusinessObject implements IVocabularyB
     public final void define(final NewVocabulary vocabulary) throws UserFailureException
     {
         assert vocabulary != null : "Unspecified vocabulary.";
+
         vocabularyPE = new VocabularyPE();
         vocabularyPE.setCode(vocabulary.getCode());
         vocabularyPE.setRegistrator(findPerson());
@@ -126,6 +122,9 @@ public class VocabularyBO extends AbstractBusinessObject implements IVocabularyB
         vocabularyPE.setChosenFromList(vocabulary.isChosenFromList());
         vocabularyPE.setURLTemplate(vocabulary.getURLTemplate());
         vocabularyPE.setManagedInternally(vocabulary.isManagedInternally());
+
+        new InternalVocabularyAuthorization().canCreateVocabulary(session, vocabularyPE);
+
         Long currentTermOrdinal = 1L;
         for (final VocabularyTerm term : vocabulary.getTerms())
         {
@@ -137,11 +136,7 @@ public class VocabularyBO extends AbstractBusinessObject implements IVocabularyB
             boolean isOfficial)
     {
         assert vocabularyPE != null : UNSPECIFIED_VOCABULARY;
-        if (vocabularyPE.isManagedInternally() && false == allowChangingInternallyManaged)
-        {
-            throw new UserFailureException(
-                    "Not allowed to add terms to an internally managed vocabulary.");
-        }
+
         Long currentTermOrdinal;
         if (previousTermOrdinal == null)
         {
@@ -177,12 +172,6 @@ public class VocabularyBO extends AbstractBusinessObject implements IVocabularyB
         assert vocabularyPE != null : UNSPECIFIED_VOCABULARY;
         assert code != null : "Unspecified vocabulary term code";
 
-        if (vocabularyPE.isManagedInternally() && false == allowChangingInternallyManaged)
-        {
-            throw new UserFailureException(
-                    "Not allowed to add terms to an internally managed vocabulary.");
-        }
-
         Long currentTermOrdinal;
         if (previousTermOrdinal == null)
         {
@@ -217,6 +206,9 @@ public class VocabularyBO extends AbstractBusinessObject implements IVocabularyB
         vocabularyTermPE.setRegistrator(findPerson());
         vocabularyTermPE.setOrdinal(ordinal);
         vocabularyTermPE.setOfficial(isOfficial);
+
+        new InternalVocabularyAuthorization().canCreateTerm(session, vocabularyPE, vocabularyTermPE);
+
         vocabularyPE.addTerm(vocabularyTermPE);
 
         return vocabularyTermPE;
@@ -232,11 +224,6 @@ public class VocabularyBO extends AbstractBusinessObject implements IVocabularyB
             List<VocabularyTermReplacement> termsToBeReplaced)
     {
         assert vocabularyPE != null : UNSPECIFIED_VOCABULARY;
-        if (vocabularyPE.isManagedInternally() && false == allowChangingInternallyManaged)
-        {
-            throw new UserFailureException(
-                    "Not allowed to delete terms from an internally managed vocabulary.");
-        }
 
         Set<VocabularyTermPE> terms = vocabularyPE.getTerms();
         IKeyExtractor<String, VocabularyTermPE> keyExtractor =
@@ -296,6 +283,9 @@ public class VocabularyBO extends AbstractBusinessObject implements IVocabularyB
     private void removeTerm(TableMap<String, VocabularyTermPE> termsMap, String termCode)
     {
         VocabularyTermPE term = termsMap.remove(termCode);
+
+        new InternalVocabularyAuthorization().canDeleteTerm(session, vocabularyPE, term);
+
         term.setVocabulary(null);
     }
 
@@ -352,6 +342,9 @@ public class VocabularyBO extends AbstractBusinessObject implements IVocabularyB
         {
             throwModifiedEntityException("Vocabulary");
         }
+
+        new InternalVocabularyAuthorization().canUpdateVocabulary(session, vocabularyPE);
+
         vocabularyPE.setCode(updates.getCode());
         vocabularyPE.setDescription(updates.getDescription());
         vocabularyPE.setURLTemplate(updates.getURLTemplate());
@@ -365,11 +358,20 @@ public class VocabularyBO extends AbstractBusinessObject implements IVocabularyB
     {
         loadDataByTechId(TechId.create(updates));
 
-        vocabularyPE.setCode(updates.getCode());
-        vocabularyPE.setDescription(updates.getDescription());
-        vocabularyPE.setURLTemplate(updates.getUrlTemplate());
-        vocabularyPE.setChosenFromList(updates.isChosenFromList());
-        vocabularyPE.setManagedInternally(updates.isManagedInternally());
+        boolean updateNeeded = new EqualsBuilder().append(vocabularyPE.getCode(), updates.getCode())
+                .append(vocabularyPE.getDescription(), updates.getDescription()).append(vocabularyPE.getURLTemplate(), updates.getUrlTemplate())
+                .append(vocabularyPE.isManagedInternally(), updates.isManagedInternally()).isEquals() == false;
+
+        if (updateNeeded)
+        {
+            new InternalVocabularyAuthorization().canUpdateVocabulary(session, vocabularyPE);
+
+            vocabularyPE.setCode(updates.getCode());
+            vocabularyPE.setDescription(updates.getDescription());
+            vocabularyPE.setURLTemplate(updates.getUrlTemplate());
+            vocabularyPE.setChosenFromList(updates.isChosenFromList());
+            vocabularyPE.setManagedInternally(updates.isManagedInternally());
+        }
 
         for (NewVocabularyTerm t : updates.getNewTerms())
         {
@@ -459,6 +461,9 @@ public class VocabularyBO extends AbstractBusinessObject implements IVocabularyB
     public void deleteByTechId(TechId vocabularyId, String reason) throws UserFailureException
     {
         loadDataByTechId(vocabularyId);
+
+        new InternalVocabularyAuthorization().canDeleteVocabulary(session, vocabularyPE);
+
         try
         {
             getVocabularyDAO().delete(vocabularyPE);
@@ -493,11 +498,7 @@ public class VocabularyBO extends AbstractBusinessObject implements IVocabularyB
     public void updateTerms(List<VocabularyTerm> terms)
     {
         assert vocabularyPE != null : UNSPECIFIED_VOCABULARY;
-        if (vocabularyPE.isManagedInternally() && false == allowChangingInternallyManaged)
-        {
-            throw new UserFailureException(
-                    UPDATING_CONTENT_OF_INTERNALLY_MANAGED_VOCABULARIES_IS_NOT_ALLOWED);
-        }
+
         checkAllTermsPresent(vocabularyPE.getTerms(), terms);
         Map<String, UpdatedVocabularyTerm> newTermsMap = prepareUpdateMap(terms);
         updateExistingTermsAndRemoveFromMap(newTermsMap);
@@ -534,6 +535,9 @@ public class VocabularyBO extends AbstractBusinessObject implements IVocabularyB
             String code = oldTerm.getCode();
             UpdatedVocabularyTerm update = newTermsMap.get(code);
             VocabularyTermBatchUpdateDetails batchUpdateDetails = update.getBatchUpdateDetails();
+
+            new InternalVocabularyAuthorization().canUpdateTerm(session, vocabularyPE, oldTerm);
+
             if (batchUpdateDetails.isDescriptionUpdateRequested())
             {
                 oldTerm.setDescription(update.getDescription());
@@ -574,12 +578,6 @@ public class VocabularyBO extends AbstractBusinessObject implements IVocabularyB
             list.add(t.getCode());
         }
         return list;
-    }
-
-    @Override
-    public void setAllowChangingInternallyManaged(boolean allowChangingInternallyManaged)
-    {
-        this.allowChangingInternallyManaged = allowChangingInternallyManaged;
     }
 
     private void addToChangedEntities(IEntityPropertiesHolder entity)
@@ -642,16 +640,13 @@ public class VocabularyBO extends AbstractBusinessObject implements IVocabularyB
         if (clazz.isInstance(ExperimentPE.class))
         {
             return EntityKind.EXPERIMENT;
-        }
-        else if (clazz.isInstance(SamplePE.class))
+        } else if (clazz.isInstance(SamplePE.class))
         {
             return EntityKind.SAMPLE;
-        }
-        else if (clazz.isInstance(DataPE.class))
+        } else if (clazz.isInstance(DataPE.class))
         {
             return EntityKind.DATA_SET;
-        }
-        else if (clazz.isInstance(MaterialPE.class))
+        } else if (clazz.isInstance(MaterialPE.class))
         {
             return EntityKind.DATA_SET;
         } else

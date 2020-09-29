@@ -1355,8 +1355,7 @@ public final class CommonServerTest extends AbstractServerTestCase
                 }
             });
 
-        createServer().addVocabularyTerms(SESSION_TOKEN, vocabularyId, terms, previousTermOrdinal,
-                false);
+        createServer().addVocabularyTerms(SESSION_TOKEN, vocabularyId, terms, previousTermOrdinal);
 
         context.assertIsSatisfied();
     }
@@ -1378,15 +1377,13 @@ public final class CommonServerTest extends AbstractServerTestCase
                     one(commonBusinessObjectFactory).createVocabularyBO(session);
                     will(returnValue(vocabularyBO));
 
-                    one(vocabularyBO).setAllowChangingInternallyManaged(true);
                     one(vocabularyBO).loadDataByTechId(vocabularyId);
                     one(vocabularyBO).addNewTerms(terms, previousTermOrdinal);
                     one(vocabularyBO).save();
                 }
             });
 
-        createServer().addVocabularyTerms(SESSION_TOKEN, vocabularyId, terms, previousTermOrdinal,
-                true);
+        createServer().addVocabularyTerms(SESSION_TOKEN, vocabularyId, terms, previousTermOrdinal);
 
         context.assertIsSatisfied();
     }

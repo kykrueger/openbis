@@ -56,7 +56,7 @@ public class CreateVocabularyExecutor
 
     @Autowired
     private IVocabularyAuthorizationExecutor authorizationExecutor;
-    
+
     @Autowired
     private ICreateVocabularyTermExecutor createTermExecutor;
 
@@ -84,12 +84,12 @@ public class CreateVocabularyExecutor
     @Override
     protected void checkAccess(IOperationContext context)
     {
-        authorizationExecutor.canCreate(context);
     }
 
     @Override
     protected void checkAccess(IOperationContext context, VocabularyPE entity)
     {
+        authorizationExecutor.canCreate(context, entity);
     }
 
     @Override
@@ -129,7 +129,7 @@ public class CreateVocabularyExecutor
             daoFactory.getVocabularyDAO().createOrUpdateVocabulary(vocabulary);
         }
     }
-    
+
     @Override
     protected void updateBatch(IOperationContext context, MapBatch<VocabularyCreation, VocabularyPE> batch)
     {

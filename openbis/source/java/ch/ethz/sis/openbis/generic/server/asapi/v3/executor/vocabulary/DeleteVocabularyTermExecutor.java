@@ -64,7 +64,7 @@ public class DeleteVocabularyTermExecutor
     @Override
     protected void checkAccess(IOperationContext context, IVocabularyTermId entityId, VocabularyTermPE entity)
     {
-        authorizationExecutor.canDelete(context, entityId, entity);
+        authorizationExecutor.canDelete(context);
     }
 
     @Override
@@ -133,7 +133,6 @@ public class DeleteVocabularyTermExecutor
             }
 
             IVocabularyBO vocabularyBO = businessObjectFactory.createVocabularyBO(context.getSession());
-            vocabularyBO.setAllowChangingInternallyManaged(authorizationExecutor.canUpdateInternallyManaged(context));
             vocabularyBO.loadDataByTechId(new TechId(vocabulary.getId()));
             vocabularyBO.delete(termsToBeDeleted, termsToBeReplaced);
             vocabularyBO.save();
