@@ -179,13 +179,6 @@ public class DataSetSearchManager extends AbstractSearchManager<IDatasetLister>
     private List<Long> findDataSetIds(String userId, DetailedSearchCriteria criteria,
             List<DetailedSearchSubCriteria> otherSubCriterias)
     {
-        List<IAssociationCriteria> associations =
-                new ArrayList<IAssociationCriteria>();
-        for (DetailedSearchSubCriteria subCriteria : otherSubCriterias)
-        {
-            associations.add(findAssociatedEntities(userId, subCriteria));
-        }
-
         if (criteria.getCriteria().isEmpty() && otherSubCriterias.isEmpty())
         {
             // if no criteria were provided find all data sets
@@ -196,7 +189,7 @@ public class DataSetSearchManager extends AbstractSearchManager<IDatasetLister>
 
         final List<Long> dataSetIds =
                 searchDAO.searchForEntityIds(userId, criteria,
-                        DtoConverters.convertEntityKind(EntityKind.DATA_SET), associations);
+                        DtoConverters.convertEntityKind(EntityKind.DATA_SET));
         return dataSetIds;
     }
 

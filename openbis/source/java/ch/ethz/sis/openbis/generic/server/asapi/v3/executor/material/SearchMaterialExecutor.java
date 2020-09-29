@@ -16,7 +16,6 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.material;
 
-import java.util.Collections;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +27,6 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.Abstra
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchCriterion;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchField;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IAssociationCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleAttributeSearchFieldKind;
 
 /**
@@ -56,8 +54,7 @@ public class SearchMaterialExecutor extends AbstractSearchObjectExecutor<Materia
         }
 
         List<Long> materialIds = daoFactory.getHibernateSearchDAO().searchForEntityIds(context.getSession().tryGetPerson().getUserId(), criteria,
-                ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind.MATERIAL,
-                Collections.<IAssociationCriteria> emptyList());
+                ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind.MATERIAL);
 
         return materialIds;
     }

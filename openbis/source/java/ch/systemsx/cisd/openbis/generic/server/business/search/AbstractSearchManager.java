@@ -26,13 +26,8 @@ import java.util.Map;
 import java.util.Set;
 
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IHibernateSearchDAO;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchAssociationCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchCriteria;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchNotNullAssociationCriteria;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchNullAssociationCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchSubCriteria;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IAssociationCriteria;
-import ch.systemsx.cisd.openbis.generic.shared.translator.DtoConverters;
 
 /**
  * Manages detailed search with complex search criteria.
@@ -66,32 +61,6 @@ public class AbstractSearchManager<T>
                 return ids;
             }
             return new ArrayList<Long>(ids).subList(0, maxSize);
-        }
-    }
-
-    protected IAssociationCriteria findAssociatedEntities(String userId,
-            DetailedSearchSubCriteria subCriteria)
-    {
-        if (subCriteria.getCriteria() == null)
-        {
-            return new DetailedSearchNullAssociationCriteria(subCriteria.getTargetEntityKind());
-        } else
-        {
-            if (subCriteria.getCriteria().isEmpty())
-            {
-                return new DetailedSearchNotNullAssociationCriteria(subCriteria.getTargetEntityKind());
-            } else
-            {
-                // where related objects meets given criteria (for now we don't support sub criteria of sub criteria)
-                List<IAssociationCriteria> associations = Collections.emptyList();
-                final Collection<Long> associatedIds =
-                        searchDAO.searchForEntityIds(userId, subCriteria.getCriteria(), DtoConverters
-                                .convertEntityKind(subCriteria.getTargetEntityKind().getEntityKind()),
-                                associations);
-
-                return new DetailedSearchAssociationCriteria(subCriteria.getTargetEntityKind(),
-                        associatedIds);
-            }
         }
     }
 

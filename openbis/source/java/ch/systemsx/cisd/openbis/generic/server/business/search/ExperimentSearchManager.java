@@ -18,13 +18,11 @@ package ch.systemsx.cisd.openbis.generic.server.business.search;
 
 import static ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind.EXPERIMENT;
 
-import java.util.Collections;
 import java.util.List;
 
 import ch.systemsx.cisd.openbis.generic.server.business.bo.IExperimentTable;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IHibernateSearchDAO;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchCriteria;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IAssociationCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentPE;
 
 /**
@@ -49,8 +47,7 @@ public class ExperimentSearchManager extends AbstractSearchManager<IExperimentTa
 
     public List<Long> searchForExperimentIDs(String userId, DetailedSearchCriteria criteria)
     {
-        return searchDAO.searchForEntityIds(userId, criteria, EXPERIMENT,
-                Collections.<IAssociationCriteria> emptyList());
+        return searchDAO.searchForEntityIds(userId, criteria, EXPERIMENT);
     }
 
 }
