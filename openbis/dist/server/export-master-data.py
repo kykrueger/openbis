@@ -116,7 +116,6 @@ def exportVocabulary(vocabulary):
     description = strLiteral(vocabulary.getDescription())
     urlTemplate = strLiteral(vocabulary.getUrlTemplate())
     isManagedInternally = vocabulary.isManagedInternally();
-    isInternalNamespace = vocabulary.isInternalNamespace();
     isChosenFromList = vocabulary.isChosenFromList();
     if (vocabulary.getCode() in EXISTING_VOCABULARY):
         result = ""
@@ -126,7 +125,6 @@ def exportVocabulary(vocabulary):
 %(var)s.setDescription(%(description)s)
 %(var)s.setUrlTemplate(%(urlTemplate)s)
 %(var)s.setManagedInternally(%(isManagedInternally)s)
-%(var)s.setInternalNamespace(%(isInternalNamespace)s)
 %(var)s.setChosenFromList(%(isChosenFromList)s)
 """ % vars()
     
@@ -272,13 +270,11 @@ def exportPropertyType(propertyType):
         specialSetters = specialSetters + "\n%(var)s.setVocabulary(%(vocabularyVar)s)" % vars()
         
     isManagedInternally = propertyType.isManagedInternally() 
-    isInternalNamespace = propertyType.isInternalNamespace()
     
     return """
 %(var)s = tr.getOrCreateNewPropertyType(%(code)s, DataType.%(dataType)s)
 %(var)s.setLabel(%(label)s)
 %(var)s.setManagedInternally(%(isManagedInternally)s)
-%(var)s.setInternalNamespace(%(isInternalNamespace)s)
 %(specialSetters)s
 """ % vars()
 
