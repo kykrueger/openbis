@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-define([ "stjs", "as/dto/common/search/NumberFieldSearchCriteria", "as/dto/common/search/SearchFieldType" ], function(stjs, NumberFieldSearchCriteria, SearchFieldType) {
-	var AnyNumberPropertySearchCriteria = function() {
-		NumberFieldSearchCriteria.call(this, "any number", SearchFieldType.ANY_PROPERTY);
+define([ "stjs", "as/dto/common/search/StringFieldSearchCriteria", "as/dto/common/search/SearchFieldType" ], function(stjs, StringFieldSearchCriteria, SearchFieldType) {
+	var AnyStringPropertySearchCriteria = function() {
+		StringFieldSearchCriteria.call(this, "any string", SearchFieldType.ANY_PROPERTY);
 	};
-	stjs.extend(AnyNumberPropertySearchCriteria, NumberFieldSearchCriteria, [ NumberFieldSearchCriteria ], function(constructor, prototype) {
-		prototype['@type'] = 'as.dto.common.search.AnyNumberPropertySearchCriteria';
+	stjs.extend(AnyStringPropertySearchCriteria, StringFieldSearchCriteria, [ StringFieldSearchCriteria ], function(constructor, prototype) {
+		prototype['@type'] = 'as.dto.common.search.AnyStringPropertySearchCriteria';
 		constructor.serialVersionUID = 1;
 	}, {
 		fieldType : {
@@ -27,5 +27,5 @@ define([ "stjs", "as/dto/common/search/NumberFieldSearchCriteria", "as/dto/commo
 			arguments : [ "SearchFieldType" ]
 		}
 	});
-	return AnyNumberPropertySearchCriteria;
+	return AnyStringPropertySearchCriteria;
 })

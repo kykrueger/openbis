@@ -101,6 +101,11 @@ public abstract class AbstractEntitySearchCriteria<ID extends IObjectId> extends
         return with(new AnyPropertySearchCriteria());
     }
 
+    public AnyStringPropertySearchCriteria withAnyStringProperty()
+    {
+        return with(new AnyStringPropertySearchCriteria());
+    }
+
     public AnyNumberPropertySearchCriteria withAnyNumberProperty()
     {
         return with(new AnyNumberPropertySearchCriteria());

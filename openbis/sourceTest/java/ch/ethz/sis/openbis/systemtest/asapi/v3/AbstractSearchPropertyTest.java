@@ -565,9 +565,62 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
         final ObjectPermId entityPermId = createEntity(sessionToken, propertyTypeId, value);
         final AbstractEntitySearchCriteria<?> searchCriteria = createSearchCriteria();
 
-        final StringQueryInjector queryInjector = anyField ? new AnyFieldQueryInjector(searchCriteria, null)
-                : new AnyPropertyQueryInjector(searchCriteria, null);
+        final StringQueryInjector queryInjector = anyField ? new AnyFieldQueryInjector(searchCriteria)
+                : new AnyPropertyQueryInjector(searchCriteria);
         queryInjector.buildCriteria(queryString);
+
+        // When
+        final List<? extends IPermIdHolder> entities = search(sessionToken, searchCriteria);
+
+        // Then
+        final boolean hasMatch = entities.stream().anyMatch(
+                entity -> entity.getPermId().toString().equals(entityPermId.getPermId()));
+        assertEquals(hasMatch, found);
+    }
+
+    @DataProvider
+    protected Object[][] withAnyStringPropertyExamples()
+    {
+        final String formattedDate = DATE_FORMAT.format(createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0));
+        final String formattedTimestamp = DATE_HOURS_MINUTES_SECONDS_FORMAT.format(
+                createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1));
+        return new Object[][] {
+                { DataType.VARCHAR, "12", "== 12", true },
+                { DataType.VARCHAR, "ab", "<= abc", true },
+                { DataType.VARCHAR, "12", "> 100", true },
+                { DataType.VARCHAR, "acd3", "contains bcd and endsWith d34", false },
+                { DataType.VARCHAR, "abcd3", "contains bcd and endsWith d34", false },
+                { DataType.VARCHAR, "abd34", "contains bcd and endsWith d34", false },
+                { DataType.VARCHAR, "abcd34", "contains bcd and endsWith d34", true },
+                { DataType.MULTILINE_VARCHAR, "acd3", "contains bcd or endsWith cd4", false },
+                { DataType.MULTILINE_VARCHAR, "abcd3", "contains bcd or endsWith cd4", true },
+                { DataType.MULTILINE_VARCHAR, "abd4", "contains bcd or endsWith bd4", true },
+                { DataType.MULTILINE_VARCHAR, "abcd4", "contains bcd or endsWith cd4", true },
+                { DataType.MULTILINE_VARCHAR, "12", "> 100 and <= 13", true },
+
+                { DataType.BOOLEAN, "true", "== true", false },
+                { DataType.BOOLEAN, "true", "== false", false },
+                { DataType.BOOLEAN, "false", "contains rue", false },
+                { DataType.BOOLEAN, "true", "contains rue", false },
+                { DataType.BOOLEAN, "false", "contains als", false },
+                { DataType.BOOLEAN, "true", "contains als", false },
+                { DataType.INTEGER, "12", "== 12", false },
+                { DataType.REAL, "12.5", "== 12.5", false },
+                { DataType.DATE, formattedDate, "== 2020-02-15", false },
+                { DataType.TIMESTAMP, formattedTimestamp, "startsWith 2020-02-15 10:00:01", false },
+        };
+    }
+
+    @Test(dataProvider = "withAnyStringPropertyExamples")
+    public void testWithAnyStringProperty(final DataType dataType, final String value, final String queryString,
+            final boolean found)
+    {
+        // Given
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        final PropertyTypePermId propertyTypeId = createAPropertyType(sessionToken, dataType);
+        final ObjectPermId entityPermId = createEntity(sessionToken, propertyTypeId, value);
+        final AbstractEntitySearchCriteria<?> searchCriteria = createSearchCriteria();
+        new AnyStringPropertyQueryInjector(searchCriteria).buildCriteria(queryString);
 
         // When
         final List<? extends IPermIdHolder> entities = search(sessionToken, searchCriteria);
@@ -868,10 +921,9 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
 
     static final class AnyFieldQueryInjector extends StringQueryInjector
     {
-        AnyFieldQueryInjector(final AbstractEntitySearchCriteria<?> searchCriteria,
-                final PropertyTypePermId propertyTypeId)
+        AnyFieldQueryInjector(final AbstractEntitySearchCriteria<?> searchCriteria)
         {
-            super(searchCriteria, propertyTypeId);
+            super(searchCriteria, null);
         }
 
         @Override
@@ -883,16 +935,29 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
 
     static final class AnyPropertyQueryInjector extends StringQueryInjector
     {
-        AnyPropertyQueryInjector(final AbstractEntitySearchCriteria<?> searchCriteria,
-                final PropertyTypePermId propertyTypeId)
+        AnyPropertyQueryInjector(final AbstractEntitySearchCriteria<?> searchCriteria)
         {
-            super(searchCriteria, propertyTypeId);
+            super(searchCriteria, null);
         }
 
         @Override
         protected StringFieldSearchCriteria getStringFieldSearchCriteria()
         {
             return searchCriteria.withAnyProperty();
+        }
+    }
+
+    static final class AnyStringPropertyQueryInjector extends StringQueryInjector
+    {
+        AnyStringPropertyQueryInjector(final AbstractEntitySearchCriteria<?> searchCriteria)
+        {
+            super(searchCriteria, null);
+        }
+
+        @Override
+        protected StringFieldSearchCriteria getStringFieldSearchCriteria()
+        {
+            return searchCriteria.withAnyStringProperty();
         }
     }
 

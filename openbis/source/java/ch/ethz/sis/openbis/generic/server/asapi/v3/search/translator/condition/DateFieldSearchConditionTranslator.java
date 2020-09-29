@@ -159,6 +159,7 @@ public class DateFieldSearchConditionTranslator implements IConditionTranslator<
         sqlBuilder.append(SP).append(WHEN).append(SP);
 
         TranslatorUtils.appendInternalExternalConstraint(sqlBuilder, args, entityTypesSubTableAlias, internalProperty);
+        sqlBuilder.append(SP).append(AND);
 
         sqlBuilder.append(SP).append(aliases.get(tableMapper.getAttributeTypesTable()).getSubTableAlias())
                 .append(PERIOD).append(ColumnNames.CODE_COLUMN).append(SP).append(EQ).append(SP).append(QU);

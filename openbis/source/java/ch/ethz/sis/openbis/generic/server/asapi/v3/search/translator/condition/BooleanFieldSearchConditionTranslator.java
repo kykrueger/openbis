@@ -116,6 +116,7 @@ public class BooleanFieldSearchConditionTranslator implements IConditionTranslat
         }
 
         TranslatorUtils.appendInternalExternalConstraint(sqlBuilder, args, entityTypesSubTableAlias, internalProperty);
+        sqlBuilder.append(SP).append(AND);
 
         sqlBuilder.append(SP).append(entityTypesSubTableAlias).append(PERIOD).append(ColumnNames.CODE_COLUMN).append(SP)
                 .append(EQ).append(SP).append(QU);

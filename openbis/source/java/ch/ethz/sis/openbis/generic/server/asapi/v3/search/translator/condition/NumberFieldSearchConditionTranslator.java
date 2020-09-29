@@ -122,7 +122,7 @@ public class NumberFieldSearchConditionTranslator implements IConditionTranslato
             {
                 final AbstractNumberValue value = criterion.getFieldValue();
                 final boolean internalProperty = TranslatorUtils.isPropertyInternal(criterion.getFieldName());
-                NumberFieldSearchConditionTranslator.translateNumberProperty(tableMapper, args, sqlBuilder, aliases,
+                translateNumberProperty(tableMapper, args, sqlBuilder, aliases,
                         value, null, internalProperty);
                 break;
             }
@@ -150,6 +150,7 @@ public class NumberFieldSearchConditionTranslator implements IConditionTranslato
         }
 
         TranslatorUtils.appendInternalExternalConstraint(sqlBuilder, args, entityTypesSubTableAlias, internalProperty);
+        sqlBuilder.append(SP).append(AND);
 
         if (propertyName != null)
         {
