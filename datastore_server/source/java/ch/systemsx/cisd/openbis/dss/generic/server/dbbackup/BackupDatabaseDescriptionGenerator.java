@@ -41,8 +41,6 @@ public class BackupDatabaseDescriptionGenerator
 {
     public static final String AS_DB_KEY_PREFIX = "database.";
 
-    public static final String PROTEOMICS_DB_KEY_PREFIX = "proteomics.database.";
-
     public static final String HCS_IMAGING_DB_VERSION_HOLDER =
             "ch.systemsx.cisd.openbis.dss.etl.ImagingDatabaseVersionHolder";
 

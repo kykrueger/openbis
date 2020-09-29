@@ -16,14 +16,22 @@
 
 package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCriteriaTranslator.DATE_FORMAT;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCriteriaTranslator.DATE_HOURS_MINUTES_SECONDS_FORMAT;
 import static org.testng.Assert.assertEquals;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.text.DateFormat;
+import java.util.*;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IPermIdHolder;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.create.MaterialCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.create.VocabularyCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.create.VocabularyTermCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.VocabularyPermId;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
@@ -237,6 +245,31 @@ public class SearchMaterialTest extends AbstractTest
         assertUserFailureException(
                 Void -> searchMaterials(sessionToken, criteriaContainsMatch, new MaterialFetchOptions()),
                 String.format("Operator %s undefined for datatype %s.", "Contains", "INTEGER"));
+    }
+
+    @Test
+    public void testSearchForMaterialWithBooleanProperty()
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        final PropertyTypePermId propertyType = createABooleanPropertyType(sessionToken, "BOOLEAN");
+        final EntityTypePermId materialType = createAMaterialType(sessionToken, false, propertyType);
+
+        final MaterialCreation materialCreation = new MaterialCreation();
+        materialCreation.setCode("BOOLEAN_PROPERTY_TEST");
+        materialCreation.setTypeId(materialType);
+        materialCreation.setProperty("BOOLEAN", "false");
+
+        final MaterialPermId createdMaterialPermId = v3api.createMaterials(sessionToken,
+                Collections.singletonList(materialCreation)).get(0);
+
+        final MaterialSearchCriteria falseValueCriterion = new MaterialSearchCriteria();
+        falseValueCriterion.withProperty("BOOLEAN").thatEquals("false");
+        testSearch(TEST_USER, falseValueCriterion, createdMaterialPermId);
+
+        final MaterialSearchCriteria trueValueCriterion = new MaterialSearchCriteria();
+        trueValueCriterion.withProperty("BOOLEAN").thatEquals("true");
+        testSearch(TEST_USER, trueValueCriterion);
     }
 
     @Test
@@ -797,6 +830,377 @@ public class SearchMaterialTest extends AbstractTest
                 Void -> searchMaterials(sessionToken, criteriaWithDateProperty, new MaterialFetchOptions()),
                 String.format("Criterion of type %s cannot be applied to the data type %s.",
                         "DatePropertySearchCriteria", "VARCHAR"));
+    }
+
+    @DataProvider
+    protected Object[][] withPropertyExamples()
+    {
+        return new Object[][] {
+                { DataType.VARCHAR, "12", "== 12", true },
+                { DataType.VARCHAR, "ab", "<= abc", true },
+                { DataType.VARCHAR, "12", "> 100", true },
+                { DataType.VARCHAR, "ac3", "contains bc and endsWith 4", false },
+                { DataType.VARCHAR, "abc3", "contains bc and endsWith 4", false },
+                { DataType.VARCHAR, "ab34", "contains bc and endsWith 4", false },
+                { DataType.VARCHAR, "abc34", "contains bc and endsWith 4", true },
+                { DataType.MULTILINE_VARCHAR, "ac3", "contains bc or endsWith 4", false },
+                { DataType.MULTILINE_VARCHAR, "abc3", "contains bc or endsWith 4", true },
+                { DataType.MULTILINE_VARCHAR, "ab34", "contains bc or endsWith 4", true },
+                { DataType.MULTILINE_VARCHAR, "abc34", "contains bc or endsWith 4", true },
+                { DataType.MULTILINE_VARCHAR, "12", "> 100 and <= 13", true },
+                { DataType.BOOLEAN, "true", "== true", true },
+                { DataType.BOOLEAN, "true", "== false", false },
+                { DataType.BOOLEAN, "false", "== true", false },
+                { DataType.BOOLEAN, "false", "== false", true },
+        };
+    }
+
+    @Test(dataProvider = "withPropertyExamples")
+    public void testWithProperty(final DataType dataType, final String value, final String queryString,
+            final boolean found)
+    {
+        // Given
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        final PropertyTypePermId propertyTypeId = createAPropertyType(sessionToken, dataType);
+        final MaterialPermId entityPermId = createMaterial(sessionToken, propertyTypeId, value);
+        final MaterialSearchCriteria searchCriteria = new MaterialSearchCriteria();
+        new AbstractSearchPropertyTest.StringQueryInjector(searchCriteria, propertyTypeId, false)
+                .buildCriteria(queryString);
+
+        // When
+        final List<? extends IPermIdHolder> entities = searchMaterials(sessionToken, searchCriteria,
+                new MaterialFetchOptions());
+
+        // Then
+        assertEquals(entities.size(), found ? 1 : 0);
+        if (found)
+        {
+            assertEquals(entities.get(0).getPermId().toString(), entityPermId.toString());
+        }
+    }
+
+    @DataProvider
+    protected Object[][] withDateOrTimestampPropertyExamples()
+    {
+        return new Object[][] {
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "== 2020-02-15", true },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "== 2020-02-14", false },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), ">= 2020-02-16", false },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), ">= 2020-02-15", true },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), ">= 2020-02-14", true },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "<= 2020-02-16", true },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "<= 2020-02-15", true },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "<= 2020-02-14", false },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "> 2020-02-16", false },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "> 2020-02-15", false },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "> 2020-02-14", true },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "< 2020-02-16", true },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "< 2020-02-15", false },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "< 2020-02-14", false },
+
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "== 2020-02-15 10:00:01", true },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "== 2020-02-15 10:00:00", false },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), ">= 2020-02-15 10:00:02", false },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), ">= 2020-02-15 10:00:01", true },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), ">= 2020-02-15 10:00:00", true },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "<= 2020-02-15 10:00:02", true },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "<= 2020-02-15 10:00:01", true },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "<= 2020-02-15 10:00:00", false },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "> 2020-02-15 10:00:02", false },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "> 2020-02-15 10:00:01", false },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "> 2020-02-15 10:00:00", true },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "< 2020-02-15 10:00:02", true },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "< 2020-02-15 10:00:01", false },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "< 2020-02-15 10:00:00", false },
+        };
+    }
+
+    @Test(dataProvider = "withDateOrTimestampPropertyExamples")
+    public void testWithDateOrTimestampProperty(final DataType dataType, final Date value, final String queryString,
+            final boolean found)
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        final PropertyTypePermId propertyTypeId = createAPropertyType(sessionToken, dataType);
+        final DateFormat dateFormat = dataType == DataType.DATE ? DATE_FORMAT : DATE_HOURS_MINUTES_SECONDS_FORMAT;
+        final String formattedValue = dateFormat.format(value);
+        final MaterialPermId entityPermId = createMaterial(sessionToken, propertyTypeId, formattedValue);
+        final MaterialFetchOptions emptyFetchOptions = new MaterialFetchOptions();
+
+        // Given
+        final MaterialSearchCriteria dateSearchCriteria = new MaterialSearchCriteria();
+        new AbstractSearchPropertyTest.DateQueryInjector(dateSearchCriteria, propertyTypeId, dateFormat)
+                .buildCriteria(queryString);
+
+        // When
+        final List<? extends IPermIdHolder> dateEntities = searchMaterials(sessionToken, dateSearchCriteria,
+                emptyFetchOptions);
+
+        // Then
+        assertEquals(dateEntities.size(), found ? 1 : 0);
+        if (found)
+        {
+            assertEquals(dateEntities.get(0).getPermId().toString(), entityPermId.toString());
+        }
+
+        // Given
+        final MaterialSearchCriteria dateSearchStringPropertyCriteria = new MaterialSearchCriteria();
+        new AbstractSearchPropertyTest.StringQueryInjector(dateSearchStringPropertyCriteria, propertyTypeId, false)
+                .buildCriteria(queryString);
+
+        // When
+        final List<? extends IPermIdHolder> dateEntitiesFromStringPropertyCriteria = searchMaterials(sessionToken,
+                dateSearchStringPropertyCriteria, emptyFetchOptions);
+
+        // Then
+        assertEquals(dateEntitiesFromStringPropertyCriteria.size(), found ? 1 : 0);
+        if (found)
+        {
+            assertEquals(dateEntitiesFromStringPropertyCriteria.get(0).getPermId().toString(), entityPermId.toString());
+        }
+
+        if (dataType == DataType.TIMESTAMP)
+        {
+            // Given
+            final MaterialSearchCriteria timestampSearchCriteria = new MaterialSearchCriteria();
+            new AbstractSearchPropertyTest.DateQueryInjector(timestampSearchCriteria, propertyTypeId, null)
+                    .buildCriteria(queryString);
+
+            // When
+            final List<? extends IPermIdHolder> timestampEntities = searchMaterials(sessionToken,
+                    timestampSearchCriteria, emptyFetchOptions);
+
+            // Then
+            assertEquals(timestampEntities.size(), found ? 1 : 0);
+            if (found)
+            {
+                assertEquals(timestampEntities.get(0).getPermId().toString(), entityPermId.toString());
+            }
+
+            // Given
+            final MaterialSearchCriteria timestampSearchStringPropertyCriteria = new MaterialSearchCriteria();
+            new AbstractSearchPropertyTest.StringQueryInjector(timestampSearchStringPropertyCriteria, propertyTypeId,
+                    false).buildCriteria(queryString);
+
+            // When
+            final List<? extends IPermIdHolder> timestampEntitiesFromStringPropertyCriteria =
+                    searchMaterials(sessionToken, timestampSearchStringPropertyCriteria, emptyFetchOptions);
+
+            // Then
+            assertEquals(timestampEntitiesFromStringPropertyCriteria.size(), found ? 1 : 0);
+            if (found)
+            {
+                assertEquals(timestampEntitiesFromStringPropertyCriteria.get(0).getPermId().toString(),
+                        entityPermId.toString());
+            }
+        }
+    }
+
+    @DataProvider
+    protected Object[][] withControlledVocabularyPropertyExamples()
+    {
+        return new Object[][] {
+                { "WINTER", "== WINTER", true },
+                { "WINTER", "== SUMMER", false },
+                { "WINTER", "<= WINTER", true },
+                { "SUMMER", "<= WINTER", true },
+                { "WINTER", "<= SUMMER", false },
+                { "WINTER", "< WINTER", false },
+                { "SUMMER", "< WINTER", true },
+                { "WINTER", "< SUMMER", false },
+                { "WINTER", ">= WINTER", true },
+                { "WINTER", ">= SUMMER", true },
+                { "SUMMER", ">= WINTER", false },
+                { "WINTER", "> WINTER", false },
+                { "WINTER", "> SUMMER", true },
+                { "SUMMER", "> WINTER", false },
+
+                { "WINTER", "contains I and endsWith ER", true },
+                { "SUMMER", "contains I and endsWith ER", false },
+                { "SPRING", "contains I and endsWith ER", false },
+                { "SUMMER", "startsWith SU", true },
+                { "SPRING", "startsWith SU", false },
+        };
+    }
+
+    @Test(dataProvider = "withControlledVocabularyPropertyExamples")
+    public void testWithControlledVocabularyProperty(final String value, final String queryString, final boolean found)
+    {
+        // Given
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        final VocabularyTermCreation vocabularyTermCreation1 = new VocabularyTermCreation();
+        vocabularyTermCreation1.setCode("WINTER");
+        final VocabularyTermCreation vocabularyTermCreation2 = new VocabularyTermCreation();
+        vocabularyTermCreation2.setCode("SPRING");
+        final VocabularyTermCreation vocabularyTermCreation3 = new VocabularyTermCreation();
+        vocabularyTermCreation3.setCode("SUMMER");
+        final VocabularyTermCreation vocabularyTermCreation4 = new VocabularyTermCreation();
+        vocabularyTermCreation4.setCode("AUTUMN");
+
+        final VocabularyCreation vocabularyCreation = new VocabularyCreation();
+        vocabularyCreation.setCode("SEASONS");
+        vocabularyCreation.setTerms(Arrays.asList(vocabularyTermCreation1, vocabularyTermCreation2,
+                vocabularyTermCreation3, vocabularyTermCreation4));
+        final VocabularyPermId vocabularyPermId =
+                v3api.createVocabularies(sessionToken, Collections.singletonList(vocabularyCreation)).get(0);
+
+        final PropertyTypePermId propertyTypeId = createAPropertyType(sessionToken, DataType.CONTROLLEDVOCABULARY,
+                vocabularyPermId);
+        final MaterialPermId entityPermId = createMaterial(sessionToken, propertyTypeId, value);
+        final MaterialSearchCriteria searchCriteria = new MaterialSearchCriteria();
+        new AbstractSearchPropertyTest.StringQueryInjector(searchCriteria, propertyTypeId, false)
+                .buildCriteria(queryString);
+
+        // When
+        final List<? extends IPermIdHolder> entities = searchMaterials(sessionToken, searchCriteria,
+                new MaterialFetchOptions());
+
+        // Then
+        assertEquals(entities.size(), found ? 1 : 0);
+        if (found)
+        {
+            assertEquals(entities.get(0).getPermId().toString(), entityPermId.toString());
+        }
+    }
+
+    @Test
+    public void testSearchWithPropertyMatchingMaterialProperty()
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        final EntityTypePermId materialType = createAMaterialType(sessionToken, false);
+
+        final MaterialCreation materialCreation = new MaterialCreation();
+        materialCreation.setCode("MATERIAL_PROPERTY_TEST");
+        materialCreation.setTypeId(materialType);
+
+        final MaterialPermId materialPermId = v3api.createMaterials(sessionToken,
+                Collections.singletonList(materialCreation)).get(0);
+
+        final String materialTypePermId = materialType.getPermId();
+        final PropertyTypePermId propertyTypeId = createAMaterialPropertyType(sessionToken,
+                new EntityTypePermId(materialTypePermId, EntityKind.MATERIAL));
+
+        final MaterialPermId entityPermId = createMaterial(sessionToken, propertyTypeId, materialPermId.toString());
+
+        final MaterialSearchCriteria searchCriteria = new MaterialSearchCriteria();
+        searchCriteria.withOrOperator();
+        searchCriteria.withProperty(propertyTypeId.getPermId()).thatEquals(materialPermId.getCode());
+
+        final List<? extends IPermIdHolder> entities = searchMaterials(sessionToken, searchCriteria,
+                new MaterialFetchOptions());
+        assertEquals(entities.size(), 1);
+        assertEquals(entities.get(0).getPermId(), entityPermId);
+    }
+
+    @DataProvider
+    protected Object[][] withAnyPropertyExamples()
+    {
+        final String formattedDate = DATE_FORMAT.format(createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0));
+        final String formattedTimestamp = DATE_HOURS_MINUTES_SECONDS_FORMAT.format(
+                createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1));
+        return new Object[][] {
+                { DataType.VARCHAR, "12", "== 12", true },
+                { DataType.VARCHAR, "ab", "<= abc", true },
+                { DataType.VARCHAR, "12", "> 100", true },
+                { DataType.VARCHAR, "acd3", "contains bcd and endsWith d34", false },
+                { DataType.VARCHAR, "abcd3", "contains bcd and endsWith d34", false },
+                { DataType.VARCHAR, "abd34", "contains bcd and endsWith d34", false },
+                { DataType.VARCHAR, "abcd34", "contains bcd and endsWith d34", true },
+                { DataType.MULTILINE_VARCHAR, "acd3", "contains bcd or endsWith cd4", false },
+                { DataType.MULTILINE_VARCHAR, "abcd3", "contains bcd or endsWith cd4", true },
+                { DataType.MULTILINE_VARCHAR, "abd4", "contains bcd or endsWith bd4", true },
+                { DataType.MULTILINE_VARCHAR, "abcd4", "contains bcd or endsWith cd4", true },
+                { DataType.MULTILINE_VARCHAR, "12", "> 100 and <= 13", true },
+                { DataType.BOOLEAN, "true", "== true", true },
+                { DataType.BOOLEAN, "true", "== false", false },
+                { DataType.BOOLEAN, "false", "contains rue", false },
+                { DataType.BOOLEAN, "true", "contains rue", true },
+                { DataType.BOOLEAN, "false", "contains als", true },
+                { DataType.BOOLEAN, "true", "contains als", false },
+
+                { DataType.INTEGER, "12", "== 12", true },
+                { DataType.REAL, "12.5", "== 12.5", true },
+                { DataType.INTEGER, "13333", "<= 13333 and > 13332", true },
+                { DataType.INTEGER, "13333", "<= 13333.0 and > 13332", true },
+                { DataType.INTEGER, "13333", "< 13333.001 and > 13332", true },
+                { DataType.INTEGER, "999999999999", "< 999999999999.001 and >= 999999999999", true },
+                { DataType.INTEGER, "14", "> 13 and <= 19.5", true },
+                { DataType.INTEGER, "19", "> 13 and <= 19.5", true },
+                { DataType.REAL, "19", "> 13 and <= 19.5", true },
+                { DataType.REAL, "19.5", "> 13 and <= 19.5", true },
+                { DataType.REAL, "19", ">= 23.5 or <= 19.5", true },
+                { DataType.REAL, "23.5", ">= 23.5 or <= 19.5", true },
+                { DataType.INTEGER, "19", ">= 23.5 or <= 19.5", true },
+                { DataType.INTEGER, "24", ">= 23.5 or <= 19.5", true },
+                { DataType.INTEGER, "19", ">= 24 or <= 19", true },
+                { DataType.INTEGER, "24", ">= 24 or <= 19", true },
+                { DataType.INTEGER, "12345", "startsWith 123 and endsWith 345", true },
+                { DataType.INTEGER, "12345", "startsWith 133 and endsWith 345", false },
+                { DataType.INTEGER, "12345", "startsWith 123 and endsWith 355", false },
+                { DataType.INTEGER, "12345", "startsWith 113 and endsWith 355", false },
+                { DataType.INTEGER, "12345", "startsWith 123 or endsWith 345", true },
+                { DataType.INTEGER, "12345", "startsWith 133 or endsWith 345", true },
+                { DataType.INTEGER, "12345", "startsWith 123 or endsWith 355", true },
+                { DataType.INTEGER, "12345", "startsWith 113 or endsWith 355", false },
+                { DataType.INTEGER, "12345", "contains 234", true },
+                { DataType.INTEGER, "12345", "contains 437", false },
+                { DataType.REAL, "12.345", "startsWith 12. and endsWith 45", true },
+                { DataType.REAL, "12.345", "startsWith 12. or endsWith 45", true },
+                { DataType.REAL, "12.345", "contains .34", true },
+                { DataType.REAL, "12.345", "contains 9876", false },
+
+                { DataType.DATE, formattedDate, "== 2020-02-15", true },
+                { DataType.DATE, formattedDate, "== 2020-02-14", false },
+                { DataType.TIMESTAMP, formattedTimestamp, "startsWith 2020-02-15 10:00:01", true },
+                { DataType.TIMESTAMP, formattedTimestamp, "startsWith 2020-02-15 10:00:00", false },
+        };
+    }
+
+    @Test(dataProvider = "withAnyPropertyExamples")
+    public void testWithAnyProperty(final DataType dataType, final String value, final String queryString,
+            final boolean found)
+    {
+        testWithAny(dataType, value, queryString, found, false);
+    }
+
+    @Test(dataProvider = "withAnyPropertyExamples")
+    public void testWithAnyField(final DataType dataType, final String value, final String queryString,
+            final boolean found)
+    {
+        testWithAny(dataType, value, queryString, found, true);
+    }
+
+    public void testWithAny(final DataType dataType, final String value, final String queryString,
+            final boolean found, final boolean anyField)
+    {
+        // Given
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        final PropertyTypePermId propertyTypeId = createAPropertyType(sessionToken, dataType);
+        final MaterialPermId entityPermId = createMaterial(sessionToken, propertyTypeId, value);
+        final MaterialSearchCriteria searchCriteria = new MaterialSearchCriteria();
+        new AbstractSearchPropertyTest.StringQueryInjector(searchCriteria, null, anyField).buildCriteria(queryString);
+
+        // When
+        final List<? extends IPermIdHolder> entities = searchMaterials(sessionToken, searchCriteria,
+                new MaterialFetchOptions());
+
+        // Then
+        final boolean hasMatch = entities.stream().anyMatch(
+                entity -> entity.getPermId().toString().equals(entityPermId.toString()));
+        assertEquals(hasMatch, found);
+    }
+
+    private MaterialPermId createMaterial(final String sessionToken, final PropertyTypePermId propertyType,
+            final String formattedValue)
+    {
+        final EntityTypePermId materialType = createAMaterialType(sessionToken, false, propertyType);
+
+        final MaterialCreation materialCreation = new MaterialCreation();
+        materialCreation.setCode("TEST-MATERIAL-" + System.currentTimeMillis());
+        materialCreation.setTypeId(materialType);
+        materialCreation.setProperty(propertyType.getPermId(), formattedValue);
+
+        return v3api.createMaterials(sessionToken, Collections.singletonList(materialCreation)).get(0);
     }
 
     private List<Material> searchMaterials(final String sessionToken, final MaterialSearchCriteria criteria,

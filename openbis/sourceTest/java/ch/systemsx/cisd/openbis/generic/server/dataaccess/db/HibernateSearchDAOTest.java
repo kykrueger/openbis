@@ -24,12 +24,10 @@ import static org.testng.AssertJUnit.fail;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.*;
 import org.testng.AssertJUnit;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -37,6 +35,13 @@ import org.testng.annotations.Test;
 import ch.rinn.restrictions.Friend;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IHibernateSearchDAO;
 import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetAttributeSearchFieldKind;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchCriteria;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchCriterion;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchField;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MatchingEntity;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SearchCriteriaConnection;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataSetPropertyPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EntityPropertyPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExternalDataPE;
@@ -46,7 +51,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialPropertyPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PropertyTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SearchableEntity;
 import ch.systemsx.cisd.openbis.generic.shared.translator.DtoConverters;
-import ch.systemsx.cisd.openbis.generic.shared.util.HibernateUtils;
 
 /**
  * Test cases for corresponding {@link IHibernateSearchDAO} class.
@@ -232,13 +236,12 @@ public final class HibernateSearchDAOTest extends AbstractDAOTest
      * <br>
      * Only eager connections are loaded.
      */
-    private List<ExternalDataPE> searchForDatasets(DetailedSearchCriteria criteria,
-            List<IAssociationCriteria> assiciations)
+    private List<ExternalDataPE> searchForDatasets(DetailedSearchCriteria criteria)
     {
         final IHibernateSearchDAO hibernateSearchDAO = daoFactory.getHibernateSearchDAO();
         List<Long> datasetIds =
                 hibernateSearchDAO.searchForEntityIds(USER_ID, criteria,
-                        DtoConverters.convertEntityKind(EntityKind.DATA_SET), assiciations);
+                        DtoConverters.convertEntityKind(EntityKind.DATA_SET));
         final List<ExternalDataPE> result = new ArrayList<ExternalDataPE>();
         for (Long datasetId : datasetIds)
         {
@@ -268,8 +271,7 @@ public final class HibernateSearchDAOTest extends AbstractDAOTest
             DSLoc... expectedLocations)
     {
         List<ExternalDataPE> dataSets =
-                searchForDatasets(criteria,
-                        Collections.<IAssociationCriteria> emptyList());
+                searchForDatasets(criteria);
 
         AssertJUnit.assertEquals(expectedLocations.length, dataSets.size());
         for (ExternalDataPE dataSet : dataSets)
@@ -285,8 +287,7 @@ public final class HibernateSearchDAOTest extends AbstractDAOTest
             int expectedTotalResults, DSLoc... expectedLocations)
     {
         List<ExternalDataPE> dataSets =
-                searchForDatasets(criteria,
-                        Collections.<IAssociationCriteria> emptyList());
+                searchForDatasets(criteria);
         AssertJUnit.assertEquals(expectedTotalResults, dataSets.size());
         for (DSLoc expectedLocation : expectedLocations)
         {
@@ -300,26 +301,6 @@ public final class HibernateSearchDAOTest extends AbstractDAOTest
             }
             AssertJUnit.assertTrue("Expected dataset location " + expectedLocation
                     + " not found in database.", found);
-        }
-    }
-
-    // NOTE: such a check depends strongly on the test database content. Use it only when the better
-    // way to check the results is much harder.
-    private void assertCorrectDatasetsFound(DetailedSearchCriteria criteria,
-            IAssociationCriteria association, DSLoc... expectedLocations)
-    {
-        List<ExternalDataPE> dataSets =
-                searchForDatasets(criteria, Collections.singletonList(association));
-        // Collections.<DetailedSearchAssociationCriteria> emptyList());
-        for (ExternalDataPE dataSet : dataSets)
-        {
-            System.err.println(dataSet.getLocation() + ": "
-                    + HibernateUtils.getId(dataSet.getExperiment()));
-        }
-        AssertJUnit.assertEquals(expectedLocations.length, dataSets.size());
-        for (ExternalDataPE dataSet : dataSets)
-        {
-            assertContains(expectedLocations, dataSet.getLocation());
         }
     }
 

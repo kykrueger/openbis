@@ -64,16 +64,7 @@ public class TranslatorUtils
             final AbstractStringValue value, final PSQLTypes casting, final StringBuilder sqlBuilder,
             final List<Object> args)
     {
-        final boolean equalsToComparison = (value.getClass() == StringEqualToValue.class);
-        if (equalsToComparison)
-        {
-            sqlBuilder.append(LOWER).append(LP);
-        }
-        sqlBuilder.append(tableAlias).append(PERIOD).append(columnName);
-        if (equalsToComparison)
-        {
-            sqlBuilder.append(RP);
-        }
+        sqlBuilder.append(LOWER).append(LP).append(tableAlias).append(PERIOD).append(columnName).append(RP);
         if (casting != null)
         {
             sqlBuilder.append(DOUBLE_COLON).append(casting);
@@ -83,13 +74,14 @@ public class TranslatorUtils
         appendStringComparatorOp(value.getClass(), strippedValue, sqlBuilder, args);
     }
 
-    public static void appendStringComparatorOp(final AbstractStringValue value, final StringBuilder sqlBuilder, final List<Object> args)
+    public static void appendStringComparatorOp(final AbstractStringValue value, final StringBuilder sqlBuilder,
+            final List<Object> args)
     {
         appendStringComparatorOp(value.getClass(), value.getValue(), sqlBuilder, args);
     }
 
-    public static void appendStringComparatorOp(final Class<?> valueClass, final String finalValue, final StringBuilder sqlBuilder,
-            final List<Object> args)
+    public static void appendStringComparatorOp(final Class<?> valueClass, final String finalValue,
+            final StringBuilder sqlBuilder, final List<Object> args)
     {
         sqlBuilder.append(SP);
         if (valueClass == StringEqualToValue.class)

@@ -23,20 +23,7 @@ import static org.testng.Assert.fail;
 import java.lang.reflect.Method;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -171,6 +158,14 @@ public class AbstractTest extends SystemTestCase
 
     @Autowired
     protected IGeneralInformationService generalInformationService;
+
+    protected static Date createDate(final int year, final int month, final int date, final int hrs, final int min,
+            final int sec)
+    {
+        final Calendar calendar = Calendar.getInstance();
+        calendar.set(year, month, date, hrs, min, sec);
+        return calendar.getTime();
+    }
 
     @BeforeClass
     public void beforeClass()
@@ -1406,18 +1401,24 @@ public class AbstractTest extends SystemTestCase
         }
     }
 
-    protected PropertyTypePermId createAPropertyType(String sessionToken, DataType dataType)
+    protected PropertyTypePermId createAPropertyType(final String sessionToken, final DataType dataType)
     {
-        PropertyTypeCreation creation = new PropertyTypeCreation();
+        return createAPropertyType(sessionToken, dataType, new VocabularyPermId("ORGANISM"));
+    }
+
+    protected PropertyTypePermId createAPropertyType(final String sessionToken, final DataType dataType,
+            final VocabularyPermId vocabularyPermId)
+    {
+        final PropertyTypeCreation creation = new PropertyTypeCreation();
         creation.setCode("TYPE-" + System.currentTimeMillis());
         creation.setDataType(dataType);
         creation.setLabel("label");
         creation.setDescription("description");
         if (dataType == DataType.CONTROLLEDVOCABULARY)
         {
-            creation.setVocabularyId(new VocabularyPermId("ORGANISM"));
+            creation.setVocabularyId(vocabularyPermId);
         }
-        return v3api.createPropertyTypes(sessionToken, Arrays.asList(creation)).get(0);
+        return v3api.createPropertyTypes(sessionToken, Collections.singletonList(creation)).get(0);
     }
 
     protected PropertyTypePermId createASamplePropertyType(String sessionToken, IEntityTypeId sampleTypeId)
@@ -1428,7 +1429,19 @@ public class AbstractTest extends SystemTestCase
         creation.setSampleTypeId(sampleTypeId);
         creation.setLabel("label");
         creation.setDescription("description");
-        return v3api.createPropertyTypes(sessionToken, Arrays.asList(creation)).get(0);
+        return v3api.createPropertyTypes(sessionToken, Collections.singletonList(creation)).get(0);
+    }
+
+    protected PropertyTypePermId createAMaterialPropertyType(final String sessionToken,
+            final IEntityTypeId materialTypeId)
+    {
+        final PropertyTypeCreation creation = new PropertyTypeCreation();
+        creation.setCode("TYPE-" + System.currentTimeMillis());
+        creation.setDataType(DataType.MATERIAL);
+        creation.setMaterialTypeId(materialTypeId);
+        creation.setLabel("label");
+        creation.setDescription("description");
+        return v3api.createPropertyTypes(sessionToken, Collections.singletonList(creation)).get(0);
     }
 
     protected EntityTypePermId createASampleType(String sessionToken, boolean mandatory, PropertyTypePermId... propertyTypes)
@@ -1521,7 +1534,7 @@ public class AbstractTest extends SystemTestCase
     private String getSampleIdentifier(String permId)
     {
         Session session = sessionFactory.getCurrentSession();
-        NativeQuery query = session.createSQLQuery("select sample_identifier from samples where perm_id = :permId")
+        NativeQuery query = session.createNativeQuery("select sample_identifier from samples where perm_id = :permId")
                 .setParameter("permId", permId);
         List<?> result = query.getResultList();
         try
