@@ -273,8 +273,7 @@ public class GeneralInformationServiceTest extends AbstractServerTestCase
             {
                 {
                     one(hibernateSearchDAO).searchForEntityIds(with(session.getUserName()),
-                            with(criteriaMatcher), with(EntityKind.EXPERIMENT),
-                            with(Collections.<IAssociationCriteria> emptyList()));
+                            with(criteriaMatcher), with(EntityKind.EXPERIMENT));
                     will(returnValue(Arrays.asList(42L)));
                 }
             });
@@ -400,8 +399,7 @@ public class GeneralInformationServiceTest extends AbstractServerTestCase
             {
                 {
                     one(hibernateSearchDAO).searchForEntityIds(with(session.getUserName()),
-                            with(criteriaMatcher), with(EntityKind.SAMPLE),
-                            with(associatedCriteriaMatcher));
+                            with(criteriaMatcher), with(EntityKind.SAMPLE));
                     will(returnValue(Arrays.asList(42L)));
                 }
             });
@@ -421,8 +419,7 @@ public class GeneralInformationServiceTest extends AbstractServerTestCase
 
                     exactly(numberOfSearches).of(hibernateSearchDAO).searchForEntityIds(
                             with(session.getUserName()), with(criteriaMatcher),
-                            with(EntityKind.SAMPLE),
-                            with(Collections.<IAssociationCriteria> emptyList()));
+                            with(EntityKind.SAMPLE));
                     will(returnValue(new ArrayList<Long>(Arrays.asList(42L))));
 
                     one(hibernateSearchDAO).getResultSetSizeLimit();

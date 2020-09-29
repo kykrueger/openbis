@@ -58,7 +58,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchCriterion;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchSubCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentAttributeSearchFieldKind;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IAssociationCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MatchingEntity;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialAttributeSearchFieldKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Person;
@@ -236,10 +235,9 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
     @Override
     public List<Long> searchForEntityIds(final String userId,
                                          final DetailedSearchCriteria mainV1Criteria,
-                                         final EntityKind entityKind,
-                                         final List<IAssociationCriteria> v1Associations)
+                                         final EntityKind entityKind)
     {
-        operationLog.info("TO ADAPT [QUERY] : " + entityKind + " [" + mainV1Criteria + "] " + v1Associations);
+        operationLog.info("TO ADAPT [QUERY] : " + entityKind + " [" + mainV1Criteria + "]");
 
         // Obtain PersonPE
         DAOFactory daoFactory = (DAOFactory) CommonServiceProvider.getApplicationContext().getBean(DAO_FACTORY);

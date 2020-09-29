@@ -32,7 +32,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchCriterion
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchField;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchSubCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IAssociationCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ListOrSearchSampleCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Sample;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleAttributeSearchFieldKind;
@@ -170,13 +169,6 @@ public class SampleSearchManager extends AbstractSearchManager<ISampleLister>
     private List<Long> findSampleIds(String userId, DetailedSearchCriteria criteria,
             List<DetailedSearchSubCriteria> subCriterias)
     {
-        // for now we connect all sub criteria with logical AND
-        List<IAssociationCriteria> associations =
-                new ArrayList<IAssociationCriteria>();
-        for (DetailedSearchSubCriteria subCriteria : subCriterias)
-        {
-            associations.add(findAssociatedEntities(userId, subCriteria));
-        }
         if (subCriterias.isEmpty() && criteria.getCriteria().isEmpty())
         {
             // if no criteria were provided find all samples
@@ -186,7 +178,7 @@ public class SampleSearchManager extends AbstractSearchManager<ISampleLister>
         }
         final List<Long> sampleIds =
                 searchDAO.searchForEntityIds(userId, criteria,
-                        DtoConverters.convertEntityKind(EntityKind.SAMPLE), associations);
+                        DtoConverters.convertEntityKind(EntityKind.SAMPLE));
         return sampleIds;
     }
 

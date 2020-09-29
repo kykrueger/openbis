@@ -238,7 +238,7 @@ public final class HibernateSearchDAOTest extends AbstractDAOTest
         final IHibernateSearchDAO hibernateSearchDAO = daoFactory.getHibernateSearchDAO();
         List<Long> datasetIds =
                 hibernateSearchDAO.searchForEntityIds(USER_ID, criteria,
-                        DtoConverters.convertEntityKind(EntityKind.DATA_SET), assiciations);
+                        DtoConverters.convertEntityKind(EntityKind.DATA_SET));
         final List<ExternalDataPE> result = new ArrayList<ExternalDataPE>();
         for (Long datasetId : datasetIds)
         {
