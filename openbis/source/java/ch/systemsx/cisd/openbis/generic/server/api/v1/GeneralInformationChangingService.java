@@ -107,7 +107,7 @@ public class GeneralInformationChangingService extends
 
     @Override
     @Transactional
-    @RolesAllowed(RoleWithHierarchy.PROJECT_POWER_USER)
+    @RolesAllowed(RoleWithHierarchy.PROJECT_USER)
     @DatabaseCreateOrDeleteModification(value = ObjectKind.VOCABULARY_TERM)
     public void addUnofficialVocabularyTerm(String sessionToken, TechId vocabularyId, String code,
             String label, String description, Long previousTermOrdinal)
@@ -118,7 +118,7 @@ public class GeneralInformationChangingService extends
 
     @Override
     @Transactional
-    @RolesAllowed(RoleWithHierarchy.PROJECT_POWER_USER)
+    @RolesAllowed(RoleWithHierarchy.PROJECT_USER)
     @DatabaseCreateOrDeleteModification(value = ObjectKind.VOCABULARY_TERM)
     public void addUnofficialVocabularyTerm(String sessionToken, Long vocabularyId,
             NewVocabularyTerm term)

@@ -25,7 +25,7 @@ if len(sys.argv) > 1:
     elif firstArgument == '-h':
         print(("Usage: %s [-h|-r|-d|-rd|-s <ci server>]\n-h: prints this help\n-r: reuses artifact repository\n"
             + "-d: developing mode\n-rd: both options\n"
-            + "-s <ci server>: option for CI server host name") % os.path.basename(cmd))
+            + "-s <ci server>: option for CI server base URL") % os.path.basename(cmd))
         exit(1)
     else:
         print("Unknown option: %s. Use option '-h' to see usage." % firstArgument)

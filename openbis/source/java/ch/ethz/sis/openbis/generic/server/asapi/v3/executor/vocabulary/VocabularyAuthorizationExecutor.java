@@ -22,10 +22,11 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.IVocabularyId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.systemsx.cisd.openbis.generic.server.authorization.annotation.Capability;
 import ch.systemsx.cisd.openbis.generic.server.authorization.annotation.RolesAllowed;
+import ch.systemsx.cisd.openbis.generic.server.business.bo.InternalVocabularyAuthorization;
 import ch.systemsx.cisd.openbis.generic.shared.DatabaseCreateOrDeleteModification;
 import ch.systemsx.cisd.openbis.generic.shared.DatabaseUpdateModification;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.RoleWithHierarchy;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DatabaseModificationKind.ObjectKind;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.RoleWithHierarchy;
 import ch.systemsx.cisd.openbis.generic.shared.dto.VocabularyPE;
 
 /**
@@ -36,11 +37,12 @@ public class VocabularyAuthorizationExecutor implements IVocabularyAuthorization
 {
 
     @Override
-    @RolesAllowed({ RoleWithHierarchy.INSTANCE_ADMIN })
+    @RolesAllowed({ RoleWithHierarchy.INSTANCE_ADMIN, RoleWithHierarchy.INSTANCE_ETL_SERVER })
     @DatabaseCreateOrDeleteModification(value = ObjectKind.VOCABULARY)
     @Capability("CREATE_VOCABULARY")
-    public void canCreate(IOperationContext context)
+    public void canCreate(IOperationContext context, VocabularyPE entity)
     {
+        new InternalVocabularyAuthorization().canCreateVocabulary(context.getSession(), entity);
     }
 
     @Override
@@ -58,19 +60,21 @@ public class VocabularyAuthorizationExecutor implements IVocabularyAuthorization
     }
 
     @Override
-    @RolesAllowed({ RoleWithHierarchy.INSTANCE_ADMIN })
+    @RolesAllowed({ RoleWithHierarchy.INSTANCE_ADMIN, RoleWithHierarchy.INSTANCE_ETL_SERVER })
     @DatabaseUpdateModification(value = ObjectKind.VOCABULARY)
     @Capability("UPDATE_VOCABULARY")
     public void canUpdate(IOperationContext context, IVocabularyId id, VocabularyPE entity)
     {
+        new InternalVocabularyAuthorization().canUpdateVocabulary(context.getSession(), entity);
     }
 
     @Override
-    @RolesAllowed({ RoleWithHierarchy.INSTANCE_ADMIN })
+    @RolesAllowed({ RoleWithHierarchy.INSTANCE_ADMIN, RoleWithHierarchy.INSTANCE_ETL_SERVER })
     @DatabaseCreateOrDeleteModification(value = ObjectKind.VOCABULARY)
     @Capability("DELETE_VOCABULARY")
     public void canDelete(IOperationContext context, IVocabularyId entityId, VocabularyPE entity)
     {
+        new InternalVocabularyAuthorization().canDeleteVocabulary(context.getSession(), entity);
     }
 
 }

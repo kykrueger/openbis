@@ -231,7 +231,7 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
         }
     }
 
-    // TODO : Remove List<IAssociationCriteria> v1Associations from the interface and the code that build them from the core
+    @SuppressWarnings("rawtypes")
     @Override
     public List<Long> searchForEntityIds(final String userId,
                                          final DetailedSearchCriteria mainV1Criteria,
@@ -520,6 +520,7 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
         return new ArrayList<>(results);
     }
 
+    @SuppressWarnings("rawtypes")
     private void adapt(AbstractEntitySearchCriteria v3Criteria,
                        DetailedSearchCriteria v1Criteria,
                        DetailedSearchCriterion v1Criterion) {
@@ -671,7 +672,7 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
     // Helper Methods - withAttribute conversions
     //
 
-    private ISearchCriteria withAttribute(AbstractDataSetSearchCriteria v3Criteria, String attributeCode) {
+    private ISearchCriteria withAttribute(AbstractDataSetSearchCriteria<?> v3Criteria, String attributeCode) {
         ISearchCriteria criterionV3Criteria = null;
         switch (DataSetAttributeSearchFieldKind.valueOf(attributeCode)) {
             case CODE:
@@ -793,7 +794,7 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
         return criterionV3Criteria;
     }
 
-    private ISearchCriteria withAttribute(AbstractSampleSearchCriteria v3Criteria, String attributeCode) {
+    private ISearchCriteria withAttribute(AbstractSampleSearchCriteria<?> v3Criteria, String attributeCode) {
         ISearchCriteria criterionV3Criteria = null;
         switch (SampleAttributeSearchFieldKind.valueOf(attributeCode)) {
             case CODE:
@@ -1022,7 +1023,7 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
     // Helper Methods - Criteria build
     //
 
-    private EntityKind getEntityKind(AbstractEntitySearchCriteria criteria) {
+    private EntityKind getEntityKind(AbstractEntitySearchCriteria<?> criteria) {
         EntityKind entityKind = null;
         if (criteria instanceof MaterialSearchCriteria) {
             entityKind = EntityKind.MATERIAL;
@@ -1039,8 +1040,8 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
         return entityKind;
     }
 
-    private AbstractEntitySearchCriteria getCriteria(EntityKind entityKind) {
-        AbstractEntitySearchCriteria criteria = null;
+    private AbstractEntitySearchCriteria<?> getCriteria(EntityKind entityKind) {
+        AbstractEntitySearchCriteria<?> criteria = null;
         switch (entityKind) {
             case MATERIAL:
                 criteria = new MaterialSearchCriteria();
@@ -1159,7 +1160,7 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
     private boolean isNumberProperty(String propertyCode) {
         DAOFactory daoFactory = (DAOFactory) CommonServiceProvider.getApplicationContext().getBean(DAO_FACTORY);
         Session currentSession = daoFactory.getSessionFactory().getCurrentSession();
-        NativeQuery nativeQuery = currentSession.createNativeQuery(IS_NUMBER);
+        NativeQuery<?> nativeQuery = currentSession.createNativeQuery(IS_NUMBER);
         nativeQuery.setParameter("code", propertyCode);
         Boolean isNumber = (Boolean) nativeQuery.getSingleResult();
         return isNumber;
@@ -1170,7 +1171,7 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
     private boolean isDateProperty(String propertyCode) {
         DAOFactory daoFactory = (DAOFactory) CommonServiceProvider.getApplicationContext().getBean(DAO_FACTORY);
         Session currentSession = daoFactory.getSessionFactory().getCurrentSession();
-        NativeQuery nativeQuery = currentSession.createNativeQuery(IS_DATE);
+        NativeQuery<?> nativeQuery = currentSession.createNativeQuery(IS_DATE);
         nativeQuery.setParameter("code", propertyCode);
         Boolean isDate = (Boolean) nativeQuery.getSingleResult();
         return isDate;

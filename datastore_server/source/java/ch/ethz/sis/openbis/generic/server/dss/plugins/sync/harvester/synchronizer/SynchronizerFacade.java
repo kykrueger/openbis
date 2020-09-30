@@ -339,7 +339,7 @@ public class SynchronizerFacade implements ISynchronizerFacade
         }
         if (dryRun == false)
         {
-            commonServer.addVocabularyTerms(sessionToken, techId, termsToBeAdded, null, true);
+            commonServer.addVocabularyTerms(sessionToken, techId, termsToBeAdded, null);
         }
     }
 
@@ -469,6 +469,7 @@ public class SynchronizerFacade implements ISynchronizerFacade
     private static final class UpdateSummary
     {
         private final String item;
+
         private String diff;
 
         private Map<String, String> changes = new TreeMap<>();
@@ -478,7 +479,6 @@ public class SynchronizerFacade implements ISynchronizerFacade
         private int numberOfAdds;
 
         private int numberOfRemoves;
-
 
         public UpdateSummary(String item)
         {

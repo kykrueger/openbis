@@ -92,14 +92,14 @@ class TestCase(systemtest.testcase.TestCase):
         incoming = "%s/data/incoming-test" % openbis.installPath
         if not os.path.exists(incoming):
             os.makedirs(incoming)
-        example_files = []
-        example_files.append(self._drop_big_file(incoming))
-        example_files.append(self._drop_big_folder_with_many_files(incoming))
-        for example_file in example_files:
-            with open("%s/.MARKER_is_finished_%s" % (incoming, example_file), 'w') as f:
-                pass
-        openbis.waitUntilDataSetRegistrationFinished(2, timeOutInMinutes = 20)
-        
+        self._mark_and_wait(incoming, openbis, self._drop_big_file(incoming))
+        self._mark_and_wait(incoming, openbis, self._drop_big_folder_with_many_files(incoming))
+
+    def _mark_and_wait(self, incoming, openbis, file):
+        with open("%s/.MARKER_is_finished_%s" % (incoming, file), 'w') as f:
+            pass
+        openbis.waitUntilDataSetRegistrationFinished(1, timeOutInMinutes = 20)
+
     def _drop_big_file(self, incoming):
         big_file = self.artifactRepository.getPathToArtifact(OPENBIS_STANDARD_TECHNOLOGIES_PROJECT, 'openBIS-installation')
         big_file_folder, big_file_name = os.path.split(big_file)
@@ -107,6 +107,8 @@ class TestCase(systemtest.testcase.TestCase):
         return big_file_name
 
     def _drop_big_folder_with_many_files(self, incoming):
+        util.printAndFlush("Create big example with many files")
+
         next_words = self._get_next_words_dictionary('Pride_and_Prejudice.txt')
         number_of_text_files = 20000
         minimum_size = 50000
@@ -427,6 +429,7 @@ class TestCase(systemtest.testcase.TestCase):
         openbis_harvester.setDataStoreServerProperty("host-address", "https://localhost")
         openbis_harvester.asProperties['max-number-of-sessions-per-user'] = '0'
         openbis_harvester.dssProperties['database.kind'] = openbis_harvester.databaseKind
+        openbis_harvester.createTestDatabase('openbis')
         openbis_harvester.enableCorePlugin("openbis-sync")
         util.copyFromTo(self.getTemplatesFolder(), openbis_harvester.installPath, "harvester-config.txt")
         return openbis_harvester

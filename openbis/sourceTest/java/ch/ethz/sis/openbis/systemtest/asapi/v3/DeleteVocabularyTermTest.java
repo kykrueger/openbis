@@ -155,8 +155,9 @@ public class DeleteVocabularyTermTest extends AbstractVocabularyTermTest
     public Object[][] providerTestDeleteTermFromInternallyManagedVocabulary()
     {
         return new Object[][] {
-                { TEST_USER, true },
-                { TEST_INSTANCE_ETLSERVER, true },
+                { SYSTEM_USER, true },
+                { TEST_USER, false },
+                { TEST_INSTANCE_ETLSERVER, false },
                 { TEST_INSTANCE_OBSERVER, false },
                 { TEST_SPACE_USER, false },
                 { TEST_SPACE_ETLSERVER_TESTSPACE, false }
@@ -166,8 +167,16 @@ public class DeleteVocabularyTermTest extends AbstractVocabularyTermTest
     @Test(dataProvider = "providerTestDeleteTermFromInternallyManagedVocabulary")
     public void testDeleteTermFromInternallyManagedVocabulary(String user, boolean allowed)
     {
-        String adminSessionToken = v3api.login(TEST_USER, PASSWORD);
-        String userSessionToken = v3api.login(user, PASSWORD);
+        String systemSessionToken = v3api.loginAsSystem();
+        String userSessionToken = null;
+
+        if (SYSTEM_USER.equals(user))
+        {
+            userSessionToken = v3api.loginAsSystem();
+        } else
+        {
+            userSessionToken = v3api.login(user, PASSWORD);
+        }
 
         VocabularyTermCreation term1Creation = new VocabularyTermCreation();
         term1Creation.setCode("I_WANT_TO_STAY");
@@ -183,7 +192,7 @@ public class DeleteVocabularyTermTest extends AbstractVocabularyTermTest
         VocabularyTermPermId term1Id = new VocabularyTermPermId(term1Creation.getCode(), vocabularyCreation.getCode());
         VocabularyTermPermId term2Id = new VocabularyTermPermId(term2Creation.getCode(), vocabularyCreation.getCode());
 
-        v3api.createVocabularies(adminSessionToken, Arrays.asList(vocabularyCreation));
+        v3api.createVocabularies(systemSessionToken, Arrays.asList(vocabularyCreation));
 
         List<VocabularyTerm> termsBefore = searchTerms(vocabularyCreation.getCode());
         assertVocabularyTermPermIds(termsBefore, term1Id, term2Id);
@@ -205,7 +214,8 @@ public class DeleteVocabularyTermTest extends AbstractVocabularyTermTest
                 fail();
             } catch (UserFailureException e)
             {
-                assertTrue(e.getMessage().contains("Not allowed to delete terms from an internally managed vocabulary.")
+                assertTrue(e.getMessage()
+                        .contains("Terms created by the system user that belong to internal vocabularies can be managed only by the system user")
                         || e.getMessage().contains("Access denied"), e.getMessage());
             }
         }

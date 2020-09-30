@@ -755,7 +755,7 @@ define(
 						var vocabularyCreation = new c.VocabularyCreation();
 						vocabularyCreation.setCode(code);
 						vocabularyCreation.setDescription("test description");
-						vocabularyCreation.setManagedInternally(true);
+						vocabularyCreation.setManagedInternally(false);
 						vocabularyCreation.setChosenFromList(true);
 						vocabularyCreation.setUrlTemplate("https://www.ethz.ch");
 						var termCreation = new c.VocabularyTermCreation();
@@ -765,9 +765,9 @@ define(
 					}
 
 					var fCheck = function(vocabulary) {
-						c.assertEqual(vocabulary.getCode(), "$" + code, "Code");
+						c.assertEqual(vocabulary.getCode(), code, "Code");
 						c.assertEqual(vocabulary.getDescription(), "test description", "Description");
-						c.assertEqual(vocabulary.isManagedInternally(), true, "Managed internally");
+						c.assertEqual(vocabulary.isManagedInternally(), false, "Managed internally");
 						c.assertEqual(vocabulary.isChosenFromList(), true, "Chosen from list");
 						c.assertEqual(vocabulary.getUrlTemplate(), "https://www.ethz.ch", "URL template");
 					}

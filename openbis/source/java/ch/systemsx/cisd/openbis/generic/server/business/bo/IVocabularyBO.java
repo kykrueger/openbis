@@ -114,9 +114,4 @@ public interface IVocabularyBO extends IEntityBusinessObject
      */
     void updateTerms(List<VocabularyTerm> terms);
 
-    /**
-     * If set to true, than there will be no checking if the internally modified vocabulary is updated
-     */
-    void setAllowChangingInternallyManaged(boolean allowChangingInternallyManaged);
-
 }

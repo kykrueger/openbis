@@ -39,6 +39,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.VocabularyTermReplaceme
 import ch.systemsx.cisd.openbis.generic.shared.dto.EntityPropertyPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialPropertyPE;
+import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.VocabularyPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.VocabularyTermPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
@@ -309,20 +310,22 @@ public final class VocabularyBOTest extends AbstractBOTest
                 {
                     one(vocabularyDAO).tryFindVocabularyByCode("voc-code");
                     will(returnValue(vocabulary));
+
+                    one(vocabularyTermDAO).increaseVocabularyTermOrdinals(vocabulary, 1L, 1);
                 }
             });
 
+        VocabularyTerm newTerm = new VocabularyTerm();
+        newTerm.setCode("test-term");
+
         VocabularyBO vocabularyBO = createVocabularyBO();
         vocabularyBO.load("voc-code");
-        List<VocabularyTerm> newTerms = Arrays.asList(new VocabularyTerm());
-        try
-        {
-            vocabularyBO.addNewTerms(newTerms, 0L);
-        } catch (UserFailureException e)
-        {
-            assertEquals("Not allowed to add terms to an internally managed vocabulary.",
-                    e.getMessage());
-        }
+        vocabularyBO.addNewTerms(Arrays.asList(newTerm), 0L);
+
+        Set<VocabularyTermPE> terms = vocabularyBO.getVocabulary().getTerms();
+        assertEquals(1, terms.size());
+        assertEquals("TEST-TERM", terms.iterator().next().getCode());
+
         context.assertIsSatisfied();
     }
 
@@ -541,22 +544,32 @@ public final class VocabularyBOTest extends AbstractBOTest
     @Test
     public void testUpdateTermsInternalVocabulary() throws Exception
     {
+        PersonPE systemUser = new PersonPE();
+        systemUser.setUserId(PersonPE.SYSTEM_USER_ID);
+
+        VocabularyTermPE term = new VocabularyTermPE();
+        term.setRegistrator(systemUser);
+        term.setCode("TEST-TERM");
+
         VocabularyPE vocabulary = new VocabularyPE();
         vocabulary.setManagedInternally(true);
+        vocabulary.setTerms(Arrays.asList(term));
+
         VocabularyBO bo = createVocabularyBO(vocabulary);
-        boolean exceptionThrown = false;
+
+        VocabularyTerm termUpdate = new VocabularyTerm();
+        termUpdate.setCode(term.getCode());
+
         try
         {
-            bo.updateTerms(new ArrayList<VocabularyTerm>());
+            bo.updateTerms(Arrays.asList(new UpdatedVocabularyTerm(termUpdate, null)));
+            fail();
         } catch (UserFailureException ex)
         {
-            exceptionThrown = true;
             assertEquals(
-                    VocabularyBO.UPDATING_CONTENT_OF_INTERNALLY_MANAGED_VOCABULARIES_IS_NOT_ALLOWED,
+                    "Authorization failure: Terms created by the system user that belong to internal vocabularies can be managed only by the system user.",
                     ex.getMessage());
         }
-
-        assertTrue(exceptionThrown);
     }
 
     @Test

@@ -167,7 +167,6 @@ public class CreateVocabularyTermExecutor implements ICreateVocabularyTermExecut
 
         IVocabularyBO vocabularyBO = businessObjectFactory.createVocabularyBO(context.getSession());
         vocabularyBO.loadDataByTechId(new TechId(vocabulary.getId()));
-        vocabularyBO.setAllowChangingInternallyManaged(authorizationExecutor.canUpdateInternallyManaged(context));
 
         Set<String> existingTermCodes = new HashSet<String>();
         for (VocabularyTermPE existingTerm : vocabulary.getTerms())
