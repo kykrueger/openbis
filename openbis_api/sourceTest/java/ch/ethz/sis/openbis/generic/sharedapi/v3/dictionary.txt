@@ -2408,3 +2408,13 @@ Date Object Earlier Than Value
 Date Object Later Than Value
 that Is Earlier Than
 that Is Later Than
+AnyDatePropertySearchCriteria
+AnyNumberPropertySearchCriteria
+AnyStringPropertySearchCriteria
+BooleanPropertySearchCriteria
+StrictlyStringPropertySearchCriteria
+withAnyDateProperty
+withAnyNumberProperty
+withAnyStringProperty
+withBooleanProperty
+withStringProperty
