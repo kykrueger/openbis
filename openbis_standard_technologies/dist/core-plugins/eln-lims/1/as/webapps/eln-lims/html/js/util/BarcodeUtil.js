@@ -270,7 +270,7 @@ var BarcodeUtil = new function() {
         $window.append($('<legend>').append("Barcode Reader"));
         $window.append($('<br>'));
         $window.append($btnAccept).append('&nbsp;').append($btnCancel);
-        $window.append($('<legend>').append('Readed'));
+        $window.append($('<legend>').append('Read'));
         $window.append($('<br>'));
         $window.append($('<div>').append($readed));
 
