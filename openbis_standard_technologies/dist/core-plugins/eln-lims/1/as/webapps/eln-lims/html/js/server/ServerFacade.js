@@ -2426,6 +2426,7 @@ function ServerFacade(openbisServer) {
 			searchCriteria.withOperator("AND");
 
 			var fetchOptions = new GlobalSearchObjectFetchOptions();
+			fetchOptions.withMatch();
 			var sampleFetchOptions = fetchOptions.withSample();
 			sampleFetchOptions.withSpace();
 			sampleFetchOptions.withType();
