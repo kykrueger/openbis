@@ -22,7 +22,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.Vocabulary;
@@ -37,7 +36,7 @@ import ch.systemsx.cisd.common.action.IDelegatedAction;
 /**
  * @author Franz-Josef Elmer
  */
-public class CreateVocabulariesTest extends AbstractTest
+public class CreateVocabulariesTest extends AbstractVocabularyTest
 {
     @Test
     public void testCreateVocabulary()
@@ -160,7 +159,7 @@ public class CreateVocabulariesTest extends AbstractTest
         v3api.logout(sessionToken);
     }
 
-    @Test(dataProvider = "usersNotAllowedToCreateVocabularies")
+    @Test(dataProvider = PROVIDE_USERS_NOT_ALLOWED_TO_MANAGE_VOCABULARIES)
     public void testCreateWithUserCausingAuthorizationFailure(final String user)
     {
         assertUnauthorizedObjectAccessException(new IDelegatedAction()
@@ -174,6 +173,23 @@ public class CreateVocabulariesTest extends AbstractTest
                     v3api.createVocabularies(sessionToken, Arrays.asList(vocabularyCreation));
                 }
             }, new VocabularyPermId("AUTHORIZATION_TEST_VOCABULARY"));
+    }
+
+    @Test(dataProvider = PROVIDE_USERS_NOT_ALLOWED_TO_MANAGE_INTERNAL_VOCABULARIES)
+    public void testCreateInternalWithUserCausingAuthorizationFailure(final String user)
+    {
+        assertUnauthorizedObjectAccessException(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    String sessionToken = v3api.login(user, PASSWORD);
+                    VocabularyCreation vocabularyCreation = new VocabularyCreation();
+                    vocabularyCreation.setCode("AUTHORIZATION_TEST_VOCABULARY");
+                    vocabularyCreation.setManagedInternally(true);
+                    v3api.createVocabularies(sessionToken, Arrays.asList(vocabularyCreation));
+                }
+            }, new VocabularyPermId("$AUTHORIZATION_TEST_VOCABULARY"));
     }
 
     @Test
@@ -193,10 +209,4 @@ public class CreateVocabulariesTest extends AbstractTest
                 "create-vocabularies  NEW_VOCABULARIES('[VocabularyCreation[code=LOG_TEST_1], VocabularyCreation[code=LOG_TEST_2]]')");
     }
 
-    @DataProvider
-    Object[][] usersNotAllowedToCreateVocabularies()
-    {
-        return createTestUsersProvider(TEST_GROUP_ADMIN, TEST_GROUP_OBSERVER, TEST_GROUP_POWERUSER,
-                TEST_INSTANCE_OBSERVER, TEST_OBSERVER_CISD, TEST_POWER_USER_CISD, TEST_SPACE_USER);
-    }
 }

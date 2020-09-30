@@ -21,6 +21,7 @@ import static org.testng.Assert.assertEquals;
 import java.util.Arrays;
 import java.util.List;
 
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
@@ -30,14 +31,63 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.fetchoptions.Vocabula
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.VocabularyPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.VocabularyTermPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.search.VocabularyTermSearchCriteria;
+import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 
 /**
  * @author pkupczyk
  */
 @Test(groups = { "before remote api" })
-public class CreateVocabularyTermTest extends AbstractVocabularyTermTest
+public class CreateVocabularyTermTest extends AbstractVocabularyTest
 {
+
+    @DataProvider
+    private Object[][] providerTestCreateAuthorization()
+    {
+        return new Object[][] {
+                { "ORGANISM", SYSTEM_USER, true, null },
+                { "ORGANISM", SYSTEM_USER, false, null },
+
+                { "ORGANISM", TEST_USER, true, null },
+                { "ORGANISM", TEST_USER, false, null },
+
+                { "ORGANISM", TEST_POWER_USER_CISD, true,
+                        "None of method roles '[INSTANCE_ADMIN, INSTANCE_ETL_SERVER]' could be found in roles of user 'test_role'" },
+                { "ORGANISM", TEST_POWER_USER_CISD, false, null },
+
+                { "$PLATE_GEOMETRY", SYSTEM_USER, true, null },
+                { "$PLATE_GEOMETRY", SYSTEM_USER, false, null },
+
+                { "$PLATE_GEOMETRY", TEST_USER, true, null },
+                { "$PLATE_GEOMETRY", TEST_USER, false, null },
+
+                { "$PLATE_GEOMETRY", TEST_POWER_USER_CISD, true,
+                        "None of method roles '[INSTANCE_ADMIN, INSTANCE_ETL_SERVER]' could be found in roles of user 'test_role'" },
+                { "$PLATE_GEOMETRY", TEST_POWER_USER_CISD, false, null },
+        };
+    }
+
+    @Test(dataProvider = "providerTestCreateAuthorization")
+    public void testCreateAuthorization(String vocabularyCode, String termRegistrator, boolean termOfficial,
+            String expectedError)
+    {
+        String sessionToken = termRegistrator.equals(SYSTEM_USER) ? v3api.loginAsSystem() : v3api.login(termRegistrator, PASSWORD);
+
+        VocabularyTermCreation creation = new VocabularyTermCreation();
+        creation.setCode("TEST-CODE");
+        creation.setVocabularyId(new VocabularyPermId(vocabularyCode));
+        creation.setOfficial(termOfficial);
+
+        assertExceptionMessage(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    List<VocabularyTermPermId> ids = v3api.createVocabularyTerms(sessionToken, Arrays.asList(creation));
+                    assertEquals(ids.size(), 1);
+                }
+            }, expectedError);
+    }
 
     @Test(expectedExceptions = UserFailureException.class, expectedExceptionsMessageRegExp = ".*Vocabulary term vocabulary id cannot be null.*")
     public void testCreateWithVocabularyIdNull()
@@ -84,23 +134,7 @@ public class CreateVocabularyTermTest extends AbstractVocabularyTermTest
     }
 
     @Test
-    public void testCreateWithOfficalTermAndAuthorizedUser()
-    {
-        VocabularyTermCreation creation = termCreation();
-        creation.setOfficial(true);
-        createTerms(TEST_USER, PASSWORD, creation);
-    }
-
-    @Test(expectedExceptions = UserFailureException.class, expectedExceptionsMessageRegExp = ".*None of method roles '\\[INSTANCE_ADMIN, INSTANCE_ETL_SERVER\\]' could be found in roles of user 'observer'.*")
-    public void testCreateWithOfficalTermAndUnauthorizedUser()
-    {
-        VocabularyTermCreation creation = termCreation();
-        creation.setOfficial(true);
-        createTerms(TEST_GROUP_OBSERVER, PASSWORD, creation);
-    }
-
-    @Test
-    public void testCreateWithOfficalTermAndPreviousTermNull()
+    public void testCreateWithOfficialTermAndPreviousTermNull()
     {
         VocabularyTermCreation creation = termCreation();
         creation.setOfficial(true);
@@ -108,7 +142,7 @@ public class CreateVocabularyTermTest extends AbstractVocabularyTermTest
     }
 
     @Test
-    public void testCreateWithOfficalTermAndPreviousTermNotNull()
+    public void testCreateWithOfficialTermAndPreviousTermNotNull()
     {
         VocabularyTermCreation creation = termCreation();
         creation.setOfficial(true);
@@ -116,23 +150,7 @@ public class CreateVocabularyTermTest extends AbstractVocabularyTermTest
     }
 
     @Test
-    public void testCreateWithUnofficalTermAndAuthorizedUser()
-    {
-        VocabularyTermCreation creation = termCreation();
-        creation.setOfficial(false);
-        createTerms(TEST_USER, PASSWORD, creation);
-    }
-
-    @Test(expectedExceptions = UserFailureException.class, expectedExceptionsMessageRegExp = ".*None of method roles '\\[PROJECT_USER, PROJECT_POWER_USER, PROJECT_ADMIN, SPACE_ADMIN, INSTANCE_ADMIN, SPACE_POWER_USER, SPACE_USER, SPACE_ETL_SERVER, INSTANCE_ETL_SERVER\\]' could be found in roles of user 'observer'.*")
-    public void testCreateWithUnofficalTermAndUnauthorizedUser()
-    {
-        VocabularyTermCreation creation = termCreation();
-        creation.setOfficial(false);
-        createTerms(TEST_GROUP_OBSERVER, PASSWORD, creation);
-    }
-
-    @Test
-    public void testCreateWithUnofficalTermAndPreviousTermNull()
+    public void testCreateWithUnofficialTermAndPreviousTermNull()
     {
         VocabularyTermCreation creation = termCreation();
         creation.setOfficial(false);
@@ -140,25 +158,11 @@ public class CreateVocabularyTermTest extends AbstractVocabularyTermTest
     }
 
     @Test
-    public void testCreateWithUnofficalTermAndPreviousTermNotNull()
+    public void testCreateWithUnofficialTermAndPreviousTermNotNull()
     {
         VocabularyTermCreation creation = termCreation();
         creation.setOfficial(false);
         createWithPreviousTermNotNull(creation);
-    }
-
-    @Test
-    public void testCreateWithInternallyManagedVocabularyAndAuthorizedUser()
-    {
-        VocabularyTermCreation creation = termCreationInternallyManaged();
-        createTerms(TEST_USER, PASSWORD, creation);
-    }
-
-    @Test(expectedExceptions = UserFailureException.class, expectedExceptionsMessageRegExp = ".*None of method roles '\\[INSTANCE_ADMIN, INSTANCE_ETL_SERVER\\]' could be found in roles of user 'test_space'.*")
-    public void testCreateWithInternallyManagedVocabularyAndUnauthorizedUser()
-    {
-        VocabularyTermCreation creation = termCreationInternallyManaged();
-        createTerms(TEST_SPACE_USER, PASSWORD, creation);
     }
 
     @Test(expectedExceptions = UserFailureException.class, expectedExceptionsMessageRegExp = ".*Position of term TIGER \\(ORGANISM\\) could not be found as the specified previous term IDONTEXIST \\(ORGANISM\\) does not exist.*")
@@ -252,16 +256,6 @@ public class CreateVocabularyTermTest extends AbstractVocabularyTermTest
         creation.setCode("TIGER");
         creation.setDescription("tiger's description");
         creation.setLabel("tiger's label");
-        return creation;
-    }
-
-    private VocabularyTermCreation termCreationInternallyManaged()
-    {
-        VocabularyTermCreation creation = new VocabularyTermCreation();
-        creation.setVocabularyId(new VocabularyPermId("$PLATE_GEOMETRY"));
-        creation.setCode("1_WELL_1X1");
-        creation.setDescription("geometry description");
-        creation.setLabel("geometry label");
         return creation;
     }
 

@@ -20,7 +20,6 @@ import static org.testng.Assert.assertEquals;
 
 import java.util.Arrays;
 
-import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.Vocabulary;
@@ -32,7 +31,7 @@ import ch.systemsx.cisd.common.action.IDelegatedAction;
 /**
  * @author Franz-Josef Elmer
  */
-public class UpdateVocabulariesTest extends AbstractTest
+public class UpdateVocabulariesTest extends AbstractVocabularyTest
 {
     @Test
     public void testUpdateDescription()
@@ -87,6 +86,27 @@ public class UpdateVocabulariesTest extends AbstractTest
     }
 
     @Test
+    public void testUpdateInternal()
+    {
+        // Given
+        String sessionToken = v3api.loginAsSystem();
+        VocabularyUpdate update = new VocabularyUpdate();
+        VocabularyPermId id = new VocabularyPermId("$PLATE_GEOMETRY");
+        update.setVocabularyId(id);
+        update.setDescription("test internal");
+
+        // When
+        v3api.updateVocabularies(sessionToken, Arrays.asList(update));
+
+        // Then
+        Vocabulary vocabulary = v3api.getVocabularies(sessionToken, Arrays.asList(id), new VocabularyFetchOptions()).get(id);
+        assertEquals(vocabulary.getDescription(), update.getDescription().getValue());
+        assertEquals(vocabulary.isManagedInternally(), true);
+
+        v3api.logout(sessionToken);
+    }
+
+    @Test
     public void testUpdateVocabularyWithMissingId()
     {
         // Given
@@ -131,10 +151,27 @@ public class UpdateVocabulariesTest extends AbstractTest
         v3api.logout(sessionToken);
     }
 
-    @Test(dataProvider = "usersNotAllowedToUpdateVocabularies")
+    @Test(dataProvider = PROVIDE_USERS_NOT_ALLOWED_TO_MANAGE_VOCABULARIES)
     public void testUpdateWithUserCausingAuthorizationFailure(final String user)
     {
         VocabularyPermId vocabularyId = new VocabularyPermId("ORGANISM");
+        assertUnauthorizedObjectAccessException(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    String sessionToken = v3api.login(user, PASSWORD);
+                    VocabularyUpdate update = new VocabularyUpdate();
+                    update.setVocabularyId(vocabularyId);
+                    v3api.updateVocabularies(sessionToken, Arrays.asList(update));
+                }
+            }, vocabularyId);
+    }
+
+    @Test(dataProvider = PROVIDE_USERS_NOT_ALLOWED_TO_MANAGE_INTERNAL_VOCABULARIES)
+    public void testUpdateInternalWithUserCausingAuthorizationFailure(final String user)
+    {
+        VocabularyPermId vocabularyId = new VocabularyPermId("$PLATE_GEOMETRY");
         assertUnauthorizedObjectAccessException(new IDelegatedAction()
             {
                 @Override
@@ -165,10 +202,4 @@ public class UpdateVocabulariesTest extends AbstractTest
                 "update-vocabularies  VOCABULARY_UPDATES('[VocabularyUpdate[vocabularyId=$PLATE_GEOMETRY], VocabularyUpdate[vocabularyId=ORGANISM]]')");
     }
 
-    @DataProvider
-    Object[][] usersNotAllowedToUpdateVocabularies()
-    {
-        return createTestUsersProvider(TEST_GROUP_ADMIN, TEST_GROUP_OBSERVER, TEST_GROUP_POWERUSER,
-                TEST_INSTANCE_OBSERVER, TEST_OBSERVER_CISD, TEST_POWER_USER_CISD, TEST_SPACE_USER);
-    }
 }

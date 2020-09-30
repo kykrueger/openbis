@@ -33,7 +33,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.VocabularyTermPerm
  * @author pkupczyk
  */
 @Test(groups = { "before remote api" })
-public class GetVocabularyTermTest extends AbstractVocabularyTermTest
+public class GetVocabularyTermTest extends AbstractVocabularyTest
 {
 
     @Test

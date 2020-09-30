@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.sql.DataSource;
 
@@ -39,8 +40,10 @@ import org.apache.commons.collections4.Predicate;
 import org.apache.log4j.Logger;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.common.concurrent.MessageChannel;
 import ch.systemsx.cisd.common.exceptions.AuthorizationFailureException;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
@@ -98,6 +101,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MetaprojectAssignmentsC
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewAttachment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewAuthorizationGroup;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewExperiment;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewVocabulary;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Project;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyUpdates;
@@ -109,8 +113,10 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Script;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ScriptType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SearchCriteriaConnection;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Space;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.UpdatedVocabularyTerm;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Vocabulary;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.VocabularyTerm;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.VocabularyTermBatchUpdateDetails;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.displaysettings.IDisplaySettingsUpdate;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.metaproject.IMetaprojectId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.metaproject.MetaprojectIdentifierId;
@@ -127,11 +133,12 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SampleUpdatesDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SearchableEntity;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SessionContextDTO;
+import ch.systemsx.cisd.openbis.generic.shared.dto.VocabularyPE;
+import ch.systemsx.cisd.openbis.generic.shared.dto.VocabularyTermPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.ExperimentIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.ProjectIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SpaceIdentifier;
 import ch.systemsx.cisd.openbis.systemtest.authorization.ProjectAuthorizationUser;
-
 import junit.framework.Assert;
 
 /**
@@ -141,6 +148,287 @@ public class CommonServerTest extends SystemTestCase
 {
 
     private Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION, getClass());
+
+    @DataProvider
+    public Object[][] providerTestRegisterVocabularyAuthorization()
+    {
+        return new Object[][] {
+                { "NEW_NOT_INTERNAL", SYSTEM_USER, Arrays.asList(true, false), null },
+                { "NEW_NOT_INTERNAL", TEST_USER, Arrays.asList(true, false), null },
+                { "NEW_NOT_INTERNAL", TEST_GROUP_ADMIN, Arrays.asList(true, false),
+                        "None of method roles '[INSTANCE_ADMIN, INSTANCE_ETL_SERVER]' could be found in roles of user 'admin'" },
+                { "$NEW_INTERNAL", SYSTEM_USER, Arrays.asList(true, false), null },
+                { "$NEW_INTERNAL", TEST_USER, Arrays.asList(true, false), "Internal vocabularies can be managed only by the system user" },
+                { "$NEW_INTERNAL", TEST_GROUP_ADMIN, Arrays.asList(true, false),
+                        "None of method roles '[INSTANCE_ADMIN, INSTANCE_ETL_SERVER]' could be found in roles of user 'admin'" },
+        };
+    }
+
+    @Test(dataProvider = "providerTestRegisterVocabularyAuthorization")
+    public void testRegisterVocabularyAuthorization(String vocabularyCode, String vocabularyRegistrator, List<Boolean> termsOfficial,
+            String expectedError)
+    {
+        SessionContextDTO session = vocabularyRegistrator.equals(SYSTEM_USER) ? commonServer.tryToAuthenticateAsSystem()
+                : commonServer.tryAuthenticate(vocabularyRegistrator, PASSWORD);
+
+        NewVocabulary newVocabulary = new NewVocabulary();
+        newVocabulary.setCode(vocabularyCode);
+        newVocabulary.setManagedInternally(vocabularyCode.startsWith("$"));
+
+        if (termsOfficial != null)
+        {
+            List<VocabularyTerm> terms = new ArrayList<>();
+
+            for (boolean termOfficial : termsOfficial)
+            {
+                VocabularyTerm term = new VocabularyTerm();
+                term.setCode(UUID.randomUUID().toString());
+                term.setOfficial(termOfficial);
+            }
+
+            newVocabulary.setTerms(terms);
+        }
+
+        assertExceptionMessage(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    commonServer.registerVocabulary(session.getSessionToken(), newVocabulary);
+                }
+            }, expectedError);
+    }
+
+    @DataProvider
+    public Object[][] providerTestUpdateAndDeleteVocabularyAuthorization()
+    {
+        return new Object[][] {
+                { "NEW_NOT_INTERNAL", SYSTEM_USER, null },
+                { "NEW_NOT_INTERNAL", TEST_USER, null },
+                { "NEW_NOT_INTERNAL", TEST_GROUP_ADMIN,
+                        "None of method roles '[INSTANCE_ADMIN, INSTANCE_ETL_SERVER]' could be found in roles of user 'admin'" },
+                { "$NEW_INTERNAL", SYSTEM_USER, null },
+                { "$NEW_INTERNAL", TEST_USER, "Internal vocabularies can be managed only by the system user" },
+                { "$NEW_INTERNAL", TEST_GROUP_ADMIN,
+                        "None of method roles '[INSTANCE_ADMIN, INSTANCE_ETL_SERVER]' could be found in roles of user 'admin'" },
+        };
+    }
+
+    @Test(dataProvider = "providerTestUpdateAndDeleteVocabularyAuthorization")
+    public void testUpdateAndDeleteVocabularyAuthorization(String vocabularyCode, String vocabularyUpdater, String expectedError)
+    {
+        SessionContextDTO systemSession = commonServer.tryToAuthenticateAsSystem();
+
+        SessionContextDTO updaterSession = vocabularyUpdater.equals(SYSTEM_USER) ? commonServer.tryToAuthenticateAsSystem()
+                : commonServer.tryAuthenticate(vocabularyUpdater, PASSWORD);
+
+        NewVocabulary newVocabulary = new NewVocabulary();
+        newVocabulary.setCode(vocabularyCode);
+        newVocabulary.setManagedInternally(vocabularyCode.startsWith("$"));
+        commonServer.registerVocabulary(systemSession.getSessionToken(), newVocabulary);
+
+        VocabularyPE vocabulary = daoFactory.getVocabularyDAO().tryFindVocabularyByCode(vocabularyCode);
+
+        Vocabulary update = new Vocabulary();
+        update.setId(vocabulary.getId());
+        update.setCode(vocabulary.getCode());
+        update.setDescription("new description");
+        update.setModificationDate(vocabulary.getModificationDate());
+
+        assertExceptionMessage(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    commonServer.updateVocabulary(updaterSession.getSessionToken(), update);
+                }
+            }, expectedError);
+
+        assertExceptionMessage(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    commonServer.deleteVocabularies(updaterSession.getSessionToken(), TechId.createList(vocabulary.getId()), "testing");
+                }
+            }, expectedError);
+    }
+
+    @DataProvider
+    public Object[][] providerTestAddVocabularyTermsAuthorization()
+    {
+        return new Object[][] {
+                { "ORGANISM", SYSTEM_USER, null },
+                { "ORGANISM", TEST_USER, null },
+                { "ORGANISM", TEST_GROUP_ADMIN,
+                        "None of method roles '[INSTANCE_ADMIN, INSTANCE_ETL_SERVER]' could be found in roles of user 'admin'" },
+                { "$PLATE_GEOMETRY", SYSTEM_USER, null },
+                { "$PLATE_GEOMETRY", TEST_USER, null },
+                { "$PLATE_GEOMETRY", TEST_GROUP_ADMIN,
+                        "None of method roles '[INSTANCE_ADMIN, INSTANCE_ETL_SERVER]' could be found in roles of user 'admin'" },
+        };
+    }
+
+    @Test(dataProvider = "providerTestAddVocabularyTermsAuthorization")
+    public void testAddVocabularyTermsAuthorization(String vocabularyCode, String vocabularyUpdater, String expectedError)
+    {
+        SessionContextDTO session = vocabularyUpdater.equals(SYSTEM_USER) ? commonServer.tryToAuthenticateAsSystem()
+                : commonServer.tryAuthenticate(vocabularyUpdater, PASSWORD);
+
+        VocabularyPE vocabulary = daoFactory.getVocabularyDAO().tryFindVocabularyByCode(vocabularyCode);
+
+        VocabularyTerm term = new VocabularyTerm();
+        term.setCode("NEW_TERM");
+
+        assertExceptionMessage(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    // this methods adds only official terms (internally sets official flag to true)
+                    commonServer.addVocabularyTerms(session.getSessionToken(), new TechId(vocabulary.getId()), Arrays.asList(term), null);
+                }
+            }, expectedError);
+    }
+
+    @DataProvider
+    public Object[][] providerTestAddUnofficialVocabularyTermsAuthorization()
+    {
+        return new Object[][] {
+                { "ORGANISM", SYSTEM_USER, null },
+                { "ORGANISM", TEST_USER, null },
+                { "ORGANISM", TEST_GROUP_ADMIN, null },
+                { "$PLATE_GEOMETRY", SYSTEM_USER, null },
+                { "$PLATE_GEOMETRY", TEST_USER, null },
+                { "$PLATE_GEOMETRY", TEST_GROUP_ADMIN, null },
+        };
+    }
+
+    @Test(dataProvider = "providerTestAddUnofficialVocabularyTermsAuthorization")
+    public void testAddUnofficialVocabularyTermsAuthorization(String vocabularyCode, String vocabularyUpdater, String expectedError)
+    {
+        SessionContextDTO session = vocabularyUpdater.equals(SYSTEM_USER) ? commonServer.tryToAuthenticateAsSystem()
+                : commonServer.tryAuthenticate(vocabularyUpdater, PASSWORD);
+
+        VocabularyPE vocabulary = daoFactory.getVocabularyDAO().tryFindVocabularyByCode(vocabularyCode);
+
+        assertExceptionMessage(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    // this methods adds only unofficial terms (internally sets official flag to false)
+                    commonServer.addUnofficialVocabularyTerm(session.getSessionToken(), new TechId(vocabulary.getId()), "NEW_TERM", "New label",
+                            "New description", null);
+                }
+            }, expectedError);
+    }
+
+    @DataProvider
+    private Object[][] providerTestUpdateAndDeleteVocabularyTermAuthorization()
+    {
+        return new Object[][] {
+                { "NEW_NON_INTERNAL", SYSTEM_USER, SYSTEM_USER, true, null },
+                { "NEW_NON_INTERNAL", SYSTEM_USER, SYSTEM_USER, false, null },
+                { "NEW_NON_INTERNAL", SYSTEM_USER, TEST_USER, true, null },
+                { "NEW_NON_INTERNAL", SYSTEM_USER, TEST_USER, false, null },
+
+                { "NEW_NON_INTERNAL", TEST_USER, TEST_USER, true, null },
+                { "NEW_NON_INTERNAL", TEST_USER, TEST_USER, false, null },
+
+                { "NEW_NON_INTERNAL", TEST_POWER_USER_CISD, SYSTEM_USER, false, null },
+                { "NEW_NON_INTERNAL", TEST_POWER_USER_CISD, TEST_USER, false, null },
+                { "NEW_NON_INTERNAL", TEST_POWER_USER_CISD, TEST_POWER_USER_CISD, false,
+                        "None of method roles '[INSTANCE_ADMIN, INSTANCE_ETL_SERVER]' could be found in roles of user" },
+
+                { "$NEW_INTERNAL", SYSTEM_USER, SYSTEM_USER, true, null },
+                { "$NEW_INTERNAL", SYSTEM_USER, SYSTEM_USER, false, null },
+                { "$NEW_INTERNAL", SYSTEM_USER, TEST_USER, true,
+                        "Terms created by the system user that belong to internal vocabularies can be managed only by the system user" },
+                { "$NEW_INTERNAL", SYSTEM_USER, TEST_USER, false,
+                        "Terms created by the system user that belong to internal vocabularies can be managed only by the system user" },
+
+                { "$NEW_INTERNAL", TEST_USER, TEST_USER, true, null },
+                { "$NEW_INTERNAL", TEST_USER, TEST_USER, false, null },
+
+                { "$NEW_INTERNAL", TEST_POWER_USER_CISD, SYSTEM_USER, false, null },
+                { "$NEW_INTERNAL", TEST_POWER_USER_CISD, TEST_USER, false, null },
+                { "$NEW_INTERNAL", TEST_POWER_USER_CISD, TEST_POWER_USER_CISD, false,
+                        "None of method roles '[INSTANCE_ADMIN, INSTANCE_ETL_SERVER]' could be found in roles of user" },
+        };
+    }
+
+    @Test(dataProvider = "providerTestUpdateAndDeleteVocabularyTermAuthorization")
+    public void testUpdateAndDeleteVocabularyTermAuthorization(String vocabularyCode, String termRegistrator, String termUpdater,
+            boolean termOfficial,
+            String expectedError)
+    {
+        SessionContextDTO systemSession = commonServer.tryToAuthenticateAsSystem();
+
+        SessionContextDTO sessionRegistrator = termRegistrator.equals(SYSTEM_USER) ? commonServer.tryToAuthenticateAsSystem()
+                : commonServer.tryAuthenticate(termRegistrator, PASSWORD);
+
+        SessionContextDTO sessionUpdater = termUpdater.equals(SYSTEM_USER) ? commonServer.tryToAuthenticateAsSystem()
+                : commonServer.tryAuthenticate(termUpdater, PASSWORD);
+
+        NewVocabulary newVocabulary = new NewVocabulary();
+        newVocabulary.setCode(vocabularyCode);
+        newVocabulary.setManagedInternally(vocabularyCode.startsWith("$"));
+        commonServer.registerVocabulary(systemSession.getSessionToken(), newVocabulary);
+
+        VocabularyPE vocabulary = daoFactory.getVocabularyDAO().tryFindVocabularyByCode(vocabularyCode);
+
+        if (termOfficial)
+        {
+            VocabularyTerm term = new VocabularyTerm();
+            term.setCode("NEW_TERM");
+            commonServer.addVocabularyTerms(sessionRegistrator.getSessionToken(), new TechId(vocabulary.getId()), Arrays.asList(term), null);
+        } else
+        {
+            commonServer.addUnofficialVocabularyTerm(sessionRegistrator.getSessionToken(), new TechId(vocabulary.getId()), "NEW_TERM", "New label",
+                    "New description", null);
+        }
+
+        VocabularyTermPE term = vocabulary.tryGetVocabularyTerm("NEW_TERM");
+
+        VocabularyTerm updateTerm = new VocabularyTerm();
+        updateTerm.setId(term.getId());
+        updateTerm.setCode(term.getCode());
+        updateTerm.setDescription("new description");
+        updateTerm.setOrdinal(term.getOrdinal());
+        updateTerm.setModificationDate(term.getModificationDate());
+        VocabularyTermBatchUpdateDetails updateDetails = new VocabularyTermBatchUpdateDetails();
+        UpdatedVocabularyTerm update = new UpdatedVocabularyTerm(updateTerm, updateDetails);
+
+        assertExceptionMessage(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+
+                    commonServer.updateVocabularyTerm(sessionUpdater.getSessionToken(), update);
+                }
+            }, expectedError);
+
+        assertExceptionMessage(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    commonServer.updateVocabularyTerms(sessionUpdater.getSessionToken(), new TechId(vocabulary.getId()),
+                            Arrays.asList(update));
+                }
+            }, expectedError);
+        assertExceptionMessage(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    commonServer.deleteVocabularyTerms(sessionUpdater.getSessionToken(), new TechId(vocabulary.getId()), Arrays.asList(update),
+                            Arrays.asList());
+                }
+            }, expectedError);
+    }
 
     @Test
     public void testDeleteGroupWithPersons()
