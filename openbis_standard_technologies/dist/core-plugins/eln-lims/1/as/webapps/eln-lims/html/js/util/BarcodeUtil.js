@@ -388,12 +388,13 @@ var BarcodeUtil = new function() {
             'action' : 'javascript:void(0);'
         });
 
+        var $canvas = $('<img>');
         var $btnAccept = $('<input>', { 'type': 'submit', 'class' : 'btn btn-primary', 'value' : 'Download' });
         $btnAccept.click(function(event) {
-            var canvas = document.getElementById('barcode-canvas');
-            canvas.toBlob(function (blob) {
-                saveAs(blob, entity.permId + '.png');
-            }, 'image/png', 1);
+            var downloadLink = document.createElement("a");
+            downloadLink.href = $canvas.attr('src');
+            downloadLink.download = entity.permId + '.png';
+            downloadLink.click();
         });
 
         var $btnCancel = $('<input>', { 'type': 'submit', 'class' : 'btn', 'value' : 'Close' });
@@ -401,7 +402,6 @@ var BarcodeUtil = new function() {
 			Util.unblockUI();
 		});
 
-        var $canvas = $('<img>');
         var $barcodeTypesDropdown = FormUtil.getDropdown(this.supportedBarcodes());
             $barcodeTypesDropdown.change(function() {
                 $canvas.attr('src', _this.generateBarcode($barcodeTypesDropdown.val(), barcode, barcode));
