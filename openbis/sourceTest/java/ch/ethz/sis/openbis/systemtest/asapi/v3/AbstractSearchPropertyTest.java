@@ -310,24 +310,6 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
                 "cannot be applied to the data type " + dataType);
     }
 
-    @Test
-    public void testWithDatePropertyComparedToJavaDateThrowingException()
-    {
-        // Given
-        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
-        final PropertyTypePermId propertyTypeId = createAPropertyType(sessionToken, DataType.DATE);
-        final String formattedDate = DATE_FORMAT.format(createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0));
-        createEntity(sessionToken, propertyTypeId, formattedDate);
-        final AbstractEntitySearchCriteria<?> searchCriteria = createSearchCriteria();
-        new DateQueryInjector(searchCriteria, propertyTypeId, null).buildCriteria("== 2020-02-15");
-
-        // When
-        assertUserFailureException(aVoid -> search(sessionToken, searchCriteria),
-                // Then
-                String.format("Search criteria with time stamp doesn't make sense for property %s of data type %s.",
-                        propertyTypeId, DataType.DATE));
-    }
-
     @DataProvider
     protected Object[][] withDatePropertyThrowingExceptionExamples()
     {
@@ -388,20 +370,64 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
                 { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "< 2020-02-15", false },
                 { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "< 2020-02-14", false },
 
-                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "== 2020-02-15 10:00:01", true },
-                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "== 2020-02-15 10:00:00", false },
-                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), ">= 2020-02-15 10:00:02", false },
-                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), ">= 2020-02-15 10:00:01", true },
-                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), ">= 2020-02-15 10:00:00", true },
-                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "<= 2020-02-15 10:00:02", true },
-                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "<= 2020-02-15 10:00:01", true },
-                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "<= 2020-02-15 10:00:00", false },
-                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "> 2020-02-15 10:00:02", false },
-                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "> 2020-02-15 10:00:01", false },
-                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "> 2020-02-15 10:00:00", true },
-                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "< 2020-02-15 10:00:02", true },
-                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "< 2020-02-15 10:00:01", false },
-                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "< 2020-02-15 10:00:00", false },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "== 2020-02-15 13:21:01", true },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "== 2020-02-14 13:21:01", false },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), ">= 2020-02-16 13:21:01", false },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), ">= 2020-02-15 13:21:01", true },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), ">= 2020-02-14 13:21:01", true },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "<= 2020-02-16 13:21:01", true },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "<= 2020-02-15 13:21:01", true },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "<= 2020-02-14 13:21:01", false },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "> 2020-02-16 13:21:01", false },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "> 2020-02-15 13:21:01", false },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "> 2020-02-14 13:21:01", true },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "< 2020-02-16 13:21:01", true },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "< 2020-02-15 13:21:01", false },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "< 2020-02-14 13:21:01", false },
+
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "== 2020-02-15 10:00:01",
+                        true },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "== 2020-02-15 10:00:00",
+                        false },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), ">= 2020-02-15 10:00:02",
+                        false },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), ">= 2020-02-15 10:00:01",
+                        true },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), ">= 2020-02-15 10:00:00",
+                        true },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "<= 2020-02-15 10:00:02",
+                        true },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "<= 2020-02-15 10:00:01",
+                        true },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "<= 2020-02-15 10:00:00",
+                        false },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "> 2020-02-15 10:00:02",
+                        false },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "> 2020-02-15 10:00:01",
+                        false },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "> 2020-02-15 10:00:00",
+                        true },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "< 2020-02-15 10:00:02",
+                        true },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "< 2020-02-15 10:00:01",
+                        false },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "< 2020-02-15 10:00:00",
+                        false },
+
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "== 2020-02-15", true },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "== 2020-02-16", false },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), ">= 2020-02-16", false },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), ">= 2020-02-15", true },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), ">= 2020-02-14", true },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "<= 2020-02-16", true },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "<= 2020-02-15", true },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "<= 2020-02-14", false },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "> 2020-02-16", false },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "> 2020-02-15", false },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "> 2020-02-14", true },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "< 2020-02-16", true },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "< 2020-02-15", false },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "< 2020-02-14", false },
         };
     }
 
@@ -411,13 +437,20 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
     {
         final String sessionToken = v3api.login(TEST_USER, PASSWORD);
         final PropertyTypePermId propertyTypeId = createAPropertyType(sessionToken, dataType);
-        final DateFormat dateFormat = dataType == DataType.DATE ? DATE_FORMAT : DATE_HOURS_MINUTES_SECONDS_FORMAT;
-        final String formattedValue = dateFormat.format(value);
+        final DateFormat dataDateFormat = dataType == DataType.TIMESTAMP
+                ? DATE_HOURS_MINUTES_SECONDS_FORMAT : DATE_FORMAT;
+        final String formattedValue = dataDateFormat.format(value);
         final ObjectPermId entityPermId = createEntity(sessionToken, propertyTypeId, formattedValue);
+
+        final boolean queryHasTime = queryString.contains(":");
+        final DateFormat criteriaDateFormat = dataType == DataType.TIMESTAMP && queryHasTime
+                ? DATE_HOURS_MINUTES_SECONDS_FORMAT : DATE_FORMAT;
+
+        // Date/Timestamp as string
 
         // Given
         final AbstractEntitySearchCriteria<?> dateSearchCriteria = createSearchCriteria();
-        new DateQueryInjector(dateSearchCriteria, propertyTypeId, dateFormat).buildCriteria(queryString);
+        new DateQueryInjector(dateSearchCriteria, propertyTypeId, criteriaDateFormat).buildCriteria(queryString);
 
         // When
         final List<? extends IPermIdHolder> dateEntities = search(sessionToken, dateSearchCriteria);
@@ -429,50 +462,24 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
             assertEquals(dateEntities.get(0).getPermId().toString(), entityPermId.getPermId());
         }
 
-        // Given
-        final AbstractEntitySearchCriteria<?> dateSearchStringPropertyCriteria = createSearchCriteria();
-        new StringQueryInjector(dateSearchStringPropertyCriteria, propertyTypeId).buildCriteria(queryString);
-
-        // When
-        final List<? extends IPermIdHolder> dateEntitiesFromStringPropertyCriteria = search(sessionToken,
-                dateSearchStringPropertyCriteria);
-
-        // Then
-        assertEquals(dateEntitiesFromStringPropertyCriteria.size(), found ? 1 : 0);
-        if (found)
+        // This condition is needed because it is not possible to create Java date without time.
+        if (dataType == DataType.DATE || queryHasTime)
         {
-            assertEquals(dateEntitiesFromStringPropertyCriteria.get(0).getPermId().toString(), entityPermId.getPermId());
-        }
-
-        if (dataType == DataType.TIMESTAMP)
-        {
-            // Given
-            final AbstractEntitySearchCriteria<?> timestampSearchCriteria = createSearchCriteria();
-            new DateQueryInjector(timestampSearchCriteria, propertyTypeId, null).buildCriteria(queryString);
-
-            // When
-            final List<? extends IPermIdHolder> timestampEntities = search(sessionToken, timestampSearchCriteria);
-
-            // Then
-            assertEquals(timestampEntities.size(), found ? 1 : 0);
-            if (found)
-            {
-                assertEquals(timestampEntities.get(0).getPermId().toString(), entityPermId.getPermId());
-            }
+            // Date/Timestamp as Java Date object
 
             // Given
-            final AbstractEntitySearchCriteria<?> timestampSearchStringPropertyCriteria = createSearchCriteria();
-            new StringQueryInjector(timestampSearchStringPropertyCriteria, propertyTypeId).buildCriteria(queryString);
+            final AbstractEntitySearchCriteria<?> dateSearchStringPropertyCriteria = createSearchCriteria();
+            new DateQueryInjector(dateSearchStringPropertyCriteria, propertyTypeId, null).buildCriteria(queryString);
 
             // When
-            final List<? extends IPermIdHolder> timestampEntitiesFromStringPropertyCriteria = search(sessionToken,
-                    timestampSearchStringPropertyCriteria);
+            final List<? extends IPermIdHolder> dateEntitiesFromStringPropertyCriteria = search(sessionToken,
+                    dateSearchStringPropertyCriteria);
 
             // Then
-            assertEquals(timestampEntitiesFromStringPropertyCriteria.size(), found ? 1 : 0);
+            assertEquals(dateEntitiesFromStringPropertyCriteria.size(), found ? 1 : 0);
             if (found)
             {
-                assertEquals(timestampEntitiesFromStringPropertyCriteria.get(0).getPermId().toString(),
+                assertEquals(dateEntitiesFromStringPropertyCriteria.get(0).getPermId().toString(),
                         entityPermId.getPermId());
             }
         }
@@ -797,30 +804,74 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
                 { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), ">= 2020-02-16", false },
                 { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), ">= 2020-02-15", true },
                 { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), ">= 2020-02-14", true },
-                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "<= 2020-02-16", true },
-                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "<= 2020-02-15", true },
-                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "<= 2020-02-14", false },
+                { DataType.DATE, createDate(1970, Calendar.FEBRUARY, 15, 0, 0, 0), "<= 1970-02-16", true },
+                { DataType.DATE, createDate(1970, Calendar.FEBRUARY, 15, 0, 0, 0), "<= 1970-02-15", true },
+                { DataType.DATE, createDate(1970, Calendar.FEBRUARY, 15, 0, 0, 0), "<= 1970-02-14", false },
                 { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "> 2020-02-16", false },
                 { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "> 2020-02-15", false },
                 { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "> 2020-02-14", true },
-                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "< 2020-02-16", true },
-                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "< 2020-02-15", false },
-                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "< 2020-02-14", false },
+                { DataType.DATE, createDate(1970, Calendar.FEBRUARY, 15, 0, 0, 0), "< 1970-02-16", true },
+                { DataType.DATE, createDate(1970, Calendar.FEBRUARY, 15, 0, 0, 0), "< 1970-02-15", false },
+                { DataType.DATE, createDate(1970, Calendar.FEBRUARY, 15, 0, 0, 0), "< 1970-02-14", false },
 
-                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "== 2020-02-15 10:00:01", true },
-                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "== 2020-02-15 10:00:00", false },
-                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), ">= 2020-02-15 10:00:02", false },
-                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), ">= 2020-02-15 10:00:01", true },
-                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), ">= 2020-02-15 10:00:00", true },
-                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "<= 2020-02-15 10:00:02", true },
-                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "<= 2020-02-15 10:00:01", true },
-                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "<= 2020-02-15 10:00:00", false },
-                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "> 2020-02-15 10:00:02", false },
-                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "> 2020-02-15 10:00:01", false },
-                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "> 2020-02-15 10:00:00", true },
-                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "< 2020-02-15 10:00:02", true },
-                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "< 2020-02-15 10:00:01", false },
-                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "< 2020-02-15 10:00:00", false },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "== 2020-02-15 13:21:01", true },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "== 2020-02-14 13:21:01", false },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), ">= 2020-02-16 13:21:01", false },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), ">= 2020-02-15 13:21:01", true },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), ">= 2020-02-14 13:21:01", true },
+                { DataType.DATE, createDate(1970, Calendar.FEBRUARY, 15, 0, 0, 0), "<= 1970-02-16 13:21:01", true },
+                { DataType.DATE, createDate(1970, Calendar.FEBRUARY, 15, 0, 0, 0), "<= 1970-02-15 13:21:01", true },
+                { DataType.DATE, createDate(1970, Calendar.FEBRUARY, 15, 0, 0, 0), "<= 1970-02-14 13:21:01", false },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "> 2020-02-16 13:21:01", false },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "> 2020-02-15 13:21:01", false },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "> 2020-02-14 13:21:01", true },
+                { DataType.DATE, createDate(1970, Calendar.FEBRUARY, 15, 0, 0, 0), "< 1970-02-16 13:21:01", true },
+                { DataType.DATE, createDate(1970, Calendar.FEBRUARY, 15, 0, 0, 0), "< 1970-02-15 13:21:01", false },
+                { DataType.DATE, createDate(1970, Calendar.FEBRUARY, 15, 0, 0, 0), "< 1970-02-14 13:21:01", false },
+
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "== 2020-02-15 10:00:01",
+                        true },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "== 2020-02-15 10:00:00",
+                        false },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), ">= 2020-02-15 10:00:02",
+                        false },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), ">= 2020-02-15 10:00:01",
+                        true },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), ">= 2020-02-15 10:00:00",
+                        true },
+                { DataType.TIMESTAMP, createDate(1970, Calendar.FEBRUARY, 15, 10, 0, 1), "<= 1970-02-15 10:00:02",
+                        true },
+                { DataType.TIMESTAMP, createDate(1970, Calendar.FEBRUARY, 15, 10, 0, 1), "<= 1970-02-15 10:00:01",
+                        true },
+                { DataType.TIMESTAMP, createDate(1970, Calendar.FEBRUARY, 15, 10, 0, 1), "<= 1970-02-15 10:00:00",
+                        false },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "> 2020-02-15 10:00:02",
+                        false },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "> 2020-02-15 10:00:01",
+                        false },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "> 2020-02-15 10:00:00",
+                        true },
+                { DataType.TIMESTAMP, createDate(1970, Calendar.FEBRUARY, 15, 10, 0, 1), "< 1970-02-15 10:00:02",
+                        true },
+                { DataType.TIMESTAMP, createDate(1970, Calendar.FEBRUARY, 15, 10, 0, 1), "< 1970-02-15 10:00:01",
+                        false },
+                { DataType.TIMESTAMP, createDate(1970, Calendar.FEBRUARY, 15, 10, 0, 1), "< 1970-02-15 10:00:00",
+                        false },
+
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "== 2020-02-15", true },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "== 2020-02-16", false },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), ">= 2020-02-16", false },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), ">= 2020-02-15", true },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), ">= 2020-02-14", true },
+                { DataType.TIMESTAMP, createDate(1970, Calendar.FEBRUARY, 15, 10, 0, 1), "<= 1970-02-16", true },
+                { DataType.TIMESTAMP, createDate(1970, Calendar.FEBRUARY, 15, 10, 0, 1), "<= 1970-02-15", true },
+                { DataType.TIMESTAMP, createDate(1970, Calendar.FEBRUARY, 15, 10, 0, 1), "<= 1970-02-14", false },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "> 2020-02-16", false },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "> 2020-02-15", false },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "> 2020-02-14", true },
+                { DataType.TIMESTAMP, createDate(1970, Calendar.FEBRUARY, 15, 10, 0, 1), "< 1970-02-16", true },
+                { DataType.TIMESTAMP, createDate(1970, Calendar.FEBRUARY, 15, 10, 0, 1), "< 1970-02-15", false },
+                { DataType.TIMESTAMP, createDate(1970, Calendar.FEBRUARY, 15, 10, 0, 1), "< 1970-02-14", false },
         };
     }
 
@@ -830,13 +881,20 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
     {
         final String sessionToken = v3api.login(TEST_USER, PASSWORD);
         final PropertyTypePermId propertyTypeId = createAPropertyType(sessionToken, dataType);
-        final DateFormat dateFormat = dataType == DataType.DATE ? DATE_FORMAT : DATE_HOURS_MINUTES_SECONDS_FORMAT;
-        final String formattedValue = dateFormat.format(value);
+        final DateFormat dataDateFormat = dataType == DataType.TIMESTAMP
+                ? DATE_HOURS_MINUTES_SECONDS_FORMAT : DATE_FORMAT;
+        final String formattedValue = dataDateFormat.format(value);
         final ObjectPermId entityPermId = createEntity(sessionToken, propertyTypeId, formattedValue);
+
+        final boolean queryHasTime = queryString.contains(":");
+        final DateFormat criteriaDateFormat = dataType == DataType.TIMESTAMP && queryHasTime
+                ? DATE_HOURS_MINUTES_SECONDS_FORMAT : DATE_FORMAT;
+
+        // Date/Timestamp as string
 
         // Given
         final AbstractEntitySearchCriteria<?> dateSearchCriteria = createSearchCriteria();
-        new DateQueryInjector(dateSearchCriteria, null, dateFormat).buildCriteria(queryString);
+        new DateQueryInjector(dateSearchCriteria, null, criteriaDateFormat).buildCriteria(queryString);
 
         // When
         final List<? extends IPermIdHolder> dateEntities = search(sessionToken, dateSearchCriteria);
@@ -848,50 +906,24 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
             assertEquals(dateEntities.get(0).getPermId().toString(), entityPermId.getPermId());
         }
 
-        // Given
-        final AbstractEntitySearchCriteria<?> dateSearchStringPropertyCriteria = createSearchCriteria();
-        new DateQueryInjector(dateSearchStringPropertyCriteria, null, null).buildCriteria(queryString);
-
-        // When
-        final List<? extends IPermIdHolder> dateEntitiesFromStringPropertyCriteria = search(sessionToken,
-                dateSearchStringPropertyCriteria);
-
-        // Then
-        assertEquals(dateEntitiesFromStringPropertyCriteria.size(), found ? 1 : 0);
-        if (found)
+        // This condition is needed because it is not possible to create Java date without time.
+        if (dataType == DataType.DATE || queryHasTime)
         {
-            assertEquals(dateEntitiesFromStringPropertyCriteria.get(0).getPermId().toString(), entityPermId.getPermId());
-        }
-
-        if (dataType == DataType.TIMESTAMP)
-        {
-            // Given
-            final AbstractEntitySearchCriteria<?> timestampSearchCriteria = createSearchCriteria();
-            new DateQueryInjector(timestampSearchCriteria, null, dateFormat).buildCriteria(queryString);
-
-            // When
-            final List<? extends IPermIdHolder> timestampEntities = search(sessionToken, timestampSearchCriteria);
-
-            // Then
-            assertEquals(timestampEntities.size(), found ? 1 : 0);
-            if (found)
-            {
-                assertEquals(timestampEntities.get(0).getPermId().toString(), entityPermId.getPermId());
-            }
+            // Date/Timestamp as Java Date object
 
             // Given
-            final AbstractEntitySearchCriteria<?> timestampSearchStringPropertyCriteria = createSearchCriteria();
-            new DateQueryInjector(timestampSearchStringPropertyCriteria, null, null).buildCriteria(queryString);
+            final AbstractEntitySearchCriteria<?> dateSearchStringPropertyCriteria = createSearchCriteria();
+            new DateQueryInjector(dateSearchStringPropertyCriteria, null, null).buildCriteria(queryString);
 
             // When
-            final List<? extends IPermIdHolder> timestampEntitiesFromStringPropertyCriteria = search(sessionToken,
-                    timestampSearchStringPropertyCriteria);
+            final List<? extends IPermIdHolder> dateEntitiesFromStringPropertyCriteria = search(sessionToken,
+                    dateSearchStringPropertyCriteria);
 
             // Then
-            assertEquals(timestampEntitiesFromStringPropertyCriteria.size(), found ? 1 : 0);
+            assertEquals(dateEntitiesFromStringPropertyCriteria.size(), found ? 1 : 0);
             if (found)
             {
-                assertEquals(timestampEntitiesFromStringPropertyCriteria.get(0).getPermId().toString(),
+                assertEquals(dateEntitiesFromStringPropertyCriteria.get(0).getPermId().toString(),
                         entityPermId.getPermId());
             }
         }

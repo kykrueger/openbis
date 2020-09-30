@@ -100,7 +100,7 @@ public class DateFieldSearchConditionTranslator implements IConditionTranslator<
 
                 sqlBuilder.append(SP);
 
-                TranslatorUtils.appendDateComparatorOp(value, sqlBuilder, args);
+                TranslatorUtils.appendDateComparatorOp(value, sqlBuilder, args, bareDateValue);
                 break;
             }
 
@@ -146,24 +146,20 @@ public class DateFieldSearchConditionTranslator implements IConditionTranslator<
         if (propertyName == null)
         {
             appendWhenForDateOrTimestampProperties(sqlBuilder, args, tableMapper, value, aliases, timeZone,
+                    true, null, internalProperty, entityTypesSubTableAlias,
+                    DataType.DATE.toString());
+            appendWhenForDateOrTimestampProperties(sqlBuilder, args, tableMapper, value, aliases, timeZone,
                     bareDateValue, null, internalProperty, entityTypesSubTableAlias,
-                    DataType.DATE.toString(), DataType.TIMESTAMP.toString());
+                    DataType.TIMESTAMP.toString());
         } else if (DataType.DATE.toString().equals(casting))
         {
-            if (bareDateValue == false)
-            {
-                throw new UserFailureException(String.format(
-                        "Search criteria with time stamp doesn't make sense for property %s of data type %s.",
-                        propertyName, DataType.DATE));
-                
-            }
             if (timeZone instanceof TimeZone)
             {
                 throw new UserFailureException(String.format(
                         "Search criteria with time zone doesn't make sense for property %s of data type %s.",
                         propertyName, DataType.DATE));
             }
-            appendWhenForDateOrTimestampProperties(sqlBuilder, args, tableMapper, value, aliases, null, bareDateValue,
+            appendWhenForDateOrTimestampProperties(sqlBuilder, args, tableMapper, value, aliases, null, true,
                     propertyName, internalProperty, entityTypesSubTableAlias, DataType.DATE.toString());
         } else if (DataType.TIMESTAMP.toString().equals(casting))
         {
@@ -180,7 +176,7 @@ public class DateFieldSearchConditionTranslator implements IConditionTranslator<
 
     static void appendWhenForDateOrTimestampProperties(final StringBuilder sqlBuilder, final List<Object> args,
             final TableMapper tableMapper, final IDate value, final Map<String, JoinInformation> aliases,
-            final ITimeZone timeZone, final boolean bareDateValue, final String propertyName,
+            final ITimeZone timeZone, final boolean castToDate, final String propertyName,
             final boolean internalProperty, final String entityTypesSubTableAlias, final String... dataTypeStrings)
     {
         sqlBuilder.append(SP).append(WHEN).append(SP);
@@ -203,7 +199,7 @@ public class DateFieldSearchConditionTranslator implements IConditionTranslator<
 
         sqlBuilder.append(SP).append(THEN).append(SP);
 
-        if (bareDateValue)
+        if (castToDate)
         {
             sqlBuilder.append(LP);
         }
@@ -213,12 +209,12 @@ public class DateFieldSearchConditionTranslator implements IConditionTranslator<
                 .append(TIMESTAMP_WITH_TZ.toString()).append(SP);
         TranslatorUtils.appendTimeZoneConversion(value, sqlBuilder, timeZone);
 
-        if (bareDateValue)
+        if (castToDate)
         {
             sqlBuilder.append(RP).append(DOUBLE_COLON).append(DATE).append(SP);
         }
 
-        TranslatorUtils.appendDateComparatorOp(value, sqlBuilder, args);
+        TranslatorUtils.appendDateComparatorOp(value, sqlBuilder, args, castToDate);
     }
 
 }

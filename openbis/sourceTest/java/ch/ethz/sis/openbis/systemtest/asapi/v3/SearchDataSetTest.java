@@ -1333,31 +1333,6 @@ public class SearchDataSetTest extends AbstractDataSetTest
     }
 
     @Test
-    public void testSearchWithDateDatePropertyThatIsEarlierWithInvalidDate()
-    {
-        // Given
-        String sessionToken = v3api.login(TEST_USER, PASSWORD);
-        PropertyTypePermId propertyType = createAPropertyType(sessionToken, DataType.DATE);
-        EntityTypePermId dataSetType = createADataSetType(sessionToken, true, propertyType);
-        DataSetCreation creation = physicalDataSetCreation();
-        creation.setCode("DATA_SET_WITH_DATE_PROPERTY");
-        creation.setTypeId(dataSetType);
-        creation.setExperimentId(new ExperimentIdentifier("/CISD/NEMO/EXP1"));
-        creation.setProperty(propertyType.getPermId(), "1990-11-09");
-        v3api.createDataSets(sessionToken, Arrays.asList(creation));
-
-        DataSetSearchCriteria criteria = new DataSetSearchCriteria();
-        DatePropertySearchCriteria datePropertySearchCriteria = criteria.withDateProperty(propertyType.getPermId());
-        datePropertySearchCriteria.thatIsEarlierThanOrEqualTo("1990-11-09 01:22:33");
-
-        // When
-        assertUserFailureException(Void -> v3api.searchDataSets(sessionToken, criteria, new DataSetFetchOptions()),
-                // Then
-                "Search criteria with time stamp doesn't make sense for property " + propertyType.getPermId()
-                        + " of data type " + DataType.DATE);
-    }
-
-    @Test
     public void testSearchWithAnyPropertyThatIsEarlier()
     {
         // Given

@@ -441,7 +441,7 @@ public class TranslatorUtils
     }
 
     public static void appendDateComparatorOp(final IDate fieldValue, final StringBuilder sqlBuilder,
-            final List<Object> args)
+            final List<Object> args, final boolean castToDate)
     {
         if (fieldValue instanceof DateEqualToValue || fieldValue instanceof DateObjectEqualToValue)
         {
@@ -468,17 +468,14 @@ public class TranslatorUtils
         }
         sqlBuilder.append(SP);
 
-        final boolean bareDateValue = fieldValue instanceof AbstractDateValue &&
-                TranslatorUtils.isDateWithoutTime(((AbstractDateValue) fieldValue).getValue());
-
-        if (bareDateValue)
+        if (castToDate)
         {
             sqlBuilder.append(LP);
         }
 
         sqlBuilder.append(QU).append(DOUBLE_COLON).append(TIMESTAMP_WITHOUT_TZ.toString());
 
-        if (bareDateValue)
+        if (castToDate)
         {
             sqlBuilder.append(RP).append(DOUBLE_COLON).append(DATE);
         }

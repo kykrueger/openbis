@@ -687,31 +687,6 @@ public class SearchExperimentTest extends AbstractExperimentTest
     }
 
     @Test
-    public void testSearchWithDateDatePropertyThatIsEarlierWithInvalidDate()
-    {
-        // Given
-        String sessionToken = v3api.login(TEST_USER, PASSWORD);
-        PropertyTypePermId propertyType = createAPropertyType(sessionToken, DataType.DATE);
-        EntityTypePermId experimentType = createAnExperimentType(sessionToken, true, propertyType);
-        ExperimentCreation creation = new ExperimentCreation();
-        creation.setCode("EXPERIMENT_WITH_DATE_PROPERTY");
-        creation.setTypeId(experimentType);
-        creation.setProjectId(new ProjectIdentifier("/CISD/NEMO"));
-        creation.setProperty(propertyType.getPermId(), "1990-11-09");
-        v3api.createExperiments(sessionToken, Arrays.asList(creation));
-
-        ExperimentSearchCriteria criteria = new ExperimentSearchCriteria();
-        DatePropertySearchCriteria datePropertySearchCriteria = criteria.withDateProperty(propertyType.getPermId());
-        datePropertySearchCriteria.thatIsEarlierThanOrEqualTo("1990-11-09 01:22:33");
-
-        // When
-        assertUserFailureException(Void -> v3api.searchExperiments(sessionToken, criteria, new ExperimentFetchOptions()),
-                // Then
-                "Search criteria with time stamp doesn't make sense for property " + propertyType.getPermId()
-                        + " of data type " + DataType.DATE);
-    }
-
-    @Test
     public void testSearchWithAnyPropertyThatIsEarlier()
     {
         // Given
