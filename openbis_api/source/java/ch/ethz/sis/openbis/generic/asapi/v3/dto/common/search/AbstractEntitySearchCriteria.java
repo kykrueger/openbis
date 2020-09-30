@@ -110,6 +110,11 @@ public abstract class AbstractEntitySearchCriteria<ID extends IObjectId> extends
     {
         return with(new AnyNumberPropertySearchCriteria());
     }
+    
+    public AnyDatePropertySearchCriteria withAnyDateProperty()
+    {
+        return with(new AnyDatePropertySearchCriteria());
+    }
 
     public AnyFieldSearchCriteria withAnyField()
     {

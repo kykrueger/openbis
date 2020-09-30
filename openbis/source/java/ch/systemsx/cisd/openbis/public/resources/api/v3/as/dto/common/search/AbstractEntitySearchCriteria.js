@@ -74,6 +74,10 @@ define([ "require", "stjs", "as/dto/common/search/AbstractObjectSearchCriteria",
 			var AnyPropertySearchCriteria = require("as/dto/common/search/AnyPropertySearchCriteria");
 			return this.addCriteria(new AnyPropertySearchCriteria());
 		};
+		prototype.withAnyDateProperty = function() {
+			var AnyDatePropertySearchCriteria = require("as/dto/common/search/AnyDatePropertySearchCriteria");
+			return this.addCriteria(new AnyDatePropertySearchCriteria());
+		};
 		prototype.withAnyNumberProperty = function() {
 			var AnyNumberPropertySearchCriteria = require("as/dto/common/search/AnyNumberPropertySearchCriteria");
 			return this.addCriteria(new AnyNumberPropertySearchCriteria());

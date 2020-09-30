@@ -1361,7 +1361,7 @@ public class SearchMaterialTest extends AbstractTest
     }
 
     @Test(dataProvider = "withAnyNumberPropertyExamples")
-    public void testWithAnyNumber(final DataType dataType, final Number value, final String queryString,
+    public void testWithAnyNumberProperty(final DataType dataType, final Number value, final String queryString,
             final boolean found)
     {
         // Given

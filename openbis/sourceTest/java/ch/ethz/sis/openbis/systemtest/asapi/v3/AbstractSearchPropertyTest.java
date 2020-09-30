@@ -659,7 +659,7 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
     }
 
     @Test(dataProvider = "withAnyNumberPropertyExamples")
-    public void testWithAnyNumber(final DataType dataType, final Number value, final String queryString,
+    public void testWithAnyNumberProperty(final DataType dataType, final Number value, final String queryString,
             final boolean found)
     {
         // Given
@@ -786,6 +786,115 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
         final List<? extends IPermIdHolder> entities = search(sessionToken, searchCriteria);
         assertEquals(entities.size(), 1);
         assertEquals(entities.get(0).getPermId(), entityPermId);
+    }
+
+    @DataProvider
+    protected Object[][] withAnyDateOrTimestampPropertyExamples()
+    {
+        return new Object[][] {
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "== 2020-02-15", true },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "== 2020-02-14", false },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), ">= 2020-02-16", false },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), ">= 2020-02-15", true },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), ">= 2020-02-14", true },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "<= 2020-02-16", true },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "<= 2020-02-15", true },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "<= 2020-02-14", false },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "> 2020-02-16", false },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "> 2020-02-15", false },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "> 2020-02-14", true },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "< 2020-02-16", true },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "< 2020-02-15", false },
+                { DataType.DATE, createDate(2020, Calendar.FEBRUARY, 15, 0, 0, 0), "< 2020-02-14", false },
+
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "== 2020-02-15 10:00:01", true },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "== 2020-02-15 10:00:00", false },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), ">= 2020-02-15 10:00:02", false },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), ">= 2020-02-15 10:00:01", true },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), ">= 2020-02-15 10:00:00", true },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "<= 2020-02-15 10:00:02", true },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "<= 2020-02-15 10:00:01", true },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "<= 2020-02-15 10:00:00", false },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "> 2020-02-15 10:00:02", false },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "> 2020-02-15 10:00:01", false },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "> 2020-02-15 10:00:00", true },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "< 2020-02-15 10:00:02", true },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "< 2020-02-15 10:00:01", false },
+                { DataType.TIMESTAMP, createDate(2020, Calendar.FEBRUARY, 15, 10, 0, 1), "< 2020-02-15 10:00:00", false },
+        };
+    }
+
+    @Test(dataProvider = "withAnyDateOrTimestampPropertyExamples")
+    public void testWithAnyDateOrTimestampProperty(final DataType dataType, final Date value, final String queryString,
+            final boolean found)
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        final PropertyTypePermId propertyTypeId = createAPropertyType(sessionToken, dataType);
+        final DateFormat dateFormat = dataType == DataType.DATE ? DATE_FORMAT : DATE_HOURS_MINUTES_SECONDS_FORMAT;
+        final String formattedValue = dateFormat.format(value);
+        final ObjectPermId entityPermId = createEntity(sessionToken, propertyTypeId, formattedValue);
+
+        // Given
+        final AbstractEntitySearchCriteria<?> dateSearchCriteria = createSearchCriteria();
+        new DateQueryInjector(dateSearchCriteria, null, dateFormat).buildCriteria(queryString);
+
+        // When
+        final List<? extends IPermIdHolder> dateEntities = search(sessionToken, dateSearchCriteria);
+
+        // Then
+        assertEquals(dateEntities.size(), found ? 1 : 0);
+        if (found)
+        {
+            assertEquals(dateEntities.get(0).getPermId().toString(), entityPermId.getPermId());
+        }
+
+        // Given
+        final AbstractEntitySearchCriteria<?> dateSearchStringPropertyCriteria = createSearchCriteria();
+        new DateQueryInjector(dateSearchStringPropertyCriteria, null, null).buildCriteria(queryString);
+
+        // When
+        final List<? extends IPermIdHolder> dateEntitiesFromStringPropertyCriteria = search(sessionToken,
+                dateSearchStringPropertyCriteria);
+
+        // Then
+        assertEquals(dateEntitiesFromStringPropertyCriteria.size(), found ? 1 : 0);
+        if (found)
+        {
+            assertEquals(dateEntitiesFromStringPropertyCriteria.get(0).getPermId().toString(), entityPermId.getPermId());
+        }
+
+        if (dataType == DataType.TIMESTAMP)
+        {
+            // Given
+            final AbstractEntitySearchCriteria<?> timestampSearchCriteria = createSearchCriteria();
+            new DateQueryInjector(timestampSearchCriteria, null, dateFormat).buildCriteria(queryString);
+
+            // When
+            final List<? extends IPermIdHolder> timestampEntities = search(sessionToken, timestampSearchCriteria);
+
+            // Then
+            assertEquals(timestampEntities.size(), found ? 1 : 0);
+            if (found)
+            {
+                assertEquals(timestampEntities.get(0).getPermId().toString(), entityPermId.getPermId());
+            }
+
+            // Given
+            final AbstractEntitySearchCriteria<?> timestampSearchStringPropertyCriteria = createSearchCriteria();
+            new DateQueryInjector(timestampSearchStringPropertyCriteria, null, null).buildCriteria(queryString);
+
+            // When
+            final List<? extends IPermIdHolder> timestampEntitiesFromStringPropertyCriteria = search(sessionToken,
+                    timestampSearchStringPropertyCriteria);
+
+            // Then
+            assertEquals(timestampEntitiesFromStringPropertyCriteria.size(), found ? 1 : 0);
+            if (found)
+            {
+                assertEquals(timestampEntitiesFromStringPropertyCriteria.get(0).getPermId().toString(),
+                        entityPermId.getPermId());
+            }
+        }
     }
 
     private ObjectPermId createEntity(String sessionToken, PropertyTypePermId propertyTypeId, String value)
@@ -992,7 +1101,9 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
         protected void injectQuery(final Operator operator, final String operand)
         {
             final Date date = parseDate(operand);
-            final DatePropertySearchCriteria criteria = searchCriteria.withDateProperty(propertyTypeId.getPermId());
+            final DateFieldSearchCriteria criteria = propertyTypeId == null
+                    ? searchCriteria.withAnyDateProperty()
+                    : searchCriteria.withDateProperty(propertyTypeId.getPermId());
 
             if (dateFormat != null)
             {

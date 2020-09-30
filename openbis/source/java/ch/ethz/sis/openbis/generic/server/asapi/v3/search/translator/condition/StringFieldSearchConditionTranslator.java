@@ -182,8 +182,8 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
 
                     sqlBuilder.append(CASE);
                     DateFieldSearchConditionTranslator.appendWhenForDateOrTimestampProperties(sqlBuilder, args,
-                            dataType, tableMapper, convertStringValueToDateValue(value), aliases, null,
-                            bareDateValue, propertyName, internalProperty, entityTypesSubTableAlias);
+                            tableMapper, convertStringValueToDateValue(value), aliases, null, bareDateValue,
+                            propertyName, internalProperty, entityTypesSubTableAlias, dataType.toString());
                     sqlBuilder.append(SP).append(END);
                     sqlBuilder.append(RP);
                     return;
