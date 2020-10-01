@@ -196,7 +196,7 @@ public class SyncConfig
 
     // the username/password pair to be used on the harvester side
     // to get the session token
-    private String harvesterUser;
+    private String harvesterUser = "system";
 
     private String harvesterPass;
 
