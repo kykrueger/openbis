@@ -40,13 +40,13 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.TranslationContext
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.globalsearch.IGlobalSearchObjectTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.person.IPersonTranslator;
 import ch.systemsx.cisd.openbis.generic.shared.authorization.AuthorizationConfig;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MatchingEntity;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearchObjectSortOptions.SCORE;
@@ -139,15 +139,43 @@ public class SearchGloballyOperationExecutor
                 fetchOptions.hasMatch());
         final List<MatchingEntity> pagedMatchingEntities = sortAndPage(matchingEntities, fetchOptions);
         // TODO: doTranslate() should only filter nested objects of the results (parents, children, components...).
-        final Map<MatchingEntity, GlobalSearchObject> pagedResultV3DTOs = doTranslate(translationContext, pagedMatchingEntities, fetchOptions);
+
+        //
+        // Path/Hack: doTranslate only works with entities of one kind - START
+        //
+
+        final Map<EntityKind, List<MatchingEntity>> pagedMatchingEntitiesByKind = new HashMap<>();
+        for (MatchingEntity matchingEntity:pagedMatchingEntities) {
+            List<MatchingEntity> pagedMatchingEntitiesOfType = pagedMatchingEntitiesByKind.get(matchingEntity.getEntityKind());
+            if (pagedMatchingEntitiesOfType == null) {
+                pagedMatchingEntitiesOfType = new ArrayList<>(pagedMatchingEntities.size());
+                pagedMatchingEntitiesByKind.put(matchingEntity.getEntityKind(), pagedMatchingEntitiesOfType);
+            }
+            pagedMatchingEntitiesOfType.add(matchingEntity);
+        }
+
+        final Map<String, GlobalSearchObject> pagedResultV3DTOs = new HashMap<>();
+
+        for (List<MatchingEntity> pagedMatchingEntitiesOfType:pagedMatchingEntitiesByKind.values()) {
+            final Map<MatchingEntity, GlobalSearchObject> pagedResultV3DTOsForType = doTranslate(translationContext, pagedMatchingEntitiesOfType, fetchOptions);
+            translationContext.getTranslationCache().clear();
+            for (MatchingEntity matchingEntity:pagedResultV3DTOsForType.keySet()) {
+                pagedResultV3DTOs.put(matchingEntity.getPermId(), pagedResultV3DTOsForType.get(matchingEntity));
+            }
+        }
+
+        //
+        // Path/Hack: doTranslate only works with entities of one kind - END
+        //
 
         assert pagedMatchingEntities.size() == pagedResultV3DTOs.size() : "The number of results after translation should not change. " +
                 "[pagedResultPEs.size()=" + pagedMatchingEntities.size() + ", pagedResultV3DTOs.size()=" + pagedResultV3DTOs.size() + "]";
 
         // Reordering of pagedResultV3DTOs is needed because translation mixes the order
-        final List<GlobalSearchObject> objectResults = pagedMatchingEntities.stream().map(pagedResultV3DTOs::get)
-                .collect(Collectors.toList());
-
+        final List<GlobalSearchObject> objectResults = new ArrayList<>(pagedMatchingEntities.size());
+        for (MatchingEntity pagedMatchingEntity:pagedMatchingEntities) {
+            objectResults.add(pagedResultV3DTOs.get(pagedMatchingEntity.getPermId()));
+        }
         // Sorting and paging parents and children in a "conventional" way.
         new SortAndPage().nest(objectResults, criteria, fetchOptions);
 

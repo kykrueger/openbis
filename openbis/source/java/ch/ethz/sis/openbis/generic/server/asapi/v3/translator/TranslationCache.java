@@ -12,6 +12,10 @@ public class TranslationCache
 
     private Map<CacheKey, CacheEntry> entries = new HashMap<CacheKey, CacheEntry>();
 
+    public void clear() {
+        entries.clear();
+    }
+
     public CacheEntry getEntry(CacheKey cacheKey)
     {
         CacheEntry cacheEntry = entries.get(cacheKey);
