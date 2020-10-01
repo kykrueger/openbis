@@ -26,8 +26,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.common.exceptions.AuthorizationFailureException;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchCriteria.MatchClause;
@@ -61,12 +63,15 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.DataSetBatchUpdatesDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentUpdatesDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ListSamplesByPropertyCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.dto.NewExternalData;
+import ch.systemsx.cisd.openbis.generic.shared.dto.NewVocabularyTerm;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PermId;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ProjectUpdatesDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SampleUpdatesDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SessionContextDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SimpleDataSetInformationDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.StorageFormat;
+import ch.systemsx.cisd.openbis.generic.shared.dto.VocabularyPE;
+import ch.systemsx.cisd.openbis.generic.shared.dto.VocabularyUpdatesDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.ExperimentIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.ProjectIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SampleIdentifier;
@@ -74,7 +79,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SampleIdentifierFa
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SpaceIdentifier;
 import ch.systemsx.cisd.openbis.systemtest.SystemTestCase;
 import ch.systemsx.cisd.openbis.systemtest.authorization.ProjectAuthorizationUser;
-
 import junit.framework.Assert;
 
 /**
@@ -1214,6 +1218,205 @@ public class ServiceForDataStoreServerTest extends SystemTestCase
                 // expected
             }
         }
+    }
+
+    @DataProvider
+    public Object[][] providerTestPerformEntityOperationsWithVocabularyUpdateAttributesAuthorization()
+    {
+        return new Object[][] {
+                { "ORGANISM", TEST_INSTANCE_ETLSERVER, null, null },
+                { "ORGANISM", TEST_INSTANCE_ETLSERVER, SYSTEM_USER, null },
+                { "ORGANISM", TEST_INSTANCE_ETLSERVER, TEST_USER, null },
+                { "ORGANISM", TEST_INSTANCE_ETLSERVER, TEST_GROUP_ADMIN,
+                        "None of method roles '[INSTANCE_ADMIN, INSTANCE_ETL_SERVER]' could be found in roles of user 'admin'" },
+
+                { "$PLATE_GEOMETRY", TEST_INSTANCE_ETLSERVER, null, "Internal vocabularies can be managed only by the system user" },
+                { "$PLATE_GEOMETRY", TEST_INSTANCE_ETLSERVER, SYSTEM_USER, null },
+                { "$PLATE_GEOMETRY", TEST_INSTANCE_ETLSERVER, TEST_USER, "Internal vocabularies can be managed only by the system user" },
+                { "$PLATE_GEOMETRY", TEST_INSTANCE_ETLSERVER, TEST_GROUP_ADMIN,
+                        "None of method roles '[INSTANCE_ADMIN, INSTANCE_ETL_SERVER]' could be found in roles of user 'admin'" },
+
+                { "ORGANISM", TEST_SPACE_ETLSERVER_TESTSPACE, null,
+                        "None of method roles '[INSTANCE_ADMIN, INSTANCE_ETL_SERVER]' could be found in roles of user 'test_space_etl_server'" },
+                { "ORGANISM", TEST_SPACE_ETLSERVER_TESTSPACE, SYSTEM_USER,
+                        "None of method roles '[INSTANCE_ADMIN, INSTANCE_ETL_SERVER]' could be found in roles of user 'test_space_etl_server'" },
+                { "ORGANISM", TEST_SPACE_ETLSERVER_TESTSPACE, TEST_USER,
+                        "None of method roles '[INSTANCE_ADMIN, INSTANCE_ETL_SERVER]' could be found in roles of user 'test_space_etl_server'" },
+                { "ORGANISM", TEST_SPACE_ETLSERVER_TESTSPACE, TEST_GROUP_ADMIN,
+                        "None of method roles '[INSTANCE_ADMIN, INSTANCE_ETL_SERVER]' could be found in roles of user 'test_space_etl_server'" },
+
+                { "$PLATE_GEOMETRY", TEST_SPACE_ETLSERVER_TESTSPACE, null,
+                        "None of method roles '[INSTANCE_ADMIN, INSTANCE_ETL_SERVER]' could be found in roles of user 'test_space_etl_server'" },
+                { "$PLATE_GEOMETRY", TEST_SPACE_ETLSERVER_TESTSPACE, SYSTEM_USER,
+                        "None of method roles '[INSTANCE_ADMIN, INSTANCE_ETL_SERVER]' could be found in roles of user 'test_space_etl_server'" },
+                { "$PLATE_GEOMETRY", TEST_SPACE_ETLSERVER_TESTSPACE, TEST_USER,
+                        "None of method roles '[INSTANCE_ADMIN, INSTANCE_ETL_SERVER]' could be found in roles of user 'test_space_etl_server'" },
+                { "$PLATE_GEOMETRY", TEST_SPACE_ETLSERVER_TESTSPACE, TEST_GROUP_ADMIN,
+                        "None of method roles '[INSTANCE_ADMIN, INSTANCE_ETL_SERVER]' could be found in roles of user 'test_space_etl_server'" },
+        };
+    }
+
+    @Test(dataProvider = "providerTestPerformEntityOperationsWithVocabularyUpdateAttributesAuthorization")
+    public void testPerformEntityOperationsWithVocabularyUpdateAttributesAuthorization(String vocabularyCode, String operationsPerformer,
+            String vocabularyUpdater, String expectedError)
+    {
+        SessionContextDTO performerSession = etlService.tryAuthenticate(operationsPerformer, PASSWORD);
+
+        VocabularyPE vocabulary = daoFactory.getVocabularyDAO().tryFindVocabularyByCode(vocabularyCode);
+
+        VocabularyUpdatesDTO updates =
+                new VocabularyUpdatesDTO(vocabulary.getId(), vocabulary.getCode(), "new description", vocabulary.isManagedInternally(),
+                        vocabulary.isChosenFromList(), vocabulary.getURLTemplate(), Collections.emptyList());
+
+        AtomicEntityOperationDetails operation =
+                new AtomicEntityOperationDetails(null, vocabularyUpdater, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
+                        Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
+                        Collections.emptyMap(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
+                        Collections.emptyList(),
+                        Collections.emptyList(), Arrays.asList(updates));
+
+        assertExceptionMessage(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    etlService.performEntityOperations(performerSession.getSessionToken(), operation);
+                }
+            }, expectedError);
+    }
+
+    @DataProvider
+    public Object[][] providerTestPerformEntityOperationsWithVocabularyUpdateNewTermsAuthorization()
+    {
+        return new Object[][] {
+                { "ORGANISM", TEST_INSTANCE_ETLSERVER, null, null },
+                { "ORGANISM", TEST_INSTANCE_ETLSERVER, SYSTEM_USER, null },
+                { "ORGANISM", TEST_INSTANCE_ETLSERVER, TEST_USER, null },
+                { "ORGANISM", TEST_INSTANCE_ETLSERVER, TEST_GROUP_ADMIN,
+                        "None of method roles '[INSTANCE_ADMIN, INSTANCE_ETL_SERVER]' could be found in roles of user 'admin'" },
+
+                { "$PLATE_GEOMETRY", TEST_INSTANCE_ETLSERVER, null, null },
+                { "$PLATE_GEOMETRY", TEST_INSTANCE_ETLSERVER, SYSTEM_USER, null },
+                { "$PLATE_GEOMETRY", TEST_INSTANCE_ETLSERVER, TEST_USER, null },
+                { "$PLATE_GEOMETRY", TEST_INSTANCE_ETLSERVER, TEST_GROUP_ADMIN,
+                        "None of method roles '[INSTANCE_ADMIN, INSTANCE_ETL_SERVER]' could be found in roles of user 'admin'" },
+
+                { "ORGANISM", TEST_SPACE_ETLSERVER_TESTSPACE, null,
+                        "None of method roles '[INSTANCE_ADMIN, INSTANCE_ETL_SERVER]' could be found in roles of user 'test_space_etl_server'" },
+                { "ORGANISM", TEST_SPACE_ETLSERVER_TESTSPACE, SYSTEM_USER,
+                        "None of method roles '[INSTANCE_ADMIN, INSTANCE_ETL_SERVER]' could be found in roles of user 'test_space_etl_server'" },
+                { "ORGANISM", TEST_SPACE_ETLSERVER_TESTSPACE, TEST_USER,
+                        "None of method roles '[INSTANCE_ADMIN, INSTANCE_ETL_SERVER]' could be found in roles of user 'test_space_etl_server'" },
+                { "ORGANISM", TEST_SPACE_ETLSERVER_TESTSPACE, TEST_GROUP_ADMIN,
+                        "None of method roles '[INSTANCE_ADMIN, INSTANCE_ETL_SERVER]' could be found in roles of user 'test_space_etl_server'" },
+
+                { "$PLATE_GEOMETRY", TEST_SPACE_ETLSERVER_TESTSPACE, null,
+                        "None of method roles '[INSTANCE_ADMIN, INSTANCE_ETL_SERVER]' could be found in roles of user 'test_space_etl_server'" },
+                { "$PLATE_GEOMETRY", TEST_SPACE_ETLSERVER_TESTSPACE, SYSTEM_USER,
+                        "None of method roles '[INSTANCE_ADMIN, INSTANCE_ETL_SERVER]' could be found in roles of user 'test_space_etl_server'" },
+                { "$PLATE_GEOMETRY", TEST_SPACE_ETLSERVER_TESTSPACE, TEST_USER,
+                        "None of method roles '[INSTANCE_ADMIN, INSTANCE_ETL_SERVER]' could be found in roles of user 'test_space_etl_server'" },
+                { "$PLATE_GEOMETRY", TEST_SPACE_ETLSERVER_TESTSPACE, TEST_GROUP_ADMIN,
+                        "None of method roles '[INSTANCE_ADMIN, INSTANCE_ETL_SERVER]' could be found in roles of user 'test_space_etl_server'" },
+        };
+    }
+
+    @Test(dataProvider = "providerTestPerformEntityOperationsWithVocabularyUpdateNewTermsAuthorization")
+    public void testPerformEntityOperationsWithVocabularyUpdateNewTermsAuthorization(String vocabularyCode, String operationsPerformer,
+            String vocabularyUpdater, String expectedError)
+    {
+        SessionContextDTO performerSession = etlService.tryAuthenticate(operationsPerformer, PASSWORD);
+
+        VocabularyPE vocabulary = daoFactory.getVocabularyDAO().tryFindVocabularyByCode(vocabularyCode);
+
+        // the new term is official (in VocabuaryBO the flag is always set to true)
+        NewVocabularyTerm newTerm = new NewVocabularyTerm("TEST_CODE", "test description", "test label", (long) vocabulary.getTerms().size() + 1);
+
+        VocabularyUpdatesDTO updates =
+                new VocabularyUpdatesDTO(vocabulary.getId(), vocabulary.getCode(), vocabulary.getDescription(), vocabulary.isManagedInternally(),
+                        vocabulary.isChosenFromList(), vocabulary.getURLTemplate(), Arrays.asList(newTerm));
+
+        AtomicEntityOperationDetails operation =
+                new AtomicEntityOperationDetails(null, vocabularyUpdater, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
+                        Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
+                        Collections.emptyMap(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
+                        Collections.emptyList(),
+                        Collections.emptyList(), Arrays.asList(updates));
+
+        assertExceptionMessage(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    etlService.performEntityOperations(performerSession.getSessionToken(), operation);
+                }
+            }, expectedError);
+    }
+
+    @DataProvider
+    public Object[][] providerTestPerformEntityOperationsWithVocabularyUpdateManagedInternallyAuthorization()
+    {
+        return new Object[][] {
+                { "ORGANISM", TEST_INSTANCE_ETLSERVER, null, "Internal vocabularies can be managed only by the system user" },
+                { "ORGANISM", TEST_INSTANCE_ETLSERVER, SYSTEM_USER, null },
+                { "ORGANISM", TEST_INSTANCE_ETLSERVER, TEST_USER, "Internal vocabularies can be managed only by the system user" },
+                { "ORGANISM", TEST_INSTANCE_ETLSERVER, TEST_GROUP_ADMIN,
+                        "None of method roles '[INSTANCE_ADMIN, INSTANCE_ETL_SERVER]' could be found in roles of user 'admin'" },
+
+                { "$PLATE_GEOMETRY", TEST_INSTANCE_ETLSERVER, null, "Internal vocabularies can be managed only by the system user" },
+                { "$PLATE_GEOMETRY", TEST_INSTANCE_ETLSERVER, SYSTEM_USER, null },
+                { "$PLATE_GEOMETRY", TEST_INSTANCE_ETLSERVER, TEST_USER, "Internal vocabularies can be managed only by the system user" },
+                { "$PLATE_GEOMETRY", TEST_INSTANCE_ETLSERVER, TEST_GROUP_ADMIN,
+                        "None of method roles '[INSTANCE_ADMIN, INSTANCE_ETL_SERVER]' could be found in roles of user 'admin'" },
+
+                { "ORGANISM", TEST_SPACE_ETLSERVER_TESTSPACE, null,
+                        "None of method roles '[INSTANCE_ADMIN, INSTANCE_ETL_SERVER]' could be found in roles of user 'test_space_etl_server'" },
+                { "ORGANISM", TEST_SPACE_ETLSERVER_TESTSPACE, SYSTEM_USER,
+                        "None of method roles '[INSTANCE_ADMIN, INSTANCE_ETL_SERVER]' could be found in roles of user 'test_space_etl_server'" },
+                { "ORGANISM", TEST_SPACE_ETLSERVER_TESTSPACE, TEST_USER,
+                        "None of method roles '[INSTANCE_ADMIN, INSTANCE_ETL_SERVER]' could be found in roles of user 'test_space_etl_server'" },
+                { "ORGANISM", TEST_SPACE_ETLSERVER_TESTSPACE, TEST_GROUP_ADMIN,
+                        "None of method roles '[INSTANCE_ADMIN, INSTANCE_ETL_SERVER]' could be found in roles of user 'test_space_etl_server'" },
+
+                { "$PLATE_GEOMETRY", TEST_SPACE_ETLSERVER_TESTSPACE, null,
+                        "None of method roles '[INSTANCE_ADMIN, INSTANCE_ETL_SERVER]' could be found in roles of user 'test_space_etl_server'" },
+                { "$PLATE_GEOMETRY", TEST_SPACE_ETLSERVER_TESTSPACE, SYSTEM_USER,
+                        "None of method roles '[INSTANCE_ADMIN, INSTANCE_ETL_SERVER]' could be found in roles of user 'test_space_etl_server'" },
+                { "$PLATE_GEOMETRY", TEST_SPACE_ETLSERVER_TESTSPACE, TEST_USER,
+                        "None of method roles '[INSTANCE_ADMIN, INSTANCE_ETL_SERVER]' could be found in roles of user 'test_space_etl_server'" },
+                { "$PLATE_GEOMETRY", TEST_SPACE_ETLSERVER_TESTSPACE, TEST_GROUP_ADMIN,
+                        "None of method roles '[INSTANCE_ADMIN, INSTANCE_ETL_SERVER]' could be found in roles of user 'test_space_etl_server'" },
+        };
+    }
+
+    @Test(dataProvider = "providerTestPerformEntityOperationsWithVocabularyUpdateManagedInternallyAuthorization")
+    public void testPerformEntityOperationsWithVocabularyUpdateManagedInternallyAuthorization(String vocabularyCode, String operationsPerformer,
+            String vocabularyUpdater, String expectedError)
+    {
+        SessionContextDTO performerSession = etlService.tryAuthenticate(operationsPerformer, PASSWORD);
+
+        VocabularyPE vocabulary = daoFactory.getVocabularyDAO().tryFindVocabularyByCode(vocabularyCode);
+
+        VocabularyUpdatesDTO updates =
+                new VocabularyUpdatesDTO(vocabulary.getId(), vocabulary.getCode(), vocabulary.getDescription(),
+                        vocabulary.isManagedInternally() ? false : true,
+                        vocabulary.isChosenFromList(), vocabulary.getURLTemplate(), Collections.emptyList());
+
+        AtomicEntityOperationDetails operation =
+                new AtomicEntityOperationDetails(null, vocabularyUpdater, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
+                        Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
+                        Collections.emptyMap(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
+                        Collections.emptyList(),
+                        Collections.emptyList(), Arrays.asList(updates));
+
+        assertExceptionMessage(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    etlService.performEntityOperations(performerSession.getSessionToken(), operation);
+                }
+            }, expectedError);
     }
 
     @Test(dataProviderClass = ProjectAuthorizationUser.class, dataProvider = ProjectAuthorizationUser.PROVIDER_WITH_ETL)

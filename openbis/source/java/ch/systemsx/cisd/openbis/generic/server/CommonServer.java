@@ -1438,7 +1438,6 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
         assert sessionToken != null : "Unspecified session token";
         assert vocabularyId != null : "Unspecified vocabulary id";
         assert code != null : "Unspecified code";
-        assert previousTermOrdinal != null : "Unspecified previous term ordinal";
 
         final Session session = getSession(sessionToken);
         final IVocabularyBO vocabularyBO = businessObjectFactory.createVocabularyBO(session);

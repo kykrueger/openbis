@@ -23,6 +23,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import org.testng.annotations.DataProvider;
+
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
@@ -50,8 +52,26 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.search.VocabularyTerm
 /**
  * @author pkupczyk
  */
-public class AbstractVocabularyTermTest extends AbstractTest
+public class AbstractVocabularyTest extends AbstractTest
 {
+
+    public static final String PROVIDE_USERS_NOT_ALLOWED_TO_MANAGE_VOCABULARIES = "usersNotAllowedToManageVocabularies";
+
+    public static final String PROVIDE_USERS_NOT_ALLOWED_TO_MANAGE_INTERNAL_VOCABULARIES = "usersNotAllowedToManageInternalVocabularies";
+
+    @DataProvider(name = PROVIDE_USERS_NOT_ALLOWED_TO_MANAGE_VOCABULARIES)
+    Object[][] usersNotAllowedToManageVocabularies()
+    {
+        return createTestUsersProvider(TEST_GROUP_ADMIN, TEST_GROUP_OBSERVER, TEST_GROUP_POWERUSER,
+                TEST_INSTANCE_OBSERVER, TEST_POWER_USER_CISD, TEST_SPACE_USER);
+    }
+
+    @DataProvider(name = PROVIDE_USERS_NOT_ALLOWED_TO_MANAGE_INTERNAL_VOCABULARIES)
+    Object[][] usersNotAllowedToManageInternalVocabularies()
+    {
+        return createTestUsersProvider(TEST_USER, TEST_GROUP_ADMIN, TEST_GROUP_OBSERVER, TEST_GROUP_POWERUSER,
+                TEST_INSTANCE_OBSERVER, TEST_POWER_USER_CISD, TEST_SPACE_USER);
+    }
 
     protected List<VocabularyTerm> listTerms(IVocabularyId vocabularyId)
     {

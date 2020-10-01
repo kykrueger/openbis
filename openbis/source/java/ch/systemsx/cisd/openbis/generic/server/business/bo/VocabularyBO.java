@@ -371,6 +371,8 @@ public class VocabularyBO extends AbstractBusinessObject implements IVocabularyB
             vocabularyPE.setURLTemplate(updates.getUrlTemplate());
             vocabularyPE.setChosenFromList(updates.isChosenFromList());
             vocabularyPE.setManagedInternally(updates.isManagedInternally());
+
+            new InternalVocabularyAuthorization().canUpdateVocabulary(session, vocabularyPE);
         }
 
         for (NewVocabularyTerm t : updates.getNewTerms())
