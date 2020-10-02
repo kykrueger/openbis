@@ -213,6 +213,21 @@ class Transaction:
 
 
     def add(self, entity_obj):
+        """Collect the creations or updates of entities.
+        self.entities = {
+            "sample": {
+                {
+                    "create": [...],
+                    "update": [...]
+                },
+            },
+            "dataSet": {
+                {
+                    "update": [...]
+                }
+            }
+        }
+        """
 
         if not entity_obj.entity in self.entities:
             self.entities[entity_obj.entity] = defaultdict(list)
@@ -222,6 +237,10 @@ class Transaction:
 
 
     def commit(self):
+        """Merge the individual requests to Make one single request.
+        For each entity-type and mode (create, update) an individual request will be sent,
+        as the method name differs.
+        """
 
         import copy
         for entity_type in self.entities:
@@ -260,6 +279,11 @@ class Transaction:
                             request['params'][1][0]
                         )
 
-                    resp = entity.openbis._post_request(entity.openbis.as_v3, batch_request)
-                    if VERBOSE: print(f"{i} {entity_type}(s) {mode}d.")
+                    try:
+                        resp = entity.openbis._post_request(entity.openbis.as_v3, batch_request)
+                        if VERBOSE: print(f"{i+1} {entity_type}(s) {mode}d.")
+                    except ValueError as err:
+                        if VERBOSE: 
+                            print(f"ERROR: {mode} of {i+1} {entity_type}(s) FAILED")
+                        raise ValueError(err)
 
