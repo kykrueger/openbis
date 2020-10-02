@@ -499,7 +499,8 @@ sample.delete('deleted for some reason')
 
 Creating a sample takes some time. If you need to create many samples, you might want to create them in one transaction. This will transfer all your sample data at once. The Upside of this is the **gain in speed**. The downside: this is a **all-or-nothing** operation, which means, either all samples will be registered or none (if any error occurs).
 
-**Note:** a batch is bound to an entity, you cannot use the same batch for different entities. For example, you cannot mix samples and datasets in one batch operation.
+You can mix creation or update of existing samples within the transaction.
+
 
 ```
 sample1 = o.new_sample(...)
