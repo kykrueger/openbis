@@ -5,8 +5,9 @@ pyBIS is a Python module for interacting with openBIS. pyBIS is designed to be m
 ## Dependencies and Requirements
 - pyBIS relies the openBIS API v3
 - openBIS version 16.05.2 or newer is required
-- 18.06.2 or later is recommended
-- pyBIS uses Python 3.5 or newer and the Pandas module
+- 19.06.0 or later is recommended
+- pyBIS uses Python 3.6 or newer
+
 
 ## Installation
 
@@ -243,6 +244,9 @@ sample_type = o.new_sample_type(
 )
 sample_type.save()
 ```
+
+
+
 
 ## assign and revoke properties to sample type / object type
 
@@ -490,6 +494,23 @@ sample.download_attachments()
 sample.add_attachment('testfile.xls')
 
 sample.delete('deleted for some reason')
+```
+
+## create many samples in a batch
+
+Creating a sample takes some time. If you need to create many samples, you might want to create them in batches. This will transfer all your sample data at once. The Upside of this is the **gain in speed**. The downside: this is a **all-or-nothing** operation, which means, either all samples will be registered or none (if any error occurs).
+
+**Note:** a batch is bound to an entity, you cannot use the same batch for different entities. For example, you cannot mix samples and datasets in one batch operation.
+
+```
+sample1 = o.new_sample(...)
+sample2 = o.new_sample(...)
+sample3 = o.new_sample(...)
+
+batch = o.new_batch(sample1, sample2)
+batch.add_sample(sample3)
+
+batch.commit()
 ```
 
 ### parents, children, components and container
