@@ -43,6 +43,12 @@ public abstract class FetchOptions<OBJECT> implements Serializable
         return from;
     }
 
+    /**
+     *
+     * @return
+     * @deprecated caching modes are ignored
+     */
+    @Deprecated
     public FetchOptions<OBJECT> cacheMode(CacheMode mode)
     {
         if (mode == null)
