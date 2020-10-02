@@ -1065,6 +1065,28 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
         }
     }
 
+    @Test(dataProvider = "withBooleanPropertyExamples")
+    public void testWithAnyBooleanProperty(final boolean value, final String queryString, final boolean found)
+    {
+        // Given
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        final PropertyTypePermId propertyTypeId = createAPropertyType(sessionToken, DataType.BOOLEAN);
+        final ObjectPermId entityPermId = createEntity(sessionToken, propertyTypeId, String.valueOf(value));
+
+        final AbstractEntitySearchCriteria<?> searchCriteria = createSearchCriteria();
+        new BooleanQueryInjector(searchCriteria, null).buildCriteria(queryString);
+
+        // When
+        final List<? extends IPermIdHolder> entities = search(sessionToken, searchCriteria);
+
+        // Then
+        assertEquals(entities.size(), found ? 1 : 0);
+        if (found)
+        {
+            assertEquals(entities.get(0).getPermId().toString(), entityPermId.getPermId());
+        }
+    }
+
     private ObjectPermId createEntity(String sessionToken, PropertyTypePermId propertyTypeId, String value)
     {
         EntityTypePermId entityTypeId = createEntityType(sessionToken, propertyTypeId);
@@ -1396,8 +1418,9 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
         protected void injectQuery(final Operator operator, final String operand)
         {
             final boolean value = Boolean.parseBoolean(operand);
-            final BooleanPropertySearchCriteria criteria = searchCriteria.withBooleanProperty(
-                    propertyTypeId.getPermId());
+            final BooleanFieldSearchCriteria criteria = propertyTypeId != null
+                    ? searchCriteria.withBooleanProperty(propertyTypeId.getPermId())
+                    : searchCriteria.withAnyBooleanProperty();
             if (operator == Operator.EQUAL)
             {
                 criteria.thatEquals(value);

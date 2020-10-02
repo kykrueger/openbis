@@ -108,6 +108,8 @@ public class CriteriaMapper {
                 new EnumFieldSearchConditionTranslator();
 
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(AnyFieldSearchCriteria.class, new AnyFieldSearchConditionTranslator());
+        CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(AnyBooleanPropertySearchCriteria.class,
+                booleanFieldSearchConditionTranslator);
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(AnyDatePropertySearchCriteria.class,
                 dateFieldSearchConditionTranslator);
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(AnyNumberPropertySearchCriteria.class,

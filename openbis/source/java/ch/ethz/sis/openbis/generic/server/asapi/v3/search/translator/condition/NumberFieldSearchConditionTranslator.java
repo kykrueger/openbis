@@ -121,9 +121,7 @@ public class NumberFieldSearchConditionTranslator implements IConditionTranslato
             case ANY_PROPERTY:
             {
                 final AbstractNumberValue value = criterion.getFieldValue();
-                final boolean internalProperty = TranslatorUtils.isPropertyInternal(criterion.getFieldName());
-                translateNumberProperty(tableMapper, args, sqlBuilder, aliases,
-                        value, null, internalProperty);
+                translateNumberProperty(tableMapper, args, sqlBuilder, aliases, value, null, null);
                 break;
             }
             
@@ -136,12 +134,13 @@ public class NumberFieldSearchConditionTranslator implements IConditionTranslato
 
     static void translateNumberProperty(final TableMapper tableMapper, final List<Object> args,
             final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases, final AbstractNumberValue value,
-            final String propertyName, final boolean internalProperty)
+            final String propertyName, final Boolean internalProperty)
     {
-        final JoinInformation joinInformation = aliases.get(tableMapper.getAttributeTypesTable());
-        final String entityTypesSubTableAlias = joinInformation.getSubTableAlias();
+        final JoinInformation attributeTypesJoinInformation = aliases.get(tableMapper.getAttributeTypesTable());
+        final String entityTypesSubTableAlias = attributeTypesJoinInformation.getSubTableAlias();
 
-        sqlBuilder.append(entityTypesSubTableAlias).append(PERIOD).append(joinInformation.getSubTableIdField())
+        sqlBuilder.append(entityTypesSubTableAlias).append(PERIOD)
+                .append(attributeTypesJoinInformation.getSubTableIdField())
                 .append(SP).append(IS_NOT_NULL).append(SP).append(AND).append(SP).append(LP);
 
         if (value != null)
@@ -149,12 +148,16 @@ public class NumberFieldSearchConditionTranslator implements IConditionTranslato
             sqlBuilder.append(CASE).append(SP).append(WHEN).append(SP);
         }
 
-        TranslatorUtils.appendInternalExternalConstraint(sqlBuilder, args, entityTypesSubTableAlias, internalProperty);
-        sqlBuilder.append(SP).append(AND);
+        if (internalProperty != null)
+        {
+            TranslatorUtils.appendInternalExternalConstraint(sqlBuilder, args, entityTypesSubTableAlias,
+                    internalProperty);
+            sqlBuilder.append(SP).append(AND);
+        }
 
         if (propertyName != null)
         {
-            sqlBuilder.append(SP).append(joinInformation.getSubTableAlias())
+            sqlBuilder.append(SP).append(attributeTypesJoinInformation.getSubTableAlias())
                     .append(PERIOD).append(ColumnNames.CODE_COLUMN).append(SP).append(EQ).append(SP).append(QU);
             args.add(propertyName);
 

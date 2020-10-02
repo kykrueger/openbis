@@ -182,8 +182,8 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
 
                     sqlBuilder.append(CASE);
                     DateFieldSearchConditionTranslator.appendWhenForDateOrTimestampProperties(sqlBuilder, args,
-                            tableMapper, convertStringValueToDateValue(value), aliases, null, propertyName, internalProperty, entityTypesSubTableAlias, bareDateValue,
-                            dataType.toString());
+                            tableMapper, convertStringValueToDateValue(value), aliases, null, propertyName,
+                            internalProperty, entityTypesSubTableAlias, bareDateValue, dataType.toString());
                     sqlBuilder.append(SP).append(END);
                     sqlBuilder.append(RP);
                     return;
@@ -191,16 +191,22 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
             }
 
             sqlBuilder.append(CASE).append(SP).append(WHEN).append(SP);
+
+            TranslatorUtils.appendInternalExternalConstraint(sqlBuilder, args, entityTypesSubTableAlias,
+                    internalProperty);
+
+            if (propertyName != null)
+            {
+                sqlBuilder.append(SP).append(AND).append(SP);
+            }
         } else
         {
             casting = null;
         }
 
-        TranslatorUtils.appendInternalExternalConstraint(sqlBuilder, args, entityTypesSubTableAlias, internalProperty);
-
         if (propertyName != null)
         {
-            sqlBuilder.append(SP).append(AND).append(SP).append(entityTypesSubTableAlias).append(PERIOD)
+            sqlBuilder.append(entityTypesSubTableAlias).append(PERIOD)
                     .append(CODE_COLUMN).append(SP).append(EQ).append(SP).append(QU);
             args.add(propertyName);
         }
