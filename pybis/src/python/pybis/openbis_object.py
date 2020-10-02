@@ -198,3 +198,77 @@ class OpenBisObject():
             new_entity_data = get_single_item(self.permId, only_data=True)
             self._set_data(new_entity_data)
 
+
+class Transaction:
+    def __init__(self, *entities):
+
+        self.entities = []
+
+        if not entities:
+            return
+
+        for entity in entities:
+            self.add(entity)
+
+
+    def add(self, entity):
+
+        if hasattr(self, 'entity_type'):
+            if entity.entity != self.entity_type:
+                raise ValueError(f"This transaction is for {self.entity_type}s only. For {entity.entity}s please create a separate transaction")
+        else:
+            # the first entity sets the entity type
+            setattr(self, 'entity_type', entity.entity)
+
+        if hasattr(self, 'is_new'):
+            if entity.is_new != self.is_new:
+                action = "new" if self.is_new else "updating"
+                other_action = "updating" if self.is_new else "new"
+                raise ValueError(f"This transaction is for {action} {self.entity_type}s only. For {other_action} {entity.entity}s, create a separate transaction (i.e. do not mix update and creation in one transaction)")
+        else:
+            # the first entity sets the entity type
+            setattr(self, 'is_new', entity.is_new)
+
+        self.entities.append(entity)
+
+
+    def save(self):
+
+        for entity in self.entities:
+        
+            get_single_item = entity._get_single_item_method()
+            # check for mandatory properties before saving the entity
+            props = None
+            if entity.props:
+                for prop_name, prop in entity.props._property_names.items():
+                    if prop['mandatory']:
+                        if getattr(entity.props, prop_name) is None \
+                        or getattr(entity.props, prop_name) == "":
+                            raise ValueError(
+                                "Property '{}' is mandatory and must not be None".format(prop_name)
+                            )
+
+                props = entity.p._all_props()
+
+            # NEW
+            if entity.is_new:
+                request = entity._new_attrs()
+                if props: request["params"][1][0]["properties"] = props
+
+                resp = entity.openbis._post_request(entity.openbis.as_v3, request)
+
+                if VERBOSE: print("{} successfully created.".format(entity.entity))
+                new_entity_data = get_single_item(resp[0]['permId'], only_data=True)
+                entity._set_data(new_entity_data)
+                return entity
+
+            # UPDATE
+            else:
+                request = entity._up_attrs(method_name=None, permId=entity._permId)
+                if props: request["params"][1][0]["properties"] = props
+
+                resp = entity.openbis._post_request(entity.openbis.as_v3, request)
+                if VERBOSE: print("{} successfully updated.".format(entity.entity))
+                new_entity_data = get_single_item(entity.permId, only_data=True)
+                entity._set_data(new_entity_data)
+
