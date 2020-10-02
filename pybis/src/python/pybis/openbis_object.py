@@ -2,6 +2,7 @@ from .property import PropertyHolder
 from .attribute import AttrHolder
 from .utils import VERBOSE
 from .definitions import get_definition_for_entity
+from collections import defaultdict
 
 class OpenBisObject():
 
@@ -202,7 +203,7 @@ class OpenBisObject():
 class Transaction:
     def __init__(self, *entities):
 
-        self.entities = []
+        self.entities = {}
 
         if not entities:
             return
@@ -211,64 +212,54 @@ class Transaction:
             self.add(entity)
 
 
-    def add(self, entity):
+    def add(self, entity_obj):
 
-        if hasattr(self, 'entity_type'):
-            if entity.entity != self.entity_type:
-                raise ValueError(f"This transaction is for {self.entity_type}s only. For {entity.entity}s please create a separate transaction")
-        else:
-            # the first entity sets the entity type
-            setattr(self, 'entity_type', entity.entity)
+        if not entity_obj.entity in self.entities:
+            self.entities[entity_obj.entity] = defaultdict(list)
 
-        if hasattr(self, 'is_new'):
-            if entity.is_new != self.is_new:
-                action = "new" if self.is_new else "updating"
-                other_action = "updating" if self.is_new else "new"
-                raise ValueError(f"This transaction is for {action} {self.entity_type}s only. For {other_action} {entity.entity}s, create a separate transaction (i.e. do not mix update and creation in one transaction)")
-        else:
-            # the first entity sets the entity type
-            setattr(self, 'is_new', entity.is_new)
-
-        self.entities.append(entity)
+        mode = "create" if entity_obj.is_new else "update"
+        self.entities[entity_obj.entity][mode].append(entity_obj)
 
 
-    def save(self):
+    def commit(self):
 
-        for entity in self.entities:
-        
-            get_single_item = entity._get_single_item_method()
-            # check for mandatory properties before saving the entity
-            props = None
-            if entity.props:
-                for prop_name, prop in entity.props._property_names.items():
-                    if prop['mandatory']:
-                        if getattr(entity.props, prop_name) is None \
-                        or getattr(entity.props, prop_name) == "":
-                            raise ValueError(
-                                "Property '{}' is mandatory and must not be None".format(prop_name)
-                            )
+        import copy
+        for entity_type in self.entities:
+            for mode in self.entities[entity_type]:
 
-                props = entity.p._all_props()
+                request_coll = []
+                for entity in self.entities[entity_type][mode]:
+                    props = None
+                    if entity.props:
+                        for prop_name, prop in entity.props._property_names.items():
+                            if prop['mandatory']:
+                                if getattr(entity.props, prop_name) is None \
+                                or getattr(entity.props, prop_name) == "":
+                                    raise ValueError(
+                                        "Property '{}' is mandatory and must not be None".format(prop_name)
+                                    )
+                    props = entity.p._all_props()
 
-            # NEW
-            if entity.is_new:
-                request = entity._new_attrs()
-                if props: request["params"][1][0]["properties"] = props
+                    if mode == "create":
+                        request = entity._new_attrs()
+                        if props: request["params"][1][0]["properties"] = props
 
-                resp = entity.openbis._post_request(entity.openbis.as_v3, request)
+                    elif mode == "update":
+                        request = entity._up_attrs(method_name=None, permId=entity._permId)
+                        if props: request["params"][1][0]["properties"] = props
 
-                if VERBOSE: print("{} successfully created.".format(entity.entity))
-                new_entity_data = get_single_item(resp[0]['permId'], only_data=True)
-                entity._set_data(new_entity_data)
-                return entity
+                    else:
+                        raise ValueError(f"Unkown mode: {mode}")
+                    request_coll.append(request)
 
-            # UPDATE
-            else:
-                request = entity._up_attrs(method_name=None, permId=entity._permId)
-                if props: request["params"][1][0]["properties"] = props
+                if request_coll:
+                    batch_request = copy.deepcopy(request_coll[0])
+                    for i, request in enumerate(request_coll):
+                        if i == 0: continue
+                        batch_request['params'][1].append(
+                            request['params'][1][0]
+                        )
 
-                resp = entity.openbis._post_request(entity.openbis.as_v3, request)
-                if VERBOSE: print("{} successfully updated.".format(entity.entity))
-                new_entity_data = get_single_item(entity.permId, only_data=True)
-                entity._set_data(new_entity_data)
+                    resp = entity.openbis._post_request(entity.openbis.as_v3, batch_request)
+                    if VERBOSE: print(f"{i} {entity_type}(s) {mode}d.")
 
