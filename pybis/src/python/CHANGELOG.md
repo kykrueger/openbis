@@ -1,3 +1,9 @@
+## Changes with pybis-1.16.0
+
+- added support for batch creation of samples
+- changed Python minimum requirement to Python 3.6
+- new vocabulary and new property_type: internalNameSpace was removed, will cause possible incompatibilities with older versions of openBIS.
+
 ## Changes with pybis-1.15.1
 
 - added support for date-searching
