@@ -33,7 +33,7 @@ from .utils import parse_jackson, check_datatype, split_identifier, format_times
 from .utils import extract_attr, extract_permid, extract_code,extract_deletion,extract_identifier,extract_nested_identifier,extract_nested_permid, extract_nested_permids, extract_property_assignments,extract_role_assignments,extract_person, extract_person_details,extract_id,extract_userId
 from .entity_type import EntityType, SampleType, DataSetType, MaterialType, ExperimentType
 from .vocabulary import Vocabulary, VocabularyTerm
-from .openbis_object import OpenBisObject 
+from .openbis_object import OpenBisObject, Transaction
 from .definitions import openbis_definitions, get_definition_for_entity, fetch_option, get_fetchoption_for_entity, get_type_for_entity, get_method_for_entity, get_fetchoptions
 
 
@@ -4035,10 +4035,19 @@ class Openbis:
         if 'collection' in kwargs:
             kwargs['experiment'] = kwargs['collection']
             kwargs.pop('collection', None)
-        sample_type = self.get_sample_type(type)
+
+        if isinstance(type, str):
+            sample_type = self.get_sample_type(type)
+        else:
+            sample_type = type
         return Sample(self, type=sample_type, project=project, data=None, props=props, **kwargs)
 
     new_object = new_sample # Alias
+
+
+    def new_transaction(self, *entities):
+        return Transaction(*entities)
+
 
     def new_sample_type(self,
         code, 
@@ -4115,10 +4124,17 @@ class Openbis:
         )
 
     def new_dataset(self, type=None, kind='PHYSICAL_DATA', files=None, props=None, folder=None, **kwargs):
-        """ Creates a new dataset of a given sample type.
+        """ Creates a new dataset of a given type.
         """
 
         type_obj = self.get_dataset_type(type.upper())
+        if isinstance(type, str):
+            type_obj = self.get_dataset_type(type.upper())
+        if isinstance(type, None):
+            raise ValueError("Please provide a dataSet type")
+        else:
+            type_obj = type
+
         if 'object' in kwargs:
             kwargs['sample'] = kwargs['object']
             kwargs.pop('object', None)
