@@ -527,8 +527,8 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
     }
 
     @Test(dataProvider = "withDateOrTimestampPropertyAsObjectExamples")
-    public void testWithDateOrTimestampPropertyAsObject(final DataType dataType, final Date value, final String queryString,
-            final boolean found)
+    public void testWithDateOrTimestampPropertyAsObject(final DataType dataType, final Date value,
+            final String queryString, final boolean found)
     {
         final String sessionToken = v3api.login(TEST_USER, PASSWORD);
         final PropertyTypePermId propertyTypeId = createAPropertyType(sessionToken, dataType);
@@ -542,15 +542,13 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
         new DateQueryInjector(dateSearchStringPropertyCriteria, propertyTypeId, null).buildCriteria(queryString);
 
         // When
-        final List<? extends IPermIdHolder> dateEntitiesFromStringPropertyCriteria = search(sessionToken,
-                dateSearchStringPropertyCriteria);
+        final List<? extends IPermIdHolder> dateEntities = search(sessionToken, dateSearchStringPropertyCriteria);
 
         // Then
-        assertEquals(dateEntitiesFromStringPropertyCriteria.size(), found ? 1 : 0);
+        assertEquals(dateEntities.size(), found ? 1 : 0);
         if (found)
         {
-            assertEquals(dateEntitiesFromStringPropertyCriteria.get(0).getPermId().toString(),
-                    entityPermId.getPermId());
+            assertEquals(dateEntities.get(0).getPermId().toString(), entityPermId.getPermId());
         }
     }
 
@@ -1028,8 +1026,8 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
     }
 
     @Test(dataProvider = "withAnyDateOrTimestampPropertyAsObjectExamples")
-    public void testWithAnyDateOrTimestampPropertyAsObject(final DataType dataType, final Date value, final String queryString,
-            final boolean found)
+    public void testWithAnyDateOrTimestampPropertyAsObject(final DataType dataType, final Date value,
+            final String queryString, final boolean found)
     {
         final String sessionToken = v3api.login(TEST_USER, PASSWORD);
         final PropertyTypePermId propertyTypeId = createAPropertyType(sessionToken, dataType);
@@ -1043,15 +1041,13 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
         new DateQueryInjector(dateSearchStringPropertyCriteria, null, null).buildCriteria(queryString);
 
         // When
-        final List<? extends IPermIdHolder> dateEntitiesFromStringPropertyCriteria = search(sessionToken,
-                dateSearchStringPropertyCriteria);
+        final List<? extends IPermIdHolder> dateEntities = search(sessionToken, dateSearchStringPropertyCriteria);
 
         // Then
-        assertEquals(dateEntitiesFromStringPropertyCriteria.size(), found ? 1 : 0);
+        assertEquals(dateEntities.size(), found ? 1 : 0);
         if (found)
         {
-            assertEquals(dateEntitiesFromStringPropertyCriteria.get(0).getPermId().toString(),
-                    entityPermId.getPermId());
+            assertEquals(dateEntities.get(0).getPermId().toString(), entityPermId.getPermId());
         }
     }
 
