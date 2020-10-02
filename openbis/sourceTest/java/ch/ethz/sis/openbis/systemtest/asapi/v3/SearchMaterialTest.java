@@ -250,31 +250,6 @@ public class SearchMaterialTest extends AbstractTest
     }
 
     @Test
-    public void testSearchWithBooleanProperty()
-    {
-        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
-
-        final PropertyTypePermId propertyType = createABooleanPropertyType(sessionToken, "BOOLEAN");
-        final EntityTypePermId materialType = createAMaterialType(sessionToken, false, propertyType);
-
-        final MaterialCreation materialCreation = new MaterialCreation();
-        materialCreation.setCode("BOOLEAN_PROPERTY_TEST");
-        materialCreation.setTypeId(materialType);
-        materialCreation.setProperty("BOOLEAN", "false");
-
-        final MaterialPermId createdMaterialPermId = v3api.createMaterials(sessionToken,
-                Collections.singletonList(materialCreation)).get(0);
-
-        final MaterialSearchCriteria falseValueCriterion = new MaterialSearchCriteria();
-        falseValueCriterion.withProperty("BOOLEAN").thatEquals("false");
-        testSearch(TEST_USER, falseValueCriterion, createdMaterialPermId);
-
-        final MaterialSearchCriteria trueValueCriterion = new MaterialSearchCriteria();
-        trueValueCriterion.withProperty("BOOLEAN").thatEquals("true");
-        testSearch(TEST_USER, trueValueCriterion);
-    }
-
-    @Test
     public void testSearchWithBooleanPropertyMatchingSubstring()
     {
         final String sessionToken = v3api.login(TEST_USER, PASSWORD);
@@ -1299,10 +1274,13 @@ public class SearchMaterialTest extends AbstractTest
     @Test(dataProvider = "withBooleanPropertyExamples")
     public void testSearchWithBooleanProperty(final boolean value, final String queryString, final boolean found)
     {
-        // Given
         final String sessionToken = v3api.login(TEST_USER, PASSWORD);
         final PropertyTypePermId propertyTypeId = createAPropertyType(sessionToken, DataType.BOOLEAN);
         final MaterialPermId entityPermId = createMaterial(sessionToken, propertyTypeId, String.valueOf(value));
+
+        // Using withBooleanProperty()
+
+        // Given
         final MaterialSearchCriteria searchCriteria = new MaterialSearchCriteria();
         new AbstractSearchPropertyTest.BooleanQueryInjector(searchCriteria, propertyTypeId).buildCriteria(queryString);
 
@@ -1315,6 +1293,24 @@ public class SearchMaterialTest extends AbstractTest
         if (found)
         {
             assertEquals(entities.get(0).getPermId().toString(), entityPermId.toString());
+        }
+
+        // Using withProperty()
+
+        // Given
+        final MaterialSearchCriteria withPropertySearchCriteria = new MaterialSearchCriteria();
+        new AbstractSearchPropertyTest.StringQueryInjector(withPropertySearchCriteria, propertyTypeId)
+                .buildCriteria(queryString);
+
+        // When
+        final List<? extends IPermIdHolder> withPropertyEntities = searchMaterials(sessionToken,
+                withPropertySearchCriteria, new MaterialFetchOptions());
+
+        // Then
+        assertEquals(withPropertyEntities.size(), found ? 1 : 0);
+        if (found)
+        {
+            assertEquals(withPropertyEntities.get(0).getPermId().toString(), entityPermId.toString());
         }
     }
 

@@ -263,6 +263,7 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
         final String sessionToken = v3api.login(TEST_USER, PASSWORD);
         final PropertyTypePermId propertyTypeId = createAPropertyType(sessionToken, DataType.BOOLEAN);
         final ObjectPermId entityPermId = createEntity(sessionToken, propertyTypeId, String.valueOf(value));
+
         final AbstractEntitySearchCriteria<?> searchCriteria = createSearchCriteria();
         new BooleanQueryInjector(searchCriteria, propertyTypeId).buildCriteria(queryString);
 
@@ -274,6 +275,19 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
         if (found)
         {
             assertEquals(entities.get(0).getPermId().toString(), entityPermId.getPermId());
+        }
+
+        final AbstractEntitySearchCriteria<?> withPropertySearchCriteria = createSearchCriteria();
+        new BooleanQueryInjector(withPropertySearchCriteria, propertyTypeId).buildCriteria(queryString);
+
+        // When
+        final List<? extends IPermIdHolder> withPropertyEntities = search(sessionToken, withPropertySearchCriteria);
+
+        // Then
+        assertEquals(withPropertyEntities.size(), found ? 1 : 0);
+        if (found)
+        {
+            assertEquals(withPropertyEntities.get(0).getPermId().toString(), entityPermId.getPermId());
         }
     }
 
