@@ -10,26 +10,23 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.io.FilenameUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.annotation.Transactional;
-import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.IApplicationServerInternalApi;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 
 @ContextConfiguration(locations = "classpath:applicationContext.xml")
 @Transactional(transactionManager = "transaction-manager")
 @Rollback
-public class ImportDatasetTypesTest extends AbstractImportTest {
+public class ImportDatasetTypesTest extends AbstractImportTest
+{
 
     private static final String DATASET_TYPES_XLS = "dataset_types/normal_dataset.xls";
 
@@ -44,14 +41,19 @@ public class ImportDatasetTypesTest extends AbstractImportTest {
     private static String FILES_DIR;
 
     @BeforeClass
-    public void setupClass() throws IOException {
+    public void setupClass() throws IOException
+    {
         String f = ImportDatasetTypesTest.class.getName().replace(".", "/");
         FILES_DIR = f.substring(0, f.length() - ImportDatasetTypesTest.class.getSimpleName().length()) + "/test_files/";
     }
 
     @Test
     @DirtiesContext
-    public void testNormalDatasetTypesAreCreated() throws Exception {
+    public void testNormalDatasetTypesAreCreated() throws Exception
+    {
+        // the Excel contains internally managed property types which can be only manipulated by the system user
+        sessionToken = v3api.loginAsSystem();
+
         // GIVEN
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, DATASET_TYPES_XLS)));
         // WHEN
@@ -81,7 +83,8 @@ public class ImportDatasetTypesTest extends AbstractImportTest {
 
     @Test
     @DirtiesContext
-    public void testDatasetTypesWithoutPropertiesTypesAreCreated() throws IOException {
+    public void testDatasetTypesWithoutPropertiesTypesAreCreated() throws IOException
+    {
         // GIVEN
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, DATASET_WITHOUT_PROPERTIES)));
         // WHEN
@@ -93,7 +96,8 @@ public class ImportDatasetTypesTest extends AbstractImportTest {
 
     @Test
     @DirtiesContext
-    public void testDatasetTypesWithValidationScript() throws Exception {
+    public void testDatasetTypesWithValidationScript() throws Exception
+    {
         // GIVEN
         TestUtils.createFrom(v3api, sessionToken, TestUtils.getValidationPluginMap(),
                 Paths.get(FilenameUtils.concat(FILES_DIR, DATASET_WITH_VALIDATION_SCRIPT)));
@@ -105,7 +109,11 @@ public class ImportDatasetTypesTest extends AbstractImportTest {
 
     @Test
     @DirtiesContext
-    public void testDatasetTypesUpdate() throws Exception {
+    public void testDatasetTypesUpdate() throws Exception
+    {
+        // the Excel contains internally managed property types which can be only manipulated by the system user
+        sessionToken = v3api.loginAsSystem();
+
         // GIVEN
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, DATASET_TYPES_XLS)));
         // WHEN
@@ -135,7 +143,8 @@ public class ImportDatasetTypesTest extends AbstractImportTest {
     }
 
     @Test(expectedExceptions = UserFailureException.class)
-    public void shouldThrowExceptionIfNoSampleCode() throws IOException {
+    public void shouldThrowExceptionIfNoSampleCode() throws IOException
+    {
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, DATASET_NO_CODE)));
     }
 

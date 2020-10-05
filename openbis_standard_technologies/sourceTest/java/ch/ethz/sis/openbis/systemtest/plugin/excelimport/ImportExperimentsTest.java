@@ -11,9 +11,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.annotation.Transactional;
-import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
@@ -23,7 +21,8 @@ import ch.systemsx.cisd.common.exceptions.UserFailureException;
 @ContextConfiguration(locations = "classpath:applicationContext.xml")
 @Transactional(transactionManager = "transaction-manager")
 @Rollback
-public class ImportExperimentsTest extends AbstractImportTest {
+public class ImportExperimentsTest extends AbstractImportTest
+{
     @Autowired
     private IApplicationServerInternalApi v3api;
 
@@ -68,14 +67,19 @@ public class ImportExperimentsTest extends AbstractImportTest {
     private static String FILES_DIR;
 
     @BeforeClass
-    public void setupClass() throws IOException {
+    public void setupClass() throws IOException
+    {
         String f = ImportExperimentsTest.class.getName().replace(".", "/");
         FILES_DIR = f.substring(0, f.length() - ImportExperimentsTest.class.getSimpleName().length()) + "/test_files/";
     }
 
     @Test
     @DirtiesContext
-    public void testExperimentsAreCreated() throws IOException {
+    public void testExperimentsAreCreated() throws IOException
+    {
+        // the Excel contains internally managed property types which can be only manipulated by the system user
+        String sessionToken = v3api.loginAsSystem();
+
         // GIVEN
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, EXPERIMENT_XLS)));
         // WHEN
@@ -89,7 +93,11 @@ public class ImportExperimentsTest extends AbstractImportTest {
 
     @Test
     @DirtiesContext
-    public void testExperimentsAreCreatedSecondExperiment() throws IOException {
+    public void testExperimentsAreCreatedSecondExperiment() throws IOException
+    {
+        // the Excel contains internally managed property types which can be only manipulated by the system user
+        String sessionToken = v3api.loginAsSystem();
+
         // GIVEN
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, EXPERIMENT_XLS)));
         // WHEN
@@ -103,7 +111,11 @@ public class ImportExperimentsTest extends AbstractImportTest {
 
     @Test
     @DirtiesContext
-    public void testExperimentsAreCreatedWithEverythingOnServer() throws IOException {
+    public void testExperimentsAreCreatedWithEverythingOnServer() throws IOException
+    {
+        // the Excel contains internally managed property types which can be only manipulated by the system user
+        String sessionToken = v3api.loginAsSystem();
+
         // GIVEN
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, EXPERIMENT_TYPE)));
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, SPACE)));
@@ -120,7 +132,11 @@ public class ImportExperimentsTest extends AbstractImportTest {
 
     @Test
     @DirtiesContext
-    public void testExperimentsAreCreatedWithEverythingOnServerAndInXls() throws IOException {
+    public void testExperimentsAreCreatedWithEverythingOnServerAndInXls() throws IOException
+    {
+        // the Excel contains internally managed property types which can be only manipulated by the system user
+        String sessionToken = v3api.loginAsSystem();
+
         // GIVEN
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, EXPERIMENT_TYPE)));
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, SPACE)));
@@ -136,14 +152,16 @@ public class ImportExperimentsTest extends AbstractImportTest {
     }
 
     @Test(expectedExceptions = UserFailureException.class)
-    public void shouldThrowExceptionIfExperimentTypeDoesntExist() throws IOException {
+    public void shouldThrowExceptionIfExperimentTypeDoesntExist() throws IOException
+    {
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, SPACE)));
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, PROJECT)));
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, EXPERIMENTS_ALL_ELSEWHERE)));
     }
 
     @Test(expectedExceptions = UserFailureException.class)
-    public void shouldThrowExceptionIfProjectDoesntExist() throws IOException {
+    public void shouldThrowExceptionIfProjectDoesntExist() throws IOException
+    {
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, EXPERIMENT_TYPE)));
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, SPACE)));
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, EXPERIMENTS_ALL_ELSEWHERE)));
@@ -151,7 +169,11 @@ public class ImportExperimentsTest extends AbstractImportTest {
 
     @Test
     @DirtiesContext
-    public void testExperimentsAreCreatedWithTypeOnServer() throws IOException {
+    public void testExperimentsAreCreatedWithTypeOnServer() throws IOException
+    {
+        // the Excel contains internally managed property types which can be only manipulated by the system user
+        String sessionToken = v3api.loginAsSystem();
+
         // GIVEN
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, EXPERIMENT_TYPE)));
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, EXPERIMENTS_WITH_TYPE_ELSEWHERE)));
@@ -166,7 +188,11 @@ public class ImportExperimentsTest extends AbstractImportTest {
 
     @Test
     @DirtiesContext
-    public void testExperimentsAreCreatedWithTypeOnServerAndInXls() throws IOException {
+    public void testExperimentsAreCreatedWithTypeOnServerAndInXls() throws IOException
+    {
+        // the Excel contains internally managed property types which can be only manipulated by the system user
+        String sessionToken = v3api.loginAsSystem();
+
         // GIVEN
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, EXPERIMENT_TYPE)));
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, SPACE)));
@@ -182,13 +208,18 @@ public class ImportExperimentsTest extends AbstractImportTest {
     }
 
     @Test(expectedExceptions = UserFailureException.class)
-    public void shouldThrowExceptionIfExperimentNoCode() throws IOException {
+    public void shouldThrowExceptionIfExperimentNoCode() throws IOException
+    {
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, EXPERIMENTS_NO_CODE)));
     }
 
     @Test
     @DirtiesContext
-    public void testExperimentsAreCreatedWhenNonMandatoryPropertiesAreNotProvided() throws IOException {
+    public void testExperimentsAreCreatedWhenNonMandatoryPropertiesAreNotProvided() throws IOException
+    {
+        // the Excel contains internally managed property types which can be only manipulated by the system user
+        String sessionToken = v3api.loginAsSystem();
+
         // GIVEN
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, EXPERIMENTS_WITH_NON_MANDATORY_PROPERTY_MISSING)));
         // WHEN
@@ -201,13 +232,18 @@ public class ImportExperimentsTest extends AbstractImportTest {
     }
 
     @Test(expectedExceptions = UserFailureException.class)
-    public void shouldThrowExceptionIfExperimentNoProject() throws IOException {
+    public void shouldThrowExceptionIfExperimentNoProject() throws IOException
+    {
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, EXPERIMENTS_NO_PROJECT_ATTRIBUTE)));
     }
 
     @Test
     @DirtiesContext
-    public void testExperimentsAreCreatedWithSpaceAndProjectOnServer() throws IOException {
+    public void testExperimentsAreCreatedWithSpaceAndProjectOnServer() throws IOException
+    {
+        // the Excel contains internally managed property types which can be only manipulated by the system user
+        String sessionToken = v3api.loginAsSystem();
+
         // GIVEN
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, SPACE)));
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, PROJECT)));
@@ -223,7 +259,11 @@ public class ImportExperimentsTest extends AbstractImportTest {
 
     @Test
     @DirtiesContext
-    public void testExperimentsAreCreatedWithSpaceOnServer() throws IOException {
+    public void testExperimentsAreCreatedWithSpaceOnServer() throws IOException
+    {
+        // the Excel contains internally managed property types which can be only manipulated by the system user
+        String sessionToken = v3api.loginAsSystem();
+
         // GIVEN
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, SPACE)));
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, EXPERIMENTS_SPACE_ELSEWHERE)));
@@ -238,7 +278,11 @@ public class ImportExperimentsTest extends AbstractImportTest {
 
     @Test
     @DirtiesContext
-    public void testExperimentsAreCreatedWithTypeAndSpaceOnServer() throws IOException {
+    public void testExperimentsAreCreatedWithTypeAndSpaceOnServer() throws IOException
+    {
+        // the Excel contains internally managed property types which can be only manipulated by the system user
+        String sessionToken = v3api.loginAsSystem();
+
         // GIVEN
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, EXPERIMENT_TYPE)));
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, SPACE)));
@@ -253,13 +297,18 @@ public class ImportExperimentsTest extends AbstractImportTest {
     }
 
     @Test(expectedExceptions = UserFailureException.class)
-    public void shouldThrowExceptionIfMandatoryPropertyMissing() throws IOException {
+    public void shouldThrowExceptionIfMandatoryPropertyMissing() throws IOException
+    {
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, EXPERIMENTS_WITH_MANDATORY_PROPERTY_MISSING)));
     }
 
     @Test
     @DirtiesContext
-    public void testExperimentsAreCreatedIfMandatoryPropertyArePresent() throws IOException {
+    public void testExperimentsAreCreatedIfMandatoryPropertyArePresent() throws IOException
+    {
+        // the Excel contains internally managed property types which can be only manipulated by the system user
+        String sessionToken = v3api.loginAsSystem();
+
         // GIVEN
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, EXPERIMENTS_WITH_MANDATORY_PROPERTY_PRESENT)));
         // WHEN
@@ -273,7 +322,11 @@ public class ImportExperimentsTest extends AbstractImportTest {
 
     @Test
     @DirtiesContext
-    public void testExperimentsAreCreatedWhenPropertiesAreAddressedByLabelsWithTypeInXls() throws IOException {
+    public void testExperimentsAreCreatedWhenPropertiesAreAddressedByLabelsWithTypeInXls() throws IOException
+    {
+        // the Excel contains internally managed property types which can be only manipulated by the system user
+        String sessionToken = v3api.loginAsSystem();
+
         // GIVEN
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, EXPERIMENTS_PROPERTIES_COLUMNS_AS_LABELS)));
         // WHEN
@@ -287,7 +340,11 @@ public class ImportExperimentsTest extends AbstractImportTest {
 
     @Test
     @DirtiesContext
-    public void testExperimentsAreCreatedWhenPropertiesAreAddressedByLabelsWithTypeOnServer() throws IOException {
+    public void testExperimentsAreCreatedWhenPropertiesAreAddressedByLabelsWithTypeOnServer() throws IOException
+    {
+        // the Excel contains internally managed property types which can be only manipulated by the system user
+        String sessionToken = v3api.loginAsSystem();
+
         // GIVEN
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, EXPERIMENT_TYPE)));
         TestUtils.createFrom(v3api, sessionToken,

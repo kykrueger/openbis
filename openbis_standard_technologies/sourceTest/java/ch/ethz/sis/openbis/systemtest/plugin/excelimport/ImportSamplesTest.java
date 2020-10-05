@@ -6,9 +6,6 @@ import static org.testng.Assert.assertNotNull;
 import java.io.IOException;
 import java.nio.file.Paths;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
@@ -18,20 +15,20 @@ import org.springframework.transaction.annotation.Transactional;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.IApplicationServerInternalApi;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 
 @ContextConfiguration(locations = "classpath:applicationContext.xml")
 @Transactional(transactionManager = "transaction-manager")
 @Rollback
-public class ImportSamplesTest extends AbstractImportTest {
+public class ImportSamplesTest extends AbstractImportTest
+{
     @Autowired
     private IApplicationServerInternalApi v3api;
-
-    private static final String TEST_USER = "test";
-
-    private static final String PASSWORD = "password";
 
     private static final String SAMPLES_XLS = "samples/all_in.xls";
 
@@ -70,14 +67,19 @@ public class ImportSamplesTest extends AbstractImportTest {
     private static String FILES_DIR;
 
     @BeforeClass
-    public void setupClass() throws IOException {
+    public void setupClass() throws IOException
+    {
         String f = ImportSamplesTest.class.getName().replace(".", "/");
         FILES_DIR = f.substring(0, f.length() - ImportSamplesTest.class.getSimpleName().length()) + "/test_files/";
     }
 
     @Test
     @DirtiesContext
-    public void testSamplesAreCreated() throws IOException {
+    public void testSamplesAreCreated() throws IOException
+    {
+        // the Excel contains internally managed property types which can be only manipulated by the system user
+        sessionToken = v3api.loginAsSystem();
+
         // GIVEN
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, SAMPLES_XLS)));
         // WHEN
@@ -91,7 +93,11 @@ public class ImportSamplesTest extends AbstractImportTest {
 
     @Test
     @DirtiesContext
-    public void testSamplesAreCreatedSecondSample() throws IOException {
+    public void testSamplesAreCreatedSecondSample() throws IOException
+    {
+        // the Excel contains internally managed property types which can be only manipulated by the system user
+        sessionToken = v3api.loginAsSystem();
+
         // GIVEN
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, SAMPLES_XLS)));
         // WHEN
@@ -105,7 +111,11 @@ public class ImportSamplesTest extends AbstractImportTest {
 
     @Test
     @DirtiesContext
-    public void testSamplesAreCreatedThirdSample() throws IOException {
+    public void testSamplesAreCreatedThirdSample() throws IOException
+    {
+        // the Excel contains internally managed property types which can be only manipulated by the system user
+        sessionToken = v3api.loginAsSystem();
+
         // GIVEN
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, SAMPLES_XLS)));
         // WHEN
@@ -119,7 +129,11 @@ public class ImportSamplesTest extends AbstractImportTest {
 
     @Test
     @DirtiesContext
-    public void testSamplesAreCreatedWhenSpaceOnServer() throws IOException {
+    public void testSamplesAreCreatedWhenSpaceOnServer() throws IOException
+    {
+        // the Excel contains internally managed property types which can be only manipulated by the system user
+        String sessionToken = v3api.loginAsSystem();
+
         // GIVEN
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, SPACE)));
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, SAMPLES_SPACE_ELSEWHERE)));
@@ -131,7 +145,11 @@ public class ImportSamplesTest extends AbstractImportTest {
 
     @Test
     @DirtiesContext
-    public void testSamplesAreCreatedWhenSpaceInSeparateXls() throws IOException {
+    public void testSamplesAreCreatedWhenSpaceInSeparateXls() throws IOException
+    {
+        // the Excel contains internally managed property types which can be only manipulated by the system user
+        String sessionToken = v3api.loginAsSystem();
+
         // GIVEN
         TestUtils.createFrom(v3api, sessionToken,
                 Paths.get(FilenameUtils.concat(FILES_DIR, SAMPLES_SPACE_ELSEWHERE)),
@@ -143,13 +161,18 @@ public class ImportSamplesTest extends AbstractImportTest {
     }
 
     @Test(expectedExceptions = UserFailureException.class)
-    public void shouldThrowExceptionIfSpaceDoesntExist() throws IOException {
+    public void shouldThrowExceptionIfSpaceDoesntExist() throws IOException
+    {
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, SAMPLES_SPACE_ELSEWHERE)));
     }
 
     @Test
     @DirtiesContext
-    public void testSamplesAreCreatedWhenSampleTypeOnServer() throws IOException {
+    public void testSamplesAreCreatedWhenSampleTypeOnServer() throws IOException
+    {
+        // the Excel contains internally managed property types which can be only manipulated by the system user
+        String sessionToken = v3api.loginAsSystem();
+
         // GIVEN
         TestUtils.createFrom(v3api, sessionToken,
                 Paths.get(FilenameUtils.concat(FILES_DIR, VOCABULARY_TYPE)),
@@ -163,7 +186,11 @@ public class ImportSamplesTest extends AbstractImportTest {
 
     @Test
     @DirtiesContext
-    public void testSamplesAreCreatedWhenSampleTypeInSeparateXls() throws IOException {
+    public void testSamplesAreCreatedWhenSampleTypeInSeparateXls() throws IOException
+    {
+        // the Excel contains internally managed property types which can be only manipulated by the system user
+        sessionToken = v3api.loginAsSystem();
+
         // GIVEN
         TestUtils.createFrom(v3api, sessionToken,
                 Paths.get(FilenameUtils.concat(FILES_DIR, SAMPLES_SAMPLE_TYPE_ELSWHERE)),
@@ -176,7 +203,11 @@ public class ImportSamplesTest extends AbstractImportTest {
 
     @Test
     @DirtiesContext
-    public void testSamplesChildrenAreAssignedWhenAddressedByCodeInXls() throws IOException {
+    public void testSamplesChildrenAreAssignedWhenAddressedByCodeInXls() throws IOException
+    {
+        // the Excel contains internally managed property types which can be only manipulated by the system user
+        String sessionToken = v3api.loginAsSystem();
+
         // GIVEN
         TestUtils.createFrom(v3api, sessionToken,
                 Paths.get(FilenameUtils.concat(FILES_DIR, CHILD_AS_CODE)));
@@ -192,7 +223,11 @@ public class ImportSamplesTest extends AbstractImportTest {
 
     @Test
     @DirtiesContext
-    public void testSamplesParentsAreAssignedWhenAddressedByCodeInXls() throws IOException {
+    public void testSamplesParentsAreAssignedWhenAddressedByCodeInXls() throws IOException
+    {
+        // the Excel contains internally managed property types which can be only manipulated by the system user
+        String sessionToken = v3api.loginAsSystem();
+
         // GIVEN
         TestUtils.createFrom(v3api, sessionToken,
                 Paths.get(FilenameUtils.concat(FILES_DIR, PARENT_AS_CODE)));
@@ -208,7 +243,11 @@ public class ImportSamplesTest extends AbstractImportTest {
 
     @Test
     @DirtiesContext
-    public void testSamplesChildrenAreAssignedWhenAddressedByDollartagInXls() throws IOException {
+    public void testSamplesChildrenAreAssignedWhenAddressedByDollartagInXls() throws IOException
+    {
+        // the Excel contains internally managed property types which can be only manipulated by the system user
+        String sessionToken = v3api.loginAsSystem();
+
         // GIVEN
         TestUtils.createFrom(v3api, sessionToken,
                 Paths.get(FilenameUtils.concat(FILES_DIR, CHILD_AS_DOLLARTAG)));
@@ -224,7 +263,11 @@ public class ImportSamplesTest extends AbstractImportTest {
 
     @Test
     @DirtiesContext
-    public void testSamplesParentsAreAssignedWhenAddressedByDollartagInXls() throws IOException {
+    public void testSamplesParentsAreAssignedWhenAddressedByDollartagInXls() throws IOException
+    {
+        // the Excel contains internally managed property types which can be only manipulated by the system user
+        String sessionToken = v3api.loginAsSystem();
+
         // GIVEN
         TestUtils.createFrom(v3api, sessionToken,
                 Paths.get(FilenameUtils.concat(FILES_DIR, PARENT_AS_DOLLARTAG)));
@@ -240,7 +283,11 @@ public class ImportSamplesTest extends AbstractImportTest {
 
     @Test
     @DirtiesContext
-    public void testCreatesSampleWithNonMandatoryFieldsMissing() throws IOException {
+    public void testCreatesSampleWithNonMandatoryFieldsMissing() throws IOException
+    {
+        // the Excel contains internally managed property types which can be only manipulated by the system user
+        sessionToken = v3api.loginAsSystem();
+
         // GIVEN
         TestUtils.createFrom(v3api, sessionToken,
                 Paths.get(FilenameUtils.concat(FILES_DIR, NON_MANDATORY_FIELD_MISSING)));
@@ -253,7 +300,11 @@ public class ImportSamplesTest extends AbstractImportTest {
 
     @Test
     @DirtiesContext
-    public void testCreatesSampleWithAutogeneratedCodeWhenOnPerSampleLevel() throws IOException {
+    public void testCreatesSampleWithAutogeneratedCodeWhenOnPerSampleLevel() throws IOException
+    {
+        // the Excel contains internally managed property types which can be only manipulated by the system user
+        sessionToken = v3api.loginAsSystem();
+
         // GIVEN
         String result = TestUtils.createFrom(v3api, sessionToken,
                 Paths.get(FilenameUtils.concat(FILES_DIR, AUTO_GENERATED_SAMPLE_LEVEL)));
@@ -267,7 +318,11 @@ public class ImportSamplesTest extends AbstractImportTest {
 
     @Test
     @DirtiesContext
-    public void testCreatesSampleWithAutogeneratedCodeWhenOnSampleTypeLevel() throws IOException {
+    public void testCreatesSampleWithAutogeneratedCodeWhenOnSampleTypeLevel() throws IOException
+    {
+        // the Excel contains internally managed property types which can be only manipulated by the system user
+        sessionToken = v3api.loginAsSystem();
+
         // GIVEN
         String result = TestUtils.createFrom(v3api, sessionToken,
                 Paths.get(FilenameUtils.concat(FILES_DIR, AUTO_GENERATED_SAMPLE_TYPE_LEVEL)));
@@ -281,7 +336,11 @@ public class ImportSamplesTest extends AbstractImportTest {
 
     @Test
     @DirtiesContext
-    public void testSampleIsUpdateByXlsParser() throws IOException {
+    public void testSampleIsUpdateByXlsParser() throws IOException
+    {
+        // the Excel contains internally managed property types which can be only manipulated by the system user
+        sessionToken = v3api.loginAsSystem();
+
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, GENERAL_ELN_SETTINGS)));
 
         // test sample before update
@@ -304,7 +363,8 @@ public class ImportSamplesTest extends AbstractImportTest {
         assertEquals(experiment.getProperties().containsKey("$NAME"), true);
         assertEquals(experiment.getProperties().get("$NAME"), "Default Experiment");
 
-        TestUtils.createFrom(v3api, sessionToken, UpdateMode.UPDATE_IF_EXISTS, Paths.get(FilenameUtils.concat(FILES_DIR, GENERAL_ELN_SETTINGS_UPDATE)));
+        TestUtils.createFrom(v3api, sessionToken, UpdateMode.UPDATE_IF_EXISTS,
+                Paths.get(FilenameUtils.concat(FILES_DIR, GENERAL_ELN_SETTINGS_UPDATE)));
 
         // test sample after update
         sample = TestUtils.getSample(v3api, sessionToken, "GENERAL_ELN_SETTINGS", "ELN_SETTINGS");
@@ -331,12 +391,14 @@ public class ImportSamplesTest extends AbstractImportTest {
     }
 
     @Test(expectedExceptions = UserFailureException.class)
-    public void shouldThrowExceptionIfSamplesSpaceProjectDoesntExist() throws IOException {
+    public void shouldThrowExceptionIfSamplesSpaceProjectDoesntExist() throws IOException
+    {
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, SAMPLES_SPACE_PROJECT_EXPERIMENT_ELSEWHERE)));
     }
 
     @Test(expectedExceptions = UserFailureException.class)
-    public void shouldThrowExceptionIfMandatoryPropertyIsMissing() throws IOException {
+    public void shouldThrowExceptionIfMandatoryPropertyIsMissing() throws IOException
+    {
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, MANDATORY_FIELD_MISSING)));
     }
 
