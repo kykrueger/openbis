@@ -140,7 +140,7 @@ public abstract class AbstractCachingTranslator<I, O, F extends FetchOptions<?>>
         }
     }
 
-    private Long getObjectId(I input)
+    protected Long getObjectId(I input)
     {
         if (input instanceof IIdHolder)
         {
@@ -156,7 +156,7 @@ public abstract class AbstractCachingTranslator<I, O, F extends FetchOptions<?>>
         }
     }
 
-    private CacheKey getObjectCacheKey(I input, F fetchOptions)
+    protected CacheKey getObjectCacheKey(I input, F fetchOptions)
     {
         return new TranslationCache.CacheKey(namespace, getObjectId(input), fetchOptions);
     }

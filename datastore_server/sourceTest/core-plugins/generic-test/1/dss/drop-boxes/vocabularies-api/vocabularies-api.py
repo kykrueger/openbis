@@ -28,7 +28,6 @@ def process(transaction):
     # test modifying vocabulary
     vocabulary = transaction.getVocabularyForUpdate("TEST_VOCABULARY")
     vocabulary.setDescription("modified description")
-    vocabulary.setManagedInternally(True)
     vocabulary.setChosenFromList(False)
     vocabulary.setUrlTemplate("localuri")
     

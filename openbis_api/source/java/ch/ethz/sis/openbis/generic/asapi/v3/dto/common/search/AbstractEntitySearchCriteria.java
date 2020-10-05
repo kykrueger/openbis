@@ -76,6 +76,16 @@ public abstract class AbstractEntitySearchCriteria<ID extends IObjectId> extends
         return with(new NumberPropertySearchCriteria(propertyName));
     }
 
+    /**
+     * @deprecated This method casts any string to the actual type of the property been queried.
+     * This leads in some cases to cast errors or missing operators for the type latter on during the query parsing.
+     * More often than not these errors are completely avoidable simply using the typed methods:
+     * {@link AbstractEntitySearchCriteria#withDateProperty(String)}
+     * {@link AbstractEntitySearchCriteria#withNumberProperty(String)}
+     * {@link AbstractEntitySearchCriteria#withStringProperty(String)}
+     * {@link AbstractEntitySearchCriteria#withBooleanProperty(String)}
+     */
+    @Deprecated
     public StringPropertySearchCriteria withProperty(String propertyName)
     {
         return with(new StringPropertySearchCriteria(propertyName));
@@ -96,6 +106,16 @@ public abstract class AbstractEntitySearchCriteria<ID extends IObjectId> extends
         return with(new BooleanPropertySearchCriteria(propertyName));
     }
 
+    /**
+     * @deprecated This method doesn't cast any string to the actual type of the property been queried.
+     * Instead it does string comparison, being inconsistent with the rest of the query engine.
+     * It is an inefficient replacement of full text search that actually does a very slow full table scan that can lead to heavy slowdowns on big databases.
+     * {@link AbstractEntitySearchCriteria#withAnyDateProperty(String)}
+     * {@link AbstractEntitySearchCriteria#withAnyNumberProperty(String)}
+     * {@link AbstractEntitySearchCriteria#withAnyStringProperty(String)}
+     * {@link AbstractEntitySearchCriteria#withAnyBooleanProperty(String)}
+     */
+    @Deprecated
     public AnyPropertySearchCriteria withAnyProperty()
     {
         return with(new AnyPropertySearchCriteria());
@@ -110,7 +130,7 @@ public abstract class AbstractEntitySearchCriteria<ID extends IObjectId> extends
     {
         return with(new AnyNumberPropertySearchCriteria());
     }
-    
+
     public AnyDatePropertySearchCriteria withAnyDateProperty()
     {
         return with(new AnyDatePropertySearchCriteria());
