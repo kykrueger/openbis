@@ -2094,43 +2094,6 @@ public class SearchSampleTest extends AbstractSampleTest
     }
 
     @Test
-    public void testSearchWithDateDatePropertyThatIsEarlierWithInvalidDate()
-    {
-        // Given
-        String sessionToken = v3api.login(TEST_USER, PASSWORD);
-        PropertyTypePermId propertyType = createAPropertyType(sessionToken, DataType.DATE);
-        EntityTypePermId sampleType = createASampleType(sessionToken, true, propertyType);
-        SampleCreation creation = new SampleCreation();
-        creation.setCode("SAMPLE_WITH_DATE_PROPERTY");
-        creation.setTypeId(sampleType);
-        creation.setSpaceId(new SpacePermId("CISD"));
-        creation.setProperty(propertyType.getPermId(), "1990-11-09");
-        v3api.createSamples(sessionToken, Arrays.asList(creation));
-
-        final SampleSearchCriteria criteria1 = new SampleSearchCriteria();
-        final DatePropertySearchCriteria datePropertySearchCriteria1 = criteria1.withDateProperty(
-                propertyType.getPermId());
-        datePropertySearchCriteria1.thatIsEarlierThanOrEqualTo("1990-11-09 01:22:33");
-
-        // When
-        assertUserFailureException(Void -> v3api.searchSamples(sessionToken, criteria1, new SampleFetchOptions()),
-                // Then
-                "Search criteria with time stamp doesn't make sense for property " + propertyType.getPermId()
-                        + " of data type " + DataType.DATE);
-
-        final SampleSearchCriteria criteria2 = new SampleSearchCriteria();
-        final DatePropertySearchCriteria datePropertySearchCriteria2 = criteria2.withDateProperty(
-                propertyType.getPermId());
-        datePropertySearchCriteria2.thatIsEarlierThanOrEqualTo("1990-11-09 01:22:33");
-
-        // When
-        assertUserFailureException(Void -> v3api.searchSamples(sessionToken, criteria2, new SampleFetchOptions()),
-                // Then
-                "Search criteria with time stamp doesn't make sense for property " + propertyType.getPermId()
-                        + " of data type " + DataType.DATE);
-    }
-
-    @Test
     public void testSearchWithAnyPropertyThatIsEarlier()
     {
         // Given
@@ -2500,17 +2463,10 @@ public class SearchSampleTest extends AbstractSampleTest
         final List<Sample> samplesGED2 = searchSamples(sessionToken, criteriaGEDMatch2, emptyFetchOptions);
         assertSampleIdentifiers(samplesGED2, "/CISD/DATE_PROPERTY_TEST");
 
-        final SampleSearchCriteria criteriaTimestampMatch = new SampleSearchCriteria();
-        criteriaTimestampMatch.withDateProperty("DATE").thatIsLaterThanOrEqualTo("2020-02-08 10:00:00 +0100");
-        assertUserFailureException(
-                Void -> searchSamples(sessionToken, criteriaTimestampMatch, emptyFetchOptions),
-                String.format("Search criteria with time stamp doesn't make sense for property %s of data type %s.",
-                        "DATE", DataType.DATE));
-
         final SampleSearchCriteria criteriaMatchNotDate = new SampleSearchCriteria();
         criteriaMatchNotDate.withProperty("DATE").thatEquals("blabla");
         assertUserFailureException(
-                Void -> searchSamples(sessionToken, criteriaMatchNotDate, new SampleFetchOptions()),
+                aVoid -> searchSamples(sessionToken, criteriaMatchNotDate, new SampleFetchOptions()),
                 "String does not represent a date: [blabla]");
     }
 

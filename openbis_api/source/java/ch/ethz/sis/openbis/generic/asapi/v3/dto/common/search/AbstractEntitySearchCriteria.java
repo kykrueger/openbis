@@ -91,9 +91,19 @@ public abstract class AbstractEntitySearchCriteria<ID extends IObjectId> extends
         return with(new StringPropertySearchCriteria(propertyName));
     }
 
+    public StrictlyStringPropertySearchCriteria withStringProperty(final String propertyName)
+    {
+        return with(new StrictlyStringPropertySearchCriteria(propertyName));
+    }
+
     public DatePropertySearchCriteria withDateProperty(String propertyName)
     {
         return with(new DatePropertySearchCriteria(propertyName));
+    }
+
+    public BooleanPropertySearchCriteria withBooleanProperty(final String propertyName)
+    {
+        return with(new BooleanPropertySearchCriteria(propertyName));
     }
 
     /**
@@ -109,6 +119,26 @@ public abstract class AbstractEntitySearchCriteria<ID extends IObjectId> extends
     public AnyPropertySearchCriteria withAnyProperty()
     {
         return with(new AnyPropertySearchCriteria());
+    }
+
+    public AnyStringPropertySearchCriteria withAnyStringProperty()
+    {
+        return with(new AnyStringPropertySearchCriteria());
+    }
+
+    public AnyNumberPropertySearchCriteria withAnyNumberProperty()
+    {
+        return with(new AnyNumberPropertySearchCriteria());
+    }
+
+    public AnyDatePropertySearchCriteria withAnyDateProperty()
+    {
+        return with(new AnyDatePropertySearchCriteria());
+    }
+
+    public AnyBooleanPropertySearchCriteria withAnyBooleanProperty()
+    {
+        return with(new AnyBooleanPropertySearchCriteria());
     }
 
     public AnyFieldSearchCriteria withAnyField()

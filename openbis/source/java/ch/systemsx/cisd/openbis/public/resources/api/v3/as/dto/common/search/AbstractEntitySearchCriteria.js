@@ -49,6 +49,10 @@ define([ "require", "stjs", "as/dto/common/search/AbstractObjectSearchCriteria",
 			var NumberPropertySearchCriteria = require("as/dto/common/search/NumberPropertySearchCriteria");
 			return this.addCriteria(new NumberPropertySearchCriteria(propertyName));
 		};
+		prototype.withBooleanProperty = function(propertyName) {
+			var BooleanPropertySearchCriteria = require("as/dto/common/search/BooleanPropertySearchCriteria");
+			return this.addCriteria(new BooleanPropertySearchCriteria(propertyName));
+		};
 		prototype.withTag = function() {
 			var TagSearchCriteria = require("as/dto/tag/search/TagSearchCriteria");
 			return this.addCriteria(new TagSearchCriteria());
@@ -57,6 +61,11 @@ define([ "require", "stjs", "as/dto/common/search/AbstractObjectSearchCriteria",
 			var StringPropertySearchCriteria = require("as/dto/common/search/StringPropertySearchCriteria");
 			return this.addCriteria(new StringPropertySearchCriteria(propertyName));
 		};
+		prototype.withStringProperty = function(propertyName) {
+			var StrictlyStringPropertySearchCriteria =
+				require("as/dto/common/search/StrictlyStringPropertySearchCriteria");
+			return this.addCriteria(new StrictlyStringPropertySearchCriteria(propertyName));
+		};
 		prototype.withDateProperty = function(propertyName) {
 			var DatePropertySearchCriteria = require("as/dto/common/search/DatePropertySearchCriteria");
 			return this.addCriteria(new DatePropertySearchCriteria(propertyName));
@@ -64,6 +73,22 @@ define([ "require", "stjs", "as/dto/common/search/AbstractObjectSearchCriteria",
 		prototype.withAnyProperty = function() {
 			var AnyPropertySearchCriteria = require("as/dto/common/search/AnyPropertySearchCriteria");
 			return this.addCriteria(new AnyPropertySearchCriteria());
+		};
+		prototype.withAnyDateProperty = function() {
+			var AnyDatePropertySearchCriteria = require("as/dto/common/search/AnyDatePropertySearchCriteria");
+			return this.addCriteria(new AnyDatePropertySearchCriteria());
+		};
+		prototype.withAnyNumberProperty = function() {
+			var AnyNumberPropertySearchCriteria = require("as/dto/common/search/AnyNumberPropertySearchCriteria");
+			return this.addCriteria(new AnyNumberPropertySearchCriteria());
+		};
+		prototype.withAnyStringProperty = function() {
+			var AnyStringPropertySearchCriteria = require("as/dto/common/search/AnyStringPropertySearchCriteria");
+			return this.addCriteria(new AnyStringPropertySearchCriteria());
+		};
+		prototype.withAnyBooleanProperty = function() {
+			var AnyBooleanPropertySearchCriteria = require("as/dto/common/search/AnyBooleanPropertySearchCriteria");
+			return this.addCriteria(new AnyBooleanPropertySearchCriteria());
 		};
 		prototype.withAnyField = function() {
 			var AnyFieldSearchCriteria = require("as/dto/common/search/AnyFieldSearchCriteria");

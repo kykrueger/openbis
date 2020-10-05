@@ -232,8 +232,9 @@ public class SearchCriteriaTranslator
                         (IConditionTranslator<ISearchCriteria>) CriteriaMapper.getCriteriaToConditionTranslatorMap().get(criterion.getClass());
                 if (conditionTranslator != null)
                 {
-                    conditionTranslator.translate(criterion, tableMapper, translationContext.getArgs(), sqlBuilder, translationContext.getAliases().get(criterion),
-                            translationContext.getDataTypeByPropertyName());
+                    conditionTranslator.translate(criterion, tableMapper, translationContext.getArgs(), sqlBuilder,
+                            translationContext.getAliases().get(criterion),
+                            translationContext.getDataTypeByPropertyCode());
                 } else
                 {
                     throw new IllegalArgumentException("Unsupported criterion type: " + criterion.getClass().getSimpleName());
