@@ -259,6 +259,8 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
     @Test(dataProvider = "withBooleanPropertyExamples")
     public void testWithBooleanProperty(final boolean value, final String queryString, final boolean found)
     {
+        // Using withBooleanProperty()
+
         // Given
         final String sessionToken = v3api.login(TEST_USER, PASSWORD);
         final PropertyTypePermId propertyTypeId = createAPropertyType(sessionToken, DataType.BOOLEAN);
@@ -277,8 +279,11 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
             assertEquals(entities.get(0).getPermId().toString(), entityPermId.getPermId());
         }
 
+        // Using withProperty()
+
+        // Given
         final AbstractEntitySearchCriteria<?> withPropertySearchCriteria = createSearchCriteria();
-        new BooleanQueryInjector(withPropertySearchCriteria, propertyTypeId).buildCriteria(queryString);
+        new StringQueryInjector(withPropertySearchCriteria, propertyTypeId).buildCriteria(queryString);
 
         // When
         final List<? extends IPermIdHolder> withPropertyEntities = search(sessionToken, withPropertySearchCriteria);

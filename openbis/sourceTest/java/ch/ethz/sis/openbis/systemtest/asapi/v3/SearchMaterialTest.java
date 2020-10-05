@@ -23,9 +23,7 @@ import static org.testng.Assert.assertEquals;
 import java.text.DateFormat;
 import java.util.*;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IPermIdHolder;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractEntitySearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.create.MaterialCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
@@ -1713,6 +1711,41 @@ public class SearchMaterialTest extends AbstractTest
         {
             assertEquals(dateEntities.get(0).getPermId().toString(), entityPermId.toString());
         }
+    }
+
+    @Test(dataProvider = "withBooleanPropertyExamples")
+    public void testSearchWithAnyBooleanProperty(final boolean value, final String queryString, final boolean found)
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        final PropertyTypePermId propertyTypeId = createAPropertyType(sessionToken, DataType.BOOLEAN);
+        final MaterialPermId entityPermId = createMaterial(sessionToken, propertyTypeId, String.valueOf(value));
+
+        // Given
+        final MaterialSearchCriteria searchCriteria = new MaterialSearchCriteria();
+        new AbstractSearchPropertyTest.BooleanQueryInjector(searchCriteria, null).buildCriteria(queryString);
+
+        // When
+        final List<? extends IPermIdHolder> entities = searchMaterials(sessionToken, searchCriteria,
+                new MaterialFetchOptions());
+
+        // Then
+        final boolean containsResult = entities.stream().anyMatch(
+                entity -> entityPermId.toString().equals(entity.getPermId().toString()));
+        assertEquals(containsResult, found);
+
+        // Given
+        final MaterialSearchCriteria withPropertySearchCriteria = new MaterialSearchCriteria();
+        new AbstractSearchPropertyTest.AnyPropertyQueryInjector(withPropertySearchCriteria)
+                .buildCriteria(queryString);
+
+        // When
+        final List<? extends IPermIdHolder> withPropertyEntities = searchMaterials(sessionToken,
+                withPropertySearchCriteria, new MaterialFetchOptions());
+
+        // Then
+        final boolean containsWithPropertyResult = withPropertyEntities.stream().anyMatch(
+                entity -> entityPermId.toString().equals(entity.getPermId().toString()));
+        assertEquals(containsWithPropertyResult, found);
     }
 
     private MaterialPermId createMaterial(final String sessionToken, final PropertyTypePermId propertyType,
