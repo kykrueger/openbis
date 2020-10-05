@@ -71,7 +71,7 @@ public class CreatePropertyTypeExecutor
 
     @Autowired
     private ISetPropertyTypeSampleTypeExecutor setPropertyTypeSampleTypeExecutor;
-    
+
     @Autowired
     private IPropertyTypeAuthorizationExecutor authorizationExecutor;
 
@@ -177,12 +177,12 @@ public class CreatePropertyTypeExecutor
     @Override
     protected void checkAccess(IOperationContext context)
     {
-        authorizationExecutor.canCreate(context);
     }
 
     @Override
     protected void checkAccess(IOperationContext context, PropertyTypePE entity)
     {
+        authorizationExecutor.canCreate(context, entity);
     }
 
     @Override

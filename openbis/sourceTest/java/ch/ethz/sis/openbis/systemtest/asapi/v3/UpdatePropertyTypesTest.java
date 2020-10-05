@@ -64,11 +64,60 @@ public class UpdatePropertyTypesTest extends AbstractTest
 {
     private static final String ALL_DATA_TYPES = "ALL_DATA_TYPES";
 
+    @DataProvider
+    private Object[][] providerTestUpdateAuthorization()
+    {
+        return new Object[][] {
+                { "NEW_NON_INTERNAL", SYSTEM_USER, SYSTEM_USER, null },
+                { "NEW_NON_INTERNAL", SYSTEM_USER, TEST_USER, null },
+                { "NEW_NON_INTERNAL", SYSTEM_USER, TEST_POWER_USER_CISD, "Access denied to object with PropertyTypePermId = [NEW_NON_INTERNAL]" },
+
+                { "NEW_NON_INTERNAL", TEST_USER, SYSTEM_USER, null },
+                { "NEW_NON_INTERNAL", TEST_USER, TEST_USER, null },
+                { "NEW_NON_INTERNAL", TEST_USER, TEST_POWER_USER_CISD, "Access denied to object with PropertyTypePermId = [NEW_NON_INTERNAL]" },
+
+                { "$NEW_INTERNAL", SYSTEM_USER, SYSTEM_USER, null },
+                { "$NEW_INTERNAL", SYSTEM_USER, TEST_USER, "Access denied to object with PropertyTypePermId = [$NEW_INTERNAL]" },
+                { "$NEW_INTERNAL", SYSTEM_USER, TEST_POWER_USER_CISD, "Access denied to object with PropertyTypePermId = [$NEW_INTERNAL]" },
+        };
+    }
+
+    @Test(dataProvider = "providerTestUpdateAuthorization")
+    public void testUpdateAuthorization(String propertyTypeCode, String propertyTypeRegistrator, String propertyTypeUpdater, String expectedError)
+    {
+        String registratorSessionToken =
+                propertyTypeRegistrator.equals(SYSTEM_USER) ? v3api.loginAsSystem() : v3api.login(propertyTypeRegistrator, PASSWORD);
+        String updaterSessionToken = propertyTypeUpdater.equals(SYSTEM_USER) ? v3api.loginAsSystem() : v3api.login(propertyTypeUpdater, PASSWORD);
+
+        PropertyTypeCreation creation = new PropertyTypeCreation();
+        creation.setCode(propertyTypeCode);
+        creation.setDataType(DataType.VARCHAR);
+        creation.setLabel("Test label");
+        creation.setDescription("Test description");
+        creation.setManagedInternally(propertyTypeCode.startsWith("$"));
+
+        List<PropertyTypePermId> ids = v3api.createPropertyTypes(registratorSessionToken, Arrays.asList(creation));
+        assertEquals(ids.size(), 1);
+
+        PropertyTypeUpdate update = new PropertyTypeUpdate();
+        update.setTypeId(ids.get(0));
+        update.setDescription("New description");
+
+        assertExceptionMessage(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    v3api.updatePropertyTypes(updaterSessionToken, Arrays.asList(update));
+                }
+            }, expectedError);
+    }
+
     @Test
     public void testUpdatePropertyTypeWhichIsManagedInternally()
     {
         // Given
-        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        String sessionToken = v3api.loginAsSystem();
         PropertyTypePermId id = new PropertyTypePermId("$PLATE_GEOMETRY");
         PropertyTypeUpdate update = new PropertyTypeUpdate();
         update.setTypeId(id);
@@ -438,12 +487,12 @@ public class UpdatePropertyTypesTest extends AbstractTest
         update.setTypeId(new PropertyTypePermId("BACTERIUM"));
 
         PropertyTypeUpdate update2 = new PropertyTypeUpdate();
-        update2.setTypeId(new PropertyTypePermId("$PLATE_GEOMETRY"));
+        update2.setTypeId(new PropertyTypePermId("ORGANISM"));
 
         v3api.updatePropertyTypes(sessionToken, Arrays.asList(update, update2));
 
         assertAccessLog(
-                "update-property-types  PROPERTY_TYPE_UPDATES('[PropertyTypeUpdate[typeId=BACTERIUM], PropertyTypeUpdate[typeId=$PLATE_GEOMETRY]]')");
+                "update-property-types  PROPERTY_TYPE_UPDATES('[PropertyTypeUpdate[typeId=BACTERIUM], PropertyTypeUpdate[typeId=ORGANISM]]')");
     }
 
     @DataProvider

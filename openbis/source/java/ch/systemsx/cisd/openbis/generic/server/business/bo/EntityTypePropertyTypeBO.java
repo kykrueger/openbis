@@ -19,6 +19,7 @@ package ch.systemsx.cisd.openbis.generic.server.business.bo;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.log4j.Logger;
 import org.springframework.dao.DataAccessException;
 
@@ -105,6 +106,9 @@ public class EntityTypePropertyTypeBO extends AbstractBusinessObject implements
         {
             return;
         }
+
+        new InternalPropertyTypeAuthorization().canDeletePropertyAssignment(session, assignment.getPropertyType(), assignment);
+
         getEntityPropertyTypeDAO(entityKind).delete(assignment);
         assignment = null;
     }
@@ -235,6 +239,9 @@ public class EntityTypePropertyTypeBO extends AbstractBusinessObject implements
         {
             throwModifiedEntityException("Property type assignment");
         }
+
+        UpdateAuthorizationSnapshot snapshotBefore = new UpdateAuthorizationSnapshot(assignment);
+
         // if ordinal was changed some etpts need to be shifted by 1
         Long ordinal = assignmentUpdates.getOrdinal();
         final Long currentOrdinal = (ordinal == null ? assignment.getOrdinal() : ordinal) + 1;
@@ -281,7 +288,16 @@ public class EntityTypePropertyTypeBO extends AbstractBusinessObject implements
         }
         assignment.setShownInEditView(assignmentUpdates.isShownInEditView());
         assignment.setShowRawValue(assignmentUpdates.getShowRawValue());
+
+        UpdateAuthorizationSnapshot snapshotAfter = new UpdateAuthorizationSnapshot(assignment);
+
+        if (snapshotBefore.equals(snapshotAfter) == false)
+        {
+            new InternalPropertyTypeAuthorization().canUpdatePropertyAssignment(session, assignment.getPropertyType(), assignment);
+        }
+
         validateAndSave();
+
         if (scriptChanged)
         {
             getEntityPropertyTypeDAO(entityKind).scheduleDynamicPropertiesEvaluation(assignment);
@@ -327,6 +343,8 @@ public class EntityTypePropertyTypeBO extends AbstractBusinessObject implements
         etpt.setScript(scriptOrNull);
         etpt.setShownInEditView(shownInEditView);
         etpt.setShowRawValue(showRawValue);
+
+        new InternalPropertyTypeAuthorization().canCreatePropertyAssignment(session, etpt.getPropertyType(), etpt);
 
         try
         {
@@ -389,5 +407,34 @@ public class EntityTypePropertyTypeBO extends AbstractBusinessObject implements
     {
         return String.format("Property type '%s' is already assigned to %s type '%s'.",
                 propertyType.getCode(), entityKind.getLabel(), entityType.getCode());
+    }
+
+    private static class UpdateAuthorizationSnapshot
+    {
+        @SuppressWarnings("unused")
+        private boolean mandatory;
+
+        @SuppressWarnings("unused")
+        private ScriptPE script;
+
+        @SuppressWarnings("unused")
+        private boolean showInEditView;
+
+        @SuppressWarnings("unused")
+        private boolean showRawValue;
+
+        public UpdateAuthorizationSnapshot(EntityTypePropertyTypePE assignment)
+        {
+            this.mandatory = assignment.isMandatory();
+            this.script = assignment.getScript();
+            this.showInEditView = assignment.isShownInEditView();
+            this.showRawValue = assignment.isShownInEditView();
+        }
+
+        @Override
+        public boolean equals(Object obj)
+        {
+            return EqualsBuilder.reflectionEquals(this, obj);
+        }
     }
 }

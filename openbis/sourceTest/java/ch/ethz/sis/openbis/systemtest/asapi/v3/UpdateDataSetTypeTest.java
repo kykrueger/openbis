@@ -29,6 +29,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractEntitySear
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetTypeCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetSearchCriteria;
@@ -45,13 +46,19 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
  * @author Franz-Josef Elmer
  */
 @Test
-public class UpdateDataSetTypeTest extends UpdateEntityTypeTest<DataSetTypeUpdate, DataSetType>
+public class UpdateDataSetTypeTest extends UpdateEntityTypeTest<DataSetTypeCreation, DataSetTypeUpdate, DataSetType>
 {
 
     @Override
     protected EntityKind getEntityKind()
     {
         return EntityKind.DATA_SET;
+    }
+
+    @Override
+    protected DataSetTypeCreation newTypeCreation()
+    {
+        return new DataSetTypeCreation();
     }
 
     @Override
@@ -64,6 +71,12 @@ public class UpdateDataSetTypeTest extends UpdateEntityTypeTest<DataSetTypeUpdat
     protected EntityTypePermId getTypeId()
     {
         return new EntityTypePermId("DELETION_TEST", ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind.DATA_SET);
+    }
+
+    @Override
+    protected List<EntityTypePermId> createTypes(String sessionToken, List<DataSetTypeCreation> updates)
+    {
+        return v3api.createDataSetTypes(sessionToken, updates);
     }
 
     @Override

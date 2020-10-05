@@ -22,6 +22,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.IPropertyTypeId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.systemsx.cisd.openbis.generic.server.authorization.annotation.Capability;
 import ch.systemsx.cisd.openbis.generic.server.authorization.annotation.RolesAllowed;
+import ch.systemsx.cisd.openbis.generic.server.business.bo.InternalPropertyTypeAuthorization;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.RoleWithHierarchy;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PropertyTypePE;
 
@@ -49,8 +50,9 @@ public class PropertyTypeAuthorizationExecutor implements IPropertyTypeAuthoriza
     @Override
     @RolesAllowed(RoleWithHierarchy.INSTANCE_ADMIN)
     @Capability("CREATE_PROPERTY_TYPE")
-    public void canCreate(IOperationContext context)
+    public void canCreate(IOperationContext context, PropertyTypePE entity)
     {
+        new InternalPropertyTypeAuthorization().canCreatePropertyType(context.getSession(), entity);
     }
 
     @Override
@@ -58,6 +60,7 @@ public class PropertyTypeAuthorizationExecutor implements IPropertyTypeAuthoriza
     @Capability("UPDATE_PROPERTY_TYPE")
     public void canUpdate(IOperationContext context, IPropertyTypeId id, PropertyTypePE entity)
     {
+        new InternalPropertyTypeAuthorization().canUpdatePropertyType(context.getSession(), entity);
     }
 
     @Override
@@ -65,6 +68,7 @@ public class PropertyTypeAuthorizationExecutor implements IPropertyTypeAuthoriza
     @Capability("DELETE_PROPERTY_TYPE")
     public void canDelete(IOperationContext context, IPropertyTypeId entityId, PropertyTypePE entity)
     {
+        new InternalPropertyTypeAuthorization().canDeletePropertyType(context.getSession(), entity);
     }
 
 }

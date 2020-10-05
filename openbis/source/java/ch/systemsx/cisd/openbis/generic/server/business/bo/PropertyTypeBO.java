@@ -118,6 +118,8 @@ public final class PropertyTypeBO extends VocabularyBO implements IPropertyTypeB
         propertyTypePE.setSchema(propertyType.getSchema());
         propertyTypePE.setTransformation(propertyType.getTransformation());
         validateXmlDocumentValues();
+
+        new InternalPropertyTypeAuthorization().canCreatePropertyType(session, propertyTypePE);
     }
 
     private void validateXmlDocumentValues()
@@ -153,7 +155,7 @@ public final class PropertyTypeBO extends VocabularyBO implements IPropertyTypeB
             return null;
         }
     }
-    
+
     private DataTypePE getDataTypeCode(final DataType dataType)
     {
         DataTypePE dataTypePE = null;
@@ -189,6 +191,8 @@ public final class PropertyTypeBO extends VocabularyBO implements IPropertyTypeB
         {
             throwModifiedEntityException("Property type");
         }
+
+        new InternalPropertyTypeAuthorization().canUpdatePropertyType(session, propertyTypePE);
 
         propertyTypePE.setDescription(updates.getDescription());
         propertyTypePE.setLabel(updates.getLabel());
@@ -232,6 +236,9 @@ public final class PropertyTypeBO extends VocabularyBO implements IPropertyTypeB
     public void deleteByTechId(TechId propertyTypeId, String reason) throws UserFailureException
     {
         loadDataByTechId(propertyTypeId);
+
+        new InternalPropertyTypeAuthorization().canDeletePropertyType(session, propertyTypePE);
+
         try
         {
             getPropertyTypeDAO().delete(propertyTypePE);

@@ -32,13 +32,16 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IEntityType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IPropertiesHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractEntitySearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.FieldUpdateValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.create.IEntityTypeCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.update.IEntityTypeUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.id.PluginPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.create.PropertyAssignmentCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.create.PropertyTypeCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.IPropertyTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyAssignmentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
@@ -48,15 +51,20 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
 /**
  * @author Franz-Josef Elmer
  */
-public abstract class UpdateEntityTypeTest<UPDATE extends IEntityTypeUpdate, TYPE extends IEntityType> extends AbstractTest
+public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation, UPDATE extends IEntityTypeUpdate, TYPE extends IEntityType>
+        extends AbstractTest
 {
     protected abstract EntityKind getEntityKind();
+
+    protected abstract CREATION newTypeCreation();
 
     protected abstract UPDATE newTypeUpdate();
 
     protected abstract EntityTypePermId getTypeId();
 
     protected abstract void createEntity(String sessionToken, IEntityTypeId entityType, String propertyType, String propertyValue);
+
+    protected abstract List<EntityTypePermId> createTypes(String sessionToken, List<CREATION> updates);
 
     protected abstract void updateTypes(String sessionToken, List<UPDATE> updates);
 
@@ -71,6 +79,261 @@ public abstract class UpdateEntityTypeTest<UPDATE extends IEntityTypeUpdate, TYP
     protected abstract AbstractEntitySearchCriteria<?> createSearchCriteria(EntityTypePermId typeId);
 
     protected abstract List<? extends IPropertiesHolder> searchEntities(String sessionToken, AbstractEntitySearchCriteria<?> searchCriteria);
+
+    @DataProvider
+    public Object[][] providerTestUpdateAuthorizationWithCreateAssignment()
+    {
+        return new Object[][] {
+                { "NEW_NON_INTERNAL", SYSTEM_USER, null },
+                { "NEW_NON_INTERNAL", TEST_USER, null },
+                { "NEW_NON_INTERNAL", TEST_POWER_USER_CISD,
+                        "Access denied to object with EntityTypePermId = [NEW_ENTITY_TYPE (" + getEntityKind() + ")]" },
+
+                { "$NEW_INTERNAL", SYSTEM_USER, null },
+                { "$NEW_INTERNAL", TEST_USER, null },
+                { "$NEW_INTERNAL", TEST_POWER_USER_CISD,
+                        "Access denied to object with EntityTypePermId = [NEW_ENTITY_TYPE (" + getEntityKind() + ")]" }
+        };
+    }
+
+    @Test(dataProvider = "providerTestUpdateAuthorizationWithCreateAssignment")
+    public void testUpdateAuthorizationWithCreateAssignment(String propertyTypeCode, String propertyAssignmentRegistrator, String expectedError)
+    {
+        String systemSessionToken = v3api.loginAsSystem();
+        String registratorSessionToken =
+                propertyAssignmentRegistrator.equals(SYSTEM_USER) ? v3api.loginAsSystem() : v3api.login(propertyAssignmentRegistrator, PASSWORD);
+
+        CREATION entityTypeCreation = newTypeCreation();
+        entityTypeCreation.setCode("NEW_ENTITY_TYPE");
+        List<EntityTypePermId> entityTypeIds = createTypes(systemSessionToken, Arrays.asList(entityTypeCreation));
+
+        PropertyTypeCreation propertyTypeCreation = new PropertyTypeCreation();
+        propertyTypeCreation.setCode(propertyTypeCode);
+        propertyTypeCreation.setDataType(DataType.VARCHAR);
+        propertyTypeCreation.setLabel("Test label");
+        propertyTypeCreation.setDescription("Test description");
+        propertyTypeCreation.setManagedInternally(propertyTypeCode.startsWith("$"));
+        List<PropertyTypePermId> propertyTypeIds = v3api.createPropertyTypes(systemSessionToken, Arrays.asList(propertyTypeCreation));
+
+        PropertyAssignmentCreation propertyAssignmentCreation = new PropertyAssignmentCreation();
+        propertyAssignmentCreation.setPropertyTypeId(propertyTypeIds.get(0));
+
+        UPDATE entityTypeUpdate = newTypeUpdate();
+        entityTypeUpdate.setTypeId(entityTypeIds.get(0));
+        entityTypeUpdate.getPropertyAssignments().add(propertyAssignmentCreation);
+
+        assertExceptionMessage(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    updateTypes(registratorSessionToken, Arrays.asList(entityTypeUpdate));
+
+                    TYPE entityType = getType(systemSessionToken, entityTypeIds.get(0));
+                    assertEquals(entityType.getPropertyAssignments().size(), 1);
+                }
+            }, expectedError);
+    }
+
+    @DataProvider
+    public Object[][] providerTestUpdateAuthorizationWithUpdateAssignment()
+    {
+        return new Object[][] {
+                { "NEW_NON_INTERNAL", SYSTEM_USER, SYSTEM_USER, false, null },
+                { "NEW_NON_INTERNAL", SYSTEM_USER, TEST_USER, false, null },
+                { "NEW_NON_INTERNAL", SYSTEM_USER, TEST_POWER_USER_CISD, false,
+                        "Access denied to object with EntityTypePermId = [NEW_ENTITY_TYPE (" + getEntityKind() + ")]" },
+
+                { "NEW_NON_INTERNAL", SYSTEM_USER, SYSTEM_USER, true, null },
+                { "NEW_NON_INTERNAL", SYSTEM_USER, TEST_USER, true, null },
+                { "NEW_NON_INTERNAL", SYSTEM_USER, TEST_POWER_USER_CISD, true,
+                        "Access denied to object with EntityTypePermId = [NEW_ENTITY_TYPE (" + getEntityKind() + ")]" },
+
+                { "NEW_NON_INTERNAL", TEST_USER, SYSTEM_USER, false, null },
+                { "NEW_NON_INTERNAL", TEST_USER, TEST_USER, false, null },
+                { "NEW_NON_INTERNAL", TEST_USER, TEST_POWER_USER_CISD, false,
+                        "Access denied to object with EntityTypePermId = [NEW_ENTITY_TYPE (" + getEntityKind() + ")]" },
+
+                { "NEW_NON_INTERNAL", TEST_USER, SYSTEM_USER, true, null },
+                { "NEW_NON_INTERNAL", TEST_USER, TEST_USER, true, null },
+                { "NEW_NON_INTERNAL", TEST_USER, TEST_POWER_USER_CISD, true,
+                        "Access denied to object with EntityTypePermId = [NEW_ENTITY_TYPE (" + getEntityKind() + ")]" },
+
+                { "$NEW_INTERNAL", SYSTEM_USER, SYSTEM_USER, false, null },
+                { "$NEW_INTERNAL", SYSTEM_USER, TEST_USER, false,
+                        "Property assignments created by the system user for internal property types can be managed only by the system user" },
+                { "$NEW_INTERNAL", SYSTEM_USER, TEST_POWER_USER_CISD, false,
+                        "Access denied to object with EntityTypePermId = [NEW_ENTITY_TYPE (" + getEntityKind() + ")]" },
+
+                { "$NEW_INTERNAL", SYSTEM_USER, SYSTEM_USER, true, null },
+                { "$NEW_INTERNAL", SYSTEM_USER, TEST_USER, true, null },
+                { "$NEW_INTERNAL", SYSTEM_USER, TEST_POWER_USER_CISD, true,
+                        "Access denied to object with EntityTypePermId = [NEW_ENTITY_TYPE (" + getEntityKind() + ")]" },
+
+                { "$NEW_INTERNAL", TEST_USER, SYSTEM_USER, false, null },
+                { "$NEW_INTERNAL", TEST_USER, TEST_USER, false, null },
+                { "$NEW_INTERNAL", TEST_USER, TEST_POWER_USER_CISD, false,
+                        "Access denied to object with EntityTypePermId = [NEW_ENTITY_TYPE (" + getEntityKind() + ")]" },
+
+                { "$NEW_INTERNAL", TEST_USER, SYSTEM_USER, true, null },
+                { "$NEW_INTERNAL", TEST_USER, TEST_USER, true, null },
+                { "$NEW_INTERNAL", TEST_USER, TEST_POWER_USER_CISD, true,
+                        "Access denied to object with EntityTypePermId = [NEW_ENTITY_TYPE (" + getEntityKind() + ")]" },
+        };
+    }
+
+    @Test(dataProvider = "providerTestUpdateAuthorizationWithUpdateAssignment")
+    public void testUpdateAuthorizationWithUpdateAssignment(String propertyTypeCode, String propertyAssignmentRegistrator,
+            String propertyAssignmentUpdater, boolean updateLayoutFieldsOnly, String expectedError)
+    {
+        String systemSessionToken = v3api.loginAsSystem();
+        String registratorSessionToken =
+                propertyAssignmentRegistrator.equals(SYSTEM_USER) ? v3api.loginAsSystem() : v3api.login(propertyAssignmentRegistrator, PASSWORD);
+        String updaterSessionToken =
+                propertyAssignmentUpdater.equals(SYSTEM_USER) ? v3api.loginAsSystem() : v3api.login(propertyAssignmentUpdater, PASSWORD);
+
+        CREATION entityTypeCreation = newTypeCreation();
+        entityTypeCreation.setCode("NEW_ENTITY_TYPE");
+        List<EntityTypePermId> entityTypeIds = createTypes(systemSessionToken, Arrays.asList(entityTypeCreation));
+
+        PropertyTypeCreation propertyTypeCreation = new PropertyTypeCreation();
+        propertyTypeCreation.setCode(propertyTypeCode);
+        propertyTypeCreation.setDataType(DataType.VARCHAR);
+        propertyTypeCreation.setLabel("Test label");
+        propertyTypeCreation.setDescription("Test description");
+        propertyTypeCreation.setManagedInternally(propertyTypeCode.startsWith("$"));
+        List<PropertyTypePermId> propertyTypeIds = v3api.createPropertyTypes(systemSessionToken, Arrays.asList(propertyTypeCreation));
+
+        PropertyAssignmentCreation propertyAssignmentCreation = new PropertyAssignmentCreation();
+        propertyAssignmentCreation.setPropertyTypeId(propertyTypeIds.get(0));
+        propertyAssignmentCreation.setSection("Test section");
+        propertyAssignmentCreation.setOrdinal(1);
+        propertyAssignmentCreation.setMandatory(false);
+
+        UPDATE entityTypeUpdateWithAssignmentCreation = newTypeUpdate();
+        entityTypeUpdateWithAssignmentCreation.setTypeId(entityTypeIds.get(0));
+        entityTypeUpdateWithAssignmentCreation.getPropertyAssignments().add(propertyAssignmentCreation);
+        updateTypes(registratorSessionToken, Arrays.asList(entityTypeUpdateWithAssignmentCreation));
+
+        PropertyAssignmentCreation propertyAssignmentUpdate = new PropertyAssignmentCreation();
+        propertyAssignmentUpdate.setPropertyTypeId(propertyTypeIds.get(0));
+
+        if (updateLayoutFieldsOnly)
+        {
+            propertyAssignmentUpdate.setSection("Updated section");
+            propertyAssignmentUpdate.setOrdinal(2);
+            propertyAssignmentUpdate.setMandatory(false);
+        } else
+        {
+            propertyAssignmentUpdate.setSection("Test section");
+            propertyAssignmentUpdate.setOrdinal(1);
+            propertyAssignmentUpdate.setMandatory(true);
+        }
+
+        UPDATE entityTypeUpdateWithAssignmentUpdate = newTypeUpdate();
+        entityTypeUpdateWithAssignmentUpdate.setTypeId(entityTypeIds.get(0));
+        entityTypeUpdateWithAssignmentUpdate.getPropertyAssignments().set(propertyAssignmentUpdate);
+
+        assertExceptionMessage(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    updateTypes(updaterSessionToken, Arrays.asList(entityTypeUpdateWithAssignmentUpdate));
+
+                    TYPE entityType = getType(systemSessionToken, entityTypeIds.get(0));
+                    assertEquals(entityType.getPropertyAssignments().size(), 1);
+
+                    PropertyAssignment updatedAssignment = entityType.getPropertyAssignments().get(0);
+
+                    if (updateLayoutFieldsOnly)
+                    {
+                        assertEquals(updatedAssignment.getSection(), "Updated section");
+                        assertEquals(updatedAssignment.getOrdinal(), Integer.valueOf(2));
+                        assertEquals(updatedAssignment.isMandatory(), Boolean.valueOf(false));
+                    } else
+                    {
+                        assertEquals(updatedAssignment.getSection(), "Test section");
+                        assertEquals(updatedAssignment.getOrdinal(), Integer.valueOf(1));
+                        assertEquals(updatedAssignment.isMandatory(), Boolean.valueOf(true));
+                    }
+                }
+            }, expectedError);
+    }
+
+    @DataProvider
+    public Object[][] providerTestUpdateAuthorizationWithDeleteAssignment()
+    {
+        return new Object[][] {
+                { "NEW_NON_INTERNAL", SYSTEM_USER, SYSTEM_USER, null },
+                { "NEW_NON_INTERNAL", SYSTEM_USER, TEST_USER, null },
+                { "NEW_NON_INTERNAL", SYSTEM_USER, TEST_POWER_USER_CISD,
+                        "Access denied to object with EntityTypePermId = [NEW_ENTITY_TYPE (" + getEntityKind() + ")]" },
+
+                { "NEW_NON_INTERNAL", TEST_USER, SYSTEM_USER, null },
+                { "NEW_NON_INTERNAL", TEST_USER, TEST_USER, null },
+                { "NEW_NON_INTERNAL", TEST_USER, TEST_POWER_USER_CISD,
+                        "Access denied to object with EntityTypePermId = [NEW_ENTITY_TYPE (" + getEntityKind() + ")]" },
+
+                { "$NEW_INTERNAL", SYSTEM_USER, SYSTEM_USER, null },
+                { "$NEW_INTERNAL", SYSTEM_USER, TEST_USER,
+                        "Property assignments created by the system user for internal property types can be managed only by the system user" },
+                { "$NEW_INTERNAL", SYSTEM_USER, TEST_POWER_USER_CISD,
+                        "Access denied to object with EntityTypePermId = [NEW_ENTITY_TYPE (" + getEntityKind() + ")]" },
+
+                { "$NEW_INTERNAL", TEST_USER, SYSTEM_USER, null },
+                { "$NEW_INTERNAL", TEST_USER, TEST_USER, null },
+                { "$NEW_INTERNAL", TEST_USER, TEST_POWER_USER_CISD,
+                        "Access denied to object with EntityTypePermId = [NEW_ENTITY_TYPE (" + getEntityKind() + ")]" },
+        };
+    }
+
+    @Test(dataProvider = "providerTestUpdateAuthorizationWithDeleteAssignment")
+    public void testUpdateAuthorizationWithDeleteAssignment(String propertyTypeCode, String propertyAssignmentRegistrator,
+            String propertyAssignmentDeleter, String expectedError)
+    {
+        String systemSessionToken = v3api.loginAsSystem();
+        String registratorSessionToken =
+                propertyAssignmentRegistrator.equals(SYSTEM_USER) ? v3api.loginAsSystem() : v3api.login(propertyAssignmentRegistrator, PASSWORD);
+        String deleterSessionToken =
+                propertyAssignmentDeleter.equals(SYSTEM_USER) ? v3api.loginAsSystem() : v3api.login(propertyAssignmentDeleter, PASSWORD);
+
+        CREATION entityTypeCreation = newTypeCreation();
+        entityTypeCreation.setCode("NEW_ENTITY_TYPE");
+        List<EntityTypePermId> entityTypeIds = createTypes(systemSessionToken, Arrays.asList(entityTypeCreation));
+
+        PropertyTypeCreation propertyTypeCreation = new PropertyTypeCreation();
+        propertyTypeCreation.setCode(propertyTypeCode);
+        propertyTypeCreation.setDataType(DataType.VARCHAR);
+        propertyTypeCreation.setLabel("Test label");
+        propertyTypeCreation.setDescription("Test description");
+        propertyTypeCreation.setManagedInternally(propertyTypeCode.startsWith("$"));
+        List<PropertyTypePermId> propertyTypeIds = v3api.createPropertyTypes(systemSessionToken, Arrays.asList(propertyTypeCreation));
+
+        PropertyAssignmentCreation propertyAssignmentCreation = new PropertyAssignmentCreation();
+        propertyAssignmentCreation.setPropertyTypeId(propertyTypeIds.get(0));
+
+        UPDATE entityTypeUpdateWithAssignmentCreation = newTypeUpdate();
+        entityTypeUpdateWithAssignmentCreation.setTypeId(entityTypeIds.get(0));
+        entityTypeUpdateWithAssignmentCreation.getPropertyAssignments().add(propertyAssignmentCreation);
+        updateTypes(registratorSessionToken, Arrays.asList(entityTypeUpdateWithAssignmentCreation));
+
+        UPDATE entityTypeUpdateWithAssignmentDeletion = newTypeUpdate();
+        entityTypeUpdateWithAssignmentDeletion.setTypeId(entityTypeIds.get(0));
+        entityTypeUpdateWithAssignmentDeletion.getPropertyAssignments().set();
+
+        assertExceptionMessage(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    updateTypes(deleterSessionToken, Arrays.asList(entityTypeUpdateWithAssignmentDeletion));
+
+                    TYPE entityType = getType(systemSessionToken, entityTypeIds.get(0));
+                    assertEquals(entityType.getPropertyAssignments().size(), 0);
+                }
+            }, expectedError);
+    }
 
     @Test
     public void testUpdateWithUnspecifiedId()
@@ -381,7 +644,7 @@ public abstract class UpdateEntityTypeTest<UPDATE extends IEntityTypeUpdate, TYP
     public void testSetPropertyTypeAssignment()
     {
         // Given
-        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        String sessionToken = v3api.loginAsSystem();
         UPDATE update = newTypeUpdate();
         EntityTypePermId typeId = getTypeId();
         update.setTypeId(typeId);

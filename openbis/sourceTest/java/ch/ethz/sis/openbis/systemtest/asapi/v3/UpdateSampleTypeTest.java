@@ -28,6 +28,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractEntitySear
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleTypeCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
@@ -37,18 +38,22 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Script;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
 
 /**
- * 
- *
  * @author Franz-Josef Elmer
  */
 @Test
-public class UpdateSampleTypeTest extends UpdateEntityTypeTest<SampleTypeUpdate, SampleType>
+public class UpdateSampleTypeTest extends UpdateEntityTypeTest<SampleTypeCreation, SampleTypeUpdate, SampleType>
 {
 
     @Override
     protected EntityKind getEntityKind()
     {
         return EntityKind.SAMPLE;
+    }
+
+    @Override
+    protected SampleTypeCreation newTypeCreation()
+    {
+        return new SampleTypeCreation();
     }
 
     @Override
@@ -62,10 +67,16 @@ public class UpdateSampleTypeTest extends UpdateEntityTypeTest<SampleTypeUpdate,
     {
         return new EntityTypePermId("CONTROL_LAYOUT", ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind.SAMPLE);
     }
-    
+
     @Override
     protected void createEntity(String sessionToken, IEntityTypeId entityType, String propertyType, String propertyValue)
     {
+    }
+
+    @Override
+    protected List<EntityTypePermId> createTypes(String sessionToken, List<SampleTypeCreation> updates)
+    {
+        return v3api.createSampleTypes(sessionToken, updates);
     }
 
     @Override
@@ -146,7 +157,7 @@ public class UpdateSampleTypeTest extends UpdateEntityTypeTest<SampleTypeUpdate,
         fetchOptions.withProperties();
         return v3api.searchSamples(sessionToken, (SampleSearchCriteria) searchCriteria, fetchOptions).getObjects();
     }
-    
+
     @Test
     public void testLogging()
     {

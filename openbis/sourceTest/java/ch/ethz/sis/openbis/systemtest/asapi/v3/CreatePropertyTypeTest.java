@@ -82,11 +82,48 @@ public class CreatePropertyTypeTest extends AbstractTest
     static String EXAMPLE_INCORRECT_XSLT = EXAMPLE_XSLT.replaceAll("xsl:stylesheet",
             "xsl:styleshet");
 
+    @DataProvider
+    private Object[][] providerTestCreateAuthorization()
+    {
+        return new Object[][] {
+                { "NEW_NON_INTERNAL", SYSTEM_USER, null },
+                { "NEW_NON_INTERNAL", TEST_USER, null },
+                { "NEW_NON_INTERNAL", TEST_POWER_USER_CISD, "Access denied to object with PropertyTypePermId = [NEW_NON_INTERNAL]" },
+
+                { "$NEW_INTERNAL", SYSTEM_USER, null },
+                { "$NEW_INTERNAL", TEST_USER, "Access denied to object with PropertyTypePermId = [$NEW_INTERNAL]" },
+                { "$NEW_INTERNAL", TEST_POWER_USER_CISD, "Access denied to object with PropertyTypePermId = [$NEW_INTERNAL]" }
+        };
+    }
+
+    @Test(dataProvider = "providerTestCreateAuthorization")
+    public void testCreateAuthorization(String propertyTypeCode, String propertyTypeRegistrator, String expectedError)
+    {
+        String sessionToken = propertyTypeRegistrator.equals(SYSTEM_USER) ? v3api.loginAsSystem() : v3api.login(propertyTypeRegistrator, PASSWORD);
+
+        PropertyTypeCreation creation = new PropertyTypeCreation();
+        creation.setCode(propertyTypeCode);
+        creation.setDataType(DataType.VARCHAR);
+        creation.setLabel("Test label");
+        creation.setDescription("Test description");
+        creation.setManagedInternally(propertyTypeCode.startsWith("$"));
+
+        assertExceptionMessage(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    List<PropertyTypePermId> ids = v3api.createPropertyTypes(sessionToken, Arrays.asList(creation));
+                    assertEquals(ids.size(), 1);
+                }
+            }, expectedError);
+    }
+
     @Test
     public void testCreateManagedInternallyPropertyTypeWithCodeWithDolarSign()
     {
         // Given
-        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        String sessionToken = v3api.loginAsSystem();
         PropertyTypeCreation creation = new PropertyTypeCreation();
         creation.setCode("$test-property");
         creation.setDataType(DataType.REAL);
@@ -341,10 +378,10 @@ public class CreatePropertyTypeTest extends AbstractTest
         creation.setDataType(DataType.DATE);
         creation.setDescription("only for testing");
         creation.setLabel("Test Date Property");
-        
+
         // When
         List<PropertyTypePermId> ids = v3api.createPropertyTypes(sessionToken, Arrays.asList(creation));
-        
+
         // Then
         assertEquals(ids.toString(), "[TEST-DATE-PROPERTY]");
         PropertyTypeSearchCriteria searchCriteria = new PropertyTypeSearchCriteria();
@@ -360,10 +397,10 @@ public class CreatePropertyTypeTest extends AbstractTest
         assertEquals(propertyType.getLabel(), creation.getLabel());
         assertEquals(propertyType.isManagedInternally().booleanValue(), false);
         assertEquals(types.size(), 1);
-        
+
         v3api.logout(sessionToken);
     }
-    
+
     @Test
     public void testMissingCode()
     {
@@ -552,7 +589,7 @@ public class CreatePropertyTypeTest extends AbstractTest
     @Test(dataProvider = "usersNotAllowedToCreatePropertyTypes")
     public void testCreateWithUserCausingAuthorizationFailure(final String user)
     {
-        assertAuthorizationFailureException(new IDelegatedAction()
+        assertUnauthorizedObjectAccessException(new IDelegatedAction()
             {
                 @Override
                 public void execute()
@@ -560,11 +597,12 @@ public class CreatePropertyTypeTest extends AbstractTest
                     String sessionToken = v3api.login(user, PASSWORD);
                     PropertyTypeCreation creation = new PropertyTypeCreation();
                     creation.setCode("TEST");
-                    creation.setDescription("test");
+                    creation.setLabel("test label");
+                    creation.setDescription("test description");
                     creation.setDataType(DataType.REAL);
                     v3api.createPropertyTypes(sessionToken, Arrays.asList(creation));
                 }
-            });
+            }, new PropertyTypePermId("TEST"));
     }
 
     @Test
