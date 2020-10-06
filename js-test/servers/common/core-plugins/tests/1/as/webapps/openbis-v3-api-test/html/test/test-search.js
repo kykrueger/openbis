@@ -888,42 +888,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			
 			testSearch(c, fSearch, fCheck);
 		});
-/*
-	    @Test
-	    public void testSearchWithCodeThatIsLessOrEqualTo()
-	    {
-	        SampleSearchCriteria criteria = new SampleSearchCriteria();
-	        criteria.withCode().thatIsLessThanOrEqualTo("3VCP5");
-	        testSearch(TEST_USER, criteria, "/CISD/3V-125", "/CISD/3V-126", "/CISD/3VCP5");
-	    }
 
-	    @Test
-	    public void testSearchWithCodeThatIsLessThan()
-	    {
-	        SampleSearchCriteria criteria = new SampleSearchCriteria();
-	        criteria.withCode().thatIsLessThan("3VCP5");
-	        testSearch(TEST_USER, criteria, "/CISD/3V-125", "/CISD/3V-126");
-	    }
-
-	    @Test
-	    public void testSearchWithCodeThatIsGreaterThanOrEqualTo()
-	    {
-	        SampleSearchCriteria criteria = new SampleSearchCriteria();
-	        criteria.withCode().thatIsGreaterThanOrEqualTo("WELL-A01");
-	        testSearch(TEST_USER, criteria, "/CISD/PLATE_WELLSEARCH:WELL-A01", "/CISD/PLATE_WELLSEARCH:WELL-A02");
-	    }
-
-	    @Test
-	    public void testSearchWithCodeThatIsGreaterThan()
-	    {
-	        SampleSearchCriteria criteria = new SampleSearchCriteria();
-	        criteria.withCode().thatIsGreaterThan("WELL-A01");
-	        testSearch(TEST_USER, criteria, "/CISD/PLATE_WELLSEARCH:WELL-A02");
-	    }
-
-*/
-		
-		
 		QUnit.test("searchSampleTypes()", function(assert) {
 			var c = new common(assert, openbis);
 
@@ -2711,6 +2676,70 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testSearch(c, fSearch, fCheck);
 		});
 
+		QUnit.test("searchSamples() withProperty", function(assert) {
+			var c = new common(assert, openbis);
+
+			var samplePermId;
+			var fSearch = function(facade) {
+				return createPropertyType(c, facade, c.DataType.VARCHAR).then(function(propertyTypeIds) {
+					return createSampleType(c, facade, false, propertyTypeIds[0]).then(function(sampleTypeIds) {
+						return createSample(c, facade, sampleTypeIds[0], propertyTypeIds[0], "abc").then(
+							function(sampleIds) {
+								samplePermId = sampleIds[0];
+								var criteria = new c.SampleSearchCriteria();
+								criteria.withProperty(propertyTypeIds[0].getPermId()).thatEquals("abc");
+								return facade.searchSamples(criteria, c.createSampleFetchOptions());
+							});
+					});
+				});
+			}
+
+			var fCheck = function(facade, samples) {
+				c.assertEqual(samples.length, 1);
+				c.assertEqual(samples[0].getPermId(), samplePermId.getPermId());
+			}
+
+			testSearch(c, fSearch, fCheck);
+		});
+
+		function createSampleType(c, facade, mandatory) {
+			var creation = new c.SampleTypeCreation();
+			creation.setCode("SAMPLE-TYPE-" + Date.now());
+
+			var assignments = [];
+			for (var i = 3; i < arguments.length; i++) {
+				var propertyAssignmentCreation = new c.PropertyAssignmentCreation();
+				propertyAssignmentCreation.setPropertyTypeId(arguments[i]);
+				propertyAssignmentCreation.setMandatory(mandatory);
+				assignments.push(propertyAssignmentCreation);
+			}
+			creation.setPropertyAssignments(assignments);
+
+			return facade.createSampleTypes([creation]);
+		}
+
+		function createPropertyType(c, facade, dataType, vocabularyPermId) {
+			var creation = new c.PropertyTypeCreation();
+			creation.setCode("TYPE-" + Date.now());
+			creation.setDataType(dataType);
+			creation.setDescription("description");
+			creation.setLabel("label");
+
+			if (dataType === c.DataType.CONTROLLEDVOCABULARY)
+			{
+				creation.setVocabularyId(vocabularyPermId);
+			}
+			return facade.createPropertyTypes([creation]);
+		}
+
+		function createSample(c, facade, sampleTypeId, propertyType, value) {
+			var creation = new c.SampleCreation();
+			creation.setTypeId(sampleTypeId);
+			creation.setCode("TEST-SAMPLE-" + Date.now());
+			creation.setSpaceId(new c.SpacePermId("TEST"));
+			creation.setProperty(propertyType, value);
+			return facade.createSamples([creation]);
+		}
 	}
 
 	return function() {
