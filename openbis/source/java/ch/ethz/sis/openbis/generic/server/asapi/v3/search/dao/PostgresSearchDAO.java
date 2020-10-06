@@ -91,7 +91,8 @@ public class PostgresSearchDAO implements ISQLSearchDAO
     {
         final Map<String, String> dataTypeByPropertyCode;
 
-        if(translationContext.getDataTypeByPropertyCode() == null) {
+        if (translationContext.getDataTypeByPropertyCode() == null)
+        {
             final String pt = "pt";
             final String dt = "dt";
             final String propertyTypeAlias = "propertytype";
@@ -109,13 +110,25 @@ public class PostgresSearchDAO implements ISQLSearchDAO
                     (valueByColumnName) -> ((((Boolean) valueByColumnName.get(isManagedInternallyAlias)) ? "$" : "") + ((String) valueByColumnName.get(propertyTypeAlias))),
                     (valueByColumnName) -> (String) valueByColumnName.get(dataTypeAlias)));
             translationContext.setDataTypeByPropertyCode(dataTypeByPropertyCode);
-        } else {
+        } else
+        {
             dataTypeByPropertyCode = translationContext.getDataTypeByPropertyCode();
         }
 
         translationContext.getCriteria().forEach(criterion ->
         {
-            if (criterion instanceof NumberPropertySearchCriteria)
+            if (criterion instanceof StrictlyStringPropertySearchCriteria)
+            {
+                final String dataType = dataTypeByPropertyCode.get(((StrictlyStringPropertySearchCriteria) criterion)
+                        .getFieldName());
+                if (!dataType.equals(DataTypeCode.VARCHAR.toString())
+                        && !dataType.equals(DataTypeCode.MULTILINE_VARCHAR.toString())
+                        && !dataType.equals(DataTypeCode.HYPERLINK.toString())
+                        && !dataType.equals(DataTypeCode.XML.toString()))
+                {
+                    throwInconsistencyException(criterion, dataType);
+                }
+            } if (criterion instanceof NumberPropertySearchCriteria)
             {
                 final String dataType = dataTypeByPropertyCode.get(((NumberPropertySearchCriteria) criterion)
                         .getFieldName());
@@ -130,6 +143,14 @@ public class PostgresSearchDAO implements ISQLSearchDAO
                         .getFieldName());
                 if (!dataType.equals(DataTypeCode.TIMESTAMP.toString())
                         && !dataType.equals(DataTypeCode.DATE.toString()))
+                {
+                    throwInconsistencyException(criterion, dataType);
+                }
+            } else if (criterion instanceof BooleanPropertySearchCriteria)
+            {
+                final String dataType = dataTypeByPropertyCode.get(((BooleanPropertySearchCriteria) criterion)
+                        .getFieldName());
+                if (!dataType.equals(DataTypeCode.BOOLEAN.toString()))
                 {
                     throwInconsistencyException(criterion, dataType);
                 }

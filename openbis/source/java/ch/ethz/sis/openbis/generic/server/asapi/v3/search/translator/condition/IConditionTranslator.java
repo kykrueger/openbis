@@ -33,7 +33,8 @@ public interface IConditionTranslator<CRITERIA extends ISearchCriteria>
     Map<String, JoinInformation> getJoinInformationMap(final CRITERIA criterion, final TableMapper tableMapper,
             final IAliasFactory aliasFactory);
 
-    void translate(final CRITERIA criterion, final TableMapper tableMapper, final List<Object> args, final StringBuilder sqlBuilder,
-            final Map<String, JoinInformation> aliases, final Map<String, String> dataTypeByPropertyName);
+    void translate(final CRITERIA criterion, final TableMapper tableMapper, final List<Object> args,
+            final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases,
+            final Map<String, String> dataTypeByPropertyCode);
 
 }

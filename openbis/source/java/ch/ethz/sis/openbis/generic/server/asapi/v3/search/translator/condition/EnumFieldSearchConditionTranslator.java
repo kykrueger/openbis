@@ -41,7 +41,7 @@ public class EnumFieldSearchConditionTranslator implements IConditionTranslator<
     @Override
     public void translate(final EnumFieldSearchCriteria<?> criterion, final TableMapper tableMapper, final List<Object> args,
             final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases,
-            final Map<String, String> dataTypeByPropertyName)
+            final Map<String, String> dataTypeByPropertyCode)
     {
         if (criterion.getFieldType() == ATTRIBUTE)
         {

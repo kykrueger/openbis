@@ -17,12 +17,16 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.BooleanFieldSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.AttributesMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils;
+import ch.systemsx.cisd.common.exceptions.UserFailureException;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
+import ch.systemsx.cisd.openbis.generic.shared.dto.TableNames;
 
 import java.util.List;
 import java.util.Map;
@@ -45,6 +49,7 @@ public class BooleanFieldSearchConditionTranslator implements IConditionTranslat
             }
 
             case PROPERTY:
+            case ANY_PROPERTY:
             {
                 return TranslatorUtils.getPropertyJoinInformationMap(tableMapper, aliasFactory);
             }
@@ -56,7 +61,7 @@ public class BooleanFieldSearchConditionTranslator implements IConditionTranslat
     @Override
     public void translate(final BooleanFieldSearchCriteria criterion, final TableMapper tableMapper, final List<Object> args,
             final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases,
-            final Map<String, String> dataTypeByPropertyName)
+            final Map<String, String> dataTypeByPropertyCode)
     {
         switch (criterion.getFieldType())
         {
@@ -73,15 +78,29 @@ public class BooleanFieldSearchConditionTranslator implements IConditionTranslat
 
             case PROPERTY:
             {
-                final Boolean value = criterion.getFieldValue();
                 final String propertyName = TranslatorUtils.normalisePropertyName(criterion.getFieldName());
+                final String casting = dataTypeByPropertyCode.get(propertyName);
+
+                if (!DataTypeCode.BOOLEAN.toString().equals(casting))
+                {
+                    throw new UserFailureException(String.format(
+                            "The data type of property %s has to be %s instead of %s.", propertyName,
+                            DataTypeCode.BOOLEAN, casting));
+                }
+
                 final boolean internalProperty = TranslatorUtils.isPropertyInternal(criterion.getFieldName());
 
-                translateBooleanProperty(tableMapper, args, sqlBuilder, aliases, value, propertyName, internalProperty);
+                translateBooleanProperty(tableMapper, args, sqlBuilder, aliases, criterion.getFieldValue(),
+                        propertyName, internalProperty);
                 break;
             }
 
             case ANY_PROPERTY:
+            {
+                translateBooleanProperty(tableMapper, args, sqlBuilder, aliases, criterion.getFieldValue(), null, null);
+                break;
+            }
+
             case ANY_FIELD:
             {
                 throw new IllegalArgumentException();
@@ -91,7 +110,7 @@ public class BooleanFieldSearchConditionTranslator implements IConditionTranslat
 
     static void translateBooleanProperty(final TableMapper tableMapper, final List<Object> args,
             final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases, final Boolean value,
-            final String propertyName, final boolean internalProperty)
+            final String propertyName, final Boolean internalProperty)
     {
         final JoinInformation joinInformation = aliases.get(tableMapper.getAttributeTypesTable());
         final String entityTypesSubTableAlias = joinInformation.getSubTableAlias();
@@ -104,11 +123,23 @@ public class BooleanFieldSearchConditionTranslator implements IConditionTranslat
             sqlBuilder.append(CASE).append(SP).append(WHEN).append(SP);
         }
 
-        TranslatorUtils.appendInternalExternalConstraint(sqlBuilder, args, entityTypesSubTableAlias, internalProperty);
+        sqlBuilder.append(aliases.get(TableNames.DATA_TYPES_TABLE).getSubTableAlias())
+                .append(PERIOD).append(ColumnNames.CODE_COLUMN).append(SP).append(EQ).append(SP)
+                .append(SQ).append(DataType.BOOLEAN).append(SQ);
 
-        sqlBuilder.append(SP).append(entityTypesSubTableAlias).append(PERIOD).append(ColumnNames.CODE_COLUMN).append(SP)
-                .append(EQ).append(SP).append(QU);
-        args.add(propertyName);
+        if (internalProperty != null)
+        {
+            sqlBuilder.append(SP).append(AND).append(SP);
+            TranslatorUtils.appendInternalExternalConstraint(sqlBuilder, args, entityTypesSubTableAlias, internalProperty);
+        }
+
+        if (propertyName != null)
+        {
+            sqlBuilder.append(SP).append(AND);
+            sqlBuilder.append(SP).append(entityTypesSubTableAlias).append(PERIOD).append(ColumnNames.CODE_COLUMN)
+                    .append(SP).append(EQ).append(SP).append(QU);
+            args.add(propertyName);
+        }
 
         if (value != null)
         {
