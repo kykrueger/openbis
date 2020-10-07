@@ -70,7 +70,6 @@ define([ "require", "stjs", "as/dto/common/search/AbstractObjectSearchCriteria",
 			return this.addCriteria(new StringPropertySearchCriteria(propertyName));
 		};
 		prototype.withStringProperty = function(propertyName) {
-			debugger;
 			var StrictlyStringPropertySearchCriteria =
 				require("as/dto/common/search/StrictlyStringPropertySearchCriteria");
 			return this.addCriteria(new StrictlyStringPropertySearchCriteria(propertyName));
