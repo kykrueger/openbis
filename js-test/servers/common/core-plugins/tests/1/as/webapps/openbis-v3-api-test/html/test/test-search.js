@@ -2694,12 +2694,64 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				});
 			}
 
+			var fCleanup = function(facade, samples) {
+				var options = new c.SampleDeletionOptions();
+				options.setReason("Test reason.");
+
+				if (samples) {
+					facade.deleteSamples([samples[0].getPermId()], options).fail(function(error) {
+						c.fail("Error deleting sample. error=" + error)
+					});
+				}
+			}
+
 			var fCheck = function(facade, samples) {
 				c.assertEqual(samples.length, 1);
 				c.assertEqual(samples[0].getPermId(), samplePermId.getPermId());
+
+				fCleanup(facade, samples);
 			}
 
-			testSearch(c, fSearch, fCheck);
+			testSearch(c, fSearch, fCheck, fCleanup);
+		});
+
+		QUnit.test("searchSamples() withStringProperty", function(assert) {
+			var c = new common(assert, openbis);
+
+			var samplePermId;
+			var fSearch = function(facade) {
+				return createPropertyType(c, facade, c.DataType.VARCHAR).then(function(propertyTypeIds) {
+					return createSampleType(c, facade, false, propertyTypeIds[0]).then(function(sampleTypeIds) {
+						return createSample(c, facade, sampleTypeIds[0], propertyTypeIds[0], "abc").then(
+							function(sampleIds) {
+								samplePermId = sampleIds[0];
+								var criteria = new c.SampleSearchCriteria();
+								criteria.withStringProperty(propertyTypeIds[0].getPermId()).thatEquals("abc");
+								return facade.searchSamples(criteria, c.createSampleFetchOptions());
+							});
+					});
+				});
+			}
+
+			var fCleanup = function(facade, samples) {
+				var options = new c.SampleDeletionOptions();
+				options.setReason("Test reason.");
+
+				if (samples) {
+					facade.deleteSamples([samples[0].getPermId()], options).fail(function(error) {
+						c.fail("Error deleting sample. error=" + error)
+					});
+				}
+			}
+
+			var fCheck = function(facade, samples) {
+				c.assertEqual(samples.length, 1);
+				c.assertEqual(samples[0].getPermId(), samplePermId.getPermId());
+
+				fCleanup(facade, samples);
+			}
+
+			testSearch(c, fSearch, fCheck, fCleanup);
 		});
 
 		function createSampleType(c, facade, mandatory) {
@@ -2735,7 +2787,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 		function createSample(c, facade, sampleTypeId, propertyType, value) {
 			var creation = new c.SampleCreation();
 			creation.setTypeId(sampleTypeId);
-			creation.setCode("TEST-SAMPLE-" + Date.now());
+			creation.setCode("TST-SAMPLE-" + Date.now());
 			creation.setSpaceId(new c.SpacePermId("TEST"));
 			creation.setProperty(propertyType, value);
 			return facade.createSamples([creation]);
