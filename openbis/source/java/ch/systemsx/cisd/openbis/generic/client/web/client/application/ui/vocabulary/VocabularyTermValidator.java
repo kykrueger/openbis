@@ -65,10 +65,6 @@ final class VocabularyTermValidator implements Validator
     final public String validate(Field<?> field, String value)
     {
         final List<VocabularyTerm> terms = VocabularyTermValidator.getTerms(value);
-        if (terms.size() == 0)
-        {
-            return messageProvider.getMessage(Dict.MISSING_VOCABULARY_TERMS);
-        }
         for (final VocabularyTerm term : terms)
         {
             CodeFieldKind codeKind = CodeFieldKind.CODE_WITH_COLON;
