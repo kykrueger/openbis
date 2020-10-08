@@ -106,15 +106,15 @@ public class NumberFieldSearchConditionTranslator implements IConditionTranslato
             case PROPERTY:
             {
                 final AbstractNumberValue value = criterion.getFieldValue();
-                final String propertyName = TranslatorUtils.normalisePropertyName(criterion.getFieldName());
-                String casting = dataTypeByPropertyCode.get(propertyName);
+                final String casting = dataTypeByPropertyCode.get(criterion.getFieldName());
                 if (VALID_DATA_TYPES.contains(casting) == false)
                 {
-                    throw new UserFailureException("The data type of property " + propertyName + " has to be one of "
-                            + VALID_DATA_TYPES + " instead of " + casting + ".");
+                    throw new UserFailureException("The data type of property " + criterion.getFieldName() +
+                            " has to be one of " + VALID_DATA_TYPES + " instead of " + casting + ".");
                 }
                 final boolean internalProperty = TranslatorUtils.isPropertyInternal(criterion.getFieldName());
-                translateNumberProperty(tableMapper, args, sqlBuilder, aliases, value, propertyName, internalProperty);
+                translateNumberProperty(tableMapper, args, sqlBuilder, aliases, value,
+                        TranslatorUtils.normalisePropertyName(criterion.getFieldName()), internalProperty);
                 break;
             }
 
