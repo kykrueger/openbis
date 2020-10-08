@@ -106,9 +106,8 @@ public class DateFieldSearchConditionTranslator implements IConditionTranslator<
 
             case PROPERTY:
             {
-                final String propertyName = TranslatorUtils.normalisePropertyName(criterion.getFieldName());
                 translateDateProperty(criterion, tableMapper, args, sqlBuilder, aliases, dataTypeByPropertyCode,
-                        propertyName);
+                        TranslatorUtils.normalisePropertyName(criterion.getFieldName()));
                 break;
             }
 
@@ -196,14 +195,16 @@ public class DateFieldSearchConditionTranslator implements IConditionTranslator<
 
     static void appendWhenForDateOrTimestampProperties(final StringBuilder sqlBuilder, final List<Object> args,
             final TableMapper tableMapper, final IDate value, final Map<String, JoinInformation> aliases,
-            final ITimeZone timeZone, final String propertyName, final Boolean internalProperty, final String entityTypesSubTableAlias, final boolean castToDate,
+            final ITimeZone timeZone, final String propertyName, final Boolean internalProperty,
+            final String entityTypesSubTableAlias, final boolean castToDate,
             final String... dataTypeStrings)
     {
         sqlBuilder.append(SP).append(WHEN).append(SP);
 
         if (internalProperty != null)
         {
-            TranslatorUtils.appendInternalExternalConstraint(sqlBuilder, args, entityTypesSubTableAlias, internalProperty);
+            TranslatorUtils.appendInternalExternalConstraint(sqlBuilder, args, entityTypesSubTableAlias,
+                    internalProperty);
             sqlBuilder.append(SP).append(AND);
         }
 

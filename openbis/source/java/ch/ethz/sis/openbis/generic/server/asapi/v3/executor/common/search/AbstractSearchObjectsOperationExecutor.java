@@ -299,11 +299,19 @@ public abstract class AbstractSearchObjectsOperationExecutor<OBJECT, OBJECT_PE, 
             }
         }
 
-        final List<Long> toPage = (sortOptions != null) ? getSearchManager().sortIDs(ids, sortOptions) : new ArrayList<>(ids);
+        final List<Long> toPage = (sortOptions != null) ? getSearchManager().sortIDs(ids, sortOptions)
+                : new ArrayList<>(ids);
         final Integer fromRecord = fetchOptions.getFrom();
         final Integer recordsCount = fetchOptions.getCount();
         final boolean hasPaging = fromRecord != null && recordsCount != null;
-        return hasPaging ? toPage.subList(fromRecord, Math.min(fromRecord + recordsCount, toPage.size())) : toPage;
+        if (hasPaging)
+        {
+            final int toRecord = Math.min(fromRecord + recordsCount, toPage.size());
+            return fromRecord <= toRecord ? toPage.subList(fromRecord, toRecord) : Collections.emptyList();
+        } else
+        {
+            return toPage;
+        }
     }
 
 }

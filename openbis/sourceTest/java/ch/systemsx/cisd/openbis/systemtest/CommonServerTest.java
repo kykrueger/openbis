@@ -18,6 +18,7 @@ package ch.systemsx.cisd.openbis.systemtest;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertNull;
 import static org.testng.Assert.fail;
 
 import java.sql.Connection;
@@ -100,6 +101,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MetaprojectAssignments;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MetaprojectAssignmentsCount;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewAttachment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewAuthorizationGroup;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewETPTAssignment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewExperiment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewVocabulary;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Project;
@@ -108,6 +110,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyUpdates;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Sample;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleAttributeSearchFieldKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleParentWithDerived;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleUpdateResult;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Script;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ScriptType;
@@ -123,12 +126,15 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.metaproject.Metaproj
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataSetUpdatesDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataSetUploadContext;
+import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePE;
+import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePropertyTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentUpdatesDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.MetaprojectAssignmentPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.MetaprojectPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ProjectUpdatesDTO;
+import ch.systemsx.cisd.openbis.generic.shared.dto.PropertyTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SampleUpdatesDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SearchableEntity;
@@ -148,6 +154,414 @@ public class CommonServerTest extends SystemTestCase
 {
 
     private Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION, getClass());
+
+    @DataProvider
+    private Object[][] providerTestRegisterPropertyTypeAuthorization()
+    {
+        return new Object[][] {
+                { "NEW_NON_INTERNAL", SYSTEM_USER, null },
+                { "NEW_NON_INTERNAL", TEST_USER, null },
+                { "NEW_NON_INTERNAL", TEST_POWER_USER_CISD, "None of method roles '[INSTANCE_ADMIN]' could be found in roles of user 'test_role'" },
+
+                { "$NEW_INTERNAL", SYSTEM_USER, null },
+                { "$NEW_INTERNAL", TEST_USER, "Internal property types can be managed only by the system user" },
+                { "$NEW_INTERNAL", TEST_POWER_USER_CISD, "None of method roles '[INSTANCE_ADMIN]' could be found in roles of user 'test_role'" }
+        };
+    }
+
+    @Test(dataProvider = "providerTestRegisterPropertyTypeAuthorization")
+    public void testRegisterPropertyTypeAuthorization(String propertyTypeCode, String propertyTypeRegistrator, String expectedError)
+    {
+        SessionContextDTO session = propertyTypeRegistrator.equals(SYSTEM_USER) ? commonServer.tryToAuthenticateAsSystem()
+                : commonServer.tryAuthenticate(propertyTypeRegistrator, PASSWORD);
+
+        PropertyType propertyType = new PropertyType();
+        propertyType.setCode(propertyTypeCode);
+        propertyType.setDataType(new DataType(DataTypeCode.VARCHAR));
+        propertyType.setLabel("Test label");
+        propertyType.setDescription("Test description");
+        propertyType.setManagedInternally(propertyTypeCode.startsWith("$"));
+
+        assertExceptionMessage(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    commonServer.registerPropertyType(session.getSessionToken(), propertyType);
+
+                    PropertyTypePE propertyTypePE = daoFactory.getPropertyTypeDAO().tryFindPropertyTypeByCode(propertyTypeCode);
+                    assertNotNull(propertyTypePE);
+                }
+            }, expectedError);
+    }
+
+    @DataProvider
+    private Object[][] providerTestUpdatePropertyTypeAuthorization()
+    {
+        return new Object[][] {
+                { "NEW_NON_INTERNAL", SYSTEM_USER, SYSTEM_USER, null },
+                { "NEW_NON_INTERNAL", SYSTEM_USER, TEST_USER, null },
+                { "NEW_NON_INTERNAL", SYSTEM_USER, TEST_POWER_USER_CISD,
+                        "None of method roles '[INSTANCE_ADMIN]' could be found in roles of user 'test_role'" },
+
+                { "NEW_NON_INTERNAL", TEST_USER, SYSTEM_USER, null },
+                { "NEW_NON_INTERNAL", TEST_USER, TEST_USER, null },
+                { "NEW_NON_INTERNAL", TEST_USER, TEST_POWER_USER_CISD,
+                        "None of method roles '[INSTANCE_ADMIN]' could be found in roles of user 'test_role'" },
+
+                { "$NEW_INTERNAL", SYSTEM_USER, SYSTEM_USER, null },
+                { "$NEW_INTERNAL", SYSTEM_USER, TEST_USER, "Internal property types can be managed only by the system user" },
+                { "$NEW_INTERNAL", SYSTEM_USER, TEST_POWER_USER_CISD,
+                        "None of method roles '[INSTANCE_ADMIN]' could be found in roles of user 'test_role'" },
+        };
+    }
+
+    @Test(dataProvider = "providerTestUpdatePropertyTypeAuthorization")
+    public void testUpdatePropertyTypeAuthorization(String propertyTypeCode, String propertyTypeRegistrator, String propertyTypeUpdater,
+            String expectedError)
+    {
+        SessionContextDTO registratorSession =
+                propertyTypeRegistrator.equals(SYSTEM_USER) ? commonServer.tryToAuthenticateAsSystem()
+                        : commonServer.tryAuthenticate(propertyTypeRegistrator, PASSWORD);
+        SessionContextDTO updaterSession = propertyTypeUpdater.equals(SYSTEM_USER) ? commonServer.tryToAuthenticateAsSystem()
+                : commonServer.tryAuthenticate(propertyTypeUpdater, PASSWORD);
+
+        PropertyType propertyType = new PropertyType();
+        propertyType.setCode(propertyTypeCode);
+        propertyType.setDataType(new DataType(DataTypeCode.VARCHAR));
+        propertyType.setLabel("Test label");
+        propertyType.setDescription("Test description");
+        propertyType.setManagedInternally(propertyTypeCode.startsWith("$"));
+        commonServer.registerPropertyType(registratorSession.getSessionToken(), propertyType);
+
+        PropertyTypePE propertyTypePE = daoFactory.getPropertyTypeDAO().tryFindPropertyTypeByCode(propertyTypeCode);
+        assertNotNull(propertyTypePE);
+
+        PropertyType propertyTypeUpdate = new PropertyType();
+        propertyTypeUpdate.setId(propertyTypePE.getId());
+        propertyTypeUpdate.setCode(propertyTypePE.getCode());
+        propertyTypeUpdate.setDataType(new DataType(propertyTypePE.getType().getCode()));
+        propertyTypeUpdate.setLabel(propertyTypePE.getLabel());
+        propertyTypeUpdate.setDescription("New description");
+        propertyTypeUpdate.setManagedInternally(propertyTypePE.isManagedInternally());
+        propertyTypeUpdate.setModificationDate(propertyTypePE.getModificationDate());
+
+        assertExceptionMessage(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    commonServer.updatePropertyType(updaterSession.getSessionToken(), propertyTypeUpdate);
+
+                    PropertyTypePE updatedPropertyTypePE = daoFactory.getPropertyTypeDAO().tryFindPropertyTypeByCode(propertyTypeCode);
+                    assertNotNull(updatedPropertyTypePE);
+                    assertEquals(updatedPropertyTypePE.getDescription(), "New description");
+                }
+            }, expectedError);
+    }
+
+    @DataProvider
+    private Object[][] providerTestDeletePropertyTypesAuthorization()
+    {
+        return new Object[][] {
+                { "NEW_NON_INTERNAL", SYSTEM_USER, SYSTEM_USER, null },
+                { "NEW_NON_INTERNAL", SYSTEM_USER, TEST_USER, null },
+                { "NEW_NON_INTERNAL", SYSTEM_USER, TEST_POWER_USER_CISD,
+                        "None of method roles '[INSTANCE_ADMIN]' could be found in roles of user 'test_role'" },
+
+                { "NEW_NON_INTERNAL", TEST_USER, SYSTEM_USER, null },
+                { "NEW_NON_INTERNAL", TEST_USER, TEST_USER, null },
+                { "NEW_NON_INTERNAL", TEST_USER, TEST_POWER_USER_CISD,
+                        "None of method roles '[INSTANCE_ADMIN]' could be found in roles of user 'test_role'" },
+
+                { "$NEW_INTERNAL", SYSTEM_USER, SYSTEM_USER, null },
+                { "$NEW_INTERNAL", SYSTEM_USER, TEST_USER, "Internal property types can be managed only by the system user" },
+                { "$NEW_INTERNAL", SYSTEM_USER, TEST_POWER_USER_CISD,
+                        "None of method roles '[INSTANCE_ADMIN]' could be found in roles of user 'test_role'" },
+        };
+    }
+
+    @Test(dataProvider = "providerTestDeletePropertyTypesAuthorization")
+    public void testDeletePropertyTypesAuthorization(String propertyTypeCode, String propertyTypeRegistrator, String propertyTypeDeleter,
+            String expectedError)
+    {
+        SessionContextDTO registratorSession =
+                propertyTypeRegistrator.equals(SYSTEM_USER) ? commonServer.tryToAuthenticateAsSystem()
+                        : commonServer.tryAuthenticate(propertyTypeRegistrator, PASSWORD);
+        SessionContextDTO deleterSession = propertyTypeDeleter.equals(SYSTEM_USER) ? commonServer.tryToAuthenticateAsSystem()
+                : commonServer.tryAuthenticate(propertyTypeDeleter, PASSWORD);
+
+        PropertyType propertyType = new PropertyType();
+        propertyType.setCode(propertyTypeCode);
+        propertyType.setDataType(new DataType(DataTypeCode.VARCHAR));
+        propertyType.setLabel("Test label");
+        propertyType.setDescription("Test description");
+        propertyType.setManagedInternally(propertyTypeCode.startsWith("$"));
+        commonServer.registerPropertyType(registratorSession.getSessionToken(), propertyType);
+
+        PropertyTypePE propertyTypePE = daoFactory.getPropertyTypeDAO().tryFindPropertyTypeByCode(propertyTypeCode);
+        assertNotNull(propertyTypePE);
+
+        assertExceptionMessage(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    commonServer.deletePropertyTypes(deleterSession.getSessionToken(), TechId.createList(propertyTypePE.getId()), "testing");
+
+                    PropertyTypePE deletedPropertyTypePE = daoFactory.getPropertyTypeDAO().tryFindPropertyTypeByCode(propertyTypeCode);
+                    assertNull(deletedPropertyTypePE);
+                }
+            }, expectedError);
+    }
+
+    @DataProvider
+    public Object[][] providerTestAssignPropertyTypeAuthorization()
+    {
+        return new Object[][] {
+                { "NEW_NON_INTERNAL", SYSTEM_USER, null },
+                { "NEW_NON_INTERNAL", TEST_USER, null },
+                { "NEW_NON_INTERNAL", TEST_POWER_USER_CISD,
+                        "None of method roles '[INSTANCE_ADMIN]' could be found in roles of user 'test_role'" },
+
+                { "$NEW_INTERNAL", SYSTEM_USER, null },
+                { "$NEW_INTERNAL", TEST_USER, null },
+                { "$NEW_INTERNAL", TEST_POWER_USER_CISD,
+                        "None of method roles '[INSTANCE_ADMIN]' could be found in roles of user 'test_role'" }
+        };
+    }
+
+    @Test(dataProvider = "providerTestAssignPropertyTypeAuthorization")
+    public void testAssignPropertyTypeAuthorization(String propertyTypeCode, String propertyAssignmentRegistrator, String expectedError)
+    {
+        SessionContextDTO systemSession = commonServer.tryToAuthenticateAsSystem();
+        SessionContextDTO registratorSession =
+                propertyAssignmentRegistrator.equals(SYSTEM_USER) ? commonServer.tryToAuthenticateAsSystem()
+                        : commonServer.tryAuthenticate(propertyAssignmentRegistrator, PASSWORD);
+
+        SampleType sampleType = new SampleType();
+        sampleType.setCode("NEW_ENTITY_TYPE");
+        sampleType.setGeneratedCodePrefix("PREFIX_");
+        commonServer.registerSampleType(systemSession.getSessionToken(), sampleType);
+
+        PropertyType propertyType = new PropertyType();
+        propertyType.setCode(propertyTypeCode);
+        propertyType.setDataType(new DataType(DataTypeCode.VARCHAR));
+        propertyType.setLabel("Test label");
+        propertyType.setDescription("Test description");
+        propertyType.setManagedInternally(propertyTypeCode.startsWith("$"));
+        commonServer.registerPropertyType(systemSession.getSessionToken(), propertyType);
+
+        NewETPTAssignment assignment = new NewETPTAssignment();
+        assignment.setEntityKind(EntityKind.SAMPLE);
+        assignment.setEntityTypeCode(sampleType.getCode());
+        assignment.setPropertyTypeCode(propertyTypeCode);
+
+        assertExceptionMessage(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    commonServer.assignPropertyType(registratorSession.getSessionToken(), assignment);
+
+                    EntityTypePropertyTypePE createdAssignment =
+                            findPropertyAssignment(EntityKind.SAMPLE, sampleType.getCode(), propertyType.getCode());
+                    assertNotNull(createdAssignment);
+                }
+            }, expectedError);
+    }
+
+    @DataProvider
+    public Object[][] providerTestUpdatePropertyTypeAssignmentAuthorization()
+    {
+        return new Object[][] {
+                { "NEW_NON_INTERNAL", SYSTEM_USER, SYSTEM_USER, false, null },
+                { "NEW_NON_INTERNAL", SYSTEM_USER, TEST_USER, false, null },
+                { "NEW_NON_INTERNAL", SYSTEM_USER, TEST_POWER_USER_CISD, false,
+                        "None of method roles '[INSTANCE_ADMIN]' could be found in roles of user 'test_role'" },
+
+                { "NEW_NON_INTERNAL", SYSTEM_USER, SYSTEM_USER, true, null },
+                { "NEW_NON_INTERNAL", SYSTEM_USER, TEST_USER, true, null },
+                { "NEW_NON_INTERNAL", SYSTEM_USER, TEST_POWER_USER_CISD, true,
+                        "None of method roles '[INSTANCE_ADMIN]' could be found in roles of user 'test_role'" },
+
+                { "NEW_NON_INTERNAL", TEST_USER, SYSTEM_USER, false, null },
+                { "NEW_NON_INTERNAL", TEST_USER, TEST_USER, false, null },
+                { "NEW_NON_INTERNAL", TEST_USER, TEST_POWER_USER_CISD, false,
+                        "None of method roles '[INSTANCE_ADMIN]' could be found in roles of user 'test_role'" },
+
+                { "NEW_NON_INTERNAL", TEST_USER, SYSTEM_USER, true, null },
+                { "NEW_NON_INTERNAL", TEST_USER, TEST_USER, true, null },
+                { "NEW_NON_INTERNAL", TEST_USER, TEST_POWER_USER_CISD, true,
+                        "None of method roles '[INSTANCE_ADMIN]' could be found in roles of user 'test_role'" },
+
+                { "$NEW_INTERNAL", SYSTEM_USER, SYSTEM_USER, false, null },
+                { "$NEW_INTERNAL", SYSTEM_USER, TEST_USER, false,
+                        "Property assignments created by the system user for internal property types can be managed only by the system user" },
+                { "$NEW_INTERNAL", SYSTEM_USER, TEST_POWER_USER_CISD, false,
+                        "None of method roles '[INSTANCE_ADMIN]' could be found in roles of user 'test_role'" },
+
+                { "$NEW_INTERNAL", SYSTEM_USER, SYSTEM_USER, true, null },
+                { "$NEW_INTERNAL", SYSTEM_USER, TEST_USER, true, null },
+                { "$NEW_INTERNAL", SYSTEM_USER, TEST_POWER_USER_CISD, true,
+                        "None of method roles '[INSTANCE_ADMIN]' could be found in roles of user 'test_role'" },
+
+                { "$NEW_INTERNAL", TEST_USER, SYSTEM_USER, false, null },
+                { "$NEW_INTERNAL", TEST_USER, TEST_USER, false, null },
+                { "$NEW_INTERNAL", TEST_USER, TEST_POWER_USER_CISD, false,
+                        "None of method roles '[INSTANCE_ADMIN]' could be found in roles of user 'test_role'" },
+
+                { "$NEW_INTERNAL", TEST_USER, SYSTEM_USER, true, null },
+                { "$NEW_INTERNAL", TEST_USER, TEST_USER, true, null },
+                { "$NEW_INTERNAL", TEST_USER, TEST_POWER_USER_CISD, true,
+                        "None of method roles '[INSTANCE_ADMIN]' could be found in roles of user 'test_role'" },
+        };
+    }
+
+    @Test(dataProvider = "providerTestUpdatePropertyTypeAssignmentAuthorization")
+    public void testUpdatePropertyTypeAssignmentAuthorization(String propertyTypeCode, String propertyAssignmentRegistrator,
+            String propertyAssignmentUpdater, boolean updateLayoutFieldsOnly, String expectedError)
+    {
+        SessionContextDTO systemSession = commonServer.tryToAuthenticateAsSystem();
+        SessionContextDTO registratorSession =
+                propertyAssignmentRegistrator.equals(SYSTEM_USER) ? commonServer.tryToAuthenticateAsSystem()
+                        : commonServer.tryAuthenticate(propertyAssignmentRegistrator, PASSWORD);
+        SessionContextDTO updaterSession =
+                propertyAssignmentUpdater.equals(SYSTEM_USER) ? commonServer.tryToAuthenticateAsSystem()
+                        : commonServer.tryAuthenticate(propertyAssignmentUpdater, PASSWORD);
+
+        SampleType sampleType = new SampleType();
+        sampleType.setCode("NEW_ENTITY_TYPE");
+        sampleType.setGeneratedCodePrefix("PREFIX_");
+        commonServer.registerSampleType(systemSession.getSessionToken(), sampleType);
+
+        PropertyType propertyType = new PropertyType();
+        propertyType.setCode(propertyTypeCode);
+        propertyType.setDataType(new DataType(DataTypeCode.VARCHAR));
+        propertyType.setLabel("Test label");
+        propertyType.setDescription("Test description");
+        propertyType.setManagedInternally(propertyTypeCode.startsWith("$"));
+        commonServer.registerPropertyType(systemSession.getSessionToken(), propertyType);
+
+        NewETPTAssignment assignment = new NewETPTAssignment();
+        assignment.setEntityKind(EntityKind.SAMPLE);
+        assignment.setEntityTypeCode(sampleType.getCode());
+        assignment.setPropertyTypeCode(propertyTypeCode);
+        assignment.setSection("Test section");
+        assignment.setOrdinal(1L);
+        assignment.setMandatory(false);
+        commonServer.assignPropertyType(registratorSession.getSessionToken(), assignment);
+
+        NewETPTAssignment assignmentUpdate = new NewETPTAssignment();
+        assignmentUpdate.setEntityKind(EntityKind.SAMPLE);
+        assignmentUpdate.setEntityTypeCode(sampleType.getCode());
+        assignmentUpdate.setPropertyTypeCode(propertyTypeCode);
+        assignmentUpdate.setSection("Test section");
+        assignmentUpdate.setMandatory(false);
+
+        if (updateLayoutFieldsOnly)
+        {
+            assignmentUpdate.setSection("Updated section");
+        } else
+        {
+            assignmentUpdate.setMandatory(true);
+        }
+
+        assertExceptionMessage(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    commonServer.updatePropertyTypeAssignment(updaterSession.getSessionToken(), assignmentUpdate);
+
+                    EntityTypePropertyTypePE updatedAssignment =
+                            findPropertyAssignment(EntityKind.SAMPLE, sampleType.getCode(), propertyType.getCode());
+                    assertNotNull(updatedAssignment);
+
+                    if (updateLayoutFieldsOnly)
+                    {
+                        assertEquals(updatedAssignment.getSection(), "Updated section");
+                        assertEquals((Boolean) updatedAssignment.isMandatory(), Boolean.valueOf(false));
+                    } else
+                    {
+                        assertEquals(updatedAssignment.getSection(), "Test section");
+                        assertEquals((Boolean) updatedAssignment.isMandatory(), Boolean.valueOf(true));
+                    }
+                }
+            }, expectedError);
+    }
+
+    @DataProvider
+    public Object[][] providerUnassignPropertyTypeAuthorization()
+    {
+        return new Object[][] {
+                { "NEW_NON_INTERNAL", SYSTEM_USER, SYSTEM_USER, null },
+                { "NEW_NON_INTERNAL", SYSTEM_USER, TEST_USER, null },
+                { "NEW_NON_INTERNAL", SYSTEM_USER, TEST_POWER_USER_CISD,
+                        "None of method roles '[INSTANCE_ADMIN]' could be found in roles of user 'test_role'" },
+
+                { "NEW_NON_INTERNAL", TEST_USER, SYSTEM_USER, null },
+                { "NEW_NON_INTERNAL", TEST_USER, TEST_USER, null },
+                { "NEW_NON_INTERNAL", TEST_USER, TEST_POWER_USER_CISD,
+                        "None of method roles '[INSTANCE_ADMIN]' could be found in roles of user 'test_role'" },
+
+                { "$NEW_INTERNAL", SYSTEM_USER, SYSTEM_USER, null },
+                { "$NEW_INTERNAL", SYSTEM_USER, TEST_USER,
+                        "Property assignments created by the system user for internal property types can be managed only by the system user" },
+                { "$NEW_INTERNAL", SYSTEM_USER, TEST_POWER_USER_CISD,
+                        "None of method roles '[INSTANCE_ADMIN]' could be found in roles of user 'test_role'" },
+
+                { "$NEW_INTERNAL", TEST_USER, SYSTEM_USER, null },
+                { "$NEW_INTERNAL", TEST_USER, TEST_USER, null },
+                { "$NEW_INTERNAL", TEST_USER, TEST_POWER_USER_CISD,
+                        "None of method roles '[INSTANCE_ADMIN]' could be found in roles of user 'test_role'" },
+        };
+    }
+
+    @Test(dataProvider = "providerUnassignPropertyTypeAuthorization")
+    public void testUnassignPropertyTypeAuthorization(String propertyTypeCode, String propertyAssignmentRegistrator,
+            String propertyAssignmentDeleter, String expectedError)
+    {
+        SessionContextDTO systemSession = commonServer.tryToAuthenticateAsSystem();
+        SessionContextDTO registratorSession =
+                propertyAssignmentRegistrator.equals(SYSTEM_USER) ? commonServer.tryToAuthenticateAsSystem()
+                        : commonServer.tryAuthenticate(propertyAssignmentRegistrator, PASSWORD);
+        SessionContextDTO deleterSession =
+                propertyAssignmentDeleter.equals(SYSTEM_USER) ? commonServer.tryToAuthenticateAsSystem()
+                        : commonServer.tryAuthenticate(propertyAssignmentDeleter, PASSWORD);
+
+        SampleType sampleType = new SampleType();
+        sampleType.setCode("NEW_ENTITY_TYPE");
+        sampleType.setGeneratedCodePrefix("PREFIX_");
+        commonServer.registerSampleType(systemSession.getSessionToken(), sampleType);
+
+        PropertyType propertyType = new PropertyType();
+        propertyType.setCode(propertyTypeCode);
+        propertyType.setDataType(new DataType(DataTypeCode.VARCHAR));
+        propertyType.setLabel("Test label");
+        propertyType.setDescription("Test description");
+        propertyType.setManagedInternally(propertyTypeCode.startsWith("$"));
+        commonServer.registerPropertyType(systemSession.getSessionToken(), propertyType);
+
+        NewETPTAssignment assignment = new NewETPTAssignment();
+        assignment.setEntityKind(EntityKind.SAMPLE);
+        assignment.setEntityTypeCode(sampleType.getCode());
+        assignment.setPropertyTypeCode(propertyTypeCode);
+        commonServer.assignPropertyType(registratorSession.getSessionToken(), assignment);
+
+        assertExceptionMessage(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    commonServer.unassignPropertyType(deleterSession.getSessionToken(), EntityKind.SAMPLE, propertyTypeCode, sampleType.getCode());
+
+                    EntityTypePropertyTypePE deletedAssignment =
+                            findPropertyAssignment(EntityKind.SAMPLE, sampleType.getCode(), propertyType.getCode());
+                    assertNull(deletedAssignment);
+                }
+            }, expectedError);
+    }
 
     @DataProvider
     public Object[][] providerTestRegisterVocabularyAuthorization()
@@ -3929,6 +4343,17 @@ public class CommonServerTest extends SystemTestCase
         }
 
         daoFactory.getSessionFactory().getCurrentSession().save(assignment);
+    }
+
+    private EntityTypePropertyTypePE findPropertyAssignment(EntityKind entityKind, String entityTypeCode, String propertyTypeCode)
+    {
+        ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind entityKindConverted =
+                ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind.valueOf(entityKind.name());
+
+        EntityTypePE entityType = daoFactory.getEntityTypeDAO(entityKindConverted).tryToFindEntityTypeByCode(entityTypeCode);
+        PropertyTypePE propertyType = daoFactory.getPropertyTypeDAO().tryFindPropertyTypeByCode(propertyTypeCode);
+
+        return daoFactory.getEntityPropertyTypeDAO(entityKindConverted).tryFindAssignment(entityType, propertyType);
     }
 
 }

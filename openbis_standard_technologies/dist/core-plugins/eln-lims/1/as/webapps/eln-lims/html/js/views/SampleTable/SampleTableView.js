@@ -220,8 +220,7 @@ function SampleTableView(sampleTableController, sampleTableModel) {
 						if(data.error) {
 							Util.showError(data.error.message, function() {Util.unblockUI();});
 						} else if(data.result) {
-							var extraMessage = "<br> It can take a couple of minutes to have them available.";
-							Util.showSuccess(data.result + extraMessage, function() {
+							Util.showSuccess(data.result, function() {
 								Util.unblockUI();
 								mainController.changeView('showSamplesPage', experimentIdentifier);
 							});

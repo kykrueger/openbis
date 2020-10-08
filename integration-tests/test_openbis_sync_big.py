@@ -435,11 +435,24 @@ class TestCase(systemtest.testcase.TestCase):
         return openbis_harvester
 
     def _waitUntilSyncIsFinished(self, openbis_harvester):
-        synclogfile = sorted(glob.glob("%s/synch*" % openbis_harvester.installPath))[-1]
-        monitor = util.LogMonitor("%s synchronization" % openbis_harvester.instanceName, synclogfile, timeOutInMinutes=30)
-        monitor.addNotificationCondition(util.RegexCondition('OPERATION.EntitySynchronizer'))
-        monitor.waitUntilEvent(util.RegexCondition('Saving the timestamp of sync start to file'), delay = 60)
-        time.sleep(60)
+        timeoutPeriod = 5 * 60
+        timeoutTime = time.time() + timeoutPeriod
+        synclogfiles = None
 
+        while time.time() < timeoutTime:
+            synclogfiles = sorted(glob.glob("%s/synch*" % openbis_harvester.installPath))
+            if synclogfiles:
+                break
+            else:
+                print ('Waiting for the synchronization log file to appear...')
+                time.sleep(1)
+
+        if synclogfiles:
+            monitor = util.LogMonitor("%s synchronization" % openbis_harvester.instanceName, synclogfiles[-1], timeOutInMinutes=30)
+            monitor.addNotificationCondition(util.RegexCondition('OPERATION.EntitySynchronizer'))
+            monitor.waitUntilEvent(util.RegexCondition('Saving the timestamp of sync start to file'), delay = 60)
+            time.sleep(60)
+        else:
+            raise Exception('Synchronization log file not found in %s. Waited for %s seconds.' % (openbis_harvester.installPath, str(timeoutPeriod)))
 
 TestCase(settings, __file__).runTest()
