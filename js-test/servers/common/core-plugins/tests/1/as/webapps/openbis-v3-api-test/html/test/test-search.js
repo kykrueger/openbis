@@ -2699,26 +2699,8 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			}
 
 			var fCleanup = function(facade, samples) {
-				var options = new c.SampleDeletionOptions();
-				options.setReason("Test reason.");
-
 				if (samples) {
-					facade.deleteSamples([samples[0].getPermId()], options)
-						.then(function() {
-							facade.deleteSampleTypes([sampleTypeId], new c.SampleTypeDeletionOptions())
-								.then(function() {
-									facade.deletePropertyTypes([propertyTypeId], new c.PropertyTypeDeletionOptions())
-										.fail(function(error) {
-											c.fail("Error deleting property type. error=" + error);
-										});
-								})
-								.fail(function(error) {
-									c.fail("Error deleting sample type. error=" + error);
-								});
-						})
-						.fail(function(error) {
-							c.fail("Error deleting sample. error=" + error);
-						});
+					cleanup(c, facade, samples[0].getPermId(), propertyTypeId, sampleTypeId);
 				}
 			}
 
@@ -2755,26 +2737,8 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			}
 
 			var fCleanup = function(facade, samples) {
-				var options = new c.SampleDeletionOptions();
-				options.setReason("Test reason.");
-
 				if (samples) {
-					facade.deleteSamples([samples[0].getPermId()], options)
-						.then(function() {
-							facade.deleteSampleTypes([sampleTypeId], new c.SampleTypeDeletionOptions())
-								.then(function() {
-									facade.deletePropertyTypes([propertyTypeId], new c.PropertyTypeDeletionOptions())
-										.fail(function(error) {
-											c.fail("Error deleting property type. error=" + error);
-										});
-								})
-								.fail(function(error) {
-									c.fail("Error deleting sample type. error=" + error);
-								});
-						})
-						.fail(function(error) {
-							c.fail("Error deleting sample. error=" + error);
-						});
+					cleanup(c, facade, samples[0].getPermId(), propertyTypeId, sampleTypeId);
 				}
 			}
 
@@ -2846,6 +2810,65 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 		//
 		// 	testDataType(0);
 		// });
+
+		QUnit.test("searchSamples() withNumberProperty", function(assert) {
+			var c = new common(assert, openbis);
+
+			var samplePermId;
+			var propertyTypeId;
+			var sampleTypeId;
+			var fSearch = function(facade) {
+				return createPropertyType(c, facade, c.DataType.INTEGER).then(function(propertyTypeIds) {
+					propertyTypeId = propertyTypeIds[0];
+					return createSampleType(c, facade, false, propertyTypeIds[0]).then(function(sampleTypeIds) {
+						sampleTypeId = sampleTypeIds[0];
+						return createSample(c, facade, sampleTypeIds[0], propertyTypeIds[0], 12).then(
+							function(sampleIds) {
+								samplePermId = sampleIds[0];
+								var criteria = new c.SampleSearchCriteria();
+								criteria.withNumberProperty(propertyTypeIds[0].getPermId()).thatEquals(12);
+								return facade.searchSamples(criteria, c.createSampleFetchOptions());
+							});
+					});
+				});
+			}
+
+			var fCleanup = function(facade, samples) {
+				if (samples) {
+					cleanup(c, facade, samples[0].getPermId(), propertyTypeId, sampleTypeId);
+				}
+			}
+
+			var fCheck = function(facade, samples) {
+				c.assertEqual(samples.length, 1);
+				c.assertEqual(samples[0].getPermId(), samplePermId.getPermId());
+
+				fCleanup(facade, samples);
+			}
+
+			testSearch(c, fSearch, fCheck, fCleanup);
+		});
+
+		function cleanup(c, facade, samplePermId, propertyTypeId, sampleTypeId) {
+			var options = new c.SampleDeletionOptions();
+			options.setReason("Test reason.");
+			facade.deleteSamples([samplePermId], options)
+				.then(function() {
+					facade.deleteSampleTypes([sampleTypeId], new c.SampleTypeDeletionOptions())
+						.then(function() {
+							facade.deletePropertyTypes([propertyTypeId], new c.PropertyTypeDeletionOptions())
+								.fail(function(error) {
+									c.fail("Error deleting property type. error=" + error);
+								});
+						})
+						.fail(function(error) {
+							c.fail("Error deleting sample type. error=" + error);
+						});
+				})
+				.fail(function(error) {
+					c.fail("Error deleting sample. error=" + error);
+				});
+		}
 
 		function createSampleType(c, facade, mandatory) {
 			var creation = new c.SampleTypeCreation();
