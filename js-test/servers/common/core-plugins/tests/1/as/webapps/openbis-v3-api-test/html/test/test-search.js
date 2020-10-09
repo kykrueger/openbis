@@ -2796,6 +2796,46 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testSearch(c, fSearch, fCheck, fCleanup);
 		});
 
+		QUnit.test("searchSamples() withAnyStringProperty", function(assert) {
+			var c = new common(assert, openbis);
+
+			var samplePermId;
+			var propertyTypeId;
+			var sampleTypeId;
+			var fSearch = function(facade) {
+				return createPropertyType(c, facade, c.DataType.VARCHAR).then(function(propertyTypeIds) {
+					propertyTypeId = propertyTypeIds[0];
+					return createSampleType(c, facade, false, propertyTypeIds[0]).then(function(sampleTypeIds) {
+						sampleTypeId = sampleTypeIds[0];
+						return createSample(c, facade, sampleTypeIds[0], propertyTypeIds[0], "abc").then(
+							function(sampleIds) {
+								samplePermId = sampleIds[0];
+								var criteria = new c.SampleSearchCriteria();
+								criteria.withAnyStringProperty().thatEquals("abc");
+								return facade.searchSamples(criteria, c.createSampleFetchOptions());
+							});
+					});
+				}).fail(function(error) {
+					c.fail("Error creating property type. error=" + error.message);
+				});
+			}
+
+			var fCleanup = function(facade, samples) {
+				if (samples) {
+					cleanup(c, facade, samples[0].getPermId(), propertyTypeId, sampleTypeId);
+				}
+			}
+
+			var fCheck = function(facade, samples) {
+				c.assertEqual(samples.length, 1);
+				c.assertEqual(samples[0].getPermId(), samplePermId.getPermId());
+
+				fCleanup(facade, samples);
+			}
+
+			testSearch(c, fSearch, fCheck, fCleanup);
+		});
+
 		// QUnit.test("searchSamples() withStringProperty throwing exception", function(assert) {
 		// 	var c = new common(assert, openbis);
 		// 	var dataTypes = [
