@@ -2680,9 +2680,13 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			var c = new common(assert, openbis);
 
 			var samplePermId;
+			var propertyTypeId;
+			var sampleTypeId;
 			var fSearch = function(facade) {
 				return createPropertyType(c, facade, c.DataType.VARCHAR).then(function(propertyTypeIds) {
+					propertyTypeId = propertyTypeIds[0];
 					return createSampleType(c, facade, false, propertyTypeIds[0]).then(function(sampleTypeIds) {
+						sampleTypeId = sampleTypeIds[0];
 						return createSample(c, facade, sampleTypeIds[0], propertyTypeIds[0], "abc").then(
 							function(sampleIds) {
 								samplePermId = sampleIds[0];
@@ -2699,9 +2703,22 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				options.setReason("Test reason.");
 
 				if (samples) {
-					facade.deleteSamples([samples[0].getPermId()], options).fail(function(error) {
-						c.fail("Error deleting sample. error=" + error)
-					});
+					facade.deleteSamples([samples[0].getPermId()], options)
+						.then(function() {
+							facade.deleteSampleTypes([sampleTypeId], new c.SampleTypeDeletionOptions())
+								.then(function() {
+									facade.deletePropertyTypes([propertyTypeId], new c.PropertyTypeDeletionOptions())
+										.fail(function(error) {
+											c.fail("Error deleting property type. error=" + error);
+										});
+								})
+								.fail(function(error) {
+									c.fail("Error deleting sample type. error=" + error);
+								});
+						})
+						.fail(function(error) {
+							c.fail("Error deleting sample. error=" + error);
+						});
 				}
 			}
 
@@ -2719,9 +2736,13 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			var c = new common(assert, openbis);
 
 			var samplePermId;
+			var propertyTypeId;
+			var sampleTypeId;
 			var fSearch = function(facade) {
 				return createPropertyType(c, facade, c.DataType.VARCHAR).then(function(propertyTypeIds) {
+					propertyTypeId = propertyTypeIds[0];
 					return createSampleType(c, facade, false, propertyTypeIds[0]).then(function(sampleTypeIds) {
+						sampleTypeId = sampleTypeIds[0];
 						return createSample(c, facade, sampleTypeIds[0], propertyTypeIds[0], "abc").then(
 							function(sampleIds) {
 								samplePermId = sampleIds[0];
@@ -2738,9 +2759,22 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				options.setReason("Test reason.");
 
 				if (samples) {
-					facade.deleteSamples([samples[0].getPermId()], options).fail(function(error) {
-						c.fail("Error deleting sample. error=" + error)
-					});
+					facade.deleteSamples([samples[0].getPermId()], options)
+						.then(function() {
+							facade.deleteSampleTypes([sampleTypeId], new c.SampleTypeDeletionOptions())
+								.then(function() {
+									facade.deletePropertyTypes([propertyTypeId], new c.PropertyTypeDeletionOptions())
+										.fail(function(error) {
+											c.fail("Error deleting property type. error=" + error);
+										});
+								})
+								.fail(function(error) {
+									c.fail("Error deleting sample type. error=" + error);
+								});
+						})
+						.fail(function(error) {
+							c.fail("Error deleting sample. error=" + error);
+						});
 				}
 			}
 
@@ -2753,6 +2787,65 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 
 			testSearch(c, fSearch, fCheck, fCleanup);
 		});
+
+		// QUnit.test("searchSamples() withStringProperty throwing exception", function(assert) {
+		// 	var c = new common(assert, openbis);
+		// 	var dataTypes = [
+		// 		c.DataType.BOOLEAN,
+		// 		c.DataType.CONTROLLEDVOCABULARY,
+		// 		// c.DataType.DATE,
+		// 		// c.DataType.INTEGER,
+		// 		// c.DataType.MATERIAL,
+		// 		// c.DataType.REAL,
+		// 		// c.DataType.SAMPLE,
+		// 		// c.DataType.TIMESTAMP
+		// 	];
+		//
+		// 	// var finish = c.finish;
+		//
+		// 	var fRecursion = function(i) {
+		// 		debugger;
+		// 		if (i < dataTypes.length - 1) {
+		// 			testDataType(i + 1);
+		// 		} else {
+		// 			// finish();
+		// 		}
+		// 	}
+		//
+		// 	// c.start();
+		// 	//
+		// 	// // We want to start only once. Because testSearch() also calls
+		// 	// // start() let's make the start() do nothing.
+		// 	// c.start = function() {}
+		// 	// c.finish = function() {}
+		//
+		// 	debugger;
+		// 	var testDataType = function(i) {
+		// 		debugger;
+		// 		var dataType = dataTypes[i];
+		// 		var fSearch = function (facade) {
+		// 			return createPropertyType(c, facade, dataType).then(function (propertyTypeIds) {
+		// 				var criteria = new c.SampleSearchCriteria();
+		// 				criteria.withStringProperty(propertyTypeIds[0].getPermId()).thatEquals("true");
+		// 				return facade.searchSamples(criteria, c.createSampleFetchOptions());
+		// 			});
+		// 		}
+		//
+		// 		var fCheck = function () {
+		// 			debugger;
+		// 			c.fail("Exception expected.");
+		// 			fRecursion(i);
+		// 		}
+		//
+		// 		testSearch(c, fSearch, fCheck, function(e) {
+		// 			debugger;
+		// 			c.ok("Expected exception for data type " + dataType + ".");
+		// 			fRecursion(i);
+		// 		});
+		// 	}
+		//
+		// 	testDataType(0);
+		// });
 
 		function createSampleType(c, facade, mandatory) {
 			var creation = new c.SampleTypeCreation();
