@@ -2695,6 +2695,8 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 								return facade.searchSamples(criteria, c.createSampleFetchOptions());
 							});
 					});
+				}).fail(function(error) {
+					c.fail("Error creating property type. error=" + error.message);
 				});
 			}
 
@@ -2733,6 +2735,8 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 								return facade.searchSamples(criteria, c.createSampleFetchOptions());
 							});
 					});
+				}).fail(function(error) {
+					c.fail("Error creating property type. error=" + error.message);
 				});
 			}
 
@@ -2830,6 +2834,8 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 								return facade.searchSamples(criteria, c.createSampleFetchOptions());
 							});
 					});
+				}).fail(function(error) {
+					c.fail("Error creating property type. error=" + error.message);
 				});
 			}
 
@@ -2856,7 +2862,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			var propertyTypeId;
 			var sampleTypeId;
 			var fSearch = function(facade) {
-				return createPropertyType(c, facade, c.DataType.INTEGER).then(function(propertyTypeIds) {
+				return createPropertyType(c, facade, c.DataType.BOOLEAN).then(function(propertyTypeIds) {
 					propertyTypeId = propertyTypeIds[0];
 					return createSampleType(c, facade, false, propertyTypeIds[0]).then(function(sampleTypeIds) {
 						sampleTypeId = sampleTypeIds[0];
@@ -2887,6 +2893,47 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testSearch(c, fSearch, fCheck, fCleanup);
 		});
 
+		QUnit.test("searchSamples() withDateProperty", function(assert) {
+			var c = new common(assert, openbis);
+
+			var samplePermId;
+			var propertyTypeId;
+			var sampleTypeId;
+			var fSearch = function(facade) {
+				return createPropertyType(c, facade, c.DataType.DATE).then(function(propertyTypeIds) {
+					propertyTypeId = propertyTypeIds[0];
+					return createSampleType(c, facade, false, propertyTypeIds[0]).then(function(sampleTypeIds) {
+						sampleTypeId = sampleTypeIds[0];
+						return createSample(c, facade, sampleTypeIds[0], propertyTypeIds[0], '2007-07-17').then(
+							function(sampleIds) {
+								samplePermId = sampleIds[0];
+								var criteria = new c.SampleSearchCriteria();
+								criteria.withDateProperty(propertyTypeIds[0].getPermId()).thatEquals('2007-07-17');
+								return facade.searchSamples(criteria, c.createSampleFetchOptions());
+							});
+					});
+				}).fail(function(error) {
+					c.fail("Error creating property type. error=" + error.message);
+				});
+			}
+
+			var fCleanup = function(facade, samples) {
+				debugger;
+				if (samples) {
+					cleanup(c, facade, samples[0].getPermId(), propertyTypeId, sampleTypeId);
+				}
+			}
+
+			var fCheck = function(facade, samples) {
+				c.assertEqual(samples.length, 1);
+				c.assertEqual(samples[0].getPermId(), samplePermId.getPermId());
+
+				fCleanup(facade, samples);
+			}
+
+			testSearch(c, fSearch, fCheck, fCleanup);
+		});
+
 		function cleanup(c, facade, samplePermId, propertyTypeId, sampleTypeId) {
 			var options = new c.SampleDeletionOptions();
 			options.setReason("Test reason.");
@@ -2896,15 +2943,15 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 						.then(function() {
 							facade.deletePropertyTypes([propertyTypeId], new c.PropertyTypeDeletionOptions())
 								.fail(function(error) {
-									c.fail("Error deleting property type. error=" + error);
+									c.fail("Error deleting property type. error.message=" + erro.message);
 								});
 						})
 						.fail(function(error) {
-							c.fail("Error deleting sample type. error=" + error);
+							c.fail("Error deleting sample type. error.message=" + error.message);
 						});
 				})
 				.fail(function(error) {
-					c.fail("Error deleting sample. error=" + error);
+					c.fail("Error deleting sample. error.message=" + error.message);
 				});
 		}
 
