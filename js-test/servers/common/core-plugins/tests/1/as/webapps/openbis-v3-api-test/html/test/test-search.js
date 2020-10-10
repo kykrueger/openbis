@@ -3030,6 +3030,27 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testSearch(c, fSearch, fCheck, fCleanup);
 		});
 
+		QUnit.test("searchSamples() withBooleanProperty throwing exception", function(assert) {
+			var c = new common(assert, openbis);
+			checkExceptionsThrown(assert, [
+				c.DataType.CONTROLLEDVOCABULARY,
+				c.DataType.DATE,
+				c.DataType.HYPERLINK,
+				c.DataType.INTEGER,
+				c.DataType.MATERIAL,
+				c.DataType.MULTILINE_VARCHAR,
+				c.DataType.REAL,
+				c.DataType.SAMPLE,
+				c.DataType.TIMESTAMP,
+				c.DataType.VARCHAR,
+				c.DataType.XML,
+			], function(propertyTypePermId) {
+				var criteria = new c.SampleSearchCriteria();
+				criteria.withBooleanProperty(propertyTypePermId).thatEquals(true);
+				return criteria;
+			});
+		});
+
 		QUnit.test("searchSamples() withDateProperty", function(assert) {
 			var c = new common(assert, openbis);
 
