@@ -2934,6 +2934,26 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testSearch(c, fSearch, fCheck, fCleanup);
 		});
 
+		QUnit.test("searchSamples() withNumberProperty throwing exception", function(assert) {
+			var c = new common(assert, openbis);
+			checkExceptionsThrown(assert, [
+				c.DataType.BOOLEAN,
+				c.DataType.CONTROLLEDVOCABULARY,
+				c.DataType.DATE,
+				c.DataType.HYPERLINK,
+				c.DataType.MATERIAL,
+				c.DataType.MULTILINE_VARCHAR,
+				c.DataType.SAMPLE,
+				c.DataType.TIMESTAMP,
+				c.DataType.VARCHAR,
+				c.DataType.XML,
+			], function(propertyTypePermId) {
+				var criteria = new c.SampleSearchCriteria();
+				criteria.withNumberProperty(propertyTypePermId).thatEquals(12);
+				return criteria;
+			});
+		});
+
 		QUnit.test("searchSamples() withBooleanProperty", function(assert) {
 			var c = new common(assert, openbis);
 
