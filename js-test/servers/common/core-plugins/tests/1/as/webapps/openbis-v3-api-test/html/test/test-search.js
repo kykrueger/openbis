@@ -2836,64 +2836,58 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testSearch(c, fSearch, fCheck, fCleanup);
 		});
 
-		// QUnit.test("searchSamples() withStringProperty throwing exception", function(assert) {
-		// 	var c = new common(assert, openbis);
-		// 	var dataTypes = [
-		// 		c.DataType.BOOLEAN,
-		// 		c.DataType.CONTROLLEDVOCABULARY,
-		// 		// c.DataType.DATE,
-		// 		// c.DataType.INTEGER,
-		// 		// c.DataType.MATERIAL,
-		// 		// c.DataType.REAL,
-		// 		// c.DataType.SAMPLE,
-		// 		// c.DataType.TIMESTAMP
-		// 	];
-		//
-		// 	// var finish = c.finish;
-		//
-		// 	var fRecursion = function(i) {
-		// 		debugger;
-		// 		if (i < dataTypes.length - 1) {
-		// 			testDataType(i + 1);
-		// 		} else {
-		// 			// finish();
-		// 		}
-		// 	}
-		//
-		// 	// c.start();
-		// 	//
-		// 	// // We want to start only once. Because testSearch() also calls
-		// 	// // start() let's make the start() do nothing.
-		// 	// c.start = function() {}
-		// 	// c.finish = function() {}
-		//
-		// 	debugger;
-		// 	var testDataType = function(i) {
-		// 		debugger;
-		// 		var dataType = dataTypes[i];
-		// 		var fSearch = function (facade) {
-		// 			return createPropertyType(c, facade, dataType).then(function (propertyTypeIds) {
-		// 				var criteria = new c.SampleSearchCriteria();
-		// 				criteria.withStringProperty(propertyTypeIds[0].getPermId()).thatEquals("true");
-		// 				return facade.searchSamples(criteria, c.createSampleFetchOptions());
-		// 			});
-		// 		}
-		//
-		// 		var fCheck = function () {
-		// 			debugger;
-		// 			c.fail("Exception expected.");
-		// 			fRecursion(i);
-		// 		}
-		//
-		// 		testSearch(c, fSearch, fCheck, function(e) {
-		// 			debugger;
-		// 			c.ok("Expected exception for data type " + dataType + ".");
-		// 			fRecursion(i);
-		// 		});
-		// 	}
-		//
-		// 	testDataType(0);
-		// });
+		QUnit.test("searchSamples() withStringProperty throwing exception", function(assert) {
+			var c = new common(assert, openbis);
+			c.start = function() {}
+			c.finish = function() {}
+
+			var dataTypes = [
+				c.DataType.BOOLEAN,
+				c.DataType.CONTROLLEDVOCABULARY,
+				c.DataType.DATE,
+				c.DataType.INTEGER,
+				c.DataType.MATERIAL,
+				c.DataType.REAL,
+				c.DataType.SAMPLE,
+				c.DataType.TIMESTAMP
+			];
+
+			var finish = assert.async();
+
+			var fRecursion = function(i) {
+				if (i < dataTypes.length - 1) {
+					testDataType(i + 1);
+				} else {
+					finish();
+				}
+			}
+
+			var testDataType = function(i) {
+				debugger;
+				var dataType = dataTypes[i];
+				var fSearch = function(facade) {
+					return createPropertyType(c, facade, dataType).then(function(propertyTypeIds) {
+						var criteria = new c.SampleSearchCriteria();
+						criteria.withStringProperty(propertyTypeIds[0].getPermId()).thatEquals("true");
+						return facade.searchSamples(criteria, c.createSampleFetchOptions());
+					});
+				}
+
+				var fCheck = function() {
+					debugger;
+					c.fail("Expected exception not thrown for data type " + dataType + ".");
+					fRecursion(i);
+				}
+
+				testSearch(c, fSearch, fCheck, function(e) {
+					debugger;
+					c.ok("Expected exception thrown for data type " + dataType + ".");
+					fRecursion(i);
+				});
+			}
+
+			testDataType(0);
+		});
 
 		QUnit.test("searchSamples() withNumberProperty", function(assert) {
 			var c = new common(assert, openbis);
