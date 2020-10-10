@@ -96,7 +96,7 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
             {
                 final AbstractStringValue value = criterion.getFieldValue();
                 translateStringProperty(criterion, tableMapper, args, sqlBuilder, aliases, dataTypeByPropertyCode,
-                        value, criterion.getFieldName());
+                        value, TranslatorUtils.normalisePropertyName(criterion.getFieldName()));
                 break;
             }
 
