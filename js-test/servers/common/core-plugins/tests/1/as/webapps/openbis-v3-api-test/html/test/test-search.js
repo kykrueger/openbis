@@ -2838,10 +2838,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 
 		QUnit.test("searchSamples() withStringProperty throwing exception", function(assert) {
 			var c = new common(assert, openbis);
-			c.start = function() {}
-			c.finish = function() {}
-
-			var dataTypes = [
+			checkExceptionsThrown(assert, [
 				c.DataType.BOOLEAN,
 				c.DataType.CONTROLLEDVOCABULARY,
 				c.DataType.DATE,
@@ -2850,43 +2847,11 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				c.DataType.REAL,
 				c.DataType.SAMPLE,
 				c.DataType.TIMESTAMP
-			];
-
-			var finish = assert.async();
-
-			var fRecursion = function(i) {
-				if (i < dataTypes.length - 1) {
-					testDataType(i + 1);
-				} else {
-					finish();
-				}
-			}
-
-			var testDataType = function(i) {
-				debugger;
-				var dataType = dataTypes[i];
-				var fSearch = function(facade) {
-					return createPropertyType(c, facade, dataType).then(function(propertyTypeIds) {
-						var criteria = new c.SampleSearchCriteria();
-						criteria.withStringProperty(propertyTypeIds[0].getPermId()).thatEquals("true");
-						return facade.searchSamples(criteria, c.createSampleFetchOptions());
-					});
-				}
-
-				var fCheck = function() {
-					debugger;
-					c.fail("Expected exception not thrown for data type " + dataType + ".");
-					fRecursion(i);
-				}
-
-				testSearch(c, fSearch, fCheck, function(e) {
-					debugger;
-					c.ok("Expected exception thrown for data type " + dataType + ".");
-					fRecursion(i);
-				});
-			}
-
-			testDataType(0);
+			], function(propertyTypePermId) {
+				var criteria = new c.SampleSearchCriteria();
+				criteria.withStringProperty(propertyTypePermId).thatEquals("true");
+				return criteria;
+			});
 		});
 
 		QUnit.test("searchSamples() withNumberProperty", function(assert) {
@@ -3126,6 +3091,47 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 
 			testSearch(c, fSearch, fCheck, fCleanup);
 		});
+
+		function checkExceptionsThrown(assert, dataTypes, createCriteria) {
+			var c = new common(assert, openbis);
+			c.start = function() {}
+			c.finish = function() {}
+
+			var finish = assert.async();
+
+			var fRecursion = function(i) {
+				if (i < dataTypes.length - 1) {
+					testDataType(i + 1);
+				} else {
+					finish();
+				}
+			}
+
+			var testDataType = function(i) {
+				debugger;
+				var dataType = dataTypes[i];
+				var fSearch = function(facade) {
+					return createPropertyType(c, facade, dataType).then(function(propertyTypeIds) {
+						var criteria = createCriteria(propertyTypeIds[0].getPermId());
+						return facade.searchSamples(criteria, c.createSampleFetchOptions());
+					});
+				}
+
+				var fCheck = function() {
+					debugger;
+					c.fail("Expected exception not thrown for data type " + dataType + ".");
+					fRecursion(i);
+				}
+
+				testSearch(c, fSearch, fCheck, function(e) {
+					debugger;
+					c.ok("Expected exception thrown for data type " + dataType + ".");
+					fRecursion(i);
+				});
+			}
+
+			testDataType(0);
+		}
 
 		function cleanup(c, facade, samplePermId, propertyTypeId, sampleTypeId) {
 			var options = new c.SampleDeletionOptions();
