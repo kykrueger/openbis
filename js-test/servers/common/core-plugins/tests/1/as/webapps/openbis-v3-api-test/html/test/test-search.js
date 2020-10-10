@@ -3133,6 +3133,26 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testSearch(c, fSearch, fCheck, fCleanup);
 		});
 
+		QUnit.test("searchSamples() withDateProperty throwing exception", function(assert) {
+			var c = new common(assert, openbis);
+			checkExceptionsThrown(assert, [
+				c.DataType.BOOLEAN,
+				c.DataType.CONTROLLEDVOCABULARY,
+				c.DataType.HYPERLINK,
+				c.DataType.INTEGER,
+				c.DataType.MATERIAL,
+				c.DataType.MULTILINE_VARCHAR,
+				c.DataType.REAL,
+				c.DataType.SAMPLE,
+				c.DataType.VARCHAR,
+				c.DataType.XML,
+			], function(propertyTypePermId) {
+				var criteria = new c.SampleSearchCriteria();
+				criteria.withDateProperty(propertyTypePermId).thatEquals('2017-09-17');
+				return criteria;
+			});
+		});
+
 		function checkExceptionsThrown(assert, dataTypes, createCriteria) {
 			var c = new common(assert, openbis);
 			c.start = function() {}
