@@ -47,10 +47,10 @@ public class PersonUpdate implements IUpdate, IObjectUpdate<IPersonId>
     private FieldUpdateValue<ISpaceId> spaceId = new FieldUpdateValue<ISpaceId>();
 
     @JsonProperty
-    private Map<String, WebAppSettingsUpdateValue> webAppSettings;
+    private FieldUpdateValue<Boolean> active = new FieldUpdateValue<Boolean>();
 
     @JsonProperty
-    private boolean active = true;
+    private Map<String, WebAppSettingsUpdateValue> webAppSettings;
 
     public IPersonId getUserId()
     {
@@ -106,15 +106,21 @@ public class PersonUpdate implements IUpdate, IObjectUpdate<IPersonId>
     }
 
     @JsonIgnore
-    public boolean isActive()
+    public FieldUpdateValue<Boolean> isActive()
     {
         return active;
     }
 
     @JsonIgnore
+    public void activate()
+    {
+        active.setValue(true);
+    }
+
+    @JsonIgnore
     public void deactivate()
     {
-        active = false;
+        active.setValue(false);
     }
 
     @Override

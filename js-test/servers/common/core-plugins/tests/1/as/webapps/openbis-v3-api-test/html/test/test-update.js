@@ -1278,6 +1278,36 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 
 			testUpdate(c, fCreate, fUpdate, c.findPerson, fCheck);
 		});
+		
+		QUnit.test("updatePersons() deactivate and activate", function(assert) {
+			var c = new common(assert, openbis);
+			var userId = c.generateId("USER");
+
+			var fCreate = function(facade) {
+				var creation = new c.PersonCreation();
+				creation.setUserId(userId);
+				return facade.createPersons([ creation ]);
+			}
+
+			var fUpdate = function(facade, permId) {
+				var deactivateUpdate = new c.PersonUpdate();
+				deactivateUpdate.setUserId(permId);
+				deactivateUpdate.deactivate();
+				return facade.updatePersons([ deactivateUpdate ]).then(function(){
+					var activateUpdate = new c.PersonUpdate();
+					activateUpdate.setUserId(permId);
+					activateUpdate.activate();
+					return facade.updatePersons([ activateUpdate ]);
+				})
+			}
+
+			var fCheck = function(person) {
+				c.assertEqual(person.getUserId(), userId, "User id");
+				c.assertEqual(person.isActive(), true, "Active");
+			}
+
+			testUpdate(c, fCreate, fUpdate, c.findPerson, fCheck);
+		});
 
 		QUnit.test("updatePersons() webAppSettings", function(assert) {
 			var c = new common(assert, openbis);
