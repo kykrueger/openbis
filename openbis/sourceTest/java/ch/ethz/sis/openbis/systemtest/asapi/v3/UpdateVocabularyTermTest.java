@@ -21,6 +21,7 @@ import static org.testng.Assert.assertEquals;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -100,6 +101,70 @@ public class UpdateVocabularyTermTest extends AbstractVocabularyTest
                 {
                     String sessionTokenUpdater = termUpdater.equals(SYSTEM_USER) ? v3api.loginAsSystem() : v3api.login(termUpdater, PASSWORD);
                     v3api.updateVocabularyTerms(sessionTokenUpdater, Arrays.asList(update));
+                }
+            }, expectedError);
+    }
+
+    @DataProvider
+    private Object[][] providerTestUpdateAndTakeOverTerm()
+    {
+        return new Object[][] {
+                { "ORGANISM", SYSTEM_USER, SYSTEM_USER, SYSTEM_USER, null },
+                { "ORGANISM", SYSTEM_USER, TEST_USER, SYSTEM_USER, null },
+
+                { "ORGANISM", TEST_USER, SYSTEM_USER, TEST_USER, null },
+                { "ORGANISM", TEST_USER, TEST_USER, TEST_USER, null },
+
+                { "$PLATE_GEOMETRY", SYSTEM_USER, SYSTEM_USER, SYSTEM_USER, null },
+                { "$PLATE_GEOMETRY", SYSTEM_USER, TEST_USER, SYSTEM_USER,
+                        "Terms created by the system user that belong to internal vocabularies can be managed only by the system user" },
+
+                { "$PLATE_GEOMETRY", TEST_USER, SYSTEM_USER, SYSTEM_USER, null },
+                { "$PLATE_GEOMETRY", TEST_USER, TEST_USER, TEST_USER, null },
+        };
+    }
+
+    @Test(dataProvider = "providerTestUpdateAndTakeOverTerm")
+    public void testUpdateAndTakeOverTerm(String vocabularyCode, String termRegistrator, String termUpdater,
+            String expectedTermRegistratorAfterUpdate, String expectedError)
+    {
+        String termRegistratorSessionToken =
+                termRegistrator.equals(SYSTEM_USER) ? v3api.loginAsSystem() : v3api.login(termRegistrator, PASSWORD);
+        String termUpdaterSessionToken =
+                termUpdater.equals(SYSTEM_USER) ? v3api.loginAsSystem() : v3api.login(termUpdater, PASSWORD);
+        String termGetterSessionToken = v3api.loginAsSystem();
+
+        VocabularyTermCreation termCreation = new VocabularyTermCreation();
+        termCreation.setCode("TERM-TO-TAKE-OVER");
+        termCreation.setVocabularyId(new VocabularyPermId(vocabularyCode));
+        termCreation.setLabel("Original Label");
+        termCreation.setDescription("Original Description");
+
+        List<VocabularyTermPermId> termIds = v3api.createVocabularyTerms(termRegistratorSessionToken, Arrays.asList(termCreation));
+
+        VocabularyTermUpdate termUpdate = new VocabularyTermUpdate();
+        termUpdate.setVocabularyTermId(termIds.get(0));
+        termUpdate.setLabel("Updated Label");
+        termUpdate.setDescription("Updated Description");
+
+        assertExceptionMessage(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    v3api.updateVocabularyTerms(termUpdaterSessionToken, Arrays.asList(termUpdate));
+
+                    VocabularyTermFetchOptions fetchOptions = new VocabularyTermFetchOptions();
+                    fetchOptions.withRegistrator();
+
+                    Map<IVocabularyTermId, VocabularyTerm> terms = v3api.getVocabularyTerms(termGetterSessionToken, termIds, fetchOptions);
+                    assertEquals(terms.size(), 1);
+
+                    VocabularyTerm term = terms.get(termIds.get(0));
+                    assertEquals(term.getCode(), "TERM-TO-TAKE-OVER");
+                    assertEquals(term.getLabel(), "Updated Label");
+                    assertEquals(term.getDescription(), "Updated Description");
+                    assertEquals(term.getRegistrator().getUserId(), expectedTermRegistratorAfterUpdate);
                 }
             }, expectedError);
     }

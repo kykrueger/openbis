@@ -196,22 +196,30 @@ public class VocabularyBO extends AbstractBusinessObject implements IVocabularyB
     private VocabularyTermPE addTerm(String code, String description, String label, Long ordinal,
             Boolean isOfficial)
     {
-        final VocabularyTermPE vocabularyTermPE = new VocabularyTermPE();
-        vocabularyTermPE.setCode(code);
-        vocabularyTermPE.setDescription(description);
-        if (label != null && label.length() > 0)
+        final VocabularyTermPE existingTermPE = vocabularyPE.tryGetVocabularyTerm(code);
+
+        if (existingTermPE == null)
         {
-            vocabularyTermPE.setLabel(label);
+            final VocabularyTermPE vocabularyTermPE = new VocabularyTermPE();
+            vocabularyTermPE.setCode(code);
+            vocabularyTermPE.setDescription(description);
+            if (label != null && label.length() > 0)
+            {
+                vocabularyTermPE.setLabel(label);
+            }
+            vocabularyTermPE.setRegistrator(findPerson());
+            vocabularyTermPE.setOrdinal(ordinal);
+            vocabularyTermPE.setOfficial(isOfficial);
+
+            new InternalVocabularyAuthorization().canCreateTerm(session, vocabularyPE, vocabularyTermPE);
+
+            vocabularyPE.addTerm(vocabularyTermPE);
+
+            return vocabularyTermPE;
+        } else
+        {
+            throw new UserFailureException("Vocabulary term " + code + " (" + vocabularyPE.getCode() + ") already exists.");
         }
-        vocabularyTermPE.setRegistrator(findPerson());
-        vocabularyTermPE.setOrdinal(ordinal);
-        vocabularyTermPE.setOfficial(isOfficial);
-
-        new InternalVocabularyAuthorization().canCreateTerm(session, vocabularyPE, vocabularyTermPE);
-
-        vocabularyPE.addTerm(vocabularyTermPE);
-
-        return vocabularyTermPE;
     }
 
     private VocabularyTermPE addTerm(VocabularyTerm term, Long ordinal, Boolean isOfficial)
@@ -549,6 +557,9 @@ public class VocabularyBO extends AbstractBusinessObject implements IVocabularyB
                 oldTerm.setLabel(update.getLabel());
             }
             oldTerm.setOrdinal(update.getOrdinal()); // ordinal is always updated
+
+            makeSystemInternalIfSystemUser(oldTerm);
+
             newTermsMap.remove(code);
         }
     }

@@ -22,6 +22,7 @@ import static org.testng.Assert.assertNull;
 
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.io.FilenameUtils;
@@ -35,6 +36,10 @@ import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.Vocabulary;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.VocabularyTerm;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.create.VocabularyCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.create.VocabularyTermCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.fetchoptions.VocabularyFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.VocabularyPermId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.IApplicationServerInternalApi;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 
@@ -59,6 +64,8 @@ public class ImportVocabularyTypesTest extends AbstractImportTest
     private static final String VOCABULARIES_NO_TERMS = "vocabularies/vocab_no_term_label.xlsx";
 
     private static final String EXIST_VOCABULARIES = "vocabularies/exist_vocab_type.xlsx";
+
+    private static final String VOCABULARY_WITH_TERM_TO_TAKE_OVER = "vocabularies/vocab_with_term_to_take_over.xlsx";
 
     @Autowired
     private IApplicationServerInternalApi v3api;
@@ -204,13 +211,44 @@ public class ImportVocabularyTypesTest extends AbstractImportTest
 
     @Test
     @DirtiesContext
-    public void updateVocabularyInDBThatIsNotInJson() throws IOException
+    public void testTakeOverTerm() throws IOException
     {
-        TestUtils.createVocabulary(v3api, sessionToken, "TEST_VOCABULARY_TYPE", "Test desc");
-        // there should be no exceptions
-        TestUtils.createFrom(v3api, sessionToken, UpdateMode.UPDATE_IF_EXISTS, Paths.get(FilenameUtils.concat(FILES_DIR, EXIST_VOCABULARIES)));
-        Vocabulary test = TestUtils.getVocabulary(v3api, sessionToken, "TEST_VOCABULARY_TYPE");
-        assertNotNull(test);
+        String instanceAdminSessionToken = v3api.login(TEST_USER, PASSWORD);
+        String systemSessionToken = v3api.loginAsSystem();
+
+        VocabularyCreation vocabularyCreation = new VocabularyCreation();
+        vocabularyCreation.setCode("$VOCABULARY-WITH-TERM-TO-TAKE-OVER");
+        vocabularyCreation.setManagedInternally(true);
+
+        VocabularyPermId vocabularyId = v3api.createVocabularies(systemSessionToken, Arrays.asList(vocabularyCreation)).get(0);
+
+        VocabularyTermCreation termCreation = new VocabularyTermCreation();
+        termCreation.setVocabularyId(vocabularyId);
+        termCreation.setCode("TERM-TO-TAKE-OVER");
+        termCreation.setLabel("Original Label");
+        termCreation.setDescription("Original Description");
+
+        v3api.createVocabularyTerms(instanceAdminSessionToken, Arrays.asList(termCreation));
+
+        VocabularyFetchOptions fetchOptions = new VocabularyFetchOptions();
+        fetchOptions.withTerms().withRegistrator();
+
+        Vocabulary beforeVocabulary = v3api.getVocabularies(instanceAdminSessionToken, Arrays.asList(vocabularyId), fetchOptions).get(vocabularyId);
+        VocabularyTerm beforeTerm = beforeVocabulary.getTerms().get(0);
+
+        assertEquals(beforeTerm.getLabel(), "Original Label");
+        assertEquals(beforeTerm.getDescription(), "Original Description");
+        assertEquals(beforeTerm.getRegistrator().getUserId(), TEST_USER);
+
+        TestUtils.createFrom(v3api, systemSessionToken, UpdateMode.UPDATE_IF_EXISTS,
+                Paths.get(FilenameUtils.concat(FILES_DIR, VOCABULARY_WITH_TERM_TO_TAKE_OVER)));
+
+        Vocabulary afterVocabulary = v3api.getVocabularies(instanceAdminSessionToken, Arrays.asList(vocabularyId), fetchOptions).get(vocabularyId);
+        VocabularyTerm afterTerm = afterVocabulary.getTerms().get(0);
+
+        assertEquals(afterTerm.getLabel(), "Updated Label");
+        assertEquals(afterTerm.getDescription(), "Updated Description");
+        assertEquals(afterTerm.getRegistrator().getUserId(), SYSTEM_USER);
     }
 
 }

@@ -122,15 +122,51 @@ public class CreateVocabularyTermTest extends AbstractVocabularyTest
         v3api.createVocabularyTerms(sessionToken, Arrays.asList(creation));
     }
 
-    @Test(expectedExceptions = UserFailureException.class, expectedExceptionsMessageRegExp = ".*Vocabulary term HUMAN \\(ORGANISM\\) already exists.*")
-    public void testCreateWithCodeDuplicated()
+    @DataProvider
+    private Object[][] providerTestCreateWithCodeDuplicated()
     {
-        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        return new Object[][] {
+                { "ORGANISM", SYSTEM_USER, SYSTEM_USER, "Vocabulary term EXISTING-TERM-CODE (ORGANISM) already exists" },
+                { "ORGANISM", SYSTEM_USER, TEST_USER, "Vocabulary term EXISTING-TERM-CODE (ORGANISM) already exists" },
 
-        VocabularyTermCreation creation = termCreation();
-        creation.setCode("HUMAN");
+                { "ORGANISM", TEST_USER, SYSTEM_USER, "Vocabulary term EXISTING-TERM-CODE (ORGANISM) already exists" },
+                { "ORGANISM", TEST_USER, TEST_USER, "Vocabulary term EXISTING-TERM-CODE (ORGANISM) already exists" },
 
-        v3api.createVocabularyTerms(sessionToken, Arrays.asList(creation));
+                { "$PLATE_GEOMETRY", SYSTEM_USER, SYSTEM_USER, "Vocabulary term EXISTING-TERM-CODE ($PLATE_GEOMETRY) already exists" },
+                { "$PLATE_GEOMETRY", SYSTEM_USER, TEST_USER, "Vocabulary term EXISTING-TERM-CODE ($PLATE_GEOMETRY) already exists" },
+
+                { "$PLATE_GEOMETRY", TEST_USER, SYSTEM_USER, "Vocabulary term EXISTING-TERM-CODE ($PLATE_GEOMETRY) already exists" },
+                { "$PLATE_GEOMETRY", TEST_USER, TEST_USER, "Vocabulary term EXISTING-TERM-CODE ($PLATE_GEOMETRY) already exists" },
+        };
+    }
+
+    @Test(dataProvider = "providerTestCreateWithCodeDuplicated")
+    public void testCreateWithCodeDuplicated(String vocabularyCode, String existingTermRegistrator, String newTermRegistrator,
+            String expectedError)
+    {
+        String existingTermRegistratorSessionToken =
+                existingTermRegistrator.equals(SYSTEM_USER) ? v3api.loginAsSystem() : v3api.login(existingTermRegistrator, PASSWORD);
+        String newTermRegistratorSessionToken =
+                newTermRegistrator.equals(SYSTEM_USER) ? v3api.loginAsSystem() : v3api.login(newTermRegistrator, PASSWORD);
+
+        VocabularyTermCreation existingTermCreation = new VocabularyTermCreation();
+        existingTermCreation.setCode("EXISTING-TERM-CODE");
+        existingTermCreation.setVocabularyId(new VocabularyPermId(vocabularyCode));
+
+        v3api.createVocabularyTerms(existingTermRegistratorSessionToken, Arrays.asList(existingTermCreation));
+
+        VocabularyTermCreation newTermCreation = new VocabularyTermCreation();
+        newTermCreation.setCode("NEW-TERM-CODE");
+        newTermCreation.setVocabularyId(new VocabularyPermId(vocabularyCode));
+
+        assertExceptionMessage(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    v3api.createVocabularyTerms(newTermRegistratorSessionToken, Arrays.asList(existingTermCreation));
+                }
+            }, expectedError);
     }
 
     @Test
