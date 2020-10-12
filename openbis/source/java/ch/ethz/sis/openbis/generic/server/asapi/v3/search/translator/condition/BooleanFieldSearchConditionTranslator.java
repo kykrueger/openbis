@@ -78,20 +78,19 @@ public class BooleanFieldSearchConditionTranslator implements IConditionTranslat
 
             case PROPERTY:
             {
-                final String propertyName = TranslatorUtils.normalisePropertyName(criterion.getFieldName());
-                final String casting = dataTypeByPropertyCode.get(propertyName);
+                final String casting = dataTypeByPropertyCode.get(criterion.getFieldName());
 
                 if (!DataTypeCode.BOOLEAN.toString().equals(casting))
                 {
                     throw new UserFailureException(String.format(
-                            "The data type of property %s has to be %s instead of %s.", propertyName,
+                            "The data type of property %s has to be %s instead of %s.", criterion.getFieldName(),
                             DataTypeCode.BOOLEAN, casting));
                 }
 
                 final boolean internalProperty = TranslatorUtils.isPropertyInternal(criterion.getFieldName());
 
                 translateBooleanProperty(tableMapper, args, sqlBuilder, aliases, criterion.getFieldValue(),
-                        propertyName, internalProperty);
+                        TranslatorUtils.normalisePropertyName(criterion.getFieldName()), internalProperty);
                 break;
             }
 

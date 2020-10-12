@@ -888,11 +888,11 @@ public class SearchDataSetTest extends AbstractDataSetTest
         final DataSetFetchOptions fo = new DataSetFetchOptions();
         fo.withProperties();
 
-        fo.sortBy().property("$COMMENT").asc();
+        fo.sortBy().property("COMMENT").asc();
         final List<DataSet> dataSets1 = v3api.searchDataSets(sessionToken, criteria, fo).getObjects();
         assertDataSetCodesInOrder(dataSets1, "20081105092259000-20", "20081105092159111-1", "20110509092359990-12");
 
-        fo.sortBy().property("$COMMENT").desc();
+        fo.sortBy().property("COMMENT").desc();
         fo.from(0).count(3);
         final List<DataSet> dataSets2 = v3api.searchDataSets(sessionToken, criteria, fo).getObjects();
         assertDataSetCodesInOrder(dataSets2, "20110509092359990-12", "20081105092159111-1", "20081105092259000-20");
@@ -914,28 +914,28 @@ public class SearchDataSetTest extends AbstractDataSetTest
         final DataSetFetchOptions fo = new DataSetFetchOptions();
         fo.withProperties();
 
-        fo.sortBy().property("$COMMENT").asc();
+        fo.sortBy().property("COMMENT").asc();
         fo.from(1).count(2);
         final SearchResult<DataSet> dataSetSearchResult1 = v3api.searchDataSets(sessionToken, criteria, fo);
         assertEquals(dataSetSearchResult1.getTotalCount(), 3);
         List<DataSet> dataSets1 = dataSetSearchResult1.getObjects();
         assertDataSetCodesInOrder(dataSets1, "20081105092159111-1", "20110509092359990-12");
 
-        fo.sortBy().property("$COMMENT").asc();
+        fo.sortBy().property("COMMENT").asc();
         fo.from(1).count(1);
         final SearchResult<DataSet> dataSetSearchResult2 = v3api.searchDataSets(sessionToken, criteria, fo);
         assertEquals(dataSetSearchResult2.getTotalCount(), 3);
         List<DataSet> dataSets2 = dataSetSearchResult2.getObjects();
         assertDataSetCodesInOrder(dataSets2, "20081105092159111-1");
 
-        fo.sortBy().property("$COMMENT").desc();
+        fo.sortBy().property("COMMENT").desc();
         fo.from(1).count(3);
         final SearchResult<DataSet> dataSetSearchResult3 = v3api.searchDataSets(sessionToken, criteria, fo);
         assertEquals(dataSetSearchResult3.getTotalCount(), 3);
         List<DataSet> dataSets3 = dataSetSearchResult3.getObjects();
         assertDataSetCodesInOrder(dataSets3, "20081105092159111-1", "20081105092259000-20");
 
-        fo.sortBy().property("$COMMENT").desc();
+        fo.sortBy().property("COMMENT").desc();
         fo.from(2).count(1);
         final SearchResult<DataSet> dataSetSearchResult4 = v3api.searchDataSets(sessionToken, criteria, fo);
         assertEquals(dataSetSearchResult4.getTotalCount(), 3);
