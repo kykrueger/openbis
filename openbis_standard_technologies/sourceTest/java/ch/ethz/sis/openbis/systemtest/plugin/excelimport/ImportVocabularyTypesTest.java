@@ -211,6 +211,17 @@ public class ImportVocabularyTypesTest extends AbstractImportTest
 
     @Test
     @DirtiesContext
+    public void updateVocabularyInDBThatIsNotInJson() throws IOException
+    {
+        TestUtils.createVocabulary(v3api, sessionToken, "TEST_VOCABULARY_TYPE", "Test desc");
+        // there should be no exceptions
+        TestUtils.createFrom(v3api, sessionToken, UpdateMode.UPDATE_IF_EXISTS, Paths.get(FilenameUtils.concat(FILES_DIR, EXIST_VOCABULARIES)));
+        Vocabulary test = TestUtils.getVocabulary(v3api, sessionToken, "TEST_VOCABULARY_TYPE");
+        assertNotNull(test);
+    }
+
+    @Test
+    @DirtiesContext
     public void testTakeOverTerm() throws IOException
     {
         String instanceAdminSessionToken = v3api.login(TEST_USER, PASSWORD);
