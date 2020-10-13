@@ -106,13 +106,13 @@ public class DateFieldSearchConditionTranslator implements IConditionTranslator<
 
             case PROPERTY:
             {
-                translateDateProperty(criterion, tableMapper, args, sqlBuilder, aliases, dataTypeByPropertyCode);
+                translateDateProperty(criterion, tableMapper, args, sqlBuilder, aliases, dataTypeByPropertyCode, false);
                 break;
             }
 
             case ANY_PROPERTY:
             {
-                translateDateProperty(criterion, tableMapper, args, sqlBuilder, aliases, dataTypeByPropertyCode);
+                translateDateProperty(criterion, tableMapper, args, sqlBuilder, aliases, dataTypeByPropertyCode, true);
                 break;
             }
 
@@ -125,9 +125,15 @@ public class DateFieldSearchConditionTranslator implements IConditionTranslator<
 
     private static void translateDateProperty(final DateFieldSearchCriteria criterion, final TableMapper tableMapper,
             final List<Object> args, final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases,
-            final Map<String, String> dataTypeByPropertyCode)
+            final Map<String, String> dataTypeByPropertyCode, boolean isAnyProperty)
     {
-        final String fullPropertyName = criterion.getFieldName();
+        final String fullPropertyName;
+        if (isAnyProperty) {
+            fullPropertyName = null;
+        } else {
+            fullPropertyName = criterion.getFieldName();
+        }
+
         final IDate value = criterion.getFieldValue();
         final ITimeZone timeZone = criterion.getTimeZone();
         final boolean bareDateValue = value instanceof AbstractDateValue &&
