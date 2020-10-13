@@ -198,28 +198,38 @@ public class VocabularyBO extends AbstractBusinessObject implements IVocabularyB
     {
         final VocabularyTermPE existingTermPE = vocabularyPE.tryGetVocabularyTerm(code);
 
-        if (existingTermPE == null)
+        if (existingTermPE != null)
         {
-            final VocabularyTermPE vocabularyTermPE = new VocabularyTermPE();
-            vocabularyTermPE.setCode(code);
-            vocabularyTermPE.setDescription(description);
-            if (label != null && label.length() > 0)
+            PersonPE user = session.tryGetPerson();
+
+            if (user != null && user.isSystemUser() && vocabularyPE.isManagedInternally())
             {
-                vocabularyTermPE.setLabel(label);
+                existingTermPE.setDescription(description);
+                existingTermPE.setLabel(label);
+                existingTermPE.setOrdinal(ordinal);
+                existingTermPE.setOfficial(isOfficial);
+                getVocabularyTermDAO().updateRegistrator(existingTermPE, user);
+
+                return existingTermPE;
             }
-            vocabularyTermPE.setRegistrator(findPerson());
-            vocabularyTermPE.setOrdinal(ordinal);
-            vocabularyTermPE.setOfficial(isOfficial);
-
-            new InternalVocabularyAuthorization().canCreateTerm(session, vocabularyPE, vocabularyTermPE);
-
-            vocabularyPE.addTerm(vocabularyTermPE);
-
-            return vocabularyTermPE;
-        } else
-        {
-            throw new UserFailureException("Vocabulary term " + code + " (" + vocabularyPE.getCode() + ") already exists.");
         }
+
+        final VocabularyTermPE vocabularyTermPE = new VocabularyTermPE();
+        vocabularyTermPE.setCode(code);
+        vocabularyTermPE.setDescription(description);
+        if (label != null && label.length() > 0)
+        {
+            vocabularyTermPE.setLabel(label);
+        }
+        vocabularyTermPE.setRegistrator(findPerson());
+        vocabularyTermPE.setOrdinal(ordinal);
+        vocabularyTermPE.setOfficial(isOfficial);
+
+        new InternalVocabularyAuthorization().canCreateTerm(session, vocabularyPE, vocabularyTermPE);
+
+        vocabularyPE.addTerm(vocabularyTermPE);
+
+        return vocabularyTermPE;
     }
 
     private VocabularyTermPE addTerm(VocabularyTerm term, Long ordinal, Boolean isOfficial)

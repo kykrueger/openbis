@@ -20,9 +20,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Resource;
 
@@ -166,8 +168,22 @@ public class CreateVocabularyTermExecutor implements ICreateVocabularyTermExecut
         IVocabularyBO vocabularyBO = businessObjectFactory.createVocabularyBO(context.getSession());
         vocabularyBO.loadDataByTechId(new TechId(vocabulary.getId()));
 
+        Set<String> existingTermCodes = new HashSet<String>();
+        for (VocabularyTermPE existingTerm : vocabulary.getTerms())
+        {
+            existingTermCodes.add(existingTerm.getCode());
+        }
+
         for (VocabularyTermCreation creation : creations)
         {
+            if (existingTermCodes.contains(creation.getCode()))
+            {
+                throw new UserFailureException("Vocabulary term " + creation.getCode() + " (" + vocabulary.getCode() + ") already exists.");
+            } else
+            {
+                existingTermCodes.add(creation.getCode());
+            }
+
             Long previousTermOrdinal = getPreviousTermOrdinal(context, vocabulary, creation);
 
             if (creation.isOfficial())
