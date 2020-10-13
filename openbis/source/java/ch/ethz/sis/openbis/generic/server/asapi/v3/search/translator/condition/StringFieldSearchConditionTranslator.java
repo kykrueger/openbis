@@ -96,7 +96,7 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
             {
                 final AbstractStringValue value = criterion.getFieldValue();
                 translateStringProperty(criterion, tableMapper, args, sqlBuilder, aliases, dataTypeByPropertyCode,
-                        value, TranslatorUtils.normalisePropertyName(criterion.getFieldName()));
+                        value, criterion.getFieldName());
                 break;
             }
 
@@ -118,7 +118,7 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
     private static void translateStringProperty(final StringFieldSearchCriteria criterion,
             final TableMapper tableMapper, final List<Object> args, final StringBuilder sqlBuilder,
             final Map<String, JoinInformation> aliases, final Map<String, String> dataTypeByPropertyCode,
-            final AbstractStringValue value, final String propertyName)
+            final AbstractStringValue value, final String fullPropertyName)
     {
         final boolean internalProperty = TranslatorUtils.isPropertyInternal(criterion.getFieldName());
         final JoinInformation joinInformation = aliases.get(tableMapper.getAttributeTypesTable());
@@ -127,7 +127,7 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
         sqlBuilder.append(entityTypesSubTableAlias).append(PERIOD).append(joinInformation.getSubTableIdField())
                 .append(SP).append(IS_NOT_NULL);
 
-        if (propertyName == null)
+        if (fullPropertyName == null)
         {
             sqlBuilder.append(SP).append(AND).append(SP);
             sqlBuilder.append(aliases.get(DATA_TYPES_TABLE).getSubTableAlias()).append(PERIOD).append(CODE_COLUMN)
@@ -144,7 +144,7 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
         final String casting;
         if (value.getClass() != AnyStringValue.class)
         {
-            casting = dataTypeByPropertyCode.get(propertyName);
+            casting = dataTypeByPropertyCode.get(fullPropertyName);
 
             if (casting != null)
             {
@@ -154,7 +154,7 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
                 if (casting.equals(DataTypeCode.BOOLEAN.toString()))
                 {
                     BooleanFieldSearchConditionTranslator.translateBooleanProperty(tableMapper, args,
-                            sqlBuilder, aliases, convertStringValueToBooleanValue(value), propertyName,
+                            sqlBuilder, aliases, convertStringValueToBooleanValue(value), fullPropertyName,
                             internalProperty);
                     sqlBuilder.append(RP);
                     return;
@@ -166,7 +166,7 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
                 {
 
                     NumberFieldSearchConditionTranslator.translateNumberProperty(tableMapper, args, sqlBuilder,
-                            aliases, convertStringValueToNumberValue(value), propertyName, internalProperty);
+                            aliases, convertStringValueToNumberValue(value), fullPropertyName, internalProperty);
                     sqlBuilder.append(RP);
                     return;
                 }
@@ -181,7 +181,7 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
 
                     sqlBuilder.append(CASE);
                     DateFieldSearchConditionTranslator.appendWhenForDateOrTimestampProperties(sqlBuilder, args,
-                            tableMapper, convertStringValueToDateValue(value), aliases, null, propertyName,
+                            tableMapper, convertStringValueToDateValue(value), aliases, null, fullPropertyName,
                             internalProperty, entityTypesSubTableAlias, bareDateValue, dataType.toString());
                     sqlBuilder.append(SP).append(END);
                     sqlBuilder.append(RP);
@@ -194,7 +194,7 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
             TranslatorUtils.appendInternalExternalConstraint(sqlBuilder, args, entityTypesSubTableAlias,
                     internalProperty);
 
-            if (propertyName != null)
+            if (fullPropertyName != null)
             {
                 sqlBuilder.append(SP).append(AND).append(SP);
             }
@@ -203,18 +203,18 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
             casting = null;
         }
 
-        if (propertyName != null)
+        if (fullPropertyName != null)
         {
             sqlBuilder.append(entityTypesSubTableAlias).append(PERIOD)
                     .append(CODE_COLUMN).append(SP).append(EQ).append(SP).append(QU);
-            args.add(propertyName);
+            args.add(TranslatorUtils.normalisePropertyName(fullPropertyName));
         }
 
         if (value.getClass() != AnyStringValue.class)
         {
             sqlBuilder.append(SP).append(THEN).append(NL);
             sqlBuilder.append(CASE);
-            if (propertyName != null)
+            if (fullPropertyName != null)
             {
                 sqlBuilder.append(NL).append(WHEN).append(SP)
                         .append(aliases.get(DATA_TYPES_TABLE).getSubTableAlias()).append(PERIOD).append(CODE_COLUMN)
