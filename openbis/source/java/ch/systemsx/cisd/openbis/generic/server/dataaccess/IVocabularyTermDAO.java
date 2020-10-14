@@ -16,6 +16,7 @@
 
 package ch.systemsx.cisd.openbis.generic.server.dataaccess;
 
+import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.VocabularyPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.VocabularyTermPE;
 
@@ -43,5 +44,10 @@ public interface IVocabularyTermDAO extends IGenericDAO<VocabularyTermPE>
      * Returns the maximum ordinal over all terms of the specified vocabulary.
      */
     long getMaximumOrdinal(VocabularyPE vocabulary);
+
+    /**
+     * Updates the term's registrator.
+     */
+    void updateRegistrator(VocabularyTermPE term, PersonPE registrator);
 
 }

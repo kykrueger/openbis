@@ -114,6 +114,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.RelationshipTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.Session;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SpacePE;
+import ch.systemsx.cisd.openbis.generic.shared.dto.VocabularyTermPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SpaceIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.managed_property.IManagedPropertyEvaluatorFactory;
@@ -158,8 +159,9 @@ abstract class AbstractBusinessObject implements IDAOFactory
             DataSetTypeWithoutExperimentChecker dataSetTypeChecker,
             IRelationshipService relationshipService)
     {
-        this(daoFactory, session, entityKindOrNull == null ? null : new EntityPropertiesConverter(
-                entityKindOrNull, daoFactory, entityInformationProvider, managedPropertyEvaluatorFactory),
+        this(daoFactory, session, entityKindOrNull == null ? null
+                : new EntityPropertiesConverter(
+                        entityKindOrNull, daoFactory, entityInformationProvider, managedPropertyEvaluatorFactory),
                 managedPropertyEvaluatorFactory, dataSetTypeChecker, relationshipService);
     }
 
@@ -905,6 +907,16 @@ abstract class AbstractBusinessObject implements IDAOFactory
         if (false == objectIds.isEmpty())
         {
             indexUpdater.scheduleUpdate(DynamicPropertyEvaluationOperation.evaluate(objectClass, objectIds));
+        }
+    }
+
+    protected void makeSystemInternalIfSystemUser(VocabularyTermPE term)
+    {
+        PersonPE user = session.tryGetCreatorPerson();
+
+        if (user != null && user.isSystemUser() && term.getVocabulary().isManagedInternally())
+        {
+            getVocabularyTermDAO().updateRegistrator(term, user);
         }
     }
 

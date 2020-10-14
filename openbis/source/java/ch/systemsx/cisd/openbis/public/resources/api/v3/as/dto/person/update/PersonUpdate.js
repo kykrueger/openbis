@@ -2,6 +2,7 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/
 		IdListUpdateValue, WebAppSettingsUpdateValue) {
 	var PersonUpdate = function() {
 		this.spaceId = new FieldUpdateValue();
+		this.active = new FieldUpdateValue();
 	};
 	stjs.extend(PersonUpdate, null, [], function(constructor, prototype) {
 		prototype['@type'] = 'as.dto.person.update.PersonUpdate';
@@ -9,7 +10,7 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/
 		prototype.userId = null;
 		prototype.spaceId = null;
 		prototype.webAppSettings = null;
-		prototype.active = true;
+		prototype.active = null;
 
 		prototype.getObjectId = function() {
 			return this.getUserId();
@@ -47,8 +48,11 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/
 		prototype.isActive = function() {
 			return this.active;
 		};
+		prototype.activate = function() {
+			this.active.setValue(true);
+		};
 		prototype.deactivate = function() {
-			this.active = false;
+			this.active.setValue(false);
 		};
 	}, {
 		userId : "IPersonId",
@@ -59,7 +63,11 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/
 		webAppSettings : {
 			name : "Map",
 			arguments : [ "String", "WebAppSettingsUpdateValue" ]
-		}
+		},
+		active : {
+			name : "FieldUpdateValue",
+			arguments : [ null ]
+		},
 	});
 	return PersonUpdate;
 })

@@ -844,6 +844,143 @@ public class CommonServerTest extends SystemTestCase
             }, expectedError);
     }
 
+    @DataProvider
+    private Object[][] providerTestCreateAndTakeOverExistingVocabularyTerm()
+    {
+        return new Object[][] {
+                { "ORGANISM", SYSTEM_USER, SYSTEM_USER, SYSTEM_USER, null },
+                { "ORGANISM", SYSTEM_USER, TEST_USER, SYSTEM_USER, null },
+
+                { "ORGANISM", TEST_USER, SYSTEM_USER, TEST_USER, null },
+                { "ORGANISM", TEST_USER, TEST_USER, TEST_USER, null },
+
+                { "$PLATE_GEOMETRY", SYSTEM_USER, SYSTEM_USER, SYSTEM_USER, null },
+                { "$PLATE_GEOMETRY", SYSTEM_USER, TEST_USER, SYSTEM_USER, null },
+
+                { "$PLATE_GEOMETRY", TEST_USER, SYSTEM_USER, SYSTEM_USER, null },
+                { "$PLATE_GEOMETRY", TEST_USER, TEST_USER, TEST_USER, null },
+        };
+    }
+
+    @Test(dataProvider = "providerTestCreateAndTakeOverExistingVocabularyTerm")
+    public void testCreateAndTakeOverExistingVocabularyTerm(String vocabularyCode, String originalTermRegistrator, String duplicatedTermRegistrator,
+            String expectedTermRegistratorAfterCreation, String expectedError)
+    {
+        SessionContextDTO originalTermRegistratorSession =
+                originalTermRegistrator.equals(SYSTEM_USER) ? commonServer.tryToAuthenticateAsSystem()
+                        : commonServer.tryAuthenticate(originalTermRegistrator, PASSWORD);
+        SessionContextDTO duplicatedTermRegistratorSession =
+                duplicatedTermRegistrator.equals(SYSTEM_USER) ? commonServer.tryToAuthenticateAsSystem()
+                        : commonServer.tryAuthenticate(duplicatedTermRegistrator, PASSWORD);
+
+        VocabularyPE vocabularyPE = daoFactory.getVocabularyDAO().tryFindVocabularyByCode(vocabularyCode);
+
+        VocabularyTerm originalTerm = new VocabularyTerm();
+        originalTerm.setCode("TERM-TO-TAKE-OVER");
+        originalTerm.setLabel("Test Label");
+        originalTerm.setDescription("Test Description");
+        commonServer.addVocabularyTerms(originalTermRegistratorSession.getSessionToken(), new TechId(vocabularyPE.getId()),
+                Arrays.asList(originalTerm),
+                null);
+
+        VocabularyTerm duplicatedTerm = new VocabularyTerm();
+        duplicatedTerm.setCode("TERM-TO-TAKE-OVER");
+        duplicatedTerm.setLabel("Updated Label");
+        duplicatedTerm.setDescription("Updated Description");
+
+        assertExceptionMessage(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    commonServer.addVocabularyTerms(duplicatedTermRegistratorSession.getSessionToken(), new TechId(vocabularyPE.getId()),
+                            Arrays.asList(duplicatedTerm), null);
+
+                    VocabularyPE vocabularyPE = daoFactory.getVocabularyDAO().tryFindVocabularyByCode(vocabularyCode);
+                    VocabularyTermPE vocabularyTermPE = vocabularyPE.tryGetVocabularyTerm(originalTerm.getCode());
+
+                    if (duplicatedTermRegistrator.equals(SYSTEM_USER) && vocabularyPE.isManagedInternally())
+                    {
+                        assertEquals(vocabularyTermPE.getLabel(), "Updated Label");
+                        assertEquals(vocabularyTermPE.getDescription(), "Updated Description");
+                    } else
+                    {
+                        assertEquals(vocabularyTermPE.getLabel(), "Test Label");
+                        assertEquals(vocabularyTermPE.getDescription(), "Test Description");
+                    }
+
+                    assertEquals(vocabularyTermPE.getRegistrator().getUserId(), expectedTermRegistratorAfterCreation);
+                }
+            }, expectedError);
+    }
+
+    @DataProvider
+    private Object[][] providerTestUpdateAndTakeOverExistingVocabularyTerm()
+    {
+        return new Object[][] {
+                { "ORGANISM", SYSTEM_USER, SYSTEM_USER, SYSTEM_USER, null },
+                { "ORGANISM", SYSTEM_USER, TEST_USER, SYSTEM_USER, null },
+
+                { "ORGANISM", TEST_USER, SYSTEM_USER, TEST_USER, null },
+                { "ORGANISM", TEST_USER, TEST_USER, TEST_USER, null },
+
+                { "$PLATE_GEOMETRY", SYSTEM_USER, SYSTEM_USER, SYSTEM_USER, null },
+                { "$PLATE_GEOMETRY", SYSTEM_USER, TEST_USER, SYSTEM_USER,
+                        "Terms created by the system user that belong to internal vocabularies can be managed only by the system user" },
+
+                { "$PLATE_GEOMETRY", TEST_USER, SYSTEM_USER, SYSTEM_USER, null },
+                { "$PLATE_GEOMETRY", TEST_USER, TEST_USER, TEST_USER, null },
+        };
+    }
+
+    @Test(dataProvider = "providerTestUpdateAndTakeOverExistingVocabularyTerm")
+    public void testUpdateAndTakeOverExistingVocabularyTerm(String vocabularyCode, String termRegistrator, String termUpdater,
+            String expectedTermRegistratorAfterUpdate, String expectedError)
+    {
+        SessionContextDTO termRegistratorSession =
+                termRegistrator.equals(SYSTEM_USER) ? commonServer.tryToAuthenticateAsSystem()
+                        : commonServer.tryAuthenticate(termRegistrator, PASSWORD);
+        SessionContextDTO termUpdaterSession =
+                termUpdater.equals(SYSTEM_USER) ? commonServer.tryToAuthenticateAsSystem()
+                        : commonServer.tryAuthenticate(termUpdater, PASSWORD);
+
+        VocabularyPE vocabularyPE = daoFactory.getVocabularyDAO().tryFindVocabularyByCode(vocabularyCode);
+
+        VocabularyTerm term = new VocabularyTerm();
+        term.setCode("TERM-TO-TAKE-OVER");
+        term.setLabel("Test Label");
+        term.setDescription("Test Description");
+        commonServer.addVocabularyTerms(termRegistratorSession.getSessionToken(), new TechId(vocabularyPE.getId()), Arrays.asList(term),
+                null);
+
+        VocabularyTermPE termPE = vocabularyPE.tryGetVocabularyTerm(term.getCode());
+
+        VocabularyTerm updateTerm = new VocabularyTerm();
+        updateTerm.setId(termPE.getId());
+        updateTerm.setCode(termPE.getCode());
+        updateTerm.setLabel("Updated Label");
+        updateTerm.setDescription("Updated Description");
+        updateTerm.setOrdinal(termPE.getOrdinal());
+        updateTerm.setModificationDate(termPE.getModificationDate());
+        VocabularyTermBatchUpdateDetails updateDetails = new VocabularyTermBatchUpdateDetails();
+        UpdatedVocabularyTerm update = new UpdatedVocabularyTerm(updateTerm, updateDetails);
+
+        assertExceptionMessage(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    commonServer.updateVocabularyTerm(termUpdaterSession.getSessionToken(), update);
+
+                    VocabularyPE vocabularyPE = daoFactory.getVocabularyDAO().tryFindVocabularyByCode(vocabularyCode);
+                    VocabularyTermPE vocabularyTermPE = vocabularyPE.tryGetVocabularyTerm(term.getCode());
+                    assertEquals(vocabularyTermPE.getLabel(), "Updated Label");
+                    assertEquals(vocabularyTermPE.getDescription(), "Updated Description");
+                    assertEquals(vocabularyTermPE.getRegistrator().getUserId(), expectedTermRegistratorAfterUpdate);
+                }
+            }, expectedError);
+    }
+
     @Test
     public void testDeleteGroupWithPersons()
     {

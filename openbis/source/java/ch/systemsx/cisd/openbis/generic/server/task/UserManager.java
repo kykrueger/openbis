@@ -63,6 +63,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.IPersonId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.PersonPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.PersonSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.update.PersonUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.update.UpdatePersonsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.create.CreateProjectsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.create.ProjectCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.fetchoptions.ProjectFetchOptions;
@@ -623,6 +624,11 @@ public class UserManager
                     context.getReport().addUser(userId);
                 } else if (knownUser != null && knownUser.isActive() == false)
                 {
+                    PersonUpdate personUpdate = new PersonUpdate();
+                    personUpdate.setUserId(personId);
+                    personUpdate.activate();
+                    context.add(personUpdate);
+
                     context.getReport().reuseUser(userId);
                 }
                 getHomeSpaceRequest(userId).setHomeSpace(userSpaceId);
@@ -1003,6 +1009,8 @@ public class UserManager
 
         private Map<String, PersonCreation> personCreations = new LinkedMap<>();
 
+        private Map<IPersonId, PersonUpdate> personUpdates = new LinkedMap<>();
+
         private List<SpaceCreation> spaceCreations = new ArrayList<>();
 
         private List<ProjectCreation> projectCreations = new ArrayList<>();
@@ -1053,6 +1061,11 @@ public class UserManager
             personCreations.put(personCreation.getUserId(), personCreation);
         }
 
+        public void add(PersonUpdate personUpdate)
+        {
+            personUpdates.put(personUpdate.getUserId(), personUpdate);
+        }
+
         public void add(SpaceCreation spaceCreation)
         {
             spaceCreations.add(spaceCreation);
@@ -1099,6 +1112,10 @@ public class UserManager
             if (personCreations.isEmpty() == false)
             {
                 operations.add(new CreatePersonsOperation(new ArrayList<>(personCreations.values())));
+            }
+            if (personUpdates.isEmpty() == false)
+            {
+                operations.add(new UpdatePersonsOperation(new ArrayList<>(personUpdates.values())));
             }
             if (spaceCreations.isEmpty() == false)
             {

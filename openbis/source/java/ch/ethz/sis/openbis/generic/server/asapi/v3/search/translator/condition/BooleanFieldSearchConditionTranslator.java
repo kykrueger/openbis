@@ -90,7 +90,7 @@ public class BooleanFieldSearchConditionTranslator implements IConditionTranslat
                 final boolean internalProperty = TranslatorUtils.isPropertyInternal(criterion.getFieldName());
 
                 translateBooleanProperty(tableMapper, args, sqlBuilder, aliases, criterion.getFieldValue(),
-                        TranslatorUtils.normalisePropertyName(criterion.getFieldName()), internalProperty);
+                        criterion.getFieldName(), internalProperty);
                 break;
             }
 
@@ -109,7 +109,7 @@ public class BooleanFieldSearchConditionTranslator implements IConditionTranslat
 
     static void translateBooleanProperty(final TableMapper tableMapper, final List<Object> args,
             final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases, final Boolean value,
-            final String propertyName, final Boolean internalProperty)
+            final String fullPropertyName, final Boolean internalProperty)
     {
         final JoinInformation joinInformation = aliases.get(tableMapper.getAttributeTypesTable());
         final String entityTypesSubTableAlias = joinInformation.getSubTableAlias();
@@ -132,12 +132,12 @@ public class BooleanFieldSearchConditionTranslator implements IConditionTranslat
             TranslatorUtils.appendInternalExternalConstraint(sqlBuilder, args, entityTypesSubTableAlias, internalProperty);
         }
 
-        if (propertyName != null)
+        if (fullPropertyName != null)
         {
             sqlBuilder.append(SP).append(AND);
             sqlBuilder.append(SP).append(entityTypesSubTableAlias).append(PERIOD).append(ColumnNames.CODE_COLUMN)
                     .append(SP).append(EQ).append(SP).append(QU);
-            args.add(propertyName);
+            args.add(TranslatorUtils.normalisePropertyName(fullPropertyName));
         }
 
         if (value != null)

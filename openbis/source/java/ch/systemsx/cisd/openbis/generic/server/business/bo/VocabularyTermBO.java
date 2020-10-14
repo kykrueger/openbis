@@ -72,6 +72,8 @@ public final class VocabularyTermBO extends AbstractBusinessObject implements IV
             increaseVocabularyTermOrdinals(updates.getOrdinal());
             vocabularyTermPE.setOrdinal(updates.getOrdinal());
         }
+
+        makeSystemInternalIfSystemUser(vocabularyTermPE);
         validateAndSave();
     }
 
@@ -121,6 +123,8 @@ public final class VocabularyTermBO extends AbstractBusinessObject implements IV
 
         vocabularyTermPE.setOfficial(true);
 
+        makeSystemInternalIfSystemUser(vocabularyTermPE);
         validateAndSave();
     }
+
 }

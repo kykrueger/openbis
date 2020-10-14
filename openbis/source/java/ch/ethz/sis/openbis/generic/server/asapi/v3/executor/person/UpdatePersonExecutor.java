@@ -113,12 +113,16 @@ public class UpdatePersonExecutor
         {
             PersonUpdate personUpdate = entry.getKey();
             PersonPE person = entry.getValue();
-            if (person.isActive() && personUpdate.isActive() == false)
+
+            if (personUpdate.isActive() != null && personUpdate.isActive().isModified() && personUpdate.isActive().getValue() != null)
             {
-                deactivate(context, person);
-            } else if (person.isActive() == false && personUpdate.isActive())
-            {
-                activate(context, person);
+                if (person.isActive() == true && personUpdate.isActive().getValue() == false)
+                {
+                    deactivate(context, person);
+                } else if (person.isActive() == false && personUpdate.isActive().getValue() == true)
+                {
+                    activate(context, person);
+                }
             }
         }
     }
@@ -145,7 +149,7 @@ public class UpdatePersonExecutor
             roleAssignmenDAO.deleteRoleAssignment(roleAssignment);
         }
     }
-    
+
     private void activate(IOperationContext context, PersonPE person)
     {
         authorizationExecutor.canActivate(context);

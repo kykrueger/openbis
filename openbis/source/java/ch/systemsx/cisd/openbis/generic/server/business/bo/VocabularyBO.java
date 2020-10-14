@@ -196,6 +196,24 @@ public class VocabularyBO extends AbstractBusinessObject implements IVocabularyB
     private VocabularyTermPE addTerm(String code, String description, String label, Long ordinal,
             Boolean isOfficial)
     {
+        final VocabularyTermPE existingTermPE = vocabularyPE.tryGetVocabularyTerm(code);
+
+        if (existingTermPE != null)
+        {
+            PersonPE user = session.tryGetPerson();
+
+            if (user != null && user.isSystemUser() && vocabularyPE.isManagedInternally())
+            {
+                existingTermPE.setDescription(description);
+                existingTermPE.setLabel(label);
+                existingTermPE.setOrdinal(ordinal);
+                existingTermPE.setOfficial(isOfficial);
+                getVocabularyTermDAO().updateRegistrator(existingTermPE, user);
+
+                return existingTermPE;
+            }
+        }
+
         final VocabularyTermPE vocabularyTermPE = new VocabularyTermPE();
         vocabularyTermPE.setCode(code);
         vocabularyTermPE.setDescription(description);
@@ -549,6 +567,9 @@ public class VocabularyBO extends AbstractBusinessObject implements IVocabularyB
                 oldTerm.setLabel(update.getLabel());
             }
             oldTerm.setOrdinal(update.getOrdinal()); // ordinal is always updated
+
+            makeSystemInternalIfSystemUser(oldTerm);
+
             newTermsMap.remove(code);
         }
     }
