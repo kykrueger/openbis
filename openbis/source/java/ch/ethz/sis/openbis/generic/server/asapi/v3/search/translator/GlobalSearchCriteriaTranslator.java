@@ -48,6 +48,8 @@ public class GlobalSearchCriteriaTranslator
 
     public static final String SAMPLE_IDENTIFIER_MATCH_ALIAS = "sample_identifier_match";
 
+    public static final String MATERIAL_MATCH_ALIAS = "material_match";
+
     public static final String SAMPLE_MATCH_ALIAS = "sample_match";
 
     public static final String ENTITY_TYPES_CODE_ALIAS = "enty_code";
@@ -87,6 +89,8 @@ public class GlobalSearchCriteriaTranslator
     private static final String CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS = "cvte";
 
     private static final String SAMPLES_TABLE_ALIAS = "samp";
+
+    private static final String MATERIALS_TABLE_ALIAS = "mat";
 
     private static final String SPACE_TABLE_ALIAS = "space";
 
@@ -257,6 +261,8 @@ public class GlobalSearchCriteriaTranslator
                 sqlBuilder.append(SP).append(SAMPLE_IDENTIFIER_MATCH_ALIAS).append(COMMA).append(NL);
             }
 
+            sqlBuilder.append(NULL).append(SP).append(MATERIAL_MATCH_ALIAS).append(COMMA).append(NL);
+
             if (tableMapper == SAMPLE || tableMapper == EXPERIMENT || tableMapper == DATA_SET)
             {
                 sqlBuilder.append(NULL).append(SP).append(SAMPLE_MATCH_ALIAS).append(COMMA).append(NL);
@@ -305,6 +311,9 @@ public class GlobalSearchCriteriaTranslator
             {
                 sqlBuilder.append(NULL).append(SP).append(SAMPLE_IDENTIFIER_MATCH_ALIAS).append(COMMA).append(NL);
             }
+
+            buildMaterialMatch(sqlBuilder, criterionValues, args);
+            sqlBuilder.append(COMMA).append(NL);
 
             if (tableMapper == SAMPLE || tableMapper == EXPERIMENT || tableMapper == DATA_SET)
             {
@@ -362,20 +371,29 @@ public class GlobalSearchCriteriaTranslator
             final List<Object> args)
     {
         sqlBuilder.append(CASE).append(NL);
-        appendWhenThen(sqlBuilder, PERM_ID_COLUMN, values, args);
-        appendWhenThen(sqlBuilder, CODE_COLUMN, values, args);
-        appendWhenThen(sqlBuilder, SAMPLE_IDENTIFIER_COLUMN, values, args);
+        appendWhenThen(sqlBuilder, SAMPLES_TABLE_ALIAS, PERM_ID_COLUMN, values, args);
+        appendWhenThen(sqlBuilder, SAMPLES_TABLE_ALIAS, CODE_COLUMN, values, args);
+        appendWhenThen(sqlBuilder, SAMPLES_TABLE_ALIAS, SAMPLE_IDENTIFIER_COLUMN, values, args);
         sqlBuilder.append('\t').append(ELSE).append(SP).append(NULL).append(NL);
         sqlBuilder.append(END).append(SP).append(SAMPLE_MATCH_ALIAS);
     }
 
-    private static void appendWhenThen(final StringBuilder sqlBuilder, final String column, final String[] values,
+    private static void buildMaterialMatch(final StringBuilder sqlBuilder, final String[] values,
             final List<Object> args)
     {
+        sqlBuilder.append(CASE).append(NL);
+        appendWhenThen(sqlBuilder, MATERIALS_TABLE_ALIAS, CODE_COLUMN, values, args);
+        sqlBuilder.append('\t').append(ELSE).append(SP).append(NULL).append(NL);
+        sqlBuilder.append(END).append(SP).append(MATERIAL_MATCH_ALIAS);
+    }
+
+    private static void appendWhenThen(final StringBuilder sqlBuilder, final String tableAlias, final String column,
+            final String[] values, final List<Object> args)
+    {
         sqlBuilder.append('\t').append(WHEN).append(SP).append(LOWER).append(LP)
-                .append(SAMPLES_TABLE_ALIAS).append(PERIOD).append(column).append(RP).append(SP).append(IN).append(SP)
-                .append(SELECT_UNNEST)
-                .append(THEN).append(SP).append(SAMPLES_TABLE_ALIAS).append(PERIOD).append(column).append(NL);
+                .append(tableAlias).append(PERIOD).append(column).append(RP).append(SP).append(IN).append(SP)
+                .append(SELECT_UNNEST).append(SP)
+                .append(THEN).append(SP).append(tableAlias).append(PERIOD).append(column).append(NL);
         args.add(values);
     }
 
@@ -604,6 +622,11 @@ public class GlobalSearchCriteriaTranslator
                     .append(VOCABULARY_TERM_COLUMN).append(SP).append(EQ).append(SP).append(CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS).append(PERIOD)
                     .append(ID_COLUMN).append(NL);
 
+            sqlBuilder.append(LEFT_JOIN).append(SP).append(MATERIAL.getEntitiesTable()).append(SP)
+                    .append(MATERIALS_TABLE_ALIAS).append(SP).append(ON).append(SP).append(PROPERTIES_TABLE_ALIAS)
+                    .append(PERIOD).append(MATERIAL_PROP_COLUMN).append(SP).append(EQ).append(SP)
+                    .append(MATERIALS_TABLE_ALIAS).append(PERIOD).append(ID_COLUMN).append(NL);
+
             if (tableMapper == TableMapper.SAMPLE || tableMapper == TableMapper.EXPERIMENT
                     || tableMapper == TableMapper.DATA_SET)
             {
@@ -690,6 +713,12 @@ public class GlobalSearchCriteriaTranslator
                 .append(PERIOD).append(TS_VECTOR_COLUMN).append(SP)
                 .append(DOUBLE_AT).append(SP);
         buildTsQueryPart(sqlBuilder, stringValue, args);
+
+        sqlBuilder.append(SP).append(OR).append(SP);
+
+        sqlBuilder.append(MATERIALS_TABLE_ALIAS).append(PERIOD).append(TS_VECTOR_COLUMN).append(SP)
+                .append(DOUBLE_AT).append(SP).append(QU).append(DOUBLE_COLON).append(TSQUERY);
+        args.add(toTsQueryText(stringValue));
 
         if (tableMapper == TableMapper.SAMPLE || tableMapper == TableMapper.EXPERIMENT
                 || tableMapper == TableMapper.DATA_SET)

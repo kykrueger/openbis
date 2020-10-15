@@ -310,6 +310,12 @@ public class GlobalSearchManager implements IGlobalSearchManager
             addPropertyMatch(cvCodeMatch, fieldsMap, matches);
         }
 
+        final String materialMatch = (String) fieldsMap.get(MATERIAL_MATCH_ALIAS);
+        if (materialMatch != null)
+        {
+            addPropertyMatch(materialMatch, fieldsMap, matches);
+        }
+
         final String sampleMatch = (String) fieldsMap.get(SAMPLE_MATCH_ALIAS);
         if (sampleMatch != null)
         {
