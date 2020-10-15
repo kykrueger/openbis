@@ -45,7 +45,6 @@ import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronize
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
 import ch.systemsx.cisd.openbis.generic.shared.ICommonServer;
-import ch.systemsx.cisd.openbis.generic.shared.basic.CodeConverter;
 import ch.systemsx.cisd.openbis.generic.shared.basic.ICodeHolder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetType;
@@ -255,10 +254,18 @@ public class MasterDataSynchronizer
         for (String code : vocabulariesToProcess.keySet())
         {
             NewVocabulary newVocabulary = vocabulariesToProcess.get(code);
-            String vocabCode = CodeConverter.tryToBusinessLayer(newVocabulary.getCode(), newVocabulary.isManagedInternally());
+            if (newVocabulary.isManagedInternally())
+            {
+                continue;
+            }
+            String vocabCode = newVocabulary.getCode();
             Vocabulary existingVocabulary = existingVocabularyMap.get(vocabCode);
             if (existingVocabulary != null)
             {
+                if (existingVocabulary.isManagedInternally())
+                {
+                    continue;
+                }
                 String diff = calculateDiff(existingVocabulary, newVocabulary);
                 if (StringUtils.isNotBlank(diff) && config.isMasterDataUpdateAllowed())
                 {
@@ -614,10 +621,18 @@ public class MasterDataSynchronizer
         for (String propTypeCode : propertyTypesToProcess.keySet())
         {
             PropertyType incomingPropertyType = propertyTypesToProcess.get(propTypeCode);
+            if (incomingPropertyType.isManagedInternally())
+            {
+                continue;
+            }
             String propertyTypeCode = incomingPropertyType.getCode();
             PropertyType existingPropertyType = propertyTypeMap.get(propertyTypeCode);
             if (existingPropertyType != null)
             {
+                if (existingPropertyType.isManagedInternally())
+                {
+                    continue;
+                }
                 String diff = calculateDiff(existingPropertyType, incomingPropertyType);
                 if (StringUtils.isNotBlank(diff) && config.isMasterDataUpdateAllowed())
                 {
