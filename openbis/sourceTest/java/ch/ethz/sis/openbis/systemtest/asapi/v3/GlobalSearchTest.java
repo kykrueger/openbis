@@ -1153,7 +1153,31 @@ public class GlobalSearchTest extends AbstractTest
         }
     }
 
-    public List<GlobalSearchObject> filterSearchResults(final List<GlobalSearchObject> results,
+    @Test
+    public void testSearchMatchingMaterialProperty()
+    {
+        final GlobalSearchCriteria criteria = new GlobalSearchCriteria();
+        criteria.withText().thatContains("BACTERIUM-Y");
+
+        final GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
+        fo.sortBy().objectPermId().asc();
+        fo.withMatch();
+
+        final SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
+        final List<GlobalSearchObject> objects = result.getObjects();
+
+        assertEquals(result.getTotalCount(), 4);
+        assertEquals(objects.size(), 4);
+
+        assertSample(objects.get(0), "200902091250077-1026", "/CISD/CP-TEST-2", "Property 'bacterium': BACTERIUM-Y");
+        assertSample(objects.get(1), "200902091250077-1051", "/CISD/PLATE_WELLSEARCH:WELL-A01",
+                "Property 'bacterium': BACTERIUM-Y");
+        assertExperiment(objects.get(2), "201108050937246-1031", "/CISD/DEFAULT/EXP-Y",
+                "Property 'any_material': BACTERIUM-Y");
+        assertMaterial(objects.get(3), "BACTERIUM-Y", "BACTERIUM", "Identifier: BACTERIUM-Y (BACTERIUM)");
+    }
+
+    private List<GlobalSearchObject> filterSearchResults(final List<GlobalSearchObject> results,
             final boolean withDataset, final boolean withSample, final boolean withExperiment)
     {
         return results.stream().filter(globalSearchObject ->
