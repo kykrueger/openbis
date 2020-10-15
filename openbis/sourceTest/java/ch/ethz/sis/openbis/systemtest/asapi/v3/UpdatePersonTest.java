@@ -23,6 +23,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.webapp.WebAppSettings;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.webapp.fetchoptions.WebAppSettingsFetchOptions;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -313,6 +315,17 @@ public class UpdatePersonTest extends AbstractTest
 
         PersonPermId permId = createPersonToUpdate();
 
+        // Other tests use WEB_APP_1
+        PersonFetchOptions personFetchOptions = new PersonFetchOptions();
+        personFetchOptions.withWebAppSettings(WEB_APP_1);
+        Person currentPerson = v3api.getPersons(sessionToken, Arrays.asList(permId), personFetchOptions).get(permId);
+        WebAppSettings currentWebApp1Settings = currentPerson.getWebAppSettings(WEB_APP_1);
+        int currentWebApp1Size = 0;
+        if (currentWebApp1Settings != null) {
+            currentWebApp1Size = currentWebApp1Settings.getSettings().size();
+        }
+        //
+
         // 1st update
 
         PersonUpdate update = new PersonUpdate();
@@ -344,7 +357,7 @@ public class UpdatePersonTest extends AbstractTest
         assertEquals(person.getWebAppSettings().size(), 4);
 
         Map<String, WebAppSetting> webApp1 = person.getWebAppSettings(WEB_APP_1).getSettings();
-        assertEquals(webApp1.size(), 2);
+        assertEquals(webApp1.size(), 2 + currentWebApp1Size);
         assertEquals(webApp1.get("n1a").getValue(), "v1a");
         assertEquals(webApp1.get("n1b").getValue(), "v1b");
 
@@ -388,7 +401,7 @@ public class UpdatePersonTest extends AbstractTest
         assertEquals(person.getWebAppSettings().size(), 2);
 
         webApp1 = person.getWebAppSettings(WEB_APP_1).getSettings();
-        assertEquals(webApp1.size(), 2);
+        assertEquals(webApp1.size(), 2 + currentWebApp1Size);
         assertEquals(webApp1.get("n1a").getValue(), "v1a");
         assertEquals(webApp1.get("n1c").getValue(), "v1c");
 
