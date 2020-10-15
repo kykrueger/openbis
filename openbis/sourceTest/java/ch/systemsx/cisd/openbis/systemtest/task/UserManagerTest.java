@@ -1410,9 +1410,9 @@ public class UserManagerTest extends AbstractTest
         return new UserManagerExpectationsBuilder(v3api, testService, sessionManager);
     }
 
-    private UserManagerReport manage(UserManager userManager)
+    private UserManagerReport manage(UserManager userManager, String... knownUsers)
     {
-        userManager.manage();
+        userManager.manage(new TreeSet<>(Arrays.asList(knownUsers)));
         daoFactory.getSessionFactory().getCurrentSession().flush();
         return report;
     }
