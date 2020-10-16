@@ -23,8 +23,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.webapp.WebAppSettings;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.webapp.fetchoptions.WebAppSettingsFetchOptions;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -39,6 +37,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.Role;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.create.RoleAssignmentCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.webapp.WebAppSetting;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.webapp.WebAppSettings;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.webapp.create.WebAppSettingCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.webapp.update.WebAppSettingsUpdateValue;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
@@ -317,11 +316,12 @@ public class UpdatePersonTest extends AbstractTest
 
         // Other tests use WEB_APP_1
         PersonFetchOptions personFetchOptions = new PersonFetchOptions();
-        personFetchOptions.withWebAppSettings(WEB_APP_1);
+        personFetchOptions.withWebAppSettings(WEB_APP_1).withAllSettings();
         Person currentPerson = v3api.getPersons(sessionToken, Arrays.asList(permId), personFetchOptions).get(permId);
         WebAppSettings currentWebApp1Settings = currentPerson.getWebAppSettings(WEB_APP_1);
         int currentWebApp1Size = 0;
-        if (currentWebApp1Settings != null) {
+        if (currentWebApp1Settings != null)
+        {
             currentWebApp1Size = currentWebApp1Settings.getSettings().size();
         }
         //
