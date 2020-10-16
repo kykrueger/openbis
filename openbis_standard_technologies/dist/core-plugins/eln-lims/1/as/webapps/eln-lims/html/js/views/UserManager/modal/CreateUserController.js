@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-function CreateUserController() {
-	this._createUserModel = new CreateUserModel();
+function CreateUserController(authenticationService) {
+	this._createUserModel = new CreateUserModel(authenticationService);
 	this._createUserView = new CreateUserView(this, this._createUserModel);
 	
 	this.init = function() {
@@ -33,8 +33,8 @@ function CreateUserController() {
 							Util.unblockUI();
 							mainController.changeView("showUserManagerPage");
 						});
-					} else if (message.indexOf("Following persons already exist") !== -1){
-						Util.showUserError(message, function() {
+					} else if (message.indexOf("constraint [pers_bk_uk]") !== -1){
+						Util.showUserError("Person already exist", function() {
 							_this._createUserView.enableAccept();
 						}, true);
 					} else {

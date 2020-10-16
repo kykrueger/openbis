@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-function CreateUserModel() {
+function CreateUserModel(authenticationService) {
+    this.authenticationService = authenticationService;
 	this.isPasswordRequired = false;
 	this.userId = null;
 	this.password = null;
