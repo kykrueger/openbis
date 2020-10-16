@@ -38,9 +38,9 @@ function CreateUserController(authenticationService) {
 							_this._createUserView.enableAccept();
 						}, true);
 					} else {
-						_this._createUserView.showPasswordField();
-						_this._createUserModel.isPasswordRequired = true;
-						_this._createUserView.enableAccept();
+						Util.showUserError(message, function() {
+                            _this._createUserView.enableAccept();
+                        }, true);
 					}
 				});
 			}
