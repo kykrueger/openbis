@@ -2,7 +2,8 @@
 
 - added support for batch creation of samples
 - changed Python minimum requirement to Python 3.6
-- new vocabulary and new property_type: internalNameSpace was removed, will cause possible incompatibilities with older versions of openBIS.
+- new vocabulary and new property_type: internalNameSpace was removed
+- this will cause possible incompatibilities with older versions of openBIS (< 20.10.x)
 
 ## Changes with pybis-1.15.1
 
