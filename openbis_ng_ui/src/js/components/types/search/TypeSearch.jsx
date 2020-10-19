@@ -1,10 +1,9 @@
 import _ from 'lodash'
 import React from 'react'
-import { connect } from 'react-redux'
 import { withStyles } from '@material-ui/core/styles'
-import Link from '@material-ui/core/Link'
 import Grid from '@src/js/components/common/grid/Grid.jsx'
 import GridContainer from '@src/js/components/common/grid/GridContainer.jsx'
+import LinkToObject from '@src/js/components/common/form/LinkToObject.jsx'
 import ids from '@src/js/common/consts/ids.js'
 import pages from '@src/js/common/consts/pages.js'
 import objectTypes from '@src/js/common/consts/objectType.js'
@@ -13,19 +12,7 @@ import actions from '@src/js/store/actions/actions.js'
 import openbis from '@src/js/services/openbis.js'
 import logger from '@src/js/common/logger.js'
 
-const styles = () => ({
-  tableLink: {
-    fontSize: 'inherit'
-  }
-})
-
-function mapDispatchToProps(dispatch) {
-  return {
-    objectOpen: (objectType, objectId) => {
-      dispatch(actions.objectOpen(pages.TYPES, objectType, objectId))
-    }
-  }
-}
+const styles = () => ({})
 
 class TypeSearch extends React.Component {
   constructor(props) {
@@ -34,8 +21,6 @@ class TypeSearch extends React.Component {
     this.state = {
       loaded: false
     }
-
-    this.handleLinkClick = this.handleLinkClick.bind(this)
   }
 
   componentDidMount() {
@@ -151,12 +136,6 @@ class TypeSearch extends React.Component {
     })
   }
 
-  handleLinkClick(row) {
-    return () => {
-      this.props.objectOpen(row.object.type, row.object.id)
-    }
-  }
-
   render() {
     logger.log(logger.DEBUG, 'Search.render')
 
@@ -164,7 +143,6 @@ class TypeSearch extends React.Component {
       return null
     }
 
-    const { classes } = this.props
     const { types } = this.state
 
     return (
@@ -178,13 +156,9 @@ class TypeSearch extends React.Component {
               sort: 'asc',
               getValue: ({ row }) => row.code,
               renderValue: ({ row }) => (
-                <Link
-                  component='button'
-                  classes={{ root: classes.tableLink }}
-                  onClick={this.handleLinkClick(row)}
-                >
+                <LinkToObject page={pages.TYPES} object={row.object}>
                   {row.code}
-                </Link>
+                </LinkToObject>
               )
             },
             {
@@ -205,7 +179,4 @@ class TypeSearch extends React.Component {
   }
 }
 
-export default _.flow(
-  connect(null, mapDispatchToProps),
-  withStyles(styles)
-)(TypeSearch)
+export default _.flow(withStyles(styles))(TypeSearch)

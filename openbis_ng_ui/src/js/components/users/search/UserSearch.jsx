@@ -1,9 +1,12 @@
 import React from 'react'
 import Grid from '@src/js/components/common/grid/Grid.jsx'
 import GridContainer from '@src/js/components/common/grid/GridContainer.jsx'
+import LinkToObject from '@src/js/components/common/form/LinkToObject.jsx'
 import ids from '@src/js/common/consts/ids.js'
 import store from '@src/js/store/store.js'
 import actions from '@src/js/store/actions/actions.js'
+import pages from '@src/js/common/consts/pages.js'
+import objectTypes from '@src/js/common/consts/objectType.js'
 import openbis from '@src/js/services/openbis.js'
 import logger from '@src/js/common/logger.js'
 
@@ -67,7 +70,15 @@ class UserSearch extends React.Component {
               name: 'userId',
               label: 'UserId',
               sort: 'asc',
-              getValue: ({ row }) => row.userId
+              getValue: ({ row }) => row.userId,
+              renderValue: ({ row }) => (
+                <LinkToObject
+                  page={pages.USERS}
+                  object={{ type: objectTypes.USER, id: row.userId }}
+                >
+                  {row.userId}
+                </LinkToObject>
+              )
             },
             {
               name: 'firstName',

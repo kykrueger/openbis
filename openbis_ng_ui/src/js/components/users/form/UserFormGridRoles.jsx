@@ -3,9 +3,12 @@ import React from 'react'
 import autoBind from 'auto-bind'
 import { withStyles } from '@material-ui/core/styles'
 import Grid from '@src/js/components/common/grid/Grid.jsx'
+import LinkToObject from '@src/js/components/common/form/LinkToObject.jsx'
 import openbis from '@src/js/services/openbis.js'
 import util from '@src/js/common/util.js'
 import ids from '@src/js/common/consts/ids.js'
+import pages from '@src/js/common/consts/pages.js'
+import objectTypes from '@src/js/common/consts/objectType.js'
 import logger from '@src/js/common/logger.js'
 
 const styles = theme => ({
@@ -95,7 +98,28 @@ class UserFormGridRoles extends React.PureComponent {
   renderValue({ value, row, column }) {
     const { classes } = this.props
 
+    let renderedValue = null
     const classNames = []
+
+    if (row.inheritedFrom.value) {
+      classNames.push(classes.inherited)
+
+      if (column.name === 'inheritedFrom') {
+        renderedValue = (
+          <LinkToObject
+            page={pages.USERS}
+            object={{
+              type: objectTypes.USER_GROUP,
+              id: row.inheritedFrom.value
+            }}
+          >
+            {row.inheritedFrom.value}
+          </LinkToObject>
+        )
+      }
+    } else {
+      renderedValue = value
+    }
 
     if (column.name === 'space' || column.name === 'project') {
       const rawValue = row[column.name].value
@@ -104,11 +128,7 @@ class UserFormGridRoles extends React.PureComponent {
       }
     }
 
-    if (row.inheritedFrom.value) {
-      classNames.push(classes.inherited)
-    }
-
-    return <span className={util.classNames(...classNames)}>{value}</span>
+    return <div className={util.classNames(...classNames)}>{renderedValue}</div>
   }
 
   compareValue({ row1, row2, column, defaultCompare }) {
