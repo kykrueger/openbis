@@ -88,6 +88,7 @@ class UserFormParametersRole extends React.PureComponent {
       <Container>
         <Header>Role</Header>
         {this.renderMessageVisible()}
+        {this.renderMessageInherited(role)}
         {this.renderLevel(role)}
         {this.renderSpace(role)}
         {this.renderProject(role)}
@@ -105,6 +106,22 @@ class UserFormParametersRole extends React.PureComponent {
           <Message type='warning'>
             The selected role is currently not visible in the role list due to
             the chosen filtering and paging.
+          </Message>
+        </div>
+      )
+    } else {
+      return null
+    }
+  }
+
+  renderMessageInherited(role) {
+    const { classes } = this.props
+
+    if (role.inheritedFrom.value) {
+      return (
+        <div className={classes.field}>
+          <Message type='info'>
+            This role is inherited from {role.inheritedFrom.value} group.
           </Message>
         </div>
       )
