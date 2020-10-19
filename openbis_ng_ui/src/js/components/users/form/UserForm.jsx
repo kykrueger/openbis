@@ -167,7 +167,7 @@ class UserForm extends React.PureComponent {
 
   renderButtons() {
     const { controller } = this
-    const { user, selection, changed, mode } = this.state
+    const { user, roles, selection, changed, mode } = this.state
 
     return (
       <UserFormButtons
@@ -178,6 +178,7 @@ class UserForm extends React.PureComponent {
         onAddRole={controller.handleAddRole}
         onRemove={controller.handleRemove}
         user={user}
+        roles={roles}
         selection={selection}
         changed={changed}
         mode={mode}
