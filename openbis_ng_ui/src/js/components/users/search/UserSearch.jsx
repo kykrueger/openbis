@@ -64,14 +64,20 @@ class UserSearch extends React.Component {
           id={ids.USERS_GRID_ID}
           columns={[
             {
-              field: 'userId',
-              sort: 'asc'
+              name: 'userId',
+              label: 'UserId',
+              sort: 'asc',
+              getValue: ({ row }) => row.userId
             },
             {
-              field: 'firstName'
+              name: 'firstName',
+              label: 'First Name',
+              getValue: ({ row }) => row.firstName
             },
             {
-              field: 'lastName'
+              name: 'lastName',
+              label: 'Last Name',
+              getValue: ({ row }) => row.lastName
             }
           ]}
           rows={this.state.users}

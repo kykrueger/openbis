@@ -20,21 +20,25 @@ const styles = () => ({})
 
 const columns = [
   {
-    field: 'code.value',
+    name: 'code',
     label: 'Code',
-    sort: 'asc'
+    sort: 'asc',
+    getValue: ({ row }) => row.code.value
   },
   {
-    field: 'label.value',
-    label: 'Label'
+    name: 'label',
+    label: 'Label',
+    getValue: ({ row }) => row.label.value
   },
   {
-    field: 'description.value',
-    label: 'Description'
+    name: 'description',
+    label: 'Description',
+    getValue: ({ row }) => row.description.value
   },
   {
-    field: 'official.value',
-    label: 'Official'
+    name: 'official',
+    label: 'Official',
+    getValue: ({ row }) => row.official.value
   }
 ]
 

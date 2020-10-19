@@ -173,8 +173,11 @@ class TypeSearch extends React.Component {
           id={ids.TYPES_GRID_ID}
           columns={[
             {
-              field: 'code',
-              render: row => (
+              name: 'code',
+              label: 'Code',
+              sort: 'asc',
+              getValue: ({ row }) => row.code,
+              renderValue: ({ row }) => (
                 <Link
                   component='button'
                   classes={{ root: classes.tableLink }}
@@ -182,15 +185,17 @@ class TypeSearch extends React.Component {
                 >
                   {row.code}
                 </Link>
-              ),
-              sort: 'asc'
+              )
             },
             {
-              field: 'kind',
-              label: 'Kind'
+              name: 'kind',
+              label: 'Kind',
+              getValue: ({ row }) => row.kind
             },
             {
-              field: 'description'
+              name: 'description',
+              label: 'Description',
+              getValue: ({ row }) => row.description
             }
           ]}
           rows={types}
