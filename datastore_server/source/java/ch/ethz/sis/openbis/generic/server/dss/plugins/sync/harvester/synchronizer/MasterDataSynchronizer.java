@@ -39,6 +39,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.fetchoptions.Externa
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.id.ExternalDmsPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.id.IExternalDmsId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.update.ExternalDmsUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyTypeFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.search.PropertyTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.ServiceFinderUtils;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.config.SyncConfig;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.util.Monitor;
@@ -56,6 +58,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileFormatType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewETPTAssignment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewVocabulary;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Person;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Script;
@@ -254,15 +257,12 @@ public class MasterDataSynchronizer
         for (String code : vocabulariesToProcess.keySet())
         {
             NewVocabulary newVocabulary = vocabulariesToProcess.get(code);
-            if (newVocabulary.isManagedInternally())
-            {
-                continue;
-            }
             String vocabCode = newVocabulary.getCode();
             Vocabulary existingVocabulary = existingVocabularyMap.get(vocabCode);
             if (existingVocabulary != null)
             {
-                if (existingVocabulary.isManagedInternally())
+                if (existingVocabulary.isManagedInternally()
+                        && isSystem(existingVocabulary.getRegistrator().getUserId()))
                 {
                     continue;
                 }
@@ -279,6 +279,11 @@ public class MasterDataSynchronizer
                 synchronizerFacade.registerVocabulary(newVocabulary);
             }
         }
+    }
+
+    private boolean isSystem(String userId)
+    {
+        return "system".equals(userId);
     }
 
     private String calculateDiff(Vocabulary existingVocabulary, NewVocabulary newVocabulary)
@@ -617,19 +622,16 @@ public class MasterDataSynchronizer
         {
             propertyTypeMap.put(propertyType.getCode(), propertyType);
         }
-
+        Map<String, String> registratorByTypeCode = getRegistratorByTypeCode();
         for (String propTypeCode : propertyTypesToProcess.keySet())
         {
             PropertyType incomingPropertyType = propertyTypesToProcess.get(propTypeCode);
-            if (incomingPropertyType.isManagedInternally())
-            {
-                continue;
-            }
             String propertyTypeCode = incomingPropertyType.getCode();
             PropertyType existingPropertyType = propertyTypeMap.get(propertyTypeCode);
             if (existingPropertyType != null)
             {
-                if (existingPropertyType.isManagedInternally())
+                if (existingPropertyType.isManagedInternally() 
+                        && isSystem(registratorByTypeCode.get(existingPropertyType.getCode())))
                 {
                     continue;
                 }
@@ -645,6 +647,16 @@ public class MasterDataSynchronizer
                 synchronizerFacade.registerPropertyType(incomingPropertyType);
             }
         }
+    }
+
+    private Map<String, String> getRegistratorByTypeCode()
+    {
+        PropertyTypeFetchOptions fetchOptions = new PropertyTypeFetchOptions();
+        fetchOptions.withRegistrator();
+        PropertyTypeSearchCriteria searchCriteria = new PropertyTypeSearchCriteria();
+        return v3api.searchPropertyTypes(sessionToken, searchCriteria, fetchOptions).getObjects()
+                .stream().collect(Collectors.toMap(
+                        type -> type.getCode(), type -> type.getRegistrator().getUserId()));
     }
 
     private String calculateDiff(PropertyType existingPropertyType, PropertyType incomingPropertyType)
