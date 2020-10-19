@@ -5,6 +5,7 @@ import Header from '@src/js/components/common/form/Header.jsx'
 import TextField from '@src/js/components/common/form/TextField.jsx'
 import SelectField from '@src/js/components/common/form/SelectField.jsx'
 import CheckboxField from '@src/js/components/common/form/CheckboxField.jsx'
+import ConfirmationDialog from '@src/js/components/common/dialog/ConfirmationDialog.jsx'
 import UserFormSelectionType from '@src/js/components/users/form/UserFormSelectionType.js'
 import logger from '@src/js/common/logger.js'
 
@@ -243,9 +244,32 @@ class UserFormParametersUser extends React.PureComponent {
 
   renderActive(user) {
     const { visible, enabled, error, value } = { ...user.active }
+    const { activeChangeDialogOpen = false } = this.state
 
     if (!visible) {
       return null
+    }
+
+    const onChange = () => {
+      this.setState({
+        activeChangeDialogOpen: true
+      })
+    }
+
+    const onConfirm = () => {
+      this.setState({
+        activeChangeDialogOpen: false
+      })
+      this.props.onChange(UserFormSelectionType.USER, {
+        field: 'active',
+        value: !value
+      })
+    }
+
+    const onCancel = () => {
+      this.setState({
+        activeChangeDialogOpen: false
+      })
     }
 
     const { mode, classes } = this.props
@@ -259,9 +283,20 @@ class UserFormParametersUser extends React.PureComponent {
           disabled={!enabled}
           value={value}
           mode={mode}
-          onChange={this.handleChange}
+          onChange={onChange}
           onFocus={this.handleFocus}
           onBlur={this.handleBlur}
+        />
+        <ConfirmationDialog
+          open={activeChangeDialogOpen}
+          onConfirm={onConfirm}
+          onCancel={onCancel}
+          title={value ? 'Deactivate user' : 'Activate user'}
+          content={
+            value
+              ? 'Are you sure you want to deactivate the user?'
+              : 'Are you sure you want to activate the user?'
+          }
         />
       </div>
     )
