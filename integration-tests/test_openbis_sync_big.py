@@ -32,12 +32,12 @@ def sslwrap(func):
 
 ssl.wrap_socket = sslwrap(ssl.wrap_socket)
 
-ALL_TECHNOLOGIES = ['screening', 'illumina-ngs', 'microscopy', 'flow']
+ALL_TECHNOLOGIES = ['eln-lims', 'illumina-ngs', 'microscopy', 'flow']
 DATA_SOURCE_AS_PORT = '9000'
 DATA_SOURCE_DSS_PORT = '9001'
 HARVESTER_AS_PORT = '9002'
 HARVESTER_DSS_PORT = '9003'
-TYPE_PREFIX = 'DS1_'
+TYPE_PREFIX = ''
 
 
 class TestCase(systemtest.testcase.TestCase):
