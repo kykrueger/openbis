@@ -1403,7 +1403,7 @@ public class ETLServiceTest extends AbstractServerTestCase
 
                     one(hibernateSearchDAO).searchForEntityIds(with(session.getUserName()),
                             with(aNonNull(DetailedSearchCriteria.class)),
-                            with(equal(EntityKind.SAMPLE)), with(aNonNull(List.class)));
+                            with(equal(EntityKind.SAMPLE)));
                     will(returnValue(Arrays.asList(new Long(1), new Long(2))));
 
                     one(hibernateSearchDAO).getResultSetSizeLimit();

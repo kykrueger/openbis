@@ -40,7 +40,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchCriterion;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchField;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchSubCriteria;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IAssociationCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleAttributeSearchFieldKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SearchCriteriaConnection;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
@@ -106,12 +105,10 @@ public class SampleSearchManagerTest extends AssertJUnit
                     will(returnValue(100));
 
                     one(searchDAO).searchForEntityIds(with(USER_ID), with(mainCriteriaMatcher),
-                            with(EntityKind.SAMPLE),
-                            with(Arrays.<IAssociationCriteria> asList()));
+                            with(EntityKind.SAMPLE));
                     will(returnValue(new ArrayList<Long>(Arrays.asList(1L, 2L, 3L, 4L))));
                     one(searchDAO).searchForEntityIds(with(USER_ID), with(parentCriteriaMatcher),
-                            with(EntityKind.SAMPLE),
-                            with(Arrays.<IAssociationCriteria> asList()));
+                            with(EntityKind.SAMPLE));
                     will(returnValue(new ArrayList<Long>(Arrays.asList(1L, 2L, 3L, 4L, 5L))));
 
                     one(sampleLister).getChildToParentsIdsMap(Arrays.asList(1L, 2L, 3L, 4L));
@@ -166,12 +163,10 @@ public class SampleSearchManagerTest extends AssertJUnit
                     will(returnValue(100));
 
                     one(searchDAO).searchForEntityIds(with(USER_ID), with(mainCriteriaMatcher),
-                            with(EntityKind.SAMPLE),
-                            with(Arrays.<IAssociationCriteria> asList()));
+                            with(EntityKind.SAMPLE));
                     will(returnValue(new ArrayList<Long>(Arrays.asList(1L, 2L, 3L, 4L, 5L))));
                     one(searchDAO).searchForEntityIds(with(USER_ID), with(parentCriteriaMatcher),
-                            with(EntityKind.SAMPLE),
-                            with(Arrays.<IAssociationCriteria> asList()));
+                            with(EntityKind.SAMPLE));
                     will(returnValue(new ArrayList<Long>(Arrays.asList(1L, 2L, 3L, 4L))));
 
                     one(sampleLister).getParentToChildrenIdsMap(Arrays.asList(1L, 2L, 3L, 4L));

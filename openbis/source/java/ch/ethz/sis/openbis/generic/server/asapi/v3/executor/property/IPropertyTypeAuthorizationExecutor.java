@@ -31,7 +31,7 @@ public interface IPropertyTypeAuthorizationExecutor extends IObjectAuthorization
 
     void canSearch(IOperationContext context);
 
-    void canCreate(IOperationContext context);
+    void canCreate(IOperationContext context, PropertyTypePE entity);
 
     void canUpdate(IOperationContext context, IPropertyTypeId id, PropertyTypePE entity);
 

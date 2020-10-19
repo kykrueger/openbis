@@ -17,12 +17,9 @@
 package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
 import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
-import static org.testng.Assert.fail;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.testng.annotations.DataProvider;
@@ -53,26 +50,68 @@ import ch.systemsx.cisd.common.exceptions.UserFailureException;
  * @author pkupczyk
  */
 @Test(groups = { "before remote api" })
-public class DeleteVocabularyTermTest extends AbstractVocabularyTermTest
+public class DeleteVocabularyTermTest extends AbstractVocabularyTest
 {
 
-    @Test
-    public void testDeleteTermUnauthorized()
+    @DataProvider
+    private Object[][] providerTestDeleteAuthorization()
     {
-        final VocabularyTermPermId permId = new VocabularyTermPermId("HUMAN", "ORGANISM");
-        assertUnauthorizedObjectAccessException(new IDelegatedAction()
+        return new Object[][] {
+                { "ORGANISM", SYSTEM_USER, SYSTEM_USER, true, null },
+                { "ORGANISM", SYSTEM_USER, SYSTEM_USER, false, null },
+                { "ORGANISM", SYSTEM_USER, TEST_USER, true, null },
+                { "ORGANISM", SYSTEM_USER, TEST_USER, false, null },
+
+                { "ORGANISM", TEST_USER, TEST_USER, true, null },
+                { "ORGANISM", TEST_USER, TEST_USER, false, null },
+
+                { "ORGANISM", TEST_POWER_USER_CISD, SYSTEM_USER, false, null },
+                { "ORGANISM", TEST_POWER_USER_CISD, TEST_USER, false, null },
+                { "ORGANISM", TEST_POWER_USER_CISD, TEST_POWER_USER_CISD, false,
+                        "Access denied to object with VocabularyTermPermId = [TEST-CODE (ORGANISM)]" },
+
+                { "$PLATE_GEOMETRY", SYSTEM_USER, SYSTEM_USER, true, null },
+                { "$PLATE_GEOMETRY", SYSTEM_USER, SYSTEM_USER, false, null },
+                { "$PLATE_GEOMETRY", SYSTEM_USER, TEST_USER, true,
+                        "Terms created by the system user that belong to internal vocabularies can be managed only by the system user" },
+                { "$PLATE_GEOMETRY", SYSTEM_USER, TEST_USER, false,
+                        "Terms created by the system user that belong to internal vocabularies can be managed only by the system user" },
+
+                { "$PLATE_GEOMETRY", TEST_USER, TEST_USER, true, null },
+                { "$PLATE_GEOMETRY", TEST_USER, TEST_USER, false, null },
+
+                { "$PLATE_GEOMETRY", TEST_POWER_USER_CISD, SYSTEM_USER, false, null },
+                { "$PLATE_GEOMETRY", TEST_POWER_USER_CISD, TEST_USER, false, null },
+                { "$PLATE_GEOMETRY", TEST_POWER_USER_CISD, TEST_POWER_USER_CISD, false,
+                        "Access denied to object with VocabularyTermPermId = [TEST-CODE ($PLATE_GEOMETRY)]" },
+        };
+    }
+
+    @Test(dataProvider = "providerTestDeleteAuthorization")
+    public void testDeleteAuthorization(String vocabularyCode, String termRegistrator, String termDeleter, boolean termOfficial,
+            String expectedError)
+    {
+        String sessionTokenRegistrator = termRegistrator.equals(SYSTEM_USER) ? v3api.loginAsSystem() : v3api.login(termRegistrator, PASSWORD);
+
+        VocabularyTermCreation creation = new VocabularyTermCreation();
+        creation.setCode("TEST-CODE");
+        creation.setVocabularyId(new VocabularyPermId(vocabularyCode));
+        creation.setOfficial(termOfficial);
+
+        List<VocabularyTermPermId> permIds = v3api.createVocabularyTerms(sessionTokenRegistrator, Arrays.asList(creation));
+
+        VocabularyTermDeletionOptions options = new VocabularyTermDeletionOptions();
+        options.setReason("Just for testing");
+
+        assertExceptionMessage(new IDelegatedAction()
             {
                 @Override
                 public void execute()
                 {
-                    String sessionToken = v3api.login(TEST_GROUP_OBSERVER, PASSWORD);
-
-                    VocabularyTermDeletionOptions options = new VocabularyTermDeletionOptions();
-                    options.setReason("Just for testing");
-
-                    v3api.deleteVocabularyTerms(sessionToken, Arrays.asList(permId), options);
+                    String sessionTokenDeleter = termDeleter.equals(SYSTEM_USER) ? v3api.loginAsSystem() : v3api.login(termDeleter, PASSWORD);
+                    v3api.deleteVocabularyTerms(sessionTokenDeleter, permIds, options);
                 }
-            }, permId);
+            }, expectedError);
     }
 
     @Test
@@ -149,66 +188,6 @@ public class DeleteVocabularyTermTest extends AbstractVocabularyTermTest
 
         Vocabulary vocabularyAfter = v3api.getVocabularies(sessionToken, Arrays.asList(vocabularyId), fo).get(vocabularyId);
         assertEquals(vocabularyAfter.getTerms().size(), 0);
-    }
-
-    @DataProvider
-    public Object[][] providerTestDeleteTermFromInternallyManagedVocabulary()
-    {
-        return new Object[][] {
-                { TEST_USER, true },
-                { TEST_INSTANCE_ETLSERVER, true },
-                { TEST_INSTANCE_OBSERVER, false },
-                { TEST_SPACE_USER, false },
-                { TEST_SPACE_ETLSERVER_TESTSPACE, false }
-        };
-    }
-
-    @Test(dataProvider = "providerTestDeleteTermFromInternallyManagedVocabulary")
-    public void testDeleteTermFromInternallyManagedVocabulary(String user, boolean allowed)
-    {
-        String adminSessionToken = v3api.login(TEST_USER, PASSWORD);
-        String userSessionToken = v3api.login(user, PASSWORD);
-
-        VocabularyTermCreation term1Creation = new VocabularyTermCreation();
-        term1Creation.setCode("I_WANT_TO_STAY");
-
-        VocabularyTermCreation term2Creation = new VocabularyTermCreation();
-        term2Creation.setCode("DELETE_ME");
-
-        VocabularyCreation vocabularyCreation = new VocabularyCreation();
-        vocabularyCreation.setCode("$INTERNALLY_MANAGED_" + UUID.randomUUID());
-        vocabularyCreation.setManagedInternally(true);
-        vocabularyCreation.setTerms(Arrays.asList(term1Creation, term2Creation));
-
-        VocabularyTermPermId term1Id = new VocabularyTermPermId(term1Creation.getCode(), vocabularyCreation.getCode());
-        VocabularyTermPermId term2Id = new VocabularyTermPermId(term2Creation.getCode(), vocabularyCreation.getCode());
-
-        v3api.createVocabularies(adminSessionToken, Arrays.asList(vocabularyCreation));
-
-        List<VocabularyTerm> termsBefore = searchTerms(vocabularyCreation.getCode());
-        assertVocabularyTermPermIds(termsBefore, term1Id, term2Id);
-
-        VocabularyTermDeletionOptions options = new VocabularyTermDeletionOptions();
-        options.setReason("Just for testing");
-
-        if (allowed)
-        {
-            v3api.deleteVocabularyTerms(userSessionToken, Arrays.asList(term2Id), options);
-
-            List<VocabularyTerm> termsAfter = searchTerms(vocabularyCreation.getCode());
-            assertVocabularyTermPermIds(termsAfter, term1Id);
-        } else
-        {
-            try
-            {
-                v3api.deleteVocabularyTerms(userSessionToken, Arrays.asList(term2Id), options);
-                fail();
-            } catch (UserFailureException e)
-            {
-                assertTrue(e.getMessage().contains("Not allowed to delete terms from an internally managed vocabulary.")
-                        || e.getMessage().contains("Access denied"), e.getMessage());
-            }
-        }
     }
 
     @Test(expectedExceptions = UserFailureException.class, expectedExceptionsMessageRegExp = "Vocabulary 'GENDER'. is being used. Delete all connected data  first.*")

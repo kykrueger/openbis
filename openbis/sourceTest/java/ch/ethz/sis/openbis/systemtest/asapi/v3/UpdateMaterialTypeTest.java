@@ -26,6 +26,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractEntitySear
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.MaterialType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.create.MaterialTypeCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.fetchoptions.MaterialFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.fetchoptions.MaterialTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialSearchCriteria;
@@ -38,13 +39,19 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
  * @author Franz-Josef Elmer
  */
 @Test
-public class UpdateMaterialTypeTest extends UpdateEntityTypeTest<MaterialTypeUpdate, MaterialType>
+public class UpdateMaterialTypeTest extends UpdateEntityTypeTest<MaterialTypeCreation, MaterialTypeUpdate, MaterialType>
 {
 
     @Override
     protected EntityKind getEntityKind()
     {
         return EntityKind.MATERIAL;
+    }
+
+    @Override
+    protected MaterialTypeCreation newTypeCreation()
+    {
+        return new MaterialTypeCreation();
     }
 
     @Override
@@ -62,6 +69,12 @@ public class UpdateMaterialTypeTest extends UpdateEntityTypeTest<MaterialTypeUpd
     @Override
     protected void createEntity(String sessionToken, IEntityTypeId entityType, String propertyType, String propertyValue)
     {
+    }
+
+    @Override
+    protected List<EntityTypePermId> createTypes(String sessionToken, List<MaterialTypeCreation> updates)
+    {
+        return v3api.createMaterialTypes(sessionToken, updates);
     }
 
     @Override

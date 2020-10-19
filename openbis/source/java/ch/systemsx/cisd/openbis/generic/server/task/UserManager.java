@@ -63,6 +63,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.IPersonId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.PersonPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.PersonSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.update.PersonUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.update.UpdatePersonsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.create.CreateProjectsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.create.ProjectCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.fetchoptions.ProjectFetchOptions;
@@ -215,7 +216,7 @@ public class UserManager
         logger.log(LogLevel.INFO, principalsByUserId.size() + " users for " + (group.isEnabled() ? "" : "disabled ") + "group " + groupCode);
     }
 
-    public void manage()
+    public void manage(Set<String> knownUsers)
     {
         try
         {
@@ -225,7 +226,7 @@ public class UserManager
             manageGlobalSpaces(sessionToken, report);
             if (deactivateUnknownUsers)
             {
-                revokeUsersUnkownByAuthenticationService(sessionToken, report);
+                revokeUnknownUsers(sessionToken, knownUsers, report);
             }
             CurrentState currentState = loadCurrentState(sessionToken, service);
             for (Entry<String, Map<String, Principal>> entry : usersByGroupCode.entrySet())
@@ -393,7 +394,7 @@ public class UserManager
         }
     }
 
-    private void revokeUsersUnkownByAuthenticationService(String sessionToken, UserManagerReport report)
+    private void revokeUnknownUsers(String sessionToken, Set<String> knownUsers, UserManagerReport report)
     {
         List<PersonUpdate> updates = new ArrayList<>();
         PersonSearchCriteria searchCriteria = new PersonSearchCriteria();
@@ -402,24 +403,35 @@ public class UserManager
         List<Person> persons = service.searchPersons(sessionToken, searchCriteria, fetchOptions).getObjects();
         for (Person person : persons)
         {
-            if (person.isActive() & person.getRegistrator() != null) // user 'system' has no registrator
+            if (person.isActive() && person.getRegistrator() != null // user 'system' has no registrator
+                    && isKnownUser(knownUsers, person) == false)
             {
-                try
-                {
-                    authenticationService.getPrincipal(person.getUserId());
-                } catch (IllegalArgumentException e)
-                {
-                    PersonUpdate update = new PersonUpdate();
-                    update.setUserId(person.getPermId());
-                    update.deactivate();
-                    updates.add(update);
-                    report.deactivateUser(person.getUserId());
-                }
+                PersonUpdate update = new PersonUpdate();
+                update.setUserId(person.getPermId());
+                update.deactivate();
+                updates.add(update);
+                report.deactivateUser(person.getUserId());
             }
         }
         if (updates.isEmpty() == false)
         {
             service.updatePersons(sessionToken, updates);
+        }
+    }
+    
+    private boolean isKnownUser(Set<String> knownUsers, Person person)
+    {
+        if (knownUsers.contains(person.getUserId()))
+        {
+            return true;
+        }
+        try
+        {
+            authenticationService.getPrincipal(person.getUserId());
+            return true;
+        } catch (IllegalArgumentException e)
+        {
+            return false;
         }
     }
 
@@ -623,6 +635,11 @@ public class UserManager
                     context.getReport().addUser(userId);
                 } else if (knownUser != null && knownUser.isActive() == false)
                 {
+                    PersonUpdate personUpdate = new PersonUpdate();
+                    personUpdate.setUserId(personId);
+                    personUpdate.activate();
+                    context.add(personUpdate);
+
                     context.getReport().reuseUser(userId);
                 }
                 getHomeSpaceRequest(userId).setHomeSpace(userSpaceId);
@@ -1003,6 +1020,8 @@ public class UserManager
 
         private Map<String, PersonCreation> personCreations = new LinkedMap<>();
 
+        private Map<IPersonId, PersonUpdate> personUpdates = new LinkedMap<>();
+
         private List<SpaceCreation> spaceCreations = new ArrayList<>();
 
         private List<ProjectCreation> projectCreations = new ArrayList<>();
@@ -1053,6 +1072,11 @@ public class UserManager
             personCreations.put(personCreation.getUserId(), personCreation);
         }
 
+        public void add(PersonUpdate personUpdate)
+        {
+            personUpdates.put(personUpdate.getUserId(), personUpdate);
+        }
+
         public void add(SpaceCreation spaceCreation)
         {
             spaceCreations.add(spaceCreation);
@@ -1099,6 +1123,10 @@ public class UserManager
             if (personCreations.isEmpty() == false)
             {
                 operations.add(new CreatePersonsOperation(new ArrayList<>(personCreations.values())));
+            }
+            if (personUpdates.isEmpty() == false)
+            {
+                operations.add(new UpdatePersonsOperation(new ArrayList<>(personUpdates.values())));
             }
             if (spaceCreations.isEmpty() == false)
             {

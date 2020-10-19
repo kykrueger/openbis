@@ -1886,7 +1886,7 @@ public class ServiceForDataStoreServer extends AbstractCommonServer<IServiceForD
                             authorize);
 
             long vocabulariesUpdated =
-                    updateVocabularies(sessionForEntityOperation, operationDetails,
+                    updateVocabularies(session, sessionForEntityOperation, operationDetails,
                             progressListener, authorize);
 
             long experimentsCreated =
@@ -2018,15 +2018,20 @@ public class ServiceForDataStoreServer extends AbstractCommonServer<IServiceForD
         entityOperationChecker.assertSpaceRoleAssignmentAllowed(session, space);
     }
 
-    private long updateVocabularies(Session session, AtomicEntityOperationDetails operationDetails,
+    private long updateVocabularies(Session etlSession, Session userSession, AtomicEntityOperationDetails operationDetails,
             IServiceConversationProgressListener progress, boolean authorize)
     {
-
         List<VocabularyUpdatesDTO> updates = operationDetails.getVocabularyUpdates();
 
-        for (VocabularyUpdatesDTO update : updates)
+        if (updates != null && updates.isEmpty() == false)
         {
-            updateVocabulary(session, update);
+            entityOperationChecker.assertVocabularyUpdateAllowed(etlSession);
+            entityOperationChecker.assertVocabularyUpdateAllowed(userSession);
+
+            for (VocabularyUpdatesDTO update : updates)
+            {
+                updateVocabulary(userSession, update);
+            }
         }
 
         return updates.size();

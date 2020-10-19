@@ -16,6 +16,8 @@
 
 package ch.systemsx.cisd.openbis.systemtest;
 
+import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.fail;
 import static org.testng.AssertJUnit.assertEquals;
 
 import java.io.Serializable;
@@ -41,6 +43,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.DataProvider;
 
+import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.common.servlet.SpringRequestContextProvider;
 import ch.systemsx.cisd.openbis.generic.client.web.client.ICommonClientService;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.GridRowModels;
@@ -484,6 +487,26 @@ public abstract class SystemTestCase extends AbstractTransactionalTestNGSpringCo
         }
         Collections.sort(identifiers);
         assertEquals(expectedEntities, identifiers.toString());
+    }
+
+    protected void assertExceptionMessage(IDelegatedAction action, String expectedMessage)
+    {
+        try
+        {
+            action.execute();
+
+            if (expectedMessage != null)
+            {
+                fail("Expected exception was not thrown: " + expectedMessage);
+            }
+        } catch (Exception e)
+        {
+            if (expectedMessage == null)
+            {
+                fail("Unexpected exception was thrown: " + e.getMessage());
+            }
+            assertTrue(e.getMessage().contains(expectedMessage), "Expected exception: " + expectedMessage + ", Got exception: " + e.getMessage());
+        }
     }
 
     protected List<PropertyHistory> getMaterialPropertiesHistory(long materialID)

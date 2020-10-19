@@ -51,6 +51,7 @@ public final class EntityTypePropertyTypeBOTest extends AbstractBOTest
         final ExperimentTypePE experimentType = createExperimentType();
         final PropertyTypePE propertyType = createPropertyType();
         final ExperimentTypePropertyTypePE etpt = new ExperimentTypePropertyTypePE();
+        etpt.setPropertyType(propertyType);
         prepareExperimentTypeAndPropertyType(entityKind, experimentType, propertyType);
         context.checking(new Expectations()
             {
@@ -159,6 +160,7 @@ public final class EntityTypePropertyTypeBOTest extends AbstractBOTest
         final ExperimentTypePE experimentType = createExperimentType();
         final PropertyTypePE propertyType = createPropertyType();
         final ExperimentTypePropertyTypePE etpt = new ExperimentTypePropertyTypePE();
+        etpt.setPropertyType(propertyType);
         final ScriptPE script1 = new ScriptPE();
         script1.setName("name1");
         script1.setScriptType(ScriptType.DYNAMIC_PROPERTY);

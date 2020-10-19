@@ -143,8 +143,7 @@ public class VocabularyTermGrid extends TypedTableGrid<VocabularyTermWithStats>
     @Override
     protected ColumnDefsAndConfigs<TableModelRowWithObject<VocabularyTermWithStats>> createColumnsDefinition()
     {
-        ColumnDefsAndConfigs<TableModelRowWithObject<VocabularyTermWithStats>> definitions = super
-                .createColumnsDefinition();
+        ColumnDefsAndConfigs<TableModelRowWithObject<VocabularyTermWithStats>> definitions = super.createColumnsDefinition();
         definitions.setGridCellRendererFor(VocabularyTermGridIDs.URL,
                 LinkRenderer.createExternalLinkRenderer());
         definitions.setGridCellRendererFor(CommonGridIDs.DESCRIPTION,
@@ -229,7 +228,6 @@ public class VocabularyTermGrid extends TypedTableGrid<VocabularyTermWithStats>
         {
             String tooltip = viewContext
                     .getMessage(Dict.TOOLTIP_VOCABULARY_MANAGED_INTERNALLY);
-            disableButton(addButton, tooltip);
             disableButton(batchUpdateButton, tooltip);
             disableButton(editButton, tooltip);
             disableButton(deleteButton, tooltip);
@@ -653,12 +651,6 @@ public class VocabularyTermGrid extends TypedTableGrid<VocabularyTermWithStats>
         List<BaseEntityModel<TableModelRowWithObject<VocabularyTermWithStats>>> terms = getSelectedItems();
         if (terms.isEmpty())
         {
-            return;
-        }
-        if (terms.size() == getTerms().size())
-        {
-            GWTUtils.alert(viewContext.getMessage(Dict.DELETE_VOCABULARY_TERMS_INVALID_TITLE),
-                    viewContext.getMessage(Dict.DELETE_VOCABULARY_TERMS_INVALID_MESSAGE));
             return;
         }
         Set<String> selectedTerms = new HashSet<String>();

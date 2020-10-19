@@ -22,6 +22,7 @@ import static org.testng.Assert.assertNull;
 
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.io.FilenameUtils;
@@ -30,20 +31,23 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.annotation.Transactional;
-import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.Vocabulary;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.VocabularyTerm;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.create.VocabularyCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.create.VocabularyTermCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.fetchoptions.VocabularyFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.VocabularyPermId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.IApplicationServerInternalApi;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 
 @ContextConfiguration(locations = "classpath:applicationContext.xml")
 @Transactional(transactionManager = "transaction-manager")
 @Rollback
-public class ImportVocabularyTypesTest extends AbstractImportTest {
+public class ImportVocabularyTypesTest extends AbstractImportTest
+{
 
     private static final String VOCABULARIES_TYPES_XLS = "vocabularies/normal_vocab.xls";
 
@@ -61,24 +65,27 @@ public class ImportVocabularyTypesTest extends AbstractImportTest {
 
     private static final String EXIST_VOCABULARIES = "vocabularies/exist_vocab_type.xlsx";
 
+    private static final String VOCABULARY_WITH_TERM_TO_TAKE_OVER = "vocabularies/vocab_with_term_to_take_over.xlsx";
+
     @Autowired
     private IApplicationServerInternalApi v3api;
-
-    private static final String TEST_USER = "test";
-
-    private static final String PASSWORD = "password";
 
     private static String FILES_DIR;
 
     @BeforeClass
-    public void setupClass() throws IOException {
+    public void setupClass() throws IOException
+    {
         String f = ImportVocabularyTypesTest.class.getName().replace(".", "/");
         FILES_DIR = f.substring(0, f.length() - ImportVocabularyTypesTest.class.getSimpleName().length()) + "/test_files/";
     }
 
     @Test
     @DirtiesContext
-    public void testNormalVocabularyCreationIsCreated() throws IOException {
+    public void testNormalVocabularyCreationIsCreated() throws IOException
+    {
+        // the Excel contains internally managed vocabularies which can be only manipulated by the system user
+        sessionToken = v3api.loginAsSystem();
+
         // GIVEN
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, VOCABULARIES_TYPES_XLS)));
         // WHEN
@@ -90,7 +97,11 @@ public class ImportVocabularyTypesTest extends AbstractImportTest {
 
     @Test
     @DirtiesContext
-    public void testNormalVocabularyHasFirstTermCreated() throws IOException {
+    public void testNormalVocabularyHasFirstTermCreated() throws IOException
+    {
+        // the Excel contains internally managed vocabularies which can be only manipulated by the system user
+        sessionToken = v3api.loginAsSystem();
+
         // GIVEN
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, VOCABULARIES_TYPES_XLS)));
         // WHEN
@@ -104,7 +115,11 @@ public class ImportVocabularyTypesTest extends AbstractImportTest {
 
     @Test
     @DirtiesContext
-    public void testNormalVocabularyCreatedNoExtraVocabulary() throws IOException {
+    public void testNormalVocabularyCreatedNoExtraVocabulary() throws IOException
+    {
+        // the Excel contains internally managed vocabularies which can be only manipulated by the system user
+        sessionToken = v3api.loginAsSystem();
+
         // GIVEN
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, VOCABULARIES_TYPES_XLS)));
         // WHEN
@@ -115,7 +130,11 @@ public class ImportVocabularyTypesTest extends AbstractImportTest {
 
     @Test
     @DirtiesContext
-    public void testNormalVocabularyHasSecondTermCreated() throws IOException {
+    public void testNormalVocabularyHasSecondTermCreated() throws IOException
+    {
+        // the Excel contains internally managed vocabularies which can be only manipulated by the system user
+        sessionToken = v3api.loginAsSystem();
+
         // GIVEN
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, VOCABULARIES_TYPES_XLS)));
         // WHEN
@@ -129,7 +148,8 @@ public class ImportVocabularyTypesTest extends AbstractImportTest {
 
     @Test
     @DirtiesContext
-    public void testVocabularyWithNoTermDescriptionShouldBeCreated() throws IOException {
+    public void testVocabularyWithNoTermDescriptionShouldBeCreated() throws IOException
+    {
         // GIVEN
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, VOCABULARIES_NO_TERM_DESCRIPTION)));
         // WHEN
@@ -140,18 +160,21 @@ public class ImportVocabularyTypesTest extends AbstractImportTest {
     }
 
     @Test(expectedExceptions = UserFailureException.class)
-    public void shouldThrowExceptionIfNoVocabularyCode() throws IOException {
+    public void shouldThrowExceptionIfNoVocabularyCode() throws IOException
+    {
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, VOCABULARIES_NO_CODE)));
     }
 
     @Test(expectedExceptions = UserFailureException.class)
-    public void shouldThrowExceptionIfNoTermCode() throws IOException {
+    public void shouldThrowExceptionIfNoTermCode() throws IOException
+    {
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, VOCABULARIES_NO_TERM_CODE)));
     }
 
     @Test
     @DirtiesContext
-    public void shouldNotThrowExceptionIfNoVocabularyDescription() throws IOException {
+    public void shouldNotThrowExceptionIfNoVocabularyDescription() throws IOException
+    {
         // GIVEN
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, VOCABULARIES_NO_DESCRIPTION)));
         // WHEN
@@ -163,7 +186,8 @@ public class ImportVocabularyTypesTest extends AbstractImportTest {
 
     @Test
     @DirtiesContext
-    public void shouldNotThrowExceptionIfNoTermLabel() throws IOException {
+    public void shouldNotThrowExceptionIfNoTermLabel() throws IOException
+    {
         // GIVEN
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, VOCABULARIES_NO_TERM_LABEL)));
         // WHEN
@@ -175,7 +199,8 @@ public class ImportVocabularyTypesTest extends AbstractImportTest {
 
     @Test
     @DirtiesContext
-    public void shouldNotThrowExceptionIfNoTerms() throws IOException {
+    public void shouldNotThrowExceptionIfNoTerms() throws IOException
+    {
         // GIVEN
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, VOCABULARIES_NO_TERMS)));
         // WHEN
@@ -186,12 +211,55 @@ public class ImportVocabularyTypesTest extends AbstractImportTest {
 
     @Test
     @DirtiesContext
-    public void updateVocabularyInDBThatIsNotInJson() throws IOException {
+    public void updateVocabularyInDBThatIsNotInJson() throws IOException
+    {
         TestUtils.createVocabulary(v3api, sessionToken, "TEST_VOCABULARY_TYPE", "Test desc");
         // there should be no exceptions
         TestUtils.createFrom(v3api, sessionToken, UpdateMode.UPDATE_IF_EXISTS, Paths.get(FilenameUtils.concat(FILES_DIR, EXIST_VOCABULARIES)));
         Vocabulary test = TestUtils.getVocabulary(v3api, sessionToken, "TEST_VOCABULARY_TYPE");
         assertNotNull(test);
+    }
+
+    @Test
+    @DirtiesContext
+    public void testTakeOverTerm() throws IOException
+    {
+        String instanceAdminSessionToken = v3api.login(TEST_USER, PASSWORD);
+        String systemSessionToken = v3api.loginAsSystem();
+
+        VocabularyCreation vocabularyCreation = new VocabularyCreation();
+        vocabularyCreation.setCode("$VOCABULARY-WITH-TERM-TO-TAKE-OVER");
+        vocabularyCreation.setManagedInternally(true);
+
+        VocabularyPermId vocabularyId = v3api.createVocabularies(systemSessionToken, Arrays.asList(vocabularyCreation)).get(0);
+
+        VocabularyTermCreation termCreation = new VocabularyTermCreation();
+        termCreation.setVocabularyId(vocabularyId);
+        termCreation.setCode("TERM-TO-TAKE-OVER");
+        termCreation.setLabel("Original Label");
+        termCreation.setDescription("Original Description");
+
+        v3api.createVocabularyTerms(instanceAdminSessionToken, Arrays.asList(termCreation));
+
+        VocabularyFetchOptions fetchOptions = new VocabularyFetchOptions();
+        fetchOptions.withTerms().withRegistrator();
+
+        Vocabulary beforeVocabulary = v3api.getVocabularies(instanceAdminSessionToken, Arrays.asList(vocabularyId), fetchOptions).get(vocabularyId);
+        VocabularyTerm beforeTerm = beforeVocabulary.getTerms().get(0);
+
+        assertEquals(beforeTerm.getLabel(), "Original Label");
+        assertEquals(beforeTerm.getDescription(), "Original Description");
+        assertEquals(beforeTerm.getRegistrator().getUserId(), TEST_USER);
+
+        TestUtils.createFrom(v3api, systemSessionToken, UpdateMode.UPDATE_IF_EXISTS,
+                Paths.get(FilenameUtils.concat(FILES_DIR, VOCABULARY_WITH_TERM_TO_TAKE_OVER)));
+
+        Vocabulary afterVocabulary = v3api.getVocabularies(instanceAdminSessionToken, Arrays.asList(vocabularyId), fetchOptions).get(vocabularyId);
+        VocabularyTerm afterTerm = afterVocabulary.getTerms().get(0);
+
+        assertEquals(afterTerm.getLabel(), "Updated Label");
+        assertEquals(afterTerm.getDescription(), "Updated Description");
+        assertEquals(afterTerm.getRegistrator().getUserId(), SYSTEM_USER);
     }
 
 }

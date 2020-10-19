@@ -99,20 +99,11 @@ function ServerFacade(openbisServer) {
     }
 
     this.setCustomWidgetSettings = function(widgetSettings, doneCallback) {
-        require([ "openbis", "as/dto/property/update/PropertyTypeUpdate", "as/dto/property/id/PropertyTypePermId", "as/dto/common/update/ListUpdateActionAdd" ],
-        function(openbis, PropertyTypeUpdate, PropertyTypePermId) {
-            var ptus = [];
-            for(var uIdx = 0; uIdx < widgetSettings.length; uIdx++) {
-                var ptu = new PropertyTypeUpdate();
-                ptu.setTypeId(new PropertyTypePermId(widgetSettings[uIdx]["Property Type"]));
-                var luaa = new ListUpdateActionAdd();
-                luaa.setItems([{"custom_widget" : widgetSettings[uIdx]["Widget"] }])
-                ptu.setMetaDataActions([luaa]);
-                ptus.push(ptu);
-            }
-            mainController.openbisV3.updatePropertyTypes(ptus).done(function() {
-                doneCallback();
-            });
+        this.customELNASAPI({
+            "method" : "setCustomWidgetSettings",
+            "widgetSettings" : widgetSettings,
+        }, function(result) {
+            doneCallback();
         });
     }
 
@@ -331,11 +322,13 @@ function ServerFacade(openbisServer) {
 				});
 			}
 		};
- 		
-		_this.openbisServer.registerPerson(userId, function(data) {
-			if(data.error) {
-				callback(false, data.error.message);
-			} else {
+
+ 		require([   "as/dto/person/create/PersonCreation"],
+        function(PersonCreation, PersonPermId) {
+            var personCreation = new PersonCreation();
+            personCreation.setUserId(userId);
+            mainController.openbisV3.createPersons([personCreation]).done(function(response) {
+                userId = response[0].permId; // V3 API returns normalised user ids
 				_this.openbisServer.registerSpace(userId, "Space for user " + userId, function(data) {
 					if(data.error) {
 						callback(false, data.error.message);
@@ -363,12 +356,12 @@ function ServerFacade(openbisServer) {
 									var spaceCode = profile.inventorySpaces[i];
 									inventorySpacesToRegister.push(inventorySpaceToRegisterFunc(spaceCode, "USER", callback));
 								}
-								
+
 								for(var i = 0; i < profile.inventorySpacesReadOnly.length; i++) {
 									var spaceCode = profile.inventorySpacesReadOnly[i];
 									inventorySpacesToRegister.push(inventorySpaceToRegisterFunc(spaceCode, "OBSERVER", callback));
 								}
-								
+
 								var spaceToRegister = inventorySpacesToRegister.pop();
 								if(spaceToRegister) {
 									spaceToRegister();
@@ -377,9 +370,11 @@ function ServerFacade(openbisServer) {
 								}
 							}
 						});
-					}			
+					}
 				});
-			}			
+            }).fail(function(error) {
+                callback(false, error.message);
+            });
 		});
 	}
 	
@@ -2426,6 +2421,7 @@ function ServerFacade(openbisServer) {
 			searchCriteria.withOperator("AND");
 
 			var fetchOptions = new GlobalSearchObjectFetchOptions();
+			fetchOptions.withMatch();
 			var sampleFetchOptions = fetchOptions.withSample();
 			sampleFetchOptions.withSpace();
 			sampleFetchOptions.withType();

@@ -19,7 +19,28 @@ def process(context, parameters):
         result = trashStorageSamplesWithoutParents(context, parameters);
     elif method == "isValidStoragePositionToInsertUpdate":
         result = isValidStoragePositionToInsertUpdate(context, parameters);
+    elif method == "setCustomWidgetSettings":
+        result = setCustomWidgetSettings(context, parameters);
     return result;
+
+def setCustomWidgetSettings(context, parameters):
+    from ch.ethz.sis.openbis.generic.asapi.v3.dto.property.update import PropertyTypeUpdate
+    from ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id import PropertyTypePermId
+    from ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.ListUpdateValue import ListUpdateActionAdd
+
+    widgetSettings = parameters.get("widgetSettings");
+    ptus = [];
+    for widgetSetting in widgetSettings:
+        ptu = PropertyTypeUpdate();
+        ptu.setTypeId(PropertyTypePermId(widgetSetting["Property Type"]));
+        luaa = ListUpdateActionAdd();
+        luaa.setItems([{"custom_widget" : widgetSetting["Widget"] }])
+        ptu.setMetaDataActions([luaa]);
+        ptus.append(ptu);
+
+    sessionToken = context.applicationService.loginAsSystem();
+    context.applicationService.updatePropertyTypes(sessionToken, ptus);
+    return True
 
 def isValidStoragePositionToInsertUpdate(context, parameters):
     from ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions import SampleFetchOptions

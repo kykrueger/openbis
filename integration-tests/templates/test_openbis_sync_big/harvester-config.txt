@@ -10,9 +10,9 @@ data-source-auth-pass = admin
 
 #replace the following with proper user on openbis2
 #after switching on master data synchronization
-harvester-user = admin
+harvester-user = system
 harvester-pass = admin
-translate-using-data-source-alias = true
+translate-using-data-source-alias = false
 
 email-addresses = openbis@id.ethz.ch
 max-threads = 1

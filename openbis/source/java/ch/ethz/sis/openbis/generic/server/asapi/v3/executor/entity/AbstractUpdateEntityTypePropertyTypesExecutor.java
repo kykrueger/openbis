@@ -49,6 +49,7 @@ import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.server.ComponentNames;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.ICommonBusinessObjectFactory;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.IEntityTypePropertyTypeBO;
+import ch.systemsx.cisd.openbis.generic.server.business.bo.InternalPropertyTypeAuthorization;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewETPTAssignment;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePE;
@@ -67,10 +68,10 @@ public abstract class AbstractUpdateEntityTypePropertyTypesExecutor<UPDATE exten
 
     @Autowired
     private CreatePropertyAssignmentsExecutor createPropertyAssignmentsExecutor;
-    
+
     @Autowired
     private IMapPropertyAssignmentByIdExecutor mapPropertyAssignmentByIdExecutor;
-    
+
     protected abstract EntityKind getEntityKind();
 
     @Override
@@ -93,7 +94,7 @@ public abstract class AbstractUpdateEntityTypePropertyTypesExecutor<UPDATE exten
                 }
             };
     }
-    
+
     private void update(IOperationContext context, TYPE_PE typePE, PropertyAssignmentListUpdateValue updates)
     {
         if (context == null)
@@ -112,7 +113,7 @@ public abstract class AbstractUpdateEntityTypePropertyTypesExecutor<UPDATE exten
             set(context, typePE, updates);
         }
     }
-    
+
     @SuppressWarnings("unchecked")
     private void remove(IOperationContext context, TYPE_PE typePE, PropertyAssignmentListUpdateValue updates)
     {
@@ -128,7 +129,7 @@ public abstract class AbstractUpdateEntityTypePropertyTypesExecutor<UPDATE exten
         {
             Map<IPropertyAssignmentId, EntityTypePropertyTypePE> map = mapPropertyAssignmentByIdExecutor.map(context, removed);
             boolean forceRemovingAssignments = updates.isForceRemovingAssignments();
-            removeAssignments(map.values(), forceRemovingAssignments);
+            removeAssignments(context, map.values(), forceRemovingAssignments);
         }
     }
 
@@ -167,7 +168,7 @@ public abstract class AbstractUpdateEntityTypePropertyTypesExecutor<UPDATE exten
             List<PropertyAssignmentCreation> replacements = new ArrayList<>();
             List<PropertyAssignmentCreation> newCreations = new ArrayList<>();
             boolean forceRemovingAssignments = updates.isForceRemovingAssignments();
-            findReplacementsNewCreationsAndDeleteAssignments(typePE, creations, replacements, newCreations, 
+            findReplacementsNewCreationsAndDeleteAssignments(context, typePE, creations, replacements, newCreations,
                     forceRemovingAssignments);
             if (newCreations.isEmpty() == false)
             {
@@ -177,9 +178,8 @@ public abstract class AbstractUpdateEntityTypePropertyTypesExecutor<UPDATE exten
             {
                 for (PropertyAssignmentCreation replacement : replacements)
                 {
-                    NewETPTAssignment translatedAssignment 
-                            = createPropertyAssignmentsExecutor.translateAssignment(context, typePE.getCode(), 
-                                    getEntityKind(), replacement);
+                    NewETPTAssignment translatedAssignment = createPropertyAssignmentsExecutor.translateAssignment(context, typePE.getCode(),
+                            getEntityKind(), replacement);
                     IEntityTypePropertyTypeBO etptBO =
                             businessObjectFactory.createEntityTypePropertyTypeBO(context.getSession(),
                                     DtoConverters.convertEntityKind(getEntityKind()));
@@ -191,9 +191,9 @@ public abstract class AbstractUpdateEntityTypePropertyTypesExecutor<UPDATE exten
         }
     }
 
-    private void findReplacementsNewCreationsAndDeleteAssignments(TYPE_PE typePE, 
+    private void findReplacementsNewCreationsAndDeleteAssignments(IOperationContext context, TYPE_PE typePE,
             Collection<? extends PropertyAssignmentCreation> creations,
-            List<PropertyAssignmentCreation> replacements, List<PropertyAssignmentCreation> newCreations, 
+            List<PropertyAssignmentCreation> replacements, List<PropertyAssignmentCreation> newCreations,
             boolean forceRemovingAssignments)
     {
         Map<String, EntityTypePropertyTypePE> currentAssignments = getCurrentAssignments(typePE);
@@ -213,12 +213,12 @@ public abstract class AbstractUpdateEntityTypePropertyTypesExecutor<UPDATE exten
             } else if (propertyTypeId == null)
             {
                 throw new UserFailureException("PropertyTypeId cannot be null.");
-            } else 
+            } else
             {
                 throw new UserFailureException("Unknown type of property type id: " + propertyTypeId.getClass().getName());
             }
         }
-        removeAssignments(currentAssignments.values(), forceRemovingAssignments);
+        removeAssignments(context, currentAssignments.values(), forceRemovingAssignments);
     }
 
     private Map<String, EntityTypePropertyTypePE> getCurrentAssignments(TYPE_PE typePE)
@@ -232,13 +232,16 @@ public abstract class AbstractUpdateEntityTypePropertyTypesExecutor<UPDATE exten
         }
         return etptByPropertyTypeCode;
     }
-    
-    private void removeAssignments(Collection<EntityTypePropertyTypePE> etpts, boolean forceRemovingAssignments)
+
+    private void removeAssignments(IOperationContext context, Collection<EntityTypePropertyTypePE> etpts, boolean forceRemovingAssignments)
     {
         for (EntityTypePropertyTypePE entityTypePropertyType : etpts)
         {
             if (forceRemovingAssignments || entityTypePropertyType.getPropertyValues().isEmpty())
             {
+                new InternalPropertyTypeAuthorization().canDeletePropertyAssignment(context.getSession(), entityTypePropertyType.getPropertyType(),
+                        entityTypePropertyType);
+
                 entityTypePropertyType.getEntityType().getEntityTypePropertyTypes().remove(entityTypePropertyType);
             } else
             {
@@ -251,6 +254,5 @@ public abstract class AbstractUpdateEntityTypePropertyTypesExecutor<UPDATE exten
             }
         }
     }
-
 
 }

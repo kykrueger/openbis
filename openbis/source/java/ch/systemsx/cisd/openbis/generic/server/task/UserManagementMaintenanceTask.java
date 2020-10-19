@@ -17,9 +17,11 @@
 package ch.systemsx.cisd.openbis.generic.server.task;
 
 import java.io.File;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.commons.lang3.StringUtils;
@@ -99,12 +101,17 @@ public class UserManagementMaintenanceTask extends AbstractMaintenanceTask
         }
         operationLog.info("manage " + config.getGroups().size() + " groups");
         Log4jSimpleLogger logger = new Log4jSimpleLogger(operationLog);
+        Set<String> knownUsers = new HashSet<>();
         UserManager userManager = createUserManager(config, logger, report);
         for (UserGroup group : config.getGroups())
         {
             addGroup(userManager, group);
+            if (group.getUsers() != null)
+            {
+                knownUsers.addAll(group.getUsers());
+            }
         }
-        userManager.manage();
+        userManager.manage(knownUsers);
         handleReport(report);
         operationLog.info("finished");
     }

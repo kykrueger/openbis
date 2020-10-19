@@ -26,6 +26,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractEntitySear
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.ExperimentType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.create.ExperimentTypeCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria;
@@ -38,13 +39,19 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
  * @author Franz-Josef Elmer
  */
 @Test
-public class UpdateExperimentTypeTest extends UpdateEntityTypeTest<ExperimentTypeUpdate, ExperimentType>
+public class UpdateExperimentTypeTest extends UpdateEntityTypeTest<ExperimentTypeCreation, ExperimentTypeUpdate, ExperimentType>
 {
 
     @Override
     protected EntityKind getEntityKind()
     {
         return EntityKind.EXPERIMENT;
+    }
+
+    @Override
+    protected ExperimentTypeCreation newTypeCreation()
+    {
+        return new ExperimentTypeCreation();
     }
 
     @Override
@@ -62,6 +69,12 @@ public class UpdateExperimentTypeTest extends UpdateEntityTypeTest<ExperimentTyp
     @Override
     protected void createEntity(String sessionToken, IEntityTypeId entityType, String propertyType, String propertyValue)
     {
+    }
+
+    @Override
+    protected List<EntityTypePermId> createTypes(String sessionToken, List<ExperimentTypeCreation> updates)
+    {
+        return v3api.createExperimentTypes(sessionToken, updates);
     }
 
     @Override

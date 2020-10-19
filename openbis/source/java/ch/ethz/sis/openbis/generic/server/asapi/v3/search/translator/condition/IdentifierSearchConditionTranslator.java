@@ -52,7 +52,7 @@ public class IdentifierSearchConditionTranslator implements IConditionTranslator
 
     @Override
     public void translate(final IdentifierSearchCriteria criterion, final TableMapper tableMapper, final List<Object> args,
-            final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases, final Map<String, String> dataTypeByPropertyName)
+            final StringBuilder sqlBuilder, final Map<String, JoinInformation> aliases, final Map<String, String> dataTypeByPropertyCode)
     {
         doTranslate(criterion, tableMapper, args, sqlBuilder, aliases, UNIQUE_PREFIX);
     }

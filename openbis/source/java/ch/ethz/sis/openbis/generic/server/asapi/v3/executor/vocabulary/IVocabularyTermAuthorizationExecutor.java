@@ -16,10 +16,8 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.vocabulary;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.IVocabularyTermId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.IObjectAuthorizationExecutor;
-import ch.systemsx.cisd.openbis.generic.shared.dto.VocabularyTermPE;
 
 /**
  * @author pkupczyk
@@ -35,13 +33,7 @@ public interface IVocabularyTermAuthorizationExecutor extends IObjectAuthorizati
 
     void canUpdate(IOperationContext context);
 
-    void canUpdateOfficial(IOperationContext context);
-
-    void canUpdateUnofficial(IOperationContext context);
-
-    boolean canUpdateInternallyManaged(IOperationContext context);
-
-    void canDelete(IOperationContext context, IVocabularyTermId id, VocabularyTermPE term);
+    void canDelete(IOperationContext context);
 
     void canGet(IOperationContext context);
 

@@ -32,13 +32,12 @@ def sslwrap(func):
 
 ssl.wrap_socket = sslwrap(ssl.wrap_socket)
 
-#ALL_TECHNOLOGIES = ['screening', 'proteomics', 'illumina-ngs', 'eln-lims', 'microscopy', 'flow']
-ALL_TECHNOLOGIES = ['screening', 'proteomics', 'illumina-ngs', 'microscopy', 'flow']
+ALL_TECHNOLOGIES = ['eln-lims', 'illumina-ngs', 'microscopy', 'flow']
 DATA_SOURCE_AS_PORT = '9000'
 DATA_SOURCE_DSS_PORT = '9001'
 HARVESTER_AS_PORT = '9002'
 HARVESTER_DSS_PORT = '9003'
-TYPE_PREFIX = 'DS1_'
+TYPE_PREFIX = ''
 
 
 class TestCase(systemtest.testcase.TestCase):
@@ -93,14 +92,14 @@ class TestCase(systemtest.testcase.TestCase):
         incoming = "%s/data/incoming-test" % openbis.installPath
         if not os.path.exists(incoming):
             os.makedirs(incoming)
-        example_files = []
-        example_files.append(self._drop_big_file(incoming))
-        example_files.append(self._drop_big_folder_with_many_files(incoming))
-        for example_file in example_files:
-            with open("%s/.MARKER_is_finished_%s" % (incoming, example_file), 'w') as f:
-                pass
-        openbis.waitUntilDataSetRegistrationFinished(2, timeOutInMinutes = 20)
-        
+        self._mark_and_wait(incoming, openbis, self._drop_big_file(incoming))
+        self._mark_and_wait(incoming, openbis, self._drop_big_folder_with_many_files(incoming))
+
+    def _mark_and_wait(self, incoming, openbis, file):
+        with open("%s/.MARKER_is_finished_%s" % (incoming, file), 'w') as f:
+            pass
+        openbis.waitUntilDataSetRegistrationFinished(1, timeOutInMinutes = 20)
+
     def _drop_big_file(self, incoming):
         big_file = self.artifactRepository.getPathToArtifact(OPENBIS_STANDARD_TECHNOLOGIES_PROJECT, 'openBIS-installation')
         big_file_folder, big_file_name = os.path.split(big_file)
@@ -108,6 +107,8 @@ class TestCase(systemtest.testcase.TestCase):
         return big_file_name
 
     def _drop_big_folder_with_many_files(self, incoming):
+        util.printAndFlush("Create big example with many files")
+
         next_words = self._get_next_words_dictionary('Pride_and_Prejudice.txt')
         number_of_text_files = 20000
         minimum_size = 50000
@@ -415,7 +416,6 @@ class TestCase(systemtest.testcase.TestCase):
         openbis_data_source.createTestDatabase('openbis')
         openbis_data_source.createTestDatabase('pathinfo')
         openbis_data_source.createTestDatabase('imaging')
-        openbis_data_source.createTestDatabase('proteomics')
         openbis_data_source.enableCorePlugin('openbis-sync')
         return openbis_data_source
 
@@ -429,16 +429,30 @@ class TestCase(systemtest.testcase.TestCase):
         openbis_harvester.setDataStoreServerProperty("host-address", "https://localhost")
         openbis_harvester.asProperties['max-number-of-sessions-per-user'] = '0'
         openbis_harvester.dssProperties['database.kind'] = openbis_harvester.databaseKind
+        openbis_harvester.createTestDatabase('openbis')
         openbis_harvester.enableCorePlugin("openbis-sync")
         util.copyFromTo(self.getTemplatesFolder(), openbis_harvester.installPath, "harvester-config.txt")
         return openbis_harvester
 
     def _waitUntilSyncIsFinished(self, openbis_harvester):
-        synclogfile = sorted(glob.glob("%s/synch*" % openbis_harvester.installPath))[-1]
-        monitor = util.LogMonitor("%s synchronization" % openbis_harvester.instanceName, synclogfile, timeOutInMinutes=30)
-        monitor.addNotificationCondition(util.RegexCondition('OPERATION.EntitySynchronizer'))
-        monitor.waitUntilEvent(util.RegexCondition('Saving the timestamp of sync start to file'), delay = 60)
-        time.sleep(60)
+        timeoutPeriod = 5 * 60
+        timeoutTime = time.time() + timeoutPeriod
+        synclogfiles = None
 
+        while time.time() < timeoutTime:
+            synclogfiles = sorted(glob.glob("%s/synch*" % openbis_harvester.installPath))
+            if synclogfiles:
+                break
+            else:
+                print ('Waiting for the synchronization log file to appear...')
+                time.sleep(1)
+
+        if synclogfiles:
+            monitor = util.LogMonitor("%s synchronization" % openbis_harvester.instanceName, synclogfiles[-1], timeOutInMinutes=30)
+            monitor.addNotificationCondition(util.RegexCondition('OPERATION.EntitySynchronizer'))
+            monitor.waitUntilEvent(util.RegexCondition('Saving the timestamp of sync start to file'), delay = 60)
+            time.sleep(60)
+        else:
+            raise Exception('Synchronization log file not found in %s. Waited for %s seconds.' % (openbis_harvester.installPath, str(timeoutPeriod)))
 
 TestCase(settings, __file__).runTest()

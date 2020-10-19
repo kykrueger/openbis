@@ -22,7 +22,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.Vocabulary;
@@ -37,7 +36,7 @@ import ch.systemsx.cisd.common.action.IDelegatedAction;
 /**
  * @author Franz-Josef Elmer
  */
-public class CreateVocabulariesTest extends AbstractTest
+public class CreateVocabulariesTest extends AbstractVocabularyTest
 {
     @Test
     public void testCreateVocabulary()
@@ -47,8 +46,6 @@ public class CreateVocabulariesTest extends AbstractTest
         VocabularyCreation vocabularyCreation = new VocabularyCreation();
         vocabularyCreation.setCode("CREATION_TEST");
         vocabularyCreation.setDescription("creation test");
-        vocabularyCreation.setManagedInternally(true);
-        vocabularyCreation.setInternalNameSpace(true);
         vocabularyCreation.setChosenFromList(true);
         vocabularyCreation.setUrlTemplate("https://en.wikipedia.org/wiki/${term}");
         VocabularyTermCreation term1 = new VocabularyTermCreation();
@@ -56,12 +53,10 @@ public class CreateVocabulariesTest extends AbstractTest
         VocabularyTermCreation term2 = new VocabularyTermCreation();
         term2.setCode("ALPHA");
         vocabularyCreation.setTerms(Arrays.asList(term1, term2));
-        VocabularyCreation vocabularyCreation2 = new VocabularyCreation();
-        vocabularyCreation2.setCode(vocabularyCreation.getCode());
 
         // When
         List<VocabularyPermId> vocabularies = v3api.createVocabularies(sessionToken,
-                Arrays.asList(vocabularyCreation, vocabularyCreation2));
+                Arrays.asList(vocabularyCreation));
 
         // Then
         VocabularyFetchOptions fetchOptions = new VocabularyFetchOptions();
@@ -69,7 +64,7 @@ public class CreateVocabulariesTest extends AbstractTest
         fetchOptions.withRegistrator();
         Map<IVocabularyId, Vocabulary> map = v3api.getVocabularies(sessionToken, vocabularies, fetchOptions);
         Vocabulary vocabulary = map.get(vocabularies.get(0));
-        assertEquals(vocabulary.getCode(), "$" + vocabularyCreation.getCode());
+        assertEquals(vocabulary.getCode(), vocabularyCreation.getCode());
         assertEquals(vocabulary.getDescription(), vocabularyCreation.getDescription());
         assertEquals(vocabulary.isManagedInternally(), vocabularyCreation.isManagedInternally());
         assertEquals(vocabulary.isInternalNameSpace(), vocabularyCreation.isInternalNameSpace());
@@ -77,10 +72,44 @@ public class CreateVocabulariesTest extends AbstractTest
         assertEquals(vocabulary.getUrlTemplate(), vocabularyCreation.getUrlTemplate());
         List<VocabularyTerm> terms = vocabulary.getTerms();
         assertEquals(terms.toString(), "[VocabularyTerm ALPHA, VocabularyTerm OMEGA]");
-        assertEquals(map.get(vocabularies.get(1)).getCode(), vocabularyCreation2.getCode());
-        assertEquals(map.get(vocabularies.get(1)).isInternalNameSpace(), false);
-        assertEquals(map.get(vocabularies.get(1)).isManagedInternally(), false);
-        assertEquals(vocabularies.size(), 2);
+        assertEquals(vocabularies.size(), 1);
+
+        v3api.logout(sessionToken);
+    }
+
+    @Test
+    public void testCreateInternalVocabulary()
+    {
+        // Given
+        String sessionToken = v3api.loginAsSystem();
+
+        VocabularyTermCreation term1 = new VocabularyTermCreation();
+        term1.setCode("OMEGA");
+
+        VocabularyTermCreation term2 = new VocabularyTermCreation();
+        term2.setCode("ALPHA");
+
+        VocabularyCreation vocabularyCreation = new VocabularyCreation();
+        vocabularyCreation.setCode("CREATION_TEST");
+        vocabularyCreation.setManagedInternally(true);
+
+        vocabularyCreation.setTerms(Arrays.asList(term1, term2));
+
+        // When
+        VocabularyPermId vocabularyId = v3api.createVocabularies(sessionToken,
+                Arrays.asList(vocabularyCreation)).get(0);
+
+        // Then
+        VocabularyFetchOptions fetchOptions = new VocabularyFetchOptions();
+        fetchOptions.withTerms();
+
+        Vocabulary vocabulary = v3api.getVocabularies(sessionToken, Arrays.asList(vocabularyId), fetchOptions).get(vocabularyId);
+
+        assertEquals(vocabulary.getCode(), "$" + vocabularyCreation.getCode());
+        assertEquals(vocabulary.isManagedInternally(), vocabularyCreation.isManagedInternally());
+
+        List<VocabularyTerm> terms = vocabulary.getTerms();
+        assertEquals(terms.toString(), "[VocabularyTerm ALPHA, VocabularyTerm OMEGA]");
 
         v3api.logout(sessionToken);
     }
@@ -130,10 +159,10 @@ public class CreateVocabulariesTest extends AbstractTest
         v3api.logout(sessionToken);
     }
 
-    @Test(dataProvider = "usersNotAllowedToCreateVocabularies")
+    @Test(dataProvider = PROVIDE_USERS_NOT_ALLOWED_TO_MANAGE_VOCABULARIES)
     public void testCreateWithUserCausingAuthorizationFailure(final String user)
     {
-        assertAuthorizationFailureException(new IDelegatedAction()
+        assertUnauthorizedObjectAccessException(new IDelegatedAction()
             {
                 @Override
                 public void execute()
@@ -143,7 +172,24 @@ public class CreateVocabulariesTest extends AbstractTest
                     vocabularyCreation.setCode("AUTHORIZATION_TEST_VOCABULARY");
                     v3api.createVocabularies(sessionToken, Arrays.asList(vocabularyCreation));
                 }
-            });
+            }, new VocabularyPermId("AUTHORIZATION_TEST_VOCABULARY"));
+    }
+
+    @Test(dataProvider = PROVIDE_USERS_NOT_ALLOWED_TO_MANAGE_INTERNAL_VOCABULARIES)
+    public void testCreateInternalWithUserCausingAuthorizationFailure(final String user)
+    {
+        assertUnauthorizedObjectAccessException(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    String sessionToken = v3api.login(user, PASSWORD);
+                    VocabularyCreation vocabularyCreation = new VocabularyCreation();
+                    vocabularyCreation.setCode("AUTHORIZATION_TEST_VOCABULARY");
+                    vocabularyCreation.setManagedInternally(true);
+                    v3api.createVocabularies(sessionToken, Arrays.asList(vocabularyCreation));
+                }
+            }, new VocabularyPermId("$AUTHORIZATION_TEST_VOCABULARY"));
     }
 
     @Test
@@ -163,10 +209,4 @@ public class CreateVocabulariesTest extends AbstractTest
                 "create-vocabularies  NEW_VOCABULARIES('[VocabularyCreation[code=LOG_TEST_1], VocabularyCreation[code=LOG_TEST_2]]')");
     }
 
-    @DataProvider
-    Object[][] usersNotAllowedToCreateVocabularies()
-    {
-        return createTestUsersProvider(TEST_GROUP_ADMIN, TEST_GROUP_OBSERVER, TEST_GROUP_POWERUSER,
-                TEST_INSTANCE_OBSERVER, TEST_OBSERVER_CISD, TEST_POWER_USER_CISD, TEST_SPACE_USER);
-    }
 }

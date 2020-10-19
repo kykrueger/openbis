@@ -43,6 +43,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.AbstractCachingTranslator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.TranslationCache.CacheKey;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.TranslationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.dataset.IDataSetTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.experiment.IExperimentTranslator;
@@ -85,6 +86,12 @@ public class GlobalSearchObjectTranslator extends AbstractCachingTranslator<Matc
         MatchingEntityValidator validator = new MatchingEntityValidator();
         validator.init(new AuthorizationDataProvider(daoFactory));
         return new HashSet<MatchingEntity>(validator.getValid(context.getSession().tryGetPerson(), inputs));
+    }
+
+    @Override
+    protected CacheKey getObjectCacheKey(MatchingEntity input, GlobalSearchObjectFetchOptions fetchOptions)
+    {
+        return new CacheKey(getClass().getName() + "." + input.getEntityKind(), getObjectId(input), fetchOptions);
     }
 
     @Override

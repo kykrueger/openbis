@@ -16,11 +16,8 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.vocabulary;
 
-import java.util.Set;
-
 import org.springframework.stereotype.Component;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.IVocabularyTermId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.systemsx.cisd.openbis.generic.server.authorization.annotation.Capability;
 import ch.systemsx.cisd.openbis.generic.server.authorization.annotation.RolesAllowed;
@@ -28,9 +25,6 @@ import ch.systemsx.cisd.openbis.generic.shared.DatabaseCreateOrDeleteModificatio
 import ch.systemsx.cisd.openbis.generic.shared.DatabaseUpdateModification;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DatabaseModificationKind.ObjectKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.RoleWithHierarchy;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.RoleWithHierarchy.RoleCode;
-import ch.systemsx.cisd.openbis.generic.shared.dto.RoleAssignmentPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.VocabularyTermPE;
 
 /**
  * @author pkupczyk
@@ -62,7 +56,7 @@ public class VocabularyTermAuthorizationExecutor implements IVocabularyTermAutho
     }
 
     @Override
-    // @RolesAllowed and @Capability are checked later depending whether an official or unofficial term is updated
+    @RolesAllowed({ RoleWithHierarchy.INSTANCE_ADMIN, RoleWithHierarchy.INSTANCE_ETL_SERVER })
     @DatabaseUpdateModification(value = ObjectKind.VOCABULARY_TERM)
     @Capability("UPDATE_VOCABULARY_TERM")
     public void canUpdate(IOperationContext context)
@@ -70,43 +64,11 @@ public class VocabularyTermAuthorizationExecutor implements IVocabularyTermAutho
     }
 
     @Override
-    @RolesAllowed({ RoleWithHierarchy.INSTANCE_ADMIN, RoleWithHierarchy.INSTANCE_ETL_SERVER })
-    @Capability("UPDATE_OFFICIAL_VOCABULARY_TERM")
-    public void canUpdateOfficial(IOperationContext context)
-    {
-    }
-
-    @Override
-    @RolesAllowed({ RoleWithHierarchy.PROJECT_USER, RoleWithHierarchy.SPACE_ETL_SERVER })
-    @Capability("UPDATE_UNOFFICIAL_VOCABULARY_TERM")
-    public void canUpdateUnofficial(IOperationContext context)
-    {
-    }
-
-    @Override
-    public boolean canUpdateInternallyManaged(IOperationContext context)
-    {
-        Set<RoleAssignmentPE> roles = context.getSession().tryGetCreatorPerson().getAllPersonRoles();
-
-        for (RoleAssignmentPE role : roles)
-        {
-            if ((RoleCode.ETL_SERVER.equals(role.getRole()) || RoleCode.ADMIN.equals(role.getRole()))
-                    && role.getRoleWithHierarchy().isInstanceLevel())
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    @Override
     @DatabaseCreateOrDeleteModification(value = { ObjectKind.VOCABULARY_TERM, ObjectKind.DELETION })
     @RolesAllowed({ RoleWithHierarchy.INSTANCE_ADMIN, RoleWithHierarchy.INSTANCE_ETL_SERVER })
     @Capability("DELETE_VOCABULARY_TERM")
-    public void canDelete(IOperationContext context, IVocabularyTermId id, VocabularyTermPE term)
+    public void canDelete(IOperationContext context)
     {
-        // nothing to do
     }
 
     @Override

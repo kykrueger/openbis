@@ -614,7 +614,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
                                     viewData: experiment.getIdentifier().getIdentifier(),
                                     registrationDate: experiment.registrationDate,
                             };
-                            if(experiment.type.code === "COLLECTION") {
+                            if(experiment.type.code === "COLLECTION" || experiment.type.code === "MATERIALS" || experiment.type.code === "METHODS") {
                                 experimentResult.icon = "fa fa-table";
                             }
                             results.push(experimentResult);

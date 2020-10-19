@@ -137,7 +137,6 @@ public class OrderTranslator
         final StringBuilder sqlBuilder = new StringBuilder(WHERE + SP + SearchCriteriaTranslator.MAIN_TABLE_ALIAS + PERIOD + ID_COLUMN + SP + IN + SP +
                 LP + SELECT + SP + UNNEST + LP + QU + RP + RP);
         final Map<Object, Map<String, JoinInformation>> aliases = translationContext.getAliases();
-        final TableMapper tableMapper = translationContext.getTableMapper();
         final List<Object> args = translationContext.getArgs();
 
         args.add(translationContext.getIds().toArray(new Long[0]));
@@ -147,11 +146,18 @@ public class OrderTranslator
             final String sortingCriteriaFieldName = sorting.getField();
             if (TranslatorUtils.isPropertySearchFieldName(sortingCriteriaFieldName))
             {
-                final String fullPropertyName = sortingCriteriaFieldName.substring(EntityWithPropertiesSortOptions.PROPERTY.length());
-                final String attributeTypesTableAlias = aliases.get(fullPropertyName.toLowerCase()).get(TableNames.DATA_TYPES_TABLE).
-                        getMainTableAlias();
-                sqlBuilder.append(SP).append(AND).append(SP).append(attributeTypesTableAlias).append(PERIOD).append(CODE_COLUMN).append(SP).
-                        append(EQ).append(SP).append(QU);
+                final String fullPropertyName = sortingCriteriaFieldName.substring(
+                        EntityWithPropertiesSortOptions.PROPERTY.length());
+                final boolean internalProperty = TranslatorUtils.isPropertyInternal(fullPropertyName);
+                final String attributeTypesTableAlias = aliases.get(fullPropertyName.toLowerCase())
+                        .get(TableNames.DATA_TYPES_TABLE).getMainTableAlias();
+
+                sqlBuilder.append(SP).append(AND).append(SP);
+                TranslatorUtils.appendInternalExternalConstraint(sqlBuilder, args, attributeTypesTableAlias,
+                        internalProperty);
+
+                sqlBuilder.append(SP).append(AND).append(SP).append(attributeTypesTableAlias).append(PERIOD)
+                        .append(CODE_COLUMN).append(SP).append(EQ).append(SP).append(QU);
                 args.add(TranslatorUtils.normalisePropertyName(fullPropertyName));
             }
         });

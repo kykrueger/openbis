@@ -21,7 +21,9 @@ import static org.testng.Assert.assertEquals;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.VocabularyTerm;
@@ -31,14 +33,141 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.IVocabularyTermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.VocabularyPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.VocabularyTermPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.update.VocabularyTermUpdate;
+import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 
 /**
  * @author pkupczyk
  */
 @Test(groups = { "before remote api" })
-public class UpdateVocabularyTermTest extends AbstractVocabularyTermTest
+public class UpdateVocabularyTermTest extends AbstractVocabularyTest
 {
+
+    @DataProvider
+    private Object[][] providerTestUpdateAuthorization()
+    {
+        return new Object[][] {
+                { "ORGANISM", SYSTEM_USER, SYSTEM_USER, true, null },
+                { "ORGANISM", SYSTEM_USER, SYSTEM_USER, false, null },
+                { "ORGANISM", SYSTEM_USER, TEST_USER, true, null },
+                { "ORGANISM", SYSTEM_USER, TEST_USER, false, null },
+
+                { "ORGANISM", TEST_USER, TEST_USER, true, null },
+                { "ORGANISM", TEST_USER, TEST_USER, false, null },
+
+                { "ORGANISM", TEST_POWER_USER_CISD, SYSTEM_USER, false, null },
+                { "ORGANISM", TEST_POWER_USER_CISD, TEST_USER, false, null },
+                { "ORGANISM", TEST_POWER_USER_CISD, TEST_POWER_USER_CISD, false,
+                        "None of method roles '[INSTANCE_ADMIN, INSTANCE_ETL_SERVER]' could be found in roles of user" },
+
+                { "$PLATE_GEOMETRY", SYSTEM_USER, SYSTEM_USER, true, null },
+                { "$PLATE_GEOMETRY", SYSTEM_USER, SYSTEM_USER, false, null },
+                { "$PLATE_GEOMETRY", SYSTEM_USER, TEST_USER, true,
+                        "Terms created by the system user that belong to internal vocabularies can be managed only by the system user" },
+                { "$PLATE_GEOMETRY", SYSTEM_USER, TEST_USER, false,
+                        "Terms created by the system user that belong to internal vocabularies can be managed only by the system user" },
+
+                { "$PLATE_GEOMETRY", TEST_USER, TEST_USER, true, null },
+                { "$PLATE_GEOMETRY", TEST_USER, TEST_USER, false, null },
+
+                { "$PLATE_GEOMETRY", TEST_POWER_USER_CISD, SYSTEM_USER, false, null },
+                { "$PLATE_GEOMETRY", TEST_POWER_USER_CISD, TEST_USER, false, null },
+                { "$PLATE_GEOMETRY", TEST_POWER_USER_CISD, TEST_POWER_USER_CISD, false,
+                        "None of method roles '[INSTANCE_ADMIN, INSTANCE_ETL_SERVER]' could be found in roles of user" },
+        };
+    }
+
+    @Test(dataProvider = "providerTestUpdateAuthorization")
+    public void testUpdateAuthorization(String vocabularyCode, String termRegistrator, String termUpdater, boolean termOfficial,
+            String expectedError)
+    {
+        String sessionTokenRegistrator = termRegistrator.equals(SYSTEM_USER) ? v3api.loginAsSystem() : v3api.login(termRegistrator, PASSWORD);
+
+        VocabularyTermCreation creation = new VocabularyTermCreation();
+        creation.setCode("TEST-CODE");
+        creation.setVocabularyId(new VocabularyPermId(vocabularyCode));
+        creation.setOfficial(termOfficial);
+
+        List<VocabularyTermPermId> permIds = v3api.createVocabularyTerms(sessionTokenRegistrator, Arrays.asList(creation));
+
+        VocabularyTermUpdate update = new VocabularyTermUpdate();
+        update.setVocabularyTermId(permIds.get(0));
+        update.setOfficial(true);
+
+        assertExceptionMessage(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    String sessionTokenUpdater = termUpdater.equals(SYSTEM_USER) ? v3api.loginAsSystem() : v3api.login(termUpdater, PASSWORD);
+                    v3api.updateVocabularyTerms(sessionTokenUpdater, Arrays.asList(update));
+                }
+            }, expectedError);
+    }
+
+    @DataProvider
+    private Object[][] providerTestUpdateAndTakeOverTerm()
+    {
+        return new Object[][] {
+                { "ORGANISM", SYSTEM_USER, SYSTEM_USER, SYSTEM_USER, null },
+                { "ORGANISM", SYSTEM_USER, TEST_USER, SYSTEM_USER, null },
+
+                { "ORGANISM", TEST_USER, SYSTEM_USER, TEST_USER, null },
+                { "ORGANISM", TEST_USER, TEST_USER, TEST_USER, null },
+
+                { "$PLATE_GEOMETRY", SYSTEM_USER, SYSTEM_USER, SYSTEM_USER, null },
+                { "$PLATE_GEOMETRY", SYSTEM_USER, TEST_USER, SYSTEM_USER,
+                        "Terms created by the system user that belong to internal vocabularies can be managed only by the system user" },
+
+                { "$PLATE_GEOMETRY", TEST_USER, SYSTEM_USER, SYSTEM_USER, null },
+                { "$PLATE_GEOMETRY", TEST_USER, TEST_USER, TEST_USER, null },
+        };
+    }
+
+    @Test(dataProvider = "providerTestUpdateAndTakeOverTerm")
+    public void testUpdateAndTakeOverTerm(String vocabularyCode, String termRegistrator, String termUpdater,
+            String expectedTermRegistratorAfterUpdate, String expectedError)
+    {
+        String termRegistratorSessionToken =
+                termRegistrator.equals(SYSTEM_USER) ? v3api.loginAsSystem() : v3api.login(termRegistrator, PASSWORD);
+        String termUpdaterSessionToken =
+                termUpdater.equals(SYSTEM_USER) ? v3api.loginAsSystem() : v3api.login(termUpdater, PASSWORD);
+        String termGetterSessionToken = v3api.loginAsSystem();
+
+        VocabularyTermCreation termCreation = new VocabularyTermCreation();
+        termCreation.setCode("TERM-TO-TAKE-OVER");
+        termCreation.setVocabularyId(new VocabularyPermId(vocabularyCode));
+        termCreation.setLabel("Original Label");
+        termCreation.setDescription("Original Description");
+
+        List<VocabularyTermPermId> termIds = v3api.createVocabularyTerms(termRegistratorSessionToken, Arrays.asList(termCreation));
+
+        VocabularyTermUpdate termUpdate = new VocabularyTermUpdate();
+        termUpdate.setVocabularyTermId(termIds.get(0));
+        termUpdate.setLabel("Updated Label");
+        termUpdate.setDescription("Updated Description");
+
+        assertExceptionMessage(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    v3api.updateVocabularyTerms(termUpdaterSessionToken, Arrays.asList(termUpdate));
+
+                    VocabularyTermFetchOptions fetchOptions = new VocabularyTermFetchOptions();
+                    fetchOptions.withRegistrator();
+
+                    Map<IVocabularyTermId, VocabularyTerm> terms = v3api.getVocabularyTerms(termGetterSessionToken, termIds, fetchOptions);
+                    assertEquals(terms.size(), 1);
+
+                    VocabularyTerm term = terms.get(termIds.get(0));
+                    assertEquals(term.getCode(), "TERM-TO-TAKE-OVER");
+                    assertEquals(term.getLabel(), "Updated Label");
+                    assertEquals(term.getDescription(), "Updated Description");
+                    assertEquals(term.getRegistrator().getUserId(), expectedTermRegistratorAfterUpdate);
+                }
+            }, expectedError);
+    }
 
     @Test(expectedExceptions = UserFailureException.class, expectedExceptionsMessageRegExp = ".*Vocabulary term id cannot be null.*")
     public void testUpdateWithVocabularyIdNull()
@@ -55,28 +184,6 @@ public class UpdateVocabularyTermTest extends AbstractVocabularyTermTest
         updateTerms(TEST_USER, PASSWORD, update);
     }
 
-    @Test
-    public void testUpdateWithOfficalTermAndAuthorizedUser()
-    {
-        VocabularyTermUpdate update = new VocabularyTermUpdate();
-        update.setVocabularyTermId(getOfficialTermId());
-        update.setDescription("Updated offical term");
-
-        List<VocabularyTerm> terms = updateTerms(TEST_USER, PASSWORD, update);
-
-        assertEquals(terms.get(0).getDescription(), update.getDescription().getValue());
-    }
-
-    @Test(expectedExceptions = UserFailureException.class, expectedExceptionsMessageRegExp = ".*None of method roles '\\[INSTANCE_ADMIN, INSTANCE_ETL_SERVER\\]' could be found in roles of user 'observer'.*")
-    public void testUpdateWithOfficalTermAndUnauthorizedUser()
-    {
-        VocabularyTermUpdate update = new VocabularyTermUpdate();
-        update.setVocabularyTermId(getOfficialTermId());
-        update.setDescription("Updated offical term");
-
-        updateTerms(TEST_GROUP_OBSERVER, PASSWORD, update);
-    }
-
     @Test(expectedExceptions = UserFailureException.class, expectedExceptionsMessageRegExp = ".*Offical vocabulary term DOG \\(ORGANISM\\) cannot be updated to be unofficial.*")
     public void testUpdateWithOfficialTermMadeUnofficial()
     {
@@ -85,40 +192,6 @@ public class UpdateVocabularyTermTest extends AbstractVocabularyTermTest
         update.setOfficial(false);
 
         updateTerms(TEST_USER, PASSWORD, update);
-    }
-
-    @Test(expectedExceptions = UserFailureException.class, expectedExceptionsMessageRegExp = ".*None of method roles '\\[INSTANCE_ADMIN, INSTANCE_ETL_SERVER\\]' could be found in roles of user 'observer'.*")
-    public void testUpdateWithOfficialTermMadeUnofficialUnauthorized()
-    {
-        VocabularyTermUpdate update = new VocabularyTermUpdate();
-        update.setVocabularyTermId(getOfficialTermId());
-        update.setOfficial(false);
-
-        updateTerms(TEST_GROUP_OBSERVER, PASSWORD, update);
-    }
-
-    @Test
-    public void testUpdateWithUnofficalTermAndAuthorizedUser()
-    {
-        VocabularyTermUpdate update = new VocabularyTermUpdate();
-        update.setVocabularyTermId(getUnofficialTermId());
-        update.setDescription("Updated unofficial term");
-
-        List<VocabularyTerm> terms = updateTerms(TEST_USER, PASSWORD, update);
-
-        assertEquals(terms.get(0).getDescription(), update.getDescription().getValue());
-    }
-
-    @Test(expectedExceptions = UserFailureException.class, expectedExceptionsMessageRegExp = ".*None of method roles '\\[PROJECT_USER, PROJECT_POWER_USER, PROJECT_ADMIN, SPACE_ADMIN, INSTANCE_ADMIN, SPACE_POWER_USER, SPACE_USER, SPACE_ETL_SERVER, INSTANCE_ETL_SERVER\\]' could be found in roles of user 'observer'.*")
-    public void testUpdateWithUnofficalTermAndUnauthorizedUser()
-    {
-        VocabularyTermUpdate update = new VocabularyTermUpdate();
-        update.setVocabularyTermId(getUnofficialTermId());
-        update.setDescription("Updated unofficial term");
-
-        List<VocabularyTerm> terms = updateTerms(TEST_GROUP_OBSERVER, PASSWORD, update);
-
-        assertEquals(terms.get(0).getDescription(), update.getDescription().getValue());
     }
 
     @Test
@@ -256,28 +329,6 @@ public class UpdateVocabularyTermTest extends AbstractVocabularyTermTest
     }
 
     @Test
-    public void testUpdateWithInternallyManagedVocabularyAndAuthorized()
-    {
-        VocabularyTermUpdate update = new VocabularyTermUpdate();
-        update.setVocabularyTermId(getInternallyManagedTermId());
-        update.setDescription("a brand new description");
-
-        List<VocabularyTerm> terms = updateTerms(TEST_USER, PASSWORD, update);
-
-        assertEquals(terms.get(0).getDescription(), update.getDescription().getValue());
-    }
-
-    @Test(expectedExceptions = UserFailureException.class, expectedExceptionsMessageRegExp = ".*Not allowed to update terms of an internally managed vocabulary.*")
-    public void testUpdateWithInternallyManagedVocabularyAndUnauthorized()
-    {
-        VocabularyTermUpdate update = new VocabularyTermUpdate();
-        update.setVocabularyTermId(getInternallyManagedTermId());
-        update.setDescription("a brand new description");
-
-        updateTerms(TEST_GROUP_OBSERVER, PASSWORD, update);
-    }
-
-    @Test
     public void testUpdateWithMultipleTerms()
     {
         // TODO
@@ -333,11 +384,6 @@ public class UpdateVocabularyTermTest extends AbstractVocabularyTermTest
     private VocabularyTermPermId getOfficialTermId()
     {
         return new VocabularyTermPermId("DOG", "ORGANISM");
-    }
-
-    private VocabularyTermPermId getInternallyManagedTermId()
-    {
-        return new VocabularyTermPermId("96_WELLS_8X12", "$PLATE_GEOMETRY");
     }
 
 }

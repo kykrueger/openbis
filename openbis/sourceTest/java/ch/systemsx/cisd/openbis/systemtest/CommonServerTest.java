@@ -18,6 +18,7 @@ package ch.systemsx.cisd.openbis.systemtest;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertNull;
 import static org.testng.Assert.fail;
 
 import java.sql.Connection;
@@ -31,6 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.sql.DataSource;
 
@@ -39,8 +41,10 @@ import org.apache.commons.collections4.Predicate;
 import org.apache.log4j.Logger;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.common.concurrent.MessageChannel;
 import ch.systemsx.cisd.common.exceptions.AuthorizationFailureException;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
@@ -97,41 +101,50 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MetaprojectAssignments;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MetaprojectAssignmentsCount;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewAttachment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewAuthorizationGroup;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewETPTAssignment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewExperiment;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewVocabulary;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Project;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyUpdates;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Sample;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleAttributeSearchFieldKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleParentWithDerived;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleUpdateResult;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Script;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ScriptType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SearchCriteriaConnection;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Space;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.UpdatedVocabularyTerm;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Vocabulary;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.VocabularyTerm;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.VocabularyTermBatchUpdateDetails;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.displaysettings.IDisplaySettingsUpdate;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.metaproject.IMetaprojectId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.metaproject.MetaprojectIdentifierId;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataSetUpdatesDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataSetUploadContext;
+import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePE;
+import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePropertyTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentUpdatesDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.MetaprojectAssignmentPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.MetaprojectPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ProjectUpdatesDTO;
+import ch.systemsx.cisd.openbis.generic.shared.dto.PropertyTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SampleUpdatesDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SearchableEntity;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SessionContextDTO;
+import ch.systemsx.cisd.openbis.generic.shared.dto.VocabularyPE;
+import ch.systemsx.cisd.openbis.generic.shared.dto.VocabularyTermPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.ExperimentIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.ProjectIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SpaceIdentifier;
 import ch.systemsx.cisd.openbis.systemtest.authorization.ProjectAuthorizationUser;
-
 import junit.framework.Assert;
 
 /**
@@ -141,6 +154,832 @@ public class CommonServerTest extends SystemTestCase
 {
 
     private Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION, getClass());
+
+    @DataProvider
+    private Object[][] providerTestRegisterPropertyTypeAuthorization()
+    {
+        return new Object[][] {
+                { "NEW_NON_INTERNAL", SYSTEM_USER, null },
+                { "NEW_NON_INTERNAL", TEST_USER, null },
+                { "NEW_NON_INTERNAL", TEST_POWER_USER_CISD, "None of method roles '[INSTANCE_ADMIN]' could be found in roles of user 'test_role'" },
+
+                { "$NEW_INTERNAL", SYSTEM_USER, null },
+                { "$NEW_INTERNAL", TEST_USER, "Internal property types can be managed only by the system user" },
+                { "$NEW_INTERNAL", TEST_POWER_USER_CISD, "None of method roles '[INSTANCE_ADMIN]' could be found in roles of user 'test_role'" }
+        };
+    }
+
+    @Test(dataProvider = "providerTestRegisterPropertyTypeAuthorization")
+    public void testRegisterPropertyTypeAuthorization(String propertyTypeCode, String propertyTypeRegistrator, String expectedError)
+    {
+        SessionContextDTO session = propertyTypeRegistrator.equals(SYSTEM_USER) ? commonServer.tryToAuthenticateAsSystem()
+                : commonServer.tryAuthenticate(propertyTypeRegistrator, PASSWORD);
+
+        PropertyType propertyType = new PropertyType();
+        propertyType.setCode(propertyTypeCode);
+        propertyType.setDataType(new DataType(DataTypeCode.VARCHAR));
+        propertyType.setLabel("Test label");
+        propertyType.setDescription("Test description");
+        propertyType.setManagedInternally(propertyTypeCode.startsWith("$"));
+
+        assertExceptionMessage(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    commonServer.registerPropertyType(session.getSessionToken(), propertyType);
+
+                    PropertyTypePE propertyTypePE = daoFactory.getPropertyTypeDAO().tryFindPropertyTypeByCode(propertyTypeCode);
+                    assertNotNull(propertyTypePE);
+                }
+            }, expectedError);
+    }
+
+    @DataProvider
+    private Object[][] providerTestUpdatePropertyTypeAuthorization()
+    {
+        return new Object[][] {
+                { "NEW_NON_INTERNAL", SYSTEM_USER, SYSTEM_USER, null },
+                { "NEW_NON_INTERNAL", SYSTEM_USER, TEST_USER, null },
+                { "NEW_NON_INTERNAL", SYSTEM_USER, TEST_POWER_USER_CISD,
+                        "None of method roles '[INSTANCE_ADMIN]' could be found in roles of user 'test_role'" },
+
+                { "NEW_NON_INTERNAL", TEST_USER, SYSTEM_USER, null },
+                { "NEW_NON_INTERNAL", TEST_USER, TEST_USER, null },
+                { "NEW_NON_INTERNAL", TEST_USER, TEST_POWER_USER_CISD,
+                        "None of method roles '[INSTANCE_ADMIN]' could be found in roles of user 'test_role'" },
+
+                { "$NEW_INTERNAL", SYSTEM_USER, SYSTEM_USER, null },
+                { "$NEW_INTERNAL", SYSTEM_USER, TEST_USER, "Internal property types can be managed only by the system user" },
+                { "$NEW_INTERNAL", SYSTEM_USER, TEST_POWER_USER_CISD,
+                        "None of method roles '[INSTANCE_ADMIN]' could be found in roles of user 'test_role'" },
+        };
+    }
+
+    @Test(dataProvider = "providerTestUpdatePropertyTypeAuthorization")
+    public void testUpdatePropertyTypeAuthorization(String propertyTypeCode, String propertyTypeRegistrator, String propertyTypeUpdater,
+            String expectedError)
+    {
+        SessionContextDTO registratorSession =
+                propertyTypeRegistrator.equals(SYSTEM_USER) ? commonServer.tryToAuthenticateAsSystem()
+                        : commonServer.tryAuthenticate(propertyTypeRegistrator, PASSWORD);
+        SessionContextDTO updaterSession = propertyTypeUpdater.equals(SYSTEM_USER) ? commonServer.tryToAuthenticateAsSystem()
+                : commonServer.tryAuthenticate(propertyTypeUpdater, PASSWORD);
+
+        PropertyType propertyType = new PropertyType();
+        propertyType.setCode(propertyTypeCode);
+        propertyType.setDataType(new DataType(DataTypeCode.VARCHAR));
+        propertyType.setLabel("Test label");
+        propertyType.setDescription("Test description");
+        propertyType.setManagedInternally(propertyTypeCode.startsWith("$"));
+        commonServer.registerPropertyType(registratorSession.getSessionToken(), propertyType);
+
+        PropertyTypePE propertyTypePE = daoFactory.getPropertyTypeDAO().tryFindPropertyTypeByCode(propertyTypeCode);
+        assertNotNull(propertyTypePE);
+
+        PropertyType propertyTypeUpdate = new PropertyType();
+        propertyTypeUpdate.setId(propertyTypePE.getId());
+        propertyTypeUpdate.setCode(propertyTypePE.getCode());
+        propertyTypeUpdate.setDataType(new DataType(propertyTypePE.getType().getCode()));
+        propertyTypeUpdate.setLabel(propertyTypePE.getLabel());
+        propertyTypeUpdate.setDescription("New description");
+        propertyTypeUpdate.setManagedInternally(propertyTypePE.isManagedInternally());
+        propertyTypeUpdate.setModificationDate(propertyTypePE.getModificationDate());
+
+        assertExceptionMessage(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    commonServer.updatePropertyType(updaterSession.getSessionToken(), propertyTypeUpdate);
+
+                    PropertyTypePE updatedPropertyTypePE = daoFactory.getPropertyTypeDAO().tryFindPropertyTypeByCode(propertyTypeCode);
+                    assertNotNull(updatedPropertyTypePE);
+                    assertEquals(updatedPropertyTypePE.getDescription(), "New description");
+                }
+            }, expectedError);
+    }
+
+    @DataProvider
+    private Object[][] providerTestDeletePropertyTypesAuthorization()
+    {
+        return new Object[][] {
+                { "NEW_NON_INTERNAL", SYSTEM_USER, SYSTEM_USER, null },
+                { "NEW_NON_INTERNAL", SYSTEM_USER, TEST_USER, null },
+                { "NEW_NON_INTERNAL", SYSTEM_USER, TEST_POWER_USER_CISD,
+                        "None of method roles '[INSTANCE_ADMIN]' could be found in roles of user 'test_role'" },
+
+                { "NEW_NON_INTERNAL", TEST_USER, SYSTEM_USER, null },
+                { "NEW_NON_INTERNAL", TEST_USER, TEST_USER, null },
+                { "NEW_NON_INTERNAL", TEST_USER, TEST_POWER_USER_CISD,
+                        "None of method roles '[INSTANCE_ADMIN]' could be found in roles of user 'test_role'" },
+
+                { "$NEW_INTERNAL", SYSTEM_USER, SYSTEM_USER, null },
+                { "$NEW_INTERNAL", SYSTEM_USER, TEST_USER, "Internal property types can be managed only by the system user" },
+                { "$NEW_INTERNAL", SYSTEM_USER, TEST_POWER_USER_CISD,
+                        "None of method roles '[INSTANCE_ADMIN]' could be found in roles of user 'test_role'" },
+        };
+    }
+
+    @Test(dataProvider = "providerTestDeletePropertyTypesAuthorization")
+    public void testDeletePropertyTypesAuthorization(String propertyTypeCode, String propertyTypeRegistrator, String propertyTypeDeleter,
+            String expectedError)
+    {
+        SessionContextDTO registratorSession =
+                propertyTypeRegistrator.equals(SYSTEM_USER) ? commonServer.tryToAuthenticateAsSystem()
+                        : commonServer.tryAuthenticate(propertyTypeRegistrator, PASSWORD);
+        SessionContextDTO deleterSession = propertyTypeDeleter.equals(SYSTEM_USER) ? commonServer.tryToAuthenticateAsSystem()
+                : commonServer.tryAuthenticate(propertyTypeDeleter, PASSWORD);
+
+        PropertyType propertyType = new PropertyType();
+        propertyType.setCode(propertyTypeCode);
+        propertyType.setDataType(new DataType(DataTypeCode.VARCHAR));
+        propertyType.setLabel("Test label");
+        propertyType.setDescription("Test description");
+        propertyType.setManagedInternally(propertyTypeCode.startsWith("$"));
+        commonServer.registerPropertyType(registratorSession.getSessionToken(), propertyType);
+
+        PropertyTypePE propertyTypePE = daoFactory.getPropertyTypeDAO().tryFindPropertyTypeByCode(propertyTypeCode);
+        assertNotNull(propertyTypePE);
+
+        assertExceptionMessage(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    commonServer.deletePropertyTypes(deleterSession.getSessionToken(), TechId.createList(propertyTypePE.getId()), "testing");
+
+                    PropertyTypePE deletedPropertyTypePE = daoFactory.getPropertyTypeDAO().tryFindPropertyTypeByCode(propertyTypeCode);
+                    assertNull(deletedPropertyTypePE);
+                }
+            }, expectedError);
+    }
+
+    @DataProvider
+    public Object[][] providerTestAssignPropertyTypeAuthorization()
+    {
+        return new Object[][] {
+                { "NEW_NON_INTERNAL", SYSTEM_USER, null },
+                { "NEW_NON_INTERNAL", TEST_USER, null },
+                { "NEW_NON_INTERNAL", TEST_POWER_USER_CISD,
+                        "None of method roles '[INSTANCE_ADMIN]' could be found in roles of user 'test_role'" },
+
+                { "$NEW_INTERNAL", SYSTEM_USER, null },
+                { "$NEW_INTERNAL", TEST_USER, null },
+                { "$NEW_INTERNAL", TEST_POWER_USER_CISD,
+                        "None of method roles '[INSTANCE_ADMIN]' could be found in roles of user 'test_role'" }
+        };
+    }
+
+    @Test(dataProvider = "providerTestAssignPropertyTypeAuthorization")
+    public void testAssignPropertyTypeAuthorization(String propertyTypeCode, String propertyAssignmentRegistrator, String expectedError)
+    {
+        SessionContextDTO systemSession = commonServer.tryToAuthenticateAsSystem();
+        SessionContextDTO registratorSession =
+                propertyAssignmentRegistrator.equals(SYSTEM_USER) ? commonServer.tryToAuthenticateAsSystem()
+                        : commonServer.tryAuthenticate(propertyAssignmentRegistrator, PASSWORD);
+
+        SampleType sampleType = new SampleType();
+        sampleType.setCode("NEW_ENTITY_TYPE");
+        sampleType.setGeneratedCodePrefix("PREFIX_");
+        commonServer.registerSampleType(systemSession.getSessionToken(), sampleType);
+
+        PropertyType propertyType = new PropertyType();
+        propertyType.setCode(propertyTypeCode);
+        propertyType.setDataType(new DataType(DataTypeCode.VARCHAR));
+        propertyType.setLabel("Test label");
+        propertyType.setDescription("Test description");
+        propertyType.setManagedInternally(propertyTypeCode.startsWith("$"));
+        commonServer.registerPropertyType(systemSession.getSessionToken(), propertyType);
+
+        NewETPTAssignment assignment = new NewETPTAssignment();
+        assignment.setEntityKind(EntityKind.SAMPLE);
+        assignment.setEntityTypeCode(sampleType.getCode());
+        assignment.setPropertyTypeCode(propertyTypeCode);
+
+        assertExceptionMessage(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    commonServer.assignPropertyType(registratorSession.getSessionToken(), assignment);
+
+                    EntityTypePropertyTypePE createdAssignment =
+                            findPropertyAssignment(EntityKind.SAMPLE, sampleType.getCode(), propertyType.getCode());
+                    assertNotNull(createdAssignment);
+                }
+            }, expectedError);
+    }
+
+    @DataProvider
+    public Object[][] providerTestUpdatePropertyTypeAssignmentAuthorization()
+    {
+        return new Object[][] {
+                { "NEW_NON_INTERNAL", SYSTEM_USER, SYSTEM_USER, false, null },
+                { "NEW_NON_INTERNAL", SYSTEM_USER, TEST_USER, false, null },
+                { "NEW_NON_INTERNAL", SYSTEM_USER, TEST_POWER_USER_CISD, false,
+                        "None of method roles '[INSTANCE_ADMIN]' could be found in roles of user 'test_role'" },
+
+                { "NEW_NON_INTERNAL", SYSTEM_USER, SYSTEM_USER, true, null },
+                { "NEW_NON_INTERNAL", SYSTEM_USER, TEST_USER, true, null },
+                { "NEW_NON_INTERNAL", SYSTEM_USER, TEST_POWER_USER_CISD, true,
+                        "None of method roles '[INSTANCE_ADMIN]' could be found in roles of user 'test_role'" },
+
+                { "NEW_NON_INTERNAL", TEST_USER, SYSTEM_USER, false, null },
+                { "NEW_NON_INTERNAL", TEST_USER, TEST_USER, false, null },
+                { "NEW_NON_INTERNAL", TEST_USER, TEST_POWER_USER_CISD, false,
+                        "None of method roles '[INSTANCE_ADMIN]' could be found in roles of user 'test_role'" },
+
+                { "NEW_NON_INTERNAL", TEST_USER, SYSTEM_USER, true, null },
+                { "NEW_NON_INTERNAL", TEST_USER, TEST_USER, true, null },
+                { "NEW_NON_INTERNAL", TEST_USER, TEST_POWER_USER_CISD, true,
+                        "None of method roles '[INSTANCE_ADMIN]' could be found in roles of user 'test_role'" },
+
+                { "$NEW_INTERNAL", SYSTEM_USER, SYSTEM_USER, false, null },
+                { "$NEW_INTERNAL", SYSTEM_USER, TEST_USER, false,
+                        "Property assignments created by the system user for internal property types can be managed only by the system user" },
+                { "$NEW_INTERNAL", SYSTEM_USER, TEST_POWER_USER_CISD, false,
+                        "None of method roles '[INSTANCE_ADMIN]' could be found in roles of user 'test_role'" },
+
+                { "$NEW_INTERNAL", SYSTEM_USER, SYSTEM_USER, true, null },
+                { "$NEW_INTERNAL", SYSTEM_USER, TEST_USER, true, null },
+                { "$NEW_INTERNAL", SYSTEM_USER, TEST_POWER_USER_CISD, true,
+                        "None of method roles '[INSTANCE_ADMIN]' could be found in roles of user 'test_role'" },
+
+                { "$NEW_INTERNAL", TEST_USER, SYSTEM_USER, false, null },
+                { "$NEW_INTERNAL", TEST_USER, TEST_USER, false, null },
+                { "$NEW_INTERNAL", TEST_USER, TEST_POWER_USER_CISD, false,
+                        "None of method roles '[INSTANCE_ADMIN]' could be found in roles of user 'test_role'" },
+
+                { "$NEW_INTERNAL", TEST_USER, SYSTEM_USER, true, null },
+                { "$NEW_INTERNAL", TEST_USER, TEST_USER, true, null },
+                { "$NEW_INTERNAL", TEST_USER, TEST_POWER_USER_CISD, true,
+                        "None of method roles '[INSTANCE_ADMIN]' could be found in roles of user 'test_role'" },
+        };
+    }
+
+    @Test(dataProvider = "providerTestUpdatePropertyTypeAssignmentAuthorization")
+    public void testUpdatePropertyTypeAssignmentAuthorization(String propertyTypeCode, String propertyAssignmentRegistrator,
+            String propertyAssignmentUpdater, boolean updateLayoutFieldsOnly, String expectedError)
+    {
+        SessionContextDTO systemSession = commonServer.tryToAuthenticateAsSystem();
+        SessionContextDTO registratorSession =
+                propertyAssignmentRegistrator.equals(SYSTEM_USER) ? commonServer.tryToAuthenticateAsSystem()
+                        : commonServer.tryAuthenticate(propertyAssignmentRegistrator, PASSWORD);
+        SessionContextDTO updaterSession =
+                propertyAssignmentUpdater.equals(SYSTEM_USER) ? commonServer.tryToAuthenticateAsSystem()
+                        : commonServer.tryAuthenticate(propertyAssignmentUpdater, PASSWORD);
+
+        SampleType sampleType = new SampleType();
+        sampleType.setCode("NEW_ENTITY_TYPE");
+        sampleType.setGeneratedCodePrefix("PREFIX_");
+        commonServer.registerSampleType(systemSession.getSessionToken(), sampleType);
+
+        PropertyType propertyType = new PropertyType();
+        propertyType.setCode(propertyTypeCode);
+        propertyType.setDataType(new DataType(DataTypeCode.VARCHAR));
+        propertyType.setLabel("Test label");
+        propertyType.setDescription("Test description");
+        propertyType.setManagedInternally(propertyTypeCode.startsWith("$"));
+        commonServer.registerPropertyType(systemSession.getSessionToken(), propertyType);
+
+        NewETPTAssignment assignment = new NewETPTAssignment();
+        assignment.setEntityKind(EntityKind.SAMPLE);
+        assignment.setEntityTypeCode(sampleType.getCode());
+        assignment.setPropertyTypeCode(propertyTypeCode);
+        assignment.setSection("Test section");
+        assignment.setOrdinal(1L);
+        assignment.setMandatory(false);
+        commonServer.assignPropertyType(registratorSession.getSessionToken(), assignment);
+
+        NewETPTAssignment assignmentUpdate = new NewETPTAssignment();
+        assignmentUpdate.setEntityKind(EntityKind.SAMPLE);
+        assignmentUpdate.setEntityTypeCode(sampleType.getCode());
+        assignmentUpdate.setPropertyTypeCode(propertyTypeCode);
+        assignmentUpdate.setSection("Test section");
+        assignmentUpdate.setMandatory(false);
+
+        if (updateLayoutFieldsOnly)
+        {
+            assignmentUpdate.setSection("Updated section");
+        } else
+        {
+            assignmentUpdate.setMandatory(true);
+        }
+
+        assertExceptionMessage(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    commonServer.updatePropertyTypeAssignment(updaterSession.getSessionToken(), assignmentUpdate);
+
+                    EntityTypePropertyTypePE updatedAssignment =
+                            findPropertyAssignment(EntityKind.SAMPLE, sampleType.getCode(), propertyType.getCode());
+                    assertNotNull(updatedAssignment);
+
+                    if (updateLayoutFieldsOnly)
+                    {
+                        assertEquals(updatedAssignment.getSection(), "Updated section");
+                        assertEquals((Boolean) updatedAssignment.isMandatory(), Boolean.valueOf(false));
+                    } else
+                    {
+                        assertEquals(updatedAssignment.getSection(), "Test section");
+                        assertEquals((Boolean) updatedAssignment.isMandatory(), Boolean.valueOf(true));
+                    }
+                }
+            }, expectedError);
+    }
+
+    @DataProvider
+    public Object[][] providerUnassignPropertyTypeAuthorization()
+    {
+        return new Object[][] {
+                { "NEW_NON_INTERNAL", SYSTEM_USER, SYSTEM_USER, null },
+                { "NEW_NON_INTERNAL", SYSTEM_USER, TEST_USER, null },
+                { "NEW_NON_INTERNAL", SYSTEM_USER, TEST_POWER_USER_CISD,
+                        "None of method roles '[INSTANCE_ADMIN]' could be found in roles of user 'test_role'" },
+
+                { "NEW_NON_INTERNAL", TEST_USER, SYSTEM_USER, null },
+                { "NEW_NON_INTERNAL", TEST_USER, TEST_USER, null },
+                { "NEW_NON_INTERNAL", TEST_USER, TEST_POWER_USER_CISD,
+                        "None of method roles '[INSTANCE_ADMIN]' could be found in roles of user 'test_role'" },
+
+                { "$NEW_INTERNAL", SYSTEM_USER, SYSTEM_USER, null },
+                { "$NEW_INTERNAL", SYSTEM_USER, TEST_USER,
+                        "Property assignments created by the system user for internal property types can be managed only by the system user" },
+                { "$NEW_INTERNAL", SYSTEM_USER, TEST_POWER_USER_CISD,
+                        "None of method roles '[INSTANCE_ADMIN]' could be found in roles of user 'test_role'" },
+
+                { "$NEW_INTERNAL", TEST_USER, SYSTEM_USER, null },
+                { "$NEW_INTERNAL", TEST_USER, TEST_USER, null },
+                { "$NEW_INTERNAL", TEST_USER, TEST_POWER_USER_CISD,
+                        "None of method roles '[INSTANCE_ADMIN]' could be found in roles of user 'test_role'" },
+        };
+    }
+
+    @Test(dataProvider = "providerUnassignPropertyTypeAuthorization")
+    public void testUnassignPropertyTypeAuthorization(String propertyTypeCode, String propertyAssignmentRegistrator,
+            String propertyAssignmentDeleter, String expectedError)
+    {
+        SessionContextDTO systemSession = commonServer.tryToAuthenticateAsSystem();
+        SessionContextDTO registratorSession =
+                propertyAssignmentRegistrator.equals(SYSTEM_USER) ? commonServer.tryToAuthenticateAsSystem()
+                        : commonServer.tryAuthenticate(propertyAssignmentRegistrator, PASSWORD);
+        SessionContextDTO deleterSession =
+                propertyAssignmentDeleter.equals(SYSTEM_USER) ? commonServer.tryToAuthenticateAsSystem()
+                        : commonServer.tryAuthenticate(propertyAssignmentDeleter, PASSWORD);
+
+        SampleType sampleType = new SampleType();
+        sampleType.setCode("NEW_ENTITY_TYPE");
+        sampleType.setGeneratedCodePrefix("PREFIX_");
+        commonServer.registerSampleType(systemSession.getSessionToken(), sampleType);
+
+        PropertyType propertyType = new PropertyType();
+        propertyType.setCode(propertyTypeCode);
+        propertyType.setDataType(new DataType(DataTypeCode.VARCHAR));
+        propertyType.setLabel("Test label");
+        propertyType.setDescription("Test description");
+        propertyType.setManagedInternally(propertyTypeCode.startsWith("$"));
+        commonServer.registerPropertyType(systemSession.getSessionToken(), propertyType);
+
+        NewETPTAssignment assignment = new NewETPTAssignment();
+        assignment.setEntityKind(EntityKind.SAMPLE);
+        assignment.setEntityTypeCode(sampleType.getCode());
+        assignment.setPropertyTypeCode(propertyTypeCode);
+        commonServer.assignPropertyType(registratorSession.getSessionToken(), assignment);
+
+        assertExceptionMessage(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    commonServer.unassignPropertyType(deleterSession.getSessionToken(), EntityKind.SAMPLE, propertyTypeCode, sampleType.getCode());
+
+                    EntityTypePropertyTypePE deletedAssignment =
+                            findPropertyAssignment(EntityKind.SAMPLE, sampleType.getCode(), propertyType.getCode());
+                    assertNull(deletedAssignment);
+                }
+            }, expectedError);
+    }
+
+    @DataProvider
+    public Object[][] providerTestRegisterVocabularyAuthorization()
+    {
+        return new Object[][] {
+                { "NEW_NOT_INTERNAL", SYSTEM_USER, Arrays.asList(true, false), null },
+                { "NEW_NOT_INTERNAL", TEST_USER, Arrays.asList(true, false), null },
+                { "NEW_NOT_INTERNAL", TEST_GROUP_ADMIN, Arrays.asList(true, false),
+                        "None of method roles '[INSTANCE_ADMIN, INSTANCE_ETL_SERVER]' could be found in roles of user 'admin'" },
+                { "$NEW_INTERNAL", SYSTEM_USER, Arrays.asList(true, false), null },
+                { "$NEW_INTERNAL", TEST_USER, Arrays.asList(true, false), "Internal vocabularies can be managed only by the system user" },
+                { "$NEW_INTERNAL", TEST_GROUP_ADMIN, Arrays.asList(true, false),
+                        "None of method roles '[INSTANCE_ADMIN, INSTANCE_ETL_SERVER]' could be found in roles of user 'admin'" },
+        };
+    }
+
+    @Test(dataProvider = "providerTestRegisterVocabularyAuthorization")
+    public void testRegisterVocabularyAuthorization(String vocabularyCode, String vocabularyRegistrator, List<Boolean> termsOfficial,
+            String expectedError)
+    {
+        SessionContextDTO session = vocabularyRegistrator.equals(SYSTEM_USER) ? commonServer.tryToAuthenticateAsSystem()
+                : commonServer.tryAuthenticate(vocabularyRegistrator, PASSWORD);
+
+        NewVocabulary newVocabulary = new NewVocabulary();
+        newVocabulary.setCode(vocabularyCode);
+        newVocabulary.setManagedInternally(vocabularyCode.startsWith("$"));
+
+        if (termsOfficial != null)
+        {
+            List<VocabularyTerm> terms = new ArrayList<>();
+
+            for (boolean termOfficial : termsOfficial)
+            {
+                VocabularyTerm term = new VocabularyTerm();
+                term.setCode(UUID.randomUUID().toString());
+                term.setOfficial(termOfficial);
+            }
+
+            newVocabulary.setTerms(terms);
+        }
+
+        assertExceptionMessage(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    commonServer.registerVocabulary(session.getSessionToken(), newVocabulary);
+                }
+            }, expectedError);
+    }
+
+    @DataProvider
+    public Object[][] providerTestUpdateAndDeleteVocabularyAuthorization()
+    {
+        return new Object[][] {
+                { "NEW_NOT_INTERNAL", SYSTEM_USER, null },
+                { "NEW_NOT_INTERNAL", TEST_USER, null },
+                { "NEW_NOT_INTERNAL", TEST_GROUP_ADMIN,
+                        "None of method roles '[INSTANCE_ADMIN, INSTANCE_ETL_SERVER]' could be found in roles of user 'admin'" },
+                { "$NEW_INTERNAL", SYSTEM_USER, null },
+                { "$NEW_INTERNAL", TEST_USER, "Internal vocabularies can be managed only by the system user" },
+                { "$NEW_INTERNAL", TEST_GROUP_ADMIN,
+                        "None of method roles '[INSTANCE_ADMIN, INSTANCE_ETL_SERVER]' could be found in roles of user 'admin'" },
+        };
+    }
+
+    @Test(dataProvider = "providerTestUpdateAndDeleteVocabularyAuthorization")
+    public void testUpdateAndDeleteVocabularyAuthorization(String vocabularyCode, String vocabularyUpdater, String expectedError)
+    {
+        SessionContextDTO systemSession = commonServer.tryToAuthenticateAsSystem();
+
+        SessionContextDTO updaterSession = vocabularyUpdater.equals(SYSTEM_USER) ? commonServer.tryToAuthenticateAsSystem()
+                : commonServer.tryAuthenticate(vocabularyUpdater, PASSWORD);
+
+        NewVocabulary newVocabulary = new NewVocabulary();
+        newVocabulary.setCode(vocabularyCode);
+        newVocabulary.setManagedInternally(vocabularyCode.startsWith("$"));
+        commonServer.registerVocabulary(systemSession.getSessionToken(), newVocabulary);
+
+        VocabularyPE vocabulary = daoFactory.getVocabularyDAO().tryFindVocabularyByCode(vocabularyCode);
+
+        Vocabulary update = new Vocabulary();
+        update.setId(vocabulary.getId());
+        update.setCode(vocabulary.getCode());
+        update.setDescription("new description");
+        update.setModificationDate(vocabulary.getModificationDate());
+
+        assertExceptionMessage(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    commonServer.updateVocabulary(updaterSession.getSessionToken(), update);
+                }
+            }, expectedError);
+
+        assertExceptionMessage(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    commonServer.deleteVocabularies(updaterSession.getSessionToken(), TechId.createList(vocabulary.getId()), "testing");
+                }
+            }, expectedError);
+    }
+
+    @DataProvider
+    public Object[][] providerTestAddVocabularyTermsAuthorization()
+    {
+        return new Object[][] {
+                { "ORGANISM", SYSTEM_USER, null },
+                { "ORGANISM", TEST_USER, null },
+                { "ORGANISM", TEST_GROUP_ADMIN,
+                        "None of method roles '[INSTANCE_ADMIN, INSTANCE_ETL_SERVER]' could be found in roles of user 'admin'" },
+                { "$PLATE_GEOMETRY", SYSTEM_USER, null },
+                { "$PLATE_GEOMETRY", TEST_USER, null },
+                { "$PLATE_GEOMETRY", TEST_GROUP_ADMIN,
+                        "None of method roles '[INSTANCE_ADMIN, INSTANCE_ETL_SERVER]' could be found in roles of user 'admin'" },
+        };
+    }
+
+    @Test(dataProvider = "providerTestAddVocabularyTermsAuthorization")
+    public void testAddVocabularyTermsAuthorization(String vocabularyCode, String vocabularyUpdater, String expectedError)
+    {
+        SessionContextDTO session = vocabularyUpdater.equals(SYSTEM_USER) ? commonServer.tryToAuthenticateAsSystem()
+                : commonServer.tryAuthenticate(vocabularyUpdater, PASSWORD);
+
+        VocabularyPE vocabulary = daoFactory.getVocabularyDAO().tryFindVocabularyByCode(vocabularyCode);
+
+        VocabularyTerm term = new VocabularyTerm();
+        term.setCode("NEW_TERM");
+
+        assertExceptionMessage(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    // this methods adds only official terms (internally sets official flag to true)
+                    commonServer.addVocabularyTerms(session.getSessionToken(), new TechId(vocabulary.getId()), Arrays.asList(term), null);
+                }
+            }, expectedError);
+    }
+
+    @DataProvider
+    public Object[][] providerTestAddUnofficialVocabularyTermsAuthorization()
+    {
+        return new Object[][] {
+                { "ORGANISM", SYSTEM_USER, null },
+                { "ORGANISM", TEST_USER, null },
+                { "ORGANISM", TEST_GROUP_ADMIN, null },
+                { "$PLATE_GEOMETRY", SYSTEM_USER, null },
+                { "$PLATE_GEOMETRY", TEST_USER, null },
+                { "$PLATE_GEOMETRY", TEST_GROUP_ADMIN, null },
+        };
+    }
+
+    @Test(dataProvider = "providerTestAddUnofficialVocabularyTermsAuthorization")
+    public void testAddUnofficialVocabularyTermsAuthorization(String vocabularyCode, String vocabularyUpdater, String expectedError)
+    {
+        SessionContextDTO session = vocabularyUpdater.equals(SYSTEM_USER) ? commonServer.tryToAuthenticateAsSystem()
+                : commonServer.tryAuthenticate(vocabularyUpdater, PASSWORD);
+
+        VocabularyPE vocabulary = daoFactory.getVocabularyDAO().tryFindVocabularyByCode(vocabularyCode);
+
+        assertExceptionMessage(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    // this methods adds only unofficial terms (internally sets official flag to false)
+                    commonServer.addUnofficialVocabularyTerm(session.getSessionToken(), new TechId(vocabulary.getId()), "NEW_TERM", "New label",
+                            "New description", null);
+                }
+            }, expectedError);
+    }
+
+    @DataProvider
+    private Object[][] providerTestUpdateAndDeleteVocabularyTermAuthorization()
+    {
+        return new Object[][] {
+                { "NEW_NON_INTERNAL", SYSTEM_USER, SYSTEM_USER, true, null },
+                { "NEW_NON_INTERNAL", SYSTEM_USER, SYSTEM_USER, false, null },
+                { "NEW_NON_INTERNAL", SYSTEM_USER, TEST_USER, true, null },
+                { "NEW_NON_INTERNAL", SYSTEM_USER, TEST_USER, false, null },
+
+                { "NEW_NON_INTERNAL", TEST_USER, TEST_USER, true, null },
+                { "NEW_NON_INTERNAL", TEST_USER, TEST_USER, false, null },
+
+                { "NEW_NON_INTERNAL", TEST_POWER_USER_CISD, SYSTEM_USER, false, null },
+                { "NEW_NON_INTERNAL", TEST_POWER_USER_CISD, TEST_USER, false, null },
+                { "NEW_NON_INTERNAL", TEST_POWER_USER_CISD, TEST_POWER_USER_CISD, false,
+                        "None of method roles '[INSTANCE_ADMIN, INSTANCE_ETL_SERVER]' could be found in roles of user" },
+
+                { "$NEW_INTERNAL", SYSTEM_USER, SYSTEM_USER, true, null },
+                { "$NEW_INTERNAL", SYSTEM_USER, SYSTEM_USER, false, null },
+                { "$NEW_INTERNAL", SYSTEM_USER, TEST_USER, true,
+                        "Terms created by the system user that belong to internal vocabularies can be managed only by the system user" },
+                { "$NEW_INTERNAL", SYSTEM_USER, TEST_USER, false,
+                        "Terms created by the system user that belong to internal vocabularies can be managed only by the system user" },
+
+                { "$NEW_INTERNAL", TEST_USER, TEST_USER, true, null },
+                { "$NEW_INTERNAL", TEST_USER, TEST_USER, false, null },
+
+                { "$NEW_INTERNAL", TEST_POWER_USER_CISD, SYSTEM_USER, false, null },
+                { "$NEW_INTERNAL", TEST_POWER_USER_CISD, TEST_USER, false, null },
+                { "$NEW_INTERNAL", TEST_POWER_USER_CISD, TEST_POWER_USER_CISD, false,
+                        "None of method roles '[INSTANCE_ADMIN, INSTANCE_ETL_SERVER]' could be found in roles of user" },
+        };
+    }
+
+    @Test(dataProvider = "providerTestUpdateAndDeleteVocabularyTermAuthorization")
+    public void testUpdateAndDeleteVocabularyTermAuthorization(String vocabularyCode, String termRegistrator, String termUpdater,
+            boolean termOfficial,
+            String expectedError)
+    {
+        SessionContextDTO systemSession = commonServer.tryToAuthenticateAsSystem();
+
+        SessionContextDTO sessionRegistrator = termRegistrator.equals(SYSTEM_USER) ? commonServer.tryToAuthenticateAsSystem()
+                : commonServer.tryAuthenticate(termRegistrator, PASSWORD);
+
+        SessionContextDTO sessionUpdater = termUpdater.equals(SYSTEM_USER) ? commonServer.tryToAuthenticateAsSystem()
+                : commonServer.tryAuthenticate(termUpdater, PASSWORD);
+
+        NewVocabulary newVocabulary = new NewVocabulary();
+        newVocabulary.setCode(vocabularyCode);
+        newVocabulary.setManagedInternally(vocabularyCode.startsWith("$"));
+        commonServer.registerVocabulary(systemSession.getSessionToken(), newVocabulary);
+
+        VocabularyPE vocabulary = daoFactory.getVocabularyDAO().tryFindVocabularyByCode(vocabularyCode);
+
+        if (termOfficial)
+        {
+            VocabularyTerm term = new VocabularyTerm();
+            term.setCode("NEW_TERM");
+            commonServer.addVocabularyTerms(sessionRegistrator.getSessionToken(), new TechId(vocabulary.getId()), Arrays.asList(term), null);
+        } else
+        {
+            commonServer.addUnofficialVocabularyTerm(sessionRegistrator.getSessionToken(), new TechId(vocabulary.getId()), "NEW_TERM", "New label",
+                    "New description", null);
+        }
+
+        VocabularyTermPE term = vocabulary.tryGetVocabularyTerm("NEW_TERM");
+
+        VocabularyTerm updateTerm = new VocabularyTerm();
+        updateTerm.setId(term.getId());
+        updateTerm.setCode(term.getCode());
+        updateTerm.setDescription("new description");
+        updateTerm.setOrdinal(term.getOrdinal());
+        updateTerm.setModificationDate(term.getModificationDate());
+        VocabularyTermBatchUpdateDetails updateDetails = new VocabularyTermBatchUpdateDetails();
+        UpdatedVocabularyTerm update = new UpdatedVocabularyTerm(updateTerm, updateDetails);
+
+        assertExceptionMessage(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+
+                    commonServer.updateVocabularyTerm(sessionUpdater.getSessionToken(), update);
+                }
+            }, expectedError);
+
+        assertExceptionMessage(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    commonServer.updateVocabularyTerms(sessionUpdater.getSessionToken(), new TechId(vocabulary.getId()),
+                            Arrays.asList(update));
+                }
+            }, expectedError);
+        assertExceptionMessage(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    commonServer.deleteVocabularyTerms(sessionUpdater.getSessionToken(), new TechId(vocabulary.getId()), Arrays.asList(update),
+                            Arrays.asList());
+                }
+            }, expectedError);
+    }
+
+    @DataProvider
+    private Object[][] providerTestCreateAndTakeOverExistingVocabularyTerm()
+    {
+        return new Object[][] {
+                { "ORGANISM", SYSTEM_USER, SYSTEM_USER, SYSTEM_USER, null },
+                { "ORGANISM", SYSTEM_USER, TEST_USER, SYSTEM_USER, null },
+
+                { "ORGANISM", TEST_USER, SYSTEM_USER, TEST_USER, null },
+                { "ORGANISM", TEST_USER, TEST_USER, TEST_USER, null },
+
+                { "$PLATE_GEOMETRY", SYSTEM_USER, SYSTEM_USER, SYSTEM_USER, null },
+                { "$PLATE_GEOMETRY", SYSTEM_USER, TEST_USER, SYSTEM_USER, null },
+
+                { "$PLATE_GEOMETRY", TEST_USER, SYSTEM_USER, SYSTEM_USER, null },
+                { "$PLATE_GEOMETRY", TEST_USER, TEST_USER, TEST_USER, null },
+        };
+    }
+
+    @Test(dataProvider = "providerTestCreateAndTakeOverExistingVocabularyTerm")
+    public void testCreateAndTakeOverExistingVocabularyTerm(String vocabularyCode, String originalTermRegistrator, String duplicatedTermRegistrator,
+            String expectedTermRegistratorAfterCreation, String expectedError)
+    {
+        SessionContextDTO originalTermRegistratorSession =
+                originalTermRegistrator.equals(SYSTEM_USER) ? commonServer.tryToAuthenticateAsSystem()
+                        : commonServer.tryAuthenticate(originalTermRegistrator, PASSWORD);
+        SessionContextDTO duplicatedTermRegistratorSession =
+                duplicatedTermRegistrator.equals(SYSTEM_USER) ? commonServer.tryToAuthenticateAsSystem()
+                        : commonServer.tryAuthenticate(duplicatedTermRegistrator, PASSWORD);
+
+        VocabularyPE vocabularyPE = daoFactory.getVocabularyDAO().tryFindVocabularyByCode(vocabularyCode);
+
+        VocabularyTerm originalTerm = new VocabularyTerm();
+        originalTerm.setCode("TERM-TO-TAKE-OVER");
+        originalTerm.setLabel("Test Label");
+        originalTerm.setDescription("Test Description");
+        commonServer.addVocabularyTerms(originalTermRegistratorSession.getSessionToken(), new TechId(vocabularyPE.getId()),
+                Arrays.asList(originalTerm),
+                null);
+
+        VocabularyTerm duplicatedTerm = new VocabularyTerm();
+        duplicatedTerm.setCode("TERM-TO-TAKE-OVER");
+        duplicatedTerm.setLabel("Updated Label");
+        duplicatedTerm.setDescription("Updated Description");
+
+        assertExceptionMessage(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    commonServer.addVocabularyTerms(duplicatedTermRegistratorSession.getSessionToken(), new TechId(vocabularyPE.getId()),
+                            Arrays.asList(duplicatedTerm), null);
+
+                    VocabularyPE vocabularyPE = daoFactory.getVocabularyDAO().tryFindVocabularyByCode(vocabularyCode);
+                    VocabularyTermPE vocabularyTermPE = vocabularyPE.tryGetVocabularyTerm(originalTerm.getCode());
+
+                    if (duplicatedTermRegistrator.equals(SYSTEM_USER) && vocabularyPE.isManagedInternally())
+                    {
+                        assertEquals(vocabularyTermPE.getLabel(), "Updated Label");
+                        assertEquals(vocabularyTermPE.getDescription(), "Updated Description");
+                    } else
+                    {
+                        assertEquals(vocabularyTermPE.getLabel(), "Test Label");
+                        assertEquals(vocabularyTermPE.getDescription(), "Test Description");
+                    }
+
+                    assertEquals(vocabularyTermPE.getRegistrator().getUserId(), expectedTermRegistratorAfterCreation);
+                }
+            }, expectedError);
+    }
+
+    @DataProvider
+    private Object[][] providerTestUpdateAndTakeOverExistingVocabularyTerm()
+    {
+        return new Object[][] {
+                { "ORGANISM", SYSTEM_USER, SYSTEM_USER, SYSTEM_USER, null },
+                { "ORGANISM", SYSTEM_USER, TEST_USER, SYSTEM_USER, null },
+
+                { "ORGANISM", TEST_USER, SYSTEM_USER, TEST_USER, null },
+                { "ORGANISM", TEST_USER, TEST_USER, TEST_USER, null },
+
+                { "$PLATE_GEOMETRY", SYSTEM_USER, SYSTEM_USER, SYSTEM_USER, null },
+                { "$PLATE_GEOMETRY", SYSTEM_USER, TEST_USER, SYSTEM_USER,
+                        "Terms created by the system user that belong to internal vocabularies can be managed only by the system user" },
+
+                { "$PLATE_GEOMETRY", TEST_USER, SYSTEM_USER, SYSTEM_USER, null },
+                { "$PLATE_GEOMETRY", TEST_USER, TEST_USER, TEST_USER, null },
+        };
+    }
+
+    @Test(dataProvider = "providerTestUpdateAndTakeOverExistingVocabularyTerm")
+    public void testUpdateAndTakeOverExistingVocabularyTerm(String vocabularyCode, String termRegistrator, String termUpdater,
+            String expectedTermRegistratorAfterUpdate, String expectedError)
+    {
+        SessionContextDTO termRegistratorSession =
+                termRegistrator.equals(SYSTEM_USER) ? commonServer.tryToAuthenticateAsSystem()
+                        : commonServer.tryAuthenticate(termRegistrator, PASSWORD);
+        SessionContextDTO termUpdaterSession =
+                termUpdater.equals(SYSTEM_USER) ? commonServer.tryToAuthenticateAsSystem()
+                        : commonServer.tryAuthenticate(termUpdater, PASSWORD);
+
+        VocabularyPE vocabularyPE = daoFactory.getVocabularyDAO().tryFindVocabularyByCode(vocabularyCode);
+
+        VocabularyTerm term = new VocabularyTerm();
+        term.setCode("TERM-TO-TAKE-OVER");
+        term.setLabel("Test Label");
+        term.setDescription("Test Description");
+        commonServer.addVocabularyTerms(termRegistratorSession.getSessionToken(), new TechId(vocabularyPE.getId()), Arrays.asList(term),
+                null);
+
+        VocabularyTermPE termPE = vocabularyPE.tryGetVocabularyTerm(term.getCode());
+
+        VocabularyTerm updateTerm = new VocabularyTerm();
+        updateTerm.setId(termPE.getId());
+        updateTerm.setCode(termPE.getCode());
+        updateTerm.setLabel("Updated Label");
+        updateTerm.setDescription("Updated Description");
+        updateTerm.setOrdinal(termPE.getOrdinal());
+        updateTerm.setModificationDate(termPE.getModificationDate());
+        VocabularyTermBatchUpdateDetails updateDetails = new VocabularyTermBatchUpdateDetails();
+        UpdatedVocabularyTerm update = new UpdatedVocabularyTerm(updateTerm, updateDetails);
+
+        assertExceptionMessage(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    commonServer.updateVocabularyTerm(termUpdaterSession.getSessionToken(), update);
+
+                    VocabularyPE vocabularyPE = daoFactory.getVocabularyDAO().tryFindVocabularyByCode(vocabularyCode);
+                    VocabularyTermPE vocabularyTermPE = vocabularyPE.tryGetVocabularyTerm(term.getCode());
+                    assertEquals(vocabularyTermPE.getLabel(), "Updated Label");
+                    assertEquals(vocabularyTermPE.getDescription(), "Updated Description");
+                    assertEquals(vocabularyTermPE.getRegistrator().getUserId(), expectedTermRegistratorAfterUpdate);
+                }
+            }, expectedError);
+    }
 
     @Test
     public void testDeleteGroupWithPersons()
@@ -3641,6 +4480,17 @@ public class CommonServerTest extends SystemTestCase
         }
 
         daoFactory.getSessionFactory().getCurrentSession().save(assignment);
+    }
+
+    private EntityTypePropertyTypePE findPropertyAssignment(EntityKind entityKind, String entityTypeCode, String propertyTypeCode)
+    {
+        ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind entityKindConverted =
+                ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind.valueOf(entityKind.name());
+
+        EntityTypePE entityType = daoFactory.getEntityTypeDAO(entityKindConverted).tryToFindEntityTypeByCode(entityTypeCode);
+        PropertyTypePE propertyType = daoFactory.getPropertyTypeDAO().tryFindPropertyTypeByCode(propertyTypeCode);
+
+        return daoFactory.getEntityPropertyTypeDAO(entityKindConverted).tryFindAssignment(entityType, propertyType);
     }
 
 }

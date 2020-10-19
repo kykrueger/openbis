@@ -17,6 +17,7 @@
 package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
 
 import java.util.Arrays;
 import java.util.List;
@@ -32,8 +33,11 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.IPersonId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.Me;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.PersonPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.update.PersonUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.Role;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.create.RoleAssignmentCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.webapp.WebAppSetting;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.webapp.WebAppSettings;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.webapp.create.WebAppSettingCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.webapp.update.WebAppSettingsUpdateValue;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
@@ -224,11 +228,103 @@ public class UpdatePersonTest extends AbstractTest
     }
 
     @Test
+    public void testActivateUser()
+    {
+        String adminSessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        // create a new user with an observer role
+
+        PersonCreation userCreation = new PersonCreation();
+        userCreation.setUserId("USER_TO_DEACTIVATE_AND_ACTIVATE");
+
+        RoleAssignmentCreation roleCreation = new RoleAssignmentCreation();
+        roleCreation.setUserId(new PersonPermId(userCreation.getUserId()));
+        roleCreation.setRole(Role.OBSERVER);
+
+        PersonPermId userId = v3api.createPersons(adminSessionToken, Arrays.asList(userCreation)).get(0);
+        v3api.createRoleAssignments(adminSessionToken, Arrays.asList(roleCreation));
+
+        PersonFetchOptions fetchOptions = new PersonFetchOptions();
+        fetchOptions.withRoleAssignments();
+
+        Person user = v3api.getPersons(adminSessionToken, Arrays.asList(userId), fetchOptions).get(userId);
+
+        assertEquals(user.isActive(), Boolean.TRUE);
+        assertEquals(user.getRoleAssignments().size(), 1);
+
+        String userSessionToken = v3api.login(userCreation.getUserId(), PASSWORD);
+        assertNotNull(userSessionToken);
+
+        // deactivate the user (active flag is set to false, all rights are cleared)
+
+        PersonUpdate userDeactivateUpdate = new PersonUpdate();
+        userDeactivateUpdate.setUserId(userId);
+        userDeactivateUpdate.deactivate();
+
+        v3api.updatePersons(adminSessionToken, Arrays.asList(userDeactivateUpdate));
+
+        Person deactivatedUser = v3api.getPersons(adminSessionToken, Arrays.asList(userId), fetchOptions).get(userId);
+
+        assertEquals(deactivatedUser.isActive(), Boolean.FALSE);
+        assertEquals(deactivatedUser.getRoleAssignments().size(), 0);
+
+        assertUserFailureException(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    v3api.login(userCreation.getUserId(), PASSWORD);
+                }
+            }, "User 'USER_TO_DEACTIVATE_AND_ACTIVATE' has no role assignments and thus is not permitted to login");
+
+        // assign roles to the deactivated user and try to login
+
+        v3api.createRoleAssignments(adminSessionToken, Arrays.asList(roleCreation));
+
+        assertUserFailureException(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    v3api.login(userCreation.getUserId(), PASSWORD);
+                }
+            }, "User 'USER_TO_DEACTIVATE_AND_ACTIVATE' has been deactivated and thus is not permitted to login");
+
+        // activate the user again (active flag is set to true)
+
+        PersonUpdate userActivateUpdate = new PersonUpdate();
+        userActivateUpdate.setUserId(userId);
+        userActivateUpdate.activate();
+
+        v3api.updatePersons(adminSessionToken, Arrays.asList(userActivateUpdate));
+
+        Person activatedUser = v3api.getPersons(adminSessionToken, Arrays.asList(userId), fetchOptions).get(userId);
+
+        assertEquals(activatedUser.isActive(), Boolean.TRUE);
+        assertEquals(activatedUser.getRoleAssignments().size(), 1);
+
+        String activatedUserSessionToken = v3api.login(userCreation.getUserId(), PASSWORD);
+        assertNotNull(activatedUserSessionToken);
+    }
+
+    @Test
     public void testUpdateWebApps()
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
 
         PersonPermId permId = createPersonToUpdate();
+
+        // Other tests use WEB_APP_1
+        PersonFetchOptions personFetchOptions = new PersonFetchOptions();
+        personFetchOptions.withWebAppSettings(WEB_APP_1).withAllSettings();
+        Person currentPerson = v3api.getPersons(sessionToken, Arrays.asList(permId), personFetchOptions).get(permId);
+        WebAppSettings currentWebApp1Settings = currentPerson.getWebAppSettings(WEB_APP_1);
+        int currentWebApp1Size = 0;
+        if (currentWebApp1Settings != null)
+        {
+            currentWebApp1Size = currentWebApp1Settings.getSettings().size();
+        }
+        //
 
         // 1st update
 
@@ -261,7 +357,7 @@ public class UpdatePersonTest extends AbstractTest
         assertEquals(person.getWebAppSettings().size(), 4);
 
         Map<String, WebAppSetting> webApp1 = person.getWebAppSettings(WEB_APP_1).getSettings();
-        assertEquals(webApp1.size(), 2);
+        assertEquals(webApp1.size(), 2 + currentWebApp1Size);
         assertEquals(webApp1.get("n1a").getValue(), "v1a");
         assertEquals(webApp1.get("n1b").getValue(), "v1b");
 
@@ -305,7 +401,7 @@ public class UpdatePersonTest extends AbstractTest
         assertEquals(person.getWebAppSettings().size(), 2);
 
         webApp1 = person.getWebAppSettings(WEB_APP_1).getSettings();
-        assertEquals(webApp1.size(), 2);
+        assertEquals(webApp1.size(), 2 + currentWebApp1Size);
         assertEquals(webApp1.get("n1a").getValue(), "v1a");
         assertEquals(webApp1.get("n1c").getValue(), "v1c");
 

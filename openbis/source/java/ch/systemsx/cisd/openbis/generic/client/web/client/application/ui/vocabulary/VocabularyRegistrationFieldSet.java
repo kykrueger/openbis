@@ -353,7 +353,7 @@ public final class VocabularyRegistrationFieldSet extends FieldSet
         {
             final TextArea textArea = new TextArea();
             final String fieldLabel = messageProvider.getMessage(Dict.VOCABULARY_TERMS);
-            VarcharField.configureField(textArea, fieldLabel, true);
+            VarcharField.configureField(textArea, fieldLabel, false);
             textArea.setHeight("10em");
             textArea.setId(idPrefix + "_terms");
             textArea.setEmptyText(messageProvider.getMessage(Dict.VOCABULARY_TERMS_EMPTY));

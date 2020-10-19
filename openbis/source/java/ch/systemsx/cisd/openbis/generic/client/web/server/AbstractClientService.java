@@ -161,8 +161,6 @@ public abstract class AbstractClientService implements IClientService,
     @Private
     public WebClientConfigurationProvider webClientConfigurationProvider;
 
-    private int maxResults;
-
     // This is to prevent infinite recursion when the commonClientService is actually a proxy to
     // myself.
     private int getApplicationInfoInvocationCount = 0;
@@ -257,11 +255,6 @@ public abstract class AbstractClientService implements IClientService,
                     throw new IllegalStateException("Data not found in the cache");
                 }
             };
-    }
-
-    public final void setMaxResults(String maxResults)
-    {
-        this.maxResults = Integer.parseInt(maxResults);
     }
 
     public final void setCifexURL(String cifexURL)
@@ -482,7 +475,6 @@ public abstract class AbstractClientService implements IClientService,
         {
             applicationInfo.setCifexURL(cifexURL);
             applicationInfo.setCifexRecipient(cifexRecipient);
-            applicationInfo.setMaxResults(maxResults);
             applicationInfo.setWebClientConfiguration(getWebClientConfiguration());
         } else
         {

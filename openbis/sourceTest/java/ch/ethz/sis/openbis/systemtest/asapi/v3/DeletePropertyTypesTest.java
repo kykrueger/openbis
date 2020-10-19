@@ -19,6 +19,7 @@ package ch.ethz.sis.openbis.systemtest.asapi.v3;
 import static org.testng.Assert.assertEquals;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import org.testng.annotations.DataProvider;
@@ -26,6 +27,7 @@ import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.create.PropertyTypeCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.delete.PropertyTypeDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.IPropertyTypeId;
@@ -37,6 +39,55 @@ import ch.systemsx.cisd.common.action.IDelegatedAction;
  */
 public class DeletePropertyTypesTest extends AbstractTest
 {
+
+    @DataProvider
+    private Object[][] providerTestDeleteAuthorization()
+    {
+        return new Object[][] {
+                { "NEW_NON_INTERNAL", SYSTEM_USER, SYSTEM_USER, null },
+                { "NEW_NON_INTERNAL", SYSTEM_USER, TEST_USER, null },
+                { "NEW_NON_INTERNAL", SYSTEM_USER, TEST_POWER_USER_CISD, "Access denied to object with PropertyTypePermId = [NEW_NON_INTERNAL]" },
+
+                { "NEW_NON_INTERNAL", TEST_USER, SYSTEM_USER, null },
+                { "NEW_NON_INTERNAL", TEST_USER, TEST_USER, null },
+                { "NEW_NON_INTERNAL", TEST_USER, TEST_POWER_USER_CISD, "Access denied to object with PropertyTypePermId = [NEW_NON_INTERNAL]" },
+
+                { "$NEW_INTERNAL", SYSTEM_USER, SYSTEM_USER, null },
+                { "$NEW_INTERNAL", SYSTEM_USER, TEST_USER, "Access denied to object with PropertyTypePermId = [$NEW_INTERNAL]" },
+                { "$NEW_INTERNAL", SYSTEM_USER, TEST_POWER_USER_CISD, "Access denied to object with PropertyTypePermId = [$NEW_INTERNAL]" },
+        };
+    }
+
+    @Test(dataProvider = "providerTestDeleteAuthorization")
+    public void testDeleteAuthorization(String propertyTypeCode, String propertyTypeRegistrator, String propertyTypeDeleter, String expectedError)
+    {
+        String registratorSessionToken =
+                propertyTypeRegistrator.equals(SYSTEM_USER) ? v3api.loginAsSystem() : v3api.login(propertyTypeRegistrator, PASSWORD);
+        String deleterSessionToken = propertyTypeDeleter.equals(SYSTEM_USER) ? v3api.loginAsSystem() : v3api.login(propertyTypeDeleter, PASSWORD);
+
+        PropertyTypeCreation creation = new PropertyTypeCreation();
+        creation.setCode(propertyTypeCode);
+        creation.setDataType(DataType.VARCHAR);
+        creation.setLabel("Test label");
+        creation.setDescription("Test description");
+        creation.setManagedInternally(propertyTypeCode.startsWith("$"));
+
+        List<PropertyTypePermId> ids = v3api.createPropertyTypes(registratorSessionToken, Arrays.asList(creation));
+        assertEquals(ids.size(), 1);
+
+        PropertyTypeDeletionOptions options = new PropertyTypeDeletionOptions();
+        options.setReason("testing");
+
+        assertExceptionMessage(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    v3api.deletePropertyTypes(deleterSessionToken, ids, options);
+                }
+            }, expectedError);
+    }
+
     @Test
     public void testDeletion()
     {
