@@ -1,3 +1,7 @@
+## Changes with pybis-1.16.1
+
+- new_dataset bugfix
+
 ## Changes with pybis-1.16.0
 
 - added support for batch creation of samples
