@@ -4127,11 +4127,11 @@ class Openbis:
         """ Creates a new dataset of a given type.
         """
 
-        type_obj = self.get_dataset_type(type.upper())
+        if type is None:
+            raise ValueError("Please provide a dataSet type")
+
         if isinstance(type, str):
             type_obj = self.get_dataset_type(type.upper())
-        if isinstance(type, None):
-            raise ValueError("Please provide a dataSet type")
         else:
             type_obj = type
 
