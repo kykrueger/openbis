@@ -2,7 +2,7 @@ apply from: '../gradle/javaproject.gradle'
 
 dependencies {
     compile 'apache:commons-io:2.6',
-            'apache:commons-lang3:3.7',
+            'apache:commons-lang3:3.11',
             'apache:commons-text:1.6',
 			'apache:log4j:1.2.15',
             'sis:sis-base:18.09.0',

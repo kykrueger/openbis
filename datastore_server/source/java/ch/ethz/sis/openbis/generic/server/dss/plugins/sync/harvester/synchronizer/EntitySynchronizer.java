@@ -1450,15 +1450,7 @@ public class EntitySynchronizer
             NewExperiment incomingExp = exp.getExperiment();
             if (exp.getLastModificationDate().after(lastSyncTimestamp))
             {
-                Experiment experiment = null;
-                try
-                {
-                    experiment = service.tryGetExperimentByPermId(incomingExp.getPermID());
-                } catch (Exception e)
-                {
-                    // doing nothing because when the experiment with the perm id not found
-                    // an exception will be thrown. Seems to be the same with entity kinds
-                }
+                Experiment experiment = service.tryGetExperiment(ExperimentIdentifierFactory.parse(incomingExp.getIdentifier()));
                 if (experiment == null)
                 {
                     // ADD EXPERIMENT
@@ -1524,15 +1516,7 @@ public class EntitySynchronizer
             NewProject incomingProject = prj.getProject();
             if (prj.getLastModificationDate().after(lastSyncTimestamp))
             {
-                Project project = null;
-                try
-                {
-                    project = service.tryGetProjectByPermId(incomingProject.getPermID());
-                } catch (Exception e)
-                {
-                    // TODO doing nothing because when the project with the perm is not found
-                    // an exception will be thrown. See bug report SSDM-4108
-                }
+                Project project = service.tryGetProject(ProjectIdentifierFactory.parse(incomingProject.getIdentifier()));
                 if (project == null)
                 {
                     // ADD PROJECT
@@ -1581,7 +1565,7 @@ public class EntitySynchronizer
             {
                 SampleIdentifier sampleIdentifier = SampleIdentifierFactory.parse(incomingSample);
                 ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample knownSample = null;
-                knownSample = knownSamples.get(incomingSample.getPermID());
+                knownSample = knownSamples.get(incomingSample.getIdentifier());
                 if (knownSample == null)
                 {
                     // ADD SAMPLE
@@ -1695,7 +1679,7 @@ public class EntitySynchronizer
         HashMap<String, ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample> result = new HashMap<>();
         for (ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample sample : samples.values())
         {
-            result.put(sample.getPermId().getPermId(), sample);
+            result.put(sample.getIdentifier().getIdentifier(), sample);
         }
         return result;
     }
