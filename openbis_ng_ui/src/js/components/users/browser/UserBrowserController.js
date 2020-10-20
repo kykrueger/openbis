@@ -27,7 +27,7 @@ export default class UserBrowserController extends BrowserController {
           text: user.userId,
           object: { type: objectType.USER, id: user.userId },
           canMatchFilter: true,
-          canRemove: true
+          canRemove: false
         }
       })
 
