@@ -1549,7 +1549,7 @@ public class EntitySynchronizer
     {
         // process samples
         Map<String, IncomingSample> samplesToProcess = data.getSamplesToProcess();
-        Map<String, ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample> knownSamples = getKnownSamples(samplesToProcess.keySet());
+        Map<String, ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample> knownSamples = getKnownSamples(samplesToProcess.values());
         Map<SampleIdentifier, NewSample> samplesToUpdate = new HashMap<SampleIdentifier, NewSample>();
         Set<String> sampleWithUpdatedParents = new HashSet<String>();
         int count = 0;
@@ -1631,7 +1631,7 @@ public class EntitySynchronizer
         for (SampleIdentifier sampleIdentifier : samplesToUpdate.keySet())
         {
             NewSample incomingSmp = samplesToUpdate.get(sampleIdentifier);
-            Sample sample = service.tryGetSampleByPermId(incomingSmp.getPermID());
+            Sample sample = service.tryGetSampleWithExperiment(SampleIdentifierFactory.parse(incomingSmp));
 
             TechId sampleId = TechId.create(sample);
             ExperimentIdentifier experimentIdentifier = getExperimentIdentifier(incomingSmp);
@@ -1669,10 +1669,12 @@ public class EntitySynchronizer
         throw new IllegalArgumentException("sample " + permId + " hasn't been provided by the data source.");
     }
 
-    private Map<String, ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample> getKnownSamples(Collection<String> samplePermIds)
+    private Map<String, ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample> getKnownSamples(Collection<IncomingSample> collection)
     {
         String sessionToken = service.getSessionToken();
-        List<SamplePermId> sampleIds = samplePermIds.stream().map(SamplePermId::new).collect(Collectors.toList());
+        List<ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier> sampleIds 
+            = collection.stream().map(s -> new ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier(s.getIdentifier()))
+                    .collect(Collectors.toList());
         SampleFetchOptions fetchOptions = new SampleFetchOptions();
         fetchOptions.withChildren();
         Map<ISampleId, ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample> samples = v3Api.getSamples(sessionToken, sampleIds, fetchOptions);
