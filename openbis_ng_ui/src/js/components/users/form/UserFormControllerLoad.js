@@ -48,7 +48,7 @@ export default class UserFormControllerLoad extends PageControllerLoad {
     const roles = []
 
     if (loadedUser) {
-      loadedUser.getRoleAssignments().forEach(loadedRole => {
+      loadedUser.roleAssignments.forEach(loadedRole => {
         const role = this._createRole(loadedRole)
         roles.push(role)
       })
@@ -59,8 +59,8 @@ export default class UserFormControllerLoad extends PageControllerLoad {
         const group = this._createGroup(loadedGroup)
         groups.push(group)
 
-        if (loadedGroup.getRoleAssignments()) {
-          loadedGroup.getRoleAssignments().forEach(loadedRole => {
+        if (loadedGroup.roleAssignments) {
+          loadedGroup.roleAssignments.forEach(loadedRole => {
             const role = this._createRole(loadedRole)
             roles.push(role)
           })

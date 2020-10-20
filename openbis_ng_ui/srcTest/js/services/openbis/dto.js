@@ -60,6 +60,7 @@ import PluginFetchOptions from 'as/dto/plugin/fetchoptions/PluginFetchOptions'
 import PluginPermId from 'as/dto/plugin/id/PluginPermId'
 import PluginSearchCriteria from 'as/dto/plugin/search/PluginSearchCriteria'
 import PluginType from 'as/dto/plugin/PluginType'
+import Project from 'as/dto/project/Project'
 import ProjectFetchOptions from 'as/dto/project/fetchoptions/ProjectFetchOptions'
 import ProjectIdentifier from 'as/dto/project/id/ProjectIdentifier'
 import ProjectSearchCriteria from 'as/dto/project/search/ProjectSearchCriteria'
@@ -76,6 +77,7 @@ import PropertyTypePermId from 'as/dto/property/id/PropertyTypePermId'
 import PropertyTypeSearchCriteria from 'as/dto/property/search/PropertyTypeSearchCriteria'
 import PropertyTypeUpdate from 'as/dto/property/update/PropertyTypeUpdate'
 import Role from 'as/dto/roleassignment/Role'
+import RoleAssignment from 'as/dto/roleassignment/RoleAssignment'
 import RoleAssignmentCreation from 'as/dto/roleassignment/create/RoleAssignmentCreation'
 import RoleAssignmentDeletionOptions from 'as/dto/roleassignment/delete/RoleAssignmentDeletionOptions'
 import RoleAssignmentTechId from 'as/dto/roleassignment/id/RoleAssignmentTechId'
@@ -93,6 +95,7 @@ import SearchExperimentsOperation from 'as/dto/experiment/search/SearchExperimen
 import SearchMaterialsOperation from 'as/dto/material/search/SearchMaterialsOperation'
 import SearchResult from 'as/dto/common/search/SearchResult'
 import SearchSamplesOperation from 'as/dto/sample/search/SearchSamplesOperation'
+import Space from 'as/dto/space/Space'
 import SpaceFetchOptions from 'as/dto/space/fetchoptions/SpaceFetchOptions'
 import SpacePermId from 'as/dto/space/id/SpacePermId'
 import SpaceSearchCriteria from 'as/dto/space/search/SpaceSearchCriteria'
@@ -185,6 +188,7 @@ const dto = {
   PluginPermId,
   PluginSearchCriteria,
   PluginType,
+  Project,
   ProjectFetchOptions,
   ProjectIdentifier,
   ProjectSearchCriteria,
@@ -201,6 +205,7 @@ const dto = {
   PropertyTypeSearchCriteria,
   PropertyTypeUpdate,
   Role,
+  RoleAssignment,
   RoleAssignmentCreation,
   RoleAssignmentDeletionOptions,
   RoleAssignmentTechId,
@@ -218,6 +223,7 @@ const dto = {
   SearchMaterialsOperation,
   SearchResult,
   SearchSamplesOperation,
+  Space,
   SpaceFetchOptions,
   SpacePermId,
   SpaceSearchCriteria,
