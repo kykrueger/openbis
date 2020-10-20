@@ -61,56 +61,17 @@ async function testLoadNew() {
 }
 
 async function testLoadExisting() {
-  const mySpace = new openbis.Space()
-  mySpace.setCode('my-space')
-
-  const testSpace = new openbis.Space()
-  testSpace.setCode('test-space')
-
-  const testProject = new openbis.Project()
-  testProject.setCode('test-project')
-  testProject.setSpace(testSpace)
-
-  const instanceObserverGroup = new openbis.AuthorizationGroup()
-  instanceObserverGroup.setCode('instance-observer-group')
-
-  const instanceObserverGroupAssignment = new openbis.RoleAssignment()
-  instanceObserverGroupAssignment.setRoleLevel(openbis.RoleLevel.INSTANCE)
-  instanceObserverGroupAssignment.setRole(openbis.Role.OBSERVER)
-
-  instanceObserverGroup.setRoleAssignments([instanceObserverGroupAssignment])
-  instanceObserverGroupAssignment.setAuthorizationGroup(instanceObserverGroup)
-
-  const testSpacePowerUserGroup = new openbis.AuthorizationGroup()
-  testSpacePowerUserGroup.setCode('test-space-power-user-group')
-
-  const testSpacePowerUserGroupAssignment = new openbis.RoleAssignment()
-  testSpacePowerUserGroupAssignment.setRoleLevel(openbis.RoleLevel.SPACE)
-  testSpacePowerUserGroupAssignment.setRole(openbis.Role.POWER_USER)
-  testSpacePowerUserGroupAssignment.setSpace(testSpace)
-
-  testSpacePowerUserGroup.setRoleAssignments([
-    testSpacePowerUserGroupAssignment
-  ])
-  testSpacePowerUserGroupAssignment.setAuthorizationGroup(
-    testSpacePowerUserGroup
-  )
-
-  const testProjectAdminGroup = new openbis.AuthorizationGroup()
-  testProjectAdminGroup.setCode('test-project-admin-group')
-
-  const testProjectAdminGroupAssignment = new openbis.RoleAssignment()
-  testProjectAdminGroupAssignment.setRoleLevel(openbis.RoleLevel.PROJECT)
-  testProjectAdminGroupAssignment.setRole(openbis.Role.ADMIN)
-  testProjectAdminGroupAssignment.setProject(testProject)
-
-  testProjectAdminGroup.setRoleAssignments([testProjectAdminGroupAssignment])
-  testProjectAdminGroupAssignment.setAuthorizationGroup(testProjectAdminGroup)
-
-  const mySpaceAdminAssignment = new openbis.RoleAssignment()
-  mySpaceAdminAssignment.setRoleLevel(openbis.RoleLevel.SPACE)
-  mySpaceAdminAssignment.setRole(openbis.Role.ADMIN)
-  mySpaceAdminAssignment.setSpace(mySpace)
+  const {
+    mySpace,
+    testSpace,
+    instanceObserverGroup,
+    instanceObserverGroupAssignment,
+    testSpacePowerUserGroup,
+    testSpacePowerUserGroupAssignment,
+    testProjectAdminGroup,
+    testProjectAdminGroupAssignment,
+    mySpaceAdminAssignment
+  } = common.getTestData()
 
   const user = new openbis.Person()
   user.setUserId('test-user')
@@ -119,6 +80,10 @@ async function testLoadExisting() {
   user.setSpace(mySpace)
   user.setActive(true)
   user.setRoleAssignments([mySpaceAdminAssignment])
+
+  common.facade.loadSpaces.mockReturnValue(
+    Promise.resolve([mySpace, testSpace])
+  )
 
   common.facade.loadUserGroups.mockReturnValue(
     Promise.resolve([
@@ -296,6 +261,68 @@ async function testLoadExisting() {
       remove: null,
       save: null,
       cancel: null,
+      message: null
+    }
+  })
+
+  form.getButtons().getEdit().click()
+  await form.update()
+
+  form.expectJSON({
+    groupsGrid: groupsGridJSON,
+    rolesGrid: rolesGridJSON,
+    parameters: {
+      user: {
+        title: 'User',
+        userId: {
+          label: 'User Id',
+          value: user.getUserId(),
+          mode: 'edit'
+        },
+        firstName: {
+          label: 'First Name',
+          value: user.getFirstName(),
+          mode: 'edit'
+        },
+        lastName: {
+          label: 'Last Name',
+          value: user.getLastName(),
+          mode: 'edit'
+        },
+        email: {
+          label: 'Email',
+          value: user.getEmail(),
+          mode: 'edit'
+        },
+        homeSpace: {
+          label: 'Home Space',
+          value: user.space.code,
+          mode: 'edit'
+        },
+        active: {
+          label: 'Active',
+          value: user.isActive(),
+          mode: 'edit'
+        }
+      }
+    },
+    buttons: {
+      addGroup: {
+        enabled: true
+      },
+      addRole: {
+        enabled: true
+      },
+      remove: {
+        enabled: false
+      },
+      save: {
+        enabled: true
+      },
+      cancel: {
+        enabled: true
+      },
+      edit: null,
       message: null
     }
   })

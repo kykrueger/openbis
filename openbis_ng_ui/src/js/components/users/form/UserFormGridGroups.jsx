@@ -37,14 +37,23 @@ class UserFormGridGroups extends React.PureComponent {
             label: 'Code',
             sort: 'asc',
             getValue: ({ row }) => row.code.value,
-            renderValue: ({ row }) => (
-              <LinkToObject
-                page={pages.USERS}
-                object={{ type: objectTypes.USER_GROUP, id: row.code.value }}
-              >
-                {row.code.value}
-              </LinkToObject>
-            )
+            renderValue: ({ value }) => {
+              if (value) {
+                return (
+                  <LinkToObject
+                    page={pages.USERS}
+                    object={{
+                      type: objectTypes.USER_GROUP,
+                      id: value
+                    }}
+                  >
+                    {value}
+                  </LinkToObject>
+                )
+              } else {
+                return ''
+              }
+            }
           },
           {
             name: 'description',
