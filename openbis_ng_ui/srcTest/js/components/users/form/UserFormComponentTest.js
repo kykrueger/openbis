@@ -47,6 +47,10 @@ export default class UserFormComponentTest extends ComponentTest {
     const mySpace = new openbis.Space()
     mySpace.setCode('my-space')
 
+    const myProject = new openbis.Project()
+    myProject.setCode('my-project')
+    myProject.setSpace(mySpace)
+
     const testSpace = new openbis.Space()
     testSpace.setCode('test-space')
 
@@ -95,6 +99,11 @@ export default class UserFormComponentTest extends ComponentTest {
     mySpaceAdminAssignment.setRole(openbis.Role.ADMIN)
     mySpaceAdminAssignment.setSpace(mySpace)
 
+    const myProjectAdminAssignment = new openbis.RoleAssignment()
+    myProjectAdminAssignment.setRoleLevel(openbis.RoleLevel.PROJECT)
+    myProjectAdminAssignment.setRole(openbis.Role.ADMIN)
+    myProjectAdminAssignment.setProject(myProject)
+
     return {
       mySpace,
       testSpace,
@@ -105,7 +114,8 @@ export default class UserFormComponentTest extends ComponentTest {
       testSpacePowerUserGroupAssignment,
       testProjectAdminGroup,
       testProjectAdminGroupAssignment,
-      mySpaceAdminAssignment
+      mySpaceAdminAssignment,
+      myProjectAdminAssignment
     }
   }
 }
