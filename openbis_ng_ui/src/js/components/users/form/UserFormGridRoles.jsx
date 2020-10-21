@@ -19,8 +19,7 @@ const styles = theme => ({
   }
 })
 
-const EMPTY_SPACE_VALUE = '(all)'
-const EMPTY_PROJECT_VALUE = '(all)'
+const ALL_VALUE = '(all)'
 
 class UserFormGridRoles extends React.PureComponent {
   constructor(props) {
@@ -47,37 +46,73 @@ class UserFormGridRoles extends React.PureComponent {
             name: 'inheritedFrom',
             label: 'Inherited From',
             sort: 'asc',
-            getValue: ({ row }) => row.inheritedFrom.value,
-            renderValue: this.renderInheritedFrom,
-            compareValue: this.compareInheritedFrom
+            getValue: this.getInheritedFromValue,
+            renderValue: this.renderInheritedFromValue,
+            compareValue: params => {
+              return (
+                10000 * this.compareInheritedFromValue(params) +
+                1000 * this.compareLevelValue(params) +
+                100 * this.compareSpaceValue(params) +
+                10 * this.compareProjectValue(params) +
+                this.compareRoleValue(params)
+              )
+            }
           },
           {
             name: 'level',
             label: 'Level',
-            getValue: ({ row }) => row.level.value,
-            renderValue: this.renderLevel,
-            compareValue: this.compareLevel
+            getValue: this.getLevelValue,
+            renderValue: this.renderLevelValue,
+            compareValue: params => {
+              return (
+                1000 * this.compareLevelValue(params) +
+                100 * this.compareSpaceValue(params) +
+                10 * this.compareProjectValue(params) +
+                this.compareRoleValue(params)
+              )
+            }
           },
           {
             name: 'space',
             label: 'Space',
-            getValue: ({ row }) => row.space.value || EMPTY_SPACE_VALUE,
-            renderValue: this.renderSpace,
-            compareValue: this.compareSpace
+            getValue: this.getSpaceValue,
+            renderValue: this.renderSpaceValue,
+            compareValue: params => {
+              return (
+                1000 * this.compareSpaceValue(params) +
+                100 * this.compareLevelValue(params) +
+                10 * this.compareProjectValue(params) +
+                this.compareRoleValue(params)
+              )
+            }
           },
           {
             name: 'project',
             label: 'Project',
-            getValue: ({ row }) => row.project.value || EMPTY_PROJECT_VALUE,
-            renderValue: this.renderProject,
-            compareValue: this.compareProject
+            getValue: this.getProjectValue,
+            renderValue: this.renderProjectValue,
+            compareValue: params => {
+              return (
+                1000 * this.compareProjectValue(params) +
+                100 * this.compareLevelValue(params) +
+                10 * this.compareSpaceValue(params) +
+                this.compareRoleValue(params)
+              )
+            }
           },
           {
             name: 'role',
             label: 'Role',
-            getValue: ({ row }) => row.role.value,
-            renderValue: this.renderRole,
-            compareValue: this.compareRole
+            getValue: this.getRoleValue,
+            renderValue: this.renderRoleValue,
+            compareValue: params => {
+              return (
+                1000 * this.compareRoleValue(params) +
+                100 * this.compareLevelValue(params) +
+                10 * this.compareSpaceValue(params) +
+                this.compareProjectValue(params)
+              )
+            }
           }
         ]}
         rows={rows}
@@ -87,7 +122,37 @@ class UserFormGridRoles extends React.PureComponent {
     )
   }
 
-  renderInheritedFrom({ value, row }) {
+  getInheritedFromValue({ row }) {
+    return row.inheritedFrom.value
+  }
+
+  getLevelValue({ row }) {
+    return row.level.value
+  }
+
+  getSpaceValue({ row }) {
+    if (row.level.value === openbis.RoleLevel.INSTANCE) {
+      return ALL_VALUE
+    } else {
+      return row.space.value
+    }
+  }
+
+  getProjectValue({ row }) {
+    if (row.level.value === openbis.RoleLevel.INSTANCE) {
+      return ALL_VALUE
+    } else if (row.level.value === openbis.RoleLevel.SPACE) {
+      return row.space.value ? ALL_VALUE : null
+    } else {
+      return row.project.value
+    }
+  }
+
+  getRoleValue({ row }) {
+    return row.role.value
+  }
+
+  renderInheritedFromValue({ value, row }) {
     if (value) {
       return this.renderDefault({
         value: (
@@ -108,15 +173,15 @@ class UserFormGridRoles extends React.PureComponent {
     }
   }
 
-  renderLevel({ value, row }) {
+  renderLevelValue({ value, row }) {
     return this.renderDefault({ value, row })
   }
 
-  renderSpace({ value, row }) {
-    if (!row.space.value) {
+  renderSpaceValue({ value, row }) {
+    if (!row.space.value && value) {
       return (
         <div className={this.props.classes.implicit}>
-          {this.renderDefault({ value: EMPTY_SPACE_VALUE, row })}
+          {this.renderDefault({ value, row })}
         </div>
       )
     } else {
@@ -124,11 +189,11 @@ class UserFormGridRoles extends React.PureComponent {
     }
   }
 
-  renderProject({ value, row }) {
-    if (!row.project.value) {
+  renderProjectValue({ value, row }) {
+    if (!row.project.value && value) {
       return (
         <div className={this.props.classes.implicit}>
-          {this.renderDefault({ value: EMPTY_PROJECT_VALUE, row })}
+          {this.renderDefault({ value, row })}
         </div>
       )
     } else {
@@ -136,7 +201,7 @@ class UserFormGridRoles extends React.PureComponent {
     }
   }
 
-  renderRole({ value, row }) {
+  renderRoleValue({ value, row }) {
     return this.renderDefault({ value, row })
   }
 
@@ -150,73 +215,56 @@ class UserFormGridRoles extends React.PureComponent {
     }
   }
 
-  compareInheritedFrom({ row1, row2, defaultCompare }) {
-    const inheritedFrom1 = row1.inheritedFrom.value
-    const inheritedFrom2 = row2.inheritedFrom.value
+  compareInheritedFromValue({ row1, row2, defaultCompare }) {
+    const inheritedFrom1 = this.getInheritedFromValue({ row: row1 })
+    const inheritedFrom2 = this.getInheritedFromValue({ row: row2 })
 
     if (inheritedFrom1 && !inheritedFrom2) {
       return -1
     } else if (!inheritedFrom1 && inheritedFrom2) {
       return 1
     } else {
-      return this.normalizeCompare(
-        10 * defaultCompare(inheritedFrom1, inheritedFrom2) +
-          this.compareLevel({ row1, row2, defaultCompare })
-      )
+      return defaultCompare(inheritedFrom1, inheritedFrom2)
     }
   }
 
-  compareLevel({ row1, row2, defaultCompare }) {
+  compareLevelValue({ row1, row2, defaultCompare }) {
     const LEVEL_SORTING = {
-      [openbis.RoleLevel.INSTANCE]: 0,
-      [openbis.RoleLevel.SPACE]: 1,
-      [openbis.RoleLevel.PROJECT]: 2
+      [null]: 0,
+      [openbis.RoleLevel.INSTANCE]: 1,
+      [openbis.RoleLevel.SPACE]: 2,
+      [openbis.RoleLevel.PROJECT]: 3
     }
-    const level1 = row1.level.value
-    const level2 = row2.level.value
-    return this.normalizeCompare(
-      10 * defaultCompare(LEVEL_SORTING[level1], LEVEL_SORTING[level2]) +
-        this.compareRole({ row1, row2, defaultCompare })
-    )
+    const level1 = this.getLevelValue({ row: row1 })
+    const level2 = this.getLevelValue({ row: row2 })
+    return defaultCompare(LEVEL_SORTING[level1], LEVEL_SORTING[level2])
   }
 
-  compareRole({ row1, row2, defaultCompare }) {
-    const ROLE_SORTING = {
-      [openbis.Role.ETL_SERVER]: 0,
-      [openbis.Role.ADMIN]: 1,
-      [openbis.Role.POWER_USER]: 2,
-      [openbis.Role.USER]: 3,
-      [openbis.Role.OBSERVER]: 4,
-      [openbis.Role.DISABLED]: 5
-    }
-    const role1 = row1.role.value
-    const role2 = row2.role.value
-    return defaultCompare(ROLE_SORTING[role1], ROLE_SORTING[role2])
+  compareSpaceValue({ row1, row2, defaultCompare }) {
+    const space1 = this.getSpaceValue({ row: row1 })
+    const space2 = this.getSpaceValue({ row: row2 })
+    return defaultCompare(space1, space2)
   }
 
-  compareSpace({ row1, row2, defaultCompare }) {
-    const space1 = row1.space.value
-    const space2 = row2.space.value
-    return this.normalizeCompare(
-      10 * defaultCompare(space1, space2) +
-        this.compareProject({ row1, row2, defaultCompare })
-    )
-  }
-
-  compareProject({ row1, row2, defaultCompare }) {
-    const project1 = row1.project.value
-    const project2 = row2.project.value
+  compareProjectValue({ row1, row2, defaultCompare }) {
+    const project1 = this.getProjectValue({ row: row1 })
+    const project2 = this.getProjectValue({ row: row2 })
     return defaultCompare(project1, project2)
   }
 
-  normalizeCompare(value) {
-    if (value > 0) {
-      return 1
-    } else if (value < 0) {
-      return -1
-    } else {
-      return 0
+  compareRoleValue({ row1, row2, defaultCompare }) {
+    const ROLE_SORTING = {
+      [null]: 0,
+      [openbis.Role.ETL_SERVER]: 1,
+      [openbis.Role.ADMIN]: 2,
+      [openbis.Role.POWER_USER]: 3,
+      [openbis.Role.USER]: 4,
+      [openbis.Role.OBSERVER]: 5,
+      [openbis.Role.DISABLED]: 6
     }
+    const role1 = this.getRoleValue({ row: row1 })
+    const role2 = this.getRoleValue({ row: row2 })
+    return defaultCompare(ROLE_SORTING[role1], ROLE_SORTING[role2])
   }
 }
 
