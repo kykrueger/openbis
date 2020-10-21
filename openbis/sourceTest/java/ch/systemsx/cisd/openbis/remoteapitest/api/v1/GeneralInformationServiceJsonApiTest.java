@@ -829,8 +829,8 @@ public class GeneralInformationServiceJsonApiTest extends RemoteApiTestCase
         assertEquals("Vocabulary[GENDER,{VocabularyTerm[MALE,MALE],VocabularyTerm[FEMALE,FEMALE]}]",
                 gender.toString());
         final Vocabulary human = findVocabulary(vocabularies, "HUMAN");
-        assertEquals("Vocabulary[HUMAN,[VocabularyTerm[MAN,MAN],VocabularyTerm[WOMAN,WOMAN],"
-                + "VocabularyTerm[CHILD,CHILD]]]",
+        assertEquals("Vocabulary[HUMAN,{VocabularyTerm[MAN,MAN],VocabularyTerm[WOMAN,WOMAN],"
+                + "VocabularyTerm[CHILD,CHILD]}]",
                 human.toString());
 
         Vocabulary organism = findVocabulary(vocabularies, "ORGANISM");

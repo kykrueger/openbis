@@ -85,7 +85,7 @@ public class GeneralInformationChangingServiceJsonApiTest extends RemoteApiTestC
 
         Vocabulary updatedVocabulary = fetchVocabularyFromServer(vocabularyCode);
 
-        assertEquals("Vocabulary[ORGANISM,{VocabularyTerm[RAT,RAT], VocabularyTerm[DOG,DOG],"
+        assertEquals("Vocabulary[ORGANISM,{VocabularyTerm[RAT,RAT],VocabularyTerm[DOG,DOG],"
                 + "VocabularyTerm[HUMAN,HUMAN],VocabularyTerm[GORILLA,GORILLA],"
                 + "VocabularyTerm[FLY,FLY],VocabularyTerm[ALIEN,Alien species]}]",
                 updatedVocabulary.toString());
