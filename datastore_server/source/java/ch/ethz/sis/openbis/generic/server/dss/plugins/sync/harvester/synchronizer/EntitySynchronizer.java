@@ -62,13 +62,17 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.DataSetUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.LinkedDataUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.id.IDeletionId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.delete.ExperimentDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.IExperimentId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.delete.MaterialDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.MaterialPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.create.PersonCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.fetchoptions.PersonFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.PersonPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.delete.ProjectDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.fetchoptions.ProjectFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.IProjectId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.delete.SampleDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
@@ -321,31 +325,68 @@ public class EntitySynchronizer
     private void updateProjects(Collection<IncomingProject> projects, IHarvesterQuery query,
             Map<String, Long> userTechIdsByUserId, Monitor monitor)
     {
+        Map<String, String> projectPermIdsByIdentifiers = getProjectPermIdsByIdentifiers(projects);
         if (config.isDryRun() == false)
         {
             List<RegistrationDTO> registrations = new ArrayList<>();
             for (IncomingProject incomingProject : projects)
             {
-                addRegistration(registrations, incomingProject.getPermID(), incomingProject, userTechIdsByUserId);
+                incomingProject.getIdentifier();
+                addRegistration(registrations,
+                        projectPermIdsByIdentifiers.get(incomingProject.getIdentifier()),
+                        incomingProject, userTechIdsByUserId);
             }
             query.updateProjectRegistrations(registrations);
         }
         SummaryUtils.printShortUpdatedSummary(operationLog, projects.size(), "projects");
     }
 
+    private Map<String, String> getProjectPermIdsByIdentifiers(Collection<IncomingProject> incomingProjects)
+    {
+        List<IProjectId> ids = incomingProjects.stream()
+                .map(p -> new ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier(p.getIdentifier()))
+                .collect(Collectors.toList());
+        Map<String, String> result = new HashMap<>();
+        Collection<ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project> projects =
+                v3Api.getProjects(service.getSessionToken(), ids, new ProjectFetchOptions()).values();
+        for (ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project project : projects)
+        {
+            result.put(project.getIdentifier().getIdentifier(), project.getPermId().getPermId());
+        }
+        return result;
+    }
+
     private void updateExperiments(Collection<IncomingExperiment> experiments, IHarvesterQuery query,
             Map<String, Long> userTechIdsByUserId, Monitor monitor)
     {
+        Map<String, String> experimentPermIdsByIdentifiers = getExperimentPermIdsByIdentifiers(experiments);
         if (config.isDryRun() == false)
         {
             List<RegistrationDTO> registrations = new ArrayList<>();
             for (IncomingExperiment incomingExperiment : experiments)
             {
-                addRegistration(registrations, incomingExperiment.getPermID(), incomingExperiment, userTechIdsByUserId);
+                addRegistration(registrations,
+                        experimentPermIdsByIdentifiers.get(incomingExperiment.getIdentifier()),
+                        incomingExperiment, userTechIdsByUserId);
             }
             query.updateExperimentRegistrations(registrations);
         }
         SummaryUtils.printShortUpdatedSummary(operationLog, experiments.size(), "experiments");
+    }
+
+    private Map<String, String> getExperimentPermIdsByIdentifiers(Collection<IncomingExperiment> incomingExperiments)
+    {
+        List<IExperimentId> ids = incomingExperiments.stream()
+                .map(e -> new ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier(e.getIdentifier()))
+                .collect(Collectors.toList());
+        Map<String, String> result = new HashMap<>();
+        Collection<ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment> experiments =
+                v3Api.getExperiments(service.getSessionToken(), ids, new ExperimentFetchOptions()).values();
+        for (ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment experiment : experiments)
+        {
+            result.put(experiment.getIdentifier().getIdentifier(), experiment.getPermId().getPermId());
+        }
+        return result;
     }
 
     private void updateSamples(Collection<IncomingSample> samples, IHarvesterQuery query,
@@ -364,12 +405,30 @@ public class EntitySynchronizer
                     @Override
                     public void execute(List<IncomingSample> samples)
                     {
+                        Map<String, String> permIdsByIdentifiers = getPermIdsByIdentifiers(samples);
                         List<RegistrationDTO> registrations = new ArrayList<>();
                         for (IncomingSample incomingSamples : samples)
                         {
-                            addRegistration(registrations, incomingSamples.getPermID(), incomingSamples, userTechIdsByUserId);
+                            addRegistration(registrations, permIdsByIdentifiers.get(
+                                    incomingSamples.getIdentifier()),
+                                    incomingSamples, userTechIdsByUserId);
                         }
                         query.updateSampleRegistrations(registrations);
+                    }
+
+                    private Map<String, String> getPermIdsByIdentifiers(Collection<IncomingSample> incomingSamples)
+                    {
+                        List<ISampleId> ids = incomingSamples.stream()
+                                .map(s -> new ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier(s.getIdentifier()))
+                                .collect(Collectors.toList());
+                        Map<String, String> result = new HashMap<>();
+                        Collection<ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample> samples =
+                                v3Api.getSamples(service.getSessionToken(), ids, new SampleFetchOptions()).values();
+                        for (ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample sample : samples)
+                        {
+                            result.put(sample.getIdentifier().getIdentifier(), sample.getPermId().getPermId());
+                        }
+                        return result;
                     }
 
                     @Override
@@ -1218,9 +1277,9 @@ public class EntitySynchronizer
         IEntityRetriever entityRetriever =
                 SkinnyEntityRetriever.createWithSessionToken(v3Api, sessionToken);
 
-        Set<String> incomingProjectPermIds = data.getProjectsToProcess().keySet();
-        Set<String> incomingExperimentPermIds = data.getExperimentsToProcess().keySet();
-        Set<String> incomingSamplePermIds = data.getSamplesToProcess().keySet();
+        Set<String> incomingProjectIdentifiers = getIdentifiers(data.getProjectsToProcess().values());
+        Set<String> incomingExperimentIdentifiers = getIdentifiers(data.getExperimentsToProcess().values());
+        Set<String> incomingSampledentifiers = getIdentifiers(data.getSamplesToProcess().values());
         Set<String> incomingDataSetCodes = data.getDataSetsToProcess().keySet();
         MultiKeyMap<String, IncomingMaterial> incomingMaterials = data.getMaterialsToProcess();
 
@@ -1245,7 +1304,7 @@ public class EntitySynchronizer
                 String typeCodeOrNull = entity.getTypeCodeOrNull();
                 if (entity.getEntityKind().equals(SyncEntityKind.PROJECT))
                 {
-                    if (incomingProjectPermIds.contains(permId) == false)
+                    if (incomingProjectIdentifiers.contains(identifier) == false)
                     {
                         ProjectPermId projectPermId = new ProjectPermId(permId);
                         projectsToDelete.put(projectPermId, identifier);
@@ -1253,7 +1312,7 @@ public class EntitySynchronizer
                 } else if (entity.getEntityKind().equals(SyncEntityKind.EXPERIMENT))
                 {
                     ExperimentPermId experimentPermId = new ExperimentPermId(permId);
-                    if (incomingExperimentPermIds.contains(permId) == false)
+                    if (incomingExperimentIdentifiers.contains(identifier) == false)
                     {
                         experimentsToDelete.put(experimentPermId, identifier);
                     } else
@@ -1267,7 +1326,7 @@ public class EntitySynchronizer
                 } else if (entity.getEntityKind().equals(SyncEntityKind.SAMPLE))
                 {
                     SamplePermId samplePermId = new SamplePermId(permId);
-                    if (incomingSamplePermIds.contains(permId) == false)
+                    if (incomingSampledentifiers.contains(identifier) == false)
                     {
                         samplesToDelete.put(samplePermId, identifier);
                     } else
@@ -1426,6 +1485,16 @@ public class EntitySynchronizer
             SegmentedStoreUtils.deleteDataSetInstantly(physicalDS.getCode(), datasetDir, new Log4jSimpleLogger(operationLog));
         }
         monitor.log();
+    }
+    
+    private Set<String> getIdentifiers(Collection<? extends IncomingEntity<?>> incomingEntities)
+    {
+        Set<String> identifiers = new HashSet<>();
+        for (IncomingEntity<?> incomingEntity : incomingEntities)
+        {
+            identifiers.add(incomingEntity.getIdentifier());
+        }
+        return identifiers;
     }
 
     private void verboseLogDeletions(Collection<String> identifiers, String entityKind)
@@ -1672,9 +1741,9 @@ public class EntitySynchronizer
     private Map<String, ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample> getKnownSamples(Collection<IncomingSample> collection)
     {
         String sessionToken = service.getSessionToken();
-        List<ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier> sampleIds 
-            = collection.stream().map(s -> new ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier(s.getIdentifier()))
-                    .collect(Collectors.toList());
+        List<ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier> sampleIds =
+                collection.stream().map(s -> new ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier(s.getIdentifier()))
+                        .collect(Collectors.toList());
         SampleFetchOptions fetchOptions = new SampleFetchOptions();
         fetchOptions.withChildren();
         Map<ISampleId, ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample> samples = v3Api.getSamples(sessionToken, sampleIds, fetchOptions);
