@@ -1,3 +1,7 @@
+## Changes with pybis-1.16.2
+
+- transaction.commit() now updates all added samples with their respective permIds
+
 ## Changes with pybis-1.16.1
 
 - new_dataset bugfix

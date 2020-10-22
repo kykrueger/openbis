@@ -107,7 +107,10 @@ class OpenBisObject():
         try:
             return self.data['permId']['permId']
         except Exception:
-            return ""
+            try:
+                return self.a.__dict__['_permId']['permId']
+            except Exception:
+                return ""
         
 
     def __getattr__(self, name):
@@ -282,6 +285,15 @@ class Transaction:
                     try:
                         resp = entity.openbis._post_request(entity.openbis.as_v3, batch_request)
                         if VERBOSE: print(f"{i+1} {entity_type}(s) {mode}d.")
+
+                        # mark every sample as not being new anymore
+                        # and add the permId attribute received by the response
+                        # we assume the response permIds are the same order as we sent them
+                        for i, resp_item in enumerate(resp):
+                            self.entities[entity_type][mode][i].a.__dict__['_is_new'] = False
+                            self.entities[entity_type][mode][i].a.__dict__['_permId'] = resp_item
+
+
                     except ValueError as err:
                         if VERBOSE: 
                             print(f"ERROR: {mode} of {i+1} {entity_type}(s) FAILED")
