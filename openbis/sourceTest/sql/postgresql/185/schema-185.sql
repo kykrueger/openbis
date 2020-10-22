@@ -1291,6 +1291,7 @@ CREATE TABLE data_set_properties (
     dase_frozen boolean_char DEFAULT false NOT NULL,
     samp_prop_id tech_id,
     tsvector_document tsvector NOT NULL,
+    is_unique boolean_char DEFAULT false NOT NULL,
     CONSTRAINT dspr_ck CHECK ((((value IS NOT NULL) AND (cvte_id IS NULL) AND (mate_prop_id IS NULL) AND (samp_prop_id IS NULL)) OR ((value IS NULL) AND (cvte_id IS NOT NULL) AND (mate_prop_id IS NULL) AND (samp_prop_id IS NULL)) OR ((value IS NULL) AND (cvte_id IS NULL) AND (mate_prop_id IS NOT NULL) AND (samp_prop_id IS NULL)) OR ((value IS NULL) AND (cvte_id IS NULL) AND (mate_prop_id IS NULL) AND (samp_prop_id IS NOT NULL))))
 );
 CREATE SEQUENCE data_set_property_id_seq
@@ -1358,7 +1359,8 @@ CREATE TABLE data_set_type_property_types (
     ordinal ordinal_int NOT NULL,
     script_id tech_id,
     is_shown_edit boolean_char DEFAULT true NOT NULL,
-    show_raw_value boolean_char DEFAULT false NOT NULL
+    show_raw_value boolean_char DEFAULT false NOT NULL,
+    is_unique boolean_char DEFAULT false NOT NULL
 );
 CREATE TABLE data_set_types (
     id tech_id NOT NULL,
@@ -1570,6 +1572,7 @@ CREATE TABLE experiment_properties (
     expe_frozen boolean_char DEFAULT false NOT NULL,
     samp_prop_id tech_id,
     tsvector_document tsvector NOT NULL,
+    is_unique boolean_char DEFAULT false NOT NULL,
     CONSTRAINT expr_ck CHECK ((((value IS NOT NULL) AND (cvte_id IS NULL) AND (mate_prop_id IS NULL) AND (samp_prop_id IS NULL)) OR ((value IS NULL) AND (cvte_id IS NOT NULL) AND (mate_prop_id IS NULL) AND (samp_prop_id IS NULL)) OR ((value IS NULL) AND (cvte_id IS NULL) AND (mate_prop_id IS NOT NULL) AND (samp_prop_id IS NULL)) OR ((value IS NULL) AND (cvte_id IS NULL) AND (mate_prop_id IS NULL) AND (samp_prop_id IS NOT NULL))))
 );
 CREATE SEQUENCE experiment_property_id_seq
@@ -1602,7 +1605,8 @@ CREATE TABLE experiment_type_property_types (
     ordinal ordinal_int NOT NULL,
     script_id tech_id,
     is_shown_edit boolean_char DEFAULT true NOT NULL,
-    show_raw_value boolean_char DEFAULT false NOT NULL
+    show_raw_value boolean_char DEFAULT false NOT NULL,
+    is_unique boolean_char DEFAULT false NOT NULL
 );
 CREATE TABLE experiment_types (
     id tech_id NOT NULL,
@@ -1778,6 +1782,7 @@ CREATE TABLE material_properties (
     mate_prop_id tech_id,
     pers_id_author tech_id NOT NULL,
     tsvector_document tsvector NOT NULL,
+    is_unique boolean_char DEFAULT false NOT NULL,
     CONSTRAINT mapr_ck CHECK ((((value IS NOT NULL) AND (cvte_id IS NULL) AND (mate_prop_id IS NULL)) OR ((value IS NULL) AND (cvte_id IS NOT NULL) AND (mate_prop_id IS NULL)) OR ((value IS NULL) AND (cvte_id IS NULL) AND (mate_prop_id IS NOT NULL))))
 );
 CREATE TABLE material_properties_history (
@@ -1816,7 +1821,8 @@ CREATE TABLE material_type_property_types (
     ordinal ordinal_int NOT NULL,
     script_id tech_id,
     is_shown_edit boolean_char DEFAULT true NOT NULL,
-    show_raw_value boolean_char DEFAULT false NOT NULL
+    show_raw_value boolean_char DEFAULT false NOT NULL,
+    is_unique boolean_char DEFAULT false NOT NULL
 );
 CREATE TABLE material_types (
     id tech_id NOT NULL,
@@ -2157,6 +2163,7 @@ CREATE TABLE sample_properties (
     samp_frozen boolean_char DEFAULT false NOT NULL,
     samp_prop_id tech_id,
     tsvector_document tsvector NOT NULL,
+    is_unique boolean_char DEFAULT false NOT NULL,
     CONSTRAINT sapr_ck CHECK ((((value IS NOT NULL) AND (cvte_id IS NULL) AND (mate_prop_id IS NULL) AND (samp_prop_id IS NULL)) OR ((value IS NULL) AND (cvte_id IS NOT NULL) AND (mate_prop_id IS NULL) AND (samp_prop_id IS NULL)) OR ((value IS NULL) AND (cvte_id IS NULL) AND (mate_prop_id IS NOT NULL) AND (samp_prop_id IS NULL)) OR ((value IS NULL) AND (cvte_id IS NULL) AND (mate_prop_id IS NULL) AND (samp_prop_id IS NOT NULL))))
 );
 CREATE SEQUENCE sample_property_id_seq
@@ -2225,7 +2232,8 @@ CREATE TABLE sample_type_property_types (
     ordinal ordinal_int NOT NULL,
     script_id tech_id,
     is_shown_edit boolean_char DEFAULT true NOT NULL,
-    show_raw_value boolean_char DEFAULT false NOT NULL
+    show_raw_value boolean_char DEFAULT false NOT NULL,
+    is_unique boolean_char DEFAULT false NOT NULL
 );
 CREATE TABLE sample_types (
     id tech_id NOT NULL,
@@ -2429,7 +2437,7 @@ SELECT pg_catalog.setval('project_relationships_history_id_seq', 1, false);
 SELECT pg_catalog.setval('property_type_id_seq', 28, true);
 SELECT pg_catalog.setval('query_id_seq', 1, false);
 SELECT pg_catalog.setval('relationship_type_id_seq', 3, true);
-SELECT pg_catalog.setval('role_assignment_id_seq', 30, true);
+SELECT pg_catalog.setval('role_assignment_id_seq', 29, true);
 SELECT pg_catalog.setval('sample_code_seq', 8, true);
 SELECT pg_catalog.setval('sample_id_seq', 1061, true);
 SELECT pg_catalog.setval('sample_property_id_seq', 55, true);
