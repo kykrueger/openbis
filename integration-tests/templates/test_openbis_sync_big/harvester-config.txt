@@ -12,7 +12,7 @@ data-source-auth-pass = admin
 #after switching on master data synchronization
 harvester-user = system
 harvester-pass = admin
-translate-using-data-source-alias = false
+translate-using-data-source-alias = true
 
 email-addresses = openbis@id.ethz.ch
 max-threads = 1

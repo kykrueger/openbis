@@ -219,10 +219,10 @@ public class ImageSizeFeedingMaintenanceTaskTest extends AssertJUnit
                 + "1 original image sizes and 1 thumbnail image sizes are added to the database.",
                 logRecorder.getLogContent());
         assertEquals(
-                "[ImgImageZoomLevelDTO{physicalDatasetPermId=ds2,isOriginal=true,"
-                        + "containerDatasetId=99715,rootPath=,width=144,height=89,colorDepth=8,fileType=<null>,id=0}, "
-                        + "ImgImageZoomLevelDTO{physicalDatasetPermId=ds3,isOriginal=false,"
-                        + "containerDatasetId=99716,rootPath=,width=21,height=34,colorDepth=24,fileType=<null>,id=0}]",
+                "[ImgImageZoomLevelDTO{colorDepth=8,containerDatasetId=99715,fileType=<null>,"
+                        + "height=89,isOriginal=true,physicalDatasetPermId=ds2,rootPath=,width=144,id=0}, "
+                        + "ImgImageZoomLevelDTO{colorDepth=24,containerDatasetId=99716,fileType=<null>,"
+                        + "height=34,isOriginal=false,physicalDatasetPermId=ds3,rootPath=,width=21,id=0}]",
                 zoomLevels.toString());
         context.assertIsSatisfied();
     }
@@ -259,8 +259,8 @@ public class ImageSizeFeedingMaintenanceTaskTest extends AssertJUnit
                 + "0 original image sizes and 0 thumbnail image sizes are added to the database.",
                 logRecorder.getLogContent());
         assertEquals(
-                "[ImgImageZoomLevelDTO{physicalDatasetPermId=ds2,isOriginal=true,"
-                        + "containerDatasetId=99715,rootPath=,width=1,height=2,colorDepth=16,fileType=<null>,id=0}]",
+                "[ImgImageZoomLevelDTO{colorDepth=16,containerDatasetId=99715,fileType=<null>,"
+                        + "height=2,isOriginal=true,physicalDatasetPermId=ds2,rootPath=,width=1,id=0}]",
                 zoomLevels.toString());
         context.assertIsSatisfied();
     }

@@ -156,8 +156,8 @@ public class TranslatorTest extends AssertJUnit
         ExperimentType translatedExperimentType =
                 Translator.translate(builder.getExperimentType(), vocabTerms);
 
-        assertEquals("ExperimentType[MY-EXP,<null>,[PropertyTypeGroup[<null>,"
-                + "[PropertyType[VARCHAR,NAME,Name,<null>,mandatory]]]]]",
+        assertEquals("ExperimentType[MY-EXP,<null>,{PropertyTypeGroup[<null>,"
+                + "{PropertyType[VARCHAR,NAME,Name,<null>,mandatory]}]}]",
                 translatedExperimentType.toString());
     }
 
@@ -183,15 +183,13 @@ public class TranslatorTest extends AssertJUnit
         ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.DataSetType translatedDataSetType =
                 Translator.translate(dataSetType, vocabTerms);
 
-        assertEquals("DataSetType[CODE,<null>,deletionDisallowed=false,"
-                + "mainDataSetPattern=<null>,mainDataSetPath=<null>,"
-                + "[PropertyTypeGroup[<null>,[PropertyType[VARCHAR,NAME,Name,<null>,optional]]], "
-                + "PropertyTypeGroup[A,[PropertyType[VARCHAR,CITY,City,<null>,optional]]], "
-                + "PropertyTypeGroup[<null>,["
-                + "ControlledVocabularyPropertyType[CONTROLLEDVOCABULARY,LEVEL,"
-                + "Level,<null>,mandatory,"
-                + "[ControlledVocabularyPropertyType.VocabularyTerm[HIGH,High]]]]], "
-                + "PropertyTypeGroup[A,[PropertyType[REAL,AGE,Age,<null>,optional]]]]]",
+        assertEquals("DataSetType[CODE,<null>,deletionDisallowed=false,mainDataSetPattern=<null>,"
+                + "mainDataSetPath=<null>,{PropertyTypeGroup[<null>,{PropertyType[VARCHAR,NAME,"
+                + "Name,<null>,optional]}],PropertyTypeGroup[A,{PropertyType[VARCHAR,CITY,City,"
+                + "<null>,optional]}],PropertyTypeGroup[<null>,"
+                + "{ControlledVocabularyPropertyType[CONTROLLEDVOCABULARY,LEVEL,Level,<null>,"
+                + "mandatory,{ControlledVocabularyPropertyType.VocabularyTerm[HIGH,High]}]}],"
+                + "PropertyTypeGroup[A,{PropertyType[REAL,AGE,Age,<null>,optional]}]}]",
                 translatedDataSetType.toString());
     }
 
@@ -209,9 +207,8 @@ public class TranslatorTest extends AssertJUnit
         ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.DataSetType translatedDataSetType =
                 Translator.translate(builder.getDataSetType(), vocabTerms);
 
-        assertEquals("DataSetType[CODE,hello,deletionDisallowed=true,"
-                + "mainDataSetPattern=.*,mainDataSetPath=/here,"
-                + "[PropertyTypeGroup[A,[PropertyType[VARCHAR,NAME,Name,<null>,optional]]]]]",
+        assertEquals("DataSetType[CODE,hello,deletionDisallowed=true,mainDataSetPattern=.*,mainDataSetPath=/here,"
+                + "{PropertyTypeGroup[A,{PropertyType[VARCHAR,NAME,Name,<null>,optional]}]}]",
                 translatedDataSetType.toString());
     }
 
@@ -234,13 +231,12 @@ public class TranslatorTest extends AssertJUnit
         ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SampleType translatedSampleType =
                 Translator.translate(dataSetType, vocabTerms);
 
-        assertEquals(
-                "SampleType[CODE,test type,ValidationPluginInfo[test,Testing],"
-                        + "listable=true,showContainer=true,showParents=true,showParentMetaData=true,"
-                        + "uniqueSubcodes=true,automaticCodeGeneration=true,codePrefix=S-,"
-                        + "[PropertyTypeGroup[A,[PropertyType[VARCHAR,NAME,Name,<null>,optional],"
-                        + " PropertyType[VARCHAR,CITY,City,<null>,optional]]],"
-                        + " PropertyTypeGroup[<null>,[PropertyType[TIMESTAMP,TIMESTAMP,Timestamp,<null>,optional]]]]]",
+        assertEquals("SampleType[CODE,test type,ValidationPluginInfo[test,Testing],listable=true,"
+                + "showContainer=true,showParents=true,showParentMetaData=true,uniqueSubcodes=true,"
+                + "automaticCodeGeneration=true,codePrefix=S-,{PropertyTypeGroup[A,"
+                + "{PropertyType[VARCHAR,NAME,Name,<null>,optional],PropertyType[VARCHAR,CITY,"
+                + "City,<null>,optional]}],PropertyTypeGroup[<null>,{PropertyType[TIMESTAMP,"
+                + "TIMESTAMP,Timestamp,<null>,optional]}]}]",
                 translatedSampleType.toString());
     }
 
@@ -273,10 +269,10 @@ public class TranslatorTest extends AssertJUnit
         ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SampleType translatedSampleType =
                 Translator.translate(dataSetType, vocabTerms);
 
-        assertEquals("SampleType[CODE,<null>,<null>,"
-                + "listable=false,showContainer=false,showParents=false,showParentMetaData=false,"
-                + "uniqueSubcodes=false,automaticCodeGeneration=false,codePrefix=<null>,"
-                + "[PropertyTypeGroup[<null>,[PropertyType[VARCHAR,NAME,Name,<null>,optional]]]]]",
+        assertEquals("SampleType[CODE,<null>,<null>,listable=false,showContainer=false,showParents=false,"
+                + "showParentMetaData=false,uniqueSubcodes=false,automaticCodeGeneration=false,"
+                + "codePrefix=<null>,{PropertyTypeGroup[<null>,{PropertyType[VARCHAR,NAME,Name,"
+                + "<null>,optional]}]}]",
                 translatedSampleType.toString());
     }
 

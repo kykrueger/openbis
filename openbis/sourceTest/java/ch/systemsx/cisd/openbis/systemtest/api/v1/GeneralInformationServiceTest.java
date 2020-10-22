@@ -543,9 +543,8 @@ public class GeneralInformationServiceTest extends SystemTestCase
                 generalInformationService.searchForSamples(sessionToken, searchCriteria,
                         EnumSet.of(SampleFetchOption.DESCENDANTS));
         Collections.sort(samples, SAMPLE_COMPARATOR);
-        assertEquals("Sample[/CISD/3V-126,DILUTION_PLATE,properties=?,parents=?,"
-                + "children=[Sample[/TEST-SPACE/S1,NORMAL,properties=?,parents=?,"
-                + "children=[]]]]", samples.get(1).toString());
+        assertEquals("Sample[/CISD/3V-126,DILUTION_PLATE,properties=?,parents=?,children={Sample[/TEST-SPACE/S1,"
+                + "NORMAL,properties=?,parents=?,children=[]]}]", samples.get(1).toString());
         assertEquals(8, samples.size());
         sessionToken = generalInformationService.tryToAuthenticateForAllServices("test_role", "a");
 
@@ -578,9 +577,8 @@ public class GeneralInformationServiceTest extends SystemTestCase
                 generalInformationService.searchForSamples(sessionToken, searchCriteria,
                         EnumSet.of(SampleFetchOption.DESCENDANTS));
         Collections.sort(samples, SAMPLE_COMPARATOR);
-        assertEquals("Sample[/CISD/3V-126,DILUTION_PLATE,properties=?,parents=?,"
-                + "children=[Sample[/TEST-SPACE/S1,NORMAL,properties=?,parents=?,"
-                + "children=[]]]]", samples.get(1).toString());
+        assertEquals("Sample[/CISD/3V-126,DILUTION_PLATE,properties=?,parents=?,children={Sample[/TEST-SPACE/S1,"
+                + "NORMAL,properties=?,parents=?,children=[]]}]", samples.get(1).toString());
         assertEquals(8, samples.size());
 
         samples =
@@ -1582,19 +1580,19 @@ public class GeneralInformationServiceTest extends SystemTestCase
                 "[DataSet[20110509092359990-11,/CISD/DEFAULT/EXP-REUSE,<null>,HCS_IMAGE,{COMMENT=non-virtual comment}], DataSet[20110509092359990-12,/CISD/DEFAULT/EXP-REUSE,<null>,HCS_IMAGE,{COMMENT=non-virtual comment}]]",
                 dataSets.toString());
     }
-    
-//    TODO: searching by  tags is not supported yet because they are private information for the users who made a tag.
-//    @Test
-//    public void testSearchForDataSetsByAnyFieldMatchingAttribute()
-//    {
-//        SearchCriteria searchCriteria = new SearchCriteria();
-//        searchCriteria.addMatchClause(MatchClause.createAnyFieldMatch("TEST_METAPROJECTS"));
-//        List<DataSet> dataSets =
-//                generalInformationService.searchForDataSets(sessionToken, searchCriteria);
-//        assertEquals(
-//                "[DataSet[20120619092259000-22,/TEST-SPACE/TEST-PROJECT/EXP-SPACE-TEST,<null>,HCS_IMAGE,{COMMENT=co comment}]]",
-//                dataSets.toString());
-//    }
+
+    // TODO: searching by tags is not supported yet because they are private information for the users who made a tag.
+    // @Test
+    // public void testSearchForDataSetsByAnyFieldMatchingAttribute()
+    // {
+    // SearchCriteria searchCriteria = new SearchCriteria();
+    // searchCriteria.addMatchClause(MatchClause.createAnyFieldMatch("TEST_METAPROJECTS"));
+    // List<DataSet> dataSets =
+    // generalInformationService.searchForDataSets(sessionToken, searchCriteria);
+    // assertEquals(
+    // "[DataSet[20120619092259000-22,/TEST-SPACE/TEST-PROJECT/EXP-SPACE-TEST,<null>,HCS_IMAGE,{COMMENT=co comment}]]",
+    // dataSets.toString());
+    // }
 
     @Test
     public void testSearchForDataSetsByAnyProperty()
@@ -1880,19 +1878,25 @@ public class GeneralInformationServiceTest extends SystemTestCase
     private Person getPerson(String userId)
     {
         List<Person> persons = generalInformationService.listPersons(sessionToken);
-        for(Person person:persons) {
-            if(person.getUserId().equals(userId)) {
+        for (Person person : persons)
+        {
+            if (person.getUserId().equals(userId))
+            {
                 return person;
             }
         }
         return null;
     }
 
-    private boolean contains(List<Experiment> experiments, List<String> experimentIdentifiers) {
+    private boolean contains(List<Experiment> experiments, List<String> experimentIdentifiers)
+    {
         int found = 0;
-        for (String experimentIdentifier : experimentIdentifiers) {
-            for (Experiment experiment : experiments) {
-                if (experiment.getIdentifier().equals(experimentIdentifier)) {
+        for (String experimentIdentifier : experimentIdentifiers)
+        {
+            for (Experiment experiment : experiments)
+            {
+                if (experiment.getIdentifier().equals(experimentIdentifier))
+                {
                     found++;
                 }
             }
@@ -1919,7 +1923,8 @@ public class GeneralInformationServiceTest extends SystemTestCase
         String userId = "test_role";
         Person person = getPerson(userId);
         SearchCriteria searchCriteria = new SearchCriteria();
-        searchCriteria.addMatchClause(MatchClause.createAttributeMatch(MatchClauseAttribute.MODIFIER_FIRST_NAME, "\"" + person.getFirstName() + "\""));
+        searchCriteria
+                .addMatchClause(MatchClause.createAttributeMatch(MatchClauseAttribute.MODIFIER_FIRST_NAME, "\"" + person.getFirstName() + "\""));
 
         List<Experiment> experiments =
                 generalInformationService.searchForExperiments(sessionToken, searchCriteria);
@@ -1985,10 +1990,10 @@ public class GeneralInformationServiceTest extends SystemTestCase
             });
 
         assertEquals("ExperimentType[COMPOUND_HCS,Compound High Content Screening,"
-                + "[PropertyTypeGroup[<null>,["
-                + "PropertyType[VARCHAR,DESCRIPTION,Description,A Description,mandatory], "
-                + "PropertyType[VARCHAR,COMMENT,Comment,Any other comments,optional], "
-                + "PropertyType[MATERIAL,ANY_MATERIAL,any_material,any_material,optional]]]]]",
+                + "{PropertyTypeGroup[<null>,{PropertyType[VARCHAR,DESCRIPTION,Description,"
+                + "A Description,mandatory],PropertyType[VARCHAR,COMMENT,Comment,"
+                + "Any other comments,optional],PropertyType[MATERIAL,ANY_MATERIAL,"
+                + "any_material,any_material,optional]}]}]",
                 experimentTypes.get(0).toString());
         assertEquals(3, experimentTypes.size());
     }
@@ -2047,11 +2052,10 @@ public class GeneralInformationServiceTest extends SystemTestCase
                 + "listable=false,showContainer=true,showParents=false,showParentMetaData=false,"
                 + "uniqueSubcodes=false,automaticCodeGeneration=false,codePrefix=S,[]]",
                 pick(types, "WELL").toString());
-        assertEquals("SampleType[DILUTION_PLATE,Dilution Plate,<null>,"
-                + "listable=true,showContainer=false,showParents=true,showParentMetaData=false,"
-                + "uniqueSubcodes=false,automaticCodeGeneration=false,codePrefix=S,"
-                + "[PropertyTypeGroup[<null>,[PropertyType[INTEGER,OFFSET,Offset,"
-                + "Offset from the start of the sequence,optional]]]]]",
+        assertEquals("SampleType[DILUTION_PLATE,Dilution Plate,<null>,listable=true,showContainer=false,"
+                + "showParents=true,showParentMetaData=false,uniqueSubcodes=false,"
+                + "automaticCodeGeneration=false,codePrefix=S,{PropertyTypeGroup[<null>,"
+                + "{PropertyType[INTEGER,OFFSET,Offset,Offset from the start of the sequence,optional]}]}]",
                 pick(types, "DILUTION_PLATE").toString());
         assertEquals(12, types.size());
     }
@@ -2990,7 +2994,8 @@ public class GeneralInformationServiceTest extends SystemTestCase
                 generalInformationService.getMetaprojectOnBehalfOfUser(sessionToken,
                         new MetaprojectTechIdId(metaProjects.get(1).getId()), "test");
         assertEquals("[MaterialIdentifier [materialCode=AD3, "
-                + "materialTypeIdentifier=MaterialTypeIdentifier [materialTypeCode=VIRUS]]]", mas
+                + "materialTypeIdentifier=MaterialTypeIdentifier [materialTypeCode=VIRUS]]]",
+                mas
                         .getMaterials().toString());
         assertEntities("[/CISD/NEMO/EXP11, /TEST-SPACE/TEST-PROJECT/EXP-SPACE-TEST]",
                 mas.getExperiments());
