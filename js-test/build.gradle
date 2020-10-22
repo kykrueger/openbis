@@ -42,7 +42,7 @@ dependencies {
 
 	testCompile project(path: ':ui-test', configuration: 'tests')
 	
-	testRuntimeFirst 'javax:servlet-api:3.1.0', 'reflections:reflections:0.9.10', 'apache:commons-lang3:3.11'
+	testRuntimeFirst 'javax:servlet-api:3.1.0', 'reflections:reflections:0.9.10', 'apache:commons-lang3:3.7'
 	
 	testRuntimeSecond 'google:gwt-user:2.4'
 
