@@ -10,6 +10,18 @@ beforeEach(() => {
 
 describe(UserFormComponentTest.SUITE, () => {
   test('select role', testSelectRole)
+  test('select instance role', () => {
+    testSelectInstanceRole(true)
+    testSelectInstanceRole(false)
+  })
+  test('select space role', () => {
+    testSelectSpaceRole(true)
+    testSelectSpaceRole(false)
+  })
+  test('select project role', () => {
+    testSelectProjectRole(true)
+    testSelectProjectRole(false)
+  })
 })
 
 async function testSelectRole() {
@@ -161,6 +173,210 @@ async function testSelectRole() {
         role: {
           label: 'Role',
           value: mySpaceAdminAssignment.getRole(),
+          mode: 'edit'
+        }
+      }
+    }
+  })
+}
+
+async function testSelectInstanceRole(inherited) {
+  const {
+    instanceObserverGroupAssignment,
+    instanceAdminAssignment
+  } = common.getTestData()
+
+  const userAssignment = inherited
+    ? instanceObserverGroupAssignment
+    : instanceAdminAssignment
+
+  const user = new openbis.Person()
+  user.setUserId('test-user')
+  user.setRoleAssignments([userAssignment])
+
+  common.facade.loadUserGroups.mockReturnValue(Promise.resolve([]))
+
+  const form = await common.mountExisting(user)
+
+  form.getButtons().getEdit().click()
+  await form.update()
+
+  form.getRolesGrid().getRows()[0].click()
+  await form.update()
+
+  form.expectJSON({
+    rolesGrid: {
+      rows: [
+        {
+          values: {
+            inheritedFrom: userAssignment.authorizationGroup
+              ? userAssignment.authorizationGroup.code
+              : null,
+            level: userAssignment.getRoleLevel(),
+            space: '(all)',
+            project: '(all)',
+            role: userAssignment.getRole()
+          },
+          selected: true
+        }
+      ]
+    },
+    parameters: {
+      role: {
+        title: 'Role',
+        level: {
+          label: 'Level',
+          value: userAssignment.getRoleLevel(),
+          enabled: !userAssignment.authorizationGroup,
+          mode: 'edit'
+        },
+        space: null,
+        project: null,
+        role: {
+          label: 'Role',
+          value: userAssignment.getRole(),
+          enabled: !userAssignment.authorizationGroup,
+          mode: 'edit'
+        }
+      }
+    }
+  })
+}
+
+async function testSelectSpaceRole(inherited) {
+  const {
+    testSpacePowerUserGroupAssignment,
+    mySpaceAdminAssignment
+  } = common.getTestData()
+
+  const userAssignment = inherited
+    ? testSpacePowerUserGroupAssignment
+    : mySpaceAdminAssignment
+
+  const user = new openbis.Person()
+  user.setUserId('test-user')
+  user.setRoleAssignments([userAssignment])
+
+  common.facade.loadUserGroups.mockReturnValue(Promise.resolve([]))
+
+  const form = await common.mountExisting(user)
+
+  form.getButtons().getEdit().click()
+  await form.update()
+
+  form.getRolesGrid().getRows()[0].click()
+  await form.update()
+
+  form.expectJSON({
+    rolesGrid: {
+      rows: [
+        {
+          values: {
+            inheritedFrom: userAssignment.authorizationGroup
+              ? userAssignment.authorizationGroup.code
+              : null,
+            level: userAssignment.getRoleLevel(),
+            space: userAssignment.space.code,
+            project: '(all)',
+            role: userAssignment.getRole()
+          },
+          selected: true
+        }
+      ]
+    },
+    parameters: {
+      role: {
+        title: 'Role',
+        level: {
+          label: 'Level',
+          value: userAssignment.getRoleLevel(),
+          enabled: !userAssignment.authorizationGroup,
+          mode: 'edit'
+        },
+        space: {
+          label: 'Space',
+          value: userAssignment.space.code,
+          enabled: !userAssignment.authorizationGroup,
+          mode: 'edit'
+        },
+        project: null,
+        role: {
+          label: 'Role',
+          value: userAssignment.getRole(),
+          enabled: !userAssignment.authorizationGroup,
+          mode: 'edit'
+        }
+      }
+    }
+  })
+}
+
+async function testSelectProjectRole(inherited) {
+  const {
+    testProjectAdminGroupAssignment,
+    myProjectAdminAssignment
+  } = common.getTestData()
+
+  const userAssignment = inherited
+    ? testProjectAdminGroupAssignment
+    : myProjectAdminAssignment
+
+  const user = new openbis.Person()
+  user.setUserId('test-user')
+  user.setRoleAssignments([userAssignment])
+
+  common.facade.loadUserGroups.mockReturnValue(Promise.resolve([]))
+
+  const form = await common.mountExisting(user)
+
+  form.getButtons().getEdit().click()
+  await form.update()
+
+  form.getRolesGrid().getRows()[0].click()
+  await form.update()
+
+  form.expectJSON({
+    rolesGrid: {
+      rows: [
+        {
+          values: {
+            inheritedFrom: userAssignment.authorizationGroup
+              ? userAssignment.authorizationGroup.code
+              : null,
+            level: userAssignment.getRoleLevel(),
+            space: userAssignment.project.space.code,
+            project: userAssignment.project.code,
+            role: userAssignment.getRole()
+          },
+          selected: true
+        }
+      ]
+    },
+    parameters: {
+      role: {
+        title: 'Role',
+        level: {
+          label: 'Level',
+          value: userAssignment.getRoleLevel(),
+          enabled: !userAssignment.authorizationGroup,
+          mode: 'edit'
+        },
+        space: {
+          label: 'Space',
+          value: userAssignment.project.space.code,
+          enabled: !userAssignment.authorizationGroup,
+          mode: 'edit'
+        },
+        project: {
+          label: 'Project',
+          value: userAssignment.project.code,
+          enabled: !userAssignment.authorizationGroup,
+          mode: 'edit'
+        },
+        role: {
+          label: 'Role',
+          value: userAssignment.getRole(),
+          enabled: !userAssignment.authorizationGroup,
           mode: 'edit'
         }
       }
