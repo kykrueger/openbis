@@ -797,6 +797,7 @@ class Openbis:
             'new_collection_type()',
             'new_material_type()',
             'new_semantic_annotation()',
+            'new_transaction()',
             'update_sample()',
             'update_object()', 
         ]
