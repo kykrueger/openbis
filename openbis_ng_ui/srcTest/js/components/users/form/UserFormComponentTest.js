@@ -95,7 +95,7 @@ export default class UserFormComponentTest extends ComponentTest {
     testProjectAdminGroupAssignment.setAuthorizationGroup(testProjectAdminGroup)
 
     const instanceAdminAssignment = new openbis.RoleAssignment()
-    instanceAdminAssignment.setRole(openbis.RoleLevel.INSTANCE)
+    instanceAdminAssignment.setRoleLevel(openbis.RoleLevel.INSTANCE)
     instanceAdminAssignment.setRole(openbis.Role.ADMIN)
 
     const mySpaceAdminAssignment = new openbis.RoleAssignment()
@@ -110,6 +110,7 @@ export default class UserFormComponentTest extends ComponentTest {
 
     return {
       mySpace,
+      myProject,
       testSpace,
       testProject,
       instanceObserverGroup,
