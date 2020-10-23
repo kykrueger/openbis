@@ -209,7 +209,7 @@ async function testSelectInstanceRole(inherited) {
       rows: [
         {
           values: {
-            inheritedFrom: userAssignment.authorizationGroup
+            inheritedFrom: inherited
               ? userAssignment.authorizationGroup.code
               : null,
             level: userAssignment.getRoleLevel(),
@@ -227,7 +227,7 @@ async function testSelectInstanceRole(inherited) {
         level: {
           label: 'Level',
           value: userAssignment.getRoleLevel(),
-          enabled: !userAssignment.authorizationGroup,
+          enabled: !inherited,
           mode: 'edit'
         },
         space: null,
@@ -235,9 +235,14 @@ async function testSelectInstanceRole(inherited) {
         role: {
           label: 'Role',
           value: userAssignment.getRole(),
-          enabled: !userAssignment.authorizationGroup,
+          enabled: !inherited,
           mode: 'edit'
         }
+      }
+    },
+    buttons: {
+      remove: {
+        enabled: !inherited
       }
     }
   })
@@ -272,7 +277,7 @@ async function testSelectSpaceRole(inherited) {
       rows: [
         {
           values: {
-            inheritedFrom: userAssignment.authorizationGroup
+            inheritedFrom: inherited
               ? userAssignment.authorizationGroup.code
               : null,
             level: userAssignment.getRoleLevel(),
@@ -290,22 +295,27 @@ async function testSelectSpaceRole(inherited) {
         level: {
           label: 'Level',
           value: userAssignment.getRoleLevel(),
-          enabled: !userAssignment.authorizationGroup,
+          enabled: !inherited,
           mode: 'edit'
         },
         space: {
           label: 'Space',
           value: userAssignment.space.code,
-          enabled: !userAssignment.authorizationGroup,
+          enabled: !inherited,
           mode: 'edit'
         },
         project: null,
         role: {
           label: 'Role',
           value: userAssignment.getRole(),
-          enabled: !userAssignment.authorizationGroup,
+          enabled: !inherited,
           mode: 'edit'
         }
+      }
+    },
+    buttons: {
+      remove: {
+        enabled: !inherited
       }
     }
   })
@@ -340,7 +350,7 @@ async function testSelectProjectRole(inherited) {
       rows: [
         {
           values: {
-            inheritedFrom: userAssignment.authorizationGroup
+            inheritedFrom: inherited
               ? userAssignment.authorizationGroup.code
               : null,
             level: userAssignment.getRoleLevel(),
@@ -358,27 +368,32 @@ async function testSelectProjectRole(inherited) {
         level: {
           label: 'Level',
           value: userAssignment.getRoleLevel(),
-          enabled: !userAssignment.authorizationGroup,
+          enabled: !inherited,
           mode: 'edit'
         },
         space: {
           label: 'Space',
           value: userAssignment.project.space.code,
-          enabled: !userAssignment.authorizationGroup,
+          enabled: !inherited,
           mode: 'edit'
         },
         project: {
           label: 'Project',
           value: userAssignment.project.code,
-          enabled: !userAssignment.authorizationGroup,
+          enabled: !inherited,
           mode: 'edit'
         },
         role: {
           label: 'Role',
           value: userAssignment.getRole(),
-          enabled: !userAssignment.authorizationGroup,
+          enabled: !inherited,
           mode: 'edit'
         }
+      }
+    },
+    buttons: {
+      remove: {
+        enabled: !inherited
       }
     }
   })
