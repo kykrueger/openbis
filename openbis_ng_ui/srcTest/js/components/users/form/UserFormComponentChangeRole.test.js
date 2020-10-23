@@ -1,4 +1,5 @@
 import UserFormComponentTest from '@srcTest/js/components/users/form/UserFormComponentTest.js'
+import UserFormTestData from '@srcTest/js/components/users/form/UserFormTestData.js'
 import openbis from '@srcTest/js/services/openbis.js'
 
 let common = null
@@ -13,7 +14,7 @@ describe(UserFormComponentTest.SUITE, () => {
 })
 
 async function testChangeRole() {
-  const { mySpace, myProject, instanceAdminAssignment } = common.getTestData()
+  const { mySpace, myProject, instanceAdminAssignment } = UserFormTestData
 
   const user = new openbis.Person()
   user.setUserId('test-user')

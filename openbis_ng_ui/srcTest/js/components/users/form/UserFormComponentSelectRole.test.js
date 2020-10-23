@@ -1,4 +1,5 @@
 import UserFormComponentTest from '@srcTest/js/components/users/form/UserFormComponentTest.js'
+import UserFormTestData from '@srcTest/js/components/users/form/UserFormTestData.js'
 import openbis from '@srcTest/js/services/openbis.js'
 
 let common = null
@@ -29,7 +30,7 @@ async function testSelectRole() {
     mySpace,
     mySpaceAdminAssignment,
     myProjectAdminAssignment
-  } = common.getTestData()
+  } = UserFormTestData
 
   const user = new openbis.Person()
   user.setUserId('test-user')
@@ -184,7 +185,7 @@ async function testSelectInstanceRole(inherited) {
   const {
     instanceObserverGroupAssignment,
     instanceAdminAssignment
-  } = common.getTestData()
+  } = UserFormTestData
 
   const userAssignment = inherited
     ? instanceObserverGroupAssignment
@@ -252,7 +253,7 @@ async function testSelectSpaceRole(inherited) {
   const {
     testSpacePowerUserGroupAssignment,
     mySpaceAdminAssignment
-  } = common.getTestData()
+  } = UserFormTestData
 
   const userAssignment = inherited
     ? testSpacePowerUserGroupAssignment
@@ -325,7 +326,7 @@ async function testSelectProjectRole(inherited) {
   const {
     testProjectAdminGroupAssignment,
     myProjectAdminAssignment
-  } = common.getTestData()
+  } = UserFormTestData
 
   const userAssignment = inherited
     ? testProjectAdminGroupAssignment
