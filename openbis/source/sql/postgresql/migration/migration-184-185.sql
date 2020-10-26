@@ -1,6 +1,6 @@
 --
 -- Feature: Unique property values
--- is_unique boolean_char DEFAULT false NOT NULL,
+--
 
 -- Columns used to store information regarding what properties should have unique values.
 
