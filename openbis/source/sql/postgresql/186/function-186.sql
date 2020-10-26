@@ -3376,12 +3376,6 @@ BEGIN
                              setweight((escape_tsvector_string(NEW.code) || ':1')::tsvector, 'B');
     RETURN NEW;
 END
--- BEGIN
---     NEW.tsvector_document := setweight((escape_tsvector_string(NEW.perm_id) || ':1')::tsvector, 'A') ||
---             setweight((escape_tsvector_string(NEW.sample_identifier) || ':1')::tsvector, 'A') ||
---             setweight((escape_tsvector_string(NEW.code) || ':1')::tsvector, 'B');
---     RETURN NEW;
--- END
 $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION experiments_all_tsvector_document_trigger() RETURNS trigger AS $$
@@ -3401,8 +3395,7 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION data_all_tsvector_document_trigger() RETURNS trigger AS $$
 BEGIN
     NEW.tsvector_document := setweight(('/' || escape_tsvector_string(NEW.code) || ':1')::tsvector, 'A') ||
-            setweight((escape_tsvector_string(NEW.code) || ':1')::tsvector, 'B') ||
-            setweight((escape_tsvector_string(NEW.data_set_kind) || ':1')::tsvector, 'B');
+            setweight((escape_tsvector_string(NEW.code) || ':1')::tsvector, 'B');
     RETURN NEW;
 END
 $$ LANGUAGE plpgsql;
