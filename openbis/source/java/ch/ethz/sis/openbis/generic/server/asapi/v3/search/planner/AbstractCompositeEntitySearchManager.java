@@ -89,7 +89,9 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
         if (!mainCriteria.isEmpty())
         {
             // The main criteria have no recursive ISearchCriteria into it, to facilitate building a query
-            final DummyCompositeSearchCriterion containerCriterion = new DummyCompositeSearchCriterion(mainCriteria, finalSearchOperator);
+            final CRITERIA containerCriterion = createEmptyCriteria();
+            containerCriterion.withOperator(finalSearchOperator);
+            containerCriterion.setCriteria(mainCriteria);
             mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId, containerCriterion, tableMapper,
                     idsColumnName, authorisationInformation);
         } else
@@ -257,7 +259,7 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
             final TableMapper tableMapper)
     {
         final CRITERIA criteria = createEmptyCriteria();
-        final DummyCompositeSearchCriterion containerCriterion = new DummyCompositeSearchCriterion();
+        final CRITERIA containerCriterion = createEmptyCriteria();
         containerCriterion.setCriteria(Collections.singletonList(criteria));
         return getSearchDAO().queryDBWithNonRecursiveCriteria(userId, containerCriterion, tableMapper, idsColumnName, authorisationInformation);
     }
