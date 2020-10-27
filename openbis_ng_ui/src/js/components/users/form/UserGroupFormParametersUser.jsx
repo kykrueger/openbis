@@ -4,7 +4,7 @@ import Container from '@src/js/components/common/form/Container.jsx'
 import Header from '@src/js/components/common/form/Header.jsx'
 import SelectField from '@src/js/components/common/form/SelectField.jsx'
 import Message from '@src/js/components/common/form/Message.jsx'
-import UserFormSelectionType from '@src/js/components/users/form/UserFormSelectionType.js'
+import UserGroupFormSelectionType from '@src/js/components/users/form/UserGroupFormSelectionType.js'
 import logger from '@src/js/common/logger.js'
 
 const styles = theme => ({
@@ -13,12 +13,12 @@ const styles = theme => ({
   }
 })
 
-class UserFormParametersGroup extends React.PureComponent {
+class UserGroupFormParametersUser extends React.PureComponent {
   constructor(props) {
     super(props)
     this.state = {}
     this.references = {
-      code: React.createRef()
+      userId: React.createRef()
     }
     this.handleChange = this.handleChange.bind(this)
     this.handleFocus = this.handleFocus.bind(this)
@@ -39,8 +39,8 @@ class UserFormParametersGroup extends React.PureComponent {
   }
 
   focus() {
-    const group = this.getGroup(this.props)
-    if (group && this.props.selection) {
+    const user = this.getUser(this.props)
+    if (user && this.props.selection) {
       const { part } = this.props.selection.params
       if (part) {
         const reference = this.references[part]
@@ -52,18 +52,18 @@ class UserFormParametersGroup extends React.PureComponent {
   }
 
   handleChange(event) {
-    const group = this.getGroup(this.props)
-    this.props.onChange(UserFormSelectionType.GROUP, {
-      id: group.id,
+    const user = this.getUser(this.props)
+    this.props.onChange(UserGroupFormSelectionType.USER, {
+      id: user.id,
       field: event.target.name,
       value: event.target.value
     })
   }
 
   handleFocus(event) {
-    const group = this.getGroup(this.props)
-    this.props.onSelectionChange(UserFormSelectionType.GROUP, {
-      id: group.id,
+    const user = this.getUser(this.props)
+    this.props.onSelectionChange(UserGroupFormSelectionType.USER, {
+      id: user.id,
       part: event.target.name
     })
   }
@@ -73,18 +73,18 @@ class UserFormParametersGroup extends React.PureComponent {
   }
 
   render() {
-    logger.log(logger.DEBUG, 'UserFormParametersGroup.render')
+    logger.log(logger.DEBUG, 'UserGroupFormParametersUser.render')
 
-    const group = this.getGroup(this.props)
-    if (!group) {
+    const user = this.getUser(this.props)
+    if (!user) {
       return null
     }
 
     return (
       <Container>
-        <Header>Group</Header>
+        <Header>User</Header>
         {this.renderMessageVisible()}
-        {this.renderCode(group)}
+        {this.renderUserId(user)}
       </Container>
     )
   }
@@ -96,7 +96,7 @@ class UserFormParametersGroup extends React.PureComponent {
       return (
         <div className={classes.field}>
           <Message type='warning'>
-            The selected group is currently not visible in the group list due to
+            The selected user is currently not visible in the user list due to
             the chosen filtering and paging.
           </Message>
         </div>
@@ -106,23 +106,23 @@ class UserFormParametersGroup extends React.PureComponent {
     }
   }
 
-  renderCode(group) {
-    const { visible, enabled, error, value } = { ...group.code }
+  renderUserId(user) {
+    const { visible, enabled, error, value } = { ...user.userId }
 
     if (!visible) {
       return null
     }
 
     const { mode, classes, controller } = this.props
-    const { groups } = controller.getDictionaries()
+    const { users } = controller.getDictionaries()
 
     let options = []
 
-    if (groups) {
-      options = groups.map(group => {
+    if (users) {
+      options = users.map(user => {
         return {
-          label: group.code,
-          value: group.code
+          label: user.userId,
+          value: user.userId
         }
       })
     }
@@ -130,9 +130,9 @@ class UserFormParametersGroup extends React.PureComponent {
     return (
       <div className={classes.field}>
         <SelectField
-          reference={this.references.code}
-          label='Code'
-          name='code'
+          reference={this.references.userId}
+          label='User Id'
+          name='userId'
           error={error}
           disabled={!enabled}
           mandatory={true}
@@ -147,16 +147,16 @@ class UserFormParametersGroup extends React.PureComponent {
     )
   }
 
-  getGroup(props) {
-    let { groups, selection } = props
+  getUser(props) {
+    let { users, selection } = props
 
-    if (selection && selection.type === UserFormSelectionType.GROUP) {
-      let [group] = groups.filter(group => group.id === selection.params.id)
-      return group
+    if (selection && selection.type === UserGroupFormSelectionType.USER) {
+      let [user] = users.filter(user => user.id === selection.params.id)
+      return user
     } else {
       return null
     }
   }
 }
 
-export default withStyles(styles)(UserFormParametersGroup)
+export default withStyles(styles)(UserGroupFormParametersUser)

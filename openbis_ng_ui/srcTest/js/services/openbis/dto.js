@@ -1,8 +1,11 @@
 import AuthorizationGroup from 'as/dto/authorizationgroup/AuthorizationGroup'
+import AuthorizationGroupCreation from 'as/dto/authorizationgroup/create/AuthorizationGroupCreation'
+import AuthorizationGroupDeletionOptions from 'as/dto/authorizationgroup/delete/AuthorizationGroupDeletionOptions'
 import AuthorizationGroupFetchOptions from 'as/dto/authorizationgroup/fetchoptions/AuthorizationGroupFetchOptions'
 import AuthorizationGroupPermId from 'as/dto/authorizationgroup/id/AuthorizationGroupPermId'
 import AuthorizationGroupSearchCriteria from 'as/dto/authorizationgroup/search/AuthorizationGroupSearchCriteria'
 import AuthorizationGroupUpdate from 'as/dto/authorizationgroup/update/AuthorizationGroupUpdate'
+import CreateAuthorizationGroupsOperation from 'as/dto/authorizationgroup/create/CreateAuthorizationGroupsOperation'
 import CreateDataSetTypesOperation from 'as/dto/dataset/create/CreateDataSetTypesOperation'
 import CreateExperimentTypesOperation from 'as/dto/experiment/create/CreateExperimentTypesOperation'
 import CreateMaterialTypesOperation from 'as/dto/material/create/CreateMaterialTypesOperation'
@@ -23,6 +26,7 @@ import DataSetTypeFetchOptions from 'as/dto/dataset/fetchoptions/DataSetTypeFetc
 import DataSetTypeSearchCriteria from 'as/dto/dataset/search/DataSetTypeSearchCriteria'
 import DataSetTypeUpdate from 'as/dto/dataset/update/DataSetTypeUpdate'
 import DataType from 'as/dto/property/DataType'
+import DeleteAuthorizationGroupsOperation from 'as/dto/authorizationgroup/delete/DeleteAuthorizationGroupsOperation'
 import DeleteDataSetTypesOperation from 'as/dto/dataset/delete/DeleteDataSetTypesOperation'
 import DeleteExperimentTypesOperation from 'as/dto/experiment/delete/DeleteExperimentTypesOperation'
 import DeleteMaterialTypesOperation from 'as/dto/material/delete/DeleteMaterialTypesOperation'
@@ -127,10 +131,13 @@ import WebAppSettingCreation from 'as/dto/webapp/create/WebAppSettingCreation'
 
 const dto = {
   AuthorizationGroup,
+  AuthorizationGroupCreation,
+  AuthorizationGroupDeletionOptions,
   AuthorizationGroupFetchOptions,
   AuthorizationGroupPermId,
   AuthorizationGroupSearchCriteria,
   AuthorizationGroupUpdate,
+  CreateAuthorizationGroupsOperation,
   CreateDataSetTypesOperation,
   CreateExperimentTypesOperation,
   CreateMaterialTypesOperation,
@@ -151,6 +158,7 @@ const dto = {
   DataSetTypeSearchCriteria,
   DataSetTypeUpdate,
   DataType,
+  DeleteAuthorizationGroupsOperation,
   DeleteDataSetTypesOperation,
   DeleteExperimentTypesOperation,
   DeleteMaterialTypesOperation,

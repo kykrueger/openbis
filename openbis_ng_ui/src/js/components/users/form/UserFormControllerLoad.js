@@ -156,7 +156,7 @@ export default class UserFormControllerLoad extends PageControllerLoad {
         enabled: inheritedFrom === null
       }),
       role: FormUtil.createField({
-        value: _.get(loadedRole, UserFormSelectionType.ROLE, null),
+        value: _.get(loadedRole, 'role', null),
         enabled: inheritedFrom === null
       })
     }

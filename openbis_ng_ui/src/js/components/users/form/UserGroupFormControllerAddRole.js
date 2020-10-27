@@ -1,8 +1,8 @@
 import _ from 'lodash'
-import UserFormSelectionType from '@src/js/components/users/form/UserFormSelectionType.js'
+import UserGroupFormSelectionType from '@src/js/components/users/form/UserGroupFormSelectionType.js'
 import FormUtil from '@src/js/components/common/form/FormUtil.js'
 
-export default class UserFormControllerAddRole {
+export default class UserGroupFormControllerAddRole {
   constructor(controller) {
     this.controller = controller
     this.context = controller.context
@@ -13,7 +13,6 @@ export default class UserFormControllerAddRole {
 
     const newRole = {
       id: _.uniqueId('role-'),
-      inheritedFrom: FormUtil.createField({}),
       level: FormUtil.createField({}),
       space: FormUtil.createField({
         visible: false
@@ -34,7 +33,7 @@ export default class UserFormControllerAddRole {
       ...state,
       roles: newRoles,
       selection: {
-        type: UserFormSelectionType.ROLE,
+        type: UserGroupFormSelectionType.ROLE,
         params: {
           id: newRole.id,
           part: 'level'

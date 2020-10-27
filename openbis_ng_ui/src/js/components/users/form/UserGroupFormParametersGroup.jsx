@@ -2,9 +2,8 @@ import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import Container from '@src/js/components/common/form/Container.jsx'
 import Header from '@src/js/components/common/form/Header.jsx'
-import SelectField from '@src/js/components/common/form/SelectField.jsx'
-import Message from '@src/js/components/common/form/Message.jsx'
-import UserFormSelectionType from '@src/js/components/users/form/UserFormSelectionType.js'
+import TextField from '@src/js/components/common/form/TextField.jsx'
+import UserGroupFormSelectionType from '@src/js/components/users/form/UserGroupFormSelectionType.js'
 import logger from '@src/js/common/logger.js'
 
 const styles = theme => ({
@@ -13,12 +12,13 @@ const styles = theme => ({
   }
 })
 
-class UserFormParametersGroup extends React.PureComponent {
+class UserGroupFormParametersGroup extends React.PureComponent {
   constructor(props) {
     super(props)
     this.state = {}
     this.references = {
-      code: React.createRef()
+      code: React.createRef(),
+      description: React.createRef()
     }
     this.handleChange = this.handleChange.bind(this)
     this.handleFocus = this.handleFocus.bind(this)
@@ -52,18 +52,14 @@ class UserFormParametersGroup extends React.PureComponent {
   }
 
   handleChange(event) {
-    const group = this.getGroup(this.props)
-    this.props.onChange(UserFormSelectionType.GROUP, {
-      id: group.id,
+    this.props.onChange(UserGroupFormSelectionType.GROUP, {
       field: event.target.name,
       value: event.target.value
     })
   }
 
   handleFocus(event) {
-    const group = this.getGroup(this.props)
-    this.props.onSelectionChange(UserFormSelectionType.GROUP, {
-      id: group.id,
+    this.props.onSelectionChange(UserGroupFormSelectionType.GROUP, {
       part: event.target.name
     })
   }
@@ -73,7 +69,7 @@ class UserFormParametersGroup extends React.PureComponent {
   }
 
   render() {
-    logger.log(logger.DEBUG, 'UserFormParametersGroup.render')
+    logger.log(logger.DEBUG, 'UserGroupFormParametersGroup.render')
 
     const group = this.getGroup(this.props)
     if (!group) {
@@ -83,27 +79,10 @@ class UserFormParametersGroup extends React.PureComponent {
     return (
       <Container>
         <Header>Group</Header>
-        {this.renderMessageVisible()}
         {this.renderCode(group)}
+        {this.renderDescription(group)}
       </Container>
     )
-  }
-
-  renderMessageVisible() {
-    const { classes, selectedRow } = this.props
-
-    if (selectedRow && !selectedRow.visible) {
-      return (
-        <div className={classes.field}>
-          <Message type='warning'>
-            The selected group is currently not visible in the group list due to
-            the chosen filtering and paging.
-          </Message>
-        </div>
-      )
-    } else {
-      return null
-    }
   }
 
   renderCode(group) {
@@ -113,31 +92,43 @@ class UserFormParametersGroup extends React.PureComponent {
       return null
     }
 
-    const { mode, classes, controller } = this.props
-    const { groups } = controller.getDictionaries()
-
-    let options = []
-
-    if (groups) {
-      options = groups.map(group => {
-        return {
-          label: group.code,
-          value: group.code
-        }
-      })
-    }
-
+    const { mode, classes } = this.props
     return (
       <div className={classes.field}>
-        <SelectField
+        <TextField
           reference={this.references.code}
           label='Code'
           name='code'
+          mandatory={true}
           error={error}
           disabled={!enabled}
-          mandatory={true}
           value={value}
-          options={options}
+          mode={mode}
+          onChange={this.handleChange}
+          onFocus={this.handleFocus}
+          onBlur={this.handleBlur}
+        />
+      </div>
+    )
+  }
+
+  renderDescription(group) {
+    const { visible, enabled, error, value } = { ...group.description }
+
+    if (!visible) {
+      return null
+    }
+
+    const { mode, classes } = this.props
+    return (
+      <div className={classes.field}>
+        <TextField
+          reference={this.references.description}
+          label='Description'
+          name='description'
+          error={error}
+          disabled={!enabled}
+          value={value}
           mode={mode}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
@@ -148,10 +139,9 @@ class UserFormParametersGroup extends React.PureComponent {
   }
 
   getGroup(props) {
-    let { groups, selection } = props
+    let { group, selection } = props
 
-    if (selection && selection.type === UserFormSelectionType.GROUP) {
-      let [group] = groups.filter(group => group.id === selection.params.id)
+    if (!selection || selection.type === UserGroupFormSelectionType.GROUP) {
       return group
     } else {
       return null
@@ -159,4 +149,4 @@ class UserFormParametersGroup extends React.PureComponent {
   }
 }
 
-export default withStyles(styles)(UserFormParametersGroup)
+export default withStyles(styles)(UserGroupFormParametersGroup)

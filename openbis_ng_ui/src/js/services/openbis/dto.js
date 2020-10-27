@@ -1,5 +1,9 @@
 const CLASS_FULL_NAMES = [
   'as/dto/authorizationgroup/AuthorizationGroup',
+  'as/dto/authorizationgroup/create/AuthorizationGroupCreation',
+  'as/dto/authorizationgroup/create/CreateAuthorizationGroupsOperation',
+  'as/dto/authorizationgroup/delete/AuthorizationGroupDeletionOptions',
+  'as/dto/authorizationgroup/delete/DeleteAuthorizationGroupsOperation',
   'as/dto/authorizationgroup/fetchoptions/AuthorizationGroupFetchOptions',
   'as/dto/authorizationgroup/id/AuthorizationGroupPermId',
   'as/dto/authorizationgroup/search/AuthorizationGroupSearchCriteria',
