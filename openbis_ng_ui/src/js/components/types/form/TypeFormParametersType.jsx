@@ -5,7 +5,6 @@ import Header from '@src/js/components/common/form/Header.jsx'
 import CheckboxField from '@src/js/components/common/form/CheckboxField.jsx'
 import TextField from '@src/js/components/common/form/TextField.jsx'
 import SelectField from '@src/js/components/common/form/SelectField.jsx'
-import Message from '@src/js/components/common/form/Message.jsx'
 import TypeFormSelectionType from '@src/js/components/types/form/TypeFormSelectionType.js'
 import logger from '@src/js/common/logger.js'
 
@@ -90,7 +89,6 @@ class TypeFormParametersType extends React.PureComponent {
     return (
       <Container>
         {this.renderHeader(type)}
-        {this.renderMessageUsage(type)}
         {this.renderCode(type)}
         {this.renderDescription(type)}
         {this.renderValidationPlugin(type)}
@@ -110,30 +108,6 @@ class TypeFormParametersType extends React.PureComponent {
 
   renderHeader() {
     return <Header>Type</Header>
-  }
-
-  renderMessageUsage(type) {
-    const { classes } = this.props
-
-    function entities(number) {
-      return number === 0 || number > 1
-        ? `${number} entities`
-        : `${number} entity`
-    }
-
-    function message(type) {
-      return `This type is already used by ${entities(type.usages)}.`
-    }
-
-    if (type.usages !== 0) {
-      return (
-        <div className={classes.field}>
-          <Message type='info'>{message(type)}</Message>
-        </div>
-      )
-    } else {
-      return null
-    }
   }
 
   renderCode(type) {

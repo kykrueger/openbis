@@ -34,7 +34,7 @@ class ConfirmationDialog extends React.Component {
         open={open}
         onClose={this.handleClose}
         title={title || 'Confirmation'}
-        content={<Message type='warning'>{content}</Message>}
+        content={<Message type={this.getMessageType()}>{content}</Message>}
         actions={this.renderButtons()}
       />
     )
@@ -45,18 +45,48 @@ class ConfirmationDialog extends React.Component {
     return (
       <div>
         <Button
+          name='confirm'
           label='Confirm'
-          type='risky'
+          type={this.getButtonType()}
           styles={{ root: classes.button }}
           onClick={onConfirm}
         />
         <Button
+          name='cancel'
           label='Cancel'
           styles={{ root: classes.button }}
           onClick={onCancel}
         />
       </div>
     )
+  }
+
+  getMessageType() {
+    const type = this.getType()
+
+    if (type === 'warning') {
+      return 'warning'
+    } else if (type === 'info') {
+      return 'info'
+    } else {
+      throw new Error('Unsupported type: ' + type)
+    }
+  }
+
+  getButtonType() {
+    const type = this.getType()
+
+    if (type === 'warning') {
+      return 'risky'
+    } else if (type === 'info') {
+      return null
+    } else {
+      throw new Error('Unsupported type: ' + type)
+    }
+  }
+
+  getType() {
+    return this.props.type || 'warning'
   }
 }
 
