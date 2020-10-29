@@ -1,5 +1,8 @@
 package ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer;
 
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.fail;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -12,6 +15,7 @@ import org.apache.log4j.spi.NOPLoggerRepository;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
@@ -19,22 +23,25 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.ExternalDms;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.fetchoptions.ExternalDmsFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.id.ExternalDmsPermId;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.config.SyncConfig;
+import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.translator.DefaultNameTranslator;
+import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.translator.INameTranslator;
+import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.translator.PrefixBasedNameTranslator;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.util.Monitor;
 import ch.systemsx.cisd.openbis.generic.shared.ICommonServer;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.PropertyType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileFormatType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewVocabulary;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Person;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Script;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ScriptType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.VocabularyTerm;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SessionContextDTO;
 
 public class MasterDataSynchronizerTest
 {
+    private static final String UPDATE_AND_PREFIX_PROVIDER = "updateAndPrefixProvider";
+
     private static final String USER_ID = "user";
 
     private static final String PASSWORD = "password";
@@ -81,19 +88,43 @@ public class MasterDataSynchronizerTest
         monitor = new Monitor("test", new NOPLogger(new NOPLoggerRepository(), "null"));
     }
 
-    @Test
-    // TODO finish test
-    public void testSystemManagedVocabularyExist()
+    @DataProvider
+    public Object[][] updateAndPrefixProvider()
+    {
+        return new Object[][] {
+                { false, null },
+                { false, "PR" },
+                { true, null },
+                { true, "PR" },
+        };
+    }
+
+    @Test(dataProvider = UPDATE_AND_PREFIX_PROVIDER)
+    public void testNonexistentInternalVocabulary(boolean withUpdate, String prefix)
     {
         // Given
-        config.setMasterDataUpdateAllowed(true);
-        TestFixtureBuilder builder = new TestFixtureBuilder();
-        NewVocabulary v1 = new VocabularyBuilder("$A").managedInternally().system()
-                /*.description("1. description")*/.get();
-        builder.existingVocabularies(v1);
+        config.setMasterDataUpdateAllowed(withUpdate);
+        TestFixtureBuilder builder = new TestFixtureBuilder(createTranslator(prefix));
         builder.incomingVocabularies(new VocabularyBuilder("A").managedInternally().system().get());
         MasterData masterData = builder.prepare();
-        prepareAddVocabularyTerms(v1.getCode(), v1.getId());
+
+        // When & Then
+        assertFailure(masterData, "There is no internal vocabulary $A.");
+        context.assertIsSatisfied();
+    }
+
+    @Test(dataProvider = UPDATE_AND_PREFIX_PROVIDER)
+    public void testNonexistentVocabulary(boolean withUpdate, String prefix)
+    {
+        // Given
+        config.setMasterDataUpdateAllowed(withUpdate);
+        TestFixtureBuilder builder = new TestFixtureBuilder(createTranslator(prefix));
+        VocabularyBuilder vocabulary = new VocabularyBuilder("A").registrator("admin");
+        builder.incomingVocabularies(vocabulary.get());
+        MasterData masterData = builder.prepare();
+
+        // Expected actions
+        prepareRegisterVocabulary(vocabulary.get());
 
         // When
         synchronizer.synchronizeMasterData(masterData, monitor);
@@ -102,8 +133,179 @@ public class MasterDataSynchronizerTest
         context.assertIsSatisfied();
     }
 
+    @Test(dataProvider = UPDATE_AND_PREFIX_PROVIDER)
+    public void testAlreadyExistentInternalVocabularyAddTerms(boolean withUpdate, String prefix)
+    {
+        // Given
+        config.setMasterDataUpdateAllowed(withUpdate);
+        TestFixtureBuilder builder = new TestFixtureBuilder(createTranslator(prefix));
+        VocabularyBuilder existing = new VocabularyBuilder("$A").managedInternally().system();
+        existing.term("1").label("alpha");
+        builder.existingVocabularies(existing.get());
+        VocabularyBuilder incoming = new VocabularyBuilder("A").managedInternally().system().description("blabla");
+        incoming.term("1").label("one");
+        VocabularyTermBuilder term2 = incoming.term("2").label("two");
+        builder.incomingVocabularies(incoming.get());
+        MasterData masterData = builder.prepare();
+
+        // Expected actions
+        prepareAddVocabularyTerms("$A", existing.get().getId(), term2.get());
+
+        // When
+        synchronizer.synchronizeMasterData(masterData, monitor);
+
+        // Then
+        context.assertIsSatisfied();
+    }
+
+    @Test
+    public void testWithPrefixAlreadyExistentVocabularyAddTerms()
+    {
+        // Given
+        config.setMasterDataUpdateAllowed(true);
+        TestFixtureBuilder builder = new TestFixtureBuilder(createTranslator("PR"));
+        VocabularyBuilder existing = new VocabularyBuilder("A").system();
+        existing.term("1").label("alpha");
+        builder.existingVocabularies(existing.get());
+        VocabularyBuilder incoming = new VocabularyBuilder("A").system().description("blabla");
+        incoming.term("1").label("one");
+        incoming.term("2").label("two");
+        builder.incomingVocabularies(incoming.get());
+        MasterData masterData = builder.prepare();
+
+        // Expected actions
+        prepareRegisterVocabulary(incoming.get());
+
+        // When
+        synchronizer.synchronizeMasterData(masterData, monitor);
+
+        // Then
+        context.assertIsSatisfied();
+    }
+
+    @Test
+    public void testWithoutPrefixAlreadyExistentVocabularyAddTerms()
+    {
+        // Given
+        config.setMasterDataUpdateAllowed(true);
+        TestFixtureBuilder builder = new TestFixtureBuilder(createTranslator(null));
+        VocabularyBuilder existing = new VocabularyBuilder("A").system();
+        existing.term("1").label("alpha");
+        builder.existingVocabularies(existing.get());
+        VocabularyBuilder incoming = new VocabularyBuilder("A").system()
+                .description("1. description");
+        VocabularyTermBuilder term1 = incoming.term("1").label("one");
+        VocabularyTermBuilder term2 = incoming.term("2").label("two");
+        builder.incomingVocabularies(incoming.get());
+        MasterData masterData = builder.prepare();
+
+        // Expected actions
+        prepareUpdateVocabulary(incoming.get(), "incoming NewVocabulary[description=1. description] "
+                + "differs from existing NewVocabulary[description=<null>]");
+        prepareUpdateVocabularyTerm("A", term1.get(), "incoming VocabularyTerm[label=one] "
+                + "differs from existing VocabularyTerm[label=alpha]");
+        prepareAddVocabularyTerms("A", existing.get().getId(), term2.get());
+
+        // When
+        synchronizer.synchronizeMasterData(masterData, monitor);
+
+        // Then
+        context.assertIsSatisfied();
+    }
+
+    @Test
+    public void testWithoutPrefixAlreadyExistentVocabularyAddTermsButUpdatesNotAllowed()
+    {
+        // Given
+        config.setMasterDataUpdateAllowed(false);
+        TestFixtureBuilder builder = new TestFixtureBuilder(createTranslator(null));
+        VocabularyBuilder existing = new VocabularyBuilder("A").system();
+        existing.term("1").label("alpha");
+        builder.existingVocabularies(existing.get());
+        VocabularyBuilder incoming = new VocabularyBuilder("A").system()
+                .description("1. description");
+        incoming.term("1").label("one");
+        VocabularyTermBuilder term2 = incoming.term("2").label("two");
+        builder.incomingVocabularies(incoming.get());
+        MasterData masterData = builder.prepare();
+
+        // Expected actions
+        prepareAddVocabularyTerms("A", existing.get().getId(), term2.get());
+
+        // When
+        synchronizer.synchronizeMasterData(masterData, monitor);
+
+        // Then
+        context.assertIsSatisfied();
+    }
+
+    private void assertFailure(MasterData masterData, String... failureMessages)
+    {
+        try
+        {
+            synchronizer.synchronizeMasterData(masterData, monitor);
+            fail("RuntimeException expected");
+        } catch (RuntimeException e)
+        {
+            StringBuilder builder = new StringBuilder("Master data can not be synchronization "
+                    + "because of the following reasons:\n");
+            for (String failureMessage : failureMessages)
+            {
+                builder.append(failureMessage).append("\n");
+            }
+            assertEquals(e.getMessage(), builder.toString());
+        }
+    }
+
+    private INameTranslator createTranslator(String prefixOrNull)
+    {
+        return prefixOrNull == null ? new DefaultNameTranslator() : new PrefixBasedNameTranslator(prefixOrNull);
+    }
+
+    private void prepareRegisterVocabulary(NewVocabulary vocabulary)
+    {
+        context.checking(new Expectations()
+            {
+                {
+                    one(facade).registerVocabulary(vocabulary);
+                }
+            });
+    }
+
+    private void prepareUpdateVocabulary(NewVocabulary vocabulary, String diff)
+    {
+        context.checking(new Expectations()
+            {
+                {
+                    one(facade).updateVocabulary(vocabulary, diff);
+                }
+            });
+    }
+
+    private void prepareAddVocabularyTerms(String vocabularyCode, long id, VocabularyTerm... vocabularyTerms)
+    {
+        context.checking(new Expectations()
+            {
+                {
+                    one(facade).addVocabularyTerms(vocabularyCode, new TechId(id), Arrays.asList(vocabularyTerms));
+                }
+            });
+    }
+
+    private void prepareUpdateVocabularyTerm(String vocabularyCode, VocabularyTerm vocabularyTerm, String diff)
+    {
+        context.checking(new Expectations()
+            {
+                {
+                    one(facade).updateVocabularyTerm(vocabularyCode, vocabularyTerm, diff);
+                }
+            });
+    }
+
     private final class TestFixtureBuilder
     {
+        private final INameTranslator nameTranslator;
+
         private List<FileFormatType> existingFileFormatTypes = Collections.emptyList();
 
         private List<FileFormatType> incomingFileFormatTypes = Collections.emptyList();
@@ -128,6 +330,12 @@ public class MasterDataSynchronizerTest
 
         private List<ExternalDms> incomingExternalDmss = Collections.emptyList();
 
+        TestFixtureBuilder(INameTranslator nameTranslator)
+        {
+            this.nameTranslator = nameTranslator;
+
+        }
+
         TestFixtureBuilder existingVocabularies(NewVocabulary... vocabularies)
         {
             existingVocabularies = Arrays.asList(vocabularies);
@@ -137,12 +345,14 @@ public class MasterDataSynchronizerTest
         TestFixtureBuilder incomingVocabularies(NewVocabulary... vocabularies)
         {
             incomingVocabularies = Arrays.asList(vocabularies);
+            incomingVocabularies.forEach(v -> v.setCode(nameTranslator.translate(v.getCode())));
             return this;
         }
 
         MasterData prepare()
         {
-            List<ExternalDmsPermId> existingExternalDmssIds = existingExternalDmss.stream().map(ExternalDms::getPermId).collect(Collectors.toList());
+            List<ExternalDmsPermId> existingExternalDmssIds =
+                    existingExternalDmss.stream().map(ExternalDms::getPermId).collect(Collectors.toList());
             Map<ExternalDmsPermId, ExternalDms> existingExternalDmssMap = existingExternalDmss.stream().collect(
                     Collectors.toMap(ExternalDms::getPermId, Function.identity()));
             context.checking(new Expectations()
@@ -158,27 +368,18 @@ public class MasterDataSynchronizerTest
                         will(returnValue(existingPropertyTypes));
                         allowing(server).listMaterialTypes(SESSION_TOKEN);
                         will(returnValue(existingMaterialTypes));
-                        allowing(v3api).getExternalDataManagementSystems(with(SESSION_TOKEN), with(existingExternalDmssIds),
+                        allowing(v3api).getExternalDataManagementSystems(with(SESSION_TOKEN),
+                                with(existingExternalDmssIds),
                                 with(any(ExternalDmsFetchOptions.class)));
                         will(returnValue(existingExternalDmssMap));
                         one(facade).printSummary();
                     }
                 });
-            MasterData masterData = new MasterData();
+            MasterData masterData = new MasterData(nameTranslator);
             masterData.setVocabulariesToProcess(incomingVocabularies.stream().collect(
                     Collectors.toMap(NewVocabulary::getCode, Function.identity())));
             return masterData;
         }
-    }
-
-    private void prepareAddVocabularyTerms(String vocabularyCode, long id, VocabularyTerm... vocabularyTerms)
-    {
-        context.checking(new Expectations()
-            {
-                {
-                    one(facade).addVocabularyTerms(vocabularyCode, new TechId(id), Arrays.asList(vocabularyTerms));
-                }
-            });
     }
 
     private static final class VocabularyBuilder
@@ -196,12 +397,6 @@ public class MasterDataSynchronizerTest
         NewVocabulary get()
         {
             return vocabulary;
-        }
-
-        VocabularyBuilder chosenFromList(boolean chosenFromList)
-        {
-            vocabulary.setChosenFromList(chosenFromList);
-            return this;
         }
 
         VocabularyBuilder description(String description)
@@ -226,6 +421,34 @@ public class MasterDataSynchronizerTest
             Person person = new Person();
             person.setUserId(userId);
             vocabulary.setRegistrator(person);
+            return this;
+        }
+
+        VocabularyTermBuilder term(String code)
+        {
+            VocabularyTermBuilder termBuilder = new VocabularyTermBuilder(code);
+            vocabulary.getTerms().add(termBuilder.get());
+            return termBuilder;
+        }
+    }
+
+    private static final class VocabularyTermBuilder
+    {
+        private VocabularyTerm term = new VocabularyTerm();
+
+        VocabularyTermBuilder(String code)
+        {
+            term.setCode(code);
+        }
+
+        VocabularyTerm get()
+        {
+            return term;
+        }
+
+        VocabularyTermBuilder label(String label)
+        {
+            term.setLabel(label);
             return this;
         }
     }

@@ -97,7 +97,7 @@ public class ResourceListParser
 
     private ResourceListParser(INameTranslator nameTranslator, String dataStoreCode)
     {
-        this.data = new ResourceListParserData();
+        this.data = new ResourceListParserData(nameTranslator);
         this.nameTranslator = nameTranslator;
         this.dataStoreCode = dataStoreCode;
     }
