@@ -85,14 +85,23 @@ public class MasterDataSynchronizer
 
     public MasterDataSynchronizer(SyncConfig config, Logger operationLog)
     {
+        this(config,
+                new SynchronizerFacade(ServiceProvider.getConfigProvider().getOpenBisServerUrl(),
+                        config.getHarvesterUser(), config.getHarvesterPass(), config.isDryRun(),
+                        config.isVerbose(), operationLog),
+                ServiceFinderUtils.getCommonServer(ServiceProvider.getConfigProvider().getOpenBisServerUrl()),
+                ServiceProvider.getV3ApplicationService());
+    }
+
+    MasterDataSynchronizer(SyncConfig config, ISynchronizerFacade synchronizerFacade, ICommonServer commonServer,
+            IApplicationServerApi v3api)
+    {
         this.config = config;
-        String openBisServerUrl = ServiceProvider.getConfigProvider().getOpenBisServerUrl();
         this.dryRun = config.isDryRun();
-        this.synchronizerFacade = new SynchronizerFacade(openBisServerUrl, config.getHarvesterUser(),
-                config.getHarvesterPass(), dryRun, config.isVerbose(), operationLog);
-        this.commonServer = ServiceFinderUtils.getCommonServer(openBisServerUrl);
+        this.synchronizerFacade = synchronizerFacade;
+        this.commonServer = commonServer;
         this.sessionToken = ServiceFinderUtils.login(commonServer, config.getHarvesterUser(), config.getHarvesterPass());
-        v3api = ServiceProvider.getV3ApplicationService();
+        this.v3api = v3api;
     }
 
     public void synchronizeMasterData(MasterData masterData, Monitor monitor)
@@ -272,6 +281,16 @@ public class MasterDataSynchronizer
                 synchronizerFacade.registerVocabulary(newVocabulary);
             }
         }
+    }
+
+    private boolean isInternallyManagedBySystem(Vocabulary vocabulary)
+    {
+        return vocabulary.isManagedInternally() && isSystem(vocabulary.getRegistrator().getUserId());
+    }
+
+    private boolean isSystem(String userId)
+    {
+        return "system".equals(userId);
     }
 
     private String calculateDiff(Vocabulary existingVocabulary, NewVocabulary newVocabulary)
