@@ -31,6 +31,7 @@ class UserFormGridGroups extends React.PureComponent {
       <Grid
         id={ids.USER_GROUPS_GRID_ID}
         controllerRef={controllerRef}
+        header='Groups'
         columns={[
           {
             name: 'code',

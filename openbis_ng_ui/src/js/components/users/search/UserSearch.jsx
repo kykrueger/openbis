@@ -65,6 +65,7 @@ class UserSearch extends React.Component {
       <GridContainer>
         <Grid
           id={ids.USERS_GRID_ID}
+          header={'Search: ' + this.props.objectId}
           columns={[
             {
               name: 'userId',

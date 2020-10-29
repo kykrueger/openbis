@@ -35,6 +35,7 @@ class UserGroupFormGridRoles extends React.PureComponent {
       <Grid
         id={ids.USER_GROUP_ROLES_GRID_ID}
         controllerRef={controllerRef}
+        header='Roles'
         columns={[
           {
             name: 'level',

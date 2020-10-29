@@ -5,7 +5,6 @@ import { connect } from 'react-redux'
 import { withStyles } from '@material-ui/core/styles'
 import ComponentContext from '@src/js/components/common/ComponentContext.js'
 import PageWithTwoPanels from '@src/js/components/common/page/PageWithTwoPanels.jsx'
-import Header from '@src/js/components/common/form/Header.jsx'
 import GridContainer from '@src/js/components/common/grid/GridContainer.jsx'
 import UserGroupFormController from '@src/js/components/users/form/UserGroupFormController.js'
 import UserGroupFormFacade from '@src/js/components/users/form/UserGroupFormFacade.js'
@@ -92,7 +91,6 @@ class UserGroupForm extends React.PureComponent {
 
     return (
       <GridContainer onClick={this.handleClickContainer}>
-        <Header>Users</Header>
         <UserGroupFormGridUsers
           controllerRef={this.handleUsersGridControllerRef}
           rows={users}
@@ -103,7 +101,6 @@ class UserGroupForm extends React.PureComponent {
           }
           onSelectedRowChange={this.handleSelectedUserRowChange}
         />
-        <Header>Roles</Header>
         <UserGroupFormGridRoles
           controllerRef={this.handleRolesGridControllerRef}
           rows={roles}

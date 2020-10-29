@@ -41,6 +41,7 @@ class UserFormGridRoles extends React.PureComponent {
       <Grid
         id={ids.USER_ROLES_GRID_ID}
         controllerRef={controllerRef}
+        header='Roles'
         columns={[
           {
             name: 'inheritedFrom',
