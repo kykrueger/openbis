@@ -1,4 +1,5 @@
 import PageControllerValidate from '@src/js/components/common/page/PageConrollerValidate.js'
+import RoleControllerValidate from '@src/js/components/users/form/common/RoleControllerValidate.js'
 import UserGroupFormSelectionType from '@src/js/components/users/form/UserGroupFormSelectionType.js'
 
 export default class UserGroupFormControllerValidate extends PageControllerValidate {
@@ -7,7 +8,10 @@ export default class UserGroupFormControllerValidate extends PageControllerValid
 
     const newGroup = this._validateGroup(validator, group)
     const newUsers = this._validateUsers(validator, users)
-    const newRoles = this._validateRoles(validator, roles)
+    const newRoles = new RoleControllerValidate(this.controller).validate(
+      validator,
+      roles
+    )
 
     return {
       group: newGroup,
@@ -39,17 +43,7 @@ export default class UserGroupFormControllerValidate extends PageControllerValid
         await this.controller.usersGridController.showSelectedRow()
       }
     } else if (roles.includes(firstError.object)) {
-      await this.setSelection({
-        type: UserGroupFormSelectionType.ROLE,
-        params: {
-          id: firstError.object.id,
-          part: firstError.name
-        }
-      })
-
-      if (this.controller.rolesGridController) {
-        await this.controller.rolesGridController.showSelectedRow()
-      }
+      await new RoleControllerValidate(this.controller).select(firstError)
     }
   }
 
@@ -63,21 +57,5 @@ export default class UserGroupFormControllerValidate extends PageControllerValid
       validator.validateNotEmpty(user, 'userId', 'User Id')
     })
     return validator.withErrors(users)
-  }
-
-  _validateRoles(validator, roles) {
-    roles.forEach(role => {
-      validator.validateNotEmpty(role, 'level', 'Level')
-      if (role.space.visible) {
-        validator.validateNotEmpty(role, 'space', 'Space')
-      }
-      if (role.project.visible) {
-        validator.validateNotEmpty(role, 'project', 'Project')
-      }
-      if (role.role.visible) {
-        validator.validateNotEmpty(role, 'role', 'Role')
-      }
-    })
-    return validator.withErrors(roles)
   }
 }

@@ -1,8 +1,8 @@
 import _ from 'lodash'
 import PageControllerLoad from '@src/js/components/common/page/PageControllerLoad.js'
+import RoleControllerLoad from '@src/js/components/users/form/common/RoleControllerLoad.js'
 import UserGroupFormSelectionType from '@src/js/components/users/form/UserGroupFormSelectionType.js'
 import FormUtil from '@src/js/components/common/form/FormUtil.js'
-import openbis from '@src/js/services/openbis.js'
 
 export default class UserGroupFormControllerLoad extends PageControllerLoad {
   async load(object, isNew) {
@@ -44,10 +44,10 @@ export default class UserGroupFormControllerLoad extends PageControllerLoad {
     const roles = []
 
     if (loadedGroup && loadedGroup.roleAssignments) {
-      loadedGroup.roleAssignments.forEach(loadedRole => {
-        const role = this._createRole(loadedRole)
-        roles.push(role)
-      })
+      const groupRoles = new RoleControllerLoad(this.controller).createRoles(
+        loadedGroup.roleAssignments
+      )
+      roles.push(...groupRoles)
     }
 
     if (loadedGroup && loadedGroup.users) {
@@ -115,49 +115,8 @@ export default class UserGroupFormControllerLoad extends PageControllerLoad {
     return user
   }
 
-  _createRole(loadedRole) {
-    const level = _.get(loadedRole, 'roleLevel', null)
-
-    let space = null
-    let project = null
-
-    if (level === openbis.RoleLevel.SPACE) {
-      space = _.get(loadedRole, 'space.code')
-    } else if (level === openbis.RoleLevel.PROJECT) {
-      space = _.get(loadedRole, 'project.space.code')
-      project = _.get(loadedRole, 'project.code')
-    }
-
-    const role = {
-      id: _.uniqueId('role-'),
-      techId: FormUtil.createField({
-        value: _.get(loadedRole, 'id.techId', null)
-      }),
-      level: FormUtil.createField({
-        value: level
-      }),
-      space: FormUtil.createField({
-        value: space,
-        visible: space !== null
-      }),
-      project: FormUtil.createField({
-        value: project,
-        visible: project !== null
-      }),
-      role: FormUtil.createField({
-        value: _.get(loadedRole, 'role', null)
-      })
-    }
-    role.original = _.cloneDeep(role)
-    return role
-  }
-
   _createSelection(newUsers, newRoles) {
-    const {
-      selection: oldSelection,
-      users: oldUsers,
-      roles: oldRoles
-    } = this.context.getState()
+    const { selection: oldSelection, users: oldUsers } = this.context.getState()
 
     if (!oldSelection) {
       return null
@@ -180,26 +139,7 @@ export default class UserGroupFormControllerLoad extends PageControllerLoad {
         }
       }
     } else if (oldSelection.type === UserGroupFormSelectionType.ROLE) {
-      const oldRole = _.find(
-        oldRoles,
-        oldRole => oldRole.id === oldSelection.params.id
-      )
-      const newRole = _.find(
-        newRoles,
-        newRole =>
-          newRole.space.value === oldRole.space.value &&
-          newRole.project.value === oldRole.project.value &&
-          newRole.role.value === oldRole.role.value
-      )
-
-      if (newRole) {
-        return {
-          type: UserGroupFormSelectionType.ROLE,
-          params: {
-            id: newRole.id
-          }
-        }
-      }
+      return new RoleControllerLoad(this.controller).createSelection(newRoles)
     } else {
       return null
     }

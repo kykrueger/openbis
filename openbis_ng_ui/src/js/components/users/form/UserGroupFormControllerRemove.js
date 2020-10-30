@@ -1,3 +1,4 @@
+import RoleControllerRemove from '@src/js/components/users/form/common/RoleControllerRemove.js'
 import UserGroupFormSelectionType from '@src/js/components/users/form/UserGroupFormSelectionType.js'
 
 export default class UserGroupFormControllerRemove {
@@ -11,7 +12,7 @@ export default class UserGroupFormControllerRemove {
     if (selection.type === UserGroupFormSelectionType.USER) {
       this._handleRemoveUser(selection.params.id)
     } else if (selection.type === UserGroupFormSelectionType.ROLE) {
-      this._handleRemoveRole(selection.params.id)
+      new RoleControllerRemove(this.controller).execute(selection.params.id)
     }
   }
 
@@ -26,23 +27,6 @@ export default class UserGroupFormControllerRemove {
     this.context.setState(state => ({
       ...state,
       users: newUsers,
-      selection: null
-    }))
-
-    this.controller.changed(true)
-  }
-
-  _handleRemoveRole(roleId) {
-    const { roles } = this.context.getState()
-
-    const roleIndex = roles.findIndex(role => role.id === roleId)
-
-    const newRoles = Array.from(roles)
-    newRoles.splice(roleIndex, 1)
-
-    this.context.setState(state => ({
-      ...state,
-      roles: newRoles,
       selection: null
     }))
 
