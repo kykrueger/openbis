@@ -1,3 +1,4 @@
+import _ from 'lodash'
 import PageControllerChange from '@src/js/components/common/page/PageControllerChange.js'
 import RoleControllerChange from '@src/js/components/users/form/common/RoleControllerChange.js'
 import UserGroupFormSelectionType from '@src/js/components/users/form/UserGroupFormSelectionType.js'
@@ -32,13 +33,19 @@ export default class UserGroupFormControllerChange extends PageControllerChange 
     await this.context.setState(state => {
       const newState = { ...state }
 
-      const { newCollection } = FormUtil.changeCollectionItemField(
+      const {
+        newCollection,
+        oldObject,
+        newObject
+      } = FormUtil.changeCollectionItemField(
         state.users,
         params.id,
         params.field,
         params.value
       )
       newState.users = newCollection
+
+      this._handleChangeUserId(oldObject, newObject)
 
       return newState
     })
@@ -48,5 +55,39 @@ export default class UserGroupFormControllerChange extends PageControllerChange 
     }
 
     await this.controller.changed(true)
+  }
+
+  _handleChangeUserId(oldUser, newUser) {
+    const oldUserId = oldUser.userId.value
+    const newUserId = newUser.userId.value
+
+    if (oldUserId !== newUserId) {
+      const { users } = this.controller.getDictionaries()
+
+      const user = users.find(user => user.userId === newUserId)
+
+      _.assign(newUser, {
+        firstName: {
+          ...newUser.firstName,
+          value: user.firstName
+        },
+        lastName: {
+          ...newUser.lastName,
+          value: user.lastName
+        },
+        email: {
+          ...newUser.email,
+          value: user.email
+        },
+        space: {
+          ...newUser.space,
+          value: user.space ? user.space.code : null
+        },
+        active: {
+          ...newUser.active,
+          value: user.active
+        }
+      })
+    }
   }
 }

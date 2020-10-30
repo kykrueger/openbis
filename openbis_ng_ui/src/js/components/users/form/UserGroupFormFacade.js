@@ -15,6 +15,7 @@ export default class UserGroupFormFacade {
   async loadUsers() {
     const criteria = new openbis.PersonSearchCriteria()
     const fo = new openbis.PersonFetchOptions()
+    fo.withSpace()
     return openbis.searchPersons(criteria, fo).then(result => {
       return result.getObjects()
     })
