@@ -226,22 +226,26 @@ public class GlobalSearchManager implements IGlobalSearchManager
             return matchingEntity;
         }).collect(Collectors.toMap(MatchingEntity::getIdentifier, Function.identity(),
             (existingMatchingEntity, newMatchingEntity) ->
-            {
-                existingMatchingEntity.setScore(existingMatchingEntity.getScore() + newMatchingEntity.getScore());
-                if (withMatches)
-                {
-                    final Collection<PropertyMatch> existingMatches = existingMatchingEntity.getMatches();
-                    final Collection<PropertyMatch> newMatches = newMatchingEntity.getMatches();
-                    final Collection<PropertyMatch> mergedMatches = mergeMatches(existingMatches, newMatches);
-                    existingMatchingEntity.setMatches(new ArrayList<>(mergedMatches));
-                }
-                return existingMatchingEntity;
-            },
+                    mergeMatchingEntities(existingMatchingEntity, newMatchingEntity, withMatches),
             LinkedHashMap::new
         )).values();
     }
 
-    private Collection<PropertyMatch> mergeMatches(final Collection<PropertyMatch> existingMatches,
+    private static MatchingEntity mergeMatchingEntities(final MatchingEntity existingMatchingEntity,
+            final MatchingEntity newMatchingEntity, final boolean withMatches)
+    {
+        existingMatchingEntity.setScore(existingMatchingEntity.getScore() + newMatchingEntity.getScore());
+        if (withMatches)
+        {
+            final Collection<PropertyMatch> existingMatches = existingMatchingEntity.getMatches();
+            final Collection<PropertyMatch> newMatches = newMatchingEntity.getMatches();
+            final Collection<PropertyMatch> mergedMatches = mergeMatches(existingMatches, newMatches);
+            existingMatchingEntity.setMatches(new ArrayList<>(mergedMatches));
+        }
+        return existingMatchingEntity;
+    }
+
+    private static Collection<PropertyMatch> mergeMatches(final Collection<PropertyMatch> existingMatches,
             final Collection<PropertyMatch> newMatches)
     {
         final List<PropertyMatch> combinedMatches = new ArrayList<>(existingMatches);

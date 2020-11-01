@@ -19,6 +19,8 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator;
 public class SQLLexemes
 {
 
+    public static final String ARRAY = "ARRAY";
+
     public static final String UNNEST = "UNNEST";
 
     public static final String COALESCE = "COALESCE";
@@ -31,6 +33,10 @@ public class SQLLexemes
 
     public static final String GREATEST = "GREATEST";
 
+    public static final String SUM = "SUM";
+
+    public static final String ARRAY_POSITION = "array_position";
+    
     public static final String DATE_TRUNC = "date_trunc";
 
     public static final String TS_RANK = "ts_rank";
@@ -117,6 +123,8 @@ public class SQLLexemes
 
     public static final String ORDER_BY = "ORDER BY";
 
+    public static final String GROUP_BY = "GROUP BY";
+
     public static final String INTERSECT = "INTERSECT";
 
     public static final String UNION = "UNION";
@@ -156,6 +164,10 @@ public class SQLLexemes
     public static final String LP = "(";
 
     public static final String RP = ")";
+
+    public static final String LB = "[";
+
+    public static final String RB = "]";
 
     public static final String SQ = "'";
 

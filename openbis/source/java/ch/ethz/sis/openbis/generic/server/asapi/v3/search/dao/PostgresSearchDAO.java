@@ -28,13 +28,15 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.ISQLExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.*;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.GlobalSearchCriteriaTranslator.*;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.*;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.*;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.*;
@@ -165,8 +167,8 @@ public class PostgresSearchDAO implements ISQLSearchDAO
     }
 
     @Override
-    public Set<Map<String, Object>> queryDBWithNonRecursiveCriteria(final Long userId, final GlobalSearchCriteria criterion,
-            final TableMapper tableMapper, final String idsColumnName,
+    public Set<Map<String, Object>> queryDBWithNonRecursiveCriteria(final Long userId,
+            final GlobalSearchCriteria criterion, final TableMapper tableMapper, final String idsColumnName,
             final AuthorisationInformation authorisationInformation, final boolean useHeadline)
     {
         final Collection<ISearchCriteria> criteria = criterion.getCriteria();
@@ -184,10 +186,36 @@ public class PostgresSearchDAO implements ISQLSearchDAO
         translationContext.setAuthorisationInformation(authorisationInformation);
         translationContext.setUseHeadline(useHeadline);
 
+        // Short query to narrow down the result set and calculate ranks.
         final SelectQuery selectQuery = GlobalSearchCriteriaTranslator.translate(translationContext);
-        final List<Map<String, Object>> result = sqlExecutor.execute(selectQuery.getQuery(), selectQuery.getArgs());
+        final List<Map<String, Object>> idsAndRanksResult = sqlExecutor.execute(selectQuery.getQuery(),
+                selectQuery.getArgs());
 
-        return new LinkedHashSet<>(result);
+        final Map<Long, Map<String, Object>> recordById = idsAndRanksResult.stream()
+                .collect(Collectors.toMap(fieldsMap -> (Long) fieldsMap.get(ID_COLUMN), Function.identity(),
+                        (existingFieldsMap, newFieldsMap) ->
+                        {
+                            throw new IllegalStateException(
+                                    String.format(
+                                            "Result with the same key found. [existingFieldsMap=%s, newFieldsMap=%s]",
+                                            existingFieldsMap, newFieldsMap));
+                        }, LinkedHashMap::new)
+                );
+
+        final Set<Long> permIdSet = recordById.keySet();
+
+        selectQuery.getArgs().clear();
+
+        // Detailed query to fetch all required information as a final result.
+        final SelectQuery detailsSelectQuery = GlobalSearchCriteriaTranslator.translateDetailsQuery(translationContext,
+                permIdSet);
+        final List<Map<String, Object>> otherDetailsResult = sqlExecutor.execute(detailsSelectQuery.getQuery(),
+                selectQuery.getArgs());
+
+        otherDetailsResult.forEach(record -> record.put(RANK_ALIAS,
+                recordById.get((Long) record.get(ID_COLUMN)).get(RANK_ALIAS)));
+
+        return new LinkedHashSet<>(otherDetailsResult);
     }
 
     @Override
@@ -212,7 +240,8 @@ public class PostgresSearchDAO implements ISQLSearchDAO
 
         final List<Object> args = Arrays.asList(parentIdSet.toArray(new Long[0]), relationshipType.toString());
         final List<Map<String, Object>> queryResultList = sqlExecutor.execute(sql, args);
-        return queryResultList.stream().map(stringObjectMap -> (Long) stringObjectMap.get(ID_COLUMN)).collect(Collectors.toSet());
+        return queryResultList.stream().map(stringObjectMap -> (Long) stringObjectMap.get(ID_COLUMN))
+                .collect(Collectors.toSet());
     }
 
     @Override
@@ -225,7 +254,8 @@ public class PostgresSearchDAO implements ISQLSearchDAO
         final String sql = SELECT + SP + DISTINCT + SP + parent + PERIOD + ID_COLUMN + NL +
                 FROM + SP + tableMapper.getRelationshipsTable() + SP + rel + NL +
                 INNER_JOIN + SP + tableMapper.getEntitiesTable() + SP + parent + SP +
-                ON + SP + rel + PERIOD + tableMapper.getRelationshipsTableParentIdField() + SP + EQ + SP + parent + PERIOD + ID_COLUMN + NL +
+                ON + SP + rel + PERIOD + tableMapper.getRelationshipsTableParentIdField() + SP + EQ + SP +
+                parent + PERIOD + ID_COLUMN + NL +
                 WHERE + SP + tableMapper.getRelationshipsTableChildIdField() + SP + IN + SP + LP +
                 SELECT + SP + UNNEST + LP + QU + RP + RP + SP +
                 AND + SP + RELATIONSHIP_COLUMN + SP + EQ + SP + LP +
@@ -235,11 +265,13 @@ public class PostgresSearchDAO implements ISQLSearchDAO
                 RP;
         final List<Object> args = Arrays.asList(childIdSet.toArray(new Long[0]), relationshipType.toString());
         final List<Map<String, Object>> queryResultList = sqlExecutor.execute(sql, args);
-        return queryResultList.stream().map(stringObjectMap -> (Long) stringObjectMap.get(ID_COLUMN)).collect(Collectors.toSet());
+        return queryResultList.stream().map(stringObjectMap -> (Long) stringObjectMap.get(ID_COLUMN))
+                .collect(Collectors.toSet());
     }
 
     @Override
-    public List<Long> sortIDs(final TableMapper tableMapper, final Collection<Long> filteredIDs, final SortOptions<?> sortOptions)
+    public List<Long> sortIDs(final TableMapper tableMapper, final Collection<Long> filteredIDs,
+            final SortOptions<?> sortOptions)
     {
         final TranslationContext translationContext = new TranslationContext();
         translationContext.setTableMapper(tableMapper);
@@ -252,7 +284,8 @@ public class PostgresSearchDAO implements ISQLSearchDAO
         updateWithDataTypes(translationContext, containsProperties);
 
         final SelectQuery orderQuery = OrderTranslator.translateToOrderQuery(translationContext);
-        final List<Map<String, Object>> orderQueryResultList = sqlExecutor.execute(orderQuery.getQuery(), orderQuery.getArgs());
+        final List<Map<String, Object>> orderQueryResultList = sqlExecutor.execute(orderQuery.getQuery(),
+                orderQuery.getArgs());
         return orderQueryResultList.stream().map((valueByColumnName) -> (Long) valueByColumnName.get(ID_COLUMN))
                 .collect(Collectors.toList());
     }
@@ -265,7 +298,8 @@ public class PostgresSearchDAO implements ISQLSearchDAO
         {
             // Making property types query only when it is needed.
             final SelectQuery dataTypesQuery = OrderTranslator.translateToSearchTypeQuery(translationContext);
-            final List<Map<String, Object>> dataTypesQueryResultList = sqlExecutor.execute(dataTypesQuery.getQuery(), dataTypesQuery.getArgs());
+            final List<Map<String, Object>> dataTypesQueryResultList = sqlExecutor.execute(dataTypesQuery.getQuery(),
+                    dataTypesQuery.getArgs());
             typeByPropertyName = dataTypesQueryResultList.stream().collect(Collectors.toMap(
                     (valueByColumnName) -> (String) valueByColumnName.get(OrderTranslator.PROPERTY_CODE_ALIAS),
                     (valueByColumnName) -> (String) valueByColumnName.get(OrderTranslator.TYPE_CODE_ALIAS)));
