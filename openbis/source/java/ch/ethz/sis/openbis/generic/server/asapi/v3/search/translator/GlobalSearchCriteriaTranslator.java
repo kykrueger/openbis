@@ -76,14 +76,6 @@ public class GlobalSearchCriteriaTranslator
 
     public static final String DESCRIPTION_HEADLINE_ALIAS = "description_headline";
 
-    public static final String VALUE_MATCH_RANK_ALIAS = "value_match_rank";
-
-    public static final String CODE_MATCH_RANK_ALIAS = "code_match_rank";
-
-    public static final String LABEL_MATCH_RANK_ALIAS = "label_match_rank";
-    
-    public static final String DESCRIPTION_MATCH_RANK_ALIAS = "description_match_rank";
-
     private static final String REG_CONFIG = "english";
 
     private static final String PROPERTIES_TABLE_ALIAS = "prop";
@@ -120,9 +112,6 @@ public class GlobalSearchCriteriaTranslator
     /** Rank for ID properties. */
     private static final float ID_PROPERTY_RANK = ATTRIBUTE_RANK * IMPORTANCE_MULTIPLIER;
 
-    /** Rank for ID matches. */
-    private static final float ID_RANK = ID_PROPERTY_RANK * IMPORTANCE_MULTIPLIER;
-
     private static final Logger LOG = LogFactory.getLogger(LogCategory.OPERATION, GlobalSearchCriteriaTranslator.class);
 
     private GlobalSearchCriteriaTranslator()
@@ -130,7 +119,7 @@ public class GlobalSearchCriteriaTranslator
         throw new UnsupportedOperationException();
     }
 
-    public static SelectQuery translate(final TranslationContext translationContext)
+    public static SelectQuery translateToShortQuery(final TranslationContext translationContext)
     {
         if (translationContext.getCriteria() == null)
         {
@@ -213,7 +202,7 @@ public class GlobalSearchCriteriaTranslator
                 translationContext.getArgs());
     }
 
-    public static SelectQuery translateDetailsQuery(final TranslationContext translationContext,
+    public static SelectQuery translateToDetailsQuery(final TranslationContext translationContext,
             final Collection<Long> ids)
     {
         // TODO: Request by perm ID only fields we require not '*'. See MatchingEntity for that.
@@ -285,27 +274,6 @@ public class GlobalSearchCriteriaTranslator
             buildDetailsSelect(sqlBuilder, translationContext, globalSearchTextCriterion, false);
             buildFrom(sqlBuilder, translationContext, false);
             buildDetailsWhere(sqlBuilder, translationContext, globalSearchTextCriterion, resultIds, false);
-        }
-    }
-
-    private static void translateCriterion(final StringBuilder sqlBuilder, final TranslationContext translationContext,
-            final ISearchCriteria criterion)
-    {
-        if (criterion instanceof GlobalSearchTextCriteria)
-        {
-            final GlobalSearchTextCriteria globalSearchTextCriterion = (GlobalSearchTextCriteria) criterion;
-
-            // Fields
-            buildSelect(sqlBuilder, translationContext, globalSearchTextCriterion, true);
-            buildFrom(sqlBuilder, translationContext, true);
-            buildWhere(sqlBuilder, translationContext, globalSearchTextCriterion, true);
-
-            sqlBuilder.append(UNION).append(NL);
-
-            // Properties
-            buildSelect(sqlBuilder, translationContext, globalSearchTextCriterion, false);
-            buildFrom(sqlBuilder, translationContext, false);
-            buildWhere(sqlBuilder, translationContext, globalSearchTextCriterion, false);
         }
     }
 
@@ -383,195 +351,6 @@ public class GlobalSearchCriteriaTranslator
                     .append(DOUBLE_AT).append(SP);
             buildTsQueryPart(sqlBuilder, criterion.getFieldValue(), args);
         }
-        sqlBuilder.append(NL);
-    }
-
-    private static void buildSelect(final StringBuilder sqlBuilder, final TranslationContext translationContext,
-            final GlobalSearchTextCriteria criterion, final boolean forAttributes)
-    {
-        final TableMapper tableMapper = translationContext.getTableMapper();
-        final AbstractStringValue stringValue = criterion.getFieldValue();
-        final List<Object> args = translationContext.getArgs();
-
-        final boolean hasSpaces = hasSpaces(tableMapper);
-        final boolean hasProjects = hasProjects(tableMapper);
-
-        sqlBuilder.append(SELECT).append(SP).append(MAIN_TABLE_ALIAS).append(PERIOD).append(ID_COLUMN)
-                .append(COMMA).append(NL);
-
-        switch (tableMapper)
-        {
-            case SAMPLE:
-            case EXPERIMENT:
-            {
-                sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(PERM_ID_COLUMN)
-                        .append(COMMA).append(NL);
-                break;
-            }
-            case DATA_SET:
-            {
-                sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(DATA_SET_KIND_COLUMN)
-                        .append(COMMA).append(NL);
-                break;
-            }
-        }
-
-        sqlBuilder.append(ENTITY_TYPES_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(SP)
-                .append(ENTITY_TYPES_CODE_ALIAS).append(COMMA).append(NL);
-
-        sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(COMMA).append(NL);
-        sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(PERSON_REGISTERER_COLUMN).append(COMMA).append(NL);
-        sqlBuilder.append(SQ).append(tableMapper.getEntityKind()).append(SQ).append(SP).append(OBJECT_KIND_ALIAS)
-                .append(COMMA).append(NL);
-
-        sqlBuilder.append(UPPER).append(LP);
-        if (tableMapper == TableMapper.MATERIAL)
-        {
-            buildTypeCodeIdentifierConcatenationString(sqlBuilder, ENTITY_TYPES_TABLE_ALIAS);
-        } else
-        {
-            buildFullIdentifierConcatenationString(sqlBuilder, hasSpaces || hasProjects ? SPACE_TABLE_ALIAS : null,
-                    hasProjects ? PROJECT_TABLE_ALIAS : null,
-                    (tableMapper == SAMPLE) ? CONTAINER_TABLE_ALIAS : null);
-        }
-        sqlBuilder.append(RP).append(SP).append(IDENTIFIER_ALIAS).append(COMMA).append(NL);
-
-        if (hasSpaces || hasProjects)
-        {
-            sqlBuilder.append(SPACE_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN);
-        } else
-        {
-            sqlBuilder.append(NULL);
-        }
-        sqlBuilder.append(SP).append(SPACE_CODE_ALIAS).append(COMMA).append(NL);
-
-        final String[] criterionValues = criterion.getFieldValue().getValue().toLowerCase().trim().split("\\s+");
-        if (forAttributes)
-        {
-            final String thenValue = ID_RANK + DOUBLE_COLON + FLOAT4;
-            final String elseValue = ATTRIBUTE_RANK + DOUBLE_COLON + FLOAT4;
-            final String[] matchingColumns = (tableMapper == SAMPLE || tableMapper == EXPERIMENT)
-                    ? new String[] { MAIN_TABLE_ALIAS + PERIOD + CODE_COLUMN,
-                            MAIN_TABLE_ALIAS + PERIOD + PERM_ID_COLUMN }
-                    : new String[] { MAIN_TABLE_ALIAS + PERIOD + CODE_COLUMN };
-            buildCaseWhenIn(sqlBuilder, args, criterionValues, matchingColumns, thenValue, elseValue);
-            sqlBuilder.append(SP).append(RANK_ALIAS).append(COMMA).append(NL);
-
-            buildAttributesMatchSelection(sqlBuilder, criterionValues, translationContext.getTableMapper(), args);
-            sqlBuilder.append(COMMA).append(NL);
-
-            if (tableMapper == SAMPLE)
-            {
-                final String sampleIdentifierColumnReference = MAIN_TABLE_ALIAS + PERIOD + SAMPLE_IDENTIFIER_COLUMN;
-                buildCaseWhenIn(sqlBuilder, args, criterionValues,
-                        new String[] { LOWER + LP + sampleIdentifierColumnReference + RP },
-                        sampleIdentifierColumnReference, NULL);
-                sqlBuilder.append(SP).append(SAMPLE_IDENTIFIER_MATCH_ALIAS).append(COMMA).append(NL);
-            }
-
-            sqlBuilder.append(NULL).append(SP).append(MATERIAL_MATCH_ALIAS).append(COMMA).append(NL);
-
-            if (tableMapper == SAMPLE || tableMapper == EXPERIMENT || tableMapper == DATA_SET)
-            {
-                sqlBuilder.append(NULL).append(SP).append(SAMPLE_MATCH_ALIAS).append(COMMA).append(NL);
-            }
-
-            sqlBuilder.append(NULL).append(SP).append(PROPERTY_TYPE_LABEL_ALIAS).append(COMMA).append(NL);
-
-            sqlBuilder.append(NULL).append(SP).append(PROPERTY_VALUE_ALIAS).append(COMMA).append(NL);
-            sqlBuilder.append(NULL).append(SP).append(CV_CODE_ALIAS).append(COMMA).append(NL);
-            sqlBuilder.append(NULL).append(SP).append(CV_LABEL_ALIAS).append(COMMA).append(NL);
-            sqlBuilder.append(NULL).append(SP).append(CV_DESCRIPTION_ALIAS).append(COMMA).append(NL);
-
-            sqlBuilder.append(NULL).append(SP).append(VALUE_HEADLINE_ALIAS).append(COMMA).append(NL);
-            sqlBuilder.append(NULL).append(SP).append(CODE_HEADLINE_ALIAS).append(COMMA).append(NL);
-            sqlBuilder.append(NULL).append(SP).append(LABEL_HEADLINE_ALIAS).append(COMMA).append(NL);
-            sqlBuilder.append(NULL).append(SP).append(DESCRIPTION_HEADLINE_ALIAS).append(COMMA).append(NL);
-
-            sqlBuilder.append(0.0f).append(DOUBLE_COLON).append(FLOAT4).append(SP).append(VALUE_MATCH_RANK_ALIAS)
-                    .append(COMMA).append(NL);
-            sqlBuilder.append(0.0f).append(DOUBLE_COLON).append(FLOAT4).append(SP).append(CODE_MATCH_RANK_ALIAS)
-                    .append(COMMA).append(NL);
-            sqlBuilder.append(0.0f).append(DOUBLE_COLON).append(FLOAT4).append(SP).append(LABEL_MATCH_RANK_ALIAS)
-                    .append(COMMA).append(NL);
-            sqlBuilder.append(0.0f).append(DOUBLE_COLON).append(FLOAT4).append(SP).append(DESCRIPTION_MATCH_RANK_ALIAS);
-        } else
-        {
-            buildPropertyMatchRank(sqlBuilder, stringValue, criterionValues, args);
-
-            sqlBuilder.append(NULL).append(SP).append(CODE_MATCH_ALIAS).append(COMMA).append(NL);
-            switch (tableMapper)
-            {
-                case SAMPLE:
-                case EXPERIMENT:
-                {
-                    sqlBuilder.append(NULL).append(SP).append(PERM_ID_MATCH_ALIAS).append(COMMA).append(NL);
-                    break;
-                }
-                case DATA_SET:
-                {
-                    sqlBuilder.append(NULL).append(SP).append(DATA_SET_KIND_MATCH_ALIAS).append(COMMA).append(NL);
-                    break;
-                }
-            }
-
-            if (tableMapper == SAMPLE)
-            {
-                sqlBuilder.append(NULL).append(SP).append(SAMPLE_IDENTIFIER_MATCH_ALIAS).append(COMMA).append(NL);
-            }
-
-            buildMaterialMatch(sqlBuilder, criterionValues, args);
-            sqlBuilder.append(COMMA).append(NL);
-
-            if (tableMapper == SAMPLE || tableMapper == EXPERIMENT || tableMapper == DATA_SET)
-            {
-                buildSampleMatch(sqlBuilder, criterionValues, args);
-                sqlBuilder.append(COMMA).append(NL);
-            }
-
-            sqlBuilder.append(ATTRIBUTE_TYPES_TABLE_ALIAS).append(PERIOD).append(LABEL_COLUMN).append(SP)
-                    .append(PROPERTY_TYPE_LABEL_ALIAS).append(COMMA).append(NL);
-
-            sqlBuilder.append(PROPERTIES_TABLE_ALIAS).append(PERIOD).append(VALUE_COLUMN).append(SP)
-                    .append(PROPERTY_VALUE_ALIAS).append(COMMA).append(NL);
-            sqlBuilder.append(CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(SP)
-                    .append(CV_CODE_ALIAS).append(COMMA).append(NL);
-            sqlBuilder.append(CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS).append(PERIOD).append(LABEL_COLUMN).append(SP)
-                    .append(CV_LABEL_ALIAS).append(COMMA).append(NL);
-            sqlBuilder.append(CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS).append(PERIOD).append(DESCRIPTION_COLUMN)
-                    .append(SP).append(CV_DESCRIPTION_ALIAS).append(COMMA).append(NL);
-
-            final boolean useHeadline = translationContext.isUseHeadline();
-            buildTsHeadline(sqlBuilder, stringValue, args, PROPERTIES_TABLE_ALIAS + PERIOD + VALUE_COLUMN,
-                    VALUE_HEADLINE_ALIAS, useHeadline);
-            sqlBuilder.append(COMMA).append(NL);
-            buildTsHeadline(sqlBuilder, stringValue, args,
-                    CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS + PERIOD + CODE_COLUMN, CODE_HEADLINE_ALIAS,
-                    useHeadline);
-            sqlBuilder.append(COMMA).append(NL);
-            buildTsHeadline(sqlBuilder, stringValue, args,
-                    CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS + PERIOD + LABEL_COLUMN, LABEL_HEADLINE_ALIAS,
-                    useHeadline);
-            sqlBuilder.append(COMMA).append(NL);
-            buildTsHeadline(sqlBuilder, stringValue, args,
-                    CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS + PERIOD + DESCRIPTION_COLUMN, DESCRIPTION_HEADLINE_ALIAS,
-                    useHeadline);
-            sqlBuilder.append(COMMA).append(NL);
-
-            buildHeadlineTsRank(sqlBuilder, stringValue, args, PROPERTIES_TABLE_ALIAS + PERIOD + VALUE_COLUMN,
-                    VALUE_MATCH_RANK_ALIAS);
-            sqlBuilder.append(COMMA).append(NL);
-            buildHeadlineTsRank(sqlBuilder, stringValue, args, CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS + PERIOD + CODE_COLUMN,
-                    CODE_MATCH_RANK_ALIAS);
-            sqlBuilder.append(COMMA).append(NL);
-            buildHeadlineTsRank(sqlBuilder, stringValue, args,
-                    CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS + PERIOD + LABEL_COLUMN, LABEL_MATCH_RANK_ALIAS);
-            sqlBuilder.append(COMMA).append(NL);
-            buildHeadlineTsRank(sqlBuilder, stringValue, args,
-                    CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS + PERIOD + DESCRIPTION_COLUMN,
-                    DESCRIPTION_MATCH_RANK_ALIAS);
-        }
-
         sqlBuilder.append(NL);
     }
 
@@ -768,41 +547,6 @@ public class GlobalSearchCriteriaTranslator
                 .append(SELECT_UNNEST).append(SP)
                 .append(THEN).append(SP).append(tableAlias).append(PERIOD).append(column).append(NL);
         args.add(values);
-    }
-
-    /**
-     * Builds the rank calculation part of the property matching query part.
-     * @param sqlBuilder {@link StringBuilder string builder} containing SQL to be operated on.
-     * @param stringValue string value to search by.
-     * @param splitValues string value split to separate values.
-     * @param args query arguments.
-     */
-    private static void buildPropertyMatchRank(final StringBuilder sqlBuilder, final AbstractStringValue stringValue,
-            final String[] splitValues, final List<Object> args)
-    {
-        sqlBuilder.append(CASE).append(SP).append(WHEN).append(SP)
-                .append(CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(SP)
-                .append(IN).append(SP).append(SELECT_UNNEST)
-                .append(SP).append(OR).append(SP)
-                .append(DATA_TYPES_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(SP).append(IN).append(SP)
-                .append(LP).append(SQ).append(MATERIAL.name()).append(SQ).append(COMMA).append(SP).append(SQ)
-                .append(SAMPLE.name()).append(SQ).append(RP);
-        args.add(splitValues);
-        sqlBuilder.append(SP).append(THEN).append(SP).append(ID_PROPERTY_RANK).append(DOUBLE_COLON)
-                .append(FLOAT4).append(SP);
-        sqlBuilder.append(ELSE).append(SP);
-        buildHeadlineTsRank(sqlBuilder, stringValue, args, PROPERTIES_TABLE_ALIAS + PERIOD + VALUE_COLUMN, "");
-        sqlBuilder.append(PLUS).append(NL);
-        buildHeadlineTsRank(sqlBuilder, stringValue, args,
-                CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS + PERIOD + CODE_COLUMN, "");
-        sqlBuilder.append(ASTERISK).append(SP).append(IMPORTANCE_MULTIPLIER).append(DOUBLE_COLON).append(FLOAT4)
-                .append(SP).append(PLUS).append(NL);
-        buildHeadlineTsRank(sqlBuilder, stringValue, args,
-                CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS + PERIOD + LABEL_COLUMN, "");
-        sqlBuilder.append(ASTERISK).append(SP).append(IMPORTANCE_MULTIPLIER).append(DOUBLE_COLON).append(FLOAT4)
-                .append(NL);
-
-        sqlBuilder.append(END).append(SP).append(RANK_ALIAS).append(COMMA).append(NL);
     }
 
     private static void buildHeadlineTsRank(final StringBuilder sqlBuilder, final AbstractStringValue stringValue,
@@ -1077,22 +821,6 @@ public class GlobalSearchCriteriaTranslator
     {
         final String entitiesTable = tableMapper.getEntitiesTable();
         return SAMPLE.getEntitiesTable().equals(entitiesTable) || PROJECT.getEntitiesTable().equals(entitiesTable);
-    }
-
-    private static void buildWhere(final StringBuilder sqlBuilder, final TranslationContext translationContext,
-            final GlobalSearchTextCriteria criterion, final boolean forAttributes)
-    {
-        final List<Object> args = translationContext.getArgs();
-
-        sqlBuilder.append(WHERE).append(SP);
-        if (forAttributes)
-        {
-            buildAttributesMatchCondition(sqlBuilder, criterion, args);
-        } else
-        {
-            buildTsVectorMatch(sqlBuilder, criterion.getFieldValue(), translationContext.getTableMapper(), args);
-        }
-        sqlBuilder.append(NL);
     }
 
     private static void buildDetailsWhere(final StringBuilder sqlBuilder, final TranslationContext translationContext,

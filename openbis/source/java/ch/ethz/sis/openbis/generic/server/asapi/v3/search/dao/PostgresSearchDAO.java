@@ -187,7 +187,7 @@ public class PostgresSearchDAO implements ISQLSearchDAO
         translationContext.setUseHeadline(useHeadline);
 
         // Short query to narrow down the result set and calculate ranks.
-        final SelectQuery selectQuery = GlobalSearchCriteriaTranslator.translate(translationContext);
+        final SelectQuery selectQuery = GlobalSearchCriteriaTranslator.translateToShortQuery(translationContext);
         final List<Map<String, Object>> idsAndRanksResult = sqlExecutor.execute(selectQuery.getQuery(),
                 selectQuery.getArgs());
 
@@ -207,11 +207,12 @@ public class PostgresSearchDAO implements ISQLSearchDAO
         selectQuery.getArgs().clear();
 
         // Detailed query to fetch all required information as a final result.
-        final SelectQuery detailsSelectQuery = GlobalSearchCriteriaTranslator.translateDetailsQuery(translationContext,
+        final SelectQuery detailsSelectQuery = GlobalSearchCriteriaTranslator.translateToDetailsQuery(translationContext,
                 permIdSet);
         final List<Map<String, Object>> otherDetailsResult = sqlExecutor.execute(detailsSelectQuery.getQuery(),
                 selectQuery.getArgs());
 
+        // Adding ranks obtained from the first query to the result of the second one.
         otherDetailsResult.forEach(record -> record.put(RANK_ALIAS,
                 recordById.get((Long) record.get(ID_COLUMN)).get(RANK_ALIAS)));
 
