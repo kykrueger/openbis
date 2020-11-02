@@ -28,18 +28,23 @@ import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronize
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.translator.PrefixBasedNameTranslator;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.util.Monitor;
 import ch.systemsx.cisd.openbis.generic.shared.ICommonServer;
-import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.PropertyType;
+import ch.systemsx.cisd.openbis.generic.shared.basic.CodeConverter;
 import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataType;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileFormatType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewVocabulary;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Person;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Script;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.VocabularyTerm;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SessionContextDTO;
 
 public class MasterDataSynchronizerTest
 {
+    private static final String SYSTEM_USER_ID = "system";
+
     private static final String UPDATE_AND_PREFIX_PROVIDER = "updateAndPrefixProvider";
 
     private static final String USER_ID = "user";
@@ -139,7 +144,7 @@ public class MasterDataSynchronizerTest
         // Given
         config.setMasterDataUpdateAllowed(withUpdate);
         TestFixtureBuilder builder = new TestFixtureBuilder(createTranslator(prefix));
-        VocabularyBuilder existing = new VocabularyBuilder("$A").managedInternally().system();
+        VocabularyBuilder existing = new VocabularyBuilder("A").managedInternally().system();
         existing.term("1").label("alpha");
         builder.existingVocabularies(existing.get());
         VocabularyBuilder incoming = new VocabularyBuilder("A").managedInternally().system().description("blabla");
@@ -239,6 +244,57 @@ public class MasterDataSynchronizerTest
         context.assertIsSatisfied();
     }
 
+    @Test(dataProvider = UPDATE_AND_PREFIX_PROVIDER)
+    public void testNonexistentInternalPropertyType(boolean withUpdate, String prefix)
+    {
+        // Given
+        config.setMasterDataUpdateAllowed(withUpdate);
+        TestFixtureBuilder builder = new TestFixtureBuilder(createTranslator(prefix));
+        builder.incomingPropertyTypes(new PropertyTypeBuilder("A").managedInternally().system().get());
+        MasterData masterData = builder.prepare();
+
+        // When & Then
+        assertFailure(masterData, "There is no internal property type $A.");
+        context.assertIsSatisfied();
+    }
+
+    @Test(dataProvider = UPDATE_AND_PREFIX_PROVIDER)
+    public void testNonexistentPropertyTypes(boolean withUpdate, String prefix)
+    {
+        // Given
+        config.setMasterDataUpdateAllowed(withUpdate);
+        TestFixtureBuilder builder = new TestFixtureBuilder(createTranslator(prefix));
+        PropertyTypeBuilder propertyType = new PropertyTypeBuilder("A").registrator("admin");
+        builder.incomingPropertyTypes(propertyType.get());
+        MasterData masterData = builder.prepare();
+
+        // Expected actions
+        prepareRegisterPropertyType(propertyType.get());
+
+        // When
+        synchronizer.synchronizeMasterData(masterData, monitor);
+
+        // Then
+        context.assertIsSatisfied();
+    }
+
+    @Test(dataProvider = UPDATE_AND_PREFIX_PROVIDER)
+    public void testInternalPropertyTypeOfDifferentDataType(boolean withUpdate, String prefix)
+    {
+        // Given
+        config.setMasterDataUpdateAllowed(withUpdate);
+        TestFixtureBuilder builder = new TestFixtureBuilder(createTranslator(prefix));
+        builder.incomingPropertyTypes(new PropertyTypeBuilder("A").type(DataTypeCode.VARCHAR)
+                .managedInternally().system().get());
+        builder.existingPropertyTypes(new PropertyTypeBuilder("A").type(DataTypeCode.CONTROLLEDVOCABULARY)
+                .managedInternally().system().get());
+        MasterData masterData = builder.prepare();
+
+        // When & Then
+        assertFailure(masterData, "The internal property type $A is not of data type VARCHAR but CONTROLLEDVOCABULARY.");
+        context.assertIsSatisfied();
+    }
+
     private void assertFailure(MasterData masterData, String... failureMessages)
     {
         try
@@ -302,6 +358,16 @@ public class MasterDataSynchronizerTest
             });
     }
 
+    private void prepareRegisterPropertyType(PropertyType propertyType)
+    {
+        context.checking(new Expectations()
+            {
+                {
+                    one(facade).registerPropertyType(propertyType);
+                }
+            });
+    }
+
     private final class TestFixtureBuilder
     {
         private final INameTranslator nameTranslator;
@@ -330,15 +396,21 @@ public class MasterDataSynchronizerTest
 
         private List<ExternalDms> incomingExternalDmss = Collections.emptyList();
 
+        private Function<? super NewVocabulary, ? extends String> vocabularyKeyMapper =
+                v -> CodeConverter.tryToBusinessLayer(v.getCode(), v.isManagedInternally());
+
+        private Function<? super PropertyType, ? extends String> propertyTypeKeyMapper =
+                p -> CodeConverter.tryToBusinessLayer(p.getCode(), p.isManagedInternally());
+
         TestFixtureBuilder(INameTranslator nameTranslator)
         {
             this.nameTranslator = nameTranslator;
-
         }
 
         TestFixtureBuilder existingVocabularies(NewVocabulary... vocabularies)
         {
             existingVocabularies = Arrays.asList(vocabularies);
+            existingVocabularies.forEach(v -> v.setCode(vocabularyKeyMapper.apply(v)));
             return this;
         }
 
@@ -346,6 +418,20 @@ public class MasterDataSynchronizerTest
         {
             incomingVocabularies = Arrays.asList(vocabularies);
             incomingVocabularies.forEach(v -> v.setCode(nameTranslator.translate(v.getCode())));
+            return this;
+        }
+
+        TestFixtureBuilder existingPropertyTypes(PropertyType... propertyTypes)
+        {
+            existingPropertyTypes = Arrays.asList(propertyTypes);
+            existingPropertyTypes.forEach(t -> t.setCode(propertyTypeKeyMapper.apply(t)));
+            return this;
+        }
+
+        TestFixtureBuilder incomingPropertyTypes(PropertyType... propertyTypes)
+        {
+            incomingPropertyTypes = Arrays.asList(propertyTypes);
+            incomingPropertyTypes.forEach(t -> t.setCode(nameTranslator.translate(t.getCode())));
             return this;
         }
 
@@ -377,7 +463,9 @@ public class MasterDataSynchronizerTest
                 });
             MasterData masterData = new MasterData(nameTranslator);
             masterData.setVocabulariesToProcess(incomingVocabularies.stream().collect(
-                    Collectors.toMap(NewVocabulary::getCode, Function.identity())));
+                    Collectors.toMap(vocabularyKeyMapper, Function.identity())));
+            masterData.setPropertyTypesToProcess(incomingPropertyTypes.stream().collect(
+                    Collectors.toMap(propertyTypeKeyMapper, Function.identity())));
             return masterData;
         }
     }
@@ -413,7 +501,7 @@ public class MasterDataSynchronizerTest
 
         VocabularyBuilder system()
         {
-            return registrator("system");
+            return registrator(SYSTEM_USER_ID);
         }
 
         VocabularyBuilder registrator(String userId)
@@ -451,5 +539,49 @@ public class MasterDataSynchronizerTest
             term.setLabel(label);
             return this;
         }
+    }
+
+    private static final class PropertyTypeBuilder
+    {
+        private PropertyType propertyType = new PropertyType();
+
+        private String code;
+
+        PropertyTypeBuilder(String code)
+        {
+            this.code = code;
+        }
+
+        PropertyType get()
+        {
+            propertyType.setCode(code);
+            return propertyType;
+        }
+
+        PropertyTypeBuilder managedInternally()
+        {
+            propertyType.setManagedInternally(true);
+            return this;
+        }
+
+        PropertyTypeBuilder type(DataTypeCode typeCode)
+        {
+            propertyType.setDataType(new DataType(typeCode));
+            return this;
+        }
+
+        PropertyTypeBuilder system()
+        {
+            return registrator(SYSTEM_USER_ID);
+        }
+
+        PropertyTypeBuilder registrator(String userId)
+        {
+            Person person = new Person();
+            person.setUserId(userId);
+            propertyType.setRegistrator(person);
+            return this;
+        }
+
     }
 }

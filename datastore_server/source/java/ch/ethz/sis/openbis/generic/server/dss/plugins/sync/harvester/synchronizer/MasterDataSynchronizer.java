@@ -52,6 +52,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.CodeConverter;
 import ch.systemsx.cisd.openbis.generic.shared.basic.ICodeHolder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetType;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityTypePropertyType;
@@ -667,12 +668,20 @@ public class MasterDataSynchronizer
             if (existingPropertyType != null)
             {
                 boolean existentIsInternal = isInternallyManagedBySystem(existingPropertyType);
-                String diff = calculateDiff(existingPropertyType, incomingPropertyType);
-                if (StringUtils.isNotBlank(diff) && config.isMasterDataUpdateAllowed() && existentIsInternal == false)
+                if (existentIsInternal == false)
                 {
-                    incomingPropertyType.setModificationDate(existingPropertyType.getModificationDate());
-                    incomingPropertyType.setId(existingPropertyType.getId());
-                    synchronizerFacade.updatePropertyType(incomingPropertyType, diff);
+                    String diff = calculateDiff(existingPropertyType, incomingPropertyType);
+                    if (StringUtils.isNotBlank(diff) && config.isMasterDataUpdateAllowed())
+                    {
+                        incomingPropertyType.setModificationDate(existingPropertyType.getModificationDate());
+                        incomingPropertyType.setId(existingPropertyType.getId());
+                        synchronizerFacade.updatePropertyType(incomingPropertyType, diff);
+                    }
+                } else if (getType(existingPropertyType).equals(getType(incomingPropertyType)) == false)
+                {
+                    errorsOut.println("The internal property type " + getCode(incomingPropertyType, nameTranslator)
+                            + " is not of data type " + getType(incomingPropertyType) + " but "
+                            + getType(existingPropertyType) + ".");
                 }
             } else if (incomingIsInternal)
             {
@@ -710,7 +719,7 @@ public class MasterDataSynchronizer
     {
         DiffBuilder diffBuilder = new DiffBuilder(existingPropertyType, incomingPropertyType, ToStringStyle.SHORT_PREFIX_STYLE, false)
                 .append("label", existingPropertyType.getLabel(), incomingPropertyType.getLabel())
-                .append("dataType", existingPropertyType.getDataType().getCode(), incomingPropertyType.getDataType().getCode())
+                .append("dataType", getType(existingPropertyType), getType(incomingPropertyType))
                 .append("description", existingPropertyType.getDescription(), incomingPropertyType.getDescription())
                 .append("managedInternally", existingPropertyType.isManagedInternally(), incomingPropertyType.isManagedInternally())
                 .append("vocabulary", getCode(existingPropertyType.getVocabulary()),
@@ -719,6 +728,11 @@ public class MasterDataSynchronizer
                         getCode(incomingPropertyType.getMaterialType()));
         DiffResult diffResult = diffBuilder.build();
         return render(diffResult, existingPropertyType, incomingPropertyType);
+    }
+
+    private DataTypeCode getType(PropertyType propertyType)
+    {
+        return propertyType.getDataType().getCode();
     }
 
     private String getCode(Vocabulary vocabulary)

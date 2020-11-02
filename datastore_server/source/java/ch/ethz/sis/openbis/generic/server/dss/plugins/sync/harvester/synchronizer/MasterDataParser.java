@@ -541,7 +541,12 @@ public class MasterDataParser
             if (dataTypeCode.equals(DataTypeCode.CONTROLLEDVOCABULARY))
             {
                 String vocabularyCode = nameTranslator.translate((getAttribute(propertyTypeElement, "vocabulary")));
-                newPropertyType.setVocabulary(vocabularies.get(vocabularyCode));
+                NewVocabulary vocabulary = vocabularies.get(vocabularyCode);
+                if (vocabulary == null)
+                {
+                    throw new RuntimeException("Unknown vocabulary " + vocabularyCode);
+                }
+                newPropertyType.setVocabulary(vocabulary);
             } else if (dataTypeCode.equals(DataTypeCode.MATERIAL))
             {
                 String materialCode = getAttribute(propertyTypeElement, "material");
