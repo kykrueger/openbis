@@ -52,6 +52,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileFormatType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewETPTAssignment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewVocabulary;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Person;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PluginType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleType;
@@ -306,6 +307,9 @@ public class MasterDataParser
             newVocabulary.setManagedInternally(Boolean.valueOf(getAttribute(vocabElement, "managedInternally")));
             newVocabulary.setChosenFromList(Boolean.valueOf(getAttribute(vocabElement, "chosenFromList")));
             newVocabulary.setRegistrationDate(DSPropertyUtils.convertFromW3CDate(getAttribute(vocabElement, "registration-timestamp")));
+            Person registrator = new Person();
+            registrator.setUserId(getAttribute(vocabElement, "registrator"));
+            newVocabulary.setRegistrator(registrator);
             newVocabulary.setModificationDate(DSPropertyUtils.convertFromW3CDate(getAttribute(vocabElement, "modification-timestamp")));
 
             vocabularies.put(CodeConverter.tryToBusinessLayer(newVocabulary.getCode(), newVocabulary.isManagedInternally()), newVocabulary);
@@ -522,15 +526,18 @@ public class MasterDataParser
             PropertyType newPropertyType = new PropertyType();
             Boolean managedInternally = Boolean.valueOf(getAttribute(propertyTypeElement, "managedInternally"));
             String code = nameTranslator.translate(getAttribute(propertyTypeElement, "code"));
-            newPropertyType.setCode(CodeConverter.tryToBusinessLayer(code, managedInternally));
+            newPropertyType.setCode(code);
             newPropertyType.setLabel(getAttribute(propertyTypeElement, "label"));
             DataTypeCode dataTypeCode = DataTypeCode.valueOf(getAttribute(propertyTypeElement, "dataType"));
             newPropertyType.setDataType(new DataType(dataTypeCode));
             newPropertyType.setDescription(getAttribute(propertyTypeElement, "description"));
             newPropertyType.setManagedInternally(managedInternally);
+            Person registrator = new Person();
+            registrator.setUserId(getAttribute(propertyTypeElement, "registrator"));
+            newPropertyType.setRegistrator(registrator);
             newPropertyType.setModificationDate(DSPropertyUtils.convertFromW3CDate(getAttribute(propertyTypeElement, "registration-timestamp")));
 
-            propertyTypes.put(newPropertyType.getCode(), newPropertyType);
+            propertyTypes.put(CodeConverter.tryToBusinessLayer(newPropertyType.getCode(), managedInternally), newPropertyType);
             if (dataTypeCode.equals(DataTypeCode.CONTROLLEDVOCABULARY))
             {
                 String vocabularyCode = nameTranslator.translate((getAttribute(propertyTypeElement, "vocabulary")));

@@ -270,9 +270,8 @@ public class MasterDataSynchronizer
         {
             existingVocabularyMap.put(vocabulary.getCode(), vocabulary);
         }
-        for (String code : vocabulariesToProcess.keySet())
+        for (NewVocabulary newVocabulary : vocabulariesToProcess.values())
         {
-            NewVocabulary newVocabulary = vocabulariesToProcess.get(code);
             boolean newIsInternal = isInternallyManagedBySystem(newVocabulary);
             Vocabulary existingVocabulary = getExisting(existingVocabularyMap, newVocabulary, nameTranslator);
             if (existingVocabulary != null)
@@ -661,9 +660,8 @@ public class MasterDataSynchronizer
             propertyTypeMap.put(propertyType.getCode(), propertyType);
         }
 
-        for (String propTypeCode : propertyTypesToProcess.keySet())
+        for (PropertyType incomingPropertyType : propertyTypesToProcess.values())
         {
-            PropertyType incomingPropertyType = propertyTypesToProcess.get(propTypeCode);
             boolean incomingIsInternal = isInternallyManagedBySystem(incomingPropertyType);
             PropertyType existingPropertyType = getExisting(propertyTypeMap, incomingPropertyType, nameTranslator);
             if (existingPropertyType != null)
