@@ -38,6 +38,7 @@ import ch.systemsx.cisd.dbmigration.postgresql.PostgreSQLDAOFactory;
  */
 public enum DatabaseEngine
 {
+    // FORCE_OPENBIS_POSTGRES_HOST is used for servers that don't have the Postgres installation locally and require no change on config files (test servers)
     POSTGRESQL("postgresql", "org.postgresql.Driver", PostgreSQLDAOFactory.class,
             new DefaultLobHandler(), new PostgreSQLSequencerHandler(), "jdbc:postgresql://{0}/",
             "jdbc:postgresql://{0}/{1}", System.getenv().getOrDefault("FORCE_OPENBIS_POSTGRES_HOST", "localhost"), "postgres", "SELECT 1"),
