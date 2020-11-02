@@ -54,7 +54,7 @@ public class GlobalSearchManager implements IGlobalSearchManager
         final Set<Map<String, Object>> resultBeforeFiltering = containsValues(mainCriteriaIntermediateResults)
                 ? mainCriteriaIntermediateResults : Collections.emptySet();
 
-        return filterResultsByUserRights(authorisationInformation, resultBeforeFiltering, tableMapper);
+        return resultBeforeFiltering;
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -134,55 +134,6 @@ public class GlobalSearchManager implements IGlobalSearchManager
     protected static boolean containsValues(final Collection<?> collection)
     {
         return collection != null && !collection.isEmpty();
-    }
-
-    private Set<Map<String, Object>> filterResultsByUserRights(final AuthorisationInformation authorisationInformation,
-            final Set<Map<String, Object>> result, final TableMapper tableMapper)
-    {
-        if (authorisationInformation.isInstanceRole())
-        {
-            return result;
-        } else
-        {
-            final Set<Long> allIds = result.stream().map(fieldMap -> (Long) fieldMap.get(ID_COLUMN))
-                    .collect(Collectors.toSet());
-            final Set<Long> filteredIds = doFilterIDsByUserRights(allIds, authorisationInformation, tableMapper);
-            return result.stream().filter(fieldMap -> filteredIds.contains((Long) fieldMap.get(ID_COLUMN)))
-                    .collect(Collectors.toSet());
-        }
-    }
-
-    protected Set<Long> doFilterIDsByUserRights(final Set<Long> ids,
-            final AuthorisationInformation authorisationInformation, final TableMapper tableMapper)
-    {
-        switch (tableMapper)
-        {
-            case SAMPLE:
-            {
-                return authProvider.getAuthorisedSamples(ids, authorisationInformation);
-            }
-            
-            case EXPERIMENT:
-            {
-                return authProvider.getAuthorisedExperiments(ids, authorisationInformation);
-            }
-            
-            case DATA_SET:
-            {
-                return authProvider.getAuthorisedDatasets(ids, authorisationInformation);
-            }
-            
-            case MATERIAL:
-            {
-                return ids;
-            }
-            
-            default:
-            {
-                throw new IllegalArgumentException("Full text search does not support this table mapper: "
-                        + tableMapper);
-            }
-        }
     }
 
     @Override

@@ -69,6 +69,8 @@ public class SQLLexemes
 
     public static final String WHERE = "WHERE";
 
+    public static final String HAVING = "HAVING";
+
     public static final String CASE = "CASE";
 
     public static final String WHEN = "WHEN";

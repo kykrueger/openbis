@@ -6,6 +6,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringContainsExac
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchObjectKindCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchTextCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchWildCardsCriteria;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.AttributesMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.systemsx.cisd.common.logging.LogCategory;
@@ -13,10 +14,7 @@ import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.openbis.generic.shared.dto.TableNames;
 import org.apache.log4j.Logger;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Spliterator;
+import java.util.*;
 import java.util.stream.StreamSupport;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes.FLOAT4;
@@ -29,6 +27,7 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.cond
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils.buildTypeCodeIdentifierConcatenationString;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.*;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.DATA_TYPES_TABLE;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.PROJECTS_TABLE;
 
 public class GlobalSearchCriteriaTranslator
 {
@@ -161,6 +160,7 @@ public class GlobalSearchCriteriaTranslator
         final TableMapper tableMapper = translationContext.getTableMapper();
         final boolean hasSpaces = hasSpaces(tableMapper);
         final boolean hasProjects = hasProjects(tableMapper);
+        final boolean hasExperiments = hasExperiments(tableMapper);
         final String permIdColumn = getPermId(tableMapper);
 
         if (hasProjects)
@@ -192,14 +192,139 @@ public class GlobalSearchCriteriaTranslator
             suffixSqlBuilder.append(SPACE_COLUMN).append(COMMA).append(SP);
         }
 
+        if (hasExperiments)
+        {
+            suffixSqlBuilder.append(EXPERIMENT_COLUMN).append(COMMA).append(SP);
+        }
+
         suffixSqlBuilder.append(ID_COLUMN).append(COMMA).append(SP)
                 .append(permIdColumn).append(COMMA).append(SP)
                 .append(OBJECT_KIND_ALIAS).append(NL);
+
+        translateAuthorisation(suffixSqlBuilder, translationContext);
+
         // TODO: add ORDER BY and rights management.
         suffixSqlBuilder.append(RP).append(SP).append("q2");
 
         return new SelectQuery(prefixSqlBuilder.toString() + sqlBuilder.toString() + suffixSqlBuilder.toString(),
                 translationContext.getArgs());
+    }
+
+    private static void translateAuthorisation(final StringBuilder sqlBuilder,
+            final TranslationContext translationContext)
+    {
+        final AuthorisationInformation authorisationInformation = translationContext.getAuthorisationInformation();
+        final TableMapper tableMapper = translationContext.getTableMapper();
+        final List<Object> args = translationContext.getArgs();
+        if (!authorisationInformation.isInstanceRole())
+        {
+            switch (tableMapper)
+            {
+                case SAMPLE:
+                {
+                    sqlBuilder.append(HAVING).append(SP);
+                    sqlBuilder.append(SPACE_COLUMN).append(SP).append(IN).append(SP).append(LP)
+                            .append(SELECT).append(SP).append(UNNEST).append(LP).append(QU).append(RP).append(RP)
+                            .append(SP).append(OR).append(NL);
+                    sqlBuilder.append(PROJECT_COLUMN).append(SP).append(IN).append(SP).append(LP).append(SELECT)
+                            .append(SP).append(UNNEST).append(LP).append(QU).append(RP).append(RP)
+                            .append(SP).append(OR).append(NL);
+                    sqlBuilder.append(EXPERIMENT_COLUMN).append(SP).append(IN).append(SP).append(LP).append(SELECT)
+                            .append(SP).append(ID_COLUMN).append(SP).append(FROM).append(SP)
+                            .append(TableMapper.EXPERIMENT.getEntitiesTable()).append(SP)
+                            .append(WHERE).append(SP).append(PROJECT_COLUMN).append(SP).append(IN).append(SP)
+                            .append(SELECT_UNNEST).append(RP)
+                            .append(SP).append(OR).append(NL);
+                    sqlBuilder.append(SPACE_COLUMN).append(SP).append(IS_NULL)
+                            .append(SP).append(AND).append(SP).append(PROJECT_COLUMN).append(SP).append(IS_NULL)
+                            .append(NL);
+
+                    final Long[] projectIds = authorisationInformation.getProjectIds().toArray(new Long[0]);
+                    args.add(authorisationInformation.getSpaceIds().toArray(new Long[0]));
+                    args.add(projectIds);
+                    args.add(projectIds);
+                    break;
+                }
+
+                case EXPERIMENT:
+                {
+                    sqlBuilder.append(HAVING).append(SP);
+                    sqlBuilder.append(PROJECT_COLUMN).append(SP).append(IN).append(SP).append(LP)
+                            .append(SELECT).append(SP).append(ID_COLUMN).append(SP)
+                            .append(FROM).append(SP).append(PROJECTS_TABLE).append(SP)
+                            .append(WHERE).append(SP).append(SPACE_COLUMN).append(SP).append(IN).append(SP).append(LP)
+                            .append(SELECT).append(SP).append(UNNEST).append(LP).append(QU).append(RP)
+                            .append(RP)
+                            .append(RP).append(SP).append(OR).append(NL);
+                    sqlBuilder.append(PROJECT_COLUMN).append(SP).append(IN).append(SP).append(LP)
+                            .append(SELECT).append(SP).append(UNNEST).append(LP).append(QU).append(RP)
+                            .append(RP).append(NL);
+
+                    args.add(authorisationInformation.getSpaceIds().toArray(new Long[0]));
+                    args.add(authorisationInformation.getProjectIds().toArray(new Long[0]));
+                    break;
+                }
+
+                case DATA_SET:
+                {
+                    final String d = "d";
+                    final String ep = "ep";
+                    final String sp = "sp";
+                    final String exp = "exp";
+                    final String samp = "samp";
+                    sqlBuilder.append(HAVING).append(SP);
+                    sqlBuilder.append(ID_COLUMN).append(SP).append(IN).append(SP).append(LP);
+                    sqlBuilder.append(SELECT).append(SP).append(d).append(PERIOD).append(ID_COLUMN).append(NL);
+                    sqlBuilder.append(FROM).append(SP).append(TableMapper.DATA_SET.getEntitiesTable()).append(SP)
+                            .append(d).append(NL);
+                    sqlBuilder.append(LEFT_JOIN).append(SP).append(TableMapper.EXPERIMENT.getEntitiesTable()).append(SP)
+                            .append(exp).append(SP).append(ON).append(SP).append(d).append(PERIOD)
+                            .append(EXPERIMENT_COLUMN).append(SP).append(EQ).append(SP).append(exp).append(PERIOD)
+                            .append(ID_COLUMN).append(NL);
+                    sqlBuilder.append(LEFT_JOIN).append(SP).append(TableMapper.PROJECT.getEntitiesTable()).append(SP)
+                            .append(ep).append(SP).append(ON).append(SP).append(exp).append(PERIOD)
+                            .append(PROJECT_COLUMN).append(SP).append(EQ).append(SP).append(ep).append(PERIOD)
+                            .append(ID_COLUMN).append(NL);
+                    sqlBuilder.append(LEFT_JOIN).append(SP).append(TableMapper.SAMPLE.getEntitiesTable()).append(SP)
+                            .append(samp).append(SP).append(ON).append(SP).append(d).append(PERIOD)
+                            .append(SAMPLE_COLUMN).append(SP).append(EQ).append(SP).append(samp).append(PERIOD)
+                            .append(ID_COLUMN).append(NL);
+                    sqlBuilder.append(LEFT_JOIN).append(SP).append(TableMapper.PROJECT.getEntitiesTable()).append(SP)
+                            .append(sp).append(SP).append(ON).append(SP).append(samp).append(PERIOD)
+                            .append(PROJECT_COLUMN).append(SP).append(EQ).append(SP).append(sp).append(PERIOD)
+                            .append(ID_COLUMN).append(NL);
+                    sqlBuilder.append(WHERE).append(SP).append(ep).append(PERIOD).append(ID_COLUMN)
+                            .append(SP).append(IN).append(SP).append(SELECT_UNNEST)
+                            .append(SP).append(OR).append(SP)
+                            .append(sp).append(PERIOD).append(ID_COLUMN).append(SP).append(IN).append(SP)
+                            .append(SELECT_UNNEST)
+                            .append(SP).append(OR).append(NL)
+                            .append(ep).append(PERIOD).append(SPACE_COLUMN).append(SP).append(IN).append(SP)
+                            .append(SELECT_UNNEST)
+                            .append(SP).append(OR).append(SP)
+                            .append(sp).append(PERIOD).append(SPACE_COLUMN).append(SP).append(IN).append(SP)
+                            .append(SELECT_UNNEST);
+                    sqlBuilder.append(RP).append(NL);
+                    args.add(authorisationInformation.getProjectIds().toArray(new Long[0]));
+                    args.add(authorisationInformation.getProjectIds().toArray(new Long[0]));
+                    args.add(authorisationInformation.getSpaceIds().toArray(new Long[0]));
+                    args.add(authorisationInformation.getSpaceIds().toArray(new Long[0]));
+                    break;
+                }
+
+                case MATERIAL:
+                {
+                    // No filtering is needed in this case.
+                    break;
+                }
+
+                default:
+                {
+                    throw new IllegalArgumentException("Full text search does not support this table mapper: "
+                            + tableMapper);
+                }
+            }
+        }
     }
 
     public static SelectQuery translateToDetailsQuery(final TranslationContext translationContext,
@@ -286,6 +411,7 @@ public class GlobalSearchCriteriaTranslator
 
         final boolean hasSpaces = hasSpaces(tableMapper);
         final boolean hasProjects = hasProjects(tableMapper);
+        final boolean hasExperiments = hasExperiments(tableMapper);
 
         final String prefix = MAIN_TABLE_ALIAS + PERIOD;
         sqlBuilder.append(SELECT).append(SP);
@@ -298,6 +424,11 @@ public class GlobalSearchCriteriaTranslator
         if (hasSpaces)
         {
             sqlBuilder.append(prefix).append(SPACE_COLUMN).append(COMMA).append(SP);
+        }
+
+        if (hasExperiments)
+        {
+            sqlBuilder.append(prefix).append(EXPERIMENT_COLUMN).append(COMMA).append(SP);
         }
 
         sqlBuilder.append(prefix).append(ID_COLUMN).append(COMMA).append(SP);
@@ -821,6 +952,12 @@ public class GlobalSearchCriteriaTranslator
     {
         final String entitiesTable = tableMapper.getEntitiesTable();
         return SAMPLE.getEntitiesTable().equals(entitiesTable) || PROJECT.getEntitiesTable().equals(entitiesTable);
+    }
+
+    private static boolean hasExperiments(final TableMapper tableMapper)
+    {
+        final String entitiesTable = tableMapper.getEntitiesTable();
+        return SAMPLE.getEntitiesTable().equals(entitiesTable) || DATA_SET.getEntitiesTable().equals(entitiesTable);
     }
 
     private static void buildDetailsWhere(final StringBuilder sqlBuilder, final TranslationContext translationContext,
