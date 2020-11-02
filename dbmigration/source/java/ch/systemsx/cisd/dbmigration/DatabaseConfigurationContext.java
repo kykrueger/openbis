@@ -177,8 +177,13 @@ public class DatabaseConfigurationContext implements DisposableBean
      */
     private final String getUrl(final String dsDatabaseName) throws ConfigurationFailureException
     {
+        // FORCE_OPENBIS_POSTGRES_HOST is used for servers that don't have the Postgres installation locally and require no change on config files (test servers)
+        if (System.getenv().containsKey("FORCE_OPENBIS_POSTGRES_HOST"))
+        {
+            this.urlHostPart = System.getenv().get("FORCE_OPENBIS_POSTGRES_HOST");
+        }
         checkDatabaseEngine();
-        return databaseEngine.getURL(urlHostPart, dsDatabaseName);
+        return databaseEngine.getURL(this.urlHostPart, dsDatabaseName);
     }
 
     /**
@@ -414,7 +419,11 @@ public class DatabaseConfigurationContext implements DisposableBean
      */
     public final String getUrlHostPart()
     {
-        return urlHostPart;
+        if (System.getenv().containsKey("FORCE_OPENBIS_POSTGRES_HOST"))
+        {
+            this.urlHostPart = System.getenv().get("FORCE_OPENBIS_POSTGRES_HOST");
+        }
+        return this.urlHostPart;
     }
 
     /**
@@ -496,8 +505,12 @@ public class DatabaseConfigurationContext implements DisposableBean
      */
     private final String getAdminURL() throws ConfigurationFailureException
     {
+        if (System.getenv().containsKey("FORCE_OPENBIS_POSTGRES_HOST"))
+        {
+            this.urlHostPart = System.getenv().get("FORCE_OPENBIS_POSTGRES_HOST");
+        }
         checkDatabaseEngine();
-        return databaseEngine.getAdminURL(urlHostPart, getDatabaseName());
+        return databaseEngine.getAdminURL(this.urlHostPart, getDatabaseName());
     }
 
     /**
