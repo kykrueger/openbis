@@ -108,8 +108,6 @@ public final class DatabaseCreationUtil
     {
         final BeanFactory factory = getBeanFactory();
         final DatabaseConfigurationContext configurationContext = (DatabaseConfigurationContext) factory.getBean("db-configuration-context");
-        // FORCE_OPENBIS_POSTGRES_HOST is used for servers that don't have the Postgres installation locally and require no change on config files (test servers)
-        configurationContext.setUrlHostPart(System.getenv().getOrDefault("FORCE_OPENBIS_POSTGRES_HOST", configurationContext.getUrlHostPart()));
         configurationContext.setDatabaseKind(databaseKind);
         configurationContext.setScriptFolder("sourceTest/sql");
         return configurationContext;

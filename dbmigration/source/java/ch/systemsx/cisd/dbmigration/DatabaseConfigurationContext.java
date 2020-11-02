@@ -423,7 +423,11 @@ public class DatabaseConfigurationContext implements DisposableBean
      */
     public final void setUrlHostPart(final String urlHostPart)
     {
-        if (isSet(urlHostPart))
+        // FORCE_OPENBIS_POSTGRES_HOST is used for servers that don't have the Postgres installation locally and require no change on config files (test servers)
+        if (System.getenv().containsKey("FORCE_OPENBIS_POSTGRES_HOST"))
+        {
+            this.urlHostPart = System.getenv().get("FORCE_OPENBIS_POSTGRES_HOST");
+        } else if (isSet(urlHostPart))
         {
             this.urlHostPart = StringUtils.trim(urlHostPart);
         } else
