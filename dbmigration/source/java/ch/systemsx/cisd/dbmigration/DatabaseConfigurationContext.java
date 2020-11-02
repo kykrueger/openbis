@@ -100,12 +100,8 @@ public class DatabaseConfigurationContext implements DisposableBean
     }
 
     @PostConstruct
-    private void setDatabaseURLFromEnvironment() {
-        // FORCE_OPENBIS_POSTGRES_HOST is used for servers that don't have the Postgres installation locally and require no change on config files (test servers)
-        if (System.getenv().containsKey("FORCE_OPENBIS_POSTGRES_HOST"))
-        {
-            this.urlHostPart = System.getenv().get("FORCE_OPENBIS_POSTGRES_HOST");
-        }
+    private void setTestEnvironmentHostOrConfigured() {
+        this.urlHostPart = DatabaseEngine.getTestEnvironmentHostOrConfigured(this.urlHostPart);
     }
 
     public final void initDataSourceFactory(final IDataSourceFactory factory)
