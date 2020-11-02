@@ -107,8 +107,9 @@ public final class DatabaseCreationUtil
             final String databaseKind)
     {
         final BeanFactory factory = getBeanFactory();
-        final DatabaseConfigurationContext configurationContext =
-                (DatabaseConfigurationContext) factory.getBean("db-configuration-context");
+        final DatabaseConfigurationContext configurationContext = (DatabaseConfigurationContext) factory.getBean("db-configuration-context");
+        // adding variable to redirect postgres connections
+        configurationContext.setUrlHostPart(System.getenv().getOrDefault("FORCE_OPENBIS_POSTGRES_HOST", configurationContext.getUrlHostPart()));
         configurationContext.setDatabaseKind(databaseKind);
         configurationContext.setScriptFolder("sourceTest/sql");
         return configurationContext;
