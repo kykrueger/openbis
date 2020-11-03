@@ -5,7 +5,6 @@ import { connect } from 'react-redux'
 import { withStyles } from '@material-ui/core/styles'
 import ComponentContext from '@src/js/components/common/ComponentContext.js'
 import PageWithTwoPanels from '@src/js/components/common/page/PageWithTwoPanels.jsx'
-import Header from '@src/js/components/common/form/Header.jsx'
 import Grid from '@src/js/components/common/grid/Grid.jsx'
 import GridContainer from '@src/js/components/common/grid/GridContainer.jsx'
 import VocabularyFormSelectionType from '@src/js/components/types/form/VocabularyFormSelectionType.js'
@@ -20,21 +19,25 @@ const styles = () => ({})
 
 const columns = [
   {
-    field: 'code.value',
+    name: 'code',
     label: 'Code',
-    sort: 'asc'
+    sort: 'asc',
+    getValue: ({ row }) => row.code.value
   },
   {
-    field: 'label.value',
-    label: 'Label'
+    name: 'label',
+    label: 'Label',
+    getValue: ({ row }) => row.label.value
   },
   {
-    field: 'description.value',
-    label: 'Description'
+    name: 'description',
+    label: 'Description',
+    getValue: ({ row }) => row.description.value
   },
   {
-    field: 'official.value',
-    label: 'Official'
+    name: 'official',
+    label: 'Official',
+    getValue: ({ row }) => row.official.value
   }
 ]
 
@@ -99,10 +102,10 @@ class VocabularyForm extends React.PureComponent {
 
     return (
       <GridContainer onClick={this.handleClickContainer}>
-        <Header>Terms</Header>
         <Grid
           id={ids.VOCABULARY_TERMS_GRID_ID}
           controllerRef={this.handleGridControllerRef}
+          header='Terms'
           columns={columns}
           rows={terms}
           selectedRowId={

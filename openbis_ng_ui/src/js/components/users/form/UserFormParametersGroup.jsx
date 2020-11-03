@@ -18,8 +18,7 @@ class UserFormParametersGroup extends React.PureComponent {
     super(props)
     this.state = {}
     this.references = {
-      code: React.createRef(),
-      description: React.createRef()
+      code: React.createRef()
     }
     this.handleChange = this.handleChange.bind(this)
     this.handleFocus = this.handleFocus.bind(this)

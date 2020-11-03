@@ -57,12 +57,22 @@ class UserFormButtons extends React.PureComponent {
   }
 
   isGroupOrRoleSelected() {
-    const { selection } = this.props
-    return (
-      selection &&
-      (selection.type === UserFormSelectionType.GROUP ||
-        selection.type === UserFormSelectionType.ROLE)
-    )
+    const { selection, roles } = this.props
+
+    if (!selection) {
+      return false
+    }
+
+    if (selection.type === UserFormSelectionType.GROUP) {
+      return true
+    }
+
+    if (selection.type === UserFormSelectionType.ROLE) {
+      const role = roles.find(role => role.id === selection.params.id)
+      return role && !role.inheritedFrom.value
+    }
+
+    return false
   }
 }
 

@@ -3,7 +3,7 @@ import Header from '@src/js/components/common/form/Header.jsx'
 import Message from '@src/js/components/common/form/Message.jsx'
 import MessageWrapper from '@srcTest/js/components/common/form/wrapper/MessageWrapper.js'
 
-export default class VocabularyFormParametersCommonWrapper extends BaseWrapper {
+export default class PageParametersPanelWrapper extends BaseWrapper {
   getTitle() {
     return this.findComponent(Header)
   }
