@@ -90,6 +90,7 @@ class RoleParameters extends React.PureComponent {
       <Container>
         <Header>Role</Header>
         {this.renderMessageVisible()}
+        {this.renderMessageInstanceAdmin(role)}
         {this.renderMessageInherited(role)}
         {this.renderLevel(role)}
         {this.renderSpace(role)}
@@ -108,6 +109,26 @@ class RoleParameters extends React.PureComponent {
           <Message type='warning'>
             The selected role is currently not visible in the role list due to
             the chosen filtering and paging.
+          </Message>
+        </div>
+      )
+    } else {
+      return null
+    }
+  }
+
+  renderMessageInstanceAdmin(role) {
+    const { classes } = this.props
+
+    if (
+      role.level.value === openbis.RoleLevel.INSTANCE &&
+      role.role.value === openbis.Role.ADMIN
+    ) {
+      return (
+        <div className={classes.field}>
+          <Message type='warning'>
+            This is an instance admin role. It gives an access to the user and
+            master data management functionality.
           </Message>
         </div>
       )
