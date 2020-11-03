@@ -3,8 +3,8 @@ import UserFormParametersUser from '@src/js/components/users/form/UserFormParame
 import UserFormParametersUserWrapper from './UserFormParametersUserWrapper.js'
 import UserFormParametersGroup from '@src/js/components/users/form/UserFormParametersGroup.jsx'
 import UserFormParametersGroupWrapper from './UserFormParametersGroupWrapper.js'
-import UserFormParametersRole from '@src/js/components/users/form/UserFormParametersRole.jsx'
-import UserFormParametersRoleWrapper from './UserFormParametersRoleWrapper.js'
+import RoleParameters from '@src/js/components/users/form/common/RoleParameters.jsx'
+import RoleParametersWrapper from '@srcTest/js/components/users/form/common/wrapper/RoleParametersWrapper.js'
 
 export default class UserFormParametersWrapper extends BaseWrapper {
   getUser() {
@@ -20,9 +20,7 @@ export default class UserFormParametersWrapper extends BaseWrapper {
   }
 
   getRole() {
-    return new UserFormParametersRoleWrapper(
-      this.findComponent(UserFormParametersRole)
-    )
+    return new RoleParametersWrapper(this.findComponent(RoleParameters))
   }
 
   toJSON() {

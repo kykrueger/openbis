@@ -66,11 +66,13 @@ class RolesGrid extends React.PureComponent {
   }
 
   getColumns() {
+    const { id } = this.props
+
     return [
       {
         name: 'inheritedFrom',
         label: 'Inherited From',
-        sort: 'asc',
+        sort: id === ids.USER_ROLES_GRID_ID ? 'asc' : null,
         getValue: this.getInheritedFromValue,
         renderValue: this.renderInheritedFromValue,
         compareValue: params => {
@@ -86,6 +88,7 @@ class RolesGrid extends React.PureComponent {
       {
         name: 'level',
         label: 'Level',
+        sort: id === ids.USER_GROUP_ROLES_GRID_ID ? 'asc' : null,
         getValue: this.getLevelValue,
         renderValue: this.renderLevelValue,
         compareValue: params => {
