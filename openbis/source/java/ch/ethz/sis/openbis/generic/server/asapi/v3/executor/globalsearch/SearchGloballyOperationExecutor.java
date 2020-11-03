@@ -67,9 +67,6 @@ public class SearchGloballyOperationExecutor
     private IGlobalSearchObjectTranslator translator;
 
     @Autowired
-    private IPersonTranslator personTranslator;
-
-    @Autowired
     private IGlobalAuthorizationExecutor authorizationExecutor;
 
     @Autowired

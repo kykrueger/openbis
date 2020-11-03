@@ -36,25 +36,26 @@ public class GlobalSearchManager implements IGlobalSearchManager
 
     private final ISQLSearchDAO searchDAO;
 
-    public GlobalSearchManager(final ISQLAuthorisationInformationProviderDAO authProvider, final ISQLSearchDAO searchDAO)
+    public GlobalSearchManager(final ISQLAuthorisationInformationProviderDAO authProvider,
+            final ISQLSearchDAO searchDAO)
     {
         this.searchDAO = searchDAO;
         this.authProvider = authProvider;
     }
 
     @Override
-    public Set<Map<String, Object>> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation, final GlobalSearchCriteria criteria,
+    public Set<Map<String, Object>> searchForIDs(final Long userId,
+            final AuthorisationInformation authorisationInformation, final GlobalSearchCriteria criteria,
             final String idsColumnName, final TableMapper tableMapper, final boolean useHeadline)
     {
-        final Set<Map<String, Object>> mainCriteriaIntermediateResults = searchDAO.queryDBWithNonRecursiveCriteria(userId,
-                criteria, tableMapper, idsColumnName, authorisationInformation, useHeadline);
+        final Set<Map<String, Object>> mainCriteriaIntermediateResults = searchDAO.queryDBWithNonRecursiveCriteria(
+                userId, criteria, tableMapper, idsColumnName, authorisationInformation, useHeadline);
 
         // If we have results, we use them
         // If we don't have results and criteria are not empty, there are no results.
-        final Set<Map<String, Object>> resultBeforeFiltering = containsValues(mainCriteriaIntermediateResults)
-                ? mainCriteriaIntermediateResults : Collections.emptySet();
 
-        return resultBeforeFiltering;
+        return containsValues(mainCriteriaIntermediateResults)
+                ? mainCriteriaIntermediateResults : Collections.emptySet();
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -213,7 +214,8 @@ public class GlobalSearchManager implements IGlobalSearchManager
                 )).values();
     }
 
-    private void mapAttributeMatches(final Map<String, Object> fieldsMap, final EntityKind entityKind, final List<PropertyMatch> matches)
+    private void mapAttributeMatches(final Map<String, Object> fieldsMap, final EntityKind entityKind,
+            final List<PropertyMatch> matches)
     {
         switch (entityKind)
         {

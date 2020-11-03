@@ -31,9 +31,11 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.PROJECTS_TA
 
 public class GlobalSearchCriteriaTranslator
 {
-    public static final String START_SEL = "<SEL--";
+    private static final Random RANDOM = new Random();
 
-    public static final String STOP_SEL = "--SEL>";
+    public static final String START_SEL = "<" + generateRandomString() + "--";
+
+    public static final String STOP_SEL = "--" + generateRandomString() + ">";
 
     public static final String RANK_ALIAS = "rank";
 
@@ -102,20 +104,23 @@ public class GlobalSearchCriteriaTranslator
     private static final String TS_HEADLINE_OPTIONS = "HighlightAll=TRUE, StartSel=" + START_SEL
             +", StopSel=" + STOP_SEL;
 
-    /** Magnitude of difference between important and less important fields. */
-    private static final float IMPORTANCE_MULTIPLIER = 10.0f;
-
-    /** Rank for other than ID attribute matches. */
-    private static final float ATTRIBUTE_RANK = 0.6f;
-
-    /** Rank for ID properties. */
-    private static final float ID_PROPERTY_RANK = ATTRIBUTE_RANK * IMPORTANCE_MULTIPLIER;
-
     private static final Logger LOG = LogFactory.getLogger(LogCategory.OPERATION, GlobalSearchCriteriaTranslator.class);
 
     private GlobalSearchCriteriaTranslator()
     {
         throw new UnsupportedOperationException();
+    }
+
+    private static String generateRandomString()
+    {
+        final int leftLimit = 97; // letter 'a'
+        final int rightLimit = 122; // letter 'z'
+        final int targetStringLength = 10;
+
+        return RANDOM.ints(leftLimit, rightLimit + 1)
+                .limit(targetStringLength)
+                .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+                .toString();
     }
 
     public static SelectQuery translateToShortQuery(final TranslationContext translationContext)
@@ -203,7 +208,6 @@ public class GlobalSearchCriteriaTranslator
 
         translateAuthorisation(suffixSqlBuilder, translationContext);
 
-        // TODO: add ORDER BY and rights management.
         suffixSqlBuilder.append(RP).append(SP).append("q2");
 
         return new SelectQuery(prefixSqlBuilder.toString() + sqlBuilder.toString() + suffixSqlBuilder.toString(),
@@ -330,7 +334,6 @@ public class GlobalSearchCriteriaTranslator
     public static SelectQuery translateToDetailsQuery(final TranslationContext translationContext,
             final Collection<Long> ids)
     {
-        // TODO: Request by perm ID only fields we require not '*'. See MatchingEntity for that.
         final StringBuilder sqlBuilder = new StringBuilder(SELECT + SP + ASTERISK + NL);
         sqlBuilder.append(FROM).append(SP).append(LP).append(NL);
 
@@ -678,19 +681,6 @@ public class GlobalSearchCriteriaTranslator
                 .append(SELECT_UNNEST).append(SP)
                 .append(THEN).append(SP).append(tableAlias).append(PERIOD).append(column).append(NL);
         args.add(values);
-    }
-
-    private static void buildHeadlineTsRank(final StringBuilder sqlBuilder, final AbstractStringValue stringValue,
-            final List<Object> args, final String field, final String alias)
-    {
-        sqlBuilder.append(COALESCE).append(LP).append(TS_RANK).append(LP)
-                .append(TO_TSVECTOR).append(LP).append(SQ).append(REG_CONFIG).append(SQ).append(COMMA).append(SP)
-                .append(field).append(RP).append(COMMA).append(SP)
-                .append(TO_TSQUERY).append(LP).append(SQ).append(REG_CONFIG).append(SQ).append(COMMA).append(SP)
-                .append(QU).append(RP).append(RP).append(COMMA).append(SP)
-                .append(0.0f).append(DOUBLE_COLON).append(FLOAT4).append(RP)
-                .append(SP).append(alias);
-        args.add(toTsQueryText(stringValue));
     }
 
     private static void buildTsHeadline(final StringBuilder sqlBuilder, final AbstractStringValue stringValue,
