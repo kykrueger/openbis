@@ -58,6 +58,10 @@ class MasterData
 
     private MultiKeyMap<String, List<NewETPTAssignment>> propertyAssignmentsToProcess = new MultiKeyMap<String, List<NewETPTAssignment>>();
 
+    private NameMapper vocabularyNameMapper;
+
+    private NameMapper propertyTypeNameMapper;
+
     public MasterData(INameTranslator nameTranslator)
     {
         this.nameTranslator = nameTranslator;
@@ -118,6 +122,16 @@ class MasterData
         return fileFormatTypesToProcess;
     }
 
+    public NameMapper getVocabularyNameMapper()
+    {
+        return vocabularyNameMapper;
+    }
+
+    public NameMapper getPropertyTypeNameMapper()
+    {
+        return propertyTypeNameMapper;
+    }
+
     public void setFileFormatTypesToProcess(Map<String, FileFormatType> fileFormatTypesToProcess)
     {
         this.fileFormatTypesToProcess = fileFormatTypesToProcess;
@@ -166,5 +180,15 @@ class MasterData
     public void setPropertyAssignmentsToProcess(MultiKeyMap<String, List<NewETPTAssignment>> propertyAssignmentsToProcess)
     {
         this.propertyAssignmentsToProcess = propertyAssignmentsToProcess;
+    }
+
+    public void setVocabularyNameMapper(NameMapper vocabularyNameMapper)
+    {
+        this.vocabularyNameMapper = vocabularyNameMapper;
+    }
+
+    public void setPropertyTypeNameMapper(NameMapper propertyTypeNameMapper)
+    {
+        this.propertyTypeNameMapper = propertyTypeNameMapper;
     }
 }

@@ -291,6 +291,7 @@ public class MasterDataSynchronizer
                 errorsOut.println("There is no internal vocabulary " + getCode(newVocabulary, nameTranslator) + ".");
             } else
             {
+                newVocabulary.setManagedInternally(false);
                 synchronizerFacade.registerVocabulary(newVocabulary);
             }
         }
@@ -689,6 +690,7 @@ public class MasterDataSynchronizer
                         + getCode(incomingPropertyType, nameTranslator) + ".");
             } else
             {
+                incomingPropertyType.setManagedInternally(false);
                 synchronizerFacade.registerPropertyType(incomingPropertyType);
             }
         }
