@@ -78,22 +78,6 @@ async function doTestSelectProperty(scope, used) {
       text: 'This property is already assigned to 2 types.',
       type: 'info'
     })
-
-    common.facade.loadUsages.mockReturnValue(
-      Promise.resolve({
-        propertyLocal: {
-          [propertyType.getCode()]: 1
-        },
-        propertyGlobal: {
-          [propertyType.getCode()]: 3
-        }
-      })
-    )
-    messages.push({
-      text:
-        'This property is already used by 3 entities (1 entity of this type and 2 entities of other types).',
-      type: 'info'
-    })
   }
 
   const form = await common.mount({

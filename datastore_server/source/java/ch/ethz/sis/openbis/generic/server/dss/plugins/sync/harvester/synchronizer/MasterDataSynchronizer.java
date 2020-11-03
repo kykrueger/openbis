@@ -16,6 +16,8 @@
 
 package ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -41,6 +43,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.id.IExternalDmsId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.update.ExternalDmsUpdate;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.ServiceFinderUtils;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.config.SyncConfig;
+import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.translator.INameTranslator;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.util.Monitor;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
@@ -49,6 +52,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.CodeConverter;
 import ch.systemsx.cisd.openbis.generic.shared.basic.ICodeHolder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetType;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityTypePropertyType;
@@ -69,30 +73,40 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.VocabularyTerm;
  */
 public class MasterDataSynchronizer
 {
-    final ISynchronizerFacade synchronizerFacade;
+    private final ISynchronizerFacade synchronizerFacade;
 
-    final ICommonServer commonServer;
+    private final ICommonServer commonServer;
 
-    final String sessionToken;
+    private final String sessionToken;
 
-    final boolean dryRun;
+    private final Map<TechId, String> vocabularyTechIdToCode = new HashMap<TechId, String>();
 
-    final Map<TechId, String> vocabularyTechIdToCode = new HashMap<TechId, String>();
+    private final IApplicationServerApi v3api;
 
-    private IApplicationServerApi v3api;
+    private final SyncConfig config;
 
-    private SyncConfig config;
+    private final StringWriter errors = new StringWriter();
+
+    private final PrintWriter errorsOut = new PrintWriter(errors);
 
     public MasterDataSynchronizer(SyncConfig config, Logger operationLog)
     {
+        this(config,
+                new SynchronizerFacade(ServiceProvider.getConfigProvider().getOpenBisServerUrl(),
+                        config.getHarvesterUser(), config.getHarvesterPass(), config.isDryRun(),
+                        config.isVerbose(), operationLog),
+                ServiceFinderUtils.getCommonServer(ServiceProvider.getConfigProvider().getOpenBisServerUrl()),
+                ServiceProvider.getV3ApplicationService());
+    }
+
+    MasterDataSynchronizer(SyncConfig config, ISynchronizerFacade synchronizerFacade, ICommonServer commonServer,
+            IApplicationServerApi v3api)
+    {
         this.config = config;
-        String openBisServerUrl = ServiceProvider.getConfigProvider().getOpenBisServerUrl();
-        this.dryRun = config.isDryRun();
-        this.synchronizerFacade = new SynchronizerFacade(openBisServerUrl, config.getHarvesterUser(),
-                config.getHarvesterPass(), dryRun, config.isVerbose(), operationLog);
-        this.commonServer = ServiceFinderUtils.getCommonServer(openBisServerUrl);
+        this.synchronizerFacade = synchronizerFacade;
+        this.commonServer = commonServer;
         this.sessionToken = ServiceFinderUtils.login(commonServer, config.getHarvesterUser(), config.getHarvesterPass());
-        v3api = ServiceProvider.getV3ApplicationService();
+        this.v3api = v3api;
     }
 
     public void synchronizeMasterData(MasterData masterData, Monitor monitor)
@@ -103,12 +117,12 @@ public class MasterDataSynchronizer
         monitor.log("process validation plugins");
         processValidationPlugins(masterData.getValidationPluginsToProcess());
         monitor.log("process vocabularies");
-        processVocabularies(masterData.getVocabulariesToProcess());
+        processVocabularies(masterData.getVocabulariesToProcess(), masterData.getNameTranslator());
         // materials are registered but their property assignments are deferred until after property types are processed
         monitor.log("process material types");
         processEntityTypes(masterData.getMaterialTypesToProcess(), propertyAssignmentsToProcess);
         monitor.log("process property types");
-        processPropertyTypes(masterData.getPropertyTypesToProcess());
+        processPropertyTypes(masterData.getPropertyTypesToProcess(), masterData.getNameTranslator());
         monitor.log("process sample types");
         processEntityTypes(masterData.getSampleTypesToProcess(), propertyAssignmentsToProcess);
         monitor.log("process data set types");
@@ -121,6 +135,11 @@ public class MasterDataSynchronizer
         processExternalDataManagementSystems(masterData.getExternalDataManagementSystemsToProcess());
 
         synchronizerFacade.printSummary();
+        if (errors.toString().length() > 0)
+        {
+            throw new RuntimeException("Master data can not be synchronization because of the following reasons:\n"
+                    + errors);
+        }
     }
 
     private void processDeferredMaterialTypePropertyAssignments(MultiKeyMap<String, List<NewETPTAssignment>> propertyAssignmentsToProcess)
@@ -207,13 +226,13 @@ public class MasterDataSynchronizer
                 creations.add(creation);
             }
         }
-        if (creations.isEmpty() == false && dryRun == false)
+        if (creations.isEmpty() == false)
         {
-            v3api.createExternalDataManagementSystems(sessionToken, creations);
+            synchronizerFacade.createExternalDataManagementSystems(creations);
         }
-        if (updates.isEmpty() == false && dryRun == false)
+        if (updates.isEmpty() == false)
         {
-            v3api.updateExternalDataManagementSystems(sessionToken, updates);
+            synchronizerFacade.updateExternalDataManagementSystems(updates);
         }
     }
 
@@ -244,7 +263,7 @@ public class MasterDataSynchronizer
         }
     }
 
-    private void processVocabularies(Map<String, NewVocabulary> vocabulariesToProcess)
+    private void processVocabularies(Map<String, NewVocabulary> vocabulariesToProcess, INameTranslator nameTranslator)
     {
         List<Vocabulary> existingVocabularies = commonServer.listVocabularies(sessionToken, true, false);
         Map<String, Vocabulary> existingVocabularyMap = new HashMap<String, Vocabulary>();
@@ -252,26 +271,57 @@ public class MasterDataSynchronizer
         {
             existingVocabularyMap.put(vocabulary.getCode(), vocabulary);
         }
-        for (String code : vocabulariesToProcess.keySet())
+        for (NewVocabulary newVocabulary : vocabulariesToProcess.values())
         {
-            NewVocabulary newVocabulary = vocabulariesToProcess.get(code);
-            String vocabCode = CodeConverter.tryToBusinessLayer(newVocabulary.getCode(), newVocabulary.isManagedInternally());
-            Vocabulary existingVocabulary = existingVocabularyMap.get(vocabCode);
+            boolean newIsInternal = isInternallyManagedBySystem(newVocabulary);
+            Vocabulary existingVocabulary = getExisting(existingVocabularyMap, newVocabulary, nameTranslator);
             if (existingVocabulary != null)
             {
+                boolean existingIsInternal = isInternallyManagedBySystem(existingVocabulary);
                 String diff = calculateDiff(existingVocabulary, newVocabulary);
-                if (StringUtils.isNotBlank(diff) && config.isMasterDataUpdateAllowed())
+                if (StringUtils.isNotBlank(diff) && config.isMasterDataUpdateAllowed() && existingIsInternal == false)
                 {
                     newVocabulary.setModificationDate(existingVocabulary.getModificationDate());
                     newVocabulary.setId(existingVocabulary.getId());
                     synchronizerFacade.updateVocabulary(newVocabulary, diff);
                 }
                 processVocabularyTerms(sessionToken, commonServer, newVocabulary, existingVocabulary);
+            } else if (newIsInternal)
+            {
+                errorsOut.println("There is no internal vocabulary " + getCode(newVocabulary, nameTranslator) + ".");
             } else
             {
+                newVocabulary.setManagedInternally(false);
                 synchronizerFacade.registerVocabulary(newVocabulary);
             }
         }
+    }
+
+    private Vocabulary getExisting(Map<String, Vocabulary> existingVocabularyMap, NewVocabulary newVocabulary,
+            INameTranslator nameTranslator)
+    {
+        return existingVocabularyMap.get(getCode(newVocabulary, nameTranslator));
+    }
+
+    private String getCode(NewVocabulary newVocabulary, INameTranslator nameTranslator)
+    {
+        String originalCode = newVocabulary.getCode();
+        boolean internal = isInternallyManagedBySystem(newVocabulary);
+        if (internal)
+        {
+            originalCode = nameTranslator.translateBack(originalCode);
+        }
+        return CodeConverter.tryToBusinessLayer(originalCode, internal);
+    }
+
+    private boolean isInternallyManagedBySystem(Vocabulary vocabulary)
+    {
+        return vocabulary.isManagedInternally() && isSystem(vocabulary.getRegistrator().getUserId());
+    }
+
+    private boolean isSystem(String userId)
+    {
+        return "system".equals(userId);
     }
 
     private String calculateDiff(Vocabulary existingVocabulary, NewVocabulary newVocabulary)
@@ -298,7 +348,8 @@ public class MasterDataSynchronizer
             } else
             {
                 String diff = calculateDiff(existingTerm, incomingTerm);
-                if (StringUtils.isNotBlank(diff) && config.isMasterDataUpdateAllowed())
+                if (StringUtils.isNotBlank(diff) && config.isMasterDataUpdateAllowed()
+                        && isInternallyManagedBySystem(existingVocabulary) == false)
                 {
                     incomingTerm.setModificationDate(existingTerm.getModificationDate());
                     incomingTerm.setId(existingTerm.getId());
@@ -602,7 +653,7 @@ public class MasterDataSynchronizer
         }
     }
 
-    private void processPropertyTypes(Map<String, PropertyType> propertyTypesToProcess)
+    private void processPropertyTypes(Map<String, PropertyType> propertyTypesToProcess, INameTranslator nameTranslator)
     {
         List<PropertyType> propertyTypes = commonServer.listPropertyTypes(sessionToken, false);
         Map<String, PropertyType> propertyTypeMap = new HashMap<String, PropertyType>();
@@ -611,32 +662,66 @@ public class MasterDataSynchronizer
             propertyTypeMap.put(propertyType.getCode(), propertyType);
         }
 
-        for (String propTypeCode : propertyTypesToProcess.keySet())
+        for (PropertyType incomingPropertyType : propertyTypesToProcess.values())
         {
-            PropertyType incomingPropertyType = propertyTypesToProcess.get(propTypeCode);
-            String propertyTypeCode = incomingPropertyType.getCode();
-            PropertyType existingPropertyType = propertyTypeMap.get(propertyTypeCode);
+            boolean incomingIsInternal = isInternallyManagedBySystem(incomingPropertyType);
+            PropertyType existingPropertyType = getExisting(propertyTypeMap, incomingPropertyType, nameTranslator);
             if (existingPropertyType != null)
             {
-                String diff = calculateDiff(existingPropertyType, incomingPropertyType);
-                if (StringUtils.isNotBlank(diff) && config.isMasterDataUpdateAllowed())
+                boolean existentIsInternal = isInternallyManagedBySystem(existingPropertyType);
+                if (existentIsInternal == false)
                 {
-                    incomingPropertyType.setModificationDate(existingPropertyType.getModificationDate());
-                    incomingPropertyType.setId(existingPropertyType.getId());
-                    synchronizerFacade.updatePropertyType(incomingPropertyType, diff);
+                    String diff = calculateDiff(existingPropertyType, incomingPropertyType);
+                    if (StringUtils.isNotBlank(diff) && config.isMasterDataUpdateAllowed())
+                    {
+                        incomingPropertyType.setModificationDate(existingPropertyType.getModificationDate());
+                        incomingPropertyType.setId(existingPropertyType.getId());
+                        synchronizerFacade.updatePropertyType(incomingPropertyType, diff);
+                    }
+                } else if (getType(existingPropertyType).equals(getType(incomingPropertyType)) == false)
+                {
+                    errorsOut.println("The internal property type " + getCode(incomingPropertyType, nameTranslator)
+                            + " is not of data type " + getType(incomingPropertyType) + " but "
+                            + getType(existingPropertyType) + ".");
                 }
+            } else if (incomingIsInternal)
+            {
+                errorsOut.println("There is no internal property type "
+                        + getCode(incomingPropertyType, nameTranslator) + ".");
             } else
             {
+                incomingPropertyType.setManagedInternally(false);
                 synchronizerFacade.registerPropertyType(incomingPropertyType);
             }
         }
+    }
+
+    private PropertyType getExisting(Map<String, PropertyType> propertyTypeMap, PropertyType incomingPropertyType, INameTranslator nameTranslator)
+    {
+        return propertyTypeMap.get(getCode(incomingPropertyType, nameTranslator));
+    }
+
+    private String getCode(PropertyType propertyType, INameTranslator nameTranslator)
+    {
+        String originalCode = propertyType.getCode();
+        boolean internal = isInternallyManagedBySystem(propertyType);
+        if (internal)
+        {
+            originalCode = nameTranslator.translateBack(originalCode);
+        }
+        return CodeConverter.tryToBusinessLayer(originalCode, internal);
+    }
+
+    private boolean isInternallyManagedBySystem(PropertyType propertyType)
+    {
+        return propertyType.isManagedInternally() && isSystem(propertyType.getRegistrator().getUserId());
     }
 
     private String calculateDiff(PropertyType existingPropertyType, PropertyType incomingPropertyType)
     {
         DiffBuilder diffBuilder = new DiffBuilder(existingPropertyType, incomingPropertyType, ToStringStyle.SHORT_PREFIX_STYLE, false)
                 .append("label", existingPropertyType.getLabel(), incomingPropertyType.getLabel())
-                .append("dataType", existingPropertyType.getDataType().getCode(), incomingPropertyType.getDataType().getCode())
+                .append("dataType", getType(existingPropertyType), getType(incomingPropertyType))
                 .append("description", existingPropertyType.getDescription(), incomingPropertyType.getDescription())
                 .append("managedInternally", existingPropertyType.isManagedInternally(), incomingPropertyType.isManagedInternally())
                 .append("vocabulary", getCode(existingPropertyType.getVocabulary()),
@@ -645,6 +730,11 @@ public class MasterDataSynchronizer
                         getCode(incomingPropertyType.getMaterialType()));
         DiffResult diffResult = diffBuilder.build();
         return render(diffResult, existingPropertyType, incomingPropertyType);
+    }
+
+    private DataTypeCode getType(PropertyType propertyType)
+    {
+        return propertyType.getDataType().getCode();
     }
 
     private String getCode(Vocabulary vocabulary)
