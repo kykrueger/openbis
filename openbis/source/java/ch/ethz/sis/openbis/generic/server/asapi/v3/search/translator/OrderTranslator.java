@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.*;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCriteriaTranslator.MAIN_TABLE_ALIAS;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils.buildFullIdentifierConcatenationString;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.*;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.*;
@@ -203,9 +204,18 @@ public class OrderTranslator
                 final JoinInformation spacesTableAlias = aliases.get(UNIQUE_PREFIX + SPACES_TABLE);
                 final JoinInformation projectsTableAlias = aliases.get(UNIQUE_PREFIX + PROJECTS_TABLE);
 
-                buildFullIdentifierConcatenationString(sqlBuilder, (spacesTableAlias != null) ? spacesTableAlias.getSubTableAlias() : null,
-                        (projectsTableAlias != null) ? projectsTableAlias.getSubTableAlias() : null,
-                        (entitiesTableAlias != null) ? entitiesTableAlias.getSubTableAlias() : null);
+                if (translationContext.getTableMapper() != TableMapper.SAMPLE)
+                {
+                    buildFullIdentifierConcatenationString(sqlBuilder,
+                            (spacesTableAlias != null) ? spacesTableAlias.getSubTableAlias() : null,
+                            (projectsTableAlias != null) ? projectsTableAlias.getSubTableAlias() : null,
+                            (entitiesTableAlias != null) ? entitiesTableAlias.getSubTableAlias() : null);
+                } else
+                {
+                    sqlBuilder.append(LOWER).append(LP).append(MAIN_TABLE_ALIAS).append(PERIOD)
+                            .append(SAMPLE_IDENTIFIER_COLUMN).append(RP);
+                }
+
                 sqlBuilder.append(SP);
             }
             sqlBuilder.append(IDENTIFIER_SORTING_COLUMN);

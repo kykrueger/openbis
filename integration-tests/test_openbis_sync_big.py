@@ -64,7 +64,17 @@ class TestCase(systemtest.testcase.TestCase):
 #        openbis_harvester.allUp()
 #        self._waitUntilSyncIsFinished(openbis_harvester)
 #        self._freeze_some_entities(openbis_data_source)
-        self._checkData(openbis_data_source, openbis_harvester)
+#        self._checkData(openbis_data_source, openbis_harvester)
+        self._compareDataBases("Non internal property types", openbis_data_source, openbis_harvester, "openbis", 
+                               "select '{0}' || t.code as code,dt.code as data_type, "
+                               + "case when v.is_managed_internally then v.code else '{0}' || v.code end as vocabulary, "
+                               + "  '{0}' || mt.code as material, t.label, t.description, "
+                               + " t.schema, t.transformation "
+                               + "from property_types t join data_types dt on t.daty_id = dt.id "
+                               + "left join controlled_vocabularies v on t.covo_id = v.id "
+                               + "left join material_types mt on t.maty_prop_id = mt.id "
+                               + "where (not t.is_managed_internally or t.pers_id_registerer <> 1) and t.code like '{1}%' order by t.code, t.is_managed_internally")
+
 
     def _freeze_some_entities(self, openbis_data_source):
         util.printAndFlush("Freeze some entities")
@@ -161,17 +171,31 @@ class TestCase(systemtest.testcase.TestCase):
         return next_words
     
     def _checkData(self, openbis_data_source, openbis_harvester):
-        self._compareDataBases("Vocabularies", openbis_data_source, openbis_harvester, "openbis",
-                               "select '{0}' || code as code, description, source_uri, is_managed_internally, is_chosen_from_list "
-                               + "from controlled_vocabularies where code like '{1}%' order by code")
-        self._compareDataBases("Property types", openbis_data_source, openbis_harvester, "openbis", 
-                               "select '{0}' || t.code as code,dt.code as data_type, '{0}' || v.code as vocabulary, "
-                               + "  '{0}' || mt.code as material, t.label, t.description, "
-                               + "  t.is_managed_internally, t.schema, t.transformation "
+        self._compareDataBases("Internal Vocabularies", openbis_data_source, openbis_harvester, "openbis",
+                               "select code, description from controlled_vocabularies "
+                               + "where is_managed_internally and pers_id_registerer = 1 order by code")
+        self._compareDataBases("Non internal Vocabularies", openbis_data_source, openbis_harvester, "openbis",
+                               "select '{0}' || code as code, description, source_uri, is_chosen_from_list "
+                               + "from controlled_vocabularies "
+                               + "where(not is_managed_internally or pers_id_registerer <> 1) and code like '{1}%' order by code")
+        self._compareDataBases("Internal property types", openbis_data_source, openbis_harvester, "openbis", 
+                               "select t.code as code,dt.code as data_type, v.code as vocabulary, "
+                               + " mt.code as material, t.label, t.description, "
+                               + " t.is_managed_internally, t.schema, t.transformation "
                                + "from property_types t join data_types dt on t.daty_id = dt.id "
                                + "left join controlled_vocabularies v on t.covo_id = v.id "
                                + "left join material_types mt on t.maty_prop_id = mt.id "
-                               + "where t.code like '{1}%' order by t.code, t.is_managed_internally")
+                               + "where t.is_managed_internally and t.pers_id_registerer = 1 order by t.code, t.is_managed_internally")
+        self._compareDataBases("Non internal property types", openbis_data_source, openbis_harvester, "openbis", 
+                               "select '{0}' || t.code as code,dt.code as data_type, "
+                               + "case when v.is_managed_internally then v.code else '{0}' || v.code end as vocabulary, "
+                               + "  '{0}' || mt.code as material, t.label, t.description, "
+                               + " t.schema, t.transformation "
+                               + "from property_types t join data_types dt on t.daty_id = dt.id "
+                               + "left join controlled_vocabularies v on t.covo_id = v.id "
+                               + "left join material_types mt on t.maty_prop_id = mt.id "
+                               + "where (not t.is_managed_internally or t.pers_id_registerer <> 1) and t.code like '{1}%' order by t.code, t.is_managed_internally")
+
         self._compareDataBases("Material types", openbis_data_source, openbis_harvester, "openbis", 
                                "select '{0}' || t.code as code, t.description, '{0}' || s.name as validation_script "
                                + "from material_types t left join scripts s on t.validation_script_id = s.id "
