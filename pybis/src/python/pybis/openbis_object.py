@@ -289,9 +289,10 @@ class Transaction:
                         # mark every sample as not being new anymore
                         # and add the permId attribute received by the response
                         # we assume the response permIds are the same order as we sent them
-                        for i, resp_item in enumerate(resp):
-                            self.entities[entity_type][mode][i].a.__dict__['_is_new'] = False
-                            self.entities[entity_type][mode][i].a.__dict__['_permId'] = resp_item
+                        if resp:
+                            for i, resp_item in enumerate(resp):
+                                self.entities[entity_type][mode][i].a.__dict__['_is_new'] = False
+                                self.entities[entity_type][mode][i].a.__dict__['_permId'] = resp_item
 
 
                     except ValueError as err:
