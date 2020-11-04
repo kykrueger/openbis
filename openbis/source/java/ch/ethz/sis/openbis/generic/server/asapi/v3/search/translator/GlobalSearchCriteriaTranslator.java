@@ -434,20 +434,53 @@ public class GlobalSearchCriteriaTranslator
             sqlBuilder.append(prefix).append(EXPERIMENT_COLUMN).append(COMMA).append(SP);
         }
 
-        sqlBuilder.append(prefix).append(ID_COLUMN).append(COMMA).append(SP);
-        sqlBuilder.append(prefix).append(getPermId(tableMapper)).append(COMMA).append(SP)
-                .append(SQ).append(tableMapper).append(SQ).append(SP).append(OBJECT_KIND_ALIAS).append(COMMA).append(SP)
-                .append(TS_RANK).append(LP).append(ARRAY).append(LB)
+        if (forAttributes) {
+            sqlBuilder.append(prefix).append(ID_COLUMN).append(COMMA).append(SP);
+            sqlBuilder.append(prefix).append(getPermId(tableMapper)).append(COMMA).append(SP)
+                    .append(SQ).append(tableMapper).append(SQ).append(SP).append(OBJECT_KIND_ALIAS).append(COMMA)
+                    .append(SP);
+            buildTsRank(sqlBuilder, MAIN_TABLE_ALIAS, () -> buildCastingTsQueryPart(sqlBuilder, stringValue, args));
+        } else
+        {
+            sqlBuilder.append(prefix).append(ID_COLUMN).append(COMMA).append(SP);
+            sqlBuilder.append(prefix).append(getPermId(tableMapper)).append(COMMA).append(SP)
+                    .append(SQ).append(tableMapper).append(SQ).append(SP).append(OBJECT_KIND_ALIAS).append(COMMA)
+                    .append(SP);
+            buildTsRank(sqlBuilder, PROPERTIES_TABLE_ALIAS, () -> buildTsQueryPart(sqlBuilder, stringValue, args));
+
+            sqlBuilder.append(SP).append(PLUS).append(SP);
+            sqlBuilder.append(COALESCE).append(LP);
+            buildTsRank(sqlBuilder, MATERIALS_TABLE_ALIAS,
+                    () -> buildCastingTsQueryPart(sqlBuilder, stringValue, args));
+            sqlBuilder.append(COMMA).append(SP).append(0).append(RP);
+
+            if (tableMapper == TableMapper.SAMPLE || tableMapper == TableMapper.EXPERIMENT
+                    || tableMapper == TableMapper.DATA_SET)
+            {
+                sqlBuilder.append(SP).append(PLUS).append(SP);
+                sqlBuilder.append(COALESCE).append(LP);
+                buildTsRank(sqlBuilder, SAMPLES_TABLE_ALIAS,
+                        () -> buildCastingTsQueryPart(sqlBuilder, stringValue, args));
+                sqlBuilder.append(COMMA).append(SP).append(0).append(RP);
+            }
+        }
+
+        sqlBuilder.append(SP).append(RANK_ALIAS).append(NL);
+    }
+
+    private static void buildTsRank(final StringBuilder sqlBuilder, final String tsVectorReference,
+            final Runnable tsQueryBuilder)
+    {
+        sqlBuilder.append(TS_RANK).append(LP).append(ARRAY).append(LB)
                 .append(SQ).append(0.001).append(SQ).append(COMMA).append(SP)
                 .append(SQ).append(0.01).append(SQ).append(COMMA).append(SP)
                 .append(SQ).append(0.1).append(SQ).append(COMMA).append(SP)
                 .append(SQ).append(1.0).append(SQ).append(RB)
                 .append(DOUBLE_COLON).append(FLOAT4).append(LB).append(RB).append(COMMA).append(SP)
-                .append(forAttributes ? MAIN_TABLE_ALIAS : PROPERTIES_TABLE_ALIAS).append(PERIOD)
+                .append(tsVectorReference).append(PERIOD)
                 .append(TSVECTOR_DOCUMENT).append(COMMA).append(SP);
-
-        buildTsQueryPart(sqlBuilder, stringValue, args);
-        sqlBuilder.append(RP).append(SP).append(RANK_ALIAS).append(NL);
+        tsQueryBuilder.run();
+        sqlBuilder.append(RP);
     }
 
     private static void buildShortFrom(final StringBuilder sqlBuilder, final TranslationContext translationContext,
@@ -464,6 +497,21 @@ public class GlobalSearchCriteriaTranslator
                     .append(ON).append(SP).append(MAIN_TABLE_ALIAS).append(PERIOD).append(ID_COLUMN).append(SP)
                     .append(EQ).append(SP).append(PROPERTIES_TABLE_ALIAS).append(PERIOD)
                     .append(tableMapper.getValuesTableEntityIdField()).append(NL);
+            sqlBuilder.append(LEFT_JOIN).append(SP).append(MATERIAL.getEntitiesTable()).append(SP)
+                    .append(MATERIALS_TABLE_ALIAS).append(SP)
+                    .append(ON).append(SP).append(PROPERTIES_TABLE_ALIAS).append(PERIOD).append(MATERIAL_PROP_COLUMN)
+                    .append(SP).append(EQ).append(SP).append(MATERIALS_TABLE_ALIAS).append(PERIOD).append(ID_COLUMN)
+                    .append(NL);
+
+            if (tableMapper == TableMapper.SAMPLE || tableMapper == TableMapper.EXPERIMENT
+                    || tableMapper == TableMapper.DATA_SET)
+            {
+                sqlBuilder.append(LEFT_JOIN).append(SP).append(SAMPLE.getEntitiesTable()).append(SP)
+                        .append(SAMPLES_TABLE_ALIAS).append(SP)
+                        .append(ON).append(SP).append(PROPERTIES_TABLE_ALIAS).append(PERIOD).append(SAMPLE_PROP_COLUMN)
+                        .append(SP).append(EQ).append(SP).append(SAMPLES_TABLE_ALIAS).append(PERIOD).append(ID_COLUMN)
+                        .append(NL);
+            }
         }
     }
 
@@ -481,9 +529,7 @@ public class GlobalSearchCriteriaTranslator
             args.add(toTsQueryText(criterion.getFieldValue()));
         } else
         {
-            sqlBuilder.append(PROPERTIES_TABLE_ALIAS).append(PERIOD).append(TS_VECTOR_COLUMN).append(SP)
-                    .append(DOUBLE_AT).append(SP);
-            buildTsQueryPart(sqlBuilder, criterion.getFieldValue(), args);
+            buildTsVectorMatch(sqlBuilder, criterion.getFieldValue(), translationContext.getTableMapper(), args);
         }
         sqlBuilder.append(NL);
     }
@@ -1007,6 +1053,13 @@ public class GlobalSearchCriteriaTranslator
     {
         sqlBuilder.append(TO_TSQUERY).append(LP).append(SQ).append(REG_CONFIG).append(SQ).append(COMMA).append(SP)
                 .append(QU).append(RP);
+        args.add(toTsQueryText(stringValue));
+    }
+
+    private static void buildCastingTsQueryPart(final StringBuilder sqlBuilder,
+            final AbstractStringValue stringValue, final List<Object> args)
+    {
+        sqlBuilder.append(QU).append(DOUBLE_COLON).append(TSQUERY);
         args.add(toTsQueryText(stringValue));
     }
 
