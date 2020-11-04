@@ -2522,10 +2522,13 @@ class Openbis:
         }
         return request
 
-    def get_terms(self, vocabulary=None, start_with=None, count=None):
+    def get_terms(self, vocabulary=None, start_with=None, count=None, cache={}):
         """ Returns information about existing vocabulary terms. 
         If a vocabulary code is provided, it only returns the terms of that vocabulary.
         """
+
+        if vocabulary is not None and vocabulary in cache and start_with is None and count is None:
+            return cache[vocabulary]
 
         search_request = {}
         if vocabulary is not None:
@@ -2560,7 +2563,7 @@ class Openbis:
             terms['registrationDate'] = terms['registrationDate'].map(format_timestamp)
             terms['modificationDate'] = terms['modificationDate'].map(format_timestamp)
 
-        return Things(
+        things = Things(
             openbis_obj = self,
             entity = 'term',
             df = terms[attrs],
@@ -2570,6 +2573,12 @@ class Openbis:
             count = count,
             totalCount = resp.get('totalCount'),
         )
+        if vocabulary is not None and start_with is None and count is None:
+            cache[vocabulary] = things
+            return cache[vocabulary]
+
+        else:
+            return things
         
 
     def new_term(self, code, vocabularyCode, label=None, description=None):
@@ -2661,9 +2670,15 @@ class Openbis:
         )
 
 
-    def get_vocabulary(self, code, only_data=False):
+    def get_vocabulary(self, code, only_data=False, cache={}):
         """ Returns the details of a given vocabulary (including vocabulary terms)
         """
+
+        if code in cache:
+            if only_data:
+                return cache[code]['data']
+            else:
+                return cache[code]['object']
 
         entity = 'vocabulary'
         method_name = get_method_for_entity(entity, 'get')
@@ -2685,13 +2700,17 @@ class Openbis:
         else:
             parse_jackson(resp)
             for ident in resp:
+                cache[code] = {}
+                cache[code]['data'] = resp[ident]
+                vocabulary = Vocabulary(
+                    openbis_obj=self, 
+                    data=resp[ident]
+                )
+                cache[code]['object'] = vocabulary
                 if only_data:
-                    return resp[ident]
+                    return cache[code]['data']
                 else:
-                    return Vocabulary(
-                        openbis_obj=self, 
-                        data=resp[ident]
-                    )
+                    return cache[code]['object']
 
 
     def new_tag(self, code, description=None):
@@ -3068,7 +3087,14 @@ class Openbis:
             transformation = transformation,
         )
 
-    def get_property_type(self, code, only_data=False, start_with=None, count=None):
+    def get_property_type(self, code, only_data=False, start_with=None, count=None, cache={}):
+
+        if not isinstance(code, list) and code in cache and start_with is None and count is None:
+            if only_data:
+                return cache[code]['data']
+            else:
+                return cache[code]['object']
+
         identifiers = []
         only_one = False
         if not isinstance(code, list):
@@ -3102,13 +3128,18 @@ class Openbis:
             if len(resp) == 0:
                 raise ValueError('no such propertyType: {}'.format(code))
             for ident in resp:
-                if only_data:
-                    return resp[ident]
-                else:
-                    return PropertyType(
+                cache[code[0]] = {}
+                pt = PropertyType(
                         openbis_obj = self,
                         data=resp[ident]
                     )
+                cache[code[0]]['data'] = resp[ident]
+                cache[code[0]]['object'] = pt
+                if only_data:
+                    return cache[code[0]]['data']
+                else:
+                    return cache[code[0]]['object']
+
         # return a list of objects
         else:
             return self._property_type_things(
