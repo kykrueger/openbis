@@ -574,7 +574,9 @@ public class MasterDataParser
                     newPropertyType.setMaterialType(null); // material of any type
                 } else
                 {
-                    newPropertyType.setMaterialType(materialTypes.get(nameTranslator.translate(materialCode)));
+                    MaterialType materialType = new MaterialType();
+                    materialType.setCode(nameTranslator.translate(materialCode));
+                    newPropertyType.setMaterialType(materialType);
                 }
             }
         }

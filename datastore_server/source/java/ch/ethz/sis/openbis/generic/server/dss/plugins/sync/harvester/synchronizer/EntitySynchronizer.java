@@ -1342,7 +1342,7 @@ public class EntitySynchronizer
             verboseLogDeletions(materialsToDelete.values(), "materials");
         }
 
-        if (config.isDryRun() == true)
+        if (config.isDryRun())
         {
             monitor.log();
             return;

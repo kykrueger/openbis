@@ -66,7 +66,7 @@ async function testLoadExisting() {
   const gridJSON = {
     columns: [
       {
-        field: 'code.value',
+        name: 'code',
         label: 'Code',
         filter: {
           value: null
@@ -74,7 +74,7 @@ async function testLoadExisting() {
         sort: 'asc'
       },
       {
-        field: 'label.value',
+        name: 'label',
         label: 'Label',
         filter: {
           value: null
@@ -82,7 +82,7 @@ async function testLoadExisting() {
         sort: null
       },
       {
-        field: 'description.value',
+        name: 'description',
         label: 'Description',
         filter: {
           value: null
@@ -90,7 +90,7 @@ async function testLoadExisting() {
         sort: null
       },
       {
-        field: 'official.value',
+        name: 'official',
         label: 'Official',
         filter: {
           value: null
@@ -100,10 +100,10 @@ async function testLoadExisting() {
     ],
     rows: fixture.TEST_VOCABULARY_DTO.terms.map(term => ({
       values: {
-        'code.value': term.getCode(),
-        'label.value': term.getLabel(),
-        'description.value': term.getDescription(),
-        'official.value': String(term.isOfficial())
+        code: term.getCode(),
+        label: term.getLabel(),
+        description: term.getDescription(),
+        official: String(term.isOfficial())
       },
       selected: false
     }))

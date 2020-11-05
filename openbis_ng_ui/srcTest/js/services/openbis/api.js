@@ -7,6 +7,7 @@ const deleteExperimentTypes = jest.fn()
 const deleteMaterialTypes = jest.fn()
 const deleteSampleTypes = jest.fn()
 const executeOperations = jest.fn()
+const getAuthorizationGroups = jest.fn()
 const getDataSetTypes = jest.fn()
 const getExperimentTypes = jest.fn()
 const getMaterialTypes = jest.fn()
@@ -92,6 +93,7 @@ export default {
   deleteMaterialTypes,
   deleteSampleTypes,
   executeOperations,
+  getAuthorizationGroups,
   getDataSetTypes,
   getExperimentTypes,
   getMaterialTypes,

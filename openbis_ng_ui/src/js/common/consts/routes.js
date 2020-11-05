@@ -196,6 +196,88 @@ const routes = {
       })
     }
   },
+  USERS: {
+    format: params => {
+      return doFormat(params, '/users', {
+        page: pages.USERS
+      })
+    },
+    parse: path => {
+      return doParse(path, '/users', {
+        page: pages.USERS
+      })
+    }
+  },
+  USERS_SEARCH: {
+    format: params => {
+      return doFormat(params, '/users-search/:id', {
+        page: pages.USERS,
+        type: objectTypes.SEARCH
+      })
+    },
+    parse: path => {
+      return doParse(path, '/users-search/:id', {
+        page: pages.USERS,
+        type: objectTypes.SEARCH
+      })
+    }
+  },
+  NEW_USER: {
+    format: params => {
+      return doFormat(params, '/new-user/:id', {
+        page: pages.USERS,
+        type: objectTypes.NEW_USER
+      })
+    },
+    parse: path => {
+      return doParse(path, '/new-user/:id', {
+        page: pages.USERS,
+        type: objectTypes.NEW_USER
+      })
+    }
+  },
+  USER: {
+    format: params => {
+      return doFormat(params, '/user/:id', {
+        page: pages.USERS,
+        type: objectTypes.USER
+      })
+    },
+    parse: path => {
+      return doParse(path, '/user/:id', {
+        page: pages.USERS,
+        type: objectTypes.USER
+      })
+    }
+  },
+  NEW_USER_GROUP: {
+    format: params => {
+      return doFormat(params, '/new-user-group/:id', {
+        page: pages.USERS,
+        type: objectTypes.NEW_USER_GROUP
+      })
+    },
+    parse: path => {
+      return doParse(path, '/new-user-group/:id', {
+        page: pages.USERS,
+        type: objectTypes.NEW_USER_GROUP
+      })
+    }
+  },
+  USER_GROUP: {
+    format: params => {
+      return doFormat(params, '/user-group/:id', {
+        page: pages.USERS,
+        type: objectTypes.USER_GROUP
+      })
+    },
+    parse: path => {
+      return doParse(path, '/user-group/:id', {
+        page: pages.USERS,
+        type: objectTypes.USER_GROUP
+      })
+    }
+  },
   DEFAULT: {
     format: () => {
       return {

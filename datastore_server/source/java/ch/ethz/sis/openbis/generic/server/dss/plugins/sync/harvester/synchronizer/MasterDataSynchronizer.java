@@ -79,8 +79,6 @@ public class MasterDataSynchronizer
 
     private final String sessionToken;
 
-    private final Map<TechId, String> vocabularyTechIdToCode = new HashMap<TechId, String>();
-
     private final IApplicationServerApi v3api;
 
     private final SyncConfig config;
@@ -186,8 +184,9 @@ public class MasterDataSynchronizer
 
     private String calculateDiff(Script existingPlugin, Script incomingPlugin)
     {
-        DiffBuilder diffBuilder = new DiffBuilder(existingPlugin, incomingPlugin, ToStringStyle.SHORT_PREFIX_STYLE, false)
-                .append("description", existingPlugin.getDescription(), incomingPlugin.getDescription());
+        DiffBuilder<?> diffBuilder =
+                new DiffBuilder<Object>(existingPlugin, incomingPlugin, ToStringStyle.SHORT_PREFIX_STYLE, false)
+                        .append("description", existingPlugin.getDescription(), incomingPlugin.getDescription());
         String existingScript = existingPlugin.getScript();
         String incomingScript = incomingPlugin.getScript();
         int indexOfDifference = StringUtils.indexOfDifference(existingScript, incomingScript);
@@ -204,7 +203,8 @@ public class MasterDataSynchronizer
     {
         List<ExternalDmsPermId> ids = externalDataManagementSystems.keySet().stream()
                 .map(ExternalDmsPermId::new).collect(Collectors.toList());
-        Map<IExternalDmsId, ExternalDms> existingDmss = v3api.getExternalDataManagementSystems(sessionToken, ids, new ExternalDmsFetchOptions());
+        Map<IExternalDmsId, ExternalDms> existingDmss =
+                v3api.getExternalDataManagementSystems(sessionToken, ids, new ExternalDmsFetchOptions());
         List<ExternalDmsCreation> creations = new ArrayList<>();
         List<ExternalDmsUpdate> updates = new ArrayList<>();
         for (ExternalDms externalDms : externalDataManagementSystems.values())
@@ -326,16 +326,18 @@ public class MasterDataSynchronizer
 
     private String calculateDiff(Vocabulary existingVocabulary, NewVocabulary newVocabulary)
     {
-        DiffBuilder diffBuilder = new DiffBuilder(existingVocabulary, newVocabulary, ToStringStyle.SHORT_PREFIX_STYLE, false)
-                .append("description", existingVocabulary.getDescription(), newVocabulary.getDescription())
-                .append("urlTemplate", existingVocabulary.getURLTemplate(), newVocabulary.getURLTemplate())
-                .append("managedInternally", existingVocabulary.isManagedInternally(), newVocabulary.isManagedInternally())
-                .append("chosenFromList", existingVocabulary.isChosenFromList(), newVocabulary.isChosenFromList());
-        DiffResult diffResult = diffBuilder.build();
+        DiffBuilder<?> diffBuilder =
+                new DiffBuilder<Object>(existingVocabulary, newVocabulary, ToStringStyle.SHORT_PREFIX_STYLE, false)
+                        .append("description", existingVocabulary.getDescription(), newVocabulary.getDescription())
+                        .append("urlTemplate", existingVocabulary.getURLTemplate(), newVocabulary.getURLTemplate())
+                        .append("managedInternally", existingVocabulary.isManagedInternally(), newVocabulary.isManagedInternally())
+                        .append("chosenFromList", existingVocabulary.isChosenFromList(), newVocabulary.isChosenFromList());
+        DiffResult<?> diffResult = diffBuilder.build();
         return render(diffResult, existingVocabulary, newVocabulary);
     }
 
-    private void processVocabularyTerms(String sessionToken, ICommonServer commonServer, NewVocabulary newVocabulary, Vocabulary existingVocabulary)
+    private void processVocabularyTerms(String sessionToken, ICommonServer commonServer, NewVocabulary newVocabulary,
+            Vocabulary existingVocabulary)
     {
         Map<String, VocabularyTerm> existingTerms = getTermsByCode(existingVocabulary);
         List<VocabularyTerm> termsToBeAdded = new ArrayList<VocabularyTerm>();
@@ -363,11 +365,12 @@ public class MasterDataSynchronizer
 
     private String calculateDiff(VocabularyTerm existingTerm, VocabularyTerm incomingTerm)
     {
-        DiffBuilder diffBuilder = new DiffBuilder(existingTerm, incomingTerm, ToStringStyle.SHORT_PREFIX_STYLE, false)
-                .append("label", existingTerm.getLabel(), incomingTerm.getLabel())
-                .append("description", existingTerm.getDescription(), incomingTerm.getDescription())
-                .append("url", existingTerm.getUrl(), incomingTerm.getUrl());
-        DiffResult diffResult = diffBuilder.build();
+        DiffBuilder<?> diffBuilder =
+                new DiffBuilder<Object>(existingTerm, incomingTerm, ToStringStyle.SHORT_PREFIX_STYLE, false)
+                        .append("label", existingTerm.getLabel(), incomingTerm.getLabel())
+                        .append("description", existingTerm.getDescription(), incomingTerm.getDescription())
+                        .append("url", existingTerm.getUrl(), incomingTerm.getUrl());
+        DiffResult<?> diffResult = diffBuilder.build();
         return render(diffResult, existingTerm, incomingTerm);
     }
 
@@ -460,8 +463,8 @@ public class MasterDataSynchronizer
             {
                 if (findInIncomingPropertyAssignments(etpt, incomingAssignmentsList) == false)
                 {
-                    synchronizerFacade.unassignPropertyType(existingEntityType.getEntityKind(), etpt.getPropertyType().getCode(), etpt
-                            .getEntityType().getCode());
+                    synchronizerFacade.unassignPropertyType(existingEntityType.getEntityKind(),
+                            etpt.getPropertyType().getCode(), etpt.getEntityType().getCode());
                 }
             }
         }
@@ -470,21 +473,22 @@ public class MasterDataSynchronizer
     @SuppressWarnings("rawtypes")
     private String calculateDiff(EntityTypePropertyType existingAssignment, NewETPTAssignment incomingAssignment)
     {
-        DiffBuilder diffBuilder = new DiffBuilder(existingAssignment, incomingAssignment, ToStringStyle.SHORT_PREFIX_STYLE, false)
-                .append("mandatory", existingAssignment.isMandatory(), incomingAssignment.isMandatory())
-                .append("section", existingAssignment.getSection(), incomingAssignment.getSection())
-                // ch.systemsx.cisd.openbis.generic.server.business.bo.EntityTypePropertyTypeBO.createAssignment() increases
-                // the provided ordinal by one. Thus, we have to subtract 1 in order to get the same ordinal.
-                .append("ordinal", new Long(existingAssignment.getOrdinal() - 1), incomingAssignment.getOrdinal())
-                .append("showInEdit", existingAssignment.isShownInEditView(),
-                        incomingAssignment.isDynamic() ? false : incomingAssignment.isShownInEditView())
-                .append("plugin", getPluginName(existingAssignment.getScript()), incomingAssignment.getScriptName());
+        DiffBuilder<?> diffBuilder =
+                new DiffBuilder<Object>(existingAssignment, incomingAssignment, ToStringStyle.SHORT_PREFIX_STYLE, false)
+                        .append("mandatory", existingAssignment.isMandatory(), incomingAssignment.isMandatory())
+                        .append("section", existingAssignment.getSection(), incomingAssignment.getSection())
+                        // ch.systemsx.cisd.openbis.generic.server.business.bo.EntityTypePropertyTypeBO.createAssignment() increases
+                        // the provided ordinal by one. Thus, we have to subtract 1 in order to get the same ordinal.
+                        .append("ordinal", new Long(existingAssignment.getOrdinal() - 1), incomingAssignment.getOrdinal())
+                        .append("showInEdit", existingAssignment.isShownInEditView(),
+                                incomingAssignment.isDynamic() ? false : incomingAssignment.isShownInEditView())
+                        .append("plugin", getPluginName(existingAssignment.getScript()), incomingAssignment.getScriptName());
         Script plugin = existingAssignment.getScript();
         ScriptType existingPluginType = plugin == null ? null : plugin.getScriptType();
         ScriptType incomingPluginType = incomingAssignment.isDynamic() ? ScriptType.DYNAMIC_PROPERTY
                 : (incomingAssignment.isManaged() ? ScriptType.MANAGED_PROPERTY : null);
         diffBuilder.append("pluginType", existingPluginType, incomingPluginType);
-        DiffResult diffResult = diffBuilder.build();
+        DiffResult<?> diffResult = diffBuilder.build();
         return render(diffResult, existingAssignment, incomingAssignment);
 
     }
@@ -560,9 +564,10 @@ public class MasterDataSynchronizer
 
     private String calculateDiff(EntityKind entityKind, EntityType existingEntityType, EntityType incomingEntityType)
     {
-        DiffBuilder diffBuilder = new DiffBuilder(existingEntityType, incomingEntityType, ToStringStyle.SHORT_PREFIX_STYLE, false)
-                .append("description", existingEntityType.getDescription(), incomingEntityType.getDescription())
-                .append("validationPlugin", getPluginName(existingEntityType), getPluginName(incomingEntityType));
+        DiffBuilder<?> diffBuilder =
+                new DiffBuilder<Object>(existingEntityType, incomingEntityType, ToStringStyle.SHORT_PREFIX_STYLE, false)
+                        .append("description", existingEntityType.getDescription(), incomingEntityType.getDescription())
+                        .append("validationPlugin", getPluginName(existingEntityType), getPluginName(incomingEntityType));
         switch (entityKind)
         {
             case SAMPLE:
@@ -580,7 +585,7 @@ public class MasterDataSynchronizer
             default:
                 throw new UserFailureException("update not implemented for entity kind: " + entityKind.name());
         }
-        DiffResult diffResult = diffBuilder.build();
+        DiffResult<?> diffResult = diffBuilder.build();
         return render(diffResult, existingEntityType, incomingEntityType);
     }
 
@@ -594,7 +599,7 @@ public class MasterDataSynchronizer
         return plugin == null ? null : plugin.getName();
     }
 
-    private static String render(DiffResult diffResult, Object existing, Object incoming)
+    private static String render(DiffResult<?> diffResult, Object existing, Object incoming)
     {
         List<Diff<?>> diffs = diffResult.getDiffs();
         if (diffs.isEmpty())
@@ -611,7 +616,7 @@ public class MasterDataSynchronizer
         return "incoming " + builderIncoming.build() + " differs from existing " + builderExisting.build();
     }
 
-    private void appendToDiffBuilder(DiffBuilder diffBuilder, SampleType existingType, SampleType incomingType)
+    private void appendToDiffBuilder(DiffBuilder<?> diffBuilder, SampleType existingType, SampleType incomingType)
     {
         diffBuilder.append("generatedCodePrefix", existingType.getGeneratedCodePrefix(), incomingType.getGeneratedCodePrefix())
                 .append("listable", existingType.isListable(), incomingType.isListable())
@@ -622,17 +627,17 @@ public class MasterDataSynchronizer
                 .append("autoGeneratedCode", existingType.isAutoGeneratedCode(), incomingType.isAutoGeneratedCode());
     }
 
-    private void appendToDiffBuilder(DiffBuilder diffBuilder, DataSetType existingType, DataSetType incomingType)
+    private void appendToDiffBuilder(DiffBuilder<?> diffBuilder, DataSetType existingType, DataSetType incomingType)
     {
         diffBuilder.append("mainDataSetPattern", existingType.getMainDataSetPattern(), incomingType.getMainDataSetPattern())
                 .append("mainDataSetPath", existingType.getMainDataSetPath(), incomingType.getMainDataSetPath());
     }
 
-    private void appendToDiffBuilder(DiffBuilder diffBuilder, ExperimentType existingType, ExperimentType incomingType)
+    private void appendToDiffBuilder(DiffBuilder<?> diffBuilder, ExperimentType existingType, ExperimentType incomingType)
     {
     }
 
-    private void appendToDiffBuilder(DiffBuilder diffBuilder, MaterialType existingType, MaterialType incomingType)
+    private void appendToDiffBuilder(DiffBuilder<?> diffBuilder, MaterialType existingType, MaterialType incomingType)
     {
     }
 
@@ -696,7 +701,8 @@ public class MasterDataSynchronizer
         }
     }
 
-    private PropertyType getExisting(Map<String, PropertyType> propertyTypeMap, PropertyType incomingPropertyType, INameTranslator nameTranslator)
+    private PropertyType getExisting(Map<String, PropertyType> propertyTypeMap, PropertyType incomingPropertyType,
+            INameTranslator nameTranslator)
     {
         return propertyTypeMap.get(getCode(incomingPropertyType, nameTranslator));
     }
@@ -719,16 +725,18 @@ public class MasterDataSynchronizer
 
     private String calculateDiff(PropertyType existingPropertyType, PropertyType incomingPropertyType)
     {
-        DiffBuilder diffBuilder = new DiffBuilder(existingPropertyType, incomingPropertyType, ToStringStyle.SHORT_PREFIX_STYLE, false)
-                .append("label", existingPropertyType.getLabel(), incomingPropertyType.getLabel())
-                .append("dataType", getType(existingPropertyType), getType(incomingPropertyType))
-                .append("description", existingPropertyType.getDescription(), incomingPropertyType.getDescription())
-                .append("managedInternally", existingPropertyType.isManagedInternally(), incomingPropertyType.isManagedInternally())
-                .append("vocabulary", getCode(existingPropertyType.getVocabulary()),
-                        getCode(incomingPropertyType.getVocabulary()))
-                .append("material", getCode(existingPropertyType.getMaterialType()),
-                        getCode(incomingPropertyType.getMaterialType()));
-        DiffResult diffResult = diffBuilder.build();
+        DiffBuilder<?> diffBuilder =
+                new DiffBuilder<Object>(existingPropertyType, incomingPropertyType, ToStringStyle.SHORT_PREFIX_STYLE, false)
+                        .append("label", existingPropertyType.getLabel(), incomingPropertyType.getLabel())
+                        .append("dataType", getType(existingPropertyType), getType(incomingPropertyType))
+                        .append("description", existingPropertyType.getDescription(), incomingPropertyType.getDescription())
+                        .append("managedInternally", existingPropertyType.isManagedInternally(),
+                                incomingPropertyType.isManagedInternally())
+                        .append("vocabulary", getCode(existingPropertyType.getVocabulary()),
+                                getCode(incomingPropertyType.getVocabulary()))
+                        .append("material", getCode(existingPropertyType.getMaterialType()),
+                                getCode(incomingPropertyType.getMaterialType()));
+        DiffResult<?> diffResult = diffBuilder.build();
         return render(diffResult, existingPropertyType, incomingPropertyType);
     }
 
