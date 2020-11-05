@@ -76,6 +76,8 @@ public class SynchronizationConfigReader
 
     private static final String FULL_SYNC_INTERVAL_PROPERTY_NAME = "full-sync-interval";
 
+    private static final String DRY_RUN_PROPERTY_NAME = "dry-run";
+
     private static final String VERBOSE_PROPERTY_NAME = "verbose";
 
     private static final String SPACE_BLACK_LIST_PROPERTY_NAME = "space-black-list";
@@ -184,8 +186,9 @@ public class SynchronizationConfigReader
                     reader.getString(section, HARVESTER_NOT_SYNCED_ENTITIES_FILE_NAME, defaultNotSyncedEntitiesFilePath, false));
             configs.add(config);
 
+            config.setDryRun(reader.getBoolean(section, DRY_RUN_PROPERTY_NAME, false));
             config.setVerbose(reader.getBoolean(section, VERBOSE_PROPERTY_NAME, true));
-            if (config.isDryRun() == true)
+            if (config.isDryRun())
             {
                 config.setVerbose(true);
             }
