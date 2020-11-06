@@ -1,5 +1,5 @@
 import React from 'react'
-import RolesGrid from '@src/js/components/users/form/common/RolesGrid.jsx'
+import RolesGrid from '@src/js/components/users/common/RolesGrid.jsx'
 import ids from '@src/js/common/consts/ids.js'
 import logger from '@src/js/common/logger.js'
 
