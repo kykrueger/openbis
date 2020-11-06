@@ -81,7 +81,8 @@ public class OrderTranslator
 
     private static String buildSelect(final TranslationContext translationContext)
     {
-        final StringBuilder sqlBuilder = new StringBuilder(SELECT + SP + DISTINCT + SP + SearchCriteriaTranslator.MAIN_TABLE_ALIAS + PERIOD + ID_COLUMN);
+        final StringBuilder sqlBuilder = new StringBuilder(
+                SELECT + SP + SearchCriteriaTranslator.MAIN_TABLE_ALIAS + PERIOD + ID_COLUMN);
 
         translationContext.getSortOptions().getSortings().forEach((sorting) ->
         {
@@ -113,7 +114,7 @@ public class OrderTranslator
             {
                 joinInformationMap = TranslatorUtils.getTypeJoinInformationMap(tableMapper, () -> getOrderingAlias(indexCounter));
                 aliasesMapKey = EntityWithPropertiesSortOptions.TYPE;
-            } else if (isSortingByIdentifierCriterion(sortingCriterionFieldName))
+            } else if (isSortingByIdentifierCriterion(sortingCriterionFieldName) && tableMapper != TableMapper.SAMPLE)
             {
                 joinInformationMap = TranslatorUtils.getIdentifierJoinInformationMap(tableMapper, () -> getOrderingAlias(indexCounter),
                         UNIQUE_PREFIX);
@@ -179,11 +180,12 @@ public class OrderTranslator
     {
         final String sortingCriteriaFieldName = sorting.getField();
         final Map<String, JoinInformation> aliases = translationContext.getAliases().get(UNIQUE_PREFIX);
+        final TableMapper tableMapper = translationContext.getTableMapper();
         if (TranslatorUtils.isPropertySearchFieldName(sortingCriteriaFieldName))
         {
             final String propertyName = sortingCriteriaFieldName.substring(EntityWithPropertiesSortOptions.PROPERTY.length());
             final String propertyNameLowerCase = propertyName.toLowerCase();
-            final String valuesTableAlias = translationContext.getAliases().get(propertyNameLowerCase).get(translationContext.getTableMapper().getEntityTypesAttributeTypesTable()).getMainTableAlias();
+            final String valuesTableAlias = translationContext.getAliases().get(propertyNameLowerCase).get(tableMapper.getEntityTypesAttributeTypesTable()).getMainTableAlias();
             sqlBuilder.append(valuesTableAlias).append(PERIOD).append(VALUE_COLUMN);
 
             final String casting = translationContext.getDataTypeByPropertyName().get(propertyName);
@@ -193,27 +195,25 @@ public class OrderTranslator
             }
         } else if (isTypeSearchCriterion(sortingCriteriaFieldName))
         {
-            final String typesTableAlias = translationContext.getAliases().get(EntityWithPropertiesSortOptions.TYPE).get(translationContext.getTableMapper().getEntityTypesTable()).
+            final String typesTableAlias = translationContext.getAliases().get(EntityWithPropertiesSortOptions.TYPE).get(tableMapper.getEntityTypesTable()).
                     getSubTableAlias();
             sqlBuilder.append(typesTableAlias).append(PERIOD).append(CODE_COLUMN);
         } else if (isSortingByIdentifierCriterion(sortingCriteriaFieldName))
         {
             if (inSelect)
             {
-                final JoinInformation entitiesTableAlias = aliases.get(translationContext.getTableMapper().getEntitiesTable());
-                final JoinInformation spacesTableAlias = aliases.get(UNIQUE_PREFIX + SPACES_TABLE);
-                final JoinInformation projectsTableAlias = aliases.get(UNIQUE_PREFIX + PROJECTS_TABLE);
-
-                if (translationContext.getTableMapper() != TableMapper.SAMPLE)
+                if (tableMapper != TableMapper.SAMPLE)
                 {
+                    final JoinInformation entitiesTableAlias = aliases.get(tableMapper.getEntitiesTable());
+                    final JoinInformation spacesTableAlias = aliases.get(UNIQUE_PREFIX + SPACES_TABLE);
+                    final JoinInformation projectsTableAlias = aliases.get(UNIQUE_PREFIX + PROJECTS_TABLE);
                     buildFullIdentifierConcatenationString(sqlBuilder,
                             (spacesTableAlias != null) ? spacesTableAlias.getSubTableAlias() : null,
                             (projectsTableAlias != null) ? projectsTableAlias.getSubTableAlias() : null,
-                            (entitiesTableAlias != null) ? entitiesTableAlias.getSubTableAlias() : null);
+                            (entitiesTableAlias != null) ? entitiesTableAlias.getSubTableAlias() : null, false);
                 } else
                 {
-                    sqlBuilder.append(LOWER).append(LP).append(MAIN_TABLE_ALIAS).append(PERIOD)
-                            .append(SAMPLE_IDENTIFIER_COLUMN).append(RP);
+                    sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(SAMPLE_IDENTIFIER_COLUMN);
                 }
 
                 sqlBuilder.append(SP);
@@ -222,7 +222,7 @@ public class OrderTranslator
         } else if (isSortingByMaterialPermId(translationContext, sortingCriteriaFieldName))
         {
             final String materialTypeTableAlias = translationContext.getAliases().get(EntityWithPropertiesSortOptions.TYPE)
-                    .get(translationContext.getTableMapper().getEntityTypesTable()).getSubTableAlias();
+                    .get(tableMapper.getEntityTypesTable()).getSubTableAlias();
             sqlBuilder.append(SearchCriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN);
 
             if (!inSelect)
@@ -237,7 +237,7 @@ public class OrderTranslator
         } else
         {
             final String lowerCaseSortingCriteriaFieldName = sortingCriteriaFieldName.toLowerCase();
-            final String fieldName = AttributesMapper.getColumnName(lowerCaseSortingCriteriaFieldName, translationContext.getTableMapper().getEntitiesTable(),
+            final String fieldName = AttributesMapper.getColumnName(lowerCaseSortingCriteriaFieldName, tableMapper.getEntitiesTable(),
                     lowerCaseSortingCriteriaFieldName);
             sqlBuilder.append(SearchCriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(fieldName);
         }
