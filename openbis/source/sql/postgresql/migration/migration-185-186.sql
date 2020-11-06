@@ -5,8 +5,8 @@ DECLARE cvt RECORD;
 BEGIN
     IF NEW.cvte_id IS NOT NULL THEN
         SELECT code, label INTO STRICT cvt FROM controlled_vocabulary_terms WHERE id = NEW.cvte_id;
-        NEW.tsvector_document := setweight(to_tsvector('english', escape_tsvector_string(cvt.code)), 'D') ||
-                setweight(to_tsvector('english', escape_tsvector_string(coalesce(cvt.label, ''))), 'D');
+        NEW.tsvector_document := setweight(to_tsvector('english', escape_tsvector_string(cvt.code)), 'C') ||
+                setweight(to_tsvector('english', escape_tsvector_string(coalesce(cvt.label, ''))), 'C');
     ELSE
         NEW.tsvector_document := setweight(to_tsvector('english', escape_tsvector_string(coalesce(NEW.value, ''))), 'D');
     END IF;
