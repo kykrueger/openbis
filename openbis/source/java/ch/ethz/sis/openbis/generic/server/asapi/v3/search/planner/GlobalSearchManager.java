@@ -138,47 +138,51 @@ public class GlobalSearchManager implements IGlobalSearchManager
     @Override
     public Collection<MatchingEntity> map(final Collection<Map<String, Object>> records, final boolean withMatches)
     {
-        return records.stream().map((fieldsMap) ->
+        return records.stream().map(stringObjectMap -> mapRecordToMatchingEntity(stringObjectMap, withMatches))
+                .collect(Collectors.toMap(MatchingEntity::getIdentifier, Function.identity(),
+                        (existingMatchingEntity, newMatchingEntity) ->
+                                mergeMatchingEntities(existingMatchingEntity, newMatchingEntity, withMatches),
+                        LinkedHashMap::new
+                )).values();
+    }
+
+    private static MatchingEntity mapRecordToMatchingEntity(final Map<String, Object> fieldsMap,
+            final boolean withMatches)
+    {
+        final MatchingEntity matchingEntity = new MatchingEntity();
+        matchingEntity.setCode((String) fieldsMap.get(CODE_COLUMN));
+        final EntityKind entityKind = EntityKind.valueOf((String) fieldsMap.get(OBJECT_KIND_ALIAS));
+        matchingEntity.setEntityKind(entityKind);
+        matchingEntity.setId((Long) fieldsMap.get(ID_COLUMN));
+        matchingEntity.setPermId((String) fieldsMap.get(PERM_ID_COLUMN));
+
+        final String entityTypesCode = (String) fieldsMap.get(ENTITY_TYPES_CODE_ALIAS);
+        if (entityTypesCode != null)
         {
-            final MatchingEntity matchingEntity = new MatchingEntity();
-            matchingEntity.setCode((String) fieldsMap.get(CODE_COLUMN));
-            final EntityKind entityKind = EntityKind.valueOf((String) fieldsMap.get(OBJECT_KIND_ALIAS));
-            matchingEntity.setEntityKind(entityKind);
-            matchingEntity.setId((Long) fieldsMap.get(ID_COLUMN));
-            matchingEntity.setPermId((String) fieldsMap.get(PERM_ID_COLUMN));
+            matchingEntity.setEntityType(new BasicEntityType(entityTypesCode));
+        }
 
-            final String entityTypesCode = (String) fieldsMap.get(ENTITY_TYPES_CODE_ALIAS);
-            if (entityTypesCode != null)
-            {
-                matchingEntity.setEntityType(new BasicEntityType(entityTypesCode));
-            }
+        matchingEntity.setIdentifier((String) fieldsMap.get(IDENTIFIER_ALIAS));
 
-            matchingEntity.setIdentifier((String) fieldsMap.get(IDENTIFIER_ALIAS));
+        if (entityKind == EntityKind.EXPERIMENT || entityKind == EntityKind.DATA_SET)
+        {
+            final Space space = new Space();
+            space.setCode((String) fieldsMap.get(SPACE_CODE_ALIAS));
+            matchingEntity.setSpace(space);
+        }
 
-            if (entityKind == EntityKind.EXPERIMENT || entityKind == EntityKind.DATA_SET)
-            {
-                final Space space = new Space();
-                space.setCode((String) fieldsMap.get(SPACE_CODE_ALIAS));
-                matchingEntity.setSpace(space);
-            }
+        matchingEntity.setScore((Float) fieldsMap.get(RANK_ALIAS));
 
-            matchingEntity.setScore((Float) fieldsMap.get(RANK_ALIAS));
+        final List<PropertyMatch> matches = new ArrayList<>();
 
-            final List<PropertyMatch> matches = new ArrayList<>();
+        if (withMatches)
+        {
+            mapPropertyMatches(fieldsMap, matches);
+            mapAttributeMatches(fieldsMap, entityKind, matches);
+        }
 
-            if (withMatches)
-            {
-                mapPropertyMatches(fieldsMap, matches);
-                mapAttributeMatches(fieldsMap, entityKind, matches);
-            }
-
-            matchingEntity.setMatches(matches);
-            return matchingEntity;
-        }).collect(Collectors.toMap(MatchingEntity::getIdentifier, Function.identity(),
-            (existingMatchingEntity, newMatchingEntity) ->
-                    mergeMatchingEntities(existingMatchingEntity, newMatchingEntity, withMatches),
-            LinkedHashMap::new
-        )).values();
+        matchingEntity.setMatches(matches);
+        return matchingEntity;
     }
 
     private static MatchingEntity mergeMatchingEntities(final MatchingEntity existingMatchingEntity,
@@ -212,7 +216,7 @@ public class GlobalSearchManager implements IGlobalSearchManager
                 )).values();
     }
 
-    private void mapAttributeMatches(final Map<String, Object> fieldsMap, final EntityKind entityKind,
+    private static void mapAttributeMatches(final Map<String, Object> fieldsMap, final EntityKind entityKind,
             final List<PropertyMatch> matches)
     {
         switch (entityKind)
@@ -244,7 +248,7 @@ public class GlobalSearchManager implements IGlobalSearchManager
         }
     }
 
-    private void mapPropertyMatches(final Map<String, Object> fieldsMap, final List<PropertyMatch> matches)
+    private static void mapPropertyMatches(final Map<String, Object> fieldsMap, final List<PropertyMatch> matches)
     {
         final String propertyValueMatch = (String) fieldsMap.get(PROPERTY_VALUE_ALIAS);
         if (propertyValueMatch != null)
@@ -277,7 +281,7 @@ public class GlobalSearchManager implements IGlobalSearchManager
         }
     }
 
-    private void addPropertyMatch(final String codeMatchString, final Map<String, Object> fieldsMap,
+    private static void addPropertyMatch(final String codeMatchString, final Map<String, Object> fieldsMap,
             final List<PropertyMatch> matches)
     {
         final PropertyMatch propertyMatch = new PropertyMatch();
@@ -300,7 +304,7 @@ public class GlobalSearchManager implements IGlobalSearchManager
      * @param propertyMatch property match to which the spans should be added.
      * @param headline headline string which contains markers of start and stop of matches.
      */
-    private void computeSpans(final PropertyMatch propertyMatch, final String headline)
+    private static void computeSpans(final PropertyMatch propertyMatch, final String headline)
     {
         final List<Span> spans = new ArrayList<>();
         final int startSelLength = START_SEL.length();
@@ -329,13 +333,13 @@ public class GlobalSearchManager implements IGlobalSearchManager
      * @param keys keys in the order how the values should be checked.
      * @return the first not null value from map casted to string.
      */
-    private String coalesceMap(final Map<String, ?> map, final String... keys)
+    private static String coalesceMap(final Map<String, ?> map, final String... keys)
     {
         return (String) Arrays.stream(keys).map(map::get)
                 .filter(Objects::nonNull).findFirst().orElse(null);
     }
 
-    private void mapAttributeMatch(final Map<String, Object> fieldsMap, final List<PropertyMatch> matches,
+    private static void mapAttributeMatch(final Map<String, Object> fieldsMap, final List<PropertyMatch> matches,
             final String matchAlias, final String code)
     {
         final Object fieldMatch = fieldsMap.get(matchAlias);
