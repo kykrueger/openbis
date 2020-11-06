@@ -87,7 +87,7 @@ public abstract class AbstractSQLExecutor implements ISQLExecutor
         }
 
         OPERATION_LOG.info("RESULTS COUNT: " + results.size());
-        OPERATION_LOG.info("RESULTS: " + results);
+        OPERATION_LOG.debug("RESULTS: " + results);
         return results;
     }
 

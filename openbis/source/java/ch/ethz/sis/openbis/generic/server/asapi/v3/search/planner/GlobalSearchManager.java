@@ -24,8 +24,6 @@ public class GlobalSearchManager implements IGlobalSearchManager
 
     private static final String PERM_ID_FIELD_NAME = "Perm ID";
 
-    private static final String DATA_SET_KIND_FIELD_NAME = "DataSet kind";
-
     private static final String IDENTIFIER_FIELD_NAME = "Identifier";
 
     private static final String CODE_FIELD_NAME = "Code";
@@ -239,7 +237,6 @@ public class GlobalSearchManager implements IGlobalSearchManager
 
             case DATA_SET:
             {
-                mapAttributeMatch(fieldsMap, matches, DATA_SET_KIND_MATCH_ALIAS, DATA_SET_KIND_FIELD_NAME);
                 mapAttributeMatch(fieldsMap, matches, CODE_MATCH_ALIAS, PERM_ID_FIELD_NAME);
                 mapAttributeMatch(fieldsMap, matches, PERM_ID_MATCH_ALIAS, PERM_ID_FIELD_NAME);
                 break;

@@ -49,8 +49,6 @@ public class GlobalSearchCriteriaTranslator
 
     public static final String PERM_ID_MATCH_ALIAS = "perm_id_match";
 
-    public static final String DATA_SET_KIND_MATCH_ALIAS = "data_set_kind_match";
-
     public static final String SAMPLE_IDENTIFIER_MATCH_ALIAS = "sample_identifier_match";
 
     public static final String MATERIAL_MATCH_ALIAS = "material_match";
@@ -555,12 +553,6 @@ public class GlobalSearchCriteriaTranslator
                 sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(PERM_ID_COLUMN).append(COMMA).append(NL);
                 break;
             }
-            case DATA_SET:
-            {
-                sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(DATA_SET_KIND_COLUMN)
-                        .append(COMMA).append(NL);
-                break;
-            }
         }
 
         sqlBuilder.append(ENTITY_TYPES_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(SP)
@@ -644,11 +636,6 @@ public class GlobalSearchCriteriaTranslator
                 case EXPERIMENT:
                 {
                     sqlBuilder.append(NULL).append(SP).append(PERM_ID_MATCH_ALIAS).append(COMMA).append(NL);
-                    break;
-                }
-                case DATA_SET:
-                {
-                    sqlBuilder.append(NULL).append(SP).append(DATA_SET_KIND_MATCH_ALIAS).append(COMMA).append(NL);
                     break;
                 }
             }
@@ -791,22 +778,6 @@ public class GlobalSearchCriteriaTranslator
                 sqlBuilder.append(SP).append(ELSE).append(SP).append(NULL).append(SP).append(END);
                 sqlBuilder.append(SP).append(PERM_ID_MATCH_ALIAS);
 
-                args.add(criterionValues);
-                break;
-            }
-            case DATA_SET:
-            {
-                sqlBuilder.append(COMMA).append(NL);
-
-                sqlBuilder.append(CASE).append(SP).append(WHEN).append(SP).append(LOWER).append(LP);
-                sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(DATA_SET_KIND_COLUMN).append(RP);
-                sqlBuilder.append(SP).append(IN).append(SP).append(LP)
-                        .append(SELECT).append(SP).append(UNNEST).append(LP).append(QU).append(RP)
-                        .append(RP);
-                sqlBuilder.append(SP).append(THEN).append(SP).append(MAIN_TABLE_ALIAS).append(PERIOD)
-                        .append(DATA_SET_KIND_COLUMN);
-                sqlBuilder.append(SP).append(ELSE).append(SP).append(NULL).append(SP).append(END);
-                sqlBuilder.append(SP).append(DATA_SET_KIND_MATCH_ALIAS);
                 args.add(criterionValues);
                 break;
             }
