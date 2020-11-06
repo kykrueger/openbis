@@ -30,6 +30,7 @@ import DeleteAuthorizationGroupsOperation from 'as/dto/authorizationgroup/delete
 import DeleteDataSetTypesOperation from 'as/dto/dataset/delete/DeleteDataSetTypesOperation'
 import DeleteExperimentTypesOperation from 'as/dto/experiment/delete/DeleteExperimentTypesOperation'
 import DeleteMaterialTypesOperation from 'as/dto/material/delete/DeleteMaterialTypesOperation'
+import DeletePluginsOperation from 'as/dto/plugin/delete/DeletePluginsOperation'
 import DeletePropertyTypesOperation from 'as/dto/property/delete/DeletePropertyTypesOperation'
 import DeleteRoleAssignmentsOperation from 'as/dto/roleassignment/delete/DeleteRoleAssignmentsOperation'
 import DeleteSampleTypesOperation from 'as/dto/sample/delete/DeleteSampleTypesOperation'
@@ -60,6 +61,7 @@ import PersonPermId from 'as/dto/person/id/PersonPermId'
 import PersonSearchCriteria from 'as/dto/person/search/PersonSearchCriteria'
 import PersonUpdate from 'as/dto/person/update/PersonUpdate'
 import Plugin from 'as/dto/plugin/Plugin'
+import PluginDeletionOptions from 'as/dto/plugin/delete/PluginDeletionOptions'
 import PluginFetchOptions from 'as/dto/plugin/fetchoptions/PluginFetchOptions'
 import PluginPermId from 'as/dto/plugin/id/PluginPermId'
 import PluginSearchCriteria from 'as/dto/plugin/search/PluginSearchCriteria'
@@ -162,6 +164,7 @@ const dto = {
   DeleteDataSetTypesOperation,
   DeleteExperimentTypesOperation,
   DeleteMaterialTypesOperation,
+  DeletePluginsOperation,
   DeletePropertyTypesOperation,
   DeleteRoleAssignmentsOperation,
   DeleteSampleTypesOperation,
@@ -192,6 +195,7 @@ const dto = {
   PersonSearchCriteria,
   PersonUpdate,
   Plugin,
+  PluginDeletionOptions,
   PluginFetchOptions,
   PluginPermId,
   PluginSearchCriteria,

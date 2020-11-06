@@ -53,6 +53,8 @@ const CLASS_FULL_NAMES = [
   'as/dto/person/update/PersonUpdate',
   'as/dto/person/update/UpdatePersonsOperation',
   'as/dto/plugin/PluginType',
+  'as/dto/plugin/delete/PluginDeletionOptions',
+  'as/dto/plugin/delete/DeletePluginsOperation',
   'as/dto/plugin/fetchoptions/PluginFetchOptions',
   'as/dto/plugin/id/PluginPermId',
   'as/dto/plugin/search/PluginSearchCriteria',
