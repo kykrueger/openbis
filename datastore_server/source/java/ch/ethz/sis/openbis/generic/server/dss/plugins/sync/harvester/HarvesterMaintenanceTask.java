@@ -153,13 +153,17 @@ public class HarvesterMaintenanceTask<T extends DataSetInformation> implements I
         {
             for (SyncConfig config : SynchronizationConfigReader.readConfiguration(harvesterConfigFile))
             {
+                boolean dryRun = config.isDryRun();
                 Logger logger = createLogger(config);
                 try
                 {
                     config.setDryRun(true);
                     synchronize(config, logger);
-                    config.setDryRun(false);
-                    synchronize(config, logger);
+                    if (dryRun == false)
+                    {
+                        config.setDryRun(false);
+                        synchronize(config, logger);
+                    }
                 } catch (Exception e)
                 {
                     String dryRunNote = config.isDryRun() ? "(dry run) " : "";
@@ -181,12 +185,9 @@ public class HarvesterMaintenanceTask<T extends DataSetInformation> implements I
         logger.info("====================== "
                 + "Running synchronization from data source: " + config.getDataSourceOpenbisURL()
                 + " for user " + config.getUser());
-        if (config.isDryRun())
-        {
-            logger.info("DRY RUN Mode");
-        }
+        logger.info((config.isDryRun() ? "DRY RUN" : "SYNC") + " Mode");
         checkAlias(config);
-        logger.info("verbose =  " + config.isVerbose());
+        logger.info("verbose = " + config.isVerbose());
 
         String fileName = config.getLastSyncTimestampFileName();
         File lastSyncTimestampFile = new File(fileName);
