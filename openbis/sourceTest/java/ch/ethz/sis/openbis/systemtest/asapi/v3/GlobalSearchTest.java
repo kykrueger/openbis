@@ -648,7 +648,7 @@ public class GlobalSearchTest extends AbstractTest
     }
 
     @Test
-    public void testSearchWithDataSetPermIdAndLocation()
+    public void testSearchWithDataSetPermId()
     {
         GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
         fo.withDataSet();
@@ -656,32 +656,17 @@ public class GlobalSearchTest extends AbstractTest
 
         GlobalSearchCriteria criteria = new GlobalSearchCriteria();
         criteria.withText().thatContainsExactly("20110509092359990-11");
-        criteria.withText().thatContainsExactly("LINK");
 
         SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
-        assertEquals(result.getTotalCount(), 5);
+        assertEquals(result.getTotalCount(), 1);
 
-        final List<GlobalSearchObject> resultObjects = result.getObjects();
-        final GlobalSearchObject object1 = resultObjects.stream().filter(
-                globalSearchObject -> globalSearchObject.getDataSet().getCode().equals("20110509092359990-11"))
-                .findAny().orElse(null);
-        final GlobalSearchObject object2 = resultObjects.stream().filter(
-                globalSearchObject -> globalSearchObject.getDataSet().getCode().equals("20120628092259000-23"))
-                .findAny().orElse(null);
-
+        final GlobalSearchObject object1 = result.getObjects().get(0);
         assertDataSet(object1, "20110509092359990-11", object1.getMatch(), DataSetKind.PHYSICAL);
         AssertionUtil.assertContains("Perm ID: 20110509092359990-11", object1.getMatch());
         assertEquals(object1.getDataSet().getCode(), "20110509092359990-11");
         assertExperimentNotFetched(object1);
         assertSampleNotFetched(object1);
         assertMaterialNotFetched(object1);
-
-        assertDataSet(object2, "20120628092259000-23", object2.getMatch(), DataSetKind.LINK);
-        AssertionUtil.assertContains("DataSet kind: LINK", object2.getMatch());
-        assertEquals(object2.getDataSet().getCode(), "20120628092259000-23");
-        assertExperimentNotFetched(object2);
-        assertSampleNotFetched(object2);
-        assertMaterialNotFetched(object2);
     }
 
     @Test
