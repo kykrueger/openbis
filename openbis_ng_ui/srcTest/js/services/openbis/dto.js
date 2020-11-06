@@ -1,8 +1,11 @@
 import AuthorizationGroup from 'as/dto/authorizationgroup/AuthorizationGroup'
+import AuthorizationGroupCreation from 'as/dto/authorizationgroup/create/AuthorizationGroupCreation'
+import AuthorizationGroupDeletionOptions from 'as/dto/authorizationgroup/delete/AuthorizationGroupDeletionOptions'
 import AuthorizationGroupFetchOptions from 'as/dto/authorizationgroup/fetchoptions/AuthorizationGroupFetchOptions'
 import AuthorizationGroupPermId from 'as/dto/authorizationgroup/id/AuthorizationGroupPermId'
 import AuthorizationGroupSearchCriteria from 'as/dto/authorizationgroup/search/AuthorizationGroupSearchCriteria'
 import AuthorizationGroupUpdate from 'as/dto/authorizationgroup/update/AuthorizationGroupUpdate'
+import CreateAuthorizationGroupsOperation from 'as/dto/authorizationgroup/create/CreateAuthorizationGroupsOperation'
 import CreateDataSetTypesOperation from 'as/dto/dataset/create/CreateDataSetTypesOperation'
 import CreateExperimentTypesOperation from 'as/dto/experiment/create/CreateExperimentTypesOperation'
 import CreateMaterialTypesOperation from 'as/dto/material/create/CreateMaterialTypesOperation'
@@ -23,6 +26,7 @@ import DataSetTypeFetchOptions from 'as/dto/dataset/fetchoptions/DataSetTypeFetc
 import DataSetTypeSearchCriteria from 'as/dto/dataset/search/DataSetTypeSearchCriteria'
 import DataSetTypeUpdate from 'as/dto/dataset/update/DataSetTypeUpdate'
 import DataType from 'as/dto/property/DataType'
+import DeleteAuthorizationGroupsOperation from 'as/dto/authorizationgroup/delete/DeleteAuthorizationGroupsOperation'
 import DeleteDataSetTypesOperation from 'as/dto/dataset/delete/DeleteDataSetTypesOperation'
 import DeleteExperimentTypesOperation from 'as/dto/experiment/delete/DeleteExperimentTypesOperation'
 import DeleteMaterialTypesOperation from 'as/dto/material/delete/DeleteMaterialTypesOperation'
@@ -60,6 +64,7 @@ import PluginFetchOptions from 'as/dto/plugin/fetchoptions/PluginFetchOptions'
 import PluginPermId from 'as/dto/plugin/id/PluginPermId'
 import PluginSearchCriteria from 'as/dto/plugin/search/PluginSearchCriteria'
 import PluginType from 'as/dto/plugin/PluginType'
+import Project from 'as/dto/project/Project'
 import ProjectFetchOptions from 'as/dto/project/fetchoptions/ProjectFetchOptions'
 import ProjectIdentifier from 'as/dto/project/id/ProjectIdentifier'
 import ProjectSearchCriteria from 'as/dto/project/search/ProjectSearchCriteria'
@@ -76,6 +81,7 @@ import PropertyTypePermId from 'as/dto/property/id/PropertyTypePermId'
 import PropertyTypeSearchCriteria from 'as/dto/property/search/PropertyTypeSearchCriteria'
 import PropertyTypeUpdate from 'as/dto/property/update/PropertyTypeUpdate'
 import Role from 'as/dto/roleassignment/Role'
+import RoleAssignment from 'as/dto/roleassignment/RoleAssignment'
 import RoleAssignmentCreation from 'as/dto/roleassignment/create/RoleAssignmentCreation'
 import RoleAssignmentDeletionOptions from 'as/dto/roleassignment/delete/RoleAssignmentDeletionOptions'
 import RoleAssignmentTechId from 'as/dto/roleassignment/id/RoleAssignmentTechId'
@@ -93,6 +99,7 @@ import SearchExperimentsOperation from 'as/dto/experiment/search/SearchExperimen
 import SearchMaterialsOperation from 'as/dto/material/search/SearchMaterialsOperation'
 import SearchResult from 'as/dto/common/search/SearchResult'
 import SearchSamplesOperation from 'as/dto/sample/search/SearchSamplesOperation'
+import Space from 'as/dto/space/Space'
 import SpaceFetchOptions from 'as/dto/space/fetchoptions/SpaceFetchOptions'
 import SpacePermId from 'as/dto/space/id/SpacePermId'
 import SpaceSearchCriteria from 'as/dto/space/search/SpaceSearchCriteria'
@@ -124,10 +131,13 @@ import WebAppSettingCreation from 'as/dto/webapp/create/WebAppSettingCreation'
 
 const dto = {
   AuthorizationGroup,
+  AuthorizationGroupCreation,
+  AuthorizationGroupDeletionOptions,
   AuthorizationGroupFetchOptions,
   AuthorizationGroupPermId,
   AuthorizationGroupSearchCriteria,
   AuthorizationGroupUpdate,
+  CreateAuthorizationGroupsOperation,
   CreateDataSetTypesOperation,
   CreateExperimentTypesOperation,
   CreateMaterialTypesOperation,
@@ -148,6 +158,7 @@ const dto = {
   DataSetTypeSearchCriteria,
   DataSetTypeUpdate,
   DataType,
+  DeleteAuthorizationGroupsOperation,
   DeleteDataSetTypesOperation,
   DeleteExperimentTypesOperation,
   DeleteMaterialTypesOperation,
@@ -185,6 +196,7 @@ const dto = {
   PluginPermId,
   PluginSearchCriteria,
   PluginType,
+  Project,
   ProjectFetchOptions,
   ProjectIdentifier,
   ProjectSearchCriteria,
@@ -201,6 +213,7 @@ const dto = {
   PropertyTypeSearchCriteria,
   PropertyTypeUpdate,
   Role,
+  RoleAssignment,
   RoleAssignmentCreation,
   RoleAssignmentDeletionOptions,
   RoleAssignmentTechId,
@@ -218,6 +231,7 @@ const dto = {
   SearchMaterialsOperation,
   SearchResult,
   SearchSamplesOperation,
+  Space,
   SpaceFetchOptions,
   SpacePermId,
   SpaceSearchCriteria,

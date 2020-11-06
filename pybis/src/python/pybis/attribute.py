@@ -327,7 +327,6 @@ class AttrHolder():
         if name in name_map:
             name = name_map[name]
 
-
         int_name = '_' + name
         if int_name in self.__dict__:
             if int_name == '_attachments':

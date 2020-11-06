@@ -35,6 +35,10 @@ class Facade {
     return this.promise(this.v3.getPropertyTypes(ids, fo))
   }
 
+  getAuthorizationGroups(ids, fo) {
+    return this.promise(this.v3.getAuthorizationGroups(ids, fo))
+  }
+
   getPersons(ids, fo) {
     return this.promise(this.v3.getPersons(ids, fo))
   }

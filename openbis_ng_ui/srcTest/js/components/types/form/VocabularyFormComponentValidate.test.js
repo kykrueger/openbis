@@ -32,7 +32,7 @@ async function testValidateTerm() {
     grid: {
       rows: [fixture.TEST_TERM_5_DTO, fixture.TEST_TERM_6_DTO].map(term => ({
         values: {
-          'code.value': term.getCode()
+          code: term.getCode()
         },
         selected: false
       })),
@@ -68,17 +68,17 @@ async function testValidateTerm() {
       rows: [
         {
           values: {
-            'code.value': null,
-            'label.value': null,
-            'description.value': null,
-            'official.value': String(true)
+            code: null,
+            label: null,
+            description: null,
+            official: String(true)
           },
           selected: true
         },
-        { values: { 'code.value': fixture.TEST_TERM_1_DTO.getCode() } },
-        { values: { 'code.value': fixture.TEST_TERM_2_DTO.getCode() } },
-        { values: { 'code.value': fixture.TEST_TERM_3_DTO.getCode() } },
-        { values: { 'code.value': fixture.TEST_TERM_4_DTO.getCode() } }
+        { values: { code: fixture.TEST_TERM_1_DTO.getCode() } },
+        { values: { code: fixture.TEST_TERM_2_DTO.getCode() } },
+        { values: { code: fixture.TEST_TERM_3_DTO.getCode() } },
+        { values: { code: fixture.TEST_TERM_4_DTO.getCode() } }
       ],
       paging: {
         pageSize: {
@@ -138,10 +138,10 @@ async function testValidateVocabulary() {
       rows: [
         {
           values: {
-            'code.value': null,
-            'label.value': null,
-            'description.value': null,
-            'official.value': String(true)
+            code: null,
+            label: null,
+            description: null,
+            official: String(true)
           },
           selected: false
         }

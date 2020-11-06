@@ -30,8 +30,14 @@ function UserManagerController(mainController) {
 	}
 	
 	this.showCreateNewUserModal = function() {
-		var createUserController = new CreateUserController();
-		createUserController.init();
+	    Util.blockUI();
+        mainController.openbisV3.getServerInformation().done(function(serverInformation) {
+                var authenticationService = serverInformation["authentication-service"];
+                console.log(authenticationService);
+                Util.unblockUI();
+                var createUserController = new CreateUserController(authenticationService);
+                createUserController.init();
+        });
 	}
 	
 	this.resetPassword = function(userId) {

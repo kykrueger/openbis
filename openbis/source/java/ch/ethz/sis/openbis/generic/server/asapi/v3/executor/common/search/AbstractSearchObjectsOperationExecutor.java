@@ -301,12 +301,14 @@ public abstract class AbstractSearchObjectsOperationExecutor<OBJECT, OBJECT_PE, 
 
         final List<Long> toPage = (sortOptions != null) ? getSearchManager().sortIDs(ids, sortOptions)
                 : new ArrayList<>(ids);
-        final Integer fromRecord = fetchOptions.getFrom();
-        final Integer recordsCount = fetchOptions.getCount();
-        final boolean hasPaging = fromRecord != null && recordsCount != null;
+        final Integer foFromRecord = fetchOptions.getFrom();
+        final Integer foRecordsCount = fetchOptions.getCount();
+        final boolean hasPaging = foFromRecord != null || foRecordsCount != null;
         if (hasPaging)
         {
-            final int toRecord = Math.min(fromRecord + recordsCount, toPage.size());
+            final int fromRecord = foFromRecord != null ? foFromRecord : 0;
+            final int toRecord = foRecordsCount != null ? Math.min(fromRecord + foRecordsCount, toPage.size())
+                    : toPage.size();
             return fromRecord <= toRecord ? toPage.subList(fromRecord, toRecord) : Collections.emptyList();
         } else
         {

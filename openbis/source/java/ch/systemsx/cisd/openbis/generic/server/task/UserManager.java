@@ -216,7 +216,7 @@ public class UserManager
         logger.log(LogLevel.INFO, principalsByUserId.size() + " users for " + (group.isEnabled() ? "" : "disabled ") + "group " + groupCode);
     }
 
-    public void manage()
+    public void manage(Set<String> knownUsers)
     {
         try
         {
@@ -226,7 +226,7 @@ public class UserManager
             manageGlobalSpaces(sessionToken, report);
             if (deactivateUnknownUsers)
             {
-                revokeUsersUnkownByAuthenticationService(sessionToken, report);
+                revokeUnknownUsers(sessionToken, knownUsers, report);
             }
             CurrentState currentState = loadCurrentState(sessionToken, service);
             for (Entry<String, Map<String, Principal>> entry : usersByGroupCode.entrySet())
@@ -394,7 +394,7 @@ public class UserManager
         }
     }
 
-    private void revokeUsersUnkownByAuthenticationService(String sessionToken, UserManagerReport report)
+    private void revokeUnknownUsers(String sessionToken, Set<String> knownUsers, UserManagerReport report)
     {
         List<PersonUpdate> updates = new ArrayList<>();
         PersonSearchCriteria searchCriteria = new PersonSearchCriteria();
@@ -403,24 +403,35 @@ public class UserManager
         List<Person> persons = service.searchPersons(sessionToken, searchCriteria, fetchOptions).getObjects();
         for (Person person : persons)
         {
-            if (person.isActive() & person.getRegistrator() != null) // user 'system' has no registrator
+            if (person.isActive() && person.getRegistrator() != null // user 'system' has no registrator
+                    && isKnownUser(knownUsers, person) == false)
             {
-                try
-                {
-                    authenticationService.getPrincipal(person.getUserId());
-                } catch (IllegalArgumentException e)
-                {
-                    PersonUpdate update = new PersonUpdate();
-                    update.setUserId(person.getPermId());
-                    update.deactivate();
-                    updates.add(update);
-                    report.deactivateUser(person.getUserId());
-                }
+                PersonUpdate update = new PersonUpdate();
+                update.setUserId(person.getPermId());
+                update.deactivate();
+                updates.add(update);
+                report.deactivateUser(person.getUserId());
             }
         }
         if (updates.isEmpty() == false)
         {
             service.updatePersons(sessionToken, updates);
+        }
+    }
+    
+    private boolean isKnownUser(Set<String> knownUsers, Person person)
+    {
+        if (knownUsers.contains(person.getUserId()))
+        {
+            return true;
+        }
+        try
+        {
+            authenticationService.getPrincipal(person.getUserId());
+            return true;
+        } catch (IllegalArgumentException e)
+        {
+            return false;
         }
     }
 

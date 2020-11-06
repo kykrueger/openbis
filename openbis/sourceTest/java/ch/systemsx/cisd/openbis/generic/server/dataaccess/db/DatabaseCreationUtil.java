@@ -107,8 +107,7 @@ public final class DatabaseCreationUtil
             final String databaseKind)
     {
         final BeanFactory factory = getBeanFactory();
-        final DatabaseConfigurationContext configurationContext =
-                (DatabaseConfigurationContext) factory.getBean("db-configuration-context");
+        final DatabaseConfigurationContext configurationContext = (DatabaseConfigurationContext) factory.getBean("db-configuration-context");
         configurationContext.setDatabaseKind(databaseKind);
         configurationContext.setScriptFolder("sourceTest/sql");
         return configurationContext;

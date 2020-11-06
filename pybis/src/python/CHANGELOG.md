@@ -1,3 +1,18 @@
+## Changes with pybis-1.16.2
+
+- transaction.commit() now updates all added samples with their respective permIds
+
+## Changes with pybis-1.16.1
+
+- new_dataset bugfix
+
+## Changes with pybis-1.16.0
+
+- added support for batch creation of samples
+- changed Python minimum requirement to Python 3.6
+- new vocabulary and new property_type: internalNameSpace was removed
+- this will cause possible incompatibilities with older versions of openBIS (< 20.10.x)
+
 ## Changes with pybis-1.15.1
 
 - added support for date-searching

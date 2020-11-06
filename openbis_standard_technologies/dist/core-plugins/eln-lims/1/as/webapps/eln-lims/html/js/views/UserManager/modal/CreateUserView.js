@@ -39,6 +39,14 @@ function CreateUserView(createUserController, createUserModel) {
 		this._passwordGroupRepeat.show();
 		this._warning.show();
 	}
+
+    this.hidePasswordField = function() {
+        this._passField.attr('disabled','disabled');
+        this._passwordGroup.hide();
+        this._passFieldRepeat.attr('disabled','disabled');
+        this._passwordGroupRepeat.hide();
+    	this._warning.hide();
+    }
 	
 	this.repaint = function() {
 		var _this = this;
@@ -57,9 +65,31 @@ function CreateUserView(createUserController, createUserModel) {
 		//
 		this._warning = $("<p>")
 							.append($("<span>", { class: "glyphicon glyphicon-info-sign" }))
-							.append(" Your authentication service requires a password to create a user.");
+							.append(" File authentication requires a password to create a user, the user can change the password later at the profile.");
 		this._warning.hide();
 		$window.append(this._warning);
+
+		//
+		// Authentication Service
+		//
+		var authenticationServicesValues = [{ value : 'Default Authentication Service', label : 'Default Authentication Service', selected : true }];
+		if(this._createUserModel.authenticationService.indexOf("file") !== -1) {
+		    authenticationServicesValues.push({ value : 'File Authentication Service', label : 'File Authentication Service' });
+		}
+        var authServicesDropdown = FormUtil.getDropdown(authenticationServicesValues, 'Authentication Service');
+		var $authenticationServices = FormUtil.getFieldForComponentWithLabel(authServicesDropdown, 'Authentication Service', null);
+		$window.append($authenticationServices);
+
+        $authenticationServices.change(function() {
+            if(authServicesDropdown.val() === "File Authentication Service") {
+                _this.showPasswordField();
+                _this._createUserModel.isPasswordRequired = true;
+            } else {
+                _this.hidePasswordField();
+                _this._createUserModel.isPasswordRequired = false;
+            }
+        });
+
 		//
 		// User ID
 		//

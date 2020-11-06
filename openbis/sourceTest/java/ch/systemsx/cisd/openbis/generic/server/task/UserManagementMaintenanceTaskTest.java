@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.log4j.Level;
@@ -456,7 +457,7 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
                 + "{\"name\":\"sis\",\"key\":\"SIS\",\"ldapGroupKeys\": [\"s\"],\"users\":[\"u2\"],\"admins\": [\"u2\"]},"
                 + "{\"name\":\"abc\",\"key\":\"ABC\",\"ldapGroupKeys\": [\"a\"],\"enabled\": false}]}\n"
                 + "1970-01-01 01:00:03 [CONFIG-UPDATE-END] \n"
-                + "1970-01-01 01:00:04 [ADD-AUTHORIZATION-GROUP] dummy group\n\n",
+                + "1970-01-01 01:00:04 [ADD-AUTHORIZATION-GROUP] dummy group, known users: [u2]\n\n",
                 FileUtilities.loadToString(auditLogFile));
     }
 
@@ -516,12 +517,12 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
         assertEquals("1970-01-01 01:00:00 [CONFIG-UPDATE-START] Last modified: " + lastModified1 + "\n"
                 + "{\"groups\": [{\"name\":\"abc\",\"key\":\"ABC\",\"ldapGroupKeys\": [\"a\"],\"enabled\": false}]}\n"
                 + "1970-01-01 01:00:01 [CONFIG-UPDATE-END] \n"
-                + "1970-01-01 01:00:02 [ADD-AUTHORIZATION-GROUP] dummy group\n\n"
-                + "1970-01-01 01:00:00 [ADD-AUTHORIZATION-GROUP] dummy group\n\n"
+                + "1970-01-01 01:00:02 [ADD-AUTHORIZATION-GROUP] dummy group, known users: []\n\n"
+                + "1970-01-01 01:00:00 [ADD-AUTHORIZATION-GROUP] dummy group, known users: []\n\n"
                 + "1970-01-01 01:00:00 [CONFIG-UPDATE-START] Last modified: " + lastModified2 + "\n"
                 + "{\"groups\": [{\"name\":\"abc\",\"key\":\"ABC\",\"ldapGroupKeys\": [\"a\"]}]}\n"
                 + "1970-01-01 01:00:01 [CONFIG-UPDATE-END] \n"
-                + "1970-01-01 01:00:02 [ADD-AUTHORIZATION-GROUP] dummy group\n\n",
+                + "1970-01-01 01:00:02 [ADD-AUTHORIZATION-GROUP] dummy group, known users: []\n\n",
                 FileUtilities.loadToString(auditLogFile));
     }
 
@@ -584,12 +585,6 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
             return this;
         }
 
-        private UserManagementMaintenanceTaskWithMocks withNotConfiguredLdap()
-        {
-            config.setSecurityPrincipalPassword(null);
-            return this;
-        }
-
         private UserManagementMaintenanceTaskWithMocks withUserManagerReport(UserManagerReport report)
         {
             this.report = report;
@@ -639,9 +634,9 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
             }
 
             @Override
-            public void manage()
+            public void manage(Set<String> knownUsers)
             {
-                report.addGroup("dummy group");
+                report.addGroup("dummy group, known users: " + knownUsers);
             }
 
         }

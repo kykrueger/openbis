@@ -322,11 +322,13 @@ function ServerFacade(openbisServer) {
 				});
 			}
 		};
- 		
-		_this.openbisServer.registerPerson(userId, function(data) {
-			if(data.error) {
-				callback(false, data.error.message);
-			} else {
+
+ 		require([   "as/dto/person/create/PersonCreation"],
+        function(PersonCreation, PersonPermId) {
+            var personCreation = new PersonCreation();
+            personCreation.setUserId(userId);
+            mainController.openbisV3.createPersons([personCreation]).done(function(response) {
+                userId = response[0].permId; // V3 API returns normalised user ids
 				_this.openbisServer.registerSpace(userId, "Space for user " + userId, function(data) {
 					if(data.error) {
 						callback(false, data.error.message);
@@ -354,12 +356,12 @@ function ServerFacade(openbisServer) {
 									var spaceCode = profile.inventorySpaces[i];
 									inventorySpacesToRegister.push(inventorySpaceToRegisterFunc(spaceCode, "USER", callback));
 								}
-								
+
 								for(var i = 0; i < profile.inventorySpacesReadOnly.length; i++) {
 									var spaceCode = profile.inventorySpacesReadOnly[i];
 									inventorySpacesToRegister.push(inventorySpaceToRegisterFunc(spaceCode, "OBSERVER", callback));
 								}
-								
+
 								var spaceToRegister = inventorySpacesToRegister.pop();
 								if(spaceToRegister) {
 									spaceToRegister();
@@ -368,9 +370,11 @@ function ServerFacade(openbisServer) {
 								}
 							}
 						});
-					}			
+					}
 				});
-			}			
+            }).fail(function(error) {
+                callback(false, error.message);
+            });
 		});
 	}
 	

@@ -1574,6 +1574,34 @@ public class SearchSampleTest extends AbstractSampleTest
     }
 
     @Test
+    public void testSearchWithPagingTopLevelSpecialCases()
+    {
+        final SampleSearchCriteria criteria = new SampleSearchCriteria();
+        criteria.withOrOperator();
+        criteria.withPermId().thatEquals("200902091219327-1025");
+        criteria.withPermId().thatEquals("200902091225616-1027");
+        criteria.withPermId().thatEquals("200902091250077-1026");
+
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        final SampleFetchOptions fo1 = new SampleFetchOptions();
+        fo1.sortBy().code().asc();
+
+        fo1.count(2);
+        final SearchResult<Sample> searchResult1 = v3api.searchSamples(sessionToken, criteria, fo1);
+        assertEquals(searchResult1.getTotalCount(), 3);
+        assertSampleIdentifiersInOrder(searchResult1.getObjects(), "/CISD/CP-TEST-1", "/CISD/CP-TEST-2");
+
+        final SampleFetchOptions fo2 = new SampleFetchOptions();
+        fo2.sortBy().code().asc();
+
+        fo2.from(1);
+        final SearchResult<Sample> searchResult2 = v3api.searchSamples(sessionToken, criteria, fo2);
+        assertEquals(searchResult2.getTotalCount(), 3);
+        assertSampleIdentifiersInOrder(searchResult2.getObjects(), "/CISD/CP-TEST-2", "/CISD/CP-TEST-3");
+    }
+
+    @Test
     public void testSearchWithPagingSubLevel()
     {
         SampleSearchCriteria criteria = new SampleSearchCriteria();

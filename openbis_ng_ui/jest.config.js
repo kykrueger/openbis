@@ -32,5 +32,6 @@ module.exports = {
     '^@src/(.*)$': '<rootDir>/src/$1',
     '^@srcTest/(.*)$': '<rootDir>/srcTest/$1',
     '^@srcV3/(.*)$': '<rootDir>/srcV3/$1'
-  }
+  },
+  slowTestThreshold: 30
 }

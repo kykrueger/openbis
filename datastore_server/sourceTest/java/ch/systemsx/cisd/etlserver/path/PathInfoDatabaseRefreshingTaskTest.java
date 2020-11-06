@@ -74,9 +74,9 @@ public class PathInfoDatabaseRefreshingTaskTest extends AbstractFileSystemTestCa
     private static final String T4 = "2017-01-23 15:42:48";
 
     private static final String T5 = "2017-01-24 15:42:48";
-    
+
     private BufferedAppender logRecorder;
-    
+
     private Mockery context;
 
     private IEncapsulatedOpenBISService service;
@@ -111,7 +111,7 @@ public class PathInfoDatabaseRefreshingTaskTest extends AbstractFileSystemTestCa
                 {
                     allowing(directoryProvider).getStoreRoot();
                     will(returnValue(store));
-                    
+
                     allowing(directoryProvider).getShareIdManager();
                     will(returnValue(shareIdManager));
                 }
@@ -145,7 +145,7 @@ public class PathInfoDatabaseRefreshingTaskTest extends AbstractFileSystemTestCa
                     + createDefaultStateFile().getAbsolutePath() + "' exists.", ex.getMessage());
         }
     }
-    
+
     @Test
     public void testInvalidTimeStampOfYoungestDataSetProperty()
     {
@@ -160,7 +160,7 @@ public class PathInfoDatabaseRefreshingTaskTest extends AbstractFileSystemTestCa
             assertEquals("Invalid property '" + TIME_STAMP_OF_YOUNGEST_DATA_SET_KEY + "': abcde", ex.getMessage());
         }
     }
-    
+
     @Test
     public void testStateFileIsADirectory()
     {
@@ -172,7 +172,7 @@ public class PathInfoDatabaseRefreshingTaskTest extends AbstractFileSystemTestCa
             fail("ConfigurationFailureException expected");
         } catch (ConfigurationFailureException ex)
         {
-            assertEquals("File '" + store.getAbsolutePath() + "' (specified by property '" 
+            assertEquals("File '" + store.getAbsolutePath() + "' (specified by property '"
                     + STATE_FILE_KEY + "') is a directory.", ex.getMessage());
         }
     }
@@ -199,13 +199,13 @@ public class PathInfoDatabaseRefreshingTaskTest extends AbstractFileSystemTestCa
 
         task.execute();
 
-        assertEquals("SearchCriteria[MATCH_ALL_CLAUSES,[SearchCriteria.TimeAttributeMatchClause["
-                + "ATTRIBUTE,REGISTRATION_DATE," + T4 + ",LESS_THAN_OR_EQUAL]],[]]", 
+        assertEquals("SearchCriteria[MATCH_ALL_CLAUSES,{SearchCriteria.TimeAttributeMatchClause[ATTRIBUTE,"
+                + "REGISTRATION_DATE,2017-01-23 15:42:48,LESS_THAN_OR_EQUAL]},[]]",
                 criteriaMatcher.recordedObject().toString());
-        AssertionUtil.assertContainsLines(LOG_PREFIX + "Refresh path info for 2 physical data sets.\n" + 
-                LOG_PREFIX + "Paths inside data set ds-5 successfully added to database. Data set size: 0\n" + 
-                LOG_PREFIX + "Paths inside data set ds-3 successfully added to database. Data set size: 0\n" + 
-                LOG_PREFIX + "Path info for 2 physical data sets refreshed in 0 secs.", 
+        AssertionUtil.assertContainsLines(LOG_PREFIX + "Refresh path info for 2 physical data sets.\n" +
+                LOG_PREFIX + "Paths inside data set ds-5 successfully added to database. Data set size: 0\n" +
+                LOG_PREFIX + "Paths inside data set ds-3 successfully added to database. Data set size: 0\n" +
+                LOG_PREFIX + "Path info for 2 physical data sets refreshed in 0 secs.",
                 logRecorder.getLogContent());
         File stateFile = createDefaultStateFile();
         assertEquals(T2 + " [ds-3]", FileUtilities.loadToString(stateFile).trim());
@@ -230,21 +230,22 @@ public class PathInfoDatabaseRefreshingTaskTest extends AbstractFileSystemTestCa
         RecordingMatcher<SearchCriteria> criteriaMatcher = prepareGetPhysicalDataSets(ds1, ds2, ds3);
         prepareDeleteAndLockDataSet(ds1);
         prepareDeleteAndLockDataSet(ds2);
-        
+
         task.execute();
-        
-        assertEquals("SearchCriteria[MATCH_ALL_CLAUSES,[SearchCriteria.TimeAttributeMatchClause["
-                + "ATTRIBUTE,REGISTRATION_DATE," + T3 + ",LESS_THAN_OR_EQUAL], "
-                + "SearchCriteria.AttributeMatchClause[ATTRIBUTE,TYPE,A,EQUALS]],[]]", 
+
+        assertEquals("SearchCriteria[MATCH_ALL_CLAUSES,"
+                + "{SearchCriteria.TimeAttributeMatchClause[ATTRIBUTE,REGISTRATION_DATE,"
+                + "2017-01-21 15:42:49,LESS_THAN_OR_EQUAL],"
+                + "SearchCriteria.AttributeMatchClause[ATTRIBUTE,TYPE,A,EQUALS]},[]]",
                 criteriaMatcher.recordedObject().toString());
-        AssertionUtil.assertContainsLines(LOG_PREFIX + "Refresh path info for 2 physical data sets.\n" + 
-                LOG_PREFIX + "Paths inside data set ds-2 successfully added to database. Data set size: 0\n" + 
-                LOG_PREFIX + "Paths inside data set ds-1 successfully added to database. Data set size: 0\n" + 
-                LOG_PREFIX + "Path info for 2 physical data sets refreshed in 0 secs.", 
+        AssertionUtil.assertContainsLines(LOG_PREFIX + "Refresh path info for 2 physical data sets.\n" +
+                LOG_PREFIX + "Paths inside data set ds-2 successfully added to database. Data set size: 0\n" +
+                LOG_PREFIX + "Paths inside data set ds-1 successfully added to database. Data set size: 0\n" +
+                LOG_PREFIX + "Path info for 2 physical data sets refreshed in 0 secs.",
                 logRecorder.getLogContent());
         assertEquals(T1 + " [ds-1]", FileUtilities.loadToString(stateFile).trim());
     }
-    
+
     @Test
     public void testChunkSize()
     {
@@ -261,21 +262,21 @@ public class PathInfoDatabaseRefreshingTaskTest extends AbstractFileSystemTestCa
         RecordingMatcher<SearchCriteria> criteriaMatcher = prepareGetPhysicalDataSets(ds1, ds2, ds3);
         prepareDeleteAndLockDataSet(ds2);
         prepareDeleteAndLockDataSet(ds3);
-        
+
         task.execute();
-        
-        assertEquals("SearchCriteria[MATCH_ALL_CLAUSES,[SearchCriteria.TimeAttributeMatchClause["
-                + "ATTRIBUTE,REGISTRATION_DATE," + T4 + ",LESS_THAN_OR_EQUAL]],[]]", 
+
+        assertEquals("SearchCriteria[MATCH_ALL_CLAUSES,{SearchCriteria.TimeAttributeMatchClause[ATTRIBUTE,"
+                + "REGISTRATION_DATE,2017-01-23 15:42:48,LESS_THAN_OR_EQUAL]},[]]",
                 criteriaMatcher.recordedObject().toString());
-        AssertionUtil.assertContainsLines(LOG_PREFIX + "Refresh path info for 2 physical data sets.\n" + 
-                LOG_PREFIX + "Paths inside data set ds-3 successfully added to database. Data set size: 0\n" + 
-                LOG_PREFIX + "Paths inside data set ds-2 successfully added to database. Data set size: 0\n" + 
-                LOG_PREFIX + "Path info for 2 physical data sets refreshed in 0 secs.", 
+        AssertionUtil.assertContainsLines(LOG_PREFIX + "Refresh path info for 2 physical data sets.\n" +
+                LOG_PREFIX + "Paths inside data set ds-3 successfully added to database. Data set size: 0\n" +
+                LOG_PREFIX + "Paths inside data set ds-2 successfully added to database. Data set size: 0\n" +
+                LOG_PREFIX + "Path info for 2 physical data sets refreshed in 0 secs.",
                 logRecorder.getLogContent());
         File stateFile = createDefaultStateFile();
         assertEquals(T2 + " [ds-2]", FileUtilities.loadToString(stateFile).trim());
     }
-    
+
     @Test
     public void testExecuteThreeTimes()
     {
@@ -292,56 +293,56 @@ public class PathInfoDatabaseRefreshingTaskTest extends AbstractFileSystemTestCa
         RecordingMatcher<SearchCriteria> criteriaMatcher = prepareGetPhysicalDataSets(ds1, ds2, ds3);
         prepareDeleteAndLockDataSet(ds2);
         prepareDeleteAndLockDataSet(ds3);
-        
+
         task.execute();
-        
-        assertEquals("SearchCriteria[MATCH_ALL_CLAUSES,[SearchCriteria.TimeAttributeMatchClause["
-                + "ATTRIBUTE,REGISTRATION_DATE," + T4 + ",LESS_THAN_OR_EQUAL]],[]]", 
+
+        assertEquals("SearchCriteria[MATCH_ALL_CLAUSES,{SearchCriteria.TimeAttributeMatchClause[ATTRIBUTE,"
+                + "REGISTRATION_DATE,2017-01-23 15:42:48,LESS_THAN_OR_EQUAL]},[]]",
                 criteriaMatcher.recordedObject().toString());
-        AssertionUtil.assertContainsLines(LOG_PREFIX + "Refresh path info for 2 physical data sets.\n" + 
-                LOG_PREFIX + "Paths inside data set ds-3 successfully added to database. Data set size: 0\n" + 
-                LOG_PREFIX + "Paths inside data set ds-2 successfully added to database. Data set size: 0\n" + 
-                LOG_PREFIX + "Path info for 2 physical data sets refreshed in 0 secs.", 
+        AssertionUtil.assertContainsLines(LOG_PREFIX + "Refresh path info for 2 physical data sets.\n" +
+                LOG_PREFIX + "Paths inside data set ds-3 successfully added to database. Data set size: 0\n" +
+                LOG_PREFIX + "Paths inside data set ds-2 successfully added to database. Data set size: 0\n" +
+                LOG_PREFIX + "Path info for 2 physical data sets refreshed in 0 secs.",
                 logRecorder.getLogContent());
         File stateFile = createDefaultStateFile();
         assertEquals(T2 + " [ds-2]", FileUtilities.loadToString(stateFile).trim());
-        
+
         criteriaMatcher = prepareGetPhysicalDataSets(ds1, ds2, ds3);
         prepareDeleteAndLockDataSet(ds1);
-        
+
         task.execute();
-        
-        assertEquals("SearchCriteria[MATCH_ALL_CLAUSES,[SearchCriteria.TimeAttributeMatchClause["
-                + "ATTRIBUTE,REGISTRATION_DATE," + T2 + ",LESS_THAN_OR_EQUAL]],[]]", 
+
+        assertEquals("SearchCriteria[MATCH_ALL_CLAUSES,{SearchCriteria.TimeAttributeMatchClause["
+                + "ATTRIBUTE,REGISTRATION_DATE," + T2 + ",LESS_THAN_OR_EQUAL]},[]]",
                 criteriaMatcher.recordedObject().toString());
-        AssertionUtil.assertContainsLines(LOG_PREFIX + "Refresh path info for 2 physical data sets.\n" + 
-                LOG_PREFIX + "Paths inside data set ds-3 successfully added to database. Data set size: 0\n" + 
-                LOG_PREFIX + "Paths inside data set ds-2 successfully added to database. Data set size: 0\n" + 
+        AssertionUtil.assertContainsLines(LOG_PREFIX + "Refresh path info for 2 physical data sets.\n" +
+                LOG_PREFIX + "Paths inside data set ds-3 successfully added to database. Data set size: 0\n" +
+                LOG_PREFIX + "Paths inside data set ds-2 successfully added to database. Data set size: 0\n" +
                 LOG_PREFIX + "Path info for 2 physical data sets refreshed in 0 secs.\n" +
-                LOG_PREFIX + "Refresh path info for 1 physical data sets.\n" + 
-                LOG_PREFIX + "Paths inside data set ds-1 successfully added to database. Data set size: 0\n" + 
-                LOG_PREFIX + "Path info for 1 physical data sets refreshed in 0 secs.", 
+                LOG_PREFIX + "Refresh path info for 1 physical data sets.\n" +
+                LOG_PREFIX + "Paths inside data set ds-1 successfully added to database. Data set size: 0\n" +
+                LOG_PREFIX + "Path info for 1 physical data sets refreshed in 0 secs.",
                 logRecorder.getLogContent());
         assertEquals(T1 + " [ds-1]", FileUtilities.loadToString(stateFile).trim());
-        
+
         criteriaMatcher = prepareGetPhysicalDataSets(ds1, ds2, ds3);
-        
+
         task.execute();
-        
-        assertEquals("SearchCriteria[MATCH_ALL_CLAUSES,[SearchCriteria.TimeAttributeMatchClause["
-                + "ATTRIBUTE,REGISTRATION_DATE," + T1 + ",LESS_THAN_OR_EQUAL]],[]]", 
+
+        assertEquals("SearchCriteria[MATCH_ALL_CLAUSES,{SearchCriteria.TimeAttributeMatchClause["
+                + "ATTRIBUTE,REGISTRATION_DATE," + T1 + ",LESS_THAN_OR_EQUAL]},[]]",
                 criteriaMatcher.recordedObject().toString());
-        AssertionUtil.assertContainsLines(LOG_PREFIX + "Refresh path info for 2 physical data sets.\n" + 
-                LOG_PREFIX + "Paths inside data set ds-3 successfully added to database. Data set size: 0\n" + 
-                LOG_PREFIX + "Paths inside data set ds-2 successfully added to database. Data set size: 0\n" + 
+        AssertionUtil.assertContainsLines(LOG_PREFIX + "Refresh path info for 2 physical data sets.\n" +
+                LOG_PREFIX + "Paths inside data set ds-3 successfully added to database. Data set size: 0\n" +
+                LOG_PREFIX + "Paths inside data set ds-2 successfully added to database. Data set size: 0\n" +
                 LOG_PREFIX + "Path info for 2 physical data sets refreshed in 0 secs.\n" +
-                LOG_PREFIX + "Refresh path info for 1 physical data sets.\n" + 
-                LOG_PREFIX + "Paths inside data set ds-1 successfully added to database. Data set size: 0\n" + 
-                LOG_PREFIX + "Path info for 1 physical data sets refreshed in 0 secs.", 
+                LOG_PREFIX + "Refresh path info for 1 physical data sets.\n" +
+                LOG_PREFIX + "Paths inside data set ds-1 successfully added to database. Data set size: 0\n" +
+                LOG_PREFIX + "Path info for 1 physical data sets refreshed in 0 secs.",
                 logRecorder.getLogContent());
         assertEquals(T1 + " [ds-1]", FileUtilities.loadToString(stateFile).trim());
     }
-    
+
     private void prepareDeleteAndLockDataSet(final PhysicalDataSet dataSet)
     {
         final String dataSetCode = dataSet.getCode();
@@ -351,23 +352,23 @@ public class PathInfoDatabaseRefreshingTaskTest extends AbstractFileSystemTestCa
             {
                 {
                     one(dao).deleteDataSet(dataSetCode);
-                    
+
                     one(dao).tryGetDataSetId(dataSetCode);
                     will(returnValue(null));
-                    
+
                     one(dao).createDataSet(dataSetCode, dataSet.getLocation());
                     Long id = dataSet.getId();
                     will(returnValue(id));
-                    
+
                     one(dao).createDataSetFile(id, null, "", dataSetCode, 0L, true, null, null, new Date(file.lastModified()));
-                    
+
                     one(dao).commit();
-                    
+
                     one(shareIdManager).lock(dataSetCode);
-                    
+
                     one(directoryProvider).getDataSetDirectory(dataSet);
                     will(returnValue(file));
-                    
+
                     one(shareIdManager).releaseLocks();
                 }
             });
@@ -401,5 +402,5 @@ public class PathInfoDatabaseRefreshingTaskTest extends AbstractFileSystemTestCa
     {
         return new File(store, PathInfoDatabaseRefreshingTask.class.getSimpleName() + "-state.txt");
     }
-    
+
 }
