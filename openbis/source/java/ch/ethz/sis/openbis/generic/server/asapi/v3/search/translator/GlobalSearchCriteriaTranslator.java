@@ -63,8 +63,6 @@ public class GlobalSearchCriteriaTranslator
 
     public static final String CV_LABEL_ALIAS = "cv_label";
 
-    public static final String CV_DESCRIPTION_ALIAS = "cv_description";
-
     public static final String PROPERTY_VALUE_ALIAS = "property_value";
 
     public static final String VALUE_HEADLINE_ALIAS = "value_headline";
@@ -621,7 +619,6 @@ public class GlobalSearchCriteriaTranslator
             sqlBuilder.append(NULL).append(SP).append(PROPERTY_VALUE_ALIAS).append(COMMA).append(NL);
             sqlBuilder.append(NULL).append(SP).append(CV_CODE_ALIAS).append(COMMA).append(NL);
             sqlBuilder.append(NULL).append(SP).append(CV_LABEL_ALIAS).append(COMMA).append(NL);
-            sqlBuilder.append(NULL).append(SP).append(CV_DESCRIPTION_ALIAS).append(COMMA).append(NL);
 
             sqlBuilder.append(NULL).append(SP).append(VALUE_HEADLINE_ALIAS).append(COMMA).append(NL);
             sqlBuilder.append(NULL).append(SP).append(CODE_HEADLINE_ALIAS).append(COMMA).append(NL);
@@ -663,8 +660,6 @@ public class GlobalSearchCriteriaTranslator
                     .append(CV_CODE_ALIAS).append(COMMA).append(NL);
             sqlBuilder.append(CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS).append(PERIOD).append(LABEL_COLUMN).append(SP)
                     .append(CV_LABEL_ALIAS).append(COMMA).append(NL);
-            sqlBuilder.append(CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS).append(PERIOD).append(DESCRIPTION_COLUMN)
-                    .append(SP).append(CV_DESCRIPTION_ALIAS).append(COMMA).append(NL);
 
             final boolean useHeadline = translationContext.isUseHeadline();
             buildTsHeadline(sqlBuilder, stringValue, args, PROPERTIES_TABLE_ALIAS + PERIOD + VALUE_COLUMN,
