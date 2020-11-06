@@ -245,8 +245,7 @@ CREATE FUNCTION data_all_tsvector_document_trigger() RETURNS trigger
     AS $$
 BEGIN
     NEW.tsvector_document := setweight(('/' || escape_tsvector_string(NEW.code) || ':1')::tsvector, 'A') ||
-            setweight((escape_tsvector_string(NEW.code) || ':1')::tsvector, 'B') ||
-            setweight((escape_tsvector_string(NEW.data_set_kind) || ':1')::tsvector, 'B');
+            setweight((escape_tsvector_string(NEW.code) || ':1')::tsvector, 'B');
     RETURN NEW;
 END
 $$;
