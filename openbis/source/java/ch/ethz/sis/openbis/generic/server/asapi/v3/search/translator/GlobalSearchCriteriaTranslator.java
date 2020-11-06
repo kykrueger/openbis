@@ -622,8 +622,7 @@ public class GlobalSearchCriteriaTranslator
 
             sqlBuilder.append(NULL).append(SP).append(VALUE_HEADLINE_ALIAS).append(COMMA).append(NL);
             sqlBuilder.append(NULL).append(SP).append(CODE_HEADLINE_ALIAS).append(COMMA).append(NL);
-            sqlBuilder.append(NULL).append(SP).append(LABEL_HEADLINE_ALIAS).append(COMMA).append(NL);
-            sqlBuilder.append(NULL).append(SP).append(DESCRIPTION_HEADLINE_ALIAS);
+            sqlBuilder.append(NULL).append(SP).append(LABEL_HEADLINE_ALIAS);
         } else
         {
             sqlBuilder.append(NULL).append(SP).append(CODE_MATCH_ALIAS).append(COMMA).append(NL);
@@ -671,10 +670,6 @@ public class GlobalSearchCriteriaTranslator
             sqlBuilder.append(COMMA).append(NL);
             buildTsHeadline(sqlBuilder, stringValue, args,
                     CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS + PERIOD + LABEL_COLUMN, LABEL_HEADLINE_ALIAS,
-                    useHeadline);
-            sqlBuilder.append(COMMA).append(NL);
-            buildTsHeadline(sqlBuilder, stringValue, args,
-                    CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS + PERIOD + DESCRIPTION_COLUMN, DESCRIPTION_HEADLINE_ALIAS,
                     useHeadline);
         }
 

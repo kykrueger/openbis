@@ -285,7 +285,7 @@ public class GlobalSearchManager implements IGlobalSearchManager
         propertyMatch.setValue(codeMatchString);
 
         final String headline = coalesceMap(fieldsMap, VALUE_HEADLINE_ALIAS, LABEL_HEADLINE_ALIAS,
-                CODE_HEADLINE_ALIAS, DESCRIPTION_HEADLINE_ALIAS);
+                CODE_HEADLINE_ALIAS);
 
         if (headline != null)
         {
