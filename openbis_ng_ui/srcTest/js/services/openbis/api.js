@@ -15,6 +15,7 @@ const getPersons = jest.fn()
 const getPropertyTypes = jest.fn()
 const getSampleTypes = jest.fn()
 const getVocabularies = jest.fn()
+const getPlugins = jest.fn()
 const searchAuthorizationGroups = jest.fn()
 const searchDataSetTypes = jest.fn()
 const searchExperimentTypes = jest.fn()
@@ -107,6 +108,7 @@ export default {
   getPropertyTypes,
   getSampleTypes,
   getVocabularies,
+  getPlugins,
   searchAuthorizationGroups,
   searchDataSetTypes,
   searchExperimentTypes,

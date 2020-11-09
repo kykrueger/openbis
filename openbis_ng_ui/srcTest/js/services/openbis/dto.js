@@ -10,6 +10,7 @@ import CreateDataSetTypesOperation from 'as/dto/dataset/create/CreateDataSetType
 import CreateExperimentTypesOperation from 'as/dto/experiment/create/CreateExperimentTypesOperation'
 import CreateMaterialTypesOperation from 'as/dto/material/create/CreateMaterialTypesOperation'
 import CreatePersonsOperation from 'as/dto/person/create/CreatePersonsOperation'
+import CreatePluginsOperation from 'as/dto/plugin/create/CreatePluginsOperation'
 import CreatePropertyTypesOperation from 'as/dto/property/create/CreatePropertyTypesOperation'
 import CreateRoleAssignmentsOperation from 'as/dto/roleassignment/create/CreateRoleAssignmentsOperation'
 import CreateSampleTypesOperation from 'as/dto/sample/create/CreateSampleTypesOperation'
@@ -61,8 +62,11 @@ import PersonPermId from 'as/dto/person/id/PersonPermId'
 import PersonSearchCriteria from 'as/dto/person/search/PersonSearchCriteria'
 import PersonUpdate from 'as/dto/person/update/PersonUpdate'
 import Plugin from 'as/dto/plugin/Plugin'
+import PluginCreation from 'as/dto/plugin/create/PluginCreation'
+import PluginUpdate from 'as/dto/plugin/update/PluginUpdate'
 import PluginDeletionOptions from 'as/dto/plugin/delete/PluginDeletionOptions'
 import PluginFetchOptions from 'as/dto/plugin/fetchoptions/PluginFetchOptions'
+import PluginKind from 'as/dto/plugin/PluginKind'
 import PluginPermId from 'as/dto/plugin/id/PluginPermId'
 import PluginSearchCriteria from 'as/dto/plugin/search/PluginSearchCriteria'
 import PluginType from 'as/dto/plugin/PluginType'
@@ -111,6 +115,7 @@ import UpdateDataSetTypesOperation from 'as/dto/dataset/update/UpdateDataSetType
 import UpdateExperimentTypesOperation from 'as/dto/experiment/update/UpdateExperimentTypesOperation'
 import UpdateMaterialTypesOperation from 'as/dto/material/update/UpdateMaterialTypesOperation'
 import UpdatePersonsOperation from 'as/dto/person/update/UpdatePersonsOperation'
+import UpdatePluginsOperation from 'as/dto/plugin/update/UpdatePluginsOperation'
 import UpdatePropertyTypesOperation from 'as/dto/property/update/UpdatePropertyTypesOperation'
 import UpdateSampleTypesOperation from 'as/dto/sample/update/UpdateSampleTypesOperation'
 import UpdateVocabulariesOperation from 'as/dto/vocabulary/update/UpdateVocabulariesOperation'
@@ -144,6 +149,7 @@ const dto = {
   CreateExperimentTypesOperation,
   CreateMaterialTypesOperation,
   CreatePersonsOperation,
+  CreatePluginsOperation,
   CreatePropertyTypesOperation,
   CreateRoleAssignmentsOperation,
   CreateSampleTypesOperation,
@@ -195,8 +201,11 @@ const dto = {
   PersonSearchCriteria,
   PersonUpdate,
   Plugin,
+  PluginCreation,
+  PluginUpdate,
   PluginDeletionOptions,
   PluginFetchOptions,
+  PluginKind,
   PluginPermId,
   PluginSearchCriteria,
   PluginType,
@@ -245,6 +254,7 @@ const dto = {
   UpdateExperimentTypesOperation,
   UpdateMaterialTypesOperation,
   UpdatePersonsOperation,
+  UpdatePluginsOperation,
   UpdatePropertyTypesOperation,
   UpdateSampleTypesOperation,
   UpdateVocabulariesOperation,
