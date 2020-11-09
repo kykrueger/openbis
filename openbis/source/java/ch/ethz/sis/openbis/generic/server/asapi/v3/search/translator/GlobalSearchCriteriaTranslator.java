@@ -224,7 +224,7 @@ public class GlobalSearchCriteriaTranslator
         {
             buildFullIdentifierConcatenationString(sqlBuilder, hasSpaces || hasProjects ? SPACE_TABLE_ALIAS : null,
                     hasProjects ? PROJECT_TABLE_ALIAS : null,
-                    (tableMapper == SAMPLE) ? CONTAINER_TABLE_ALIAS : null);
+                    (tableMapper == SAMPLE) ? CONTAINER_TABLE_ALIAS : null, true);
         }
         sqlBuilder.append(RP).append(SP).append(IDENTIFIER_ALIAS).append(COMMA).append(NL);
 
