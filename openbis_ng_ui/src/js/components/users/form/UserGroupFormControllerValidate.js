@@ -49,6 +49,7 @@ export default class UserGroupFormControllerValidate extends PageControllerValid
 
   _validateGroup(validator, group) {
     validator.validateNotEmpty(group, 'code', 'Code')
+    validator.validateCode(group, 'code', 'Code')
     return validator.withErrors(group)
   }
 

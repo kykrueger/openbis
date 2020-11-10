@@ -49,6 +49,7 @@ export default class UserFormControllerValidate extends PageControllerValidate {
 
   _validateUser(validator, user) {
     validator.validateNotEmpty(user, 'userId', 'User Id')
+    validator.validateUserCode(user, 'userId', 'User Id')
     return validator.withErrors(user)
   }
 
