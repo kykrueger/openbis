@@ -35,9 +35,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 
 		var testSearchWithPagingAndSortingByAll = function(c, fSearch, fetchOptions) {
 			testSearchWithPagingAndSorting(c, fSearch, fetchOptions, "code").then(function() {
-				testSearchWithPagingAndSorting(c, fSearch, fetchOptions, "registrationDate").then(function() {
-					testSearchWithPagingAndSorting(c, fSearch, fetchOptions, "modificationDate");
-				});
+				testSearchWithPagingAndSorting(c, fSearch, fetchOptions, "registrationDate");
 			});
 		}
 
