@@ -3,12 +3,12 @@ import { withStyles } from '@material-ui/core/styles'
 import Container from '@src/js/components/common/form/Container.jsx'
 import Header from '@src/js/components/common/form/Header.jsx'
 import TextField from '@src/js/components/common/form/TextField.jsx'
-import DynamicPropertyPluginFormSelectionType from '@src/js/components/tools/form/dynamicproperty/DynamicPropertyPluginFormSelectionType.js'
+import PluginFormSelectionType from '@src/js/components/tools/form/plugin/PluginFormSelectionType.js'
 import logger from '@src/js/common/logger.js'
 
 const styles = () => ({})
 
-class DynamicPropertyPluginFormScript extends React.PureComponent {
+class PluginFormScript extends React.PureComponent {
   constructor(props) {
     super(props)
     this.state = {}
@@ -46,19 +46,16 @@ class DynamicPropertyPluginFormScript extends React.PureComponent {
   }
 
   handleChange(event) {
-    this.props.onChange(DynamicPropertyPluginFormSelectionType.PLUGIN, {
+    this.props.onChange(PluginFormSelectionType.PLUGIN, {
       field: event.target.name,
       value: event.target.value
     })
   }
 
   handleFocus(event) {
-    this.props.onSelectionChange(
-      DynamicPropertyPluginFormSelectionType.PLUGIN,
-      {
-        part: event.target.name
-      }
-    )
+    this.props.onSelectionChange(PluginFormSelectionType.PLUGIN, {
+      part: event.target.name
+    })
   }
 
   handleBlur() {
@@ -66,7 +63,7 @@ class DynamicPropertyPluginFormScript extends React.PureComponent {
   }
 
   render() {
-    logger.log(logger.DEBUG, 'DynamicPropertyPluginFormScript.render')
+    logger.log(logger.DEBUG, 'PluginFormScript.render')
 
     const { plugin } = this.props
 
@@ -107,4 +104,4 @@ class DynamicPropertyPluginFormScript extends React.PureComponent {
   }
 }
 
-export default withStyles(styles)(DynamicPropertyPluginFormScript)
+export default withStyles(styles)(PluginFormScript)

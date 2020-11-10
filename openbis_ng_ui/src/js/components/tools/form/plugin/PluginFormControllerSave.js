@@ -2,7 +2,7 @@ import PageControllerSave from '@src/js/components/common/page/PageControllerSav
 import FormUtil from '@src/js/components/common/form/FormUtil.js'
 import openbis from '@src/js/services/openbis.js'
 
-export default class DynamicPropertyPluginFormControllerSave extends PageControllerSave {
+export default class PluginFormControllerSave extends PageControllerSave {
   async save() {
     const state = this.context.getState()
 

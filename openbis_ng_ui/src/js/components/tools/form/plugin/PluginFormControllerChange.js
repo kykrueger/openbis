@@ -1,10 +1,10 @@
 import PageControllerChange from '@src/js/components/common/page/PageControllerChange.js'
-import DynamicPropertyPluginFormSelectionType from '@src/js/components/tools/form/dynamicproperty/DynamicPropertyPluginFormSelectionType.js'
+import PluginFormSelectionType from '@src/js/components/tools/form/plugin/PluginFormSelectionType.js'
 import FormUtil from '@src/js/components/common/form/FormUtil.js'
 
-export default class DynamicPropertyPluginFormControllerChange extends PageControllerChange {
+export default class PluginFormControllerChange extends PageControllerChange {
   async execute(type, params) {
-    if (type === DynamicPropertyPluginFormSelectionType.PLUGIN) {
+    if (type === PluginFormSelectionType.PLUGIN) {
       await this._handleChangePlugin(params)
     }
   }

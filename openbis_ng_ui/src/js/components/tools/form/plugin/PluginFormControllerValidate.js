@@ -1,7 +1,7 @@
 import PageControllerValidate from '@src/js/components/common/page/PageConrollerValidate.js'
-import DynamicPropertyPluginFormSelectionType from '@src/js/components/tools/form/dynamicproperty/DynamicPropertyPluginFormSelectionType.js'
+import PluginFormSelectionType from '@src/js/components/tools/form/plugin/PluginFormSelectionType.js'
 
-export default class DynamicPropertyPluginFormControllerValidate extends PageControllerValidate {
+export default class PluginFormControllerValidate extends PageControllerValidate {
   validate(validator) {
     const { plugin } = this.context.getState()
 
@@ -17,7 +17,7 @@ export default class DynamicPropertyPluginFormControllerValidate extends PageCon
 
     if (firstError.object === plugin) {
       await this.setSelection({
-        type: DynamicPropertyPluginFormSelectionType.PLUGIN,
+        type: PluginFormSelectionType.PLUGIN,
         params: {
           part: firstError.name
         }

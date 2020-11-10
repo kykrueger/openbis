@@ -1,6 +1,6 @@
 import openbis from '@src/js/services/openbis.js'
 
-export default class DynamicPropertyPluginFormFacade {
+export default class PluginFormFacade {
   async loadPlugin(pluginName) {
     const id = new openbis.PluginPermId(pluginName)
     const fo = new openbis.PluginFetchOptions()

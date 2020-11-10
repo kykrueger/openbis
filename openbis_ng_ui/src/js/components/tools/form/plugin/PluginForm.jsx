@@ -5,16 +5,16 @@ import { connect } from 'react-redux'
 import { withStyles } from '@material-ui/core/styles'
 import ComponentContext from '@src/js/components/common/ComponentContext.js'
 import PageWithTwoPanels from '@src/js/components/common/page/PageWithTwoPanels.jsx'
-import DynamicPropertyPluginFormController from '@src/js/components/tools/form/dynamicproperty/DynamicPropertyPluginFormController.js'
-import DynamicPropertyPluginFormFacade from '@src/js/components/tools/form/dynamicproperty/DynamicPropertyPluginFormFacade.js'
-import DynamicPropertyPluginFormScript from '@src/js/components/tools/form/dynamicproperty/DynamicPropertyPluginFormScript.jsx'
-import DynamicPropertyPluginFormParameters from '@src/js/components/tools/form/dynamicproperty/DynamicPropertyPluginFormParameters.jsx'
-import DynamicPropertyPluginFormButtons from '@src/js/components/tools/form/dynamicproperty/DynamicPropertyPluginFormButtons.jsx'
+import PluginFormController from '@src/js/components/tools/form/plugin/PluginFormController.js'
+import PluginFormFacade from '@src/js/components/tools/form/plugin/PluginFormFacade.js'
+import PluginFormScript from '@src/js/components/tools/form/plugin/PluginFormScript.jsx'
+import PluginFormParameters from '@src/js/components/tools/form/plugin/PluginFormParameters.jsx'
+import PluginFormButtons from '@src/js/components/tools/form/plugin/PluginFormButtons.jsx'
 import logger from '@src/js/common/logger.js'
 
 const styles = () => ({})
 
-class DynamicPropertyPluginForm extends React.PureComponent {
+class PluginForm extends React.PureComponent {
   constructor(props) {
     super(props)
     autoBind(this)
@@ -24,9 +24,7 @@ class DynamicPropertyPluginForm extends React.PureComponent {
     if (this.props.controller) {
       this.controller = this.props.controller
     } else {
-      this.controller = new DynamicPropertyPluginFormController(
-        new DynamicPropertyPluginFormFacade()
-      )
+      this.controller = new PluginFormController(new PluginFormFacade())
     }
 
     this.controller.init(new ComponentContext(this))
@@ -37,7 +35,7 @@ class DynamicPropertyPluginForm extends React.PureComponent {
   }
 
   render() {
-    logger.log(logger.DEBUG, 'DynamicPropertyPluginForm.render')
+    logger.log(logger.DEBUG, 'PluginForm.render')
 
     const { loading, loaded, plugin } = this.state
 
@@ -58,7 +56,7 @@ class DynamicPropertyPluginForm extends React.PureComponent {
     const { plugin, selection, mode } = this.state
 
     return (
-      <DynamicPropertyPluginFormScript
+      <PluginFormScript
         plugin={plugin}
         selection={selection}
         mode={mode}
@@ -74,7 +72,7 @@ class DynamicPropertyPluginForm extends React.PureComponent {
     const { plugin, selection, mode } = this.state
 
     return (
-      <DynamicPropertyPluginFormParameters
+      <PluginFormParameters
         plugin={plugin}
         selection={selection}
         mode={mode}
@@ -90,7 +88,7 @@ class DynamicPropertyPluginForm extends React.PureComponent {
     const { plugin, changed, mode } = this.state
 
     return (
-      <DynamicPropertyPluginFormButtons
+      <PluginFormButtons
         onEdit={controller.handleEdit}
         onSave={controller.handleSave}
         onCancel={controller.handleCancel}
@@ -102,4 +100,4 @@ class DynamicPropertyPluginForm extends React.PureComponent {
   }
 }
 
-export default _.flow(connect(), withStyles(styles))(DynamicPropertyPluginForm)
+export default _.flow(connect(), withStyles(styles))(PluginForm)

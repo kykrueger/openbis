@@ -2,9 +2,9 @@ import React from 'react'
 import PageButtons from '@src/js/components/common/page/PageButtons.jsx'
 import logger from '@src/js/common/logger.js'
 
-class DynamicPropertyPluginFormButtons extends React.PureComponent {
+class PluginFormButtons extends React.PureComponent {
   render() {
-    logger.log(logger.DEBUG, 'DynamicPropertyPluginFormButtons.render')
+    logger.log(logger.DEBUG, 'PluginFormButtons.render')
 
     const { mode, onEdit, onSave, onCancel, changed, plugin } = this.props
 
@@ -20,4 +20,4 @@ class DynamicPropertyPluginFormButtons extends React.PureComponent {
   }
 }
 
-export default DynamicPropertyPluginFormButtons
+export default PluginFormButtons

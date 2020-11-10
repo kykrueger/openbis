@@ -3,7 +3,7 @@ import PageControllerLoad from '@src/js/components/common/page/PageControllerLoa
 import FormUtil from '@src/js/components/common/form/FormUtil.js'
 import openbis from '@src/js/services/openbis.js'
 
-export default class DynamicPropertyPluginFormControllerLoad extends PageControllerLoad {
+export default class PluginFormControllerLoad extends PageControllerLoad {
   async load(object, isNew) {
     let loadedPlugin = null
 
@@ -30,7 +30,14 @@ export default class DynamicPropertyPluginFormControllerLoad extends PageControl
       pluginType = _.get(loadedPlugin, 'pluginType')
     } else {
       pluginKind = openbis.PluginKind.JYTHON
-      pluginType = openbis.PluginType.DYNAMIC_PROPERTY
+
+      if (this.controller.isDynamicPropertyType()) {
+        pluginType = openbis.PluginType.DYNAMIC_PROPERTY
+      } else if (this.controller.isEntityValidationType()) {
+        pluginType = openbis.PluginType.ENTITY_VALIDATION
+      } else {
+        throw new Error('Unsupported object type: ' + object.type)
+      }
     }
 
     const entityKinds = _.get(loadedPlugin, 'entityKinds', [])
