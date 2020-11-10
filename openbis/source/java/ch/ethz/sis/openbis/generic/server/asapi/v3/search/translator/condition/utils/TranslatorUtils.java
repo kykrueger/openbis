@@ -622,9 +622,10 @@ public class TranslatorUtils
      * @param spacesTableAlias alias of the spaces table.
      * @param projectsTableAlias alias of the projects table.
      * @param samplesTableAlias alias of the samples table, {@code null} indicates that the table should not be included.
+     * @param useLowerCase
      */
     public static void buildFullIdentifierConcatenationString(final StringBuilder sqlBuilder, final String spacesTableAlias,
-            final String projectsTableAlias, final String samplesTableAlias)
+            final String projectsTableAlias, final String samplesTableAlias, final boolean useLowerCase)
     {
         final String slash = "/";
         final String colon = ":";
@@ -632,19 +633,26 @@ public class TranslatorUtils
 
         if (spacesTableAlias != null)
         {
-            appendCoalesce(sqlBuilder, spacesTableAlias, slash);
+            appendCoalesce(sqlBuilder, spacesTableAlias, slash, useLowerCase);
         }
         if (projectsTableAlias != null)
         {
-            appendCoalesce(sqlBuilder, projectsTableAlias, slash);
+            appendCoalesce(sqlBuilder, projectsTableAlias, slash, useLowerCase);
         }
         if (samplesTableAlias != null)
         {
-            appendCoalesce(sqlBuilder, samplesTableAlias, colon);
+            appendCoalesce(sqlBuilder, samplesTableAlias, colon, useLowerCase);
         }
 
-        sqlBuilder.append(SP).append(LOWER).append(LP).append(MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN)
-                .append(RP);
+        if (useLowerCase)
+        {
+            sqlBuilder.append(SP).append(LOWER).append(LP);
+        }
+        sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN);
+        if (useLowerCase)
+        {
+            sqlBuilder.append(RP);
+        }
     }
 
     /**
@@ -656,14 +664,24 @@ public class TranslatorUtils
      * @param sqlBuilder query builder.
      * @param alias alias of the table.
      * @param separator string to be appender at the end in the first parameter.
+     * @param useLowerCase whether to convert search column to lower case.
      */
-    private static void appendCoalesce(final StringBuilder sqlBuilder, final String alias, final String separator)
+    private static void appendCoalesce(final StringBuilder sqlBuilder, final String alias, final String separator,
+            final boolean useLowerCase)
     {
-        sqlBuilder.append(SP).append(COALESCE).append(LP)
-                .append(LOWER).append(LP).append(alias).append(PERIOD).append(CODE_COLUMN).append(RP).append(SP)
-                .append(BARS)
-                .append(SP).append(SQ).append(separator).append(SQ).append(COMMA).append(SP).append(SQ).append(SQ).append(RP).append(SP)
-                .append(BARS);
+        sqlBuilder.append(SP).append(COALESCE).append(LP);
+        if (useLowerCase)
+        {
+            sqlBuilder.append(LOWER).append(LP);
+        }
+        sqlBuilder.append(alias).append(PERIOD).append(CODE_COLUMN);
+        if (useLowerCase)
+        {
+            sqlBuilder.append(RP);
+        }
+        sqlBuilder.append(SP).append(BARS).append(SP)
+                .append(SQ).append(separator).append(SQ).append(COMMA).append(SP).append(SQ).append(SQ).append(RP)
+                .append(SP).append(BARS);
     }
 
     public static Map<String, JoinInformation> getIdentifierJoinInformationMap(final TableMapper tableMapper,

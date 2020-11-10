@@ -149,7 +149,7 @@ class TypeSearch extends React.Component {
       <GridContainer>
         <Grid
           id={ids.TYPES_GRID_ID}
-          header={'Search: ' + this.props.objectId}
+          header={'Types'}
           columns={[
             {
               name: 'code',
