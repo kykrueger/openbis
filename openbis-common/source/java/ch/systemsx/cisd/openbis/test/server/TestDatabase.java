@@ -20,6 +20,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 
+import ch.systemsx.cisd.dbmigration.DatabaseEngine;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 
@@ -133,8 +134,9 @@ public class TestDatabase
 
         String psql = DumpPreparator.getPSQLExecutable();
         List<String> command =
-                Arrays.asList(psql, "-U", databaseOwner, "-d", databaseName, "-f",
-                        databaseDump.getAbsolutePath());
+                Arrays.asList(psql,
+                        "-h", DatabaseEngine.getTestEnvironmentHostOrConfigured("localhost"),
+                        "-U", databaseOwner, "-d", databaseName, "-f", databaseDump.getAbsolutePath());
         executeCommand(command);
     }
 
