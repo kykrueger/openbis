@@ -2,6 +2,7 @@ from .property import PropertyHolder
 from .attribute import AttrHolder
 from .utils import VERBOSE
 from .definitions import get_definition_for_entity
+from collections import defaultdict
 
 class OpenBisObject():
 
@@ -106,7 +107,10 @@ class OpenBisObject():
         try:
             return self.data['permId']['permId']
         except Exception:
-            return ""
+            try:
+                return self.a.__dict__['_permId']['permId']
+            except Exception:
+                return ""
         
 
     def __getattr__(self, name):
@@ -197,4 +201,101 @@ class OpenBisObject():
             if VERBOSE: print("{} successfully updated.".format(self.entity))
             new_entity_data = get_single_item(self.permId, only_data=True)
             self._set_data(new_entity_data)
+
+
+class Transaction:
+    def __init__(self, *entities):
+
+        self.entities = {}
+
+        if not entities:
+            return
+
+        for entity in entities:
+            self.add(entity)
+
+
+    def add(self, entity_obj):
+        """Collect the creations or updates of entities.
+        self.entities = {
+            "sample": {
+                {
+                    "create": [...],
+                    "update": [...]
+                },
+            },
+            "dataSet": {
+                {
+                    "update": [...]
+                }
+            }
+        }
+        """
+
+        if not entity_obj.entity in self.entities:
+            self.entities[entity_obj.entity] = defaultdict(list)
+
+        mode = "create" if entity_obj.is_new else "update"
+        self.entities[entity_obj.entity][mode].append(entity_obj)
+
+
+    def commit(self):
+        """Merge the individual requests to Make one single request.
+        For each entity-type and mode (create, update) an individual request will be sent,
+        as the method name differs.
+        """
+
+        import copy
+        for entity_type in self.entities:
+            for mode in self.entities[entity_type]:
+
+                request_coll = []
+                for entity in self.entities[entity_type][mode]:
+                    props = None
+                    if entity.props:
+                        for prop_name, prop in entity.props._property_names.items():
+                            if prop['mandatory']:
+                                if getattr(entity.props, prop_name) is None \
+                                or getattr(entity.props, prop_name) == "":
+                                    raise ValueError(
+                                        "Property '{}' is mandatory and must not be None".format(prop_name)
+                                    )
+                    props = entity.p._all_props()
+
+                    if mode == "create":
+                        request = entity._new_attrs()
+                        if props: request["params"][1][0]["properties"] = props
+
+                    elif mode == "update":
+                        request = entity._up_attrs(method_name=None, permId=entity._permId)
+                        if props: request["params"][1][0]["properties"] = props
+
+                    else:
+                        raise ValueError(f"Unkown mode: {mode}")
+                    request_coll.append(request)
+
+                if request_coll:
+                    batch_request = copy.deepcopy(request_coll[0])
+                    for i, request in enumerate(request_coll):
+                        if i == 0: continue
+                        batch_request['params'][1].append(
+                            request['params'][1][0]
+                        )
+
+                    try:
+                        resp = entity.openbis._post_request(entity.openbis.as_v3, batch_request)
+                        if VERBOSE: print(f"{i+1} {entity_type}(s) {mode}d.")
+
+                        # mark every sample as not being new anymore
+                        # and add the permId attribute received by the response
+                        # we assume the response permIds are the same order as we sent them
+                        for i, resp_item in enumerate(resp):
+                            self.entities[entity_type][mode][i].a.__dict__['_is_new'] = False
+                            self.entities[entity_type][mode][i].a.__dict__['_permId'] = resp_item
+
+
+                    except ValueError as err:
+                        if VERBOSE: 
+                            print(f"ERROR: {mode} of {i+1} {entity_type}(s) FAILED")
+                        raise ValueError(err)
 

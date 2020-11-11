@@ -244,6 +244,9 @@ sample_type = o.new_sample_type(
 sample_type.save()
 ```
 
+
+
+
 ## assign and revoke properties to sample type / object type
 
 The third step, after saving the sample type, is to **assign or revoke properties** to the newly created sample type. This assignment procedure applies to all entity types (dataset type, experiment type).
@@ -490,6 +493,26 @@ sample.download_attachments()
 sample.add_attachment('testfile.xls')
 
 sample.delete('deleted for some reason')
+```
+
+## create many samples in a transaction
+
+Creating a sample takes some time. If you need to create many samples, you might want to create them in one transaction. This will transfer all your sample data at once. The Upside of this is the **gain in speed**. The downside: this is a **all-or-nothing** operation, which means, either all samples will be registered or none (if any error occurs).
+
+You can mix creation or update of existing samples within the transaction.
+
+
+```
+sample1 = o.new_sample(...)
+sample2 = o.new_sample(...)
+sample3 = o.new_sample(...)
+
+trans = o.new_transaction()
+trans.add(sample1)
+trans.add(sample2)
+trans.add(sample3)
+
+trans.commit()
 ```
 
 ### parents, children, components and container

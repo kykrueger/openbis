@@ -33,7 +33,7 @@ class BrowserDialogRemoveNode extends React.Component {
     const { node } = this.props
 
     if (node) {
-      return `Are you sure you want to remove "${node.text}"? Some data will be lost!`
+      return `Are you sure you want to remove "${node.text}"?`
     } else {
       return null
     }

@@ -3,6 +3,7 @@ import _ from 'lodash'
 const CODE_PATTERN = /^[A-Z0-9_\-.]+$/i
 const INTERNAL_CODE_PATTERN = /^\$[A-Z0-9_\-.]+$/i
 const TERM_CODE_PATTERN = /^[A-Z0-9_\-.:]+$/i
+const USER_CODE_PATTERN = /^[A-Z0-9_\-.@]+$/i
 
 class FormValidator {
   static MODE_BASIC = 'basic'
@@ -70,6 +71,15 @@ class FormValidator {
       name,
       label + ' can only contain A-Z, a-z, 0-9 and _, -, ., :',
       TERM_CODE_PATTERN
+    )
+  }
+
+  validateUserCode(object, name, label) {
+    this.validatePattern(
+      object,
+      name,
+      label + ' can only contain A-Z, a-z, 0-9 and _, -, ., @',
+      USER_CODE_PATTERN
     )
   }
 

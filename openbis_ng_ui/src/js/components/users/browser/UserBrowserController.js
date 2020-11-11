@@ -27,7 +27,7 @@ export default class UserBrowserController extends BrowserController {
           text: user.userId,
           object: { type: objectType.USER, id: user.userId },
           canMatchFilter: true,
-          canRemove: true
+          canRemove: false
         }
       })
 
@@ -68,6 +68,47 @@ export default class UserBrowserController extends BrowserController {
         actions.objectNew(this.getPage(), node.childrenType)
       )
     }
+  }
+
+  doNodeRemove(node) {
+    if (!node.object) {
+      return Promise.resolve()
+    }
+
+    const { type, id } = node.object
+    const reason = 'deleted via ng_ui'
+
+    return this._prepareRemoveOperations(type, id, reason)
+      .then(operations => {
+        const options = new openbis.SynchronousOperationExecutionOptions()
+        options.setExecuteInOrder(true)
+        return openbis.executeOperations(operations, options)
+      })
+      .then(() => {
+        this.context.dispatch(actions.objectDelete(this.getPage(), type, id))
+      })
+      .catch(error => {
+        this.context.dispatch(actions.errorChange(error))
+      })
+  }
+
+  _prepareRemoveOperations(type, id, reason) {
+    if (type === objectType.USER_GROUP) {
+      return this._prepareRemoveUserGroupOperations(id, reason)
+    } else {
+      throw new Error('Unsupported type: ' + type)
+    }
+  }
+
+  _prepareRemoveUserGroupOperations(id, reason) {
+    const options = new openbis.AuthorizationGroupDeletionOptions()
+    options.setReason(reason)
+    return Promise.resolve([
+      new openbis.DeleteAuthorizationGroupsOperation(
+        [new openbis.AuthorizationGroupPermId(id)],
+        options
+      )
+    ])
   }
 
   doGetObservedModifications() {

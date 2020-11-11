@@ -76,7 +76,7 @@ public class IdentifierSearchConditionTranslator implements IConditionTranslator
 
         if (tableMapper != TableMapper.SAMPLE)
         {
-            buildFullIdentifierConcatenationString(sqlBuilder, spacesTableAlias, projectsTableAlias, samplesTableAlias);
+            buildFullIdentifierConcatenationString(sqlBuilder, spacesTableAlias, projectsTableAlias, samplesTableAlias, true);
         } else
         {
             sqlBuilder.append(LOWER).append(LP).append(MAIN_TABLE_ALIAS).append(PERIOD)

@@ -111,8 +111,7 @@ public class SampleListerTest extends AssertJUnit
                 {
                     SampleRecord r101 = record(101);
                     SampleRecord r102 = record(102);
-                    LongOpenHashSet sampleIdSet = new LongOpenHashSet(new long[]
-                    { r101.s_id, r102.s_id });
+                    LongOpenHashSet sampleIdSet = new LongOpenHashSet(new long[] { r101.s_id, r102.s_id });
                     one(query).listSamplesByIds(sampleIdSet);
                     will(returnValue(Arrays.asList(r101, r102)));
 
@@ -122,8 +121,7 @@ public class SampleListerTest extends AssertJUnit
                     one(query).getMetaprojectAssignments(sampleIdSet, user.getId());
                     will(returnValue(Arrays.asList(sampleMetaproject(102, 42))));
 
-                    one(query).getMetaprojects(new LongOpenHashSet(new long[]
-                    { 42 }));
+                    one(query).getMetaprojects(new LongOpenHashSet(new long[] { 42 }));
                     will(returnValue(Arrays.asList(metaproject(42, "answer"))));
 
                     atLeast(1).of(filter).isValid(user, sample(r101));
@@ -161,8 +159,7 @@ public class SampleListerTest extends AssertJUnit
                     SampleRecord r3 = record(3);
                     SampleRecord r101 = record(101);
                     SampleRecord r102 = record(102);
-                    one(query).listSamplesByIds(new LongOpenHashSet(new long[]
-                    { r1.s_id, r2.s_id, r3.s_id, r101.s_id, r102.s_id }));
+                    one(query).listSamplesByIds(new LongOpenHashSet(new long[] { r1.s_id, r2.s_id, r3.s_id, r101.s_id, r102.s_id }));
                     will(returnValue(Arrays.asList(r1, r2, r3, r101, r102)));
 
                     atLeast(1).of(filter).isValid(user, sample(r1));
@@ -186,8 +183,8 @@ public class SampleListerTest extends AssertJUnit
                 lister.getSamples(sampleIDs, EnumSet.of(SampleFetchOption.PARENTS), filter);
 
         assertEquals(
-                "[Sample[/SPACE/S-101,MY-TYPE,properties=?,"
-                        + "parents=[Sample[/SPACE/S-1,MY-TYPE,properties=?,parents=?,children=?]],children=?]]",
+                "[Sample[/SPACE/S-101,MY-TYPE,properties=?,parents={Sample[/SPACE/S-1,"
+                        + "MY-TYPE,properties=?,parents=?,children=?]},children=?]]",
                 samples.toString());
         assertEquals("[BASIC, PARENTS]", samples.get(0).getRetrievedFetchOptions().toString());
         assertEquals("[BASIC]", samples.get(0).getParents().get(0).getRetrievedFetchOptions()
@@ -219,8 +216,7 @@ public class SampleListerTest extends AssertJUnit
                     SampleRecord r302 = record(302);
                     SampleRecord r401 = record(401);
                     one(query).listSamplesByIds(
-                            new LongOpenHashSet(new long[]
-                            { r1.s_id, r2.s_id, r3.s_id, r101.s_id, r102.s_id, r201.s_id,
+                            new LongOpenHashSet(new long[] { r1.s_id, r2.s_id, r3.s_id, r101.s_id, r102.s_id, r201.s_id,
                                     r202.s_id, r301.s_id, r302.s_id, r401.s_id }));
                     will(returnValue(Arrays.asList(r1, r2, r3, r101, r102, r201, r202, r301, r302,
                             r401)));
@@ -254,11 +250,11 @@ public class SampleListerTest extends AssertJUnit
                         filter);
 
         assertEquals(
-                "[Sample[/SPACE/S-201,MY-TYPE,properties=?,"
-                        + "parents=[Sample[/SPACE/S-101,MY-TYPE,properties=?,"
-                        + "parents=[Sample[/SPACE/S-1,MY-TYPE,properties=?,parents=[],children=?]],children=?]],"
-                        + "children=[Sample[/SPACE/S-302,MY-TYPE,properties=?,parents=?,"
-                        + "children=[Sample[/SPACE/S-401,MY-TYPE,properties=?,parents=?,children=[]]]]]]]",
+                "[Sample[/SPACE/S-201,MY-TYPE,properties=?,parents={Sample[/SPACE/S-101,MY-TYPE,"
+                        + "properties=?,parents={Sample[/SPACE/S-1,MY-TYPE,properties=?,parents=[],"
+                        + "children=?]},children=?]},children={Sample[/SPACE/S-302,MY-TYPE,"
+                        + "properties=?,parents=?,children={Sample[/SPACE/S-401,MY-TYPE,properties=?,"
+                        + "parents=?,children=[]]}]}]]",
                 samples.toString());
         assertEquals("[BASIC, PARENTS, CHILDREN]", samples.get(0).getRetrievedFetchOptions()
                 .toString());

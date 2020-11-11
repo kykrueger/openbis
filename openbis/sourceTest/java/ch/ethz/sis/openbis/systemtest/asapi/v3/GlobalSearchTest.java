@@ -16,47 +16,45 @@
 
 package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.CreationId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.IObjectId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.delete.DataSetDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.IDataSetId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.id.DataStorePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.id.IDeletionId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.create.ExperimentCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.delete.ExperimentDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.IExperimentId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.GlobalSearchObject;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearchObjectFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearchObjectSortOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchObjectKind;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.MaterialPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.delete.SampleDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.IApplicationServerInternalApi;
-import org.testng.annotations.Test;
-
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetKind;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.GlobalSearchObject;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearchObjectFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchObjectKind;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.MaterialPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.IApplicationServerInternalApi;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.common.test.AssertionUtil;
 import ch.systemsx.cisd.openbis.systemtest.authorization.ProjectAuthorizationUser;
+import org.testng.annotations.Test;
+
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static org.testng.Assert.*;
 
@@ -84,13 +82,46 @@ public class GlobalSearchTest extends AbstractTest
     }
 
     @Test
-    public void testSearchWithUnauthorized()
+    public void testSearchSamplesUnauthorized()
     {
         GlobalSearchCriteria criteria = new GlobalSearchCriteria();
         criteria.withText().thatContainsExactly("200902091219327-1025");
 
-        SearchResult<GlobalSearchObject> result = search(TEST_SPACE_USER, criteria, new GlobalSearchObjectFetchOptions());
+        SearchResult<GlobalSearchObject> result = search(TEST_SPACE_USER, criteria,
+                new GlobalSearchObjectFetchOptions());
         assertEquals(result.getObjects().size(), 0);
+    }
+
+    @Test
+    public void testSearchExperimentsUnauthorized()
+    {
+        final GlobalSearchCriteria criteria1 = new GlobalSearchCriteria();
+        criteria1.withText().thatContainsExactly("200811050951882-1028");
+        final SearchResult<GlobalSearchObject> result1 = search(TEST_USER, criteria1,
+                new GlobalSearchObjectFetchOptions());
+        assertEquals(result1.getObjects().size(), 1);
+
+        final GlobalSearchCriteria criteria2 = new GlobalSearchCriteria();
+        criteria2.withText().thatContainsExactly("200811050951882-1028");
+        final SearchResult<GlobalSearchObject> result2 = search(TEST_SPACE_USER, criteria2,
+                new GlobalSearchObjectFetchOptions());
+        assertEquals(result2.getObjects().size(), 0);
+    }
+
+    @Test
+    public void testSearchDataSetsUnauthorized()
+    {
+        final GlobalSearchCriteria criteria1 = new GlobalSearchCriteria();
+        criteria1.withText().thatContainsExactly("20110509092359990-10");
+        final SearchResult<GlobalSearchObject> result1 = search(TEST_USER, criteria1,
+                new GlobalSearchObjectFetchOptions());
+        assertEquals(result1.getObjects().size(), 1);
+
+        final GlobalSearchCriteria criteria2 = new GlobalSearchCriteria();
+        criteria2.withText().thatContainsExactly("20110509092359990-10");
+        final SearchResult<GlobalSearchObject> result2 = search(TEST_SPACE_USER, criteria2,
+                new GlobalSearchObjectFetchOptions());
+        assertEquals(result2.getObjects().size(), 0);
     }
 
     @Test
@@ -617,7 +648,7 @@ public class GlobalSearchTest extends AbstractTest
     }
 
     @Test
-    public void testSearchWithDataSetPermIdAndLocation()
+    public void testSearchWithDataSetPermId()
     {
         GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
         fo.withDataSet();
@@ -625,32 +656,17 @@ public class GlobalSearchTest extends AbstractTest
 
         GlobalSearchCriteria criteria = new GlobalSearchCriteria();
         criteria.withText().thatContainsExactly("20110509092359990-11");
-        criteria.withText().thatContainsExactly("LINK");
 
         SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
-        assertEquals(result.getTotalCount(), 5);
+        assertEquals(result.getTotalCount(), 1);
 
-        final List<GlobalSearchObject> resultObjects = result.getObjects();
-        final GlobalSearchObject object1 = resultObjects.stream().filter(
-                globalSearchObject -> globalSearchObject.getDataSet().getCode().equals("20110509092359990-11"))
-                .findAny().orElse(null);
-        final GlobalSearchObject object2 = resultObjects.stream().filter(
-                globalSearchObject -> globalSearchObject.getDataSet().getCode().equals("20120628092259000-23"))
-                .findAny().orElse(null);
-
+        final GlobalSearchObject object1 = result.getObjects().get(0);
         assertDataSet(object1, "20110509092359990-11", object1.getMatch(), DataSetKind.PHYSICAL);
         AssertionUtil.assertContains("Perm ID: 20110509092359990-11", object1.getMatch());
         assertEquals(object1.getDataSet().getCode(), "20110509092359990-11");
         assertExperimentNotFetched(object1);
         assertSampleNotFetched(object1);
         assertMaterialNotFetched(object1);
-
-        assertDataSet(object2, "20120628092259000-23", object2.getMatch(), DataSetKind.LINK);
-        AssertionUtil.assertContains("DataSet kind: LINK", object2.getMatch());
-        assertEquals(object2.getDataSet().getCode(), "20120628092259000-23");
-        assertExperimentNotFetched(object2);
-        assertSampleNotFetched(object2);
-        assertMaterialNotFetched(object2);
     }
 
     @Test

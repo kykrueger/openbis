@@ -165,8 +165,8 @@ public class JythonBasedAggregationServiceReportingPluginTest extends AbstractFi
         TableModel tableModel = plugin.createAggregationReport(parameters, processingContext);
 
         assertEquals("SearchCriteria[MATCH_ALL_CLAUSES,[],"
-                + "[SearchSubCriteria[EXPERIMENT,SearchCriteria[MATCH_ALL_CLAUSES,"
-                + "[SearchCriteria.AttributeMatchClause[ATTRIBUTE,CODE,ABC,EQUALS]],[]]]]]",
+                + "{SearchSubCriteria[EXPERIMENT,SearchCriteria[MATCH_ALL_CLAUSES,"
+                + "{SearchCriteria.AttributeMatchClause[ATTRIBUTE,CODE,ABC,EQUALS]},[]]]}]",
                 searchCriteriaRecorder.recordedObject().toString());
         assertEquals("[Experiment, Data Set Code, Number of Files, Number of Proteins]", tableModel
                 .getHeader().toString());
@@ -206,8 +206,8 @@ public class JythonBasedAggregationServiceReportingPluginTest extends AbstractFi
         }
 
         assertEquals("SearchCriteria[MATCH_ALL_CLAUSES,[],"
-                + "[SearchSubCriteria[EXPERIMENT,SearchCriteria[MATCH_ALL_CLAUSES,"
-                + "[SearchCriteria.AttributeMatchClause[ATTRIBUTE,CODE,<null>,EQUALS]],[]]]]]",
+                + "{SearchSubCriteria[EXPERIMENT,SearchCriteria[MATCH_ALL_CLAUSES,"
+                + "{SearchCriteria.AttributeMatchClause[ATTRIBUTE,CODE,<null>,EQUALS]},[]]]}]",
                 searchCriteriaRecorder.recordedObject().toString());
         context.assertIsSatisfied();
     }

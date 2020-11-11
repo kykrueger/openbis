@@ -218,6 +218,35 @@ public class SearchProjectTest extends AbstractTest
         v3api.logout(sessionToken);
     }
 
+    @Test()
+    public void testSearchWithSortingByModificationDate()
+    {
+        final ProjectSearchCriteria criteria = new ProjectSearchCriteria();
+        criteria.withOrOperator();
+        criteria.withId().thatEquals(new ProjectIdentifier("/TEST-SPACE/TEST-PROJECT"));
+        criteria.withId().thatEquals(new ProjectIdentifier("/TESTGROUP/TESTPROJ"));
+
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        final ProjectFetchOptions fo1 = new ProjectFetchOptions();
+        fo1.from(1).count(1);
+        fo1.sortBy().modificationDate().asc();
+
+        final SearchResult<Project> result1 = v3api.searchProjects(sessionToken, criteria, fo1);
+        final Project project1 = result1.getObjects().get(0);
+        assertEquals(project1.getCode(), "TESTPROJ");
+
+        final ProjectFetchOptions fo2 = new ProjectFetchOptions();
+        fo2.from(1).count(1);
+        fo2.sortBy().modificationDate().desc();
+
+        final SearchResult<Project> result2 = v3api.searchProjects(sessionToken, criteria, fo2);
+        final Project project2 = result2.getObjects().get(0);
+        assertEquals(project2.getCode(), "TEST-PROJECT");
+
+        v3api.logout(sessionToken);
+    }
+
     @Test(dataProviderClass = ProjectAuthorizationUser.class, dataProvider = ProjectAuthorizationUser.PROVIDER_WITH_ETL)
     public void testSearchWithProjectAuthorization(ProjectAuthorizationUser user)
     {
