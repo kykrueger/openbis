@@ -7,7 +7,7 @@ export default class UserGroupFormControllerSave extends PageControllerSave {
   async save() {
     const state = this.context.getState()
 
-    const group = FormUtil.trimFields({ ...state.group })
+    const group = this._prepareGroup(state.group)
     const users = state.users
     const roles = state.roles
 
@@ -70,6 +70,16 @@ export default class UserGroupFormControllerSave extends PageControllerSave {
     await this.facade.executeOperations(operations, options)
 
     return group.code.value
+  }
+
+  _prepareGroup(group) {
+    const code = group.code.value
+    return FormUtil.trimFields({
+      ...group,
+      code: {
+        value: code ? code.toUpperCase() : null
+      }
+    })
   }
 
   _isGroupUpdateNeeded(group) {

@@ -59,15 +59,15 @@ async function testSaveCreateGroup() {
 
   expectExecuteOperations([
     createGroupOperation({
-      code: 'test-group',
+      code: 'TEST-GROUP',
       description: 'Test Description'
     }),
     createUserAssignmentOperation({
-      groupCode: 'test-group',
+      groupCode: 'TEST-GROUP',
       userId: mySpaceUser.getUserId()
     }),
     createRoleAssignmentOperation({
-      groupCode: 'test-group',
+      groupCode: 'TEST-GROUP',
       spaceCode: mySpace.getCode(),
       role: openbis.Role.ADMIN
     })
@@ -78,7 +78,7 @@ async function testSaveUpdateGroup() {
   const { testSpaceUser } = UserGroupFormTestData
 
   const group = new openbis.AuthorizationGroup()
-  group.setCode('test-group')
+  group.setCode('TEST-GROUP')
   group.setDescription('Test Description')
 
   common.facade.loadUsers.mockReturnValue(Promise.resolve([testSpaceUser]))
@@ -133,7 +133,7 @@ async function testSaveAddUser() {
   const { testSpaceUser } = UserGroupFormTestData
 
   const group = new openbis.AuthorizationGroup()
-  group.setCode('test-group')
+  group.setCode('TEST-GROUP')
 
   common.facade.loadUsers.mockReturnValue(Promise.resolve([testSpaceUser]))
 
@@ -161,7 +161,7 @@ async function testSaveAddUser() {
 
 async function testSaveAddRole() {
   const group = new openbis.AuthorizationGroup()
-  group.setCode('test-group')
+  group.setCode('TEST-GROUP')
 
   const form = await common.mountExisting(group)
 
@@ -192,7 +192,7 @@ async function testSaveRemoveUser() {
   const { mySpaceUser, testSpaceUser } = UserGroupFormTestData
 
   const group = new openbis.AuthorizationGroup()
-  group.setCode('test-group')
+  group.setCode('TEST-GROUP')
   group.setUsers([mySpaceUser, testSpaceUser])
 
   common.facade.loadUsers.mockReturnValue(
@@ -228,7 +228,7 @@ async function testSaveRemoveRole() {
   } = UserGroupFormTestData
 
   const group = new openbis.AuthorizationGroup()
-  group.setCode('test-group')
+  group.setCode('TEST-GROUP')
   group.setRoleAssignments([
     instanceObserverAssignment,
     testSpacePowerUserAssignment
