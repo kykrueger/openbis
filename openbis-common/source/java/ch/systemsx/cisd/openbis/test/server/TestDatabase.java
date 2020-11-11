@@ -148,7 +148,9 @@ public class TestDatabase
 
         String restore = DumpPreparator.getRestoreExecutable();
         List<String> command =
-                Arrays.asList(restore, "-U", databaseOwner, "-d", databaseName, "-n", "public", "-j", "4", "-Fc", "-O",
+                Arrays.asList(restore,
+                        "-h", DatabaseEngine.getTestEnvironmentHostOrConfigured("localhost"),
+                        "-U", databaseOwner, "-d", databaseName, "-n", "public", "-j", "4", "-Fc", "-O",
                         databaseDump.getAbsolutePath());
         executeCommand(command);
     }
@@ -156,7 +158,9 @@ public class TestDatabase
     private static List<String> executeSql(String userName, String sql)
     {
         String psql = DumpPreparator.getPSQLExecutable();
-        List<String> command = Arrays.asList(psql, "-U", userName, "-c", sql);
+        List<String> command = Arrays.asList(psql,
+                "-h", DatabaseEngine.getTestEnvironmentHostOrConfigured("localhost"),
+                "-U", userName, "-c", sql);
         return executeCommand(command);
     }
 
