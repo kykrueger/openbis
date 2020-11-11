@@ -2,7 +2,7 @@ import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import Container from '@src/js/components/common/form/Container.jsx'
 import Header from '@src/js/components/common/form/Header.jsx'
-import TextField from '@src/js/components/common/form/TextField.jsx'
+import SourceCodeField from '@src/js/components/common/form/SourceCodeField.jsx'
 import PluginFormSelectionType from '@src/js/components/tools/form/plugin/PluginFormSelectionType.js'
 import logger from '@src/js/common/logger.js'
 
@@ -85,12 +85,11 @@ class PluginFormScript extends React.PureComponent {
     const { mode, classes } = this.props
     return (
       <div className={classes.field}>
-        <TextField
+        <SourceCodeField
           reference={this.references.script}
           label='Script'
           name='script'
           mandatory={true}
-          multiline={true}
           error={error}
           disabled={!enabled}
           value={value}
