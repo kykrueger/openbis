@@ -162,8 +162,8 @@ public class PostgresAuthorisationInformationProviderDAO implements ISQLAuthoris
                 WHERE + SP + d + PERIOD + ID_COLUMN + SP + IN + SP + LP + SELECT + SP + UNNEST + LP + QU + RP + RP + SP + AND + SP + LP +
                 ep + PERIOD + ID_COLUMN + SP + IN + SP + LP + SELECT + SP + UNNEST + LP + QU + RP + RP + SP + OR + SP +
                 sp + PERIOD + ID_COLUMN + SP + IN + SP + LP + SELECT + SP + UNNEST + LP + QU + RP + RP + SP + OR + NL +
-                ep + PERIOD + SPACE_COLUMN + SP + IN + SP + LP + SELECT + SP + UNNEST + LP + QU + RP + RP + OR + SP +
-                sp + PERIOD + SPACE_COLUMN + SP + IN + SP + LP + SELECT + SP + UNNEST + LP + QU + RP + RP +
+                ep + PERIOD + SPACE_COLUMN + SP + IN + SP + LP + SELECT + SP + UNNEST + LP + QU + RP + RP + SP + OR +
+                SP + sp + PERIOD + SPACE_COLUMN + SP + IN + SP + LP + SELECT + SP + UNNEST + LP + QU + RP + RP +
                 RP;
 
         final List<Object> args = Arrays.asList(requestedIDs.toArray(new Long[0]), projectIds, projectIds, spaceIds, spaceIds);
