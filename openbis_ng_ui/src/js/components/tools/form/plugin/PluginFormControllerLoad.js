@@ -59,6 +59,9 @@ export default class PluginFormControllerLoad extends PageControllerLoad {
       }),
       script: FormUtil.createField({
         value: _.get(loadedPlugin, 'script', null)
+      }),
+      available: FormUtil.createField({
+        value: _.get(loadedPlugin, 'available', true)
       })
     }
     if (loadedPlugin) {

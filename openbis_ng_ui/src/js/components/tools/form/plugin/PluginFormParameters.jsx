@@ -2,6 +2,7 @@ import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import Container from '@src/js/components/common/form/Container.jsx'
 import Header from '@src/js/components/common/form/Header.jsx'
+import Message from '@src/js/components/common/form/Message.jsx'
 import TextField from '@src/js/components/common/form/TextField.jsx'
 import SelectField from '@src/js/components/common/form/SelectField.jsx'
 import PluginFormSelectionType from '@src/js/components/tools/form/plugin/PluginFormSelectionType.js'
@@ -78,11 +79,45 @@ class PluginFormParameters extends React.PureComponent {
     return (
       <Container>
         <Header>Plugin</Header>
+        {this.renderMessageDisabled(plugin)}
+        {this.renderMessagePredeployed(plugin)}
         {this.renderName(plugin)}
         {this.renderEntityKind(plugin)}
         {this.renderDescription(plugin)}
       </Container>
     )
+  }
+
+  renderMessageDisabled(plugin) {
+    const { classes } = this.props
+
+    if (!plugin.available.value) {
+      return (
+        <div className={classes.field}>
+          <Message type='warning'>The plugin is disabled.</Message>
+        </div>
+      )
+    } else {
+      return null
+    }
+  }
+
+  renderMessagePredeployed(plugin) {
+    const { classes } = this.props
+
+    if (plugin.pluginKind === openbis.PluginKind.PREDEPLOYED) {
+      return (
+        <div className={classes.field}>
+          <Message type='info'>
+            This is a predeployed Java plugin. Its parameters and logic are
+            defined in the plugin Java class and therefore cannot be changed
+            from the UI.
+          </Message>
+        </div>
+      )
+    } else {
+      return null
+    }
   }
 
   renderName(plugin) {

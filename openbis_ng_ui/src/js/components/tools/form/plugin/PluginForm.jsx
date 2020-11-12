@@ -10,6 +10,7 @@ import PluginFormFacade from '@src/js/components/tools/form/plugin/PluginFormFac
 import PluginFormScript from '@src/js/components/tools/form/plugin/PluginFormScript.jsx'
 import PluginFormParameters from '@src/js/components/tools/form/plugin/PluginFormParameters.jsx'
 import PluginFormButtons from '@src/js/components/tools/form/plugin/PluginFormButtons.jsx'
+import openbis from '@src/js/services/openbis.js'
 import logger from '@src/js/common/logger.js'
 
 const styles = () => ({})
@@ -55,16 +56,20 @@ class PluginForm extends React.PureComponent {
     const { controller } = this
     const { plugin, selection, mode } = this.state
 
-    return (
-      <PluginFormScript
-        plugin={plugin}
-        selection={selection}
-        mode={mode}
-        onChange={controller.handleChange}
-        onSelectionChange={controller.handleSelectionChange}
-        onBlur={controller.handleBlur}
-      />
-    )
+    if (plugin.pluginKind === openbis.PluginKind.JYTHON) {
+      return (
+        <PluginFormScript
+          plugin={plugin}
+          selection={selection}
+          mode={mode}
+          onChange={controller.handleChange}
+          onSelectionChange={controller.handleSelectionChange}
+          onBlur={controller.handleBlur}
+        />
+      )
+    } else {
+      return <div></div>
+    }
   }
 
   renderAdditionalPanel() {
