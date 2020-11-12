@@ -1,13 +1,15 @@
-import _ from 'lodash'
 import React from 'react'
 import autoBind from 'auto-bind'
-import { withStyles, withTheme } from '@material-ui/core/styles'
+import { withStyles } from '@material-ui/core/styles'
 import { highlight, languages } from 'prismjs/components/prism-core.js'
 import 'prismjs/components/prism-clike.js'
 import 'prismjs/components/prism-python.js'
 import 'prismjs/themes/prism.css'
 import Editor from 'react-simple-code-editor'
+import InputLabel from '@material-ui/core/InputLabel'
+import FormFieldLabel from '@src/js/components/common/form/FormFieldLabel.jsx'
 import FormFieldContainer from '@src/js/components/common/form/FormFieldContainer.jsx'
+import FormFieldView from '@src/js/components/common/form/FormFieldView.jsx'
 import logger from '@src/js/common/logger.js'
 
 const styles = theme => ({
@@ -15,22 +17,29 @@ const styles = theme => ({
     fontFamily: theme.typography.sourceCode.fontFamily,
     fontSize: theme.typography.body2.fontSize,
     whiteSpace: 'pre-wrap',
-    padding: theme.spacing(2),
-    border: `1px solid ${theme.palette.border.secondary}`
+    tabSize: 4
   },
 
   edit: {
+    fontFamily: theme.typography.sourceCode.fontFamily,
+    fontSize: theme.typography.body2.fontSize,
+    lineHeight: theme.typography.body2.lineHeight,
     backgroundColor: theme.palette.background.field,
+    tabSize: 4,
     '& *': {
       background: 'none !important'
     },
     '& textarea': {
+      padding: '23px 12px 6px 12px !important',
       border: `1px solid ${theme.palette.border.primary} !important`,
       borderBottom: `1px solid ${theme.palette.border.field} !important`,
       outline: 'none !important'
     },
     '& textarea:focus': {
       borderBottom: `2px solid ${theme.palette.primary.main} !important`
+    },
+    '& pre': {
+      padding: '23px 12px 6px 12px !important'
     }
   },
   error: {
@@ -46,9 +55,16 @@ const styles = theme => ({
 })
 
 class SourceCodeField extends React.PureComponent {
+  static defaultProps = {
+    mode: 'edit',
+    variant: 'filled'
+  }
+
   constructor(props) {
     super(props)
     autoBind(this)
+    this.state = { focused: false }
+    this.containerRef = React.createRef()
   }
 
   handleValueChange(value) {
@@ -60,6 +76,40 @@ class SourceCodeField extends React.PureComponent {
           value
         }
       })
+    }
+  }
+
+  handleFocus() {
+    this.setState({
+      focused: true
+    })
+
+    const { onFocus } = this.props
+
+    if (onFocus) {
+      onFocus(event)
+    }
+  }
+
+  handleBlur(event) {
+    this.setState({
+      focused: false
+    })
+
+    const { onBlur } = this.props
+
+    if (onBlur) {
+      onBlur(event)
+    }
+  }
+
+  componentDidUpdate() {
+    const { reference } = this.props
+    if (reference) {
+      const containerElement = this.containerRef.current
+      if (containerElement) {
+        reference.current = containerElement.querySelector('textarea')
+      }
     }
   }
 
@@ -78,26 +128,34 @@ class SourceCodeField extends React.PureComponent {
   }
 
   renderView() {
-    const { value, classes } = this.props
+    const { label, value, classes } = this.props
     const html = { __html: highlight(value || '', languages.python) }
 
-    return <div className={classes.view} dangerouslySetInnerHTML={html} />
+    return (
+      <FormFieldView
+        label={label}
+        value={<div className={classes.view} dangerouslySetInnerHTML={html} />}
+      />
+    )
   }
 
   renderEdit() {
     const {
       name,
+      label,
       value,
       description,
+      mandatory,
       disabled,
       error,
+      variant,
       onClick,
-      onFocus,
-      onBlur,
-      theme,
       styles,
       classes
     } = this.props
+
+    const { focused } = this.state
+
     return (
       <FormFieldContainer
         description={description}
@@ -106,25 +164,34 @@ class SourceCodeField extends React.PureComponent {
         onClick={onClick}
       >
         <div
+          ref={this.containerRef}
           className={`
             ${classes.edit} 
             ${error ? classes.error : ''} 
             ${disabled ? classes.disabled : ''}
           `}
         >
+          <InputLabel
+            shrink={!!value || focused}
+            error={!!error}
+            variant={variant}
+            margin='dense'
+          >
+            <FormFieldLabel
+              label={label}
+              mandatory={mandatory}
+              styles={styles}
+              onClick={onClick}
+            />
+          </InputLabel>
           <Editor
             name={name}
             value={value || ''}
             highlight={code => highlight(code, languages.python)}
             disabled={disabled}
-            padding={this.props.theme.spacing(2)}
-            style={{
-              fontFamily: theme.typography.sourceCode.fontFamily,
-              fontSize: this.props.theme.typography.body2.fontSize
-            }}
             onValueChange={this.handleValueChange}
-            onFocus={onFocus}
-            onBlur={onBlur}
+            onFocus={this.handleFocus}
+            onBlur={this.handleBlur}
           />
         </div>
       </FormFieldContainer>
@@ -132,4 +199,4 @@ class SourceCodeField extends React.PureComponent {
   }
 }
 
-export default _.flow(withStyles(styles), withTheme)(SourceCodeField)
+export default withStyles(styles)(SourceCodeField)
