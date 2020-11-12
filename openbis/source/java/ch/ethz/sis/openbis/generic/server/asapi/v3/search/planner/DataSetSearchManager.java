@@ -98,7 +98,10 @@ public class DataSetSearchManager extends AbstractCompositeEntitySearchManager<D
         final Collection<ISearchCriteria> parentsAndContainerCriteria = getCriteria(criteria, parentsSearchCriteriaClass);
         parentsAndContainerCriteria.addAll(getCriteria(criteria, containerSearchCriteriaClass));
         final Collection<ISearchCriteria> childrenCriteria = getCriteria(criteria, childrenSearchCriteriaClass);
-        final Collection<ISearchCriteria> mainCriteria = getOtherCriteriaThan(criteria, parentsSearchCriteriaClass, childrenSearchCriteriaClass, containerSearchCriteriaClass);
+        final Collection<DataSetSearchCriteria> nestedCriteria =
+                (List) getCriteria(criteria, DataSetSearchCriteria.class);
+        final Collection<ISearchCriteria> mainCriteria = getOtherCriteriaThan(criteria, parentsSearchCriteriaClass,
+                childrenSearchCriteriaClass, containerSearchCriteriaClass, DataSetSearchCriteria.class);
 
         // Replacing perm ID search criteria with code search criteria, because for datasets perm ID is equivalent to code
         final Collection<ISearchCriteria> newMainCriteria = mainCriteria.stream().map(searchCriterion ->
@@ -111,8 +114,8 @@ public class DataSetSearchManager extends AbstractCompositeEntitySearchManager<D
                 searchCriterion instanceof PermIdSearchCriteria
                         ? convertToCodeSearchCriterion((PermIdSearchCriteria) searchCriterion) : searchCriterion).collect(Collectors.toList());
 
-        return super.doSearchForIDs(userId, newParentsAndContainerCriteria, newChildrenCriteria, newMainCriteria, criteria.getOperator(),
-                idsColumnName, TableMapper.DATA_SET, authorisationInformation);
+        return super.doSearchForIDs(userId, newParentsAndContainerCriteria, newChildrenCriteria, nestedCriteria,
+                newMainCriteria, criteria.getOperator(), idsColumnName, TableMapper.DATA_SET, authorisationInformation);
     }
 
     @Override

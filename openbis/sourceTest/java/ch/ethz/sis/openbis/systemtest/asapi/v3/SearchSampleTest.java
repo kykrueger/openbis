@@ -30,9 +30,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.create.ExperimentCreation;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
@@ -1702,7 +1699,7 @@ public class SearchSampleTest extends AbstractSampleTest
         criteriaG.withProperty("SIZE").thatIsGreaterThan("321.0");
         samplesG = searchSamples(sessionToken, criteriaG, sortByCodeFO);
         assertSampleIdentifiersInOrder(samplesG, "/CISD/3VCP7", "/CISD/CP-TEST-3");
-        
+
         // Equals As Text - Real
         SampleSearchCriteria criteriaETxt2 = new SampleSearchCriteria();
         criteriaETxt2.withProperty("SIZE").thatEquals("666.0");
@@ -2743,6 +2740,22 @@ public class SearchSampleTest extends AbstractSampleTest
 
         assertAccessLog(
                 "search-samples  SEARCH_CRITERIA:\n'SAMPLE\n    with attribute 'code' equal to 'RP1-A2X'\n'\nFETCH_OPTIONS:\n'Sample\n    with Project\n    with Space\n'");
+    }
+
+    @Test
+    public void testNestedLogicalOperators()
+    {
+        final SampleSearchCriteria criteria = new SampleSearchCriteria().withAndOperator();
+
+        final SampleSearchCriteria subCriteria1 = criteria.withSubcriteria().withOrOperator();
+        subCriteria1.withIdentifier().thatStartsWith("/MP:");
+        subCriteria1.withIdentifier().thatStartsWith("/CISD/B");
+
+        final SampleSearchCriteria subCriteria2 = criteria.withSubcriteria().withOrOperator();
+        subCriteria2.withIdentifier().thatEndsWith(":B03");
+        subCriteria2.withIdentifier().thatEndsWith(":B01");
+
+        testSearch(TEST_USER, criteria, "/MP:B03", "/CISD/B1B3:B03", "/CISD/B1B3:B01");
     }
 
     private void testSearch(String user, SampleSearchCriteria criteria, String... expectedIdentifiers)

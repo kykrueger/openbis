@@ -182,7 +182,8 @@ public class SearchCriteriaTranslator
      * @param sqlBuilder string builder to append the condition to.
      * @param criterion criterion to be translated.
      */
-    private static void appendCriterionCondition(final TranslationContext translationContext, final AuthorisationInformation authorisationInformation,
+    private static void appendCriterionCondition(final TranslationContext translationContext,
+            final AuthorisationInformation authorisationInformation,
             final StringBuilder sqlBuilder, ISearchCriteria criterion)
     {
         final TableMapper tableMapper = translationContext.getTableMapper();

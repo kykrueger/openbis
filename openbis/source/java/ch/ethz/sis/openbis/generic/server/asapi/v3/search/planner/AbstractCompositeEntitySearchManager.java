@@ -51,17 +51,21 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
 
     protected abstract CRITERIA createEmptyCriteria();
 
-    protected Set<Long> doSearchForIDs(final Long userId, final AuthorisationInformation authorisationInformation, final CRITERIA criteria, final SearchOperator searchOperator, final String idsColumnName,
+    protected Set<Long> doSearchForIDs(final Long userId, final AuthorisationInformation authorisationInformation,
+            final CRITERIA criteria, final SearchOperator searchOperator, final String idsColumnName,
             final TableMapper tableMapper)
     {
+        final CRITERIA emptyCriteria = createEmptyCriteria();
         final Class<? extends AbstractCompositeSearchCriteria> parentsSearchCriteriaClass = getParentsSearchCriteriaClass();
         final Class<? extends AbstractCompositeSearchCriteria> childrenSearchCriteriaClass = getChildrenSearchCriteriaClass();
         final Collection<ISearchCriteria> parentsCriteria = getCriteria(criteria, parentsSearchCriteriaClass);
         final Collection<ISearchCriteria> childrenCriteria = getCriteria(criteria, childrenSearchCriteriaClass);
+        final List<CRITERIA> nestedCriteria = (List) getCriteria(criteria, emptyCriteria.getClass());
         final Collection<ISearchCriteria> mainCriteria;
         if (parentsSearchCriteriaClass != null && childrenSearchCriteriaClass != null)
         {
-            mainCriteria = getOtherCriteriaThan(criteria, parentsSearchCriteriaClass, childrenSearchCriteriaClass);
+            mainCriteria = getOtherCriteriaThan(criteria, parentsSearchCriteriaClass, childrenSearchCriteriaClass,
+                    emptyCriteria.getClass());
         } else if (parentsSearchCriteriaClass == null && childrenSearchCriteriaClass == null)
         {
             mainCriteria = criteria.getCriteria();
@@ -71,14 +75,14 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
         }
         final SearchOperator finalSearchOperator = (searchOperator == null) ? criteria.getOperator() : searchOperator;
 
-        return doSearchForIDs(userId, parentsCriteria, childrenCriteria, mainCriteria, finalSearchOperator, idsColumnName, tableMapper,
+        return doSearchForIDs(userId, parentsCriteria, childrenCriteria, nestedCriteria, mainCriteria, finalSearchOperator, idsColumnName, tableMapper,
                 authorisationInformation);
     }
 
     protected Set<Long> doSearchForIDs(final Long userId,
             final Collection<ISearchCriteria> upstreamRelationshipsCriteria,
             final Collection<ISearchCriteria> downstreamRelationshipsCriteria,
-            final Collection<ISearchCriteria> mainCriteria,
+            final Collection<CRITERIA> nestedCriteria, final Collection<ISearchCriteria> mainCriteria,
             final SearchOperator finalSearchOperator, final String idsColumnName, final TableMapper tableMapper,
             final AuthorisationInformation authorisationInformation)
     {
@@ -116,7 +120,7 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
                 parentCriteriaIntermediateResults = getChildrenIdsOf(finalParentIdsFiltered, tableMapper,
                         IGetRelationshipIdExecutor.RelationshipType.PARENT_CHILD);
             } else
-                {
+            {
                 parentCriteriaIntermediateResults = null;
             }
 
@@ -160,11 +164,24 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
             childrenCriteriaIntermediateResults = null;
         }
 
+        final Collection<Set<Long>> nestedCriteriaIntermediateResults;
+        if (!nestedCriteria.isEmpty())
+        {
+            nestedCriteriaIntermediateResults = nestedCriteria.stream().map(criteria ->
+                    doSearchForIDs(userId, authorisationInformation, criteria, criteria.getOperator(),
+                            idsColumnName, tableMapper))
+                    .collect(Collectors.toList());
+        } else
+        {
+            nestedCriteriaIntermediateResults = Collections.emptyList();
+        }
+
         // Reaching this point we have the intermediate results of all recursive queries
         final Set<Long> results;
         if (containsValues(mainCriteriaIntermediateResults) || containsValues(parentCriteriaIntermediateResults)
                 || containsValues(containerCriteriaIntermediateResults)
-                || containsValues(childrenCriteriaIntermediateResults))
+                || containsValues(childrenCriteriaIntermediateResults)
+                || containsValues(nestedCriteriaIntermediateResults))
         {
             // If we have results, we merge them
             results = mergeResults(finalSearchOperator,
@@ -175,7 +192,8 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
                     parentCriteriaIntermediateResults != null
                             ? Collections.singleton(parentCriteriaIntermediateResults) : Collections.emptySet(),
                     containerCriteriaIntermediateResults != null
-                            ? Collections.singleton(containerCriteriaIntermediateResults) : Collections.emptySet());
+                            ? Collections.singleton(containerCriteriaIntermediateResults) : Collections.emptySet(),
+                    nestedCriteriaIntermediateResults);
         } else if (mainCriteria.isEmpty() && upstreamRelationshipsCriteria.isEmpty() && downstreamRelationshipsCriteria.isEmpty())
         {
             // If we don't have results and criteria are empty, return all.

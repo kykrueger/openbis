@@ -47,4 +47,9 @@ public class SampleSearchCriteria extends AbstractSampleSearchCriteria<SampleSea
         return with(new SampleContainerSearchCriteria());
     }
 
+    public SampleSearchCriteria withSubcriteria()
+    {
+        return with(new SampleSearchCriteria());
+    }
+
 }
