@@ -42,7 +42,7 @@ DECLARE proj_code VARCHAR;
         container_code VARCHAR;
         identifier VARCHAR := '/';
 BEGIN
-    IF NEW IS DISTINCT FROM NULL AND (OLD IS NOT DISTINCT FROM NULL OR
+    IF TG_OP != 'DELETE' AND (TG_OP = 'INSERT' OR
             (NEW.space_id IS DISTINCT FROM OLD.space_id OR NEW.proj_id IS DISTINCT FROM OLD.proj_id OR
             NEW.samp_id_part_of IS DISTINCT FROM OLD.samp_id_part_of)) THEN
         IF NEW.space_id IS NOT NULL THEN
