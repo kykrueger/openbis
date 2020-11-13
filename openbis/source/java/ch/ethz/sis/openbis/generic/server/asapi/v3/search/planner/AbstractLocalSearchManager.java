@@ -56,19 +56,6 @@ public abstract class AbstractLocalSearchManager<CRITERIA extends ISearchCriteri
                 collect(Collectors.toList());
     }
 
-    protected List<ISearchCriteria> getCriteria(
-            AbstractCompositeSearchCriteria compositeSearchCriteria, Class<? extends ISearchCriteria> clazz)
-    {
-        if (clazz != null)
-        {
-            return compositeSearchCriteria.getCriteria().stream().filter(clazz::isInstance)
-                    .collect(Collectors.toList());
-        } else
-        {
-            return Collections.emptyList();
-        }
-    }
-
     protected static <E> Set<E> mergeResults(final SearchOperator operator,
             final Collection<Set<E>>... intermediateResultsToMerge)
     {

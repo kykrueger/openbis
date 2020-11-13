@@ -58,8 +58,8 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
         final CRITERIA emptyCriteria = createEmptyCriteria();
         final Class<? extends AbstractCompositeSearchCriteria> parentsSearchCriteriaClass = getParentsSearchCriteriaClass();
         final Class<? extends AbstractCompositeSearchCriteria> childrenSearchCriteriaClass = getChildrenSearchCriteriaClass();
-        final Collection<ISearchCriteria> parentsCriteria = getCriteria(criteria, parentsSearchCriteriaClass);
-        final Collection<ISearchCriteria> childrenCriteria = getCriteria(criteria, childrenSearchCriteriaClass);
+        final Collection<? extends ISearchCriteria> parentsCriteria = getCriteria(criteria, parentsSearchCriteriaClass);
+        final Collection<? extends ISearchCriteria> childrenCriteria = getCriteria(criteria, childrenSearchCriteriaClass);
         final List<CRITERIA> nestedCriteria = (List) getCriteria(criteria, emptyCriteria.getClass());
         final Collection<ISearchCriteria> mainCriteria;
         if (parentsSearchCriteriaClass != null && childrenSearchCriteriaClass != null)
@@ -80,8 +80,8 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
     }
 
     protected Set<Long> doSearchForIDs(final Long userId,
-            final Collection<ISearchCriteria> upstreamRelationshipsCriteria,
-            final Collection<ISearchCriteria> downstreamRelationshipsCriteria,
+            final Collection<? extends ISearchCriteria> upstreamRelationshipsCriteria,
+            final Collection<? extends ISearchCriteria> downstreamRelationshipsCriteria,
             final Collection<CRITERIA> nestedCriteria, final Collection<ISearchCriteria> mainCriteria,
             final SearchOperator finalSearchOperator, final String idsColumnName, final TableMapper tableMapper,
             final AuthorisationInformation authorisationInformation)
@@ -207,7 +207,8 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
         return filterIDsByUserRights(userId, authorisationInformation, results);
     }
 
-    private Collection<ISearchCriteria> getCriteriaByRelationshipType(final Collection<ISearchCriteria> criteria,
+    private Collection<ISearchCriteria> getCriteriaByRelationshipType(
+            final Collection<? extends ISearchCriteria> criteria,
             IGetRelationshipIdExecutor.RelationshipType relationshipType)
     {
         switch (relationshipType)

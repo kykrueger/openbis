@@ -62,6 +62,11 @@ public class ExperimentSearchCriteria extends AbstractEntitySearchCriteria<IExpe
         return (ExperimentSearchCriteria) withOperator(SearchOperator.AND);
     }
 
+    public ExperimentSearchCriteria withSubcriteria()
+    {
+        return with(new ExperimentSearchCriteria());
+    }
+
     @Override
     protected SearchCriteriaToStringBuilder createBuilder()
     {

@@ -74,11 +74,13 @@ public abstract class AbstractSearchManager<OBJECT>
                 collect(Collectors.toList());
     }
 
-    protected List<ISearchCriteria> getCriteria(
-            AbstractCompositeSearchCriteria compositeSearchCriteria, Class<? extends ISearchCriteria> clazz)
+    @SuppressWarnings("unchecked")
+    protected <T extends ISearchCriteria> List<T> getCriteria(
+            AbstractCompositeSearchCriteria compositeSearchCriteria, Class<T> clazz)
     {
         return (clazz != null)
-                ? compositeSearchCriteria.getCriteria().stream().filter(clazz::isInstance).collect(Collectors.toList())
+                ? (List<T>) compositeSearchCriteria.getCriteria().stream().filter(clazz::isInstance)
+                        .collect(Collectors.toList())
                 : Collections.emptyList();
     }
 

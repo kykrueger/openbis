@@ -1537,6 +1537,23 @@ public class SearchExperimentTest extends AbstractExperimentTest
                         "DatePropertySearchCriteria", "VARCHAR"));
     }
 
+    @Test(enabled = false)
+    public void testNestedLogicalOperators()
+    {
+        // TODO: experiments require separate implementation because they don't inherit from AbstractCompositeSearchCriteria
+        final ExperimentSearchCriteria criteria = new ExperimentSearchCriteria().withAndOperator();
+
+        final ExperimentSearchCriteria subCriteria1 = criteria.withSubcriteria().withOrOperator();
+        subCriteria1.withCode().thatStartsWith("EXP-");
+        subCriteria1.withCode().thatStartsWith("EXP1");
+
+        final ExperimentSearchCriteria subCriteria2 = criteria.withSubcriteria().withOrOperator();
+        subCriteria2.withCode().thatEndsWith("E");
+        subCriteria2.withCode().thatEndsWith("1");
+
+        testSearch(TEST_USER, criteria, "EXP1", "EXP11", "EXP-REUSE", "EXP-TEST-1");
+    }
+
     public ExperimentCreation getExperimentCreation(final EntityTypePermId experimentType, final int intValue,
             final double realValue)
     {

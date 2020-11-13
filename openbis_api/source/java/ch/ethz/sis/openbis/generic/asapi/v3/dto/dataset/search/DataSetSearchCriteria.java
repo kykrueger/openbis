@@ -47,4 +47,9 @@ public class DataSetSearchCriteria extends AbstractDataSetSearchCriteria<DataSet
         return with(new DataSetContainerSearchCriteria());
     }
 
+    public DataSetSearchCriteria withSubcriteria()
+    {
+        return with(new DataSetSearchCriteria());
+    }
+
 }
