@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DatePropertySearchCriteria;
@@ -1587,6 +1588,23 @@ public class SearchDataSetTest extends AbstractDataSetTest
                 Void -> searchDataSets(sessionToken, criteriaWithDateProperty, new DataSetFetchOptions()),
                 String.format("Criterion of type %s cannot be applied to the data type %s.",
                         "DatePropertySearchCriteria", "VARCHAR"));
+    }
+
+    @Test
+    public void testNestedLogicalOperators()
+    {
+        final DataSetSearchCriteria criteria = new DataSetSearchCriteria().withAndOperator();
+
+        final DataSetSearchCriteria subCriteria1 = criteria.withSubcriteria().withOrOperator();
+        subCriteria1.withCode().thatStartsWith("2008");
+        subCriteria1.withCode().thatStartsWith("CON");
+
+        final DataSetSearchCriteria subCriteria2 = criteria.withSubcriteria().withOrOperator();
+        subCriteria2.withCode().thatEndsWith("1");
+        subCriteria2.withCode().thatEndsWith("A");
+
+        testSearch(TEST_USER, criteria, "CONTAINER_1", "20081105092259000-21", "20081105092159111-1", "CONTAINER_3A",
+                "20081105092259900-1");
     }
 
     @Test
