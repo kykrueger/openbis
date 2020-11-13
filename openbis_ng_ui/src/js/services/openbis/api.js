@@ -31,6 +31,10 @@ class Facade {
     return this.promise(this.v3.logout())
   }
 
+  getPlugins(ids, fo) {
+    return this.promise(this.v3.getPlugins(ids, fo))
+  }
+
   getPropertyTypes(ids, fo) {
     return this.promise(this.v3.getPropertyTypes(ids, fo))
   }

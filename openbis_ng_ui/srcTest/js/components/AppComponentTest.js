@@ -25,6 +25,7 @@ export default class AppComponentTest extends ComponentTest {
     openbis.mockSearchVocabularies([])
     openbis.mockSearchPersons([])
     openbis.mockSearchGroups([])
+    openbis.mockSearchPlugins([])
   }
 
   async login(app) {
