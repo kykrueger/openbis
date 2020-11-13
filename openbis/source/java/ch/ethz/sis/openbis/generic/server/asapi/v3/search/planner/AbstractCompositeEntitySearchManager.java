@@ -19,10 +19,6 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetContainerSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetSearchRelation;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleContainerSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchRelation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.relationship.IGetRelationshipIdExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
@@ -39,7 +35,8 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
         OBJECT, OBJECT_PE> extends AbstractLocalSearchManager<CRITERIA, OBJECT, OBJECT_PE>
 {
 
-    public AbstractCompositeEntitySearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
+    public AbstractCompositeEntitySearchManager(final ISQLSearchDAO searchDAO,
+            final ISQLAuthorisationInformationProviderDAO authProvider,
             final IID2PEMapper<Long, OBJECT_PE> idsTranslator)
     {
         super(searchDAO, authProvider, idsTranslator);
@@ -56,11 +53,9 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
             final TableMapper tableMapper)
     {
         final CRITERIA emptyCriteria = createEmptyCriteria();
-        final Class<? extends AbstractCompositeSearchCriteria> parentsSearchCriteriaClass = getParentsSearchCriteriaClass();
-        final Class<? extends AbstractCompositeSearchCriteria> childrenSearchCriteriaClass = getChildrenSearchCriteriaClass();
-        final Collection<? extends ISearchCriteria> parentsCriteria = getCriteria(criteria, parentsSearchCriteriaClass);
-        final Collection<? extends ISearchCriteria> childrenCriteria = getCriteria(criteria, childrenSearchCriteriaClass);
-        final List<CRITERIA> nestedCriteria = (List) getCriteria(criteria, emptyCriteria.getClass());
+        final Class<? extends AbstractCompositeSearchCriteria> parentsSearchCriteriaClass =
+                getParentsSearchCriteriaClass();
+        final Class<? extends ISearchCriteria> childrenSearchCriteriaClass = getChildrenSearchCriteriaClass();
         final Collection<ISearchCriteria> mainCriteria;
         if (parentsSearchCriteriaClass != null && childrenSearchCriteriaClass != null)
         {
@@ -73,22 +68,26 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
         {
             throw new RuntimeException("Either both or none of parent/child search criteria should be null.");
         }
-        final SearchOperator finalSearchOperator = (searchOperator == null) ? criteria.getOperator() : searchOperator;
 
-        return doSearchForIDs(userId, parentsCriteria, childrenCriteria, nestedCriteria, mainCriteria, finalSearchOperator, idsColumnName, tableMapper,
-                authorisationInformation);
+        final CriteriaVo criteriaVo = new CriteriaVo(mainCriteria, getCriteria(criteria, parentsSearchCriteriaClass),
+                getCriteria(criteria, childrenSearchCriteriaClass),
+                Collections.emptyList(), (List) getCriteria(criteria, emptyCriteria.getClass()),
+                (searchOperator == null) ? criteria.getOperator() : searchOperator);
+
+        return doSearchForIDs(userId, criteriaVo, idsColumnName, tableMapper, authorisationInformation);
     }
 
-    protected Set<Long> doSearchForIDs(final Long userId,
-            final Collection<? extends ISearchCriteria> upstreamRelationshipsCriteria,
-            final Collection<? extends ISearchCriteria> downstreamRelationshipsCriteria,
-            final Collection<CRITERIA> nestedCriteria, final Collection<ISearchCriteria> mainCriteria,
-            final SearchOperator finalSearchOperator, final String idsColumnName, final TableMapper tableMapper,
+    protected Set<Long> doSearchForIDs(final Long userId, final CriteriaVo criteriaVo,
+            final String idsColumnName, final TableMapper tableMapper,
             final AuthorisationInformation authorisationInformation)
     {
-        // upstreamRelationshipsCriteria & downstreamRelationshipsCriteria are relationships from the relationships
-        // table, for datasets it is both the parent-child relationships and containers but for samples it is only the
-        // parent-child ones.
+        final Collection<? extends ISearchCriteria> parentRelationshipsCriteria = criteriaVo.getParentsCriteria();
+        final Collection<? extends ISearchCriteria> childRelationshipsCriteria = criteriaVo.getChildrenCriteria();
+        final Collection<? extends ISearchCriteria> containerCriteria = criteriaVo.getContainerCriteria();
+        final Collection<CRITERIA> nestedCriteria = criteriaVo.getNestedCriteria();
+        final Collection<ISearchCriteria> mainCriteria = criteriaVo.getMainCriteria();
+        final SearchOperator finalSearchOperator = criteriaVo.getSearchOperator();
+
         final Set<Long> mainCriteriaIntermediateResults;
         if (!mainCriteria.isEmpty())
         {
@@ -96,65 +95,46 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
             final CRITERIA containerCriterion = createEmptyCriteria();
             containerCriterion.withOperator(finalSearchOperator);
             containerCriterion.setCriteria(mainCriteria);
-            mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId, containerCriterion, tableMapper,
-                    idsColumnName, authorisationInformation);
+            mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId, containerCriterion,
+                    tableMapper, idsColumnName, authorisationInformation);
         } else
         {
             mainCriteriaIntermediateResults = null;
         }
 
         final Set<Long> parentCriteriaIntermediateResults;
-        final Set<Long> containerCriteriaIntermediateResults;
-        if (!upstreamRelationshipsCriteria.isEmpty())
+        if (!parentRelationshipsCriteria.isEmpty())
         {
-            final Collection<ISearchCriteria> filteredParentsCriteria =
-                    getCriteriaByRelationshipType(upstreamRelationshipsCriteria,
-                            IGetRelationshipIdExecutor.RelationshipType.PARENT_CHILD);
-
-            if (!filteredParentsCriteria.isEmpty())
-            {
-                final Set<Long> finalParentIds = findFinalRelationshipIds(userId, authorisationInformation,
-                        finalSearchOperator, filteredParentsCriteria, tableMapper);
-                final Set<Long> finalParentIdsFiltered = filterIDsByUserRights(userId, authorisationInformation,
-                        finalParentIds);
-                parentCriteriaIntermediateResults = getChildrenIdsOf(finalParentIdsFiltered, tableMapper,
-                        IGetRelationshipIdExecutor.RelationshipType.PARENT_CHILD);
-            } else
-            {
-                parentCriteriaIntermediateResults = null;
-            }
-
-            final Collection<ISearchCriteria> filteredContainersCriteria =
-                    getCriteriaByRelationshipType(upstreamRelationshipsCriteria,
-                            IGetRelationshipIdExecutor.RelationshipType.CONTAINER_COMPONENT);
-
-            if (!filteredContainersCriteria.isEmpty())
-            {
-                final Set<Long> finalContainerIds = findFinalRelationshipIds(userId, authorisationInformation,
-                        finalSearchOperator, filteredContainersCriteria, tableMapper);
-                final Set<Long> finalContainerIdsFiltered = filterIDsByUserRights(userId, authorisationInformation,
-                        finalContainerIds);
-                containerCriteriaIntermediateResults = getChildrenIdsOf(finalContainerIdsFiltered, tableMapper,
-                        IGetRelationshipIdExecutor.RelationshipType.CONTAINER_COMPONENT);
-            } else
-            {
-                containerCriteriaIntermediateResults = null;
-            }
+            final Set<Long> finalParentIds = findFinalRelationshipIds(userId, authorisationInformation,
+                    finalSearchOperator, parentRelationshipsCriteria, tableMapper);
+            final Set<Long> finalParentIdsFiltered = filterIDsByUserRights(userId, authorisationInformation,
+                    finalParentIds);
+            parentCriteriaIntermediateResults = getChildrenIdsOf(finalParentIdsFiltered, tableMapper,
+                    IGetRelationshipIdExecutor.RelationshipType.PARENT_CHILD);
         } else
         {
             parentCriteriaIntermediateResults = null;
+        }
+
+        final Set<Long> containerCriteriaIntermediateResults;
+        if (!containerCriteria.isEmpty())
+        {
+            final Set<Long> finalContainerIds = findFinalRelationshipIds(userId, authorisationInformation,
+                    finalSearchOperator, containerCriteria, tableMapper);
+            final Set<Long> finalContainerIdsFiltered = filterIDsByUserRights(userId, authorisationInformation,
+                    finalContainerIds);
+            containerCriteriaIntermediateResults = getChildrenIdsOf(finalContainerIdsFiltered, tableMapper,
+                    IGetRelationshipIdExecutor.RelationshipType.CONTAINER_COMPONENT);
+        } else
+        {
             containerCriteriaIntermediateResults = null;
         }
 
         final Set<Long> childrenCriteriaIntermediateResults;
-        if (!downstreamRelationshipsCriteria.isEmpty())
+        if (!childRelationshipsCriteria.isEmpty())
         {
-            final Collection<ISearchCriteria> filteredChildrenCriteria =
-                    getCriteriaByRelationshipType(downstreamRelationshipsCriteria,
-                            IGetRelationshipIdExecutor.RelationshipType.PARENT_CHILD);
-
             final Set<Long> finalChildrenIds = findFinalRelationshipIds(userId, authorisationInformation,
-                    finalSearchOperator, filteredChildrenCriteria, tableMapper);
+                    finalSearchOperator, childRelationshipsCriteria, tableMapper);
             final Set<Long> finalChildrenIdsFiltered = filterIDsByUserRights(userId,
                     authorisationInformation, finalChildrenIds);
             childrenCriteriaIntermediateResults = getParentsIdsOf(finalChildrenIdsFiltered, tableMapper,
@@ -194,7 +174,8 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
                     containerCriteriaIntermediateResults != null
                             ? Collections.singleton(containerCriteriaIntermediateResults) : Collections.emptySet(),
                     nestedCriteriaIntermediateResults);
-        } else if (mainCriteria.isEmpty() && upstreamRelationshipsCriteria.isEmpty() && downstreamRelationshipsCriteria.isEmpty())
+        } else if (mainCriteria.isEmpty() && parentRelationshipsCriteria.isEmpty()
+                && childRelationshipsCriteria.isEmpty())
         {
             // If we don't have results and criteria are empty, return all.
             results = getAllIds(userId, authorisationInformation, idsColumnName, tableMapper);
@@ -207,39 +188,6 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
         return filterIDsByUserRights(userId, authorisationInformation, results);
     }
 
-    private Collection<ISearchCriteria> getCriteriaByRelationshipType(
-            final Collection<? extends ISearchCriteria> criteria,
-            IGetRelationshipIdExecutor.RelationshipType relationshipType)
-    {
-        switch (relationshipType)
-        {
-            case PARENT_CHILD:
-            {
-                return criteria.stream().filter(criterion -> !isContainerCriterion(criterion))
-                        .collect(Collectors.toList());
-            }
-            case CONTAINER_COMPONENT:
-            {
-                return criteria.stream().filter(this::isContainerCriterion)
-                        .collect(Collectors.toList());
-            }
-            default:
-            {
-                throw new IllegalArgumentException();
-            }
-        }
-    }
-
-    private boolean isContainerCriterion(final ISearchCriteria criterion)
-    {
-        return criterion instanceof DataSetContainerSearchCriteria &&
-                ((DataSetContainerSearchCriteria) criterion).getRelation() ==
-                        DataSetSearchRelation.CONTAINER ||
-        criterion instanceof SampleContainerSearchCriteria &&
-                ((SampleContainerSearchCriteria) criterion).getRelation() ==
-                        SampleSearchRelation.CONTAINER;
-    }
-
     /**
      * Returns IDs using parent or child relationship criteria.
      *
@@ -250,8 +198,9 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
      * @return IDs found from parent/child criteria.
      */
     @SuppressWarnings("unchecked")
-    private Set<Long> findFinalRelationshipIds(final Long userId, final AuthorisationInformation authorisationInformation, final SearchOperator operator,
-            final Collection<ISearchCriteria> relatedEntitiesCriteria, final TableMapper tableMapper)
+    private Set<Long> findFinalRelationshipIds(final Long userId,
+            final AuthorisationInformation authorisationInformation, final SearchOperator operator,
+            final Collection<? extends ISearchCriteria> relatedEntitiesCriteria, final TableMapper tableMapper)
     {
         final List<Set<Long>> relatedIds = relatedEntitiesCriteria.stream().flatMap(entitySearchCriteria ->
         {
@@ -263,8 +212,6 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
         return mergeResults(operator, relatedIds);
     }
 
-    // These methods require a simple SQL query to the database
-
     /**
      * Queries the DB to return all entity IDs.
      *
@@ -274,13 +221,15 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
      * @param idsColumnName the name of the column, whose values to be returned.
      * @param tableMapper the table mapper to be used during translation.
      */
-    protected Set<Long> getAllIds(final Long userId, final AuthorisationInformation authorisationInformation, final String idsColumnName,
+    protected Set<Long> getAllIds(final Long userId, final AuthorisationInformation authorisationInformation,
+            final String idsColumnName,
             final TableMapper tableMapper)
     {
         final CRITERIA criteria = createEmptyCriteria();
         final CRITERIA containerCriterion = createEmptyCriteria();
         containerCriterion.setCriteria(Collections.singletonList(criteria));
-        return getSearchDAO().queryDBWithNonRecursiveCriteria(userId, containerCriterion, tableMapper, idsColumnName, authorisationInformation);
+        return getSearchDAO().queryDBWithNonRecursiveCriteria(userId, containerCriterion, tableMapper, idsColumnName,
+                authorisationInformation);
     }
 
     private Set<Long> getChildrenIdsOf(final Set<Long> parentIdSet, final TableMapper tableMapper,
@@ -293,6 +242,61 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
             final IGetRelationshipIdExecutor.RelationshipType relationshipType)
     {
         return getSearchDAO().findParentIDs(tableMapper, childIdSet, relationshipType);
+    }
+
+    protected class CriteriaVo
+    {
+        private final Collection<ISearchCriteria> mainCriteria;
+        private final Collection<? extends ISearchCriteria> parentsCriteria;
+        private final Collection<? extends ISearchCriteria> childrenCriteria;
+        private final Collection<? extends ISearchCriteria> containerCriteria;
+        private final Collection<CRITERIA> nestedCriteria;
+        private final SearchOperator searchOperator;
+
+        public CriteriaVo(final Collection<ISearchCriteria> mainCriteria,
+                final Collection<? extends ISearchCriteria> parentsCriteria,
+                final Collection<? extends ISearchCriteria> childrenCriteria,
+                final Collection<? extends ISearchCriteria> containerCriteria,
+                final Collection<CRITERIA> nestedCriteria, final SearchOperator searchOperator)
+        {
+            this.mainCriteria = mainCriteria;
+            this.parentsCriteria = parentsCriteria;
+            this.childrenCriteria = childrenCriteria;
+            this.containerCriteria = containerCriteria;
+            this.nestedCriteria = nestedCriteria;
+            this.searchOperator = searchOperator;
+        }
+
+        public Collection<ISearchCriteria> getMainCriteria()
+        {
+            return mainCriteria;
+        }
+
+        public Collection<? extends ISearchCriteria> getParentsCriteria()
+        {
+            return parentsCriteria;
+        }
+
+        public Collection<? extends ISearchCriteria> getChildrenCriteria()
+        {
+            return childrenCriteria;
+        }
+
+        public Collection<? extends ISearchCriteria> getContainerCriteria()
+        {
+            return containerCriteria;
+        }
+
+        public Collection<CRITERIA> getNestedCriteria()
+        {
+            return nestedCriteria;
+        }
+
+        public SearchOperator getSearchOperator()
+        {
+            return searchOperator;
+        }
+
     }
 
 }

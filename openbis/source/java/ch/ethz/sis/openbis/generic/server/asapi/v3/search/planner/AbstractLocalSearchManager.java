@@ -59,13 +59,14 @@ public abstract class AbstractLocalSearchManager<CRITERIA extends ISearchCriteri
     protected static <E> Set<E> mergeResults(final SearchOperator operator,
             final Collection<Set<E>>... intermediateResultsToMerge)
     {
-        final Collection<Set<E>> intermediateResults = Arrays.stream(intermediateResultsToMerge).reduce(new ArrayList<>(), (sets, sets2) ->
+        final Collection<Set<E>> intermediateResults = Arrays.stream(intermediateResultsToMerge).reduce(
+                new ArrayList<>(), (sets1, sets2) ->
                 {
                     if (sets2 != null)
                     {
-                        sets.addAll(sets2);
+                        sets1.addAll(sets2);
                     }
-                    return sets;
+                    return sets1;
                 });
 
         switch (operator)
