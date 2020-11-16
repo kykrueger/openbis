@@ -48,6 +48,12 @@ public class SampleContainerSearchManager extends AbstractLocalSearchManager<Sam
         super(searchDAO, authProvider, idsMapper);
     }
 
+    @Override
+    protected AbstractCompositeSearchCriteria createEmptyCriteria()
+    {
+        return new SampleContainerSearchCriteria();
+    }
+
     public Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation,
             final SampleContainerSearchCriteria criteria,
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)

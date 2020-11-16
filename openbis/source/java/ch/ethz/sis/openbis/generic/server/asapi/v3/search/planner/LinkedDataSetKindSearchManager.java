@@ -40,13 +40,20 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.DATA_ID_CO
  *
  * @author Viktor Kovtun
  */
-public class LinkedDataSetKindSearchManager extends AbstractLocalSearchManager<LinkedDataSearchCriteria, DataSetType, Long>
+public class LinkedDataSetKindSearchManager extends AbstractLocalSearchManager<LinkedDataSearchCriteria, DataSetType,
+        Long>
 {
 
     public LinkedDataSetKindSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
             final IID2PEMapper<Long, Long> idsMapper)
     {
         super(searchDAO, authProvider, idsMapper);
+    }
+
+    @Override
+    protected AbstractCompositeSearchCriteria createEmptyCriteria()
+    {
+        return new LinkedDataSearchCriteria();
     }
 
     @Override

@@ -182,11 +182,11 @@ public abstract class AbstractSearchManager<OBJECT>
         return result;
     }
 
-    protected Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation, final AbstractCompositeSearchCriteria criteria, final String selectColumnName,
+    protected Set<Long> searchForIDs(final Long userId, final AuthorisationInformation authorisationInformation, final AbstractCompositeSearchCriteria criteria, final String idsColumnName,
             final TableMapper tableMapper)
     {
-        final Set<Long> mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId, criteria, tableMapper,
-                selectColumnName, authorisationInformation);
+        final Set<Long> mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId,
+                criteria, tableMapper, idsColumnName, authorisationInformation);
 
         // If we have results, we use them
         // If we don't have results and criteria are not empty, there are no results.

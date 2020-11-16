@@ -1350,7 +1350,7 @@ public class SearchExperimentTest extends AbstractExperimentTest
                 experimentCreation3));
 
         final ExperimentFetchOptions emptyFetchOptions = new ExperimentFetchOptions();
-        
+
         // Greater or Equal - Integer
         final ExperimentSearchCriteria criteriaGE = new ExperimentSearchCriteria();
         criteriaGE.withNumberProperty("INT_NUMBER").thatIsGreaterThanOrEqualTo(2);
@@ -1537,10 +1537,9 @@ public class SearchExperimentTest extends AbstractExperimentTest
                         "DatePropertySearchCriteria", "VARCHAR"));
     }
 
-    @Test(enabled = false)
+    @Test
     public void testNestedLogicalOperators()
     {
-        // TODO: experiments require separate implementation because they don't inherit from AbstractCompositeSearchCriteria
         final ExperimentSearchCriteria criteria = new ExperimentSearchCriteria().withAndOperator();
 
         final ExperimentSearchCriteria subCriteria1 = criteria.withSubcriteria().withOrOperator();
@@ -1551,7 +1550,8 @@ public class SearchExperimentTest extends AbstractExperimentTest
         subCriteria2.withCode().thatEndsWith("E");
         subCriteria2.withCode().thatEndsWith("1");
 
-        testSearch(TEST_USER, criteria, "EXP1", "EXP11", "EXP-REUSE", "EXP-TEST-1");
+        testSearch(TEST_USER, criteria, "/CISD/NEMO/EXP1", "/CISD/DEFAULT/EXP-REUSE", "/CISD/NEMO/EXP-TEST-1",
+                "/CISD/NEMO/EXP11");
     }
 
     public ExperimentCreation getExperimentCreation(final EntityTypePermId experimentType, final int intValue,

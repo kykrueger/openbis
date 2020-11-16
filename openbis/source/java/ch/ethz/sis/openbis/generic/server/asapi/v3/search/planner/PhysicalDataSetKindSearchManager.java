@@ -49,6 +49,12 @@ public class PhysicalDataSetKindSearchManager extends AbstractLocalSearchManager
     }
 
     @Override
+    protected AbstractCompositeSearchCriteria createEmptyCriteria()
+    {
+        return new PhysicalDataSearchCriteria();
+    }
+
+    @Override
     protected Set<Long> doFilterIDsByUserRights(final Set<Long> ids, final AuthorisationInformation authorisationInformation)
     {
         return ids;

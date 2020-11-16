@@ -32,7 +32,6 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PEMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -126,8 +125,8 @@ public class DataSetSearchManager extends AbstractCompositeEntitySearchManager<D
                         : searchCriterion
                 ).collect(Collectors.toList());
 
-        final CriteriaVo criteriaVo = new CriteriaVo(newMainCriteria, newParentsCriteria, newChildrenCriteria,
-                newContainerCriteria, nestedCriteria, criteria.getOperator());
+        final CompositeEntityCriteriaVo criteriaVo = new CompositeEntityCriteriaVo(newMainCriteria, newParentsCriteria,
+                newChildrenCriteria, newContainerCriteria, nestedCriteria, criteria.getOperator());
 
         return super.doSearchForIDs(userId, criteriaVo, idsColumnName, TableMapper.DATA_SET, authorisationInformation);
     }

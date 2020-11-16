@@ -46,6 +46,12 @@ public class SpaceSearchManager extends AbstractLocalSearchManager<SpaceSearchCr
     }
 
     @Override
+    protected AbstractCompositeSearchCriteria createEmptyCriteria()
+    {
+        return new SpaceSearchCriteria();
+    }
+
+    @Override
     protected Set<Long> doFilterIDsByUserRights(final Set<Long> ids, final AuthorisationInformation authorisationInformation)
     {
         return getAuthProvider().getAuthorisedSpaces(ids, authorisationInformation);

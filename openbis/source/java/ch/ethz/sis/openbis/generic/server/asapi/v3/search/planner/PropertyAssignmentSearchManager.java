@@ -105,4 +105,9 @@ public class PropertyAssignmentSearchManager extends
         return doSortIDs(ids, sortOptions, TableMapper.SAMPLE_PROPERTY_ASSIGNMENT);
     }
 
+    @Override
+    protected AbstractCompositeSearchCriteria createEmptyCriteria()
+    {
+        return new PropertyAssignmentSearchCriteria();
+    }
 }
