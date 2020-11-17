@@ -1,4 +1,4 @@
-const PLUGIN = 'plugins'
+const PLUGIN = 'plugin'
 
 export default {
   PLUGIN

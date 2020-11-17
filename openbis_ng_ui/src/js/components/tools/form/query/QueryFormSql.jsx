@@ -3,17 +3,17 @@ import { withStyles } from '@material-ui/core/styles'
 import Container from '@src/js/components/common/form/Container.jsx'
 import Header from '@src/js/components/common/form/Header.jsx'
 import SourceCodeField from '@src/js/components/common/form/SourceCodeField.jsx'
-import PluginFormSelectionType from '@src/js/components/tools/form/plugin/PluginFormSelectionType.js'
+import QueryFormSelectionType from '@src/js/components/tools/form/query/QueryFormSelectionType.js'
 import logger from '@src/js/common/logger.js'
 
 const styles = () => ({})
 
-class PluginFormScript extends React.PureComponent {
+class QueryFormSql extends React.PureComponent {
   constructor(props) {
     super(props)
     this.state = {}
     this.references = {
-      script: React.createRef()
+      sql: React.createRef()
     }
     this.handleChange = this.handleChange.bind(this)
     this.handleFocus = this.handleFocus.bind(this)
@@ -46,14 +46,14 @@ class PluginFormScript extends React.PureComponent {
   }
 
   handleChange(event) {
-    this.props.onChange(PluginFormSelectionType.PLUGIN, {
+    this.props.onChange(QueryFormSelectionType.QUERY, {
       field: event.target.name,
       value: event.target.value
     })
   }
 
   handleFocus(event) {
-    this.props.onSelectionChange(PluginFormSelectionType.PLUGIN, {
+    this.props.onSelectionChange(QueryFormSelectionType.QUERY, {
       part: event.target.name
     })
   }
@@ -63,20 +63,20 @@ class PluginFormScript extends React.PureComponent {
   }
 
   render() {
-    logger.log(logger.DEBUG, 'PluginFormScript.render')
+    logger.log(logger.DEBUG, 'QueryFormQuery.render')
 
-    const { plugin } = this.props
+    const { query } = this.props
 
     return (
       <Container>
-        <Header>Script</Header>
-        {this.renderScript(plugin)}
+        <Header>SQL</Header>
+        {this.renderSql(query)}
       </Container>
     )
   }
 
-  renderScript(plugin) {
-    const { visible, enabled, error, value } = { ...plugin.script }
+  renderSql(query) {
+    const { visible, enabled, error, value } = { ...query.sql }
 
     if (!visible) {
       return null
@@ -86,10 +86,10 @@ class PluginFormScript extends React.PureComponent {
     return (
       <div className={classes.field}>
         <SourceCodeField
-          reference={this.references.script}
-          language='python'
-          label='Script'
-          name='script'
+          reference={this.references.sql}
+          language='sql'
+          label='Sql'
+          name='sql'
           mandatory={true}
           error={error}
           disabled={!enabled}
@@ -104,4 +104,4 @@ class PluginFormScript extends React.PureComponent {
   }
 }
 
-export default withStyles(styles)(PluginFormScript)
+export default withStyles(styles)(QueryFormSql)

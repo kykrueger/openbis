@@ -16,6 +16,7 @@ const getPropertyTypes = jest.fn()
 const getSampleTypes = jest.fn()
 const getVocabularies = jest.fn()
 const getPlugins = jest.fn()
+const getQueries = jest.fn()
 const searchAuthorizationGroups = jest.fn()
 const searchDataSetTypes = jest.fn()
 const searchExperimentTypes = jest.fn()
@@ -23,6 +24,7 @@ const searchMaterialTypes = jest.fn()
 const searchMaterials = jest.fn()
 const searchPersons = jest.fn()
 const searchPlugins = jest.fn()
+const searchQueries = jest.fn()
 const searchProjects = jest.fn()
 const searchPropertyAssignments = jest.fn()
 const searchPropertyTypes = jest.fn()
@@ -92,6 +94,12 @@ const mockSearchPlugins = plugins => {
   searchPlugins.mockReturnValue(Promise.resolve(searchResult))
 }
 
+const mockSearchQueries = queries => {
+  const searchResult = new dto.SearchResult()
+  searchResult.setObjects(queries)
+  searchQueries.mockReturnValue(Promise.resolve(searchResult))
+}
+
 export default {
   login,
   logout,
@@ -109,6 +117,7 @@ export default {
   getSampleTypes,
   getVocabularies,
   getPlugins,
+  getQueries,
   searchAuthorizationGroups,
   searchDataSetTypes,
   searchExperimentTypes,
@@ -116,6 +125,7 @@ export default {
   searchMaterials,
   searchPersons,
   searchPlugins,
+  searchQueries,
   searchProjects,
   searchPropertyAssignments,
   searchPropertyTypes,
@@ -136,5 +146,6 @@ export default {
   mockSearchSampleTypes,
   mockSearchPropertyTypes,
   mockSearchVocabularies,
-  mockSearchPlugins
+  mockSearchPlugins,
+  mockSearchQueries
 }
