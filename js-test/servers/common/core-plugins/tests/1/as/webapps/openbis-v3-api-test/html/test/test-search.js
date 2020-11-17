@@ -418,6 +418,33 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testSearch(c, fSearch, fCheck);
 		});
 
+		QUnit.test("searchExperiments() with nested logical operators", function(assert) {
+			var c = new common(assert, openbis);
+
+			var fSearch = function(facade) {
+				var criteria = new c.ExperimentSearchCriteria().withAndOperator();
+
+				var subCriteria1 = criteria.withSubcriteria().withOrOperator();
+				subCriteria1.withCode().thatStartsWith("TEST");
+				subCriteria1.withCode().thatStartsWith("EXP");
+
+				var subCriteria2 = criteria.withSubcriteria().withOrOperator();
+				subCriteria2.withCode().thatEndsWith("1");
+				subCriteria2.withCode().thatEndsWith("2");
+
+				return facade.searchExperiments(criteria, c.createExperimentFetchOptions());
+			}
+
+			var fCheck = function(facade, samples) {
+				identifiers = c.extractIdentifiers(samples);
+				c.assertEqual(identifiers.length, 3);
+				c.assertEqual(identifiers.toString(),
+					"/PLATONIC/SCREENING-EXAMPLES/EXP-1,/PLATONIC/SCREENING-EXAMPLES/EXP-2,/TEST/TEST-PROJECT/TEST-EXPERIMENT-2");
+			}
+
+			testSearch(c, fSearch, fCheck);
+		});
+
 		QUnit.test("searchExperimentTypes() with and operator", function(assert) {
 			var c = new common(assert, openbis);
 
