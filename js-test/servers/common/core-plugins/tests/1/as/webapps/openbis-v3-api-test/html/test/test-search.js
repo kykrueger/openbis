@@ -435,8 +435,8 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				return facade.searchExperiments(criteria, c.createExperimentFetchOptions());
 			}
 
-			var fCheck = function(facade, samples) {
-				identifiers = c.extractIdentifiers(samples);
+			var fCheck = function(facade, experiments) {
+				var identifiers = c.extractIdentifiers(experiments);
 				c.assertEqual(identifiers.length, 3);
 				c.assertEqual(identifiers.toString(),
 					"/PLATONIC/SCREENING-EXAMPLES/EXP-1,/PLATONIC/SCREENING-EXAMPLES/EXP-2,/TEST/TEST-PROJECT/TEST-EXPERIMENT-2");
@@ -932,7 +932,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			}
 
 			var fCheck = function(facade, samples) {
-				identifiers = c.extractIdentifiers(samples);
+				var identifiers = c.extractIdentifiers(samples);
 				c.assertEqual(identifiers.length, 4);
 				c.assertEqual(identifiers.toString(),
 					"/PLATONIC/PLATE-1:A1,/PLATONIC/PLATE-1:A2,/TEST/PLATE-2:A1,/TEST/PLATE-2:A2");
@@ -1396,6 +1396,35 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 
 			var fCheck = function(facade, dataSets) {
 				c.assertObjectsWithValues(dataSets, "code", [ "20130412143121081-200", "20130412153119864-385" ]);
+			}
+
+			testSearch(c, fSearch, fCheck);
+		});
+
+		QUnit.test("searchDataSets() with nested logical operators", function(assert) {
+			var c = new common(assert, openbis);
+
+			var fSearch = function(facade) {
+				var criteria = new c.DataSetSearchCriteria().withAndOperator();
+
+				var subCriteria1 = criteria.withSubcriteria().withOrOperator();
+				subCriteria1.withCode().thatStartsWith("2016");
+				subCriteria1.withCode().thatStartsWith("2013");
+
+				var subCriteria2 = criteria.withSubcriteria().withOrOperator();
+				subCriteria2.withCode().thatEndsWith("1");
+				subCriteria2.withCode().thatEndsWith("7");
+
+				return facade.searchDataSets(criteria, c.createDataSetFetchOptions());
+			}
+
+			var fCheck = function(facade, dataSets) {
+				var codes = c.extractCodes(dataSets);
+				c.assertEqual(codes.length, 7);
+				c.assertEqual(codes.toString(),
+					"20130412142543232-197,20130412152038345-381,20130412153659994-391,20130415100158230-407,20130417094934693-427,20130424111751432-431,20160613195437233-437"
+				);
+
 			}
 
 			testSearch(c, fSearch, fCheck);

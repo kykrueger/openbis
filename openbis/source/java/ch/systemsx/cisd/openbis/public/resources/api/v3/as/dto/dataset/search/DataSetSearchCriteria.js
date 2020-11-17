@@ -82,6 +82,9 @@ define([ "require", "stjs", "as/dto/common/search/AbstractEntitySearchCriteria",
 		prototype.withContainer = function() {
 			return this.addCriteria(new DataSetContainerSearchCriteria());
 		};
+		prototype.withSubcriteria = function() {
+			return this.addCriteria(new DataSetSearchCriteria());
+		};
 	}, {
 		relation : {
 			name : "Enum",
@@ -96,7 +99,7 @@ define([ "require", "stjs", "as/dto/common/search/AbstractEntitySearchCriteria",
 			arguments : [ "ISearchCriteria" ]
 		}
 	});
-	
+
 	var DataSetParentsSearchCriteria = function() {
 		AbstractDataSetSearchCriteria.call(this, DataSetSearchRelation.PARENTS);
 	};

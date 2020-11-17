@@ -1348,6 +1348,15 @@ define([ 'jquery', 'openbis', 'underscore', 'test/dtos' ], function($, defaultOp
 			return identifiers;
 		}
 
+		this.extractCodes = function(entities) {
+			var codes = [];
+			entities.forEach(function(entity) {
+				codes.push(entity.getCode());
+			});
+			codes.sort();
+			return codes;
+		}
+
 		this.assertNull = function(actual, msg) {
 			this.assertEqual(actual, null, msg)
 		};
@@ -1414,7 +1423,7 @@ define([ 'jquery', 'openbis', 'underscore', 'test/dtos' ], function($, defaultOp
 		this.assertEqualDictionary = function(actual, expected, msg) {
 			this.assert.equal(this.renderDictionary(actual), this.renderDictionary(expected), msg);
 		};
-		
+
 		this.renderDictionary = function(dictionary) {
 			var keys = Object.keys(dictionary);
 			keys.sort();
