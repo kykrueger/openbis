@@ -2420,4 +2420,6 @@ withAnyNumberProperty
 withAnyStringProperty
 withBooleanProperty
 withStringProperty
+withOperator
+withSubcriteria
 activate
