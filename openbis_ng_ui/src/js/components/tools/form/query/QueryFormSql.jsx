@@ -88,7 +88,7 @@ class QueryFormSql extends React.PureComponent {
         <SourceCodeField
           reference={this.references.sql}
           language='sql'
-          label='Sql'
+          label='SQL'
           name='sql'
           mandatory={true}
           error={error}

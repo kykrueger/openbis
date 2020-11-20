@@ -53,7 +53,6 @@ export default class QueryFormControllerSave extends PageControllerSave {
   _updateQueryOperation(query) {
     const update = new openbis.QueryUpdate()
     update.setQueryId(new openbis.QueryName(query.name.value))
-    update.setName(query.name.value)
     update.setDescription(query.description.value)
     update.setDatabaseId(new openbis.QueryDatabaseName(query.databaseId.value))
     update.setQueryType(query.queryType.value)

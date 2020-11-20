@@ -29,7 +29,7 @@ export default class QueryFormControllerValidate extends PageControllerValidate 
     validator.validateNotEmpty(query, 'name', 'Name')
     validator.validateNotEmpty(query, 'databaseId', 'Database')
     validator.validateNotEmpty(query, 'queryType', 'Query Type')
-    validator.validateNotEmpty(query, 'sql', 'Sql')
+    validator.validateNotEmpty(query, 'sql', 'SQL')
     return validator.withErrors(query)
   }
 }
